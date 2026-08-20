@@ -121,6 +121,23 @@ jobs:
           pnpm --filter @awc-ui/core build
           pnpm ci:wrappers
 
+      # Full core test suite before anything reaches npm. Storybook a11y and
+      # Playwright CT are deliberately NOT repeated here — they gate every
+      # push on main, and releases are dispatched from a green main.
+      - name: SSR gate (renderToString every component + DSD)
+        run: pnpm --filter @awc-ui/core test:ssr
+
+      - name: Spec tests
+        # jest-direct path — `stencil test --spec --coverage` wedges, and this
+        # config caps worker heap (see jest.coverage.config.cjs).
+        run: pnpm --filter @awc-ui/core test:spec:coverage
+
+      - name: Install chrome-headless-shell for Puppeteer
+        run: pnpm --filter @awc-ui/core exec puppeteer browsers install chrome-headless-shell
+
+      - name: E2E tests
+        run: pnpm --filter @awc-ui/core exec stencil test --e2e --ci --max-workers=2
+
       - name: Publish-readiness gate (publint + attw)
         run: |
           pnpm ci:publint
