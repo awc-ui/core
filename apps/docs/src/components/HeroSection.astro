@@ -1334,7 +1334,9 @@ import stats from "../data/stats.json";
 
   @media (max-width: 40rem) {
     .awc-hero__inner {
-      padding-block-start: 3rem;
+      /* Tall enough that the eyebrow pill clears the fixed site header —
+         3rem left it half-clipped under the header bar on phones. */
+      padding-block-start: 4.5rem;
       padding-block-end: 2rem;
     }
 
@@ -1357,14 +1359,29 @@ import stats from "../data/stats.json";
       display: none;
     }
 
-    .awc-hero__chips--bottom {
-      align-items: flex-start;
-    }
-
+    /* Collapse the absolute collage into normal flow. The card's content
+       is taller than any fixed stage height at phone widths, so
+       percentage-anchored chips end up ON the card instead of below it,
+       and the 80%-wide card overflows its own segmented row. In flow the
+       card sizes to its content at full width and the spec chips simply
+       follow underneath. */
     .awc-hero__preview-stage {
       max-inline-size: 100%;
       aspect-ratio: auto;
-      min-block-size: 460px;
+      min-block-size: auto;
+    }
+
+    .awc-hero__card {
+      position: static;
+      inline-size: 100%;
+    }
+
+    .awc-hero__chips--bottom {
+      position: static;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-block-start: 0.75rem;
     }
   }
 

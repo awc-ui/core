@@ -238,6 +238,22 @@ const items = [
       gap: 0.625rem;
     }
 
+    /* At phone widths the tiles are too narrow for the letter-spaced
+       uppercase labels — wrap to a second line instead of ellipsising
+       ("CODE COVERA…"). */
+    .awc-stat__label {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      line-height: 1.25;
+    }
+
+    /* An odd tile count leaves a hole in the 2-column grid; let the last
+       tile span the full row instead. */
+    .awc-stat:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+
     .awc-stat__icon {
       inline-size: 36px;
       block-size: 36px;
