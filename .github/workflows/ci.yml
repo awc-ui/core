@@ -62,14 +62,18 @@ jobs:
         run: pnpm --filter @awc-ui/core test:ssr
 
       - name: Spec tests (with coverage)
-        run: pnpm --filter @awc-ui/core exec stencil test --spec --ci --coverage
+        # Runs jest directly via jest.coverage.config.cjs — that file's header
+        # documents that `stencil test --spec --coverage` wedges and ignores
+        # path patterns. The config also caps worker heap (workerIdleMemoryLimit)
+        # so long runs can't OOM a shared worker mid-suite.
+        run: pnpm --filter @awc-ui/core test:spec:coverage
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage-spec
-          path: packages/core/coverage/
+          path: packages/core/coverage-spec/
           retention-days: 30
 
       - name: Upload core dist for downstream jobs

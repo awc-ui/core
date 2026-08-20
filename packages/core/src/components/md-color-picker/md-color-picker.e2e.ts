@@ -60,10 +60,10 @@ describe('md-color-picker (e2e)', () => {
   it('emits mdOpenChange when toggling the popover', async () => {
     const page = await newE2EPage();
     await page.setContent(
-      '<md-color-picker variant="popover" value="#6750A4"></md-color-picker>',
+      '<md-color-picker variant="popover" value="#6750A4"><md-button slot="trigger">Pick</md-button></md-color-picker>',
     );
     const openChange = await page.spyOnEvent('mdOpenChange');
-    const trigger = await page.find('md-color-picker >>> [part="trigger"]');
+    const trigger = await page.find('md-color-picker [slot="trigger"]');
     await trigger.click();
     await page.waitForChanges();
     expect(openChange).toHaveReceivedEventDetail({ open: true });

@@ -66,11 +66,19 @@ function decodeBase64(b64: string): Uint8Array {
 }
 
 /**
+ * Compiled once per process — the module bytes never change, and every
+ * consumer gets its own isolated instance (fresh memory) below. Without this
+ * cache each component instance re-decoded and recompiled the same module.
+ */
+let modulePromise: Promise<WebAssembly.Module> | undefined;
+
+/**
  * Lazily instantiate the engine. The compiled module is a few KB; consumers
  * load their (potentially millions of) rows into its memory at runtime.
  */
 export async function instantiateEngine(): Promise<EngineExports> {
-  const bytes = decodeBase64(WASM_BASE64);
+  modulePromise ??= WebAssembly.compile(decodeBase64(WASM_BASE64));
+  const module = await modulePromise;
   const imports = {
     env: {
       abort() {},
@@ -80,13 +88,6 @@ export async function instantiateEngine(): Promise<EngineExports> {
       },
     },
   };
-  // `bytes` is a BufferSource, so at runtime this is the `{ module, instance }`
-  // overload. Some TS lib versions infer the `Module` overload instead
-  // (`Promise<Instance>`, which has no `.instance`) for a generic `Uint8Array`,
-  // so reach the instance through a structural cast that doesn't depend on the
-  // overload TS picked.
-  const source = (await WebAssembly.instantiate(bytes, imports)) as unknown as {
-    instance: WebAssembly.Instance;
-  };
-  return source.instance.exports as unknown as EngineExports;
+  const instance = await WebAssembly.instantiate(module, imports);
+  return instance.exports as unknown as EngineExports;
 }

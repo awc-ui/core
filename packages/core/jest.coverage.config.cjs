@@ -37,6 +37,14 @@ module.exports = {
   testMatch: undefined,
   maxWorkers: 2,
   /**
+   * Recycle a worker between suites once its heap crosses this threshold.
+   * Each suite retains 30-70MB in its worker (jest module registries + the
+   * Stencil testing preset), so a full run otherwise climbs unbounded until
+   * the CI runner kills the worker MID-suite (observed at ~640MB heap on the
+   * 8GB runners, failing whichever suite happened to be executing).
+   */
+  workerIdleMemoryLimit: '500MB',
+  /**
    * Several suites wait on real animation durations (panel close 250ms, bloom
    * 500ms). Alone md-date-picker takes 96s; sharing two workers it takes 184s,
    * and at jest's 5s default the slowest of those waits starts timing out from

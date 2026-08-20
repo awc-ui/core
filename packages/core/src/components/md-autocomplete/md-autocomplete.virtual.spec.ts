@@ -42,9 +42,20 @@ const items = (page: SpecPage) =>
 const rows = (n: number) =>
   Array.from({ length: n }, (_, i) => ({ value: `v${i}`, label: `Label ${i}` }));
 
-/** Give the async pack a turn to settle. */
+/**
+ * Wait for the async pack to settle. The component clears `packing` only when
+ * vc.load() commits, so polling it is race-free regardless of how long the
+ * per-instance WebAssembly instantiate takes on a loaded machine; a fixed
+ * sleep is not. Non-packing paths never set the flag and fall through to a
+ * single flush.
+ */
 const settle = async (page: SpecPage) => {
-  await new Promise((r) => setTimeout(r, 30));
+  await page.waitForChanges();
+  const inst = page.rootInstance as unknown as { packing: boolean };
+  const deadline = Date.now() + 5000;
+  while (inst.packing && Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 5));
+  }
   await page.waitForChanges();
 };
 

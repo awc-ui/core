@@ -376,9 +376,12 @@ export class MdBottomSheet {
     const selector =
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), md-icon-button:not([disabled]), md-button:not([disabled]), md-text-field:not([disabled]), md-checkbox:not([disabled]), md-switch:not([disabled]), md-radio:not([disabled]), md-slider:not([disabled])';
 
-    const shadowEls = Array.from(
-      this.containerEl?.querySelectorAll(selector) ?? [],
-    ) as HTMLElement[];
+    // The focus-guard sentinels match the [tabindex] clause but must never
+    // receive wrap-around focus themselves — the trap would land (and in the
+    // spec env, recurse) on an invisible span instead of real content.
+    const shadowEls = (
+      Array.from(this.containerEl?.querySelectorAll(selector) ?? []) as HTMLElement[]
+    ).filter((el) => !el.classList.contains('md-bottom-sheet__focus-guard'));
 
     const slots = this.containerEl?.querySelectorAll('slot') ?? [];
     const slottedEls: HTMLElement[] = [];

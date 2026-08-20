@@ -55,8 +55,8 @@
   --_outline-width: var(--md-status-dot-outline-width, max(1px, calc(2px + var(--md-sys-density-scale, 0) * 0.25px)));
 
   position: absolute;
-  inset-inline-end: var(--md-status-dot-inset-end, 0px);
-  inset-block-end: var(--md-status-dot-inset-block-end, 0px);
+  inset-inline-end: var(--md-status-dot-inset-end, -2px);
+  inset-block-end: var(--md-status-dot-inset-block-end, -2px);
   inline-size: var(--_size);
   block-size: var(--_size);
   border-radius: 50%;
