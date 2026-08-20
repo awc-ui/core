@@ -98,10 +98,11 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Install Chrome for Puppeteer
-        # Belt-and-braces: puppeteer's postinstall usually downloads Chrome for
-        # Testing already; this is a no-op when the browser is present.
-        run: pnpm --filter @awc-ui/core exec puppeteer browsers install chrome
+      - name: Install chrome-headless-shell for Puppeteer
+        # Stencil launches Puppeteer in "shell" headless mode, which uses the
+        # standalone chrome-headless-shell binary (not the full chrome build).
+        # The CLI resolves the exact version pinned by the installed puppeteer.
+        run: pnpm --filter @awc-ui/core exec puppeteer browsers install chrome-headless-shell
 
       - name: E2E tests
         # --shard: Jest 29 shards are disjoint + complete (verified with
