@@ -3,6 +3,8 @@ import stats from "../data/stats.json";
 
 // Story 1.4 AC: the waitlist CTA is currently a mailto stopgap; once the
 // Lemon Squeezy interest form ships in Epic 5, swap WAITLIST_URL.
+// Hidden until a mailing setup exists behind the address.
+const WAITLIST_ENABLED = false;
 const WAITLIST_URL =
   "mailto:waitlist@awc-ui.dev?subject=AWC%20UI%20Pro%20%E2%80%94%20Waitlist&body=Please%20notify%20me%20when%20Awc%20UI%20Pro%20is%20available.%0A%0AInterested%20in%3A%20%5Bdata%20grid%20%2F%20advanced%20charts%20%2F%20export%20%2F%20other%5D";
 
@@ -148,13 +150,20 @@ const proFeatures = [
           </li>
         </ul>
 
-        <a href={WAITLIST_URL} class="awc-pro__btn awc-pro__btn--filled" data-waitlist-cta>
-          <span class="material-symbols-outlined" aria-hidden="true">mark_email_read</span>
-          Join the waitlist
-        </a>
-        <p class="awc-pro__plan-note">
-          We&rsquo;ll email you when Pro launches. No spam, unsubscribe with one click.
-        </p>
+        {/* Waitlist CTA hidden until an email/mailing setup exists —
+            restore by flipping WAITLIST_ENABLED (the mailto address has
+            nothing behind it yet). */}
+        {WAITLIST_ENABLED && (
+          <>
+            <a href={WAITLIST_URL} class="awc-pro__btn awc-pro__btn--filled" data-waitlist-cta>
+              <span class="material-symbols-outlined" aria-hidden="true">mark_email_read</span>
+              Join the waitlist
+            </a>
+            <p class="awc-pro__plan-note">
+              We&rsquo;ll email you when Pro launches. No spam, unsubscribe with one click.
+            </p>
+          </>
+        )}
       </article>
     </div>
   </div>
