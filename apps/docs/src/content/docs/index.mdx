@@ -5,6 +5,42 @@ template: splash
 hero:
   title: ""
   tagline: ""
+head:
+  # Structured data for search engines (Google, Bing, Yandex, DuckDuckGo all
+  # consume schema.org JSON-LD). Landing page only — it describes the product,
+  # not any single docs page. og:* / twitter:* tags live in astro.config.mjs.
+  - tag: script
+    attrs:
+      type: application/ld+json
+    content: |
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://awcui.io/#website",
+            "url": "https://awcui.io/",
+            "name": "AWC UI",
+            "description": "Material Design 3 Web Components built with Stencil — for React, Angular, Vue, Svelte, or plain HTML."
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://awcui.io/#software",
+            "name": "AWC UI",
+            "alternateName": "Advanced Web Components UI",
+            "url": "https://awcui.io/",
+            "image": "https://awcui.io/og.png",
+            "applicationCategory": "DeveloperApplication",
+            "operatingSystem": "Any",
+            "license": "https://opensource.org/license/mit",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "sameAs": [
+              "https://github.com/awc-ui/core",
+              "https://www.npmjs.com/package/@awc-ui/core"
+            ]
+          }
+        ]
+      }
 ---
 
 import HeroSection from "../../components/HeroSection.astro";

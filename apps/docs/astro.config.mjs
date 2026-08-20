@@ -169,6 +169,60 @@ export default defineConfig({
         './src/styles/custom.css',
       ],
       head: [
+        // SEO — Starlight already emits title, canonical, description, the
+        // og:title/type/url/locale/description/site_name set, twitter:card,
+        // and a sitemap (auto-injected @astrojs/sitemap → /sitemap-index.xml,
+        // referenced from public/robots.txt). What it does NOT provide is a
+        // social-share image or theme-color, so only those are added here.
+        // og.png is a static 1200×630 card in public/ (rendered from the logo
+        // mark; regenerate with sharp if the branding changes). The URL must
+        // be absolute — scrapers don't resolve relative og:image paths.
+        {
+          tag: 'meta',
+          attrs: { property: 'og:image', content: 'https://awcui.io/og.png' },
+        },
+        {
+          tag: 'meta',
+          attrs: { property: 'og:image:width', content: '1200' },
+        },
+        {
+          tag: 'meta',
+          attrs: { property: 'og:image:height', content: '630' },
+        },
+        {
+          tag: 'meta',
+          attrs: {
+            property: 'og:image:alt',
+            content: 'AWC UI — Material Design 3 Web Components',
+          },
+        },
+        {
+          tag: 'meta',
+          attrs: { name: 'twitter:image', content: 'https://awcui.io/og.png' },
+        },
+        {
+          tag: 'meta',
+          attrs: {
+            name: 'twitter:image:alt',
+            content: 'AWC UI — Material Design 3 Web Components',
+          },
+        },
+        {
+          tag: 'meta',
+          attrs: {
+            name: 'theme-color',
+            media: '(prefers-color-scheme: light)',
+            content: '#FEF7FF',
+          },
+        },
+        {
+          tag: 'meta',
+          attrs: {
+            name: 'theme-color',
+            media: '(prefers-color-scheme: dark)',
+            content: '#141218',
+          },
+        },
         {
           tag: 'link',
           attrs: {
