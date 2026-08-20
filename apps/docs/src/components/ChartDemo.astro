@@ -131,8 +131,11 @@ const {
 // even if it embeds 50 ChartDemo blocks.
 const demoId = `chart-${Math.random().toString(36).slice(2, 12)}`;
 
+// TEMPORARILY DISABLED: the deployed static Storybook is being stabilised
+// (stencil lazy-runtime fix in flight) — flip back to re-enable the links.
+const STORYBOOK_LINKS_ENABLED = false;
 const sbBase = import.meta.env.PUBLIC_STORYBOOK_URL || "/storybook";
-const sbUrl = storyId ? `${sbBase}/?path=/story/${storyId}` : null;
+const sbUrl = STORYBOOK_LINKS_ENABLED && storyId ? `${sbBase}/?path=/story/${storyId}` : null;
 
 // Build the chart's opening tag with the static attributes
 // the author passed in. Booleans render as bare attributes,
