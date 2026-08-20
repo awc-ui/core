@@ -16,8 +16,8 @@
 and shipped as standard custom elements — so they work in React, Angular, Vue,
 Svelte, or a plain HTML page, with no framework runtime of their own.
 
-**[awcui.io](https://awcui.io)** · [Components](https://awcui.io/components/) ·
-[Theming](https://awcui.io/theming/overview/) · [Guides](https://awcui.io/guides/accessibility/)
+**[awc-ui.dev](https://awc-ui.dev)** · [Components](https://awc-ui.dev/components/) ·
+[Theming](https://awc-ui.dev/theming/overview/) · [Guides](https://awc-ui.dev/guides/accessibility/)
 
 > **Beta.** The API is stable enough to build on, but not frozen — expect
 > occasional breaking changes before 1.0.
@@ -99,10 +99,10 @@ document.documentElement.setAttribute('data-theme', 'dark');
 
 Three more global switches work the same way — `dir="rtl"`, `data-density`
 (0 to -4), `data-ripple` and `data-shape-morph`. See
-[Global behaviour](https://awcui.io/behaviour/density/).
+[Global behaviour](https://awc-ui.dev/behaviour/density/).
 
 Build a palette from a source colour with the
-[theme generator](https://awcui.io/theme-generator/).
+[theme generator](https://awc-ui.dev/theme-generator/).
 
 ## Working with AI assistants
 
@@ -131,7 +131,7 @@ awc-ui/
 │   ├── vue/         Wrapper — generated
 │   └── svelte/      Wrapper — generated
 ├── apps/
-│   ├── docs/        awcui.io — Astro + Starlight
+│   ├── docs/        awc-ui.dev — Astro + Starlight
 │   ├── storybook/   Stories for every component
 │   ├── example-*/   SSR reference apps (next, nuxt, sveltekit, astro, angular-ssr)
 │   └── test-*/      Per-framework integration apps
@@ -211,9 +211,9 @@ Other Storybook commands:
 Bug reports, feature requests and new component proposals each have a template
 and a guide:
 
-- [Report a bug](https://awcui.io/contributing/reporting-a-bug/)
-- [Request a feature](https://awcui.io/contributing/feature-requests/)
-- [Request a component](https://awcui.io/contributing/new-component-requests/)
+- [Report a bug](https://awc-ui.dev/contributing/reporting-a-bug/)
+- [Request a feature](https://awc-ui.dev/contributing/feature-requests/)
+- [Request a component](https://awc-ui.dev/contributing/new-component-requests/)
 - [Contributing guide](CONTRIBUTING.md)
 
 You do not need to write code to help — a bug report we can reproduce is worth

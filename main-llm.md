@@ -409,7 +409,7 @@ break on any release.
 
 **Overriding a colour role forfeits the library's contrast testing.** Re-verify
 AA (4.5:1 text, 3:1 borders and dividers) after any palette change. The Theme
-Generator at <https://awcui.io/theme-generator> takes a seed colour, emits both
+Generator at <https://awc-ui.dev/theme-generator> takes a seed colour, emits both
 palettes as `--md-sys-color-*` overrides, and runs the WCAG checks live — use it
 rather than hand-picking container and `on-` pairs.
 
@@ -1112,7 +1112,7 @@ rules you must not break:
 7. **Directional icons do not auto-flip in RTL** — see §4.5.
 8. **Re-verify contrast after overriding any colour role** — the library's AA
    testing covers the shipped palette only. The Theme Generator at
-   <https://awcui.io/theme-generator> runs the WCAG checks live (§4.2).
+   <https://awc-ui.dev/theme-generator> runs the WCAG checks live (§4.2).
 
 ---
 

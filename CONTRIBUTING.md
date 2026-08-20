@@ -26,7 +26,7 @@ Before you do, two checks that resolve a good share of reports:
 
 1. **Is the Material Symbols font loaded?** If icons render as words (`add`
    instead of a plus), the stylesheet is missing or requested without its axis
-   ranges. See the [iconography guide](https://awcui.io/guides/iconography/).
+   ranges. See the [iconography guide](https://awc-ui.dev/guides/iconography/).
 2. **Is the component actually defined?** A component that renders at zero
    height, or ignores clicks while its methods still work, is usually not
    hydrated yet rather than broken.
@@ -111,7 +111,7 @@ we will agree the API shape with you before you write anything, so the review is
 about correctness rather than direction.
 
 Before opening, check the
-[component list](https://awcui.io/components/) — there are 56 components and
+[component list](https://awc-ui.dev/components/) — there are 56 components and
 some hide under a name you might not guess (`md-otp-field`,
 `md-transfer-list`, `md-organization-chart`).
 
