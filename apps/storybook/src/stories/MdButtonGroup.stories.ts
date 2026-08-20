@@ -820,6 +820,16 @@ export const PressMotion: Story = {
     await step('required: pressing the active button does NOT animate', async () => {
       const active = btn(requiredGroup, 'a'); // selected + required -> shouldMotion returns false
       const neighbor = btn(requiredGroup, 'b');
+      // The assertion is "this press STARTS no motion" — but getAnimations()
+      // also reports whatever is still mid-flight from earlier steps/stories
+      // (the 400ms press motions above outlive their steps, and under a loaded
+      // full-suite run they can land on these elements' timeline right up to
+      // this line). Clear the deck so only what THIS dispatch starts is
+      // measured; runMotion starts its animations synchronously, so a real
+      // suppression bug still fails the assertion below.
+      for (const el of [active, neighbor, btn(requiredGroup, 'c')]) {
+        el.getAnimations().forEach((a) => a.cancel());
+      }
       active.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
       expect(neighbor.getAnimations().length).toBe(0); // group suppressed the press motion
     });
