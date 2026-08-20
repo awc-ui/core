@@ -1,0 +1,164 @@
+# Manual npm publishing for the @awc-ui packages.
+#
+# Trigger from the Actions tab (or `gh workflow run publish.yml`):
+#   channel=snapshot  — auto-versioned 0.0.0-snapshot.<utc>.<sha> under the
+#                       `snapshot` dist-tag. Allowed from any branch; nothing
+#                       is committed. For trying a build straight off a ref:
+#                       npm i @awc-ui/core@snapshot
+#   channel=beta      — your prerelease version (e.g. 1.0.0-beta.1) under the
+#                       `beta` dist-tag:  npm i @awc-ui/core@beta
+#   channel=prod      — plain semver (e.g. 1.0.0) under `latest`.
+# beta and prod must be dispatched on main; they also commit the version
+# bump back, tag v<version>, and create a GitHub release.
+#
+# Published set: core, tokens, react, vue, angular. svelte and theme are
+# deliberately absent — both still ship raw .ts entry points and are not
+# consumable from npm yet.
+#
+# Versions are stamped into the manifests BEFORE the build because
+# ng-packagr bakes the version into packages/angular/dist/package.json, and
+# the workspace:* peer ranges rewrite to the stamped version at publish time
+# (verified with pnpm pack), so only the version fields need setting.
+#
+# Requires the NPM_TOKEN repo secret: an npm Granular Access Token with
+# read/write on the @awc-ui scope (npmjs.com → Access Tokens).
+
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Release channel
+        required: true
+        type: choice
+        options:
+          - snapshot
+          - beta
+          - prod
+      version:
+        description: 'Version for beta/prod (e.g. 1.0.0-beta.1 or 1.0.0). Ignored for snapshot.'
+        required: false
+        type: string
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+env:
+  PUBLISH_FILTERS: >-
+    --filter @awc-ui/core
+    --filter @awc-ui/tokens
+    --filter @awc-ui/react
+    --filter @awc-ui/vue
+    --filter @awc-ui/angular
+
+jobs:
+  publish:
+    name: Publish (${{ inputs.channel }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: beta/prod release only from main
+        if: inputs.channel != 'snapshot' && github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::${{ inputs.channel }} releases must be dispatched on main (got ${{ github.ref }})"
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Resolve version and dist-tag
+        id: rv
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          case "$CHANNEL" in
+            snapshot)
+              VERSION="0.0.0-snapshot.$(date -u +%Y%m%d%H%M%S).$(git rev-parse --short HEAD)"
+              TAG=snapshot
+              ;;
+            beta)
+              if ! [[ "$INPUT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.-]+$ ]]; then
+                echo "::error::beta needs a prerelease version like 1.0.0-beta.1 (got '$INPUT_VERSION')"
+                exit 1
+              fi
+              VERSION="$INPUT_VERSION"
+              TAG=beta
+              ;;
+            prod)
+              if ! [[ "$INPUT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                echo "::error::prod needs a plain version like 1.0.0 (got '$INPUT_VERSION')"
+                exit 1
+              fi
+              VERSION="$INPUT_VERSION"
+              TAG=latest
+              ;;
+          esac
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Publishing $VERSION under dist-tag $TAG"
+
+      - name: Stamp package versions
+        run: |
+          for p in core tokens react vue angular; do
+            (cd "packages/$p" && npm pkg set version='${{ steps.rv.outputs.version }}')
+          done
+
+      - name: Build
+        run: |
+          pnpm --filter @awc-ui/core build
+          pnpm ci:wrappers
+
+      - name: Publish-readiness gate (publint + attw)
+        run: |
+          pnpm ci:publint
+          pnpm ci:attw
+
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: >-
+          pnpm -r ${{ env.PUBLISH_FILTERS }} publish
+          --access public
+          --tag ${{ steps.rv.outputs.tag }}
+          --no-git-checks
+
+      - name: Commit bump, tag, and GitHub release (beta/prod)
+        if: inputs.channel != 'snapshot'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.rv.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add packages/*/package.json
+          git commit -m "chore(release): v$VERSION"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
+          PRERELEASE=""
+          if [ "${{ inputs.channel }}" = "beta" ]; then PRERELEASE="--prerelease"; fi
+          gh release create "v$VERSION" --generate-notes $PRERELEASE
+
+      - name: Summary
+        run: |
+          {
+            echo "### Published ${{ steps.rv.outputs.version }} (dist-tag: ${{ steps.rv.outputs.tag }})"
+            echo ""
+            for p in core tokens react vue angular; do
+              echo "- \`@awc-ui/$p@${{ steps.rv.outputs.version }}\`"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
