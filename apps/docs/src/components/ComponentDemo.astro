@@ -78,9 +78,7 @@ const demoUid = `awc-demo-${Math.random().toString(36).slice(2, 10)}`;
 
 // Mirror StorybookEmbed's fallback so the link target stays in sync with
 // however the docs site is deployed (env var in prod, /storybook in dev).
-// TEMPORARILY DISABLED: the deployed static Storybook is being stabilised
-// (stencil lazy-runtime fix in flight) — flip back to re-enable the links.
-const STORYBOOK_LINKS_ENABLED = false;
+const STORYBOOK_LINKS_ENABLED = true;
 const sbBase = import.meta.env.PUBLIC_STORYBOOK_URL || "/storybook";
 const sbUrl = STORYBOOK_LINKS_ENABLED && storyId ? `${sbBase}/?path=/story/${storyId}` : null;
 
