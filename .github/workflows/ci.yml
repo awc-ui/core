@@ -156,15 +156,20 @@ jobs:
         run: pnpm ci:publint
 
       - name: Are the types wrong? (react, vue)
-        # Accepted --ignore-rules (see root "ci:attw" script), verified 2026-07:
+        # Accepted --ignore-rules (see root "ci:attw" script), verified 2026-08:
         # - react: false-cjs — node16 ESM import resolves dist/index.d.ts as a
-        #   CJS-flavored declaration for the ESM dist/index.mjs (needs .d.mts twin).
-        # - vue: cjs-resolves-to-esm — the package is intentionally ESM-only
-        #   ("type": "module", no "require" condition); CJS consumers must use
-        #   dynamic import.
-        # - vue: internal-resolution-error — dist/index.d.ts re-exports
-        #   './components' without an extension, which node16 ESM resolution
-        #   rejects (fix belongs in the generated wrapper source, lib/index.ts).
+        #   CJS-flavored declaration for the ESM dist/index.js (needs .d.mts twin).
+        # - react + vue: cjs-resolves-to-esm — both packages are intentionally
+        #   ESM-only ("type": "module"); CJS consumers must use dynamic import.
+        # - react: no-resolution — the ./server subpath has no node10 mapping;
+        #   node10 resolution predates subpath exports and SSR consumers are on
+        #   modern tooling.
+        # - vue: internal-resolution-error — the GENERATED components.ts (from
+        #   @stencil/vue-output-target) imports './vue-component-lib/utils'
+        #   extensionless; only types are affected (the runtime dist/index.mjs
+        #   is a self-contained esbuild bundle). The hand-written entries were
+        #   extension-qualified (react src/index.ts + src/server.ts, vue
+        #   lib/index.ts), so react no longer needs this ignore.
         run: pnpm ci:attw
 
   test-ct:
@@ -299,6 +304,15 @@ jobs:
         with:
           name: storybook-static
           path: apps/storybook/storybook-static/
+
+      - name: Download core dist
+        # test:a11y drives the stories through a live Vite server (vitest
+        # browser mode), which imports @awc-ui/core from the workspace — so
+        # packages/core needs its built dist/, not just the static storybook.
+        uses: actions/download-artifact@v4
+        with:
+          name: core-dist
+          path: packages/core/
 
       - run: pnpm --filter @awc-ui/storybook exec playwright install --with-deps chromium
 

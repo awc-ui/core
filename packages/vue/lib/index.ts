@@ -33,4 +33,4 @@ export const AwcUiVue = {
   },
 };
 
-export * from './components';
+export * from './components.js';

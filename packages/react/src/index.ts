@@ -3,4 +3,6 @@
 
 // Re-export everything from the generated components file
 // After building core, this file will be at ./components.ts
-export * from './components';
+// (.js extension: node16 ESM consumers resolve the emitted d.ts/js verbatim,
+// so the specifier must be extension-qualified.)
+export * from './components.js';

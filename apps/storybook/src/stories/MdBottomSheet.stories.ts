@@ -1797,16 +1797,22 @@ export const EscapeAndFocusTrap: Story = {
       trigger.click();
       await waitFor(() => expect(sheet.open).toBe(true));
       await waitFor(() => expect(container.getAttribute('aria-hidden')).toBeNull());
-      // rAF focusFirst() moves focus off the opener into the shadow container.
-      await waitFor(() => expect(document.activeElement).toBe(sheet));
+      // rAF focusFirst() moves focus off the opener onto the first focusable
+      // control — the slotted body button (the sentinels are excluded from
+      // the focusable scan).
+      await waitFor(() =>
+        expect(document.activeElement).toBe(sheet.querySelector('#esc-trap-focusable')),
+      );
     });
 
     await step('Focus escaping to the background opener is yanked back into the dialog', async () => {
       // Drive focus OUT of the sheet onto the background opener…
       trigger.focus();
       // …the document `focusin` trap re-runs focusFirst(), so focus lands back
-      // on the sheet host (its shadow guard) instead of staying on the opener.
-      await waitFor(() => expect(document.activeElement).toBe(sheet));
+      // on the first slotted control instead of staying on the opener.
+      await waitFor(() =>
+        expect(document.activeElement).toBe(sheet.querySelector('#esc-trap-focusable')),
+      );
       expect(document.activeElement).not.toBe(trigger);
     });
 
@@ -2032,14 +2038,13 @@ export const FocusGuardWrap: Story = {
     const firstBtn = sheet.querySelector('#guard-wrap-first') as HTMLElement;
     const lastBtn = sheet.querySelector('#guard-wrap-last') as HTMLElement;
 
-    await step('The leading focus-guard routes focus to focusable[0] — the sentinel itself in real DOM', async () => {
+    await step('The leading focus-guard wraps focus to the FIRST focusable control', async () => {
       // Shift+Tab past the top lands on the leading sentinel → handleEndGuardFocus
-      // sends focus to focusable[0]. In a real browser the focus-guard spans carry
-      // tabindex=0, so they match the focusable selector and sort ahead of the
-      // slotted buttons — focusable[0] is this very sentinel. Re-focusing it is a
-      // no-op, so document.activeElement retargets to the md-bottom-sheet host.
+      // sends focus to focusable[0]. The sentinels are excluded from the
+      // focusable scan, so focusable[0] is the first slotted body button —
+      // focus can no longer stick to an invisible guard.
       topGuard.focus();
-      await waitFor(() => expect(document.activeElement).toBe(sheet));
+      await waitFor(() => expect(document.activeElement).toBe(firstBtn));
       expect(document.activeElement).not.toBe(lastBtn);
     });
 
