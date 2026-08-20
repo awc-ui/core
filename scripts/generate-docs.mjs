@@ -1017,10 +1017,16 @@ async function main() {
   // the last measured value is cached in packages/core/coverage-snapshot.json
   // (committed) and refreshed automatically whenever a fresh lcov exists.
   let unitTestCoveragePercent = null;
-  const lcovPath = join(ROOT, 'packages/core/coverage/lcov.info');
+  // coverage-spec/ is where the jest-direct spec run writes (see
+  // packages/core/jest.coverage.config.cjs); coverage/ is the legacy
+  // stencil-run location, kept as a fallback.
+  const lcovPath = [
+    join(ROOT, 'packages/core/coverage-spec/lcov.info'),
+    join(ROOT, 'packages/core/coverage/lcov.info'),
+  ].find((p) => existsSync(p));
   const coverageSnapshotPath = join(ROOT, 'packages/core/coverage-snapshot.json');
   try {
-    if (existsSync(lcovPath)) {
+    if (lcovPath) {
       const lcov = await readFile(lcovPath, 'utf-8');
       let found = 0;
       let hit = 0;
