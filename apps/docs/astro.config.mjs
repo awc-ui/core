@@ -142,7 +142,7 @@ export default defineConfig({
   markdown: {
     rehypePlugins: [rehypeWrapTables],
   },
-  site: 'https://awcui.io',
+  site: 'https://awc-ui.dev',
   integrations: [
     starlight({
       title: 'AWC UI',
@@ -179,7 +179,7 @@ export default defineConfig({
         // be absolute — scrapers don't resolve relative og:image paths.
         {
           tag: 'meta',
-          attrs: { property: 'og:image', content: 'https://awcui.io/og.png' },
+          attrs: { property: 'og:image', content: 'https://awc-ui.dev/og.png' },
         },
         {
           tag: 'meta',
@@ -198,7 +198,7 @@ export default defineConfig({
         },
         {
           tag: 'meta',
-          attrs: { name: 'twitter:image', content: 'https://awcui.io/og.png' },
+          attrs: { name: 'twitter:image', content: 'https://awc-ui.dev/og.png' },
         },
         {
           tag: 'meta',

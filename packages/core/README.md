@@ -82,7 +82,7 @@ and JSX types:
 - **Design tokens** — 200+ `--md-sys-*` custom properties, light and dark, plus
   per-component hooks and `::part()` for anything the props don't cover.
 - **Accessibility** — WAI-ARIA roles, keyboard support and focus management,
-  verified with axe in CI. See <https://awcui.io/guides/accessibility/>.
+  verified with axe in CI. See <https://awc-ui.dev/guides/accessibility/>.
 - **Form participation** — inputs are form-associated via `ElementInternals`, so
   they land in `FormData` and take part in constraint validation.
 - **RTL** — logical properties throughout; directional icons mirror.
@@ -91,7 +91,7 @@ and JSX types:
 
 ## Documentation
 
-- **Docs and live demos** — <https://awcui.io>
+- **Docs and live demos** — <https://awc-ui.dev>
 - **Component reference** — every component ships a `readme.md` next to its
   source with API, do/don't, patterns and anti-patterns.
 

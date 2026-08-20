@@ -16,7 +16,7 @@ You wrap the trigger in the default slot and the component positions, flips and
 clamps the popup for you.
 
 > Setup, theming, density and i18n are configured once for the whole library —
-> see the [AWC UI documentation](https://awcui.io).
+> see the [AWC UI documentation](https://awc-ui.dev).
 
 ---
 

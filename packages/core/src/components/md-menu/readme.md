@@ -17,7 +17,7 @@ dismissal. It is also the dropdown surface inside `md-select`,
 `md-multi-select`, `md-autocomplete` and `md-date-picker`.
 
 > Setup, theming, density and i18n are configured once for the whole library —
-> see the [AWC UI documentation](https://awcui.io).
+> see the [AWC UI documentation](https://awc-ui.dev).
 
 ---
 
