@@ -77,10 +77,16 @@ jobs:
           retention-days: 30
 
       - name: Upload core dist for downstream jobs
+        # hydrate/ must ride along: the react/vue server wrappers import
+        # @awc-ui/core/hydrate, which lives beside dist/, not inside it.
+        # With multiple paths the artifact roots at packages/core, so
+        # downstream jobs download into packages/core/.
         uses: actions/upload-artifact@v4
         with:
           name: core-dist
-          path: packages/core/dist/
+          path: |
+            packages/core/dist/
+            packages/core/hydrate/
           retention-days: 1
 
   e2e:
@@ -135,7 +141,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: core-dist
-          path: packages/core/dist/
+          path: packages/core/
 
       - name: Build react + vue + angular wrappers
         run: pnpm ci:wrappers
@@ -263,7 +269,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: core-dist
-          path: packages/core/dist/
+          path: packages/core/
 
       - run: pnpm --filter @awc-ui/storybook build-storybook
 

@@ -1,5 +1,14 @@
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/web-components-vite';
 import { stencilLoaderStabilityPlugin, stencilDistRestartPlugin } from './stencil-loader-stability.ts';
+
+// ../coverage-stories only exists after `pnpm test:coverage` has run, and
+// Storybook hard-fails on a missing staticDirs entry — so a fresh checkout
+// (CI's storybook-build job) must not list it. Without it,
+// /library-coverage/ simply 404s until a coverage sweep has produced it.
+const coverageStoriesDir = fileURLToPath(new URL('../coverage-stories', import.meta.url));
+
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(js|jsx|ts|tsx|mdx)'],
   // SB9+: actions/controls/viewport/interactions are built into core; docs and
@@ -39,7 +48,9 @@ const config: StorybookConfig = {
    * .storybook/addons/library-coverage/register.tsx.
    */
   staticDirs: [
-    { from: '../coverage-stories', to: '/library-coverage' },
+    ...(existsSync(coverageStoriesDir)
+      ? [{ from: '../coverage-stories', to: '/library-coverage' }]
+      : []),
     /*
      * Copied to the output ROOT so `favicon.svg` overwrites the one Storybook
      * ships. `manager-head.html` also injects a data-URI icon, which is what the
