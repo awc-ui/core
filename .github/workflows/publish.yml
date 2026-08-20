@@ -11,9 +11,7 @@
 # beta and prod must be dispatched on main; they also commit the version
 # bump back, tag v<version>, and create a GitHub release.
 #
-# Published set: core, tokens, react, vue, angular. svelte and theme are
-# deliberately absent — both still ship raw .ts entry points and are not
-# consumable from npm yet.
+# Published set: core, tokens, react, vue, angular, svelte, theme.
 #
 # Versions are stamped into the manifests BEFORE the build because
 # ng-packagr bakes the version into packages/angular/dist/package.json, and
@@ -52,6 +50,8 @@ env:
     --filter @awc-ui/react
     --filter @awc-ui/vue
     --filter @awc-ui/angular
+    --filter @awc-ui/svelte
+    --filter @awc-ui/theme
 
 jobs:
   publish:
@@ -112,7 +112,7 @@ jobs:
 
       - name: Stamp package versions
         run: |
-          for p in core tokens react vue angular; do
+          for p in core tokens react vue angular svelte theme; do
             (cd "packages/$p" && npm pkg set version='${{ steps.rv.outputs.version }}')
           done
 
@@ -171,18 +171,25 @@ jobs:
             git pull --rebase origin main
             git push origin HEAD:main
           fi
-          git tag "v$VERSION"
-          git push origin "v$VERSION"
-          PRERELEASE=""
-          if [ "${{ inputs.channel }}" = "beta" ]; then PRERELEASE="--prerelease"; fi
-          gh release create "v$VERSION" --generate-notes $PRERELEASE
+          # A re-run of an already-tagged version (e.g. to publish packages
+          # added to the set later — pnpm -r publish skips versions the
+          # registry already has) must not die on the existing tag/release.
+          if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null 2>&1; then
+            echo "tag v$VERSION already exists; skipping tag + release"
+          else
+            git tag "v$VERSION"
+            git push origin "v$VERSION"
+            PRERELEASE=""
+            if [ "${{ inputs.channel }}" = "beta" ]; then PRERELEASE="--prerelease"; fi
+            gh release create "v$VERSION" --generate-notes $PRERELEASE
+          fi
 
       - name: Summary
         run: |
           {
             echo "### Published ${{ steps.rv.outputs.version }} (dist-tag: ${{ steps.rv.outputs.tag }})"
             echo ""
-            for p in core tokens react vue angular; do
+            for p in core tokens react vue angular svelte theme; do
               echo "- \`@awc-ui/$p@${{ steps.rv.outputs.version }}\`"
             done
           } >> "$GITHUB_STEP_SUMMARY"

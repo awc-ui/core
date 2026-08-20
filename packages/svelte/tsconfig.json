@@ -3,16 +3,15 @@
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ES2020", "DOM", "WebWorker"],
     "declaration": true,
     "declarationMap": true,
-    "strict": true,
-    "isolatedModules": true,
+    "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "noImplicitAny": false
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

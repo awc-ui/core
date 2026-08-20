@@ -675,6 +675,9 @@ importers:
       '@awc-ui/core':
         specifier: workspace:*
         version: link:../core
+      esbuild:
+        specifier: ^0.25.12
+        version: 0.25.12
       typescript:
         specifier: ^5.4.0
         version: 5.4.5
@@ -685,6 +688,9 @@ importers:
         specifier: ^0.4.0
         version: 0.4.0
     devDependencies:
+      esbuild:
+        specifier: ^0.25.12
+        version: 0.25.12
       typescript:
         specifier: ^5.4.0
         version: 5.4.5
