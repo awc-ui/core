@@ -38,8 +38,9 @@ const DIRECTOR = join(ROOT, 'main-llm.md');
  */
 function rewriteLinks(md) {
   return md
-    .replace(/\]\(packages\/core\/src\/components\//g, '](src/components/')
-    .replace(/`packages\/core\/src\/components\//g, '`src/components/')
+    // Installed, the readmes sit next to main-llm.md — no path through the
+    // monorepo ever resolves, so rewrite every form (links, backticks, prose).
+    .replace(/(?:\.\/)?packages\/core\/src\/components\//g, 'src/components/')
     .replace(/\]\((?:\.\.\/)+llms\.txt\)/g, '](main-llm.md)');
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@awc-ui/vue",
-  "version": "0.1.0",
+  "version": "1.0.0-beta",
   "description": "Vue 3 wrapper for AWC UI Material Design 3 components",
   "publishConfig": {
     "access": "public"
@@ -28,8 +28,9 @@
     "@awc-ui/core": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "esbuild": "^0.25.12"
+    "@awc-ui/core": "workspace:*",
+    "esbuild": "^0.25.12",
+    "typescript": "^5.4.0"
   },
   "license": "MIT",
   "author": "AWC UI",
