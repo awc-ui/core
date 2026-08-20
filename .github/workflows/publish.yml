@@ -152,6 +152,26 @@ jobs:
           --tag ${{ steps.rv.outputs.tag }}
           --no-git-checks
 
+      - name: Heal bootstrap latest tag (beta/prod)
+        # npm forcibly assigns `latest` on a package's FIRST publish even when
+        # --tag says otherwise, so the inaugural snapshot run left `latest`
+        # pointing at 0.0.0-snapshot.* — a plain `npm i @awc-ui/core` installed
+        # the snapshot. Whenever a real release publishes, move any
+        # snapshot-held `latest` to this version. A `latest` that already
+        # points at a real release never matches and is never touched.
+        if: inputs.channel != 'snapshot'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          VERSION: ${{ steps.rv.outputs.version }}
+        run: |
+          for p in core tokens react vue angular svelte theme; do
+            latest=$(npm view "@awc-ui/$p" dist-tags.latest 2>/dev/null || echo "")
+            if [[ "$latest" == 0.0.0-snapshot.* ]]; then
+              echo "@awc-ui/$p: latest=$latest -> $VERSION"
+              npm dist-tag add "@awc-ui/$p@$VERSION" latest
+            fi
+          done
+
       - name: Commit bump, tag, and GitHub release (beta/prod)
         if: inputs.channel != 'snapshot'
         env:
