@@ -1,0 +1,527 @@
+/* ==========================================================
+   md-bottom-sheet — Material Design 3 Bottom Sheet
+   Spec: https://m3.material.io/components/bottom-sheets/overview
+
+   Both variants are modal dialogs (scrim + focus trap + Escape +
+   body scroll lock + drag-to-dismiss). The variant only changes the
+   chrome:
+     - `standard` (default): anchored to the bottom edge, top corners
+       rounded only.
+     - `detached`: floats with margin on every side, all corners
+       rounded.
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-bottom-sheet-container-color       Container background
+     --md-bottom-sheet-container-shape       Corner radius (top corners
+                                             on standard, all corners
+                                             on detached)
+     --md-bottom-sheet-content-color         Content text color
+     --md-bottom-sheet-headline-color        Headline text color
+     --md-bottom-sheet-scrim-color           Scrim overlay color
+     --md-bottom-sheet-drag-handle-color     Drag handle indicator color
+     --md-bottom-sheet-divider-color         Top / bottom divider color
+     --md-bottom-sheet-icon-color            Close icon color
+
+     --md-bottom-sheet-width                 Inline size (default 100%
+                                             on mobile, 640px ≥ 640px
+                                             viewport)
+     --md-bottom-sheet-min-width             Minimum inline size
+     --md-bottom-sheet-max-width             Maximum inline size
+
+     --md-bottom-sheet-height                Block size (default `auto`)
+     --md-bottom-sheet-min-height            Minimum block size
+     --md-bottom-sheet-max-height            Maximum block size
+                                             (default 80vh)
+
+     --md-bottom-sheet-detached-margin       Margin around the container
+                                             on the detached variant
+
+     --md-bottom-sheet-content-padding-inline
+                                             Inline padding inside the
+                                             scrollable area. Default 24 px
+                                             matches the MD3 spec gutter for
+                                             prose. Set to `0` for
+                                             edge-to-edge content (lists,
+                                             carousels, tables) — the
+                                             scrollbar will then sit flush
+                                             with the container edge.
+
+   CSS PARTS:
+     scrim                       Scrim overlay
+     container                   Sheet surface
+     drag-handle                 Drag handle hit area
+     drag-handle-indicator       Drag handle visible bar
+     header                      Header row
+     headline                    Headline text
+     close                       Close button wrapper
+     divider-top                 Divider between header and content
+     divider-bottom              Divider between content and actions
+     content                     Content area wrapper (inline padding)
+     content-viewport            Inner scroll viewport (block padding)
+     content-shadow-block-start  Top scroll shadow gradient
+     content-shadow-block-end    Bottom scroll shadow gradient
+     actions                     Bottom action bar
+
+   ATTRIBUTES (drive layout / variants):
+     headline-align    start (default) | center | end — inline-axis
+                       text-align of the headline. Logical: flips with
+                       dir="rtl".
+     content-align     start (default) | center | end — inline-axis
+                       text-align of the slotted body content.
+                       Inherits to all default-slot children unless
+                       they override it.
+
+   SLOTS:
+     (default)   Main content
+     headline    Custom headline content
+     actions     Bottom action buttons
+     close       Custom close element
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST
+   ========================================================== */
+
+:host {
+  --_container-color: var(--md-bottom-sheet-container-color, var(--md-sys-color-surface-container-low, #F7F2FA));
+  --_container-shape: var(--md-bottom-sheet-container-shape, max(16px, calc(28px + var(--md-sys-density-scale, 0) * 2px)));
+  --_content-color: var(--md-bottom-sheet-content-color, var(--md-sys-color-on-surface, #1C1B1F));
+  --_headline-color: var(--md-bottom-sheet-headline-color, var(--md-sys-color-on-surface, #1C1B1F));
+  --_scrim-color: var(--md-bottom-sheet-scrim-color, rgba(0, 0, 0, 0.32));
+  --_drag-handle-color: var(--md-bottom-sheet-drag-handle-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_divider-color: var(--md-bottom-sheet-divider-color, var(--md-sys-color-outline-variant, #CAC4D0));
+  --_icon-color: var(--md-bottom-sheet-icon-color, var(--md-sys-color-on-surface-variant, #49454F));
+
+  --_min-width: var(--md-bottom-sheet-min-width, 0);
+  --_max-width: var(--md-bottom-sheet-max-width, 100%);
+  --_width: var(--md-bottom-sheet-width, 100%);
+
+  --_min-height: var(--md-bottom-sheet-min-height, 0);
+  --_max-height: var(--md-bottom-sheet-max-height, 80vh);
+  --_height: var(--md-bottom-sheet-height, auto);
+
+  --_detached-margin: var(--md-bottom-sheet-detached-margin, 16px);
+
+  /* Inline padding for the scroll area. Lives on the host so it
+     resolves once and is referenced from both the scroll-shadow ON
+     path (applied to the inner viewport) and the scroll-shadow OFF
+     fallback (applied to .content directly). */
+  --_content-padding-inline: var(--md-bottom-sheet-content-padding-inline, max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px)));
+
+  display: contents;
+
+  /* MD3 body-medium typescale — set on :host so it inherits through to
+     slotted content (which lives in light DOM and only inherits from the
+     host element, not from shadow-DOM rules). Components inside (md-list,
+     md-button, etc.) override these with their own typescales.
+     NOTE: never use `--md-sys-typescale-*-font` for `font-family` — that
+     token is the `font` shorthand (e.g. `400 14px/20px Roboto, sans-serif`)
+     and is invalid for `font-family`, which silently kills the rule. */
+  font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif);
+  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-medium-font-weight, 400);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-body-medium-letter-spacing, 0.25px);
+  color: var(--_content-color);
+}
+
+:host(:not(.md-bottom-sheet--open)) {
+  pointer-events: none;
+}
+
+/* ==========================================================
+   2. SCRIM
+   ========================================================== */
+
+.md-bottom-sheet__scrim {
+  position: fixed;
+  inset: 0;
+  background-color: var(--_scrim-color);
+  z-index: var(--md-sys-z-index-popup, 1000);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+:host(.md-bottom-sheet--open) .md-bottom-sheet__scrim {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ==========================================================
+   3. CONTAINER (shared by both variants)
+   ========================================================== */
+
+.md-bottom-sheet__container {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  margin-inline: auto;
+  z-index: var(--md-sys-z-index-dialog-scrim, 1001);
+
+  inline-size: var(--_width);
+  min-inline-size: var(--_min-width);
+  max-inline-size: var(--_max-width);
+  block-size: var(--_height);
+  min-block-size: var(--_min-height);
+  max-block-size: var(--_max-height);
+
+  background-color: var(--_container-color);
+  color: var(--_content-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(100%);
+  transition:
+    transform var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),
+    opacity var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  padding-block-end: env(safe-area-inset-bottom, 0px);
+  box-sizing: border-box;
+  outline: none;
+}
+
+:host(.md-bottom-sheet--open) .md-bottom-sheet__container {
+  pointer-events: auto;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ==========================================================
+   4. STANDARD VARIANT — anchored to bottom edge
+   ========================================================== */
+
+:host(.md-bottom-sheet--standard) .md-bottom-sheet__container {
+  border-start-start-radius: var(--_container-shape);
+  border-start-end-radius: var(--_container-shape);
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+
+/* ==========================================================
+   5. DETACHED VARIANT — floats with margin on every side
+   ========================================================== */
+
+:host(.md-bottom-sheet--detached) .md-bottom-sheet__container {
+  inset-inline: var(--_detached-margin);
+  inset-block-end: var(--_detached-margin);
+  margin-inline: auto;
+  border-radius: var(--_container-shape);
+  box-shadow: var(--md-sys-elevation-3);
+  /* Reserve the margin on either side so a 100% width cap works visually. */
+  max-inline-size: min(var(--_max-width), calc(100% - calc(var(--_detached-margin) * 2)));
+}
+
+/* ==========================================================
+   6. RESPONSIVE — modal width breakpoint at 640px
+   ========================================================== */
+
+/* Mobile: full-width edge-to-edge — the rounded top corners give it
+   visual separation from the viewport. */
+@media (max-width: 639.98px) {
+  :host {
+    --_width: var(--md-bottom-sheet-width, 100%);
+    --_max-width: var(--md-bottom-sheet-max-width, 100%);
+  }
+}
+
+/* Desktop: centred 640px panel per spec. */
+@media (min-width: 640px) {
+  :host {
+    --_width: var(--md-bottom-sheet-width, 640px);
+    --_max-width: var(--md-bottom-sheet-max-width, calc(100% - 112px));
+  }
+}
+
+/* ==========================================================
+   7. DRAG HANDLE
+   ========================================================== */
+
+.md-bottom-sheet__drag-handle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-block: max(12px, calc(22px + var(--md-sys-density-scale, 0) * 2px));
+  flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.md-bottom-sheet__drag-handle--dragging {
+  cursor: grabbing;
+}
+
+.md-bottom-sheet__drag-handle-indicator {
+  inline-size: max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px));
+  block-size: max(3px, calc(4px + var(--md-sys-density-scale, 0) * 0.25px));
+  border-radius: 2px;
+  background-color: var(--_drag-handle-color);
+  opacity: 0.4;
+  transition: opacity var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, ease);
+}
+
+.md-bottom-sheet__drag-handle:hover .md-bottom-sheet__drag-handle-indicator {
+  opacity: 0.6;
+}
+
+.md-bottom-sheet__drag-handle--dragging .md-bottom-sheet__drag-handle-indicator {
+  opacity: 0.8;
+}
+
+/* When no drag handle, restore the spec's 24px top padding inside the
+   container so the headline isn't flush with the top edge. */
+:host(.md-bottom-sheet--no-drag-handle) .md-bottom-sheet__container {
+  padding-block-start: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+}
+
+/* ==========================================================
+   8. HEADER — headline + close
+   ========================================================== */
+
+.md-bottom-sheet__header {
+  display: flex;
+  align-items: center;
+  gap: max(4px, calc(12px + var(--md-sys-density-scale, 0) * 2px));
+  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  padding-block: 0 max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px));
+  flex-shrink: 0;
+}
+
+.md-bottom-sheet__headline {
+  flex: 1;
+  font-family: var(--md-sys-typescale-headline-small-font-family, Roboto, sans-serif);
+  font-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+  font-weight: var(--md-sys-typescale-headline-small-font-weight, 400);
+  line-height: max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px));
+  letter-spacing: var(--md-sys-typescale-headline-small-letter-spacing, 0);
+  color: var(--_headline-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Reset to logical start so the host's parent text-align (e.g. the
+     Storybook decorator's `text-align: center`) does not bleed in.
+     The alignment is then driven exclusively by the
+     `headline-align` attribute below. */
+  text-align: start;
+}
+
+/* Headline alignment variants — controlled by the `headline-align`
+   attribute on the host. We match the host instead of the .headline
+   element so consumers can drive both prop-supplied and slotted
+   headlines with a single attribute. */
+:host([headline-align='center']) .md-bottom-sheet__headline {
+  text-align: center;
+}
+
+:host([headline-align='end']) .md-bottom-sheet__headline {
+  text-align: end;
+}
+
+.md-bottom-sheet__close {
+  flex-shrink: 0;
+  /* Anchor the close button to the trailing edge whether or not the
+     headline is rendered. The negative end margin pulls it back so
+     the icon-button's invisible hit area doesn't push the close past
+     the header's gutter. Scales with density to stay aligned. */
+  margin-inline-start: auto;
+  margin-inline-end: calc(-12px - var(--md-sys-density-scale, 0) * 1px);
+}
+
+.md-bottom-sheet__close md-icon-button {
+  --md-icon-button-icon-color: var(--_icon-color);
+  --md-icon-button-container-width: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
+  --md-icon-button-container-height: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
+  --md-icon-button-icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+}
+
+/* No `::slotted([slot="close"]) { color }` rule. ::slotted() from the
+   outer tree wins over the slotted component's own `:host { color }`
+   regardless of specificity (Shadow DOM cascade), so blanket-setting
+   color here would clobber the slotted component's intended label /
+   icon colour — e.g. an `md-button slot="close" variant="text"` would
+   lose its primary tint and render as muted on-surface-variant text.
+   Slotted components style themselves; bare icons (svg, span, etc.)
+   still inherit the bottom-sheet host's content color via the normal
+   cascade, so they remain legible by default. */
+
+/* ==========================================================
+   9. DIVIDERS
+   ========================================================== */
+
+.md-bottom-sheet__divider {
+  block-size: 1px;
+  background-color: var(--_divider-color);
+  flex-shrink: 0;
+}
+
+.md-bottom-sheet__divider--bottom {
+  margin-block-start: auto;
+}
+
+/* ==========================================================
+   10. CONTENT — scrollable body
+   ========================================================== */
+
+.md-bottom-sheet__content {
+  /* Make this a flex column container so its single child (either the
+     <md-scroll-shadow> or the bare <slot> in the opt-out mode) gets a
+     definite, flex-resolved block-size to scroll inside. We use
+     `flex: 1 1 auto` (basis = max-content) rather than `flex: 1`
+     (basis = 0) so the projected content's intrinsic block-size
+     propagates up to the container's `block-size: auto` calculation —
+     otherwise the container collapses to its chrome-only intrinsic
+     size and the sheet renders far shorter than `max-block-size: 80vh`
+     when the content would actually fill that space. `min-block-size:
+     0` then lets the content shrink below its intrinsic size so the
+     inner viewport (also flexing) can be the real scroll surface. */
+  flex: 1 1 auto;
+  min-block-size: 0;
+  display: flex;
+  flex-direction: column;
+  /* No inline padding here. The gutter lives inside the scroll
+     viewport (or, when scroll-shadow is opted out, on .content
+     directly via the rule below) so the scrollbar sits flush with
+     the container's inline edge instead of inset by the gutter.
+     Override the gutter via `--md-bottom-sheet-content-padding-inline`
+     (set to `0` for edge-to-edge content). */
+  /* Inherit body-medium typescale from :host so any shadow-DOM-only text
+     here renders consistently. Slotted content already inherits these
+     via the host element. */
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: var(--_content-color);
+  /* Reset to logical start so the host's parent text-align does not
+     bleed into slotted content. Slotted children inherit text-align
+     through the flattened tree from this element (the slot's parent),
+     so this is what controls their default alignment. The
+     `content-align` attribute below overrides for `center` / `end`. */
+  text-align: start;
+}
+
+/* Content alignment variants — drive every text-align inside the body
+   from the host attribute. Slotted children inherit text-align through
+   the flattened tree, so setting it here propagates into prose, lists,
+   forms, and any other default-slot content unless they set their own
+   text-align explicitly. */
+:host([content-align='center']) .md-bottom-sheet__content {
+  text-align: center;
+}
+
+:host([content-align='end']) .md-bottom-sheet__content {
+  text-align: end;
+}
+
+/* The content area is the scroll surface. All padding lives inside it so the
+   scrollbar sits flush with the container's inline edge instead of inset by the
+   gutter. Override the inline gutter via
+   `--md-bottom-sheet-content-padding-inline` (default 24px, or 0 for
+   edge-to-edge content). */
+.md-bottom-sheet__content {
+  overflow-y: auto;
+  padding-inline: var(--_content-padding-inline);
+  padding-block: var(--md-sys-spacing-inset-sm, 8px) var(--md-sys-spacing-inset-lg, 16px);
+  scrollbar-width: thin;
+  scrollbar-color: var(--md-sys-color-outline-variant, #CAC4D0) transparent;
+}
+
+.md-bottom-sheet__content::-webkit-scrollbar {
+  inline-size: 4px;
+}
+
+.md-bottom-sheet__content::-webkit-scrollbar-thumb {
+  background-color: var(--md-sys-color-outline-variant, #CAC4D0);
+  border-radius: 2px;
+}
+
+.md-bottom-sheet__content::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* ==========================================================
+   11. ACTIONS — bottom button bar
+   ========================================================== */
+
+.md-bottom-sheet__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  padding-inline: var(--md-sys-spacing-inset-xl, 24px);
+  padding-block: var(--md-sys-spacing-inset-lg, 16px) var(--md-sys-spacing-inset-xl, 24px);
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+::slotted([slot="actions"]) {
+  flex-shrink: 0;
+}
+
+/* ==========================================================
+   12. FOCUS GUARDS (sentinel elements for focus trap)
+   ========================================================== */
+
+.md-bottom-sheet__focus-guard {
+  position: fixed;
+  overflow: hidden;
+  clip-path: inset(50%);
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  border: 0;
+  margin: -1px;
+  white-space: nowrap;
+}
+
+/* ==========================================================
+   13. FOCUS RING
+   ========================================================== */
+
+.md-bottom-sheet__container:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary, #625B71);
+  outline-offset: -3px;
+}
+
+/* ==========================================================
+   14. REDUCED MOTION
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-bottom-sheet__container,
+  .md-bottom-sheet__scrim {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   15. FORCED COLORS (Windows High Contrast)
+   ========================================================== */
+
+@media (forced-colors: active) {
+  .md-bottom-sheet__container {
+    border: 1px solid CanvasText;
+  }
+
+  .md-bottom-sheet__divider {
+    background-color: CanvasText;
+  }
+
+  .md-bottom-sheet__drag-handle-indicator {
+    background-color: CanvasText;
+    opacity: 1;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

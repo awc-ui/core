@@ -1,0 +1,232 @@
+---
+title: Motion & Animation
+description: MD3 duration, easing and spring tokens — how components animate and how to retune or disable it
+sidebar:
+  order: 6
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+Every animation in the library reads its timing from motion tokens. Retune
+them once and the whole app's feel changes; there are no hardcoded durations
+to hunt down.
+
+## Duration tokens
+
+Four families, four steps each. Short for small elements, long for large ones
+travelling further.
+
+| Token | Typical use |
+|---|---|
+| `--md-sys-motion-duration-short1` … `short4` | State layers, selection, small icon changes |
+| `--md-sys-motion-duration-medium1` … `medium4` | Expanding cards, menus, sheets |
+| `--md-sys-motion-duration-long1` … `long4` | Full-screen transitions |
+| `--md-sys-motion-duration-extra-long1` … `extra-long4` | Large, deliberate entrances |
+
+The rule of thumb MD3 uses: **the larger the element and the further it
+moves, the longer it takes.** A checkbox tick is `short`; a full-screen dialog
+is `long`.
+
+## Easing tokens
+
+| Token | Character |
+|---|---|
+| `--md-sys-motion-easing-standard` | The default. Most transitions. |
+| `--md-sys-motion-easing-standard-accelerate` | Leaving the screen |
+| `--md-sys-motion-easing-standard-decelerate` | Entering the screen |
+| `--md-sys-motion-easing-emphasized` | The expressive default — begins slowly, finishes quickly |
+| `--md-sys-motion-easing-emphasized-accelerate` | Emphasised exit |
+| `--md-sys-motion-easing-emphasized-decelerate` | Emphasised entrance |
+| `--md-sys-motion-easing-linear` | Progress indicators, continuous motion |
+
+Pair an **entrance** with a decelerate curve and an **exit** with an
+accelerate curve. Something arriving should settle; something leaving should
+get out of the way.
+
+<ComponentDemo
+  html={`<div style="display:grid; gap:14px; max-inline-size:520px;" data-ease-demo>
+  <md-button variant="filled" data-ease-play style="justify-self:start;">Replay</md-button>
+  <div data-ease-row="standard">standard</div>
+  <div data-ease-row="standard-accelerate">standard-accelerate</div>
+  <div data-ease-row="standard-decelerate">standard-decelerate</div>
+  <div data-ease-row="emphasized">emphasized</div>
+  <div data-ease-row="emphasized-accelerate">emphasized-accelerate</div>
+  <div data-ease-row="emphasized-decelerate">emphasized-decelerate</div>
+  <div data-ease-row="linear">linear</div>
+</div>`}
+  script={`
+    var rows = [].slice.call(root.querySelectorAll('[data-ease-row]'));
+
+    rows.forEach(function (row) {
+      var name = row.getAttribute('data-ease-row');
+      row.style.cssText = 'display:grid; grid-template-columns:190px 1fr; gap:12px; align-items:center; font:var(--md-sys-typescale-label-medium-font); color:var(--md-sys-color-on-surface-variant);';
+      row.innerHTML =
+        '<code>' + name + '</code>' +
+        '<div style="position:relative; block-size:20px; border-radius:999px; background:var(--md-sys-color-surface-container-highest);">' +
+          '<span data-ball style="position:absolute; inset-block:3px; inset-inline-start:3px; inline-size:14px; border-radius:50%; background:var(--md-sys-color-primary);"></span>' +
+        '</div>';
+      var ball = row.querySelector('[data-ball]');
+      ball.style.transition = 'transform var(--md-sys-motion-duration-long2, 500ms) var(--md-sys-motion-easing-' + name + ')';
+    });
+
+    function play() {
+      rows.forEach(function (row) {
+        var ball = row.querySelector('[data-ball]');
+        var track = row.lastElementChild;
+        ball.style.transform = 'translateX(0)';
+        // Force the reset to land before starting, or the transition never runs.
+        ball.getBoundingClientRect();
+        ball.style.transform = 'translateX(' + (track.clientWidth - 26) + 'px)';
+      });
+      setTimeout(function () {
+        rows.forEach(function (row) { row.querySelector('[data-ball]').style.transform = 'translateX(0)'; });
+      }, 900);
+    }
+
+    root.querySelector('[data-ease-play]').addEventListener('mdClick', play);
+    play();
+  `}
+  label="The same 500ms travel under each curve — press replay to compare"
+  storyId="foundations-design-tokens--motion-state"
+/>
+
+## Spring tokens
+
+For motion that should feel physical rather than timed:
+
+```
+--md-sys-motion-spring-spatial-default-duration / -easing
+--md-sys-motion-spring-effects-default-duration / -easing
+--md-sys-motion-spring-effects-fast-duration    / -easing
+--md-sys-motion-spring-effects-slow-duration    / -easing
+```
+
+**Spatial** springs move things (position, size). **Effects** springs change
+properties in place (colour, opacity). Spatial springs may overshoot; effects
+springs should not.
+
+## Using them
+
+```css
+.my-panel {
+  transition:
+    transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate),
+    opacity   var(--md-sys-motion-duration-short3)  var(--md-sys-motion-easing-standard);
+}
+```
+
+Always use a token pair — a duration **and** an easing. A stock duration with
+a browser-default `ease` still looks wrong.
+
+## Retuning globally
+
+Snappier app:
+
+```css
+:root {
+  --md-sys-motion-duration-short2:  50ms;
+  --md-sys-motion-duration-medium2: 150ms;
+  --md-sys-motion-duration-long2:   250ms;
+}
+```
+
+Every component that animates follows, including the charts.
+
+<ComponentDemo
+  html={`<div style="display:flex; gap:28px; flex-wrap:wrap; align-items:center;">
+  <div style="display:grid; gap:8px; justify-items:center;">
+    <md-switch></md-switch>
+    <span style="font:var(--md-sys-typescale-label-small-font); color:var(--md-sys-color-on-surface-variant);">default</span>
+  </div>
+  <div style="--md-sys-motion-duration-short4: 1200ms; --md-sys-motion-duration-medium2: 1600ms; display:grid; gap:8px; justify-items:center;">
+    <md-switch></md-switch>
+    <span style="font:var(--md-sys-typescale-label-small-font); color:var(--md-sys-color-on-surface-variant);">slowed by tokens</span>
+  </div>
+</div>`}
+  label="Same component, one token override — toggle both to compare"
+/>
+
+## Chart animation
+
+All five charts share one MD3 entrance — grow + fade on the
+`emphasized-decelerate` curve — driven by the same tokens. Each exposes:
+
+```html
+<md-bar-chart animation="expressive"></md-bar-chart>  <!-- default -->
+<md-bar-chart animation="none"></md-bar-chart>        <!-- static -->
+<md-bar-chart no-animation></md-bar-chart>            <!-- same, shorthand -->
+<md-bar-chart animation-duration="400"></md-bar-chart>
+```
+
+Charts render to canvas, so their curves are computed in JS from the same CSS
+tokens rather than by the browser's transition engine — retuning the tokens
+still reaches them.
+
+## Reduced motion
+
+:::danger[Ship this]
+Honour `prefers-reduced-motion` in every app. This one block covers the
+library's expressive behaviours:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --md-sys-ripple-enabled: 0;
+    --md-sys-shape-morph-enabled: 0;
+
+    --md-sys-motion-duration-short1:  1ms;
+    --md-sys-motion-duration-short2:  1ms;
+    --md-sys-motion-duration-short3:  1ms;
+    --md-sys-motion-duration-short4:  1ms;
+    --md-sys-motion-duration-medium1: 1ms;
+    --md-sys-motion-duration-medium2: 1ms;
+    --md-sys-motion-duration-medium3: 1ms;
+    --md-sys-motion-duration-medium4: 1ms;
+    --md-sys-motion-duration-long1:   1ms;
+    --md-sys-motion-duration-long2:   1ms;
+    --md-sys-motion-duration-long3:   1ms;
+    --md-sys-motion-duration-long4:   1ms;
+  }
+}
+```
+
+Use `1ms` rather than `0s`: transitions still *fire*, so `transitionend`
+handlers keep working, but nothing perceptibly moves.
+:::
+
+Components with their own motion prop should also be switched:
+
+```html
+<md-accordion transition="none"></md-accordion>
+<md-bar-chart no-animation></md-bar-chart>
+<md-table motion="none"></md-table>
+```
+
+## Per-component motion props
+
+A few components expose motion directly rather than only through tokens:
+
+| Component | Prop |
+|---|---|
+| `md-accordion` | `transition="expressive\|standard\|fade\|collapse\|none"` |
+| `md-table` | `motion="expressive\|none"` |
+| Charts | `animation`, `animation-duration`, `no-animation` |
+| `md-fab-menu`, `md-menu` | `quick` (skip the open animation) |
+| `md-ripple` | `--md-ripple-grow-duration`, `--md-ripple-grow-easing` |
+
+## Do & Don't
+
+| ✅ Do | ❌ Don't |
+|---|---|
+| Use a duration **and** an easing token together | Don't pair an MD3 duration with the browser default easing |
+| Scale duration with element size and distance | Don't animate a full-screen sheet in 100ms |
+| Use decelerate for entrances, accelerate for exits | Don't use one curve for everything |
+| Honour `prefers-reduced-motion` | Don't ship motion with no opt-out |
+| Animate `transform` and `opacity` | Don't animate `width`, `height` or `top` — they cause layout |
+| Keep motion purposeful | Don't animate everything at once |
+
+## Related
+
+- [Design Tokens](/theming/tokens/) — the complete token reference
+- [Ripple](/behaviour/ripple/) and [Shape Morph](/behaviour/shape-morph/) — the expressive toggles
+- [Accessibility](/guides/accessibility/) — motion sensitivity

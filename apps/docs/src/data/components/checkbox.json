@@ -1,0 +1,231 @@
+{
+  "tag": "md-checkbox",
+  "title": "Checkbox",
+  "slug": "checkbox",
+  "category": "Selection",
+  "subComponentOf": null,
+  "storyId": "selection-checkbox--playground",
+  "props": [
+    {
+      "name": "valueMissingLabel",
+      "attribute": "value-missing-label",
+      "type": "string",
+      "default": "'Please check this box if you want to proceed.'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "error",
+      "attribute": "error",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "errorText",
+      "attribute": "error-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "supportingText",
+      "attribute": "supporting-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "checked",
+      "attribute": "checked",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "indeterminate",
+      "attribute": "indeterminate",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "required",
+      "attribute": "required",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "name",
+      "attribute": "name",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "'on'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "{ checked: boolean; indeterminate: boolean }"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ],
+  "methods": [
+    {
+      "name": "getValidity",
+      "params": ""
+    },
+    {
+      "name": "checkValidity",
+      "params": ""
+    },
+    {
+      "name": "reportValidity",
+      "params": ""
+    },
+    {
+      "name": "setCustomValidity",
+      "params": "message: string"
+    }
+  ],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "target",
+      "description": ""
+    },
+    {
+      "name": "state-layer",
+      "description": "Hover / focus / press overlay"
+    },
+    {
+      "name": "container",
+      "description": "The 18px checkbox box"
+    },
+    {
+      "name": "icon",
+      "description": "The SVG icon (checkmark or dash)"
+    },
+    {
+      "name": "supporting-text",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-checkbox-container-color",
+      "description": "Unchecked container (transparent)"
+    },
+    {
+      "name": "--md-checkbox-selected-container-color",
+      "description": "Checked / indeterminate fill"
+    },
+    {
+      "name": "--md-checkbox-outline-color",
+      "description": "Border color (unchecked)"
+    },
+    {
+      "name": "--md-checkbox-outline-width",
+      "description": "Border width"
+    },
+    {
+      "name": "--md-checkbox-icon-color",
+      "description": "Checkmark / dash color"
+    },
+    {
+      "name": "--md-checkbox-container-shape",
+      "description": "Container corner radius"
+    },
+    {
+      "name": "--md-checkbox-container-size",
+      "description": "Container size"
+    },
+    {
+      "name": "--md-checkbox-icon-size",
+      "description": "Icon size"
+    },
+    {
+      "name": "--md-checkbox-state-layer-size",
+      "description": "State-layer diameter"
+    },
+    {
+      "name": "--md-checkbox-state-layer-color",
+      "description": "State-layer color (unchecked)"
+    },
+    {
+      "name": "--md-checkbox-selected-state-layer-color",
+      "description": "State-layer color (checked/indeterminate)"
+    },
+    {
+      "name": "--md-checkbox-touch-target-size",
+      "description": ""
+    },
+    {
+      "name": "--md-checkbox-supporting-text-color",
+      "description": ""
+    },
+    {
+      "name": "--md-checkbox-error-text-color",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdChange",
+      "detail": "{ checked: boolean; indeterminate: boolean }"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ]
+}

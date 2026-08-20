@@ -1,0 +1,94 @@
+{
+  "tag": "md-tabs",
+  "title": "Tabs",
+  "slug": "tabs",
+  "category": "Navigation",
+  "subComponentOf": null,
+  "storyId": "navigation-tabs--playground",
+  "props": [
+    {
+      "name": "activeTabIndex",
+      "attribute": "active-tab-index",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'primary' | 'secondary'",
+      "default": "'primary'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "ariaLabelProp",
+      "attribute": "aria-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "tabWidth",
+      "attribute": "tab-width",
+      "type": "string",
+      "default": "'equal'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "width",
+      "attribute": "width",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdTabChange",
+      "detail": "{ index: number; previousIndex: number }"
+    }
+  ],
+  "methods": [
+    {
+      "name": "selectTab",
+      "params": "index: number"
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "container",
+      "description": "Scrollable tab container"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-tabs-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-tabs-divider-color",
+      "description": "Divider color for every child tab's"
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdTabChange",
+      "detail": "{ index: number; previousIndex: number }"
+    }
+  ]
+}

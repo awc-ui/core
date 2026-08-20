@@ -1,0 +1,230 @@
+{
+  "tag": "md-table-pagination",
+  "title": "Table Pagination",
+  "slug": "table-pagination",
+  "category": "Data Display",
+  "subComponentOf": "md-table",
+  "storyId": null,
+  "props": [
+    {
+      "name": "count",
+      "attribute": "count",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "page",
+      "attribute": "page",
+      "type": "number",
+      "default": "0",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "rowsPerPage",
+      "attribute": "rows-per-page",
+      "type": "number",
+      "default": "10",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "rowsPerPageOptions",
+      "attribute": "rows-per-page-options",
+      "type": "string",
+      "default": "'5,10,25,50'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "showFirstLast",
+      "attribute": "show-first-last",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "labelDisplayedRows",
+      "attribute": "label-displayed-rows",
+      "type": "string",
+      "default": "'%from%–%to% of %count%'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelRowsPerPage",
+      "attribute": "label-rows-per-page",
+      "type": "string",
+      "default": "'Rows per page:'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelFirstPage",
+      "attribute": "label-first-page",
+      "type": "string",
+      "default": "'First page'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelPreviousPage",
+      "attribute": "label-previous-page",
+      "type": "string",
+      "default": "'Previous page'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelNextPage",
+      "attribute": "label-next-page",
+      "type": "string",
+      "default": "'Next page'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelLastPage",
+      "attribute": "label-last-page",
+      "type": "string",
+      "default": "'Last page'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelAll",
+      "attribute": "label-all",
+      "type": "string",
+      "default": "'All'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "compact",
+      "attribute": "compact",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdPageChange",
+      "detail": "{ page: number }"
+    },
+    {
+      "name": "mdRowsPerPageChange",
+      "detail": "{ rowsPerPage: number }"
+    }
+  ],
+  "methods": [
+    {
+      "name": "goToPage",
+      "params": "page: number"
+    },
+    {
+      "name": "setRowsPerPage",
+      "params": "rpp: number"
+    }
+  ],
+  "slots": [
+    {
+      "name": "actions",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "display",
+      "description": "The \"from–to of count\" label"
+    },
+    {
+      "name": "rpp",
+      "description": "Rows-per-page region"
+    },
+    {
+      "name": "rpp-select",
+      "description": "The md-select picker"
+    },
+    {
+      "name": "nav",
+      "description": "Navigation buttons region"
+    },
+    {
+      "name": "first-button",
+      "description": ""
+    },
+    {
+      "name": "prev-button",
+      "description": ""
+    },
+    {
+      "name": "next-button",
+      "description": ""
+    },
+    {
+      "name": "last-button",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-table-pagination-color",
+      "description": "Foreground color"
+    },
+    {
+      "name": "--md-table-pagination-bg",
+      "description": "Background color"
+    },
+    {
+      "name": "--md-table-pagination-padding-block",
+      "description": "Top/bottom padding"
+    },
+    {
+      "name": "--md-table-pagination-padding-inline",
+      "description": "Left/right padding"
+    },
+    {
+      "name": "--md-table-pagination-select-width",
+      "description": "Rows-per-page select width (default 72px)"
+    }
+  ],
+  "dependencies": [
+    "md-table-container",
+    "md-select",
+    "md-icon-button"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdPageChange",
+      "detail": "{ page: number }"
+    },
+    {
+      "name": "mdRowsPerPageChange",
+      "detail": "{ rowsPerPage: number }"
+    }
+  ]
+}

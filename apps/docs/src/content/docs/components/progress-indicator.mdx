@@ -1,0 +1,807 @@
+---
+title: Progress Indicator
+description: "How far along an activity is — linear or circular, determinate or indeterminate, with the M3 Expressive wave"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/progress-indicator.json";
+
+**How far along an activity is.** Linear or circular, determinate or
+indeterminate, with the M3 Expressive travelling-wave treatment and a
+four-colour cycle.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 360px; display: flex; flex-direction: column; gap: 24px;">
+  <md-progress-indicator value="60" label="Uploading"></md-progress-indicator>
+  <md-progress-indicator indeterminate label="Loading"></md-progress-indicator>
+</div>
+<md-progress-indicator variant="circular" value="60" label="Uploading"></md-progress-indicator>
+<md-progress-indicator variant="circular" indeterminate label="Loading"></md-progress-indicator>`}
+  label="Live preview"
+  storyId="communication-progress-indicator--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-progress-indicator" example="" />
+
+## When to use
+
+- A **determinate** operation whose progress you can measure: upload, import,
+  multi-step job.
+- A short **indeterminate** wait where the shape of the incoming content is
+  unknown.
+- Overall progress of a **group** of items — one indicator for the group, never
+  one per row.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Loading structured content whose shape you know | [`md-skeleton`](/components/skeleton/) |
+| A page-level refresh / brand loading moment | [`md-loading-indicator`](/components/loading-indicator/) |
+| A button working after a click | [`md-button`](/components/button/) with `loading` |
+| Per-item progress inside a group | Nothing — M3: show the group total instead |
+| A rating or score | [`md-rating`](/components/rating/) |
+| A value the user sets | [`md-slider`](/components/slider/) |
+
+## Variants
+
+`variant` picks the geometry. `linear` is the default and stretches to its
+container's inline size; `circular` is a fixed-size ring.
+
+| Variant | Layout | Use for |
+|---|---|---|
+| `linear` | **Default.** `inline-size: 100%`, 4dp tall | A bar under a header, row, or app bar |
+| `circular` | 40dp ring (48dp when `wave`) | A compact spinner inline with content |
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 360px; display: flex; flex-direction: column; gap: 20px;">
+  <md-progress-indicator value="60" label="Linear determinate"></md-progress-indicator>
+  <md-progress-indicator indeterminate label="Linear indeterminate"></md-progress-indicator>
+</div>
+<md-progress-indicator variant="circular" value="60" label="Circular determinate"></md-progress-indicator>
+<md-progress-indicator variant="circular" indeterminate label="Circular indeterminate"></md-progress-indicator>`}
+  label="Linear and circular, determinate and indeterminate"
+  storyId="communication-progress-indicator--all-variants"
+/>
+
+:::note[`linear` fills its container]
+The host is `inline-size: 100%`. Put it in a sized wrapper — a bare linear
+indicator in a flex row collapses or stretches unpredictably.
+:::
+
+## Determinate
+
+`value` is interpreted against `max` (default `100`). Pass the **raw count**
+with a matching `max` rather than pre-computing a percentage — it avoids
+rounding drift.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 360px; display: flex; flex-direction: column; gap: 20px;">
+  <md-progress-indicator value="0" label="0 percent"></md-progress-indicator>
+  <md-progress-indicator value="25" label="25 percent"></md-progress-indicator>
+  <md-progress-indicator value="50" label="50 percent"></md-progress-indicator>
+  <md-progress-indicator value="75" label="75 percent"></md-progress-indicator>
+  <md-progress-indicator value="100" label="100 percent"></md-progress-indicator>
+</div>`}
+  label="Linear determinate — 0 / 25 / 50 / 75 / 100"
+  storyId="communication-progress-indicator--linear-determinate"
+/>
+
+<ComponentDemo
+  html={`<md-progress-indicator variant="circular" value="0" label="0 percent"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="25" label="25 percent"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="50" label="50 percent"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="75" label="75 percent"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="100" label="100 percent"></md-progress-indicator>`}
+  label="Circular determinate — 0 / 25 / 50 / 75 / 100"
+  storyId="communication-progress-indicator--circular-determinate"
+/>
+
+The small dot at the track's end is the **stop indicator**. M3 says keep it
+unless the track has ≥3:1 contrast with the surrounding surface.
+
+## Indeterminate
+
+`indeterminate` is for a wait whose duration you cannot measure. M3's advice:
+prefer a **circular** indeterminate indicator for waits under 5 seconds.
+
+:::danger[`indeterminate` overrides `value`]
+Setting both silently ignores the number. When a real total arrives you must
+clear `indeterminate` first, then set `max` and `value`.
+:::
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 360px;">
+  <md-progress-indicator indeterminate label="Loading"></md-progress-indicator>
+</div>
+<md-progress-indicator variant="circular" indeterminate label="Loading"></md-progress-indicator>`}
+  label="Indeterminate — linear and circular"
+  storyId="communication-progress-indicator--linear-indeterminate"
+/>
+
+## Thickness
+
+`thickness` is in dp and defaults to `4`. It applies to both variants; for a
+circular indicator scale it with `size` (a good rule of thumb is
+`thickness ≈ size / 10`).
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 360px; display: flex; flex-direction: column; gap: 20px;">
+  <md-progress-indicator value="60" thickness="2" label="thickness 2"></md-progress-indicator>
+  <md-progress-indicator value="60" thickness="4" label="thickness 4"></md-progress-indicator>
+  <md-progress-indicator value="60" thickness="8" label="thickness 8"></md-progress-indicator>
+  <md-progress-indicator value="60" thickness="12" label="thickness 12"></md-progress-indicator>
+</div>`}
+  label="Linear thickness — 2 / 4 (default) / 8 / 12"
+  storyId="communication-progress-indicator--thickness"
+/>
+
+<ComponentDemo
+  html={`<md-progress-indicator variant="circular" value="60" size="48" thickness="2" label="thickness 2"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="60" size="48" thickness="4" label="thickness 4"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="60" size="48" thickness="6" label="thickness 6"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="60" size="48" thickness="8" label="thickness 8"></md-progress-indicator>`}
+  label="Circular thickness at size 48"
+/>
+
+## Circular size
+
+`size` is the ring diameter in dp. M3 specifies a range of **24dp minimum to
+240dp maximum** and the component clamps to it — smaller values snap up, larger
+snap down.
+
+:::caution[`size` and the `wave-*` props default to `0`, meaning "auto"]
+`0` is *not* zero-sized or zero-amplitude — it means "use the component
+default" (40dp flat, 48dp wavy). To hide an indicator, use CSS.
+:::
+
+<ComponentDemo
+  html={`<md-progress-indicator variant="circular" value="60" size="24" thickness="2" label="24dp"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="60" size="32" thickness="3" label="32dp"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="60" size="40" thickness="4" label="40dp"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="60" size="48" thickness="4" label="48dp"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="60" size="64" thickness="6" label="64dp"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="60" size="96" thickness="10" label="96dp"></md-progress-indicator>`}
+  label="Circular sizes — 24 / 32 / 40 / 48 / 64 / 96 dp"
+  storyId="communication-progress-indicator--circular-sizes"
+/>
+
+### An icon in the ring
+
+A circular indicator leaves its centre empty, so at the larger sizes an icon or
+a count can sit inside it. Position it yourself; the component does not own that
+slot.
+
+<ComponentDemo
+  html={`<div style="position: relative; display: inline-flex; align-items: center; justify-content: center;">
+  <md-progress-indicator variant="circular" value="72" size="64" label="Uploading"></md-progress-indicator>
+  <span class="material-symbols-outlined" aria-hidden="true" style="position: absolute; font-size: 24px; color: var(--md-sys-color-primary);">cloud_upload</span>
+</div>
+<div style="position: relative; display: inline-flex; align-items: center; justify-content: center;">
+  <md-progress-indicator variant="circular" value="40" size="64" label="40 percent"></md-progress-indicator>
+  <span aria-hidden="true" style="position: absolute; font: 500 14px system-ui, sans-serif; color: var(--md-sys-color-on-surface);">40%</span>
+</div>`}
+  label="An icon in the ring"
+  storyId="communication-progress-indicator--circular-with-icon"
+/>
+
+## Wave (M3 Expressive)
+
+`wave` replaces the flat active indicator with a travelling wave. It works on
+both variants, determinate and indeterminate. A determinate indicator is flat at
+exactly `0` and wavy for **every** value above it; on the linear variant the
+amplitude is additionally scaled down while the fill is shorter than one
+wavelength, so the first few percent read as a growing dot before the wave
+emerges. There is **no flatten at the top end** — at 100% it is still wavy, and
+the completion animation collapses the wave shape itself rather than a flat
+line.
+
+`wave-amplitude`, `wave-length` and `wave-speed` all default to `0` = auto
+(linear: amplitude 3dp, wavelength 40dp; circular: amplitude 1.6dp, wavelength
+15dp; speed tracks the wavelength at roughly one wave per second).
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 360px; display: flex; flex-direction: column; gap: 24px;">
+  <md-progress-indicator wave value="60" label="Wave default"></md-progress-indicator>
+  <md-progress-indicator wave value="60" thickness="8" label="Wave thick"></md-progress-indicator>
+  <md-progress-indicator wave value="0" label="Wave at zero"></md-progress-indicator>
+  <md-progress-indicator wave value="6" label="Wave near zero"></md-progress-indicator>
+  <md-progress-indicator wave value="100" label="Wave at 100 percent"></md-progress-indicator>
+  <md-progress-indicator wave indeterminate label="Wave indeterminate"></md-progress-indicator>
+  <md-progress-indicator wave value="50" wave-amplitude="5" wave-length="60" wave-speed="120" label="Wave custom"></md-progress-indicator>
+</div>`}
+  label="Wavy linear — default, thick, at 0%, near 0%, at 100%, indeterminate, custom"
+  storyId="communication-progress-indicator--wavy-linear"
+/>
+
+<ComponentDemo
+  html={`<md-progress-indicator variant="circular" wave value="25" label="25 percent"></md-progress-indicator>
+<md-progress-indicator variant="circular" wave value="50" label="50 percent"></md-progress-indicator>
+<md-progress-indicator variant="circular" wave value="75" label="75 percent"></md-progress-indicator>
+<md-progress-indicator variant="circular" wave value="50" size="72" thickness="6" label="72dp"></md-progress-indicator>
+<md-progress-indicator variant="circular" wave indeterminate label="Loading"></md-progress-indicator>`}
+  label="Wavy circular — determinate, larger, indeterminate"
+  storyId="communication-progress-indicator--wavy-circular"
+/>
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 360px; display: flex; flex-direction: column; gap: 20px;">
+  <md-progress-indicator value="60" thickness="8" label="Flat"></md-progress-indicator>
+  <md-progress-indicator wave value="60" thickness="8" label="Wavy"></md-progress-indicator>
+</div>
+<md-progress-indicator variant="circular" value="60" label="Flat"></md-progress-indicator>
+<md-progress-indicator variant="circular" wave value="60" label="Wavy"></md-progress-indicator>`}
+  label="Wavy vs flat, same value"
+  storyId="communication-progress-indicator--wavy-vs-flat"
+/>
+
+## Four-colour
+
+`four-color` cycles the active indicator through
+primary → primary-container → tertiary → tertiary-container.
+
+:::caution[It only affects a **flat circular indeterminate** indicator]
+The colour cycle is a CSS animation on the circular spinner's active arc, and
+its selector requires `circular` **and** `indeterminate` **and** *not* `wave`.
+Adding `four-color` to a linear indicator, to a determinate one, or to a wavy
+circular one is a silent no-op — the indicator renders exactly as it would
+without the attribute.
+:::
+
+<ComponentDemo
+  html={`<md-progress-indicator variant="circular" indeterminate label="Default"></md-progress-indicator>
+<md-progress-indicator variant="circular" indeterminate four-color label="Four colour"></md-progress-indicator>`}
+  label="Four-colour cycle — the one combination it applies to"
+  storyId="communication-progress-indicator--four-color"
+/>
+
+Override the palette with `--md-progress-indicator-four-color-1` … `-4`.
+
+## Completion
+
+`complete` is a state you set; it plays M3's "closing TV" completion animation
+and then fires `mdComplete`. It is a **sticky one-shot** — the component never
+resets it internally, so to replay it you must recreate the element. It is a
+no-op on an indeterminate indicator.
+
+:::note[Three of the four variants self-hide; the flat circular one does not]
+Linear flat, linear wavy and circular wavy all end `visibility: hidden`. The
+**flat circular** variant instead erases its active arc and fades its *empty
+track ring* back in, resting on that ring rather than disappearing. `mdComplete`
+fires at the end either way — so it is still the moment to remove the element or
+swap in a result, you just have to remove it yourself for that one variant.
+Watch the third indicator below against the other three.
+:::
+
+<ComponentDemo
+  html={`<div data-completion style="display: flex; flex-direction: column; gap: 24px; inline-size: 100%; max-inline-size: 420px;">
+  <div data-stage style="display: flex; flex-direction: column; gap: 20px;">
+    <md-progress-indicator value="0" thickness="10" label="Linear flat"></md-progress-indicator>
+    <md-progress-indicator value="0" thickness="10" wave label="Linear wave"></md-progress-indicator>
+    <div style="display: flex; gap: 32px; align-items: center;">
+      <md-progress-indicator variant="circular" value="0" label="Circular flat"></md-progress-indicator>
+      <md-progress-indicator variant="circular" value="0" wave label="Circular wave"></md-progress-indicator>
+    </div>
+  </div>
+  <md-button variant="filled" data-completion-run>Fill and complete</md-button>
+</div>`}
+  script={`
+    var stage = root.querySelector('[data-stage]');
+    var runBtn = root.querySelector('[data-completion-run]');
+    if (!stage || !runBtn) return;
+
+    var tpl = stage.innerHTML;
+    var timer = 0;
+
+    function run() {
+      clearInterval(timer);
+      // 'complete' never resets itself, so each run starts from fresh nodes.
+      stage.innerHTML = tpl;
+      var bars = [].slice.call(stage.querySelectorAll('md-progress-indicator'));
+      var v = 0;
+      timer = setInterval(function () {
+        v = Math.min(100, v + 2);
+        bars.forEach(function (bar) { bar.value = v; });
+        if (v >= 100) {
+          clearInterval(timer);
+          bars.forEach(function (bar) { bar.complete = true; });
+        }
+      }, 50);
+    }
+
+    runBtn.addEventListener('click', run);
+  `}
+  htmlForCode={`<md-progress-indicator value="100" thickness="10" label="Linear flat" complete></md-progress-indicator>
+<md-progress-indicator value="100" thickness="10" wave label="Linear wave" complete></md-progress-indicator>
+
+<md-progress-indicator variant="circular" value="100" label="Circular flat" complete></md-progress-indicator>
+<md-progress-indicator variant="circular" value="100" wave label="Circular wave" complete></md-progress-indicator>`}
+  label="Fill, then close"
+  storyId="communication-progress-indicator--completion-animation"
+/>
+
+Press it twice and note what the button does: it **rebuilds the indicators**
+before each run. `complete` never resets itself, so assigning `false` after it
+has fired is a no-op — replaying means new element nodes, which is exactly what
+the Storybook story's Reset does.
+
+```html
+<md-progress-indicator id="up" value="0" max="100" label="Uploading"></md-progress-indicator>
+
+<script type="module">
+  const up = document.getElementById('up');
+  xhr.upload.onprogress = (e) => { up.value = e.loaded; up.max = e.total; };
+  up.addEventListener('mdComplete', () => up.remove());
+</script>
+```
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdComplete` | no | `void` | After the completion animation finishes |
+
+:::tip[`mdComplete` is not "value reached max"]
+Nothing fires when `value` hits `max`. `mdComplete` fires at the *end of the
+closing animation* that `complete` starts — which is exactly the moment it is
+safe to remove the element or swap in a result.
+:::
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 20px; inline-size: 100%; max-inline-size: 420px;">
+  <div data-ev-stage>
+    <md-progress-indicator value="0" max="12" label="Importing 12 files"></md-progress-indicator>
+  </div>
+  <md-button variant="filled" data-ev-run>Run the import</md-button>
+  <output data-ev-log style="display: block; min-block-size: 5.5rem; padding: 12px 14px; border-radius: 12px; background: var(--md-sys-color-surface-container-high); color: var(--md-sys-color-on-surface); font-family: ui-monospace, monospace; font-size: 0.8125rem; line-height: 1.5; white-space: pre-line;">Press "Run the import".</output>
+</div>`}
+  script={`
+    var stage = root.querySelector('[data-ev-stage]');
+    var log = root.querySelector('[data-ev-log]');
+    var runBtn = root.querySelector('[data-ev-run]');
+    if (!stage || !log || !runBtn) return;
+
+    var tpl = stage.innerHTML;
+    var lines = [];
+    var timer = 0;
+
+    function print(msg) {
+      lines.push(msg);
+      while (lines.length > 5) lines.shift();
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    function run() {
+      clearInterval(timer);
+      lines = [];
+      stage.innerHTML = tpl;
+      var bar = stage.querySelector('md-progress-indicator');
+      bar.addEventListener('mdComplete', function () {
+        print('mdComplete -> safe to remove the indicator now');
+      });
+      var done = 0;
+      print('value = 0 / 12');
+      timer = setInterval(function () {
+        done += 1;
+        bar.value = done;
+        print('value = ' + done + ' / 12');
+        if (done >= 12) {
+          clearInterval(timer);
+          print('value = max -- no event yet, setting complete');
+          bar.complete = true;
+        }
+      }, 200);
+    }
+
+    runBtn.addEventListener('click', run);
+  `}
+  label="mdComplete fires after the closing animation, not at value = max"
+  htmlCode={`<md-progress-indicator id="job" value="0" max="12" label="Importing 12 files"></md-progress-indicator>
+
+<script type="module">
+  const job = document.getElementById('job');
+
+  // mdComplete does NOT fire at value === max — set \`complete\` to start the
+  // closing animation, and the event lands when that animation has finished.
+  onFileImported((done) => {
+    job.value = done;
+    if (done >= job.max) job.complete = true;
+  });
+
+  job.addEventListener('mdComplete', () => {
+    job.remove();
+    showResult();
+  });
+</script>`}
+  react={`import { MdProgressIndicator } from '@awc-ui/react';
+
+export function ImportProgress({ done, total }: { done: number; total: number }) {
+  return (
+    <MdProgressIndicator
+      value={done}
+      max={total}
+      label={\`Importing \${total} files\`}
+      complete={done >= total}
+      onMdComplete={() => showResult()}
+    />
+  );
+}`}
+  angular={`import { Component, Input } from '@angular/core';
+import { showResult } from './result';
+
+@Component({
+  selector: 'app-import-progress',
+  template: \`
+    <md-progress-indicator
+      [attr.value]="done"
+      [attr.max]="total"
+      [attr.label]="'Importing ' + total + ' files'"
+      [attr.complete]="done >= total ? '' : null"
+      (mdComplete)="onComplete()"
+    ></md-progress-indicator>
+  \`,
+})
+export class ImportProgressComponent {
+  @Input() done = 0;
+  @Input() total = 0;
+
+  onComplete() {
+    showResult();
+  }
+}`}
+  vue={`<script setup lang="ts">
+const props = defineProps<{ done: number; total: number }>();
+
+function onComplete() {
+  showResult();
+}
+</script>
+
+<template>
+  <md-progress-indicator
+    :value="props.done"
+    :max="props.total"
+    :label="'Importing ' + props.total + ' files'"
+    :complete="props.done >= props.total"
+    @mdComplete="onComplete"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  export let done = 0;
+  export let total = 0;
+
+  function onComplete() {
+    showResult();
+  }
+</script>
+
+<md-progress-indicator
+  value={done}
+  max={total}
+  label={'Importing ' + total + ' files'}
+  complete={done >= total}
+  on:mdComplete={onComplete}
+/>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- The host is a `progressbar`. `label` is the **accessible name** and defaults
+  to the English `"Progress"` — always set something specific ("Uploading
+  invoice.pdf" beats "Progress").
+- Determinate indicators expose `aria-valuenow` / `aria-valuemin` /
+  `aria-valuemax`; indeterminate ones drop `aria-valuenow` entirely, because the
+  progress is genuinely unknown.
+- For long operations, also surface a textual percentage or count near the bar —
+  not everyone can track a moving indicator.
+- Indeterminate and `wave` indicators animate continuously. Honour
+  `prefers-reduced-motion`; the component flattens the wave when it is set.
+- Don't rely on colour alone for completion — pair it with text or an icon.
+- Keep the stop indicator unless you have verified ≥3:1 track contrast.
+
+Inspect these three in the accessibility tree: the first announces
+"Uploading invoice.pdf, 42%", the second announces its name with no value at
+all, and the third is the mistake — it inherits the English default and
+announces "Progress", which tells a screen-reader user nothing about *what* is
+progressing.
+
+<ComponentDemo
+  html={`<div style="display: grid; grid-template-columns: auto 1fr; gap: 14px 16px; align-items: center; inline-size: 100%; max-inline-size: 460px;">
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">named</span>
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <md-progress-indicator style="flex: 1 1 auto;" value="42" max="100" label="Uploading invoice.pdf"></md-progress-indicator>
+    <span aria-hidden="true" style="font: 500 0.8125rem system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">42%</span>
+  </div>
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">unknown</span>
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <md-progress-indicator style="flex: 1 1 auto;" indeterminate label="Checking for updates"></md-progress-indicator>
+    <span aria-hidden="true" style="font: 500 0.8125rem system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">—</span>
+  </div>
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">unnamed</span>
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <md-progress-indicator style="flex: 1 1 auto;" value="42" max="100"></md-progress-indicator>
+    <span aria-hidden="true" style="font: 500 0.8125rem system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">42%</span>
+  </div>
+</div>`}
+  label="Named, unknown, and the unnamed default a screen reader hears as Progress"
+/>
+
+The percentage beside each bar is `aria-hidden` on purpose: the indicator
+already exposes `aria-valuenow`, so an unhidden copy would be announced twice.
+It is there for the sighted reader who cannot judge a bar by eye.
+
+## RTL, density & i18n
+
+**RTL** — nothing to configure. The linear track fills from the reading start
+and mirrors under `dir="rtl"`; the wavy path is redrawn from the right edge in
+JS, and the flat track, the fill and the stop dot flip through CSS logical
+properties. Set the direction on an ancestor and the same markup works both
+ways. See [RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <md-progress-indicator value="60" label="Uploading"></md-progress-indicator>
+</div>
+```
+
+<ComponentDemo
+  html={`<div style="display: grid; grid-template-columns: auto 1fr; gap: 14px 16px; align-items: center; inline-size: 100%; max-inline-size: 460px;">
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">ltr</span>
+  <div dir="ltr" style="display: flex; flex-direction: column; gap: 14px;">
+    <md-progress-indicator value="60" label="60 percent, ltr"></md-progress-indicator>
+    <md-progress-indicator wave value="60" label="60 percent wavy, ltr"></md-progress-indicator>
+    <md-progress-indicator indeterminate label="Loading, ltr"></md-progress-indicator>
+  </div>
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">rtl</span>
+  <div dir="rtl" style="display: flex; flex-direction: column; gap: 14px;">
+    <md-progress-indicator value="60" label="60 percent, rtl"></md-progress-indicator>
+    <md-progress-indicator wave value="60" label="60 percent wavy, rtl"></md-progress-indicator>
+    <md-progress-indicator indeterminate label="Loading, rtl"></md-progress-indicator>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+  storyId="communication-progress-indicator--rtl"
+/>
+
+### The stop indicator sits at the trailing edge, not "on the right"
+
+The stop dot is positioned with `inset-inline-end`, so it follows the reading
+direction along with the fill. Under `dir="rtl"` the bar fills from the **right**
+and the stop dot sits at the **left** — the dot always marks the end the fill is
+heading toward, not a fixed side of the screen.
+
+That matters the moment you absolutely position something of your own beside the
+bar — a target marker, a threshold tick, a label. `right: 0` pins it to the
+physical right, which in RTL is where the bar *starts*; `inset-inline-end: 0`
+puts it where the stop dot already is. Both rows below are `dir="rtl"` and
+differ only in that one declaration.
+
+<ComponentDemo
+  html={`<div dir="rtl" style="display: grid; grid-template-columns: auto 1fr; gap: 14px 16px; align-items: center; inline-size: 100%; max-inline-size: 460px;">
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">right</span>
+  <div style="position: relative;">
+    <md-progress-indicator value="60" thickness="10" label="60 percent, marker pinned right"></md-progress-indicator>
+    <span aria-hidden="true" style="position: absolute; top: 50%; right: 0; transform: translateY(-50%); inline-size: 10px; block-size: 10px; border-radius: 50%; background: var(--md-sys-color-error);"></span>
+  </div>
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">logical</span>
+  <div style="position: relative;">
+    <md-progress-indicator value="60" thickness="10" label="60 percent, marker on the trailing edge"></md-progress-indicator>
+    <span aria-hidden="true" style="position: absolute; top: 50%; inset-inline-end: 0; transform: translateY(-50%); inline-size: 10px; block-size: 10px; border-radius: 50%; background: var(--md-sys-color-primary);"></span>
+  </div>
+</div>`}
+  label="Both rows are dir=rtl — right: lands at the fill's origin, inset-inline-end: at the stop dot"
+/>
+
+### Every density rung
+
+`density="-1…-4"` thins the linear track **4 → 3.5 → 3 → 2.5 → 2px** and shrinks
+the circular ring **40 → 37 → 34 → 31 → 28px**. It moves the stop dot and the
+track↔fill gap by the same rung, so the whole bar stays in proportion.
+
+<ComponentDemo
+  html={`<p style="margin: 0 0 8px; font: 500 12px/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);">Linear</p>
+<div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-block-end: 24px;">
+<div style="display: flex; flex-direction: column; gap: 12px; inline-size: 100%; max-inline-size: 360px;">
+  <md-progress-indicator value="60" density="0" label="60 percent, rung 0"></md-progress-indicator>
+  <md-progress-indicator value="60" density="-1" label="60 percent, rung -1"></md-progress-indicator>
+  <md-progress-indicator value="60" density="-2" label="60 percent, rung -2"></md-progress-indicator>
+  <md-progress-indicator value="60" density="-3" label="60 percent, rung -3"></md-progress-indicator>
+  <md-progress-indicator value="60" density="-4" label="60 percent, rung -4"></md-progress-indicator>
+</div>
+</div>
+<p style="margin: 0 0 8px; font: 500 12px/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);">Linear, wave</p>
+<div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-block-end: 24px;">
+<div style="display: flex; flex-direction: column; gap: 12px; inline-size: 100%; max-inline-size: 360px;">
+  <md-progress-indicator value="60" wave density="0" label="60 percent, rung 0"></md-progress-indicator>
+  <md-progress-indicator value="60" wave density="-1" label="60 percent, rung -1"></md-progress-indicator>
+  <md-progress-indicator value="60" wave density="-2" label="60 percent, rung -2"></md-progress-indicator>
+  <md-progress-indicator value="60" wave density="-3" label="60 percent, rung -3"></md-progress-indicator>
+  <md-progress-indicator value="60" wave density="-4" label="60 percent, rung -4"></md-progress-indicator>
+</div>
+</div>
+<p style="margin: 0 0 8px; font: 500 12px/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);">Circular</p>
+<div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-block-end: 24px;">
+  <md-progress-indicator variant="circular" value="60" density="0" label="60 percent, rung 0"></md-progress-indicator>
+  <md-progress-indicator variant="circular" value="60" density="-1" label="60 percent, rung -1"></md-progress-indicator>
+  <md-progress-indicator variant="circular" value="60" density="-2" label="60 percent, rung -2"></md-progress-indicator>
+  <md-progress-indicator variant="circular" value="60" density="-3" label="60 percent, rung -3"></md-progress-indicator>
+  <md-progress-indicator variant="circular" value="60" density="-4" label="60 percent, rung -4"></md-progress-indicator>
+</div>
+<p style="margin: 0 0 8px; font: 500 12px/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);">Circular, wave</p>
+<div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-block-end: 24px;">
+  <md-progress-indicator variant="circular" value="60" wave density="0" label="60 percent, rung 0"></md-progress-indicator>
+  <md-progress-indicator variant="circular" value="60" wave density="-1" label="60 percent, rung -1"></md-progress-indicator>
+  <md-progress-indicator variant="circular" value="60" wave density="-2" label="60 percent, rung -2"></md-progress-indicator>
+  <md-progress-indicator variant="circular" value="60" wave density="-3" label="60 percent, rung -3"></md-progress-indicator>
+  <md-progress-indicator variant="circular" value="60" wave density="-4" label="60 percent, rung -4"></md-progress-indicator>
+</div>`}
+  label="Density 0 through -4 — track, ring, stop dot and gap all taper"
+/>
+
+:::caution[Below `-2`, check the track against its surface]
+At rung `-4` the linear track is 2px and the stop dot is clamped to the same
+2px. That is thin enough that a low-contrast `--md-progress-indicator-track-color`
+stops reading as a bar at all — verify it, or set `thickness` explicitly and
+opt out of the rung.
+:::
+
+### Density and direction together
+
+Density and direction are independent signals: one comes from
+`--md-sys-density-scale` (set by a `data-density` ancestor, or by a local
+`density` rung of `-1…-4`), the other from `dir`. They compose without any
+extra wiring, and a local rung still wins over the inherited one.
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display: grid; grid-template-columns: auto 1fr; gap: 14px 16px; align-items: center; inline-size: 100%; max-inline-size: 460px;">
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">inherit</span>
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <md-progress-indicator value="60" label="60 percent, inherited rung -2"></md-progress-indicator>
+    <md-progress-indicator wave value="60" label="60 percent wavy, inherited rung -2"></md-progress-indicator>
+  </div>
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">-4</span>
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <md-progress-indicator value="60" density="-4" label="60 percent, local rung -4"></md-progress-indicator>
+    <md-progress-indicator wave value="60" density="-4" label="60 percent wavy, local rung -4"></md-progress-indicator>
+  </div>
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">opt out</span>
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <md-progress-indicator value="60" thickness="6" label="60 percent, thickness pinned at 6"></md-progress-indicator>
+    <md-progress-indicator wave value="60" thickness="6" label="60 percent wavy, thickness pinned at 6"></md-progress-indicator>
+  </div>
+</div>`}
+  label="dir=rtl with data-density=-2 — inherited rung, a local rung, and one pinned thickness"
+/>
+
+:::note[Rung `0` means "inherit", not "reset"]
+`density="0"` is the default and writes no density signal at all, so an
+indicator inside a `data-density="-2"` region still renders at `-2`. To hold one
+at full size inside a dense region, pin `thickness` (and `size` for circular)
+instead. One catch: `thickness="4"` is the *default* value, so it reads as
+"auto" and still tapers — pin a value other than `4`.
+:::
+
+**Density** — an explicit `thickness` or `size` beats the rung outright, which
+is why the rung demos above leave both unset and why the "opt out" row sets
+`thickness="6"` to hold its size inside a dense region. See
+[Density](/behaviour/density/).
+
+**i18n** — translate `label`. Format any accompanying percentage or count with
+`Intl.NumberFormat`.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-progress-indicator-active-indicator-color` | Filled portion | `primary` |
+| `--md-progress-indicator-active-indicator-shape` | Filled portion radius | Track shape |
+| `--md-progress-indicator-track-color` | Track fill | `secondary-container` |
+| `--md-progress-indicator-track-shape` | Track radius | `corner-full` |
+| `--md-progress-indicator-stop-indicator-color` / `-shape` / `-size` | End stop dot | `primary` / `corner-full` / 4dp |
+| `--md-progress-indicator-stop-indicator-trailing-space` | Space past the stop dot | `0px` |
+| `--md-progress-indicator-track-active-indicator-space` | Gap between track and fill | 4dp |
+| `--md-progress-indicator-four-color-1` … `-4` | `four-color` palette | primary → primary-container → tertiary → tertiary-container |
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 360px; display: flex; flex-direction: column; gap: 20px;">
+  <md-progress-indicator value="60" thickness="10" label="Error themed" style="--md-progress-indicator-active-indicator-color: var(--md-sys-color-error); --md-progress-indicator-track-color: var(--md-sys-color-error-container); --md-progress-indicator-stop-indicator-color: var(--md-sys-color-error);"></md-progress-indicator>
+  <md-progress-indicator value="60" thickness="10" label="Squared off" style="--md-progress-indicator-track-shape: 2px; --md-progress-indicator-active-indicator-shape: 2px;"></md-progress-indicator>
+</div>
+<md-progress-indicator variant="circular" indeterminate four-color label="Custom four colour" style="--md-progress-indicator-four-color-1: #6750A4; --md-progress-indicator-four-color-2: #7D5260; --md-progress-indicator-four-color-3: #386A20; --md-progress-indicator-four-color-4: #B3261E;"></md-progress-indicator>`}
+  label="Themed instances"
+  storyId="communication-progress-indicator--custom-css"
+/>
+
+Every hook is a plain custom property, so a class works as well as an inline
+`style` — which is how you theme a set rather than one instance:
+
+:::caution[Hard-coded hex values do not follow the theme]
+The palettes below are literal colours, so they render identically in light and
+dark. Anything that has to survive a theme switch belongs in a
+`--md-sys-color-*` token (or a pair of values behind
+`prefers-color-scheme`) — the demo above uses `var(--md-sys-color-error)` for
+exactly that reason.
+:::
+
+<ComponentDemo
+  html={`<style>
+  .brand-progress {
+    --md-progress-indicator-active-indicator-color: #6200ee;
+    --md-progress-indicator-track-color: #e0d4f5;
+    --md-progress-indicator-stop-indicator-color: #6200ee;
+  }
+  .success-progress {
+    --md-progress-indicator-active-indicator-color: #2e7d32;
+    --md-progress-indicator-track-color: #c8e6c9;
+    --md-progress-indicator-stop-indicator-color: #2e7d32;
+  }
+</style>
+<div style="inline-size: 100%; max-inline-size: 360px; display: flex; flex-direction: column; gap: 20px;">
+  <md-progress-indicator value="60" label="Default"></md-progress-indicator>
+  <md-progress-indicator value="60" class="brand-progress" label="Brand"></md-progress-indicator>
+  <md-progress-indicator value="60" class="success-progress" label="Success"></md-progress-indicator>
+</div>`}
+  label="One class per palette"
+  storyId="communication-progress-indicator--custom-css"
+/>
+
+Set the **stop-indicator colour alongside the active one**. It is a separate
+property that does not follow the fill, so changing only the fill leaves a
+`primary` dot sitting at the end of a green bar.
+
+**CSS parts** — `track`, `active-indicator`, `stop-indicator`.
+
+Reach for a part when a single colour token cannot express the result — a
+gradient fill, a faded track, a differently *shaped* stop dot:
+
+<ComponentDemo
+  html={`<style>
+  .gradient-indicator::part(active-indicator) {
+    background: linear-gradient(to right, #1a237e, #7c4dff, #ce93d8);
+  }
+  .faded-track::part(track) {
+    opacity: 0.15;
+  }
+  .error-stop::part(stop-indicator) {
+    background-color: var(--md-sys-color-error, #b3261e);
+    border-radius: 0;
+  }
+</style>
+<div style="inline-size: 100%; max-inline-size: 360px; display: flex; flex-direction: column; gap: 20px;">
+  <md-progress-indicator value="60" thickness="10" class="gradient-indicator" label="Gradient active indicator"></md-progress-indicator>
+  <md-progress-indicator value="40" thickness="10" class="faded-track" label="Faded track"></md-progress-indicator>
+  <md-progress-indicator value="50" thickness="10" class="error-stop" label="Squared stop indicator"></md-progress-indicator>
+</div>`}
+  label="::part() overrides"
+  storyId="communication-progress-indicator--css-parts"
+/>
+
+```css
+md-progress-indicator::part(stop-indicator) {
+  display: none;
+}
+```
+
+
+## Related
+
+[`md-loading-indicator`](/components/loading-indicator/) ·
+[`md-skeleton`](/components/skeleton/) ·
+[`md-button`](/components/button/) ·
+[`md-slider`](/components/slider/) ·
+[`md-rating`](/components/rating/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-progress-indicator" />

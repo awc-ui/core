@@ -1,0 +1,261 @@
+{
+  "tag": "md-dialog",
+  "title": "Dialog",
+  "slug": "dialog",
+  "category": "Containment",
+  "subComponentOf": null,
+  "storyId": "containment-dialog--playground",
+  "props": [
+    {
+      "name": "open",
+      "attribute": "open",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "headline",
+      "attribute": "headline",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "fullscreen",
+      "attribute": "fullscreen",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "scrimDismissible",
+      "attribute": "scrim-dismissible",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "locale",
+      "attribute": "locale",
+      "type": "string",
+      "default": "'en-US'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "closeLabel",
+      "attribute": "close-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "cancelLabel",
+      "attribute": "cancel-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "okLabel",
+      "attribute": "ok-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "divider",
+      "attribute": "divider",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "headerDivider",
+      "attribute": "header-divider",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdCancel",
+      "detail": "void"
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "params": ""
+    },
+    {
+      "name": "close",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "actions",
+      "description": "Action buttons"
+    },
+    {
+      "name": "header-action",
+      "description": "Full-screen header action (e.g. Save button)"
+    },
+    {
+      "name": "icon",
+      "description": "Custom icon (replaces icon prop)"
+    },
+    {
+      "name": "headline",
+      "description": "Custom headline content"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "actions",
+      "description": "Action buttons row"
+    },
+    {
+      "name": "cancel-button",
+      "description": "Default cancel button (slot fallback)"
+    },
+    {
+      "name": "ok-button",
+      "description": "Default confirm button (slot fallback)"
+    },
+    {
+      "name": "scrim",
+      "description": "Scrim overlay (basic only)"
+    },
+    {
+      "name": "container",
+      "description": "Dialog surface"
+    },
+    {
+      "name": "header",
+      "description": "Header area (both variants)"
+    },
+    {
+      "name": "close-button",
+      "description": "Close button (full-screen)"
+    },
+    {
+      "name": "headline",
+      "description": "Headline text"
+    },
+    {
+      "name": "divider",
+      "description": "Horizontal divider"
+    },
+    {
+      "name": "icon",
+      "description": "Icon element (basic)"
+    },
+    {
+      "name": "content",
+      "description": "Supporting text / body"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-dialog-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-dialog-container-shape",
+      "description": "Container corner radius"
+    },
+    {
+      "name": "--md-dialog-headline-color",
+      "description": "Headline text color"
+    },
+    {
+      "name": "--md-dialog-content-color",
+      "description": "Supporting text color"
+    },
+    {
+      "name": "--md-dialog-icon-color",
+      "description": "Icon color"
+    },
+    {
+      "name": "--md-dialog-icon-size",
+      "description": "Icon dimensions"
+    },
+    {
+      "name": "--md-dialog-scrim-color",
+      "description": "Scrim overlay color"
+    },
+    {
+      "name": "--md-dialog-divider-color",
+      "description": "Divider color"
+    },
+    {
+      "name": "--md-dialog-z-index",
+      "description": "Surface z-index (default near int32 max)"
+    },
+    {
+      "name": "--md-dialog-scrim-z-index",
+      "description": "Scrim z-index (one below the surface)"
+    }
+  ],
+  "dependencies": [
+    "md-button",
+    "md-text-field"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdCancel",
+      "detail": "void"
+    }
+  ]
+}

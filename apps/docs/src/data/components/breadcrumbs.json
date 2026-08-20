@@ -1,0 +1,137 @@
+{
+  "tag": "md-breadcrumbs",
+  "title": "Breadcrumbs",
+  "slug": "breadcrumbs",
+  "category": "Navigation",
+  "subComponentOf": null,
+  "storyId": "navigation-breadcrumbs--playground",
+  "props": [
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "'Breadcrumb'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "expandLabel",
+      "attribute": "expand-label",
+      "type": "string",
+      "default": "'Show full breadcrumb trail'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "separator",
+      "attribute": "separator",
+      "type": "string",
+      "default": "'/'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "maxItems",
+      "attribute": "max-items",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "itemsBeforeCollapse",
+      "attribute": "items-before-collapse",
+      "type": "number",
+      "default": "1",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "itemsAfterCollapse",
+      "attribute": "items-after-collapse",
+      "type": "number",
+      "default": "2",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdExpand",
+      "detail": "MdBreadcrumbsExpandDetail"
+    }
+  ],
+  "methods": [
+    {
+      "name": "expand",
+      "params": ""
+    },
+    {
+      "name": "collapse",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "list",
+      "description": "The <ol> element."
+    },
+    {
+      "name": "overflow",
+      "description": "The \"…\" collapse list item."
+    },
+    {
+      "name": "overflow-button",
+      "description": "The button inside the overflow item."
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-breadcrumbs-gap",
+      "description": "Gap between items / separators"
+    },
+    {
+      "name": "--md-breadcrumbs-separator-color",
+      "description": "Separator glyph colour"
+    },
+    {
+      "name": "--md-breadcrumbs-text-color",
+      "description": "Item label colour (resting)"
+    },
+    {
+      "name": "--md-breadcrumbs-stagger",
+      "description": "Per-item entrance delay"
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [
+    {
+      "name": "MdBreadcrumbsExpandDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** New expanded state — `true` means the full trail is now visible. */\n  expanded: boolean;\n  /** Total number of crumbs in the trail. */\n  itemCount: number;"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdExpand",
+      "detail": "MdBreadcrumbsExpandDetail"
+    }
+  ]
+}

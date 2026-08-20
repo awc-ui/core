@@ -1,0 +1,187 @@
+{
+  "tag": "md-breadcrumb-item",
+  "title": "Breadcrumb Item",
+  "slug": "breadcrumb-item",
+  "category": "Navigation",
+  "subComponentOf": "md-breadcrumbs",
+  "storyId": null,
+  "props": [
+    {
+      "name": "href",
+      "attribute": "href",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "target",
+      "attribute": "target",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "rel",
+      "attribute": "rel",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "current",
+      "attribute": "current",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "collapsed",
+      "attribute": "collapsed",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "itemIndex",
+      "attribute": "item-index",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "itemTotal",
+      "attribute": "item-total",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdSelect",
+      "detail": "MdBreadcrumbSelectDetail"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "icon",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "separator",
+      "description": "Glyph rendered before this item (when not first)."
+    },
+    {
+      "name": "icon",
+      "description": "Leading icon container."
+    },
+    {
+      "name": "label",
+      "description": "Label text wrapper."
+    },
+    {
+      "name": "static",
+      "description": "The span (when current or no href)."
+    },
+    {
+      "name": "link",
+      "description": "The anchor (when an href is set and not current)."
+    },
+    {
+      "name": "state-layer",
+      "description": "Hover/focus/press overlay."
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-breadcrumb-item-link-color",
+      "description": "Link text colour"
+    },
+    {
+      "name": "--md-breadcrumb-item-current-color",
+      "description": "Current-page text colour"
+    },
+    {
+      "name": "--md-breadcrumb-item-current-bg",
+      "description": "Current-page pill background"
+    },
+    {
+      "name": "--md-breadcrumb-item-disabled-color",
+      "description": "Disabled text colour"
+    },
+    {
+      "name": "--md-breadcrumb-item-hover-color",
+      "description": "Hover-state text colour"
+    },
+    {
+      "name": "--md-breadcrumb-item-state-layer-color",
+      "description": "Hover/focus/press overlay colour"
+    },
+    {
+      "name": "--md-breadcrumb-item-gap",
+      "description": "Gap between icon + label"
+    },
+    {
+      "name": "--md-breadcrumb-item-padding",
+      "description": "Interactive padding"
+    }
+  ],
+  "dependencies": [
+    "md-breadcrumbs",
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [
+    {
+      "name": "MdBreadcrumbSelectDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Destination URL of the activated crumb (empty string when none). */\n  href: string;\n  /** Plain-text label of the activated crumb. */\n  label: string;\n  /** Whether the activated crumb is marked as the current page. */\n  current: boolean;\n  /** Position of the activated crumb in the trail (0-indexed). */\n  itemIndex: number;\n  /** Total number of crumbs in the trail. */\n  itemTotal: number;\n  /** The original DOM event that triggered the activation. */\n  originalEvent: MouseEvent | KeyboardEvent;"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdSelect",
+      "detail": "MdBreadcrumbSelectDetail"
+    }
+  ]
+}

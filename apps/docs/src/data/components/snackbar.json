@@ -1,0 +1,209 @@
+{
+  "tag": "md-snackbar",
+  "title": "Snackbar",
+  "slug": "snackbar",
+  "category": "Communication",
+  "subComponentOf": null,
+  "storyId": "communication-snackbar--playground",
+  "props": [
+    {
+      "name": "open",
+      "attribute": "open",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "message",
+      "attribute": "message",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "action",
+      "attribute": "action",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "closeable",
+      "attribute": "closeable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "autoHide",
+      "attribute": "auto-hide",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "autoHideDuration",
+      "attribute": "auto-hide-duration",
+      "type": "number",
+      "default": "4000",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "position",
+      "attribute": "position",
+      "type": "| 'bottom' | 'bottom-start' | 'bottom-end' | 'top' | 'top-start' | 'top-end' | 'start' | 'end' | 'center'",
+      "default": "'bottom'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "stacked",
+      "attribute": "stacked",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "politeness",
+      "attribute": "politeness",
+      "type": "'polite' | 'assertive'",
+      "default": "'polite'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "dismissLabel",
+      "attribute": "dismiss-label",
+      "type": "string",
+      "default": "'Dismiss'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "{ reason: 'auto' | 'action' | 'close' }"
+    },
+    {
+      "name": "mdAction",
+      "detail": "void"
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "params": ""
+    },
+    {
+      "name": "hide",
+      "params": "reason: 'auto' | 'action' | 'close' = 'close'"
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "action",
+      "description": "Custom action element"
+    },
+    {
+      "name": "close",
+      "description": "Custom close element"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "surface",
+      "description": "Outer container"
+    },
+    {
+      "name": "message",
+      "description": "Supporting text wrapper"
+    },
+    {
+      "name": "actions",
+      "description": "Action button wrapper"
+    },
+    {
+      "name": "close",
+      "description": "Close button wrapper"
+    },
+    {
+      "name": "close-icon",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-snackbar-container-color",
+      "description": "Surface background"
+    },
+    {
+      "name": "--md-snackbar-message-color",
+      "description": "Supporting text color"
+    },
+    {
+      "name": "--md-snackbar-action-color",
+      "description": "Action button text color"
+    },
+    {
+      "name": "--md-snackbar-close-color",
+      "description": "Close icon color"
+    },
+    {
+      "name": "--md-snackbar-container-shape",
+      "description": "Border radius"
+    },
+    {
+      "name": "--md-snackbar-min-width",
+      "description": "Minimum inline size"
+    },
+    {
+      "name": "--md-snackbar-max-width",
+      "description": "Maximum inline size"
+    }
+  ],
+  "dependencies": [
+    "md-button",
+    "md-icon-button"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "{ reason: 'auto' | 'action' | 'close' }"
+    },
+    {
+      "name": "mdAction",
+      "detail": "void"
+    }
+  ]
+}

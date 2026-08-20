@@ -1,0 +1,604 @@
+---
+// ChartDemo.astro
+//
+// Renders a chart custom-element inside the same chrome as
+// <ComponentDemo>, plus a typed JS fixture that is assigned
+// to the chart after it upgrades. This keeps chart demos
+// declarative in MDX — authors only pass the tag, the static
+// attributes, and the data object; the component handles the
+// `customElements.whenDefined()` → property-assignment dance.
+//
+// Why we need this:
+//   ComponentDemo accepts an HTML string and renders it via
+//   `set:html`, which (a) strips inline script tags, and
+//   (b) gives every demo on the page a fresh DOM clone. For
+//   charts, the data lives in arrays / objects that need to be
+//   set as JS properties (not HTML attributes), so we can't
+//   inline them in the markup string. The fix is to emit a
+//   small per-demo bootstrap script that finds the chart by
+//   its generated id and assigns the props after the element
+//   upgrades. Reuses ComponentDemo's CSS for visual consistency.
+
+import { codeToHtml, type BundledLanguage } from "shiki";
+import '../styles/component-demo.css';
+
+export interface ChartDemoProps {
+  /**
+   * Custom-element tag. Originally just chart tags, but reused for any
+   * MD3 component whose realistic demo needs JS property injection
+   * after upgrade (e.g. md-rating with a getLabel function,
+   * md-autocomplete with an options array, md-multi-select with a
+   * value array, md-transfer-list with items + value, etc.). All such
+   * cases share the same "render shell → wait for upgrade → assign
+   * fixture as properties" boot dance, so a single component covers
+   * them. The previous string-union restriction is widened to the
+   * broader set we now support.
+   */
+  tag:
+    | "md-line-chart"
+    | "md-area-chart"
+    | "md-bar-chart"
+    | "md-pie-chart"
+    | "md-sparkline"
+    | "md-organization-chart"
+    | "md-rating"
+    | "md-autocomplete"
+    | "md-multi-select"
+    | "md-transfer-list";
+  /** Optional label above the demo (defaults to "Live Preview"). */
+  label?: string;
+  /** Optional Storybook story id for the "Open in Storybook" link. */
+  storyId?: string;
+  /** Optional static HTML attributes (legend, layout, curve, …). */
+  attrs?: Record<string, string | number | boolean>;
+  /**
+   * Chart data assignment. The keys map onto the chart's JS
+   * properties (`series`, `xAxis`, `data`, `referenceAreas`, …).
+   * Pass any JSON-serialisable object.
+   */
+  fixture: Record<string, unknown>;
+  /**
+   * Function-valued properties (`tooltipRenderer`, `getLabel`, …), as JS
+   * SOURCE strings compiled in the browser.
+   *
+   * These cannot ride along in `fixture`: it is serialised with
+   * `JSON.stringify`, which drops function values silently — the property
+   * would simply never be set, the chart would fall back to its default, and
+   * nothing would be logged. Passing source keeps the transport JSON-safe.
+   *
+   * Assigned BEFORE `fixture`, so the first paint already has the renderer
+   * rather than drawing a default card and then re-rendering.
+   */
+  fnFixture?: Record<string, string>;
+  /**
+   * JS source run once after the fixture lands, with the upgraded element bound
+   * to `el`. For demos whose whole point is behaviour over time — a bar race
+   * reassigning `series` on a timer — which neither `fixture` (static values)
+   * nor `fnFixture` (a prop the chart calls) can express.
+   *
+   * The body is wrapped in an IntersectionObserver, so a timer only runs while
+   * the demo is actually on screen: a docs page carrying several of these
+   * should not burn CPU animating charts nobody is looking at. Return a
+   * teardown function to stop when it scrolls away.
+   */
+  boot?: string;
+  /** Optional inline style on the chart host. */
+  style?: string;
+  /** Optional wrapper inline style — controls layout (max-width etc.). */
+  wrapperStyle?: string;
+  /**
+   * Hand-written per-framework snippets, replacing the generated ones.
+   *
+   * The generator builds every tab from the same fixture, so all five come out
+   * shape-identical — fine for "here is the data, here is the element", wrong
+   * whenever the framework itself is the lesson (a stable function identity in
+   * React, an arrow class property in Angular, a non-reactive plain function in
+   * Vue). Override just the tabs that need it; the rest stay generated.
+   */
+  react?: string;
+  angular?: string;
+  vue?: string;
+  svelte?: string;
+  /** Hide the "show code" panel. */
+  hideCode?: boolean;
+  /** Optional inner HTML for slotted content (e.g. donut centre). */
+  innerHtml?: string;
+}
+
+type Props = ChartDemoProps;
+
+const {
+  tag,
+  label,
+  storyId,
+  attrs = {},
+  fixture,
+  fnFixture = {},
+  boot,
+  react: reactOverride,
+  angular: angularOverride,
+  vue: vueOverride,
+  svelte: svelteOverride,
+  style,
+  wrapperStyle,
+  hideCode,
+  innerHtml,
+} = Astro.props;
+
+// Per-demo unique id used both by the rendered chart and the
+// bootstrap script that wires up its data after upgrade. Ten
+// random chars are enough to avoid collisions on a docs page
+// even if it embeds 50 ChartDemo blocks.
+const demoId = `chart-${Math.random().toString(36).slice(2, 12)}`;
+
+const sbBase = import.meta.env.PUBLIC_STORYBOOK_URL || "/storybook";
+const sbUrl = storyId ? `${sbBase}/?path=/story/${storyId}` : null;
+
+// Build the chart's opening tag with the static attributes
+// the author passed in. Booleans render as bare attributes,
+// numbers and strings as `attr="value"`.
+const attrString = Object.entries(attrs)
+  .map(([k, v]) => {
+    if (typeof v === "boolean") return v ? k : "";
+    return `${k}="${String(v).replace(/"/g, "&quot;")}"`;
+  })
+  .filter(Boolean)
+  .join(" ");
+
+// We escape the closing script tag inside the JSON payload (the
+// one classic XSS / parsing hazard inside an inline script).
+const fixtureJson = JSON.stringify(fixture).replace(
+  /<\/script>/gi,
+  "<\\/script>",
+);
+
+// Function props travel as source strings — see `fnFixture` above. Same
+// closing-script-tag escape, since the source is author-written text.
+const fnFixtureJson = JSON.stringify(fnFixture).replace(
+  /<\/script>/gi,
+  "<\\/script>",
+);
+
+const bootJson = JSON.stringify(boot ?? "").replace(/<\/script>/gi, "<\\/script>");
+
+// Generate the developer-facing code snippet shown in the
+// "show code" panel. Pretty-printed JSON for readability.
+const fixturePretty = JSON.stringify(fixture, null, 2);
+// NOTE: the script tags in this developer-facing snippet are written
+// with the `\x3C` escape for `<` so they render verbatim in the code
+// panel while staying invisible to Vite's naive dev-time dependency
+// scanner (which would otherwise try to parse the template-literal
+// `${…}` interpolations below as JavaScript).
+// The HTML snippet is built AFTER the literal helper below, so it can share the
+// same compact formatting as the framework tabs — see buildHtmlSnippet().
+let codeSnippet = "";
+
+const TECH_META: Record<string, { label: string; lang: string; iconSvg: string }> = {
+  html:    { label: "HTML",    lang: "html",       iconSvg: `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#E34F26" d="M1.5 0h21l-1.91 21.563L11.977 24l-8.565-2.438L1.5 0zm17.09 4.413L5.41 4.41l.213 2.622 10.125.002-.255 2.716h-6.64l.24 2.573h6.182l-.366 3.523-2.91.804-2.956-.81-.188-2.11h-2.61l.29 3.855L12 19.288l5.373-1.53L18.59 4.414z"/></svg>` },
+  react:   { label: "React",   lang: "tsx",        iconSvg: `<svg viewBox="-11.5 -10.232 23 20.463" width="20" height="20" aria-hidden="true"><circle r="2.05" fill="#61DAFB"/><g stroke="#61DAFB" stroke-width="1" fill="none"><ellipse rx="11" ry="4.2"/><ellipse rx="11" ry="4.2" transform="rotate(60)"/><ellipse rx="11" ry="4.2" transform="rotate(120)"/></g></svg>` },
+  angular: { label: "Angular", lang: "typescript", iconSvg: `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#DD0031" d="M9.93 12.645h4.134L11.996 7.74zM11.996.009L.686 3.988l1.725 14.76 9.585 5.243 9.588-5.238L23.308 3.99 11.996.009zm7.058 18.297h-2.636l-1.42-3.501H8.995l-1.42 3.501H4.937L11.996 2.397l7.058 15.909z"/></svg>` },
+  vue:     { label: "Vue",     lang: "vue",        iconSvg: `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#41B883" d="M24 1.61H14.06L12 5.16 9.94 1.61H0L12 22.39 24 1.61z"/><path class="component-demo__vue-inner" fill="#35495E" d="M14.06 1.61L12 5.16 9.94 1.61H6.04L12 11.93l5.96-10.32h-3.9z"/></svg>` },
+  svelte:  { label: "Svelte",  lang: "svelte",     iconSvg: `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#FF3E00" d="M10.354 21.125a4.44 4.44 0 0 1-4.765-1.767 4.109 4.109 0 0 1-.703-3.107 3.898 3.898 0 0 1 .134-.522l.105-.321.286.21a7.21 7.21 0 0 0 2.184 1.092l.208.063-.02.208a1.253 1.253 0 0 0 .226.83 1.337 1.337 0 0 0 1.435.533 1.231 1.231 0 0 0 .343-.15l5.59-3.562a1.164 1.164 0 0 0 .524-.778 1.242 1.242 0 0 0-.211-.937 1.338 1.338 0 0 0-1.435-.533 1.23 1.23 0 0 0-.343.15l-2.133 1.36a4.078 4.078 0 0 1-1.135.499 4.44 4.44 0 0 1-4.765-1.766 4.108 4.108 0 0 1-.702-3.108 3.855 3.855 0 0 1 1.742-2.582l5.589-3.563a4.072 4.072 0 0 1 1.135-.499 4.44 4.44 0 0 1 4.765 1.767 4.109 4.109 0 0 1 .703 3.107 3.943 3.943 0 0 1-.134.522l-.105.321-.286-.21a7.204 7.204 0 0 0-2.184-1.092l-.208-.063.02-.208a1.253 1.253 0 0 0-.226-.83 1.337 1.337 0 0 0-1.435-.533 1.231 1.231 0 0 0-.343.15L8.62 9.368a1.162 1.162 0 0 0-.524.778 1.24 1.24 0 0 0 .211.937 1.338 1.338 0 0 0 1.435.533 1.235 1.235 0 0 0 .344-.15l2.132-1.36a4.067 4.067 0 0 1 1.135-.498 4.44 4.44 0 0 1 4.765 1.766 4.108 4.108 0 0 1 .702 3.108 3.857 3.857 0 0 1-1.742 2.583l-5.589 3.562a4.072 4.072 0 0 1-1.135.499"/></svg>` },
+};
+
+// Charts take their data as PROPERTIES, so each framework really does differ —
+// a generic HTML-to-framework conversion cannot express "assign these objects
+// after the element upgrades". Each snippet below is written for the idiom that
+// framework actually uses to reach a custom element instance.
+const openTag = `<${tag}${attrString ? " " + attrString : ""}${style ? ` style="${style}"` : ""}>`;
+const fixtureKeys = Object.keys(fixture);
+const assign = (obj: string, indent: string) =>
+  fixtureKeys
+    .map((k) => `${indent}${obj}.${k} = ${JSON.stringify(fixture[k], null, 2).replace(/\n/g, "\n" + indent)};`)
+    .join("\n");
+
+// Compact literal: primitive arrays stay on one line and object keys lose their
+// quotes, so a series reads like code someone would write rather than a
+// pretty-printed JSON dump one number per line.
+function literal(value: unknown, indent = ""): string {
+  if (Array.isArray(value)) {
+    const primitives = value.every((v) => typeof v !== "object" || v === null);
+    if (primitives) return `[${value.map((v) => JSON.stringify(v)).join(", ")}]`;
+    const inner = value.map((v) => `${indent}  ${literal(v, indent + "  ")}`).join(",\n");
+    return `[\n${inner}\n${indent}]`;
+  }
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>);
+    const body = entries
+      .map(([k, v]) => `${indent}  ${/^[A-Za-z_$][\w$]*$/.test(k) ? k : JSON.stringify(k)}: ${literal(v, indent + "  ")}`)
+      .join(",\n");
+    return `{\n${body}\n${indent}}`;
+  }
+  return JSON.stringify(value);
+}
+
+/*
+ * Function props are authored inside an MDX template literal, so every line
+ * after the first carries that block's indentation (and the closing brace sits
+ * one level shallower than the body). Strip the common leading run, then
+ * re-indent to wherever the snippet needs it — otherwise the code panel shows a
+ * renderer drifting six spaces right of everything around it.
+ */
+function reindent(source: string, indent: string): string {
+  const [first, ...rest] = source.split("\n");
+  const widths = rest.filter((l) => l.trim()).map((l) => (l.match(/^ */) ?? [""])[0].length);
+  const common = widths.length ? Math.min(...widths) : 0;
+  return [first, ...rest.map((l) => (l.trim() ? indent + l.slice(common) : ""))].join("\n");
+}
+
+// Function props take part in every snippet exactly like data props — they just
+// render as their own source instead of a JSON literal. Keeping them OUT of the
+// snippets would be worse than showing no code at all: the panel would display
+// a faithful-looking example that quietly omits the one prop the demo exists to
+// show, and a reader copying it would get the default tooltip and no error.
+const fnKeys = Object.keys(fnFixture);
+const allKeys = [...fixtureKeys, ...fnKeys];
+const valueSrc = (k: string, indent = "") =>
+  fnKeys.includes(k) ? reindent(fnFixture[k], indent) : literal(fixture[k], indent);
+
+/*
+ * `boot` is imperative setup for THIS element, so every framework has a place
+ * for it — a mount hook with the element in hand. Rendering it into the
+ * snippets keeps the panel honest: a boot demo (the fan chart builds its bands
+ * and tints there) would otherwise show only its static fixture and silently
+ * omit the code that actually draws it.
+ */
+const bootBody = boot?.trim() ? reindent(boot.trim(), "") : "";
+const bootAt = (indent: string) =>
+  bootBody
+    .split("\n")
+    .map((l) => (l.trim() ? indent + l : ""))
+    .join("\n");
+
+const pascal = tag.replace(/(^|-)([a-z])/g, (_m, _d, c) => c.toUpperCase());
+
+// Data hoisted to consts so the markup stays readable, and passed as DIRECT
+// PROPS rather than assigned through a ref. Every wrapper here sets a complex
+// value as an element property for you: the React proxy is createComponent(...,
+// Components.MdAreaChart), Vue's `:prop` and Angular's `[prop]` both do a
+// property binding on a custom element, and Svelte assigns properties on
+// upgraded elements. A ref + useEffect is only needed without a wrapper.
+const dataConsts = (kw: string, sep = ' = ') =>
+  allKeys.map((k) => `${kw}${k}${sep}${valueSrc(k)};`).join("\n\n");
+// One attribute per line at the caller's indent — the static attrs arrive as a
+// single `a="1" b="2"` string and would otherwise all land on one line.
+const staticList = (attrString.match(/[\w-]+(?:="[^"]*")?/g) ?? []).filter(Boolean);
+const lines = (indent: string, fmt: (k: string) => string) =>
+  [...allKeys.map(fmt), ...staticList].map((l) => indent + l).join("\n");
+
+// Plain HTML has no way to express an array of objects: an attribute is a
+// string, so `series='[{...}]'` arrives as a 30-character string and the chart
+// ignores it (verified). Complex data therefore has to be assigned as a
+// PROPERTY, which is the one thing HTML cannot do declaratively.
+//
+// No `customElements.whenDefined` though: assigning the property before the
+// element upgrades works — Stencil picks up the own-property value on upgrade —
+// so the wait was ceremony. One Object.assign is the whole story.
+codeSnippet = `${openTag}${innerHtml ?? ""}</${tag}>
+
+\x3Cscript type="module">
+${allKeys.map((k) => `  const ${k} = ${valueSrc(k, "  ")};`).join("\n\n")}
+
+  const el = document.querySelector("${tag}");
+  Object.assign(el, { ${allKeys.join(", ")} });
+${bootBody ? "\n" + bootAt("  ") + "\n" : ""}\x3C/script>`;
+
+const SNIPPETS: Record<string, string> = {
+  html: codeSnippet,
+
+  react: `import { ${bootBody ? "useEffect, useRef" : ""}${bootBody ? " } from 'react';\nimport { " : ""}${pascal} } from '@awc-ui/react';
+
+${dataConsts('const ')}
+
+export function Chart() {${bootBody ? `
+  const ref = useRef<HTML${pascal}Element>(null);
+
+  // Imperative setup runs once the element exists.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+${bootAt("    ")}
+  }, []);
+` : ""}
+  return (
+    <${pascal}${bootBody ? "\n      ref={ref}" : ""}
+${lines("      ", (k) => `${k}={${k}}`)}
+    />
+  );
+}`,
+
+  angular: `import { Component${bootBody ? ', AfterViewInit, ElementRef, ViewChild' : ''} } from '@angular/core';
+
+@Component({
+  selector: 'app-chart',
+  template: \`
+    <${tag}${bootBody ? " #chart" : ""}
+${lines("      ", (k) => `[${k}]="${k}"`)}
+    ></${tag}>
+  \`,
+})
+export class ChartComponent${bootBody ? " implements AfterViewInit" : ""} {
+${allKeys.map((k) => `  ${k} = ${valueSrc(k, "  ")};`).join("\n\n")}${bootBody ? `
+
+  @ViewChild('chart') chartRef!: ElementRef<HTML${pascal}Element>;
+
+  // The view has to exist before the element can be set up.
+  ngAfterViewInit() {
+    const el = this.chartRef.nativeElement;
+${bootAt("    ")}
+  }` : ""}
+}`,
+
+  vue: `\x3Cscript setup lang="ts">
+${bootBody ? "import { onMounted, ref } from 'vue';\n\nconst chart = ref(null);\n\n" : ""}${dataConsts('const ')}${bootBody ? `
+
+onMounted(() => {
+  const el = chart.value;
+${bootAt("  ")}
+});` : ""}
+\x3C/script>
+
+<template>
+  <${tag}${bootBody ? '\n    ref="chart"' : ""}
+${lines("    ", (k) => `:${k}="${k}"`)}
+  />
+</template>`,
+
+  svelte: `\x3Cscript lang="ts">
+${bootBody ? "  import { onMount } from 'svelte';\n\n  let chart;\n\n" : ""}${dataConsts('  const ')}${bootBody ? `
+
+  onMount(() => {
+    const el = chart;
+${bootAt("    ")}
+  });` : ""}
+\x3C/script>
+
+<${tag}${bootBody ? "\n  bind:this={chart}" : ""}
+${lines("  ", (k) => `${k}={${k}}`)}
+/>`,
+};
+
+type ChartTab = { id: string; label: string; iconSvg: string; code: string; highlighted: string };
+let codeTabs: ChartTab[] = [];
+if (!hideCode) {
+  codeTabs = await Promise.all(
+    Object.entries({
+      ...SNIPPETS,
+      ...(reactOverride ? { react: reactOverride } : {}),
+      ...(angularOverride ? { angular: angularOverride } : {}),
+      ...(vueOverride ? { vue: vueOverride } : {}),
+      ...(svelteOverride ? { svelte: svelteOverride } : {}),
+    }).map(async ([id, code]) => {
+      const meta = TECH_META[id];
+      return {
+        id,
+        label: meta.label,
+        iconSvg: meta.iconSvg,
+        code,
+        highlighted: await codeToHtml(code, {
+          lang: meta.lang as BundledLanguage,
+          themes: { light: "github-light", dark: "github-dark" },
+          defaultColor: false,
+        }),
+      };
+    }),
+  );
+}
+---
+
+<div class="component-demo" data-component-demo>
+  <div class="component-demo__header">
+    <span class="component-demo__indicator" aria-hidden="true"></span>
+    <span class="component-demo__label">{label ?? "Live Preview"}</span>
+    {
+      sbUrl && (
+        <a
+          class="component-demo__storybook-link"
+          href={sbUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open this component in Storybook (opens in a new tab)"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+          <span>Open in Storybook</span>
+        </a>
+      )
+    }
+  </div>
+
+  <div class="component-demo__preview chart-demo__preview" style={wrapperStyle}>
+    <Fragment
+      set:html={`<${tag} id="${demoId}"${attrString ? " " + attrString : ""}${style ? ` style="${style}"` : ""}>${innerHtml ?? ""}</${tag}>`}
+    />
+  </div>
+
+  {
+    !hideCode && (
+      <details class="component-demo__code">
+        <summary class="component-demo__code-toggle">
+          <svg
+            class="component-demo__code-icon"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="16 18 22 12 16 6" />
+            <polyline points="8 6 2 12 8 18" />
+          </svg>
+          <span class="component-demo__code-toggle-label">Show code for each technology</span>
+        </summary>
+
+        {/* Same markup as ComponentDemo so the shared stylesheet and the
+            extracted tab wiring both apply — one strip, five technologies. */}
+        <div class="component-demo__code-tabs" data-technology-tabs data-demo-tabs>
+          <div class="technology-tabs__nav" role="tablist" aria-label="Technology code examples">
+            {codeTabs.map((tab, i) => (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={i === 0 ? "true" : "false"}
+                class:list={["technology-tabs__tab", { "technology-tabs__tab--active": i === 0 }]}
+                data-tab={tab.id}
+                tabindex={i === 0 ? 0 : -1}
+              >
+                <span class="technology-tabs__tab-icon" aria-hidden="true" set:html={tab.iconSvg} />
+                <span class="technology-tabs__tab-label">{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {codeTabs.map((tab, i) => (
+            <div
+              role="tabpanel"
+              class:list={["technology-tabs__panel", { "technology-tabs__panel--active": i === 0 }]}
+              data-panel={tab.id}
+              tabindex="0"
+              hidden={i !== 0}
+            >
+              <div class="technology-tabs__code-wrapper">
+                <button
+                  type="button"
+                  class="technology-tabs__copy"
+                  data-copy={tab.code}
+                  aria-label={`Copy ${tab.label} code`}
+                  title="Copy to clipboard"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <rect width="14" height="14" x="8" y="8" rx="2" />
+                    <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+                  </svg>
+                </button>
+                <div class="technology-tabs__code" set:html={tab.highlighted} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </details>
+
+<script>
+  import { setupDemoTechnologyTabs } from '../scripts/technology-tabs';
+  setupDemoTechnologyTabs();
+</script>
+    )
+  }
+</div>
+
+<script is:inline define:vars={{ demoId, tag, fixtureJson, fnFixtureJson, bootJson }}>
+  // Bootstrap script — runs once per ChartDemo block. We wait
+  // for the custom element to upgrade so property assignments
+  // actually land on the StencilJS class (assigning to an
+  // un-upgraded element silently no-ops). After upgrade we set
+  // each fixture key on the chart instance, in declaration
+  // order, which triggers Stencil's @Watch handlers and the
+  // initial render.
+  (async () => {
+    if (typeof window === "undefined") return;
+    try {
+      await window.customElements.whenDefined(tag);
+    } catch {
+      // Element never defined (rare — happens when the loader
+      // import below fails). Fall through; the chart will stay
+      // in its empty state.
+    }
+    const el = document.getElementById(demoId);
+    if (!el) return;
+    // Function props first, so the component's first paint already uses them
+    // (a renderer set after the data would draw a default card, then redraw).
+    let fns = {};
+    try {
+      fns = JSON.parse(fnFixtureJson);
+    } catch {
+      fns = {};
+    }
+    for (const [key, source] of Object.entries(fns)) {
+      try {
+        el[key] = new Function(`return (${source});`)();
+      } catch (err) {
+        console.warn(`[ChartDemo] failed to compile ${tag}.${key}`, err);
+      }
+    }
+
+    let fixture;
+    try {
+      fixture = JSON.parse(fixtureJson);
+    } catch {
+      return;
+    }
+    for (const [key, value] of Object.entries(fixture)) {
+      try {
+        el[key] = value;
+      } catch (err) {
+        // Defensive: an invalid prop name shouldn't break the page.
+        console.warn(`[ChartDemo] failed to set ${tag}.${key}`, err);
+      }
+    }
+
+    // Imperative demos (a bar race and friends). Gated on visibility rather
+    // than started outright: several timed demos on one page would otherwise
+    // all animate forever, including the ones scrolled far off screen.
+    let bootSrc = "";
+    try {
+      bootSrc = JSON.parse(bootJson);
+    } catch {
+      bootSrc = "";
+    }
+    if (bootSrc) {
+      let stop = null;
+      const io = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !stop) {
+            try {
+              stop = new Function("el", bootSrc)(el) || null;
+            } catch (err) {
+              console.warn(`[ChartDemo] boot failed for ${tag}`, err);
+              io.disconnect();
+            }
+          } else if (!entry.isIntersecting && stop) {
+            try {
+              stop();
+            } catch {
+              /* a teardown that throws must not wedge the observer */
+            }
+            stop = null;
+          }
+        }
+      }, { threshold: 0.25 });
+      io.observe(el);
+    }
+  })();
+</script>
+
+<style>
+  /* Chart demos need taller preview surfaces than buttons /
+     chips — bump the min-block-size so the chart's
+     `aspect-ratio` machinery has room to lay out the SVG. */
+  .chart-demo__preview {
+    align-items: stretch;
+    min-block-size: 240px;
+    padding: 1.5rem;
+  }
+  .chart-demo__preview > * {
+    flex: 1;
+    min-inline-size: 0;
+  }
+</style>

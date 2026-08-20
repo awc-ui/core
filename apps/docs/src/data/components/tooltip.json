@@ -1,0 +1,226 @@
+{
+  "tag": "md-tooltip",
+  "title": "Tooltip",
+  "slug": "tooltip",
+  "category": "Communication",
+  "subComponentOf": null,
+  "storyId": "communication-tooltip--playground",
+  "props": [
+    {
+      "name": "text",
+      "attribute": "text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "subhead",
+      "attribute": "subhead",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'plain' | 'rich'",
+      "default": "'plain'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "position",
+      "attribute": "position",
+      "type": "Placement",
+      "default": "'top'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "autoPosition",
+      "attribute": "auto-position",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "offset",
+      "attribute": "offset",
+      "type": "number",
+      "default": "8",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "crossOffset",
+      "attribute": "cross-offset",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "open",
+      "attribute": "open",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "showDelay",
+      "attribute": "show-delay",
+      "type": "number",
+      "default": "500",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "hideDelay",
+      "attribute": "hide-delay",
+      "type": "number",
+      "default": "200",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "params": ""
+    },
+    {
+      "name": "hide",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "subhead",
+      "description": "Rich tooltip subhead"
+    },
+    {
+      "name": "content",
+      "description": "Rich tooltip supporting text"
+    },
+    {
+      "name": "actions",
+      "description": "Rich tooltip action buttons"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "popup",
+      "description": "Tooltip popup container"
+    },
+    {
+      "name": "subhead",
+      "description": "Rich tooltip subhead wrapper"
+    },
+    {
+      "name": "supporting-text",
+      "description": "Rich tooltip supporting text wrapper"
+    },
+    {
+      "name": "actions",
+      "description": "Rich tooltip action button wrapper"
+    },
+    {
+      "name": "text",
+      "description": "Plain tooltip text wrapper"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-tooltip-plain-container-color",
+      "description": "Plain tooltip background"
+    },
+    {
+      "name": "--md-tooltip-plain-text-color",
+      "description": "Plain tooltip text color"
+    },
+    {
+      "name": "--md-tooltip-rich-container-color",
+      "description": "Rich tooltip background"
+    },
+    {
+      "name": "--md-tooltip-rich-subhead-color",
+      "description": "Rich subhead text color"
+    },
+    {
+      "name": "--md-tooltip-rich-text-color",
+      "description": "Rich supporting text color"
+    },
+    {
+      "name": "--md-tooltip-rich-action-color",
+      "description": "Rich action button color"
+    },
+    {
+      "name": "--md-tooltip-container-shape",
+      "description": "Border-radius (plain)"
+    },
+    {
+      "name": "--md-tooltip-plain-max-inline-size",
+      "description": "Plain tooltip max width"
+    },
+    {
+      "name": "--md-tooltip-rich-container-shape",
+      "description": "Border-radius (rich)"
+    },
+    {
+      "name": "--md-tooltip-rich-min-inline-size",
+      "description": "Rich tooltip min width"
+    },
+    {
+      "name": "--md-tooltip-rich-max-inline-size",
+      "description": "Rich tooltip max width"
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    }
+  ]
+}

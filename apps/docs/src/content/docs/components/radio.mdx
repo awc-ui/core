@@ -1,0 +1,438 @@
+---
+title: Radio
+description: "Exactly one option from a small, visible set — grouped by name, with a roving tabstop and form participation"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/radio.json";
+
+**Exactly one option from a small, visible set.** Radios sharing a `name` form
+an exclusive group with a roving tabstop and arrow-key navigation, and
+participate in form submission and validation via `ElementInternals`.
+
+:::danger[There is no default slot]
+`<md-radio>Express</md-radio>` renders an empty circle — the text is dropped.
+Wrap each radio in a `<label>`, or set `aria-label` / `aria-labelledby`. Same
+contract as [`md-checkbox`](/components/checkbox/).
+:::
+
+<ComponentDemo
+  html={`<div role="radiogroup" aria-labelledby="speed-label" style="display:flex; flex-direction:column; gap:8px;">
+  <span id="speed-label" style="font-weight:600;">Delivery speed</span>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="speed" value="std" checked></md-radio> Standard</label>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="speed" value="exp"></md-radio> Express</label>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="speed" value="ovn"></md-radio> Overnight</label>
+</div>`}
+  label="Live preview"
+  storyId="selection-radio--group"
+/>
+
+## Install
+
+<ComponentSetup tag="md-radio" example="" />
+
+## When to use
+
+- **Five or fewer** mutually exclusive options that should all be visible.
+- The user must make a deliberate, single choice before continuing.
+- One option can be sensibly **pre-selected** — M3 expects this.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| More than one option may be chosen | [`md-checkbox`](/components/checkbox/) |
+| More than five options, or constrained space | [`md-select`](/components/select/) |
+| A view/mode switch that stays visible | [`md-segmented-button`](/components/segmented-button/) |
+| An immediate on/off setting | [`md-switch`](/components/switch/) |
+| Filtering | [`md-chip`](/components/chip/) |
+| Choosing from a long or remote list | [`md-select`](/components/select/) / [`md-autocomplete`](/components/autocomplete/) |
+| Running an action | [`md-button`](/components/button/) |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| One choice from a visible set | This component |
+| Group membership | A shared `name` |
+| Preselect | `checked` on one member |
+| Unavailable but discoverable | `soft-disabled` |
+| Blocks submission when nothing is picked | `required` on a member |
+| Smaller circles | `density="-1…-4"` |
+
+## Grouping
+
+**`name` is the group.** Grouping is by matching `name`, not by DOM nesting — a
+`<fieldset>` alone does not scope anything. Two logically separate groups on one
+page must use different names.
+
+The group gets a **roving tabstop**: `Tab` enters the group once, arrow keys
+move between options. That is the standard radiogroup pattern and it is
+implemented for you.
+
+<ComponentDemo
+  html={`<fieldset style="display:flex; flex-direction:column; gap:8px; border:1px solid var(--md-sys-color-outline-variant); border-radius:12px; padding:16px;">
+  <legend style="padding-inline:6px;">Plan</legend>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="plan" value="free" checked></md-radio> Free</label>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="plan" value="pro"></md-radio> Pro</label>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="plan" value="team"></md-radio> Team</label>
+</fieldset>
+
+<fieldset style="display:flex; flex-direction:column; gap:8px; border:1px solid var(--md-sys-color-outline-variant); border-radius:12px; padding:16px;">
+  <legend style="padding-inline:6px;">Billing</legend>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="billing" value="monthly" checked></md-radio> Monthly</label>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="billing" value="yearly"></md-radio> Yearly</label>
+</fieldset>`}
+  label="Two independent groups — distinct names, independent tabstops"
+  storyId="selection-radio--group"
+/>
+
+:::caution[Give the group a name]
+The component cannot label the group. Put the label on a wrapping
+`role="radiogroup"` + `aria-labelledby`, or on a `<fieldset>`/`<legend>`.
+:::
+
+## States
+
+| State | Focusable | Use when |
+|---|---|---|
+| `disabled` | No | The option is unavailable and not worth discovering |
+| `soft-disabled` | **Yes** | Contextually unavailable but worth discovering |
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:8px;">
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="st" value="a"></md-radio> Unselected</label>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="st" value="b" checked></md-radio> Selected</label>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="st2" value="c" disabled></md-radio> Disabled</label>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="st3" value="d" checked disabled></md-radio> Disabled + selected</label>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="st4" value="e" soft-disabled></md-radio> Soft-disabled (still focusable)</label>
+</div>`}
+  label="States — try tabbing through them"
+  storyId="selection-radio--states"
+/>
+
+## Layout
+
+M3 advises **vertical** lists. A horizontal row is harder to scan and pairs
+labels with the wrong control at narrow widths — reserve it for two very short
+options.
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:16px;">
+  <div role="radiogroup" aria-label="Vertical example" style="display:flex; flex-direction:column; gap:8px;">
+    <label style="display:flex; align-items:center; gap:8px;"><md-radio name="v" value="1" checked></md-radio> Vertical, preferred</label>
+    <label style="display:flex; align-items:center; gap:8px;"><md-radio name="v" value="2"></md-radio> Easy to scan</label>
+    <label style="display:flex; align-items:center; gap:8px;"><md-radio name="v" value="3"></md-radio> Labels never ambiguous</label>
+  </div>
+
+  <div role="radiogroup" aria-label="Horizontal example" style="display:flex; gap:20px;">
+    <label style="display:flex; align-items:center; gap:8px;"><md-radio name="h" value="yes" checked></md-radio> Yes</label>
+    <label style="display:flex; align-items:center; gap:8px;"><md-radio name="h" value="no"></md-radio> No</label>
+  </div>
+</div>`}
+  label="Vertical (preferred) vs horizontal"
+  storyId="selection-radio--horizontal-group"
+/>
+
+## Density
+
+`density="-1…-4"` shrinks the circles and the state layer, and overrides the
+inherited `data-density` rung. Keep the hit target at 48px on touch.
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:6px;">
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="d" value="0" density="0" checked></md-radio> density 0</label>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="d" value="-1" density="-1"></md-radio> density -1</label>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="d" value="-2" density="-2"></md-radio> density -2</label>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="d" value="-3" density="-3"></md-radio> density -3</label>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="d" value="-4" density="-4"></md-radio> density -4</label>
+</div>`}
+  label="Density rungs"
+  storyId="selection-radio--with-labels"
+/>
+
+## Forms & validation
+
+`md-radio` is form-associated, so `name`/`value` submit without any hidden
+`<input>`. Put `required` on the group's members and constraint validation
+blocks submit until one is chosen, with `value-missing-label` as the message.
+
+**Two ways to surface that message**, and the choice is yours:
+
+- **Leave the form alone** and the *browser* reports it — the native bubble,
+  positioned by the browser and styled by it, in its own timing.
+- **Add `novalidate`** and render it yourself from `getValidity()`, as the demo
+  below does. The message then lives on the **group**, which is where it belongs:
+  a radio is one member of a set, so unlike [`md-checkbox`](/components/checkbox/)
+  — a single control that owns its own `error-text` line — there is no one member
+  for the message to hang off. The group markup is yours, so the message is too.
+
+<ComponentDemo
+  html={`<form data-pay novalidate style="display:flex; flex-direction:column; gap:12px; align-items:flex-start;">
+  <div role="radiogroup" aria-labelledby="pay-label" aria-describedby="pay-error" style="display:flex; flex-direction:column; gap:8px;">
+    <span id="pay-label" style="font-weight:600;">Payment method</span>
+    <label style="display:flex; align-items:center; gap:8px;"><md-radio name="pay" value="card" required value-missing-label="Please choose a payment method."></md-radio> Card</label>
+    <label style="display:flex; align-items:center; gap:8px;"><md-radio name="pay" value="bank" required value-missing-label="Please choose a payment method."></md-radio> Bank transfer</label>
+    <span id="pay-error" data-pay-error role="alert" style="min-block-size:1.25em; color:var(--md-sys-color-error); font:400 12px/1.25em Roboto,system-ui,sans-serif;"></span>
+  </div>
+  <md-button variant="filled" type="submit">Pay</md-button>
+  <output data-pay-out style="font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; opacity:.85;"></output>
+</form>`}
+  script={`
+  var form = root.querySelector('[data-pay]');
+  var error = root.querySelector('[data-pay-error]');
+  var out = root.querySelector('[data-pay-out]');
+  var radios = root.querySelectorAll('md-radio[name="pay"]');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    radios[0].getValidity().then(function (v) {
+      error.textContent = v.valid ? '' : v.validationMessage;
+      out.textContent = v.valid
+        ? 'FormData pay = ' + new FormData(form).get('pay')
+        : '';
+    });
+  });
+
+  radios.forEach(function (r) {
+    r.addEventListener('mdChange', function () { error.textContent = ''; });
+  });`}
+  htmlForCode={`<form id="checkout" novalidate>
+  <div role="radiogroup" aria-labelledby="pay-label" aria-describedby="pay-error">
+    <span id="pay-label">Payment method</span>
+    <label>
+      <md-radio name="pay" value="card" required
+                value-missing-label="Please choose a payment method."></md-radio>
+      Card
+    </label>
+    <label>
+      <md-radio name="pay" value="bank" required
+                value-missing-label="Please choose a payment method."></md-radio>
+      Bank transfer
+    </label>
+    <span id="pay-error" role="alert"></span>
+  </div>
+
+  <md-button variant="filled" type="submit">Pay</md-button>
+</form>
+
+<script type="module">
+  const form = document.getElementById('checkout');
+  const error = document.getElementById('pay-error');
+  const radios = document.querySelectorAll('md-radio[name="pay"]');
+
+  // novalidate suppresses the browser bubble; the group owns the message.
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const { valid, validationMessage } = await radios[0].getValidity();
+    error.textContent = valid ? '' : validationMessage;
+    if (valid) save(new FormData(form).get('pay'));   // 'card' | 'bank'
+  });
+
+  radios.forEach((r) =>
+    r.addEventListener('mdChange', () => { error.textContent = ''; }),
+  );
+</script>`}
+  label="Required group — press Pay with nothing chosen"
+  storyId="selection-radio--required"
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdChange` | no | `{ checked, value }` | The radio becomes checked |
+| `mdFocus` / `mdBlur` | no | `void` | Focus enters / leaves the control |
+| `mdValidityChange` | no | `{ valid, validationMessage, flags }` | Validity is recomputed |
+
+:::caution[`mdValidityChange` is not composed]
+Listen on the element itself. A delegated listener on a shadow ancestor will
+never see it.
+:::
+
+## Programmatic selection
+
+`select()` checks this radio, unchecks its siblings, and emits `mdChange` as if
+a user had done it.
+
+<ComponentDemo
+  html={`<div data-sel role="radiogroup" aria-label="Shipping" style="display:flex; flex-direction:column; gap:8px; align-items:flex-start;">
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="ship" value="std"></md-radio> Standard</label>
+  <label style="display:flex; align-items:center; gap:8px;"><md-radio name="ship" value="exp"></md-radio> Express</label>
+  <md-button data-sel-btn variant="outlined">Select Express from JS</md-button>
+  <output data-sel-out style="font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; opacity:.85;">mdChange has not fired yet</output>
+</div>`}
+  script={`
+  var scope = root.querySelector('[data-sel]');
+  var out = root.querySelector('[data-sel-out]');
+  scope.querySelectorAll('md-radio').forEach(function (r) {
+    r.addEventListener('mdChange', function (e) {
+      out.textContent = 'mdChange → ' + JSON.stringify(e.detail);
+    });
+  });
+  root.querySelector('[data-sel-btn]').addEventListener('click', function () {
+    scope.querySelector('md-radio[value="exp"]').select();
+  });`}
+  htmlForCode={`<div role="radiogroup" aria-label="Shipping">
+  <label><md-radio name="ship" value="std"></md-radio> Standard</label>
+  <label><md-radio name="ship" value="exp"></md-radio> Express</label>
+</div>
+
+<script type="module">
+  const express = document.querySelector('md-radio[value="exp"]');
+
+  // Checks it, unchecks its siblings, and emits mdChange as a user click would.
+  express.select();
+</script>`}
+  label="select() from JS — the group updates and mdChange fires, exactly as on a click"
+  storyId="selection-radio--programmatic-control"
+/>
+
+`syncValidityFromGroup()` exists so siblings can agree on validity — it is a
+coordination hook between radios, not something you normally call.
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- Wrap each radio in a `<label>` for its accessible name **and** a bigger hit
+  target. There is no default slot, so unwrapped text is dropped.
+- Name the **group** with `role="radiogroup"` + `aria-labelledby`, or a
+  `<fieldset>`/`<legend>`. The component cannot do this for you.
+- Roving tabstop: one `Tab` stop per group, arrows to move — implemented for
+  you.
+- `disabled` leaves the tab order; `soft-disabled` stays focusable so an
+  unavailable option is still discoverable.
+- Selection is conveyed by the inner circle, not by color alone.
+
+### Keyboard
+
+| Key | Action |
+|---|---|
+| `Tab` | One stop per group — it lands on the checked radio, or the first enabled one |
+| `↑` / `←` | Previous option, wrapping (mirrored under `dir="rtl"`) |
+| `↓` / `→` | Next option, wrapping |
+| `Space` | Select the focused option |
+
+Arrow keys **select as they move**, which is the ARIA radiogroup pattern —
+there is no "preview without committing".
+
+<ComponentDemo
+  html={`<div role="radiogroup" aria-label="Delivery speed" style="display:flex;flex-direction:column;gap:8px;">
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-radio name="a11y-speed" value="std" checked></md-radio> Standard</label>
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-radio name="a11y-speed" value="exp"></md-radio> Express</label>
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-radio name="a11y-speed" value="ovn" soft-disabled></md-radio> Overnight — unavailable to your address</label>
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-radio name="a11y-speed" value="drn" disabled></md-radio> Drone — skipped by Tab</label>
+</div>`}
+  label="A named group — one Tab stop, arrows select as they move"
+  storyId="selection-radio--accessibility"
+/>
+
+## RTL, density & i18n
+
+**RTL** — the control and its label side mirror automatically, and arrow-key
+direction follows reading order. See [RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;">
+  <span style="inline-size:2.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" role="radiogroup" aria-label="Speed" style="display:flex;gap:20px;flex-wrap:wrap;">
+    <label style="display:inline-flex;align-items:center;gap:8px;"><md-radio name="rtl-a" value="std" checked></md-radio> Standard</label>
+    <label style="display:inline-flex;align-items:center;gap:8px;"><md-radio name="rtl-a" value="exp"></md-radio> Express</label>
+  </div>
+  <span style="inline-size:2.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" role="radiogroup" aria-label="السرعة" style="display:flex;gap:20px;flex-wrap:wrap;">
+    <label style="display:inline-flex;align-items:center;gap:8px;"><md-radio name="rtl-b" value="std" checked></md-radio> قياسي</label>
+    <label style="display:inline-flex;align-items:center;gap:8px;"><md-radio name="rtl-b" value="exp"></md-radio> سريع</label>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl — the arrow keys invert too"
+  storyId="selection-radio--rtl"
+/>
+
+**Density** — `density="-1…-4"` shrinks the circles and state layer. See
+[Density](/behaviour/density/).
+
+:::caution[The circle shrinks; the hit area should not]
+Keep the tappable area at 48px on touch even at the deep rungs — a `-4` radio
+in a list of five is otherwise a precision exercise. See
+[Density](/behaviour/density/#accessibility).
+:::
+
+**i18n** — translate the label text you wrap around the radio and the
+`value-missing-label` validation message.
+
+## Theming
+
+| Custom property | Purpose |
+|---|---|
+| `--md-radio-icon-color` | Circle color when unselected |
+| `--md-radio-selected-icon-color` | Circle color when selected |
+| `--md-radio-icon-size` | Outer circle size |
+| `--md-radio-inner-circle-size` | Selected dot size |
+| `--md-radio-state-layer-size` | Hover/press overlay size |
+| `--md-radio-state-layer-color` / `--md-radio-selected-state-layer-color` | Overlay tint |
+
+<ComponentDemo
+  html={`<label style="display:flex; align-items:center; gap:8px;"><md-radio name="theme" value="a" checked style="--md-radio-selected-icon-color: var(--md-sys-color-tertiary); --md-radio-selected-state-layer-color: var(--md-sys-color-tertiary);"></md-radio> Tertiary accent</label>
+<label style="display:flex; align-items:center; gap:8px;"><md-radio name="theme" value="b" style="--md-radio-icon-size: 28px; --md-radio-inner-circle-size: 14px;"></md-radio> Larger circle</label>`}
+  label="Themed instances"
+  storyId="selection-radio--custom-css"
+/>
+
+Every default resolves through an `md-sys-color` role, so a radio that sets no
+custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<div role="radiogroup" aria-label="Untouched defaults" style="display:flex;gap:20px;flex-wrap:wrap;">
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-radio name="dk" value="a" checked></md-radio> Selected</label>
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-radio name="dk" value="b"></md-radio> Unselected</label>
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-radio name="dk" value="c" soft-disabled></md-radio> Soft-disabled</label>
+</div>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="selection-radio--dark-theme"
+/>
+
+## CSS parts
+
+| Part | Element |
+|---|---|
+| `container` | The control box |
+| `outer-circle` | The ring |
+| `inner-circle` | The selected dot |
+| `state-layer` | Hover / focus / press overlay |
+
+<ComponentDemo
+  html={`<style>
+  .parts-radio::part(outer-circle) { border-width: 3px; }
+  .parts-radio::part(inner-circle) { border-radius: 3px; }
+  .parts-radio::part(state-layer)  { background: var(--md-sys-color-tertiary); }
+</style>
+<div role="radiogroup" aria-label="Styled parts" style="display:flex;gap:20px;flex-wrap:wrap;">
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-radio class="parts-radio" name="parts" value="a" checked></md-radio> Square dot</label>
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-radio class="parts-radio" name="parts" value="b"></md-radio> Thick ring</label>
+</div>`}
+  label="outer-circle, inner-circle and state-layer"
+  storyId="selection-radio--css-parts"
+/>
+
+
+## Related
+
+[`md-checkbox`](/components/checkbox/) ·
+[`md-switch`](/components/switch/) ·
+[`md-select`](/components/select/) ·
+[`md-segmented-button`](/components/segmented-button/) ·
+[`md-chip`](/components/chip/) ·
+[`md-ripple`](/components/ripple/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-radio" />

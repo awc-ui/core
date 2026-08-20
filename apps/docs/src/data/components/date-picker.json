@@ -1,0 +1,898 @@
+{
+  "tag": "md-date-picker",
+  "title": "Date Picker",
+  "slug": "date-picker",
+  "category": "Selection",
+  "subComponentOf": null,
+  "storyId": "selection-date-picker--playground",
+  "props": [
+    {
+      "name": "valueMissingLabel",
+      "attribute": "value-missing-label",
+      "type": "string",
+      "default": "'Please choose a date.'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "reserveSupportingSpace",
+      "attribute": "reserve-supporting-space",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'modal' | 'modal-input' | 'docked'",
+      "default": "'modal-input'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "'Date'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "placeholder",
+      "attribute": "placeholder",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "min",
+      "attribute": "min",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "max",
+      "attribute": "max",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "open",
+      "attribute": "open",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "required",
+      "attribute": "required",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "clearable",
+      "attribute": "clearable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "clearLabel",
+      "attribute": "clear-label",
+      "type": "string",
+      "default": "'Clear date'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "error",
+      "attribute": "error",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "errorText",
+      "attribute": "error-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "supportingText",
+      "attribute": "supporting-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "locale",
+      "attribute": "locale",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "dateSeparator",
+      "attribute": "date-separator",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "fieldVariant",
+      "attribute": "field-variant",
+      "type": "'outlined' | 'filled'",
+      "default": "'outlined'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "firstDayOfWeek",
+      "attribute": "first-day-of-week",
+      "type": "number",
+      "default": "-1",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "headline",
+      "attribute": "headline",
+      "type": "string",
+      "default": "'Select date'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "cancelLabel",
+      "attribute": "cancel-label",
+      "type": "string",
+      "default": "'Cancel'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "okLabel",
+      "attribute": "ok-label",
+      "type": "string",
+      "default": "'OK'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "selectDateLabel",
+      "attribute": "select-date-label",
+      "type": "string",
+      "default": "'Select date'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "enterDatesLabel",
+      "attribute": "enter-dates-label",
+      "type": "string",
+      "default": "'Enter dates'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "invalidDateLabel",
+      "attribute": "invalid-date-label",
+      "type": "string",
+      "default": "'Invalid date'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "previousMonthLabel",
+      "attribute": "previous-month-label",
+      "type": "string",
+      "default": "'Previous month'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "nextMonthLabel",
+      "attribute": "next-month-label",
+      "type": "string",
+      "default": "'Next month'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "previousYearLabel",
+      "attribute": "previous-year-label",
+      "type": "string",
+      "default": "'Previous year'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "nextYearLabel",
+      "attribute": "next-year-label",
+      "type": "string",
+      "default": "'Next year'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "chooseMonthLabel",
+      "attribute": "choose-month-label",
+      "type": "string",
+      "default": "'Choose month'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "chooseYearLabel",
+      "attribute": "choose-year-label",
+      "type": "string",
+      "default": "'Choose year'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "chooseMonthYearLabel",
+      "attribute": "choose-month-year-label",
+      "type": "string",
+      "default": "'Choose a different month and year'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "chooseMonthAndYearLabel",
+      "attribute": "choose-month-and-year-label",
+      "type": "string",
+      "default": "'Choose month and year'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "toggleCalendarLabel",
+      "attribute": "toggle-calendar-label",
+      "type": "string",
+      "default": "'Switch to calendar input'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "toggleTextLabel",
+      "attribute": "toggle-text-label",
+      "type": "string",
+      "default": "'Switch to text input'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "openCalendarLabel",
+      "attribute": "open-calendar-label",
+      "type": "string",
+      "default": "'Open calendar'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "closeCalendarLabel",
+      "attribute": "close-calendar-label",
+      "type": "string",
+      "default": "'Close calendar'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "calendarIcon",
+      "attribute": "calendar-icon",
+      "type": "string",
+      "default": "'calendar_today'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "yearGridLabel",
+      "attribute": "year-grid-label",
+      "type": "string",
+      "default": "'Year'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "scrimDismissible",
+      "attribute": "scrim-dismissible",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "outsideClickDismissible",
+      "attribute": "outside-click-dismissible",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "commitOnSelect",
+      "attribute": "commit-on-select",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "name",
+      "attribute": "name",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "isDateDisabled",
+      "attribute": "",
+      "type": "(date: Date) => boolean",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "MdDatePickerChangeDetail"
+    },
+    {
+      "name": "mdSelected",
+      "detail": "MdDatePickerSelectedDetail"
+    },
+    {
+      "name": "mdInput",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdCancel",
+      "detail": "void"
+    },
+    {
+      "name": "mdViewChange",
+      "detail": "MdDatePickerViewChangeDetail"
+    },
+    {
+      "name": "mdMenuOpen",
+      "detail": "MdDatePickerMenuOpenDetail"
+    },
+    {
+      "name": "mdMenuSelect",
+      "detail": "MdDatePickerMenuSelectDetail"
+    },
+    {
+      "name": "mdModeChange",
+      "detail": "MdDatePickerModeChangeDetail"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "params": ""
+    },
+    {
+      "name": "close",
+      "params": ""
+    },
+    {
+      "name": "clear",
+      "params": ""
+    },
+    {
+      "name": "focusInput",
+      "params": ""
+    },
+    {
+      "name": "getValidity",
+      "params": ""
+    },
+    {
+      "name": "checkValidity",
+      "params": ""
+    },
+    {
+      "name": "reportValidity",
+      "params": ""
+    },
+    {
+      "name": "setCustomValidity",
+      "params": "message: string"
+    }
+  ],
+  "slots": [
+    {
+      "name": "leading-icon",
+      "description": "Custom leading icon for the field"
+    },
+    {
+      "name": "calendar-icon",
+      "description": "Custom trailing calendar toggle icon (replaces calendar-icon prop)"
+    },
+    {
+      "name": "header",
+      "description": "Replaces the entire modal header"
+    },
+    {
+      "name": "actions",
+      "description": "Replaces the Cancel / OK action row"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "menu-caret",
+      "description": ""
+    },
+    {
+      "name": "year-grid-wrap",
+      "description": "Animated wrapper for modal year grid"
+    },
+    {
+      "name": "month-menu",
+      "description": "Docked inline baseline md-menu (month selection)"
+    },
+    {
+      "name": "year-menu",
+      "description": "Docked inline baseline md-menu (year selection)"
+    },
+    {
+      "name": "entry-input",
+      "description": "In-dialog outlined md-text-field (single modal input)"
+    },
+    {
+      "name": "field",
+      "description": "Text-field container (trigger)"
+    },
+    {
+      "name": "clear-button",
+      "description": ""
+    },
+    {
+      "name": "calendar-button",
+      "description": "Trailing calendar toggle button"
+    },
+    {
+      "name": "month-toggle",
+      "description": "Month-year menu button (opens year grid; modal; same as menu-button)"
+    },
+    {
+      "name": "nav",
+      "description": "Month label + prev/next nav row (also docked nav row)"
+    },
+    {
+      "name": "month-menu-button",
+      "description": "Docked month dropdown menu button (\"Aug ▾\")"
+    },
+    {
+      "name": "year-menu-button",
+      "description": "Docked year dropdown menu button (\"2025 ▾\")"
+    },
+    {
+      "name": "selection-divider",
+      "description": "Divider between docked nav and month/year menu"
+    },
+    {
+      "name": "month-menu-wrap",
+      "description": ""
+    },
+    {
+      "name": "year-menu-wrap",
+      "description": ""
+    },
+    {
+      "name": "calendar",
+      "description": "Calendar grid wrapper"
+    },
+    {
+      "name": "weekdays",
+      "description": "Weekday header row"
+    },
+    {
+      "name": "weekday",
+      "description": "A single weekday column header"
+    },
+    {
+      "name": "grid",
+      "description": "Day-cell grid"
+    },
+    {
+      "name": "week",
+      "description": ""
+    },
+    {
+      "name": "year-grid-scroll year-grid-viewport",
+      "description": ""
+    },
+    {
+      "name": "year-grid",
+      "description": "Year-selection grid (modal)"
+    },
+    {
+      "name": "year-row",
+      "description": ""
+    },
+    {
+      "name": "entry",
+      "description": "In-dialog text-entry region"
+    },
+    {
+      "name": "header",
+      "description": "Modal header region"
+    },
+    {
+      "name": "supporting",
+      "description": "Header supporting text"
+    },
+    {
+      "name": "headline",
+      "description": "Large selected-date headline"
+    },
+    {
+      "name": "mode-toggle",
+      "description": "Calendar / text-input switch button"
+    },
+    {
+      "name": "actions",
+      "description": "Cancel / OK action row"
+    },
+    {
+      "name": "cancel-button",
+      "description": "Cancel action"
+    },
+    {
+      "name": "ok-button",
+      "description": "Confirm action"
+    },
+    {
+      "name": "body",
+      "description": "Calendar / year / input body region"
+    },
+    {
+      "name": "docked-below-nav",
+      "description": ""
+    },
+    {
+      "name": "panel",
+      "description": "Dialog / docked popup surface"
+    },
+    {
+      "name": "modal",
+      "description": "Modal wrapper (scrim + panel)"
+    },
+    {
+      "name": "scrim",
+      "description": "Modal scrim overlay"
+    },
+    {
+      "name": "month-menu-viewport",
+      "description": ""
+    },
+    {
+      "name": "year-menu-viewport",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-date-picker-container-color",
+      "description": "Dialog / popup body background"
+    },
+    {
+      "name": "--md-date-picker-header-color",
+      "description": "Modal header background"
+    },
+    {
+      "name": "--md-date-picker-container-shape",
+      "description": "Dialog / popup corner radius"
+    },
+    {
+      "name": "--md-date-picker-field-color",
+      "description": "Text-field resting outline color"
+    },
+    {
+      "name": "--md-date-picker-field-focus-color",
+      "description": "Text-field focused outline / label color"
+    },
+    {
+      "name": "--md-date-picker-field-text-color",
+      "description": "Text-field input text color"
+    },
+    {
+      "name": "--md-date-picker-field-filled-pill",
+      "description": "Filled field: 1 for capsule/pill (all corners)"
+    },
+    {
+      "name": "--md-date-picker-field-supporting-color",
+      "description": "Supporting text below the field"
+    },
+    {
+      "name": "--md-date-picker-label-color",
+      "description": "Floating label color"
+    },
+    {
+      "name": "--md-date-picker-headline-color",
+      "description": "Modal headline (selected date) color"
+    },
+    {
+      "name": "--md-date-picker-supporting-color",
+      "description": "Header supporting-text color"
+    },
+    {
+      "name": "--md-date-picker-weekday-color",
+      "description": "Weekday column-header color"
+    },
+    {
+      "name": "--md-date-picker-day-color",
+      "description": "Day cell text color"
+    },
+    {
+      "name": "--md-date-picker-day-selected-color",
+      "description": "Selected day text color"
+    },
+    {
+      "name": "--md-date-picker-day-selected-bg",
+      "description": "Selected day container color"
+    },
+    {
+      "name": "--md-date-picker-day-selected-shape",
+      "description": "Selected day corner radius (overrides morph)"
+    },
+    {
+      "name": "--md-date-picker-day-today-shape",
+      "description": "Today ring corner radius"
+    },
+    {
+      "name": "--md-date-picker-today-outline-color",
+      "description": "Today's outline ring color"
+    },
+    {
+      "name": "--md-date-picker-day-outline-color",
+      "description": "Deprecated — unselected days are plain text"
+    },
+    {
+      "name": "--md-date-picker-action-color",
+      "description": "Cancel / OK action label color"
+    },
+    {
+      "name": "--md-date-picker-menu-color",
+      "description": "Docked month/year menu surface"
+    },
+    {
+      "name": "--md-date-picker-selection-bloom-duration",
+      "description": "Docked month/year menu bloom-in duration"
+    },
+    {
+      "name": "--md-date-picker-selection-bloom-easing",
+      "description": "Docked month/year menu bloom-in easing"
+    },
+    {
+      "name": "--md-date-picker-selection-bloom-out-duration",
+      "description": "Docked menu bloom-out on pick (default short4)"
+    },
+    {
+      "name": "--md-date-picker-calendar-bloom-duration",
+      "description": "Docked day grid bloom-in after pick (default medium2)"
+    },
+    {
+      "name": "--md-date-picker-grid-slide-duration",
+      "description": "Day grid month/year slide duration"
+    },
+    {
+      "name": "--md-date-picker-panel-bloom-out-duration",
+      "description": "Panel bloom-out on dismiss (default short4)"
+    },
+    {
+      "name": "--md-date-picker-scrim-color",
+      "description": "Modal scrim color"
+    },
+    {
+      "name": "--md-date-picker-icon-color",
+      "description": "Trailing / nav icon color"
+    },
+    {
+      "name": "--md-date-picker-panel-width",
+      "description": "Modal / docked popup panel inline size"
+    },
+    {
+      "name": "--md-date-picker-panel-max-block-size",
+      "description": "Modal / docked popup panel max block size"
+    },
+    {
+      "name": "--md-date-picker-docked-panel-width",
+      "description": "Docked popup panel inline size (overrides panel-width)"
+    },
+    {
+      "name": "--md-date-picker-year-inline-size",
+      "description": "Year grid cell inline size (modal)"
+    },
+    {
+      "name": "--md-date-picker-year-block-size",
+      "description": "Year grid cell block size (modal)"
+    },
+    {
+      "name": "--md-date-picker-year-grid-gap",
+      "description": "Year grid row/column gap (modal)"
+    },
+    {
+      "name": "--md-date-picker-year-grid-padding-inline",
+      "description": "Year grid inline padding (modal)"
+    },
+    {
+      "name": "--md-date-picker-year-grid-viewport-block-size",
+      "description": "Year grid scroll viewport block size (modal)"
+    },
+    {
+      "name": "--md-date-picker-day-outside-color",
+      "description": ""
+    },
+    {
+      "name": "--md-date-picker-icon-size",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-text-field",
+    "md-icon-button",
+    "md-tooltip",
+    "md-button",
+    "md-menu",
+    "md-menu-item"
+  ],
+  "dataTypes": [],
+  "callableProps": [
+    {
+      "name": "isDateDisabled",
+      "kind": "callable",
+      "body": "(date: Date) => boolean"
+    }
+  ],
+  "eventTypes": [
+    {
+      "name": "MdDatePickerChangeDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Selected ISO date. */\n  value: string;\n  /** Selected `Date`. */\n  date: Date | null;"
+    },
+    {
+      "name": "MdDatePickerSelectedDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Selected ISO date. */\n  value: string;\n  /** Selected `Date`. */\n  date: Date;"
+    },
+    {
+      "name": "MdDatePickerViewChangeDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Zero-based month index (`0` = January). */\n  month: number;\n  year: number;\n  source: MdDatePickerViewChangeSource;"
+    },
+    {
+      "name": "MdDatePickerViewChangeSource",
+      "kind": "type",
+      "body": "| 'chevron-month' | 'chevron-year' | 'month-menu' | 'year-menu'"
+    },
+    {
+      "name": "MdDatePickerMenuOpenDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  type: 'month' | 'year';"
+    },
+    {
+      "name": "MdDatePickerMenuSelectDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  type: 'month' | 'year';\n  /** Zero-based month index or four-digit year. */\n  value: number;\n  /** Locale-aware month name or year string when available. */\n  label?: string;"
+    },
+    {
+      "name": "MdDatePickerModeChangeDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  mode: MdDatePickerMode;"
+    },
+    {
+      "name": "MdDatePickerMode",
+      "kind": "type",
+      "body": "'calendar' | 'input'"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdChange",
+      "detail": "MdDatePickerChangeDetail"
+    },
+    {
+      "name": "mdSelected",
+      "detail": "MdDatePickerSelectedDetail"
+    },
+    {
+      "name": "mdInput",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdCancel",
+      "detail": "void"
+    },
+    {
+      "name": "mdViewChange",
+      "detail": "MdDatePickerViewChangeDetail"
+    },
+    {
+      "name": "mdMenuOpen",
+      "detail": "MdDatePickerMenuOpenDetail"
+    },
+    {
+      "name": "mdMenuSelect",
+      "detail": "MdDatePickerMenuSelectDetail"
+    },
+    {
+      "name": "mdModeChange",
+      "detail": "MdDatePickerModeChangeDetail"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ]
+}

@@ -1,0 +1,397 @@
+/* ═══════════════════════════════════════════════════════════
+   md-menu
+   Material Design 3 — Menus
+   https://m3.material.io/components/menus/specs
+
+   Variants:
+     baseline   — MD3 original (8px corners, surface container)
+     standard   — M3 Expressive vertical (16px corners, surface-based)
+     vibrant    — M3 Expressive vertical (16px corners, tertiary-based)
+
+   CSS custom properties:
+     --md-menu-min-width     Min container width (default 112px)
+     --md-menu-max-width     Max container width (default 280px)
+     --md-menu-inline-surface-color  Background for md-menu--inline-fill only (default transparent)
+     --md-menu-inline-fill-radius-end  Bottom corner radius for inline-fill embed (default 0)
+     --md-sys-z-index-popup    Stack order (default 1000)
+
+   Parts: (none — container is internal)
+   Slots: (default) — accepts md-menu-item, md-sub-menu-item
+   ═══════════════════════════════════════════════════════════ */
+
+/* ==========================================================
+   1. HOST
+   ========================================================== */
+:host {
+  display: block;
+  position: fixed;
+  z-index: auto;
+  pointer-events: none;
+}
+
+:host(.md-menu--open) {
+  pointer-events: auto;
+}
+
+/* ==========================================================
+   2. SURFACE — BASELINE
+   ========================================================== */
+.md-menu__surface {
+  background-color: var(--md-sys-color-surface-container, #F7F2FA);
+  border-radius: var(--md-sys-shape-corner-small, 8px);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.3),
+    0 2px 6px 2px rgba(0, 0, 0, 0.15);
+  min-width: var(--md-menu-min-width, 112px);
+  /* Grow to fit the widest item, bounded only by the viewport (minus an edge
+     margin) — long labels no longer truncate at a fixed 280px. Consumers wanting
+     the MD3 280dp cap (or any cap) set --md-menu-max-width; we still clamp that
+     to the viewport so it can never run off-screen. */
+  max-width: min(
+    var(--md-menu-max-width, 100vw),
+    calc(100vw - 2 * var(--md-menu-viewport-margin, 8px))
+  );
+  /* Inline padding is 0 by design: baseline menu rows are FULL-BLEED, so their
+     hover / focus / selected state layer runs edge to edge (M3 gives the menu
+     list vertical padding only). An inline inset here leaves the highlight
+     floating in a gutter — visible on md-select, which uses this surface.
+     The vertical `standard` / `vibrant` variants override this with a real
+     inline inset further down, because THEIR rows are rounded plates and need
+     the breathing room for the corner radius. */
+  padding: var(--md-sys-spacing-inset-xs, 4px) 0;
+  overflow: visible;
+  opacity: 0;
+  transform: scaleY(0.8);
+  transform-origin: top left;
+  transition:
+    opacity var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
+    transform var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
+}
+
+:host(.md-menu--open) .md-menu__surface {
+  opacity: 1;
+  transform: none;
+}
+
+/* --- Close animation --- */
+:host(.md-menu--closing) .md-menu__surface {
+  opacity: 0;
+  transform: scaleY(0.8);
+  transition:
+    opacity var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15)),
+    transform var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15));
+}
+
+/* Keep pointer-events active during close so ripple finishes */
+:host(.md-menu--closing) {
+  pointer-events: none;
+}
+
+:host(.md-menu--quick) .md-menu__surface {
+  transition: none;
+}
+
+/* --- Inline fill: embedded in a flex parent (e.g. md-date-picker docked panel) --- */
+:host(.md-menu--inline-fill) {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-block-size: 0;
+  block-size: 100%;
+  inline-size: 100%;
+  pointer-events: auto;
+}
+
+:host(.md-menu--inline-fill) .md-menu__surface {
+  flex: 1 1 auto;
+  block-size: 100%;
+  min-block-size: 0;
+  min-inline-size: 100%;
+  max-inline-size: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: none;
+  border: none;
+  outline: none;
+  /* Baseline menus use padding: 4px 0 — strip for flush embed (e.g. date-picker). */
+  padding: 0;
+  border-radius: 0;
+  border-end-start-radius: var(--md-menu-inline-fill-radius-end, 0);
+  border-end-end-radius: var(--md-menu-inline-fill-radius-end, 0);
+  /* Consumer sets --md-menu-inline-surface-color (e.g. md-date-picker docked panel). */
+  background-color: var(--md-menu-inline-surface-color, transparent);
+}
+
+/* Inline-fill scroll is owned by md-scroll-shadow (edge fades when overflow). */
+:host(.md-menu--inline-fill) .md-menu__scroll-shadow {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  block-size: 100%;
+}
+
+:host(.md-menu--inline-fill) .md-menu__surface ::slotted(md-menu-item:last-child) {
+  border-end-start-radius: var(--md-menu-inline-fill-radius-end, 0);
+  border-end-end-radius: var(--md-menu-inline-fill-radius-end, 0);
+}
+
+/* --- Capped height: long lists scroll inside md-scroll-shadow (edge fades) --- */
+/* The scroll-shadow (display:flex column, bounded by the inline max-block-size)
+   owns the vertical scroll; the surface only clips so it never double-scrolls.
+   The viewport-safe rule below opts capped menus out (:not(.md-menu--scroll))
+   so its `overflow-y: auto` can't compete with this. */
+:host(.md-menu--scroll):not(.md-menu--has-submenu) .md-menu__surface {
+  overflow: hidden;
+}
+
+:host(.md-menu--scroll) .md-menu__scroll-shadow {
+  min-block-size: 0;
+}
+
+/* The menu's scroll viewport (long lists scroll inside its inline max-block-size
+   cap). Virtualized menus reposition their windowed rows by rewriting a
+   multi-million-px top spacer between renders. Browser scroll-anchoring would try
+   to keep the pre-render content stable and silently shift scrollTop to
+   compensate — which desyncs the keyboard-nav anchor from the offset it was laid
+   out for and snaps the view away. Opt out so our programmatic offset wins. */
+.md-menu__scroll-shadow {
+  overflow-y: auto;
+  overflow-anchor: none;
+}
+
+/* --- Match anchor width: min-width set via JS; grow to content but stay on-screen --- */
+:host([match-anchor-width]) .md-menu__surface {
+  max-width: calc(100vw - 2 * var(--md-menu-viewport-margin, 8px));
+  box-sizing: border-box;
+}
+
+/* ==========================================================
+   2b. RESPONSIVE / VIEWPORT-SAFE SIZING
+   ========================================================== */
+
+/* Tall menus scroll instead of running off the bottom of the screen. Skipped
+   when the menu has submenus — their flyouts are positioned children that
+   would be clipped by an overflow on the surface — and when capped, where
+   md-scroll-shadow owns the scroll instead (see the capped-height block above). */
+:host(:not(.md-menu--has-submenu):not(.md-menu--inline-fill):not(.md-menu--scroll)) .md-menu__surface {
+  max-height: calc(100dvh - 2 * var(--md-menu-viewport-margin, 8px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* `responsive` on a compact viewport: near-full-width sheet below the trigger.
+   Positioning (left edge + vertical flip/clamp) is handled in positionMenu(). */
+@media (max-width: 600px) {
+  :host(.md-menu--responsive) .md-menu__surface {
+    width: calc(100vw - 2 * var(--md-menu-viewport-margin, 8px));
+    min-width: 0;
+    max-width: none;
+    box-sizing: border-box;
+  }
+}
+
+/* ==========================================================
+   3. PLACEMENT — TRANSFORM ORIGIN
+   ========================================================== */
+:host([placement="bottom-start"]) .md-menu__surface { transform-origin: top left; }
+:host([placement="bottom-end"]) .md-menu__surface { transform-origin: top right; }
+:host([placement="top-start"]) .md-menu__surface { transform-origin: bottom left; }
+:host([placement="top-end"]) .md-menu__surface { transform-origin: bottom right; }
+
+/* ==========================================================
+   4. VERTICAL MENU — STANDARD VARIANT
+   ========================================================== */
+:host(.md-menu--standard) .md-menu__surface {
+  background-color: var(--md-sys-color-surface-container-low, #F7F2FA);
+  border-radius: var(--md-sys-shape-corner-large, 16px);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 4px 8px 3px rgba(0, 0, 0, 0.08);
+  padding: var(--md-sys-spacing-inset-xs, 4px);
+}
+
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item),
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item) {
+  border-radius: var(--md-sys-shape-corner-small, 8px);
+}
+
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item:first-child),
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item:first-child) {
+  border-start-start-radius: var(--md-sys-shape-corner-large, 16px);
+  border-start-end-radius: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item:last-child),
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item:last-child) {
+  border-end-start-radius: var(--md-sys-shape-corner-large, 16px);
+  border-end-end-radius: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item:hover),
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item:hover) {
+  border-radius: var(--md-sys-shape-corner-extra-small, 4px);
+}
+
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item:active),
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item.md-menu-item--selected),
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item:active) {
+  border-radius: var(--md-sys-shape-corner-medium, 12px);
+}
+
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item:first-child:hover),
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item:first-child:hover) {
+  border-start-start-radius: var(--md-sys-shape-corner-large, 16px);
+  border-start-end-radius: var(--md-sys-shape-corner-large, 16px);
+  border-end-start-radius: var(--md-sys-shape-corner-extra-small, 4px);
+  border-end-end-radius: var(--md-sys-shape-corner-extra-small, 4px);
+}
+
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item:last-child:hover),
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item:last-child:hover) {
+  border-start-start-radius: var(--md-sys-shape-corner-extra-small, 4px);
+  border-start-end-radius: var(--md-sys-shape-corner-extra-small, 4px);
+  border-end-start-radius: var(--md-sys-shape-corner-large, 16px);
+  border-end-end-radius: var(--md-sys-shape-corner-large, 16px);
+}
+
+/* ==========================================================
+   5. VERTICAL MENU — VIBRANT VARIANT
+   ========================================================== */
+:host(.md-menu--vibrant) .md-menu__surface {
+  background-color: var(--md-sys-color-tertiary-container, #FFD8E4);
+  border-radius: var(--md-sys-shape-corner-large, 16px);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 4px 8px 3px rgba(0, 0, 0, 0.08);
+  padding: var(--md-sys-spacing-inset-xs, 4px);
+}
+
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item),
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item) {
+  border-radius: var(--md-sys-shape-corner-small, 8px);
+}
+
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item:first-child),
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item:first-child) {
+  border-start-start-radius: var(--md-sys-shape-corner-large, 16px);
+  border-start-end-radius: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item:last-child),
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item:last-child) {
+  border-end-start-radius: var(--md-sys-shape-corner-large, 16px);
+  border-end-end-radius: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item:hover),
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item:hover) {
+  border-radius: var(--md-sys-shape-corner-extra-small, 4px);
+}
+
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item:active),
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item.md-menu-item--selected),
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item:active) {
+  border-radius: var(--md-sys-shape-corner-medium, 12px);
+}
+
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item:first-child:hover),
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item:first-child:hover) {
+  border-start-start-radius: var(--md-sys-shape-corner-large, 16px);
+  border-start-end-radius: var(--md-sys-shape-corner-large, 16px);
+  border-end-start-radius: var(--md-sys-shape-corner-extra-small, 4px);
+  border-end-end-radius: var(--md-sys-shape-corner-extra-small, 4px);
+}
+
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item:last-child:hover),
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item:last-child:hover) {
+  border-start-start-radius: var(--md-sys-shape-corner-extra-small, 4px);
+  border-start-end-radius: var(--md-sys-shape-corner-extra-small, 4px);
+  border-end-start-radius: var(--md-sys-shape-corner-large, 16px);
+  border-end-end-radius: var(--md-sys-shape-corner-large, 16px);
+}
+
+/* ==========================================================
+   6. GAP LAYOUT — uniform gap between all items
+   ========================================================== */
+:host(.md-menu--gap) .md-menu__surface {
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================
+   6b. GROUPED + GAP — each md-menu-item-group becomes a card
+       container. The surface is transparent; groups get their
+       own background, separated by a gap.
+   ========================================================== */
+:host(.md-menu--grouped.md-menu--gap.md-menu--standard) .md-menu__surface,
+:host(.md-menu--grouped.md-menu--gap.md-menu--vibrant) .md-menu__surface {
+  background-color: transparent;
+  box-shadow: none;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  /* The gap between group cards is a FLEX GAP, not a margin on the cards. A
+     margin would have to be declared on the group's `:host`, and document-tree
+     rules beat host styles — so a consumer's `* { margin: 0 }` reset (Starlight,
+     Tailwind preflight, any normalise) silently collapsed the cards flush
+     together. A height-capped menu nests the groups inside
+     `.md-menu__scroll-shadow`, so that container repeats the gap below. */
+  gap: var(--md-menu-group-gap, 4px);
+  padding: 0;
+  filter:
+    drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15))
+    drop-shadow(0 2px 6px rgba(0, 0, 0, 0.1));
+}
+
+/* The gap needs a flex container, and flex items shrink by default — in a short
+   viewport that squashed each group card instead of overflowing, and because the
+   cards clip (`overflow: hidden`) their rows were cut off rather than scrolled
+   to. Pin the cards to their natural height so the viewport scrolls instead. */
+:host(.md-menu--grouped.md-menu--gap) .md-menu__surface ::slotted(md-menu-item-group),
+:host(.md-menu--grouped.md-menu--gap) .md-menu__scroll-shadow ::slotted(md-menu-item-group) {
+  flex-shrink: 0;
+}
+
+/* When a height cap nests the groups inside the scroll viewport, that viewport
+   is their flex parent — repeat the gap there so it survives the wrapper. */
+:host(.md-menu--grouped.md-menu--gap) .md-menu__scroll-shadow {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--md-menu-group-gap, 4px);
+}
+
+/* --- Baseline: gap as spacing only --- */
+:host(.md-menu--sectioned.md-menu--baseline) .md-menu__surface ::slotted([gap]) {
+  margin-bottom: var(--md-menu-section-gap, 2px);
+}
+
+/* ==========================================================
+   7. EMPTY STATE
+   ========================================================== */
+.md-menu__empty {
+  display: none;
+  padding: var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px);
+  font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif);
+  font-size: var(--md-sys-typescale-body-medium-size, 14px);
+  line-height: var(--md-sys-typescale-body-medium-line-height, 20px);
+  color: var(--md-sys-color-on-surface-variant, #49454F);
+  text-align: center;
+}
+
+:host(.md-menu--empty) .md-menu__empty {
+  display: block;
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

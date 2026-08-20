@@ -1,0 +1,325 @@
+{
+  "tag": "md-otp-field",
+  "title": "OTP Field",
+  "slug": "otp-field",
+  "category": "Text Inputs",
+  "subComponentOf": null,
+  "storyId": "text-inputs-otp-field--playground",
+  "props": [
+    {
+      "name": "length",
+      "attribute": "length",
+      "type": "number",
+      "default": "6",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "validationType",
+      "attribute": "validation-type",
+      "type": "'numeric' | 'alpha' | 'alphanumeric' | 'none'",
+      "default": "'numeric'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "transform",
+      "attribute": "transform",
+      "type": "'none' | 'uppercase'",
+      "default": "'none'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "mask",
+      "attribute": "mask",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "autoSubmit",
+      "attribute": "auto-submit",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "groupSize",
+      "attribute": "group-size",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "inputMode",
+      "attribute": "inputmode",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "name",
+      "attribute": "name",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "readOnly",
+      "attribute": "readonly",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "required",
+      "attribute": "required",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "error",
+      "attribute": "error",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "errorText",
+      "attribute": "error-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "supportingText",
+      "attribute": "supporting-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "'One-time code'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "cellLabelTemplate",
+      "attribute": "cell-label-template",
+      "type": "string",
+      "default": "'Character {index} of {length}'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "valueMissingLabel",
+      "attribute": "value-missing-label",
+      "type": "string",
+      "default": "'Please enter the complete code.'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "incompleteLabel",
+      "attribute": "incomplete-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "reserveSupportingSpace",
+      "attribute": "reserve-supporting-space",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdInput",
+      "detail": "string"
+    },
+    {
+      "name": "mdChange",
+      "detail": "string"
+    },
+    {
+      "name": "mdComplete",
+      "detail": "MdOtpFieldCompleteDetail"
+    },
+    {
+      "name": "mdInvalidInput",
+      "detail": "MdOtpFieldInvalidDetail"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "MdOtpFieldValidityDetail"
+    }
+  ],
+  "methods": [
+    {
+      "name": "setFocus",
+      "params": ""
+    },
+    {
+      "name": "clear",
+      "params": ""
+    },
+    {
+      "name": "getValidity",
+      "params": ""
+    },
+    {
+      "name": "setCustomValidity",
+      "params": "message: string"
+    },
+    {
+      "name": "checkValidity",
+      "params": ""
+    },
+    {
+      "name": "reportValidity",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "separator",
+      "description": "Custom separator content between cell groups (falls back to a"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "separator",
+      "description": "Each group separator wrapper"
+    },
+    {
+      "name": "cell",
+      "description": "Every character input"
+    },
+    {
+      "name": "cells",
+      "description": "The cell row (role=\"group\" container)"
+    },
+    {
+      "name": "supporting-text",
+      "description": "Supporting / error text line"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-otp-field-cell-width",
+      "description": "Cell inline size (48px, tapers with density, 32px floor)"
+    },
+    {
+      "name": "--md-otp-field-cell-height",
+      "description": "Cell block size (56px, tapers with density, 40px floor)"
+    },
+    {
+      "name": "--md-otp-field-cell-gap",
+      "description": "Gap between cells (spacing-gap-sm token)"
+    },
+    {
+      "name": "--md-otp-field-cell-shape",
+      "description": "Cell corner radius (shape-corner-small)"
+    },
+    {
+      "name": "--md-otp-field-outline-color",
+      "description": "Resting cell border colour"
+    },
+    {
+      "name": "--md-otp-field-focus-color",
+      "description": "Focused cell border + caret colour"
+    },
+    {
+      "name": "--md-otp-field-font-size",
+      "description": "Cell glyph size (24px, tapers with density, 16px floor)"
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [
+    {
+      "name": "MdOtpFieldCompleteDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** The complete, sanitized code. */\n  value: string;"
+    },
+    {
+      "name": "MdOtpFieldInvalidDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** The raw attempted string, BEFORE whitespace-stripping / filtering. */\n  attempted: string;\n  /** Where the rejected characters came from. */\n  reason: 'input-change' | 'input-paste';"
+    },
+    {
+      "name": "MdOtpFieldValidityDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  valid: boolean;\n  validationMessage: string;\n  flags: Record<string, boolean>;"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdInput",
+      "detail": "string"
+    },
+    {
+      "name": "mdChange",
+      "detail": "string"
+    },
+    {
+      "name": "mdComplete",
+      "detail": "MdOtpFieldCompleteDetail"
+    },
+    {
+      "name": "mdInvalidInput",
+      "detail": "MdOtpFieldInvalidDetail"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "MdOtpFieldValidityDetail"
+    }
+  ]
+}

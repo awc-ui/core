@@ -1,0 +1,619 @@
+---
+title: Sparkline
+description: "A micro-chart with no chrome — a trend line, bar or area sized to sit inside a table cell, a card, or a line of text"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ChartDemo from "../../../components/ChartDemo.astro";
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/sparkline.json";
+
+**A micro-chart with no chrome.** A trend line, bar, or area sized to sit inside
+a table cell, a card, or a line of text. No axes, no legend, no title — just the
+shape story.
+
+:::note[Not a Material Design 3 component]
+M3 ships no charts. The rendering engine is **in-house Canvas2D with a DOM
+overlay** (`utils/charts/engine`). The guidance below is house rules.
+:::
+
+<ChartDemo
+  tag="md-sparkline"
+  label="Live preview"
+  storyId="charts-sparkline--playground"
+  attrs={{ variant: 'line', color: 'primary' }}
+  fixture={{ data: [12, 14, 13, 18, 22, 20, 24, 28, 26, 32, 36, 40] }}
+  style="inline-size: 100%; block-size: 72px;"
+/>
+
+## Install
+
+<ComponentSetup tag="md-sparkline" example="" />
+
+## When to use
+
+- A **trend at a glance** beside a number: a KPI tile, a table cell, a card
+  header.
+- Many small trends in a list, where full charts would be overwhelming.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| A chart users will read values from | [`md-line-chart`](/components/line-chart/) |
+| Comparing categories | [`md-bar-chart`](/components/bar-chart/) |
+| Parts of a whole | [`md-pie-chart`](/components/pie-chart/) |
+| Cumulative volume as the main story | [`md-area-chart`](/components/area-chart/) |
+| Anything needing axes, a legend, or a title | The full chart components |
+| A determinate progress bar | [`md-progress-indicator`](/components/progress-indicator/) |
+| A single value | Plain text, [`md-badge`](/components/badge/) |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Trend line | `variant="line"` (default) |
+| Discrete periods | `variant="bar"` |
+| Filled trend | `variant="area"` |
+| Highlight high/low | `show-marks="extremes"` (default) |
+| First and last points | `show-marks="edges"` |
+| No point markers | `show-marks="none"` |
+| Semantic colour | `color="primary \| error \| success \| …"`, or any CSS colour |
+| A fixed scale across several sparklines | `min` / `max` |
+| Shade a stretch of the series (a campaign, an outage) | `referenceAreas` |
+| Silent (no hover readout) | `show-tooltip="false"` |
+
+## Variants
+
+<ChartDemo
+  tag="md-sparkline"
+  label="Line (default)"
+  storyId="charts-sparkline--variants"
+  attrs={{ variant: 'line' }}
+  fixture={{ data: [12, 14, 13, 18, 22, 20, 24, 28, 26, 32, 36, 40] }}
+  style="inline-size: 100%; block-size: 44px;"
+/>
+
+<ChartDemo
+  tag="md-sparkline"
+  label="Bar"
+  attrs={{ variant: 'bar' }}
+  fixture={{ data: [12, 14, 13, 18, 22, 20, 24, 28, 26, 32, 36, 40] }}
+  style="inline-size: 100%; block-size: 44px;"
+/>
+
+<ChartDemo
+  tag="md-sparkline"
+  label="Area"
+  attrs={{ variant: 'area' }}
+  fixture={{ data: [12, 14, 13, 18, 22, 20, 24, 28, 26, 32, 36, 40] }}
+  style="inline-size: 100%; block-size: 44px;"
+/>
+
+## Shared scale
+
+:::caution[It auto-scales to its own data by default]
+Several sparklines side by side will each use their own scale, which makes them
+look comparable when they are not. Set `min` and `max` explicitly whenever the
+reader will compare them.
+:::
+
+<ChartDemo
+  tag="md-sparkline"
+  label="Auto-scaled — the two shapes look equivalent"
+  storyId="charts-sparkline--shared-scale"
+  attrs={{ variant: 'bar', color: 'primary' }}
+  fixture={{ data: [8, 9, 7, 10, 9, 11, 10] }}
+  style="inline-size: 100%; block-size: 44px;"
+/>
+
+<ChartDemo
+  tag="md-sparkline"
+  label="Same series, min=0 max=100 — the real magnitude shows"
+  attrs={{ variant: 'bar', color: 'primary', min: 0, max: 100 }}
+  fixture={{ data: [8, 9, 7, 10, 9, 11, 10] }}
+  style="inline-size: 100%; block-size: 44px;"
+/>
+
+## Marker dots
+
+| `show-marks` | Behaviour |
+|---|---|
+| `none` | No dots |
+| `extremes` | Min and max only (**default**) |
+| `edges` | First and last only |
+| `all` | Every point |
+
+Don't reach for `all` on a long series — a dot per sample becomes noise.
+`extremes` anchors the read. (`all` exists because on a monotonic line the
+extremes *are* the edges, so a combined "extremes + edges" mode collapsed to two
+dots and read as nothing.)
+
+<ChartDemo
+  tag="md-sparkline"
+  label="show-marks=all — a dot on every sample"
+  attrs={{ variant: 'line', 'show-marks': 'all' }}
+  fixture={{ data: [12, 14, 13, 18, 22, 20, 24, 28, 26, 32, 36, 40] }}
+  style="inline-size: 100%; block-size: 44px;"
+/>
+
+<ChartDemo
+  tag="md-sparkline"
+  label="show-marks=none"
+  storyId="charts-sparkline--no-marks"
+  attrs={{ variant: 'line', 'show-marks': 'none' }}
+  fixture={{ data: [12, 14, 13, 18, 22, 20, 24, 28, 26, 32, 36, 40] }}
+  style="inline-size: 100%; block-size: 44px;"
+/>
+
+## Reference areas
+
+Shade a vertical stripe across the plot — a campaign window, an outage, a
+weekend. Use this instead of absolutely-positioned overlays.
+
+:::caution[`from` / `to` are data indices, not values]
+A reference area spans **positions along the series**, not a band of the value
+scale. `{ from: 3, to: 6 }` shades the stripe between the 4th and 7th samples.
+There is no value-band equivalent — a sparkline has no value axis to hang one
+on.
+:::
+
+`color` is optional: leave it off and the band is the series colour at 12%
+opacity. If you do set it, pass a **`#hex` or `rgb()`** colour — those are the
+two forms the alpha blend understands. A colour role name (`error`, `success`)
+or a named CSS colour is passed to the canvas unchanged, so it paints fully
+opaque, or not at all.
+
+A `label` is worth adding: it is the only part of the band that reaches a screen
+reader, appended to the host's generated summary as *"Highlighted: …"*.
+
+<ChartDemo
+  tag="md-sparkline"
+  label="Two windows — indices 1–3 tinted explicitly, indices 6–8 in the series colour"
+  storyId="charts-sparkline--reference-area"
+  attrs={{ variant: 'line', min: 0, max: 100 }}
+  fixture={{
+    data: [22, 35, 48, 61, 74, 68, 82, 91, 77, 63],
+    referenceAreas: [
+      { from: 1, to: 3, color: '#b3261e', label: 'incident' },
+      { from: 6, to: 8, label: 'campaign window' },
+    ],
+  }}
+  style="inline-size: 100%; block-size: 72px;"
+/>
+
+## In a KPI tile
+
+A sparkline has no axis, so it can only ever say "the shape went like this".
+**Always pair it with the actual number.**
+
+<ChartDemo
+  tag="md-sparkline"
+  label="KPI sparkline (area variant)"
+  storyId="charts-sparkline--in-a-kpi-tile"
+  attrs={{ variant: 'area', color: 'tertiary' }}
+  fixture={{ data: [40, 38, 42, 35, 52, 48, 55, 41, 60, 58, 65, 70] }}
+  style="block-size: 44px; inline-size: 100%;"
+/>
+
+The composition it belongs in — the number first, the shape underneath it:
+
+<ComponentDemo
+  html={`<md-card variant="outlined" style="max-inline-size:260px;padding:16px;display:grid;gap:6px;">
+  <span style="font-size:.75rem;opacity:.7;">Visits this week</span>
+  <strong style="font-size:1.75rem;line-height:1;">12,480</strong>
+  <span style="font-size:.75rem;opacity:.7;">up 8% on last week</span>
+  <md-sparkline id="kpi-spark" variant="area" color="primary" height="32px"></md-sparkline>
+</md-card>`}
+  label="KPI tile — the text carries the meaning, the sparkline carries the shape"
+  script={`const spark = root.querySelector('#kpi-spark');
+spark.data = [40, 38, 42, 35, 52, 48, 55, 41, 60, 58, 65, 70];`}
+/>
+
+## In a table cell
+
+Turn the tooltip off inside an already-clickable row — it competes with the row
+target — and set `min` / `max` so every row shares one scale.
+
+<ChartDemo
+  tag="md-sparkline"
+  label="Table-cell sparkline: no tooltip, fixed scale"
+  storyId="charts-sparkline--inside-a-table"
+  attrs={{ variant: 'bar', min: 0, max: 100, 'show-tooltip': 'false' }}
+  fixture={{ data: [45, 52, 38, 61, 55, 70, 64, 72] }}
+  style="inline-size: 100%; block-size: 40px;"
+/>
+
+## Curve
+
+`curve` shapes the line between points, exactly as on
+[`md-line-chart`](/components/line-chart/): `smooth` (default), `linear`,
+`monotone`, `step`, `step-before`, `step-middle`.
+
+At sparkline size the difference is small but not cosmetic — `smooth` overshoots
+between samples, so a 7-point series can imply a peak it never reached. When the
+shape is a claim rather than decoration, use `linear` or `monotone`.
+
+<ChartDemo
+  tag="md-sparkline"
+  label="curve='smooth' (default) — the curve rides past the marked readings"
+  attrs={{ variant: 'line', curve: 'smooth', 'show-marks': 'all', color: 'primary' }}
+  fixture={{ data: [12, 34, 22, 48, 30, 56, 41] }}
+  style="inline-size: 100%; block-size: 72px;"
+/>
+
+<ChartDemo
+  tag="md-sparkline"
+  label="curve='linear' — honest about where the readings are"
+  attrs={{ variant: 'line', curve: 'linear', 'show-marks': 'all', color: 'primary' }}
+  fixture={{ data: [12, 34, 22, 48, 30, 56, 41] }}
+  style="inline-size: 100%; block-size: 72px;"
+/>
+
+## Geometry
+
+The drawn weight is tunable, which matters at this size: a sparkline is a few
+hundred pixels wide, so a default stroke that reads well in a chart can look
+heavy in a table cell.
+
+<div class="md-table-scroll">
+
+| Prop | Applies to | Effect |
+|---|---|---|
+| `line-width` | line, area | Stroke weight of the trend line |
+| `mark-size` | line, area | Radius of the marker dots (the bar variant draws none) |
+| `bar-width` | bar | Width of each bar, in px |
+| `corner-radius` | bar | Rounds the bar ends |
+| `height` | all | Explicit block-size. Without it the host is **28px** tall (`--md-sparkline-block-size`); only the width fills the box |
+
+</div>
+
+<ChartDemo
+  tag="md-sparkline"
+  label="A heavier line with larger extremes"
+  attrs={{ variant: 'line', 'line-width': 3, 'mark-size': 5, 'show-marks': 'extremes', color: 'tertiary' }}
+  fixture={{ data: [8, 14, 11, 22, 18, 27, 24, 31] }}
+  style="inline-size: 100%; block-size: 72px;"
+/>
+
+<ChartDemo
+  tag="md-sparkline"
+  label="Rounded bars"
+  attrs={{ variant: 'bar', 'bar-width': 8, 'corner-radius': 4, color: 'primary' }}
+  fixture={{ data: [12, 19, 15, 24, 28, 22, 30] }}
+  style="inline-size: 100%; block-size: 72px;"
+/>
+
+## Animation
+
+The entry animation is the same family as the other charts and honours
+`prefers-reduced-motion`. Set `no-animation` when the sparkline sits in a list
+or table: dozens of tiny charts all animating at once reads as noise, not
+delight.
+
+<ChartDemo
+  tag="md-sparkline"
+  label="no-animation — the shape is there on first paint, no grow-and-fade"
+  attrs={{ variant: 'line', color: 'primary', 'no-animation': true }}
+  fixture={{ data: [12, 14, 13, 18, 22, 20, 24, 28, 26, 32, 36, 40] }}
+  style="inline-size: 100%; block-size: 72px;"
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdSparkClick` | yes | `{ dataIndex, value }` | A point or bar is clicked |
+| `mdReady` | yes | `void` | The engine has mounted and drawn |
+
+Both are Stencil defaults — `bubbles`, `composed` and `cancelable` all `true` —
+though nothing in the component acts on `preventDefault()`.
+
+This is the sparkline the snippets below wire up. Click a point and the handler
+logs `dataIndex` and `value` — open your console to watch the payloads arrive.
+
+<ChartDemo
+  tag="md-sparkline"
+  label="Live preview — click a point, the payload lands in your console"
+  storyId="charts-sparkline--playground"
+  hideCode
+  attrs={{ variant: 'area', color: 'primary', 'show-marks': 'all' }}
+  fixture={{
+    data: [3, 5, 4, 8, 6, 9, 7],
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  }}
+  fnFixture={{
+    valueFormatter: `(v) => new Intl.NumberFormat('en-US').format(v ?? 0)`,
+  }}
+  boot={`
+    const onClick = (e) => console.log('mdSparkClick', e.detail.dataIndex, e.detail.value);
+    el.addEventListener('mdSparkClick', onClick);
+    return () => el.removeEventListener('mdSparkClick', onClick);
+  `}
+  style="inline-size: 100%; block-size: 72px;"
+/>
+
+<TechnologyTabs
+  html={`<md-sparkline id="trend" variant="area" color="primary" height="32px"></md-sparkline>
+
+<script type="module">
+  const spark = document.getElementById('trend');
+
+  spark.data   = [3, 5, 4, 8, 6, 9, 7];
+  spark.labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  spark.valueFormatter = (v) => new Intl.NumberFormat('en-US').format(v ?? 0);
+
+  spark.addEventListener('mdSparkClick', (e) => {
+    console.log(e.detail.dataIndex, e.detail.value);
+  });
+</script>`}
+  react={`import { MdSparkline } from '@awc-ui/react';
+
+const data = [3, 5, 4, 8, 6, 9, 7];
+const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const valueFormatter = (v: number | null) => new Intl.NumberFormat('en-US').format(v ?? 0);
+
+export function Trend() {
+  return (
+    <MdSparkline
+      data={data}
+      labels={labels}
+      valueFormatter={valueFormatter}
+      variant="area"
+      color="primary"
+      height="32px"
+      onMdSparkClick={(e) => console.log(e.detail.dataIndex, e.detail.value)}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-trend',
+  template: \`
+    <md-sparkline
+      [data]="data"
+      [labels]="labels"
+      [valueFormatter]="valueFormatter"
+      variant="area"
+      color="primary"
+      height="32px"
+      (mdSparkClick)="onClick($event)"
+    ></md-sparkline>
+  \`,
+})
+export class TrendComponent {
+  data = [3, 5, 4, 8, 6, 9, 7];
+  labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  valueFormatter = (v: number | null) => new Intl.NumberFormat('en-US').format(v ?? 0);
+
+  onClick(e: CustomEvent) { console.log(e.detail.dataIndex, e.detail.value); }
+}`}
+  vue={`<script setup lang="ts">
+const data = [3, 5, 4, 8, 6, 9, 7];
+const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const valueFormatter = (v: number | null) => new Intl.NumberFormat('en-US').format(v ?? 0);
+
+function onClick(e: CustomEvent) {
+  console.log(e.detail.dataIndex, e.detail.value);
+}
+</script>
+
+<template>
+  <md-sparkline
+    :data="data"
+    :labels="labels"
+    :valueFormatter="valueFormatter"
+    variant="area"
+    color="primary"
+    height="32px"
+    @mdSparkClick="onClick"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  const data = [3, 5, 4, 8, 6, 9, 7];
+  const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const valueFormatter = (v: number | null) => new Intl.NumberFormat('en-US').format(v ?? 0);
+
+  function onClick(e: CustomEvent) {
+    console.log(e.detail.dataIndex, e.detail.value);
+  }
+</script>
+
+<md-sparkline
+  data={data}
+  labels={labels}
+  valueFormatter={valueFormatter}
+  variant="area"
+  color="primary"
+  height="32px"
+  on:mdSparkClick={onClick}
+/>`}
+/>
+
+### Event payloads
+
+**`mdSparkClick`** — fired when a click lands on a point or a bar.
+
+<div class="md-table-scroll">
+
+| Field | Type | Meaning |
+|---|---|---|
+| `dataIndex` | `number` | Index of the point in `data` |
+| `value` | `number \| null` | Raw value there — `null` for a gap |
+
+</div>
+
+Those two fields are the whole payload. There is no `label` in the detail — look
+the index up in your own `labels` array if you need it.
+
+**Not every click emits.** On a **line / area** sparkline the engine takes the
+sample nearest the pointer along the x-axis and fires only if the pointer is
+also within ~26px of it; a click further off the trace produces nothing. This is
+independent of `show-marks` — every sample is clickable whether or not a dot is
+drawn for it. On a **bar** sparkline the test is exact: the click has to land
+inside a bar, and plot whitespace emits nothing.
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[Methods and deliberate omissions]
+`resize()` · `getInstance()`. Call `resize()` when the container's size changes
+without a layout event — a virtualized table row being re-measured, for example.
+
+There is deliberately **no title, no axes, no legend, and no loading or empty
+slot**, and **no `density` prop** — size it with `height` and the inline-size
+custom properties. If you want any of those, you want a full chart.
+:::
+
+## Accessibility
+
+- The host **self-describes**: it renders as `role="img"` with a generated
+  `aria-label` — *"Sparkline, latest 36, range 12 to 36."*, plus *"Highlighted:
+  …"* for any reference area that has a `label`. Values run through
+  `valueFormatter`, and an all-`null` series announces *"Sparkline, no data."*
+- That summary is **numbers only** — it names no metric and no period, so the
+  surrounding content still has to carry the meaning: *"12,480 visits, up 8%
+  this week"*.
+- When the text beside it already says all of that, the sparkline is decoration
+  and the summary is a second reading of the same numbers. Set
+  `aria-hidden="true"` on it and let the text speak once.
+- Never encode good/bad by colour alone — add the value, or an icon.
+- Turn `show-tooltip` off inside an interactive row so it doesn't stack a
+  tooltip on top of the row's click target.
+- Honour `prefers-reduced-motion` with `no-animation`.
+
+<ChartDemo
+  tag="md-sparkline"
+  label="Decorative use — aria-hidden suppresses the generated summary, so the surrounding text speaks once"
+  attrs={{ variant: 'line', color: 'primary', 'show-tooltip': 'false', 'aria-hidden': 'true' }}
+  fixture={{ data: [40, 38, 42, 35, 52, 48, 55, 41, 60, 58, 65, 70] }}
+  style="inline-size: 100%; block-size: 56px;"
+/>
+
+<ChartDemo
+  tag="md-sparkline"
+  label="Informative use — inspect the host: role=img, aria-label 'Sparkline, latest 36, range 12 to 36.'"
+  attrs={{ variant: 'area', color: 'tertiary' }}
+  fixture={{ data: [12, 18, 15, 24, 31, 27, 36] }}
+  style="inline-size: 100%; block-size: 56px;"
+/>
+
+## RTL, density & i18n
+
+**RTL** — the series draws from the reading start, so it mirrors under
+`dir="rtl"`: the first sample sits on the right and the series runs leftwards.
+Indices, values and event payloads are identical in both directions — only
+pixels move. See [RTL](/behaviour/rtl/).
+
+### Same data, `dir="ltr"` vs `dir="rtl"`
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;inline-size:100%;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <md-sparkline id="sp-dir-ltr" dir="ltr" variant="bar" color="primary" min="0" height="64px"></md-sparkline>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <md-sparkline id="sp-dir-rtl" dir="rtl" variant="bar" color="primary" min="0" height="64px"></md-sparkline>
+</div>`}
+  label="Same array, dir=ltr vs dir=rtl — the rise climbs right, then left"
+  script={`const ltr = root.querySelector('#sp-dir-ltr');
+const rtl = root.querySelector('#sp-dir-rtl');
+ltr.data = [4, 9, 14, 20, 27, 35, 44];
+rtl.data = [4, 9, 14, 20, 27, 35, 44];`}
+/>
+
+**Density** — no `density` prop, and the host doesn't taper with an inherited
+`data-density` rung either: size it with `height` and
+`--md-sparkline-block-size` / `--md-sparkline-inline-size` /
+`--md-sparkline-min-inline-size`. See [Density](/behaviour/density/).
+
+### Inside a density rung
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;inline-size:100%;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <md-sparkline id="sp-den-0" variant="area" color="primary"></md-sparkline>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div data-density="-4"><md-sparkline id="sp-den-4" variant="area" color="primary"></md-sparkline></div>
+</div>`}
+  label="Default box at density 0 and inside data-density=-4 — both stay 28px tall"
+  script={`const den0 = root.querySelector('#sp-den-0');
+const den4 = root.querySelector('#sp-den-4');
+den0.data = [12, 18, 15, 24, 31, 27, 36];
+den4.data = [12, 18, 15, 24, 31, 27, 36];`}
+/>
+
+**i18n** — `labels` and `valueFormatter` feed the tooltip; format numbers with
+`Intl`. Both are JS properties.
+
+## Theming
+
+In Storybook: [dark theme](/storybook/?path=/story/charts-sparkline--dark-theme).
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-sparkline-block-size` | Height | `28px` |
+| `--md-sparkline-inline-size` | Width | `100%` |
+| `--md-sparkline-min-inline-size` | Minimum width before clipping | `32px` |
+
+<ChartDemo
+  tag="md-sparkline"
+  label="Themed instance — block-size and min-inline-size set through the custom properties"
+  attrs={{ variant: 'area', color: 'tertiary' }}
+  fixture={{ data: [22, 26, 24, 31, 29, 38, 44, 41, 50] }}
+  style="--md-sparkline-block-size: 36px; --md-sparkline-min-inline-size: 48px; inline-size: 100%;"
+/>
+
+```css
+md-sparkline.tile-sparkline {
+  --md-sparkline-block-size: 36px;
+  --md-sparkline-min-inline-size: 48px;
+}
+```
+
+**CSS part** — `canvas`, the element the engine draws into. It is the only part,
+and there are no slots.
+
+<ComponentDemo
+  html={`<style>
+  .sp-parted::part(canvas) {
+    outline: 1px dashed rgba(124, 111, 214, .55);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+</style>
+<div style="padding:8px 4px;">
+  <md-sparkline id="sp-part" class="sp-parted" variant="line" color="primary" height="48px"></md-sparkline>
+</div>`}
+  label="::part(canvas) — the drawing surface outlined, so you can see the box the engine gets"
+  script={`const spark = root.querySelector('#sp-part');
+spark.data = [22, 26, 24, 31, 29, 38, 44, 41, 50];`}
+/>
+
+```css
+md-sparkline::part(canvas) {
+  outline: 1px dashed rgba(124, 111, 214, 0.55);
+  outline-offset: 3px;
+}
+```
+
+
+## Related
+
+[`md-line-chart`](/components/line-chart/) ·
+[`md-bar-chart`](/components/bar-chart/) ·
+[`md-area-chart`](/components/area-chart/) ·
+[`md-pie-chart`](/components/pie-chart/) ·
+[`md-card`](/components/card/) ·
+[`md-table-cell`](/components/table/#md-table-cell) ·
+[`md-progress-indicator`](/components/progress-indicator/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-sparkline" />

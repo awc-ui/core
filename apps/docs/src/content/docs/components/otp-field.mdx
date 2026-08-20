@@ -1,0 +1,761 @@
+---
+title: OTP Field
+description: "Material Design 3 one-time-code field — per-character cells, one sanitizing pipeline for typing, paste and SMS autofill, and native form participation"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/otp-field.json";
+
+**One-time-code entry with per-character cells.** `md-otp-field` renders
+`length` real input cells in its own shadow root, so every cell carries full
+ARIA. All entry — typing, paste, SMS autofill — flows through one sanitizing
+pipeline (whitespace-strip → `transform` → charset filter → clamp), and the
+field is form-associated via `ElementInternals` with the full
+constraint-validation API.
+
+<ComponentDemo
+  html={`<md-otp-field label="One-time code" supporting-text="Enter the 6-digit code we sent to your phone"></md-otp-field>`}
+  label="Live preview"
+  storyId="text-inputs-otp-field--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-otp-field" example="" />
+
+## When to use
+
+:::note[Not a Material Design 3 component]
+M3 has no one-time-code page. This is a row of single-character inputs sharing
+one sanitising pipeline, drawn on M3 text-field visuals; the entry behaviour —
+paste, SMS autofill, the charset filter — is this library's own contract, and
+the guidance below is **house rules**.
+:::
+
+- SMS / email **verification codes** (`validation-type="numeric"`, the default).
+- **Recovery codes** (`validation-type="alphanumeric"` + `transform="uppercase"`).
+- **PIN entry** on a shared screen (`mask`).
+- Any short, fixed-length code where per-character boxes communicate progress.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Free-form text, emails, passwords | [`md-text-field`](/components/text-field/) |
+| Variable-length or long codes (more than ~8 characters) | [`md-text-field`](/components/text-field/) with `restrict` |
+| Search-as-you-type | [`md-search`](/components/search/) / [`md-autocomplete`](/components/autocomplete/) |
+| Choosing from known options | [`md-select`](/components/select/) |
+
+## Length and grouping
+
+`length` sets the cell count. `group-size` chunks the cells visually — a dot
+separator sits between groups (swap it via the `separator` slot or restyle
+`::part(separator)`).
+
+<ComponentDemo
+  html={`<md-otp-field length="4" label="4-digit PIN"></md-otp-field>
+<md-otp-field group-size="3" label="Grouped 6-digit code"></md-otp-field>
+<md-otp-field length="8" group-size="4" label="8-character code"></md-otp-field>
+<md-otp-field group-size="2" label="Custom separator"><span slot="separator">—</span></md-otp-field>`}
+  label="Lengths and grouping — the last row slots a custom separator into the first gap only"
+/>
+
+:::note[Custom separator content fills the first gap]
+Slotted `separator` content is assigned to the first gap in tree order;
+additional gaps repeat the built-in dot. When every gap needs the same custom
+look, style `md-otp-field::part(separator)` instead.
+:::
+
+## Validation type and transform
+
+`validation-type` filters what the field accepts: `numeric` (default),
+`alpha`, `alphanumeric`, or `none`. Rejected characters never land — they fire
+`mdInvalidInput` with the raw attempted string, which is your hook for an
+"invalid input" shake or hint. `transform="uppercase"` normalizes accepted
+characters — a declarative attribute rather than a normalizer callback, so it
+is authorable from plain HTML and survives SSR.
+
+<ComponentDemo
+  html={`<md-otp-field
+  length="8"
+  validation-type="alphanumeric"
+  transform="uppercase"
+  label="Recovery code"
+  supporting-text="Letters are stored uppercase automatically"
+></md-otp-field>`}
+  label="Alphanumeric recovery code — type a lowercase letter"
+/>
+
+The virtual keyboard hint derives from `validation-type` (`numeric` shows the
+digit pad); override it with the `inputmode` attribute when needed.
+
+## Masked entry
+
+`mask` renders the cells as password inputs for shared-screen privacy. The
+value itself is never reflected to a DOM attribute in any mode.
+
+<ComponentDemo
+  html={`<md-otp-field length="4" mask label="PIN" value="1234"></md-otp-field>`}
+  label="Masked cells"
+/>
+
+## Keyboard model
+
+| Key | Behavior |
+|---|---|
+| Character | Fills the cell, focus auto-advances (last cell keeps focus) |
+| `Backspace` | Clears the current cell if filled; otherwise walks back and clears the previous one |
+| `Delete` | Clears the current cell without moving |
+| `ArrowLeft` / `ArrowRight` | Move focus (the row is pinned LTR, so arrows never flip in RTL) |
+| `Home` / `End` | Jump to the first / last cell |
+
+Focusing a cell selects its character, so typing replaces. The value is
+**contiguous**: clearing a cell shifts later characters left, and a character
+typed into an empty cell beyond the fill point lands at the first empty
+position.
+
+<ComponentDemo
+  html={`<md-otp-field
+  value="4926"
+  label="One-time code"
+  supporting-text="Click cell 2, then try Backspace, Delete, arrows, Home and End"
+></md-otp-field>`}
+  label="Keyboard model — click into a filled cell and walk the row"
+/>
+
+## Paste and autofill
+
+Paste anywhere in the group replaces the whole value from position 0 — the
+pasted text runs through the same pipeline, and focus lands after the last
+filled cell. A **complete** paste fires `mdComplete` even when the pasted code
+equals the current value (`mdInput` stays silent then), so re-pasting the same
+code still triggers your verification handler.
+
+`autocomplete="one-time-code"` sits on the first cell, and the cells carry no
+`maxlength`, so an SMS-autofill burst arrives intact and is distributed across
+the cells.
+
+<ComponentDemo
+  html={`<div style="display:grid; grid-template-columns:auto 1fr; gap:14px 16px; align-items:center;">
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">copy</span>
+  <code style="user-select:all; padding:4px 8px; border-radius:6px; background:var(--md-sys-color-surface-container-high); font-family:ui-monospace,monospace;">4 9 2 6 1 7</code>
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">paste</span>
+  <md-otp-field label="One-time code" supporting-text="Paste into any cell — the whole value is replaced from position 0"></md-otp-field>
+</div>`}
+  htmlForCode={`<!-- Paste "4 9 2 6 1 7" into any cell: whitespace is stripped, the value is
+     replaced from position 0, and focus lands after the last filled cell. -->
+<md-otp-field label="One-time code"></md-otp-field>`}
+  label="Paste — copy the spaced code above and paste it into any cell"
+/>
+
+## Supporting and error text
+
+`supporting-text` is the resting hint; `error` recolors the cells and swaps
+the line to `error-text` (announced via `role="alert"`). Set
+`reserve-supporting-space` to keep the line's height even while it is empty,
+so toggling the error never shifts the layout.
+
+<ComponentDemo
+  html={`<md-otp-field label="Wrong code" value="492617" error error-text="That code is incorrect — try again"></md-otp-field>`}
+  label="Error state"
+/>
+
+## Forms
+
+`md-otp-field` submits `value` under `name` via `ElementInternals`. An empty
+field submits **no entry** at all. Form reset clears the code — one-time codes
+are transient.
+
+- `required` blocks submission while the field is empty
+  (`value-missing-label` is the localizable message).
+- `required` + `incomplete-label` also blocks a **started-but-incomplete**
+  code, with `incomplete-label` as the message. Without `incomplete-label`, a
+  partial code passes constraint validation (validate server-side).
+- `auto-submit` calls `form.requestSubmit()` the moment the code completes —
+  after `mdComplete`, so your handler runs first and can `preventDefault()`.
+
+<ComponentDemo
+  html={`<form style="display: flex; flex-direction: column; gap: 12px; align-items: flex-start;" onsubmit="event.preventDefault(); this.querySelector('[data-status]').textContent = 'Submitted ✓';">
+  <md-otp-field name="code" required incomplete-label="Please enter the complete code." label="One-time code"></md-otp-field>
+  <div>
+    <md-button variant="filled" type="submit">Verify</md-button>
+    <md-button variant="text" type="reset">Reset</md-button>
+  </div>
+  <p data-status role="status" style="margin: 0; font-size: 12px; color: var(--md-sys-color-on-surface-variant);">Submit with a partial code to see validation</p>
+</form>`}
+  htmlForCode={`<form id="verify">
+  <md-otp-field
+    name="code"
+    label="One-time code"
+    required
+    incomplete-label="Please enter the complete code."
+  ></md-otp-field>
+
+  <md-button variant="filled" type="submit">Verify</md-button>
+  <md-button variant="text" type="reset">Reset</md-button>
+</form>`}
+  label="Required + incomplete gating — try submitting a partial code"
+/>
+
+**Methods** — `setFocus()` focuses the first empty cell (or the last when
+complete), `clear()` empties the code, and `getValidity()`,
+`checkValidity()`, `reportValidity()`, `setCustomValidity(message)` mirror the
+native constraint-validation API (`setCustomValidity('')` clears a
+server-side rejection).
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdInput` | no | `string` | Every user-driven value change (typing, clearing, paste, autofill) |
+| `mdChange` | no | `string` | Commit: on completion, and when focus leaves the whole group |
+| `mdComplete` | no | `{ value }` | Every cell filled; a complete paste re-fires it even when unchanged |
+| `mdInvalidInput` | no | `{ attempted, reason }` | Characters rejected by the charset filter (`reason`: `input-change` / `input-paste`) |
+| `mdValidityChange` | no | `{ valid, validationMessage, flags }` | Only when validity **changes** |
+
+:::caution[`mdValidityChange` is not composed]
+It deliberately does **not** cross shadow boundaries — bind it on the element
+itself, not a delegated ancestor in another shadow root.
+:::
+
+### Why three value events and not one
+
+`mdInput`, `mdChange` and `mdComplete` all carry the code, so the difference is
+not the data — it is **when the value is worth acting on**.
+
+`mdInput` is the raw stream: it fires on every user-driven change that actually
+moved the value — a keystroke, a `Backspace`, a `Delete`, a paste, an autofill
+burst. It is the "live" signal, and it is deliberately silent when the value
+did not change.
+
+`mdChange` is the **commit**. It fires once the code completes, and again when
+focus leaves the whole group, deduplicated against the last committed value —
+so a user who types, wanders off and comes back does not get a second commit
+for the same code.
+
+`mdComplete` is the **verification trigger**, and it is the one with a
+deliberate exception: a paste of a *complete* code re-fires it even when the
+pasted code equals the current value. `mdInput` stays silent in that case
+(nothing changed), which is exactly why re-pasting a code the server just
+rejected still re-runs your verification handler. `auto-submit` hangs off this
+event too — `form.requestSubmit()` runs **after** `mdComplete`, so your handler
+sees the code first.
+
+As with the platform's own controls, **none of the three fire on a programmatic
+change.** Setting `otp.value = '123456'` or calling `clear()` emits nothing — if
+your own code changed the value, your own code already knows.
+
+| You want to… | Listen to |
+|---|---|
+| Drive a live character counter or clear an error as the user types | `mdInput` |
+| Persist or sync the code once the user is done with it | `mdChange` |
+| Call your verification API | `mdComplete` |
+| Re-verify a code the user pasted again after a rejection | `mdComplete` — `mdInput` stays silent |
+| Shake the field / show "digits only" on a rejected character | `mdInvalidInput` |
+| Enable or disable a Verify button from validity | `mdValidityChange` (not composed — bind it on the element) |
+
+Type a digit, then a letter (rejected), then finish the code — the log shows
+the order events actually fire in:
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:12px; align-items:stretch;">
+  <md-otp-field
+    id="otp-ev"
+    label="One-time code"
+    required
+    incomplete-label="Please enter all six digits."
+    supporting-text="Type digits, try a letter, then paste 492617"
+  ></md-otp-field>
+  <output id="otp-ev-log" style="display:block; min-block-size:104px; padding:10px 12px; border-radius:8px; background:var(--md-sys-color-surface-container-high); color:var(--md-sys-color-on-surface); font-family:ui-monospace,monospace; font-size:12px; line-height:1.6; white-space:pre-wrap;">Events appear here, newest first</output>
+</div>`}
+  script={`const otp = root.querySelector('#otp-ev');
+const log = root.querySelector('#otp-ev-log');
+const lines = [];
+const push = (text) => {
+  lines.unshift(text);
+  if (lines.length > 5) lines.pop();
+  log.textContent = lines.join(String.fromCharCode(10));
+};
+otp.addEventListener('mdInput', (e) => push('mdInput: ' + JSON.stringify(e.detail)));
+otp.addEventListener('mdChange', (e) => push('mdChange: ' + JSON.stringify(e.detail)));
+otp.addEventListener('mdComplete', (e) => push('mdComplete: ' + e.detail.value));
+otp.addEventListener('mdInvalidInput', (e) => push('mdInvalidInput: ' + e.detail.attempted + ' (' + e.detail.reason + ')'));
+otp.addEventListener('mdValidityChange', (e) => push('mdValidityChange: valid=' + e.detail.valid));`}
+  label="Every event, newest first — type a letter to see mdInvalidInput, complete the code to see mdComplete"
+  htmlCode={`<md-otp-field id="otp" label="One-time code" required incomplete-label="Please enter all six digits."></md-otp-field>
+
+\x3Cscript type="module">
+  const otp = document.getElementById('otp');
+
+  otp.addEventListener('mdInput', (e) => console.log('mdInput', e.detail));
+  otp.addEventListener('mdChange', (e) => console.log('mdChange', e.detail));
+  otp.addEventListener('mdComplete', (e) => console.log('mdComplete', e.detail.value));
+  otp.addEventListener('mdInvalidInput', (e) => console.log('mdInvalidInput', e.detail.attempted, e.detail.reason));
+  // Not composed — bind it on the element itself, never on a shadow ancestor.
+  otp.addEventListener('mdValidityChange', (e) => console.log('valid?', e.detail.valid));
+\x3C/script>`}
+  react={`import { MdOtpField } from '@awc-ui/react';
+
+export function OtpEvents() {
+  return (
+    <MdOtpField
+      label="One-time code"
+      required
+      incompleteLabel="Please enter all six digits."
+      onMdInput={(e) => console.log('mdInput', e.detail)}
+      onMdChange={(e) => console.log('mdChange', e.detail)}
+      onMdComplete={(e) => console.log('mdComplete', e.detail.value)}
+      onMdInvalidInput={(e) => console.log('mdInvalidInput', e.detail.attempted, e.detail.reason)}
+      onMdValidityChange={(e) => console.log('valid?', e.detail.valid)}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-otp-events',
+  template: \`
+    <md-otp-field
+      label="One-time code"
+      required
+      incomplete-label="Please enter all six digits."
+      (mdInput)="onInput($event)"
+      (mdChange)="onChange($event)"
+      (mdComplete)="onComplete($event)"
+      (mdInvalidInput)="onInvalidInput($event)"
+      (mdValidityChange)="onValidityChange($event)"
+    ></md-otp-field>
+  \`,
+})
+export class OtpEventsComponent {
+  onInput(e: CustomEvent<string>) {
+    console.log('mdInput', e.detail);
+  }
+  onChange(e: CustomEvent<string>) {
+    console.log('mdChange', e.detail);
+  }
+  onComplete(e: CustomEvent<{ value: string }>) {
+    console.log('mdComplete', e.detail.value);
+  }
+  onInvalidInput(e: CustomEvent<{ attempted: string; reason: string }>) {
+    console.log('mdInvalidInput', e.detail.attempted, e.detail.reason);
+  }
+  onValidityChange(e: CustomEvent<{ valid: boolean }>) {
+    console.log('valid?', e.detail.valid);
+  }
+}`}
+  vue={`<script setup lang="ts">
+function log(name: string, detail: unknown) {
+  console.log(name, detail);
+}
+</script>
+
+<template>
+  <md-otp-field
+    label="One-time code"
+    required
+    incomplete-label="Please enter all six digits."
+    @mdInput="log('mdInput', $event.detail)"
+    @mdChange="log('mdChange', $event.detail)"
+    @mdComplete="log('mdComplete', $event.detail.value)"
+    @mdInvalidInput="log('mdInvalidInput', $event.detail.attempted)"
+    @mdValidityChange="log('valid?', $event.detail.valid)"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  function log(name: string, detail: unknown) {
+    console.log(name, detail);
+  }
+</script>
+
+<md-otp-field
+  label="One-time code"
+  required
+  incomplete-label="Please enter all six digits."
+  on:mdInput={(e) => log('mdInput', e.detail)}
+  on:mdChange={(e) => log('mdChange', e.detail)}
+  on:mdComplete={(e) => log('mdComplete', e.detail.value)}
+  on:mdInvalidInput={(e) => log('mdInvalidInput', e.detail.attempted)}
+  on:mdValidityChange={(e) => log('valid?', e.detail.valid)}
+/>`}
+/>
+
+The full verify-and-reject flow goes one step further than the preview above —
+validate the code server-side, show the error, then clear and refocus:
+
+<TechnologyTabs
+  html={`<md-otp-field id="otp" name="code" label="One-time code"></md-otp-field>
+
+\x3Cscript type="module">
+  const otp = document.getElementById('otp');
+
+  otp.addEventListener('mdComplete', async (e) => {
+    const ok = await verify(e.detail.value); // your API call
+    otp.error = !ok;
+    otp.errorText = ok ? '' : 'That code is incorrect — try again';
+    if (!ok) { await otp.clear(); await otp.setFocus(); }
+  });
+
+  otp.addEventListener('mdInvalidInput', (e) => {
+    console.log('rejected:', e.detail.attempted, e.detail.reason);
+  });
+\x3C/script>`}
+  react={`import { MdOtpField } from '@awc-ui/react';
+import { useRef, useState } from 'react';
+
+export function VerifyCode() {
+  const ref = useRef<HTMLMdOtpFieldElement>(null);
+  const [error, setError] = useState('');
+
+  return (
+    <MdOtpField
+      ref={ref}
+      name="code"
+      label="One-time code"
+      error={!!error}
+      errorText={error}
+      onMdComplete={async (e) => {
+        const ok = await verify(e.detail.value);
+        setError(ok ? '' : 'That code is incorrect — try again');
+        if (!ok) { await ref.current?.clear(); await ref.current?.setFocus(); }
+      }}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-verify-code',
+  template: \`
+    <md-otp-field
+      name="code"
+      label="One-time code"
+      [error]="!!error"
+      [errorText]="error"
+      (mdComplete)="onComplete($event)"
+    ></md-otp-field>
+  \`,
+})
+export class VerifyCodeComponent {
+  error = '';
+
+  async onComplete(e: CustomEvent<{ value: string }>) {
+    const ok = await verify(e.detail.value);
+    this.error = ok ? '' : 'That code is incorrect — try again';
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const error = ref('');
+
+async function onComplete(e: CustomEvent<{ value: string }>) {
+  const ok = await verify(e.detail.value);
+  error.value = ok ? '' : 'That code is incorrect — try again';
+}
+</script>
+
+<template>
+  <md-otp-field
+    name="code"
+    label="One-time code"
+    :error="!!error"
+    :error-text="error"
+    @mdComplete="onComplete"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  let error = '';
+
+  async function onComplete(e: CustomEvent<{ value: string }>) {
+    const ok = await verify(e.detail.value);
+    error = ok ? '' : 'That code is incorrect — try again';
+  }
+</script>
+
+<md-otp-field
+  name="code"
+  label="One-time code"
+  error={!!error}
+  error-text={error}
+  on:mdComplete={onComplete}
+/>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- The cells sit in a `role="group"` named by `label` — keep it meaningful
+  ("One-time code", not "Code").
+- Every cell has a positional `aria-label` from `cell-label-template`
+  (`Character {index} of {length}` by default — the `{index}` / `{length}`
+  placeholders are replaced per cell). Translate the template alongside your
+  other strings.
+- The supporting line is referenced from every cell via `aria-describedby`
+  (same shadow scope, so the IDREF resolves), and error text is announced via
+  `role="alert"`.
+- `aria-invalid` lands on the cells while `error` is set; `aria-required` on
+  the first cell when `required`.
+- Focusing a cell selects its content, so keyboard users can overtype without
+  clearing first.
+
+Tab into the group below and listen: each cell announces its own position
+("Character 3 of 6") plus the shared supporting line, and the group itself
+announces the `label`. Tab moves cell by cell; the arrows move within the row.
+
+<ComponentDemo
+  html={`<md-otp-field
+  label="One-time code"
+  supporting-text="Enter the 6-digit code we sent to your phone"
+  required
+></md-otp-field>`}
+  label="Keyboard and screen-reader behaviour"
+  storyId="text-inputs-otp-field--accessibility"
+/>
+
+## RTL, density & i18n
+
+**RTL** — the component (supporting text, layout) follows the document
+direction, but the **cell row is pinned LTR**: codes read left-to-right in RTL
+locales too, which is standard practice. Arrow keys therefore behave
+physically and logically at once. See [RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <md-otp-field label="رمز لمرة واحدة" value="123456"></md-otp-field>
+</div>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid; grid-template-columns:auto 1fr; gap:14px 16px; align-items:center;">
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">ltr</span>
+  <md-otp-field label="One-time code" value="123456" supporting-text="Supporting text sits at the start — the left"></md-otp-field>
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl"><md-otp-field label="رمز لمرة واحدة" value="123456" supporting-text="النص المساعد يبدأ من اليمين"></md-otp-field></div>
+</div>`}
+  htmlForCode={`<md-otp-field label="One-time code" value="123456"></md-otp-field>
+
+<div dir="rtl">
+  <!-- Label and supporting text move to the right edge; the six cells do not
+       move, and typing still fills them left to right. -->
+  <md-otp-field label="رمز لمرة واحدة" value="123456"></md-otp-field>
+</div>`}
+  label="Only the chrome mirrors: label and supporting text jump to the right edge, while 1-2-3-4-5-6 stays left-to-right in both — click into either and type"
+  storyId="text-inputs-otp-field--rtl"
+/>
+
+### The cell row is pinned LTR
+
+:::note[Why the cells do not mirror]
+A one-time code is a **sequence**, not a sentence: the first character the user
+types is the first character of the code, and codes are quoted left-to-right in
+every locale. Mirroring the row would put character 1 on the right and make a
+pasted code read backwards. The row is therefore pinned `direction: ltr`, so
+`ArrowRight` moves to the next character in RTL exactly as it does in LTR —
+physically and logically the same key.
+:::
+
+Because the row never flips, the arrow keys need no RTL branch — the same key
+moves to the same character in both directions:
+
+<ComponentDemo
+  html={`<div style="display:grid; grid-template-columns:auto 1fr; gap:14px 16px; align-items:center;">
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">ltr</span>
+  <md-otp-field label="One-time code" value="1234"></md-otp-field>
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl"><md-otp-field label="رمز لمرة واحدة" value="1234"></md-otp-field></div>
+</div>`}
+  htmlForCode={`<md-otp-field label="One-time code" value="1234"></md-otp-field>
+
+<div dir="rtl">
+  <!-- ArrowRight still moves to the NEXT character in both rows. -->
+  <md-otp-field label="رمز لمرة واحدة" value="1234"></md-otp-field>
+</div>`}
+  label="Arrow keys — click the first cell of either row and press ArrowRight; both move to character 2"
+/>
+
+### Every density rung
+
+`density` is a local override of the inherited `data-density`. Each rung takes
+4px off the cell box (48×56 at `0`, down to a 32×40 floor at `-4`) and tapers
+the glyph with it — all five rungs, same code, so the taper is visible in one
+place:
+
+<ComponentDemo
+  html={`<div style="display:grid; grid-template-columns:auto 1fr; gap:14px 16px; align-items:center;">
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">0</span>
+  <md-otp-field label="One-time code" value="123456"></md-otp-field>
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">-1</span>
+  <md-otp-field density="-1" label="One-time code" value="123456"></md-otp-field>
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">-2</span>
+  <md-otp-field density="-2" label="One-time code" value="123456"></md-otp-field>
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">-3</span>
+  <md-otp-field density="-3" label="One-time code" value="123456"></md-otp-field>
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">-4</span>
+  <md-otp-field density="-4" label="One-time code" value="123456"></md-otp-field>
+</div>`}
+  htmlForCode={`<md-otp-field label="One-time code" value="123456"></md-otp-field>
+<md-otp-field density="-1" label="One-time code" value="123456"></md-otp-field>
+<md-otp-field density="-2" label="One-time code" value="123456"></md-otp-field>
+<md-otp-field density="-3" label="One-time code" value="123456"></md-otp-field>
+<md-otp-field density="-4" label="One-time code" value="123456"></md-otp-field>`}
+  label="Every rung, 0 through -4 — cells shrink 4px per rung down to the 32×40 floor"
+  storyId="text-inputs-otp-field--density"
+/>
+
+:::caution[Below `-2`, check your touch targets]
+Every rung takes 4px off both axes — 48×56 at `0`, 44×52 at `-1`, 40×48 at
+`-2`, 36×44 at `-3`, and 32×40 at `-4`, where both floors bite. From `-3` down
+a cell is narrower than the 48×48 recommended touch target on *both* axes, so
+reserve those rungs for pointer-first, information-dense screens — never for a
+mobile verification step.
+:::
+
+### Density and direction together
+
+The two are independent signals, so they compose without any extra wiring, and
+a local `density` rung beats the inherited `data-density` one:
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:flex; flex-direction:column; gap:18px;">
+  <md-otp-field label="رمز لمرة واحدة" supporting-text="موروث: data-density=-2" value="123456"></md-otp-field>
+  <md-otp-field density="-4" label="رمز لمرة واحدة" supporting-text="محلي: density=-4" value="123456"></md-otp-field>
+</div>`}
+  htmlForCode={`<div dir="rtl" data-density="-2">
+  <!-- Inherits the -2 rung. -->
+  <md-otp-field label="رمز لمرة واحدة" value="123456"></md-otp-field>
+
+  <!-- A local rung is declared on the host, so it wins over the ancestor. -->
+  <md-otp-field density="-4" label="رمز لمرة واحدة" value="123456"></md-otp-field>
+</div>`}
+  label="dir=rtl with data-density=-2, and one field locally overriding to -4"
+/>
+
+**Density** — `density="-1…-4"` locally overrides the inherited `data-density`
+rung, shrinking the cells 4px per rung (48×56 down to a 32×40 floor) and
+tapering the glyph size with them. See [Density](/behaviour/density/).
+
+**i18n** — translate `label`, `supporting-text`, `error-text`,
+`cell-label-template`, `value-missing-label` and `incomplete-label`. All are
+props precisely so you can feed them from your dictionary; the component has
+no locale logic of its own.
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:20px;">
+  <md-otp-field
+    label="One-time code"
+    supporting-text="Enter the 6-digit code we sent you"
+    cell-label-template="Character {index} of {length}"
+    value="12"></md-otp-field>
+  <md-otp-field
+    label="Code à usage unique"
+    supporting-text="Saisissez le code à 6 chiffres"
+    cell-label-template="Caractère {index} sur {length}"
+    value-missing-label="Veuillez saisir le code complet."
+    incomplete-label="Code incomplet"
+    value="12"></md-otp-field>
+</div>`}
+  htmlForCode={`<!-- Every user-facing string is a prop — feed them from your dictionary -->
+<md-otp-field
+  label="Code à usage unique"
+  supporting-text="Saisissez le code à 6 chiffres"
+  cell-label-template="Caractère {index} sur {length}"
+  value-missing-label="Veuillez saisir le code complet."
+  incomplete-label="Code incomplet"
+></md-otp-field>`}
+  label="The same field in English and French — keep {index} and {length} when translating the cell template"
+  storyId="text-inputs-otp-field--localization"
+/>
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-otp-field-cell-width` | Cell inline size | 48px, density-tapered, 32px floor |
+| `--md-otp-field-cell-height` | Cell block size | 56px, density-tapered, 40px floor |
+| `--md-otp-field-cell-gap` | Gap between cells | `--md-sys-spacing-gap-sm` (8px) |
+| `--md-otp-field-cell-shape` | Cell corner radius | `--md-sys-shape-corner-small` (8px) |
+| `--md-otp-field-outline-color` | Resting cell border | `--md-sys-color-outline` |
+| `--md-otp-field-focus-color` | Focused border + caret | `--md-sys-color-primary` |
+| `--md-otp-field-font-size` | Cell glyph size | 24px, density-tapered, 16px floor |
+
+<ComponentDemo
+  html={`<md-otp-field label="Themed code" value="49" style="--md-otp-field-focus-color: var(--md-sys-color-tertiary); --md-otp-field-cell-shape: 999px;"></md-otp-field>`}
+  label="Themed instance — focus a cell"
+  storyId="text-inputs-otp-field--custom-css"
+/>
+
+**CSS parts** — `cells`, `cell`, `separator`, `supporting-text`. Reach for them
+when a token is not enough: `::part(cell)` restyles every character box,
+`::part(separator)` restyles every gap (unlike the `separator` slot, which only
+fills the first one).
+
+<ComponentDemo
+  html={`<style>
+  .otp-filled::part(cell) {
+    background: var(--md-sys-color-surface-container-highest);
+    border-color: transparent;
+  }
+  .otp-filled::part(separator) {
+    inline-size: 20px;
+  }
+  .otp-filled::part(supporting-text) {
+    font-style: italic;
+  }
+</style>
+<md-otp-field
+  class="otp-filled"
+  group-size="2"
+  value="4926"
+  label="One-time code"
+  supporting-text="Filled cells, wider gaps, italic supporting line"
+></md-otp-field>`}
+  htmlForCode={`<!-- group-size="2" over the default length of 6 renders TWO separators;
+     ::part(separator) restyles both, where the slot would fill only the first. -->
+<md-otp-field
+  class="otp-filled"
+  group-size="2"
+  value="4926"
+  label="One-time code"
+  supporting-text="Filled cells, wider gaps, italic supporting line"
+></md-otp-field>`}
+  label="CSS parts — every cell and both separators, not just the first"
+  storyId="text-inputs-otp-field--css-parts"
+/>
+
+```css
+.otp-filled::part(cell) {
+  background: var(--md-sys-color-surface-container-highest);
+  border-color: transparent;
+}
+
+/* Both gaps, unlike the `separator` slot — which fills only the first. */
+.otp-filled::part(separator) {
+  inline-size: 20px;
+}
+
+.otp-filled::part(supporting-text) {
+  font-style: italic;
+}
+```
+
+
+## Related
+
+[`md-text-field`](/components/text-field/) ·
+[`md-search`](/components/search/) ·
+[`md-autocomplete`](/components/autocomplete/) ·
+[`md-button`](/components/button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-otp-field" />

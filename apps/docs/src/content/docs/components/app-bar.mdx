@@ -1,0 +1,938 @@
+---
+title: App Bar
+description: "The screen's header — small, medium and large heights plus a dedicated search variant"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/app-bar.json";
+
+**The screen's header.** A title, a leading navigation affordance, and a small
+number of trailing actions — in `small` / `medium` / `large` heights, plus a
+dedicated `search` variant for apps where search is the primary global function.
+
+<ComponentDemo
+  html={`<md-app-bar headline="Inbox" subtitle="12 unread" leading-icon="menu" leading-icon-label="Open navigation">
+  <md-icon-button slot="trailing" icon="search" variant="standard" size="md" button-width="narrow" aria-label="Search"></md-icon-button>
+  <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+</md-app-bar>`}
+  label="Live preview"
+  storyId="navigation-app-bar--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-app-bar" example="" />
+
+:::note[The bar reports, it does not navigate]
+`md-app-bar` renders a header and emits events. It never opens a drawer,
+routes, runs a search, or watches the scroll position — every one of those is
+your wiring. The prop it looks most likely to own, [`scrolled`](#scrolled-state),
+is one you set.
+:::
+
+## When to use
+
+- The **top of a screen**: current context, a back or menu affordance, and a
+  small number of actions.
+- A taller header for a prominent page title (`medium` / `large`).
+- **Global search as the primary function** (`variant="search"`).
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Local, page-specific action clusters | [`md-toolbar`](/components/toolbar/) |
+| Top-level destinations | [`md-navigation-bar`](/components/navigation-bar/) / [`md-navigation-rail`](/components/navigation-rail/) |
+| Sibling views inside a screen | [`md-tabs`](/components/tabs/) |
+| Search scoped to one view | [`md-search`](/components/search/) |
+| Where-am-I hierarchy | [`md-breadcrumbs`](/components/breadcrumbs/) |
+| A row of related actions | [`md-button-group`](/components/button-group/) |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Standard screen header | `variant="small"` (default) |
+| A prominent page title | `variant="medium"` or `"large"` |
+| Search as the app's main job | `variant="search"` |
+| Title centred in the row | `title-alignment="center"` |
+| Recolour on scroll | `scrolled` — **you** set it |
+| Tighter rows | `density="-1…-4"` |
+
+## Variants
+
+`small` (the default) is a single 64dp row. `medium` and `large` add an
+expanded title block below the action row — M3 allows their headline to wrap to
+**two lines maximum**. `small` must never wrap.
+
+| Variant | Shape | Height (no subtitle → with) | Use for |
+|---|---|---|---|
+| `small` | One row, inline title | 64dp | **Default.** Standard screen header |
+| `medium` | Row + expanded title | 112dp → 136dp | A prominent page title |
+| `large` | Row + taller expanded title | 120dp → 152dp | The most prominent page title |
+| `search` | Row with an inline search pill | 64dp | Search is the app's primary function |
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 24px; inline-size: 100%;">
+  <md-app-bar headline="Small" leading-icon="arrow_back" leading-icon-label="Back">
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+
+  <md-app-bar variant="medium" headline="Medium headline" leading-icon="arrow_back" leading-icon-label="Back">
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+
+  <md-app-bar variant="large" headline="Quarterly performance review" subtitle="Updated 2 minutes ago" leading-icon="arrow_back" leading-icon-label="Back">
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+</div>`}
+  label="Small, medium and large"
+  storyId="navigation-app-bar--small-variants"
+/>
+
+:::caution[A subtitle makes a flexible bar taller]
+`medium` grows 112dp → **136dp** and `large` 120dp → **152dp** the moment a
+subtitle is present. Budget for the taller number, or the content below shifts
+when a subtitle appears. Each has its own custom property —
+`--md-app-bar-medium-height` and `--md-app-bar-medium-height-with-subtitle` —
+so overriding only the first silently does nothing on a bar with a subtitle.
+:::
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 24px; inline-size: 100%;">
+  <md-app-bar variant="medium" headline="Medium, no subtitle" leading-icon="arrow_back" leading-icon-label="Back">
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+
+  <md-app-bar variant="medium" headline="Medium, with subtitle" subtitle="24dp taller" leading-icon="arrow_back" leading-icon-label="Back">
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+</div>`}
+  label="Medium — the subtitle adds 24dp"
+  storyId="navigation-app-bar--medium-variants"
+/>
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 24px; inline-size: 100%;">
+  <md-app-bar variant="large" headline="Large, no subtitle" leading-icon="arrow_back" leading-icon-label="Back">
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+
+  <md-app-bar variant="large" headline="Large, with subtitle" subtitle="32dp taller" leading-icon="arrow_back" leading-icon-label="Back">
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+</div>`}
+  label="Large — the subtitle adds 32dp"
+  storyId="navigation-app-bar--large-variants"
+/>
+
+## Title alignment
+
+`title-alignment="center"` centres the headline in the action row. It has no
+effect on the expanded title block of `medium` / `large`.
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 24px; inline-size: 100%;">
+  <md-app-bar headline="Start aligned" leading-icon="menu" leading-icon-label="Open navigation">
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+
+  <md-app-bar title-alignment="center" headline="Centre aligned" leading-icon="menu" leading-icon-label="Open navigation">
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+</div>`}
+  label="Title alignment"
+/>
+
+## Search variant
+
+`variant="search"` swaps the title row for an inline search pill. The M3
+composition is a leading affordance, an in-pill trailing action via the
+`search-trailing` slot, and an account affordance in `trailing`.
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 24px; inline-size: 100%;">
+  <md-app-bar variant="search" search-placeholder="Search mail" search-aria-label="Search mail" leading-icon="menu" leading-icon-label="Open navigation">
+    <md-icon-button slot="search-trailing" icon="mic" variant="standard" size="md" button-width="narrow" aria-label="Voice search"></md-icon-button>
+    <md-avatar slot="trailing" name="Ada Lovelace" label="Account"></md-avatar>
+  </md-app-bar>
+
+  <md-app-bar variant="search" title-alignment="center" search-placeholder="Search mail" search-aria-label="Search mail" leading-icon="menu" leading-icon-label="Open navigation">
+    <md-icon-button slot="search-trailing" icon="mic" variant="standard" size="md" button-width="narrow" aria-label="Voice search"></md-icon-button>
+    <md-avatar slot="trailing" name="Ada Lovelace" label="Account"></md-avatar>
+  </md-app-bar>
+</div>`}
+  label="Search bars — type in the pill to fire mdSearchInput"
+  storyId="navigation-app-bar--search-bars"
+/>
+
+:::caution[This is a field, not a search surface]
+The search variant is a **bar-integrated input**. It has no results panel, no
+suggestions and no full-screen view. If you need those, use
+[`md-search`](/components/search/) and open it from a trailing icon.
+:::
+
+### Value and disabled state
+
+`search-value` is the field's value and reflects as you type.
+`search-disabled` greys the pill out and makes it inert: clicks, focus and
+`Enter` / `Space` are all ignored, no `mdSearchActivate` fires, and the pill
+never takes the focused state.
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 24px; inline-size: 100%;">
+  <md-app-bar variant="search" search-value="quarterly report" search-aria-label="Search mail" leading-icon="menu" leading-icon-label="Open navigation">
+    <md-icon-button slot="search-trailing" icon="close" variant="standard" size="md" button-width="narrow" aria-label="Clear search"></md-icon-button>
+  </md-app-bar>
+
+  <md-app-bar variant="search" search-disabled search-placeholder="Search (disabled)" search-aria-label="Search mail" leading-icon="menu" leading-icon-label="Open navigation">
+    <md-icon-button slot="search-trailing" icon="mic" variant="standard" size="md" button-width="narrow" aria-label="Voice search"></md-icon-button>
+  </md-app-bar>
+</div>`}
+  label="A pre-filled value, and a disabled pill"
+  storyId="navigation-app-bar--disabled-search"
+/>
+
+### Naming the field
+
+The inline input derives its accessible name from a **three-step fallback**:
+
+| Order | Source | Notes |
+|---|---|---|
+| 1 | `search-aria-label` | The only one you should rely on |
+| 2 | `search-placeholder` | Only when `search-aria-label` is empty |
+| 3 | The literal `Search` | When both are empty — an untranslated last resort |
+
+Set `search-aria-label` explicitly. Falling through to the placeholder ties the
+accessible name to a hint that may change for visual reasons, and step 3 ships
+English into every locale.
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 24px; inline-size: 100%;">
+  <md-app-bar variant="search" search-aria-label="Search all mail" search-placeholder="Type here" leading-icon="menu" leading-icon-label="Open navigation"></md-app-bar>
+
+  <md-app-bar variant="search" search-placeholder="" leading-icon="menu" leading-icon-label="Open navigation"></md-app-bar>
+</div>`}
+  label="Named field, and one falling through to the literal Search"
+  storyId="navigation-app-bar--search-label-fallback"
+/>
+
+### Replacing the field
+
+The `search` slot swaps out the built-in `<input>` entirely — for a combobox, a
+framework-controlled input, or an autocomplete. The pill, its state layer and
+the `search-trailing` bay stay; only the field is yours.
+
+<ComponentDemo
+  html={`<md-app-bar variant="search" leading-icon="menu" leading-icon-label="Open navigation">
+  <input slot="search" aria-label="Custom search field" placeholder="Your own input" style="inline-size:100%;border:0;background:none;outline:none;font:inherit;color:inherit;" />
+  <md-icon-button slot="search-trailing" icon="mic" variant="standard" size="md" button-width="narrow" aria-label="Voice search"></md-icon-button>
+</md-app-bar>`}
+  label="Slotted search field — the bar keeps the pill, you own the input"
+  storyId="navigation-app-bar--dynamic-slots"
+/>
+
+:::caution[A slotted field is outside the bar's event contract]
+`mdSearchInput` and `mdSearchActivate` come from the **built-in** input. Slot
+your own and you listen to your own element's events instead. `search-value`
+and `search-disabled` stop applying too.
+:::
+
+### Narrow containers
+
+The search row responds to its own **container** width, not just the viewport:
+
+| Container width | Behaviour |
+|---|---|
+| ≥ 600dp | Hint inset 24dp, every `search-trailing` icon visible |
+| < 600dp | Hint inset 16dp, **second and later** `search-trailing` icons hidden |
+| < 400dp | Hint inset 12dp |
+
+Add `data-compact-keep` to a `search-trailing` child to exempt it from the
+compact hide. Row gaps and the 48dp touch targets never shrink.
+
+<ComponentDemo
+  html={`<div style="display:grid;gap:20px;inline-size:100%;">
+  <div style="inline-size:min(100%,320px);">
+    <md-app-bar variant="search" search-placeholder="320dp — 12dp hint" search-aria-label="Search" leading-icon="menu" leading-icon-label="Open navigation">
+      <md-icon-button slot="search-trailing" icon="mic" variant="standard" size="md" button-width="narrow" aria-label="Voice search"></md-icon-button>
+      <md-icon-button slot="search-trailing" data-compact-keep icon="auto_awesome" variant="standard" size="md" button-width="narrow" aria-label="AI search"></md-icon-button>
+      <md-icon-button slot="search-trailing" icon="tune" variant="standard" size="md" button-width="narrow" aria-label="Search filters"></md-icon-button>
+    </md-app-bar>
+  </div>
+  <div style="inline-size:min(100%,520px);">
+    <md-app-bar variant="search" search-placeholder="~510dp — 16dp hint" search-aria-label="Search" leading-icon="menu" leading-icon-label="Open navigation">
+      <md-icon-button slot="search-trailing" icon="mic" variant="standard" size="md" button-width="narrow" aria-label="Voice search"></md-icon-button>
+      <md-icon-button slot="search-trailing" data-compact-keep icon="auto_awesome" variant="standard" size="md" button-width="narrow" aria-label="AI search"></md-icon-button>
+      <md-icon-button slot="search-trailing" icon="tune" variant="standard" size="md" button-width="narrow" aria-label="Search filters"></md-icon-button>
+    </md-app-bar>
+  </div>
+</div>`}
+  label="Both frames are under 600dp — the tune icon is hidden in both, only the hint inset differs"
+  storyId="navigation-app-bar--responsiveness"
+/>
+
+:::note[The wide tier isn't visible on this page]
+The docs content column caps these bars at roughly 510dp, so both frames above
+sit in the compact tier — the `tune` icon is hidden in each, and only the hint
+inset changes between them. Open the Storybook story, which frames the bar at a
+fixed 800px, to see the ≥ 600dp tier with every in-pill icon showing.
+:::
+## Scrolled state
+
+:::danger[`scrolled` is a prop you set, not something the bar detects]
+The bar never installs a scroll listener. It repaints when *you* flip the prop.
+:::
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 24px; inline-size: 100%;">
+  <md-app-bar headline="At rest" leading-icon="menu" leading-icon-label="Open navigation">
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+
+  <md-app-bar scrolled headline="Scrolled" leading-icon="menu" leading-icon-label="Open navigation">
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+</div>`}
+  label="Resting vs scrolled container colour"
+/>
+
+```js
+const bar = document.getElementById('bar');
+addEventListener('scroll', () => { bar.scrolled = window.scrollY > 0; }, { passive: true });
+```
+
+On a `search` bar the pill recolours too — `surface-container-highest` at rest,
+`surface-container` when scrolled — so the field stays distinguishable from the
+row behind it in both states.
+
+## Slots
+
+| Slot | Holds | Notes |
+|---|---|---|
+| `leading` | The navigation affordance | **Replaces** the `leading-icon` prop entirely |
+| `headline` | Custom title content | Used only when the `headline` prop is empty |
+| `subtitle` | Custom subtitle content | Used only when the `subtitle` prop is empty |
+| `trailing` | Action icons, avatar | **Max 3** — extras are hidden |
+| `search` | A replacement search field | `search` variant only |
+| `search-trailing` | In-pill icons (mic, clear) | `data-compact-keep` survives the narrow-container hide |
+
+:::danger[The prop wins over the slot — not the other way round]
+`headline` and `subtitle` exist as both props and slots, and the **prop takes
+precedence**. Set `headline="Inbox"` and also slot `<span slot="headline">`, and
+the slotted node is never projected — it is dead markup, silently.
+
+Leave the prop empty to use the slot. The `leading` slot is the exception: it
+replaces `leading-icon` whenever it has content.
+:::
+
+<ComponentDemo
+  html={`<md-app-bar leading-icon="menu" leading-icon-label="Open navigation">
+  <span slot="headline">Inbox</span>
+  <span slot="subtitle">12 unread</span>
+  <md-icon-button slot="trailing" icon="filter_list" variant="standard" size="md" button-width="narrow" aria-label="Filter"></md-icon-button>
+  <md-avatar slot="trailing" name="Ada Lovelace" label="Account"></md-avatar>
+</md-app-bar>`}
+  label="Slotted headline, subtitle and trailing content — no headline prop set"
+/>
+
+Flexible bars project slotted content into the **expanded** block the same way:
+
+<ComponentDemo
+  html={`<md-app-bar variant="medium" leading-icon="arrow_back" leading-icon-label="Back">
+  <span slot="headline">Slotted headline</span>
+  <span slot="subtitle">Slotted subtitle</span>
+  <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+</md-app-bar>`}
+  label="Slotted expanded headline on a medium bar"
+  storyId="navigation-app-bar--slotted-expanded-headline"
+/>
+
+### Trailing actions cap out at three
+
+The `trailing` slot renders **at most 3** children. Extras are hidden and a
+warning is logged in development. Removing a visible one re-reveals a hidden one
+— the bar re-syncs on `slotchange`.
+
+<ComponentDemo
+  html={`<md-app-bar headline="Five requested, three rendered" leading-icon="menu" leading-icon-label="Open navigation">
+  <md-icon-button slot="trailing" icon="search" variant="standard" size="md" button-width="narrow" aria-label="Search"></md-icon-button>
+  <md-icon-button slot="trailing" icon="filter_list" variant="standard" size="md" button-width="narrow" aria-label="Filter"></md-icon-button>
+  <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  <md-icon-button slot="trailing" icon="delete" variant="standard" size="md" button-width="narrow" aria-label="Delete"></md-icon-button>
+  <md-icon-button slot="trailing" icon="archive" variant="standard" size="md" button-width="narrow" aria-label="Archive"></md-icon-button>
+</md-app-bar>`}
+  label="Trailing icon limit — the 4th and 5th are hidden"
+  storyId="navigation-app-bar--trailing-icon-limit"
+/>
+
+This is a guardrail, not a bug: M3 caps an app bar at three trailing actions.
+Past three, move the rest behind an overflow [`md-menu`](/components/menu/).
+
+### Custom icons
+
+Slot `md-icon-button` (or a raw SVG) into `leading`, `trailing` or
+`search-trailing` when the Material Symbols name isn't enough — a brand glyph,
+an icon font, a logo. Host `::slotted` rules map the icon button onto the bar's
+48dp touch target for you.
+
+<ComponentDemo
+  html={`<md-app-bar headline="Custom glyphs">
+  <md-icon-button slot="leading" variant="standard" size="md" button-width="narrow" aria-label="Home">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 3l9 8h-3v10h-5v-6h-2v6H6V11H3z"/></svg>
+  </md-icon-button>
+  <md-icon-button slot="trailing" variant="standard" size="md" button-width="narrow" aria-label="Starred">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+  </md-icon-button>
+  <md-avatar slot="trailing" name="Ada Lovelace" label="Account"></md-avatar>
+</md-app-bar>`}
+  label="Slotted SVG glyphs in leading and trailing"
+  storyId="navigation-app-bar--custom-icons"
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdLeadingClick` | no | `MouseEvent` | The leading affordance is activated |
+| `mdSearchInput` | no | `{ value: string }` | Every keystroke in the search pill |
+| `mdSearchActivate` | no | `{ value: string }` | The search pill is focused, or `Enter`/`Space` is pressed in it |
+
+### Which event to listen to
+
+| You want to… | Listen to |
+|---|---|
+| Open a navigation drawer or go back | `mdLeadingClick` |
+| Update suggestions as the user types | `mdSearchInput` |
+| Run the query | `mdSearchActivate` |
+| React to a slotted `search` field | Your own element's events — not these |
+
+:::note[None of them are cancelable]
+There is no before-change hook here, unlike
+[`md-button`](/components/button/#events)'s `mdClick`. `mdSearchActivate` also
+fires on **focus**, not only on `Enter` — so treat it as "the user is starting a
+search", not as a submit.
+:::
+
+The bar **reports** the leading press; it does not open a drawer or navigate.
+That wiring is yours — the affordance below is a real button that emits the
+event and does nothing else.
+
+<ComponentDemo
+  html={`<md-app-bar headline="Press the menu icon" leading-icon="menu" leading-icon-label="Open navigation">
+  <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+</md-app-bar>`}
+  label="mdLeadingClick — open in Storybook to watch it fire"
+  storyId="navigation-app-bar--leading-icon-click"
+/>
+
+<TechnologyTabs
+  html={`<md-app-bar id="bar" variant="search" headline="Inbox"
+            leading-icon="menu" leading-icon-label="Open navigation"
+            search-placeholder="Search mail" search-aria-label="Search mail">
+</md-app-bar>
+
+<script type="module">
+  const bar = document.getElementById('bar');
+
+  bar.addEventListener('mdLeadingClick', () => rail.toggle());
+  bar.addEventListener('mdSearchInput', (e) => suggest(e.detail.value));
+  bar.addEventListener('mdSearchActivate', (e) => runSearch(e.detail.value));
+
+  addEventListener('scroll', () => { bar.scrolled = window.scrollY > 0; }, { passive: true });
+</script>`}
+  react={`import { MdAppBar } from '@awc-ui/react';
+import { useEffect, useState } from 'react';
+
+export function Header() {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 0);
+    addEventListener('scroll', onScroll, { passive: true });
+    return () => removeEventListener('scroll', onScroll);
+  }, []);
+
+  return (
+    <MdAppBar
+      variant="search"
+      headline="Inbox"
+      leadingIcon="menu"
+      leadingIconLabel="Open navigation"
+      searchPlaceholder="Search mail"
+      searchAriaLabel="Search mail"
+      scrolled={scrolled}
+      onMdLeadingClick={() => toggleRail()}
+      onMdSearchInput={(e) => suggest(e.detail.value)}
+      onMdSearchActivate={(e) => runSearch(e.detail.value)}
+    />
+  );
+}`}
+  angular={`import { Component, HostListener } from '@angular/core';
+
+@Component({
+  selector: 'app-header',
+  template: \`
+    <md-app-bar
+      variant="search"
+      headline="Inbox"
+      leading-icon="menu"
+      leading-icon-label="Open navigation"
+      search-placeholder="Search mail"
+      search-aria-label="Search mail"
+      [scrolled]="scrolled"
+      (mdLeadingClick)="onLeading()"
+      (mdSearchInput)="onInput($event)"
+      (mdSearchActivate)="onActivate($event)"
+    ></md-app-bar>
+  \`,
+})
+export class HeaderComponent {
+  scrolled = false;
+
+  @HostListener('window:scroll')
+  onScroll() { this.scrolled = window.scrollY > 0; }
+
+  onLeading() { this.toggleRail(); }
+  onInput(e: CustomEvent) { this.suggest(e.detail.value); }
+  onActivate(e: CustomEvent) { this.runSearch(e.detail.value); }
+}`}
+  vue={`<script setup lang="ts">
+import { onMounted, onUnmounted, ref } from 'vue';
+
+const scrolled = ref(false);
+const onScroll = () => (scrolled.value = window.scrollY > 0);
+
+onMounted(() => addEventListener('scroll', onScroll, { passive: true }));
+onUnmounted(() => removeEventListener('scroll', onScroll));
+</script>
+
+<template>
+  <md-app-bar
+    variant="search"
+    headline="Inbox"
+    leading-icon="menu"
+    leading-icon-label="Open navigation"
+    search-placeholder="Search mail"
+    search-aria-label="Search mail"
+    :scrolled="scrolled"
+    @mdLeadingClick="toggleRail"
+    @mdSearchInput="(e) => suggest(e.detail.value)"
+    @mdSearchActivate="(e) => runSearch(e.detail.value)"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  let scrolled = false;
+</script>
+
+<svelte:window on:scroll={() => (scrolled = window.scrollY > 0)} />
+
+<md-app-bar
+  variant="search"
+  headline="Inbox"
+  leading-icon="menu"
+  leading-icon-label="Open navigation"
+  search-placeholder="Search mail"
+  search-aria-label="Search mail"
+  {scrolled}
+  on:mdLeadingClick={toggleRail}
+  on:mdSearchInput={(e) => suggest(e.detail.value)}
+  on:mdSearchActivate={(e) => runSearch(e.detail.value)}
+/>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- Give the leading affordance a localized `leading-icon-label` — it is an
+  icon-only control and needs an accessible name.
+- Every trailing `md-icon-button` needs its own `aria-label`.
+- The headline's styling is **not** a heading. Slot a real heading element, or
+  provide one elsewhere in the document outline.
+- For the search variant set `search-aria-label`; the
+  [fallback chain](#naming-the-field) ends at an untranslated `Search`.
+- On `medium` / `large` the collapsed inline title is `aria-hidden` — the
+  expanded headline is the one announced, so the title is never read twice.
+- A fixed app bar covers content — add matching top padding to the page.
+
+### Keyboard
+
+| Key | Action |
+|---|---|
+| `Tab` | Leading affordance → search pill (search variant) → each trailing action |
+| `Enter` / `Space` | Activates the focused affordance; in the search pill, fires `mdSearchActivate` |
+| Typing in the pill | Fires `mdSearchInput` per keystroke |
+
+The search pill shows a focus ring only under **keyboard** modality, so a
+pointer click does not leave a ring behind.
+
+<ComponentDemo
+  html={`<md-app-bar headline="Company mail" subtitle="Accessible header" leading-icon="menu" leading-icon-label="Open navigation menu">
+  <md-icon-button slot="trailing" icon="search" variant="standard" size="md" button-width="narrow" aria-label="Search mail"></md-icon-button>
+  <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  <md-avatar slot="trailing" name="Ada Lovelace" label="Account for Ada Lovelace"></md-avatar>
+</md-app-bar>`}
+  label="Tab through it — every control has its own accessible name"
+  storyId="navigation-app-bar--accessibility"
+/>
+
+## RTL, density & i18n
+
+**RTL** — leading/trailing sides, title alignment and padding mirror under
+`dir="rtl"`; every box metric is a logical property. See [RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:20px 16px;align-items:center;">
+  <span style="inline-size:2.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr">
+    <md-app-bar headline="Inbox" subtitle="12 unread" leading-icon="arrow_back" leading-icon-label="Back">
+      <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+    </md-app-bar>
+  </div>
+  <span style="inline-size:2.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl">
+    <md-app-bar headline="البريد الوارد" subtitle="12 غير مقروءة" leading-icon="arrow_back" leading-icon-label="رجوع">
+      <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="خيارات أخرى"></md-icon-button>
+    </md-app-bar>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+  storyId="navigation-app-bar--rtl"
+/>
+
+:::caution[Slotted directional glyphs need `data-directional`]
+The `leading-icon` prop mirrors on its own. A glyph you **slot** does not — the
+bar cannot tell an arrow from a logo. Mark the directional ones:
+
+```html
+<md-icon-button slot="leading" data-directional aria-label="رجوع">
+  <svg viewBox="0 0 24 24"><path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z"/></svg>
+</md-icon-button>
+```
+:::
+
+### Every density rung
+
+`density="-1…-4"` is a local override of the inherited `data-density`. It tapers
+the row height (64dp → 48dp floor), the icon touch targets, the glyph size, the
+avatar, the title type scale and the expanded heights together.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;inline-size:100%;">
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <md-app-bar density="0" headline="Density 0" leading-icon="menu" leading-icon-label="Open navigation"><md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button></md-app-bar>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <md-app-bar density="-1" headline="Density -1" leading-icon="menu" leading-icon-label="Open navigation"><md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button></md-app-bar>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <md-app-bar density="-2" headline="Density -2" leading-icon="menu" leading-icon-label="Open navigation"><md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button></md-app-bar>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <md-app-bar density="-3" headline="Density -3" leading-icon="menu" leading-icon-label="Open navigation"><md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button></md-app-bar>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <md-app-bar density="-4" headline="Density -4" leading-icon="menu" leading-icon-label="Open navigation"><md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button></md-app-bar>
+</div>`}
+  label="Density 0 through -4 — row height, icons and type all taper"
+/>
+
+:::caution[M3 warns against going below the default height]
+The row floors at 48dp and the icon touch targets at 32dp — both under the 48dp
+pointer-coarse devices want. A header is the one surface where a mis-hit is most
+costly, so use the deep rungs only on genuinely dense desktop UIs. See
+[Density](/behaviour/density/#accessibility).
+:::
+
+### i18n
+
+Translate `headline`, `subtitle`, `leading-icon-label`, `search-placeholder`,
+`search-aria-label` and every trailing control's label. Long translated titles
+are exactly the case `medium` / `large` exists for — `small` never wraps, so a
+long string truncates there.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:20px 16px;align-items:center;">
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">de</span>
+  <md-app-bar variant="medium" headline="Posteingang" subtitle="12 ungelesene Nachrichten" leading-icon="menu" leading-icon-label="Navigation öffnen">
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="Weitere Optionen"></md-icon-button>
+  </md-app-bar>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ar</span>
+  <div dir="rtl">
+    <md-app-bar variant="medium" headline="البريد الوارد" subtitle="12 رسالة غير مقروءة" leading-icon="menu" leading-icon-label="فتح التنقل">
+      <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="خيارات أخرى"></md-icon-button>
+    </md-app-bar>
+  </div>
+</div>`}
+  label="Localised headline, subtitle and affordance labels"
+  storyId="navigation-app-bar--localization"
+/>
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-app-bar-container-color` | Container background at rest | `surface` |
+| `--md-app-bar-container-color-scrolled` | Container background when `scrolled` | `surface-container` |
+| `--md-app-bar-container-shape` | Corner radius | `shape-corner-none` — M3 wants straight corners |
+| `--md-app-bar-container-elevation` | Container shadow | elevation-0 |
+| `--md-app-bar-headline-color` / `-subtitle-color` | Title text | `on-surface` / `on-surface-variant` |
+| `--md-app-bar-leading-icon-color` / `-trailing-icon-color` | Icons | `on-surface` / `on-surface-variant` |
+| `--md-app-bar-row-height` | Action row height | 64dp, density-derived |
+| `--md-app-bar-padding-inline-start` / `-end` | Row padding | 4dp |
+| `--md-app-bar-icon-size` / `-icon-button-size` | Glyph / touch target | 24dp / 48dp, density-derived |
+| `--md-app-bar-trailing-gap` / `-trailing-touch-size` | Trailing cluster | 2dp / 48dp |
+| `--md-app-bar-avatar-size` | Avatar in trailing slots | 32dp |
+| `--md-app-bar-medium-height` / `-medium-height-with-subtitle` | Medium expanded | 112dp / 136dp |
+| `--md-app-bar-large-height` / `-large-height-with-subtitle` | Large expanded | 120dp / 152dp |
+| `--md-app-bar-search-container-color` / `-scrolled` | Search pill fill | `surface-container-highest` / `surface-container` |
+| `--md-app-bar-search-container-height` / `-shape` | Search pill box | 56dp, density-derived |
+| `--md-app-bar-search-padding-inline-start` / `-end` | Hint inset / in-pill inset | 24dp / 8dp |
+| `--md-app-bar-search-placeholder-color` / `-input-color` | Hint / typed text | `on-surface-variant` / `on-surface` |
+
+<ComponentDemo
+  html={`<md-app-bar
+  headline="Themed"
+  leading-icon="menu"
+  leading-icon-label="Open navigation"
+  style="--md-app-bar-container-color: var(--md-sys-color-primary-container); --md-app-bar-headline-color: var(--md-sys-color-on-primary-container); --md-app-bar-leading-icon-color: var(--md-sys-color-on-primary-container); --md-app-bar-trailing-icon-color: var(--md-sys-color-on-primary-container);">
+  <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+</md-app-bar>`}
+  label="Themed instance"
+  storyId="navigation-app-bar--custom-css"
+/>
+
+### Recolouring the container
+
+The two container colours are independent, so a bar can be flat at rest and
+tonal once scrolled — or branded in both states. Shape and elevation are yours
+too, though M3 wants a square, flat header.
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:24px;inline-size:100%;">
+  <md-app-bar headline="Tonal, both states" leading-icon="menu" leading-icon-label="Open navigation"
+    style="--md-app-bar-container-color: var(--md-sys-color-secondary-container); --md-app-bar-headline-color: var(--md-sys-color-on-secondary-container); --md-app-bar-leading-icon-color: var(--md-sys-color-on-secondary-container); --md-app-bar-trailing-icon-color: var(--md-sys-color-on-secondary-container);">
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+
+  <md-app-bar scrolled headline="Scrolled recolour" leading-icon="menu" leading-icon-label="Open navigation"
+    style="--md-app-bar-container-color-scrolled: var(--md-sys-color-tertiary-container); --md-app-bar-headline-color: var(--md-sys-color-on-tertiary-container); --md-app-bar-leading-icon-color: var(--md-sys-color-on-tertiary-container); --md-app-bar-trailing-icon-color: var(--md-sys-color-on-tertiary-container);">
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+
+  <md-app-bar headline="Rounded and raised" leading-icon="menu" leading-icon-label="Open navigation"
+    style="--md-app-bar-container-shape: 20px; --md-app-bar-container-elevation: var(--md-sys-elevation-level3); --md-app-bar-container-color: var(--md-sys-color-surface-container-high);">
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+</div>`}
+  label="Container colour at rest, when scrolled, plus shape and elevation"
+/>
+
+### Resizing the row
+
+Height, padding, glyph size, touch target and trailing gap are all separate
+properties, so a compact header does not have to go through `density`. Set them
+when you need one specific measurement rather than the whole taper.
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:24px;inline-size:100%;">
+  <md-app-bar headline="Default metrics" leading-icon="menu" leading-icon-label="Open navigation">
+    <md-icon-button slot="trailing" icon="search" variant="standard" size="md" button-width="narrow" aria-label="Search"></md-icon-button>
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+
+  <md-app-bar headline="Taller row, wide padding, big glyphs" leading-icon="menu" leading-icon-label="Open navigation"
+    style="--md-app-bar-row-height: 88px; --md-app-bar-padding-inline-start: 24px; --md-app-bar-padding-inline-end: 24px; --md-app-bar-icon-size: 32px; --md-app-bar-trailing-gap: 16px;">
+    <md-icon-button slot="trailing" icon="search" variant="standard" size="md" button-width="narrow" aria-label="Search"></md-icon-button>
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+
+  <md-app-bar headline="Shorter row, tight glyphs" leading-icon="menu" leading-icon-label="Open navigation"
+    style="--md-app-bar-row-height: 52px; --md-app-bar-icon-size: 20px; --md-app-bar-icon-button-size: 40px; --md-app-bar-trailing-gap: 0px;">
+    <md-icon-button slot="trailing" icon="search" variant="standard" size="md" button-width="narrow" aria-label="Search"></md-icon-button>
+    <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+  </md-app-bar>
+</div>`}
+  label="Row height, padding, glyph size, touch target and trailing gap"
+/>
+
+:::caution[Shrinking the row by hand skips the density guardrails]
+`density` floors the row at 48dp and the touch target at 32dp.
+`--md-app-bar-row-height: 32px` has no floor — you own the accessibility
+consequences. Prefer `density` unless you need one specific measurement.
+:::
+
+### Expanded heights
+
+`medium` and `large` each have **two** height properties, and the bar picks by
+whether a subtitle is present. Override the wrong one and nothing happens.
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:24px;inline-size:100%;">
+  <md-app-bar variant="medium" headline="Medium, custom no-subtitle height" leading-icon="arrow_back" leading-icon-label="Back"
+    style="--md-app-bar-medium-height: 96px;"></md-app-bar>
+
+  <md-app-bar variant="medium" headline="Medium with subtitle" subtitle="needs the -with-subtitle property" leading-icon="arrow_back" leading-icon-label="Back"
+    style="--md-app-bar-medium-height-with-subtitle: 168px;"></md-app-bar>
+
+  <md-app-bar variant="large" headline="Large, custom expanded padding" subtitle="wide inline inset" leading-icon="arrow_back" leading-icon-label="Back"
+    style="--md-app-bar-large-height-with-subtitle: 172px; --md-app-bar-expanded-padding-inline: 40px;"></md-app-bar>
+</div>`}
+  label="Expanded heights and the expanded block's inline padding"
+/>
+
+### Styling the search pill
+
+The pill has its own colour, shape, height and inset properties, independent of
+the row around it.
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:24px;inline-size:100%;">
+  <md-app-bar variant="search" search-placeholder="Default pill" search-aria-label="Search" leading-icon="menu" leading-icon-label="Open navigation">
+    <md-icon-button slot="search-trailing" icon="mic" variant="standard" size="md" button-width="narrow" aria-label="Voice search"></md-icon-button>
+  </md-app-bar>
+
+  <md-app-bar variant="search" search-placeholder="Squared, tinted, taller" search-aria-label="Search" leading-icon="menu" leading-icon-label="Open navigation"
+    style="--md-app-bar-search-container-color: var(--md-sys-color-primary-container); --md-app-bar-search-container-shape: 8px; --md-app-bar-search-container-height: 64px; --md-app-bar-search-placeholder-color: var(--md-sys-color-on-primary-container); --md-app-bar-search-input-color: var(--md-sys-color-on-primary-container); --md-app-bar-search-trailing-icon-color: var(--md-sys-color-on-primary-container);">
+    <md-icon-button slot="search-trailing" icon="mic" variant="standard" size="md" button-width="narrow" aria-label="Voice search"></md-icon-button>
+  </md-app-bar>
+
+  <md-app-bar variant="search" search-placeholder="Flush hint, wide row gap" search-aria-label="Search" leading-icon="menu" leading-icon-label="Open navigation"
+    style="--md-app-bar-search-padding-inline-start: 8px; --md-app-bar-search-row-gap: 20px; --md-app-bar-search-container-color: var(--md-sys-color-surface-container-low);">
+    <md-icon-button slot="search-trailing" icon="mic" variant="standard" size="md" button-width="narrow" aria-label="Voice search"></md-icon-button>
+  </md-app-bar>
+</div>`}
+  label="Pill fill, shape, height and hint inset"
+/>
+
+### Following the theme
+
+Every default resolves through an `md-sys-color` role, so a bar that sets no
+custom properties follows the theme on its own. Switch this page between light
+and dark — the bar below is untouched markup:
+
+<ComponentDemo
+  html={`<md-app-bar headline="Untouched defaults" subtitle="Follows the page theme" leading-icon="menu" leading-icon-label="Open navigation">
+  <md-icon-button slot="trailing" icon="search" variant="standard" size="md" button-width="narrow" aria-label="Search"></md-icon-button>
+  <md-avatar slot="trailing" name="Ada Lovelace" label="Account"></md-avatar>
+</md-app-bar>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="navigation-app-bar--dark-theme"
+/>
+
+## CSS parts
+
+Custom properties cover colour and metrics. **Parts** reach into the shadow root
+for everything else — type treatment, layout of a wrapper, the pill's internals.
+
+| Part | Element | Exists when |
+|---|---|---|
+| `row` | The action row | Always |
+| `leading` | Leading slot wrapper | Always |
+| `leading-icon` | The prop-built leading `md-icon-button` | Only with `leading-icon` |
+| `icon` / `state-layer` | Glyph / state layer, **exported** from `leading-icon` | Only with `leading-icon` |
+| `title` | Inline title | `small`; hidden copy on `medium` / `large` |
+| `subtitle` | Subtitle text | Inline on `small`, expanded on flexible bars |
+| `expanded` | Expanded title block | `medium` / `large` |
+| `expanded-headline` | Expanded headline text | `medium` / `large` |
+| `trailing` | Trailing slot wrapper | Always |
+| `search-host` | Flex bay holding the pill | `search` |
+| `search` | The pill container | `search` |
+| `search-state-layer` | Hover / focus / press overlay | `search` |
+| `search-field` | Text region inside the pill | `search` |
+| `search-input` | The built-in `<input>` | `search`, no `search` slot |
+| `search-content` | Wrapper around slotted `search` content | `search` **with** a `search` slot |
+| `search-trailing` | In-pill trailing bay | `search` |
+
+### Typography and layout
+
+<ComponentDemo
+  html={`<style>
+  .parts-bar::part(title)    { text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
+  .parts-bar::part(subtitle) { font-style: italic; opacity: .85; }
+  .parts-bar::part(trailing) { gap: 12px; }
+  .parts-bar::part(row)      { border-block-end: 2px solid var(--md-sys-color-primary); }
+</style>
+<md-app-bar class="parts-bar" headline="Styled parts" subtitle="title, subtitle, trailing, row" leading-icon="menu" leading-icon-label="Open navigation">
+  <md-icon-button slot="trailing" icon="search" variant="standard" size="md" button-width="narrow" aria-label="Search"></md-icon-button>
+  <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+</md-app-bar>`}
+  label="row, title, subtitle and trailing"
+  storyId="navigation-app-bar--css-parts"
+/>
+
+### The expanded block
+
+`expanded` is the wrapper and `expanded-headline` the text, so you can inset the
+block and restyle the headline independently.
+
+<ComponentDemo
+  html={`<style>
+  .parts-flex::part(expanded) {
+    background: var(--md-sys-color-surface-container-high);
+    border-start-start-radius: 16px;
+    border-start-end-radius: 16px;
+  }
+  .parts-flex::part(expanded-headline) {
+    font-weight: 700;
+    letter-spacing: -.01em;
+    color: var(--md-sys-color-primary);
+  }
+  .parts-flex::part(subtitle) { text-transform: uppercase; letter-spacing: .12em; font-size: 11px; }
+</style>
+<md-app-bar class="parts-flex" variant="large" headline="Quarterly review" subtitle="Updated 2 minutes ago" leading-icon="arrow_back" leading-icon-label="Back">
+  <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
+</md-app-bar>`}
+  label="expanded and expanded-headline on a large bar"
+/>
+
+### Inside the search pill
+
+<ComponentDemo
+  html={`<style>
+  .parts-search::part(search) {
+    border: 2px solid var(--md-sys-color-primary);
+    border-radius: 12px;
+  }
+  .parts-search::part(search-input)  { font-weight: 600; letter-spacing: .02em; }
+  .parts-search::part(search-trailing) { gap: 10px; }
+  .parts-search::part(leading-icon)  { color: var(--md-sys-color-primary); }
+</style>
+<md-app-bar class="parts-search" variant="search" search-placeholder="Styled pill internals" search-aria-label="Search" leading-icon="menu" leading-icon-label="Open navigation">
+  <md-icon-button slot="search-trailing" icon="mic" variant="standard" size="md" button-width="narrow" aria-label="Voice search"></md-icon-button>
+  <md-avatar slot="trailing" name="Ada Lovelace" label="Account"></md-avatar>
+</md-app-bar>`}
+  label="search, search-input and search-trailing"
+/>
+
+:::caution[`search-input` and `search-content` are mutually exclusive]
+`search-input` is the built-in `<input>`. Slot your own field into `search` and
+that part disappears — style `search-content` instead. A rule written against
+the wrong one fails silently.
+:::
+
+```css
+md-app-bar::part(title) {
+  letter-spacing: 0.15px;
+}
+```
+
+
+## Related
+
+[`md-toolbar`](/components/toolbar/) ·
+[`md-search`](/components/search/) ·
+[`md-navigation-rail`](/components/navigation-rail/) ·
+[`md-navigation-bar`](/components/navigation-bar/) ·
+[`md-tabs`](/components/tabs/) ·
+[`md-breadcrumbs`](/components/breadcrumbs/) ·
+[`md-icon-button`](/components/icon-button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-app-bar" />

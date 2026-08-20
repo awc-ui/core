@@ -1,0 +1,334 @@
+---
+/**
+ * ComponentIndex — a browsable, filterable overview of every AWC UI
+ * component, grouped by its Material Design 3 category. Built entirely from
+ * the generated `components.json` manifest so it never drifts from the real
+ * component set: add a component, run `pnpm generate:docs`, and it appears
+ * here automatically.
+ *
+ * A small client-side filter box narrows the list by title or tag and hides
+ * any category that ends up empty. All styling uses --md-sys-* tokens and
+ * logical properties, so it's dark-mode aware and RTL-safe.
+ */
+import manifest from '../data/components.json';
+
+interface ManifestComponent {
+  tag: string;
+  title: string;
+  slug: string;
+  category: string;
+  summary?: string;
+}
+
+const components = manifest.components as ManifestComponent[];
+const categoryOrder: string[] = manifest.categories ?? [];
+
+// A representative Material Symbols glyph for each MD3 category. Falls back to
+// a generic "widgets" glyph if the manifest ever grows a new category.
+const CATEGORY_ICONS: Record<string, string> = {
+  Actions: 'smart_button',
+  Communication: 'notifications',
+  Containment: 'dashboard',
+  Navigation: 'explore',
+  Selection: 'checklist',
+  'Text Input': 'edit',
+  Charts: 'insights',
+};
+
+// Group + sort: categories follow the manifest's declared order; components are
+// alphabetised within each category so the grid is easy to scan / Cmd-F.
+const grouped = categoryOrder
+  .map((category) => ({
+    category,
+    icon: CATEGORY_ICONS[category] ?? 'widgets',
+    items: components
+      .filter((c) => c.category === category)
+      .sort((a, b) => a.title.localeCompare(b.title)),
+  }))
+  .filter((group) => group.items.length > 0);
+---
+
+<div class="awc-compindex" data-awc-compindex>
+  <div class="awc-compindex__search">
+    <span class="material-symbols-outlined" aria-hidden="true">search</span>
+    <input
+      type="search"
+      class="awc-compindex__input"
+      placeholder={`Filter ${components.length} components…`}
+      aria-label="Filter components by name"
+      data-awc-compindex-input
+      autocomplete="off"
+    />
+  </div>
+
+  <p class="awc-compindex__empty" data-awc-compindex-empty hidden>
+    No components match that filter.
+  </p>
+
+  {grouped.map((group) => (
+    <section class="awc-compindex__group" data-awc-compindex-group>
+      <header class="awc-compindex__group-head">
+        <span class="awc-compindex__group-icon" aria-hidden="true">
+          <span class="material-symbols-outlined">{group.icon}</span>
+        </span>
+        <h3 class="awc-compindex__group-title">{group.category}</h3>
+        <span class="awc-compindex__group-count">{group.items.length}</span>
+      </header>
+
+      <div class="awc-compindex__grid">
+        {group.items.map((c) => (
+          <a
+            class="awc-compindex__card"
+            href={`/components/${c.slug}/`}
+            data-awc-compindex-card
+            data-search={`${c.title} ${c.tag}`.toLowerCase()}
+          >
+            <span class="awc-compindex__card-title">{c.title}</span>
+            <code class="awc-compindex__card-tag">{`<${c.tag}>`}</code>
+          </a>
+        ))}
+      </div>
+    </section>
+  ))}
+</div>
+
+<script>
+  // Live filter: match the user's query against each card's title + tag, hide
+  // non-matching cards, then collapse any category section with no visible
+  // cards. Runs on parse (defer-style module) and re-binds on view-transition
+  // page loads (Starlight does not ship ClientRouter by default, so the
+  // first run is what matters, but the listener keeps it resilient).
+  function setupComponentIndex() {
+    document
+      .querySelectorAll<HTMLElement>('[data-awc-compindex]')
+      .forEach((root) => {
+        if (root.dataset.compindexBound === 'true') return;
+        root.dataset.compindexBound = 'true';
+
+        const input = root.querySelector<HTMLInputElement>(
+          '[data-awc-compindex-input]',
+        );
+        const groups = Array.from(
+          root.querySelectorAll<HTMLElement>('[data-awc-compindex-group]'),
+        );
+        const emptyMsg = root.querySelector<HTMLElement>(
+          '[data-awc-compindex-empty]',
+        );
+        if (!input) return;
+
+        const apply = () => {
+          const q = input.value.trim().toLowerCase();
+          let anyVisible = false;
+
+          groups.forEach((group) => {
+            const cards = Array.from(
+              group.querySelectorAll<HTMLElement>('[data-awc-compindex-card]'),
+            );
+            let groupVisible = false;
+            cards.forEach((card) => {
+              const hay = card.dataset.search ?? '';
+              const match = q === '' || hay.includes(q);
+              card.hidden = !match;
+              if (match) groupVisible = true;
+            });
+            group.hidden = !groupVisible;
+            if (groupVisible) anyVisible = true;
+          });
+
+          if (emptyMsg) emptyMsg.hidden = anyVisible;
+        };
+
+        input.addEventListener('input', apply);
+      });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupComponentIndex, {
+      once: true,
+    });
+  } else {
+    setupComponentIndex();
+  }
+  document.addEventListener('astro:page-load', setupComponentIndex);
+</script>
+
+<style>
+  .awc-compindex {
+    margin-block: 1.5rem;
+  }
+
+  /* Filter box — surface-container pill with a leading search glyph. */
+  .awc-compindex__search {
+    display: flex;
+    align-items: center;
+    /* Even rhythm: the same 16dp inset from the pill's edge to the glyph, from
+       the glyph to the text, and from the text to the trailing edge. At 14/8 the
+       icon sat closer to the placeholder than to the edge, which reads as the
+       glyph drifting rather than as a search affordance. MD3 search bars use
+       16dp in both places. */
+    gap: 1rem;
+    padding-block: 0.5rem;
+    padding-inline: 1rem;
+    margin-block-end: 2rem;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    background: var(--md-sys-color-surface-container-low);
+    transition: border-color var(--awc-dur-default) var(--awc-spring-effects);
+  }
+
+  /* The top margin has to be asserted from OUTSIDE this component's own
+     selector. custom.css carries a belt-and-braces reset,
+     `.sl-markdown-content [class*="awc-"] { margin-block-start: 0 }`, at (0,2,0);
+     Astro scopes this component's rules with `:where(.astro-…)`, which
+     contributes nothing, so the plain `.awc-compindex__search` rule is (0,1,0)
+     and loses. Every previous attempt to space this bar was silently discarded
+     for that reason. Qualifying with the wrapper takes it to (0,3,0), which wins
+     without weakening the global reset other pages rely on.
+
+     `.sl-markdown-content` must be wrapped in :global() — it is Starlight's own
+     wrapper and carries no astro-scope class, so Astro scoping it too would
+     produce a selector that matches nothing. */
+  :global(.sl-markdown-content) .awc-compindex .awc-compindex__search {
+    margin-block-start: 2rem;
+  }
+
+  .awc-compindex__search:focus-within {
+    border-color: var(--md-sys-color-primary);
+  }
+
+  .awc-compindex__search .material-symbols-outlined {
+    font-size: 20px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .awc-compindex__input {
+    flex: 1;
+    min-inline-size: 0;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.9375rem;
+    font-family: inherit;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .awc-compindex__input::placeholder {
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .awc-compindex__empty {
+    margin-block: 0 2rem;
+    padding: 1.25rem;
+    text-align: center;
+    border-radius: var(--md-sys-shape-corner-medium, 12px);
+    background: var(--md-sys-color-surface-container-low);
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.9375rem;
+  }
+
+  .awc-compindex__group {
+    margin-block-end: 2.25rem;
+  }
+
+  .awc-compindex__group-head {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin-block-end: 1rem;
+  }
+
+  .awc-compindex__group-icon {
+    inline-size: 32px;
+    block-size: 32px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: var(--md-sys-shape-corner-small, 8px);
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .awc-compindex__group-icon .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  /* Defensive: reset the docs-theme h3 left-bar treatment so the category
+     title sits flush next to its icon. */
+  .awc-compindex__group-title {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--md-sys-color-on-surface);
+  }
+  .awc-compindex__group-title::before {
+    display: none !important;
+  }
+
+  .awc-compindex__group-count {
+    display: inline-grid;
+    place-items: center;
+    min-inline-size: 1.5rem;
+    block-size: 1.5rem;
+    padding-inline: 0.5rem;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .awc-compindex__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.625rem;
+  }
+
+  .awc-compindex__card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-block: 0.75rem;
+    padding-inline: 0.875rem;
+    border-radius: var(--md-sys-shape-corner-medium, 12px);
+    background: var(--md-sys-color-surface-container-lowest);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    text-decoration: none;
+    transition:
+      transform var(--awc-dur-default) var(--awc-spring-spatial),
+      border-color var(--awc-dur-default) var(--awc-spring-effects),
+      background-color var(--awc-dur-default) var(--awc-spring-effects);
+  }
+
+  .awc-compindex__card:hover {
+    transform: translateY(-2px);
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-surface-container);
+    text-decoration: none;
+  }
+
+  .awc-compindex__card-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  /* Use our own tag style (not the docs-theme inline <code>) so the chip
+     reads as a code token without the boxed background. */
+  .awc-compindex__card-tag {
+    font-family: var(--sl-font-system-mono, ui-monospace, monospace);
+    font-size: 0.75rem;
+    color: var(--md-sys-color-primary);
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .awc-compindex__card {
+      transition: none !important;
+      transform: none !important;
+    }
+  }
+</style>

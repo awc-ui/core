@@ -1,0 +1,52 @@
+{
+  "name": "@awc-ui/react",
+  "version": "0.1.0",
+  "description": "React wrapper for AWC UI Material Design 3 components",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@stencil/react-output-target": "^1.6.1"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18",
+    "@awc-ui/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "~18.2.79",
+    "@types/react-dom": "~18.2.25",
+    "typescript": "^5.4.0"
+  },
+  "license": "MIT",
+  "author": "AWC UI",
+  "homepage": "https://awcui.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awc-ui/core.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/awc-ui/core/issues"
+  }
+}

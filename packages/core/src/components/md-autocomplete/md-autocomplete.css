@@ -1,0 +1,296 @@
+/* ==========================================================
+   md-autocomplete — Material Design 3 free-text + filterable
+   dropdown. Composes md-text-field + md-menu.
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-autocomplete-width               Trigger width (default 100% of container)
+     --md-autocomplete-min-width           Minimum trigger width
+     --md-autocomplete-chip-gap            Gap between selected chips
+     --md-autocomplete-chip-radius         Chip corner radius
+     --md-autocomplete-caret-color         Trailing caret color
+     --md-autocomplete-caret-size          Caret glyph size (default 24px)
+     --md-autocomplete-clear-color         Clear button color
+     --md-autocomplete-option-icon-size    Leading-icon size in items
+     --md-autocomplete-loading-color       Color of the loading row
+     --md-autocomplete-spinner-size        Trigger busy-spinner size (default 22px)
+
+   CSS PARTS:
+     field    Inner md-text-field
+     chips    Selected chips container
+     caret    Trailing dropdown caret
+     clear    Trailing clear button
+     menu     Popup md-menu
+     loading  Loading row inside the menu
+     loading-spinner  Trigger busy spinner (replaces clear/caret)
+
+   SLOTS:
+     loader          Replaces the default trigger busy spinner
+     dropdown-icon   Replaces the caret glyph
+   ========================================================== */
+
+:host {
+  /* The text inset already includes the caret's 7px optical bearing (see
+     md-text-field --_text-inset). Pull the TRAILING side back to the plain
+     box inset so the caret's BOX sits 7px shallower and its INK lands on the
+     same column as the text. */
+  --md-text-field-padding-inline-end: var(--md-sys-spacing-inset-lg, 16px);
+    --_min-width: var(--md-autocomplete-min-width, 220px);
+  --_chip-gap: var(--md-autocomplete-chip-gap, var(--md-sys-spacing-gap-xs, 4px));
+  --_chip-radius: var(--md-autocomplete-chip-radius, 8px);
+  --_caret-color: var(--md-autocomplete-caret-color, var(--md-sys-color-on-surface-variant));
+  --_clear-color: var(--md-autocomplete-clear-color, var(--md-sys-color-on-surface-variant));
+  --_option-icon-size: var(--md-autocomplete-option-icon-size, 20px);
+  --_loading-color: var(--md-autocomplete-loading-color, var(--md-sys-color-on-surface-variant));
+
+  /* Fill the container (like md-select) — the trigger width must come from
+     layout, never from the typed text (a shrink-to-fit inline-block would
+     grow/shrink with the input's content). Flex column so chip-position can
+     reorder the chips around the field. */
+  display: inline-flex;
+  flex-direction: column;
+  inline-size: var(--md-autocomplete-width, 100%);
+  min-inline-size: var(--_min-width);
+  box-sizing: border-box;
+  vertical-align: bottom;
+  position: relative;
+}
+
+/* ── Chip positions around the field ───────────────────────── */
+
+:host(.md-autocomplete--chips-top) .md-autocomplete__chips {
+  /* DOM order puts the chips first for top/left (focus + reading order must
+     match the visual order) — no CSS `order` reshuffling. */
+  margin-block-start: 0;
+  margin-block-end: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+:host(.md-autocomplete--chips-left),
+:host(.md-autocomplete--chips-right) {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+:host(.md-autocomplete--chips-left) .md-autocomplete__field,
+:host(.md-autocomplete--chips-right) .md-autocomplete__field {
+  flex: 1 1 auto;
+  inline-size: auto;
+  min-inline-size: 0;
+}
+
+:host(.md-autocomplete--chips-left) .md-autocomplete__chips,
+:host(.md-autocomplete--chips-right) .md-autocomplete__chips {
+  /* Beside the field: bounded content width (contain would collapse a row
+     flex item to zero), wrapping within it. */
+  contain: none;
+  flex: 0 1 auto;
+  max-inline-size: 50%;
+  margin-block-start: 0;
+}
+
+
+.md-autocomplete__field {
+  display: block;
+  inline-size: 100%;
+}
+
+.md-autocomplete__chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--_chip-gap);
+  max-inline-size: 100%;
+  margin-block-start: var(--md-sys-spacing-inset-sm, 8px);
+  /* Chips must not contribute intrinsic width: in a shrink-to-fit layout the
+     row's max-content (all chips on one line) would widen the whole host as
+     the selection grows. Contained, the trigger field alone sizes the host
+     and the chips wrap within it. */
+  contain: inline-size;
+}
+
+.md-autocomplete__chips md-chip {
+  --md-chip-container-shape: var(--_chip-radius);
+}
+
+/* Chips INSIDE the field (chip-position="inline"): slotted into md-text-field's
+   `chips` slot with chips-wrap — they wrap onto new rows and the field grows. */
+.md-autocomplete__inline-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--_chip-gap);
+  min-inline-size: 0;
+  overflow: visible;
+}
+
+.md-autocomplete__inline-chips md-chip {
+  --md-chip-container-shape: var(--_chip-radius);
+  flex-shrink: 0;
+}
+
+/* ── Trailing controls (caret + clear) ─────────────────────── */
+
+.md-autocomplete__caret {
+  color: var(--_caret-color);
+  /* Match the selects: 24px glyph, 200ms/standard rotation (see md-select.css). */
+  font-size: var(--md-autocomplete-caret-size, 24px);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 24px;
+  block-size: 24px;
+  cursor: pointer;
+  transition: transform var(--md-sys-motion-duration-short4, 200ms)
+    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+:host(.md-autocomplete--open) .md-autocomplete__caret {
+  transform: rotate(180deg);
+}
+
+/* The clear affordance is an md-icon-button (ring/ripple/a11y for free);
+   sized down to sit inside the field's trailing cluster. */
+.md-autocomplete__clear {
+  --md-icon-button-container-width: 28px;
+  --md-icon-button-container-height: 28px;
+  --md-icon-button-icon-size: 18px;
+  color: var(--_clear-color);
+  margin-inline-end: 2px;
+}
+
+/* Space stays reserved; the button is just invisible + inert while there is
+   nothing to clear (visibility also drops it from the tab order / AT). */
+.md-autocomplete__clear--hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Busy state: trigger spinner replacing the clear/caret cluster (see the
+   selects — same sizing convention). */
+.md-autocomplete__loader {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 24px;
+  block-size: 24px;
+  --md-loading-indicator-size: var(--md-autocomplete-spinner-size, 22px);
+  --md-loading-indicator-shape-size: var(--md-autocomplete-spinner-size, 22px);
+}
+
+/* ── Menu styling ──────────────────────────────────────────── */
+
+/* Centred, like the selects' empty states. */
+md-menu::part(empty-text) {
+  display: flex;
+  justify-content: center;
+  padding: var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px);
+  color: var(--md-sys-color-on-surface-variant);
+  text-align: center;
+}
+
+.md-autocomplete__option-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--md-autocomplete-option-icon-color, var(--md-sys-color-on-surface-variant, #49454f));
+  font-size: var(--_option-icon-size);
+  inline-size: var(--_option-icon-size);
+  block-size: var(--_option-icon-size);
+}
+
+/* Listbox wrapper (plain + virtualized) — the spacers preserve the full
+   scroll height around the rendered window. */
+.md-autocomplete__listbox {
+  display: block;
+}
+
+.md-autocomplete__vspacer {
+  inline-size: 100%;
+  pointer-events: none;
+}
+
+.md-autocomplete__loading {
+  display: block;
+  padding: var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px);
+  color: var(--_loading-color);
+}
+
+/* Visually-hidden polite status region (expanded count / busy). */
+.md-autocomplete__sr-status {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Disabled ──────────────────────────────────────────────── */
+
+:host(.md-autocomplete--disabled),
+:host(.md-autocomplete--soft-disabled) {
+  pointer-events: none;
+}
+
+:host(.md-autocomplete--soft-disabled) .md-autocomplete__field {
+  pointer-events: auto;
+}
+
+/* ── RTL ────────────────────────────────────────────────────── */
+
+/* ── Reduced motion ────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-autocomplete__caret,
+  .md-autocomplete__clear {
+    transition: none;
+  }
+}
+
+/* ── Forced colors (Windows High Contrast) ─────────────────── */
+
+@media (forced-colors: active) {
+  .md-autocomplete__caret,
+  .md-autocomplete__clear {
+    color: CanvasText;
+  }
+}
+
+/* ── Material Symbols font (shadow-root scope) ─────────────── */
+
+/* Caret, clear, and option icons render inside our shadow root
+   (even when slotted into nested md-text-field / md-menu-item),
+   so they need the font-family declared locally — shadow DOM
+   does not inherit page-level CSS class rules. */
+.material-symbols-outlined {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   This component FORWARDS `density` to the md-text-field it embeds, which
+   handles the field box — but that forward says nothing about this host, so its
+   OWN chrome (dropdown surface, chips, frame gaps) stayed at density-0 whenever
+   density came from the local prop rather than a global ancestor. Mapping the
+   prop onto the shared signal here fixes that asymmetry; the spacing-token half
+   of the rung arrives from the [density="-N"] selector in tokens.css.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

@@ -1,0 +1,368 @@
+{
+  "tag": "md-app-bar",
+  "title": "App Bar",
+  "slug": "app-bar",
+  "category": "Navigation",
+  "subComponentOf": null,
+  "storyId": "navigation-app-bar--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'small' | 'medium' | 'large' | 'search'",
+      "default": "'small'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "titleAlignment",
+      "attribute": "title-alignment",
+      "type": "'start' | 'center'",
+      "default": "'start'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "searchPlaceholder",
+      "attribute": "search-placeholder",
+      "type": "string",
+      "default": "'Search'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "searchValue",
+      "attribute": "search-value",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "searchAriaLabel",
+      "attribute": "search-aria-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "searchDisabled",
+      "attribute": "search-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "headline",
+      "attribute": "headline",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "subtitle",
+      "attribute": "subtitle",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "scrolled",
+      "attribute": "scrolled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "leadingIcon",
+      "attribute": "leading-icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "leadingIconLabel",
+      "attribute": "leading-icon-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdLeadingClick",
+      "detail": "MouseEvent"
+    },
+    {
+      "name": "mdSearchActivate",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdSearchInput",
+      "detail": "{ value: string }"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "headline",
+      "description": "Custom headline content (overrides headline prop)"
+    },
+    {
+      "name": "subtitle",
+      "description": "Custom subtitle content (overrides subtitle prop)"
+    },
+    {
+      "name": "search",
+      "description": "Replace built-in search input (search configuration)"
+    },
+    {
+      "name": "search-trailing",
+      "description": "In-pill trailing icons (e.g. mic); data-compact-keep opts out of compact hide"
+    },
+    {
+      "name": "leading",
+      "description": "Leading navigation icon(s) — slot takes priority over leading-icon prop"
+    },
+    {
+      "name": "trailing",
+      "description": "Trailing action icons outside search field (max 3; excess hidden + warn)"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "leading-icon",
+      "description": "Prop-based leading md-icon-button"
+    },
+    {
+      "name": "title",
+      "description": "Inline title (small variant)"
+    },
+    {
+      "name": "subtitle",
+      "description": "Subtitle text (inline on small, expanded on medium/large)"
+    },
+    {
+      "name": "expanded-headline",
+      "description": "Expanded headline text (headline-medium)"
+    },
+    {
+      "name": "search-host",
+      "description": "Flex region between leading/trailing (search variant)"
+    },
+    {
+      "name": "search",
+      "description": "Search pill container (search variant)"
+    },
+    {
+      "name": "search-state-layer",
+      "description": "Hover / focus / press overlay on search field"
+    },
+    {
+      "name": "search-field",
+      "description": "Text/input flex region inside pill (hint padding)"
+    },
+    {
+      "name": "search-content",
+      "description": "Wrapper around slotted `search` content"
+    },
+    {
+      "name": "search-input",
+      "description": "Inline search `<input>` (search variant)"
+    },
+    {
+      "name": "search-trailing",
+      "description": "Trailing slot inside the search field"
+    },
+    {
+      "name": "row",
+      "description": "Top action row (leading | title | trailing)"
+    },
+    {
+      "name": "leading",
+      "description": "Leading slot wrapper"
+    },
+    {
+      "name": "trailing",
+      "description": "Trailing slot wrapper (outside search field)"
+    },
+    {
+      "name": "expanded",
+      "description": "Expanded title block wrapper (medium / large)"
+    },
+    {
+      "name": "icon",
+      "description": "Leading icon glyph (exported from leading-icon)"
+    },
+    {
+      "name": "state-layer",
+      "description": "Leading icon state layer (exported from leading-icon)"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-app-bar-container-color",
+      "description": "Top bar background (flat → surface)"
+    },
+    {
+      "name": "--md-app-bar-container-color-scrolled",
+      "description": "Top bar background when scrolled (surface-container)"
+    },
+    {
+      "name": "--md-app-bar-container-shape",
+      "description": "Top bar container corner radius (none)"
+    },
+    {
+      "name": "--md-app-bar-headline-color",
+      "description": "Headline / title colour (on-surface)"
+    },
+    {
+      "name": "--md-app-bar-subtitle-color",
+      "description": "Subtitle colour (on-surface-variant)"
+    },
+    {
+      "name": "--md-app-bar-leading-icon-color",
+      "description": "Leading icon colour (on-surface)"
+    },
+    {
+      "name": "--md-app-bar-trailing-icon-color",
+      "description": "Trailing icon colour (on-surface-variant)"
+    },
+    {
+      "name": "--md-app-bar-container-elevation",
+      "description": "Container shadow (elevation-0 default)"
+    },
+    {
+      "name": "--md-app-bar-row-height",
+      "description": "Action row height (64dp)"
+    },
+    {
+      "name": "--md-app-bar-padding-inline-start",
+      "description": "Action row inline-start padding (4dp)"
+    },
+    {
+      "name": "--md-app-bar-padding-inline-end",
+      "description": "Action row inline-end padding (4dp)"
+    },
+    {
+      "name": "--md-app-bar-row-padding-inline",
+      "description": "Deprecated alias for both paddings (4dp)"
+    },
+    {
+      "name": "--md-app-bar-row-padding-block-start",
+      "description": "Action row block-start padding (20dp large expanded)"
+    },
+    {
+      "name": "--md-app-bar-trailing-gap",
+      "description": "Gap between trailing action icons (2dp)"
+    },
+    {
+      "name": "--md-app-bar-trailing-icon-touch-size",
+      "description": "Trailing icon touch target (48dp; matches leading)"
+    },
+    {
+      "name": "--md-app-bar-icon-gap",
+      "description": "Gap between icons and row content (0)"
+    },
+    {
+      "name": "--md-app-bar-icon-size",
+      "description": "Icon glyph size in action row (24dp,"
+    },
+    {
+      "name": "--md-app-bar-icon-button-size",
+      "description": ""
+    },
+    {
+      "name": "--md-app-bar-avatar-size",
+      "description": ""
+    },
+    {
+      "name": "--md-app-bar-expanded-padding-inline",
+      "description": ""
+    },
+    {
+      "name": "--md-app-bar-expanded-padding-block-end",
+      "description": ""
+    },
+    {
+      "name": "--md-app-bar-search-container-height",
+      "description": ""
+    },
+    {
+      "name": "--md-app-bar-search-padding-inline-start",
+      "description": ""
+    },
+    {
+      "name": "--md-app-bar-search-padding-inline-end",
+      "description": ""
+    },
+    {
+      "name": "--md-app-bar-search-row-gap",
+      "description": ""
+    },
+    {
+      "name": "--md-app-bar-search-trailing-gap",
+      "description": ""
+    },
+    {
+      "name": "--md-app-bar-search-field-trailing-gap",
+      "description": ""
+    },
+    {
+      "name": "--md-app-bar-trailing-touch-size",
+      "description": ""
+    },
+    {
+      "name": "--md-app-bar-medium-height",
+      "description": ""
+    },
+    {
+      "name": "--md-app-bar-medium-height-with-subtitle",
+      "description": ""
+    },
+    {
+      "name": "--md-app-bar-large-height",
+      "description": ""
+    },
+    {
+      "name": "--md-app-bar-large-height-with-subtitle",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-icon-button",
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdLeadingClick",
+      "detail": "MouseEvent"
+    },
+    {
+      "name": "mdSearchActivate",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdSearchInput",
+      "detail": "{ value: string }"
+    }
+  ]
+}

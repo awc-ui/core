@@ -1,0 +1,144 @@
+---
+title: Ripple
+description: Turn the Material press ripple off globally, per region, or per component — and opt back in
+sidebar:
+  order: 3
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+The ripple is Material's press feedback: a circle that grows from the pointer.
+**24 components** use it. It is on by default and can be switched off at any
+level.
+
+## Turn it off globally
+
+```html
+<html data-ripple="off">
+```
+
+Every ripple in the app stops spawning. Hover, focus and pressed **state
+layers still work** — only the animated circle is suppressed.
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:12px;align-items:center;margin-block-end:16px;">
+  <span style="width:5rem;opacity:.7;font-size:.8rem;">on</span>
+  <md-button variant="filled">Press me</md-button>
+  <md-icon-button icon="favorite" aria-label="Favourite"></md-icon-button>
+</div>
+<div data-ripple="off" style="display:flex;gap:12px;align-items:center;">
+  <span style="width:5rem;opacity:.7;font-size:.8rem;">off</span>
+  <md-button variant="filled">Press me</md-button>
+  <md-icon-button icon="favorite" aria-label="Favourite"></md-icon-button>
+</div>`}
+  label="Ripple on vs off — press each button"
+/>
+
+## Three levels, and opting back in
+
+The switch resolves to one custom property, `--md-sys-ripple-enabled`
+(`1` on, `0` off). It travels **both ways**, so a subtree or a single
+component can opt back in inside a disabled region:
+
+```html
+<html data-ripple="off">
+  <!-- no ripples anywhere -->
+
+  <section data-ripple="on">
+    <!-- ...except in here -->
+    <md-button variant="filled">Ripples</md-button>
+  </section>
+
+  <md-button variant="filled" ripple="on">Also ripples</md-button>
+</html>
+```
+
+| Scope | Attribute | Where |
+|---|---|---|
+| Global | `data-ripple="off"` / `"on"` | `<html>` or any ancestor |
+| Region | `data-ripple="off"` / `"on"` | Any wrapper element |
+| Component | `ripple="off"` / `"on"` | The component host |
+
+Both spellings resolve to the same property, so a component never needs to
+know which one was used.
+
+### Why local wins
+
+A local rule applies the property **directly to the host**; the global one
+arrives by **inheritance** from an ancestor. A directly-applied custom
+property always beats an inherited one, at any specificity — no `!important`
+and no specificity tricks.
+
+## Why not `:host-context()`
+
+The obvious implementation — reading an ancestor's state from inside the
+shadow root — is not available: **Firefox does not implement
+`:host-context()`**. An earlier version of this library used it and was
+silently inert in Firefox. The inherited-custom-property approach works in
+every browser and needs no JavaScript.
+
+## Runtime toggle
+
+```js
+// off
+document.documentElement.dataset.ripple = 'off';
+// back on
+document.documentElement.dataset.ripple = 'on';
+// or remove the attribute entirely for the default
+delete document.documentElement.dataset.ripple;
+```
+
+Because it is pure CSS, the change applies instantly with no re-render.
+
+## Reduced motion
+
+The ripple is animation. Respect the OS preference:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  :root { --md-sys-ripple-enabled: 0; }
+}
+```
+
+:::tip
+This is the recommended baseline for every app. Users who ask for reduced
+motion get no ripple, and everyone else keeps the Material feel.
+:::
+
+## When to switch it off
+
+| Situation | Recommendation |
+|---|---|
+| Utilitarian internal tool, flat visual language | Global `off` |
+| Dense data grid where every cell click ripples | `off` on the table region |
+| User has `prefers-reduced-motion` | `off` via the media query above |
+| Consumer product | Leave it **on** — it is a core Material affordance |
+
+:::caution[Don't remove feedback entirely]
+Turning the ripple off removes an *animated* cue, not the only cue. Keep the
+hover and focus state layers and a visible focus ring — those are what
+keyboard and assistive-technology users rely on.
+:::
+
+## Custom controls
+
+If you build your own interactive surface and want matching feedback, use
+the `md-ripple` primitive rather than a hand-rolled animation — it
+participates in this same global switch:
+
+```html
+<div class="my-tile" style="position: relative; overflow: hidden;">
+  <md-ripple></md-ripple>
+  …content…
+</div>
+```
+
+Note that pointer input ripples automatically but **keyboard activation does
+not** — call `trigger()` from your `Enter`/`Space` handler, which is what the
+library components do.
+
+## Related
+
+- [Shape Morph](/behaviour/shape-morph/) — the other expressive toggle, same mechanism
+- [Motion & Animation](/theming/motion/) — durations, easings and reduced motion
+- [`md-ripple`](/components/ripple/) — the primitive itself

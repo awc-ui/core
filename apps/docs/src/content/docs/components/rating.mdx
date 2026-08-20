@@ -1,0 +1,785 @@
+---
+title: Rating
+description: "A subjective score on a small discrete scale — stars or custom glyphs, optional half-steps, and form participation"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/rating.json";
+
+**A subjective score on a small, discrete scale.** Star (or custom-glyph) rating
+with a configurable maximum, optional half-steps, a hover preview, and form
+participation via `ElementInternals`. **Not a Material Design 3 component** — M3
+has no rating page, so there is no spec to point at; the guidance here is house
+rules derived from M3's slider and icon-button pages plus this component's own
+behaviour.
+
+<ComponentDemo
+  html={`<md-rating value="3" rating-label="Rate this product"></md-rating>
+<md-rating value="4.5" precision="0.5" show-value-label rating-label="Average rating" readonly></md-rating>`}
+  label="Live preview"
+  storyId="selection-rating--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-rating" example="" />
+
+## When to use
+
+- Capturing a **subjective judgement** on a small scale: product reviews,
+  satisfaction, difficulty.
+- **Displaying** an aggregate score read-only.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| An objective value on a continuum | [`md-slider`](/components/slider/) |
+| A precise number | [`md-text-field`](/components/text-field/) with `type="number"` |
+| Binary like / dislike | [`md-icon-button`](/components/icon-button/) with `toggle` |
+| More than ~10 points of scale | [`md-slider`](/components/slider/) |
+| Progress toward completion | [`md-progress-indicator`](/components/progress-indicator/) |
+| A non-interactive status | [`md-badge`](/components/badge/) / [`md-status-dot`](/components/status-dot/) |
+| Choosing among labelled options | [`md-radio`](/components/radio/) / [`md-segmented-button`](/components/segmented-button/) |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| A star scale the user sets | Default (interactive) |
+| Display-only average | `readonly` |
+| Half stars | `precision="0.5"` |
+| More or fewer items | `max` |
+| A numeric readout | `show-value-label` |
+| Different glyphs | `icon` / `empty-icon` |
+| No hover preview | `hover="off"` |
+| Smaller glyphs | `size`, or `--md-rating-item-size` |
+
+## Sizes
+
+Five sizes. The default is **`md`**, unlike [`md-button`](/components/button/)
+which defaults to `sm`.
+
+<ComponentDemo
+  html={`<md-rating value="3" size="xs" rating-label="Extra small"></md-rating>
+<md-rating value="3" size="sm" rating-label="Small"></md-rating>
+<md-rating value="3" size="md" rating-label="Medium"></md-rating>
+<md-rating value="3" size="lg" rating-label="Large"></md-rating>
+<md-rating value="3" size="xl" rating-label="Extra large"></md-rating>`}
+  label="xs / sm / md (default) / lg / xl"
+  storyId="selection-rating--sizes"
+/>
+
+Check the per-item hit target at small `size` and deep density — a 5-item scale
+at `xs` gives very small targets on touch.
+
+## Precision and scale
+
+`precision` is `1` (whole steps) or `0.5` (half steps). With `0.5` the `value`
+is **fractional** — don't assume an integer.
+
+`max` sets the number of items and defaults to `5`. Keep it small; a 20-star
+scale belongs in a [`md-slider`](/components/slider/).
+
+<ComponentDemo
+  html={`<md-rating value="3" precision="1" show-value-label rating-label="Whole steps"></md-rating>
+<md-rating value="3.5" precision="0.5" show-value-label rating-label="Half steps"></md-rating>
+<md-rating value="7" max="10" show-value-label rating-label="Ten point scale"></md-rating>`}
+  label="Whole steps, half steps, and a wider max"
+  storyId="selection-rating--precision"
+/>
+
+## Value label
+
+`show-value-label` prints the numeric value beside the glyphs. Pair it with
+`readonly` for aggregate scores — glyph count alone is not precise enough to
+communicate an average.
+
+<ComponentDemo
+  html={`<md-rating value="4" show-value-label rating-label="With value label"></md-rating>
+<md-rating value="2.5" precision="0.5" show-value-label rating-label="Fractional value label"></md-rating>`}
+  label="Numeric value label"
+  storyId="selection-rating--with-value-label"
+/>
+
+## States
+
+`readonly` still renders and announces the score but blocks interaction (and
+switches the internal role to `img`). `disabled` also greys it out and drops it
+from the tab order; `soft-disabled` stays focusable so keyboard users can
+discover it.
+
+<ComponentDemo
+  html={`<md-rating value="4" rating-label="Enabled"></md-rating>
+<md-rating value="4" readonly rating-label="Read-only"></md-rating>
+<md-rating value="4" disabled rating-label="Disabled"></md-rating>
+<md-rating value="4" soft-disabled rating-label="Soft-disabled"></md-rating>`}
+  label="Enabled / readonly / disabled / soft-disabled — try tabbing through"
+  storyId="selection-rating--states"
+/>
+
+:::caution[Displaying an average without `readonly`]
+Users will think they are rating. Any score you are *showing* rather than
+*collecting* needs `readonly`.
+:::
+
+## Custom glyphs
+
+`icon` and `empty-icon` take any Material Symbols name. `outline-empty` (default
+**on**) draws unfilled items as outlines; turn it off for solid empties.
+
+<ComponentDemo
+  html={`<md-rating value="3" icon="star" empty-icon="star" rating-label="Stars"></md-rating>
+<md-rating value="3" icon="favorite" empty-icon="favorite" rating-label="Hearts"></md-rating>
+<md-rating value="3" icon="bolt" empty-icon="bolt" rating-label="Bolts"></md-rating>
+<md-rating value="3" icon="local_fire_department" empty-icon="local_fire_department" rating-label="Flames"></md-rating>
+<md-rating value="3" outline-empty="false" rating-label="Solid empties"></md-rating>`}
+  label="Custom glyphs and solid empties"
+  storyId="selection-rating--custom-icon"
+/>
+
+Keep the glyph conventional for a *score*. An ambiguous icon makes the scale
+unreadable.
+
+## Hover preview
+
+`hover="preview"` (the default) previews the value under the pointer and emits
+`mdHover`; it does **not** change `value` until a click. Set `hover="off"` on
+touch-primary or very dense surfaces.
+
+<ComponentDemo
+  html={`<md-rating value="3" hover="preview" rating-label="Hover preview on"></md-rating>
+<md-rating value="3" hover="off" rating-label="Hover preview off"></md-rating>`}
+  label="Hover preview on and off"
+  storyId="selection-rating--hover-off"
+/>
+
+## Forms
+
+`md-rating` is **form-associated** via `ElementInternals` — it submits `value`
+under `name` with no hidden input, exactly as
+[`md-slider`](/components/slider/) does. A value of `0` submits as *absent*
+rather than `"0"`.
+
+:::note[`default-value` is the **clear** target, not the reset target]
+`default-value` (default `0`) is where the rating lands when the user clicks the
+item it is already sitting on — the click-to-clear escape hatch, and its only
+job.
+
+A `<form>` reset is a separate path: `formResetCallback` restores the `value`
+the element was **authored with**, captured once at load. The demo below is
+authored `value="4"` and sets no `default-value`, so **Reset returns it to 4**,
+and clicking the 4th star clears it to `0`.
+:::
+
+<ComponentDemo
+  html={`<form style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;"
+        onsubmit="event.preventDefault(); this.querySelector('[data-out]').textContent = 'Submitted: satisfaction=' + (new FormData(this).get('satisfaction') || '(empty)');">
+  <md-rating name="satisfaction" value="4" show-value-label rating-label="Satisfaction"></md-rating>
+  <md-button variant="filled" type="submit">Send feedback</md-button>
+  <md-button variant="text" type="reset">Reset</md-button>
+  <span data-out style="opacity:.75;font-size:.85rem;"></span>
+</form>`}
+  htmlForCode={`<form id="feedback">
+  <md-rating name="satisfaction" value="4" show-value-label rating-label="Satisfaction"></md-rating>
+
+  <md-button variant="filled" type="submit">Send feedback</md-button>
+  <md-button variant="text" type="reset">Reset</md-button>
+</form>`}
+  label="Inside a form — submit and reset"
+  storyId="selection-rating--form-participation"
+/>
+
+Reading it back out is plain `FormData` — there is no wrapper API to learn:
+
+<TechnologyTabs
+  html={`<form id="feedback">
+  <md-rating name="satisfaction" value="4" show-value-label rating-label="Satisfaction"></md-rating>
+
+  <md-button variant="filled" type="submit">Send feedback</md-button>
+  <md-button variant="text" type="reset">Reset</md-button>
+</form>
+
+<script type="module">
+  document.getElementById('feedback').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(e.target);
+    console.log(Object.fromEntries(data));   // { satisfaction: '4' }
+  });
+</script>`}
+  react={`import { MdRating, MdButton } from '@awc-ui/react';
+
+export function FeedbackForm() {
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    console.log(Object.fromEntries(data));   // { satisfaction: '4' }
+  }
+
+  return (
+    <form onSubmit={onSubmit}>
+      <MdRating name="satisfaction" value={4} showValueLabel ratingLabel="Satisfaction" />
+
+      <MdButton variant="filled" type="submit">Send feedback</MdButton>
+      <MdButton variant="text" type="reset">Reset</MdButton>
+    </form>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+// Requires AwcUiModule from '@awc-ui/angular' in the owning NgModule.
+
+@Component({
+  selector: 'app-feedback-form',
+  template: \`
+    <form (submit)="onSubmit($event)">
+      <md-rating name="satisfaction" [value]="4" [showValueLabel]="true"
+                 ratingLabel="Satisfaction"></md-rating>
+
+      <md-button variant="filled" type="submit">Send feedback</md-button>
+      <md-button variant="text" type="reset">Reset</md-button>
+    </form>
+  \`,
+})
+export class FeedbackFormComponent {
+  onSubmit(e: Event) {
+    e.preventDefault();
+    const data = new FormData(e.target as HTMLFormElement);
+    console.log(Object.fromEntries(data));   // { satisfaction: '4' }
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { MdRating, MdButton } from '@awc-ui/vue';
+
+function onSubmit(e: Event) {
+  e.preventDefault();
+  const data = new FormData(e.target as HTMLFormElement);
+  console.log(Object.fromEntries(data));   // { satisfaction: '4' }
+}
+</script>
+
+<template>
+  <form @submit="onSubmit">
+    <MdRating name="satisfaction" :value="4" :showValueLabel="true" ratingLabel="Satisfaction" />
+
+    <MdButton variant="filled" type="submit">Send feedback</MdButton>
+    <MdButton variant="text" type="reset">Reset</MdButton>
+  </form>
+</template>`}
+  svelte={`<script lang="ts">
+  function onSubmit(e: Event) {
+    e.preventDefault();
+    const data = new FormData(e.target as HTMLFormElement);
+    console.log(Object.fromEntries(data));   // { satisfaction: '4' }
+  }
+</script>
+
+<!-- Svelte assigns to the DOM property when one exists, so numeric props must
+     be written as expressions: value="4" would set the STRING "4". -->
+<form on:submit={onSubmit}>
+  <md-rating name="satisfaction" value={4} showValueLabel={true} ratingLabel="Satisfaction"></md-rating>
+
+  <md-button variant="filled" type="submit">Send feedback</md-button>
+  <md-button variant="text" type="reset">Reset</md-button>
+</form>`}
+/>
+
+## `getLabel` is a function prop
+
+`getLabel` supplies the per-value screen-reader announcement. Function props do
+not cross the attribute boundary, so **there is no `get-label` attribute** — set
+it in JS.
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
+  <md-rating id="label-rating" value="3" rating-label="Rate this product"></md-rating>
+  <output data-label-out style="font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; opacity:.85;"></output>
+</div>`}
+  script={`
+  var rating = root.querySelector('#label-rating');
+  var out = root.querySelector('[data-label-out]');
+  rating.getLabel = function (v) { return v + ' out of ' + rating.max + ' stars'; };
+  var show = function () {
+    out.textContent = 'aria-valuetext = ' + rating.getLabel(rating.value);
+  };
+  rating.addEventListener('mdChange', show);
+  show();`}
+  htmlForCode={`<md-rating id="rating" value="3" rating-label="Rate this product"></md-rating>
+
+<script type="module">
+  const rating = document.getElementById('rating');
+
+  // Function prop — no get-label attribute exists, so set it in JS.
+  rating.getLabel = (v) => v + ' out of ' + rating.max + ' stars';
+</script>`}
+  react={`import { MdRating } from '@awc-ui/react';
+
+// Plain function — the wrapper assigns it as a property, so it goes through
+// like any other prop. No ref, no effect.
+const labelFor = (v: number) => v + ' out of 5 stars';
+
+export function ProductRating() {
+  return <MdRating getLabel={labelFor} value={3} ratingLabel="Rate this product" />;
+}`}
+  angular={`import { Component } from '@angular/core';
+// Requires AwcUiModule from '@awc-ui/angular' in the owning NgModule — its
+// MdRating proxy declares getLabel as an input, so it binds like any other.
+
+@Component({
+  selector: 'app-product-rating',
+  template: \`
+    <md-rating [getLabel]="labelFor" [value]="3" ratingLabel="Rate this product"></md-rating>
+  \`,
+})
+export class ProductRatingComponent {
+  labelFor = (v: number) => v + ' out of 5 stars';
+}`}
+  vue={`<script setup lang="ts">
+import { MdRating } from '@awc-ui/vue';
+
+const labelFor = (v: number) => v + ' out of 5 stars';
+</script>
+
+<template>
+  <MdRating :getLabel="labelFor" :value="3" ratingLabel="Rate this product" />
+</template>`}
+  svelte={`<script lang="ts">
+  const labelFor = (v: number) => v + ' out of 5 stars';
+</script>
+
+<!-- Svelte assigns to the DOM property when one exists, so getLabel goes
+     through as a plain prop — no bind:this, no onMount. -->
+<md-rating getLabel={labelFor} value={3} ratingLabel="Rate this product"></md-rating>`}
+  label="Pick a value — the announcement string follows it"
+  storyId="selection-rating--playground"
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdHover` | no | `number \| null` | Hover preview changes; `null` on leave |
+| `mdChange` | no | `number` | A rating is committed |
+
+**"Cancelable" here means *veto honoured*.** Both are declared as bare
+`@Event()`s, so Stencil emits them with its default `cancelable: true` —
+`preventDefault()` succeeds and `defaultPrevented` reads `true`. The component
+never checks it — `mdHover` is a bare notification, and `mdChange` is emitted
+*after* `value` has already been assigned. To reject a score, write the previous
+one back to `value` in your handler.
+
+`mdHover` is a **preview** — never read it as the chosen value.
+
+| You want to… | Listen to |
+|---|---|
+| Store the score the user picked | `mdChange` |
+| Paint a live "you are about to pick 4" caption | `mdHover` |
+| Clear that caption when the pointer leaves | `mdHover` with `detail === null` |
+| React to `rating.value = 4` set from your own code | Neither — no event fires |
+
+Both events **bubble** and are **composed**, so one delegated listener on an
+ancestor catches every rating. Sweep the pointer across the stars, then click:
+
+<ComponentDemo
+  html={`<md-rating id="rating-ev" precision="0.5" show-value-label rating-label="Rate this product"></md-rating>
+<output id="rating-ev-log" style="display:block; margin-block-start:16px; min-block-size:3.2em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Hover across the stars, then click one.</output>`}
+  script={`
+    var log = root.querySelector('#rating-ev-log');
+    var rating = root.querySelector('#rating-ev');
+    var lines = [];
+
+    rating.getLabel = function (v) { return v + ' of ' + rating.max; };
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 3);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    // One delegated listener on the demo root catches both — the events bubble
+    // and are composed.
+    root.addEventListener('mdHover', function (e) {
+      push('mdHover   ->  ' + (e.detail === null ? 'null (pointer left)' : e.detail) + '   preview only');
+    });
+
+    root.addEventListener('mdChange', function (e) {
+      push('mdChange  ->  ' + e.detail + '   committed, value is now ' + rating.value);
+    });`}
+  label="mdHover previews, mdChange commits"
+  htmlCode={`<md-rating id="score" precision="0.5" show-value-label name="score" rating-label="Rate this product"></md-rating>
+
+<script type="module">
+  const r = document.getElementById('score');
+
+  // Function prop — no get-label attribute exists, so assign it in JS.
+  r.getLabel = (v) => v + ' out of ' + r.max + ' stars';
+
+  r.addEventListener('mdChange', (e) => submitScore(e.detail));
+  r.addEventListener('mdHover', (e) => preview(e.detail));   // null on leave
+</script>`}
+  react={`import { MdRating } from '@awc-ui/react';
+
+const labelFor = (v: number) => v + ' out of 5 stars';
+
+export function ProductRating() {
+  // getLabel is a FUNCTION prop; the wrapper assigns it as a property, so it
+  // goes through as a prop like any other. No ref, no effect.
+  return (
+    <MdRating
+      getLabel={labelFor}
+      precision={0.5}
+      showValueLabel
+      name="score"
+      ratingLabel="Rate this product"
+      onMdChange={(e) => submitScore(e.detail)}
+      onMdHover={(e) => preview(e.detail)}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+// Requires AwcUiModule from '@awc-ui/angular' in the owning NgModule — its
+// MdRating proxy declares getLabel as an input, so it binds like any other.
+
+@Component({
+  selector: 'app-product-rating',
+  template: \`
+    <md-rating
+      [getLabel]="labelFor"
+      [precision]="0.5"
+      [showValueLabel]="true"
+      name="score"
+      ratingLabel="Rate this product"
+      (mdChange)="onChange($event)"
+      (mdHover)="onHover($event)"
+    ></md-rating>
+  \`,
+})
+export class ProductRatingComponent {
+  labelFor = (v: number) => v + ' out of 5 stars';
+
+  onChange(e: CustomEvent<number>) { submitScore(e.detail); }
+  onHover(e: CustomEvent<number | null>) { preview(e.detail); }
+}`}
+  vue={`<script setup lang="ts">
+import { MdRating } from '@awc-ui/vue';
+
+const labelFor = (v: number) => v + ' out of 5 stars';
+
+function onChange(e: CustomEvent<number>) { submitScore(e.detail); }
+function onHover(e: CustomEvent<number | null>) { preview(e.detail); }
+</script>
+
+<template>
+  <MdRating
+    :getLabel="labelFor"
+    :precision="0.5"
+    :showValueLabel="true"
+    name="score"
+    ratingLabel="Rate this product"
+    @mdChange="onChange"
+    @mdHover="onHover"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  const labelFor = (v: number) => v + ' out of 5 stars';
+
+  function onChange(e: CustomEvent<number>) { submitScore(e.detail); }
+  function onHover(e: CustomEvent<number | null>) { preview(e.detail); }
+</script>
+
+<!-- Svelte assigns to the DOM property when one exists, so getLabel goes
+     through as a plain prop — no bind:this, no onMount. -->
+<md-rating
+  getLabel={labelFor}
+  precision={0.5}
+  showValueLabel={true}
+  name="score"
+  ratingLabel="Rate this product"
+  on:mdChange={onChange}
+  on:mdHover={onHover}
+></md-rating>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- `rating-label` names the control (default `"Rating"`); `getLabel` supplies the
+  per-value announcement — set **both**.
+- Keyboard: arrow keys move through the scale by one `precision` step, `Home`
+  clears to `0`, `End` jumps to `max`, and a digit key `0`–`9` sets that value
+  outright when it is within `max`. Every other key (`Tab`, `Escape`) is left
+  alone so a dialog or menu ancestor can still act on it. `focusRating()`
+  focuses the control programmatically.
+- Filled vs empty is conveyed by glyph fill, not colour alone — keep
+  `outline-empty` on unless you have another cue.
+- `readonly` stays readable to assistive tech (`role="img"`); `disabled` leaves
+  the tab order (`tabindex="-1"`), while `soft-disabled` keeps `tabindex="0"`.
+- Check the per-item hit target at small `size` and deep density.
+
+The focusable node is the shadow-internal slider, so an IDREF can't reach it
+from outside. The component resolves the name for you instead, in this order:
+host `aria-labelledby` → host `aria-label` → an associated `<label for>` (via
+`ElementInternals.labels`) → the `rating-label` prop. Tab through these — the
+first three announce three different names, the soft-disabled one still takes
+focus, and the disabled one is skipped:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:9rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">default label</span>
+  <md-rating value="3"></md-rating>
+  <span style="inline-size:9rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rating-label</span>
+  <md-rating value="3" rating-label="Overall satisfaction"></md-rating>
+  <span style="inline-size:9rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">aria-labelledby</span>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <span id="rating-a11y-ext" style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Product quality</span>
+    <md-rating value="3" aria-labelledby="rating-a11y-ext"></md-rating>
+  </div>
+  <span style="inline-size:9rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">soft-disabled</span>
+  <md-rating value="3" soft-disabled rating-label="Soft-disabled — still focusable"></md-rating>
+  <span style="inline-size:9rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">disabled</span>
+  <md-rating value="3" disabled rating-label="Disabled — skipped"></md-rating>
+  <span style="inline-size:9rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">readonly</span>
+  <md-rating value="3" readonly rating-label="Average rating"></md-rating>
+</div>`}
+  label="Naming sources, and who stays in the tab order"
+/>
+
+The last row is the one to sanity-check with a screen reader: `readonly`
+switches the internal role from `slider` to `img`, which ignores
+`aria-valuetext`, so the score is folded into the accessible **name** instead —
+"Average rating: 3 Stars".
+
+## RTL, density & i18n
+
+**RTL** — under `dir="rtl"` the **input axis** mirrors and the **glyph row does
+not**. Nothing opts in, but the two halves read different signals:
+
+| Under `dir="rtl"` | What happens | Driven by |
+|---|---|---|
+| `ArrowRight` / `ArrowLeft` | Swap — `ArrowRight` walks *down* the scale | Computed `direction` (JS) |
+| Pointer half/full split within an item | Mirrors — the trailing (left) edge of a glyph now means *full* | Computed `direction` (JS) |
+| Value label | Moves to the left of the glyphs | Host inherits `direction: rtl` |
+| Order of the glyphs | **Unchanged** — item 1 stays on the left | See below |
+| The rendered half-fill inside one glyph | **Unchanged** — always fills from the glyph's physical left | `clip-path: inset()` is physical, and the glyph spans force `direction: ltr` |
+
+The row order is the surprise. The stylesheet mirrors it with
+`flex-direction: row-reverse`, but that container has *also* inherited
+`direction: rtl` from the host, and under RTL a flex row already runs
+right-to-left — so the two reversals cancel and the glyphs land back in physical
+left-to-right order. Measured in Chrome, the five item left edges under an
+inherited `dir="rtl"` come out ascending: item 1 is the leftmost.
+
+One more asymmetry worth knowing: the JS reads the **computed `direction`**,
+while the CSS mirror keys off a `dir` **attribute** on the host or an ancestor.
+A container styled `direction: rtl` in CSS with no `dir` attribute therefore
+flips the keyboard and pointer maths and leaves the flex rule out of it
+entirely. Set the attribute, not the property. See [RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <md-rating value="2.5" precision="0.5" show-value-label rating-label="التقييم"></md-rating>
+</div>
+```
+
+**The same ratings in both directions.** Nothing is re-authored between the two
+rows — only `dir` and the translated labels change. Compare them carefully:
+*within* each rating the stars sit in the same order in both rows, and only the
+value label crosses to the other side of its glyphs. (The three ratings as a
+group do reorder in the `rtl` row — that is the wrapping flex container, not the
+component.) The
+rest of the mirroring is in the keyboard and pointer maths, which a screenshot
+cannot show — focus a star in the `rtl` row and press `ArrowRight` to see it
+count *down*.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;">
+    <md-rating value="3" rating-label="Rating"></md-rating>
+    <md-rating value="2.5" precision="0.5" show-value-label rating-label="Average"></md-rating>
+    <md-rating value="4" readonly show-value-label rating-label="Read-only"></md-rating>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;">
+    <md-rating value="3" rating-label="التقييم"></md-rating>
+    <md-rating value="2.5" precision="0.5" show-value-label rating-label="المتوسط"></md-rating>
+    <md-rating value="4" readonly show-value-label rating-label="للقراءة فقط"></md-rating>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl — the value label swaps sides, the glyph order does not"
+  storyId="selection-rating--rtl"
+/>
+
+### Don't pin `dir` on the rating — let it inherit
+
+Pinning `dir="ltr"` on a rating inside an RTL block is worse than a no-op: it
+splits the control against itself. `:host-context([dir="rtl"])` matches when the
+host **or any ancestor** carries the attribute, so the pinned rating still gets
+`flex-direction: row-reverse` from the container — but its own computed
+`direction` is now `ltr`, so nothing cancels it. Measured in Chrome, the pinned
+row's five item left edges come out **descending**: item 1 lands on the right.
+Meanwhile the JS, reading that same `ltr`, leaves the arrow keys and the pointer
+split unmirrored.
+
+The result is a control whose glyphs run one way and whose input runs the other:
+`ArrowRight` counts *up* while the scale climbs leftward. Compare the two rows,
+both inside the same `dir="rtl"` container:
+
+<ComponentDemo
+  html={`<div dir="rtl" style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;">
+    <md-rating value="2.5" precision="0.5" show-value-label rating-label="المتوسط"></md-rating>
+    <md-rating value="3" rating-label="التقييم"></md-rating>
+  </div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;">
+    <md-rating dir="ltr" value="2.5" precision="0.5" show-value-label rating-label="المتوسط"></md-rating>
+    <md-rating dir="ltr" value="3" rating-label="التقييم"></md-rating>
+  </div>
+</div>`}
+  label="Inherit dir, don't pin it — the wrong row is the reversed one, and its arrow keys disagree with it"
+/>
+
+### Every density rung
+
+`density="-1…-4"` is a local override of the inherited `data-density`. It drives
+the same `--md-sys-density-scale` signal, tapering the glyph size and the gap
+between items. `0` is the default value rather than a rung of its own, so the
+first row below is what you get with no attribute at all:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;"><md-rating density="0" value="3" rating-label="Density 0"></md-rating><md-rating density="0" value="3.5" precision="0.5" show-value-label rating-label="Density 0 with label"></md-rating></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;"><md-rating density="-1" value="3" rating-label="Density -1"></md-rating><md-rating density="-1" value="3.5" precision="0.5" show-value-label rating-label="Density -1 with label"></md-rating></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;"><md-rating density="-2" value="3" rating-label="Density -2"></md-rating><md-rating density="-2" value="3.5" precision="0.5" show-value-label rating-label="Density -2 with label"></md-rating></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;"><md-rating density="-3" value="3" rating-label="Density -3"></md-rating><md-rating density="-3" value="3.5" precision="0.5" show-value-label rating-label="Density -3 with label"></md-rating></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;"><md-rating density="-4" value="3" rating-label="Density -4"></md-rating><md-rating density="-4" value="3.5" precision="0.5" show-value-label rating-label="Density -4 with label"></md-rating></div>
+</div>`}
+  label="Density 0 through -4 — glyph size and item gap both taper"
+/>
+
+:::caution[Below `-2`, check your touch targets]
+Each rung takes 2px off the glyph, so the default `md` item goes from 28px at
+`0` to 20px at `-4` — and every item is its own hit target, sitting next to
+four neighbours. That is far under the 48px pointer-coarse devices want, and
+`precision="0.5"` halves it again by splitting each item into two zones. On
+touch surfaces, pair a shallow rung with a larger `size` (or
+`--md-rating-item-size`) rather than shrinking both. See
+[Density](/behaviour/density/#accessibility).
+:::
+
+### Density and direction together
+
+The two are independent signals, so they compose without extra wiring — a
+wrapper sets the rung for everything inside it, and any one rating can take a
+tighter rung of its own.
+
+:::caution[`density="0"` is not an opt-out]
+Only `-1` through `-4` have a rule — there is deliberately no
+`:host([density="0"])` and no `[data-density="0"]`. Because
+`--md-sys-density-scale` is an inherited custom property, a rating written
+`density="0"` inside a `data-density="-2"` wrapper still inherits `-2` and draws
+24px glyphs like its neighbours. To restore the default rung on one element,
+reset the signal directly: `style="--md-sys-density-scale: 0"`.
+:::
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;">
+  <md-rating value="3" rating-label="التقييم"></md-rating>
+  <md-rating value="2.5" precision="0.5" show-value-label rating-label="المتوسط"></md-rating>
+  <md-rating value="4" readonly show-value-label rating-label="للقراءة فقط"></md-rating>
+  <md-rating value="3" density="-4" rating-label="أكثر إحكاما"></md-rating>
+  <md-rating value="3" rating-label="افتراضي" style="--md-sys-density-scale: 0;"></md-rating>
+</div>`}
+  label="dir=rtl with data-density=-2: three inherit, one tightens to -4, one resets the signal to 0"
+/>
+
+**Density** — `density="-1…-4"` locally overrides the inherited `data-density`
+rung; `0` is the default value, not an override. See
+[Density](/behaviour/density/).
+
+**i18n** — translate `rating-label`, and make `getLabel` locale-aware
+(pluralization: "1 star" vs "2 stars"). Format the number with `Intl` when
+`show-value-label` is on.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-rating-item-size` | Glyph size | Per `size` (16–48dp) |
+| `--md-rating-item-gap` | Spacing between items | `4px` |
+| `--md-rating-active-color` | Filled glyph colour | `secondary` |
+| `--md-rating-inactive-color` | Empty glyph colour | `on-surface-variant` at 30% |
+| `--md-rating-focus-ring-color` / `-width` / `-offset` | Focus ring | `secondary` / `3px` / `2px` |
+| `--md-rating-state-layer-color` | Hover / press overlay | `on-surface` |
+| `--md-rating-value-label-color` / `-font` | Numeric label | `on-surface` |
+| `--md-rating-pop-scale` / `--md-rating-duration` | Selection animation | `1.12` / `150ms` |
+| `--md-rating-icon-font-family` | Glyph font | Material Symbols |
+
+<ComponentDemo
+  html={`<md-rating value="4" icon="favorite" empty-icon="favorite" rating-label="Error toned" style="--md-rating-active-color: var(--md-sys-color-error); --md-rating-inactive-color: var(--md-sys-color-error-container);"></md-rating>
+<md-rating value="3" show-value-label rating-label="Wide gap" style="--md-rating-item-gap: 16px; --md-rating-item-size: 32px;"></md-rating>`}
+  label="Themed instances"
+  storyId="selection-rating--custom-css"
+/>
+
+Every default resolves through an `md-sys-color` role, so a rating that sets no
+custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;">
+  <md-rating value="4" rating-label="Untouched defaults"></md-rating>
+  <md-rating value="3.5" precision="0.5" show-value-label rating-label="Half steps"></md-rating>
+  <md-rating value="5" readonly rating-label="Read-only"></md-rating>
+</div>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="selection-rating--dark-theme"
+/>
+
+## CSS parts
+
+| Part | Element |
+|---|---|
+| `items` | The slider container — the whole row of glyphs |
+| `icon-empty` | The background (outline) glyph |
+| `icon-filled` | The clipped foreground (filled) glyph |
+| `state-layer` | Hover / press overlay — a filled glyph tracing the icon shape |
+| `ripple` | Press ripple — a glyph-clipped expanding circle |
+| `value-label` | The inline numeric value label |
+
+<ComponentDemo
+  html={`<style>
+  .parts-rating::part(items) { gap: 12px; }
+  .parts-rating::part(icon-filled) { filter: drop-shadow(0 1px 2px rgba(0,0,0,.35)); }
+  .parts-rating::part(value-label) { font-variant-numeric: tabular-nums; font-weight: 700; }
+</style>
+<md-rating class="parts-rating" value="3" show-value-label rating-label="Styled parts"></md-rating>`}
+  label="items, icon-filled and value-label"
+/>
+
+
+## Related
+
+[`md-slider`](/components/slider/) ·
+[`md-icon-button`](/components/icon-button/) ·
+[`md-progress-indicator`](/components/progress-indicator/) ·
+[`md-badge`](/components/badge/) ·
+[`md-segmented-button`](/components/segmented-button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-rating" />

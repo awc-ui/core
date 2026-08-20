@@ -1,0 +1,234 @@
+/* ==========================================================
+   md-list — Material Design 3 List Container
+   Spec: https://m3.material.io/components/lists/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-list-container-color       Container background
+     --md-list-container-shape       Border-radius override
+     --md-list-padding-block         Vertical padding inside the list
+     --md-list-padding-inline        Horizontal padding inside the list
+     --md-list-segmented-gap         Gap between rows in segmented mode (default 2px)
+     --md-list-drop-placeholder-color         Drop-target ghost fill (default primary-container @ ~45%, on-theme)
+     --md-list-drop-placeholder-outline-color Drop-target ghost outline (default primary @ ~55%, dashed, on-theme)
+     --md-list-drop-placeholder-outline-width Drop-target ghost outline width (default 2px)
+     --md-list-drop-placeholder-shape         Drop-target ghost corner radius (default corner-large / 16dp)
+     --md-list-drop-placeholder-opacity       Drop-target ghost opacity (default 1)
+
+   CSS PARTS:
+     drop-placeholder  Ghost slot shown in the lifted row's vacated position
+                       during a pointer reorder (tracks the live drop target)
+
+   SLOTS:
+     (default)   md-list-item children
+   ========================================================== */
+
+:host {
+  /* Defaults match the MD3 spec + material-web reference: standard lists
+     sit on the host's --md-sys-color-surface tone, flush to the parent's
+     edges (0px radius). Authors who want a grouped card-like chassis
+     opt in via --md-list-container-color / --md-list-container-shape. */
+  --_container-color: var(--md-list-container-color, var(--md-sys-color-surface, #fffbfe));
+  --_container-shape: var(--md-list-container-shape, 0px);
+  --_padding-block: var(--md-list-padding-block, var(--md-sys-spacing-inset-sm, 8px));
+  --_padding-inline: var(--md-list-padding-inline, 0px);
+  --_segmented-gap: var(--md-list-segmented-gap, 2px);
+
+  /* Drop-target placeholder (pointer reorder). Tinted toward the lifted row's
+     tone — a faint primary-container fill with a dashed primary outline — so
+     the ghost reads as a low-opacity version of the dragged card's color
+     rather than a neutral grey slot. Both are built from --md-sys-color-*
+     via color-mix, so the placeholder tracks the dynamic theme seed and
+     flips correctly between light and dark. Rounds to corner-large (16dp) to
+     match the dragged row's morphed shape. */
+  --_drop-placeholder-color: var(--md-list-drop-placeholder-color, color-mix(in srgb, var(--md-sys-color-primary-container, #eaddff) 45%, transparent));
+  --_drop-placeholder-outline-color: var(--md-list-drop-placeholder-outline-color, color-mix(in srgb, var(--md-sys-color-primary, #6750a4) 55%, transparent));
+  --_drop-placeholder-outline-width: var(--md-list-drop-placeholder-outline-width, 2px);
+  --_drop-placeholder-shape: var(--md-list-drop-placeholder-shape, var(--md-sys-shape-corner-large, 16px));
+  --_drop-placeholder-opacity: var(--md-list-drop-placeholder-opacity, 1);
+
+  display: flex;
+  flex-direction: column;
+  /* Fill the available inline space by default. Without this the list — a
+     block-level flex column whose rows truncate (min-inline-size: 0) — would
+     resolve to its MIN-CONTENT width (just the avatars/icons) under any
+     shrink-to-fit parent (e.g. an inline-flex wrapper, or Storybook's
+     `layout: centered`), collapsing every row to icon width. `100%` is fully
+     overridable: an author `inline-size`/`width` or `max-inline-size` on the
+     element wins, so fixed-width and capped recipes still work. */
+  inline-size: 100%;
+  background-color: var(--_container-color);
+  color: var(--md-sys-color-on-surface, #1c1b1f);
+  border-radius: var(--_container-shape);
+  padding-block: var(--_padding-block);
+  padding-inline: var(--_padding-inline);
+  box-sizing: border-box;
+  /* Clip rows to the chassis when authors opt into a non-zero radius;
+     `clip` (not `hidden`) avoids creating a stacking context so popups
+     a row might project (sub-menu, tooltip) can still escape. */
+  overflow: clip;
+}
+
+/* ==========================================================
+   1. STANDARD STYLE (default, M3 Expressive — connected)
+   Rows share a single rounded chassis with NO gap. Items carry
+   the tint so the OUTER container stays transparent (no
+   secondary "bay" reads as a wrapper around the rows).
+
+   Each row's individual radius is zeroed; first/last rows get
+   per-corner rounding via CSS custom properties — these pierce
+   the shadow boundary cleanly without ::part() gymnastics.
+   A single-child list rounds all four corners. To separate
+   rows visually, interleave <md-divider> elements between the
+   children — the M3 spec models dividers as a standalone
+   component, not a list affordance.
+   ========================================================== */
+:host(.md-list--standard) {
+  --_container-color: var(--md-list-container-color, transparent);
+  --_container-shape: var(--md-list-container-shape, 0px);
+  gap: 0;
+  /* Row focus rings are inset on md-list-item :host (inside border-box);
+     visible overflow still helps dragged elevation / tooltips escape. */
+  overflow: visible;
+}
+
+:host(.md-list--standard) ::slotted(md-list-item) {
+  /* Resting shape is sharp on middle rows; unit-aware (`0px`, not `0`) so
+     downstream `max(<length>, <length>)` calls in md-list-item.css don't
+     end up with the invalid `max(<number>, <length>)` form, which would
+     silently drop the active-state corner morph. */
+  --md-list-item-container-shape: 0px;
+  /* Item container colour falls through to md-list-item's own default
+     (surface, per the M3 Lists token spec). Authors can re-tint via
+     --md-list-item-container-color on the list, e.g. surface-container
+     for cards on busy backgrounds. */
+}
+
+:host(.md-list--standard) ::slotted(md-list-item:first-of-type) {
+  --md-list-item-container-shape-start-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-start-end: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host(.md-list--standard) ::slotted(md-list-item:last-of-type) {
+  --md-list-item-container-shape-end-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-end-end: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host(.md-list--standard) ::slotted(md-list-item:only-of-type) {
+  --md-list-item-container-shape-start-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-start-end: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-end-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-end-end: var(--md-sys-shape-corner-large, 16px);
+}
+
+/* ==========================================================
+   2. SEGMENTED STYLE (M3 Expressive — separated)
+   Each row is a rounded tile separated from its neighbours by
+   --md-list-segmented-gap (2px default). Middle tiles round all
+   four corners to corner-extra-small (4dp) at rest. The first
+   tile emphasises its top corners and the last tile emphasises
+   its bottom corners with corner-large (16dp) so the stack reads
+   as one grouped chassis; focus / press / selected morph to
+   corner-large on every tile. The container stays transparent
+   so the tiles float on the host surface; opt into a tinted bay
+   via --md-list-container-color.
+   ========================================================== */
+:host(.md-list--segmented) {
+  --_container-color: var(--md-list-container-color, transparent);
+  --_container-shape: var(--md-list-container-shape, 0px);
+  --_padding-inline: var(--md-list-padding-inline, 0px);
+  --_padding-block: var(--md-list-padding-block, 0px);
+  gap: var(--_segmented-gap);
+  overflow: visible;
+}
+
+:host(.md-list--segmented) ::slotted(md-list-item) {
+  --md-list-item-container-shape: var(--md-sys-shape-corner-extra-small, 4px);
+  /* Item container colour falls through to md-list-item's surface
+     default (M3 token: "list-item-segmented-container-color" = surface
+     = #FEF7FF light). Re-tint on the list element if you need a
+     different bay (e.g. surface-container on chrome backgrounds). */
+}
+
+:host(.md-list--segmented) ::slotted(md-list-item:first-of-type) {
+  --md-list-item-container-shape-start-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-start-end: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host(.md-list--segmented) ::slotted(md-list-item:last-of-type) {
+  --md-list-item-container-shape-end-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-end-end: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host(.md-list--segmented) ::slotted(md-list-item:only-of-type) {
+  --md-list-item-container-shape-start-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-start-end: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-end-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-end-end: var(--md-sys-shape-corner-large, 16px);
+}
+
+/* ==========================================================
+   3. SELECTION MODE (listbox / multi-select) — no extra layout
+   ========================================================== */
+:host(.md-list--single-select),
+:host(.md-list--multi-select) {
+  /* role=listbox automatically; layout otherwise unchanged */
+}
+
+/* ==========================================================
+   4. FOCUS — the container itself never shows an outline
+   ========================================================== */
+:host(:focus) {
+  outline: none;
+}
+
+/* ==========================================================
+   5. DROP-TARGET PLACEHOLDER (pointer reorder)
+   While a row is dragged, md-list renders an absolutely
+   positioned ghost slot in the lifted row's vacated position.
+   It is anchored to the list's padding box and translated to
+   the live drop target (set from TSX as the drag crosses
+   sibling centers). `inset-inline` is logical so the ghost
+   spans the row's content width in both LTR and RTL; the JS
+   only drives the block offset + height. The host becomes a
+   positioning context only while reordering so the absolute
+   child never affects resting layout.
+   ========================================================== */
+:host(.md-list--reordering) {
+  position: relative;
+}
+
+.md-list__drop-placeholder {
+  position: absolute;
+  inset-inline-start: var(--_padding-inline);
+  inset-inline-end: var(--_padding-inline);
+  inset-block-start: 0;
+  box-sizing: border-box;
+  /* Behind the slotted rows (the lifted row carries z-index:1) so the ghost
+     reads as the empty slot the row will drop into, not an overlay. */
+  z-index: 0;
+  pointer-events: none;
+  border-radius: var(--_drop-placeholder-shape);
+  background-color: var(--_drop-placeholder-color);
+  border: var(--_drop-placeholder-outline-width) dashed var(--_drop-placeholder-outline-color);
+  opacity: var(--_drop-placeholder-opacity);
+  /* Glide to the new target slot in step with the sibling shift (short4). */
+  transition: transform var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-list__drop-placeholder {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

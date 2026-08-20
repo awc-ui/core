@@ -1,0 +1,746 @@
+---
+title: Multi Select
+description: "Pick several values from a list — chips, a count or plain text, an optional select-all row, a selection cap and a field-or-button trigger"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/multi-select.json";
+
+**Pick several values from a list.** Everything
+[`md-select`](/components/select/) does, plus multiple selection rendered as
+chips / a count / plain text, an optional select-all row, a selection cap, and
+a field-or-button trigger. Form-associated via `ElementInternals`.
+
+<ComponentDemo
+  html={`<md-multi-select label="Teams" supporting-text="Pick up to three" max-selected="3" clearable style="min-width: 280px;">
+  <md-select-option value="eng" supporting-text="24 members" selected>Engineering</md-select-option>
+  <md-select-option value="des" supporting-text="6 members" selected>Design</md-select-option>
+  <md-select-option value="ops" supporting-text="11 members">Operations</md-select-option>
+  <md-select-option value="sec" supporting-text="4 members">Security</md-select-option>
+</md-multi-select>`}
+  label="Live preview"
+  storyId="selection-multi-select--playground"
+/>
+
+:::note[Not a Material Design 3 component]
+M3 has no multi-select page, and no multi-selection pattern for a
+[menu](https://m3.material.io/components/menus/guidelines) at all. The chips,
+the select-all row, the selection cap and the listbox semantics are this
+library's own contract; the guidance below is **house rules** informed by M3's
+menu, chip and text-field specs.
+:::
+
+## Install
+
+<ComponentSetup tag="md-multi-select" example="" />
+
+## When to use
+
+- **Several** values from a list of roughly 5+ options.
+- The chosen values should stay visible (as chips) after the menu closes.
+- Optionally capped with `max-selected`, or with a select-all shortcut.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Exactly one value | [`md-select`](/components/select/) |
+| Few options, all worth showing | [`md-checkbox`](/components/checkbox/) group |
+| Assigning a subset from a large pool, side by side | [`md-transfer-list`](/components/transfer-list/) |
+| Free text with suggestions | [`md-autocomplete`](/components/autocomplete/) |
+| A handful of toggleable filters | [`md-chip`](/components/chip/) set |
+| 2–5 exclusive options | [`md-segmented-button`](/components/segmented-button/) |
+
+## Options
+
+<ComponentDemo
+  html={`<md-multi-select id="prop-ms" label="Teams" display-mode="count" style="min-inline-size: 280px;"></md-multi-select>`}
+  script={`
+  var el = root.querySelector('#prop-ms');
+  el.options = [
+    { value: 'eng', label: 'Engineering' },
+    { value: 'design', label: 'Design' },
+    { value: 'ops', label: 'Operations' },
+  ];
+  el.value = ['eng', 'design'];
+  el.countFormatter = function (n) { return n + ' teams selected'; };`}
+  htmlForCode={`<md-multi-select id="teams" label="Teams" display-mode="count"></md-multi-select>
+
+<script type="module">
+  const el = document.getElementById('teams');
+
+  // Both are PROPERTIES — an array and a function never cross as attributes.
+  el.options = teams.map((t) => ({ value: t.id, label: t.name }));
+  el.value = ['eng', 'design'];
+  el.countFormatter = (n) => n + ' teams selected';
+</script>`}
+  label="options, value and countFormatter are all set as properties — the trigger reads “2 teams selected”"
+  storyId="selection-multi-select--playground"
+/>
+
+The same two option sources as `md-select` apply — declarative
+[`md-select-option`](/components/select-option/) children **or** the `options`
+array property, never both.
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Chips inside the field | `display="chips"` |
+| A "3 selected" summary | `display="count"` |
+| Chips below the field | `display="chips-inline"` |
+| A button instead of a field | `trigger="button"` |
+| A "select all" row | `select-all` |
+| A hard limit | `max-selected` |
+| An in-menu search box | `filterable` |
+| Compact trigger, chips and rows | `density="-1…-4"` |
+
+## Display modes
+
+| Mode | Renders |
+|---|---|
+| `chips` | **Default.** Chips below the field |
+| `chips-inline` | Chips inside the field |
+| `count` | A summary such as "3 selected" (customise with `countFormatter`) |
+| `text` | Comma-separated labels |
+
+<ComponentDemo
+  html={`<md-multi-select label="Chips" display-mode="chips" style="min-width: 240px;">
+  <md-select-option value="a" selected>Engineering</md-select-option>
+  <md-select-option value="b" selected>Design</md-select-option>
+  <md-select-option value="c">Operations</md-select-option>
+</md-multi-select>
+
+<md-multi-select label="Chips inline" display-mode="chips-inline" style="min-width: 240px;">
+  <md-select-option value="a" selected>Engineering</md-select-option>
+  <md-select-option value="b" selected>Design</md-select-option>
+  <md-select-option value="c">Operations</md-select-option>
+</md-multi-select>
+
+<md-multi-select label="Count" display-mode="count" style="min-width: 240px;">
+  <md-select-option value="a" selected>Engineering</md-select-option>
+  <md-select-option value="b" selected>Design</md-select-option>
+  <md-select-option value="c">Operations</md-select-option>
+</md-multi-select>
+
+<md-multi-select label="Text" display-mode="text" style="min-width: 240px;">
+  <md-select-option value="a" selected>Engineering</md-select-option>
+  <md-select-option value="b" selected>Design</md-select-option>
+  <md-select-option value="c">Operations</md-select-option>
+</md-multi-select>`}
+  label="Four display modes"
+  storyId="selection-multi-select--display-modes"
+/>
+
+## Chip overflow & position
+
+`chip-overflow="count"` collapses the tail into a "+5" chip; `"wrap"` lets the
+chips wrap. `chip-position` places the chip strip `bottom` (default), `top`,
+`left` or `right`.
+
+<ComponentDemo
+  html={`<md-multi-select label="Overflow as +N" chip-overflow="count" style="min-width: 260px;">
+  <md-select-option value="a" selected>Engineering</md-select-option>
+  <md-select-option value="b" selected>Design</md-select-option>
+  <md-select-option value="c" selected>Operations</md-select-option>
+  <md-select-option value="d" selected>Security</md-select-option>
+  <md-select-option value="e" selected>Support</md-select-option>
+</md-multi-select>
+
+<md-multi-select label="Chips above" chip-position="top" chip-overflow="wrap" style="min-width: 260px;">
+  <md-select-option value="a" selected>Engineering</md-select-option>
+  <md-select-option value="b" selected>Design</md-select-option>
+  <md-select-option value="c">Operations</md-select-option>
+</md-multi-select>`}
+  label="Overflow and chip placement"
+  storyId="selection-multi-select--chip-positions"
+/>
+
+:::caution[`chip-position="left"` / `"right"` is **physical**]
+Unlike `placement`, it does not flip under `dir="rtl"` — re-check it per
+direction.
+:::
+
+## Triggers
+
+`trigger="button"` swaps the text-field trigger for a button, named by
+`trigger-label` and iconed by `trigger-icon`.
+
+<ComponentDemo
+  html={`<md-multi-select label="Field trigger" trigger="field" style="min-width: 240px;">
+  <md-select-option value="a" selected>Engineering</md-select-option>
+  <md-select-option value="b">Design</md-select-option>
+</md-multi-select>
+
+<md-multi-select trigger="button" trigger-icon="add" trigger-label="Add tags" chip-position="right" chip-overflow="wrap">
+  <md-select-option value="a" selected>Alpha</md-select-option>
+  <md-select-option value="b">Beta</md-select-option>
+  <md-select-option value="c">Gamma</md-select-option>
+</md-multi-select>`}
+  label="Field trigger and button trigger"
+  storyId="selection-multi-select--button-trigger"
+/>
+
+### Bring your own trigger
+
+`trigger="button"` is a convenience, not a ceiling. Put **any element** in
+`slot="trigger"` and it becomes the opener: the built-in field / button is not
+rendered at all, and the chips keep their `chip-position` relationship to
+whatever you supplied. The opener sits outside the component's own chrome
+without losing the chip layout.
+
+<ComponentDemo
+  html={`<md-multi-select label="Tags" chip-position="right" chip-overflow="wrap">
+  <md-button slot="trigger" variant="outlined" size="xs" icon="add">Add tags</md-button>
+  <md-select-option value="a" selected>Alpha</md-select-option>
+  <md-select-option value="b">Beta</md-select-option>
+  <md-select-option value="c">Gamma</md-select-option>
+</md-multi-select>
+
+<md-multi-select label="Filters" chip-position="right" chip-overflow="wrap">
+  <md-icon-button slot="trigger" variant="tonal" icon="filter_list" aria-label="Filter"></md-icon-button>
+  <md-select-option value="open" selected>Open</md-select-option>
+  <md-select-option value="mine">Assigned to me</md-select-option>
+  <md-select-option value="urgent">Urgent</md-select-option>
+</md-multi-select>`}
+  label="An md-button and an md-icon-button as triggers — same chips, same menu"
+  storyId="selection-multi-select--slotted-trigger"
+/>
+
+The component wires the element it is given rather than re-rendering it: a click
+opens the menu, an `id` makes it the menu's anchor, and `aria-haspopup="listbox"`
+advertises the popup (`aria-expanded` follows on triggers whose role supports it).
+`Escape` closes and returns focus to it.
+
+:::caution[What a slotted trigger does not inherit]
+`disabled`, `error` and `required` still drive the component's own state and
+validity, but they cannot restyle an element the component does not render —
+mirror `disabled` onto your trigger yourself. The supporting / error line is
+still rendered below, announced via `role="alert"` rather than
+`aria-describedby`: that IDREF would have to cross the shadow boundary, where it
+cannot resolve.
+:::
+
+## Select all & the selection cap
+
+`show-select-all` adds a select-all row. `max-selected` caps the selection —
+and the value that means "no cap" is **`0`**.
+
+:::danger[`max-selected="0"` means unlimited, not "none allowed"]
+A common and costly misreading. To block selection entirely, use `disabled`.
+:::
+
+When the cap is reached the component **rejects** further selections. Because
+`md-menu-item` / `md-checkbox` self-toggle on click *before* the parent
+reconciles, a rejected pick has to be reverted via the event target — the
+component does this internally, but if you wrap it in your own controlled
+layer, replicate it or you will get a phantom check.
+
+<ComponentDemo
+  html={`<md-multi-select label="Everything" show-select-all select-all-label="Select all" style="min-width: 250px;">
+  <md-select-option value="a">Engineering</md-select-option>
+  <md-select-option value="b">Design</md-select-option>
+  <md-select-option value="c">Operations</md-select-option>
+</md-multi-select>
+
+<md-multi-select label="Capped at 2" max-selected="2" supporting-text="Pick up to two" style="min-width: 250px;">
+  <md-select-option value="a" selected>Engineering</md-select-option>
+  <md-select-option value="b" selected>Design</md-select-option>
+  <md-select-option value="c">Operations</md-select-option>
+</md-multi-select>`}
+  label="Select-all row and a cap"
+  storyId="selection-multi-select--select-all"
+/>
+
+Explain the cap in `supporting-text` — a silent rejection is invisible,
+especially to screen-reader users.
+
+## Variants & states
+
+<ComponentDemo
+  html={`<md-multi-select variant="outlined" label="Outlined" style="min-width: 210px;">
+  <md-select-option value="a" selected>Alpha</md-select-option>
+</md-multi-select>
+
+<md-multi-select variant="filled" label="Filled" style="min-width: 210px;">
+  <md-select-option value="a" selected>Alpha</md-select-option>
+</md-multi-select>
+
+<md-multi-select label="Disabled" disabled style="min-width: 210px;">
+  <md-select-option value="a" selected>Alpha</md-select-option>
+</md-multi-select>
+
+<md-multi-select label="Teams" required error error-text="Choose at least one" reserve-supporting-space style="min-width: 210px;">
+  <md-select-option value="a">Alpha</md-select-option>
+</md-multi-select>`}
+  label="Outlined, filled, disabled, error"
+  storyId="selection-multi-select--states"
+/>
+
+`error-text` **replaces** `supporting-text` when `error` is set — never show
+both. `soft-disabled` keeps the trigger focusable so an unavailable control is
+still discoverable.
+
+## Filtering, loading & density
+
+`filterable` renders a search box inside the menu — turn it on past roughly 15
+options. `loading` drives the progress affordance while options are fetched.
+
+<ComponentDemo
+  html={`<md-multi-select label="Filterable" filterable search-placeholder="Search…" filter-label="Filter teams" style="min-width: 220px;">
+  <md-select-option value="a">Engineering</md-select-option>
+  <md-select-option value="b">Design</md-select-option>
+  <md-select-option value="c">Operations</md-select-option>
+</md-multi-select>
+
+<md-multi-select label="Loading" loading loading-text="Loading…" style="min-width: 220px;"></md-multi-select>
+
+<md-multi-select label="Slotted loader" loading loading-text="Loading…" style="min-width: 220px;">
+  <md-progress-indicator slot="loader" variant="circular" indeterminate size="24" label="Loading"></md-progress-indicator>
+</md-multi-select>
+
+<md-multi-select label="Density -3" density="-3" style="min-width: 220px;">
+  <md-select-option value="a" selected>Engineering</md-select-option>
+</md-multi-select>`}
+  label="Filter, loading, density"
+  storyId="selection-multi-select--filterable"
+/>
+
+<ComponentDemo
+  html={`<md-multi-select id="lazy-ms" label="Users" filterable loading-text="Loading…" style="min-inline-size: 280px;"></md-multi-select>`}
+  script={`
+  var el = root.querySelector('#lazy-ms');
+  var loaded = false;
+  el.addEventListener('mdOpen', function () {
+    if (loaded) return;
+    loaded = true;
+    el.loading = true;
+    // Stands in for a network round-trip.
+    setTimeout(function () {
+      el.loadOptions([
+        { value: 'ada', label: 'Ada Lovelace' },
+        { value: 'alan', label: 'Alan Turing' },
+        { value: 'grace', label: 'Grace Hopper' },
+        { value: 'katherine', label: 'Katherine Johnson' },
+      ]);
+      el.loading = false;
+    }, 900);
+  });`}
+  htmlForCode={`<md-multi-select id="users" label="Users" filterable></md-multi-select>
+
+<script type="module">
+  const el = document.getElementById('users');
+  let loaded = false;
+
+  el.addEventListener('mdOpen', async () => {
+    if (loaded) return;
+    loaded = true;
+    el.loading = true;
+    el.loadOptions(await fetchUsers());   // SelectOptionInit[] or { count, getRow }
+    el.loading = false;
+  });
+</script>`}
+  label="Open it — the options arrive on first open, with the loading state in between"
+  storyId="selection-multi-select--async-loading"
+/>
+
+## Virtualization
+
+`virtualize="always"` hands the option set to the WASM-backed store: rows stream
+in through a factory instead of existing as JS objects, and only the visible
+window is ever in the DOM. Filtering and typeahead run in the same store, so a
+query over ten million rows is not a JS array scan.
+
+Same caveat as `md-select` — give non-uniform rows a stable `row-height`, or the
+scroll position drifts.
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:8px; align-items:flex-start;">
+  <md-multi-select id="virt-ms" label="Option" filterable show-select-all display-mode="count" virtualize="always" row-height="48" max-height="320" style="min-inline-size: 300px;"></md-multi-select>
+  <p data-virt-status style="font:500 12px/16px Roboto,system-ui,sans-serif; color:var(--md-sys-color-on-surface-variant); margin:0; min-block-size:16px;"></p>
+</div>`}
+  script={`
+  var el = root.querySelector('#virt-ms');
+  var status = root.querySelector('[data-virt-status]');
+  // Ten million rows, streamed through the row factory — they never exist as
+  // JS objects, so this is a WASM load, not an array allocation.
+  el.loading = true;
+  status.textContent = 'Loading 10,000,000 options…';
+  var t0 = performance.now();
+  el.loadOptions({
+    count: 10000000,
+    getRow: function (i) { return { value: 'v' + i, label: 'Option ' + i }; },
+  }).then(function () {
+    el.loading = false;
+    status.textContent =
+      'Ready — 10,000,000 options in ' + Math.round(performance.now() - t0) + ' ms.';
+  });`}
+  htmlForCode={`<md-multi-select
+  id="options"
+  label="Option"
+  filterable
+  show-select-all
+  display-mode="count"
+  virtualize="always"
+  row-height="48"
+  max-height="320"
+></md-multi-select>
+
+<script type="module">
+  const el = document.getElementById('options');
+
+  // A row factory streams into WASM — ten million options never exist as JS
+  // objects at once. Flip the loading flag around it so the trigger says so.
+  el.loading = true;
+  await el.loadOptions({
+    count: 10_000_000,
+    getRow: (i) => ({ value: \`v\${i}\`, label: \`Option \${i}\` }),
+  });
+  el.loading = false;
+</script>`}
+  label="10,000,000 options — scroll, filter and select all; only the visible window is in the DOM"
+  storyId="selection-multi-select--virtualized-ten-million"
+/>
+
+## Forms
+
+`md-multi-select` is **form-associated** via `ElementInternals`, so `name` puts
+the selection into `FormData` across the shadow boundary — no hidden `<input>`
+needed. `required` participates in constraint validation, with
+`value-missing-label` as the message.
+
+<ComponentDemo
+  html={`<form data-signup style="display:flex;flex-direction:column;gap:16px;align-items:flex-start;">
+  <md-multi-select data-teams label="Teams" name="teams" required
+                   value-missing-label="Please select at least one option"
+                   style="min-inline-size: 280px;">
+    <md-select-option value="eng">Engineering</md-select-option>
+    <md-select-option value="des">Design</md-select-option>
+    <md-select-option value="ops">Operations</md-select-option>
+  </md-multi-select>
+  <md-button variant="filled" type="submit">Save</md-button>
+  <output data-out style="font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;opacity:.85;"></output>
+</form>`}
+  script={`
+  var form = root.querySelector('[data-signup]');
+  var out = root.querySelector('[data-out]');
+  out.textContent = 'Submit with nothing selected \u2014 required blocks it.';
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    out.textContent = 'FormData teams = ' +
+      JSON.stringify(new FormData(form).getAll('teams'));
+  });`}
+  label="Submit empty and required blocks it; pick a team and FormData carries the selection"
+  storyId="selection-multi-select--forms"
+  htmlForCode={`<form id="signup">
+  <md-multi-select id="teams" label="Teams" name="teams" required
+                   value-missing-label="Please select at least one option">
+    <md-select-option value="eng">Engineering</md-select-option>
+    <md-select-option value="des">Design</md-select-option>
+  </md-multi-select>
+
+  <md-button variant="filled" type="submit">Save</md-button>
+</form>
+
+<script type="module">
+  const el = document.getElementById('teams');
+
+  el.value = ['eng'];                                     // ARRAY property
+  el.addEventListener('mdChange', (e) => save(e.detail)); // string[]
+  el.addEventListener('mdRemove', (e) => log('removed', e.detail));
+  el.addEventListener('mdClear',  () => log('cleared'));
+
+  document.getElementById('signup').addEventListener('submit', (e) => {
+    e.preventDefault();
+    console.log(new FormData(e.target).getAll('teams'));
+  });
+</script>`}
+  react={`import { useState } from 'react';
+import { MdMultiSelect, MdSelectOption, MdButton } from '@awc-ui/react';
+
+export function TeamsForm() {
+  // value is an array PROPERTY, forwarded by the wrapper — pass it as a prop.
+  const [teams, setTeams] = useState(['eng']);
+
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); }}>
+      <MdMultiSelect
+        value={teams}
+        label="Teams"
+        name="teams"
+        required
+        onMdChange={(e) => setTeams(e.detail)}
+      >
+        <MdSelectOption value="eng">Engineering</MdSelectOption>
+        <MdSelectOption value="des">Design</MdSelectOption>
+      </MdMultiSelect>
+
+      <MdButton variant="filled" type="submit">Save</MdButton>
+    </form>
+  );
+}`}
+  angular={`import { Component, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+
+@Component({
+  selector: 'app-teams-form',
+  template: \`
+    <form (submit)="onSubmit($event)">
+      <md-multi-select #teams label="Teams" name="teams" required
+                       (mdChange)="onChange($event)"></md-multi-select>
+
+      <md-button variant="filled" type="submit">Save</md-button>
+    </form>
+  \`,
+})
+export class TeamsFormComponent implements AfterViewInit {
+  @ViewChild('teams') teams!: ElementRef<HTMLElement & { value: string[] }>;
+
+  ngAfterViewInit() {
+    this.teams.nativeElement.value = ['eng'];   // array property
+  }
+
+  onChange(e: CustomEvent<string[]>) { save(e.detail); }
+  onSubmit(e: Event) { e.preventDefault(); }
+}`}
+  vue={`<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+const teams = ref<(HTMLElement & { value: string[] }) | null>(null);
+
+onMounted(() => {
+  if (teams.value) teams.value.value = ['eng'];   // array property
+});
+
+function onChange(e: CustomEvent<string[]>) { save(e.detail); }
+</script>
+
+<template>
+  <form @submit.prevent>
+    <md-multi-select
+      ref="teams"
+      label="Teams"
+      name="teams"
+      required
+      @mdChange="onChange"
+    />
+
+    <md-button variant="filled" type="submit">Save</md-button>
+  </form>
+</template>`}
+  svelte={`<script lang="ts">
+  import { onMount } from 'svelte';
+  let teams: HTMLElement & { value: string[] };
+
+  onMount(() => { teams.value = ['eng']; });   // array property
+
+  function onChange(e: CustomEvent<string[]>) { save(e.detail); }
+</script>
+
+<form on:submit|preventDefault>
+  <md-multi-select
+    bind:this={teams}
+    label="Teams"
+    name="teams"
+    required
+    on:mdChange={onChange}
+  ></md-multi-select>
+
+  <md-button variant="filled" type="submit">Save</md-button>
+</form>`}
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdChange` | no | `string[]` | The selection changed — carries the **new full array** |
+| `mdRemove` | no | `string` | A chip's × removed one value |
+| `mdClear` | no | `void` | The clear affordance was used |
+| `mdOpen` | no | `void` | The dropdown opened |
+| `mdClose` | no | `void` | The dropdown closed |
+| `mdValidityChange` | no | `{ valid, validationMessage, flags }` | Validity changed |
+
+:::caution[Don't double-handle a removal]
+`mdRemove` fires with the single removed value, and `mdChange` still fires with
+the new full array. Treat `mdChange` as the source of truth.
+:::
+
+`mdValidityChange` is **not composed** — listen on the element itself.
+`mdOpen` / `mdClose` **are** composed, so they also fire on an embedding shadow
+host at `AT_TARGET`.
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[`countFormatter` is a function prop]
+It cannot be set as an attribute. Assign it in JS, and make it
+pluralization-aware for your locale.
+:::
+
+## Accessibility
+
+- `label` names the control. The menu is a managed listbox with a `live-region`
+  part, so selection changes are announced.
+- Each chip's remove affordance needs a name that includes the value's label,
+  so "Remove" isn't ambiguous across many chips.
+- `Escape` closes the menu and returns focus to the trigger.
+- As with `md-select`, full `combobox` ARIA can't be wired across the shadow
+  boundary — **don't attempt it from outside.**
+- Announce cap rejections through `supporting-text` / `error-text`; a silent
+  rejection is invisible to screen-reader users.
+
+### Keyboard
+
+| Key | Action |
+|---|---|
+| `Enter` / `Space` / `↓` | Open the menu from the trigger |
+| `↑` / `↓` | Move between options |
+| `Home` / `End` | First / last option |
+| `Enter` / `Space` | Toggle the focused option — the menu **stays open** |
+| A–Z | Typeahead, or types into the search box when `filterable` |
+| `Escape` | Close, returning focus to the trigger |
+| `Backspace` | On a focused chip, remove it |
+
+<ComponentDemo
+  html={`<md-multi-select label="Teams" supporting-text="Pick as many as you need" style="min-inline-size: 280px;">
+  <md-select-option value="eng" selected>Engineering</md-select-option>
+  <md-select-option value="des" selected>Design</md-select-option>
+  <md-select-option value="pm">Product</md-select-option>
+  <md-select-option value="ops" disabled>Operations</md-select-option>
+</md-multi-select>`}
+  label="Open it and toggle with Enter — the menu stays open"
+  storyId="selection-multi-select--accessibility"
+/>
+
+## RTL, density & i18n
+
+**RTL** — field, chips, caret and menu mirror under `dir="rtl"`. `placement` is
+logical; `chip-position="left"` / `"right"` is **physical**, so re-check it per
+direction. See [RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
+  <div dir="ltr"><md-multi-select label="Teams" style="min-inline-size: 240px;"><md-select-option value="a" selected>Engineering</md-select-option><md-select-option value="b" selected>Design</md-select-option><md-select-option value="c">Product</md-select-option></md-multi-select></div>
+  <div dir="rtl"><md-multi-select label="الفرق" style="min-inline-size: 240px;"><md-select-option value="a" selected>الهندسة</md-select-option><md-select-option value="b" selected>التصميم</md-select-option><md-select-option value="c">المنتج</md-select-option></md-multi-select></div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+  storyId="selection-multi-select--rtl"
+/>
+
+:::caution[`chip-position` is physical, `placement` is logical]
+`placement="bottom-start"` follows the reading direction and needs nothing from
+you. `chip-position="left"` / `"right"` means **left** and **right** on screen —
+it does not flip under `dir="rtl"`. Re-check it per direction, or leave it at
+the default.
+:::
+
+**Density** — `density="-1…-4"` compacts trigger, chips and menu rows together.
+See [Density](/behaviour/density/).
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">
+  <md-multi-select density="0" label="0" style="min-inline-size: 200px;"><md-select-option value="a" selected>Engineering</md-select-option><md-select-option value="b" selected>Design</md-select-option></md-multi-select>
+  <md-multi-select density="-1" label="-1" style="min-inline-size: 200px;"><md-select-option value="a" selected>Engineering</md-select-option><md-select-option value="b" selected>Design</md-select-option></md-multi-select>
+  <md-multi-select density="-2" label="-2" style="min-inline-size: 200px;"><md-select-option value="a" selected>Engineering</md-select-option><md-select-option value="b" selected>Design</md-select-option></md-multi-select>
+  <md-multi-select density="-3" label="-3" style="min-inline-size: 200px;"><md-select-option value="a" selected>Engineering</md-select-option><md-select-option value="b" selected>Design</md-select-option></md-multi-select>
+  <md-multi-select density="-4" label="-4" style="min-inline-size: 200px;"><md-select-option value="a" selected>Engineering</md-select-option><md-select-option value="b" selected>Design</md-select-option></md-multi-select>
+</div>`}
+  label="Density 0 through -4 — open one to see the rows follow"
+  storyId="selection-multi-select--density"
+/>
+
+**i18n** — translate `label`, `placeholder`, `supporting-text`, `error-text`,
+`select-all-label`, `search-placeholder`, `filter-label`, `no-results-text`,
+`no-options-text`, `clear-label`, `searching-label`, `loading-text`,
+`trigger-label` and `value-missing-label` — they all default to English — and
+make `countFormatter` pluralization-aware.
+
+## Theming
+
+| Custom property | Purpose |
+|---|---|
+| `--md-multi-select-width` / `--md-multi-select-min-width` | Trigger width |
+| `--md-multi-select-trigger-width` | Button-trigger width |
+| `--md-multi-select-chip-gap` / `-chip-height` / `-chip-radius` / `-chip-outline` | Chip metrics |
+| `--md-multi-select-inline-chips-block-start` | Inline-chip offset |
+| `--md-multi-select-caret-color` / `--md-multi-select-clear-color` / `-clear-size` | Trailing controls |
+| `--md-multi-select-option-icon-size` | Option row icons |
+| `--md-multi-select-search-bg` | In-menu search background |
+| `--md-multi-select-select-all-divider-color` | Select-all separator |
+| `--md-multi-select-empty-color` | Empty-state text |
+| `--md-multi-select-frame-gap` | Field / chips spacing |
+
+<ComponentDemo
+  html={`<md-multi-select label="Themed" style="--md-multi-select-min-width: 280px; --md-multi-select-chip-gap: 10px; --md-multi-select-chip-radius: 4px; --md-multi-select-caret-color: var(--md-sys-color-primary);">
+  <md-select-option value="a" selected>Engineering</md-select-option>
+  <md-select-option value="b" selected>Design</md-select-option>
+</md-multi-select>`}
+  label="Themed instance"
+  storyId="selection-multi-select--custom-css"
+/>
+
+Every default resolves through an `md-sys-color` role, so a control that sets no
+custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<md-multi-select label="Untouched defaults" style="min-inline-size: 280px;">
+  <md-select-option value="a" selected>Engineering</md-select-option>
+  <md-select-option value="b" selected>Design</md-select-option>
+  <md-select-option value="c">Product</md-select-option>
+</md-multi-select>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="selection-multi-select--dark-theme"
+/>
+
+## CSS parts
+
+| Part | Element |
+|---|---|
+| `field` / `button` | The field trigger, or the button trigger |
+| `frame` | Field-plus-chips wrapper |
+| `chips` / `chip` / `overflow-chip` / `remove` | The chip row, each chip, the "+N" chip, a chip's remove affordance |
+| `caret` / `caret-box` / `clear` | Trailing controls |
+| `menu` / `menu-header` / `listbox` | The popup, its header, the option list |
+| `search` | In-menu search field |
+| `select-all` / `select-all-item` | Select-all row and its option |
+| `option-icon` | Per-option icon |
+| `empty` | No-results / no-options text |
+| `loading-bar` / `loading-progress` | Async loading indicator |
+| `live-region` | The announcement region |
+
+<ComponentDemo
+  html={`<style>
+  .parts-ms::part(chip) { border-radius: 4px; }
+  .parts-ms::part(caret) { color: var(--md-sys-color-primary); }
+  .parts-ms::part(chips) { gap: 10px; }
+</style>
+<md-multi-select class="parts-ms" label="Styled parts" style="min-inline-size: 280px;">
+  <md-select-option value="a" selected>Engineering</md-select-option>
+  <md-select-option value="b" selected>Design</md-select-option>
+  <md-select-option value="c">Product</md-select-option>
+</md-multi-select>`}
+  label="chip, chips and caret"
+  storyId="selection-multi-select--customization"
+/>
+
+
+## Related
+
+[`md-select`](/components/select/) ·
+[`md-select-option`](/components/select-option/) ·
+[`md-transfer-list`](/components/transfer-list/) ·
+[`md-autocomplete`](/components/autocomplete/) ·
+[`md-checkbox`](/components/checkbox/) ·
+[`md-chip`](/components/chip/) ·
+[`md-menu`](/components/menu/) ·
+[`md-text-field`](/components/text-field/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-multi-select" />

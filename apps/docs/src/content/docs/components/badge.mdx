@@ -1,0 +1,369 @@
+---
+title: Badge
+description: "A small count or marker attached to another element — a dot, or a pill carrying a number"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/badge.json";
+
+**A small count or marker attached to another element.** Two sizes: a `small`
+dot meaning "something is here", and a `large` pill carrying a number or a
+glyph.
+
+<ComponentDemo
+  html={`<md-icon-button icon="mail" variant="standard" aria-label="Inbox, 5 unread">
+  <md-badge value="5"></md-badge>
+</md-icon-button>
+<md-icon-button icon="notifications" variant="standard" aria-label="Notifications, new activity">
+  <md-badge variant="small"></md-badge>
+</md-icon-button>
+<md-icon-button icon="chat" variant="standard" aria-label="Messages, 1284 unread">
+  <md-badge value="1284" max="99"></md-badge>
+</md-icon-button>
+<md-icon-button icon="warning" variant="standard" aria-label="Alerts, action required">
+  <md-badge icon="priority_high"></md-badge>
+</md-icon-button>`}
+  label="Live preview — count, dot, capped count, glyph"
+  storyId="communication-badge--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-badge" example="" />
+
+## When to use
+
+- An **unread or pending count** on a navigation item, icon button, or avatar.
+- A **dot** indicating new activity where the exact number doesn't matter.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Presence / online status | [`md-status-dot`](/components/status-dot/) |
+| An interactive filter or tag | [`md-chip`](/components/chip/) |
+| A standalone status label | [`md-chip`](/components/chip/), non-interactive |
+| Progress toward completion | [`md-progress-indicator`](/components/progress-indicator/) |
+| A count that is the main content, not an annotation | Plain text |
+| Anything the user should click | [`md-button`](/components/button/) / [`md-icon-button`](/components/icon-button/) |
+
+## Positioning
+
+:::danger[The badge does not position itself relative to a host]
+It is an **absolutely-positioned** element anchored to the upper trailing
+corner of its offset parent. **The parent must be `position: relative`**, or
+the badge escapes to the nearest positioned ancestor and lands somewhere
+random.
+:::
+
+[`md-icon-button`](/components/icon-button/) is already `position: relative`,
+so nesting a badge inside one just works. Anything else you position yourself.
+
+<ComponentDemo
+  html={`<md-icon-button icon="mail" variant="standard" aria-label="Inbox, 5 unread">
+  <md-badge value="5"></md-badge>
+</md-icon-button>
+
+<span style="position: relative; display: inline-flex; align-items: center; justify-content: center; inline-size: 40px; block-size: 40px;">
+  <span class="material-symbols-outlined" aria-hidden="true">home</span>
+  <md-badge variant="small"></md-badge>
+</span>
+
+<span style="position: relative; display: inline-block;">
+  <md-avatar name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+  <md-badge value="3"></md-badge>
+</span>
+
+<span style="position: relative; display: inline-flex; align-items: center; justify-content: center; inline-size: 40px; block-size: 40px;">
+  <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+  <md-badge value="9" style="--md-badge-offset-x: -2px; --md-badge-offset-y: 2px;"></md-badge>
+</span>`}
+  label="Icon button, a plain relative host, an avatar, and a nudged offset"
+/>
+
+Fine-tune with `--md-badge-offset-x` / `--md-badge-offset-y`. The defaults are
+`50%` / `-50%` — a percentage of the badge's own box, so the count grows away
+from the anchor.
+
+## Variants
+
+| Variant | Renders | Carries a number |
+|---|---|---|
+| `small` | A 6px dot | **No** — `value` is ignored by design |
+| `large` | **Default.** A 16px pill | Yes |
+
+M3's advice: `small` where space is tight (app bars, so the dot can't hit the
+screen edge), `large` where collisions aren't an issue (a navigation rail).
+
+<ComponentDemo
+  html={`<md-icon-button icon="notifications" variant="standard" aria-label="Notifications, new activity">
+  <md-badge variant="small"></md-badge>
+</md-icon-button>
+<md-icon-button icon="notifications" variant="standard" aria-label="Notifications, 7 unread">
+  <md-badge variant="large" value="7"></md-badge>
+</md-icon-button>
+<md-icon-button icon="notifications" variant="standard" aria-label="Notifications, new activity">
+  <md-badge variant="small" value="7"></md-badge>
+</md-icon-button>`}
+  label="Small dot, large pill, and small with a value — the third ignores the number"
+  storyId="communication-badge--variants"
+/>
+
+## Values & `max`
+
+Counts and [string labels](/storybook/?path=/story/communication-badge--string-labels) both work —
+the badge sizes to its content either way.
+
+`max` defaults to **999**. Above it the badge renders `"{max}+"`; it does not
+clamp `value` itself, so `value` still holds the true number for you to read
+back.
+
+<ComponentDemo
+  html={`<md-icon-button icon="mail" variant="standard" aria-label="Inbox, 1 unread">
+  <md-badge value="1"></md-badge>
+</md-icon-button>
+<md-icon-button icon="mail" variant="standard" aria-label="Inbox, 42 unread">
+  <md-badge value="42"></md-badge>
+</md-icon-button>
+<md-icon-button icon="mail" variant="standard" aria-label="Inbox, 999 unread">
+  <md-badge value="999"></md-badge>
+</md-icon-button>
+<md-icon-button icon="mail" variant="standard" aria-label="Inbox, over a thousand unread">
+  <md-badge value="1284"></md-badge>
+</md-icon-button>
+<md-icon-button icon="mail" variant="standard" aria-label="Inbox, over ninety-nine unread">
+  <md-badge value="1284" max="99"></md-badge>
+</md-icon-button>
+<md-icon-button icon="mail" variant="standard" aria-label="Draft">
+  <md-badge value="NEW"></md-badge>
+</md-icon-button>`}
+  label="1, 42, 999, 1284, 1284 capped at 99, and a short string label"
+  storyId="communication-badge--numeric-values"
+/>
+
+`value` is a **string**, so short text labels work — but keep them to a few
+characters or the pill will collide with whatever sits beside it.
+
+## Icons
+
+`icon` takes a Material Symbols glyph name. The `icon` slot replaces it for a
+custom SVG.
+
+<ComponentDemo
+  html={`<md-icon-button icon="cloud" variant="standard" aria-label="Sync error">
+  <md-badge icon="priority_high"></md-badge>
+</md-icon-button>
+<md-icon-button icon="task_alt" variant="standard" aria-label="Task complete">
+  <md-badge icon="check"></md-badge>
+</md-icon-button>
+<md-icon-button icon="download" variant="standard" aria-label="Download in progress">
+  <md-badge icon="arrow_downward"></md-badge>
+</md-icon-button>
+<md-icon-button icon="star" variant="standard" aria-label="Starred, custom marker">
+  <md-badge>
+    <svg slot="icon" viewBox="0 0 24 24" width="8" height="8" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+  </md-badge>
+</md-icon-button>`}
+  label="Glyph badges, and a slotted custom SVG"
+  storyId="communication-badge--with-icons"
+/>
+
+### Custom icon slot
+
+Anything slotted into `icon` replaces the glyph — an inline SVG, or plain text
+such as an emoji. You do **not** need to set `icon` as well; a bare `md-badge`
+with slotted content renders it.
+
+<ComponentDemo
+  html={`<md-icon-button icon="favorite" variant="standard" aria-label="Favourites, starred">
+  <md-badge>
+    <svg slot="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+  </md-badge>
+</md-icon-button>
+<md-icon-button icon="security" variant="standard" aria-label="Security, protected">
+  <md-badge>
+    <svg slot="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+  </md-badge>
+</md-icon-button>
+<md-icon-button icon="local_fire_department" variant="standard" aria-label="Trending">
+  <md-badge>
+    <span slot="icon">🔥</span>
+  </md-badge>
+</md-icon-button>
+<md-icon-button icon="bolt" variant="standard" aria-label="Boosted">
+  <md-badge>
+    <span slot="icon">⚡</span>
+  </md-badge>
+</md-icon-button>`}
+  label="Slotted SVGs and emoji"
+  storyId="communication-badge--custom-icon-slot"
+/>
+
+Slotted icons are sized and coloured from the badge's own tokens —
+`--md-badge-icon-size` and `--md-badge-icon-color` are applied to the slotted
+element, so **drop any `width`/`height`/`fill` attributes** and let the badge
+scale it (that is also what keeps it shrinking with `density`). Give the SVG a
+`viewBox` so it scales, and mark it `aria-hidden` — the count belongs in the
+host's accessible name.
+
+## In navigation
+
+[`md-navigation-tab`](/components/navigation-bar/#md-navigation-tab) and
+[`md-navigation-rail-tab`](/components/navigation-rail/#md-navigation-rail-tab) carry their own
+`badge` / `badge-value` / `badge-max` props, so you don't nest an `md-badge`
+inside them.
+
+<ComponentDemo
+  html={`<md-navigation-bar style="inline-size: 100%;">
+  <md-navigation-tab label="Home" icon="home" active></md-navigation-tab>
+  <md-navigation-tab label="Mail" icon="mail" badge badge-value="12"></md-navigation-tab>
+  <md-navigation-tab label="Alerts" icon="notifications" badge></md-navigation-tab>
+  <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+</md-navigation-bar>`}
+  label="Badges owned by the navigation tabs"
+  storyId="communication-badge--with-navigation"
+/>
+
+## Events
+
+`md-badge` has **no events** and nothing focusable. It is decoration plus text.
+If the count needs to be actionable, make the **host** interactive.
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+See the [accessibility story](/storybook/?path=/story/communication-badge--accessibility) for the
+announced output.
+
+- The badge is **visual only**. Screen-reader users get the count from the host
+  control's accessible name — `aria-label="Inbox, 5 unread"` — and **you must
+  keep it in sync** when the count changes.
+
+  ```js
+  btn.setAttribute('aria-label', 'Inbox, ' + count + ' unread');
+  badge.value = String(count);
+  ```
+
+- If the count updates live and matters, put it in a live region rather than
+  relying on the badge repainting.
+- Keep contrast ≥ 3:1 for the container and label if you override the colours.
+- Nothing in the badge is focusable, so it never appears in the tab order —
+  that's intentional.
+
+## RTL, density & i18n
+
+In Storybook: [RTL](/storybook/?path=/story/communication-badge--rtl) mirrors the anchor offset, and
+[localization](/storybook/?path=/story/communication-badge--localization) formats the count with `Intl`.
+
+`density` (0 to −4) shrinks the badge, its label and its glyph in step, and
+inherits from a global `data-density` ancestor — so a badge inside a compact
+toolbar tightens with it rather than staying full size.
+
+**RTL** — M3 requires the badge to move to the mirrored corner. The offsets are
+custom properties, so set them per direction:
+
+```css
+[dir="rtl"] md-badge {
+  --md-badge-offset-x: 6px;
+}
+```
+
+See [RTL](/behaviour/rtl/).
+
+**Density** — `density="-1…-4"` shrinks the badge: **16 → 15 → 14 → 13 → 12px**
+tall, with the label and glyph scaling alongside, so a three-digit pill narrows
+from ~28px to ~21px. Set it on the badge and its host together — a badge that
+keeps full size on a tightened button drifts off the corner. Check that your
+longest value still fits at the rung you ship.
+See [Density](/behaviour/density/).
+
+<ComponentDemo
+  html={`<p style="margin: 0 0 8px; font: 500 12px/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);">Count</p>
+<div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-block-end: 24px;">
+  <md-icon-button icon="mail" variant="standard" aria-label="Inbox, 128 unread" density="0"><md-badge value="128" density="0"></md-badge></md-icon-button>
+  <md-icon-button icon="mail" variant="standard" aria-label="Inbox, 128 unread" density="-1"><md-badge value="128" density="-1"></md-badge></md-icon-button>
+  <md-icon-button icon="mail" variant="standard" aria-label="Inbox, 128 unread" density="-2"><md-badge value="128" density="-2"></md-badge></md-icon-button>
+  <md-icon-button icon="mail" variant="standard" aria-label="Inbox, 128 unread" density="-3"><md-badge value="128" density="-3"></md-badge></md-icon-button>
+  <md-icon-button icon="mail" variant="standard" aria-label="Inbox, 128 unread" density="-4"><md-badge value="128" density="-4"></md-badge></md-icon-button>
+</div>
+<p style="margin: 0 0 8px; font: 500 12px/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);">Dot (variant=small)</p>
+<div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-block-end: 24px;">
+  <md-icon-button icon="notifications" variant="standard" aria-label="New activity" density="0"><md-badge variant="small" density="0"></md-badge></md-icon-button>
+  <md-icon-button icon="notifications" variant="standard" aria-label="New activity" density="-1"><md-badge variant="small" density="-1"></md-badge></md-icon-button>
+  <md-icon-button icon="notifications" variant="standard" aria-label="New activity" density="-2"><md-badge variant="small" density="-2"></md-badge></md-icon-button>
+  <md-icon-button icon="notifications" variant="standard" aria-label="New activity" density="-3"><md-badge variant="small" density="-3"></md-badge></md-icon-button>
+  <md-icon-button icon="notifications" variant="standard" aria-label="New activity" density="-4"><md-badge variant="small" density="-4"></md-badge></md-icon-button>
+</div>
+<p style="margin: 0 0 8px; font: 500 12px/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);">Glyph</p>
+<div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-block-end: 24px;">
+  <md-icon-button icon="cloud" variant="standard" aria-label="Sync error" density="0"><md-badge icon="priority_high" density="0"></md-badge></md-icon-button>
+  <md-icon-button icon="cloud" variant="standard" aria-label="Sync error" density="-1"><md-badge icon="priority_high" density="-1"></md-badge></md-icon-button>
+  <md-icon-button icon="cloud" variant="standard" aria-label="Sync error" density="-2"><md-badge icon="priority_high" density="-2"></md-badge></md-icon-button>
+  <md-icon-button icon="cloud" variant="standard" aria-label="Sync error" density="-3"><md-badge icon="priority_high" density="-3"></md-badge></md-icon-button>
+  <md-icon-button icon="cloud" variant="standard" aria-label="Sync error" density="-4"><md-badge icon="priority_high" density="-4"></md-badge></md-icon-button>
+</div>`}
+  label="Density rungs, by badge type"
+/>
+
+**i18n** — format numerals with `Intl.NumberFormat` **before** assigning them
+to `value`, for locales with different digit systems. The `+` overflow marker
+is not localizable.
+
+## Theming
+
+In Storybook: [dark theme](/storybook/?path=/story/communication-badge--dark-theme) and
+[custom CSS](/storybook/?path=/story/communication-badge--custom-css).
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-badge-container-color` | Pill / dot background | `error` |
+| `--md-badge-label-color` | Label colour | `on-error` |
+| `--md-badge-container-shape` | Corner radius | `corner-full` |
+| `--md-badge-icon-color` / `--md-badge-icon-size` | Glyph badge | Inherits label / ~10px |
+| `--md-badge-offset-x` / `--md-badge-offset-y` | Position relative to the host | `50%` / `-50%` |
+| `--md-badge-large-height` / `--md-badge-large-padding` | Large-pill geometry | 16px |
+| `--md-badge-small-size` | Dot diameter | 6px |
+
+<ComponentDemo
+  html={`<md-icon-button icon="mail" variant="standard" aria-label="Inbox, 8 unread">
+  <md-badge value="8" style="--md-badge-container-color: var(--md-sys-color-primary); --md-badge-label-color: var(--md-sys-color-on-primary);"></md-badge>
+</md-icon-button>
+<md-icon-button icon="mail" variant="standard" aria-label="Inbox, 8 unread">
+  <md-badge value="8" style="--md-badge-container-shape: 4px;"></md-badge>
+</md-icon-button>
+<md-icon-button icon="notifications" variant="standard" aria-label="Notifications, new activity">
+  <md-badge variant="small" style="--md-badge-small-size: 10px; --md-badge-container-color: var(--md-sys-color-tertiary);"></md-badge>
+</md-icon-button>`}
+  label="Themed instances"
+/>
+
+**CSS parts** — `icon`, `label`.
+
+```css
+md-badge::part(label) {
+  font-variant-numeric: tabular-nums;
+}
+```
+
+
+## Related
+
+[`md-status-dot`](/components/status-dot/) ·
+[`md-chip`](/components/chip/) ·
+[`md-icon-button`](/components/icon-button/) ·
+[`md-navigation-bar`](/components/navigation-bar/) ·
+[`md-navigation-rail`](/components/navigation-rail/) ·
+[`md-avatar`](/components/avatar/) ·
+[`md-progress-indicator`](/components/progress-indicator/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-badge" />

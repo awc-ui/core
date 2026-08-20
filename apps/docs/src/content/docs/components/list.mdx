@@ -1,0 +1,1191 @@
+---
+title: List
+description: "A vertical set of related rows — owns list semantics, selection mode, roving focus and optional drag-reordering for its md-list-item children"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/list.json";
+import itemApiData from "../../../data/components/list-item.json";
+
+**A vertical set of related rows.** `md-list` owns the list semantics,
+selection mode, roving keyboard focus and optional drag-reordering; the rows
+themselves are [`md-list-item`](#the-row--md-list-item) children. Configuration
+flows **down** from the list — you set it once on the wrapper, never on the
+rows.
+
+<ComponentDemo
+  html={`<md-list label="Mail" style="inline-size: 340px;">
+  <md-list-item type="button" headline="Inbox" supporting-text="12 new" leading-icon="inbox" trailing-supporting-text="24"></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="Starred" supporting-text="Marked important" leading-icon="star" trailing-supporting-text="3"></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="Drafts" supporting-text="Resume where you left off" leading-icon="drafts"></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="Sent" supporting-text="Outgoing mail" leading-icon="send"></md-list-item>
+</md-list>`}
+  label="Live preview"
+  storyId="containment-list--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-list" example="" />
+
+## When to use
+
+- A **vertical collection of similar records**: contacts, files, messages,
+  settings.
+- Rows that may be selectable, activatable, or reorderable.
+- Content that reads top-to-bottom rather than comparing across columns.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Comparable data across columns | [`md-table`](/components/table/) |
+| Rich, self-contained items with their own actions | A [`md-card`](/components/card/) collection |
+| A contextual popup of actions | [`md-menu`](/components/menu/) |
+| Options in a picker | [`md-select`](/components/select/) / [`md-multi-select`](/components/multi-select/) |
+| Collapsible content sections | [`md-accordion`](/components/accordion/) |
+| Navigation destinations | [`md-navigation-rail`](/components/navigation-rail/) / [`md-navigation-bar`](/components/navigation-bar/) |
+| Moving items between two pools | [`md-transfer-list`](/components/transfer-list/) |
+
+## The list configures its children
+
+`selectionMode`, `interactionMode` and `reorderable` are **written onto the
+rows** by the list. `density` gets there a different way — the list declares
+`--md-sys-density-scale` on its own host and every row inherits it — but the
+rule for you is the same: set it on the wrapper. Setting a written prop on an
+individual `md-list-item` fights the parent and desynchronises the roving-focus
+model. Keep `md-list-item` as a **direct** child too — wrapping rows in
+`<div>`s for layout breaks child discovery.
+
+Not one row below carries an interaction, reorder or density attribute — the
+drag handles, the separate focus stops for the trailing buttons and the tighter
+rung all come from the three attributes on the wrapper:
+
+<ComponentDemo
+  html={`<md-list interaction-mode="multi-action" reorderable density="-1" label="Configured by the list" style="inline-size: 360px;">
+  <md-list-item type="button" headline="Ada Lovelace" supporting-text="Engineering" leading-icon="person">
+    <md-icon-button slot="trailing" icon="mail" aria-label="Email Ada Lovelace"></md-icon-button>
+  </md-list-item>
+  <md-list-item type="button" headline="Alan Turing" supporting-text="Research" leading-icon="person">
+    <md-icon-button slot="trailing" icon="mail" aria-label="Email Alan Turing"></md-icon-button>
+  </md-list-item>
+  <md-list-item type="button" headline="Grace Hopper" supporting-text="Compilers" leading-icon="person">
+    <md-icon-button slot="trailing" icon="mail" aria-label="Email Grace Hopper"></md-icon-button>
+  </md-list-item>
+</md-list>`}
+  label="Configuration flows down — the rows declare none of it"
+/>
+
+:::danger[Setting these on a row loses the argument]
+The list re-writes `selectionMode`, `interactionMode`, `reorderable`,
+`containerRole` and `rovingFocusVisible` on every row on load and again whenever
+its children change. A value you set by hand on an `md-list-item` is silently
+overwritten on the next child mutation.
+:::
+
+## List styles
+
+| Style | Look | Use for |
+|---|---|---|
+| `standard` | **Default.** One shared rounded chassis, no gaps — interleave dividers for separators | Dense, continuous lists |
+| `segmented` | Separate rounded tiles with a small gap; each row reads as its own affordance | Grouped settings, pickers |
+
+<ComponentDemo
+  html={`<md-list list-style="standard" label="Account settings" style="inline-size: 260px;">
+  <md-list-item type="button" headline="Profile" leading-icon="person"></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="Privacy" leading-icon="lock"></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="Sign out" leading-icon="logout"></md-list-item>
+</md-list>
+<md-list list-style="segmented" label="Library" style="inline-size: 260px;">
+  <md-list-item type="button" headline="Photos" leading-icon="photo" trailing-supporting-text="128"></md-list-item>
+  <md-list-item type="button" headline="Videos" leading-icon="videocam" trailing-supporting-text="42"></md-list-item>
+  <md-list-item type="button" headline="Music" leading-icon="music_note" trailing-supporting-text="256"></md-list-item>
+</md-list>`}
+  label="Standard versus segmented"
+  storyId="containment-list--list-styles"
+/>
+
+There is no `dividers` prop. A separator is an `md-divider` element you
+interleave between rows yourself — `inset-start` is the usual choice, because it
+starts the rule past the leading-icon column:
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 24px; flex-wrap: wrap;">
+  <md-list label="With dividers" style="inline-size: 260px;">
+    <md-list-item headline="Inbox" leading-icon="inbox"></md-list-item>
+    <md-divider inset-start></md-divider>
+    <md-list-item headline="Starred" leading-icon="star"></md-list-item>
+    <md-divider inset-start></md-divider>
+    <md-list-item headline="Archive" leading-icon="archive"></md-list-item>
+  </md-list>
+  <md-list label="Without dividers" style="inline-size: 260px;">
+    <md-list-item headline="Inbox" leading-icon="inbox"></md-list-item>
+    <md-list-item headline="Starred" leading-icon="star"></md-list-item>
+    <md-list-item headline="Archive" leading-icon="archive"></md-list-item>
+  </md-list>
+</div>`}
+  label="The same three rows, with and without interleaved md-divider elements"
+  storyId="containment-list--dividers"
+/>
+
+:::note[Dividers belong to uncontained lists]
+M3 limits dividers to **uncontained** lists. A segmented list already separates
+its rows with gaps — adding a rule between every tile is over-dividing.
+:::
+
+## Row anatomy
+
+A row promotes itself to two or three lines automatically when you add an
+`overline`, `supporting-text`, or both. You don't set a `lines` value by hand
+for the common cases.
+
+<ComponentDemo
+  html={`<md-list label="Row anatomy" style="inline-size: 380px;">
+  <md-list-item type="button" headline="One line"></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="Two lines" supporting-text="Supporting text promotes the row" leading-icon="inbox"></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="Overline also promotes" overline="OVERLINE" leading-icon="label"></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="Full configuration" supporting-text="Headline, supporting text and trailing meta" leading-icon="star" trailing-supporting-text="5 min ago"></md-list-item>
+</md-list>`}
+  label="One, two and three-line rows"
+  storyId="containment-list--two-line"
+/>
+
+A one-line row is the floor — headline only, no second region:
+
+<ComponentDemo
+  html={`<md-list label="One line" style="max-inline-size: 340px;">
+  <md-list-item headline="Wi-Fi" trailing-icon="chevron_right"></md-list-item>
+  <md-list-item headline="Bluetooth" trailing-icon="chevron_right"></md-list-item>
+</md-list>`}
+  label="One-line rows"
+  storyId="containment-list--one-line"
+/>
+
+And an `overline` on top of `headline` + `supporting-text` promotes the row all
+the way to three lines:
+
+<ComponentDemo
+  html={`<md-list label="Three line" style="max-inline-size: 400px;">
+  <md-list-item lines="3" overline="Today" headline="Deployment finished" supporting-text="All 14 services are healthy and traffic has been shifted to the new revision." leading-icon="rocket_launch"></md-list-item>
+  <md-list-item lines="3" overline="Yesterday" headline="Nightly backup" supporting-text="Snapshot completed in 42 seconds and was copied to the secondary region." leading-icon="backup"></md-list-item>
+</md-list>`}
+  label="Three-line rows — an overline promotes the line count"
+  storyId="containment-list--three-line"
+/>
+
+### Row types
+
+`type` decides whether a row is inert, a button, or a link.
+
+<ComponentDemo
+  html={`<md-list label="Row types" style="inline-size: 400px;">
+  <md-list-item type="text" headline="Static text row" supporting-text="Not focusable — no ripple, no click event" leading-icon="text_fields"></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="Button row" supporting-text="Focusable, ripples on press, emits mdClick" leading-icon="touch_app" trailing-icon="chevron_right"></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="link" href="https://m3.material.io/components/lists/guidelines" target="_blank" headline="Link row" supporting-text="Navigates to href in target" leading-icon="open_in_new" trailing-icon="north_east"></md-list-item>
+</md-list>`}
+  label="text, button and link rows"
+  storyId="containment-list--item-types"
+/>
+
+### Leading content
+
+M3 puts supporting visuals at the **leading** edge, because that is what makes
+a list scannable. An icon, a 40px avatar and a square thumbnail are all
+first-class props.
+
+<ComponentDemo
+  html={`<md-list label="Leading content" style="inline-size: 380px;">
+  <md-list-item type="button" headline="Leading icon" supporting-text="24px Material Symbol" leading-icon="wifi" trailing-icon="chevron_right"></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="Jane Cooper" supporting-text="Hey, are you free tonight?" leading-avatar="https://i.pravatar.cc/80?img=1" leading-avatar-alt="Jane Cooper" trailing-supporting-text="5m"></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="Leading image" supporting-text="Square thumbnail" leading-image="https://picsum.photos/seed/mdlist/112/112" leading-image-alt=""></md-list-item>
+</md-list>`}
+  label="Icon, avatar and image"
+  storyId="containment-list--with-icons"
+/>
+
+`leading-avatar` takes an image URL; `leading-avatar-name` takes a **name** and
+renders the initials instead, which is the fallback to reach for when a contact
+has no photo:
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 24px; flex-wrap: wrap;">
+  <md-list label="Avatars" style="inline-size: 300px;">
+    <md-list-item lines="2" headline="Ada Lovelace" supporting-text="Engineering" leading-avatar-name="Ada Lovelace"></md-list-item>
+    <md-list-item lines="2" headline="Alan Turing" supporting-text="Research" leading-avatar-name="Alan Turing"></md-list-item>
+  </md-list>
+  <md-list label="Thumbnails" style="inline-size: 300px;">
+    <md-list-item lines="2" headline="Coastline" supporting-text="4.2 MB" leading-image="https://picsum.photos/seed/a/80/80" leading-image-alt=""></md-list-item>
+    <md-list-item lines="2" headline="Forest" supporting-text="3.1 MB" leading-image="https://picsum.photos/seed/b/80/80" leading-image-alt=""></md-list-item>
+  </md-list>
+</div>`}
+  label="Initial avatars and image thumbnails"
+  storyId="containment-list--with-avatars"
+/>
+
+## Selection is not activation
+
+This is the distinction the API turns on:
+
+| Event | Means |
+|---|---|
+| `mdActivate` | The **active row changed** — the roving focus target moved, by click or by arrow key |
+| `mdSelect` | The **selected set changed** |
+
+A list can do one, both, or neither. `selection-mode="none"` (the default) is
+an activatable list: rows open things and nothing stays ticked.
+
+### Selection modes
+
+<ComponentDemo
+  html={`<md-list selection-mode="single-select" label="Plan" style="inline-size: 260px;">
+  <md-list-item type="button" headline="Free" leading-icon="check_circle"></md-list-item>
+  <md-list-item type="button" headline="Pro" leading-icon="check_circle" selected></md-list-item>
+  <md-list-item type="button" headline="Team" leading-icon="check_circle"></md-list-item>
+  <md-list-item type="button" headline="Enterprise" leading-icon="check_circle"></md-list-item>
+</md-list>
+<md-list selection-mode="multi-select" label="Notification channels" style="inline-size: 260px;">
+  <md-list-item type="button" headline="Email" selected></md-list-item>
+  <md-list-item type="button" headline="SMS"></md-list-item>
+  <md-list-item type="button" headline="Push" selected></md-list-item>
+  <md-list-item type="button" headline="In-app banner"></md-list-item>
+</md-list>`}
+  label="Single-select swaps; multi-select accumulates"
+  storyId="containment-list--single-select"
+/>
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 24px; flex-wrap: wrap;">
+  <md-list label="Multi-select" selection-mode="multi-select" style="inline-size: 280px;">
+    <md-list-item headline="Photos" selected></md-list-item>
+    <md-list-item headline="Videos" selected></md-list-item>
+    <md-list-item headline="Documents"></md-list-item>
+  </md-list>
+  <md-list label="Segmented selection" list-style="segmented" selection-mode="single-select" style="inline-size: 280px;">
+    <md-list-item headline="Light" selected></md-list-item>
+    <md-list-item headline="Dark"></md-list-item>
+    <md-list-item headline="System"></md-list-item>
+  </md-list>
+</div>`}
+  label="Multi-select, and selection inside a segmented list"
+  storyId="containment-list--multi-select"
+/>
+
+<ComponentDemo
+  html={`<md-list label="Pick artwork" selection-mode="multi-select" style="max-inline-size: 340px;">
+  <md-list-item lines="2" headline="Coastline" supporting-text="1600 × 900" leading-image="https://picsum.photos/seed/c/80/80" leading-image-alt="" selected></md-list-item>
+  <md-list-item lines="2" headline="Forest" supporting-text="1600 × 900" leading-image="https://picsum.photos/seed/d/80/80" leading-image-alt=""></md-list-item>
+  <md-list-item lines="2" headline="Desert" supporting-text="1600 × 900" leading-image="https://picsum.photos/seed/e/80/80" leading-image-alt=""></md-list-item>
+</md-list>`}
+  label="Thumbnail selection"
+  storyId="containment-list--thumbnail-selection"
+/>
+
+`single-select` moves the selection; `multi-select` sets
+`aria-multiselectable` on the list and toggles rows independently. Read the
+result with `getSelectedIndices()`.
+
+### Interaction modes
+
+`interaction-mode="multi-action"` tells rows they contain more than one
+control, which changes their keyboard model: trailing buttons get their own
+focus stops and a click on one does **not** activate the row's primary action.
+Set it whenever rows carry trailing controls — leaving it at `single-action`
+gives the row the wrong keyboard model.
+
+<ComponentDemo
+  html={`<md-list interaction-mode="multi-action" label="Files" style="inline-size: 380px;">
+  <md-list-item type="button" headline="report.pdf" supporting-text="2.4 MB" leading-icon="picture_as_pdf">
+    <md-icon-button slot="trailing" icon="bookmark_border" aria-label="Bookmark report.pdf"></md-icon-button>
+    <md-icon-button slot="trailing" icon="more_vert" aria-label="More actions for report.pdf"></md-icon-button>
+  </md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="budget.xlsx" supporting-text="812 KB" leading-icon="table_chart">
+    <md-icon-button slot="trailing" icon="bookmark_border" aria-label="Bookmark budget.xlsx"></md-icon-button>
+    <md-icon-button slot="trailing" icon="more_vert" aria-label="More actions for budget.xlsx"></md-icon-button>
+  </md-list-item>
+</md-list>`}
+  label="Multi-action rows with their own trailing controls"
+  storyId="containment-list--multi-action-list"
+/>
+
+Trailing supporting text is a prop; anything richer goes in the `trailing` slot,
+and the same applies to `leading`, `headline` and `supporting-text`:
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 24px; flex-wrap: wrap;">
+  <md-list label="Trailing text" style="inline-size: 300px;">
+    <md-list-item lines="2" headline="Storage" supporting-text="Documents" trailing-supporting-text="12.4 GB"></md-list-item>
+    <md-list-item lines="2" headline="Backups" supporting-text="Weekly" trailing-supporting-text="3.1 GB"></md-list-item>
+  </md-list>
+  <md-list label="Slotted regions" style="inline-size: 320px;">
+    <md-list-item lines="2">
+      <span slot="leading" class="material-symbols-outlined" aria-hidden="true">alternate_email</span>
+      <span slot="headline">Mentions <strong>you</strong></span>
+      <span slot="supporting-text">Two unread threads</span>
+      <md-switch slot="trailing" aria-label="Notify me about mentions"></md-switch>
+    </md-list-item>
+  </md-list>
+</div>`}
+  label="Trailing supporting text, and slotted regions"
+  storyId="containment-list--trailing-content"
+/>
+
+Note the accessible names: **"More actions for report.pdf"**, not "More
+actions". In a list of ten rows the bare label is useless.
+
+## Expandable rows
+
+A row marked `expandable` reveals `slot="expanded-content"` children inline
+below it, with an automatic caret. The children are flat rows, not a nested
+sub-list, and a child selection re-emits on the list's `mdSelect` carrying both
+the parent `index` and the `childIndex`.
+
+<ComponentDemo
+  html={`<md-list selection-mode="single-select" label="Expansion list" style="inline-size: 340px;">
+  <md-list-item type="button" headline="Shared with me" leading-icon="folder_shared" expandable expanded>
+    <md-list-item slot="expanded-content" type="button" headline="Q3 planning" leading-icon="description"></md-list-item>
+    <md-list-item slot="expanded-content" type="button" headline="Design review" leading-icon="description" selected></md-list-item>
+    <md-list-item slot="expanded-content" type="button" headline="Budget draft" leading-icon="description"></md-list-item>
+  </md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="Recent" leading-icon="schedule" expandable>
+    <md-list-item slot="expanded-content" type="button" headline="notes.txt" leading-icon="description"></md-list-item>
+    <md-list-item slot="expanded-content" type="button" headline="agenda.md" leading-icon="description"></md-list-item>
+  </md-list-item>
+</md-list>`}
+  label="One row expanded, one collapsed — click a parent to toggle"
+  storyId="containment-list--expandable"
+/>
+
+Expandable rows inside a `segmented` list behave the same way, with each group
+keeping its own corner radii.
+
+## Reordering
+
+`reorderable` gives every row a trailing drag handle and emits `mdReorder` on
+drop. **The list persists nothing.** `e.detail.order` is the new order
+expressed as the original authored indices, so `order[newPosition]` is the old
+position — one pass is enough to reorder a backing array.
+
+Reordering is not pointer-only: with focus on a row, `Alt + ArrowUp` /
+`Alt + ArrowDown` move it one position and emit the same `mdReorder`. The list
+re-focuses the row at its new position, so a run of keystrokes keeps working
+without re-aiming.
+
+<ComponentDemo
+  html={`<md-list reorderable interaction-mode="multi-action" label="Playlist" style="inline-size: 360px;">
+  <md-list-item type="button" headline="Midnight City" supporting-text="M83" leading-icon="music_note"></md-list-item>
+  <md-list-item type="button" headline="Instant Crush" supporting-text="Daft Punk" leading-icon="music_note"></md-list-item>
+  <md-list-item type="button" headline="The Less I Know the Better" supporting-text="Tame Impala" leading-icon="music_note"></md-list-item>
+</md-list>`}
+  label="Drag a row's trailing handle — or focus a row and press Alt + ArrowUp / ArrowDown"
+  storyId="containment-list--reorderable"
+/>
+
+:::note[Disabled rows can't be picked up]
+Neither path moves a `disabled` row: the drag handler refuses the pickup and
+the `Alt + Arrow` handler returns early. Nothing is emitted, so a handler that
+assumes every keystroke produced a move will drift out of sync with the DOM.
+:::
+
+## States
+
+<ComponentDemo
+  html={`<md-list label="Row states" style="inline-size: 340px;">
+  <md-list-item type="button" headline="Enabled" supporting-text="Focusable and clickable" leading-icon="check"></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="Disabled" supporting-text="Out of the tab order" leading-icon="block" disabled></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="Soft-disabled" supporting-text="Still reachable by keyboard" leading-icon="lock" soft-disabled></md-list-item>
+</md-list>`}
+  label="Enabled, disabled and soft-disabled rows"
+  storyId="containment-list--states"
+/>
+
+<ComponentDemo
+  html={`<md-list label="Long content" style="max-inline-size: 340px;">
+  <md-list-item lines="3" headline="A headline long enough that it has to wrap onto a second line in this column" supporting-text="Supporting text that also runs well past the available width and keeps going." leading-icon="subject"></md-list-item>
+  <md-list-item lines="1" headline="A one-line row whose headline is far too long for the space it has been given"></md-list-item>
+</md-list>`}
+  label="Long text — lines sets the height, it does not truncate"
+  storyId="containment-list--long-text"
+/>
+
+The second row is the trap: `lines="1"` does not clip text, it only sizes the
+row for one line.
+
+## Worked recipes
+
+Everything above shows one prop at a time. A real list is a **combination** —
+here `segmented` gives each preference its own tile, `multi-action` gives the
+switches their own focus stops, and each switch names the row it controls:
+
+<ComponentDemo
+  html={`<md-list list-style="segmented" interaction-mode="multi-action" label="Notification preferences" style="inline-size: 380px;">
+  <md-list-item lines="2" headline="Email" supporting-text="A digest, once a day" leading-icon="mail">
+    <md-switch slot="trailing" selected aria-label="Email notifications"></md-switch>
+  </md-list-item>
+  <md-list-item lines="2" headline="Push" supporting-text="Instant, on this device" leading-icon="notifications">
+    <md-switch slot="trailing" selected aria-label="Push notifications"></md-switch>
+  </md-list-item>
+  <md-list-item lines="2" headline="SMS" supporting-text="Security alerts only" leading-icon="sms">
+    <md-switch slot="trailing" aria-label="SMS notifications"></md-switch>
+  </md-list-item>
+</md-list>`}
+  label="Notification preferences — segmented, multi-action, one switch per row"
+  storyId="containment-list--notification-preferences-recipe"
+/>
+
+The multi-action Files demo further up is the same idea applied to a file
+manager: `multi-action` for the trailing controls, row-scoped names on each of
+them, and the row's own primary action left intact.
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdSelect` | no | `MdListSelectDetail` | The selected set changed |
+| `mdActivate` | no | `{ index, item }` | The active (roved) row changed — click or arrow key |
+| `mdReorder` | no | `{ from, to, order }` | A drag-reorder completed |
+
+```ts
+type MdListSelectDetail = {
+  index: number;                  // top-level row index (parent index for expanded children)
+  value: string;
+  selected: boolean;
+  item: HTMLMdListItemElement;
+  childIndex?: number;            // index within the parent's expanded-content slot
+  expanded?: boolean;             // whether that expandable parent is open
+};
+```
+
+:::tip[`mdSelect` also carries expanded children]
+When the selected row lives in a parent's `expanded-content` slot, `index` is the
+**parent's** index and `childIndex` is the position inside that slot. A handler
+that only reads `index` will treat every child of a group as the same row.
+:::
+
+**Methods** — `activateNext()`, `activatePrevious()`, `selectItem(index)`,
+`getSelectedIndices()`. All four are async.
+
+Click a row, arrow-key between rows, and move one with a drag handle or with
+`Alt + ArrowUp` / `Alt + ArrowDown` — all three events land in the same log:
+
+<ComponentDemo
+  html={`<md-list id="list-ev" label="Files" selection-mode="multi-select" interaction-mode="multi-action" reorderable style="inline-size: 380px;">
+  <md-list-item type="button" headline="report.pdf" supporting-text="2.4 MB" leading-icon="picture_as_pdf"></md-list-item>
+  <md-list-item type="button" headline="budget.xlsx" supporting-text="812 KB" leading-icon="table_chart"></md-list-item>
+  <md-list-item type="button" headline="notes.txt" supporting-text="4 KB" leading-icon="description"></md-list-item>
+</md-list>
+<output id="list-ev-log" style="display:block; margin-block-start:16px; min-block-size:3.6em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Click a row to select it, arrow-key between rows, or move one with a drag handle or Alt + ArrowUp / ArrowDown.</output>`}
+  script={`
+    var list = root.querySelector('#list-ev');
+    var log = root.querySelector('#list-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 3);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    list.addEventListener('mdSelect', function (e) {
+      var d = e.detail;
+      list.getSelectedIndices().then(function (indices) {
+        push('mdSelect    row ' + d.index + ' (' + d.value + ') selected=' + d.selected + '  set=[' + indices.join(', ') + ']');
+      });
+    });
+
+    list.addEventListener('mdActivate', function (e) {
+      push('mdActivate  the active row is now ' + e.detail.index);
+    });
+
+    // The list reorders its own DOM and reports the result — it stores nothing.
+    list.addEventListener('mdReorder', function (e) {
+      var d = e.detail;
+      push('mdReorder   ' + d.from + ' to ' + d.to + '  order=[' + d.order.join(', ') + ']');
+    });
+  `}
+  label="Selection, activation and reorder — watch the log"
+  htmlCode={`<md-list id="files" label="Files" selection-mode="multi-select" interaction-mode="multi-action" reorderable>
+  <md-list-item type="button" headline="report.pdf"></md-list-item>
+  <md-list-item type="button" headline="budget.xlsx"></md-list-item>
+  <md-list-item type="button" headline="notes.txt"></md-list-item>
+</md-list>
+
+<script type="module">
+  const list = document.getElementById('files');
+
+  list.addEventListener('mdSelect', async (e) => {
+    console.log(e.detail.index, e.detail.value, e.detail.selected);
+    console.log('selected set', await list.getSelectedIndices());
+  });
+
+  list.addEventListener('mdActivate', (e) => {
+    console.log('active row', e.detail.index);
+  });
+
+  list.addEventListener('mdReorder', (e) => {
+    console.log(e.detail.from, e.detail.to, e.detail.order);
+  });
+</script>`}
+  react={`import { MdList, MdListItem } from '@awc-ui/react';
+import { useRef } from 'react';
+
+export function FileList() {
+  const listRef = useRef<HTMLMdListElement>(null);
+
+  return (
+    <MdList
+      ref={listRef}
+      label="Files"
+      selectionMode="multi-select"
+      interactionMode="multi-action"
+      reorderable
+      onMdSelect={async (e) => {
+        console.log(e.detail.index, e.detail.value, e.detail.selected);
+        console.log('selected set', await listRef.current?.getSelectedIndices());
+      }}
+      onMdActivate={(e) => console.log('active row', e.detail.index)}
+      onMdReorder={(e) => console.log(e.detail.from, e.detail.to, e.detail.order)}
+    >
+      <MdListItem type="button" headline="report.pdf" />
+      <MdListItem type="button" headline="budget.xlsx" />
+      <MdListItem type="button" headline="notes.txt" />
+    </MdList>
+  );
+}`}
+  angular={`import { Component, ElementRef, ViewChild } from '@angular/core';
+
+@Component({
+  selector: 'app-file-list',
+  template: \`
+    <md-list
+      #list
+      label="Files"
+      selection-mode="multi-select"
+      interaction-mode="multi-action"
+      reorderable
+      (mdSelect)="onSelect($event)"
+      (mdActivate)="onActivate($event)"
+      (mdReorder)="onReorder($event)"
+    >
+      <md-list-item type="button" headline="report.pdf"></md-list-item>
+      <md-list-item type="button" headline="budget.xlsx"></md-list-item>
+      <md-list-item type="button" headline="notes.txt"></md-list-item>
+    </md-list>
+  \`,
+})
+export class FileListComponent {
+  @ViewChild('list') list!: ElementRef<HTMLMdListElement>;
+
+  async onSelect(e: CustomEvent) {
+    console.log(e.detail.index, e.detail.value, e.detail.selected);
+    console.log('selected set', await this.list.nativeElement.getSelectedIndices());
+  }
+  onActivate(e: CustomEvent) {
+    console.log('active row', e.detail.index);
+  }
+  onReorder(e: CustomEvent) {
+    console.log(e.detail.from, e.detail.to, e.detail.order);
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const list = ref<HTMLMdListElement | null>(null);
+
+async function onSelect(e: CustomEvent) {
+  console.log(e.detail.index, e.detail.value, e.detail.selected);
+  console.log('selected set', await list.value?.getSelectedIndices());
+}
+function onActivate(e: CustomEvent) {
+  console.log('active row', e.detail.index);
+}
+function onReorder(e: CustomEvent) {
+  console.log(e.detail.from, e.detail.to, e.detail.order);
+}
+</script>
+
+<template>
+  <md-list
+    ref="list"
+    label="Files"
+    selection-mode="multi-select"
+    interaction-mode="multi-action"
+    reorderable
+    @mdSelect="onSelect"
+    @mdActivate="onActivate"
+    @mdReorder="onReorder"
+  >
+    <md-list-item type="button" headline="report.pdf" />
+    <md-list-item type="button" headline="budget.xlsx" />
+    <md-list-item type="button" headline="notes.txt" />
+  </md-list>
+</template>`}
+  svelte={`<script lang="ts">
+  let list: HTMLMdListElement;
+
+  async function onSelect(e: CustomEvent) {
+    console.log(e.detail.index, e.detail.value, e.detail.selected);
+    console.log('selected set', await list.getSelectedIndices());
+  }
+  function onActivate(e: CustomEvent) {
+    console.log('active row', e.detail.index);
+  }
+  function onReorder(e: CustomEvent) {
+    console.log(e.detail.from, e.detail.to, e.detail.order);
+  }
+</script>
+
+<md-list
+  bind:this={list}
+  label="Files"
+  selection-mode="multi-select"
+  interaction-mode="multi-action"
+  reorderable
+  on:mdSelect={onSelect}
+  on:mdActivate={onActivate}
+  on:mdReorder={onReorder}
+>
+  <md-list-item type="button" headline="report.pdf" />
+  <md-list-item type="button" headline="budget.xlsx" />
+  <md-list-item type="button" headline="notes.txt" />
+</md-list>`}
+/>
+
+The demo above only reads the events. The next step is keeping a backing array in
+sync, which is the one thing the markup cannot express — `order[newPosition]` is
+the old position, so a single `map` re-sorts the data:
+
+<TechnologyTabs
+  html={`<md-list id="files" label="Files" selection-mode="multi-select" interaction-mode="multi-action" reorderable>
+  <md-list-item type="button" headline="report.pdf"></md-list-item>
+  <md-list-item type="button" headline="budget.xlsx"></md-list-item>
+</md-list>
+
+<script type="module">
+  const list = document.getElementById('files');
+
+  list.addEventListener('mdSelect', async () => {
+    console.log(await list.getSelectedIndices());
+  });
+
+  list.addEventListener('mdActivate', (e) => {
+    console.log('active row', e.detail.index);
+  });
+
+  // The list reports the new order — you persist it.
+  list.addEventListener('mdReorder', (e) => {
+    const { order } = e.detail;
+    files = order.map((originalIndex) => files[originalIndex]);
+    save(files);
+  });
+</script>`}
+  react={`import { MdList, MdListItem } from '@awc-ui/react';
+import { useRef, useState } from 'react';
+
+export function FileList() {
+  const listRef = useRef<HTMLMdListElement>(null);
+  const [files, setFiles] = useState(['report.pdf', 'budget.xlsx']);
+
+  return (
+    <MdList
+      ref={listRef}
+      label="Files"
+      selectionMode="multi-select"
+      interactionMode="multi-action"
+      reorderable
+      onMdSelect={async () => {
+        console.log(await listRef.current?.getSelectedIndices());
+      }}
+      onMdActivate={(e) => console.log('active row', e.detail.index)}
+      onMdReorder={(e) => {
+        setFiles((prev) => e.detail.order.map((i: number) => prev[i]));
+      }}
+    >
+      {files.map((name) => (
+        <MdListItem key={name} type="button" headline={name} />
+      ))}
+    </MdList>
+  );
+}`}
+  angular={`import { Component, ElementRef, ViewChild } from '@angular/core';
+
+@Component({
+  selector: 'app-file-list',
+  template: \`
+    <md-list
+      #list
+      label="Files"
+      selection-mode="multi-select"
+      interaction-mode="multi-action"
+      reorderable
+      (mdSelect)="onSelect()"
+      (mdActivate)="onActivate($event)"
+      (mdReorder)="onReorder($event)"
+    >
+      <md-list-item *ngFor="let f of files" type="button" [headline]="f"></md-list-item>
+    </md-list>
+  \`,
+})
+export class FileListComponent {
+  @ViewChild('list') list!: ElementRef<any>;
+  files = ['report.pdf', 'budget.xlsx'];
+
+  async onSelect() {
+    console.log(await this.list.nativeElement.getSelectedIndices());
+  }
+  onActivate(e: CustomEvent) {
+    console.log('active row', e.detail.index);
+  }
+  onReorder(e: CustomEvent) {
+    this.files = e.detail.order.map((i: number) => this.files[i]);
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const list = ref<any>(null);
+const files = ref(['report.pdf', 'budget.xlsx']);
+
+async function onSelect() {
+  console.log(await list.value?.getSelectedIndices());
+}
+function onReorder(e: CustomEvent) {
+  files.value = e.detail.order.map((i: number) => files.value[i]);
+}
+</script>
+
+<template>
+  <md-list
+    ref="list"
+    label="Files"
+    selection-mode="multi-select"
+    interaction-mode="multi-action"
+    reorderable
+    @mdSelect="onSelect"
+    @mdActivate="(e) => console.log('active row', e.detail.index)"
+    @mdReorder="onReorder"
+  >
+    <md-list-item v-for="f in files" :key="f" type="button" :headline="f" />
+  </md-list>
+</template>`}
+  svelte={`<script lang="ts">
+  let list: any;
+  let files = ['report.pdf', 'budget.xlsx'];
+
+  async function onSelect() {
+    console.log(await list.getSelectedIndices());
+  }
+  function onReorder(e: CustomEvent) {
+    files = e.detail.order.map((i: number) => files[i]);
+  }
+</script>
+
+<md-list
+  bind:this={list}
+  label="Files"
+  selection-mode="multi-select"
+  interaction-mode="multi-action"
+  reorderable
+  on:mdSelect={onSelect}
+  on:mdActivate={(e) => console.log('active row', e.detail.index)}
+  on:mdReorder={onReorder}
+>
+  {#each files as f (f)}
+    <md-list-item type="button" headline={f} />
+  {/each}
+</md-list>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[Row-level props live below]
+`headline`, `supporting-text`, `leading-icon`, `leading-avatar`, `type`, `href`
+and the rest belong to [`md-list-item`](#the-row--md-list-item), not to the
+list, so they are not in the table above.
+:::
+
+## The row — `md-list-item`
+
+Each row is an `md-list-item`. Its API lives here rather than on a separate
+page: outside a list it has no list semantics and no roving focus, and inside
+one the parent writes several of its props for you.
+
+:::caution[Props and slots are alternatives, not additive]
+`headline` vs the `headline` slot, `leading-icon` vs the `leading` slot — use
+**one per region**. When both are present **the slot wins** and the prop is dead
+config that quietly does nothing.
+:::
+
+- **Pick one leading visual.** `leading-icon`, `leading-avatar` and
+  `leading-image` compete for the same region — combining them is a bug, not a
+  layering feature.
+- **`lines` sets the height contract; it does not truncate.** `lines="1"` with
+  three lines of text overflows. It auto-promotes (an `overline` implies 2
+  lines, `overline` + `supporting-text` implies 3), so set it explicitly only to
+  override.
+- **Listen on the list, not the row.** `mdActivate` / `mdSelect` are indexed and
+  reconciled; the row's own `mdClick` / `mdItemClick` / `mdItemSelect` are
+  lower-level plumbing.
+- **Parent-managed props — don't set these yourself:** `selectionMode`,
+  `interactionMode`, `reorderable`, `rovingFocusVisible`, `containerRole`. The
+  list writes them imperatively.
+- `expandable` rows own their expansion (`mdExpand`, `toggle()`, `expand()`,
+  `collapse()`), which is entirely separate from selection.
+- With a `selection-mode` on the parent, the row becomes focusable and clickable
+  **regardless of `type`**.
+
+Both rows below ask for the same three regions. The first uses props, the second
+uses the matching slots — and the third proves the point: it sets `headline` and
+`leading-icon` *and* slots them, and only the slotted content survives.
+
+<ComponentDemo
+  html={`<md-list label="Props versus slots" style="inline-size: 400px;">
+  <md-list-item type="button" headline="Set by props" supporting-text="headline, supporting-text, leading-icon" leading-icon="tune" trailing-supporting-text="props"></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" lines="2">
+    <span slot="leading" class="material-symbols-outlined" aria-hidden="true">tune</span>
+    <span slot="headline">Set by <strong>slots</strong></span>
+    <span slot="supporting-text">leading, headline, supporting-text</span>
+    <span slot="trailing-supporting-text">slots</span>
+  </md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" lines="2" headline="This prop never renders" leading-icon="close">
+    <span slot="leading" class="material-symbols-outlined" aria-hidden="true">check</span>
+    <span slot="headline">The slot wins</span>
+    <span slot="supporting-text">The headline prop and leading-icon here are dead config</span>
+  </md-list-item>
+</md-list>`}
+  label="Props, slots, and what happens when you supply both"
+  storyId="containment-list--slotted-content"
+/>
+
+<ApiTable {...itemApiData} />
+
+## Accessibility
+
+- **Name the list.** `label` or `labelledby` — an unnamed list of rows is hard
+  to navigate with a screen reader, and M3 asks for it explicitly.
+- The list manages **roving focus**: the whole list is one tab stop and arrow
+  keys move between rows.
+- With `multi-action` rows, every embedded control needs its own accessible
+  name identifying **which** row it belongs to.
+- Selection state is exposed by the items (`aria-selected`), not by the list
+  wrapper; `multi-select` adds `aria-multiselectable` to the list.
+- **Reordering has a keyboard path built in** — `Alt + ArrowUp` /
+  `Alt + ArrowDown` on the focused row — so a `reorderable` list is not
+  pointer-only. It is silent, though: announce the move yourself from
+  `mdReorder` if the reorder is a primary task.
+- `role-override` exists for cases where the list is really a listbox or menu
+  in context. Leave it empty unless you know you need it.
+- **`headline` is the row's primary accessible text.** Decorative leading
+  visuals should be hidden from assistive tech — a `leading-avatar` beside the
+  same name in the headline is redundant, and `leading-image-alt` should be
+  empty for a purely decorative thumbnail.
+- On a row, `disabled` leaves the tab order while `soft-disabled` stays
+  focusable, so the row remains discoverable.
+- A directional `trailing-icon` such as `chevron_right` must be swapped by you
+  under RTL; everything else mirrors automatically.
+
+Tab into the list below: it takes **one** tab stop, not four. Arrow keys move
+between rows, `Home` / `End` jump to the ends, and typing a letter jumps to the
+first row whose headline starts with it. Because these rows are `multi-action`,
+`Tab` from a row reaches its own trailing button — and each of those buttons
+names its row, so a screen reader announces "Archive report.pdf", never a bare
+"Archive".
+
+<ComponentDemo
+  html={`<md-list interaction-mode="multi-action" label="Documents" style="inline-size: 380px;">
+  <md-list-item type="button" headline="report.pdf" supporting-text="Focusable — press Enter to activate" leading-icon="picture_as_pdf">
+    <md-icon-button slot="trailing" icon="archive" aria-label="Archive report.pdf"></md-icon-button>
+  </md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="text" headline="budget.xlsx" supporting-text="A text row — skipped by roving focus" leading-icon="table_chart"></md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="Sealed contract" supporting-text="Soft-disabled — still reachable, still announced" leading-icon="lock" soft-disabled>
+    <md-icon-button slot="trailing" icon="archive" aria-label="Archive sealed contract" disabled></md-icon-button>
+  </md-list-item>
+  <md-divider inset-start></md-divider>
+  <md-list-item type="button" headline="notes.txt" supporting-text="Type n to jump straight here" leading-icon="description">
+    <md-icon-button slot="trailing" icon="archive" aria-label="Archive notes.txt"></md-icon-button>
+  </md-list-item>
+</md-list>`}
+  label="Roving focus, typeahead and row-scoped control names — try tabbing through it"
+  storyId="containment-list--keyboard-navigation"
+/>
+
+The `type="text"` row is the one to notice: with no selection mode on the list it
+is not focusable, so arrow keys step straight past it. Give the list a
+`selection-mode` and the same row becomes focusable, because picking from a list
+of label-only rows is the whole point of a selection list.
+
+## RTL, density & i18n
+
+**RTL** — leading and trailing sides, row padding and the drag handle all mirror
+automatically under `dir="rtl"`. Nothing on the component opts in; the same
+markup is simply laid out the other way round:
+
+```html
+<md-list label="Settings" dir="rtl">
+  <md-list-item headline="Wi-Fi" leading-icon="wifi" trailing-supporting-text="On"></md-list-item>
+</md-list>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr">
+    <md-list label="Settings" style="max-inline-size:320px;">
+      <md-list-item headline="Wi-Fi" supporting-text="Home network" leading-icon="wifi" trailing-supporting-text="On"></md-list-item>
+      <md-list-item headline="Bluetooth" supporting-text="2 devices" leading-icon="bluetooth" trailing-supporting-text="On"></md-list-item>
+    </md-list>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl">
+    <md-list label="Settings" style="max-inline-size:320px;">
+      <md-list-item headline="Wi-Fi" supporting-text="Home network" leading-icon="wifi" trailing-supporting-text="On"></md-list-item>
+      <md-list-item headline="Bluetooth" supporting-text="2 devices" leading-icon="bluetooth" trailing-supporting-text="On"></md-list-item>
+    </md-list>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+  storyId="containment-list--rtl"
+/>
+
+### A directional `trailing-icon` is yours to swap
+
+The layout mirrors; the **glyph inside** `trailing-icon` does not. A
+`chevron_right` that meant "forward" in LTR still points right in RTL, where
+forward is left. Both lists below are `dir="rtl"` and differ only in that one
+attribute:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">right</span>
+  <div dir="rtl">
+    <md-list label="جهات الاتصال — خطأ" style="max-inline-size:360px;">
+      <md-list-item headline="آدا لوفلايس" supporting-text="مهندسة" leading-icon="person" trailing-icon="chevron_right"></md-list-item>
+      <md-list-item headline="آلان تورنغ" supporting-text="عالم رياضيات" leading-icon="person" trailing-icon="chevron_right"></md-list-item>
+    </md-list>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">left</span>
+  <div dir="rtl">
+    <md-list label="جهات الاتصال" style="max-inline-size:360px;">
+      <md-list-item headline="آدا لوفلايس" supporting-text="مهندسة" leading-icon="person" trailing-icon="chevron_left"></md-list-item>
+      <md-list-item headline="آلان تورنغ" supporting-text="عالم رياضيات" leading-icon="person" trailing-icon="chevron_left"></md-list-item>
+    </md-list>
+  </div>
+</div>`}
+  label="trailing-icon under dir=rtl — chevron_right is wrong, chevron_left is right"
+/>
+
+### Every density rung
+
+`density="-1…-4"` on the list drives the same `--md-sys-density-scale` signal a
+global `data-density` ancestor sets, so a value here simply overrides the
+inherited one — and it cascades to every row.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <md-list label="Rung 0" density="0" style="inline-size:280px;">
+    <md-list-item headline="Ada Lovelace" supporting-text="Engineer" leading-icon="person"></md-list-item>
+    <md-list-item headline="Alan Turing" supporting-text="Mathematician" leading-icon="person"></md-list-item>
+  </md-list>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <md-list label="Rung -1" density="-1" style="inline-size:280px;">
+    <md-list-item headline="Ada Lovelace" supporting-text="Engineer" leading-icon="person"></md-list-item>
+    <md-list-item headline="Alan Turing" supporting-text="Mathematician" leading-icon="person"></md-list-item>
+  </md-list>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <md-list label="Rung -2" density="-2" style="inline-size:280px;">
+    <md-list-item headline="Ada Lovelace" supporting-text="Engineer" leading-icon="person"></md-list-item>
+    <md-list-item headline="Alan Turing" supporting-text="Mathematician" leading-icon="person"></md-list-item>
+  </md-list>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <md-list label="Rung -3" density="-3" style="inline-size:280px;">
+    <md-list-item headline="Ada Lovelace" supporting-text="Engineer" leading-icon="person"></md-list-item>
+    <md-list-item headline="Alan Turing" supporting-text="Mathematician" leading-icon="person"></md-list-item>
+  </md-list>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <md-list label="Rung -4" density="-4" style="inline-size:280px;">
+    <md-list-item headline="Ada Lovelace" supporting-text="Engineer" leading-icon="person"></md-list-item>
+    <md-list-item headline="Alan Turing" supporting-text="Mathematician" leading-icon="person"></md-list-item>
+  </md-list>
+</div>`}
+  label="Density 0 through -4 — row height, leading icon and hit area all taper"
+  storyId="containment-list--dense-layout"
+/>
+
+:::caution[One-line rows cross the 48px floor first]
+The two ladders differ. A one-line row is `56px + rung × 4px`, so it runs
+**56 → 52 → 48 → 44 → 40px** and drops *below* M3's 48px minimum touch target
+at `-3`. A two-line row is `72px + rung × 6px` — **72 → 66 → 60 → 54 → 48px** —
+and only reaches the floor at `-4`. The deep rungs are for pointer-first,
+information-dense surfaces; on touch, measure the row shape you actually ship
+rather than trusting the rung number.
+:::
+
+### Density and direction together
+
+They are independent signals, so they compose. Here the wrapper is `dir="rtl"`
+with a global `data-density="-2"`; the first list simply inherits that rung, and
+the second declares `density="-4"` on itself, which wins over the inherited
+value:
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <md-list label="مضغوط" style="max-inline-size:320px;">
+    <md-list-item headline="آدا لوفلايس" supporting-text="مهندسة" leading-icon="person" trailing-icon="chevron_left"></md-list-item>
+    <md-list-item headline="آلان تورنغ" supporting-text="عالم رياضيات" leading-icon="person" trailing-icon="chevron_left"></md-list-item>
+  </md-list>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <md-list label="مضغوط جدا" density="-4" style="max-inline-size:320px;">
+    <md-list-item headline="آدا لوفلايس" supporting-text="مهندسة" leading-icon="person" trailing-icon="chevron_left"></md-list-item>
+    <md-list-item headline="آلان تورنغ" supporting-text="عالم رياضيات" leading-icon="person" trailing-icon="chevron_left"></md-list-item>
+  </md-list>
+</div>`}
+  label="dir=rtl with data-density=-2, and one list overriding the rung to -4"
+/>
+
+:::note[There is no `density="0"` escape hatch]
+The rungs are declared as `[density='-1']` … `[density='-4']` only, so
+`density="0"` declares nothing and the list keeps whatever rung it inherited.
+To pull a subtree back to the default rung, remove the `data-density` ancestor
+rather than trying to zero it on the child.
+:::
+
+**Density** — set it on the list, not on the rows. The rung is declared on the
+list's host as `--md-sys-density-scale`, which every row inherits, so one
+attribute keeps the whole stack in step. See [Density](/behaviour/density/) and
+[RTL](/behaviour/rtl/).
+
+**i18n** — translate `label` and all row content. Longer translations increase
+row height, and M3's line-length guidance matters more in verbose languages —
+adjust the list's margins rather than letting lines run.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-list-container-color` | List surface | `transparent` for both list styles — opt in to a painted chassis |
+| `--md-list-container-shape` | List corner radius | `0` |
+| `--md-list-padding-block` / `--md-list-padding-inline` | List padding | 8px / 0 |
+| `--md-list-segmented-gap` | Gap between tiles in `segmented` style | 2px |
+| `--md-list-drop-placeholder-color` | Drag placeholder fill | `primary-container` at 45% |
+| `--md-list-drop-placeholder-shape` | Drag placeholder radius | corner-large (16px) |
+| `--md-list-drop-placeholder-opacity` | Drag placeholder opacity | 1 |
+| `--md-list-drop-placeholder-outline-color` / `-width` | Drag placeholder border | `primary` at 55% / 2px |
+
+<ComponentDemo
+  html={`<md-list list-style="segmented" label="Themed list" style="inline-size: 300px; --md-list-container-color: var(--md-sys-color-surface-container-highest); --md-list-container-shape: 24px; --md-list-segmented-gap: 8px; --md-list-padding-inline: 12px; --md-list-padding-block: 12px;">
+  <md-list-item type="button" headline="Photos" leading-icon="photo"></md-list-item>
+  <md-list-item type="button" headline="Videos" leading-icon="videocam"></md-list-item>
+  <md-list-item type="button" headline="Music" leading-icon="music_note"></md-list-item>
+</md-list>`}
+  label="Themed instance"
+  storyId="containment-list--custom-css"
+/>
+
+A **segmented** list zeroes both paddings by default, because its tiles are
+meant to float directly on the page surface with no container behind them. The
+moment you tint one with `--md-list-container-color`, set
+`--md-list-padding-block` **and** `--md-list-padding-inline` yourself —
+otherwise the rows sit flush against the container edges, which reads as a
+rendering bug rather than a design.
+
+Check any override in both themes before you ship it.
+
+### Theming the rows
+
+Row appearance is driven by the `--md-list-item-*` properties. The full set is
+in the [row API reference](#the-row--md-list-item); these are the ones reached
+for most, and all of them can be set on the **list**, because the rows inherit
+them:
+
+| Custom property | Purpose |
+|---|---|
+| `--md-list-item-container-color` / `--md-list-item-container-shape` | Row surface |
+| `--md-list-item-container-shape-start-start` … `-end-end` | Per-corner radii |
+| `--md-list-item-active-container-shape`, or `-hover-` / `-focus-` / `-pressed-` / `-selected-` / `-dragged-` individually | Per-state shape |
+| `--md-list-item-hover-state-layer-opacity` / `-focus-` / `-pressed-` | State layer |
+| `--md-list-item-expand-duration` / `--md-list-item-collapse-duration` | Expandable motion |
+
+The per-corner properties are how you round the **ends** of a group. They have
+to go on the individual rows, not on the list: a value set on the list is
+inherited by every row equally, so it cannot single out the first and the last.
+
+<ComponentDemo
+  html={`<md-list label="Rounded group ends" style="inline-size: 300px; --md-list-item-container-color: var(--md-sys-color-surface-container-high);">
+  <md-list-item type="button" headline="First" leading-icon="photo" style="--md-list-item-container-shape-start-start: 20px; --md-list-item-container-shape-start-end: 20px;"></md-list-item>
+  <md-list-item type="button" headline="Middle" leading-icon="videocam"></md-list-item>
+  <md-list-item type="button" headline="Last" leading-icon="music_note" style="--md-list-item-container-shape-end-start: 20px; --md-list-item-container-shape-end-end: 20px;"></md-list-item>
+</md-list>`}
+  label="Per-corner shape on the first and last row only"
+/>
+
+:::caution[A `segmented` list already owns those corners]
+`list-style="segmented"` sets the four per-corner properties **directly on** its
+first, last and only child rows, and a declaration on the element beats an
+inherited one. Overrides you set on a segmented list therefore reach the middle
+rows and are ignored at exactly the ends you were aiming at — put them on the
+rows instead, or use `standard`.
+:::
+
+**CSS part** — `drop-placeholder`, the ghost slot shown while a row is dragged
+(the same affordance [`md-accordion`](/components/accordion/) uses).
+
+<ComponentDemo
+  html={`<style>
+  .list-parts::part(drop-placeholder) {
+    border-style: solid;
+    border-width: 3px;
+    border-color: var(--md-sys-color-tertiary);
+    background: color-mix(in srgb, var(--md-sys-color-tertiary) 20%, transparent);
+  }
+</style>
+<md-list class="list-parts" label="Styled drop target" reorderable style="inline-size: 300px;">
+  <md-list-item headline="Drag me" supporting-text="The ghost slot is restyled"></md-list-item>
+  <md-list-item headline="Second row"></md-list-item>
+  <md-list-item headline="Third row"></md-list-item>
+</md-list>`}
+  label="::part(drop-placeholder) — drag a row to see it"
+  storyId="containment-list--css-parts"
+/>
+
+
+## Related
+
+[`md-table`](/components/table/) ·
+[`md-card`](/components/card/) ·
+[`md-menu`](/components/menu/) ·
+[`md-accordion`](/components/accordion/) ·
+[`md-transfer-list`](/components/transfer-list/) ·
+[`md-divider`](/components/divider/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-list" />

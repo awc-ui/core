@@ -1,0 +1,171 @@
+/* ==========================================================
+   md-stepper — Material Design 3 stepper container
+
+   PUBLIC CSS CUSTOM PROPERTIES:
+     --md-stepper-gap   Spacing between steps (vertical orientation only).
+                        Defaults to 0 — any other value opens gaps in the
+                        connector rail, which relies on adjacent step boxes
+                        touching. Prefer padding inside step content.
+
+   PARTS:
+     list             The <ol> wrapping the steps.
+     content          Wrapper around the `content` slot (horizontal content area).
+     nav              The horizontal Back / Continue button bar.
+     mobile-nav       The compact variant="mobile" bar.
+     mobile-progress  The centered progress (dots / caption) in the mobile bar.
+
+   SLOTS:
+     (default)   md-step children
+     content     Active-step panel for horizontal / mobile steppers — rendered
+                 between the step row and the nav bar (swap it on mdStepChange).
+   ========================================================== */
+
+:host {
+  display: block;
+  inline-size: 100%;
+  box-sizing: border-box;
+  font-family: var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif);
+  color: var(--md-sys-color-on-surface, #1C1B1F);
+}
+
+/* Visually-hidden live regions — announce step changes / errors to AT without
+   affecting layout (the standard sr-only recipe). */
+.md-stepper__live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.md-stepper__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+/* Horizontal: steps share the row equally; connectors live on a fixed baseline
+   inside each step (see md-step), so the row stays clean at any label height. */
+
+/* ── Horizontal panel mode (opt-in) ──────────────────────────────────────────
+   A slot cannot reach a grandchild, so `md-stepper` can never project a step's
+   children into its own `content` region — only `md-step` can render them, in
+   place. To let a step's panel span the full width UNDER the row anyway, the
+   row becomes a grid and each step goes `display: contents`, promoting its
+   header and its panel to grid items: headers share row 1 (one column each),
+   panels span every column in row 2.
+
+   Gated on [data-panel-mode="step"], which the stepper only sets when a step
+   actually has content — a horizontal stepper without per-step panels keeps
+   the original flex row byte-for-byte. */
+:host(.md-stepper--horizontal[data-panel-mode='step']) .md-stepper__list {
+  display: grid;
+  grid-template-columns: repeat(var(--md-stepper-step-count, 1), 1fr);
+  align-items: start;
+}
+
+:host(.md-stepper--horizontal) .md-stepper__list {
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+/* Vertical: stacked with NO inter-step gap so the connector rail is continuous
+   (each step's down-connector meets the next step's up-connector at the box
+   boundary). Breathing room comes from the bubble wrapper + content padding. */
+:host(.md-stepper--vertical) .md-stepper__list {
+  flex-direction: column;
+  gap: var(--md-stepper-gap, 0);
+}
+
+/* Horizontal content area — only takes space when something is slotted. */
+.md-stepper__content ::slotted(*) {
+  display: block;
+  /* Global density: on-grid 24px separation tracks --md-sys-spacing-inset-xl;
+     byte-for-byte at density 0. */
+  margin-block-start: var(--md-sys-spacing-inset-xl, 24px);
+}
+
+/* Horizontal nav bar — built-in Back / Continue below the steps (and below
+   the content slot), end-aligned like M3 wizard actions. Vertical steppers
+   carry their nav inside each step's content panel instead. */
+.md-stepper__nav {
+  display: flex;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  justify-content: flex-end;
+  /* Off-grid (20px) separation tightens with global density (2px/rung),
+     floored at 4px; density 0 resolves to 20px. */
+  margin-block-start: max(4px, calc(20px + var(--md-sys-density-scale, 0) * 2px));
+}
+
+/* ── Mobile variant — compact Back · progress · Continue bar ──────────────
+   The step-header row is hidden; the active step's panel lives in the content
+   slot. Matches the MUI MobileStepper idiom for narrow checkout/onboarding. */
+:host(.md-stepper--mobile) .md-stepper__list { display: none; }
+
+.md-stepper__mobile {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  margin-block-start: var(--md-sys-spacing-gap-lg, 16px);
+}
+
+.md-stepper__mobile-progress {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  min-inline-size: 0;
+}
+
+.md-stepper__mobile-text {
+  font-family: var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif);
+  font-size: var(--md-sys-typescale-label-large-font-size, 14px);
+  font-weight: var(--md-sys-typescale-label-large-font-weight, 500);
+  line-height: var(--md-sys-typescale-label-large-line-height, 20px);
+  color: var(--md-sys-color-on-surface-variant, #49454F);
+}
+
+.md-stepper__mobile-dot {
+  inline-size: 8px;
+  block-size: 8px;
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  /* Pending dots use outline (not the 1.2:1 surface tint) for a visible 3:1. */
+  background-color: var(--md-step-connector-color, var(--md-sys-color-outline, #79747E));
+  transition:
+    background-color var(--md-sys-motion-spring-effects-default-duration, 200ms) var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.80, 0.34, 1.00)),
+    transform var(--md-sys-motion-spring-spatial-default-duration, 500ms) var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1.00));
+}
+.md-stepper__mobile-dot.is-done { background-color: var(--md-step-active-color, var(--md-sys-color-primary, #6750A4)); }
+.md-stepper__mobile-dot.is-active {
+  background-color: var(--md-step-active-color, var(--md-sys-color-primary, #6750A4));
+  transform: scale(1.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-stepper__mobile-dot { transition-duration: 0.01ms; }
+  .md-stepper__mobile-dot.is-active { transform: none; }
+}
+
+@media (forced-colors: active) {
+  .md-stepper__mobile-dot { background-color: GrayText; forced-color-adjust: none; }
+  .md-stepper__mobile-dot.is-done,
+  .md-stepper__mobile-dot.is-active { background-color: Highlight; }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

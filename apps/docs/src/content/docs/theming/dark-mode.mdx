@@ -1,0 +1,229 @@
+---
+title: Dark Mode
+description: How to enable and customize dark theme in AWC UI
+sidebar:
+  order: 5
+---
+
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+
+## Enabling Dark Mode
+
+Set the `data-theme="dark"` attribute on any ancestor element. All AWC UI components within that subtree will automatically use dark color tokens.
+
+```html
+<!-- Global dark mode -->
+<html data-theme="dark">
+  <body>
+    <md-button variant="filled">Dark Button</md-button>
+  </body>
+</html>
+```
+
+```html
+<!-- Scoped dark mode (only affects children) -->
+<div data-theme="dark" style="padding: 24px; background: var(--md-sys-color-surface);">
+  <md-button variant="filled">Dark Section</md-button>
+</div>
+```
+
+## JavaScript Toggle
+
+```js
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? '' : 'dark');
+}
+```
+
+### With System Preference
+
+Respect the user's OS-level theme preference:
+
+```js
+// Check system preference
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : '');
+
+// Listen for changes
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+  document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : '');
+});
+```
+
+### With localStorage Persistence
+
+```js
+const THEME_KEY = 'awc-ui-theme';
+
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', saved);
+  } else {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : '');
+  }
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const newTheme = isDark ? '' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem(THEME_KEY, newTheme);
+}
+
+initTheme();
+```
+
+## Dark Mode Token Overrides
+
+The default dark palette is defined in `@awc-ui/tokens`. Key differences:
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `--md-sys-color-primary` | `#6750A4` | `#D0BCFF` |
+| `--md-sys-color-on-primary` | `#FFFFFF` | `#381E72` |
+| `--md-sys-color-surface` | `#FFFBFE` | `#1C1B1F` |
+| `--md-sys-color-on-surface` | `#1C1B1F` | `#E6E1E5` |
+| `--md-sys-color-error` | `#B3261E` | `#F2B8B5` |
+| `--md-sys-color-outline` | `#79747E` | `#938F99` |
+
+## Custom Dark Palette
+
+Override dark tokens by targeting the `[data-theme="dark"]` selector:
+
+```css
+[data-theme="dark"] {
+  --md-sys-color-primary: #A8D5BA;
+  --md-sys-color-on-primary: #1B3A2A;
+  --md-sys-color-primary-container: #2E5A3F;
+  --md-sys-color-on-primary-container: #C4F1D5;
+  --md-sys-color-surface: #121212;
+  --md-sys-color-on-surface: #E0E0E0;
+}
+```
+
+## Technology Examples
+
+A reusable dark-mode toggle using AWC UI's `<md-switch>` — same behaviour in
+every technology: track an `isDark` state, mirror it onto
+`document.documentElement` as `data-theme="dark"`, and react to changes through
+the component's `mdChange` event.
+
+<TechnologyTabs
+  html={`<script type="module">
+  import { defineCustomElements } from '@awc-ui/core/loader';
+  defineCustomElements(window);
+</script>
+
+<md-switch id="theme-toggle" icons aria-label="Toggle dark mode"></md-switch>
+
+<script>
+  const toggle = document.getElementById('theme-toggle');
+  toggle.addEventListener('mdChange', (e) => {
+    document.documentElement.setAttribute(
+      'data-theme',
+      e.detail.selected ? 'dark' : ''
+    );
+  });
+</script>`}
+  react={`import { useEffect, useState } from 'react';
+import { MdSwitch } from '@awc-ui/react';
+
+export function ThemeToggle() {
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.setAttribute(
+      'data-theme',
+      isDark ? 'dark' : ''
+    );
+  }, [isDark]);
+
+  return (
+    <MdSwitch
+      selected={isDark}
+      icons
+      onMdChange={(e) => setIsDark(e.detail.selected)}
+      aria-label="Toggle dark mode"
+    />
+  );
+}`}
+  angular={`import { Component, signal, effect, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+
+@Component({
+  selector: 'theme-toggle',
+  standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: \`
+    <md-switch
+      [selected]="isDark()"
+      icons
+      aria-label="Toggle dark mode"
+      (mdChange)="onChange(\$event)"
+    ></md-switch>
+  \`,
+})
+export class ThemeToggleComponent {
+  isDark = signal(false);
+
+  constructor() {
+    effect(() => {
+      document.documentElement.setAttribute(
+        'data-theme',
+        this.isDark() ? 'dark' : ''
+      );
+    });
+  }
+
+  onChange(e: Event) {
+    const { detail } = e as CustomEvent<{ selected: boolean }>;
+    this.isDark.set(detail.selected);
+  }
+}`}
+  vue={`<script setup>
+import { ref, watchEffect } from 'vue';
+import '@awc-ui/core/define';
+
+const isDark = ref(false);
+
+watchEffect(() => {
+  document.documentElement.setAttribute(
+    'data-theme',
+    isDark.value ? 'dark' : ''
+  );
+});
+</script>
+
+<template>
+  <md-switch
+    :selected="isDark"
+    icons
+    aria-label="Toggle dark mode"
+    @md-change="isDark = $event.detail.selected"
+  />
+</template>`}
+  svelte={`<script>
+  import '@awc-ui/core/define';
+
+  let isDark = false;
+
+  $: document.documentElement.setAttribute(
+    'data-theme',
+    isDark ? 'dark' : ''
+  );
+
+  function onChange(e) {
+    isDark = e.detail.selected;
+  }
+</script>
+
+<md-switch
+  selected={isDark}
+  icons
+  aria-label="Toggle dark mode"
+  on:mdChange={onChange}
+/>`}
+/>

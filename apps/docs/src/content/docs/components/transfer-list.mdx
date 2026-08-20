@@ -1,0 +1,1045 @@
+---
+title: Transfer List
+description: "A dual-list selector — source and target columns with per-side search, select-all headers and four movers"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/transfer-list.json";
+
+**A dual-list selector.** Two columns — *source* and *target* — with per-side
+search, select-all headers, checkbox rows, and four movers between them. The
+`value` prop is the set of item values currently in the **target** column.
+
+:::note[Not a Material Design 3 component]
+M3 has no transfer-list page. The Do/Don't below are derived from M3's
+[Lists](https://m3.material.io/components/lists/guidelines) and
+[Checkbox](https://m3.material.io/components/checkbox/guidelines) guidance plus
+this component's actual behaviour — treat them as house rules, not spec.
+:::
+
+<ComponentDemo
+  html={`<md-transfer-list
+  id="tl-hero"
+  source-title="Available roles"
+  target-title="Assigned roles"
+  style="--md-transfer-list-height: 340px; --md-transfer-list-column-min-width: 190px;"
+></md-transfer-list>
+
+\x3Cscript type="module">
+  const ITEMS = [
+    { value: 'analytics', label: 'Analytics', description: 'Read dashboards' },
+    { value: 'billing', label: 'Billing', description: 'Invoices and payment methods' },
+    { value: 'content', label: 'Content editor', description: 'Create and publish pages' },
+    { value: 'support', label: 'Support agent', description: 'Answer tickets' },
+    { value: 'devops', label: 'DevOps', description: 'Deploys and infrastructure' },
+    { value: 'security', label: 'Security', description: 'Audit logs and keys' },
+    { value: 'owner', label: 'Owner', description: 'Cannot be reassigned', disabled: true },
+  ];
+
+  let tries = 0;
+  const wire = () => {
+    const el = document.getElementById('tl-hero');
+    if (el && el.classList.contains('hydrated')) {
+      el.items = ITEMS;
+      el.value = ['support'];
+      return;
+    }
+    if (++tries < 240) requestAnimationFrame(wire);
+  };
+  requestAnimationFrame(wire);
+\x3C/script>`}
+  htmlForCode={`<md-transfer-list
+  id="roles"
+  source-title="Available roles"
+  target-title="Assigned roles"
+  style="--md-transfer-list-height: 340px;"
+></md-transfer-list>
+
+<script type="module">
+  const el = document.getElementById('roles');
+
+  // Arrays are PROPERTIES, never attributes.
+  el.items = [
+    { value: 'analytics', label: 'Analytics', description: 'Read dashboards' },
+    { value: 'billing', label: 'Billing', description: 'Invoices and payment methods' },
+    { value: 'owner', label: 'Owner', disabled: true },
+  ];
+  el.value = ['support'];      // 'support' starts in the TARGET column
+
+  el.addEventListener('mdChange', (e) => saveRoles(e.detail));
+</script>`}
+  react={`import { useState } from 'react';
+import { MdTransferList } from '@awc-ui/react';
+
+const ROLES = [
+  { value: 'analytics', label: 'Analytics', description: 'Read dashboards' },
+  { value: 'billing', label: 'Billing', description: 'Invoices and payment methods' },
+  { value: 'owner', label: 'Owner', disabled: true },
+];
+
+export function RoleTransfer() {
+  const [value, setValue] = useState(['support']);
+
+  return (
+    <MdTransferList
+      sourceTitle="Available roles"
+      targetTitle="Assigned roles"
+      items={ROLES}
+      value={value}
+      onMdChange={(e) => setValue(e.detail)}
+      style={{ '--md-transfer-list-height': '340px' }}
+    />
+  );
+}`}
+  angular={`// app.module.ts — register the AWC UI elements once
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
+import { AwcUiModule } from '@awc-ui/angular';
+
+@NgModule({ imports: [AwcUiModule], schemas: [CUSTOM_ELEMENTS_SCHEMA] })
+export class AppModule {}
+
+// app.component.ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-roles',
+  template: \`
+    <md-transfer-list
+      source-title="Available roles"
+      target-title="Assigned roles"
+      [items]="roles"
+      [value]="assigned"
+      (mdChange)="assigned = $event.detail"
+      style="--md-transfer-list-height: 340px;"
+    ></md-transfer-list>
+  \`,
+})
+export class RolesComponent {
+  roles = [
+    { value: 'analytics', label: 'Analytics', description: 'Read dashboards' },
+    { value: 'billing', label: 'Billing', description: 'Invoices and payment methods' },
+    { value: 'owner', label: 'Owner', disabled: true },
+  ];
+  assigned = ['support'];
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+import '@awc-ui/core/define';
+
+const roles = [
+  { value: 'analytics', label: 'Analytics', description: 'Read dashboards' },
+  { value: 'billing', label: 'Billing', description: 'Invoices and payment methods' },
+  { value: 'owner', label: 'Owner', disabled: true },
+];
+const assigned = ref(['support']);
+</script>
+
+<template>
+  <md-transfer-list
+    source-title="Available roles"
+    target-title="Assigned roles"
+    :items="roles"
+    :value="assigned"
+    @mdChange="assigned = $event.detail"
+    style="--md-transfer-list-height: 340px;"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  import '@awc-ui/core/define';
+
+  const roles = [
+    { value: 'analytics', label: 'Analytics', description: 'Read dashboards' },
+    { value: 'billing', label: 'Billing', description: 'Invoices and payment methods' },
+    { value: 'owner', label: 'Owner', disabled: true },
+  ];
+  let assigned = ['support'];
+</script>
+
+<md-transfer-list
+  source-title="Available roles"
+  target-title="Assigned roles"
+  items={roles}
+  value={assigned}
+  on:mdChange={(e) => (assigned = e.detail)}
+  style="--md-transfer-list-height: 340px;"
+></md-transfer-list>`}
+  label="Live preview — check rows and move them across"
+  storyId="selection-transfer-list--basic"
+/>
+
+## Install
+
+<ComponentSetup tag="md-transfer-list" example="" />
+
+## When to use
+
+- Assigning a **subset out of a known, bounded pool**: users→roles,
+  permissions→groups, columns→a report, tags→an article.
+- The user benefits from seeing **chosen and unchosen side by side**, and from
+  moving items in **batches**.
+- Item counts roughly **10–300** per side.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Picking a handful from a short list (< ~10) | [`md-multi-select`](/components/multi-select/) |
+| Picking exactly one | [`md-select`](/components/select/) |
+| Free-text entry with suggestions | [`md-autocomplete`](/components/autocomplete/) |
+| A flat multi-select where order/side doesn't matter | [`md-checkbox`](/components/checkbox/) group or [`md-list`](/components/list/) |
+| Toggling a handful of independent options | [`md-switch`](/components/switch/) / [`md-checkbox`](/components/checkbox/) |
+| The two sides mean different *things* (not the same items relocated) | Two separate lists |
+| Narrow mobile viewports | [`md-multi-select`](/components/multi-select/) — three columns don't fit |
+
+## The data model
+
+**`value` is the target column.** Anything in `items` but not in `value` renders
+on the source side. There is no separate "source items" prop — the component
+derives the source side by subtraction.
+
+<ComponentDemo
+  html={`<md-transfer-list
+  id="tl-model"
+  source-title="Source (items minus value)"
+  target-title="Target (value)"
+  style="inline-size: 100%; --md-transfer-list-height: 220px; --md-transfer-list-column-min-width: 190px;"
+></md-transfer-list>`}
+  script={`
+    var el = root.querySelector('#tl-model');
+    el.items = [
+      { value: 'a', label: 'Analytics', description: 'Read dashboards' },
+      { value: 'b', label: 'Billing', disabled: true },
+      { value: 'c', label: 'Content editor' },
+    ];
+    el.value = ['b'];
+  `}
+  htmlCode={`<md-transfer-list id="roles"
+  source-title="Source (items minus value)"
+  target-title="Target (value)"
+></md-transfer-list>
+
+<script type="module">
+  const el = document.getElementById('roles');
+  el.items = [
+    { value: 'a', label: 'Analytics', description: 'Read dashboards' },
+    { value: 'b', label: 'Billing', disabled: true },
+    { value: 'c', label: 'Content editor' },
+  ];
+  el.value = ['b'];             // 'b' starts in the TARGET column
+</script>`}
+  react={`import { useState } from 'react';
+import { MdTransferList } from '@awc-ui/react';
+
+const ITEMS = [
+  { value: 'a', label: 'Analytics', description: 'Read dashboards' },
+  { value: 'b', label: 'Billing', disabled: true },
+  { value: 'c', label: 'Content editor' },
+];
+
+export function Roles() {
+  // 'b' starts in the TARGET column; the source side is ITEMS minus value.
+  const [value, setValue] = useState(['b']);
+
+  return (
+    <MdTransferList
+      sourceTitle="Source (items minus value)"
+      targetTitle="Target (value)"
+      items={ITEMS}
+      value={value}
+      onMdChange={(e) => setValue(e.detail)}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-roles',
+  template: \`
+    <md-transfer-list
+      source-title="Source (items minus value)"
+      target-title="Target (value)"
+      [items]="items"
+      [value]="value"
+      (mdChange)="value = $event.detail"
+    ></md-transfer-list>
+  \`,
+})
+export class RolesComponent {
+  items = [
+    { value: 'a', label: 'Analytics', description: 'Read dashboards' },
+    { value: 'b', label: 'Billing', disabled: true },
+    { value: 'c', label: 'Content editor' },
+  ];
+  value = ['b']; // starts in the TARGET column
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+import '@awc-ui/core/define';
+
+const items = [
+  { value: 'a', label: 'Analytics', description: 'Read dashboards' },
+  { value: 'b', label: 'Billing', disabled: true },
+  { value: 'c', label: 'Content editor' },
+];
+const value = ref(['b']); // starts in the TARGET column
+</script>
+
+<template>
+  <md-transfer-list
+    source-title="Source (items minus value)"
+    target-title="Target (value)"
+    :items="items"
+    :value="value"
+    @mdChange="value = $event.detail"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  import '@awc-ui/core/define';
+
+  const items = [
+    { value: 'a', label: 'Analytics', description: 'Read dashboards' },
+    { value: 'b', label: 'Billing', disabled: true },
+    { value: 'c', label: 'Content editor' },
+  ];
+  let value = ['b']; // starts in the TARGET column
+</script>
+
+<md-transfer-list
+  source-title="Source (items minus value)"
+  target-title="Target (value)"
+  {items}
+  {value}
+  on:mdChange={(e) => (value = e.detail)}
+></md-transfer-list>`}
+  label="items minus value on the left, value on the right"
+/>
+
+:::note[Keep the array referentially stable]
+The component is **controlled-ish**: it mutates its own `value`, then emits
+`mdChange`. Rebuilding `items` with fresh objects on every render churns
+re-renders and can drop check state — and if your framework re-feeds `value`,
+keep it in sync or the two will fight.
+:::
+
+## The four movers
+
+| Mover | Acts on |
+|---|---|
+| `›` | Items **checked *and* currently visible** under that side's search filter |
+| `‹` | Same, in the other direction |
+| `»` | **Every** non-disabled item on that side — ignores the search filter |
+| `«` | Same, in the other direction |
+
+:::caution[The single-step movers respect the search filter]
+A checked item that is hidden by the filter is **not** moved. This is
+deliberate, but it surprises users — clear the search, or use the bulk mover.
+:::
+
+Check state is tracked **per side** and is cleared for that side after a move.
+`disabled` items never move, in single-step or bulk.
+
+<ComponentDemo
+  html={`<md-transfer-list
+  id="tl-single"
+  source-title="Columns"
+  target-title="Shown in report"
+  single-step-only
+  show-select-all="false"
+  style="--md-transfer-list-height: 300px; --md-transfer-list-column-min-width: 190px;"
+></md-transfer-list>
+
+\x3Cscript type="module">
+  const ITEMS = [
+    { value: 'name', label: 'Name' },
+    { value: 'email', label: 'Email' },
+    { value: 'role', label: 'Role' },
+    { value: 'created', label: 'Created at' },
+    { value: 'last', label: 'Last seen' },
+    { value: 'plan', label: 'Plan' },
+  ];
+
+  let tries = 0;
+  const wire = () => {
+    const el = document.getElementById('tl-single');
+    if (el && el.classList.contains('hydrated')) {
+      el.items = ITEMS;
+      el.value = ['name', 'email'];
+      return;
+    }
+    if (++tries < 240) requestAnimationFrame(wire);
+  };
+  requestAnimationFrame(wire);
+\x3C/script>`}
+  htmlForCode={`<md-transfer-list
+  id="columns"
+  source-title="Columns"
+  target-title="Shown in report"
+  single-step-only
+  show-select-all="false"
+></md-transfer-list>`}
+  script={`
+    var el = root.querySelector('#columns');
+    el.items = [
+      { value: 'name', label: 'Name' },
+      { value: 'email', label: 'Email' },
+      { value: 'role', label: 'Role' },
+      { value: 'created', label: 'Created at' },
+      { value: 'last', label: 'Last seen' },
+      { value: 'plan', label: 'Plan' },
+    ];
+    el.value = ['name', 'email'];
+  `}
+  label="single-step-only + show-select-all=false — safety-first, no bulk moves"
+  storyId="selection-transfer-list--single-step-only"
+/>
+
+## Search & density
+
+`searchable` defaults to **`true`**. Turn it off for short lists where a search
+field is noise. `density="-1…-4"` tightens row padding and is forwarded to both
+search fields.
+
+<ComponentDemo
+  html={`<md-transfer-list
+  id="tl-dense"
+  source-title="Tags"
+  target-title="Applied"
+  density="-2"
+  source-search-placeholder="Search tags"
+  target-search-placeholder="Search applied"
+  count-template="{checked}/{total} selected"
+  style="--md-transfer-list-height: 300px; --md-transfer-list-column-min-width: 190px;"
+></md-transfer-list>
+
+<md-transfer-list
+  id="tl-plain"
+  source-title="Short list"
+  target-title="Picked"
+  searchable="false"
+  empty-icon="inbox"
+  empty-text="Nothing here yet"
+  style="--md-transfer-list-height: 300px; --md-transfer-list-column-min-width: 190px;"
+></md-transfer-list>
+
+\x3Cscript type="module">
+  const TAGS = [
+    { value: 'design', label: 'Design' },
+    { value: 'frontend', label: 'Frontend' },
+    { value: 'backend', label: 'Backend' },
+    { value: 'infra', label: 'Infrastructure' },
+    { value: 'docs', label: 'Documentation' },
+    { value: 'a11y', label: 'Accessibility' },
+    { value: 'perf', label: 'Performance' },
+    { value: 'i18n', label: 'Internationalisation' },
+  ];
+  const SHORT = [
+    { value: 'a', label: 'Alpha' },
+    { value: 'b', label: 'Beta' },
+    { value: 'c', label: 'Gamma' },
+  ];
+
+  const wire = (id, items, value) => {
+    let tries = 0;
+    const attempt = () => {
+      const el = document.getElementById(id);
+      if (el && el.classList.contains('hydrated')) {
+        el.items = items;
+        el.value = value;
+        return;
+      }
+      if (++tries < 240) requestAnimationFrame(attempt);
+    };
+    requestAnimationFrame(attempt);
+  };
+
+  wire('tl-dense', TAGS, ['frontend', 'a11y']);
+  wire('tl-plain', SHORT, []);
+\x3C/script>`}
+  htmlForCode={`<md-transfer-list
+  id="tags"
+  source-title="Tags" target-title="Applied"
+  density="-2"
+  source-search-placeholder="Search tags"
+  target-search-placeholder="Search applied"
+  count-template="{checked}/{total} selected"
+></md-transfer-list>
+
+<md-transfer-list
+  source-title="Short list" target-title="Picked"
+  searchable="false"
+  empty-icon="inbox" empty-text="Nothing here yet"
+></md-transfer-list>`}
+  script={`
+    var el = root.querySelector('#tags');
+    el.items = [
+      { value: 'urgent', label: 'Urgent' },
+      { value: 'billing', label: 'Billing' },
+      { value: 'bug', label: 'Bug' },
+      { value: 'feature', label: 'Feature request' },
+    ];
+    el.value = ['urgent'];
+  `}
+  label="Dense + searchable, and a short non-searchable list with a custom empty state"
+  storyId="selection-transfer-list--filtering"
+/>
+
+`count-template` interpolates `{checked}` and `{total}` — keep both tokens when
+translating.
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdChange` | no | `string[]` — the new target set | Every change to `value` |
+| `mdMove` | no | `{ direction: 'left' \| 'right', moved: string[], target: string[] }` | After a move, describing it |
+
+**Methods** — `moveSelectedRight()`, `moveSelectedLeft()`.
+
+:::caution[Don't read `.value` synchronously after a click]
+The update lands **with** the event. Persist on `mdChange`.
+:::
+
+<ComponentDemo
+  html={`<md-transfer-list
+  id="tl-events"
+  source-title="Available roles"
+  target-title="Assigned roles"
+  style="inline-size: 100%; --md-transfer-list-height: 220px; --md-transfer-list-column-min-width: 190px;"
+></md-transfer-list>
+<output id="tl-events-log" style="display:block; margin-block-start:16px; min-block-size:3.2em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Move a row to see mdMove and mdChange fire.</output>`}
+  script={`
+    var el = root.querySelector('#tl-events');
+    var log = root.querySelector('#tl-events-log');
+    var lines = [];
+
+    el.items = [
+      { value: 'analytics', label: 'Analytics' },
+      { value: 'billing', label: 'Billing' },
+      { value: 'support', label: 'Support agent' },
+      { value: 'devops', label: 'DevOps' },
+    ];
+    el.value = ['support'];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 3);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    el.addEventListener('mdMove', function (e) {
+      push('mdMove   →  ' + e.detail.direction + ', moved ' + JSON.stringify(e.detail.moved));
+    });
+    el.addEventListener('mdChange', function (e) {
+      push('mdChange →  ' + JSON.stringify(e.detail));
+    });
+  `}
+  label="mdMove and mdChange as rows cross"
+  htmlCode={`<md-transfer-list
+  id="roles"
+  source-title="Available roles"
+  target-title="Assigned roles"
+  density="-1"
+></md-transfer-list>
+
+<script type="module">
+  const el = document.getElementById('roles');
+
+  const ROLES = [
+    { value: 'analytics', label: 'Analytics', description: 'Read dashboards' },
+    { value: 'billing', label: 'Billing', description: 'Invoices and payments' },
+    { value: 'support', label: 'Support agent', description: 'Answer tickets' },
+    { value: 'devops', label: 'DevOps', description: 'Deploys and infra' },
+  ];
+
+  el.items = ROLES;
+  el.value = ['support'];          // starts in the TARGET column
+
+  el.addEventListener('mdChange', (e) => saveRoles(e.detail));
+  el.addEventListener('mdMove', (e) => {
+    const { direction, moved } = e.detail;
+    toast(moved.length + ' moved ' + (direction === 'right' ? 'in' : 'out'));
+  });
+</script>`}
+  react={`import { useState } from 'react';
+import { MdTransferList } from '@awc-ui/react';
+
+const ROLES = [
+  { value: 'analytics', label: 'Analytics', description: 'Read dashboards' },
+  { value: 'billing', label: 'Billing', description: 'Invoices and payments' },
+  { value: 'support', label: 'Support agent', description: 'Answer tickets' },
+  { value: 'devops', label: 'DevOps', description: 'Deploys and infra' },
+];
+
+export function RoleAssignment() {
+  const [assigned, setAssigned] = useState<string[]>(['support']);
+
+  // items and value are forwarded as PROPERTIES by the @awc-ui/react wrapper,
+  // so they take arrays directly — no ref, no effect.
+  return (
+    <MdTransferList
+      sourceTitle="Available roles"
+      targetTitle="Assigned roles"
+      density="-1"
+      items={ROLES}
+      value={assigned}
+      onMdChange={(e) => setAssigned(e.detail)}
+      onMdMove={(e) => console.log(e.detail.direction, e.detail.moved)}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-role-assignment',
+  template: \`
+    <md-transfer-list
+      source-title="Available roles"
+      target-title="Assigned roles"
+      density="-1"
+      [items]="roles"
+      [value]="assigned"
+      (mdChange)="assigned = $event.detail"
+      (mdMove)="onMove($event)"
+    ></md-transfer-list>
+  \`,
+})
+export class RoleAssignmentComponent {
+  roles = [
+    { value: 'analytics', label: 'Analytics', description: 'Read dashboards' },
+    { value: 'billing', label: 'Billing', description: 'Invoices and payments' },
+    { value: 'support', label: 'Support agent', description: 'Answer tickets' },
+    { value: 'devops', label: 'DevOps', description: 'Deploys and infra' },
+  ];
+  assigned = ['support'];
+
+  onMove(e: CustomEvent<{ direction: 'left' | 'right'; moved: string[] }>) {
+    console.log(e.detail.direction, e.detail.moved);
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+import '@awc-ui/core/define';
+
+const roles = [
+  { value: 'analytics', label: 'Analytics', description: 'Read dashboards' },
+  { value: 'billing', label: 'Billing', description: 'Invoices and payments' },
+  { value: 'support', label: 'Support agent', description: 'Answer tickets' },
+  { value: 'devops', label: 'DevOps', description: 'Deploys and infra' },
+];
+const assigned = ref(['support']);
+</script>
+
+<template>
+  <md-transfer-list
+    source-title="Available roles"
+    target-title="Assigned roles"
+    density="-1"
+    :items="roles"
+    :value="assigned"
+    @mdChange="assigned = $event.detail"
+    @mdMove="console.log($event.detail.direction, $event.detail.moved)"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  import '@awc-ui/core/define';
+
+  const roles = [
+    { value: 'analytics', label: 'Analytics', description: 'Read dashboards' },
+    { value: 'billing', label: 'Billing', description: 'Invoices and payments' },
+    { value: 'support', label: 'Support agent', description: 'Answer tickets' },
+    { value: 'devops', label: 'DevOps', description: 'Deploys and infra' },
+  ];
+  let assigned = ['support'];
+</script>
+
+<md-transfer-list
+  source-title="Available roles"
+  target-title="Assigned roles"
+  density="-1"
+  items={roles}
+  value={assigned}
+  on:mdChange={(e) => (assigned = e.detail)}
+  on:mdMove={(e) => console.log(e.detail.direction, e.detail.moved)}
+></md-transfer-list>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- The host is `role="group"` with `aria-disabled`. Each list is a
+  `role="listbox"` with `aria-multiselectable="true"`, labelled by its column
+  title; rows are `role="option"` with `aria-selected` / `aria-disabled`.
+- Rows are keyboard-operable: `Tab` to a row, `Space` or `Enter` to toggle.
+- The inner `md-checkbox` per row is `inert` + `aria-hidden` — **the row itself
+  is the control**, which avoids a nested interactive element.
+- Mover buttons take their accessible names from the four `move-*-label` props.
+  Note these are deliberately **not** `aria-*`-prefixed attributes: a custom
+  attribute in the ARIA namespace fails axe's `aria-valid-attr`.
+- The empty state is `role="status"`, so filtering down to nothing is announced.
+- When the whole control is `disabled`, the scroll regions keep `tabindex="0"`
+  so they stay reachable (axe `scrollable-region-focusable`).
+
+<ComponentDemo
+  html={`<md-transfer-list
+  id="tl-disabled"
+  source-title="Available"
+  target-title="Assigned"
+  disabled
+  style="--md-transfer-list-height: 260px; --md-transfer-list-column-min-width: 190px;"
+></md-transfer-list>
+
+\x3Cscript type="module">
+  let tries = 0;
+  const wire = () => {
+    const el = document.getElementById('tl-disabled');
+    if (el && el.classList.contains('hydrated')) {
+      el.items = [
+        { value: 'a', label: 'Alpha' },
+        { value: 'b', label: 'Beta' },
+        { value: 'c', label: 'Gamma' },
+        { value: 'd', label: 'Delta' },
+      ];
+      el.value = ['c'];
+      return;
+    }
+    if (++tries < 240) requestAnimationFrame(wire);
+  };
+  requestAnimationFrame(wire);
+\x3C/script>`}
+  htmlForCode={`<md-transfer-list id="locked" source-title="Available" target-title="Assigned" disabled></md-transfer-list>`}
+  script={`
+    var el = root.querySelector('#locked');
+    el.items = [
+      { value: 'analytics', label: 'Analytics' },
+      { value: 'billing', label: 'Billing' },
+      { value: 'support', label: 'Support agent' },
+    ];
+    el.value = ['support'];
+  `}
+  label="Disabled — scroll regions stay focusable"
+  storyId="selection-transfer-list--disabled"
+/>
+
+## RTL, density & i18n
+
+**RTL** — layout is logical-property based, so the source/target columns swap
+under `dir="rtl"`. The **mover glyphs do not auto-mirror**: pass mirrored values
+yourself. See [RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div dir="rtl">
+  <md-transfer-list
+    id="tl-rtl"
+    dir="rtl"
+    source-title="الأدوار المتاحة"
+    target-title="الأدوار المُسندة"
+    source-search-placeholder="بحث"
+    target-search-placeholder="بحث"
+    move-right-icon="chevron_left"
+    move-left-icon="chevron_right"
+    move-all-right-icon="keyboard_double_arrow_left"
+    move-all-left-icon="keyboard_double_arrow_right"
+    style="inline-size: 100%; --md-transfer-list-height: 260px; --md-transfer-list-column-min-width: 180px;"
+  ></md-transfer-list>
+</div>`}
+  script={`
+    var el = root.querySelector('#tl-rtl');
+    el.items = [
+      { value: 'analytics', label: 'التحليلات' },
+      { value: 'billing', label: 'الفوترة' },
+      { value: 'content', label: 'المحتوى' },
+      { value: 'support', label: 'الدعم' },
+    ];
+    el.value = ['support'];
+  `}
+  label="dir=rtl — columns swap, mover glyphs passed mirrored"
+/>
+
+**Density** — `density="-1…-4"` tightens row padding and is forwarded to the two
+search fields. See [Density](/behaviour/density/).
+
+<ComponentDemo
+  html={`<div data-tl-dens style="display: grid; gap: 24px;">
+  <md-transfer-list density="0" source-title="Density 0" target-title="Assigned" style="inline-size:100%; --md-transfer-list-height: 190px;"></md-transfer-list>
+  <md-transfer-list density="-1" source-title="Density -1" target-title="Assigned" style="inline-size:100%; --md-transfer-list-height: 190px;"></md-transfer-list>
+  <md-transfer-list density="-2" source-title="Density -2" target-title="Assigned" style="inline-size:100%; --md-transfer-list-height: 190px;"></md-transfer-list>
+  <md-transfer-list density="-3" source-title="Density -3" target-title="Assigned" style="inline-size:100%; --md-transfer-list-height: 190px;"></md-transfer-list>
+  <md-transfer-list density="-4" source-title="Density -4" target-title="Assigned" style="inline-size:100%; --md-transfer-list-height: 190px;"></md-transfer-list>
+</div>`}
+  script={`
+    var ROLES = [
+      { value: 'analytics', label: 'Analytics' },
+      { value: 'billing', label: 'Billing' },
+      { value: 'content', label: 'Content editor' },
+      { value: 'support', label: 'Support agent' },
+    ];
+    root.querySelectorAll('[data-tl-dens] md-transfer-list').forEach(function (tl) {
+      tl.items = ROLES;
+      tl.value = ['support'];
+    });
+  `}
+  htmlForCode={`<md-transfer-list density="0"  source-title="Roles" target-title="Assigned"></md-transfer-list>
+<md-transfer-list density="-1" source-title="Roles" target-title="Assigned"></md-transfer-list>
+<md-transfer-list density="-2" source-title="Roles" target-title="Assigned"></md-transfer-list>
+<md-transfer-list density="-3" source-title="Roles" target-title="Assigned"></md-transfer-list>
+<md-transfer-list density="-4" source-title="Roles" target-title="Assigned"></md-transfer-list>
+
+<script type="module">
+  // Plain HTML has nowhere to put an array, so items / value are assigned as
+  // properties. Every framework below binds them directly instead.
+  for (const tl of document.querySelectorAll('md-transfer-list')) {
+    tl.items = roles;
+    tl.value = ['support'];
+  }
+</script>`}
+  react={`import { MdTransferList } from '@awc-ui/react';
+
+const ROLES = [
+  { value: 'analytics', label: 'Analytics' },
+  { value: 'billing', label: 'Billing' },
+  { value: 'content', label: 'Content editor' },
+  { value: 'support', label: 'Support agent' },
+];
+const ASSIGNED = ['support'];
+
+export function DensityScale() {
+  // items / value are forwarded as PROPERTIES by the wrapper — pass the arrays.
+  return (
+    <>
+      {[0, -1, -2, -3, -4].map((density) => (
+        <MdTransferList
+          key={density}
+          density={density}
+          sourceTitle={\`Density \${density}\`}
+          targetTitle="Assigned"
+          items={ROLES}
+          value={ASSIGNED}
+        />
+      ))}
+    </>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-density-scale',
+  template: \`
+    <md-transfer-list
+      *ngFor="let density of densities"
+      [density]="density"
+      [sourceTitle]="'Density ' + density"
+      targetTitle="Assigned"
+      [items]="roles"
+      [value]="assigned"
+    ></md-transfer-list>
+  \`,
+})
+export class DensityScaleComponent {
+  densities = [0, -1, -2, -3, -4];
+  assigned = ['support'];
+  roles = [
+    { value: 'analytics', label: 'Analytics' },
+    { value: 'billing', label: 'Billing' },
+    { value: 'content', label: 'Content editor' },
+    { value: 'support', label: 'Support agent' },
+  ];
+}`}
+  vue={`<script setup lang="ts">
+import '@awc-ui/core/define';
+
+const densities = [0, -1, -2, -3, -4];
+const assigned = ['support'];
+const roles = [
+  { value: 'analytics', label: 'Analytics' },
+  { value: 'billing', label: 'Billing' },
+  { value: 'content', label: 'Content editor' },
+  { value: 'support', label: 'Support agent' },
+];
+</script>
+
+<template>
+  <md-transfer-list
+    v-for="density in densities"
+    :key="density"
+    :density="density"
+    :source-title="\`Density \${density}\`"
+    target-title="Assigned"
+    :items="roles"
+    :value="assigned"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  import '@awc-ui/core/define';
+
+  const densities = [0, -1, -2, -3, -4];
+  const assigned = ['support'];
+  const roles = [
+    { value: 'analytics', label: 'Analytics' },
+    { value: 'billing', label: 'Billing' },
+    { value: 'content', label: 'Content editor' },
+    { value: 'support', label: 'Support agent' },
+  ];
+</script>
+
+{#each densities as density}
+  <md-transfer-list
+    {density}
+    source-title="Density {density}"
+    target-title="Assigned"
+    items={roles}
+    value={assigned}
+  ></md-transfer-list>
+{/each}`}
+  label="Every rung, 0 through -4 — row padding and both search fields tighten together"
+/>
+
+**i18n** — every string is a prop: `source-title`, `target-title`, both search
+placeholders, `empty-text`, `count-template`, and the four `move-*-label`s.
+`count-template` interpolates `{checked}` and `{total}` — keep both tokens.
+Per the house i18n approach, resolve these from your dictionary in the consumer
+layer rather than inside the component.
+
+<ComponentDemo
+  html={`<md-transfer-list
+  id="tl-fr"
+  source-title="Rôles disponibles" target-title="Rôles attribués"
+  source-search-placeholder="Rechercher" target-search-placeholder="Rechercher"
+  count-template="{checked}/{total} sélectionnés"
+  empty-text="Aucun élément"
+  move-right-label="Déplacer la sélection vers la droite"
+  move-left-label="Déplacer la sélection vers la gauche"
+  move-all-right-label="Tout déplacer vers la droite"
+  move-all-left-label="Tout déplacer vers la gauche"
+  style="inline-size: 100%; --md-transfer-list-height: 260px;"
+></md-transfer-list>`}
+  script={`
+    var el = root.querySelector('#tl-fr');
+    el.items = [
+      { value: 'analytics', label: 'Analytique', description: 'Lire les tableaux de bord' },
+      { value: 'billing', label: 'Facturation', description: 'Factures et paiements' },
+      { value: 'content', label: 'Éditeur de contenu' },
+      { value: 'support', label: 'Agent de support' },
+    ];
+    el.value = [];
+  `}
+  label="Every visible string resolved from a dictionary — check a row to see count-template"
+/>
+
+## Theming
+
+| Custom property | Purpose |
+|---|---|
+| `--md-transfer-list-width` / `-min-width` / `-max-width` | Overall inline-size bounds |
+| `--md-transfer-list-height` / `-min-height` / `-max-height` | Overall block-size bounds |
+| `--md-transfer-list-column-min-width` | Per-column floor before wrapping |
+| `--md-transfer-list-column-max-block` | Scroll height of each list |
+| `--md-transfer-list-container-color` / `-container-shape` | Column surface and radius |
+| `--md-transfer-list-header-color` / `-header-text-color` | Header tone |
+| `--md-transfer-list-divider-color` | Rule between header and list |
+| `--md-transfer-list-item-padding` / `-item-gap` / `-item-inset` | Row metrics |
+| `--md-transfer-list-controls-gap` / `-control-size` / `-control-icon-size` | Mover column metrics |
+| `--md-transfer-list-empty-icon-size` | Empty-state glyph size |
+
+:::tip[Reserve a stable height]
+Set `--md-transfer-list-height`. If the container height follows its content,
+the mover column shifts mid-interaction and the buttons jump under the cursor.
+:::
+
+Every default resolves through an `md-sys-color` role, so a transfer list that
+sets no custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<md-transfer-list id="tl-dark" style="inline-size:100%;"></md-transfer-list>
+`}
+  htmlForCode={`<md-transfer-list></md-transfer-list>`}
+  script={`
+    var el = root.querySelector('#tl-dark');
+    el.items = [
+      { value: 'analytics', label: 'Analytics' },
+      { value: 'billing', label: 'Billing' },
+      { value: 'support', label: 'Support agent' },
+    ];
+    el.value = ['support'];
+  `}
+  htmlForCode={`<md-transfer-list id="roles" source-title="Choices" target-title="Chosen"></md-transfer-list>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="selection-transfer-list--dark-theme"
+/>
+
+## CSS parts
+
+| Part | Element |
+|---|---|
+| `header` / `header-title` / `count` | A pane's header, its title, its counter |
+| `search` | A pane's filter field |
+| `list` / `item` | The scroll region and each row |
+| `actions` | The move-button column between the panes |
+
+<ComponentDemo
+  html={`<style>
+  .tl-parts::part(header) { text-transform: uppercase; letter-spacing: .08em; }
+  .tl-parts::part(header-title) { font-weight: 700; color: var(--md-sys-color-primary); }
+  .tl-parts::part(count) { font-variant-numeric: tabular-nums; color: var(--md-sys-color-tertiary); }
+  .tl-parts::part(list) { border-radius: 12px; outline: 1px solid var(--md-sys-color-outline-variant); }
+  .tl-parts::part(actions) { gap: 12px; }
+</style>
+<md-transfer-list
+  id="tl-parts"
+  class="tl-parts"
+  source-title="Available"
+  target-title="Assigned"
+  style="inline-size: 100%; --md-transfer-list-height: 260px; --md-transfer-list-column-min-width: 190px;"
+></md-transfer-list>`}
+  script={`
+    var el = root.querySelector('#tl-parts');
+    el.items = [
+      { value: 'analytics', label: 'Analytics', description: 'Read dashboards' },
+      { value: 'billing', label: 'Billing', description: 'Invoices and payments' },
+      { value: 'content', label: 'Content editor', description: 'Publish pages' },
+      { value: 'support', label: 'Support agent', description: 'Answer tickets' },
+      { value: 'devops', label: 'DevOps', description: 'Deploys and infra' },
+    ];
+    el.value = ['support'];
+  `}
+  htmlCode={`<style>
+  md-transfer-list::part(header) { text-transform: uppercase; letter-spacing: .08em; }
+  md-transfer-list::part(header-title) { font-weight: 700; color: var(--md-sys-color-primary); }
+  md-transfer-list::part(count) { font-variant-numeric: tabular-nums; color: var(--md-sys-color-tertiary); }
+  md-transfer-list::part(list) { border-radius: 12px; outline: 1px solid var(--md-sys-color-outline-variant); }
+  md-transfer-list::part(actions) { gap: 12px; }
+</style>
+
+<md-transfer-list id="roles" source-title="Available" target-title="Assigned"></md-transfer-list>
+
+<script type="module">
+  const el = document.getElementById('roles');
+  el.items = [/* … */];
+  el.value = ['support'];
+</script>`}
+  label="header, header-title, count, list and actions"
+  storyId="selection-transfer-list--custom-css"
+/>
+
+
+## Related
+
+[`md-multi-select`](/components/multi-select/) ·
+[`md-select`](/components/select/) ·
+[`md-autocomplete`](/components/autocomplete/) ·
+[`md-checkbox`](/components/checkbox/) ·
+[`md-list`](/components/list/) ·
+[`md-text-field`](/components/text-field/) ·
+[`md-icon-button`](/components/icon-button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-transfer-list" />

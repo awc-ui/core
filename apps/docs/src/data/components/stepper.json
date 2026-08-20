@@ -1,0 +1,273 @@
+{
+  "tag": "md-stepper",
+  "title": "Stepper",
+  "slug": "stepper",
+  "category": "Navigation",
+  "subComponentOf": null,
+  "storyId": "navigation-stepper--playground",
+  "props": [
+    {
+      "name": "orientation",
+      "attribute": "orientation",
+      "type": "'horizontal' | 'vertical'",
+      "default": "'horizontal'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "indicator",
+      "attribute": "indicator",
+      "type": "'numbered' | 'dot'",
+      "default": "'numbered'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'default' | 'mobile'",
+      "default": "'default'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "mode",
+      "attribute": "mode",
+      "type": "'linear' | 'non-linear'",
+      "default": "'linear'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "active",
+      "attribute": "active",
+      "type": "number",
+      "default": "0",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "autoComplete",
+      "attribute": "auto-complete",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "nav",
+      "attribute": "nav",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "nextDisabled",
+      "attribute": "next-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "loading",
+      "attribute": "loading",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "lazy",
+      "attribute": "lazy",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "'Progress'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "stepWord",
+      "attribute": "step-word",
+      "type": "string",
+      "default": "'Step'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "ofWord",
+      "attribute": "of-word",
+      "type": "string",
+      "default": "'of'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "completedWord",
+      "attribute": "completed-word",
+      "type": "string",
+      "default": "'completed'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "currentWord",
+      "attribute": "current-word",
+      "type": "string",
+      "default": "'current'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "errorWord",
+      "attribute": "error-word",
+      "type": "string",
+      "default": "'error'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "optionalWord",
+      "attribute": "optional-word",
+      "type": "string",
+      "default": "'Optional'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "nextLabel",
+      "attribute": "next-label",
+      "type": "string",
+      "default": "'Continue'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "backLabel",
+      "attribute": "back-label",
+      "type": "string",
+      "default": "'Back'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "finishLabel",
+      "attribute": "finish-label",
+      "type": "string",
+      "default": "'Finish'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdBeforeChange",
+      "detail": "{ index: number; previous: number }"
+    },
+    {
+      "name": "mdStepChange",
+      "detail": "{ index: number; previous: number }"
+    },
+    {
+      "name": "mdComplete",
+      "detail": "void"
+    }
+  ],
+  "methods": [
+    {
+      "name": "next",
+      "params": ""
+    },
+    {
+      "name": "prev",
+      "params": ""
+    },
+    {
+      "name": "goTo",
+      "params": "index: number"
+    },
+    {
+      "name": "reset",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "content",
+      "description": "Active-step panel for horizontal / mobile steppers — rendered"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "list",
+      "description": ""
+    },
+    {
+      "name": "content",
+      "description": ""
+    },
+    {
+      "name": "nav",
+      "description": ""
+    },
+    {
+      "name": "mobile-nav",
+      "description": ""
+    },
+    {
+      "name": "mobile-progress",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-stepper-gap",
+      "description": "Spacing between steps (vertical orientation only)."
+    },
+    {
+      "name": "--md-stepper-step-count",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-step",
+    "md-button"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdBeforeChange",
+      "detail": "{ index: number; previous: number }"
+    },
+    {
+      "name": "mdStepChange",
+      "detail": "{ index: number; previous: number }"
+    },
+    {
+      "name": "mdComplete",
+      "detail": "void"
+    }
+  ]
+}

@@ -1,0 +1,458 @@
+---
+interface PropDef {
+  name: string;
+  attribute: string;
+  type: string;
+  default: string;
+  reflect: boolean;
+  mutable: boolean;
+}
+
+interface EventDef {
+  name: string;
+  detail: string;
+}
+
+interface MethodDef {
+  name: string;
+  params: string;
+}
+
+interface SlotDef {
+  name: string;
+  description: string;
+}
+
+interface CssPartDef {
+  name: string;
+  description: string;
+}
+
+interface CssCustomPropDef {
+  name: string;
+  description: string;
+}
+
+/**
+ * An event a COMPOSED CHILD declares that still reaches this component.
+ * Child events that bubble and are composed cross the shadow boundary, so a
+ * listener on the parent receives them — but the generated `events` list only
+ * ever contains what this component itself declares with `@Event`. Without
+ * these rows the table is accurate and still misleading: a reader wires the
+ * one event they can see.
+ */
+interface InheritedEventDef {
+  name: string;
+  detail: string;
+  /** Tag that declares it, e.g. `md-button`. */
+  from: string;
+  /** Link target for `from`, e.g. `/components/button/#events`. */
+  fromHref?: string;
+  /** Short note — when to reach for it, or why not to. */
+  note?: string;
+}
+
+interface Props {
+  props?: PropDef[];
+  events?: EventDef[];
+  inheritedEvents?: InheritedEventDef[];
+  methods?: MethodDef[];
+  slots?: SlotDef[];
+  cssParts?: CssPartDef[];
+  cssCustomProps?: CssCustomPropDef[];
+}
+
+const {
+  props = [],
+  events = [],
+  inheritedEvents = [],
+  methods = [],
+  slots = [],
+  cssParts = [],
+  cssCustomProps = [],
+} = Astro.props;
+---
+
+{props.length > 0 && (
+  <div class="api-section">
+    <div class="api-section__header">
+      <span class="api-section__icon material-symbols-outlined" aria-hidden="true">tune</span>
+      <h3 id="properties">Properties</h3>
+    </div>
+    <div class="api-table-wrapper" tabindex="0" role="region" aria-label="Scrollable table">
+      <table class="api-table">
+        <thead>
+          <tr>
+            <th scope="col">Property</th>
+            <th scope="col">Attribute</th>
+            <th scope="col">Type</th>
+            <th scope="col">Default</th>
+            <th scope="col">Reflects</th>
+          </tr>
+        </thead>
+        <tbody>
+          {props.map(p => (
+            <tr>
+              <td><code class="api-code api-code--name">{p.name}</code></td>
+              <td>
+                {p.attribute
+                  ? <code class="api-code">{p.attribute}</code>
+                  : (
+                    /* No attribute exists: the type (function, array, options
+                       object) cannot round-trip through one, so this prop is
+                       assignable only in JS. Saying "—" beats printing a
+                       kebab-case name nobody can actually use in HTML. */
+                    <span class="api-badge" title="JS-only property — assign it on the element; there is no HTML attribute">JS only</span>
+                  )}
+              </td>
+              <td><code class="api-code api-code--type">{p.type}</code></td>
+              <td><code class="api-code">{p.default || '—'}</code></td>
+              <td>{p.reflect ? <span class="api-badge api-badge--yes">Yes</span> : <span class="api-badge">—</span>}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+
+{/* The generated Events table was removed deliberately. Every component page
+    authors its own richer table — Event / Cancelable / Detail / Fires — and two
+    tables under one heading read as two different contracts. The `events` and
+    `inheritedEvents` props are still accepted (the data files pass them) so
+    nothing downstream breaks; they simply no longer render here. */}
+
+{methods.length > 0 && (
+  <div class="api-section">
+    <div class="api-section__header">
+      <span class="api-section__icon material-symbols-outlined" aria-hidden="true">function</span>
+      <h3 id="methods">Methods</h3>
+    </div>
+    <div class="api-table-wrapper" tabindex="0" role="region" aria-label="Scrollable table">
+      <table class="api-table">
+        <thead>
+          <tr>
+            <th scope="col">Method</th>
+            <th scope="col">Parameters</th>
+          </tr>
+        </thead>
+        <tbody>
+          {methods.map(m => (
+            <tr>
+              <td><code class="api-code api-code--name">{m.name}()</code></td>
+              <td><code class="api-code">{m.params || 'none'}</code></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+
+{slots.length > 0 && (
+  <div class="api-section">
+    <div class="api-section__header">
+      <span class="api-section__icon material-symbols-outlined" aria-hidden="true">view_in_ar</span>
+      <h3 id="slots">Slots</h3>
+    </div>
+    <div class="api-table-wrapper" tabindex="0" role="region" aria-label="Scrollable table">
+      <table class="api-table">
+        <thead>
+          <tr>
+            <th scope="col">Slot</th>
+            <th scope="col">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {slots.map(s => (
+            <tr>
+              <td><code class="api-code api-code--name">{s.name}</code></td>
+              <td>{s.description || '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+
+{cssCustomProps.length > 0 && (
+  <div class="api-section">
+    <div class="api-section__header">
+      <span class="api-section__icon material-symbols-outlined" aria-hidden="true">palette</span>
+      <h3 id="css-custom-properties">CSS Custom Properties</h3>
+    </div>
+    <p class="api-section__desc">Override on the host element for per-instance theming:</p>
+    <div class="api-table-wrapper" tabindex="0" role="region" aria-label="Scrollable table">
+      <table class="api-table">
+        <thead>
+          <tr>
+            <th scope="col">Property</th>
+            <th scope="col">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {cssCustomProps.map(p => (
+            <tr>
+              <td><code class="api-code api-code--name">{p.name}</code></td>
+              <td>{p.description || '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+
+{cssParts.length > 0 && (
+  <div class="api-section">
+    <div class="api-section__header">
+      <span class="api-section__icon material-symbols-outlined" aria-hidden="true">layers</span>
+      <h3 id="css-shadow-parts">CSS Shadow Parts</h3>
+    </div>
+    <p class="api-section__desc">Style internal elements through shadow DOM with <code>::part()</code>:</p>
+    <div class="api-table-wrapper" tabindex="0" role="region" aria-label="Scrollable table">
+      <table class="api-table">
+        <thead>
+          <tr>
+            <th scope="col">Part</th>
+            <th scope="col">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {cssParts.map(p => (
+            <tr>
+              <td><code class="api-code api-code--name">{p.name}</code></td>
+              <td>{p.description || '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+
+<style>
+  /* Inherited-event rows: same table, visually subordinate to the component's
+     own events so the distinction survives a glance. */
+  .api-row--inherited td:first-child {
+    border-inline-start: 3px solid var(--md-sys-color-outline-variant, #CAC4D0);
+  }
+
+  .api-from {
+    font-size: 0.75rem;
+    color: var(--md-sys-color-on-surface-variant, #49454F);
+    white-space: nowrap;
+  }
+
+  .api-from--own {
+    opacity: 0.6;
+    font-style: italic;
+  }
+
+  .api-from code {
+    font-size: 0.75rem;
+  }
+
+  .api-note {
+    display: block;
+    /* Without a floor the auto layout sizes this column to the event-name chip
+       and wraps the note into a one-word-per-line ribbon. */
+    min-inline-size: 24ch;
+    margin-block-start: 4px;
+    font-size: 0.72rem;
+    line-height: 1.45;
+    color: var(--md-sys-color-on-surface-variant, #49454F);
+  }
+
+  .api-section {
+    margin-block: 2rem;
+  }
+
+  .api-section__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block-end: 0.75rem;
+  }
+
+  .api-section__header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    border: none;
+    padding: 0;
+  }
+
+  .api-section__icon {
+    font-size: 20px;
+    color: var(--sl-color-text-accent, #6750A4);
+    opacity: 0.7;
+  }
+
+  .api-section__desc {
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-2);
+    margin-block: 0 0.75rem;
+  }
+
+  .api-table-wrapper {
+    overflow-x: auto;
+    background: transparent;
+    /* A scrollable region needs a keyboard route in, or the columns past the
+       fold are unreachable without a mouse. */
+    scroll-snap-type: none;
+  }
+
+  .api-table-wrapper:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary, #6750A4);
+    outline-offset: 2px;
+  }
+
+  /* Always-visible bar so it is obvious there is more table to the right.
+     NB: no `scrollbar-width` here — Chrome ignores a styled
+     ::-webkit-scrollbar when it is set (see project notes). */
+  .api-table-wrapper::-webkit-scrollbar {
+    height: 10px;
+  }
+
+  .api-table-wrapper::-webkit-scrollbar-track {
+    background: color-mix(in srgb, var(--sl-color-gray-5, #888) 20%, transparent);
+    border-radius: 999px;
+  }
+
+  .api-table-wrapper::-webkit-scrollbar-thumb {
+    background: var(--sl-color-gray-4, #888);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .api-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--sl-color-gray-3, #666);
+    background-clip: content-box;
+  }
+
+  .api-table {
+    /* min- not fixed: the table fills the wrapper when it fits, and grows past
+       it when a long type needs the room, which is what gives the wrapper
+       something to scroll. */
+    min-inline-size: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .api-table th {
+    text-align: start;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--sl-color-gray-3);
+    background: var(--sl-color-gray-7);
+    border: none;
+  }
+
+  .api-table td {
+    padding: 0.625rem 1rem;
+    border-block-end: 1px solid color-mix(in srgb, var(--sl-color-gray-5) 50%, transparent);
+    border-inline: none;
+    border-block-start: none;
+    vertical-align: top;
+    color: var(--sl-color-gray-2);
+  }
+
+  .api-table tbody tr:last-child td {
+    border-block-end: none;
+  }
+
+  .api-table tbody tr {
+    transition: background 0.1s ease;
+  }
+
+  .api-table tbody tr:hover {
+    background: var(--sl-color-gray-7);
+  }
+
+  .api-code {
+    font-size: 0.8125rem;
+    padding: 0.125rem 0.4rem;
+    border-radius: 6px;
+    background: var(--sl-color-gray-6);
+    border: 1px solid var(--sl-color-gray-5);
+    white-space: nowrap;
+    font-family: var(--sl-font-system-mono, ui-monospace, monospace);
+  }
+
+  .api-code--name {
+    color: var(--sl-color-text-accent, #6750A4);
+    font-weight: 600;
+  }
+
+  .api-code--type {
+    color: var(--sl-color-gray-2);
+    font-weight: 400;
+    /* Deliberately NOT wrapped. A long union like
+       'surface' | 'primary-container' | ... shreds into a one-token-per-line
+       ribbon when it wraps. The row stays on one line and the wrapper scrolls
+       instead — see .api-table-wrapper. */
+  }
+
+
+  .api-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    color: var(--sl-color-gray-3);
+  }
+
+  .api-badge--yes {
+    color: #16a34a;
+    font-weight: 600;
+    background: rgba(22, 163, 74, 0.08);
+    padding: 0.0625rem 0.5rem;
+    border-radius: 100px;
+    font-size: 0.6875rem;
+  }
+
+  @media (max-width: 50rem) {
+    .api-table-wrapper {
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .api-table {
+      font-size: 0.8125rem;
+      min-inline-size: 480px;
+    }
+
+    .api-table th {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.625rem;
+    }
+
+    .api-table td {
+      padding: 0.5rem 0.75rem;
+    }
+
+    .api-code {
+      font-size: 0.75rem;
+      padding: 0.1rem 0.3rem;
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .api-section {
+      margin-block: 1.5rem;
+    }
+
+    .api-section__header h3 {
+      font-size: 1rem;
+    }
+
+    .api-section__icon {
+      font-size: 18px;
+    }
+  }
+</style>

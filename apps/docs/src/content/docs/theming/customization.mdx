@@ -1,0 +1,217 @@
+---
+title: Customization
+description: Per-component theming with CSS custom properties, shadow parts, and named slots
+sidebar:
+  order: 7
+---
+
+## Three Levels of Customization
+
+AWC UI components support three progressively powerful customization methods:
+
+1. **CSS Custom Properties** — change colors, shapes, sizes without breaking encapsulation
+2. **CSS Shadow Parts** — directly style internal elements through `::part()`
+3. **Named Slots** — replace entire sections of a component's DOM
+
+## CSS Custom Properties
+
+Every component exposes public CSS custom properties following the `--md-{name}-{property}` pattern. These pierce into shadow DOM.
+
+### Per-Instance Override (inline)
+
+```html
+<md-button
+  variant="filled"
+  style="--md-button-container-color: coral;
+         --md-button-label-color: white;">
+  Custom Colors
+</md-button>
+```
+
+### Class-Based Theming
+
+```css
+md-button.danger {
+  --md-button-container-color: var(--md-sys-color-error);
+  --md-button-label-color: var(--md-sys-color-on-error);
+}
+
+md-button.brand {
+  --md-button-container-color: #6200ee;
+  --md-button-label-color: #ffffff;
+  --md-button-container-shape: 8px;
+}
+```
+
+```html
+<md-button variant="filled" class="danger">Delete</md-button>
+<md-button variant="filled" class="brand">Brand</md-button>
+```
+
+### Per-Variant Override
+
+```css
+md-button[variant="outlined"].subtle {
+  --md-button-outline-color: transparent;
+  --md-button-label-color: var(--md-sys-color-tertiary);
+}
+```
+
+### Common Properties
+
+Most components expose these patterns:
+
+| Pattern | Description |
+|---------|-------------|
+| `--md-{name}-container-color` | Background color |
+| `--md-{name}-label-color` | Text/label color |
+| `--md-{name}-icon-color` | Icon color |
+| `--md-{name}-icon-size` | Icon dimensions |
+| `--md-{name}-container-shape` | Border radius |
+| `--md-{name}-outline-color` | Border color |
+| `--md-{name}-outline-width` | Border width |
+
+Check each component's API Reference section for the full list.
+
+## CSS Shadow Parts
+
+Every styleable internal element has a `part` attribute, allowing direct CSS styling through the shadow boundary using `::part()`:
+
+```css
+/* Style the label text */
+md-button::part(label) {
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+/* Style the icon */
+md-button::part(icon) {
+  font-variation-settings: 'FILL' 1;
+}
+
+/* Style the state layer */
+md-button::part(state-layer) {
+  background-color: teal;
+}
+
+/* Combine with pseudo-classes */
+md-button:hover::part(label) {
+  text-decoration: underline;
+}
+
+/* Target specific variants */
+md-button[variant="filled"]::part(icon) {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+```
+
+### Common Parts
+
+| Part | Element | Available On |
+|------|---------|-------------|
+| `state-layer` | Hover/focus/press overlay | All interactive components |
+| `label` | Text label | Button, Chip, Tab, etc. |
+| `icon` | Leading icon | Button, FAB, Chip, etc. |
+| `trailing-icon` | Trailing icon | Button, Chip, Text Field |
+| `container` | Outer container | Card, Dialog, etc. |
+
+## Named Slots
+
+Slots let you replace entire sections of a component:
+
+### Custom Icons
+
+Replace the default Material Symbols icon with any custom element:
+
+```html
+<!-- SVG icon -->
+<md-button variant="filled">
+  <svg slot="leading-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77..."/>
+  </svg>
+  Starred
+</md-button>
+
+<!-- FontAwesome icon -->
+<md-button variant="outlined">
+  <i slot="leading-icon" class="fa-solid fa-plus"></i>
+  Add Item
+</md-button>
+
+<!-- Emoji -->
+<md-button variant="elevated">
+  <span slot="leading-icon">🚀</span>
+  Launch
+</md-button>
+```
+
+### Dialog Slots
+
+```html
+<md-dialog headline="Edit Profile">
+  <!-- Default slot: body content -->
+  <form>
+    <md-text-field variant="outlined" label="Name"></md-text-field>
+  </form>
+
+  <!-- Actions slot: footer buttons -->
+  <div slot="actions">
+    <md-button variant="text">Cancel</md-button>
+    <md-button variant="filled">Save</md-button>
+  </div>
+</md-dialog>
+```
+
+## Combining Techniques
+
+For maximum control, combine all three approaches:
+
+```html
+<style>
+  md-button.premium {
+    --md-button-container-color: linear-gradient(135deg, #667eea, #764ba2);
+    --md-button-label-color: white;
+    --md-button-container-shape: 12px;
+  }
+
+  md-button.premium::part(label) {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  md-button.premium::part(icon) {
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
+  }
+</style>
+
+<md-button variant="filled" class="premium">
+  <svg slot="leading-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77..."/>
+  </svg>
+  Premium Action
+</md-button>
+```
+
+## Global Theme Override
+
+To rebrand the entire library, override the global tokens:
+
+```css
+:root {
+  /* Brand colors */
+  --md-sys-color-primary: #006B5A;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #7CF8D8;
+  --md-sys-color-on-primary-container: #00201A;
+
+  /* Custom shapes */
+  --md-sys-shape-corner-small: 4px;
+  --md-sys-shape-corner-medium: 8px;
+  --md-sys-shape-corner-large: 12px;
+  --md-sys-shape-corner-full: 100px;
+
+  /* Custom typography */
+  --md-sys-typescale-body-large-font: 'Inter', sans-serif;
+  --md-sys-typescale-label-large-font: 'Inter', sans-serif;
+}
+```

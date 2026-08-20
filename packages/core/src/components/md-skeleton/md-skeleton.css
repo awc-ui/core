@@ -1,0 +1,278 @@
+/* ==========================================================
+   md-skeleton — AWC UI loading placeholder
+   Designed in the MD3 Expressive vocabulary: tonal surface
+   tokens, spring-driven motion, and asymmetric reveal curves.
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-skeleton-color           Base placeholder colour
+     --md-skeleton-highlight       Wave-shimmer highlight colour
+     --md-skeleton-radius          Border-radius for rectangular variant
+     --md-skeleton-rounded-radius  Radius for `variant="rounded"`
+     --md-skeleton-width           Default inline-size (text/rect)
+     --md-skeleton-height          Default block-size (text/rect)
+     --md-skeleton-size            Default size for circular variant
+     --md-skeleton-line-gap        Gap between text rows (lines > 1)
+     --md-skeleton-pulse-duration  Pulse animation duration
+     --md-skeleton-wave-duration   Wave animation duration
+     --md-skeleton-bloom-duration  Initial mount "bloom" duration
+
+   CSS PARTS:
+     shape       The rectangular / rounded / circular block.
+     line        Every text line.
+     line-last   The final tapered line in a multi-line block.
+
+   SLOTS:
+     (none)
+   ========================================================== */
+
+:host {
+  /* Use the canonical MD3 surface-container-highest as the
+     placeholder colour. Falls back to a tonal mix of on-surface
+     when the token isn't loaded. */
+  --_color: var(--md-skeleton-color,
+    var(--md-sys-color-surface-container-highest,
+      color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 11%, transparent)));
+  /* Highlight uses surface-bright (lifted tone) so the wave reads
+     as light passing across a tactile surface. */
+  --_highlight: var(--md-skeleton-highlight,
+    var(--md-sys-color-surface-bright,
+      color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 5%, transparent)));
+  --_radius: var(--md-skeleton-radius, var(--md-sys-shape-corner-extra-small, 4px));
+  --_rounded-radius: var(--md-skeleton-rounded-radius, max(8px, calc(12px + var(--md-sys-density-scale, 0) * 1px)));
+  --_w: var(--md-skeleton-width, 100%);
+  --_h: var(--md-skeleton-height, max(0.75em, calc(1em + var(--md-sys-density-scale, 0) * 0.05em)));
+  --_size: var(--md-skeleton-size, max(28px, calc(40px + var(--md-sys-density-scale, 0) * 3px)));
+  --_line-gap: var(--md-skeleton-line-gap, max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px)));
+  /* MD3 motion tokens — slightly slower than the previous defaults
+     so the rhythm matches expressive components like md-fab and
+     md-slider. */
+  --_pulse-duration: var(--md-skeleton-pulse-duration, var(--md-sys-motion-duration-extra-long2, 1800ms));
+  --_wave-duration: var(--md-skeleton-wave-duration, var(--md-sys-motion-duration-extra-long2, 1800ms));
+  --_bloom-duration: var(--md-skeleton-bloom-duration, var(--md-sys-motion-spring-spatial-default-duration, 500ms));
+  /* Emphasized easing is asymmetric (slow→fast) and reads as
+     "anticipation". We use it for the wave because the gradient
+     should accelerate through the middle. */
+  --_wave-easing: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
+  --_pulse-easing: var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  --_bloom-easing: var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1.00));
+
+  display: block;
+  box-sizing: border-box;
+  inline-size: var(--_w);
+
+  /* Bloom entrance — every skeleton mounts with a soft scale-in.
+     The spring easing gives it the M3 Expressive "settle" feel. */
+  animation: md-skeleton-bloom var(--_bloom-duration) var(--_bloom-easing) both;
+}
+
+@keyframes md-skeleton-bloom {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ==========================================================
+   1. SHAPE (rectangular / rounded / circular)
+   ========================================================== */
+
+.md-skeleton__shape {
+  display: block;
+  background-color: var(--_color);
+  inline-size: 100%;
+  block-size: var(--_h);
+}
+
+:host(.md-skeleton--rectangular) {
+  --_h: var(--md-skeleton-height, max(80px, calc(120px + var(--md-sys-density-scale, 0) * 8px)));
+}
+:host(.md-skeleton--rectangular) .md-skeleton__shape {
+  border-radius: var(--_radius);
+}
+
+:host(.md-skeleton--rounded) {
+  --_h: var(--md-skeleton-height, max(80px, calc(120px + var(--md-sys-density-scale, 0) * 8px)));
+}
+:host(.md-skeleton--rounded) .md-skeleton__shape {
+  border-radius: var(--_rounded-radius);
+}
+
+:host(.md-skeleton--circular) {
+  --_w: var(--md-skeleton-width, var(--_size));
+  --_h: var(--md-skeleton-height, var(--_size));
+  inline-size: var(--_w);
+}
+:host(.md-skeleton--circular) .md-skeleton__shape {
+  border-radius: 50%;
+  aspect-ratio: 1 / 1;
+}
+
+/* ==========================================================
+   1b. RESPONSIVE SIZING (full-width / full-height)
+   The skeleton is already 100%-wide by default; these flags make the
+   intent explicit and let it fill its container both ways so it tracks a
+   responsive parent (grid/flex cell, resizable panel, etc.).
+   ========================================================== */
+
+:host([full-width]) {
+  inline-size: 100%;
+}
+
+:host([full-height]) {
+  block-size: 100%;
+  /* Fallback so the skeleton never collapses to 0 (invisible) when the parent
+     has no definite height — `100%` resolves to `auto` there. Keeps the
+     variant's default height as a floor. */
+  min-block-size: var(--_h);
+}
+:host([full-height]) .md-skeleton__shape {
+  block-size: 100%;
+}
+/* A full-height circular: the HOST becomes a square sized off the row height
+   (aspect-ratio derives the width), and the shape fills it as a circle — so it
+   never overflows its inline box and overlaps a sibling. */
+:host([full-height].md-skeleton--circular) {
+  inline-size: auto;
+  aspect-ratio: 1 / 1;
+}
+:host([full-height].md-skeleton--circular) .md-skeleton__shape {
+  block-size: 100%;
+  inline-size: 100%;
+}
+
+/* ==========================================================
+   2. TEXT
+   ========================================================== */
+
+:host(.md-skeleton--text) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--_line-gap);
+}
+
+.md-skeleton__line {
+  display: block;
+  background-color: var(--_color);
+  block-size: var(--_h);
+  inline-size: 100%;
+  border-radius: var(--_radius);
+}
+
+.md-skeleton__line--tapered {
+  inline-size: 60%;
+}
+
+/* RTL: taper the OPPOSITE end so the truncation visually anchors
+   to the start of the paragraph regardless of direction. */
+:host([dir="rtl"]) .md-skeleton__line--tapered,
+:host-context([dir="rtl"]) .md-skeleton__line--tapered {
+  margin-inline-end: auto;
+}
+
+/* ==========================================================
+   3. ANIMATIONS
+   Pulse uses a gentle three-stop curve so the dwell at peak
+   opacity is shorter than the dip — readers shouldn't feel like
+   the content "disappeared". Wave skews the gradient ~10deg for
+   the M3 Expressive "swept light" feel.
+   ========================================================== */
+
+@keyframes md-skeleton-pulse {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.55; }
+  100% { opacity: 1; }
+}
+
+@keyframes md-skeleton-wave {
+  0%   { transform: translateX(-100%) skewX(-12deg); }
+  100% { transform: translateX(200%) skewX(-12deg); }
+}
+
+:host(.md-skeleton--anim-pulse) .md-skeleton__shape,
+:host(.md-skeleton--anim-pulse) .md-skeleton__line {
+  animation: md-skeleton-pulse var(--_pulse-duration) var(--_pulse-easing) infinite;
+}
+
+:host(.md-skeleton--anim-wave) .md-skeleton__shape,
+:host(.md-skeleton--anim-wave) .md-skeleton__line {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+:host(.md-skeleton--anim-wave) .md-skeleton__shape::after,
+:host(.md-skeleton--anim-wave) .md-skeleton__line::after {
+  content: '';
+  position: absolute;
+  /* Inflate the gradient strip so the skew never leaves a visible
+     seam on the block edges. */
+  inset-block: -10%;
+  inset-inline-start: -100%;
+  inline-size: 200%;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 35%,
+    var(--_highlight) 50%,
+    transparent 65%,
+    transparent 100%
+  );
+  transform: translateX(-100%) skewX(-12deg);
+  animation: md-skeleton-wave var(--_wave-duration) var(--_wave-easing) infinite;
+}
+
+/* RTL: flip the wave so it sweeps in the reading direction. */
+:host([dir="rtl"].md-skeleton--anim-wave) .md-skeleton__shape::after,
+:host([dir="rtl"].md-skeleton--anim-wave) .md-skeleton__line::after,
+:host-context([dir="rtl"]).md-skeleton--anim-wave .md-skeleton__shape::after,
+:host-context([dir="rtl"]).md-skeleton--anim-wave .md-skeleton__line::after {
+  animation-direction: reverse;
+}
+
+/* ==========================================================
+   4. REDUCED MOTION
+   We still convey "loading" — a single dim → bright cycle at
+   1/3 amplitude, paced 2× slower so it's a clear cue without
+   strobing.
+   ========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    animation: none !important;
+  }
+  :host(.md-skeleton--anim-pulse) .md-skeleton__shape,
+  :host(.md-skeleton--anim-pulse) .md-skeleton__line {
+    animation-duration: calc(var(--_pulse-duration) * 2);
+  }
+  .md-skeleton__shape::after,
+  .md-skeleton__line::after {
+    animation: none !important;
+    display: none;
+  }
+}
+
+/* ==========================================================
+   5. FORCED COLORS
+   ========================================================== */
+@media (forced-colors: active) {
+  .md-skeleton__shape,
+  .md-skeleton__line {
+    background-color: GrayText;
+    forced-color-adjust: none;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

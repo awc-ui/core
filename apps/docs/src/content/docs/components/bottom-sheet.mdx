@@ -1,0 +1,1182 @@
+---
+title: Bottom Sheet
+description: "Supplementary content anchored to the bottom of the screen — two variants, a drag handle, logical alignment and a modal focus trap"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/bottom-sheet.json";
+
+**Supplementary content anchored to the bottom of the screen.** It slides up
+over the page with a drag handle, an optional headline and an actions row —
+the mobile-first counterpart to [`md-side-sheet`](/components/side-sheet/).
+
+<ComponentDemo
+  html={`<md-button id="bs-share-btn" variant="filled" icon="share" onclick="document.getElementById('bs-share').show()">Share</md-button>
+
+<md-bottom-sheet id="bs-share" headline="Share to" closeable>
+  <md-list>
+    <md-list-item headline="Copy link" leading-icon="link"></md-list-item>
+    <md-list-item headline="Email" leading-icon="email"></md-list-item>
+    <md-list-item headline="Message" leading-icon="chat"></md-list-item>
+  </md-list>
+</md-bottom-sheet>`}
+  label="Live preview"
+  storyId="containment-bottom-sheet--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-bottom-sheet" example="" />
+
+## When to use
+
+- **Mobile** supplementary content or a short task: share targets, filters, a
+  picker, a set of actions on an item.
+- Content the user can dismiss without consequence.
+- A list of contextual actions where a menu would be too small to tap.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| A blocking decision or critical information | [`md-dialog`](/components/dialog/) |
+| Desktop supplementary content | [`md-side-sheet`](/components/side-sheet/) |
+| Brief feedback | [`md-snackbar`](/components/snackbar/) |
+| A compact action list on desktop | [`md-menu`](/components/menu/) |
+| Primary content of the screen | A page |
+| Explaining a control | [`md-tooltip`](/components/tooltip/) |
+| A full sub-task on mobile | [`md-dialog`](/components/dialog/) with `fullscreen` |
+
+## Variants
+
+| Variant | Chrome | Use for |
+|---|---|---|
+| `standard` | Flush to the bottom edge, **top corners only** rounded | The default tray: share targets, filters, action lists |
+| `detached` | Inset by `--md-bottom-sheet-detached-margin` on every edge, **all four corners** rounded, elevated | A sheet that should read as a floating card — a media player, a compact picker |
+
+**Both are modal** — scrim, focus trap, body scroll lock, `Escape` and
+drag-to-dismiss. Only the chrome differs.
+
+Every demo on this page renders the sheet **closed** next to its trigger; press
+the button to open it.
+
+<ComponentDemo
+  html={`<md-button id="bs-standard-btn" variant="filled" onclick="document.getElementById('bs-standard').show()">Standard</md-button>
+<md-button id="bs-detached-btn" variant="tonal" onclick="document.getElementById('bs-detached').show()">Detached</md-button>
+
+<md-bottom-sheet id="bs-standard" headline="Standard" closeable>
+  <p style="margin: 0;">Anchored to the bottom edge, rounded top corners only — the default.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('bs-standard').close()">Close</md-button>
+</md-bottom-sheet>
+
+<md-bottom-sheet id="bs-detached" variant="detached" headline="Detached" closeable>
+  <p style="margin: 0;">Floating, inset from every edge, all four corners rounded.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('bs-detached').close()">Close</md-button>
+</md-bottom-sheet>`}
+  htmlForCode={`<md-button id="bs-standard-btn" variant="filled" onclick="document.getElementById('bs-standard').show()">Standard</md-button>
+<md-button id="bs-detached-btn" variant="tonal" onclick="document.getElementById('bs-detached').show()">Detached</md-button>
+
+<md-bottom-sheet id="bs-standard" headline="Standard" closeable>
+  <p>Anchored to the bottom edge, rounded top corners only — the default.</p>
+</md-bottom-sheet>
+
+<md-bottom-sheet id="bs-detached" variant="detached" headline="Detached" closeable>
+  <p>Floating, inset from every edge, all four corners rounded.</p>
+</md-bottom-sheet>`}
+  label="Standard and detached"
+  storyId="containment-bottom-sheet--all-variants"
+/>
+
+`detached` is the one to reach for when the sheet should read as a floating card
+rather than a tray welded to the bottom edge:
+
+<ComponentDemo
+  html={`<md-button id="bs-det3-btn" variant="filled" onclick="document.getElementById('bs-det3').show()">Detached sheet</md-button>
+
+<md-bottom-sheet id="bs-det3" variant="detached" headline="Share" closeable style="--md-bottom-sheet-content-padding-inline: 8px;">
+  <md-list>
+    <md-list-item headline="Send in email" leading-icon="email"></md-list-item>
+    <md-list-item headline="Copy link" leading-icon="link"></md-list-item>
+    <md-list-item headline="Save to Drive" leading-icon="add_to_drive"></md-list-item>
+  </md-list>
+</md-bottom-sheet>`}
+  label="Detached — inset on every edge"
+  storyId="containment-bottom-sheet--detached"
+/>
+
+The [states overview](/storybook/?path=/story/containment-bottom-sheet--states)
+collects every combination in one Storybook page, and
+[standard](/storybook/?path=/story/containment-bottom-sheet--standard) isolates
+the default variant.
+
+## Anatomy
+
+| Slot | Holds |
+|---|---|
+| `(default)` | The body. **Scrolls internally** when content exceeds the height |
+| `headline` | Rich title content — **overrides the text** of the `headline` prop |
+| `close` | A custom close affordance, replacing the built-in icon button |
+| `actions` | The action row pinned below the body |
+
+:::caution[The `headline` slot needs the `headline` prop set]
+The prop is the switch: the title element — and the `aria-labelledby` that names
+the dialog — only render when `headline` is non-empty. Set `headline="Filters"`
+*and* slot your rich markup; the slot then replaces the prop's plain text.
+Slotting alone renders no headline at all, and the sheet falls back to the
+literal accessible name "Bottom sheet".
+:::
+
+`show-drag-handle` is **on by default**. `closeable` adds an explicit close
+button and is **off** by default — turn it on, because the drag gesture is
+pointer-only. `top-divider` and `bottom-divider` draw rules around the
+scrolling body; the bottom rule only renders when there is an actions row to
+separate.
+
+<ComponentDemo
+  html={`<md-button id="bs-anatomy-btn" variant="filled" onclick="document.getElementById('bs-anatomy').show()">Full anatomy</md-button>
+<md-button id="bs-nohandle-btn" variant="tonal" onclick="document.getElementById('bs-nohandle').show()">No drag handle</md-button>
+
+<md-bottom-sheet id="bs-anatomy" headline="Filters" top-divider bottom-divider closeable>
+  <span slot="headline">Filters <span style="font-size: 0.6em; vertical-align: middle; color: var(--md-sys-color-primary);">3 active</span></span>
+  <md-list>
+    <md-list-item headline="Unread only"></md-list-item>
+    <md-list-item headline="Has attachment"></md-list-item>
+    <md-list-item headline="Starred"></md-list-item>
+  </md-list>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('bs-anatomy').close()">Reset</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('bs-anatomy').close()">Apply</md-button>
+</md-bottom-sheet>
+
+<md-bottom-sheet id="bs-nohandle" headline="New task" show-drag-handle="false" closeable>
+  <md-text-field variant="outlined" label="Title" required></md-text-field>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('bs-nohandle').close()">Cancel</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('bs-nohandle').close()">Add task</md-button>
+</md-bottom-sheet>`}
+  htmlForCode={`<md-button id="bs-anatomy-btn" variant="filled" onclick="document.getElementById('bs-anatomy').show()">Full anatomy</md-button>
+<md-button id="bs-nohandle-btn" variant="tonal" onclick="document.getElementById('bs-nohandle').show()">No drag handle</md-button>
+
+<md-bottom-sheet id="bs-anatomy" headline="Filters" top-divider bottom-divider closeable>
+  <span slot="headline">Filters <span style="font-size: 0.6em; vertical-align: middle; color: var(--md-sys-color-primary);">3 active</span></span>
+  <md-list>
+    <md-list-item headline="Unread only"></md-list-item>
+    <md-list-item headline="Has attachment"></md-list-item>
+    <md-list-item headline="Starred"></md-list-item>
+  </md-list>
+  <md-button slot="actions" variant="text">Reset</md-button>
+  <md-button slot="actions" variant="filled">Apply</md-button>
+</md-bottom-sheet>
+
+<md-bottom-sheet id="bs-nohandle" headline="New task" show-drag-handle="false" closeable>
+  <md-text-field variant="outlined" label="Title" required></md-text-field>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Add task</md-button>
+</md-bottom-sheet>`}
+  react={`import { useRef } from 'react';
+import { MdBottomSheet, MdButton, MdList, MdListItem, MdTextField } from '@awc-ui/react';
+
+export function Demo() {
+  const bsAnatomyRef = useRef(null);
+  const bsNohandleRef = useRef(null);
+
+  return (
+    <>
+      <MdButton id="bs-anatomy-btn" variant="filled" onClick={() => bsAnatomyRef.current?.show()}>Full anatomy</MdButton>
+      <MdButton id="bs-nohandle-btn" variant="tonal" onClick={() => bsNohandleRef.current?.show()}>No drag handle</MdButton>
+
+      <MdBottomSheet id="bs-anatomy" ref={bsAnatomyRef} headline="Filters" topDivider bottomDivider closeable>
+        <span slot="headline">Filters <span style={{ fontSize: '0.6em', verticalAlign: 'middle', color: 'var(--md-sys-color-primary)' }}>3 active</span></span>
+        <MdList>
+          <MdListItem headline="Unread only"></MdListItem>
+          <MdListItem headline="Has attachment"></MdListItem>
+          <MdListItem headline="Starred"></MdListItem>
+        </MdList>
+        <MdButton slot="actions" variant="text">Reset</MdButton>
+        <MdButton slot="actions" variant="filled">Apply</MdButton>
+      </MdBottomSheet>
+
+      {/* showDragHandle is a boolean prop: pass {false}, not the string "false". */}
+      <MdBottomSheet id="bs-nohandle" ref={bsNohandleRef} headline="New task" showDragHandle={false} closeable>
+        <MdTextField variant="outlined" label="Title" required></MdTextField>
+        <MdButton slot="actions" variant="text">Cancel</MdButton>
+        <MdButton slot="actions" variant="filled">Add task</MdButton>
+      </MdBottomSheet>
+    </>
+  );
+}`}
+  label="Headline slot with dividers and actions, and a handle-less form sheet"
+  storyId="containment-bottom-sheet--with-close-and-dividers"
+/>
+
+### Actions and a custom close
+
+The `actions` slot holds the footer buttons. The built-in close glyph can be
+replaced by slotting your own control into `close` — and slotting one **is** the
+request for a close affordance, so `closeable` is not required alongside it.
+The second sheet below has no `closeable` attribute and still shows its "Done"
+button.
+
+:::caution[A slotted close is not wired for you]
+The built-in icon button calls `close()` **and** emits `mdCancel`. A slotted
+control replaces it outright and inherits none of that — you call `close()`
+yourself, which fires `mdClose` only. That is a feature: a slotted *Done* reads
+as an acceptance, not a dismissal, and the events should say so.
+:::
+
+<ComponentDemo
+  html={`<md-button id="bs-actions-btn" variant="filled" onclick="document.getElementById('bs-actions').show()">Sheet with actions</md-button>
+<md-button id="bs-customclose-btn" variant="outlined" onclick="document.getElementById('bs-customclose').show()">Custom close control</md-button>
+
+<md-bottom-sheet id="bs-actions" headline="Delete conversation?" closeable>
+  <p style="margin: 0;">This removes it for everyone in the thread.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('bs-actions').close()">Cancel</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('bs-actions').close()">Delete</md-button>
+</md-bottom-sheet>
+
+<md-bottom-sheet id="bs-customclose" headline="Filters">
+  <md-button slot="close" variant="text" onclick="document.getElementById('bs-customclose').close()">Done</md-button>
+  <p style="margin: 0;">A text button replaces the close glyph — no <code>closeable</code> attribute needed.</p>
+</md-bottom-sheet>`}
+  htmlForCode={`<md-button id="bs-actions-btn" variant="filled" onclick="document.getElementById('bs-actions').show()">Sheet with actions</md-button>
+<md-button id="bs-customclose-btn" variant="outlined" onclick="document.getElementById('bs-customclose').show()">Custom close control</md-button>
+
+<md-bottom-sheet id="bs-actions" headline="Delete conversation?" closeable>
+  <p>This removes it for everyone in the thread.</p>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Delete</md-button>
+</md-bottom-sheet>
+
+<md-bottom-sheet id="bs-customclose" headline="Filters">
+  <md-button slot="close" variant="text">Done</md-button>
+  <p>A text button replaces the close glyph.</p>
+</md-bottom-sheet>`}
+  label="An actions row, and a slotted close control"
+  storyId="containment-bottom-sheet--with-actions"
+/>
+
+Reach for a slotted close when "Close" should read as an explicit affirmation —
+*Done*, *Got it*, *Apply* — rather than a dismissal glyph:
+
+<ComponentDemo
+  html={`<md-button id="bs-done-btn" variant="filled" onclick="document.getElementById('bs-done').show()">Sheet with a Done button</md-button>
+
+<md-bottom-sheet id="bs-done" headline="Sort by">
+  <md-button slot="close" variant="text" onclick="document.getElementById('bs-done').close()">Done</md-button>
+  <md-list>
+    <md-list-item headline="Relevance"></md-list-item>
+    <md-list-item headline="Newest first"></md-list-item>
+    <md-list-item headline="Price"></md-list-item>
+  </md-list>
+</md-bottom-sheet>`}
+  htmlForCode={`<md-button id="bs-done-btn" variant="filled" onclick="document.getElementById('bs-done').show()">Sheet with a Done button</md-button>
+
+<md-bottom-sheet id="bs-done" headline="Sort by">
+  <md-button slot="close" variant="text">Done</md-button>
+  <md-list>
+    <md-list-item headline="Relevance"></md-list-item>
+    <md-list-item headline="Newest first"></md-list-item>
+    <md-list-item headline="Price"></md-list-item>
+  </md-list>
+</md-bottom-sheet>`}
+  label="A text button in the close slot"
+  storyId="containment-bottom-sheet--custom-close"
+/>
+
+The [slotted-close story](/storybook/?path=/story/containment-bottom-sheet--slotted-close-dismiss)
+asserts the whole path, including that it emits `mdClose` without `mdCancel`.
+
+## Alignment & dismissal
+
+`headline-align` and `content-align` take `start` (default), `center` or `end`
+and are **logical** — they mirror in RTL. `scrim-dismissible` defaults to
+**true**; turn it off when an accidental tap outside would lose work.
+
+<ComponentDemo
+  html={`<md-button id="bs-centered-btn" variant="filled" onclick="document.getElementById('bs-centered').show()">Centred</md-button>
+<md-button id="bs-persistent-btn" variant="tonal" onclick="document.getElementById('bs-persistent').show()">Non-dismissible scrim</md-button>
+
+<md-bottom-sheet id="bs-centered" headline="Choose a plan" headline-align="center" content-align="center" closeable>
+  <p style="margin: 0;">Both the headline and the body are centred.</p>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('bs-centered').close()">Continue</md-button>
+</md-bottom-sheet>
+
+<md-bottom-sheet id="bs-persistent" headline="Discard changes?" scrim-dismissible="false">
+  <p style="margin: 0;">The scrim will not dismiss this sheet — pick one of the actions. Escape still works, and it fires mdCancel.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('bs-persistent').close()">Keep editing</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('bs-persistent').close()">Discard</md-button>
+</md-bottom-sheet>`}
+  htmlForCode={`<md-button id="bs-centered-btn" variant="filled" onclick="document.getElementById('bs-centered').show()">Centred</md-button>
+<md-button id="bs-persistent-btn" variant="tonal" onclick="document.getElementById('bs-persistent').show()">Non-dismissible scrim</md-button>
+
+<md-bottom-sheet id="bs-centered" headline="Choose a plan" headline-align="center" content-align="center" closeable>
+  <p>Both the headline and the body are centred.</p>
+  <md-button slot="actions" variant="filled">Continue</md-button>
+</md-bottom-sheet>
+
+<md-bottom-sheet id="bs-persistent" headline="Discard changes?" scrim-dismissible="false">
+  <p>The scrim is inert here. Escape still dismisses, and still fires mdCancel.</p>
+  <md-button slot="actions" variant="text">Keep editing</md-button>
+  <md-button slot="actions" variant="filled">Discard</md-button>
+</md-bottom-sheet>`}
+  react={`import { useRef } from 'react';
+import { MdBottomSheet, MdButton } from '@awc-ui/react';
+
+export function Demo() {
+  const bsCenteredRef = useRef(null);
+  const bsPersistentRef = useRef(null);
+
+  return (
+    <>
+      <MdButton id="bs-centered-btn" variant="filled" onClick={() => bsCenteredRef.current?.show()}>Centred</MdButton>
+      <MdButton id="bs-persistent-btn" variant="tonal" onClick={() => bsPersistentRef.current?.show()}>Non-dismissible scrim</MdButton>
+
+      <MdBottomSheet id="bs-centered" ref={bsCenteredRef} headline="Choose a plan" headlineAlign="center" contentAlign="center" closeable>
+        <p>Both the headline and the body are centred.</p>
+        <MdButton slot="actions" variant="filled">Continue</MdButton>
+      </MdBottomSheet>
+
+      {/* scrimDismissible is a boolean prop: pass {false}, not the string "false". */}
+      <MdBottomSheet id="bs-persistent" ref={bsPersistentRef} headline="Discard changes?" scrimDismissible={false}>
+        <p>The scrim is inert here. Escape still dismisses, and still fires mdCancel.</p>
+        <MdButton slot="actions" variant="text">Keep editing</MdButton>
+        <MdButton slot="actions" variant="filled">Discard</MdButton>
+      </MdBottomSheet>
+    </>
+  );
+}`}
+  label="Centred content, and a scrim that refuses to dismiss"
+  storyId="containment-bottom-sheet--alignment"
+/>
+
+The drag handle is a pointer affordance: press it, pull down past the
+100px threshold and release to dismiss — release above it and the sheet
+springs back.
+
+<ComponentDemo
+  html={`<md-button id="bs-drag-btn" variant="filled" onclick="document.getElementById('bs-drag').show()">Drag me down to dismiss</md-button>
+
+<md-bottom-sheet id="bs-drag" headline="Drag the handle" show-drag-handle closeable>
+  <p style="margin: 0;">Grab the handle at the top and pull down past the threshold — release below it and the sheet dismisses, release above it and it springs back.</p>
+</md-bottom-sheet>`}
+  label="Drag the handle down to dismiss"
+  storyId="containment-bottom-sheet--drag-to-dismiss"
+/>
+
+### Opening and closing programmatically
+
+| Method | Returns | Notes |
+|---|---|---|
+| `show()` | `Promise<void>` | Opens the sheet and moves focus into it |
+| `close()` | `Promise<void>` | Closes it and fires `mdClose` — but **not** `mdCancel` |
+
+A programmatic `close()` is how you tell "the user accepted" from "the user
+dismissed": the sheet below has no close glyph and an inert scrim, so its only
+exit is the action button.
+
+<ComponentDemo
+  html={`<md-button id="bs-required-btn" variant="filled" onclick="document.getElementById('bs-required').show()">Required action</md-button>
+
+<md-bottom-sheet id="bs-required" headline="Accept the terms" scrim-dismissible="false">
+  <p style="margin: 0;">The scrim is a no-op here and there is no close glyph — the only way out is the action below, so the choice cannot be skipped by tapping away. (Escape still works, and it fires mdCancel.)</p>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('bs-required').close()">I understand</md-button>
+</md-bottom-sheet>`}
+  htmlForCode={`<md-button id="bs-required-btn" variant="filled" onclick="document.getElementById('bs-required').show()">Required action</md-button>
+
+<md-bottom-sheet id="bs-required" headline="Accept the terms" scrim-dismissible="false">
+  <p>The only way out is the action below.</p>
+  <md-button slot="actions" variant="filled">I understand</md-button>
+</md-bottom-sheet>`}
+  react={`import { useRef } from 'react';
+import { MdBottomSheet, MdButton } from '@awc-ui/react';
+
+export function Demo() {
+  const bsRequiredRef = useRef(null);
+
+  return (
+    <>
+      <MdButton id="bs-required-btn" variant="filled" onClick={() => bsRequiredRef.current?.show()}>Required action</MdButton>
+
+      {/* scrimDismissible is a boolean prop: pass {false}, not the string "false". */}
+      <MdBottomSheet id="bs-required" ref={bsRequiredRef} headline="Accept the terms" scrimDismissible={false}>
+        <p>The only way out is the action below.</p>
+        <MdButton slot="actions" variant="filled" onClick={() => bsRequiredRef.current?.close()}>I understand</MdButton>
+      </MdBottomSheet>
+    </>
+  );
+}`}
+  label="scrim-dismissible=false — try clicking outside it"
+  storyId="containment-bottom-sheet--non-dismissible"
+/>
+
+Every dismissal route has its own story:
+[the close button](/storybook/?path=/story/containment-bottom-sheet--close-button-dismiss),
+[dragging the handle down](/storybook/?path=/story/containment-bottom-sheet--drag-to-dismiss)
+([and the drag threshold](/storybook/?path=/story/containment-bottom-sheet--drag-dismiss)),
+[Escape plus the focus trap](/storybook/?path=/story/containment-bottom-sheet--escape-and-focus-trap),
+and the [non-dismissible](/storybook/?path=/story/containment-bottom-sheet--non-dismissible)
+case where none of them apply.
+
+## Scrolling content
+
+Unlike [`md-card`](/components/card/), a bottom sheet **is** meant to scroll its
+body internally: the content area plain-scrolls once it outgrows
+`--md-bottom-sheet-max-height` (`80vh` by default), while the header and the
+actions row stay pinned. Never scroll it horizontally.
+
+:::note[`scroll-shadow` is a no-op]
+The prop survives for API compatibility and appears in the generated table
+below, but the content area always plain-scrolls — there are no edge fades to
+turn off. Setting it changes nothing visually.
+:::
+
+<ComponentDemo
+  html={`<md-button id="bs-scroll-btn" variant="filled" onclick="document.getElementById('bs-scroll').show()">Long list</md-button>
+
+<md-bottom-sheet id="bs-scroll" headline="Select a country" top-divider closeable>
+  <md-list>
+    <md-list-item headline="Argentina"></md-list-item>
+    <md-list-item headline="Brazil"></md-list-item>
+    <md-list-item headline="Canada"></md-list-item>
+    <md-list-item headline="Denmark"></md-list-item>
+    <md-list-item headline="Egypt"></md-list-item>
+    <md-list-item headline="France"></md-list-item>
+    <md-list-item headline="Germany"></md-list-item>
+    <md-list-item headline="Hungary"></md-list-item>
+    <md-list-item headline="India"></md-list-item>
+    <md-list-item headline="Japan"></md-list-item>
+    <md-list-item headline="Kenya"></md-list-item>
+    <md-list-item headline="Mexico"></md-list-item>
+    <md-list-item headline="Norway"></md-list-item>
+    <md-list-item headline="Portugal"></md-list-item>
+  </md-list>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('bs-scroll').close()">Cancel</md-button>
+</md-bottom-sheet>`}
+  htmlForCode={`<md-button id="bs-scroll-btn" variant="filled" onclick="document.getElementById('bs-scroll').show()">Long list</md-button>
+
+<md-bottom-sheet id="bs-scroll" headline="Select a country" top-divider closeable>
+  <md-list>
+    <md-list-item headline="Argentina"></md-list-item>
+    <md-list-item headline="Brazil"></md-list-item>
+    <md-list-item headline="Canada"></md-list-item>
+    <md-list-item headline="Denmark"></md-list-item>
+    <md-list-item headline="Egypt"></md-list-item>
+    <md-list-item headline="France"></md-list-item>
+  </md-list>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+</md-bottom-sheet>`}
+  label="A body that scrolls internally"
+  storyId="containment-bottom-sheet--scrollable-content"
+/>
+
+Keep the sheet short enough to leave context visible. A sheet that covers the
+whole viewport should be a full-screen [`md-dialog`](/components/dialog/)
+instead.
+
+## Size
+
+Width and height come from the `--md-bottom-sheet-width` / `-height` bounds
+rather than a prop, so one sheet can be a full-width tray on phones and a
+narrower panel on a wide screen without changing markup. The reflow is built
+in: below 640px the sheet is full-bleed, and at 640px and up it defaults to a
+centred `640px` panel capped at `calc(100% - 112px)`. Setting either custom
+property overrides the breakpoint's fallback at both sizes.
+
+<ComponentDemo
+  html={`<md-button id="bs-narrow-btn" variant="filled" onclick="document.getElementById('bs-narrow').show()">Narrow sheet</md-button>
+<md-button id="bs-tall-btn" variant="outlined" onclick="document.getElementById('bs-tall').show()">Tall sheet</md-button>
+
+<md-bottom-sheet id="bs-narrow" headline="Narrow" closeable style="--md-bottom-sheet-max-width: 420px;">
+  <p style="margin: 0;">Capped at 420px, centred on a wide viewport.</p>
+</md-bottom-sheet>
+
+<md-bottom-sheet id="bs-tall" headline="Tall" closeable style="--md-bottom-sheet-height: 60vh;">
+  <p style="margin: 0;">Fixed to 60vh regardless of content.</p>
+</md-bottom-sheet>`}
+  label="A width cap, and a fixed height"
+  storyId="containment-bottom-sheet--variable-width-height"
+/>
+
+The sheet is fluid by default and caps at `80vh`, so it always leaves some
+context visible above it.
+
+<ComponentDemo
+  html={`<md-button id="bs-resp-btn" variant="filled" onclick="document.getElementById('bs-resp').show()">Open, then resize the window</md-button>
+
+<md-bottom-sheet id="bs-resp" headline="Fluid by default" closeable style="--md-bottom-sheet-max-width: 640px;">
+  <p style="margin: 0;">Full-bleed on a phone, capped and centred on a wide screen — one sheet, no breakpoint markup. Resize the window with this open and watch it re-centre.</p>
+</md-bottom-sheet>`}
+  label="One sheet at every width"
+  storyId="containment-bottom-sheet--responsive"
+/>
+
+The [responsiveness story](/storybook/?path=/story/containment-bottom-sheet--responsiveness)
+steps through the breakpoints in Storybook.
+
+## Patterns
+
+Three worked examples — a form sheet, a media sheet and a filter panel — plus
+the canonical M3 share sheet.
+
+The form sheet is the case that most often gets focus handling wrong: `show()`
+moves focus to the first field, the focus guards keep `Tab` inside, and
+`Escape` hands it back to the trigger.
+
+<ComponentDemo
+  html={`<md-button id="bs-form-btn" variant="filled" onclick="document.getElementById('bs-form').show()">Form inside a sheet</md-button>
+
+<md-bottom-sheet id="bs-form" headline="Add a label" closeable>
+  <div style="display: grid; gap: 16px;">
+    <md-text-field label="Name" variant="outlined"></md-text-field>
+    <md-text-field label="Colour" variant="outlined"></md-text-field>
+  </div>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('bs-form').close()">Cancel</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('bs-form').close()">Save</md-button>
+</md-bottom-sheet>`}
+  htmlForCode={`<md-button id="bs-form-btn" variant="filled" onclick="document.getElementById('bs-form').show()">Form inside a sheet</md-button>
+
+<md-bottom-sheet id="bs-form" headline="Add a label" closeable>
+  <div style="display: grid; gap: 16px;">
+    <md-text-field label="Name" variant="outlined"></md-text-field>
+    <md-text-field label="Colour" variant="outlined"></md-text-field>
+  </div>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Save</md-button>
+</md-bottom-sheet>`}
+  label="A form sheet — focus lands inside, Escape returns it"
+  storyId="containment-bottom-sheet--form-inside-sheet"
+/>
+
+<ComponentDemo
+  html={`<md-button id="bs-music-btn" variant="filled" icon="play_arrow" onclick="document.getElementById('bs-music').show()">Now playing</md-button>
+
+<md-bottom-sheet id="bs-music" variant="detached">
+  <div style="text-align: center; padding-block: 8px;">
+    <div style="inline-size: 200px; block-size: 200px; margin: 0 auto 16px; border-radius: 16px; background: linear-gradient(135deg, var(--md-sys-color-primary-container), var(--md-sys-color-tertiary-container)); display: flex; align-items: center; justify-content: center;">
+      <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 64px; color: var(--md-sys-color-on-primary-container);">music_note</span>
+    </div>
+    <div style="font-size: 20px; font-weight: 500; margin-block-end: 4px;">Song Title</div>
+    <div style="font-size: 14px; color: var(--md-sys-color-on-surface-variant);">Artist Name</div>
+    <div style="display: flex; justify-content: center; gap: 24px; margin-block-start: 24px;">
+      <md-icon-button variant="standard" icon="skip_previous" aria-label="Previous"></md-icon-button>
+      <md-icon-button variant="filled" icon="play_arrow" aria-label="Play"></md-icon-button>
+      <md-icon-button variant="standard" icon="skip_next" aria-label="Next"></md-icon-button>
+    </div>
+  </div>
+</md-bottom-sheet>`}
+  label="Music player — a detached sheet with no headline"
+  storyId="containment-bottom-sheet--music-player"
+/>
+
+A filter panel is the other common shape: chips and switches over a divider,
+with the actions row committing or clearing.
+
+<ComponentDemo
+  html={`<md-button id="bs-filters-btn" variant="filled" icon="tune" onclick="document.getElementById('bs-filters').show()">Filters</md-button>
+
+<md-bottom-sheet id="bs-filters" headline="Filters" closeable>
+  <div style="margin-block-end: 16px;">
+    <div style="font-weight: 500; margin-block-end: 8px;">Category</div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <md-chip>Electronics</md-chip>
+      <md-chip>Clothing</md-chip>
+      <md-chip>Books</md-chip>
+      <md-chip>Home</md-chip>
+    </div>
+  </div>
+  <md-divider></md-divider>
+  <div style="margin-block-start: 16px; display: grid; gap: 12px;">
+    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+      <md-switch></md-switch>
+      In stock only
+    </label>
+    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+      <md-switch></md-switch>
+      Free delivery
+    </label>
+  </div>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('bs-filters').close()">Clear</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('bs-filters').close()">Apply</md-button>
+</md-bottom-sheet>`}
+  htmlForCode={`<md-button id="bs-filters-btn" variant="filled" icon="tune" onclick="document.getElementById('bs-filters').show()">Filters</md-button>
+
+<md-bottom-sheet id="bs-filters" headline="Filters" closeable>
+  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <md-chip>Electronics</md-chip>
+    <md-chip>Clothing</md-chip>
+    <md-chip>Books</md-chip>
+  </div>
+  <md-divider></md-divider>
+  <div style="margin-block-start: 16px; display: grid; gap: 12px;">
+    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+      <md-switch></md-switch>
+      In stock only
+    </label>
+    <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+      <md-switch></md-switch>
+      Free delivery
+    </label>
+  </div>
+  <md-button slot="actions" variant="text">Clear</md-button>
+  <md-button slot="actions" variant="filled">Apply</md-button>
+</md-bottom-sheet>`}
+  label="Filter panel"
+  storyId="containment-bottom-sheet--filter-panel"
+/>
+
+And a share sheet — a plain list of destinations, the canonical M3 example:
+
+<ComponentDemo
+  html={`<md-button id="bs-shareacts-btn" variant="filled" icon="share" onclick="document.getElementById('bs-shareacts').show()">Share</md-button>
+
+<md-bottom-sheet id="bs-shareacts" headline="Share" closeable style="--md-bottom-sheet-content-padding-inline: 8px;">
+  <md-list>
+    <md-list-item headline="Send in email" leading-icon="email"></md-list-item>
+    <md-list-item headline="Copy link" leading-icon="link"></md-list-item>
+    <md-list-item headline="Copy to clipboard" leading-icon="content_copy"></md-list-item>
+    <md-list-item headline="Save to Drive" leading-icon="add_to_drive"></md-list-item>
+    <md-list-item headline="Print" leading-icon="print"></md-list-item>
+  </md-list>
+</md-bottom-sheet>`}
+  label="Share actions"
+  storyId="containment-bottom-sheet--share-actions"
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdOpen` | no | `void` | The sheet has opened |
+| `mdClose` | no | `void` | **Any** close, including programmatic `close()` |
+| `mdCancel` | no | `void` | A **dismissal**: scrim click, `Escape`, drag-down, or the built-in close glyph |
+
+:::caution[`mdCancel` and `mdClose` are not the same event]
+A dismissal fires **both** — `mdCancel` first, then `mdClose`. A programmatic
+`close()` fires only `mdClose`. Branch on which one you got instead of treating
+them as one signal.
+:::
+
+| You want to… | Listen to |
+|---|---|
+| Restore focus, tear down state, run on **every** exit | `mdClose` |
+| Treat the exit as "the user backed out" — discard a draft, log a dismissal | `mdCancel` |
+| React to the sheet becoming visible — measure it, load its content | `mdOpen` |
+
+Open the sheet below and leave it three different ways — the glyph, `Escape`,
+and the *Done* button — and watch which events each route emits.
+
+<ComponentDemo
+  html={`<md-button id="bs-ev-btn" variant="filled" icon="share">Share</md-button>
+
+<md-bottom-sheet id="bs-ev" headline="Share to" closeable>
+  <md-list>
+    <md-list-item headline="Copy link" leading-icon="link"></md-list-item>
+    <md-list-item headline="Email" leading-icon="email"></md-list-item>
+  </md-list>
+  <md-button slot="actions" id="bs-ev-done" variant="filled">Done</md-button>
+</md-bottom-sheet>
+
+<output id="bs-ev-log" style="display:block; margin-block-start:12px; min-block-size:6.5rem; white-space:pre-line; font-family:ui-monospace, monospace; font-size:.8125rem; line-height:1.6; color:var(--md-sys-color-on-surface-variant); background:var(--md-sys-color-surface-container-high); border-radius:12px; padding:12px 14px;">Press Share, then close the sheet three different ways.</output>`}
+  script={`var sheet = root.querySelector('#bs-ev');
+var btn = root.querySelector('#bs-ev-btn');
+var done = root.querySelector('#bs-ev-done');
+var log = root.querySelector('#bs-ev-log');
+var lines = [];
+
+function push(text) {
+  lines.unshift(text);
+  if (lines.length > 5) lines.pop();
+  log.textContent = lines.join(String.fromCharCode(10));
+}
+
+btn.addEventListener('click', function () { sheet.show(); });
+done.addEventListener('click', function () { sheet.close(); });
+
+sheet.addEventListener('mdOpen', function () { push('mdOpen'); });
+sheet.addEventListener('mdCancel', function () { push('mdCancel — the user backed out'); });
+sheet.addEventListener('mdClose', function () {
+  push('mdClose');
+  btn.focus({ preventScroll: true });
+});`}
+  label="Every exit route, logged"
+  htmlCode={`<md-button id="bs-ev-btn" variant="filled" icon="share">Share</md-button>
+
+<md-bottom-sheet id="bs-ev" headline="Share to" closeable>
+  <md-list>
+    <md-list-item headline="Copy link" leading-icon="link"></md-list-item>
+    <md-list-item headline="Email" leading-icon="email"></md-list-item>
+  </md-list>
+  <md-button slot="actions" id="bs-ev-done" variant="filled">Done</md-button>
+</md-bottom-sheet>
+
+<script type="module">
+  const sheet = document.getElementById('bs-ev');
+  const btn = document.getElementById('bs-ev-btn');
+  const done = document.getElementById('bs-ev-done');
+
+  btn.addEventListener('click', () => sheet.show());
+  // A slotted / actions-row control is never auto-wired: call close() yourself.
+  done.addEventListener('click', () => sheet.close());
+
+  sheet.addEventListener('mdOpen', () => console.log('opened'));
+  sheet.addEventListener('mdCancel', () => console.log('dismissed'));   // scrim / Esc / drag / glyph
+  sheet.addEventListener('mdClose', () => btn.focus({ preventScroll: true })); // any close
+</script>`}
+  react={`import { MdBottomSheet, MdButton, MdList, MdListItem } from '@awc-ui/react';
+import { useRef } from 'react';
+
+export function ShareSheet() {
+  const sheet = useRef(null);
+  const btn = useRef(null);
+
+  return (
+    <>
+      <MdButton ref={btn} variant="filled" icon="share" onClick={() => sheet.current?.show()}>
+        Share
+      </MdButton>
+
+      <MdBottomSheet
+        ref={sheet}
+        headline="Share to"
+        closeable
+        onMdOpen={() => console.log('opened')}
+        onMdCancel={() => console.log('dismissed')}
+        onMdClose={() => btn.current?.focus({ preventScroll: true })}
+      >
+        <MdList>
+          <MdListItem headline="Copy link" leadingIcon="link" />
+          <MdListItem headline="Email" leadingIcon="email" />
+        </MdList>
+        <MdButton slot="actions" variant="filled" onClick={() => sheet.current?.close()}>
+          Done
+        </MdButton>
+      </MdBottomSheet>
+    </>
+  );
+}`}
+  angular={`import { Component, ElementRef, ViewChild } from '@angular/core';
+
+type SheetEl = HTMLElement & { show: () => Promise<void>; close: () => Promise<void> };
+
+@Component({
+  selector: 'app-share-sheet',
+  template: \`
+    <md-button #btn variant="filled" icon="share" (click)="sheet.show()">Share</md-button>
+
+    <md-bottom-sheet
+      #sheet
+      headline="Share to"
+      closeable
+      (mdOpen)="onOpen()"
+      (mdCancel)="onCancel()"
+      (mdClose)="onClose()"
+    >
+      <md-list>
+        <md-list-item headline="Copy link" leading-icon="link"></md-list-item>
+        <md-list-item headline="Email" leading-icon="email"></md-list-item>
+      </md-list>
+      <md-button slot="actions" variant="filled" (click)="sheet.close()">Done</md-button>
+    </md-bottom-sheet>
+  \`,
+})
+export class ShareSheetComponent {
+  @ViewChild('btn', { static: true }) btn!: ElementRef<HTMLElement>;
+
+  onOpen() { console.log('opened'); }
+  onCancel() { console.log('dismissed'); }
+  onClose() { this.btn.nativeElement.focus({ preventScroll: true }); }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+type SheetEl = HTMLElement & { show: () => Promise<void>; close: () => Promise<void> };
+
+const sheet = ref<SheetEl | null>(null);
+const btn = ref<HTMLElement | null>(null);
+</script>
+
+<template>
+  <md-button ref="btn" variant="filled" icon="share" @click="sheet?.show()">Share</md-button>
+
+  <md-bottom-sheet
+    ref="sheet"
+    headline="Share to"
+    closeable
+    @mdOpen="() => console.log('opened')"
+    @mdCancel="() => console.log('dismissed')"
+    @mdClose="() => btn?.focus({ preventScroll: true })"
+  >
+    <md-list>
+      <md-list-item headline="Copy link" leading-icon="link"></md-list-item>
+      <md-list-item headline="Email" leading-icon="email"></md-list-item>
+    </md-list>
+    <md-button slot="actions" variant="filled" @click="sheet?.close()">Done</md-button>
+  </md-bottom-sheet>
+</template>`}
+  svelte={`<script lang="ts">
+  type SheetEl = HTMLElement & { show: () => Promise<void>; close: () => Promise<void> };
+
+  let sheet: SheetEl;
+  let btn: HTMLElement;
+</script>
+
+<md-button bind:this={btn} variant="filled" icon="share" on:click={() => sheet.show()}>
+  Share
+</md-button>
+
+<md-bottom-sheet
+  bind:this={sheet}
+  headline="Share to"
+  closeable
+  on:mdOpen={() => console.log('opened')}
+  on:mdCancel={() => console.log('dismissed')}
+  on:mdClose={() => btn.focus({ preventScroll: true })}
+>
+  <md-list>
+    <md-list-item headline="Copy link" leading-icon="link"></md-list-item>
+    <md-list-item headline="Email" leading-icon="email"></md-list-item>
+  </md-list>
+  <md-button slot="actions" variant="filled" on:click={() => sheet.close()}>Done</md-button>
+</md-bottom-sheet>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[`aria-label` is `sheetAriaLabel` in JS]
+The `aria-label` **attribute** maps to the `sheetAriaLabel` **property** in JS
+and in the framework wrappers — a custom `aria-*` property name would fail
+axe's `aria-valid-attr`.
+:::
+
+## Accessibility
+
+- The container is a **modal dialog**: `role="dialog"`, `aria-modal="true"`,
+  and while closed the whole panel is `inert` and `aria-hidden` so nothing
+  inside it is tab-reachable.
+- `show()` moves focus to the first focusable control inside the sheet; a pair
+  of focus guards wraps `Tab` and `Shift+Tab` back around, and closing restores
+  focus to whatever was focused before — with `preventScroll`, so the page
+  doesn't jump.
+- `Escape` dismisses from anywhere on the page, firing `mdCancel` then
+  `mdClose`.
+- Name it with `headline` (wired through `aria-labelledby`) or with
+  `aria-label` when there is no visible headline. A headline-less, unlabelled
+  sheet falls back to the literal name "Bottom sheet" — never ship that.
+- The drag handle is `aria-hidden` and a **pointer affordance only**. Always
+  give keyboard and AT users a way out — `closeable`, or a cancel button in the
+  `actions` slot.
+- Keep enough of the underlying context visible that users understand where
+  they are.
+- Clean under axe-core in every documented configuration.
+
+:::danger[Don't open a sheet on mount]
+An `open` sheet sets `document.body.style.overflow = 'hidden'`. On a shared
+docs surface or in Storybook autodocs that freezes the whole page. Render it
+closed and let the trigger open it — and in Storybook, gate the `open` binding
+on `viewMode` so autodocs never mounts it open.
+:::
+
+Open the sheet below, then `Tab` past the last button: focus wraps back to the
+first control instead of escaping to the page. Press `Escape` and focus lands
+back on the trigger.
+
+<ComponentDemo
+  html={`<md-button id="bs-a11y-btn" variant="filled" onclick="document.getElementById('bs-a11y').show()">Open a labelled sheet</md-button>
+
+<md-bottom-sheet id="bs-a11y" aria-label="Payment options" closeable>
+  <p style="margin: 0;">This sheet has no visible headline, so <code>aria-label</code> names it instead. Tab around — focus is trapped inside and returns to the opener on close.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('bs-a11y').close()">Close</md-button>
+</md-bottom-sheet>`}
+  htmlForCode={`<md-button id="bs-a11y-btn" variant="filled" onclick="document.getElementById('bs-a11y').show()">Open a labelled sheet</md-button>
+
+<md-bottom-sheet id="bs-a11y" aria-label="Payment options" closeable>
+  <p>No visible headline, so aria-label names the dialog.</p>
+  <md-button slot="actions" variant="text">Close</md-button>
+</md-bottom-sheet>`}
+  label="A headline-less sheet named by aria-label — try tabbing past the last control"
+  storyId="containment-bottom-sheet--custom-aria-label"
+/>
+
+In Storybook: [accessibility](/storybook/?path=/story/containment-bottom-sheet--accessibility),
+[focus restoration](/storybook/?path=/story/containment-bottom-sheet--focus-restoration),
+[the focus-guard wrap](/storybook/?path=/story/containment-bottom-sheet--focus-guard-wrap),
+[a custom aria-label](/storybook/?path=/story/containment-bottom-sheet--custom-aria-label)
+and [opening already-open](/storybook/?path=/story/containment-bottom-sheet--initially-open).
+
+## RTL, density & i18n
+
+**RTL** — nothing on the sheet is hard-coded to a physical side. The header
+row, the close affordance, the actions row and `headline-align` /
+`content-align` are all logical, so the same markup mirrors under `dir="rtl"`:
+
+```html
+<div dir="rtl">
+  <md-bottom-sheet headline="مشاركة إلى" headline-align="start" closeable>
+    <p>المحاذاة منطقية، لذا يتبع العنوان اتجاه القراءة.</p>
+  </md-bottom-sheet>
+</div>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;flex-wrap:wrap;gap:8px;">
+    <md-button id="bs-ltr-btn" variant="filled" onclick="document.getElementById('bs-ltr').show()">Share to</md-button>
+    <md-bottom-sheet id="bs-ltr" headline="Share to" top-divider closeable>
+      <p style="margin: 0;">The close glyph sits at the inline end, and the headline starts at the inline start.</p>
+    </md-bottom-sheet>
+  </div>
+
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;flex-wrap:wrap;gap:8px;">
+    <md-button id="bs-rtl-btn" variant="filled" onclick="document.getElementById('bs-rtl').show()">مشاركة إلى</md-button>
+    <md-bottom-sheet id="bs-rtl" headline="مشاركة إلى" top-divider closeable>
+      <p style="margin: 0;">المحاذاة منطقية، لذا يتبع العنوان اتجاه القراءة.</p>
+    </md-bottom-sheet>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+  storyId="containment-bottom-sheet--rtl"
+/>
+
+### `headline-align` is logical, not physical
+
+`headline-align="start"` follows the reading direction. Hard-coding the same
+intent with `::part(headline) { text-align: left }` does not — it pins the
+headline to the physical left even in Arabic. Both rows below are under
+`dir="rtl"`:
+
+<ComponentDemo
+  html={`<style>
+  #bs-align-wrong::part(headline) { text-align: left; }
+</style>
+<div dir="rtl" style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">right</span>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;">
+    <md-button id="bs-align-right-btn" variant="filled" onclick="document.getElementById('bs-align-right').show()">headline-align="start"</md-button>
+    <md-bottom-sheet id="bs-align-right" headline="مشاركة إلى" headline-align="start" closeable>
+      <p style="margin: 0;">Logical: the headline follows the reading direction and lands on the right.</p>
+    </md-bottom-sheet>
+  </div>
+
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;">
+    <md-button id="bs-align-wrong-btn" variant="outlined" onclick="document.getElementById('bs-align-wrong').show()">text-align: left</md-button>
+    <md-bottom-sheet id="bs-align-wrong" headline="مشاركة إلى" closeable>
+      <p style="margin: 0;">Physical: pinned to the left, fighting the reading direction.</p>
+    </md-bottom-sheet>
+  </div>
+</div>`}
+  label="Logical alignment vs a hard-coded physical one, both under dir=rtl"
+/>
+
+### Every density rung
+
+`density="-1…-4"` compacts the padding, the header and the actions row together.
+Rung `0` is the uncompacted default, not a value you set — there is no
+`[density="0"]` rule to opt back into (see [Density and direction
+together](#density-and-direction-together)). On the sheets below the header goes **48 → 43 → 38 → 37 → 36px** (a `40 → 36 →
+32px` close button over a shrinking header gap) and the content gutter **24 →
+22 → 20 → 18 → 16px**. The header flattens out after `-2`; the gutter keeps
+tightening to the floor, and the actions row steps separately — it reads the
+shared `--md-sys-spacing-*` tokens, which only move at `-2` and `-3`. See
+[Density](/behaviour/density/).
+
+Nothing stops two sheets being open at once — there is no singleton registry,
+and each open sheet installs its own document-level focus trap, so a second one
+fights the first. Compare the rungs by opening each in turn.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;">
+    <md-button id="bs-d0-btn" variant="filled" onclick="document.getElementById('bs-d0').show()">Open</md-button>
+  </div>
+
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;">
+    <md-button id="bs-d1-btn" variant="outlined" onclick="document.getElementById('bs-d1').show()">Open</md-button>
+  </div>
+
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;">
+    <md-button id="bs-d2-btn" variant="outlined" onclick="document.getElementById('bs-d2').show()">Open</md-button>
+  </div>
+
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;">
+    <md-button id="bs-d3-btn" variant="outlined" onclick="document.getElementById('bs-d3').show()">Open</md-button>
+  </div>
+
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div style="display:flex;flex-wrap:wrap;gap:8px;">
+    <md-button id="bs-d4-btn" variant="outlined" onclick="document.getElementById('bs-d4').show()">Open</md-button>
+  </div>
+</div>
+
+<md-bottom-sheet id="bs-d0" headline="Density 0 (default, no prop)" closeable>
+  <p style="margin: 0;">Same content at every rung — compare the header, the content gutter and the actions row.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('bs-d0').close()">Close</md-button>
+</md-bottom-sheet>
+<md-bottom-sheet id="bs-d1" headline="Density -1" density="-1" closeable>
+  <p style="margin: 0;">Same content at every rung — compare the header, the content gutter and the actions row.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('bs-d1').close()">Close</md-button>
+</md-bottom-sheet>
+<md-bottom-sheet id="bs-d2" headline="Density -2" density="-2" closeable>
+  <p style="margin: 0;">Same content at every rung — compare the header, the content gutter and the actions row.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('bs-d2').close()">Close</md-button>
+</md-bottom-sheet>
+<md-bottom-sheet id="bs-d3" headline="Density -3" density="-3" closeable>
+  <p style="margin: 0;">Same content at every rung — compare the header, the content gutter and the actions row.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('bs-d3').close()">Close</md-button>
+</md-bottom-sheet>
+<md-bottom-sheet id="bs-d4" headline="Density -4" density="-4" closeable>
+  <p style="margin: 0;">Same content at every rung — compare the header, the content gutter and the actions row.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('bs-d4').close()">Close</md-button>
+</md-bottom-sheet>`}
+  htmlForCode={`<md-button id="bs-d2-btn" variant="outlined" onclick="document.getElementById('bs-d2').show()">Open</md-button>
+
+<md-bottom-sheet id="bs-d2" headline="Density -2" density="-2" closeable>
+  <p>Same content at every rung — compare the header, the content gutter and the actions row.</p>
+  <md-button slot="actions" variant="text">Close</md-button>
+</md-bottom-sheet>`}
+  label="Density 0 through -4 — open each in turn"
+/>
+
+:::caution[Below `-2`, check your touch targets]
+The close glyph and the actions-row buttons shrink with the rung. `-3` and `-4`
+are for dense desktop tooling; on a touch surface they drop below the 48dp
+target the sheet exists to protect.
+:::
+
+### Density and direction together
+
+A global `data-density` ancestor and `dir="rtl"` compose — and a local
+`density="-1…-4"` on one sheet overrides the inherited rung without touching the
+direction. It only ever tightens, though: to loosen a sheet back out of an
+inherited rung you set `--md-sys-density-scale` yourself.
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:flex;flex-wrap:wrap;gap:8px;">
+  <md-button id="bs-dd-inherit-btn" variant="filled" onclick="document.getElementById('bs-dd-inherit').show()">يرث -2</md-button>
+  <md-button id="bs-dd-tighter-btn" variant="outlined" onclick="document.getElementById('bs-dd-tighter').show()">أكثف -4</md-button>
+  <md-button id="bs-dd-reset-btn" variant="outlined" onclick="document.getElementById('bs-dd-reset').show()">إعادة الضبط إلى 0</md-button>
+
+  <md-bottom-sheet id="bs-dd-inherit" headline="كثافة موروثة" closeable>
+    <p style="margin: 0;">This sheet inherits data-density=-2 from its ancestor, and mirrors with it.</p>
+  </md-bottom-sheet>
+
+  <md-bottom-sheet id="bs-dd-tighter" headline="كثافة محلية -4" density="-4" closeable>
+    <p style="margin: 0;">A local density of -1 through -4 does win over the inherited rung — this sheet tightens past its ancestor's -2, still RTL.</p>
+  </md-bottom-sheet>
+
+  <md-bottom-sheet id="bs-dd-reset" headline="إعادة الضبط" style="--md-sys-density-scale: 0" closeable>
+    <p style="margin: 0;">density="0" would change nothing here. Setting --md-sys-density-scale: 0 inline is the real reset — roomy again, still RTL.</p>
+  </md-bottom-sheet>
+</div>`}
+  label="dir=rtl with data-density=-2: one sheet inheriting -2, one tightening to -4, one reset with --md-sys-density-scale: 0"
+/>
+
+:::caution[`density="0"` is not an opt-out]
+`md-bottom-sheet.css` defines `[density="-1"]` through `[density="-4"]` and no
+`[density="0"]` rule — the token layer leaves that rung out on purpose, so `0`
+means "inherit whatever the ancestor says". A sheet marked `density="0"` inside
+`data-density="-2"` still renders at `-2`. To reset a subtree, set
+`--md-sys-density-scale: 0` directly, as the third sheet above does.
+:::
+
+**Density** — the rung drives `--md-sys-density-scale`, which the container
+shape, the header height, the content padding and the typescale all read from,
+so a single attribute retunes the whole surface.
+
+**i18n** — translate `headline`, `aria-label`, the action labels and the body;
+the [localization story](/storybook/?path=/story/containment-bottom-sheet--localization)
+switches all four at once. Longer translations push the sheet taller — re-check
+that it still leaves context visible under the `80vh` cap.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-bottom-sheet-container-color` | Sheet surface | `surface-container-low` |
+| `--md-bottom-sheet-container-shape` | Corner radius | `max(16px, 28px + density × 2px)` |
+| `--md-bottom-sheet-headline-color` | Headline text | `on-surface` |
+| `--md-bottom-sheet-content-color` | Body text | `on-surface` |
+| `--md-bottom-sheet-scrim-color` | Backdrop | `rgba(0, 0, 0, 0.32)` |
+| `--md-bottom-sheet-drag-handle-color` | Handle indicator | `on-surface-variant` |
+| `--md-bottom-sheet-divider-color` | Top / bottom rules | `outline-variant` |
+| `--md-bottom-sheet-icon-color` | Close glyph | `on-surface-variant` |
+| `--md-bottom-sheet-width` / `-min-width` / `-max-width` | Inline-size bounds — the width fallbacks change at the 640px breakpoint | Below 640px: `100%` / `0` / `100%`. At 640px and up: `640px` / `0` / `calc(100% - 112px)` |
+| `--md-bottom-sheet-height` / `-min-height` / `-max-height` | Block-size bounds | `auto` / `0` / `80vh` |
+| `--md-bottom-sheet-detached-margin` | Inset for `variant="detached"` | `16px` |
+| `--md-bottom-sheet-content-padding-inline` | Body inline padding | `max(12px, 24px + density × 2px)` |
+
+<ComponentDemo
+  html={`<md-button id="bs-themed-btn" variant="filled" onclick="document.getElementById('bs-themed').show()">Themed sheet</md-button>
+
+<md-bottom-sheet
+  id="bs-themed"
+  variant="detached"
+  headline="Themed"
+  closeable
+  style="--md-bottom-sheet-container-color: var(--md-sys-color-primary-container); --md-bottom-sheet-headline-color: var(--md-sys-color-on-primary-container); --md-bottom-sheet-content-color: var(--md-sys-color-on-primary-container); --md-bottom-sheet-container-shape: 8px; --md-bottom-sheet-max-width: 420px;">
+  <p style="margin: 0;">Recoloured surface, squared corners and a capped width.</p>
+</md-bottom-sheet>`}
+  label="Themed instance"
+  storyId="containment-bottom-sheet--custom-css"
+/>
+
+**CSS parts** — `scrim`, `container`, `drag-handle`, `drag-handle-indicator`,
+`header`, `headline`, `close`, `divider-top`, `content`, `divider-bottom` and
+`actions`. Note that the sheet surface is `container`, not `surface`; there is
+no `surface` part.
+
+<ComponentDemo
+  html={`<style>
+  #bs-parts::part(container) { border: 2px solid var(--md-sys-color-primary); }
+  #bs-parts::part(headline) { font-style: italic; letter-spacing: .04em; }
+  #bs-parts::part(drag-handle-indicator) { inline-size: 48px; }
+  #bs-parts::part(scrim) { background: color-mix(in srgb, var(--md-sys-color-primary) 30%, transparent); }
+</style>
+<md-button id="bs-parts-btn" variant="filled" onclick="document.getElementById('bs-parts').show()">Styled parts</md-button>
+
+<md-bottom-sheet id="bs-parts" headline="Styled with ::part()" closeable>
+  <p style="margin: 0;">Outlined surface, italic headline, a wider drag handle and a tinted scrim.</p>
+</md-bottom-sheet>`}
+  label="CSS parts — outlined container, wider handle, tinted scrim"
+  storyId="containment-bottom-sheet--css-parts"
+/>
+
+```css
+md-bottom-sheet::part(container) {
+  border: 2px solid var(--md-sys-color-primary);
+}
+
+md-bottom-sheet::part(drag-handle-indicator) {
+  inline-size: 48px;
+}
+```
+
+Check any override in both themes — the scrim and the sheet surface sit at
+different elevations in each, so a colour that reads well on one can flatten on
+the other. The [dark-theme story](/storybook/?path=/story/containment-bottom-sheet--dark-theme)
+is the counterpart to the themed instance above.
+
+
+## Related
+
+[`md-side-sheet`](/components/side-sheet/) ·
+[`md-dialog`](/components/dialog/) ·
+[`md-snackbar`](/components/snackbar/) ·
+[`md-menu`](/components/menu/) ·
+[`md-list`](/components/list/) ·
+[`md-icon-button`](/components/icon-button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-bottom-sheet" />

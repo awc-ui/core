@@ -1,0 +1,99 @@
+/* ==========================================================
+   md-tabs — Material Design 3 Tabs Container
+   Spec: https://m3.material.io/components/tabs/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-tabs-container-color     Container background
+     --md-tabs-divider-color       Divider color for every child tab's
+                                   bottom line (md-tab inherits it into its
+                                   own divider default chain)
+
+   CSS PARTS:
+     container   Scrollable tab container
+
+   SLOTS:
+     (default)   md-tab elements
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST
+   ========================================================== */
+
+:host {
+  --_container-color: var(--md-tabs-container-color, var(--md-sys-color-surface, #FFFBFE));
+
+  display: flex;
+  flex-direction: column;
+  inline-size: 100%;
+  position: relative;
+  background-color: var(--_container-color);
+  box-sizing: border-box;
+}
+
+/* ==========================================================
+   2. CONTAINER — horizontal scroll, hide scrollbar
+   ========================================================== */
+
+.md-tabs__container {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+}
+
+.md-tabs__container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tabs fill container equally (tab-width="equal", the default) */
+::slotted(md-tab) {
+  flex: 1;
+  min-inline-size: 90px;
+}
+
+/* tab-width="auto" — content-sized tabs, strip scrolls */
+:host(.md-tabs--tw-auto) ::slotted(md-tab) {
+  flex: 0 0 auto;
+}
+
+/* tab-width="<length>" — content-immune fixed tracks (dynamic badges/labels
+   can't reshuffle the strip); long labels ellipsize inside md-tab */
+:host(.md-tabs--tw-fixed) ::slotted(md-tab) {
+  flex: 0 0 var(--_tab-width);
+  inline-size: var(--_tab-width);
+  min-inline-size: var(--_tab-width);
+  max-inline-size: var(--_tab-width);
+}
+
+/* ==========================================================
+   3. OVERFLOW AFFORDANCE — edge fades signal clipped tabs
+   md-tabs toggles clip-left/right from tab GEOMETRY (physical rects,
+   RTL-correct); the mask fades the clipped edge. Wheel input maps to
+   horizontal scroll in the component.
+   ========================================================== */
+
+:host(.md-tabs--clip-left) .md-tabs__container {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 40px);
+  mask-image: linear-gradient(to right, transparent 0, #000 40px);
+}
+
+:host(.md-tabs--clip-right) .md-tabs__container {
+  -webkit-mask-image: linear-gradient(to left, transparent 0, #000 40px);
+  mask-image: linear-gradient(to left, transparent 0, #000 40px);
+}
+
+:host(.md-tabs--clip-left.md-tabs--clip-right) .md-tabs__container {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 40px, #000 calc(100% - 40px), transparent 100%);
+}
+
+/* ==========================================================
+   4. REDUCED MOTION
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-tabs__container {
+    scroll-behavior: auto;
+  }
+}

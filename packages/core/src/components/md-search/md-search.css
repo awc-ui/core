@@ -1,0 +1,1596 @@
+/* ==========================================================
+   md-search — Material Design 3 Search
+   Spec: https://m3.material.io/components/search/specs
+
+   Implements both M3 axes:
+     - variant: contained (Expressive default) | divided (baseline)
+     - layout : full-screen (modal) | docked (anchored popup)
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-search-container-color           Bar background (#ECE6F0 / surface-container-high)
+     --md-search-contained-background-color
+                                           Contained full-screen surface (#F7F2FA)
+     --md-search-container-elevation       Custom bar shadow — overrides the
+                                           `elevation` prop level (default none)
+     --md-search-leading-icon-color        Leading / open-back icon (#1D1B20 / on-surface)
+     --md-search-trailing-icon-color       Trailing + clear icons (#49454F / on-surface-variant)
+     --md-search-icon-color                Alias for trailing icon colour (legacy)
+     --md-search-loading-color             In-bar loading indicator shape colour
+                                           (#6750A4 / primary)
+     --md-search-container-shape           Bar border-radius
+     --md-search-container-height          Bar block-size — docked / contained (56dp)
+     --md-search-divided-fullscreen-bar-height
+                                           Divided × full-screen header height (72dp)
+     --md-search-icon-button-size          Leading / trailing icon tap target (48dp)
+     --md-search-contained-docked-panel-offset
+                                           Contained docked bar ↔ results gap (4dp)
+     --md-search-leading-icon-label-gap    Tap target → label gap (4dp)
+     --md-search-trailing-icon-label-gap   Label → tap target gap (4dp)
+     --md-search-container-min-inline-size Bar minimum width             (360dp)
+     --md-search-container-max-inline-size Bar maximum width             (720dp)
+     --md-search-container-padding-inline           Extra inline padding on the bar  (0dp)
+     --md-search-container-padding-inline-focused   Inline padding on the bar when focused / open
+     --md-search-leading-padding-inline             Space from the bar's leading edge
+                                                    to the leading icon tap target    (4dp)
+     --md-search-trailing-padding-inline            Space from the bar's trailing edge
+                                                    to the trailing icon tap target   (4dp)
+     --md-search-input-color               Input text colour
+     --md-search-input-font-family         Input typescale font (body-large)
+     --md-search-input-font-size           Input typescale size (16dp)
+     --md-search-input-line-height         Input typescale line height (24dp)
+     --md-search-input-font-weight         Input typescale weight (400)
+     --md-search-input-letter-spacing      Input typescale tracking (0.5dp)
+     --md-search-placeholder-color         Placeholder / supporting text colour
+     --md-search-state-layer-color         Hover/press wash (#1D1B20 / on-surface)
+     --md-search-hover-state-layer-opacity Hover state layer opacity (0.08)
+     --md-search-pressed-state-layer-opacity Pressed state layer opacity (0.1)
+     --md-search-focus-indicator-color     Focus ring colour (#625B71 / secondary)
+     --md-search-focus-indicator-thickness Focus ring thickness (3dp)
+     --md-search-focus-indicator-offset    Focus ring offset (2dp)
+     --md-search-avatar-size               Avatar diameter when slotted   (40dp)
+     --md-search-panel-min-block-size      Docked panel floor — 0 = shrink to
+                                           content; raise for a taller empty drawer
+     --md-search-panel-max-block-size      Docked panel maximum height —
+                                           compact drawer default min(400px, 60vh)
+     --md-search-max-block-size            Open surface max height — full-screen
+                                           overlay cap or docked panel cap
+                                           (unset = layout default)
+     --md-search-docked-panel-shape        Contained docked results card radius
+                                           (16dp / shape-corner-large)
+     --md-search-panel-offset              Docked panel gap fallback (divided / generic 4dp)
+     --md-search-bar-fullscreen-color      Bar background in full-screen open
+     --md-search-fullscreen-results-color  Opaque results surface in full-screen
+                                           open (default: surface-container-low)
+     --md-search-divider-color             Hairline colour (divided variant)
+     --md-search-divider-thickness         Hairline thickness            (1px)
+     --md-search-fullscreen-bar-offset-block-start
+                                           Contained full-screen: bar inset
+                                           from viewport block-start (16dp)
+     --md-search-fullscreen-bar-offset-inline
+                                           Contained full-screen: bar inset from
+                                           viewport inline edges (8dp)
+     --md-search-fullscreen-bar-panel-gap  Contained full-screen: gap between
+                                           the pill bar and the results panel
+     --md-search-panel-padding-block-start Full-screen panel padding above
+                                           slotted results (0dp)
+     --md-search-empty-color               No-results message colour
+     --md-search-empty-padding-block       No-results vertical padding
+     --md-search-empty-padding-inline      No-results horizontal padding
+     --md-search-expand-inset              Docked/inline bar RESTING side
+                                           margin (24dp). The bar springs to
+                                           the focused margin on focus/open,
+                                           evenly left + right. Full-screen
+                                           ignores this (pure fade)
+     --md-search-expand-focused-inset      Docked/inline bar FOCUSED side
+                                           margin (12dp). Set equal to the
+                                           resting inset to disable the motion.
+                                           Set BOTH insets to 0 (or use the
+                                           `full-width` prop) for an edge-to-edge
+                                           bar + drawer with no side gutters
+     --md-search-expand-duration           Springy expand duration      (medium4 / 400ms)
+     --md-search-expand-easing             Springy expand easing — back-out
+                                           with overshoot + snap-back
+                                           (cubic-bezier(0.34, 1.56, 0.64, 1))
+     --md-search-panel-motion-duration     Docked panel + bar transition
+                                           duration (medium2). The bar
+                                           contraction delay on close is a JS
+                                           constant (MdSearch.PANEL_CLOSE_MS),
+                                           not this property
+     --md-search-fullscreen-expand-duration   Full-screen modal enter duration
+                                           (medium2 / 300ms — matches md-dialog)
+     --md-search-fullscreen-expand-easing     Full-screen enter easing
+                                           (standard — matches md-dialog)
+     --md-search-fullscreen-collapse-duration Full-screen exit duration
+                                           (medium2 / 300ms; synced to JS)
+     --md-search-fullscreen-collapse-easing   Full-screen exit easing
+                                           (standard — matches md-dialog)
+
+   ICON MORPH:
+     The leading icon morphs from `search` (resting) to a directional
+     close glyph (open) whenever the bar is selected, in BOTH layouts.
+     The open glyph is variant-aware: `contained` (Expressive) uses
+     `chevron_left` so the caret echoes the pill silhouette, while
+     `divided` (baseline) uses the spec-canonical `arrow_back`. The two
+     glyphs are stacked at the same centred slot inside a single button
+     and cross-fade with a rotation + scale spring so the change reads
+     as a single icon moving rather than two icons swapping. Override
+     either glyph via the `leading-icon` and `open-leading-icon` props.
+
+     The trailing loading indicator and clear-× share a single fixed-size
+     box and cross-fade (opacity + scale + rotate) in BOTH directions as
+     `loading` toggles, so the swap morphs expressively without shifting
+     the trailing cluster's width.
+
+   NOTE: Slotted results default to transparent list / list-item
+   backgrounds so rows sit flush on the search surface (panel or bar
+   chrome) instead of painting a nested M3 `surface` bay. Re-tint via
+   `--md-list-container-color` / `--md-list-item-container-color` on the
+   slotted `<md-list>` when you need a distinct results chassis.
+
+   CSS PARTS:
+     bar           Search bar container
+     status        Visually-hidden polite live region (result announcements)
+     state-layer   Hover / focus / press overlay on the bar
+     leading       Leading icon container
+     input         Native <input>
+     trailing      Trailing slot container (icon buttons / avatar)
+     clear-button  Built-in clear (×) button
+     voice-button  Built-in voice-search mic button (when `voice-search`
+                   is on and the Web Speech API is available)
+     loading       In-bar loading indicator (shown while `loading`)
+     loading-shape Morphing shape inside the loading indicator
+     panel         Results panel — full-viewport surface (full-screen) /
+                   anchored popup (docked)
+     panel-body    Flex region that sizes the scroll viewport
+     empty         Visible no-results message (open + query + zero rows)
+     divider       Hairline between bar and panel (visible in `divided`)
+     results-viewport          Inner scroll viewport (md-scroll-shadow)
+     results-shadow-block-start  Top scroll-shadow gradient
+     results-shadow-block-end    Bottom scroll-shadow gradient
+     trigger       Icon-button entry point (full-screen closed state)
+     trigger-button Built-in search icon button (when trigger slot empty)
+
+   SLOTS:
+     leading       Replace the leading icon
+     trailing      Trailing icon buttons + avatar (any combination)
+     results       Suggestions / results list
+     trigger       Replace the built-in search icon trigger (full-screen)
+     loader        Replace the in-bar loading indicator shown while `loading`
+   ========================================================== */
+
+:host {
+  /* ── Public API ─────────────────────────────────────────── */
+  --_container-color: var(
+    --md-search-container-color,
+    var(--md-sys-color-surface-container-high, #ECE6F0)
+  );
+  --_container-shape: var(
+    --md-search-container-shape,
+    var(--md-sys-shape-corner-full, 9999px)
+  );
+  /* Bar height follows global density (0…-4, 4px/rung, floor 40px); 56px at
+     density 0. The pill radius + panel offsets are all derived from this, so
+     the whole bar tightens coherently. */
+  --_container-height: var(--md-search-container-height, max(40px, calc(56px + var(--md-sys-density-scale, 0) * 4px)));
+  /* The resting bar's VISIBLE corner radius: `--_container-shape` is a full
+     pill (9999px) by default, which the browser clamps to half the bar height.
+     Reproduce that clamp here so the divided × docked open card can round its
+     outer corners by the same amount instead of clamping against the much
+     larger bar+panel box (which would look far rounder). */
+  --_resting-corner-shape: min(
+    var(--_container-shape),
+    calc(var(--_container-height) / 2)
+  );
+  /* Docked results panel corner radius. Contained × docked is a standalone
+     rounded card below the bar; this radius is clipped (panel overflow:hidden)
+     so the scrolling viewport, scrollbar and slotted surface stay inside the
+     rounded corners on ALL sides. Divided × docked keeps its own unified-card
+     radius (`--_resting-corner-shape`) — see the divided-docked-open rules. */
+  --_docked-panel-shape: var(--md-search-docked-panel-shape, var(--md-sys-shape-corner-large, 16px));
+  /* Full-screen header follows global density (72px at 0, floor 48px) like the
+     resting bar; contained full-screen already uses the density-responsive
+     --_container-height. */
+  --_divided-fullscreen-bar-height: var(--md-search-divided-fullscreen-bar-height, max(48px, calc(72px + var(--md-sys-density-scale, 0) * 4px)));
+  /* M3 search-bar layout: icons live inside 48dp tap targets; the gap from a
+     tap target to the label is 4dp (the 48dp target absorbs the rest, landing
+     the visible glyph ~16dp from the bar edge and the label ~56dp in). */
+  --_leading-icon-label-gap: var(--md-search-leading-icon-label-gap, 4px);
+  --_trailing-icon-label-gap: var(--md-search-trailing-icon-label-gap, 4px);
+  /* Leading (back) + trailing tap targets shrink with global density (48px at
+     0, floor 32px to keep room around the 24px glyph) so they don't floor the
+     tightened bar. */
+  --_icon-button-size: var(--md-search-icon-button-size, max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px)));
+  --_container-min-inline-size: var(--md-search-container-min-inline-size, 360px);
+  --_container-max-inline-size: var(--md-search-container-max-inline-size, 720px);
+  /* Padding lives on the leading / trailing wrappers so the icons stay at a
+     stable 16dp from the bar's edges regardless of focus state. The bar
+     itself has no inline padding by default; consumers can still inject
+     extra inline padding on the bar via these props. */
+  --_container-padding-inline: var(--md-search-container-padding-inline, 0px);
+  --_container-padding-inline-focused: var(
+    --md-search-container-padding-inline-focused,
+    var(--_container-padding-inline)
+  );
+
+  /* Stable inline padding inside the leading / trailing clusters: the space
+     from the bar edge to the icon's 48dp tap target (4dp per M3). The tap
+     target centres a 24dp glyph, so the visible icon lands ~16dp from the
+     bar edge and the trailing cluster mirrors it. As the bar's outer edge
+     expands during the expressive focus motion, the icon rides along. */
+  --_leading-padding-inline: var(--md-search-leading-padding-inline, 4px);
+  --_trailing-padding-inline: var(--md-search-trailing-padding-inline, 8px);
+
+  /* Unified M3 Expressive expansion (docked / inline bars ONLY).
+
+     The single, consistent expansion mechanism across ALL docked/inline bars
+     — contained AND divided alike: the bar rests at a 24dp side margin and
+     springs to a 12dp side margin on focus / open, symmetrically (even
+     left + right). Both edges move inward-to-outward by exactly the
+     24 → 12 = 12dp delta, so the container grows evenly on both sides. The
+     default easing is a back-out curve that briefly overshoots the target
+     width and snaps back, giving the motion a slick, springy feel.
+
+     Full-screen layout does NOT use this margin expansion — its open/close
+     is a pure opacity fade (both insets are zeroed for full-screen below),
+     so only docked/inline bars expand.
+
+     Duration drives BOTH the bar's springy expand AND the ripple wave's
+     grow (the wave is synced to this token via `--md-ripple-grow-duration`
+     further down in this file). The two HAVE to share a duration: if the
+     wave is shorter, it finishes before the bar settles and looks too
+     snappy; if the wave is longer, it lags during the bar's overshoot
+     and exposes a coverage gap on whichever side the bar grew. medium4
+     (400ms) gives the gesture a deliberate, expressive feel without
+     drifting into the ceremonial long-tier durations.
+
+     `--md-search-expand-inset` sets the RESTING margin (24dp default) and
+     `--md-search-expand-focused-inset` the FOCUSED margin (12dp default).
+     The per-side travel is `resting - focused` (12dp by default); its
+     concrete length is resolved in JS (host-anchored probe) before being
+     forwarded to the ripple — see `measureRippleExtend()` and the ripple
+     note below. Set both equal (e.g. `--md-search-expand-inset: 0` and
+     `--md-search-expand-focused-inset: 0`) to disable the motion. */
+  --_expand-inset: var(--md-search-expand-inset, 24px);
+  --_expand-inset-focused: var(--md-search-expand-focused-inset, 12px);
+  --_expand-duration: var(
+    --md-search-expand-duration,
+    var(--md-sys-motion-duration-medium4, 400ms)
+  );
+  /* Back-out spring curve: overshoots ~17 % then settles. Pure CSS, no
+     web-animations API needed. */
+  --_expand-easing: var(
+    --md-search-expand-easing,
+    cubic-bezier(0.34, 1.56, 0.64, 1)
+  );
+
+  --_input-color: var(
+    --md-search-input-color,
+    var(--md-sys-color-on-surface, #1D1B20)
+  );
+  /* M3 "Search view header input / supporting text" — body-large. */
+  --_input-font-family: var(
+    --md-search-input-font-family,
+    var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif)
+  );
+  --_input-font-size: var(
+    --md-search-input-font-size,
+    max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px))
+  );
+  --_input-line-height: var(
+    --md-search-input-line-height,
+    var(--md-sys-typescale-body-large-line-height, 24px)
+  );
+  --_input-font-weight: var(
+    --md-search-input-font-weight,
+    var(--md-sys-typescale-body-large-font-weight, 400)
+  );
+  --_input-letter-spacing: var(
+    --md-search-input-letter-spacing,
+    var(--md-sys-typescale-body-large-letter-spacing, 0.5px)
+  );
+  --_placeholder-color: var(
+    --md-search-placeholder-color,
+    var(--md-sys-color-on-surface-variant, #49454F)
+  );
+  --_leading-icon-color: var(
+    --md-search-leading-icon-color,
+    var(--md-sys-color-on-surface, #1D1B20)
+  );
+  --_trailing-icon-color: var(
+    --md-search-trailing-icon-color,
+    var(
+      --md-search-icon-color,
+      var(--md-sys-color-on-surface-variant, #49454F)
+    )
+  );
+  --_icon-size: var(--md-search-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
+  --_loading-color: var(
+    --md-search-loading-color,
+    var(--md-sys-color-primary, #6750A4)
+  );
+  /* Inline mirror for the directional open glyph (chevron_left / arrow_back).
+     1 in LTR, -1 in RTL so the "back" glyph points the correct way. Baked into
+     the glyph's transform in BOTH resting and open states via the var, so the
+     mirror never depends on a separate (fragile) RTL open-state selector. */
+  --_open-glyph-mirror: 1;
+  --_contained-background-color: var(
+    --md-search-contained-background-color,
+    var(--md-sys-color-surface-container-low, #F7F2FA)
+  );
+  /* Resting bar shadow. Default is no elevation (M3 default). Use the
+     `elevation` prop (0–5) to apply an `--md-sys-elevation-{n}` tier, or set
+     `--md-search-container-elevation` directly for a fully custom shadow —
+     the custom property wins over the prop-driven level below.
+
+     Level 0 resolves to a transparent zero-shadow (NOT the `none` keyword) so
+     it can be safely composed into the focus-ring box-shadow list — a bare
+     `none` in a comma-separated shadow list invalidates the whole rule and
+     would drop the focus indicator. */
+  --_container-elevation-level: 0px 0px 0px 0px transparent;
+  --_container-elevation: var(
+    --md-search-container-elevation,
+    var(--_container-elevation-level)
+  );
+
+  --_state-layer-color: var(
+    --md-search-state-layer-color,
+    var(--md-sys-color-on-surface, #1D1B20)
+  );
+  --_hover-state-layer-opacity: var(
+    --md-search-hover-state-layer-opacity,
+    var(--md-sys-state-hover-state-layer-opacity, 0.08)
+  );
+  --_pressed-state-layer-opacity: var(
+    --md-search-pressed-state-layer-opacity,
+    0.1
+  );
+  --_focus-indicator-color: var(
+    --md-search-focus-indicator-color,
+    var(--md-sys-color-secondary, #625B71)
+  );
+  --_focus-indicator-thickness: var(--md-search-focus-indicator-thickness, 3px);
+  --_focus-indicator-offset: var(--md-search-focus-indicator-offset, 2px);
+
+  --_avatar-size: var(--md-search-avatar-size, 40px);
+
+  /* Docked results drawer block budget. Default min is 0 so the open panel
+     shrinks to fit few rows; authors can raise `--md-search-panel-min-block-size`
+     for a taller empty bay. Max defaults to a compact drawer (~5–6 rows);
+     results beyond it scroll inside the rounded panel (via md-scroll-shadow).
+     Raise `--md-search-panel-max-block-size` or `--md-search-max-block-size`
+     for a taller drawer. */
+  --_panel-min-block-size: var(--md-search-panel-min-block-size, 0px);
+  --_panel-max-block-size: var(--md-search-panel-max-block-size, min(400px, 60vh));
+  /* Optional cap on the open surface — full-screen host or docked panel.
+     Deliberately NO fallback value: when `--md-search-max-block-size` is unset
+     this resolves to the guaranteed-invalid value, so consumers fall through to
+     their own default (docked panel → `--_panel-max-block-size` 66vh; full-screen
+     host → the property's initial `none`). A literal `none` here would be a SET
+     value and would swallow the docked panel's `var(..., --_panel-max-block-size)`
+     fallback, leaving the docked panel uncapped and unable to scroll. */
+  --_max-block-size: var(--md-search-max-block-size);
+  /* Clear the bar's keyboard focus ring (offset + thickness = 5px by default)
+     plus a small gap, so the docked results panel doesn't cover the ring's
+     rounded bottom edge. */
+  --_panel-offset: var(
+    --md-search-panel-offset,
+    calc(var(--_focus-indicator-offset) + var(--_focus-indicator-thickness) + 3px)
+  );
+
+  --_bar-fullscreen-color: var(
+    --md-search-bar-fullscreen-color,
+    var(--md-sys-color-surface-container-low, #F7F2FA)
+  );
+
+  /* Opaque results surface for the full-screen panel. The panel fills the
+     whole viewport (inset:0) as this surface and fades in — there is no scrim.
+     It must stay opaque so the page never shows through behind the results.
+     Both contained and divided full-screen use surface-container-low here. */
+  --_fullscreen-results-color: var(
+    --md-search-fullscreen-results-color,
+    var(--md-sys-color-surface-container-low, #F7F2FA)
+  );
+
+  --_divider-color: var(
+    --md-search-divider-color,
+    var(--md-sys-color-outline, #79747E)
+  );
+  --_divider-thickness: var(--md-search-divider-thickness, 1px);
+
+  /* Contained × full-screen: floating pill bar insets + panel anchor. */
+  --_fullscreen-bar-offset-block-start: var(
+    --md-search-fullscreen-bar-offset-block-start,
+    max(16px, env(safe-area-inset-block-start, 0px))
+  );
+  --_fullscreen-bar-offset-inline: var(
+    --md-search-fullscreen-bar-offset-inline,
+    max(0px, env(safe-area-inset-inline-start, 0px))
+  );
+  --_fullscreen-bar-panel-gap: var(--md-search-fullscreen-bar-panel-gap, 0px);
+  --_panel-padding-block-start: var(--md-search-panel-padding-block-start, 0px);
+
+  /* The public `--md-search-panel-motion-duration` was advertised in the doc
+     block above but read by nothing, so setting it did nothing. Honour it here
+     — the fallback chain is unchanged, so no instance moves by default. */
+  --_motion-duration: var(
+    --md-search-panel-motion-duration,
+    var(--md-sys-motion-duration-medium2, 250ms)
+  );
+  --_motion-easing: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
+
+  /* Full-screen modal enter / exit — matches md-dialog fullscreen:
+     translateY(30px) + opacity fade over medium2 / standard easing.
+     Collapse duration is kept in sync with PANEL_CLOSE_MS in md-search.tsx
+     so the bar un-pins right as the surface finishes exiting. */
+  --_fs-expand-duration: var(
+    --md-search-fullscreen-expand-duration,
+    var(--md-sys-motion-duration-medium2, 300ms)
+  );
+  --_fs-expand-easing: var(
+    --md-search-fullscreen-expand-easing,
+    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))
+  );
+  --_fs-collapse-duration: var(
+    --md-search-fullscreen-collapse-duration,
+    var(--md-sys-motion-duration-medium2, 300ms)
+  );
+  --_fs-collapse-easing: var(
+    --md-search-fullscreen-collapse-easing,
+    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1))
+  );
+
+  /* ── Host layout ────────────────────────────────────────── */
+  display: block;
+  position: relative;
+  inline-size: 100%;
+  min-inline-size: var(--_container-min-inline-size);
+  max-inline-size: var(--_container-max-inline-size);
+  margin-inline: auto;
+  /* Reserve the bar's height even when it pins to the viewport in
+     full-screen open, so surrounding layout doesn't shift. */
+  min-block-size: var(--_container-height);
+
+  font-family: var(--_input-font-family);
+  color: var(--_input-color);
+  box-sizing: border-box;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+/* Full-screen icon trigger (default): compact closed chrome — only the
+   search icon button, not the 360–720dp resting bar. Shrink-wrap the host
+   (no 100% inline stretch) and drop the inert panel from layout — the panel
+   still sizes to slotted results while visibility:hidden, which otherwise
+   inflates the host to the full results height and pins the icon to the
+   corner of Storybook / app-bar shells. */
+:host(.md-search--trigger-icon.md-search--closed) {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  inline-size: fit-content;
+  block-size: fit-content;
+  min-inline-size: 0;
+  max-inline-size: none;
+  min-block-size: 0;
+  margin-inline: 0;
+  overflow: visible;
+}
+
+:host(.md-search--trigger-icon.md-search--closed) .md-search__panel,
+:host(.md-search--trigger-icon.md-search--closed) .md-search__inset-probe {
+  display: none;
+}
+
+/* Icon trigger is removed from layout once the bar expands (open). */
+:host(.md-search--trigger-icon.md-search--open) .md-search__trigger {
+  display: none;
+}
+
+/* Pass-through wrapper — no extra box, background, or clipping around the
+   icon button (Storybook previously clipped a 56dp button inside 48dp). */
+.md-search__trigger {
+  display: contents;
+}
+
+:host(.md-search--trigger-icon) .md-search__trigger-button {
+  /* Shrink with density (floor 32px) so the tap target doesn't floor the bar. */
+  --md-icon-button-container-width: max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px));
+  --md-icon-button-container-height: max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px));
+  --md-icon-button-icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+  --md-icon-button-icon-color: var(
+    --md-search-leading-icon-color,
+    var(--md-sys-color-on-surface, #1d1b20)
+  );
+}
+
+/* Contained & Divided share the unified M3 search-bar layout: a 4dp space
+   from each bar edge to a 48dp icon tap target, then a 4dp gap to the label.
+   This lands the leading/trailing glyphs 16dp from the bar edges and the
+   label 56dp in — matching the contained (4 + 48 + 4) and divided (16dp to
+   glyph, 16dp glyph → label) measurement sheets simultaneously. Spacing is
+   therefore inherited from the :host defaults; no per-variant override. */
+
+:host(.md-search--contained.md-search--docked) {
+  --_panel-offset: var(
+    --md-search-contained-docked-panel-offset,
+    calc(var(--_focus-indicator-offset) + var(--_focus-indicator-thickness) + 3px)
+  );
+}
+
+/* Full-screen never uses the docked/inline margin expansion — its open/close
+   is a translateY(30px) slide + opacity fade (see the panel rules), matching
+   md-dialog fullscreen. Zero both insets so the bar fills its host width at
+   rest and open alike; only docked/inline bars spring 24 → 12. */
+:host(.md-search--full-screen) {
+  --_expand-inset: 0px;
+  --_expand-inset-focused: 0px;
+}
+
+/* Opt-in full-width (docked / inline): zero BOTH expand insets so the bar
+   fills its container edge-to-edge with no side gutters and no 24 → 12dp
+   margin animation. The aligned results drawer (inset by --_expand-inset-focused)
+   then fills the same full width. This is exactly the `full-width` prop's
+   effect; consumers can achieve the identical result purely via the CSS vars
+   (`--md-search-expand-inset: 0; --md-search-expand-focused-inset: 0`). */
+:host(.md-search--full-width) {
+  --_expand-inset: 0px;
+  --_expand-inset-focused: 0px;
+}
+
+/* Contained × full-screen: the bar floats as a rounded pill, inset from the
+   viewport edges. Those gutters sit OVER the full-viewport results surface
+   (the panel fills inset:0 behind the bar), so they read as the opaque
+   surface — never as a dimmer or page band. */
+:host(.md-search--contained.md-search--full-screen) {
+  --_fullscreen-bar-offset-inline: var(
+    --md-search-fullscreen-bar-offset-inline,
+    max(8px, env(safe-area-inset-inline-start, 0px))
+  );
+  /* Clear the floating pill before the results begin. The global default is 0px
+     because `divided` WANTS a flush seam — its 1px divider IS the separation.
+     Contained has no divider and its bar is a detached rounded pill, so a flush
+     list tucks the first row's state layer under the pill's bottom corners.
+     Same clearance as the docked panel (`--_panel-offset`), so a contained
+     search reads identically whether it docks or goes full-screen — and, like
+     docked, it stays constant across density: this gap clears the focus ring,
+     whose thickness doesn't scale, so tapering it would re-introduce the
+     overlap at exactly the rungs where the layout is already tightest. */
+  --_fullscreen-bar-panel-gap: var(
+    --md-search-fullscreen-bar-panel-gap,
+    calc(var(--_focus-indicator-offset) + var(--_focus-indicator-thickness) + 3px)
+  );
+}
+
+/* Resting divided × full-screen reads as the same compact, rounded pill as the
+   contained variant (56dp, `--_container-shape`). The 72dp flat app-bar header
+   chrome only applies once the view is open/expanded — see the open rules. */
+:host(.md-search--divided.md-search--full-screen.md-search--open) {
+  /* M3 divided baseline: full-screen header is 72dp; docked stays 56dp. */
+  --_container-height: var(--_divided-fullscreen-bar-height);
+  /* Flat app-bar flush to the viewport edges (safe-area only). */
+  --_fullscreen-bar-offset-block-start: max(0px, env(safe-area-inset-block-start, 0px));
+  --_fullscreen-bar-offset-inline: max(0px, env(safe-area-inset-inline-start, 0px));
+}
+
+/* Full-screen open: the host becomes the fixed viewport overlay. The results
+   panel fills the ENTIRE viewport (inset:0) as the opaque surface that fades
+   in — there is no scrim/dimmer. The bar floats on top of that surface
+   (contained pill or divided app-bar header), so the bar's gutters show the
+   opaque results surface rather than the dimmed page (no gray bands). */
+:host(.md-search--full-screen.md-search--open) {
+  position: fixed;
+  inset: 0;
+  display: block;
+  inline-size: 100%;
+  block-size: 100dvh;
+  max-inline-size: none;
+  min-inline-size: 0;
+  margin: 0;
+  min-block-size: 0;
+  z-index: var(--md-sys-z-index-modal, 1300);
+  box-sizing: border-box;
+}
+
+/* Cancel compact icon-host shrink-wrap once the full-screen overlay opens. */
+:host(.md-search--trigger-icon.md-search--full-screen.md-search--open) {
+  display: block;
+  inline-size: 100%;
+  block-size: 100dvh;
+  max-inline-size: none;
+  min-inline-size: 0;
+  min-block-size: 0;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+/* Bar floats on top of the full-viewport panel. `inset-inline` insets it by
+   the per-variant gutter (contained pill = 8dp, divided header = flush). */
+:host(.md-search--full-screen.md-search--open) .md-search__bar {
+  position: fixed;
+  inset-block-start: var(--_fullscreen-bar-offset-block-start);
+  inset-inline: var(--_fullscreen-bar-offset-inline);
+  inline-size: auto;
+  margin-inline: 0;
+  z-index: 2;
+}
+
+/* Keep the focus ring above the panel's divider at the bar/results seam so it
+   reads as one continuous outline (bar already sits above the panel). */
+:host(.md-search--full-screen.md-search--open) .md-search__bar--focus-ring {
+  z-index: 2;
+}
+
+/* The opaque results surface fills the whole viewport (inset:0) and fades in.
+   Its content is offset below the floating bar via padding-block-start so the
+   first result clears the bar; the surface itself still paints edge-to-edge
+   behind the bar (no gaps / bands). */
+:host(.md-search--full-screen.md-search--open) .md-search__panel--full-screen {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  padding-block-start: calc(
+    var(--_fullscreen-bar-offset-block-start) + var(--_container-height) +
+      var(--_fullscreen-bar-panel-gap) + var(--_panel-padding-block-start)
+  );
+  padding-inline: 0;
+  max-block-size: var(--_max-block-size, 100dvh);
+  z-index: 1;
+  background-color: var(--_fullscreen-results-color);
+}
+
+/* Contained open: cancel the open-state leading-button pull. The leading
+   space is now the spec's 4dp "with actions" value, so the 40dp back button
+   sits flush against that 4dp gutter (glyph lands ~12dp from the bar edge)
+   without the legacy -8px overshoot. */
+:host(.md-search--contained.md-search--open) .md-search__leading-button {
+  margin-inline-start: 0;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Search bar
+   ────────────────────────────────────────────────────────── */
+
+.md-search__bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  /* border-box so `inline-size: 100%` (and the resting inset calc) include the
+     bar's inline padding. With the default content-box, the focused padding is
+     ADDED outside the 100%, pushing the border-box past the host's inline-end
+     edge — the bar then overflows to the right instead of expanding evenly. */
+  box-sizing: border-box;
+  /* No flex gap — spacing is provided by the leading/trailing wrappers'
+     own padding-inline, so the icon-to-text distance equals exactly
+     `--_leading-padding-inline` (16dp) with no double-spacing. */
+  gap: 0;
+  /* Resting width is inset symmetrically; margin-inline: auto keeps the bar
+     centred so the focused expansion grows into both edges at once
+     (the M3 "expressive" expand-left-and-right motion). */
+  inline-size: calc(100% - calc(var(--_expand-inset) * 2));
+  /* Never exceed the host, and allow the flex bar to shrink below its
+     content's min-content width (default `min-inline-size: auto`). Without
+     this, when the container is narrower than the bar's intrinsic content the
+     bar can't shrink, so `inline-size: 100%` is ignored, the bar overflows past
+     the host's inline-end edge and `margin-inline: auto` collapses to 0 — the
+     bar then appears to expand only to the right. Capping at 100% + allowing
+     shrink (the input has `min-inline-size: 0`) keeps the centred bar growing
+     symmetrically into both edges at every responsive width. */
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  margin-inline: auto;
+  block-size: var(--_container-height);
+  padding-inline: var(--_container-padding-inline);
+  background-color: var(--_container-color);
+  border-radius: var(--_container-shape);
+  box-shadow: var(--_container-elevation);
+  cursor: text;
+  overflow: hidden;
+  /* Inline padding is no longer animated — leading/trailing wrappers
+     carry stable padding so the icons don't shift on focus. */
+  transition:
+    inline-size var(--_expand-duration) var(--_expand-easing),
+    background-color var(--_motion-duration) var(--_motion-easing),
+    box-shadow var(--_motion-duration) var(--_motion-easing),
+    border-radius var(--_motion-duration) var(--_motion-easing);
+}
+
+/* Elevation levels — `elevation` prop maps to an MD3 elevation tier.
+   `--md-search-container-elevation` (set on :host) still overrides these. */
+:host(.md-search--elevation-0) { --_container-elevation-level: 0px 0px 0px 0px transparent; }
+:host(.md-search--elevation-1) { --_container-elevation-level: var(--md-sys-elevation-1); }
+:host(.md-search--elevation-2) { --_container-elevation-level: var(--md-sys-elevation-2); }
+:host(.md-search--elevation-3) { --_container-elevation-level: var(--md-sys-elevation-3); }
+:host(.md-search--elevation-4) { --_container-elevation-level: var(--md-sys-elevation-4); }
+:host(.md-search--elevation-5) { --_container-elevation-level: var(--md-sys-elevation-5); }
+
+/* Focused or open: the docked/inline bar springs from its 24dp resting
+   margin out to the 12dp focused margin, evenly left + right (M3 Expressive
+   "container width" focus motion). Full-screen zeroes both insets, so this
+   resolves to the full overlay width there. */
+.md-search__bar--focused,
+:host(.md-search--open) .md-search__bar {
+  inline-size: calc(100% - calc(var(--_expand-inset-focused) * 2));
+  padding-inline: var(--_container-padding-inline-focused);
+}
+
+:host(.md-search--disabled) .md-search__bar {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+/* Full-screen: the host flips position:relative → fixed on open and its
+   containing block changes from the 720dp max to the viewport. Animating
+   the bar's percentage `inline-size` with the springy overshoot across
+   that switch resolves the percentage against a moving target and reads
+   as jitter. In full-screen the bar simply fills the overlay, so we drop
+   the width spring here and let the modal-like slide + fade carry the
+   open/close motion. The expressive width-spring stays for docked. */
+:host(.md-search--full-screen) .md-search__bar {
+  transition:
+    opacity var(--_fs-collapse-duration) var(--_fs-collapse-easing),
+    transform var(--_fs-collapse-duration) var(--_fs-collapse-easing),
+    background-color var(--_motion-duration) var(--_motion-easing),
+    border-radius var(--_motion-duration) var(--_motion-easing);
+}
+
+/* Full-screen open: bar slides up with the panel (md-dialog fullscreen
+   pattern — translateY(30px) → 0 + opacity). Hidden until the deferred
+   panel reveal commits so the animation starts from a settled layout. */
+:host(.md-search--full-screen.md-search--open) .md-search__bar {
+  opacity: 0;
+  transform: translateY(30px);
+  pointer-events: none;
+}
+
+:host(.md-search--full-screen.md-search--open.md-search--panel-content) .md-search__bar {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition:
+    opacity var(--_fs-expand-duration) var(--_fs-expand-easing),
+    transform var(--_fs-expand-duration) var(--_fs-expand-easing),
+    background-color var(--_motion-duration) var(--_motion-easing),
+    border-radius var(--_motion-duration) var(--_motion-easing);
+}
+
+/* Divided × full-screen open: flat app-bar chrome (host overlay above). */
+:host(.md-search--divided.md-search--full-screen.md-search--open) .md-search__bar {
+  border-radius: 0;
+  background-color: var(--_bar-fullscreen-color);
+  padding-inline: var(--_container-padding-inline-focused);
+}
+
+/* Contained × full-screen open: expanded expressive pill at full host width. */
+:host(.md-search--contained.md-search--full-screen.md-search--open) .md-search__bar {
+  border-radius: var(--_container-shape);
+  background-color: var(--_container-color);
+  padding-inline: var(--_container-padding-inline-focused);
+}
+
+/* Ripple pinning. The actual `--md-ripple-extend-inline` value is set
+   imperatively from md-search.tsx — see `measureRippleExtend()`.
+
+   Why JS instead of CSS: the obvious declaration here would be
+   `--md-ripple-extend-inline: calc(var(--_expand-inset) - var(--_expand-inset-focused))`
+   — each bar edge moves out by exactly that delta as the bar springs from
+   `100% - 2*resting` to `100% - 2*focused`, so the per-side extend the ripple
+   needs IS that delta. But the insets may be overridden with percentages
+   (`--md-search-expand-inset` / `--md-search-expand-focused-inset`). A
+   percentage resolves against whatever element
+   the `inline-size` ultimately lands on: the bar resolves it against the
+   SEARCH HOST (its containing block), but the same expression read back
+   through md-ripple's shadow tree walks up to the BAR, so it would
+   resolve against the bar's narrower width and the extent would fall
+   short of the actual travel. Resolving the inset in JS — through an
+   inset-probe whose containing block IS the host — sidesteps that
+   asymmetry for any value (fixed or percentage) and gives md-ripple the
+   exact pixel value it needs. */
+.md-search__bar > md-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  /* Sync the wave's grow with the bar's springy expand. Both have to
+     resolve at the same instant — if the wave is shorter, it lands
+     before the bar settles and the press feels rushed; if the wave is
+     longer, it lags during the bar's overshoot peak (~58 % of duration
+     in) and exposes a coverage gap on whichever side the bar grew,
+     because by then the bar has already swept past the wave's
+     still-ramping radius. Driving the wave's grow off
+     `--_expand-duration` / `--_expand-easing` ties the two together —
+     same back-out spring, same 400ms travel — so the bar and the wave
+     share both timing and character. We can use a `var(...)` reference
+     here because durations and timing-function tokens are resolved as
+     part of getComputedStyle's substitution (unlike the
+     length-percentage extend value, which can carry an unresolved
+     percentage component). */
+  --md-ripple-grow-duration: var(--_expand-duration);
+  --md-ripple-grow-easing: var(--_expand-easing);
+}
+
+/* Hidden probe used by md-search.tsx to resolve `--_expand-inset` to a
+   pixel value. It's a child of `:host` rather than of the bar so its
+   absolute-positioning containing block (the `position: relative` host)
+   matches the bar's containing block — so any percentage override of
+   `--md-search-expand-inset` resolves against the SAME inline-size for
+   both the probe and the bar. Reading `probe.getBoundingClientRect().width`
+   forces the browser to resolve the value (fixed length or percentage)
+   to concrete pixels, which we then forward to md-ripple as a fixed
+   length via inline style. */
+.md-search__inset-probe {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  /* The ripple's per-side reach equals the bar's per-side travel on focus:
+     the resting margin minus the focused margin (24 → 12 = 12dp default). */
+  inline-size: max(0px, calc(var(--_expand-inset) - var(--_expand-inset-focused)));
+  block-size: 0;
+  visibility: hidden;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* Visually-hidden polite live region for autosuggest announcements. Kept in
+   the accessibility tree (not display:none / visibility:hidden) so screen
+   readers still pick up content changes. */
+.md-search__a11y-status {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* State layer */
+.md-search__state-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--_state-layer-color);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short2, 100ms)
+    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+.md-search__bar:hover .md-search__state-layer {
+  opacity: var(--_hover-state-layer-opacity);
+}
+
+/* M3 Search bar / Focused: focus indicator ring (3dp / 2dp offset) — not a
+   state-layer wash. Box-shadow avoids clipping from overflow:hidden.
+
+   The ring is keyboard-only: a text input always matches :focus-visible (even
+   on click), so the component drives the ring from the `--focus-ring` class,
+   which is set only when focus did NOT follow a pointer interaction. */
+.md-search__bar--focus-ring .md-search__state-layer {
+  opacity: 0;
+}
+
+.md-search__bar--focus-ring {
+  box-shadow:
+    var(--_container-elevation),
+    0 0 0 var(--_focus-indicator-offset) var(--_container-color),
+    0 0 0
+      calc(var(--_focus-indicator-offset) + var(--_focus-indicator-thickness))
+      var(--_focus-indicator-color);
+}
+
+.md-search__bar:active .md-search__state-layer {
+  opacity: var(--_pressed-state-layer-opacity);
+}
+
+/* Hover / pressed: supporting text stays on-surface-variant (#49454F). */
+.md-search__bar:hover .md-search__input::placeholder,
+.md-search__bar:active .md-search__input::placeholder {
+  color: var(--_placeholder-color);
+}
+
+:host(.md-search--disabled) .md-search__state-layer {
+  display: none;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Leading / trailing clusters
+   ────────────────────────────────────────────────────────── */
+
+.md-search__leading,
+.md-search__trailing {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
+  /* Box-sizing keeps the wrapper's outer footprint consistent so the
+     leading icon sits at exactly --_leading-padding-inline from the bar's
+     leading edge (and the trailing cluster mirrors it on the other side). */
+  box-sizing: border-box;
+}
+
+.md-search__leading {
+  /* Leading space (bar edge → icon) + icon → label gap per M3 layout tokens. */
+  padding-inline-start: var(--_leading-padding-inline);
+  padding-inline-end: var(--_leading-icon-label-gap);
+}
+
+.md-search__trailing {
+  margin-inline-start: auto;
+  /* Label → trailing cluster gap + trailing space (cluster → bar edge). */
+  padding-inline-start: var(--_trailing-icon-label-gap);
+  padding-inline-end: var(--_trailing-padding-inline);
+}
+
+.md-search__leading .md-search__icon,
+.md-search__leading-button {
+  color: var(--_leading-icon-color);
+}
+
+.md-search__trailing .md-search__icon {
+  color: var(--_trailing-icon-color);
+}
+
+.md-search__icon {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-size: var(--_icon-size);
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  line-height: 1;
+  font-weight: normal;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Built-in icon button (used for the leading close button + clear button) */
+.md-search__icon-button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  inline-size: var(--_icon-button-size);
+  block-size: var(--_icon-button-size);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--_trailing-icon-color);
+  position: relative;
+  transition: background-color var(--md-sys-motion-duration-short2, 100ms)
+    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+.md-search__icon-button:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--_trailing-icon-color) 8%,
+    transparent
+  );
+}
+
+/* Inline loading indicator (shape-morph) shown while results are fetched.
+   Occupies the same 48dp trailing slot as an icon button so the cluster
+   width doesn't jump when it replaces the clear button; its morphing shape
+   matches the 24dp trailing icon size. */
+.md-search__loading {
+  --md-loading-indicator-size: var(--_icon-button-size);
+  --md-loading-indicator-shape-size: var(--_icon-size);
+  --md-loading-indicator-color: var(--_loading-color);
+  flex: 0 0 auto;
+  pointer-events: none;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Trailing loading ↔ clear-× morph
+   One fixed-size box holds both the loading indicator and the clear button,
+   stacked. Toggling `loading` cross-fades them (opacity + scale + rotate) in
+   BOTH directions over the same box, so the trailing cluster never jumps and
+   the swap reads as one expressive shape-morph rather than a hard switch.
+   ────────────────────────────────────────────────────────── */
+.md-search__trailing-morph {
+  position: relative;
+  flex: 0 0 auto;
+  inline-size: var(--_icon-button-size);
+  block-size: var(--_icon-button-size);
+}
+
+.md-search__trailing-morph > .md-search__loading,
+.md-search__trailing-morph > .md-search__clear {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  transition:
+    opacity var(--md-sys-motion-duration-medium1, 250ms)
+      var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),
+    transform var(--md-sys-motion-duration-medium1, 250ms)
+      var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* Resting (not loading): clear-× present, loading morphed away. */
+.md-search__trailing-morph > .md-search__clear {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+.md-search__trailing-morph > .md-search__loading {
+  opacity: 0;
+  transform: scale(0.6) rotate(-90deg);
+}
+
+/* Loading: indicator present, clear-× morphed away (and non-interactive). */
+.md-search__trailing-morph--loading > .md-search__clear {
+  opacity: 0;
+  transform: scale(0.6) rotate(90deg);
+  pointer-events: none;
+}
+.md-search__trailing-morph--loading > .md-search__loading {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+/* ──────────────────────────────────────────────────────────
+   Voice search mic button
+   ────────────────────────────────────────────────────────── */
+.md-search__voice {
+  flex: 0 0 auto;
+  color: var(--_trailing-icon-color);
+}
+
+/* Keep the glyph above the listening halo. */
+.md-search__voice .md-search__icon {
+  position: relative;
+  z-index: 1;
+}
+
+/* Listening: tint the mic with the primary colour and pulse a soft halo so
+   the active state reads at a glance. */
+.md-search__voice--listening {
+  color: var(--md-sys-color-primary, #6750A4);
+}
+
+.md-search__voice--listening::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-color: color-mix(
+    in srgb,
+    var(--md-sys-color-primary, #6750A4) 16%,
+    transparent
+  );
+  animation: md-search-voice-pulse 1.4s
+    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)) infinite;
+}
+
+@keyframes md-search-voice-pulse {
+  0%,
+  100% {
+    transform: scale(0.82);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 0.2;
+  }
+}
+
+/* Inside the bar there's only ~4dp of room around a 48dp icon button, so an
+   outset ring (offset + thickness) would spill over the bar edge / rounded
+   corners. Draw the ring INSET instead — it hugs the inner perimeter of the
+   tap target and stays fully contained within the bar. */
+.md-search__icon-button:focus-visible {
+  outline: var(--_focus-indicator-thickness) solid var(--_focus-indicator-color);
+  outline-offset: calc(-1 * var(--_focus-indicator-thickness));
+}
+
+/* ──────────────────────────────────────────────────────────
+   Leading button — search ↔ back-arrow morph
+
+   Both glyphs are always rendered, stacked at the same centred slot so
+   the change between the resting and open states reads as a single icon
+   smoothly morphing (cross-fade + rotation + scale) rather than two
+   sibling glyphs swapping.
+
+   The wrapper is always a 48dp circular tap target (the M3 search-bar icon
+   target). With the 4dp leading space, the 24dp glyph centred inside lands
+   ~16dp from the bar's leading edge in both states — so there's no size or
+   position jump on open.
+
+   In the resting state pointer-events are turned off so a click on the
+   search glyph falls through to the bar — preserving the behaviour where
+   tapping anywhere on the bar focuses the input. When the bar is open the
+   wrapper becomes interactive and gains its own hover / press / focus chrome.
+   ────────────────────────────────────────────────────────── */
+
+.md-search__leading-button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  inline-size: var(--_icon-button-size);
+  block-size: var(--_icon-button-size);
+  border-radius: 50%;
+  cursor: text;
+  /* Closed state: clicks fall through to .md-search__bar so the input
+     gets focused exactly like clicking anywhere else on the bar. */
+  pointer-events: none;
+  transition: background-color var(--md-sys-motion-duration-short2, 100ms)
+    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+:host(.md-search--open) .md-search__leading-button {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* Dedicated state layer for the leading button. An opacity-driven overlay
+   (rather than a `background-color` wash on the button itself) guarantees a
+   fully transparent idle — there is no painted circle behind the icon until
+   the button is genuinely hovered / pressed — while still rendering a clean
+   circular layer sized exactly to the 48dp tap target on interaction. It
+   sits behind the morphing glyphs and is inert. */
+.md-search__leading-state-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--_leading-icon-color);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short2, 100ms)
+    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+:host(.md-search--open) .md-search__leading-button:hover .md-search__leading-state-layer {
+  opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+}
+
+:host(.md-search--open) .md-search__leading-button:active .md-search__leading-state-layer {
+  opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+}
+
+.md-search__leading-button:focus-visible {
+  outline: var(--_focus-indicator-thickness) solid var(--_focus-indicator-color);
+  outline-offset: calc(-1 * var(--_focus-indicator-thickness));
+  border-radius: 50%;
+}
+
+.md-search__leading-button:disabled {
+  cursor: not-allowed;
+}
+
+/* Stacked icons. Each occupies the same centred slot inside the leading
+   button so the morph reads as a single glyph rotating / fading. */
+.md-search__leading-button .md-search__icon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  transition:
+    opacity var(--_motion-duration) var(--_motion-easing),
+    transform var(--_motion-duration) var(--_motion-easing);
+}
+
+/* Resting → search. Visible at rest, rotates out + scales down on open. */
+.md-search__icon--resting {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+:host(.md-search--open) .md-search__icon--resting {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.6);
+}
+
+/* Open → directional close glyph (chevron_left or arrow_back, picked by
+   variant in TSX). Pre-positioned rotated + scaled so it
+   springs in from the opposite side of the morph.
+
+   Both `chevron_left` and `arrow_back` are literal pictograms pointing
+   physically left — in an RTL context "back" means physically right, so the
+   glyph is mirrored along the inline axis via `--_open-glyph-mirror` (-1 in
+   RTL). Because the mirror lives in the transform of BOTH the resting and
+   open states, it stays applied through the whole morph and never relies on
+   a separate RTL open-state selector (chaining a class onto `:host-context()`
+   did not reliably match, leaving the glyph stuck mid-rotation in RTL). The
+   resting search glyph is directionally neutral and stays unmirrored. */
+.md-search__icon--open {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.6) scaleX(var(--_open-glyph-mirror));
+}
+
+:host(.md-search--open) .md-search__icon--open {
+  opacity: 1;
+  transform: rotate(0deg) scale(1) scaleX(var(--_open-glyph-mirror));
+}
+
+/* RTL flips the open glyph's inline axis. Set only on the host (no chaining
+   onto `:host-context()`), so it inherits cleanly into the glyph regardless
+   of open state. */
+:host([dir="rtl"]),
+:host-context([dir="rtl"]) {
+  --_open-glyph-mirror: -1;
+}
+
+/* Slotted icon buttons / avatars */
+::slotted([slot='leading']),
+::slotted([slot='trailing']) {
+  display: inline-flex;
+  align-items: center;
+}
+
+::slotted(md-avatar[slot='trailing']),
+::slotted([slot='trailing'][role='img']),
+::slotted(img[slot='trailing']) {
+  inline-size: var(--_avatar-size);
+  block-size: var(--_avatar-size);
+}
+
+/* ──────────────────────────────────────────────────────────
+   Input
+   ────────────────────────────────────────────────────────── */
+
+.md-search__input {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--_input-color);
+  font-family: var(--_input-font-family);
+  font-size: var(--_input-font-size);
+  font-weight: var(--_input-font-weight);
+  line-height: var(--_input-line-height);
+  letter-spacing: var(--_input-letter-spacing);
+  /* No internal padding — the leading/trailing wrappers control the entire
+     icon-to-text distance (16dp by default) with no double-spacing. */
+  padding-inline: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Supporting text (placeholder) uses the same body-large typescale as input. */
+.md-search__input::placeholder {
+  color: var(--_placeholder-color);
+  opacity: 1;
+  font-family: var(--_input-font-family);
+  font-size: var(--_input-font-size);
+  font-weight: var(--_input-font-weight);
+  line-height: var(--_input-line-height);
+  letter-spacing: var(--_input-letter-spacing);
+}
+
+.md-search__input:disabled {
+  cursor: not-allowed;
+}
+
+/* Hide the native `type=search` clear cross — we render our own. */
+.md-search__input::-webkit-search-cancel-button,
+.md-search__input::-webkit-search-decoration {
+  display: none;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Panel
+   ────────────────────────────────────────────────────────── */
+
+/* The panel is a pure positioning + dialog wrapper. Scrolling happens in
+   the inner viewport (`md-scroll-shadow` by default) so edge shadows and
+   the native scrollbar align with the slotted surface chrome. */
+.md-search__panel {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  box-sizing: border-box;
+  background-color: transparent;
+  color: var(--_input-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-block-size: 0;
+  transition:
+    opacity var(--_motion-duration) var(--_motion-easing),
+    transform var(--_motion-duration) var(--_motion-easing),
+    visibility 0s linear var(--_motion-duration);
+}
+
+/* Flex region below the divider — sizes the scroll viewport from the
+   panel's (or open host's) max-block-size budget. */
+.md-search__panel-body {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Flex column wrapper so the scroll viewport gets a definite block-size
+   from the panel chain (same pattern as md-bottom-sheet__content). Without
+   this, the host is a block box sized to full slotted content and the docked
+   panel's max-block-size only clips — no inner scroll. */
+.md-search__results-host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+.md-search__results-host .md-search__results-scroll {
+  flex: 1 1 auto;
+  min-block-size: 0;
+}
+
+/* The results list is the scroll surface. */
+.md-search__results-scroll {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow-block: auto;
+  overflow-inline: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--md-sys-color-outline-variant, #cac4d0) transparent;
+}
+
+.md-search__results-scroll::-webkit-scrollbar {
+  inline-size: 8px;
+}
+
+.md-search__results-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--md-sys-color-outline-variant, #cac4d0);
+  border-radius: 4px;
+}
+
+/* Visible empty state — shown when the panel is open, the user has typed a
+   query, and there are zero slotted result rows (not while `loading`). */
+.md-search__empty {
+  flex: 0 0 auto;
+  margin: 0;
+  padding-block: var(--md-search-empty-padding-block, var(--md-sys-spacing-inset-xl, 24px));
+  padding-inline: var(--md-search-empty-padding-inline, var(--md-sys-spacing-inset-lg, 16px));
+  text-align: center;
+  color: var(
+    --md-search-empty-color,
+    var(--md-sys-color-on-surface-variant, #49454f)
+  );
+  font-family: var(
+    --md-sys-typescale-body-medium-font,
+    Roboto,
+    system-ui,
+    sans-serif
+  );
+  font-size: var(--md-sys-typescale-body-medium-size, 14px);
+  font-weight: var(--md-sys-typescale-body-medium-weight, 400);
+  line-height: var(--md-sys-typescale-body-medium-line-height, 20px);
+  letter-spacing: var(--md-sys-typescale-body-medium-tracking, 0.25px);
+}
+
+/* Results slot stays mounted (for slotchange + consumer DOM) but is hidden
+   while the visible empty state is shown. */
+.md-search__panel-body--empty .md-search__results-host {
+  display: none;
+}
+
+/* Docked: anchored popup beneath the bar. The drawer aligns EXACTLY to the
+   open bar's edges — it is inset by the same focused expand margin
+   (`--_expand-inset-focused`, 12dp) on both sides, so the bar and the results
+   drawer share identical inline-start / inline-end edges at every responsive
+   width. The host already clamps the overall inline-size (min 360 / max 720),
+   so the drawer inherits that clamp through `inset-inline` rather than carrying
+   its own (which would otherwise force the drawer wider than the inset bar at
+   the lower clamp). Block clamps: min shrinks to content (0 default); max
+   scrolls inside when the list is long. The slotted list owns the surface. */
+.md-search__panel--docked {
+  position: absolute;
+  inset-inline: var(--_expand-inset-focused);
+  inset-block-start: calc(var(--_container-height) + var(--_panel-offset));
+  /* Intrinsic height from slotted rows, capped by max — no fixed 240dp bay. */
+  block-size: fit-content;
+  min-block-size: var(--_panel-min-block-size);
+  max-block-size: var(--_max-block-size, var(--_panel-max-block-size));
+  transform: translateY(-4px);
+  z-index: var(--md-sys-z-index-popup, 1100);
+}
+
+.md-search__panel--docked.md-search__panel--open {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition:
+    opacity var(--_motion-duration) var(--_motion-easing),
+    transform var(--_motion-duration) var(--_motion-easing),
+    visibility 0s;
+}
+
+/* Full-screen (closed): panel is inert; when open it becomes the fixed
+   full-viewport surface — see :host(.md-search--full-screen.md-search--open).
+   Open/close matches md-dialog fullscreen: translateY(30px) + opacity fade
+   over medium2 / standard easing (no scrim). The deferred-reveal rAF in
+   md-search.tsx commits the position:fixed overlay layout before this
+   animation starts so there's no relayout on the animating frames. */
+.md-search__panel--full-screen {
+  opacity: 0;
+  transform: translateY(30px);
+  will-change: opacity, transform;
+  transition:
+    opacity var(--_fs-collapse-duration) var(--_fs-collapse-easing),
+    transform var(--_fs-collapse-duration) var(--_fs-collapse-easing),
+    visibility 0s linear var(--_fs-collapse-duration);
+}
+
+.md-search__panel--full-screen.md-search__panel--open {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition:
+    opacity var(--_fs-expand-duration) var(--_fs-expand-easing),
+    transform var(--_fs-expand-duration) var(--_fs-expand-easing),
+    visibility 0s;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Divider (`divided` variant)
+   ────────────────────────────────────────────────────────── */
+
+.md-search__divider {
+  display: none;
+  block-size: var(--_divider-thickness);
+  background-color: var(--_divider-color);
+  flex: 0 0 auto;
+}
+
+:host(.md-search--divided.md-search--panel-content) .md-search__divider {
+  display: block;
+}
+
+/* In the divided baseline FULL-SCREEN the OPEN bar is a flat app-bar header, so
+   it drops the rounded shape and the divider becomes the only separator between
+   bar and results. The resting bar keeps the rounded `--_container-shape` (pill)
+   so it reads exactly like the contained variant before expansion. Docked keeps
+   the rounded pill in both states — see the docked-open card rule below. */
+:host(.md-search--divided.md-search--full-screen.md-search--open.md-search--panel-content) .md-search__bar {
+  border-radius: 0;
+}
+
+:host(.md-search--divided) .md-search__panel--docked {
+  inset-block-start: var(--_container-height);
+}
+
+/* Divided × docked: snap the bar's corner morph instead of transitioning it.
+   Animating border-radius eased the bottom corners from the resting pill down
+   to square WHILE the results panel revealed flush beneath — for a few frames
+   the bar's still-rounded bottom corners exposed notches against the square-
+   topped panel, reading as a flicker at the seam. The corner change is
+   imperceptible when snapped (the top corners don't change and the bottom is
+   immediately covered by the flush panel), so we drop border-radius from the
+   transition for this combination only. */
+:host(.md-search--divided.md-search--docked) .md-search__bar {
+  transition:
+    inline-size var(--_expand-duration) var(--_expand-easing),
+    background-color var(--_motion-duration) var(--_motion-easing),
+    box-shadow var(--_motion-duration) var(--_motion-easing);
+}
+
+/* Divided × docked open: one unified floating card — the bar + panel read as a
+   single surface whose OUTER corners keep the resting bar's VISIBLE radius
+   (`--_resting-corner-shape`: the clamped half-height of the default pill),
+   while the seam between bar and panel stays flat. The bar rounds only its top
+   corners and the panel only its bottom corners, so the combined silhouette
+   matches the resting pill exactly rather than clamping against the taller
+   open card. */
+:host(.md-search--divided.md-search--docked.md-search--open.md-search--panel-content) .md-search__bar {
+  border-radius: var(--_resting-corner-shape) var(--_resting-corner-shape) 0 0;
+  background-color: var(--_container-color);
+  overflow: hidden;
+}
+
+:host(.md-search--divided.md-search--docked.md-search--open.md-search--panel-content) .md-search__panel--docked {
+  background-color: var(--_container-color);
+  border-radius: 0 0 var(--_resting-corner-shape) var(--_resting-corner-shape);
+  overflow: hidden;
+}
+
+/* Contained × docked open: the results panel is a standalone rounded card
+   below the bar (4dp gap). Keep ALL four corners rounded; the panel's
+   `overflow: hidden` then clips the scrolling viewport, its scrollbar, and the
+   slotted list surface inside that radius, so enabling scroll never squares off
+   the top corners (under the bar seam) or the bottom corners (below the last
+   result). overflow:clip would also work; hidden is inherited from
+   .md-search__panel and is sufficient since the inner viewport owns scrolling.
+   Only apply when there is panel content (rows or empty-state message). */
+:host(.md-search--contained.md-search--docked.md-search--open.md-search--panel-content) .md-search__panel--docked {
+  border-radius: var(--_docked-panel-shape);
+  background-color: var(--_container-color);
+}
+
+/* ──────────────────────────────────────────────────────────
+   Slotted results — transparent on the search surface
+   ────────────────────────────────────────────────────────── */
+
+/* Slotted `<md-list>` (or any results wrapper) inherits the panel / bar
+   chrome. Suppress the default M3 `surface` list-item fill so rows don't
+   read as a nested dark card against surface-container-* panels — especially
+   in dark theme. Authors can re-tint per-list when they want a distinct bay.
+   Zero out the list's default 8dp block padding so the first and last rows
+   sit flush against the drawer edges with no gap. */
+::slotted([slot='results']) {
+  display: block;
+  --md-list-container-color: transparent;
+  --md-list-item-container-color: transparent;
+  --md-list-padding-block: 0px;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Disabled
+   ────────────────────────────────────────────────────────── */
+
+:host(.md-search--disabled) .md-search__input,
+:host(.md-search--disabled) .md-search__icon,
+:host(.md-search--disabled) .md-search__icon-button,
+:host(.md-search--disabled) .md-search__leading-button {
+  pointer-events: none;
+  color: color-mix(
+    in srgb,
+    var(--md-sys-color-on-surface, #1D1B20) 38%,
+    transparent
+  );
+}
+
+/* ──────────────────────────────────────────────────────────
+   Reduced motion
+   ────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-search__bar,
+  .md-search__panel,
+  .md-search__state-layer,
+  .md-search__icon-button,
+  .md-search__leading-button,
+  .md-search__leading-state-layer,
+  .md-search__leading-button .md-search__icon,
+  .md-search__trailing-morph > .md-search__loading,
+  .md-search__trailing-morph > .md-search__clear {
+    transition-duration: 0.01ms !important;
+  }
+
+  /* The listening halo is decorative — drop the pulse but keep the tint. */
+  .md-search__voice--listening::before {
+    animation: none;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

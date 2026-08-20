@@ -1,0 +1,149 @@
+/* ==========================================================
+   md-badge — Material Design 3 Badge
+   Spec: https://m3.material.io/components/badges/specs
+
+   Two variants:
+     small  — 6×6px dot, no label
+     large  — 16px height, label-small typography, 1–4 characters
+
+   Positioning:
+     The badge is absolutely positioned and expects its parent
+     to have position:relative. It anchors at the upper trailing
+     edge of the parent (top:0 right:0) using transform to shift
+     the badge outward so content grows away from the anchor.
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST — shared base & CSS custom properties
+   ========================================================== */
+:host {
+  --_container-color: var(--md-badge-container-color, var(--md-sys-color-error, #B3261E));
+  --_label-color: var(--md-badge-label-color, var(--md-sys-color-on-error, #FFFFFF));
+  --_shape: var(--md-badge-container-shape, var(--md-sys-shape-corner-full, 9999px));
+  --_icon-color: var(--md-badge-icon-color, var(--md-badge-label-color, var(--md-sys-color-on-error, #FFFFFF)));
+  --_icon-size: var(--md-badge-icon-size, max(8px, calc(10px + var(--md-sys-density-scale, 0) * 0.5px)));
+  --_offset-x: var(--md-badge-offset-x, 50%);
+  --_offset-y: var(--md-badge-offset-y, -50%);
+  --_large-height: var(--md-badge-large-height, max(12px, calc(16px + var(--md-sys-density-scale, 0) * 1px)));
+  --_large-padding: var(--md-badge-large-padding, 0 max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px)));
+  --_small-size: var(--md-badge-small-size, max(4px, calc(6px + var(--md-sys-density-scale, 0) * 0.5px)));
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  pointer-events: none;
+  background-color: var(--_container-color);
+  border-radius: var(--_shape);
+}
+
+/* ==========================================================
+   2. SMALL VARIANT — 6×6 dot
+   Spec: small badge is 6px circle, no label
+   ========================================================== */
+:host(.md-badge--small) {
+  width: var(--_small-size);
+  height: var(--_small-size);
+  padding: 0;
+  transform: translate(var(--_offset-x), var(--_offset-y));
+}
+
+/* ==========================================================
+   3. LARGE VARIANT — labeled badge
+   Spec: 16px height, min-width 16px, 4px horizontal padding
+   Uses label-small typography.
+   ========================================================== */
+:host(.md-badge--large) {
+  min-width: var(--_large-height);
+  height: var(--_large-height);
+  padding: var(--_large-padding);
+  transform: translate(var(--_offset-x), var(--_offset-y));
+
+  color: var(--_label-color);
+  font-family: var(--md-sys-typescale-label-small-font-family, Roboto, sans-serif);
+  font-size: max(9px, calc(11px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-label-small-font-weight, 500);
+  letter-spacing: var(--md-sys-typescale-label-small-letter-spacing, 0.5px);
+  line-height: 1;
+}
+
+/* No content: collapse padding so min-width keeps it circular */
+:host(.md-badge--large:not(.md-badge--has-content)) {
+  padding: 0;
+}
+
+/* ==========================================================
+   4. LABEL
+   ========================================================== */
+.md-badge__label {
+  display: block;
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* ==========================================================
+   5. ICON
+   ========================================================== */
+.md-badge__icon {
+  font-size: var(--_icon-size);
+  color: var(--_icon-color);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Slotted icons inherit the token-based size & color */
+::slotted(*) {
+  width: var(--_icon-size) !important;
+  height: var(--_icon-size) !important;
+  font-size: var(--_icon-size) !important;
+  color: var(--_icon-color) !important;
+  fill: var(--_icon-color) !important;
+}
+
+/* ==========================================================
+   6. MATERIAL SYMBOLS (icon font inside shadow root)
+   ========================================================== */
+.material-symbols-outlined {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-weight: normal;
+  font-style: normal;
+  font-size: var(--_icon-size, 10px);
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================
+   7. FORCED COLORS — Windows High Contrast
+   ========================================================== */
+@media (forced-colors: active) {
+  :host {
+    forced-color-adjust: none;
+    background-color: Mark;
+    color: MarkText;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

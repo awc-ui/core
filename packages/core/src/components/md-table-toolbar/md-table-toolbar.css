@@ -1,0 +1,150 @@
+/* ==========================================================
+   md-table-toolbar — toolbar above a <md-table>
+
+   PUBLIC CSS CUSTOM PROPERTIES:
+     --md-table-toolbar-color                Foreground color
+     --md-table-toolbar-bg                   Background color (default mode)
+     --md-table-toolbar-selection-bg         Background color (selection mode)
+     --md-table-toolbar-selection-color      Foreground color (selection mode)
+     --md-table-toolbar-padding-block        Top/bottom padding
+     --md-table-toolbar-padding-inline       Left/right padding
+     --md-table-toolbar-min-height           Minimum height (default: 64px)
+
+   CSS PARTS:
+     leading             Container for the `leading` slot
+     main                Container for headline / supporting text
+     headline            <h2> element
+     supporting-text     <p> element
+     selection-caption   "%count% selected" caption (selection mode)
+     actions             Container for actions / selection-actions slots
+   ========================================================== */
+:host {
+  --_color: var(--md-table-toolbar-color, var(--md-sys-color-on-surface, #1C1B1F));
+  --_bg: var(--md-table-toolbar-bg, transparent);
+  --_sel-bg: var(--md-table-toolbar-selection-bg, var(--md-sys-color-secondary-container, #E8DEF8));
+  --_sel-color: var(--md-table-toolbar-selection-color, var(--md-sys-color-on-secondary-container, #1E192B));
+  /* Follow a global `data-density` ancestor (padding + height tighten with the
+     scale; unchanged at density 0). The `compact` boolean still force-overrides. */
+  --_pad-block: var(--md-table-toolbar-padding-block, var(--md-sys-spacing-inset-md, 12px));
+  --_pad-inline: var(--md-table-toolbar-padding-inline, 24px);
+  --_min-h: var(--md-table-toolbar-min-height, calc(64px + var(--md-sys-density-scale, 0) * 4px));
+
+  /* Effects spring for the selection-mode color swap (house pairing rule). */
+  --_motion-duration: var(--md-sys-motion-spring-effects-default-duration, 200ms);
+  --_motion-easing: var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.8, 0.34, 1));
+
+  display: flex;
+  align-items: center;
+  gap: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px));
+  padding-block: var(--_pad-block);
+  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  min-block-size: var(--_min-h);
+  background-color: var(--_bg);
+  color: var(--_color);
+  position: relative;
+  isolation: isolate;
+  transition:
+    background-color var(--_motion-duration) var(--_motion-easing),
+    color var(--_motion-duration) var(--_motion-easing);
+}
+
+:host(.md-table-toolbar--compact) {
+  --_pad-block: 6px;
+  --_min-h: 48px;
+}
+
+/* MD3 Expressive: smooth color transition into selection-mode */
+:host(.md-table-toolbar--selection-mode) {
+  background-color: var(--_sel-bg);
+  color: var(--_sel-color);
+}
+
+/* Layout slots */
+.md-table-toolbar__leading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+.md-table-toolbar__leading[hidden] { display: none; }
+
+.md-table-toolbar__main {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+}
+
+.md-table-toolbar__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: max(0px, calc(4px + var(--md-sys-density-scale, 0) * 1px));
+  flex: 0 0 auto;
+  --md-icon-button-container-width: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
+  --md-icon-button-container-height: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
+  --md-icon-button-icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+}
+
+/* ----------- Titles ----------- */
+.md-table-toolbar__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.md-table-toolbar__headline {
+  margin: 0;
+  font-family: var(--md-sys-typescale-title-large-font-family, Roboto, sans-serif);
+  font-size: max(16px, calc(22px + var(--md-sys-density-scale, 0) * 1px));
+  font-weight: var(--md-sys-typescale-title-large-font-weight, 400);
+  line-height: max(22px, calc(28px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: 0;
+  color: inherit;
+}
+
+:host(.md-table-toolbar--compact) .md-table-toolbar__headline {
+  font-size: var(--md-sys-typescale-title-medium-font-size, 16px);
+  line-height: var(--md-sys-typescale-title-medium-line-height, 24px);
+}
+
+.md-table-toolbar__supporting {
+  margin: 0;
+  font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif);
+  font-size: var(--md-sys-typescale-body-medium-font-size, 14px);
+  line-height: var(--md-sys-typescale-body-medium-line-height, 20px);
+  color: var(--md-sys-color-on-surface-variant, #49454F);
+}
+
+:host(.md-table-toolbar--selection-mode) .md-table-toolbar__supporting {
+  color: inherit;
+  opacity: 0.85;
+}
+
+/* ----------- Selection caption ----------- */
+.md-table-toolbar__selection-caption {
+  font-family: var(--md-sys-typescale-title-medium-font-family, Roboto, sans-serif);
+  font-size: max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: 500;
+  line-height: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+  animation: md-table-toolbar-fade var(--_motion-duration) var(--_motion-easing);
+}
+
+@keyframes md-table-toolbar-fade {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host { transition: none; }
+  .md-table-toolbar__selection-caption { animation: none; }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

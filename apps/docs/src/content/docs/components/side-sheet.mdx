@@ -1,0 +1,1447 @@
+---
+title: Side Sheet
+description: "Supplementary content along the side of the screen — standard or modal, on either logical edge, with dividers, actions and an optional back affordance"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/side-sheet.json";
+
+**Supplementary content along the side of the screen.** Standard (inline, sits
+beside your content) or modal (over a scrim), on either logical edge, with
+optional dividers, an actions row, a back affordance for nested flows, and its
+own density rung.
+
+<ComponentDemo
+  html={`<md-button id="ss-hero-btn" variant="filled" icon="filter_list">Show filters</md-button>
+
+<md-side-sheet id="ss-hero" variant="modal" side="end" headline="Filters" top-divider bottom-divider>
+  <label style="display:flex; align-items:center; gap:8px; padding-block:4px;"><md-checkbox checked></md-checkbox> In stock</label>
+  <label style="display:flex; align-items:center; gap:8px; padding-block:4px;"><md-checkbox></md-checkbox> On sale</label>
+  <label style="display:flex; align-items:center; gap:8px; padding-block:4px;"><md-checkbox></md-checkbox> Free delivery</label>
+  <md-button slot="actions" variant="text" data-ss-hero-close>Reset</md-button>
+  <md-button slot="actions" variant="filled" data-ss-hero-close>Apply</md-button>
+</md-side-sheet>`}
+  script={`
+    var sheet = root.querySelector('#ss-hero');
+    var btn = root.querySelector('#ss-hero-btn');
+
+    btn.addEventListener('mdClick', function () { sheet.show(); });
+    sheet.addEventListener('mdClose', function () { btn.focus({ preventScroll: true }); });
+
+    root.querySelectorAll('[data-ss-hero-close]').forEach(function (b) {
+      b.addEventListener('mdClick', function () { sheet.close(); });
+    });
+  `}
+  htmlForCode={`<md-button id="ss-hero-btn" variant="filled" icon="filter_list">Show filters</md-button>
+
+<md-side-sheet id="ss-hero" variant="modal" side="end" headline="Filters" top-divider bottom-divider>
+  <label><md-checkbox checked></md-checkbox> In stock</label>
+  <label><md-checkbox></md-checkbox> On sale</label>
+  <md-button slot="actions" variant="text">Reset</md-button>
+  <md-button slot="actions" variant="filled">Apply</md-button>
+</md-side-sheet>`}
+  label="Live preview"
+  storyId="containment-side-sheet--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-side-sheet" example="" />
+
+## When to use
+
+- **Desktop / large-screen** supplementary content: filters, details, help, a
+  properties panel.
+- Content the user consults **alongside** the main view (`variant="standard"`).
+- A focused side task over the content (`variant="modal"`).
+- Nested navigation within the panel (`show-back`).
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Mobile supplementary content | [`md-bottom-sheet`](/components/bottom-sheet/) |
+| A blocking decision | [`md-dialog`](/components/dialog/) |
+| Brief feedback | [`md-snackbar`](/components/snackbar/) |
+| App-level destination navigation | [`md-navigation-rail`](/components/navigation-rail/) / [`md-navigation-bar`](/components/navigation-bar/) |
+| A short action list | [`md-menu`](/components/menu/) |
+| Primary content the task depends on | A page, or a [`md-card`](/components/card/) in the main column |
+
+## Variants
+
+:::danger[`standard` and `modal` are different accessibility contracts]
+`standard` is a **non-modal** region: no scrim, no focus trap, the rest of the
+page stays interactive, and `Escape` is ignored. `modal` traps focus, dims the
+background, locks page scroll and closes on `Escape`. Choose deliberately — you
+cannot mix and match.
+:::
+
+| Need | Setting |
+|---|---|
+| Sits beside content, no scrim | `variant="standard"` (default) |
+| Over the content with a scrim | `variant="modal"` |
+| Trailing edge (M3's usual choice) | `side="end"` (default) |
+| Leading edge | `side="start"` |
+| Floating, inset from the edge | `detached` |
+| Back arrow for a nested view | `show-back` (+ `mdBack`) |
+| Prevent click-away (modal) | `scrim-dismissible="false"` |
+
+A **standard** sheet is inline, so it can safely be rendered open in a page like
+this one — the demos below do exactly that. A **modal** sheet covers the
+viewport and locks page scroll, so every modal demo on this page opens from a
+button instead.
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 16px; align-items: stretch; min-block-size: 180px;">
+  <div style="flex: 1; padding: 8px; color: var(--md-sys-color-on-surface-variant);">
+    <p style="margin: 0;">The default: a standard sheet on the inline-end edge, sharing the layout box with your content.</p>
+  </div>
+  <md-side-sheet variant="standard" side="end" headline="Filters" open style="flex: 0 0 auto; --md-side-sheet-width: 240px; --md-side-sheet-max-width: 240px;">
+    <label style="display:flex; align-items:center; gap:8px; padding-block:4px;"><md-checkbox checked></md-checkbox> In stock</label>
+    <label style="display:flex; align-items:center; gap:8px; padding-block:4px;"><md-checkbox></md-checkbox> On sale</label>
+    <md-button slot="actions" variant="filled">Apply</md-button>
+  </md-side-sheet>
+</div>`}
+  label="The standard sheet — inline, no scrim"
+  storyId="containment-side-sheet--standard"
+/>
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 16px; align-items: stretch; min-block-size: 200px;">
+  <md-side-sheet variant="standard" side="start" headline="Navigation" open style="flex: 0 0 auto; --md-side-sheet-width: 220px; --md-side-sheet-max-width: 220px;">
+    <p style="margin: 0; font-size: 14px;">Anchored to the inline-start edge.</p>
+  </md-side-sheet>
+  <div style="flex: 1; padding: 8px; color: var(--md-sys-color-on-surface-variant);">
+    <p style="margin: 0;">Main content sits beside it — a standard sheet never covers the page.</p>
+  </div>
+</div>`}
+  label="A standard sheet on the start side"
+  storyId="containment-side-sheet--standard-start"
+/>
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 16px; align-items: stretch; min-block-size: 200px;">
+  <div style="flex: 1; padding: 8px; color: var(--md-sys-color-on-surface-variant);">
+    <p style="margin: 0;">A wide sheet suits editing forms and detail views that would feel cramped at the default width.</p>
+  </div>
+  <md-side-sheet variant="standard" headline="Edit product" open style="flex: 0 0 auto; --md-side-sheet-width: 380px; --md-side-sheet-max-width: 380px;">
+    <div style="display: grid; gap: 16px;">
+      <md-text-field label="Name" variant="outlined" style="inline-size: 100%;"></md-text-field>
+      <md-text-field label="SKU" variant="outlined" style="inline-size: 100%;"></md-text-field>
+    </div>
+    <md-button slot="actions" variant="text">Cancel</md-button>
+    <md-button slot="actions" variant="filled">Save</md-button>
+  </md-side-sheet>
+</div>`}
+  label="A wide sheet — widen it with --md-side-sheet-width"
+  storyId="containment-side-sheet--wide-sheet"
+/>
+
+<ComponentDemo
+  html={`<md-button id="ss-modal-open" variant="filled" icon="info">Open modal sheet (end)</md-button>
+<md-button id="ss-modal-start-open" variant="tonal" icon="menu">Open modal sheet (start)</md-button>
+<md-button id="ss-modal-back-open" variant="outlined" icon="tune">Open detached, with back arrow</md-button>
+
+<md-side-sheet id="ss-modal" variant="modal" side="end" headline="Order details" top-divider bottom-divider>
+  <p style="margin:0 0 12px;">Order <strong>#48211</strong> · 3 items</p>
+  <p style="margin:0; color:var(--md-sys-color-on-surface-variant);">
+    A modal sheet takes over the side task: it traps focus, dims the page behind
+    a scrim, and closes on Escape or a scrim click.
+  </p>
+  <md-button slot="actions" variant="text" data-ss-close="ss-modal">Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-ss-close="ss-modal">Track order</md-button>
+</md-side-sheet>
+
+<md-side-sheet id="ss-modal-start" variant="modal" side="start" headline="Navigation">
+  <p style="margin:0; color:var(--md-sys-color-on-surface-variant);">
+    side is logical, so this panel lands on the leading edge and follows text
+    direction automatically.
+  </p>
+  <md-button slot="actions" variant="text" data-ss-close="ss-modal-start">Close</md-button>
+</md-side-sheet>
+
+<md-side-sheet id="ss-modal-back" variant="modal" side="end" headline="Advanced filters" show-back detached>
+  <p style="margin:0; color:var(--md-sys-color-on-surface-variant);">
+    show-back only emits mdBack — it does not navigate. You swap the panel
+    content yourself. This one is also detached, so it floats inset from the
+    edge with all four corners rounded.
+  </p>
+  <md-button slot="actions" variant="text" data-ss-close="ss-modal-back">Close</md-button>
+</md-side-sheet>`}
+  script={`
+    var pairs = [
+      ['ss-modal-open', 'ss-modal'],
+      ['ss-modal-start-open', 'ss-modal-start'],
+      ['ss-modal-back-open', 'ss-modal-back'],
+    ];
+
+    pairs.forEach(function (pair) {
+      var btn = root.querySelector('#' + pair[0]);
+      var sheet = root.querySelector('#' + pair[1]);
+      btn.addEventListener('mdClick', function () { sheet.show(); });
+      sheet.addEventListener('mdClose', function () { btn.focus({ preventScroll: true }); });
+    });
+
+    root.querySelectorAll('[data-ss-close]').forEach(function (b) {
+      b.addEventListener('mdClick', function () {
+        root.querySelector('#' + b.getAttribute('data-ss-close')).close();
+      });
+    });
+
+    root.querySelector('#ss-modal-back').addEventListener('mdBack', function (e) {
+      e.target.headline = 'Filters';
+      e.target.showBack = false;
+    });
+  `}
+  htmlForCode={`<md-button id="ss-modal-open" variant="filled" icon="info">Open modal sheet</md-button>
+
+<md-side-sheet id="ss-modal" variant="modal" side="end" headline="Order details" top-divider bottom-divider>
+  <p>Order #48211 · 3 items</p>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Track order</md-button>
+</md-side-sheet>
+
+<md-side-sheet id="ss-modal-back" variant="modal" side="end" headline="Advanced filters" show-back detached>
+  <p>Detached floats inset from the edge, with all four corners rounded.</p>
+</md-side-sheet>`}
+  label="Modal variants — end, start, and a detached sheet with a back arrow"
+  storyId="containment-side-sheet--modal"
+/>
+
+## Slots & structure
+
+| Slot | Content |
+|---|---|
+| *(default)* | Panel body — scrolls vertically when it overflows |
+| `headline` | Custom headline content (replaces the `headline` prop) |
+| `back` | Custom back glyph (modal only, with `show-back`) |
+| `close` | Custom close affordance — **only rendered while `closeable` is true**; with `closeable="false"` the whole close wrapper, slot included, is dropped |
+| `actions` | Bottom action bar |
+
+`top-divider` and `bottom-divider` add rules between the header, the body and
+the actions row — useful once the body scrolls. The actions row and its bottom
+divider only render when something is actually slotted into `actions`.
+
+<ComponentDemo
+  html={`<div style="inline-size:100%; block-size:340px; display:flex; border:1px solid var(--md-sys-color-outline-variant); border-radius:12px; overflow:hidden; background:var(--md-sys-color-surface);">
+  <div style="flex:1 1 auto; min-inline-size:0; padding:20px;">
+    <md-button id="ss-slots-toggle" variant="tonal" icon="tune">Toggle panel</md-button>
+    <p style="margin-block-start:16px; color:var(--md-sys-color-on-surface-variant);">
+      This standard sheet uses a slotted headline, dividers on both edges, a
+      long scrolling body and a two-button actions row.
+    </p>
+  </div>
+
+  <md-side-sheet id="ss-slots" variant="standard" side="start" top-divider bottom-divider aria-label="Settings panel" style="flex:0 0 auto; --md-side-sheet-width:280px; --md-side-sheet-max-width:280px;">
+    <span slot="headline" style="display:flex; align-items:center; gap:8px; font-weight:600;">
+      <span class="material-symbols-outlined" aria-hidden="true">settings</span>
+      Settings
+    </span>
+    <label style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding-block:8px;">Notifications <md-switch selected></md-switch></label>
+    <label style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding-block:8px;">Auto-sync <md-switch></md-switch></label>
+    <label style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding-block:8px;">Offline mode <md-switch></md-switch></label>
+    <label style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding-block:8px;">Analytics <md-switch selected></md-switch></label>
+    <label style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding-block:8px;">Beta features <md-switch></md-switch></label>
+    <label style="display:flex; align-items:center; justify-content:space-between; gap:12px; padding-block:8px;">Crash reports <md-switch selected></md-switch></label>
+    <md-button slot="actions" variant="text">Cancel</md-button>
+    <md-button slot="actions" variant="filled">Save</md-button>
+  </md-side-sheet>
+</div>`}
+  script={`
+    var sheet = root.querySelector('#ss-slots');
+    var toggle = root.querySelector('#ss-slots-toggle');
+
+    toggle.addEventListener('mdClick', function () {
+      if (sheet.open) sheet.close();
+      else sheet.show();
+    });
+    sheet.addEventListener('mdClose', function () { toggle.focus({ preventScroll: true }); });
+  `}
+  htmlForCode={`<md-side-sheet variant="standard" side="start" top-divider bottom-divider aria-label="Settings panel" open>
+  <span slot="headline">
+    <span class="material-symbols-outlined" aria-hidden="true">settings</span>
+    Settings
+  </span>
+
+  <label>Notifications <md-switch selected></md-switch></label>
+  <label>Auto-sync <md-switch></md-switch></label>
+
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Save</md-button>
+</md-side-sheet>`}
+  label="Slotted headline, dividers, scrolling body, actions row"
+  storyId="containment-side-sheet--with-actions"
+/>
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 16px; align-items: stretch; block-size: 260px;">
+  <md-side-sheet variant="standard" headline="Dividers" top-divider bottom-divider open style="flex: 0 0 auto; --md-side-sheet-width: 240px; --md-side-sheet-max-width: 240px;">
+    <p style="margin: 0; font-size: 14px;">Rules under the header and above the actions.</p>
+    <md-button slot="actions" variant="text">Reset</md-button>
+  </md-side-sheet>
+  <md-side-sheet variant="standard" headline="No dividers" open style="flex: 0 0 auto; --md-side-sheet-width: 240px; --md-side-sheet-max-width: 240px;">
+    <p style="margin: 0; font-size: 14px;">The same panel with both dividers off — the default.</p>
+    <md-button slot="actions" variant="text">Reset</md-button>
+  </md-side-sheet>
+</div>`}
+  label="With and without dividers"
+  storyId="containment-side-sheet--with-dividers"
+/>
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 16px; align-items: stretch; min-block-size: 180px;">
+  <md-side-sheet variant="standard" open aria-label="Slotted headline" style="flex: 0 0 auto; --md-side-sheet-width: 260px; --md-side-sheet-max-width: 260px;">
+    <span slot="headline" style="display: inline-flex; align-items: center; gap: 8px;">
+      <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 20px;">tune</span>
+      Slotted headline
+    </span>
+    <p style="margin: 0; font-size: 14px;">Markup in the headline slot replaces the plain <code>headline</code> prop.</p>
+  </md-side-sheet>
+  <div style="flex: 1; padding: 8px; color: var(--md-sys-color-on-surface-variant);">
+    <p style="margin: 0;">Use the slot when the headline needs an icon, a count or a truncating title; use the prop for plain text. A slotted headline does not name the panel — aria-labelledby is wired from the headline prop only — so pair it with aria-label.</p>
+  </div>
+</div>`}
+  label="A slotted headline"
+  storyId="containment-side-sheet--custom-headline-slot"
+/>
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 16px; align-items: stretch; block-size: 240px;">
+  <md-side-sheet variant="standard" headline="Scrolling body" top-divider bottom-divider open style="flex: 0 0 auto; --md-side-sheet-width: 280px; --md-side-sheet-max-width: 280px;">
+    <p style="margin: 0; font-size: 14px;">Only the body scrolls — the header and the actions row stay pinned.</p>
+    <p style="margin: 12px 0 0; font-size: 14px;">Keep adding copy and this region grows a scrollbar of its own.</p>
+    <p style="margin: 12px 0 0; font-size: 14px;">Another paragraph, so the scroll is unmistakable.</p>
+    <p style="margin: 12px 0 0; font-size: 14px;">And one more for good measure.</p>
+    <p style="margin: 12px 0 0; font-size: 14px;">The dividers mark where the scroll region begins and ends.</p>
+    <md-button slot="actions" variant="filled">Apply</md-button>
+  </md-side-sheet>
+  <div style="flex: 1; padding: 8px; color: var(--md-sys-color-on-surface-variant);">
+    <p style="margin: 0;">Scroll inside the panel — the header, the dividers and the actions row do not move.</p>
+  </div>
+</div>`}
+  label="A scrolling body between a pinned header and actions"
+  storyId="containment-side-sheet--scrollable-content"
+/>
+
+## Behaviour worth knowing
+
+- **`closeable` defaults to `true`** here — unlike
+  [`md-bottom-sheet`](/components/bottom-sheet/), where it defaults to `false`.
+- `mdBack` is emitted by the back affordance only; **it does not navigate.** You
+  swap the panel's content, update `headline`, and clear `showBack` yourself.
+- Only a **modal** sheet listens on the document. A standard sheet ignores
+  `Escape` entirely, so one keypress can never collapse every inline panel on
+  the page.
+- The body scrolls vertically when content overflows. Horizontal scrolling is
+  an M3 violation — the panel is too narrow to show wide items.
+- Return focus to the trigger on close. A modal sheet restores the element that
+  was focused when it opened; a standard sheet does not, so listen for
+  `mdClose` if you drive one from a button.
+
+<ComponentDemo
+  html={`<md-button id="ss-nd-btn" variant="filled">Non-dismissible modal</md-button>
+<md-button id="ss-ncb-btn" variant="outlined">No close button</md-button>
+<md-button id="ss-det-btn" variant="outlined">Detached with actions</md-button>
+
+<md-side-sheet id="ss-nd" variant="modal" headline="Confirm export" scrim-dismissible="false">
+  <p style="margin: 0; font-size: 14px;">The scrim will not dismiss this sheet, and Escape is ignored — finish the choice below.</p>
+  <md-button slot="actions" variant="text" data-ss2-close="ss-nd">Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-ss2-close="ss-nd">Export</md-button>
+</md-side-sheet>
+
+<md-side-sheet id="ss-ncb" variant="modal" headline="Reading pane" closeable="false">
+  <p style="margin: 0; font-size: 14px;">No close glyph in the header — dismissal is the scrim, Escape, or your own control.</p>
+  <md-button slot="actions" variant="text" data-ss2-close="ss-ncb">Done</md-button>
+</md-side-sheet>
+
+<md-side-sheet id="ss-det" variant="modal" detached headline="Order details" top-divider bottom-divider>
+  <p style="margin: 0; font-size: 14px;">A detached sheet floats inset from the edges with all four corners rounded.</p>
+  <md-button slot="actions" variant="text" data-ss2-close="ss-det">Close</md-button>
+  <md-button slot="actions" variant="filled" data-ss2-close="ss-det">Track</md-button>
+</md-side-sheet>`}
+  script={`
+    var pairs = [['ss-nd-btn', 'ss-nd'], ['ss-ncb-btn', 'ss-ncb'], ['ss-det-btn', 'ss-det']];
+
+    pairs.forEach(function (pair) {
+      var btn = root.querySelector('#' + pair[0]);
+      var sheet = root.querySelector('#' + pair[1]);
+      btn.addEventListener('mdClick', function () { sheet.show(); });
+      sheet.addEventListener('mdClose', function () { btn.focus({ preventScroll: true }); });
+    });
+
+    root.querySelectorAll('[data-ss2-close]').forEach(function (b) {
+      b.addEventListener('mdClick', function () {
+        root.querySelector('#' + b.getAttribute('data-ss2-close')).close();
+      });
+    });
+  `}
+  htmlForCode={`<md-side-sheet variant="modal" headline="Confirm export" scrim-dismissible="false">
+  <p>Neither the scrim nor Escape dismisses this sheet.</p>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Export</md-button>
+</md-side-sheet>
+
+<md-side-sheet variant="modal" headline="Reading pane" closeable="false">
+  <p>No close glyph in the header.</p>
+</md-side-sheet>
+
+<md-side-sheet variant="modal" detached headline="Order details" top-divider bottom-divider>
+  <p>Floats inset from every edge.</p>
+  <md-button slot="actions" variant="filled">Track</md-button>
+</md-side-sheet>`}
+  label="Non-dismissible, no close button, and detached with actions"
+  storyId="containment-side-sheet--non-dismissible-modal"
+/>
+
+:::caution[`scrim-dismissible="false"` also disables `Escape`]
+The same flag guards the scrim click and the document `Escape` handler. A sheet
+with `scrim-dismissible="false"` and `closeable="false"` has **no built-in way
+out** — you must slot your own close control into `actions`. The `close` slot is
+not an escape hatch here: it only renders while `closeable` is true, so turning
+`closeable` off drops anything you put in it.
+:::
+
+## Worked panels
+
+The panel is a container, not a workflow — the workflow is yours. This one wires
+the whole loop: a trigger, a modal filter sheet, an `actions` row that applies
+the selection, and a summary written back into the page on `mdClose`.
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-wrap:wrap; align-items:center; gap:16px; min-block-size:56px;">
+  <md-button id="ss-wp-btn" variant="filled" icon="filter_list">Filter results</md-button>
+  <span id="ss-wp-out" style="font-family:ui-monospace,monospace; font-size:.8125rem; color:var(--md-sys-color-on-surface-variant);">No filters applied.</span>
+</div>
+
+<md-side-sheet id="ss-wp" variant="modal" side="end" headline="Filter results" top-divider bottom-divider>
+  <label style="display:flex; align-items:center; gap:8px; padding-block:6px;"><md-checkbox data-ss-filter="In stock" checked></md-checkbox> In stock</label>
+  <label style="display:flex; align-items:center; gap:8px; padding-block:6px;"><md-checkbox data-ss-filter="On sale"></md-checkbox> On sale</label>
+  <label style="display:flex; align-items:center; gap:8px; padding-block:6px;"><md-checkbox data-ss-filter="Free delivery"></md-checkbox> Free delivery</label>
+  <label style="display:flex; align-items:center; gap:8px; padding-block:6px;"><md-checkbox data-ss-filter="Rated 4+"></md-checkbox> Rated 4+</label>
+  <md-button slot="actions" variant="text" id="ss-wp-reset">Reset</md-button>
+  <md-button slot="actions" variant="filled" id="ss-wp-apply">Apply</md-button>
+</md-side-sheet>`}
+  script={`
+    var sheet = root.querySelector('#ss-wp');
+    var btn = root.querySelector('#ss-wp-btn');
+    var out = root.querySelector('#ss-wp-out');
+    var boxes = Array.prototype.slice.call(root.querySelectorAll('[data-ss-filter]'));
+
+    btn.addEventListener('mdClick', function () { sheet.show(); });
+
+    root.querySelector('#ss-wp-reset').addEventListener('mdClick', function () {
+      boxes.forEach(function (b) { b.checked = false; });
+    });
+
+    root.querySelector('#ss-wp-apply').addEventListener('mdClick', function () {
+      var picked = boxes
+        .filter(function (b) { return b.checked; })
+        .map(function (b) { return b.getAttribute('data-ss-filter'); });
+      out.textContent = picked.length
+        ? picked.length + ' filter(s): ' + picked.join(', ')
+        : 'No filters applied.';
+      sheet.close();
+    });
+
+    sheet.addEventListener('mdClose', function () { btn.focus({ preventScroll: true }); });
+  `}
+  htmlForCode={`<md-button id="filter-btn" variant="filled" icon="filter_list">Filter results</md-button>
+
+<md-side-sheet id="filters" variant="modal" side="end" headline="Filter results" top-divider bottom-divider>
+  <label><md-checkbox data-filter="In stock" checked></md-checkbox> In stock</label>
+  <label><md-checkbox data-filter="On sale"></md-checkbox> On sale</label>
+  <md-button slot="actions" variant="text" id="filter-reset">Reset</md-button>
+  <md-button slot="actions" variant="filled" id="filter-apply">Apply</md-button>
+</md-side-sheet>`}
+  htmlCode={`<md-button id="filter-btn" variant="filled" icon="filter_list">Filter results</md-button>
+<span id="filter-summary">No filters applied.</span>
+
+<md-side-sheet id="filters" variant="modal" side="end" headline="Filter results" top-divider bottom-divider>
+  <label><md-checkbox data-filter="In stock" checked></md-checkbox> In stock</label>
+  <label><md-checkbox data-filter="On sale"></md-checkbox> On sale</label>
+  <md-button slot="actions" variant="text" id="filter-reset">Reset</md-button>
+  <md-button slot="actions" variant="filled" id="filter-apply">Apply</md-button>
+</md-side-sheet>
+
+\x3Cscript type="module">
+  const panel = document.getElementById('filters');
+  const trigger = document.getElementById('filter-btn');
+  const summary = document.getElementById('filter-summary');
+  const boxes = [...panel.querySelectorAll('[data-filter]')];
+
+  trigger.addEventListener('mdClick', () => panel.show());
+
+  document.getElementById('filter-reset').addEventListener('mdClick', () => {
+    boxes.forEach((b) => (b.checked = false));
+  });
+
+  document.getElementById('filter-apply').addEventListener('mdClick', () => {
+    const picked = boxes.filter((b) => b.checked).map((b) => b.dataset.filter);
+    summary.textContent = picked.length ? picked.join(', ') : 'No filters applied.';
+    panel.close();
+  });
+
+  panel.addEventListener('mdClose', () => trigger.focus({ preventScroll: true }));
+\x3C/script>`}
+  react={`import { useState } from 'react';
+import { MdSideSheet, MdButton, MdCheckbox } from '@awc-ui/react';
+
+const FILTERS = ['In stock', 'On sale'];
+
+export function FilterPanel() {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState<string[]>(['In stock']);
+  const [applied, setApplied] = useState<string[]>([]);
+
+  const toggle = (name: string) =>
+    setDraft((d) => (d.includes(name) ? d.filter((n) => n !== name) : [...d, name]));
+
+  return (
+    <>
+      <MdButton variant="filled" icon="filter_list" onMdClick={() => setOpen(true)}>
+        Filter results
+      </MdButton>
+      <span>{applied.length ? applied.join(', ') : 'No filters applied.'}</span>
+
+      <MdSideSheet
+        variant="modal"
+        side="end"
+        headline="Filter results"
+        topDivider
+        bottomDivider
+        open={open}
+        onMdClose={() => setOpen(false)}
+      >
+        {FILTERS.map((name) => (
+          <label key={name}>
+            <MdCheckbox checked={draft.includes(name)} onMdChange={() => toggle(name)} />
+            {name}
+          </label>
+        ))}
+
+        <MdButton slot="actions" variant="text" onMdClick={() => setDraft([])}>
+          Reset
+        </MdButton>
+        <MdButton
+          slot="actions"
+          variant="filled"
+          onMdClick={() => { setApplied(draft); setOpen(false); }}
+        >
+          Apply
+        </MdButton>
+      </MdSideSheet>
+    </>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-filter-panel',
+  template: \`
+    <md-button variant="filled" icon="filter_list" (mdClick)="open = true">
+      Filter results
+    </md-button>
+    <span>{{ applied.length ? applied.join(', ') : 'No filters applied.' }}</span>
+
+    <md-side-sheet
+      variant="modal"
+      side="end"
+      headline="Filter results"
+      top-divider
+      bottom-divider
+      [open]="open"
+      (mdClose)="open = false"
+    >
+      <label *ngFor="let name of filters">
+        <md-checkbox
+          [checked]="draft.includes(name)"
+          (mdChange)="toggle(name)"
+        ></md-checkbox>
+        {{ name }}
+      </label>
+
+      <md-button slot="actions" variant="text" (mdClick)="draft = []">Reset</md-button>
+      <md-button slot="actions" variant="filled" (mdClick)="apply()">Apply</md-button>
+    </md-side-sheet>
+  \`,
+})
+export class FilterPanelComponent {
+  filters = ['In stock', 'On sale'];
+  draft: string[] = ['In stock'];
+  applied: string[] = [];
+  open = false;
+
+  toggle(name: string) {
+    this.draft = this.draft.includes(name)
+      ? this.draft.filter((n) => n !== name)
+      : [...this.draft, name];
+  }
+
+  apply() {
+    this.applied = [...this.draft];
+    this.open = false;
+  }
+}`}
+  vue={`\x3Cscript setup lang="ts">
+import { ref } from 'vue';
+
+const filters = ['In stock', 'On sale'];
+const draft = ref<string[]>(['In stock']);
+const applied = ref<string[]>([]);
+const open = ref(false);
+
+function toggle(name: string) {
+  draft.value = draft.value.includes(name)
+    ? draft.value.filter((n) => n !== name)
+    : [...draft.value, name];
+}
+
+function apply() {
+  applied.value = [...draft.value];
+  open.value = false;
+}
+\x3C/script>
+
+<template>
+  <md-button variant="filled" icon="filter_list" @mdClick="open = true">
+    Filter results
+  </md-button>
+  <span>{{ applied.length ? applied.join(', ') : 'No filters applied.' }}</span>
+
+  <!-- :prop on a custom element is a property binding, so no ref is needed. -->
+  <md-side-sheet
+    variant="modal"
+    side="end"
+    headline="Filter results"
+    top-divider
+    bottom-divider
+    :open="open"
+    @mdClose="open = false"
+  >
+    <label v-for="name in filters" :key="name">
+      <md-checkbox :checked="draft.includes(name)" @mdChange="toggle(name)" />
+      {{ name }}
+    </label>
+
+    <md-button slot="actions" variant="text" @mdClick="draft = []">Reset</md-button>
+    <md-button slot="actions" variant="filled" @mdClick="apply">Apply</md-button>
+  </md-side-sheet>
+</template>`}
+  svelte={`\x3Cscript lang="ts">
+  const filters = ['In stock', 'On sale'];
+  let draft: string[] = ['In stock'];
+  let applied: string[] = [];
+  let open = false;
+
+  function toggle(name: string) {
+    draft = draft.includes(name) ? draft.filter((n) => n !== name) : [...draft, name];
+  }
+
+  function apply() {
+    applied = [...draft];
+    open = false;
+  }
+\x3C/script>
+
+<md-button variant="filled" icon="filter_list" on:mdClick={() => (open = true)}>
+  Filter results
+</md-button>
+<span>{applied.length ? applied.join(', ') : 'No filters applied.'}</span>
+
+<md-side-sheet
+  variant="modal"
+  side="end"
+  headline="Filter results"
+  top-divider
+  bottom-divider
+  {open}
+  on:mdClose={() => (open = false)}
+>
+  {#each filters as name}
+    <label>
+      <md-checkbox checked={draft.includes(name)} on:mdChange={() => toggle(name)}></md-checkbox>
+      {name}
+    </label>
+  {/each}
+
+  <md-button slot="actions" variant="text" on:mdClick={() => (draft = [])}>Reset</md-button>
+  <md-button slot="actions" variant="filled" on:mdClick={apply}>Apply</md-button>
+</md-side-sheet>`}
+  label="A filter panel, wired end to end"
+  storyId="containment-side-sheet--filter-panel"
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdOpen` | no | `void` | The sheet opens |
+| `mdClose` | no | `void` | The sheet closes, **by any route** |
+| `mdCancel` | no | `void` | The sheet is *dismissed* — `Escape`, a scrim click, or the header close button |
+| `mdBack` | no | `void` | The back affordance is pressed |
+
+### `mdCancel` and `mdClose` are not interchangeable
+
+`mdCancel` is dismissal only. `mdClose` fires on **every** close, including the
+one that immediately follows a dismissal and the one from your own `close()`
+call. Treat them as the same event and you will handle every dismissal twice.
+
+| You want to… | Listen to |
+|---|---|
+| Restore focus to the trigger | `mdClose` |
+| Persist or discard panel state on close | `mdClose` |
+| Warn that the user is abandoning unsaved edits | `mdCancel` |
+| Distinguish *Apply* from *Escape* | `mdCancel`, and set a flag your `mdClose` handler reads |
+| Swap the panel to its parent view | `mdBack` |
+
+<ComponentDemo
+  html={`<md-button id="ss-ev-open" variant="filled">Open the panel</md-button>
+<md-button id="ss-ev-clear" variant="outlined">Clear log</md-button>
+
+<md-side-sheet id="ss-ev" variant="modal" side="end" headline="Advanced filters" show-back top-divider bottom-divider>
+  <p style="margin:0; font-size:14px;">The close glyph, Escape and the scrim each take a different route out. The back arrow stays put — it only reports the press, and the log shows what you would act on.</p>
+  <md-button slot="actions" variant="filled" id="ss-ev-done">Done</md-button>
+</md-side-sheet>
+
+<output id="ss-ev-log" style="display:block; margin-block-start:16px; padding:12px 14px; min-block-size:6em; white-space:pre; font-family:ui-monospace,monospace; font-size:.8125rem; line-height:1.6; color:var(--md-sys-color-on-surface-variant); background:var(--md-sys-color-surface-container-low); border-radius:12px;">Open the panel, then try each way out.</output>`}
+  script={`
+    var sheet = root.querySelector('#ss-ev');
+    var open = root.querySelector('#ss-ev-open');
+    var log = root.querySelector('#ss-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 5);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    open.addEventListener('mdClick', function () { sheet.show(); });
+    root.querySelector('#ss-ev-done').addEventListener('mdClick', function () { sheet.close(); });
+
+    root.querySelector('#ss-ev-clear').addEventListener('mdClick', function () {
+      lines = [];
+      log.textContent = 'Cleared.';
+    });
+
+    sheet.addEventListener('mdOpen', function () { push('mdOpen    -  the panel is on screen'); });
+    sheet.addEventListener('mdBack', function () {
+      push('mdBack    -  you swap the content yourself');
+      sheet.headline = 'Filters';
+      sheet.showBack = false;
+    });
+    sheet.addEventListener('mdCancel', function () { push('mdCancel  -  dismissed, not applied'); });
+    sheet.addEventListener('mdClose', function () {
+      push('mdClose   -  closed, by any route');
+      sheet.headline = 'Advanced filters';
+      sheet.showBack = true;
+      open.focus({ preventScroll: true });
+    });
+  `}
+  htmlCode={`<md-button id="open-panel" variant="filled">Open the panel</md-button>
+
+<md-side-sheet id="panel" variant="modal" headline="Advanced filters" show-back></md-side-sheet>
+
+\x3Cscript type="module">
+  const panel = document.getElementById('panel');
+  const trigger = document.getElementById('open-panel');
+
+  trigger.addEventListener('mdClick', () => panel.show());
+
+  panel.addEventListener('mdOpen', () => console.log('mdOpen'));
+
+  panel.addEventListener('mdBack', () => {   // you swap the content
+    panel.headline = 'Filters';
+    panel.showBack = false;
+  });
+
+  panel.addEventListener('mdCancel', () => console.log('dismissed, not applied'));
+  panel.addEventListener('mdClose', () => trigger.focus({ preventScroll: true }));
+\x3C/script>`}
+  react={`import { useState } from 'react';
+import { MdSideSheet, MdButton } from '@awc-ui/react';
+
+export function FiltersPanel() {
+  const [open, setOpen] = useState(false);
+  const [headline, setHeadline] = useState('Advanced filters');
+  const [showBack, setShowBack] = useState(true);
+
+  return (
+    <>
+      <MdButton variant="filled" onMdClick={() => setOpen(true)}>Open the panel</MdButton>
+
+      <MdSideSheet
+        variant="modal"
+        open={open}
+        headline={headline}
+        showBack={showBack}
+        onMdOpen={() => console.log('mdOpen')}
+        onMdBack={() => { setHeadline('Filters'); setShowBack(false); }}
+        onMdCancel={() => console.log('dismissed, not applied')}
+        onMdClose={() => {
+          setOpen(false);
+          setHeadline('Advanced filters');
+          setShowBack(true);
+        }}
+      />
+    </>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-filters-panel',
+  template: \`
+    <md-button variant="filled" (mdClick)="open = true">Open the panel</md-button>
+
+    <md-side-sheet
+      variant="modal"
+      [open]="open"
+      [headline]="headline"
+      [showBack]="showBack"
+      (mdOpen)="log('mdOpen')"
+      (mdBack)="onBack()"
+      (mdCancel)="log('dismissed, not applied')"
+      (mdClose)="onClose()"
+    ></md-side-sheet>
+  \`,
+})
+export class FiltersPanelComponent {
+  open = false;
+  headline = 'Advanced filters';
+  showBack = true;
+
+  log(message: string) { console.log(message); }
+
+  onBack() {
+    this.headline = 'Filters';
+    this.showBack = false;
+  }
+
+  onClose() {
+    this.open = false;
+    this.headline = 'Advanced filters';
+    this.showBack = true;
+  }
+}`}
+  vue={`\x3Cscript setup lang="ts">
+import { ref } from 'vue';
+
+const open = ref(false);
+const headline = ref('Advanced filters');
+const showBack = ref(true);
+
+function onBack() {
+  headline.value = 'Filters';
+  showBack.value = false;
+}
+
+function onClose() {
+  open.value = false;
+  headline.value = 'Advanced filters';
+  showBack.value = true;
+}
+\x3C/script>
+
+<template>
+  <md-button variant="filled" @mdClick="open = true">Open the panel</md-button>
+
+  <!-- :prop on a custom element is a property binding, so no ref is needed. -->
+  <md-side-sheet
+    variant="modal"
+    :open="open"
+    :headline="headline"
+    :showBack="showBack"
+    @mdOpen="console.log('mdOpen')"
+    @mdBack="onBack"
+    @mdCancel="console.log('dismissed, not applied')"
+    @mdClose="onClose"
+  />
+</template>`}
+  svelte={`\x3Cscript lang="ts">
+  let open = false;
+  let headline = 'Advanced filters';
+  let showBack = true;
+
+  function onBack() {
+    headline = 'Filters';
+    showBack = false;
+  }
+
+  function onClose() {
+    open = false;
+    headline = 'Advanced filters';
+    showBack = true;
+  }
+\x3C/script>
+
+<md-button variant="filled" on:mdClick={() => (open = true)}>Open the panel</md-button>
+
+<md-side-sheet
+  variant="modal"
+  {open}
+  {headline}
+  show-back={showBack || undefined}
+  on:mdOpen={() => console.log('mdOpen')}
+  on:mdBack={onBack}
+  on:mdCancel={() => console.log('dismissed, not applied')}
+  on:mdClose={onClose}
+></md-side-sheet>`}
+  label="Every event, logged as it fires"
+  storyId="containment-side-sheet--modal-with-back"
+/>
+
+:::tip[`show()` and `close()` are the whole imperative surface]
+Both are `async` and both simply set `open`. Anything you can do with them you
+can do by binding `open` — which is what the framework tabs above do, so the
+panel's visibility stays in your state rather than in the DOM.
+:::
+
+Nested flows are the one pattern the preview above cannot show end to end: the
+back arrow only *tells* you it was pressed, so re-rendering the panel's body is
+yours to do. Here is that step, per technology.
+
+<TechnologyTabs
+  html={`<md-button id="open-panel" variant="filled">Filters</md-button>
+
+<md-side-sheet id="panel" variant="modal" headline="Filters"></md-side-sheet>
+
+\x3Cscript type="module">
+  const panel = document.getElementById('panel');
+  const trigger = document.getElementById('open-panel');
+
+  const views = {
+    root: { headline: 'Filters', back: false, body: '<p>Pick a category to drill in.</p>' },
+    brand: { headline: 'Brand', back: true, body: '<p>Acme · Globex · Initech</p>' },
+  };
+
+  function render(name) {
+    const view = views[name];
+    panel.headline = view.headline;
+    panel.showBack = view.back;
+    panel.innerHTML = view.body;
+  }
+
+  trigger.addEventListener('mdClick', () => { render('root'); panel.show(); });
+
+  // mdBack does NOT navigate — it only reports the press.
+  panel.addEventListener('mdBack', () => render('root'));
+  panel.addEventListener('mdClose', () => trigger.focus({ preventScroll: true }));
+\x3C/script>`}
+  react={`import { useState } from 'react';
+import { MdSideSheet, MdButton } from '@awc-ui/react';
+
+const VIEWS = {
+  root: { headline: 'Filters', back: false },
+  brand: { headline: 'Brand', back: true },
+} as const;
+
+export function NestedFilters() {
+  const [open, setOpen] = useState(false);
+  const [view, setView] = useState<keyof typeof VIEWS>('root');
+
+  return (
+    <>
+      <MdButton variant="filled" onMdClick={() => { setView('root'); setOpen(true); }}>
+        Filters
+      </MdButton>
+
+      <MdSideSheet
+        variant="modal"
+        open={open}
+        headline={VIEWS[view].headline}
+        showBack={VIEWS[view].back}
+        onMdBack={() => setView('root')}
+        onMdClose={() => setOpen(false)}
+      >
+        {view === 'root' ? (
+          <button onClick={() => setView('brand')}>Brand</button>
+        ) : (
+          <p>Acme · Globex · Initech</p>
+        )}
+      </MdSideSheet>
+    </>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+type View = 'root' | 'brand';
+
+@Component({
+  selector: 'app-nested-filters',
+  template: \`
+    <md-button variant="filled" (mdClick)="openAt('root')">Filters</md-button>
+
+    <md-side-sheet
+      variant="modal"
+      [open]="open"
+      [headline]="view === 'root' ? 'Filters' : 'Brand'"
+      [showBack]="view !== 'root'"
+      (mdBack)="view = 'root'"
+      (mdClose)="open = false"
+    >
+      <button *ngIf="view === 'root'" (click)="view = 'brand'">Brand</button>
+      <p *ngIf="view === 'brand'">Acme · Globex · Initech</p>
+    </md-side-sheet>
+  \`,
+})
+export class NestedFiltersComponent {
+  open = false;
+  view: View = 'root';
+
+  openAt(view: View) {
+    this.view = view;
+    this.open = true;
+  }
+}`}
+  vue={`\x3Cscript setup lang="ts">
+import { ref } from 'vue';
+
+const open = ref(false);
+const view = ref<'root' | 'brand'>('root');
+
+function openPanel() {
+  view.value = 'root';
+  open.value = true;
+}
+\x3C/script>
+
+<template>
+  <md-button variant="filled" @mdClick="openPanel">Filters</md-button>
+
+  <md-side-sheet
+    variant="modal"
+    :open="open"
+    :headline="view === 'root' ? 'Filters' : 'Brand'"
+    :showBack="view !== 'root'"
+    @mdBack="view = 'root'"
+    @mdClose="open = false"
+  >
+    <button v-if="view === 'root'" @click="view = 'brand'">Brand</button>
+    <p v-else>Acme · Globex · Initech</p>
+  </md-side-sheet>
+</template>`}
+  svelte={`\x3Cscript lang="ts">
+  let open = false;
+  let view: 'root' | 'brand' = 'root';
+
+  function openPanel() {
+    view = 'root';
+    open = true;
+  }
+\x3C/script>
+
+<md-button variant="filled" on:mdClick={openPanel}>Filters</md-button>
+
+<md-side-sheet
+  variant="modal"
+  {open}
+  headline={view === 'root' ? 'Filters' : 'Brand'}
+  show-back={view !== 'root' || undefined}
+  on:mdBack={() => (view = 'root')}
+  on:mdClose={() => (open = false)}
+>
+  {#if view === 'root'}
+    <button on:click={() => (view = 'brand')}>Brand</button>
+  {:else}
+    <p>Acme · Globex · Initech</p>
+  {/if}
+</md-side-sheet>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[`aria-label` maps to `sheetAriaLabel`]
+The prop is named `sheetAriaLabel` in JS but its attribute is the plain
+`aria-label`, so HTML authors write `aria-label="Filter panel"` as usual, and
+framework code writes `sheetAriaLabel`.
+:::
+
+## Accessibility
+
+- A **modal** sheet's container is `role="dialog"` with `aria-modal="true"`; a
+  **standard** sheet's container is `role="region"`. That choice is the whole
+  accessibility contract, so pick it deliberately.
+- Name the sheet with `headline` (wired up as `aria-labelledby`) or
+  `aria-label`. With neither, the container falls back to the label
+  `Side sheet` — accurate, but useless to a screen-reader user. Never ship an
+  unnamed panel.
+- A closed **modal** sheet stays in the DOM — it slides off-screen for the exit
+  motion rather than being removed — and is marked `inert`, so its close button
+  and slotted controls are dropped from the tab order and the a11y tree while
+  hidden: no `aria-hidden-focus` violations. A closed **standard** sheet is
+  `display: none` instead, which removes it from the layout and the a11y tree
+  outright; it carries the same `inert` for consistency.
+- A modal sheet traps focus between two guard sentinels, moves focus to the
+  first focusable element on open, and restores it to the opener on close. A
+  standard sheet does neither: it joins the page tab order in DOM position, so
+  put it where it belongs in the reading order.
+- Keep a keyboard path out: `closeable` (on by default), `Escape`, or a cancel
+  button in the actions row.
+
+Tab through the pair below. In the standard sheet you can tab straight past the
+panel back into the page; in the modal one, `Tab` cycles inside the panel until
+you press `Escape`, and focus lands back on the button that opened it.
+
+<ComponentDemo
+  html={`<div style="display:grid; grid-template-columns:auto 1fr; gap:14px 16px; align-items:center;">
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">standard</span>
+  <div style="display:flex; gap:16px; align-items:stretch; min-block-size:150px;">
+    <md-side-sheet variant="standard" headline="Related links" open aria-label="Related links" style="flex:0 0 auto; --md-side-sheet-width:240px; --md-side-sheet-max-width:240px;">
+      <p style="margin:0; font-size:14px;">Not trapped — Tab moves on into the page.</p>
+      <md-button slot="actions" variant="text">Dismiss</md-button>
+    </md-side-sheet>
+    <div style="flex:1; padding:8px; color:var(--md-sys-color-on-surface-variant);">
+      <p style="margin:0;">role=region, no scrim, Escape ignored.</p>
+    </div>
+  </div>
+
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">modal</span>
+  <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; min-block-size:56px;">
+    <md-button id="ss-a11y-btn" variant="filled">Open the modal panel</md-button>
+    <span style="color:var(--md-sys-color-on-surface-variant); font-size:.875rem;">role=dialog, aria-modal, focus trapped, Escape closes.</span>
+  </div>
+</div>
+
+<md-side-sheet id="ss-a11y" variant="modal" side="end" headline="Trapped focus" top-divider bottom-divider>
+  <p style="margin:0 0 12px; font-size:14px;">Tab repeatedly — focus cycles between these controls and never leaves the panel.</p>
+  <md-text-field label="Search" variant="outlined" style="inline-size:100%;"></md-text-field>
+  <md-button slot="actions" variant="text" id="ss-a11y-close">Close</md-button>
+  <md-button slot="actions" variant="filled">Apply</md-button>
+</md-side-sheet>`}
+  script={`
+    var sheet = root.querySelector('#ss-a11y');
+    var btn = root.querySelector('#ss-a11y-btn');
+
+    btn.addEventListener('mdClick', function () { sheet.show(); });
+    root.querySelector('#ss-a11y-close').addEventListener('mdClick', function () { sheet.close(); });
+  `}
+  htmlForCode={`<md-side-sheet variant="standard" headline="Related links" aria-label="Related links" open>
+  <p>Not trapped — Tab moves on into the page.</p>
+</md-side-sheet>
+
+<md-side-sheet variant="modal" headline="Trapped focus" top-divider bottom-divider>
+  <md-text-field label="Search" variant="outlined"></md-text-field>
+  <md-button slot="actions" variant="filled">Apply</md-button>
+</md-side-sheet>`}
+  label="Keyboard and screen-reader behaviour — standard vs modal"
+  storyId="containment-side-sheet--accessibility"
+/>
+
+The modal sheet restores focus itself, with `preventScroll` so the page does not
+jump. A standard sheet you drive from a button does not, which is why the demos
+above listen for `mdClose` and call `focus()` on the trigger.
+
+## RTL, density & i18n
+
+**RTL** — `side="start"` / `side="end"` and every padding are logical, so the
+same markup lands on the correct edge under `dir="rtl"` with no extra work:
+
+```html
+<md-side-sheet variant="standard" side="end" headline="Filters"></md-side-sheet>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid; grid-template-columns:auto 1fr; gap:14px 16px; align-items:center;">
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex; gap:16px; align-items:stretch; min-block-size:150px; border:1px dashed var(--md-sys-color-outline-variant); border-radius:12px; padding:8px;">
+    <div style="flex:1; padding:8px; color:var(--md-sys-color-on-surface-variant);"><p style="margin:0;">Main content.</p></div>
+    <md-side-sheet variant="standard" side="end" headline="Filters" open style="flex:0 0 auto; --md-side-sheet-width:220px; --md-side-sheet-max-width:220px;">
+      <p style="margin:0; font-size:14px;">Trailing edge is the right.</p>
+    </md-side-sheet>
+  </div>
+
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex; gap:16px; align-items:stretch; min-block-size:150px; border:1px dashed var(--md-sys-color-outline-variant); border-radius:12px; padding:8px;">
+    <div style="flex:1; padding:8px; color:var(--md-sys-color-on-surface-variant);"><p style="margin:0;">المحتوى الرئيسي.</p></div>
+    <md-side-sheet variant="standard" side="end" headline="عوامل التصفية" open style="flex:0 0 auto; --md-side-sheet-width:220px; --md-side-sheet-max-width:220px;">
+      <p style="margin:0; font-size:14px;">الحافة النهائية هي اليسار.</p>
+    </md-side-sheet>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+  storyId="containment-side-sheet--rtl"
+/>
+
+### `side` is logical, not physical
+
+There is no `side="right"`. `side="end"` means *the trailing edge*, which is the
+right in LTR and the left in RTL — so if you reach for `side="start"` because a
+mock shows the panel on the left, it will jump to the right the moment the app
+is translated into Arabic or Hebrew. Both rows below are `dir="rtl"`:
+
+<ComponentDemo
+  html={`<div style="display:grid; grid-template-columns:auto 1fr; gap:14px 16px; align-items:center;">
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">do</span>
+  <div dir="rtl" style="display:flex; gap:16px; align-items:stretch; min-block-size:150px; border:1px dashed var(--md-sys-color-outline-variant); border-radius:12px; padding:8px;">
+    <div style="flex:1; padding:8px; color:var(--md-sys-color-on-surface-variant);"><p style="margin:0; font-size:14px;">side=end — supplementary content on the trailing edge, wherever that is.</p></div>
+    <md-side-sheet variant="standard" side="end" headline="عوامل التصفية" open style="flex:0 0 auto; --md-side-sheet-width:210px; --md-side-sheet-max-width:210px;">
+      <p style="margin:0; font-size:14px;">تتبع اتجاه النص.</p>
+    </md-side-sheet>
+  </div>
+
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">don't</span>
+  <div dir="rtl" style="display:flex; gap:16px; align-items:stretch; min-block-size:150px; border:1px dashed var(--md-sys-color-error); border-radius:12px; padding:8px;">
+    <md-side-sheet variant="standard" side="start" headline="عوامل التصفية" open style="flex:0 0 auto; --md-side-sheet-width:210px; --md-side-sheet-max-width:210px;">
+      <p style="margin:0; font-size:14px;">هنا لأن التصميم قال يسار.</p>
+    </md-side-sheet>
+    <div style="flex:1; padding:8px; color:var(--md-sys-color-on-surface-variant);"><p style="margin:0; font-size:14px;">side=start picked to mean the left — under RTL it is now the right, and the panel has swapped sides.</p></div>
+  </div>
+</div>`}
+  label="side is logical — the same value moves edges under dir=rtl"
+  storyId="containment-side-sheet--rtl"
+/>
+
+### Every density rung
+
+`density="-1…-4"` compacts the header, the content padding and the actions row,
+and overrides the rung inherited from a global `data-density` ancestor. The `0`
+row below is the untouched default — not a rule of its own.
+
+<ComponentDemo
+  html={`<div style="display:grid; grid-template-columns:auto 1fr; gap:14px 16px; align-items:center;">
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">0</span>
+  <md-side-sheet variant="standard" headline="Filters" density="0" open style="--md-side-sheet-width:260px; --md-side-sheet-max-width:260px;">
+    <p style="margin:0; font-size:13px;">Default padding.</p>
+    <md-button slot="actions" variant="text">Reset</md-button>
+  </md-side-sheet>
+
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">-1</span>
+  <md-side-sheet variant="standard" headline="Filters" density="-1" open style="--md-side-sheet-width:260px; --md-side-sheet-max-width:260px;">
+    <p style="margin:0; font-size:13px;">One rung tighter.</p>
+    <md-button slot="actions" variant="text">Reset</md-button>
+  </md-side-sheet>
+
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">-2</span>
+  <md-side-sheet variant="standard" headline="Filters" density="-2" open style="--md-side-sheet-width:260px; --md-side-sheet-max-width:260px;">
+    <p style="margin:0; font-size:13px;">Admin density.</p>
+    <md-button slot="actions" variant="text">Reset</md-button>
+  </md-side-sheet>
+
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">-3</span>
+  <md-side-sheet variant="standard" headline="Filters" density="-3" open style="--md-side-sheet-width:260px; --md-side-sheet-max-width:260px;">
+    <p style="margin:0; font-size:13px;">Dense dashboards.</p>
+    <md-button slot="actions" variant="text">Reset</md-button>
+  </md-side-sheet>
+
+  <span style="inline-size:3.5rem; opacity:.65; font-size:.75rem; font-family:ui-monospace,monospace;">-4</span>
+  <md-side-sheet variant="standard" headline="Filters" density="-4" open style="--md-side-sheet-width:260px; --md-side-sheet-max-width:260px;">
+    <p style="margin:0; font-size:13px;">The floor.</p>
+    <md-button slot="actions" variant="text">Reset</md-button>
+  </md-side-sheet>
+</div>`}
+  label="Density 0 through -4 — header, padding and actions all taper"
+/>
+
+:::caution[`density="0"` is not an opt-out]
+`md-side-sheet.css` defines `:host([density='-1'])` through
+`:host([density='-4'])` and nothing else — the token layer leaves the `0` rung
+out on purpose, so `density="0"` means "inherit whatever the ancestor says". A
+panel marked `density="0"` inside `data-density="-2"` still renders at `-2`. To
+reset a panel back to the default metrics, set the signal directly:
+`style="--md-sys-density-scale: 0"`.
+:::
+
+Measured across the five: the header goes **76 → 69 → 62 → 59 → 56px** and the
+content padding **12/24 → 11/22 → 10/20 → 9/18 → 8/16px**.
+
+:::caution[Width tapers too — and it is the thing that pinches]
+The default `--md-side-sheet-width` is
+`max(280px, 360px + rung × 16px)`, so `-4` takes the panel from 360px to 296px
+while every slotted control inside it also shrinks. The header close button
+tapers with it — `max(32px, 40px + rung × 4px)`, so 40px at `0` down to 32px at
+`-2` and below, none of which reaches the 44px WCAG target-size minimum. If
+pointer accuracy matters, keep a full-size cancel control in the `actions` row,
+and check at every rung that your longest label still fits — see
+[Density](/behaviour/density/#accessibility).
+:::
+
+### Density and direction together
+
+They compose: a `data-density` ancestor sets the rung for everything below it,
+`dir="rtl"` flips the edge, and a local `density="-1…-4"` prop tightens one panel
+further. Going back the other way needs the custom property, not `density="0"` —
+the third panel below resets with `style="--md-sys-density-scale: 0"`.
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:flex; gap:16px; align-items:stretch; min-block-size:180px; border:1px dashed var(--md-sys-color-outline); border-radius:12px; padding:12px;">
+  <div style="flex:1; min-inline-size:6rem; padding:8px; color:var(--md-sys-color-on-surface-variant);">
+    <p style="margin:0; font-size:14px;">dir=rtl, data-density=-2 on the wrapper.</p>
+  </div>
+  <md-side-sheet variant="standard" side="end" headline="موروث" open style="flex:0 0 auto; --md-side-sheet-width:190px; --md-side-sheet-max-width:190px;">
+    <p style="margin:0; font-size:13px;">يرث الدرجة ‎-2‎ من الأصل.</p>
+    <md-button slot="actions" variant="text">إعادة</md-button>
+  </md-side-sheet>
+  <md-side-sheet variant="standard" side="end" headline="مضغوط" density="-4" open style="flex:0 0 auto; --md-side-sheet-width:190px; --md-side-sheet-max-width:190px;">
+    <p style="margin:0; font-size:13px;">‎density="-4"‎ يضغط أكثر من الأصل.</p>
+    <md-button slot="actions" variant="text">إعادة</md-button>
+  </md-side-sheet>
+  <md-side-sheet variant="standard" side="end" headline="عادي" open style="flex:0 0 auto; --md-sys-density-scale:0; --md-side-sheet-width:190px; --md-side-sheet-max-width:190px;">
+    <p style="margin:0; font-size:13px;">‎--md-sys-density-scale: 0‎ يعيد الضبط.</p>
+    <md-button slot="actions" variant="text">إعادة</md-button>
+  </md-side-sheet>
+</div>`}
+  label="dir=rtl with data-density=-2 — one panel inherits, one tightens to -4, one resets via --md-sys-density-scale"
+/>
+
+### Longer translations in a fixed-width panel
+
+The panel's width does not grow with its content, so a headline or action label
+that fits in English can wrap — or ellipsize, since the headline is a single
+truncating line. Check each locale at your narrowest rung.
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 16px; align-items: stretch; min-block-size: 200px;">
+  <md-side-sheet variant="standard" headline="Filter" open style="flex: 0 0 auto; --md-side-sheet-width: 240px; --md-side-sheet-max-width: 240px;">
+    <p style="margin: 0; font-size: 14px;">Längere Übersetzungen können in einem schmalen Panel umbrechen — prüfen Sie die Breite pro Sprache.</p>
+    <md-button slot="actions" variant="text">Zurücksetzen</md-button>
+    <md-button slot="actions" variant="filled">Anwenden</md-button>
+  </md-side-sheet>
+  <md-side-sheet variant="standard" headline="フィルター" open style="flex: 0 0 auto; --md-side-sheet-width: 240px; --md-side-sheet-max-width: 240px;">
+    <p style="margin: 0; font-size: 14px;">見出し、本文、操作ラベルをすべて翻訳します。</p>
+    <md-button slot="actions" variant="text">リセット</md-button>
+    <md-button slot="actions" variant="filled">適用</md-button>
+  </md-side-sheet>
+</div>`}
+  label="Translated panels — German and Japanese"
+  storyId="containment-side-sheet--localization"
+/>
+
+**Density** — set it globally with `data-density` on any ancestor, or locally
+with the `density="-1…-4"` prop, which wins over the inherited rung. `density="0"`
+is not defined, so it inherits rather than resets; use
+`--md-sys-density-scale: 0` for that. See [Density](/behaviour/density/).
+
+**i18n** — translate `headline`, `aria-label` and every action label. The panel
+width is fixed-ish, so check that longer translations do not wrap awkwardly.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-side-sheet-container-color` | Surface background — **`variant="standard"` only** | `--md-sys-color-surface` (a modal container is fixed at `--md-sys-color-surface-container-low` and ignores this property) |
+| `--md-side-sheet-container-shape` | Corner radius | `0px`, or `--md-sys-shape-corner-large` when `detached` |
+| `--md-side-sheet-headline-color` | Headline text | `--md-sys-color-on-surface-variant` |
+| `--md-side-sheet-content-color` | Body text | `--md-sys-color-on-surface` |
+| `--md-side-sheet-scrim-color` | Modal backdrop | `rgba(0, 0, 0, 0.32)` |
+| `--md-side-sheet-divider-color` | Top / bottom rules | `--md-sys-color-outline-variant` |
+| `--md-side-sheet-icon-color` | Close and back glyphs | `--md-sys-color-on-surface-variant` |
+| `--md-side-sheet-width` | Panel inline size | `max(280px, 360px + rung × 16px)` |
+| `--md-side-sheet-max-width` | Maximum inline size | `max(320px, 400px + rung × 16px)` |
+
+<ComponentDemo
+  html={`<div style="inline-size:100%; block-size:300px; display:flex; border:1px solid var(--md-sys-color-outline-variant); border-radius:12px; overflow:hidden; background:var(--md-sys-color-surface);">
+  <div style="flex:1 1 auto; min-inline-size:0; padding:20px;">
+    <md-button id="ss-theme-toggle" variant="tonal">Toggle themed panel</md-button>
+  </div>
+
+  <md-side-sheet id="ss-theme" variant="standard" side="end" headline="Themed" top-divider
+    style="flex:0 0 auto; --md-side-sheet-container-color: var(--md-sys-color-surface-container-highest); --md-side-sheet-headline-color: var(--md-sys-color-primary); --md-side-sheet-width: 240px; --md-side-sheet-max-width: 240px; --md-side-sheet-divider-color: var(--md-sys-color-primary);">
+    <p style="margin:0; color:var(--md-sys-color-on-surface-variant);">Narrower panel, primary-tinted headline and divider.</p>
+  </md-side-sheet>
+</div>`}
+  script={`
+    var sheet = root.querySelector('#ss-theme');
+    var toggle = root.querySelector('#ss-theme-toggle');
+
+    toggle.addEventListener('mdClick', function () {
+      if (sheet.open) sheet.close();
+      else sheet.show();
+    });
+    sheet.addEventListener('mdClose', function () { toggle.focus({ preventScroll: true }); });
+  `}
+  htmlForCode={`<md-side-sheet
+  variant="standard"
+  side="end"
+  headline="Themed"
+  top-divider
+  open
+  style="
+    --md-side-sheet-container-color: var(--md-sys-color-surface-container-highest);
+    --md-side-sheet-headline-color: var(--md-sys-color-primary);
+    --md-side-sheet-divider-color: var(--md-sys-color-primary);
+    --md-side-sheet-width: 240px;
+    --md-side-sheet-max-width: 240px;
+  "
+>
+  <p>Narrower panel, primary-tinted headline and divider.</p>
+</md-side-sheet>`}
+  label="Themed instances"
+  storyId="containment-side-sheet--customization"
+/>
+
+Check any override in both themes — the sheet sits on a surface role that is
+much closer to the page background on dark, so a panel that reads as clearly
+separated on light can lose its edge.
+
+<ComponentDemo
+  html={`<div data-theme="dark" style="display: flex; gap: 16px; align-items: stretch; min-block-size: 200px; padding: 12px; border-radius: 12px; background: var(--md-sys-color-surface);">
+  <div style="flex: 1; padding: 8px; color: var(--md-sys-color-on-surface-variant);">
+    <p style="margin: 0;">Pinned to the dark palette regardless of the theme you are reading in.</p>
+  </div>
+  <md-side-sheet variant="standard" headline="Filters" open style="flex: 0 0 auto; --md-side-sheet-width: 240px; --md-side-sheet-max-width: 240px;">
+    <p style="margin: 0; font-size: 14px;">Surface, divider and text roles all resolve from the dark palette.</p>
+    <md-button slot="actions" variant="filled">Apply</md-button>
+  </md-side-sheet>
+</div>`}
+  label="Pinned to the dark theme"
+  storyId="containment-side-sheet--dark-theme"
+/>
+
+**CSS parts** — `scrim`, `container`, `header`, `headline`, `close`,
+`divider-top`, `content`, `divider-bottom`, `actions`. Reach for them when a
+custom property is not enough: an accent border on the container, a different
+headline treatment, a wider gap between actions.
+
+<ComponentDemo
+  html={`<style>
+  .ss-parts::part(container) { border-inline-start: 3px solid var(--md-sys-color-primary); }
+  .ss-parts::part(headline) { font-style: italic; letter-spacing: .04em; }
+  .ss-parts::part(actions) { gap: 16px; }
+</style>
+<div style="display: flex; gap: 16px; align-items: stretch; min-block-size: 220px;">
+  <div style="flex: 1; padding: 8px; color: var(--md-sys-color-on-surface-variant);">
+    <p style="margin: 0;">Main content — the panel beside it is styled through its parts.</p>
+  </div>
+  <md-side-sheet class="ss-parts" variant="standard" headline="Styled with ::part()" open style="flex: 0 0 auto; --md-side-sheet-width: 260px; --md-side-sheet-max-width: 260px;">
+    <p style="margin: 0; font-size: 14px;">An accent edge on the container, an italic headline and a wider action gap.</p>
+    <md-button slot="actions" variant="text">Cancel</md-button>
+    <md-button slot="actions" variant="filled">Apply</md-button>
+  </md-side-sheet>
+</div>`}
+  label="CSS parts and custom-property overrides"
+  storyId="containment-side-sheet--css-parts"
+/>
+
+```css
+md-side-sheet::part(container) {
+  border-inline-start: 3px solid var(--md-sys-color-primary);
+}
+
+md-side-sheet::part(content) {
+  padding-inline: 24px;
+}
+```
+
+
+## Related
+
+[`md-bottom-sheet`](/components/bottom-sheet/) ·
+[`md-dialog`](/components/dialog/) ·
+[`md-navigation-rail`](/components/navigation-rail/) ·
+[`md-navigation-bar`](/components/navigation-bar/) ·
+[`md-menu`](/components/menu/) ·
+[`md-card`](/components/card/) ·
+[`md-icon-button`](/components/icon-button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-side-sheet" />

@@ -1,0 +1,183 @@
+{
+  "tag": "md-segmented-button",
+  "title": "Segmented Button",
+  "slug": "segmented-button",
+  "category": "Actions",
+  "subComponentOf": "md-segmented-button-set",
+  "storyId": "actions-segmented-button--playground",
+  "props": [
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "selected",
+      "attribute": "selected",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "noCheckmark",
+      "attribute": "no-checkmark",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "ripple",
+      "attribute": "ripple",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "segmentIndex",
+      "attribute": "segment-index",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "segmentTotal",
+      "attribute": "segment-total",
+      "type": "number",
+      "default": "1",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "segmentDensity",
+      "attribute": "segment-density",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "segmentMultiselect",
+      "attribute": "segment-multiselect",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdSegmentClick",
+      "detail": "{ value: string; selected: boolean }"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "icon",
+      "description": "Custom icon (replaces icon prop)"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": "Hover/press overlay"
+    },
+    {
+      "name": "label",
+      "description": "Label text"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-segmented-button-container-color",
+      "description": "Unselected bg"
+    },
+    {
+      "name": "--md-segmented-button-selected-container-color",
+      "description": "Selected bg"
+    },
+    {
+      "name": "--md-segmented-button-label-color",
+      "description": "Unselected text"
+    },
+    {
+      "name": "--md-segmented-button-selected-label-color",
+      "description": "Selected text"
+    },
+    {
+      "name": "--md-segmented-button-outline-color",
+      "description": "Outline color"
+    },
+    {
+      "name": "--md-segmented-button-container-shape",
+      "description": "Border-radius"
+    },
+    {
+      "name": "--md-segmented-button-icon-size",
+      "description": "Icon dimensions"
+    }
+  ],
+  "dependencies": [
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdSegmentClick",
+      "detail": "{ value: string; selected: boolean }"
+    }
+  ]
+}

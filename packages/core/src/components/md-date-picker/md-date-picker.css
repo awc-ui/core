@@ -1,0 +1,1485 @@
+/* ==========================================================
+   md-date-picker — Material Design 3 Date Picker
+   Spec: https://m3.material.io/components/date-pickers/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-date-picker-container-color       Dialog / popup body background
+     --md-date-picker-header-color          Modal header background
+     --md-date-picker-container-shape       Dialog / popup corner radius
+     --md-date-picker-field-color           Text-field resting outline color
+     --md-date-picker-field-focus-color     Text-field focused outline / label color
+     --md-date-picker-field-text-color      Text-field input text color
+     --md-date-picker-field-container-color Filled-field container background
+     --md-date-picker-field-container-shape Text-field corner radius (filled + outlined)
+     --md-date-picker-field-filled-pill     Filled field: 1 for capsule/pill (all corners)
+     --md-date-picker-field-supporting-color  Supporting text below the field
+     --md-date-picker-label-color           Floating label color
+     --md-date-picker-headline-color        Modal headline (selected date) color
+     --md-date-picker-supporting-color      Header supporting-text color
+     --md-date-picker-weekday-color         Weekday column-header color
+     --md-date-picker-day-color             Day cell text color
+     --md-date-picker-day-selected-color    Selected day text color
+     --md-date-picker-day-selected-bg       Selected day container color
+     --md-date-picker-day-selected-shape    Selected day corner radius (overrides morph)
+     --md-date-picker-day-today-shape       Today ring corner radius
+     --md-date-picker-today-outline-color   Today's outline ring color
+     --md-date-picker-day-outline-color     Deprecated — unselected days are plain text
+     --md-date-picker-action-color          Cancel / OK action label color
+     --md-date-picker-menu-color            Docked month/year menu surface
+     --md-date-picker-selection-bloom-duration  Docked month/year menu bloom-in duration
+     --md-date-picker-selection-bloom-easing    Docked month/year menu bloom-in easing
+     --md-date-picker-selection-bloom-out-duration  Docked menu bloom-out on pick (default short4)
+     --md-date-picker-calendar-bloom-duration   Docked day grid bloom-in after pick (default medium2)
+     --md-date-picker-grid-slide-duration       Day grid month/year slide duration
+     --md-date-picker-panel-bloom-out-duration  Panel bloom-out on dismiss (default short4)
+     --md-date-picker-scrim-color           Modal scrim color
+     --md-date-picker-icon-color            Trailing / nav icon color
+     --md-date-picker-panel-width           Modal / docked popup panel inline size
+     --md-date-picker-panel-max-block-size  Modal / docked popup panel max block size
+     --md-date-picker-docked-panel-width    Docked popup panel inline size (overrides panel-width)
+     --md-date-picker-year-inline-size      Year grid cell inline size (modal)
+     --md-date-picker-year-block-size       Year grid cell block size (modal)
+     --md-date-picker-year-grid-gap         Year grid row/column gap (modal)
+     --md-date-picker-year-grid-padding-inline  Year grid inline padding (modal)
+     --md-date-picker-year-grid-viewport-block-size  Year grid scroll viewport block size (modal)
+
+   CSS PARTS:
+     field            Text-field container (trigger)
+     leading-icon     Slotted leading icon wrapper
+     label            Floating field label
+     input            Field text input
+     calendar-button  Trailing calendar toggle button
+     supporting-text  Helper / error text below the field
+     modal            Modal wrapper (scrim + panel)
+     scrim            Modal scrim overlay
+     panel            Dialog / docked popup surface
+     header           Modal header region
+     supporting       Header supporting text
+     headline         Large selected-date headline
+     mode-toggle      Calendar / text-input switch button
+     body             Calendar / year / input body region
+     nav              Month label + prev/next nav row (also docked nav row)
+     month-toggle     Month-year menu button (opens year grid; modal; same as menu-button)
+     prev-button      Previous-month md-icon-button (modal)
+     next-button      Next-month md-icon-button (modal)
+     month-menu-button  Docked month dropdown menu button ("Aug ▾")
+     year-menu-button   Docked year dropdown menu button ("2025 ▾")
+     prev-month-button  Docked previous-month chevron icon button
+     next-month-button  Docked next-month chevron icon button
+     prev-year-button   Docked previous-year chevron icon button
+     next-year-button   Docked next-year chevron icon button
+     selection-divider  Divider between docked nav and month/year menu
+     month-menu       Docked inline baseline md-menu (month selection)
+     year-menu        Docked inline baseline md-menu (year selection)
+     month-option     A month option in the docked month menu
+     month-option-selected  The selected month option
+     year-option      A year option in the docked year menu
+     year-option-selected   The selected year option
+     calendar         Calendar grid wrapper
+     weekdays         Weekday header row
+     weekday          A single weekday column header
+     grid             Day-cell grid
+     day              A day cell button
+     day-unselected   Unselected in-month day cell (plain text)
+     day-selected     Selected day cell (filled circle)
+     day-today        Today's day cell (outlined circle)
+     day-disabled     Disabled / out-of-range day cell
+     day-outside      Adjacent-month day cell (muted)
+     year-grid        Year-selection grid (modal)
+     year-grid-wrap   Animated wrapper for modal year grid
+     year-grid-scroll md-scroll-shadow wrapper for modal year grid
+     year-grid-viewport  Modal year grid scroll viewport (re-exported)
+     year-grid-shadow-block-start  Top scroll shadow (re-exported)
+     year-grid-shadow-block-end    Bottom scroll shadow (re-exported)
+     year             A year cell button (modal)
+     year-unselected  Unselected year cell (plain text)
+     year-selected    Selected year cell (filled pill)
+     year-disabled    Disabled / out-of-range year cell
+     entry            In-dialog text-entry region
+     entry-input      In-dialog outlined md-text-field (single modal input)
+     actions          Cancel / OK action row
+     cancel-button    Cancel action
+     ok-button        Confirm action
+
+   SLOTS:
+     leading-icon     Custom leading icon for the field
+     calendar-icon    Custom trailing calendar toggle icon (replaces calendar-icon prop)
+     header           Replaces the entire modal header
+     actions          Replaces the Cancel / OK action row
+   ========================================================== */
+
+:host {
+  /* Public → internal token mapping */
+  --_selection-bloom-duration: var(
+    --md-date-picker-selection-bloom-duration,
+    var(--md-sys-motion-duration-long1, 450ms)
+  );
+  --_selection-bloom-easing: var(
+    --md-date-picker-selection-bloom-easing,
+    var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1))
+  );
+  --_selection-bloom-out-duration: var(
+    --md-date-picker-selection-bloom-out-duration,
+    var(--md-sys-motion-duration-short4, 200ms)
+  );
+  --_calendar-bloom-duration: var(
+    --md-date-picker-calendar-bloom-duration,
+    var(--md-sys-motion-duration-medium2, 300ms)
+  );
+  --_grid-slide-duration: var(
+    --md-date-picker-grid-slide-duration,
+    var(--md-sys-motion-duration-medium2, 300ms)
+  );
+  --_grid-slide-easing: var(
+    --md-sys-motion-easing-emphasized,
+    cubic-bezier(0.2, 0, 0, 1)
+  );
+  --_panel-bloom-out-duration: var(
+    --md-date-picker-panel-bloom-out-duration,
+    var(--md-sys-motion-duration-short4, 200ms)
+  );
+  --_selection-bloom-out-easing: var(
+    --md-sys-motion-easing-emphasized-accelerate,
+    cubic-bezier(0.3, 0, 0.8, 0.15)
+  );
+  --_container-color: var(--md-date-picker-container-color, var(--md-sys-color-surface));
+  --_header-color: var(--md-date-picker-header-color, var(--md-sys-color-surface-container-high));
+  --_container-shape: var(--md-date-picker-container-shape, var(--md-sys-shape-corner-extra-large, 28px));
+  --_field-color: var(--md-date-picker-field-color, var(--md-sys-color-outline));
+  --_field-focus-color: var(--md-date-picker-field-focus-color, var(--md-sys-color-primary));
+  --_field-text-color: var(--md-date-picker-field-text-color, var(--md-sys-color-on-surface));
+  --_field-container-color: var(
+    --md-date-picker-field-container-color,
+    var(--md-sys-color-surface-container-highest, #e6e0e9)
+  );
+  --_field-container-shape: var(
+    --md-date-picker-field-container-shape,
+    var(--md-sys-shape-corner-extra-small, 4px)
+  );
+  --_field-supporting-color: var(
+    --md-date-picker-field-supporting-color,
+    var(--md-sys-color-on-surface-variant)
+  );
+  --_label-color: var(--md-date-picker-label-color, var(--md-sys-color-on-surface-variant));
+  --_headline-color: var(--md-date-picker-headline-color, var(--md-sys-color-on-surface));
+  --_supporting-color: var(--md-date-picker-supporting-color, var(--md-sys-color-on-surface-variant));
+  --_weekday-color: var(--md-date-picker-weekday-color, var(--md-sys-color-on-surface));
+  --_weekday-size: 24px;
+  --_day-color: var(--md-date-picker-day-color, var(--md-sys-color-on-surface));
+  /* Adjacent-month days stay selectable, so their label must meet WCAG AA
+     (4.5:1) contrast — a solid de-emphasized token, not opacity-faded text. */
+  --_day-outside-color: var(--md-date-picker-day-outside-color, var(--md-sys-color-on-surface-variant, #49454f));
+  --_day-selected-color: var(--md-date-picker-day-selected-color, var(--md-sys-color-on-primary));
+  --_day-selected-bg: var(--md-date-picker-day-selected-bg, var(--md-sys-color-primary));
+  --_today-outline-color: var(--md-date-picker-today-outline-color, var(--md-sys-color-primary));
+  --_action-color: var(--md-date-picker-action-color, var(--md-sys-color-primary));
+  --_menu-color: var(--md-date-picker-menu-color, var(--md-sys-color-surface-container-high));
+  --_scrim-color: var(--md-date-picker-scrim-color, var(--md-sys-color-scrim, #000));
+  --_icon-color: var(--md-date-picker-icon-color, var(--md-sys-color-on-surface-variant));
+  /* Fixed panel width (360px) so the nav row (month/year selectors + chevrons)
+     and header always fit. The calendar cells + grid gaps still densify inside
+     it; only the panel HEIGHT tracks content (block-size:auto below). */
+  /* Width = day grid + 2×12px gutter, so the grid FILLS the body (no extra
+     centering gap) and its edges line up with the nav and the Cancel/OK footer.
+     Chosen wider than the bare grid so the 1fr day columns spread the day
+     circles across the row (fill the space) instead of packing them tight;
+     shrinks ~20px/rung with density so the spread stays proportional, floored
+     at 288px so the day circles never overlap. */
+  --_panel-width: var(--md-date-picker-panel-width, max(288px, calc(380px + var(--md-sys-density-scale, 0) * 20px)));
+  --_panel-max-block-size: var(--md-date-picker-panel-max-block-size, 524px);
+  --_error-color: var(--md-sys-color-error);
+  /* 1px per rung off 24dp (18px floor) — the library-wide icon taper. */
+  --_icon-size: var(--md-date-picker-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
+  /* Day cell follows global density (40px at 0 → 28px at -4, 3px/rung). The grid
+     columns/rows, day buttons and panel width all derive from this. */
+  --_day-size: max(28px, calc(40px + var(--md-sys-density-scale, 0) * 3px));
+  /* Year pills, gap and scroll viewport follow global density like the day grid. */
+  --_year-inline-size: var(--md-date-picker-year-inline-size, max(48px, calc(72px + var(--md-sys-density-scale, 0) * 6px)));
+  --_year-block-size: var(--md-date-picker-year-block-size, max(24px, calc(36px + var(--md-sys-density-scale, 0) * 3px)));
+  /* 2× day grid gap — year pills are wider and need more breathing room in the 360px panel. */
+  --_year-grid-gap: var(--md-date-picker-year-grid-gap, max(4px, calc(12px + var(--md-sys-density-scale, 0) * 2px)));
+  --_year-grid-padding-inline: var(--md-date-picker-year-grid-padding-inline, 30px);
+  /* 8×36px year rows — scroll viewport below modal nav; shrinks with density. */
+  --_year-grid-viewport-block-size: var(--md-date-picker-year-grid-viewport-block-size, max(180px, calc(288px + var(--md-sys-density-scale, 0) * 24px)));
+  --_grid-gap: max(2px, calc(6px + var(--md-sys-density-scale, 0) * 1px));
+  --_caret-fade-duration: var(--md-sys-motion-duration-short3, 150ms);
+  --_caret-fade-easing: var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+
+  display: inline-block;
+  inline-size: 100%;
+  max-inline-size: 360px;
+  font-family: var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif);
+  color: var(--_field-text-color);
+  position: relative;
+}
+
+:host(.md-date-picker--docked) {
+  /* Do not stretch in flex parents — popup anchors to field bottom, not host block-size. */
+  align-self: flex-start;
+  /* Docked variant is gated by its 6-control nav (< month > < year >), which is
+     wider than the shrinking day grid. The nav densifies ~10px/rung, so the
+     floor tracks it (360px at density 0 → ~320px at -4) rather than following
+     the modal panel all the way down (would clip the nav). Modal has only 3 nav
+     controls, so it shrinks freely via --_panel-width. */
+  --_docked-panel-width: var(--md-date-picker-docked-panel-width, max(calc(360px + var(--md-sys-density-scale, 0) * 10px), var(--_panel-width)));
+  /* 7×6 day grid + weekday row — shared by calendar and month/year menus. */
+  --_docked-content-block-size: calc(
+    var(--_weekday-size) + 16px + 6 * var(--_day-size) + 5 * var(--_grid-gap) + 8px
+  );
+}
+
+:host(.md-date-picker--modal) {
+  display: contents;
+}
+
+:host(.md-date-picker--disabled) {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.material-symbols-outlined {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  /* Form the icon ligatures (e.g. "chevron_left" → glyph) — matches
+     md-icon-button so glyphs never fall back to literal text. */
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+.md-date-picker__icon {
+  font-size: var(--_icon-size);
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  color: var(--_icon-color);
+  pointer-events: none;
+}
+
+/* ---- Text-field trigger (docked + modal-input) ---------------------- */
+
+.md-date-picker__textfield,
+.md-date-picker__entry-textfield {
+  display: block;
+  inline-size: 100%;
+  --md-text-field-outline-color: var(--_field-color);
+  --md-text-field-input-color: var(--_field-text-color);
+  --md-text-field-label-color: var(--_label-color);
+  --md-text-field-active-indicator-color: var(--_field-focus-color);
+  --md-text-field-supporting-text-color: var(--_field-supporting-color);
+  --md-text-field-icon-color: var(--_icon-color);
+  --md-text-field-container-color: var(--_field-container-color);
+  --md-text-field-container-shape: var(--_field-container-shape);
+  --md-text-field-filled-pill: var(--md-date-picker-field-filled-pill, 0);
+}
+
+/* Keep the trigger visually coupled to the open panel — OS focus moves into
+   the popup, but `appear-focused` on md-text-field needs primary outline /
+   label tokens (not the resting outline) so the field does not fall back to
+   hover charcoal or a mismatched border colour. */
+:host(.md-date-picker--open) .md-date-picker__textfield {
+  --md-text-field-active-indicator-color: var(--_field-focus-color);
+  --md-text-field-icon-color: var(--_field-focus-color);
+}
+
+/* Trigger + popup share one positioning context sized to the field only. */
+.md-date-picker__docked-anchor {
+  position: relative;
+  display: block;
+  inline-size: 100%;
+}
+
+/* ---- Modal scrim + panel -------------------------------------------- */
+
+.md-date-picker__modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--md-sys-z-index-modal, 1000);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--md-sys-spacing-inset-lg, 16px);
+}
+
+.md-date-picker__scrim {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--_scrim-color) 32%, transparent);
+  animation: md-date-picker-fade-in var(--md-sys-motion-duration-short3, 150ms)
+    var(--md-sys-motion-easing-standard, ease);
+}
+
+.md-date-picker__modal--closing .md-date-picker__scrim {
+  animation: md-date-picker-fade-out
+    var(--_panel-bloom-out-duration)
+    var(--md-sys-motion-easing-standard, ease)
+    forwards;
+}
+
+.md-date-picker__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  inline-size: var(--_panel-width);
+  max-inline-size: calc(100vw - 32px);
+  max-block-size: min(
+    var(--_panel-max-block-size),
+    calc(100vh - 32px),
+    calc(100dvh - 32px)
+  );
+  overflow: hidden;
+  background: var(--_container-color);
+  color: var(--_field-text-color);
+  border-radius: var(--_container-shape);
+  box-shadow: var(--md-sys-elevation-3, 0 4px 8px 3px rgba(0, 0, 0, 0.15),
+    0 1px 3px rgba(0, 0, 0, 0.3));
+}
+
+/* Modal calendar / range — unified surface-container-high. Height fits the
+   content (capped by max-block-size on .md-date-picker__panel) so the panel
+   shrinks as the calendar + header + footer densify, instead of pooling the
+   freed space as empty top/bottom padding. At density 0 the 6-row calendar
+   still fills ~the 524px cap. */
+.md-date-picker__panel:not(.md-date-picker__panel--docked):not(.md-date-picker__panel--input-mode) {
+  --_container-color: var(--md-date-picker-container-color, var(--md-sys-color-surface-container-high));
+  block-size: auto;
+}
+
+/* Modal date-input — unified surface-container-high; compact height. */
+.md-date-picker__panel--input-mode:not(.md-date-picker__panel--docked) {
+  --_container-color: var(--md-date-picker-container-color, var(--md-sys-color-surface-container-high));
+  block-size: auto;
+  min-block-size: 0;
+}
+
+/* Modal / range — scale entrance (non-docked). */
+.md-date-picker__panel:not(.md-date-picker__panel--docked):not(.md-date-picker__panel--bloom-out) {
+  animation: md-date-picker-scale var(--md-sys-motion-duration-medium2, 300ms)
+    var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
+  transform-origin: center top;
+}
+
+/* Docked popup — expressive bloom entrance (matches month/year menus). */
+.md-date-picker__panel--docked.md-date-picker__panel--bloom-in:not(.md-date-picker__panel--bloom-out) {
+  animation: md-date-picker-selection-bloom-in
+    var(--_selection-bloom-duration)
+    var(--_selection-bloom-easing)
+    both;
+}
+
+/* Panel dismiss — bloom-out shrink/fade (docked + modal). */
+.md-date-picker__panel--bloom-out {
+  animation: md-date-picker-panel-bloom-out
+    var(--_panel-bloom-out-duration)
+    var(--_selection-bloom-out-easing)
+    both;
+  transform-origin: center top;
+}
+
+:host(.md-date-picker--panel-closing) .md-date-picker__panel {
+  pointer-events: none;
+}
+
+/* Panel is tabindex="-1" for shortcut routing — never show a focus ring on the container. */
+.md-date-picker__panel:focus,
+.md-date-picker__panel:focus-visible {
+  outline: none;
+}
+
+.md-date-picker__panel--docked {
+  /* Docked drawer + selection menus share surface-container-high. */
+  --_container-color: var(--md-sys-color-surface-container-high);
+  position: absolute;
+  /* 4px MD3 gap below field — popup wrapper is already at inset-block-start: 100%. */
+  inset-block-start: 4px;
+  inset-block-end: auto;
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+  inline-size: var(--_docked-panel-width);
+  max-inline-size: calc(100vw - 32px);
+  /* Grow to natural content height; cap only when viewport is short. */
+  block-size: auto;
+  min-block-size: 0;
+  max-block-size: min(
+    var(--_panel-max-block-size),
+    calc(100vh - 32px),
+    calc(100dvh - 32px)
+  );
+  display: flex;
+  flex-direction: column;
+  /* Visible so md-tooltip popups above docked nav are not clipped; scroll lives on calendar/menu. */
+  overflow: visible;
+  box-shadow: none;
+  border-radius: var(--md-sys-shape-corner-large, 16px);
+  z-index: var(--md-sys-z-index-popup, 900);
+}
+
+/* Viewport-aware flip — align panel end edge to anchor end when start overflows. */
+.md-date-picker__panel--docked.md-date-picker__panel--align-end {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+}
+
+/* Viewport-aware flip — open above the field when block-end overflows. */
+.md-date-picker__panel--docked.md-date-picker__panel--placement-above {
+  inset-block-start: auto;
+  inset-block-end: 4px;
+}
+
+.md-date-picker__docked-popup {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-block-end: auto;
+  inset-inline-start: 0;
+  inline-size: 100%;
+}
+
+.md-date-picker__docked-popup--above {
+  inset-block-start: auto;
+  inset-block-end: 100%;
+}
+
+/* Bloom origin follows the anchored corner (start/end × below/above).
+
+   `transform-origin` has no logical keywords — `inline-start` / `inline-end`
+   are invalid values, so every one of the rules below was dropped whole and
+   the panel bloomed from its own centre in both directions. These two
+   properties carry the physical equivalent and swap under RTL, which is what
+   the logical keywords were reaching for. */
+:host {
+  --_docked-origin-inline-start: left;
+  --_docked-origin-inline-end: right;
+}
+
+:host([dir='rtl']),
+:host-context([dir='rtl']) {
+  --_docked-origin-inline-start: right;
+  --_docked-origin-inline-end: left;
+}
+
+.md-date-picker__panel--docked.md-date-picker__panel--bloom-in:not(.md-date-picker__panel--bloom-out) {
+  transform-origin: top var(--_docked-origin-inline-start);
+}
+
+.md-date-picker__panel--docked.md-date-picker__panel--align-end.md-date-picker__panel--bloom-in:not(.md-date-picker__panel--bloom-out) {
+  transform-origin: top var(--_docked-origin-inline-end);
+}
+
+.md-date-picker__panel--docked.md-date-picker__panel--placement-above.md-date-picker__panel--bloom-in:not(.md-date-picker__panel--bloom-out) {
+  transform-origin: bottom var(--_docked-origin-inline-start);
+}
+
+.md-date-picker__panel--docked.md-date-picker__panel--placement-above.md-date-picker__panel--align-end.md-date-picker__panel--bloom-in:not(.md-date-picker__panel--bloom-out) {
+  transform-origin: bottom var(--_docked-origin-inline-end);
+}
+
+.md-date-picker__panel--docked.md-date-picker__panel--bloom-out {
+  transform-origin: top var(--_docked-origin-inline-start);
+}
+
+.md-date-picker__panel--docked.md-date-picker__panel--align-end.md-date-picker__panel--bloom-out {
+  transform-origin: top var(--_docked-origin-inline-end);
+}
+
+.md-date-picker__panel--docked.md-date-picker__panel--placement-above.md-date-picker__panel--bloom-out {
+  transform-origin: bottom var(--_docked-origin-inline-start);
+}
+
+.md-date-picker__panel--docked.md-date-picker__panel--placement-above.md-date-picker__panel--align-end.md-date-picker__panel--bloom-out {
+  transform-origin: bottom var(--_docked-origin-inline-end);
+}
+
+/* ---- Header --------------------------------------------------------- */
+
+/* Redline header anatomy (modal): 16px top, 24px inline-start, 12px inline-end,
+   12px bottom. The supporting + headline rows stack with no inter-row gap so the
+   36px supporting region and 40px headline region land exactly. */
+.md-date-picker__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-block-start: var(--md-sys-spacing-inset-lg, 16px);
+  padding-block-end: var(--md-sys-spacing-inset-md, 12px);
+  padding-inline-start: var(--md-sys-spacing-inset-xl, 24px);
+  padding-inline-end: var(--md-sys-spacing-inset-md, 12px);
+  background-color: var(--_header-color);
+  border-block-end: 1px solid var(--md-sys-color-outline-variant);
+  flex: none;
+}
+
+/* "Select date" supporting label — label-medium / on-surface-variant.
+   Occupies the 36px region from its top to the headline top (redline). */
+.md-date-picker__header-supporting {
+  font-family: var(--md-sys-typescale-label-medium-font-family, Roboto, sans-serif);
+  font-size: max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-label-medium-font-weight, 500);
+  line-height: max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  letter-spacing: var(--md-sys-typescale-label-medium-letter-spacing, 0.5px);
+  color: var(--_supporting-color);
+  /* The 36px gap below the supporting label is the biggest top spacer; shrink it
+     with density (36px at 0 → 12px at -4). */
+  padding-block-end: max(4px, calc(36px + var(--md-sys-density-scale, 0) * 6px));
+}
+
+/* Headline row — 40px headline-large line box plus the 48px trailing edit-button
+   column with an 8px gap between them. */
+.md-date-picker__header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  min-block-size: max(28px, calc(40px + var(--md-sys-density-scale, 0) * 3px));
+}
+
+.md-date-picker__headline {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  font-family: var(--md-sys-typescale-headline-large-font-family, Roboto, sans-serif);
+  font-size: max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px));
+  font-weight: var(--md-sys-typescale-headline-large-font-weight, 400);
+  line-height: max(30px, calc(40px + var(--md-sys-density-scale, 0) * 2.5px));
+  letter-spacing: var(--md-sys-typescale-headline-large-letter-spacing, 0px);
+  color: var(--_headline-color);
+}
+
+/* Edit / mode-toggle — 48px touch target in the trailing column (redline). */
+.md-date-picker__mode-toggle {
+  flex: none;
+  --md-icon-button-container-width: 48px;
+  --md-icon-button-container-height: 48px;
+}
+
+/* ---- Body / nav ----------------------------------------------------- */
+
+/* Redline: 12px inline padding → 7×40px day cells (6px grid gap) inside the 360px
+   panel; 12px gap above the month/year nav row. */
+.md-date-picker__body {
+  padding-block-start: var(--md-sys-spacing-inset-md, 12px);
+  padding-inline: 12px;
+  padding-block-end: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Modal / range — fill space between header and actions; children own overflow. */
+.md-date-picker__panel:not(.md-date-picker__panel--docked) .md-date-picker__body {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+/* Modal / range month-year nav row: 48px chevron touch targets, 4px inline edge
+   padding, 4px gap below the row before the weekday header (redline). */
+.md-date-picker__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-block-size: 48px;
+  padding-inline: var(--md-sys-spacing-inset-xs, 4px);
+  margin-block-end: var(--md-sys-spacing-inset-xs, 4px);
+  flex: none;
+}
+
+.md-date-picker__nav-buttons {
+  display: flex;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  align-items: center;
+}
+
+.md-date-picker__nav md-icon-button.md-date-picker__nav-chevron {
+  flex: none;
+}
+
+/* ---- Docked nav: month / year menu buttons + flanking chevrons ------ */
+
+/* Without a Cancel / OK row the panel has no bottom inset — that row WAS the
+   spacing, so the last week sat flush against the panel edge and read as cut
+   off. Both variants get the same bottom inset, so a picker reads identically
+   whether it is docked or modal.
+
+   A modal body's own top padding is only half the visible gap (the header adds
+   its own `padding-block-end` above it), so matching that 12px below would
+   still read tight — the full inset is what makes the two edges balance. The
+   docked rule below subtracts `--md-sys-spacing-inset-sm`: a DOCKED calendar
+   is not stretched, so its own bottom padding lands directly under the grid and
+   would otherwise be counted twice. In a modal the calendar is `flex: 1 1 auto`
+   and its bottom padding is zeroed, so nothing is double-counted there. */
+.md-date-picker__body--no-actions {
+  padding-block-end: max(4px, calc(20px + var(--md-sys-density-scale, 0) * 2px));
+}
+
+.md-date-picker__body--docked,
+.md-date-picker__body--docked.md-date-picker__body--docked-selection {
+  /* Identical chrome in day grid and selection — triggers must not shift. */
+  padding-block-start: max(4px, calc(20px + var(--md-sys-density-scale, 0) * 2px));
+  padding-inline: 12px;
+  padding-block-end: 0;
+}
+
+.md-date-picker__body--docked.md-date-picker__body--no-actions {
+  /* The docked top inset, minus what the calendar already adds below the grid,
+     so both edges read the same at every density rung. */
+  padding-block-end: max(
+    0px,
+    calc(
+      max(4px, calc(20px + var(--md-sys-density-scale, 0) * 2px)) -
+        var(--md-sys-spacing-inset-sm, 8px)
+    )
+  );
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-block-size: 0;
+  /* Nav tooltips extend above the row; calendar/menu children own overflow scrolling. */
+  overflow: hidden;
+}
+
+/* Wraps selection divider only while month/year menu is open (not rendered for day grid). */
+.md-date-picker__docked-below-nav {
+  flex: none;
+  display: flex;
+  align-items: center;
+  inline-size: 100%;
+  box-sizing: border-box;
+}
+
+.md-date-picker__selection-divider {
+  flex: none;
+  inline-size: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+/* Full-bleed selection menu + divider while nav keeps body inline padding. */
+.md-date-picker__body--docked-selection .md-date-picker__docked-below-nav,
+.md-date-picker__body--docked-selection .md-date-picker__selection-menu-wrap {
+  margin-inline: -12px;
+  inline-size: calc(100% + 24px);
+}
+
+.md-date-picker__selection-divider::before {
+  content: '';
+  display: block;
+  inline-size: 100%;
+  block-size: 1px;
+  background-color: var(--md-sys-color-outline-variant);
+}
+
+.md-date-picker__body--docked-selection .md-date-picker__selection-divider {
+  animation: md-date-picker-selection-divider-in
+    var(--_selection-bloom-duration)
+    var(--_selection-bloom-easing)
+    both;
+}
+
+.md-date-picker__body--docked-selection > .md-date-picker__selection-menu-wrap {
+  box-sizing: border-box;
+  /* Divider row above consumes 1px — keep nav-to-content span identical to day grid. */
+  flex: 1 1 auto;
+  block-size: auto;
+  min-block-size: 0;
+  max-block-size: 100%;
+  border-end-start-radius: var(--md-sys-shape-corner-large, 16px);
+  border-end-end-radius: var(--md-sys-shape-corner-large, 16px);
+  transform-origin: center top;
+}
+
+/* Bloom-in on every menu mount (Stencil remounts on open) — matches md-time-picker mode-swap. */
+.md-date-picker__body--docked-selection
+  > .md-date-picker__selection-menu-wrap:not(.md-date-picker__selection-menu-wrap--bloom-out) {
+  animation: md-date-picker-selection-bloom-in
+    var(--_selection-bloom-duration)
+    var(--_selection-bloom-easing)
+    both;
+}
+
+.md-date-picker__selection-menu-wrap--bloom-out {
+  animation: md-date-picker-selection-bloom-out
+    var(--_selection-bloom-out-duration)
+    var(--_selection-bloom-out-easing)
+    both;
+  transform-origin: center top;
+}
+
+/* Docked day grid — fills body below nav; scroll inside when viewport-capped. */
+.md-date-picker__body--docked > .md-date-picker__calendar {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  block-size: auto;
+  min-block-size: 0;
+  max-block-size: 100%;
+  overflow-x: clip;
+  overflow-y: auto;
+}
+
+/* Day grid returns after month/year pick — expressive bloom (docked only). */
+.md-date-picker__body--docked .md-date-picker__calendar--docked-bloom-in {
+  animation: md-date-picker-docked-calendar-bloom-in
+    var(--_calendar-bloom-duration)
+    var(--_selection-bloom-easing)
+    both;
+  transform-origin: center top;
+}
+
+/* Modal / range — day grid bloom after year grid closes (matches docked pick return). */
+.md-date-picker__panel:not(.md-date-picker__panel--docked)
+  .md-date-picker__calendar--content-bloom-in {
+  animation: md-date-picker-docked-calendar-bloom-in
+    var(--_calendar-bloom-duration)
+    var(--_selection-bloom-easing)
+    both;
+  transform-origin: center top;
+}
+
+.md-date-picker__docked-nav {
+  /* Match the chevron icon-button's own density-scaled size (40px at 0 -> 32px
+     floor) so the slot shrinks WITH the button: the icon-button stays centred
+     (fixes the button/chevron misalignment) and the following controls pull in
+     tighter as density increases. */
+  --_nav-chevron-size: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
+  /* 3px outline + 2px offset — clearance between chevrons and menu triggers */
+  --_nav-focus-ring-gap: 5px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  /* Pack the month + year groups together (was space-between, which spread them
+     to the panel edges leaving a large middle gap). The between-group gap is now
+     a fixed, density-shrinking value. */
+  justify-content: center;
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+  inline-size: 100%;
+  padding-block-start: 0;
+  padding-inline: 0;
+  /* Gap below nav row — docked nav bottom tooltips use offset to center here (see md-date-picker.tsx). */
+  padding-block-end: 30px;
+  flex: none;
+  box-sizing: border-box;
+}
+
+.md-date-picker__docked-nav .md-date-picker__nav-group {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  flex: 0 0 auto;
+  min-inline-size: 0;
+  box-sizing: border-box;
+}
+
+.md-date-picker__docked-nav md-icon-button.md-date-picker__directional-icon {
+  flex: none;
+  flex-shrink: 0;
+}
+
+.md-date-picker__docked-nav .md-date-picker__nav-group--month {
+  justify-content: flex-start;
+}
+
+.md-date-picker__docked-nav .md-date-picker__nav-group--year {
+  justify-content: flex-end;
+}
+
+/* Prev/next chevrons and spacers share one slot — crossfade without layout shift. */
+.md-date-picker__nav-chevron-slot {
+  position: relative;
+  flex: none;
+  flex-shrink: 0;
+  inline-size: var(--_nav-chevron-size, 40px);
+  block-size: var(--_nav-chevron-size, 40px);
+}
+
+.md-date-picker__nav-chevron-slot > md-tooltip,
+.md-date-picker__nav-chevron-slot > .md-date-picker__nav-chevron-spacer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity var(--_caret-fade-duration) var(--_caret-fade-easing),
+    visibility 0s linear var(--_caret-fade-duration);
+}
+
+.md-date-picker__nav-chevron-slot > md-tooltip.md-date-picker__nav-chevron--visible,
+.md-date-picker__nav-chevron-slot
+  > .md-date-picker__nav-chevron-spacer.md-date-picker__nav-chevron--visible {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--_caret-fade-duration) var(--_caret-fade-easing),
+    visibility 0s linear 0s;
+}
+
+/* Visible chevron must accept clicks; hidden layer stays inert (spacer never does). */
+.md-date-picker__nav-chevron-slot > md-tooltip {
+  display: block;
+}
+
+.md-date-picker__nav-chevron-slot > md-tooltip.md-date-picker__nav-chevron--visible {
+  pointer-events: auto;
+  z-index: 1;
+}
+
+.md-date-picker__nav-chevron-spacer {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.md-date-picker__icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 40px;
+  block-size: 40px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  flex: none;
+}
+.md-date-picker__icon-button:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+}
+.md-date-picker__icon-button:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: 2px;
+}
+
+/* Docked month/year triggers — `md-button` text + sm with trailing caret. */
+.md-date-picker__menu-button {
+  flex: none;
+  --md-button-label-color: var(--md-sys-color-on-surface-variant);
+  /* Literal formula, not `var(--_icon-size)`: this lands on an md-button, which
+     defines its own `--_icon-size` — handing a private name across that boundary
+     is cyclic and silently collapses to invalid. */
+  --md-button-icon-size: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  --_state-layer-color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Override md-button--sm default 8px label↔icon gap — spec wants 2px. */
+.md-date-picker__menu-button.md-button--sm {
+  gap: 2px;
+}
+
+/* Open menu: match selected md-menu-item (secondary container). */
+.md-date-picker__menu-button.md-button--selected {
+  --md-button-container-color: var(--md-sys-color-secondary-container);
+  --md-button-label-color: var(--md-sys-color-on-secondary-container);
+  --_state-layer-color: var(--md-sys-color-on-secondary-container);
+}
+
+.md-date-picker__menu-button::part(label) {
+  font-family: var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif);
+  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-label-large-font-weight, 500);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-label-large-letter-spacing, 0.1px);
+}
+
+/* Month/year nav hints include full name + shortcut — wider than default 200px plain max. */
+.md-date-picker__menu-button-tooltip {
+  --md-tooltip-plain-max-inline-size: max-content;
+}
+
+/* Trailing caret — crossfade arrow_drop_down ↔ arrow_drop_up (slotted glyphs). */
+.md-date-picker__menu-caret {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  flex: none;
+  inline-size: 20px;
+  block-size: 20px;
+}
+
+.md-date-picker__menu-caret-glyph {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  line-height: 1;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity var(--_caret-fade-duration) var(--_caret-fade-easing),
+    visibility 0s linear var(--_caret-fade-duration);
+}
+
+.md-date-picker__menu-caret-glyph--visible {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity var(--_caret-fade-duration) var(--_caret-fade-easing),
+    visibility 0s linear 0s;
+}
+
+/* ---- Docked month/year selection (inline baseline md-menu) ------------ */
+
+.md-date-picker__selection-menu-wrap {
+  inline-size: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  overflow: hidden;
+  margin-block: 0;
+  box-sizing: border-box;
+  /* Blend with the docked panel — no contrasting menu container band. */
+  background-color: var(--_container-color);
+}
+
+/* Render md-menu inline in the panel (not as a fixed popover). */
+.md-date-picker__selection-menu {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-block-size: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: auto;
+  z-index: auto;
+  --md-menu-min-width: 100%;
+  --md-menu-max-width: none;
+  --md-menu-inline-surface-color: var(--_container-color);
+  --md-menu-inline-fill-radius-end: var(--md-sys-shape-corner-large, 16px);
+}
+
+/* Radio-at-start rows: 16px before check, 16px between check and headline. */
+.md-date-picker__selection-menu md-menu-item {
+  --md-menu-item-gap: var(--md-sys-spacing-gap-lg, 16px);
+  padding-inline-start: var(--md-sys-spacing-inset-lg, 16px);
+}
+
+.md-date-picker__selection-menu md-menu-item::part(headline) {
+  font-family: var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif);
+  font-size: max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-large-font-weight, 400);
+  line-height: var(--md-sys-typescale-body-large-line-height, 24px);
+  letter-spacing: var(--md-sys-typescale-body-large-letter-spacing, 0.5px);
+  color: var(--md-sys-color-on-surface);
+}
+
+/* ---- Calendar grid -------------------------------------------------- */
+
+.md-date-picker__calendar {
+  padding-block-end: var(--md-sys-spacing-inset-sm, 8px);
+  overflow-x: clip;
+}
+
+/* Modal / range — calendar stretches to fill the body slot below nav. */
+.md-date-picker__panel:not(.md-date-picker__panel--docked) .md-date-picker__calendar {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  padding-block-end: 0;
+  overflow: hidden;
+}
+
+/* Modal / range — weekday row spacing above the fixed-size day grid. */
+.md-date-picker__panel:not(.md-date-picker__panel--docked) .md-date-picker__weekdays {
+  flex: none;
+}
+
+.md-date-picker__weekdays,
+.md-date-picker__grid {
+  display: grid;
+  /* 1fr columns fill the (wider-than-grid) body, so the day circles distribute
+     evenly across the full width instead of packing tight in the centre. Each
+     day/weekday keeps its fixed --_day-size and is centred in its track. */
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--_grid-gap);
+  justify-items: center;
+}
+
+.md-date-picker__weekdays {
+  padding-block-end: var(--md-sys-spacing-inset-lg, 16px);
+}
+
+/* Tooltip wrapper acts as the grid cell so the weekday layout is unchanged. */
+.md-date-picker__weekday-tooltip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_day-size);
+  cursor: pointer;
+}
+
+.md-date-picker__weekday {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_day-size);
+  block-size: var(--_weekday-size);
+  cursor: pointer;
+  font-family: var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif);
+  font-size: max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-large-font-weight, 400);
+  line-height: var(--md-sys-typescale-body-large-line-height, 24px);
+  letter-spacing: var(--md-sys-typescale-body-large-letter-spacing, 0.5px);
+  color: var(--_weekday-color);
+}
+
+.md-date-picker__grid {
+  grid-auto-rows: var(--_day-size);
+}
+
+/* ARIA week rows (grid > rowgroup > row > gridcell) — box-less so day cells
+   remain the direct grid items of the 7-column track above. */
+.md-date-picker__week {
+  display: contents;
+}
+
+/* Month/year chevron + Page Up/Down — horizontal slide on the day grid. */
+.md-date-picker__grid--slide-forward {
+  animation: md-date-picker-grid-slide-forward
+    var(--_grid-slide-duration)
+    var(--_grid-slide-easing)
+    both;
+}
+
+.md-date-picker__grid--slide-backward {
+  animation: md-date-picker-grid-slide-backward
+    var(--_grid-slide-duration)
+    var(--_grid-slide-easing)
+    both;
+}
+
+@keyframes md-date-picker-grid-slide-forward {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes md-date-picker-grid-slide-backward {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+:host-context([dir='rtl']) .md-date-picker__grid--slide-forward,
+:host([dir='rtl']) .md-date-picker__grid--slide-forward {
+  animation-name: md-date-picker-grid-slide-forward-rtl;
+}
+
+:host-context([dir='rtl']) .md-date-picker__grid--slide-backward,
+:host([dir='rtl']) .md-date-picker__grid--slide-backward {
+  animation-name: md-date-picker-grid-slide-backward-rtl;
+}
+
+@keyframes md-date-picker-grid-slide-forward-rtl {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes md-date-picker-grid-slide-backward-rtl {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Calendar grid cells (day + year) — md-button square + shapeMorph.
+   Square resting morphs to a filled circle/pill on select.
+   Do not pin --md-button-container-shape here — that blocks the morph. */
+.md-date-picker__day,
+.md-date-picker__year {
+  --md-button-label-color: var(--_day-color);
+  --md-button-container-color: transparent;
+
+  position: relative;
+  padding: 0;
+  font-family: var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif);
+  font-size: max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-large-font-weight, 400);
+  line-height: var(--md-sys-typescale-body-large-line-height, 24px);
+  letter-spacing: var(--md-sys-typescale-body-large-letter-spacing, 0.5px);
+  font-variant-numeric: tabular-nums;
+}
+
+.md-date-picker__day::part(label),
+.md-date-picker__year::part(label) {
+  position: relative;
+  z-index: 1;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.md-date-picker__day:focus-visible,
+.md-date-picker__year:focus-visible {
+  outline-offset: -1px;
+}
+
+/* Day cells — fixed square size in the 7-column grid. */
+.md-date-picker__day {
+  --md-button-min-width: var(--_day-size);
+  --md-button-width: var(--_day-size);
+  --md-button-min-height: var(--_day-size);
+  --md-button-height: var(--_day-size);
+}
+
+/* Single-class rule so light-DOM ::part(day-today) can override shape. */
+.md-date-picker__day--today {
+  --md-button-container-shape: var(--md-date-picker-day-today-shape, calc(var(--_day-size) / 2));
+  --md-button-label-color: var(--_today-outline-color);
+  box-shadow: 0 0 0 1px var(--_today-outline-color);
+}
+
+/* Outside (adjacent-month) days remain selectable — de-emphasized but WCAG-AA
+   legible. A solid on-surface-variant token (~7.6:1 on the panel surface) instead
+   of the 38% disabled fade (~2:1), which is reserved for the disabled rule below. */
+.md-date-picker__day--outside {
+  --md-button-label-color: var(--_day-outside-color);
+}
+
+.md-date-picker__day--selected,
+.md-date-picker__year--selected {
+  --md-button-container-color: var(--_day-selected-bg);
+  --md-button-label-color: var(--_day-selected-color);
+  --md-button-container-shape: var(--md-date-picker-day-selected-shape);
+}
+
+.md-date-picker__day--selected.md-date-picker__day--today {
+  box-shadow: none;
+}
+
+.md-date-picker__day--disabled,
+.md-date-picker__year--disabled {
+  --md-button-label-color: color-mix(
+    in srgb,
+    var(--_day-color) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%),
+    transparent
+  );
+}
+
+/* ---- Day grid spacing ----------------------------------------------- */
+/* Day states (plain text / today ring / selected fill) inherit base rules. */
+/* Fixed 40px cells + 6px gap — shared by modal and docked (7×40 + 6×6). */
+
+/* ---- Year grid ------------------------------------------------------ */
+/* 3×N grid of 72×36px pills with 30px inline inset — first column at the start
+   edge, third at the end edge (not centered as a block). Gap 12px. */
+
+.md-date-picker__year-grid-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow: hidden;
+  transform-origin: center top;
+}
+
+/* Year grid spans panel inline edges — body keeps 12px for nav; grid owns 30px inset. */
+.md-date-picker__body--year-view .md-date-picker__year-grid-wrap {
+  margin-inline: -12px;
+  inline-size: calc(100% + 24px);
+  box-sizing: border-box;
+}
+
+/* Modal / range year view — bloom on every grid mount (matches docked menus). */
+.md-date-picker__panel:not(.md-date-picker__panel--docked)
+  .md-date-picker__year-grid-wrap:not(.md-date-picker__year-grid-wrap--bloom-out) {
+  animation: md-date-picker-selection-bloom-in
+    var(--_selection-bloom-duration)
+    var(--_selection-bloom-easing)
+    both;
+}
+
+.md-date-picker__year-grid-wrap--bloom-out {
+  animation: md-date-picker-selection-bloom-out
+    var(--_selection-bloom-out-duration)
+    var(--_selection-bloom-out-easing)
+    both;
+}
+
+/* Modal year grid scroll is owned by md-scroll-shadow (edge fades when overflow). */
+.md-date-picker__year-grid-scroll {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow-y: auto;
+}
+
+/* Modal / range — fixed 288px scroll viewport (8×36px rows); flex was shrinking to 271px. */
+.md-date-picker__panel:not(.md-date-picker__panel--docked) .md-date-picker__year-grid-scroll {
+  min-block-size: var(--_year-grid-viewport-block-size);
+  max-block-size: var(--_year-grid-viewport-block-size);
+}
+
+.md-date-picker__year-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: var(--_year-block-size);
+  gap: var(--_year-grid-gap);
+  padding-block-start: 8px;
+  padding-inline: var(--_year-grid-padding-inline);
+  padding-block-end: 16px;
+  align-content: start;
+}
+
+/* ARIA year rows (grid > row > gridcell) — box-less so year cells remain the
+   direct grid items of the 3-column track above; each row holds ≤3 cells, so
+   the nth-child column alignment below still maps position → column. */
+.md-date-picker__year-row {
+  display: contents;
+}
+
+/* Modal / range — range typed-entry scrolls inside the body when tall. */
+.md-date-picker__panel:not(.md-date-picker__panel--docked):not(.md-date-picker__panel--input-mode)
+  .md-date-picker__entry {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow-y: auto;
+  padding: var(--md-sys-spacing-inset-lg, 16px) var(--md-sys-spacing-inset-xl, 24px) var(--md-sys-spacing-inset-sm, 8px);
+}
+
+/* Year cells — fixed 72×36px pill; morph on select.
+   Per-column alignment: start / center / end so columns sit at container edges. */
+.md-date-picker__year {
+  --md-button-min-width: var(--_year-inline-size);
+  --md-button-width: var(--_year-inline-size);
+  --md-button-min-height: var(--_year-block-size);
+  --md-button-height: var(--_year-block-size);
+}
+
+.md-date-picker__year:nth-child(3n + 1) {
+  justify-self: start;
+}
+
+.md-date-picker__year:nth-child(3n + 2) {
+  justify-self: center;
+}
+
+.md-date-picker__year:nth-child(3n) {
+  justify-self: end;
+}
+
+/* ---- In-dialog text entry ------------------------------------------- */
+
+.md-date-picker__entry {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+  padding: 0;
+  inline-size: 100%;
+}
+
+/* Single-date modal input — outlined md-text-field with floating label. */
+
+.md-date-picker__body--input-mode {
+  padding-block-start: var(--md-sys-spacing-inset-xl, 24px);
+  padding-inline: var(--md-sys-spacing-inset-xl, 24px);
+  padding-block-end: var(--md-sys-spacing-inset-sm, 8px);
+  flex: none;
+}
+.md-date-picker__entry-error {
+  flex-basis: 100%;
+  font-size: max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px));
+  color: var(--_error-color);
+}
+
+/* ---- Actions -------------------------------------------------------- */
+
+/* Redline: 8px above the 40px action row, 12px below, 12px inline-end edge,
+   8px gap between Cancel / OK. */
+.md-date-picker__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  min-block-size: max(28px, calc(40px + var(--md-sys-density-scale, 0) * 3px));
+  /* Inline padding is a constant 12px so the Cancel/OK edge stays aligned with
+     the day grid (also 12px) at every density — the grid margin doesn't scale,
+     so the footer's must not either. Vertical padding still densifies. */
+  padding-block: var(--md-sys-spacing-inset-sm, 8px) var(--md-sys-spacing-inset-md, 12px);
+  padding-inline: 12px;
+  flex: none;
+}
+
+/* Cancel / OK — compose md-button (text variant). */
+.md-date-picker__action-btn {
+  --md-button-label-color: var(--_action-color);
+}
+
+.md-date-picker__action-btn--primary {
+  --md-button-label-color: var(--_action-color);
+}
+
+/* ---- RTL ------------------------------------------------------------ */
+
+:host-context([dir='rtl']) .md-date-picker__directional-icon .md-date-picker__icon,
+:host([dir='rtl']) .md-date-picker__directional-icon .md-date-picker__icon {
+  transform: scaleX(-1);
+}
+/* Docked chevrons are md-icon-buttons — their glyph lives in their own shadow,
+   so mirror the whole element instead of an inner span. */
+:host-context([dir='rtl']) md-icon-button.md-date-picker__directional-icon,
+:host([dir='rtl']) md-icon-button.md-date-picker__directional-icon {
+  transform: scaleX(-1);
+}
+
+/* ---- Slotted icons -------------------------------------------------- */
+
+::slotted([slot='leading-icon']) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  font-size: var(--_icon-size);
+  color: var(--_icon-color);
+  fill: currentColor;
+  pointer-events: none;
+}
+
+/* ---- Dark theme ----------------------------------------------------- */
+
+:host([data-theme='dark']),
+:host-context([data-theme='dark']) {
+  --_container-color: var(--md-date-picker-container-color, var(--md-sys-color-surface));
+  --_header-color: var(--md-date-picker-header-color, var(--md-sys-color-surface-container-high));
+}
+
+/* ---- Motion --------------------------------------------------------- */
+
+/* Docked month/year selection — expressive bloom below nav/divider
+   (mirrors md-time-picker mode-swap: scale 0.94 + 8dp drop + fade). */
+@keyframes md-date-picker-selection-bloom-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes md-date-picker-selection-bloom-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
+}
+
+@keyframes md-date-picker-selection-divider-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes md-date-picker-docked-calendar-bloom-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes md-date-picker-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes md-date-picker-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes md-date-picker-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes md-date-picker-panel-bloom-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-date-picker__scrim,
+  .md-date-picker__modal--closing .md-date-picker__scrim,
+  .md-date-picker__panel:not(.md-date-picker__panel--docked),
+  .md-date-picker__panel--docked.md-date-picker__panel--bloom-in,
+  .md-date-picker__panel--bloom-out,
+  .md-date-picker__body--docked-selection .md-date-picker__selection-divider,
+  .md-date-picker__body--docked-selection
+    > .md-date-picker__selection-menu-wrap:not(.md-date-picker__selection-menu-wrap--bloom-out),
+  .md-date-picker__selection-menu-wrap--bloom-out,
+  .md-date-picker__panel:not(.md-date-picker__panel--docked)
+    .md-date-picker__year-grid-wrap:not(.md-date-picker__year-grid-wrap--bloom-out),
+  .md-date-picker__year-grid-wrap--bloom-out,
+  .md-date-picker__calendar--docked-bloom-in,
+  .md-date-picker__calendar--content-bloom-in,
+  .md-date-picker__grid--slide-forward,
+  .md-date-picker__grid--slide-backward {
+    animation: none;
+  }
+
+  .md-date-picker__nav-chevron-slot > md-tooltip,
+  .md-date-picker__nav-chevron-slot > .md-date-picker__nav-chevron-spacer,
+  .md-date-picker__menu-caret-glyph {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

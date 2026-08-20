@@ -1,0 +1,190 @@
+---
+// DialogRtlDemo.astro
+//
+// Live preview for the "RTL Support" section of the dialog docs page.
+// Mirrors the structure of `DialogDemo.astro` (trigger button + portaled
+// dialog + per-technology code tab) but every example renders inside a
+// `dir="rtl"` wrapper AND each `<md-dialog>` instance carries
+// `dir="rtl"` on its host element.
+//
+// Why both? `<md-dialog>` is portaled to `document.body` by
+// `DialogDemo.astro`'s wiring script (so `position: fixed` escapes
+// ancestor stacking contexts). The portal move re-parents the dialog
+// out from under the `<div dir="rtl">` wrapper — without `dir="rtl"`
+// on the dialog itself, the portaled instance would inherit the
+// document direction (LTR) and the layout would silently flip back.
+//
+// This component piggy-backs on `DialogDemo.astro`'s global wiring
+// script (open/close + portal). Both components on the same page is
+// fine: the script dedupes via `data-dialog-wired` / `data-dialog-portaled`
+// flags, so the second script never re-binds. We still ship a tiny
+// fallback bootstrap below so this component works on a page that
+// doesn't import DialogDemo.
+
+import ComponentDemo from "./ComponentDemo.astro";
+
+// Code-tab markup: idiomatic ids (no `demo-` prefix), no demo-only
+// `data-dialog-*` hooks. This is what a real app would write.
+const codeHtml = `<div dir="rtl">
+  <md-button id="open-rtl-confirm" variant="filled">إعادة تعيين الإعدادات</md-button>
+  <md-button id="open-rtl-form" variant="outlined">إضافة جهة اتصال</md-button>
+  <md-button id="open-rtl-fullscreen" variant="tonal">تعديل الملف الشخصي</md-button>
+</div>
+
+<md-dialog id="rtl-confirm-dialog" dir="rtl" headline="إعادة تعيين الإعدادات؟" icon="settings_backup_restore">
+  <span>سيتم استرجاع كل التفضيلات إلى الإعدادات الافتراضية. يمكنك إعادة تطبيق التغييرات لاحقًا من سجل النشاط.</span>
+  <md-button slot="actions" variant="text">إلغاء</md-button>
+  <md-button slot="actions" variant="filled">إعادة تعيين</md-button>
+</md-dialog>
+
+<md-dialog id="rtl-form-dialog" dir="rtl" headline="إضافة جهة اتصال">
+  <md-text-field variant="outlined" label="الاسم الكامل" required></md-text-field>
+  <md-text-field variant="outlined" label="البريد الإلكتروني" type="email"></md-text-field>
+  <md-text-field variant="outlined" label="الشركة"></md-text-field>
+  <md-button slot="actions" variant="text">إلغاء</md-button>
+  <md-button slot="actions" variant="filled">حفظ جهة الاتصال</md-button>
+</md-dialog>
+
+<md-dialog id="rtl-fullscreen-dialog" dir="rtl" headline="تعديل الملف الشخصي" fullscreen header-divider>
+  <md-button slot="header-action" variant="filled" size="sm">حفظ</md-button>
+  <md-text-field variant="outlined" label="اسم العرض" value="AWC Dev"></md-text-field>
+  <md-text-field variant="outlined" label="البريد الإلكتروني" type="email" value="dev@awcui.io"></md-text-field>
+  <md-text-field variant="outlined" label="السيرة الذاتية" value="نبني مكونات MD3 في العلن."></md-text-field>
+</md-dialog>`;
+
+// Live-preview markup: ids prefixed `demo-rtl-` to avoid colliding
+// with Starlight heading slugs and with the main DialogDemo's
+// `demo-*` ids. Every dialog carries `dir="rtl"` so it stays RTL
+// after the wiring script portals it to <body>.
+const html = `<div dir="rtl" style="display: flex; flex-wrap: wrap; gap: 12px;">
+  <md-button data-dialog-open="demo-rtl-confirm-dialog" variant="filled">إعادة تعيين الإعدادات</md-button>
+  <md-button data-dialog-open="demo-rtl-form-dialog" variant="outlined">إضافة جهة اتصال</md-button>
+  <md-button data-dialog-open="demo-rtl-fullscreen-dialog" variant="tonal">تعديل الملف الشخصي</md-button>
+</div>
+
+<md-dialog id="demo-rtl-confirm-dialog" dir="rtl" headline="إعادة تعيين الإعدادات؟" icon="settings_backup_restore" data-dialog-instance>
+  <span>سيتم استرجاع كل التفضيلات إلى الإعدادات الافتراضية. يمكنك إعادة تطبيق التغييرات لاحقًا من سجل النشاط.</span>
+  <md-button slot="actions" variant="text" data-dialog-close="demo-rtl-confirm-dialog">إلغاء</md-button>
+  <md-button slot="actions" variant="filled" data-dialog-close="demo-rtl-confirm-dialog">إعادة تعيين</md-button>
+</md-dialog>
+
+<md-dialog id="demo-rtl-form-dialog" dir="rtl" headline="إضافة جهة اتصال" data-dialog-instance>
+  <div class="dialog-demo__form">
+    <md-text-field variant="outlined" label="الاسم الكامل" required></md-text-field>
+    <md-text-field variant="outlined" label="البريد الإلكتروني" type="email"></md-text-field>
+    <md-text-field variant="outlined" label="الشركة"></md-text-field>
+  </div>
+  <md-button slot="actions" variant="text" data-dialog-close="demo-rtl-form-dialog">إلغاء</md-button>
+  <md-button slot="actions" variant="filled" data-dialog-close="demo-rtl-form-dialog">حفظ جهة الاتصال</md-button>
+</md-dialog>
+
+<md-dialog id="demo-rtl-fullscreen-dialog" dir="rtl" headline="تعديل الملف الشخصي" fullscreen header-divider data-dialog-instance>
+  <md-button slot="header-action" variant="filled" size="sm" data-dialog-close="demo-rtl-fullscreen-dialog">حفظ</md-button>
+  <div class="dialog-demo__form">
+    <md-text-field variant="outlined" label="اسم العرض" value="AWC Dev"></md-text-field>
+    <md-text-field variant="outlined" label="البريد الإلكتروني" type="email" value="dev@awcui.io"></md-text-field>
+    <md-text-field variant="outlined" label="السيرة الذاتية" value="نبني مكونات MD3 في العلن."></md-text-field>
+  </div>
+</md-dialog>`;
+---
+
+<ComponentDemo
+  label="Live Preview (RTL)"
+  html={html}
+  htmlForCode={codeHtml}
+  storyId="components-dialog--playground"
+/>
+
+<script>
+  // Fallback wiring + portal for pages that import this component
+  // WITHOUT also importing DialogDemo. When DialogDemo is on the same
+  // page, its script runs first and the dedupe guards below
+  // (`data-dialog-wired`, `data-dialog-portaled`) make this script a
+  // no-op. The duplication is intentional: each demo Astro component
+  // remains self-sufficient.
+
+  type DialogEl = HTMLElement & {
+    open: boolean;
+    show: () => Promise<void>;
+    close: () => Promise<void>;
+  };
+
+  function portalDialogs(): void {
+    document
+      .querySelectorAll<HTMLElement>("md-dialog[data-dialog-instance]")
+      .forEach((dialog) => {
+        if (dialog.dataset.dialogPortaled === "true") return;
+        if (dialog.parentElement === document.body) {
+          dialog.dataset.dialogPortaled = "true";
+          return;
+        }
+        document.body.appendChild(dialog);
+        dialog.dataset.dialogPortaled = "true";
+      });
+  }
+
+  function teardownPortaledDialogs(): void {
+    document
+      .querySelectorAll<HTMLElement>("md-dialog[data-dialog-portaled]")
+      .forEach((dialog) => {
+        dialog.remove();
+      });
+  }
+
+  function findDialog(id: string): DialogEl | null {
+    return document.querySelector<HTMLElement>(
+      `md-dialog#${CSS.escape(id)}`,
+    ) as DialogEl | null;
+  }
+
+  function wireDialogTriggers(): void {
+    document
+      .querySelectorAll<HTMLElement>("[data-dialog-open]")
+      .forEach((trigger) => {
+        if (trigger.dataset.dialogWired === "true") return;
+        trigger.dataset.dialogWired = "true";
+        trigger.addEventListener("click", () => {
+          const id = trigger.dataset.dialogOpen;
+          if (!id) return;
+          const dialog = findDialog(id);
+          if (!dialog) return;
+          if (typeof dialog.show === "function") {
+            void dialog.show();
+          } else {
+            dialog.open = true;
+          }
+        });
+      });
+
+    document
+      .querySelectorAll<HTMLElement>("[data-dialog-close]")
+      .forEach((trigger) => {
+        if (trigger.dataset.dialogWired === "true") return;
+        trigger.dataset.dialogWired = "true";
+        trigger.addEventListener("click", () => {
+          const id = trigger.dataset.dialogClose;
+          if (!id) return;
+          const dialog = findDialog(id);
+          if (!dialog) return;
+          if (typeof dialog.close === "function") {
+            void dialog.close();
+          } else {
+            dialog.open = false;
+          }
+        });
+      });
+  }
+
+  function bootstrap(): void {
+    portalDialogs();
+    wireDialogTriggers();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootstrap, { once: true });
+  } else {
+    bootstrap();
+  }
+  document.addEventListener("astro:page-load", bootstrap);
+  document.addEventListener("astro:before-preparation", teardownPortaledDialogs);
+</script>

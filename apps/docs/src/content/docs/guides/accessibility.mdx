@@ -1,0 +1,144 @@
+---
+title: Accessibility
+description: Built-in accessibility features in AWC UI — ARIA, keyboard navigation, focus management
+sidebar:
+  order: 1
+---
+
+## Built-In Accessibility
+
+Every AWC UI component is built with accessibility as a core requirement, not an afterthought. Components include:
+
+- **WAI-ARIA roles and attributes** applied automatically
+- **Keyboard navigation** following WAI-ARIA Authoring Practices
+- **Focus management** with visible focus indicators
+- **Screen reader support** via live regions and announcements
+
+## ARIA Roles
+
+Components automatically apply the correct ARIA role:
+
+| Component | Role | Key ARIA Attributes |
+|-----------|------|-------------------|
+| `md-button` | `button` | `aria-disabled`, `aria-pressed` (toggle), `tabindex` |
+| `md-checkbox` | `checkbox` | `aria-checked`, `aria-disabled`, `aria-required` |
+| `md-radio` | `radio` | `aria-checked`, `aria-disabled` |
+| `md-switch` | `switch` | `aria-checked`, `aria-disabled` |
+| `md-dialog` | `dialog` | `aria-modal`, `aria-labelledby` |
+| `md-menu` | `menu` | `aria-expanded`, `aria-haspopup` |
+| `md-menu-item` | `menuitem` | `aria-disabled` |
+| `md-tab` | `tab` | `aria-selected`, `aria-controls` |
+| `md-tabs` | `tablist` | `aria-orientation` |
+| `md-slider` | `slider` | `aria-valuenow`, `aria-valuemin`, `aria-valuemax` |
+| `md-tooltip` | `tooltip` | trigger: `aria-describedby` |
+| `md-snackbar` | `alert` | `aria-live="polite"` |
+
+## Keyboard Navigation
+
+All interactive components support keyboard operation:
+
+| Component | Keys | Behavior |
+|-----------|------|----------|
+| Button | `Enter`, `Space` | Activate |
+| Checkbox | `Space` | Toggle checked state |
+| Radio | `Arrow Up/Down` | Navigate group |
+| Switch | `Space` | Toggle on/off |
+| Menu | `Arrow Up/Down` | Navigate items |
+| Menu | `Enter`, `Space` | Select item |
+| Menu | `Escape` | Close |
+| Menu | `Home/End` | First/last item |
+| Tabs | `Arrow Left/Right` | Navigate tabs |
+| Dialog | `Escape` | Close (if dismissible) |
+| Dialog | `Tab` | Trap focus within |
+| Slider | `Arrow Left/Right/Up/Down` | Adjust value |
+| Select | `Arrow Up/Down` | Navigate options |
+| Select | `Enter`, `Space` | Open/select |
+| Select | `Escape` | Close dropdown |
+
+## Focus Management
+
+### Focus Indicators
+
+Every interactive component shows a visible focus ring when focused via keyboard (`focus-visible`):
+
+```css
+:host(:focus-visible) {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: 2px;
+}
+```
+
+### Disabled vs Soft-Disabled
+
+AWC UI supports two disabled modes:
+
+| | `disabled` | `soft-disabled` |
+|---|---|---|
+| Visual appearance | Muted (38% opacity) | Muted (38% opacity) |
+| Focusable | No (`tabindex="-1"`) | Yes (`tabindex="0"`) |
+| Click/tap | Blocked | Blocked |
+| Screen reader | Announces disabled | Announces disabled |
+| Use case | Permanently unavailable | Discoverable but not actionable |
+
+**Prefer `soft-disabled`** when users should still be able to discover a control via keyboard navigation (e.g., a submit button that becomes enabled after filling required fields).
+
+```html
+<!-- Removed from tab order entirely -->
+<md-button disabled>Can't reach me</md-button>
+
+<!-- Still in tab order, screen reader announces disabled -->
+<md-button soft-disabled>Fill the form first</md-button>
+```
+
+### Focus Trapping
+
+Modal components (`md-dialog`, `md-bottom-sheet`) automatically trap focus within their boundaries when open, preventing users from tabbing to elements behind the modal.
+
+## Screen Readers
+
+- Components use semantic HTML elements and ARIA attributes
+- State changes are announced via `aria-live` regions
+- Icon-only buttons should have `aria-label`:
+
+```html
+<md-icon-button
+  icon="close"
+  aria-label="Close dialog"
+></md-icon-button>
+```
+
+## Color Contrast
+
+All MD3 token pairings meet WCAG 2.1 AA contrast requirements (4.5:1 for normal text, 3:1 for large text). The token system ensures `on-*` colors always contrast against their paired container color.
+
+## Testing Accessibility
+
+All components are tested for accessibility in unit tests:
+
+```ts
+describe('accessibility', () => {
+  it('has correct ARIA role', async () => {
+    const page = await create('<md-button>Click</md-button>');
+    expect(page.root?.getAttribute('role')).toBe('button');
+  });
+
+  it('sets aria-disabled when disabled', async () => {
+    const page = await create('<md-button disabled>Click</md-button>');
+    expect(page.root?.getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('is focusable via tabindex', async () => {
+    const page = await create('<md-button>Click</md-button>');
+    expect(page.root?.getAttribute('tabindex')).toBe('0');
+  });
+});
+```
+
+## Best Practices
+
+1. **Always provide labels** for icon-only buttons via `aria-label`
+2. **Use `soft-disabled`** instead of `disabled` when the action may become available
+3. **Don't remove focus indicators** — they are required for keyboard accessibility
+4. **Test with a screen reader** — VoiceOver (macOS), NVDA/JAWS (Windows), TalkBack (Android)
+5. **Use semantic structure** — headings, landmarks, and lists around components
+6. **Avoid `tabindex > 0`** — let the natural DOM order determine focus sequence

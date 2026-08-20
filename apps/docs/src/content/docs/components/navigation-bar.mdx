@@ -1,0 +1,904 @@
+---
+title: Navigation Bar
+description: "Bottom bar of 3–5 top-level destinations for compact screens, with roving keyboard focus and one active indicator"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/navigation-bar.json";
+import navTabApi from "../../../data/components/navigation-tab.json";
+
+**Top-level destinations on a compact screen.** A bottom bar of 3–5
+destinations. The bar owns the active index, the roving keyboard focus and the
+single active indicator across its [`md-navigation-tab`](/components/navigation-bar/#md-navigation-tab)
+children — it does **not** route.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 380px;">
+  <md-navigation-bar active-index="0" aria-label="Main">
+    <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Library" icon="library_music"></md-navigation-tab>
+    <md-navigation-tab label="Profile" icon="person" badge-value="3"></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="Live preview"
+  storyId="navigation-navigation-bar--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-navigation-bar" example="" />
+
+## When to use
+
+- **3–5 top-level destinations** on a mobile / compact layout.
+- Destinations of equal importance that the user switches between frequently.
+- A persistent bar that always shows where the user is — `active-index` is the
+  single source of truth for the one active indicator.
+- Destinations that carry a status count or a "something new" dot.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Fewer than three destinations | [`md-tabs`](/components/tabs/) |
+| More than five destinations | A rail, a drawer, or a menu |
+| Desktop / large layouts | [`md-navigation-rail`](/components/navigation-rail/) or [`md-tabs`](/components/tabs/) |
+| Sibling views inside one screen | [`md-tabs`](/components/tabs/) |
+| Actions rather than destinations | [`md-toolbar`](/components/toolbar/) / [`md-button-group`](/components/button-group/) |
+| A linear flow | [`md-stepper`](/components/stepper/) |
+| Secondary navigation | [`md-tabs`](/components/tabs/) |
+
+## Destination count
+
+M3 caps the bar at **five** destinations and requires at least **three**. Two
+destinations belong in [`md-tabs`](/components/tabs/); six or more belong in a
+rail or drawer.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 340px;">
+  <md-navigation-bar active-index="0" aria-label="Three destinations">
+    <md-navigation-tab label="Home" icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+  </md-navigation-bar>
+</div>
+<div style="inline-size: 100%; max-inline-size: 400px;">
+  <md-navigation-bar active-index="0" aria-label="Five destinations">
+    <md-navigation-tab label="Home" icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Library" icon="library_music"></md-navigation-tab>
+    <md-navigation-tab label="Inbox" icon="inbox"></md-navigation-tab>
+    <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="Three destinations (minimum) and five (maximum)"
+  storyId="navigation-navigation-bar--three-destinations"
+/>
+
+## Label behaviour
+
+`label-behavior` is `always` by default, which is the M3 baseline. `selected`
+and `none` exist for constrained layouts, but M3 says **don't remove labels from
+navigation items** — reach for them only when you have measured that you must.
+A child tab can override the bar with its own `label-behavior`.
+
+| Value | Result |
+|---|---|
+| `always` | **Default.** Every destination shows its label |
+| `selected` | Only the active destination's label is painted |
+| `none` | Icon-only; the label is still the accessible name |
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 340px;">
+  <md-navigation-bar label-behavior="always" active-index="0" aria-label="Labels always">
+    <md-navigation-tab label="Home" icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+  </md-navigation-bar>
+</div>
+<div style="inline-size: 100%; max-inline-size: 340px;">
+  <md-navigation-bar label-behavior="selected" active-index="0" aria-label="Labels selected only">
+    <md-navigation-tab label="Home" icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+  </md-navigation-bar>
+</div>
+<div style="inline-size: 100%; max-inline-size: 340px;">
+  <md-navigation-bar label-behavior="none" active-index="0" aria-label="Icon only">
+    <md-navigation-tab label="Home" icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="always (default) · selected · none"
+  storyId="navigation-navigation-bar--label-behavior-always"
+/>
+
+## Active icon
+
+M3 requires the active destination to differ from the inactive ones — a filled
+glyph, or a heavier weight when no filled variant exists. Pass both `icon` and
+`active-icon` on the tab and the swap is automatic.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 340px;">
+  <md-navigation-bar active-index="1" aria-label="Filled active icon">
+    <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Favorites" icon="favorite" active-icon="favorite"></md-navigation-tab>
+    <md-navigation-tab label="Settings" icon="settings" active-icon="settings"></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="Outlined when inactive, filled when active"
+  storyId="navigation-navigation-bar--active-icon-filled"
+/>
+
+:::note[The same name twice is not a typo]
+`icon="home" active-icon="home"` is the normal spelling. The active glyph gets
+`font-variation-settings: 'FILL' 1`, so with the Material Symbols variable font
+one name yields both the outlined and the filled form. Give `active-icon` a
+different name only when you want a different glyph, not a different weight.
+:::
+
+### Slotted glyphs
+
+`icon` and `active-icon` are also **slots**, for artwork the Material Symbols
+names cannot express. A slot beats the matching prop.
+
+:::caution[Slot both, or the glyph vanishes when selected]
+An active tab renders the `active-icon` slot **only** — it does not fall back to
+the `icon` slot. Select `Starred` below (it slots `icon` alone) and watch its
+glyph disappear.
+:::
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 420px;">
+  <md-navigation-bar active-index="0" aria-label="Slotted icons">
+    <md-navigation-tab label="Home">
+      <svg slot="icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/></svg>
+      <svg slot="active-icon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 3l9 8h-3v10h-5v-6h-2v6H6V11H3z"/></svg>
+    </md-navigation-tab>
+    <md-navigation-tab label="Starred">
+      <svg slot="icon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+    </md-navigation-tab>
+    <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="Slotted inactive and active glyphs"
+  storyId="navigation-navigation-bar--custom-icon-slots"
+/>
+
+## Badges
+
+`badge` is the **boolean switch** for the small dot. `badge-value` renders the
+large pill; numeric values above `badge-max` (default `999`) collapse to
+`"999+"`.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 400px;">
+  <md-navigation-bar active-index="0" aria-label="Badges">
+    <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Messages" icon="chat" badge-value="3"></md-navigation-tab>
+    <md-navigation-tab label="Alerts" icon="notifications" badge></md-navigation-tab>
+    <md-navigation-tab label="Inbox" icon="inbox" badge-value="1500"></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="Dot badge, count badge, and a value over badge-max"
+  storyId="navigation-navigation-bar--with-badges"
+/>
+
+## States
+
+`disabled` leaves the tab order entirely. `soft-disabled` stays keyboard
+reachable, so the arrow-key tour still lands on a temporarily unavailable
+destination and screen-reader users can discover it.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 400px;">
+  <md-navigation-bar active-index="0" aria-label="States">
+    <md-navigation-tab label="Home" icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search" disabled></md-navigation-tab>
+    <md-navigation-tab label="Library" icon="library_music" soft-disabled></md-navigation-tab>
+    <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="Enabled, disabled and soft-disabled destinations"
+  storyId="navigation-navigation-bar--disabled-destination"
+/>
+
+`select(index)` clamps to the next enabled tab when the target is disabled, so
+programmatic navigation never lands on a dead destination.
+
+## Keyboard activation
+
+By default, arrow keys move focus **and** activate — the MD3 reference
+behaviour. Set `manual-activation` when switching destinations is expensive or
+destructive: arrows then only preview, and `Enter` / `Space` commits.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 340px;">
+  <md-navigation-bar manual-activation active-index="0" aria-label="Manual activation">
+    <md-navigation-tab label="Home" icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Reports" icon="assessment"></md-navigation-tab>
+    <md-navigation-tab label="Sync" icon="sync"></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="manual-activation — arrow to preview, Enter to commit"
+  storyId="navigation-navigation-bar--manual-activation"
+/>
+
+## Positioning
+
+The bar does **not** position itself. Fix it to the bottom edge yourself, and
+pad the page so content isn't hidden behind it.
+
+```html
+<md-navigation-bar style="position: fixed; inset-inline: 0; inset-block-end: 0;">
+  …
+</md-navigation-bar>
+```
+
+<ComponentDemo
+  html={`<div style="position:relative; inline-size:100%; max-inline-size:320px; block-size:300px; overflow:hidden; border:1px solid var(--md-sys-color-outline-variant); border-radius:16px;">
+  <div style="block-size:100%; overflow-y:auto; padding:16px; padding-block-end:96px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">
+    <p style="margin:0 0 12px;">Scroll this panel.</p>
+    <p style="margin:0 0 12px;">The bar is pinned to the bottom edge of the screen, so it never scrolls with the content.</p>
+    <p style="margin:0 0 12px;">The content pane carries the bottom padding instead — without it, the last line of text would sit underneath the bar and be unreadable.</p>
+    <p style="margin:0 0 12px;">Keep scrolling.</p>
+    <p style="margin:0;">This last line clears the bar because of that padding.</p>
+  </div>
+  <md-navigation-bar active-index="0" aria-label="Main" style="position:absolute; inset-inline:0; inset-block-end:0; --md-navigation-bar-container-elevation: var(--md-sys-elevation-2);">
+    <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="Pinned to the bottom of a scrolling shell, with the content padded to clear it"
+/>
+
+The demo pins the bar with `position: absolute` so it stays inside this page; in
+a real app the viewport is the shell and you want `position: fixed`. Either way
+the padding on the content pane is what keeps the last line readable.
+
+:::caution[A FAB must not cover the bar]
+M3 is explicit: right-align the FAB **above** the navigation bar, never
+overlapping it.
+:::
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdChange` | no | `{ index, previousIndex }` | The selected destination changed — click, keyboard activation, or `select()` |
+
+```ts
+// mdChange detail
+{
+  index: number;           // the destination now selected
+  previousIndex: number;   // the one it replaced
+}
+```
+
+`mdChange` only fires on a **real** change, so `index` and `previousIndex` are
+never equal and a no-op reselect guard would be dead code — `previousIndex` is
+there to tell you where the user came from (direction, analytics, restoring the
+previous view's scroll). Re-clicking the already active destination emits
+nothing; if you need that (scroll-to-top on a second tap, say) listen for the
+child's `mdTabClick` instead.
+
+:::tip[`mdTabClick` only reaches a listener on the bar or the tab]
+The bar's own handler calls `stopPropagation()` on `mdTabClick`, so it never
+bubbles past `md-navigation-bar`. Bind it to the bar element itself and it still
+fires — the bar stops the bubble, not the other listeners on the same target.
+
+That same handler sets `activeIndex` **synchronously**, and it runs first, so a
+bubble-phase listener always reads the *new* index off the bar. To tell a re-tap
+of the active destination from a move to a new one, listen in the **capture**
+phase, where `activeIndex` still holds the pre-tap value.
+:::
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 420px;">
+  <md-navigation-bar id="nav-ev" active-index="0" aria-label="Event demo">
+    <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Messages" icon="chat" badge-value="3"></md-navigation-tab>
+  </md-navigation-bar>
+</div>
+<output id="nav-ev-log" style="display:block; margin-block-start:16px; min-block-size:3.2em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Tap a destination. Then tap the active one again — only mdTabClick fires.</output>`}
+  script={`
+    var bar = root.querySelector('#nav-ev');
+    var log = root.querySelector('#nav-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 3);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    bar.addEventListener('mdChange', function (e) {
+      push('mdChange     index=' + e.detail.index + '  previousIndex=' + e.detail.previousIndex);
+    });
+
+    // The bar stops mdTabClick from bubbling any further, so this listener has
+    // to sit on the bar itself. It is the only way to see a re-click of the
+    // destination that is already active.
+    bar.addEventListener('mdTabClick', function (e) {
+      push('mdTabClick   index=' + e.detail.index);
+    });
+  `}
+  label="mdChange fires on a real change; mdTabClick fires on every tap"
+  htmlCode={`<md-navigation-bar id="nav" active-index="0" aria-label="Main">
+  <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+  <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+  <md-navigation-tab label="Messages" icon="chat" badge-value="3"></md-navigation-tab>
+</md-navigation-bar>
+
+<script type="module">
+  const nav = document.getElementById('nav');
+
+  nav.addEventListener('mdChange', (e) => {
+    const { index, previousIndex } = e.detail;
+    console.log('destination', index, 'was', previousIndex);
+  });
+
+  // Re-tapping the active destination: listen on the bar, not an ancestor —
+  // and in the CAPTURE phase. The bar's own bubble-phase handler sets
+  // activeIndex before a bubble listener runs, so this would otherwise be
+  // true on every tap.
+  nav.addEventListener(
+    'mdTabClick',
+    (e) => {
+      if (e.detail.index === nav.activeIndex) window.scrollTo({ top: 0 });
+    },
+    { capture: true },
+  );
+</script>`}
+  react={`import { useState } from 'react';
+import { MdNavigationBar, MdNavigationTab } from '@awc-ui/react';
+
+export function BottomNav() {
+  const [index, setIndex] = useState(0);
+
+  return (
+    <MdNavigationBar
+      activeIndex={index}
+      aria-label="Main"
+      onMdChange={(e) => setIndex(e.detail.index)}
+    >
+      <MdNavigationTab label="Home" icon="home" activeIcon="home" />
+      <MdNavigationTab label="Search" icon="search" />
+      <MdNavigationTab label="Messages" icon="chat" badgeValue="3" />
+    </MdNavigationBar>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-bottom-nav',
+  template: \`
+    <md-navigation-bar
+      [attr.active-index]="index"
+      aria-label="Main"
+      (mdChange)="onChange($event)"
+    >
+      <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+      <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+      <md-navigation-tab label="Messages" icon="chat" badge-value="3"></md-navigation-tab>
+    </md-navigation-bar>
+  \`,
+})
+export class BottomNavComponent {
+  index = 0;
+
+  onChange(e: CustomEvent<{ index: number; previousIndex: number }>) {
+    this.index = e.detail.index;
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const index = ref(0);
+
+function onChange(e: CustomEvent) {
+  index.value = e.detail.index;
+}
+</script>
+
+<template>
+  <md-navigation-bar :active-index="index" aria-label="Main" @mdChange="onChange">
+    <md-navigation-tab label="Home" icon="home" active-icon="home" />
+    <md-navigation-tab label="Search" icon="search" />
+    <md-navigation-tab label="Messages" icon="chat" badge-value="3" />
+  </md-navigation-bar>
+</template>`}
+  svelte={`<script lang="ts">
+  let index = 0;
+
+  function onChange(e: CustomEvent) {
+    index = e.detail.index;
+  }
+</script>
+
+<md-navigation-bar active-index={index} aria-label="Main" on:mdChange={onChange}>
+  <md-navigation-tab label="Home" icon="home" active-icon="home" />
+  <md-navigation-tab label="Search" icon="search" />
+  <md-navigation-tab label="Messages" icon="chat" badge-value="3" />
+</md-navigation-bar>`}
+/>
+
+Routing is the step the markup cannot express: the bar reports the change, and
+your router does the navigating. Keep the bar in sync the other way with
+`select(index)` when the router moves on its own.
+
+<TechnologyTabs
+  html={`<md-navigation-bar id="nav" active-index="0" aria-label="Main">
+  <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+  <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+  <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+</md-navigation-bar>
+
+<script type="module">
+  const routes = ['/', '/search', '/profile'];
+  const nav = document.getElementById('nav');
+
+  nav.addEventListener('mdChange', (e) => {
+    router.go(routes[e.detail.index]);
+  });
+
+  // keep the bar in sync when the router moves on its own
+  router.afterEach((to) => nav.select(routes.indexOf(to.path)));
+</script>`}
+  react={`import { MdNavigationBar, MdNavigationTab } from '@awc-ui/react';
+import { useNavigate } from 'react-router-dom';
+
+const ROUTES = ['/', '/search', '/profile'];
+
+export function BottomNav({ index }: { index: number }) {
+  const navigate = useNavigate();
+
+  return (
+    <MdNavigationBar
+      activeIndex={index}
+      aria-label="Main"
+      onMdChange={(e) => navigate(ROUTES[e.detail.index])}
+    >
+      <MdNavigationTab label="Home" icon="home" activeIcon="home" />
+      <MdNavigationTab label="Search" icon="search" />
+      <MdNavigationTab label="Profile" icon="person" />
+    </MdNavigationBar>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+
+const ROUTES = ['/', '/search', '/profile'];
+
+@Component({
+  selector: 'app-bottom-nav',
+  template: \`
+    <md-navigation-bar [attr.active-index]="index" aria-label="Main" (mdChange)="onChange($event)">
+      <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+      <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+      <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+    </md-navigation-bar>
+  \`,
+})
+export class BottomNavComponent {
+  index = 0;
+  constructor(private router: Router) {}
+
+  onChange(e: CustomEvent<{ index: number; previousIndex: number }>) {
+    this.index = e.detail.index;
+    this.router.navigateByUrl(ROUTES[e.detail.index]);
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const ROUTES = ['/', '/search', '/profile'];
+const index = ref(0);
+const router = useRouter();
+
+function onChange(e: CustomEvent) {
+  index.value = e.detail.index;
+  router.push(ROUTES[e.detail.index]);
+}
+</script>
+
+<template>
+  <md-navigation-bar :active-index="index" aria-label="Main" @mdChange="onChange">
+    <md-navigation-tab label="Home" icon="home" active-icon="home" />
+    <md-navigation-tab label="Search" icon="search" />
+    <md-navigation-tab label="Profile" icon="person" />
+  </md-navigation-bar>
+</template>`}
+  svelte={`<script lang="ts">
+  import { goto } from '$app/navigation';
+
+  const ROUTES = ['/', '/search', '/profile'];
+  let index = 0;
+
+  function onChange(e: CustomEvent) {
+    index = e.detail.index;
+    goto(ROUTES[e.detail.index]);
+  }
+</script>
+
+<md-navigation-bar active-index={index} aria-label="Main" on:mdChange={onChange}>
+  <md-navigation-tab label="Home" icon="home" active-icon="home" />
+  <md-navigation-tab label="Search" icon="search" />
+  <md-navigation-tab label="Profile" icon="person" />
+</md-navigation-bar>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[No named slots]
+Destinations are plain default-slotted children. `active-index` is the single
+source of truth — the bar writes `active` onto the children itself, so setting
+`active` on a tab by hand creates a second indicator.
+:::
+
+## The sub-components
+
+The bar is composed from one sub-component, documented here rather than on its
+own page: it means nothing outside `md-navigation-bar`, which owns the active
+index and the indicator.
+
+### `md-navigation-tab`
+
+**One destination in the bar** — an icon, a label, an active indicator and an
+optional badge.
+
+- **`active` is managed by the bar** via its `active-index`. Setting it on
+  several tabs breaks M3's "one indicator at a time" rule.
+- `active-icon` is how you satisfy M3's filled-when-active requirement. Without
+  it the same glyph shows in both states — with a Material Symbols variable font
+  the FILL axis is toggled too.
+- `badge` is the **boolean on-switch**; `badge-value` supplies the count.
+  `badge-value` alone still renders a badge as the large pill, but the dot form
+  needs `badge`. Numeric values above `badge-max` (default `999`) render as
+  `"999+"`; set `badge-max="0"` to disable the cap.
+- `href` is **scripted navigation, not a link**. The tab renders no anchor: it
+  stays `role="tab"`, and a click calls `location.assign(href)` — or
+  `window.open(href, target)` when `target` is set. So there is no middle-click,
+  no open-in-new-tab, no copy-link-address and no URL in the status bar, and
+  assistive tech announces a tab rather than a link. Call `preventDefault()` on
+  the native click to suppress it for SPA routing, or skip `href` altogether and
+  route from the bar's `mdChange`.
+- `label-behavior` exists per tab as well as on the bar, and is **not reflected**
+  as an attribute: the bar reads `getAttribute('label-behavior')` to detect an
+  explicit author override, so reflecting the default would defeat that signal.
+- `mdTabClick` `{ index }` is the **internal** signal the bar listens to — and
+  stops, so it never bubbles past the bar. Use it only when you need the
+  re-click of an already-active destination, binding it to the bar or the tab;
+  application code listens for the bar's `mdChange`.
+- `focusEl()` moves focus to the destination without selecting it. The bar's own
+  `focusTab(index)` is the usual way in.
+
+<ApiTable {...navTabApi} />
+
+## Accessibility
+
+- The bar renders a `tablist` container and manages roving focus across
+  destinations; arrow keys move, and activation follows `manual-activation`.
+- Exactly one destination is current at a time, reflected by the indicator and
+  exposed to assistive tech.
+- Labels are required, so every destination has a real accessible name — this is
+  why M3 forbids hiding them, and why `label-behavior="none"` still keeps the
+  label as the name.
+- Badges are decorative. If the count matters, put it in the label or an
+  `aria-label` ("Inbox, 12 unread") and keep it in sync.
+- Because the bar is fixed at the bottom, add bottom padding to the page equal
+  to its height so content isn't hidden behind it.
+- Prefer `soft-disabled` over `disabled` for destinations worth discovering.
+
+### Keyboard
+
+| Key | Action |
+|---|---|
+| `Tab` | One stop for the whole bar (roving tabindex) |
+| `←` / `→` | Move between destinations, wrapping at the ends (mirrored under `dir="rtl"`) |
+| `Home` / `End` | First / last destination |
+| `Enter` / `Space` | Commits the destination — required only with `manual-activation` |
+
+Tab into the bar below: one press lands on the active destination, not on the
+first one, and the arrow keys take over from there. `Settings` is
+`soft-disabled`, so the tour still visits it and a screen reader still announces
+it — it simply refuses to activate.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 420px;">
+  <md-navigation-bar active-index="1" aria-label="Main navigation">
+    <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Messages" icon="chat" badge-value="3"></md-navigation-tab>
+    <md-navigation-tab label="Settings" icon="settings" soft-disabled></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="Tab in, then arrow across — one tab stop for the bar"
+  storyId="navigation-navigation-bar--keyboard"
+/>
+
+## RTL, density & i18n
+
+**RTL** — destination order, indicator movement and badge placement follow
+reading order under `dir="rtl"`, and the arrow keys invert with them: `←`
+advances, `→` goes back. Nothing on the bar changes — the same markup works in
+both directions. See [RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <md-navigation-bar active-index="0" aria-label="التنقل">…</md-navigation-bar>
+</div>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid;gap:20px;inline-size:100%;max-inline-size:420px;">
+  <div dir="ltr">
+    <md-navigation-bar active-index="0" aria-label="Main">
+      <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+      <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+      <md-navigation-tab label="Messages" icon="chat" badge-value="3"></md-navigation-tab>
+    </md-navigation-bar>
+  </div>
+  <div dir="rtl">
+    <md-navigation-bar active-index="0" aria-label="التنقل">
+      <md-navigation-tab label="الرئيسية" icon="home" active-icon="home"></md-navigation-tab>
+      <md-navigation-tab label="بحث" icon="search"></md-navigation-tab>
+      <md-navigation-tab label="الرسائل" icon="chat" badge-value="3"></md-navigation-tab>
+    </md-navigation-bar>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl — note the badge side"
+  storyId="navigation-navigation-bar--rtl"
+/>
+
+### `active-index` counts DOM order, not visual order
+
+Under `dir="rtl"` the first child paints on the **right**. That is correct, and
+it is not something to "fix" by reversing the children: `active-index` counts
+DOM order, so a reversed list makes index `0` point at what the user reads as
+the last destination — and every index your router maps silently inverts with
+it. Both bars below are `active-index="0"`.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;inline-size:100%;max-inline-size:480px;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <md-navigation-bar dir="rtl" active-index="0" aria-label="DOM order">
+    <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+  </md-navigation-bar>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <md-navigation-bar dir="rtl" active-index="0" aria-label="Reversed children">
+    <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="Same active-index, reversed children — the wrong row selects Profile"
+/>
+
+### Every density rung
+
+`density="-1…-4"` shortens the bar, overriding any inherited `data-density`
+rung; `0` is the default and carries no rule of its own, so it never resets an
+inherited rung (see the note below). The container floors at 48px, so the
+deepest rungs trim the tab padding rather than the hit area.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;inline-size:100%;max-inline-size:480px;">
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <md-navigation-bar density="0" active-index="0" aria-label="d0"><md-navigation-tab label="Home" icon="home"></md-navigation-tab><md-navigation-tab label="Search" icon="search"></md-navigation-tab><md-navigation-tab label="Profile" icon="person"></md-navigation-tab></md-navigation-bar>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <md-navigation-bar density="-1" active-index="0" aria-label="d1"><md-navigation-tab label="Home" icon="home"></md-navigation-tab><md-navigation-tab label="Search" icon="search"></md-navigation-tab><md-navigation-tab label="Profile" icon="person"></md-navigation-tab></md-navigation-bar>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <md-navigation-bar density="-2" active-index="0" aria-label="d2"><md-navigation-tab label="Home" icon="home"></md-navigation-tab><md-navigation-tab label="Search" icon="search"></md-navigation-tab><md-navigation-tab label="Profile" icon="person"></md-navigation-tab></md-navigation-bar>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <md-navigation-bar density="-3" active-index="0" aria-label="d3"><md-navigation-tab label="Home" icon="home"></md-navigation-tab><md-navigation-tab label="Search" icon="search"></md-navigation-tab><md-navigation-tab label="Profile" icon="person"></md-navigation-tab></md-navigation-bar>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <md-navigation-bar density="-4" active-index="0" aria-label="d4"><md-navigation-tab label="Home" icon="home"></md-navigation-tab><md-navigation-tab label="Search" icon="search"></md-navigation-tab><md-navigation-tab label="Profile" icon="person"></md-navigation-tab></md-navigation-bar>
+</div>`}
+  label="Density 0 through -4 — the bar shortens, the tabs tighten"
+/>
+
+:::caution[The bar is a touch surface first]
+It lives at the bottom of a phone screen, where every destination should stay at
+or above the 48dp target. The deep rungs are for desktop shells that happen to
+reuse the bar, not for the mobile case it was designed for. See
+[Density](/behaviour/density/#accessibility).
+:::
+
+### Density and direction together
+
+A `data-density` ancestor and `dir="rtl"` compose — the rung cascades in, the
+direction flips the layout, and a local `density` on one bar overrides only that
+bar. The wrapper below is `dir="rtl" data-density="-2"`; the second bar drops to
+`-4` on its own.
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:grid;gap:16px;inline-size:100%;max-inline-size:420px;">
+  <md-navigation-bar active-index="0" aria-label="Inherited -2">
+    <md-navigation-tab label="الرئيسية" icon="home" active-icon="home"></md-navigation-tab>
+    <md-navigation-tab label="بحث" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="الرسائل" icon="chat" badge-value="3"></md-navigation-tab>
+  </md-navigation-bar>
+  <md-navigation-bar density="-4" active-index="0" aria-label="Local -4">
+    <md-navigation-tab label="الرئيسية" icon="home" active-icon="home"></md-navigation-tab>
+    <md-navigation-tab label="بحث" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="الرسائل" icon="chat" badge-value="3"></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="dir=rtl with data-density=-2, and one bar overriding to -4"
+/>
+
+:::note[`density="0"` is the default, not a reset]
+Only `-1` through `-4` carry a rule, so setting `density="0"` on a bar inside a
+`data-density="-2"` ancestor leaves the inherited rung in place. To pull one bar
+back to the baseline, set `--md-sys-density-scale: 0` on it.
+:::
+
+**Density** — `density="-1…-4"` on the bar, or a `data-density` ancestor for the
+whole shell. Either way the signal is one number and every measurement derives
+from it. See [Density](/behaviour/density/).
+
+**i18n** — translate every `label`. M3 forbids both truncation and shrinking the
+type, so long translations mean choosing shorter words: a four-destination bar
+that fits `Home · Search · Messages · Profile` can overflow on
+`Startseite · Suche · Nachrichten · Profil`. Check each locale at your narrowest
+supported width.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-navigation-bar-container-color` | Bar background | `surface-container` |
+| `--md-navigation-bar-container-height` | Bar height | `64px` |
+| `--md-navigation-bar-container-shape` | Outer corner radius | `0` |
+| `--md-navigation-bar-container-elevation` | Box shadow | `none` |
+| `--md-navigation-bar-divider-color` / `-divider-width` | Top rule | `transparent` / `0` |
+| `--md-navigation-bar-z-index` | Stacking order | `--md-sys-z-index-navigation` |
+
+Destination appearance is themed with the `--md-navigation-tab-*` properties —
+see [`md-navigation-tab`](/components/navigation-bar/#md-navigation-tab).
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 360px;">
+  <md-navigation-bar active-index="0" aria-label="Themed" style="--md-navigation-bar-container-color: var(--md-sys-color-surface-container-highest); --md-navigation-bar-container-shape: 20px; --md-navigation-bar-divider-width: 1px; --md-navigation-bar-divider-color: var(--md-sys-color-outline-variant);">
+    <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="Themed instance"
+  storyId="navigation-navigation-bar--custom-tokens"
+/>
+
+Every default resolves through an `md-sys-color` role, so a bar that sets no
+custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 420px;">
+  <md-navigation-bar active-index="1" aria-label="Untouched defaults">
+    <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Messages" icon="chat" badge-value="3"></md-navigation-tab>
+    <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="navigation-navigation-bar--dark-theme"
+/>
+
+### Theming the destinations
+
+The bar owns the container; each destination owns its own colours, indicator and
+type. Set the `--md-navigation-tab-*` properties on the bar and they cascade.
+
+| Custom property | Purpose |
+|---|---|
+| `--md-navigation-tab-active-icon-color` / `-inactive-icon-color` | Glyph colour |
+| `--md-navigation-tab-active-label-color` / `-inactive-label-color` | Label colour |
+| `--md-navigation-tab-active-indicator-color` | The pill behind the active glyph |
+| `--md-navigation-tab-active-indicator-width` / `-height` / `-shape` | Indicator box |
+| `--md-navigation-tab-icon-size` | Glyph size |
+| `--md-navigation-tab-slotted-icon-font` | Font applied to slotted text / emoji glyphs |
+| `--md-navigation-tab-label-font` / `-font-size` / `-font-weight` | Label type |
+| `--md-navigation-tab-badge-color` / `-badge-on-color` | Badge fill / text |
+| `--md-navigation-tab-hover-state-layer-color` / `-focus-…` / `-pressed-…` | State layers |
+| `--md-navigation-tab-padding-block-start` / `-end` | Vertical padding |
+| `--md-navigation-tab-disabled-opacity` | Disabled dimming |
+
+<ComponentDemo
+  html={`<div style="display:grid;gap:20px;inline-size:100%;max-inline-size:420px;">
+  <md-navigation-bar active-index="1" aria-label="Tonal indicator" style="--md-navigation-tab-active-indicator-color: var(--md-sys-color-tertiary-container); --md-navigation-tab-active-icon-color: var(--md-sys-color-on-tertiary-container); --md-navigation-tab-active-label-color: var(--md-sys-color-on-tertiary-container); --md-navigation-tab-active-indicator-shape: 8px;">
+    <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+  </md-navigation-bar>
+
+  <md-navigation-bar active-index="1" aria-label="Big glyphs" style="--md-navigation-tab-icon-size: 30px; --md-navigation-tab-active-indicator-width: 72px; --md-navigation-tab-label-font-weight: 700; --md-navigation-tab-label-font-size: 13px;">
+    <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+  </md-navigation-bar>
+
+  <md-navigation-bar active-index="1" aria-label="Branded badge" style="--md-navigation-tab-badge-color: #7c4dff; --md-navigation-tab-badge-on-color: #ffffff; --md-navigation-tab-active-indicator-color: #ede7f6; --md-navigation-tab-active-icon-color: #311b92; --md-navigation-tab-active-label-color: #311b92;">
+    <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Messages" icon="chat" badge-value="12"></md-navigation-tab>
+    <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="Indicator, glyph size, label type and badge — all set on the bar"
+/>
+
+## CSS parts
+
+The bar exposes one part; each destination exposes seven.
+
+| Part | On | Element |
+|---|---|---|
+| `container` | `md-navigation-bar` | The inner `tablist` row |
+| `container` | `md-navigation-tab` | The destination's own box |
+| `indicator` | `md-navigation-tab` | The active pill |
+| `icon-container` | `md-navigation-tab` | Wrapper holding glyph + badge |
+| `icon` | `md-navigation-tab` | The glyph |
+| `badge` | `md-navigation-tab` | The badge |
+| `label` | `md-navigation-tab` | The label text |
+| `state-layer` | `md-navigation-tab` | Hover / focus / press overlay |
+
+<ComponentDemo
+  html={`<style>
+  .parts-nav::part(container) { padding-inline: 8px; }
+  .parts-nav md-navigation-tab::part(label) { text-transform: uppercase; letter-spacing: .08em; font-size: 10px; }
+  .parts-nav md-navigation-tab::part(indicator) { border-radius: 6px; }
+  .parts-nav md-navigation-tab::part(badge) { outline: 2px solid var(--md-sys-color-surface-container); }
+</style>
+<div style="inline-size: 100%; max-inline-size: 420px;">
+  <md-navigation-bar class="parts-nav" active-index="1" aria-label="Styled parts">
+    <md-navigation-tab label="Home" icon="home" active-icon="home"></md-navigation-tab>
+    <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+    <md-navigation-tab label="Messages" icon="chat" badge-value="3"></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  label="container, label, indicator and badge"
+/>
+
+The bar's own part is reachable from the page stylesheet; the destinations'
+parts are one level down, so select the tag first:
+
+```css
+md-navigation-bar::part(container) {
+  padding-inline: 8px;
+}
+
+md-navigation-bar md-navigation-tab::part(indicator) {
+  border-radius: 6px;
+}
+```
+
+
+## Related
+
+[`md-navigation-tab`](/components/navigation-bar/#md-navigation-tab) ·
+[`md-navigation-rail`](/components/navigation-rail/) ·
+[`md-tabs`](/components/tabs/) ·
+[`md-app-bar`](/components/app-bar/) ·
+[`md-fab`](/components/fab/) ·
+[`md-badge`](/components/badge/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-navigation-bar" />

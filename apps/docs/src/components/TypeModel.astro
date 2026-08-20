@@ -1,0 +1,203 @@
+---
+/*
+ * TypeModel.astro
+ *
+ * The two shapes a consumer has to know about a component, rendered from the
+ * library's own declarations rather than a hand-written block on the page:
+ *
+ *   1. Data model    — the interfaces behind props an attribute cannot carry
+ *                      (`items`, `options`, `series`, `data`…). You cannot
+ *                      construct one of those props without its field list, and
+ *                      the props table only has room for the type NAME.
+ *   2. Output model  — the payload each event hands back. 47 components emit a
+ *                      structured detail; the events table squashes it into one
+ *                      cell, which is exactly where a reader starts guessing.
+ *
+ * Both come from `collectTypeModels()` in scripts/generate-docs.mjs, which
+ * resolves the named types out of packages/core/src. That is the whole point:
+ * a hand-written `interface` block on an .mdx page silently becomes a lie the
+ * day someone adds a field, and 11 pages were carrying one.
+ *
+ * Renders nothing when a component has neither — most do not.
+ *
+ * Usage from MDX:
+ *
+ *   import TypeModel from "../../../components/TypeModel.astro";
+ *   <TypeModel {...apiData} />
+ */
+import { Code } from "astro:components";
+
+interface TypeDef {
+  name: string;
+  kind: "interface" | "type";
+  extends?: string;
+  body: string;
+}
+
+interface EventPayload {
+  name: string;
+  detail: string;
+}
+
+interface CallableProp {
+  name: string;
+  kind: "callable";
+  body: string;
+}
+
+interface Props {
+  tag?: string;
+  dataTypes?: TypeDef[];
+  callableProps?: CallableProp[];
+  eventTypes?: TypeDef[];
+  eventPayloads?: EventPayload[];
+}
+
+const {
+  dataTypes = [],
+  callableProps = [],
+  eventTypes = [],
+  eventPayloads = [],
+} = Astro.props;
+
+/** Re-assemble a declaration the way it reads in the source. */
+const declarationOf = (t: TypeDef): string =>
+  t.kind === "interface"
+    ? `interface ${t.name}${t.extends ? ` extends ${t.extends}` : ""} {\n${t.body}\n}`
+    : `type ${t.name} = ${t.body};`;
+
+/* A function prop has no declaration to resolve — its signature IS the shape,
+   and it is the half a reader cannot guess: what am I handed, what must I
+   return? Rendered as an assignable field so it reads like the interfaces. */
+const callableBlock = callableProps
+  .map((c) => `${c.name}: ${c.body};`)
+  .join("\n");
+
+const dataBlock = [
+  dataTypes.map(declarationOf).join("\n\n"),
+  callableBlock,
+]
+  .filter(Boolean)
+  .join("\n\n");
+
+/* An event carrying a bare primitive (`string[]`, `void`) needs no block — the
+   events table already says everything there is to say. Only structured
+   payloads earn a line here. */
+const structured = eventPayloads.filter(
+  (e) => /[{<]/.test(e.detail) && e.detail !== "void",
+);
+/* An inline payload arrives as one long line (`{ a: X; b: Y; }`). Left as-is it
+   overflows the code block horizontally; broken on its top-level `;` it reads
+   like the interface above it. Nested braces are left alone — splitting inside
+   one would produce nonsense. */
+const expandInline = (detail: string): string => {
+  const inner = detail.trim().replace(/^\{\s*|\s*\}$/g, "");
+  if (!inner || inner.includes("{")) return detail;
+
+  const fields: string[] = [];
+  let depth = 0;
+  let buf = "";
+  for (const ch of inner) {
+    if ("([<".includes(ch)) depth++;
+    if (")]>".includes(ch)) depth--;
+    if (ch === ";" && depth === 0) {
+      fields.push(buf.trim());
+      buf = "";
+    } else buf += ch;
+  }
+  if (buf.trim()) fields.push(buf.trim());
+  if (fields.length < 2) return detail;
+
+  return `{\n${fields.map((f) => `  ${f};`).join("\n")}\n}`;
+};
+
+const eventBlock = [
+  ...eventTypes.map(declarationOf),
+  ...structured.map(
+    (e) => `// ${e.name}\ntype ${e.name}Detail = ${expandInline(e.detail)};`,
+  ),
+].join("\n\n");
+
+const hasAny = dataBlock.length > 0 || eventBlock.length > 0;
+---
+
+{
+  hasAny && (
+    <div class="type-model">
+      {dataBlock && (
+        <section class="type-model__section">
+          <h3 class="type-model__heading">
+            <span class="type-model__icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="12" cy="5" rx="9" ry="3" />
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+              </svg>
+            </span>
+            Data model
+          </h3>
+          <p class="type-model__lede">
+            The shapes you construct and pass in. These props are JS-only — an
+            attribute cannot carry an object or a function.
+          </p>
+          <Code code={dataBlock} lang="ts" />
+        </section>
+      )}
+
+      {eventBlock && (
+        <section class="type-model__section">
+          <h3 class="type-model__heading">
+            <span class="type-model__icon" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+            </span>
+            Output model
+          </h3>
+          <p class="type-model__lede">
+            What each event hands back on <code>event.detail</code>.
+          </p>
+          <Code code={eventBlock} lang="ts" />
+        </section>
+      )}
+    </div>
+  )
+}
+
+<style>
+  .type-model {
+    display: grid;
+    gap: 1.5rem;
+    margin-block: 1.5rem;
+  }
+
+  .type-model__section {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .type-model__heading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .type-model__icon {
+    display: inline-flex;
+    color: var(--sl-color-accent-high, currentColor);
+  }
+
+  .type-model__lede {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-3);
+  }
+
+  /* The generated block is the payload; keep it flush with the lede. */
+  .type-model :global(pre) {
+    margin-block-start: 0.25rem;
+  }
+</style>

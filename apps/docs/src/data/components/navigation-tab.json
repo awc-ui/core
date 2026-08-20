@@ -1,0 +1,232 @@
+{
+  "tag": "md-navigation-tab",
+  "title": "Navigation Tab",
+  "slug": "navigation-tab",
+  "category": "Navigation",
+  "subComponentOf": "md-navigation-bar",
+  "storyId": null,
+  "props": [
+    {
+      "name": "active",
+      "attribute": "active",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "activeIcon",
+      "attribute": "active-icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "badge",
+      "attribute": "badge",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "badgeValue",
+      "attribute": "badge-value",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "badgeMax",
+      "attribute": "badge-max",
+      "type": "number",
+      "default": "999",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "href",
+      "attribute": "href",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "target",
+      "attribute": "target",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelBehavior",
+      "attribute": "label-behavior",
+      "type": "MdNavigationTabLabelBehavior",
+      "default": "'always'",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdTabClick",
+      "detail": "{ index: number }"
+    }
+  ],
+  "methods": [
+    {
+      "name": "focusEl",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "active-icon",
+      "description": ""
+    },
+    {
+      "name": "icon",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "icon-container",
+      "description": ""
+    },
+    {
+      "name": "icon",
+      "description": ""
+    },
+    {
+      "name": "badge",
+      "description": ""
+    },
+    {
+      "name": "label",
+      "description": ""
+    },
+    {
+      "name": "state-layer",
+      "description": ""
+    },
+    {
+      "name": "container",
+      "description": ""
+    },
+    {
+      "name": "indicator",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-navigation-tab-active-indicator-width",
+      "description": "(default 56px)"
+    },
+    {
+      "name": "--md-navigation-tab-active-indicator-height",
+      "description": "(default 32px)"
+    },
+    {
+      "name": "--md-navigation-tab-active-indicator-shape",
+      "description": "(default full-rounded)"
+    },
+    {
+      "name": "--md-navigation-tab-label-font",
+      "description": "(label-medium font shorthand)"
+    },
+    {
+      "name": "--md-navigation-tab-label-font-weight",
+      "description": "(active label weight; defaults 600)"
+    },
+    {
+      "name": "--md-navigation-tab-icon-size",
+      "description": "(default 24px)"
+    },
+    {
+      "name": "--md-navigation-tab-padding-block-start",
+      "description": "(default 5px — centers 54px content in 64dp bar)"
+    },
+    {
+      "name": "--md-navigation-tab-padding-block-end",
+      "description": "(default 5px)"
+    },
+    {
+      "name": "--md-navigation-tab-disabled-opacity",
+      "description": "(default 0.38)"
+    },
+    {
+      "name": "--md-navigation-tab-label-font-size",
+      "description": ""
+    },
+    {
+      "name": "--md-navigation-tab-focus-state-layer-opacity",
+      "description": ""
+    },
+    {
+      "name": "--md-navigation-tab-slotted-icon-font",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdTabClick",
+      "detail": "{ index: number }"
+    }
+  ]
+}

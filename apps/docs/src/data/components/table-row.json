@@ -1,0 +1,145 @@
+{
+  "tag": "md-table-row",
+  "title": "Table Row",
+  "slug": "table-row",
+  "category": "Data Display",
+  "subComponentOf": "md-table",
+  "storyId": null,
+  "props": [
+    {
+      "name": "rowgroup",
+      "attribute": "rowgroup",
+      "type": "'head' | 'body' | 'foot'",
+      "default": "'body'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "selected",
+      "attribute": "selected",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "selectable",
+      "attribute": "selectable",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "clickable",
+      "attribute": "clickable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "expandable",
+      "attribute": "expandable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "expanded",
+      "attribute": "expanded",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "highlight",
+      "attribute": "highlight",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdRowClick",
+      "detail": "{ value: string; row: HTMLElement }"
+    },
+    {
+      "name": "mdRowSelectionChange",
+      "detail": "{ selected: boolean; value: string }"
+    },
+    {
+      "name": "mdRowExpandedChange",
+      "detail": "{ expanded: boolean }"
+    }
+  ],
+  "methods": [
+    {
+      "name": "toggle",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "expanded",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "expanded",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-table-row-hover-color",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-table",
+    "md-table-cell"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdRowClick",
+      "detail": "{ value: string; row: HTMLElement }"
+    },
+    {
+      "name": "mdRowSelectionChange",
+      "detail": "{ selected: boolean; value: string }"
+    },
+    {
+      "name": "mdRowExpandedChange",
+      "detail": "{ expanded: boolean }"
+    }
+  ]
+}

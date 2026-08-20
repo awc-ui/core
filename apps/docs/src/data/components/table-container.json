@@ -1,0 +1,119 @@
+{
+  "tag": "md-table-container",
+  "title": "Table Container",
+  "slug": "table-container",
+  "category": "Data Display",
+  "subComponentOf": "md-table",
+  "storyId": null,
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'elevated' | 'outlined' | 'filled' | 'flat'",
+      "default": "'elevated'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "shape",
+      "attribute": "shape",
+      "type": "'extra-large' | 'large' | 'medium' | 'small' | 'none'",
+      "default": "'large'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "maxHeight",
+      "attribute": "max-height",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "minHeight",
+      "attribute": "min-height",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "vibrant",
+      "attribute": "vibrant",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "elevation",
+      "attribute": "elevation",
+      "type": "0 | 1 | 2 | 3 | 4 | 5",
+      "default": "",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "top",
+      "description": ""
+    },
+    {
+      "name": "bottom",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "top",
+      "description": "Wrapper around `slot[name=\"top\"]` (toolbar etc.)"
+    },
+    {
+      "name": "scroll",
+      "description": "The scroll viewport that contains the table"
+    },
+    {
+      "name": "bottom",
+      "description": "Wrapper around `slot[name=\"bottom\"]` (pagination etc.)"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-table-container-color",
+      "description": "Surface background"
+    },
+    {
+      "name": "--md-table-container-shape",
+      "description": "Border-radius"
+    },
+    {
+      "name": "--md-table-container-elevation",
+      "description": "Box-shadow"
+    },
+    {
+      "name": "--md-table-container-outline-color",
+      "description": "Outline color (variant=outlined)"
+    },
+    {
+      "name": "--md-table-container-outline-width",
+      "description": "Outline width (variant=outlined)"
+    }
+  ],
+  "dependencies": [
+    "md-table",
+    "md-table-toolbar",
+    "md-table-pagination"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": []
+}

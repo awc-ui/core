@@ -1,0 +1,414 @@
+/* ==========================================================
+   md-transfer-list — Material Design 3 dual-list selector
+   Reference parity: https://mui.com/material-ui/react-transfer-list/
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-transfer-list-width              Explicit inline-size (default: auto; 100% supported)
+     --md-transfer-list-min-width          Minimum inline-size
+     --md-transfer-list-max-width          Maximum inline-size
+     --md-transfer-list-height             Explicit block-size (default: auto; 100% supported —
+                                           the column cap tracks this so the lists stretch)
+     --md-transfer-list-min-height         Minimum block-size
+     --md-transfer-list-max-height         Maximum block-size
+     --md-transfer-list-column-min-width   Min-width of each column
+     --md-transfer-list-column-max-block   Max-height of each column (default 360px,
+                                           or the configured height when one is set)
+
+   ATTRIBUTES:
+     full-width    Stretch to 100% of the container's inline-size
+     full-height   Stretch to 100% of the container's block-size
+     --md-transfer-list-container-shape    Container corner radius
+     --md-transfer-list-container-color    Column background
+     --md-transfer-list-header-color       Header background
+     --md-transfer-list-header-text-color  Header text color
+     --md-transfer-list-item-inset         Row plate inset from the panel edge
+                                           (6dp; overriding it alone keeps the
+                                           checkbox column aligned)
+     --md-transfer-list-item-padding       Padding of each row (derived from
+                                           inset-lg so the row checkbox lines up
+                                           with the header's; override together
+                                           with -item-inset)
+     --md-transfer-list-item-gap           Gap between checkbox and label
+     --md-transfer-list-divider-color      Divider color
+     --md-transfer-list-controls-gap       Gap between controls buttons
+     --md-transfer-list-empty-icon-size    Empty-state icon size (default 32px,
+                                           tapers with density; set to opt out)
+
+   CSS PARTS:
+     column          A whole column container (also column-source / column-target)
+     header          Header bar
+     header-title    Header title cluster
+     count           "{n}/{total} selected" pill
+     search          Search field per side
+     list            The <ul> listbox per side
+     item            Each <li> row
+     empty           Empty-state message
+     empty-icon      Optional empty-state glyph (via `empty-icon` prop)
+     controls        Centre column with move buttons
+   ========================================================== */
+
+:host {
+  --_column-min-width: var(--md-transfer-list-column-min-width, 260px);
+  /* The per-column height cap tracks the configured host height (so
+     `--md-transfer-list-height: 100%` fills the parent instead of stopping at
+     the 360px default); an explicit column-max-block always wins. */
+  --_column-max-block: var(--md-transfer-list-column-max-block, var(--md-transfer-list-height, 360px));
+
+  --_width: var(--md-transfer-list-width, auto);
+  --_min-width: var(--md-transfer-list-min-width, auto);
+  --_max-width: var(--md-transfer-list-max-width, none);
+  --_height: var(--md-transfer-list-height, auto);
+  --_min-height: var(--md-transfer-list-min-height, auto);
+  --_max-height: var(--md-transfer-list-max-height, none);
+  --_container-shape: var(--md-transfer-list-container-shape, var(--md-sys-shape-corner-large, 16px));
+  --_container-color: var(--md-transfer-list-container-color, var(--md-sys-color-surface-container-low));
+  --_header-color: var(--md-transfer-list-header-color, var(--md-sys-color-surface-container));
+  --_header-text-color: var(--md-transfer-list-header-text-color, var(--md-sys-color-on-surface));
+  /* How far the row's rounded hover/selected plate is pulled in from the panel
+     edge. The row gives this back as inline padding (below), so its checkbox
+     still lands on the header checkbox's column. */
+  --_item-inset: var(--md-transfer-list-item-inset, 6px);
+  /* Inline padding is derived, not chosen: the header pads its select-all
+     checkbox by `inset-lg`, and a row's checkbox starts at
+     `--_item-inset + this padding`. Deriving it from the SAME token keeps the
+     two checkboxes on one column at every rung automatically. The old
+     `max(12px, inset-md)` floored at 12px while the header's inset-lg kept
+     tapering 16→12→8, so the two drifted further apart the denser it got
+     (2px at density 0, 6px at -2, 10px at -4). */
+  --_item-padding: var(
+    --md-transfer-list-item-padding,
+    var(--md-sys-spacing-inset-sm, 8px)
+      calc(var(--md-sys-spacing-inset-lg, 16px) - var(--_item-inset))
+  );
+  --_item-gap: var(--md-transfer-list-item-gap, var(--md-sys-spacing-gap-md, 12px));
+  --_divider-color: var(--md-transfer-list-divider-color, var(--md-sys-color-outline-variant));
+  --_controls-gap: var(--md-transfer-list-controls-gap, var(--md-sys-spacing-gap-md, 12px));
+  /* Mover buttons. md-icon-button's own `--sm` sizing stops at
+     `max(32px, calc(40px + scale * 4px))`, so the movers freeze at 32×32 from
+     -2 down while the panels either side keep tightening — the control column
+     ends up visually heavier than the lists it drives. These keep the 4px/rung
+     slope all the way to -4 (40 → 24) and are scoped to this component, so the
+     library-wide 32px floor for every other small icon button is untouched.
+     The glyph tapers at 2px/rung rather than md-icon-button's 1px so it stays
+     proportionate inside the smaller plate instead of crowding it. */
+  --_control-size: var(--md-transfer-list-control-size, max(24px, calc(40px + var(--md-sys-density-scale, 0) * 4px)));
+  --_control-icon-size: var(--md-transfer-list-control-icon-size, max(16px, calc(24px + var(--md-sys-density-scale, 0) * 2px)));
+
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  /* minmax(0, 1fr): with an auto host height the row is content-sized (no
+     change); with a definite height (var / full-height / 100%) the single row
+     fills it so the columns stretch. */
+  grid-template-rows: minmax(0, 1fr);
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+  align-items: stretch;
+  box-sizing: border-box;
+
+  inline-size: var(--_width);
+  min-inline-size: var(--_min-width);
+  max-inline-size: var(--_max-width);
+  block-size: var(--_height);
+  min-block-size: var(--_min-height);
+  max-block-size: var(--_max-height);
+
+  /* Base typography for everything in this shadow root. NB: the
+     `--md-sys-typescale-*-font` tokens are full `font` SHORTHANDS — using one
+     as font-family is invalid at computed-value time and silently falls back
+     to the page serif. Only the `-font-family` tokens are families. */
+  font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, system-ui, sans-serif);
+  color: var(--md-sys-color-on-surface, #1d1b20);
+}
+
+/* ── Density ───────────────────────────────────────────── */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }
+
+/* md-card-style sizing sugar. */
+:host([full-width]) {
+  inline-size: 100%;
+}
+
+:host([full-height]) {
+  block-size: 100%;
+  --_column-max-block: var(--md-transfer-list-column-max-block, 100%);
+}
+
+@media (max-width: 640px) {
+  :host {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+}
+
+/* ── Column ───────────────────────────────────────────────── */
+
+.md-transfer-list__column {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: var(--_column-min-width);
+  max-block-size: var(--_column-max-block);
+  background: var(--_container-color);
+  border-radius: var(--_container-shape);
+  overflow: hidden;
+  border: 1px solid var(--_divider-color);
+  box-sizing: border-box;
+}
+
+/* Searchable columns get a DEFINITE height (the cap), not a content-driven
+   max — so filtering down to fewer rows never collapses the column; the
+   list just shows empty space and keeps its scroll geometry. */
+:host([searchable]) .md-transfer-list__column {
+  block-size: var(--_column-max-block);
+}
+
+.md-transfer-list__header {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  padding: var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px);
+  background: var(--_header-color);
+  color: var(--_header-text-color);
+  border-block-end: 1px solid var(--_divider-color);
+  flex: 0 0 auto;
+}
+
+.md-transfer-list__header-title {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  flex: 1;
+}
+
+.md-transfer-list__title {
+  font-family: var(--md-sys-typescale-title-small-font-family, Roboto, system-ui, sans-serif);
+  /* title-small (14/20) — 0.5px/rung on the size, 1px on the line-height, the
+     library's rates for sub-22px type. See packages/tokens/src/tokens.css §10-12. */
+  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-title-small-weight, 500);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  color: var(--md-sys-color-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* "{n}/{total} selected" as an MD3 tonal pill (the "header chip"). */
+.md-transfer-list__count {
+  align-self: flex-start;
+  margin-block-start: 2px;
+  padding: 1px 8px;
+  border-radius: var(--md-sys-shape-corner-full, 999px);
+  background: var(--md-sys-color-secondary-container, #e8def8);
+  color: var(--md-sys-color-on-secondary-container, #1d192b);
+  /* label-small (11/16). The 10px floor binds from -2 on purpose: this pill is
+     already the smallest text in the component, and the usual 0.5px/rung taper
+     would run it to 9px at -4 — below what the count stays legible at. */
+  font-size: max(10px, calc(11px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-label-small-weight, 500);
+  line-height: max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.md-transfer-list__search {
+  /* Block-start is NOT the plain inset here. This element IS the outlined
+     md-text-field, and its floating label rises a constant 8px above the
+     field's own top border to sit in the outline notch — measured identical at
+     every density rung, because the notch tracks the border, not the label's
+     (tapering) font size. So the first 8px of padding is consumed before any
+     visible breathing room begins. The old symmetric `inset-sm` gave exactly
+     0px of clearance at density 0 and, once that token tapered to 4px at -3/-4,
+     let the label overflow ABOVE the component and collide with the divider.
+     Clear the 8px first, then taper only the breathing room on top of it. */
+  padding: calc(8px + max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px)))
+    var(--md-sys-spacing-inset-md, 12px)
+    var(--md-sys-spacing-inset-sm, 8px);
+  flex: 0 0 auto;
+}
+
+/* ── List ────────────────────────────────────────────────── */
+
+.md-transfer-list__list {
+  margin: 0;
+  padding: var(--md-sys-spacing-inset-xs, 4px) 0;
+  list-style: none;
+  overflow-y: auto;
+  flex: 1 1 auto;
+}
+
+/* Inset, rounded rows with an md-ripple — the same row treatment as
+   md-menu-item / md-list-item, rather than flat full-bleed stripes. */
+.md-transfer-list__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--_item-gap);
+  padding: var(--_item-padding);
+  margin-inline: var(--_item-inset);
+  border-radius: var(--md-sys-shape-corner-small, 8px);
+  cursor: pointer;
+  transition: background-color var(--md-sys-motion-duration-short2, 100ms) ease;
+  outline: none;
+}
+
+.md-transfer-list__item + .md-transfer-list__item {
+  margin-block-start: 2px;
+}
+
+.md-transfer-list__item:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+}
+
+.md-transfer-list__item--checked {
+  background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
+}
+
+.md-transfer-list__item--checked:hover {
+  background: color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent);
+}
+
+.md-transfer-list__item:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: -3px;
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+}
+
+.md-transfer-list__item--disabled {
+  opacity: var(--md-sys-state-disabled-content-opacity, 0.38);
+  pointer-events: none;
+}
+
+.md-transfer-list__labels {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  flex: 1;
+}
+
+.md-transfer-list__label {
+  color: var(--md-sys-color-on-surface);
+  /* body-medium (14). Line-height stays unitless so it tracks the size. */
+  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.md-transfer-list__description {
+  color: var(--md-sys-color-on-surface-variant);
+  /* body-small (12). */
+  font-size: max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px));
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.md-transfer-list__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  padding: max(4px, calc(32px + var(--md-sys-density-scale, 0) * 2px)) var(--md-sys-spacing-inset-lg, 16px);
+  text-align: center;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+}
+
+.md-transfer-list__empty-icon {
+  /* 2px/rung off 32dp (24px floor) — the rate the library uses for 32px
+     decorative glyphs (cf. md-app-bar's --_avatar-size), not the 1px/rung
+     action-icon rate: this one is a large empty-state illustration and would
+     otherwise stay visually huge inside a collapsing panel. */
+  font-size: var(--md-transfer-list-empty-icon-size, max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px)));
+  opacity: 0.9;
+}
+
+/* ── Controls ─────────────────────────────────────────────── */
+
+.md-transfer-list__controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--_controls-gap);
+  padding-inline: var(--md-sys-spacing-inset-xs, 4px);
+}
+
+/* Values are written out rather than passed as `var(--_control-size)`: these
+   land on an md-icon-button, which defines its own `--_container-width` /
+   `--_icon-size`, and handing a private name across that boundary is how the
+   md-app-bar icon plumbing silently died (cyclic → guaranteed-invalid). The
+   names below are md-icon-button's PUBLIC props and collide with nothing. */
+.md-transfer-list__controls md-icon-button {
+  --md-icon-button-container-width: var(--_control-size);
+  --md-icon-button-container-height: var(--_control-size);
+  --md-icon-button-icon-size: var(--_control-icon-size);
+}
+
+@media (max-width: 640px) {
+  .md-transfer-list__controls {
+    flex-direction: row;
+    justify-content: center;
+    padding-block: var(--md-sys-spacing-inset-md, 12px);
+  }
+
+  /* Stacked layout: source sits ABOVE target, so "move to target" is now
+     downward — rotate the chevrons 90°. This also replaces the RTL scaleX
+     flip (the vertical direction is the same in both directions). */
+  .md-transfer-list__controls md-icon-button,
+  :host-context([dir='rtl']) .md-transfer-list__controls md-icon-button,
+  :host([dir='rtl']) .md-transfer-list__controls md-icon-button {
+    transform: rotate(90deg);
+  }
+}
+
+/* ── Disabled ─────────────────────────────────────────────── */
+
+:host(.md-transfer-list--disabled) .md-transfer-list__item {
+  pointer-events: none;
+  cursor: default;
+}
+
+/* ── RTL ─────────────────────────────────────────────────── */
+
+/* Layout mirrors via logical props / grid direction, but the mover chevrons
+   are physical glyphs: in RTL the source column sits on the RIGHT, so
+   "move to target" must point left. Mirror the glyphs. */
+:host-context([dir='rtl']) .md-transfer-list__controls md-icon-button,
+:host([dir='rtl']) .md-transfer-list__controls md-icon-button {
+  transform: scaleX(-1);
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-transfer-list__item {
+    transition: none;
+  }
+}
+
+/* ── Material Symbols font (shadow-root scope) ───────────── */
+
+/* Search-field leading icon + move-button glyphs are slotted
+   into nested components but stay logically in this shadow
+   root, so the `.material-symbols-outlined` class needs its
+   font-family declared locally — page-level rules don't cross
+   the shadow boundary. */
+.material-symbols-outlined {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}

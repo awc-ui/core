@@ -1,0 +1,483 @@
+/* ==========================================================
+   md-organization-chart — Material Design 3 Expressive
+   Hierarchical org tree of avatar cards joined by connectors.
+
+   Layout: the classic pure-CSS connector technique (::before/::after
+   elbows on each branch + a vertical drop on each group), authored with
+   LOGICAL properties so RTL mirrors without extra rules. The viewport
+   pans horizontally when the tree outgrows its container.
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-org-chart-connector-color     Connector line colour
+     --md-org-chart-connector-width     Connector line thickness
+     --md-org-chart-node-color          Node card background
+     --md-org-chart-node-outline-color  Node card border colour
+     --md-org-chart-node-outline-width  Node card border width
+     --md-org-chart-node-shape          Node card corner radius
+     --md-org-chart-node-min-width      Node card min inline-size
+     --md-org-chart-node-max-width      Node card max inline-size
+     --md-org-chart-selected-color      Selected node accent (border + tint)
+     --md-org-chart-focus-ring-color    Focus outline colour (default: buttons')
+     --md-org-chart-state-layer-color   Hover / selected overlay colour
+     --md-org-chart-toggle-size         Expand/collapse toggler diameter
+     --md-org-chart-level-gap           Vertical gap between levels
+     --md-org-chart-sibling-gap         Horizontal gap between siblings
+     --md-org-chart-duration            Motion duration
+
+   CSS PARTS:
+     viewport      Scroll/pan container
+     tree          The role="tree" root list
+     group         A role="group" child list
+     node          A node card
+     node-selected A selected node card
+     state-layer   Hover / selected overlay
+     avatar        The md-avatar
+     avatar-image  The avatar's <img> (exported)
+     name          Primary label
+     title         Secondary label
+     toggle        Expand / collapse affordance
+     empty         Empty-state container
+
+   SLOTS:
+     empty         Custom empty-state content
+   ========================================================== */
+
+:host {
+  --_connector-color: var(--md-org-chart-connector-color, var(--md-sys-color-outline-variant, #c4c7c5));
+  --_connector-width: var(--md-org-chart-connector-width, 1.5px);
+  --_node-color: var(--md-org-chart-node-color, var(--md-sys-color-surface-container-low, #f7f2fa));
+  --_node-outline: var(--md-org-chart-node-outline-color, var(--md-sys-color-outline-variant, #c4c7c5));
+  --_node-outline-width: var(--md-org-chart-node-outline-width, 1px);
+  --_node-shape: var(--md-org-chart-node-shape, var(--md-sys-shape-corner-medium, 12px));
+  --_node-min-width: var(--md-org-chart-node-min-width, 176px);
+  --_node-max-width: var(--md-org-chart-node-max-width, 260px);
+  --_selected-color: var(--md-org-chart-selected-color, var(--md-sys-color-primary, #6750a4));
+  /* Match the focus ring the buttons use (md-sys-color-secondary). */
+  --_focus-ring-color: var(--md-org-chart-focus-ring-color, var(--md-sys-color-secondary, #625b71));
+  --_toggle-size: var(--md-org-chart-toggle-size, max(20px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
+  --_state-layer-color: var(--md-org-chart-state-layer-color, var(--md-sys-color-on-surface, #1d1b20));
+  --_accent: var(--md-sys-color-primary, #6750a4);
+  --_level-gap: var(--md-org-chart-level-gap, max(24px, calc(28px + var(--md-sys-density-scale, 0) * 1px)));
+  --_sibling-gap: var(--md-org-chart-sibling-gap, max(8px, calc(12px + var(--md-sys-density-scale, 0) * 1px)));
+  --_duration: var(--md-org-chart-duration, var(--md-sys-motion-duration-medium2, 300ms));
+  --_easing: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
+  --_line: var(--_connector-width) solid var(--_connector-color);
+  --_elbow: 12px;
+
+  display: block;
+  box-sizing: border-box;
+  color: var(--md-sys-color-on-surface, #1d1b20);
+  font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, system-ui, sans-serif);
+}
+
+.md-org-chart__viewport {
+  overflow: auto;
+  /* Extra block-end room so a collapsed node's edge-hung toggler (which
+     overhangs the tree by half its size) isn't clipped by `overflow`. */
+  padding: 8px 8px calc(var(--_toggle-size) / 2 + 10px);
+  box-sizing: border-box;
+}
+
+/* ── Lists / connectors ───────────────────────────────────────── */
+
+.md-org-chart__tree,
+.md-org-chart__group {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+/* The tree shrink-wraps and self-centres; when wider than the viewport it
+   left-aligns (margin collapses to 0) and the viewport scrolls. */
+.md-org-chart__tree {
+  inline-size: max-content;
+  margin-inline: auto;
+}
+
+.md-org-chart__group {
+  padding-block-start: var(--_level-gap);
+}
+
+.md-org-chart__branch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-block-start: var(--_level-gap);
+  padding-inline: calc(var(--_sibling-gap) / 2);
+  outline: none;
+}
+
+/* Horizontal bus halves (top border) meeting at the branch centre, plus the
+   short vertical riser up into the bus (border-inline-start on ::after). */
+.md-org-chart__branch::before,
+.md-org-chart__branch::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 50%;
+  inline-size: 50%;
+  block-size: var(--_level-gap);
+  border-block-start: var(--_line);
+}
+
+.md-org-chart__branch::after {
+  inset-inline-end: auto;
+  inset-inline-start: 50%;
+  border-inline-start: var(--_line);
+}
+
+/* Only child: no horizontal bus/riser — just the group's vertical drop. Drop
+   its own block-start padding too, otherwise that padding (with no riser line)
+   leaves a gap between the drop and the child. */
+.md-org-chart__branch:only-child::before,
+.md-org-chart__branch:only-child::after {
+  display: none;
+}
+
+.md-org-chart__branch:only-child {
+  padding-block-start: 0;
+}
+
+/* Trim the outermost overhang and round the two elbows. */
+.md-org-chart__branch:first-child::before,
+.md-org-chart__branch:last-child::after {
+  border: 0;
+}
+
+.md-org-chart__branch:last-child::before {
+  border-inline-end: var(--_line);
+  border-start-end-radius: var(--_elbow);
+}
+
+.md-org-chart__branch:first-child::after {
+  border-start-start-radius: var(--_elbow);
+}
+
+/* Vertical drop from a parent node down to its children's bus. */
+.md-org-chart__group::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 50%;
+  inline-size: 0;
+  block-size: var(--_level-gap);
+  border-inline-start: var(--_line);
+}
+
+/* Roots have no incoming connector. */
+.md-org-chart__tree > .md-org-chart__branch {
+  padding-block-start: 0;
+}
+.md-org-chart__tree > .md-org-chart__branch::before,
+.md-org-chart__tree > .md-org-chart__branch::after {
+  display: none;
+}
+
+/* ── Node card ────────────────────────────────────────────────── */
+
+.md-org-chart__node {
+  position: relative;
+  /* Above the sibling group's connector lines (painted later in DOM) so the
+     node and its toggler sit on top of the drop/bus rather than under them. */
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1.5px));
+  padding-block: max(6px, calc(10px + var(--md-sys-density-scale, 0) * 1px));
+  padding-inline: max(8px, calc(14px + var(--md-sys-density-scale, 0) * 1.5px));
+  min-inline-size: var(--_node-min-width);
+  max-inline-size: var(--_node-max-width);
+  box-sizing: border-box;
+  border-radius: var(--_node-shape);
+  background: var(--_node-color);
+  border: var(--_node-outline-width) solid var(--_node-outline);
+  color: var(--md-sys-color-on-surface, #1d1b20);
+  transition:
+    border-color var(--_duration) var(--_easing),
+    box-shadow var(--_duration) var(--_easing);
+  /* No transform / will-change here: either would make the node a containing
+     block for the toggler tooltip's position:fixed popup, cutting it off. */
+}
+
+.md-org-chart__node--selectable {
+  cursor: pointer;
+}
+
+.md-org-chart__node--selectable:hover {
+  box-shadow: var(--md-sys-elevation-1, 0 1px 3px 1px rgba(0, 0, 0, 0.15));
+}
+
+/* Selection ring via border-colour + an outset box-shadow — NOT a wider border.
+   Growing the border would move the padding box and shift the edge-hung toggler,
+   so width + padding stay constant and nothing in the card moves on select. */
+.md-org-chart__node--selected {
+  border-color: var(--_selected-color);
+  box-shadow: 0 0 0 1px var(--_selected-color);
+}
+
+.md-org-chart__node--selected.md-org-chart__node--selectable:hover {
+  box-shadow:
+    0 0 0 1px var(--_selected-color),
+    var(--md-sys-elevation-1, 0 1px 3px 1px rgba(0, 0, 0, 0.15));
+}
+
+/* Focus ring on the focusable treeitem — same colour as the buttons. */
+.md-org-chart__branch:focus-visible > .md-org-chart__node {
+  outline: 3px solid var(--_focus-ring-color);
+  outline-offset: 2px;
+}
+
+/* Selection ripple (auto-attaches to the node card; self-clips to the radius,
+   so the edge-hung toggler is unaffected). */
+.md-org-chart__ripple {
+  --md-ripple-color: var(--_selected-color);
+  border-radius: inherit;
+}
+
+.md-org-chart__state-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--_state-layer-color);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--_duration) var(--_easing);
+}
+
+.md-org-chart__node--selectable:hover > .md-org-chart__state-layer {
+  opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+}
+
+.md-org-chart__node--selectable:active > .md-org-chart__state-layer {
+  opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+}
+
+.md-org-chart__node--selected > .md-org-chart__state-layer {
+  opacity: 0.08;
+  background: var(--_selected-color);
+}
+
+.md-org-chart__avatar {
+  flex: 0 0 auto;
+  --md-avatar-container-color: var(--md-sys-color-primary-container, #eaddff);
+  --md-avatar-label-color: var(--md-sys-color-on-primary-container, #21005d);
+}
+
+.md-org-chart__text {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  gap: 2px;
+}
+
+.md-org-chart__name {
+  font-family: var(--md-sys-typescale-title-small-font-family, Roboto, system-ui, sans-serif);
+  font-size: max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: 600;
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  color: var(--md-sys-color-on-surface, #1d1b20);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.md-org-chart__title {
+  font-size: max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px));
+  line-height: max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Toggler ──────────────────────────────────────────────────── */
+
+/* The toggler is an md-icon-button hung on the node's bottom edge, over the
+   connector drop. z-index keeps it above the lines; its opaque tonal fill
+   masks the line where they meet. */
+/* The md-tooltip wrapper carries the positioning (centred on the node's bottom
+   edge, half in / half out) and stacks above the connector lines. Centred with
+   calc() (NOT transform): a transform on the tooltip host would make it the
+   containing block for its own position:fixed popup, cutting it off / mis-placing
+   it. inset-inline-start keeps this direction-aware for RTL. */
+.md-org-chart__toggle-tip {
+  position: absolute;
+  inset-block-end: calc(-1 * var(--_toggle-size) / 2);
+  inset-inline-start: calc(50% - var(--_toggle-size) / 2);
+  z-index: 3;
+  line-height: 0;
+}
+
+.md-org-chart__toggle {
+  --md-icon-button-container-color: var(--md-sys-color-surface-container-high, #ece6f0);
+  --md-icon-button-container-width: var(--_toggle-size);
+  --md-icon-button-container-height: var(--_toggle-size);
+  --md-icon-button-icon-size: calc(var(--_toggle-size) * 0.66);
+}
+
+/* ── Group enter animation (expressive) ───────────────────────── */
+
+@keyframes md-org-chart-grow {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.md-org-chart__group {
+  animation: md-org-chart-grow var(--_duration) var(--_easing);
+  transform-origin: top center;
+}
+
+/* ── Empty state ──────────────────────────────────────────────── */
+
+.md-org-chart__empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+  font-size: var(--md-sys-typescale-body-medium-size, 14px);
+}
+
+/* ── Horizontal orientation ───────────────────────────────────────
+   Left→right tree — the block↔inline mirror of the default (vertical)
+   connector geometry above. Still authored in LOGICAL properties, so RTL
+   flips it to right→left with no extra rules. Levels now advance on the
+   inline axis; siblings stack on the block axis. */
+
+:host([orientation='horizontal']) .md-org-chart__tree,
+:host([orientation='horizontal']) .md-org-chart__group {
+  flex-direction: column;
+}
+
+/* Level gap runs inline (parent → child) instead of block. */
+:host([orientation='horizontal']) .md-org-chart__group {
+  padding-block-start: 0;
+  padding-inline-start: var(--_level-gap);
+}
+
+:host([orientation='horizontal']) .md-org-chart__branch {
+  flex-direction: row;
+  /* Node beside its child group (was column: node above group). */
+  padding-block: calc(var(--_sibling-gap) / 2); /* siblings spread on block now */
+  padding-inline: var(--_level-gap) 0;           /* incoming-connector strip on inline-start */
+}
+
+/* Roots and only-children take no incoming inline gap. */
+:host([orientation='horizontal']) .md-org-chart__branch:only-child,
+:host([orientation='horizontal']) .md-org-chart__tree > .md-org-chart__branch {
+  padding-inline-start: 0;
+}
+
+/* Sibling bus (now vertical, on the inline-start edge) + a short horizontal
+   riser into the node. Mirrors the vertical ::before/::after exactly. */
+:host([orientation='horizontal']) .md-org-chart__branch::before,
+:host([orientation='horizontal']) .md-org-chart__branch::after {
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+  inline-size: var(--_level-gap);
+  block-size: 50%;
+  border-block-start: 0;           /* clear the vertical-mode horizontal bus */
+  border-inline-start: var(--_line); /* vertical bus */
+}
+
+:host([orientation='horizontal']) .md-org-chart__branch::after {
+  inset-block-start: 50%;
+  border-block-start: var(--_line); /* the single horizontal riser */
+}
+
+/* Trim the outermost overhang. The :host-scoped bus rules above out-specify the
+   axis-agnostic `border:0` trims (0-3-1 vs 0-2-1), so re-assert them here at
+   matching specificity — otherwise the vertical bus overshoots the first/last
+   sibling. */
+:host([orientation='horizontal']) .md-org-chart__branch:first-child::before,
+:host([orientation='horizontal']) .md-org-chart__branch:last-child::after {
+  border: 0;
+}
+
+/* Round the two outermost elbows where the bus turns into the end risers.
+   The last child's riser is reconstructed on ::before since its ::after is
+   trimmed. */
+:host([orientation='horizontal']) .md-org-chart__branch:last-child::before {
+  border-inline-end: 0;             /* undo the vertical-mode riser rebuild */
+  border-start-end-radius: 0;       /* undo the vertical-mode elbow */
+  border-block-end: var(--_line);
+  border-end-start-radius: var(--_elbow);
+}
+:host([orientation='horizontal']) .md-org-chart__branch:first-child::after {
+  border-start-start-radius: var(--_elbow);
+}
+
+/* Parent → children drop is now a horizontal line. */
+:host([orientation='horizontal']) .md-org-chart__group::before {
+  inset-block-start: 50%;
+  inset-inline-start: 0;
+  inline-size: var(--_level-gap);
+  block-size: 0;
+  border-inline-start: 0;
+  border-block-start: var(--_line);
+}
+
+/* Toggler hangs on the node's inline-end edge (over the outgoing drop),
+   vertically centred — instead of the bottom edge in vertical mode. */
+:host([orientation='horizontal']) .md-org-chart__toggle-tip {
+  inset-block-end: auto;
+  inset-block-start: calc(50% - var(--_toggle-size) / 2);
+  inset-inline-start: auto;
+  inset-inline-end: calc(-1 * var(--_toggle-size) / 2);
+}
+
+/* Give the overhanging inline-end toggler room instead of the block-end room. */
+:host([orientation='horizontal']) .md-org-chart__viewport {
+  padding: 8px calc(var(--_toggle-size) / 2 + 10px) 8px 8px;
+}
+
+/* Enter animation grows from the inline-start (parent) side. */
+@keyframes md-org-chart-grow-h {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+:host([orientation='horizontal']) .md-org-chart__group {
+  animation-name: md-org-chart-grow-h;
+  transform-origin: left center;
+}
+
+/* ── Reduced motion ───────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-org-chart__node,
+  .md-org-chart__toggle-icon,
+  .md-org-chart__state-layer {
+    transition: none;
+  }
+  .md-org-chart__group {
+    animation: none;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

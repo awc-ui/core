@@ -1,0 +1,228 @@
+/* ==========================================================
+   md-select — single-select dropdown
+
+   The heavy lifting (field surface, label float, error state, menu
+   motion + positioning + keyboard) is delegated to md-text-field and
+   md-menu. This stylesheet only owns the host layout and the trailing
+   caret / clear affordances rendered into the field's trailing slot.
+
+   PUBLIC CSS CUSTOM PROPERTIES (select-owned):
+     --md-select-width            Host inline size            (default 100%)
+     --md-select-min-width        Host minimum inline size    (default 0)
+     --md-select-caret-color      Dropdown caret colour
+     --md-select-caret-size       Dropdown caret glyph size   (default 24px)
+     --md-select-clear-color      Clear (✕) icon colour       (default: caret colour)
+     --md-select-trailing-gap     Gap between clear + caret   (default 2px)
+     --md-select-option-icon-color  Leading icon colour in option rows
+
+   The composed field + menu expose their own --md-text-field-* / --md-menu-*
+   / --md-menu-item-* tokens, which flow straight through when set on the host.
+
+   PUBLIC PARTS:
+     field, field-container, trailing, clear, caret, menu,
+     option, option-selected, option-icon
+   ========================================================== */
+
+:host {
+  /* The text inset already includes the caret's 7px optical bearing (see
+     md-text-field --_text-inset). Pull the TRAILING side back to the plain
+     box inset so the caret's BOX sits 7px shallower and its INK lands on the
+     same column as the text. */
+  --md-text-field-padding-inline-end: var(--md-sys-spacing-inset-lg, 16px);
+  display: inline-block;
+  inline-size: var(--md-select-width, 100%);
+  min-inline-size: var(--md-select-min-width, 0);
+  box-sizing: border-box;
+  font-family: var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif);
+}
+
+.md-select__field {
+  inline-size: 100%;
+  cursor: pointer;
+  --md-text-field-cursor: pointer;
+}
+
+/* Override the browser's default text cursor on the readonly input —
+   the whole field behaves as a button, not an editable field. */
+.md-select__field::part(input) {
+  cursor: pointer;
+}
+
+:host(.md-select--disabled) .md-select__field::part(input) {
+  cursor: not-allowed;
+}
+
+/* ── Trailing cluster (clear + caret) ───────────────────── */
+
+/* The trailing slot holds a *cluster* (clear + caret), but md-text-field
+   sizes any single slotted trailing icon to a fixed 24px box via
+   `.md-text-field__icon ::slotted(*)` — which would squash the cluster and
+   push the caret off the edge. Scoping under `.md-select__field` raises this
+   rule's specificity above that ::slotted rule so the cluster sizes to its
+   content across the shadow boundary. */
+.md-select__field .md-select__trailing {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-select-trailing-gap, 2px);
+  width: auto;
+  height: auto;
+}
+
+
+.md-select__caret {
+  font-size: var(--md-select-caret-size, 24px);
+  line-height: 1;
+  color: var(--md-select-caret-color, var(--md-sys-color-on-surface-variant, #49454F));
+  transition: transform var(--md-sys-motion-duration-short4, 200ms)
+    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* Flip the caret when open — works for any custom dropdown-icon, not just the
+   default arrow (which then reads as "up"). */
+:host(.md-select--open) .md-select__caret {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-select__caret {
+    transition: none;
+  }
+}
+
+/* Busy state: the spinner replaces the caret/clear cluster in the trigger. The
+   default md-loading-indicator is 48px — shrink it to the trailing footprint. */
+.md-select__loader {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 24px;
+  block-size: 24px;
+  --md-loading-indicator-size: var(--md-select-spinner-size, 22px);
+  --md-loading-indicator-shape-size: var(--md-select-spinner-size, 22px);
+}
+
+/* Full-width: fill the parent's inline size as a block (overrides the default
+   inline-block sizing). The dropdown follows via match-trigger-width. */
+:host([full-width]) {
+  display: block;
+  inline-size: 100%;
+}
+
+/* Busy state inside the menu: the wavy linear progress bar fills the surface
+   width with comfortable padding (replaces the old "Loading…" text). */
+.md-select__loading {
+  display: flex;
+  align-items: center;
+  padding-block: var(--md-sys-spacing-inset-lg, 16px);
+  padding-inline: var(--md-sys-spacing-inset-lg, 16px);
+}
+
+.md-select__loading md-progress-indicator {
+  inline-size: 100%;
+}
+
+/* Clear affordance is an md-icon-button (ripple + state layer for free).
+   Compact it to the prior 24px footprint; defaults to the caret colour so it
+   sits inline with the caret, but is independently overridable. */
+.md-select__field .md-select__clear {
+  --_clear-color: var(--md-select-clear-color,
+    var(--md-select-caret-color, var(--md-sys-color-on-surface-variant, #49454F)));
+  --md-icon-button-container-width: 24px;
+  --md-icon-button-container-height: 24px;
+  --md-icon-button-icon-size: 18px;
+  --md-icon-button-icon-color: var(--_clear-color);
+  --md-icon-button-state-layer-color: var(--_clear-color);
+}
+
+/* ── Option leading icon (in the menu rows) ─────────────── */
+
+.md-select__option-icon {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--md-select-option-icon-color, var(--md-sys-color-on-surface-variant, #49454F));
+}
+
+/* ── Disabled ───────────────────────────────────────────── */
+
+:host(.md-select--disabled) {
+  cursor: default;
+}
+
+:host(.md-select--disabled) .md-select__field {
+  --md-text-field-cursor: not-allowed;
+}
+
+/* Material Symbols inside the shadow root. */
+.material-symbols-outlined {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Virtualized list ──────────────────────────────────── */
+
+/* Spacers reserve the full scroll height above/below the rendered window so
+   the menu scrolls as if every option were present. */
+.md-select__vspacer {
+  display: block;
+  flex: none;
+  pointer-events: none;
+}
+
+/* Search field pinned in the menu header (filterable virtualized lists). */
+.md-select__search-wrap {
+  position: relative;
+  display: block;
+}
+
+.md-select__search {
+  box-sizing: border-box;
+  width: 100%;
+  border: none;
+  outline: none;
+  /* Right padding reserves room for the search spinner. */
+  padding: 12px 44px 12px 16px;
+  font: inherit;
+  color: var(--md-sys-color-on-surface, #1d1b20);
+  background: var(--md-sys-color-surface-container, #f3edf7);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
+}
+
+.md-select__search::placeholder {
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+}
+
+/* M3 shape-morph loading indicator shown while a debounced search is in flight.
+   Motion + reduced-motion handling live inside md-loading-indicator. */
+.md-select__search-spinner {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 12px;
+  margin-block-start: -12px;
+  --md-loading-indicator-size: 24px;
+  --md-loading-indicator-shape-size: 18px;
+  pointer-events: none;
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   This component FORWARDS `density` to the md-text-field it embeds, which
+   handles the field box — but that forward says nothing about this host, so its
+   OWN chrome (dropdown surface, chips, frame gaps) stayed at density-0 whenever
+   density came from the local prop rather than a global ancestor. Mapping the
+   prop onto the shared signal here fixes that asymmetry; the spacing-token half
+   of the rung arrives from the [density="-N"] selector in tokens.css.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

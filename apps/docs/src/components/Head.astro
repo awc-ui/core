@@ -1,0 +1,54 @@
+---
+/**
+ * Starlight <Head> override — registers the AWC UI custom elements.
+ *
+ * WHY THIS EXISTS
+ *
+ * The docs site rendered every component as inert markup. `<md-bar-chart>`,
+ * `<md-tooltip>`, `<md-fab-menu>` and `<md-split-button>` showed a blank box;
+ * simpler components looked half-right only because their slotted text still
+ * renders without an upgrade. Measured in the browser: the element was in the
+ * DOM, `hydrated` was false, and its shadow root was never created.
+ *
+ * The cause was simply that nothing ever called the loader. Every
+ * `defineCustomElements` in this repo's docs lives inside an MDX code fence —
+ * instructions for the reader, never executed by the site itself. So no
+ * component upgraded on any page, in dev or in the static build.
+ *
+ * Registering here (rather than inside ComponentDemo/ChartDemo) means any
+ * page can drop a component into prose and have it work, not just pages that
+ * happen to use a demo wrapper. Astro bundles this script once and reuses it
+ * across the site.
+ *
+ * Getting the chunks to load took three attempts, recorded so nobody repeats
+ * them:
+ *   - `/loader` and `/define` (which wraps it) resolve each component's chunk
+ *     at runtime by URL. Astro's static build does not emit Stencil's lazy
+ *     entry chunks, so every one 404s (`/_astro/md-bar-chart.entry.js`).
+ *   - `dist/components/index.js` looked like the answer (it is the
+ *     `dist-custom-elements` output) but that index exports only utilities —
+ *     it defines no elements. Only the individual `md-*.js` modules
+ *     self-register, and importing 79 of them by hand rots immediately.
+ *   - What works: copy Stencil's own lazy build to `public/awc-runtime` (see
+ *     the `sync-runtime` script) and hand the loader that URL, so it fetches
+ *     chunks that actually exist. Lazy loading is preserved — a page only
+ *     pulls the components it uses.
+ */
+import Default from '@astrojs/starlight/components/Head.astro';
+---
+
+<Default><slot /></Default>
+
+{/* is:inline + an absolute URL keeps Vite's hands off it. loader.js then
+    resolves its sibling chunks relative to its OWN location under
+    /awc-runtime/esm/, which is the whole point — bundling it makes Stencil
+    look for chunks in /_astro/ where they do not exist. (loader/cdn.js is
+    CJS and throws "module is not defined" in a module script.) */}
+<script is:inline type="module">
+  /* md3.esm.js is Stencil's MINIFIED lazy build and self-registers on import —
+     it exports no defineCustomElements. The previous entry (esm/loader.js) was
+     the unminified bundler output: same components, ~2x the bytes. */
+  import('/awc-runtime/md3/md3.esm.js').catch((err) =>
+    console.error('[awc-ui] component registration failed', err),
+  );
+</script>

@@ -1,0 +1,988 @@
+---
+title: Split Button
+description: "One default action plus a menu of variations — a leading action segment fused to a trailing menu toggle"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/split-button.json";
+
+**One default action plus a menu of variations.** Two fused segments: a leading
+button that runs the default action, and a trailing toggle that opens a menu.
+The component renders the button — **you supply and position the menu.**
+
+<ComponentDemo
+  html={`<md-split-button variant="filled" icon="save" label="Save" menu-label="More save options"></md-split-button>
+<md-split-button variant="tonal" icon="add" label="Create" menu-label="More create options"></md-split-button>
+<md-split-button variant="elevated" icon="send" label="Send" menu-label="Send options"></md-split-button>
+<md-split-button variant="outlined" icon="merge" label="Merge" menu-label="Other merge strategies"></md-split-button>`}
+  label="Live preview"
+  storyId="actions-split-button--variants"
+/>
+
+## Install
+
+<ComponentSetup tag="md-split-button" example="" />
+
+## When to use
+
+- There is a clear **default action**, plus closely-related variants of it:
+  *Save* / Save as…, *Send* / Schedule send, *Merge* / Squash / Rebase.
+- Users pick the default the large majority of the time, and the alternatives
+  are genuinely alternatives — not unrelated commands.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| No obvious default among the options | [`md-button`](/components/button/) + [`md-menu`](/components/menu/), or [`md-select`](/components/select/) |
+| The options are unrelated commands | [`md-icon-button`](/components/icon-button/) + [`md-menu`](/components/menu/) |
+| Choosing a value rather than running an action | [`md-select`](/components/select/) / [`md-segmented-button`](/components/segmented-button/) |
+| 2–5 equal, mutually exclusive choices | [`md-segmented-button`](/components/segmented-button/) |
+| Several equal actions as a unit | [`md-button-group`](/components/button-group/) |
+| A single action | [`md-button`](/components/button/) |
+| The trailing side toggles state rather than opening a popup | [`md-button`](/components/button/) `toggle`, or set `haspopup="false"` |
+
+## The menu
+
+:::danger[There is no built-in menu]
+`md-split-button` emits `mdTrailingClick`. Opening, positioning and closing an
+[`md-menu`](/components/menu/) is your job, and so is keeping `trailing-checked`
+in sync with it. Everything below is that wiring, in all five technologies.
+:::
+
+This is the component's entire purpose, so it is worth spelling out. Four things
+have to be wired:
+
+| Wire | How | Why |
+|---|---|---|
+| Default action | `mdLeadingClick` | The leading segment never opens anything |
+| Open / close | `mdTrailingClick` → `menu.show()` / `menu.close()` | The component owns no popup |
+| ARIA | `haspopup="menu"` + `controls="<menu id>"` | Announces "opens a menu" and links trigger to popup |
+| Chevron + `aria-expanded` | `menu`'s `mdClose` → `split.trailingChecked = false` | Otherwise the chevron lies after an outside click or `Escape` |
+
+`e.detail.checked` on `mdTrailingClick` is the **new** state of the toggle, so
+it maps directly onto show/close.
+
+<ComponentDemo
+  html={`<md-split-button
+  id="sb-save"
+  icon="save"
+  label="Save"
+  variant="filled"
+  menu-label="More save options"
+  haspopup="menu"
+  controls="sb-save-menu"
+></md-split-button>
+
+<md-menu id="sb-save-menu" anchor="sb-save" placement="bottom-end">
+  <md-menu-item headline="Save as…">
+    <span slot="leading-icon" class="material-symbols-outlined">save_as</span>
+  </md-menu-item>
+  <md-menu-item headline="Save a copy">
+    <span slot="leading-icon" class="material-symbols-outlined">file_copy</span>
+  </md-menu-item>
+  <md-menu-item headline="Save and close">
+    <span slot="leading-icon" class="material-symbols-outlined">check_circle</span>
+  </md-menu-item>
+</md-menu>`}
+  script={`
+    var split = root.querySelector('#sb-save');
+    var menu = root.querySelector('#sb-save-menu');
+
+    split.addEventListener('mdLeadingClick', function () {
+      console.log('Primary action: Save');
+    });
+
+    split.addEventListener('mdTrailingClick', function (e) {
+      if (e.detail.checked) { menu.show(); } else { menu.close(); }
+    });
+
+    // Outside click, Escape or an item pick all close the menu — resync the chevron.
+    menu.addEventListener('mdClose', function () { split.trailingChecked = false; });
+  `}
+  label="The complete menu wiring — click the chevron"
+  storyId="actions-split-button--menu-pattern"
+  htmlCode={`<md-split-button
+  id="sb-save" icon="save" label="Save" variant="filled"
+  menu-label="More save options"
+  haspopup="menu" controls="sb-save-menu"
+></md-split-button>
+
+<md-menu id="sb-save-menu" anchor="sb-save" placement="bottom-end">
+  <md-menu-item headline="Save as…"></md-menu-item>
+  <md-menu-item headline="Save a copy"></md-menu-item>
+  <md-menu-item headline="Save and close"></md-menu-item>
+</md-menu>
+
+<script type="module">
+  const split = document.getElementById('sb-save');
+  const menu  = document.getElementById('sb-save-menu');
+
+  split.addEventListener('mdLeadingClick', () => save());
+
+  split.addEventListener('mdTrailingClick', (e) => {
+    e.detail.checked ? menu.show() : menu.close();
+  });
+
+  // Outside click, Escape or an item pick all close the menu — resync the chevron.
+  menu.addEventListener('mdClose', () => { split.trailingChecked = false; });
+</script>`}
+  react={`import { useState } from 'react';
+import { MdSplitButton, MdMenu, MdMenuItem } from '@awc-ui/react';
+
+export function SaveSplitButton() {
+  // One piece of state drives both the chevron (trailingChecked) and the menu
+  // (open) — no refs, no imperative show()/close().
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <MdSplitButton
+        id="sb-save"
+        icon="save"
+        label="Save"
+        variant="filled"
+        menuLabel="More save options"
+        haspopup="menu"
+        controls="sb-save-menu"
+        trailingChecked={open}
+        onMdLeadingClick={() => save()}
+        onMdTrailingClick={(e) => setOpen(e.detail.checked)}
+      />
+
+      <MdMenu
+        id="sb-save-menu"
+        anchor="sb-save"
+        placement="bottom-end"
+        open={open}
+        onMdClose={() => setOpen(false)}
+      >
+        <MdMenuItem headline="Save as…" />
+        <MdMenuItem headline="Save a copy" />
+        <MdMenuItem headline="Save and close" />
+      </MdMenu>
+    </>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-save-split-button',
+  template: \`
+    <md-split-button
+      id="sb-save" icon="save" label="Save" variant="filled"
+      menu-label="More save options"
+      haspopup="menu" controls="sb-save-menu"
+      [trailingChecked]="open"
+      (mdLeadingClick)="save()"
+      (mdTrailingClick)="open = $event.detail.checked"
+    ></md-split-button>
+
+    <md-menu id="sb-save-menu" anchor="sb-save" placement="bottom-end"
+             [open]="open" (mdClose)="open = false">
+      <md-menu-item headline="Save as…"></md-menu-item>
+      <md-menu-item headline="Save a copy"></md-menu-item>
+      <md-menu-item headline="Save and close"></md-menu-item>
+    </md-menu>
+  \`,
+})
+export class SaveSplitButtonComponent {
+  open = false;
+
+  save() { /* default action */ }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const open = ref(false);
+
+function save() { /* default action */ }
+</script>
+
+<template>
+  <md-split-button
+    id="sb-save" icon="save" label="Save" variant="filled"
+    menu-label="More save options"
+    haspopup="menu" controls="sb-save-menu"
+    :trailing-checked="open"
+    @mdLeadingClick="save"
+    @mdTrailingClick="open = $event.detail.checked"
+  />
+
+  <md-menu id="sb-save-menu" anchor="sb-save" placement="bottom-end"
+           :open="open" @mdClose="open = false">
+    <md-menu-item headline="Save as…" />
+    <md-menu-item headline="Save a copy" />
+    <md-menu-item headline="Save and close" />
+  </md-menu>
+</template>`}
+  svelte={`<script lang="ts">
+  let open = false;
+
+  function save() { /* default action */ }
+</script>
+
+<md-split-button
+  id="sb-save" icon="save" label="Save" variant="filled"
+  menu-label="More save options"
+  haspopup="menu" controls="sb-save-menu"
+  trailing-checked={open || undefined}
+  on:mdLeadingClick={save}
+  on:mdTrailingClick={(e) => (open = e.detail.checked)}
+></md-split-button>
+
+<md-menu id="sb-save-menu" anchor="sb-save" placement="bottom-end"
+         open={open || undefined} on:mdClose={() => (open = false)}>
+  <md-menu-item headline="Save as…"></md-menu-item>
+  <md-menu-item headline="Save a copy"></md-menu-item>
+  <md-menu-item headline="Save and close"></md-menu-item>
+</md-menu>`}
+/>
+
+The same four wires carry any flow. Two more, live — a send menu and a
+version-control merge menu, each with its own `md-menu`:
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+  <md-split-button
+    id="sb-send" icon="send" label="Send" variant="tonal"
+    menu-label="Send options" haspopup="menu" controls="sb-send-menu"
+  ></md-split-button>
+
+  <md-split-button
+    id="sb-merge" icon="merge" label="Merge pull request" variant="outlined"
+    menu-label="Other merge strategies" haspopup="menu" controls="sb-merge-menu"
+  ></md-split-button>
+</div>
+
+<md-menu id="sb-send-menu" anchor="sb-send" placement="bottom-end">
+  <md-menu-item headline="Schedule send"></md-menu-item>
+  <md-menu-item headline="Send without attachments"></md-menu-item>
+  <md-menu-item headline="Send and archive"></md-menu-item>
+</md-menu>
+
+<md-menu id="sb-merge-menu" anchor="sb-merge" placement="bottom-end">
+  <md-menu-item headline="Squash and merge"></md-menu-item>
+  <md-menu-item headline="Rebase and merge"></md-menu-item>
+  <md-menu-item headline="Create a merge commit" divider></md-menu-item>
+  <md-menu-item headline="Merge without waiting for checks"></md-menu-item>
+</md-menu>`}
+  script={`
+    var pairs = [['sb-send', 'sb-send-menu'], ['sb-merge', 'sb-merge-menu']];
+    pairs.forEach(function (pair) {
+      var sb = root.querySelector('#' + pair[0]);
+      var menu = root.querySelector('#' + pair[1]);
+      sb.addEventListener('mdTrailingClick', function (e) {
+        if (e.detail.checked) { menu.show(); } else { menu.close(); }
+      });
+      menu.addEventListener('mdClose', function () { sb.trailingChecked = false; });
+    });
+  `}
+  label="Menus in context — click either chevron"
+  htmlCode={`<md-split-button
+  id="sb-send" icon="send" label="Send" variant="tonal"
+  menu-label="Send options" haspopup="menu" controls="sb-send-menu"
+></md-split-button>
+
+<md-menu id="sb-send-menu" anchor="sb-send" placement="bottom-end">
+  <md-menu-item headline="Schedule send"></md-menu-item>
+  <md-menu-item headline="Send without attachments"></md-menu-item>
+  <md-menu-item headline="Send and archive"></md-menu-item>
+</md-menu>
+
+<md-split-button
+  id="sb-merge" icon="merge" label="Merge pull request" variant="outlined"
+  menu-label="Other merge strategies" haspopup="menu" controls="sb-merge-menu"
+></md-split-button>
+
+<md-menu id="sb-merge-menu" anchor="sb-merge" placement="bottom-end">
+  <md-menu-item headline="Squash and merge"></md-menu-item>
+  <md-menu-item headline="Rebase and merge"></md-menu-item>
+  <md-menu-item headline="Create a merge commit" divider></md-menu-item>
+  <md-menu-item headline="Merge without waiting for checks"></md-menu-item>
+</md-menu>
+
+<script type="module">
+  // The same four wires, once per pair.
+  for (const [triggerId, menuId] of [
+    ['sb-send', 'sb-send-menu'],
+    ['sb-merge', 'sb-merge-menu'],
+  ]) {
+    const split = document.getElementById(triggerId);
+    const menu = document.getElementById(menuId);
+
+    split.addEventListener('mdTrailingClick', (e) => {
+      e.detail.checked ? menu.show() : menu.close();
+    });
+    menu.addEventListener('mdClose', () => { split.trailingChecked = false; });
+  }
+</script>`}
+  react={`import { useState } from 'react';
+import { MdSplitButton, MdMenu, MdMenuItem } from '@awc-ui/react';
+
+export function Toolbar() {
+  // One boolean per pair — the chevron and the menu read the same state.
+  const [sendOpen, setSendOpen] = useState(false);
+  const [mergeOpen, setMergeOpen] = useState(false);
+
+  return (
+    <>
+      <MdSplitButton
+        id="sb-send"
+        icon="send"
+        label="Send"
+        variant="tonal"
+        menuLabel="Send options"
+        haspopup="menu"
+        controls="sb-send-menu"
+        trailingChecked={sendOpen}
+        onMdTrailingClick={(e) => setSendOpen(e.detail.checked)}
+      />
+      <MdMenu
+        id="sb-send-menu"
+        anchor="sb-send"
+        placement="bottom-end"
+        open={sendOpen}
+        onMdClose={() => setSendOpen(false)}
+      >
+        <MdMenuItem headline="Schedule send" />
+        <MdMenuItem headline="Send without attachments" />
+        <MdMenuItem headline="Send and archive" />
+      </MdMenu>
+
+      <MdSplitButton
+        id="sb-merge"
+        icon="merge"
+        label="Merge pull request"
+        variant="outlined"
+        menuLabel="Other merge strategies"
+        haspopup="menu"
+        controls="sb-merge-menu"
+        trailingChecked={mergeOpen}
+        onMdTrailingClick={(e) => setMergeOpen(e.detail.checked)}
+      />
+      <MdMenu
+        id="sb-merge-menu"
+        anchor="sb-merge"
+        placement="bottom-end"
+        open={mergeOpen}
+        onMdClose={() => setMergeOpen(false)}
+      >
+        <MdMenuItem headline="Squash and merge" />
+        <MdMenuItem headline="Rebase and merge" />
+        <MdMenuItem headline="Create a merge commit" divider />
+        <MdMenuItem headline="Merge without waiting for checks" />
+      </MdMenu>
+    </>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-toolbar',
+  template: \`
+    <md-split-button
+      id="sb-send" icon="send" label="Send" variant="tonal"
+      menu-label="Send options" haspopup="menu" controls="sb-send-menu"
+      [trailingChecked]="sendOpen"
+      (mdTrailingClick)="sendOpen = $event.detail.checked"
+    ></md-split-button>
+
+    <md-menu id="sb-send-menu" anchor="sb-send" placement="bottom-end"
+             [open]="sendOpen" (mdClose)="sendOpen = false">
+      <md-menu-item headline="Schedule send"></md-menu-item>
+      <md-menu-item headline="Send without attachments"></md-menu-item>
+      <md-menu-item headline="Send and archive"></md-menu-item>
+    </md-menu>
+
+    <md-split-button
+      id="sb-merge" icon="merge" label="Merge pull request" variant="outlined"
+      menu-label="Other merge strategies" haspopup="menu" controls="sb-merge-menu"
+      [trailingChecked]="mergeOpen"
+      (mdTrailingClick)="mergeOpen = $event.detail.checked"
+    ></md-split-button>
+
+    <md-menu id="sb-merge-menu" anchor="sb-merge" placement="bottom-end"
+             [open]="mergeOpen" (mdClose)="mergeOpen = false">
+      <md-menu-item headline="Squash and merge"></md-menu-item>
+      <md-menu-item headline="Rebase and merge"></md-menu-item>
+      <md-menu-item headline="Create a merge commit" divider></md-menu-item>
+      <md-menu-item headline="Merge without waiting for checks"></md-menu-item>
+    </md-menu>
+  \`,
+})
+export class ToolbarComponent {
+  sendOpen = false;
+  mergeOpen = false;
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const sendOpen = ref(false);
+const mergeOpen = ref(false);
+</script>
+
+<template>
+  <md-split-button
+    id="sb-send" icon="send" label="Send" variant="tonal"
+    menu-label="Send options" haspopup="menu" controls="sb-send-menu"
+    :trailing-checked="sendOpen"
+    @mdTrailingClick="sendOpen = $event.detail.checked"
+  />
+  <md-menu id="sb-send-menu" anchor="sb-send" placement="bottom-end"
+           :open="sendOpen" @mdClose="sendOpen = false">
+    <md-menu-item headline="Schedule send" />
+    <md-menu-item headline="Send without attachments" />
+    <md-menu-item headline="Send and archive" />
+  </md-menu>
+
+  <md-split-button
+    id="sb-merge" icon="merge" label="Merge pull request" variant="outlined"
+    menu-label="Other merge strategies" haspopup="menu" controls="sb-merge-menu"
+    :trailing-checked="mergeOpen"
+    @mdTrailingClick="mergeOpen = $event.detail.checked"
+  />
+  <md-menu id="sb-merge-menu" anchor="sb-merge" placement="bottom-end"
+           :open="mergeOpen" @mdClose="mergeOpen = false">
+    <md-menu-item headline="Squash and merge" />
+    <md-menu-item headline="Rebase and merge" />
+    <md-menu-item headline="Create a merge commit" divider />
+    <md-menu-item headline="Merge without waiting for checks" />
+  </md-menu>
+</template>`}
+  svelte={`<script lang="ts">
+  let sendOpen = false;
+  let mergeOpen = false;
+</script>
+
+<md-split-button
+  id="sb-send" icon="send" label="Send" variant="tonal"
+  menu-label="Send options" haspopup="menu" controls="sb-send-menu"
+  trailing-checked={sendOpen || undefined}
+  on:mdTrailingClick={(e) => (sendOpen = e.detail.checked)}
+></md-split-button>
+
+<md-menu id="sb-send-menu" anchor="sb-send" placement="bottom-end"
+         open={sendOpen || undefined} on:mdClose={() => (sendOpen = false)}>
+  <md-menu-item headline="Schedule send"></md-menu-item>
+  <md-menu-item headline="Send without attachments"></md-menu-item>
+  <md-menu-item headline="Send and archive"></md-menu-item>
+</md-menu>
+
+<md-split-button
+  id="sb-merge" icon="merge" label="Merge pull request" variant="outlined"
+  menu-label="Other merge strategies" haspopup="menu" controls="sb-merge-menu"
+  trailing-checked={mergeOpen || undefined}
+  on:mdTrailingClick={(e) => (mergeOpen = e.detail.checked)}
+></md-split-button>
+
+<md-menu id="sb-merge-menu" anchor="sb-merge" placement="bottom-end"
+         open={mergeOpen || undefined} on:mdClose={() => (mergeOpen = false)}>
+  <md-menu-item headline="Squash and merge"></md-menu-item>
+  <md-menu-item headline="Rebase and merge"></md-menu-item>
+  <md-menu-item headline="Create a merge commit" divider></md-menu-item>
+  <md-menu-item headline="Merge without waiting for checks"></md-menu-item>
+</md-menu>`}
+/>
+
+:::caution[`controls` cannot cross a shadow boundary]
+`controls` writes `aria-controls` on the trailing button. IDREFs don't resolve
+across shadow roots, so the menu must live in the **same DOM scope** as the
+split button or the reference dangles.
+:::
+
+## Variants
+
+`variant` sets the emphasis of the whole control — both segments move together.
+The default is `filled`.
+
+| Variant | Emphasis | Use for |
+|---|---|---|
+| `filled` | Highest | The one primary action on the screen |
+| `tonal` | High | A strong action that isn't *the* primary one |
+| `elevated` | Medium | Action sitting on a busy or coloured surface |
+| `outlined` | Low | Secondary action next to a filled one |
+
+<ComponentDemo
+  html={`<md-split-button variant="filled" icon="save" label="Filled" menu-label="More options"></md-split-button>
+<md-split-button variant="tonal" icon="save" label="Tonal" menu-label="More options"></md-split-button>
+<md-split-button variant="elevated" icon="save" label="Elevated" menu-label="More options"></md-split-button>
+<md-split-button variant="outlined" icon="save" label="Outlined" menu-label="More options"></md-split-button>`}
+  label="All four variants"
+/>
+
+## Sizes
+
+:::caution[The default is `sm`, not `md`]
+Same trap as [`md-button`](/components/button/). Set `size` explicitly when it
+matters.
+:::
+
+| Size | Height |
+|---|---|
+| `xs` | 32px |
+| `sm` *(default)* | 40px |
+| `md` | 56px |
+| `lg` | 96px |
+| `xl` | 136px |
+
+<ComponentDemo
+  html={`<md-split-button size="xs" icon="save" label="Extra small" menu-label="More options"></md-split-button>
+<md-split-button size="sm" icon="save" label="Small" menu-label="More options"></md-split-button>
+<md-split-button size="md" icon="save" label="Medium" menu-label="More options"></md-split-button>
+<md-split-button size="lg" icon="save" label="Large" menu-label="More options"></md-split-button>
+<md-split-button size="xl" icon="save" label="Extra large" menu-label="More options"></md-split-button>`}
+  label="Five sizes"
+/>
+
+## Icons
+
+The two segments take their glyphs from two different props. `icon` is the
+leading action's Material Symbols name and is optional; `trailing-icon` is the
+toggle's glyph and defaults to `keyboard_arrow_down`. Both scale with `size`.
+
+| Prop | Segment | Default |
+|---|---|---|
+| `icon` | Leading | `''` — no icon |
+| `trailing-icon` | Trailing toggle | `'keyboard_arrow_down'` |
+
+<ComponentDemo
+  html={`<md-split-button icon="save" label="With an icon" menu-label="More options"></md-split-button>
+<md-split-button label="Label only" menu-label="More options"></md-split-button>
+<md-split-button icon="filter_list" label="Filter" trailing-icon="expand_more" menu-label="Filter options"></md-split-button>
+<md-split-button icon="palette" label="Theme" trailing-icon="more_vert" menu-label="Theme options" variant="outlined"></md-split-button>`}
+  label="Leading icon and custom trailing glyphs"
+/>
+
+:::caution[An icon-only leading segment still needs a name]
+With no `label` the component mirrors the host's `aria-label` onto the leading
+button. Omit both and it has no accessible name — a WCAG 1.1.1 failure the
+component warns about in dev builds.
+:::
+
+<ComponentDemo
+  html={`<md-split-button icon="edit" aria-label="Edit item" menu-label="More edit options" variant="tonal"></md-split-button>`}
+  label="Icon-only leading segment named by aria-label"
+/>
+
+## States
+
+`disabled` disables both segments and drops them from the tab order;
+`soft-disabled` keeps them focusable so an unavailable action stays
+discoverable.
+
+| State | Focusable | Use when |
+|---|---|---|
+| default | yes | The action is available |
+| `disabled` | no | The action is gone and its absence needs no explanation |
+| `soft-disabled` | yes | The action is temporarily unavailable and users must be able to find out why |
+
+<ComponentDemo
+  html={`<md-split-button icon="save" label="Enabled" menu-label="More options"></md-split-button>
+<md-split-button icon="save" label="Disabled" menu-label="More options" disabled></md-split-button>
+<md-split-button icon="save" label="Soft-disabled" menu-label="More options" soft-disabled></md-split-button>`}
+  label="States — try tabbing through them"
+/>
+
+## Trailing toggle without a menu
+
+`trailing-checked` is the toggle's own state and drives both the chevron
+rotation and `aria-expanded`. When the trailing side toggles state rather than
+opening a popup, set `haspopup="false"` so nothing is announced as a popup.
+
+<ComponentDemo
+  html={`<md-split-button icon="notifications" label="Follow" menu-label="Notification settings" haspopup="false"></md-split-button>
+<md-split-button icon="notifications" label="Following" menu-label="Notification settings" haspopup="false" trailing-checked></md-split-button>`}
+  label="Trailing toggle, no popup — the chevron rotates either way"
+/>
+
+## Full width
+
+`full-width` grows the **leading** segment to fill the container and truncates
+its label with an ellipsis; the trailing toggle keeps its intrinsic width so it
+stays a fixed-size target.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 420px; display: flex; flex-direction: column; gap: 16px;">
+  <md-split-button full-width icon="cloud_upload" label="Upload" variant="filled" menu-label="Upload options"></md-split-button>
+  <md-split-button full-width icon="description" label="Save and continue to the next step" variant="outlined" menu-label="Save options"></md-split-button>
+</div>`}
+  label="Full width — the long label truncates"
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdLeadingClick` | no | `void` | The leading (default action) segment is activated |
+| `mdTrailingClick` | no | `{ checked: boolean }` | The trailing toggle is activated; `checked` is the **new** state |
+
+There is no single generic event covering both segments — that is deliberate,
+since the whole point is telling them apart.
+
+Neither detail has a named exported type — `mdTrailingClick` is declared inline
+as `EventEmitter<{ checked: boolean }>`, so there is nothing to import from
+`@awc-ui/core`. Type your handler against the shape directly:
+
+```ts
+function onTrailing(
+  e: CustomEvent<{
+    /** The state the toggle has just moved INTO — map it onto show/close. */
+    checked: boolean;
+  }>,
+) {
+  e.detail.checked ? menu.show() : menu.close();
+}
+```
+
+:::tip[The toggle flips itself first]
+`trailing-checked` is mutable: the component flips it and *then* emits, so
+`e.detail.checked` already matches the element. A parent that wants to veto the
+open has to write `trailingChecked` back.
+:::
+
+<ComponentDemo
+  html={`<md-split-button id="sb-log" icon="save" label="Save" menu-label="More save options" haspopup="false"></md-split-button>
+<output id="sb-ev-log" style="display:block; margin-block-start:16px; min-block-size:3.2em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Click the label, then the chevron. Both segments report separately.</output>`}
+  script={`
+    var sb = root.querySelector('#sb-log');
+    var log = root.querySelector('#sb-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 3);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    sb.addEventListener('mdLeadingClick', function () {
+      push('mdLeadingClick   ->  run the default action');
+    });
+
+    sb.addEventListener('mdTrailingClick', function (e) {
+      push('mdTrailingClick  ->  checked(next)=' + e.detail.checked);
+    });
+  `}
+  label="Both events, logged live"
+  htmlCode={`<md-split-button id="sb" icon="save" label="Save" menu-label="More save options"></md-split-button>
+
+<script type="module">
+  const sb = document.getElementById('sb');
+
+  sb.addEventListener('mdLeadingClick', () => save());
+  sb.addEventListener('mdTrailingClick', (e) => {
+    console.log('toggle is now', e.detail.checked);
+  });
+</script>`}
+  react={`import { MdSplitButton } from '@awc-ui/react';
+
+export function SaveSplitButton() {
+  return (
+    <MdSplitButton
+      icon="save"
+      label="Save"
+      menuLabel="More save options"
+      onMdLeadingClick={() => save()}
+      onMdTrailingClick={(e) => console.log('toggle is now', e.detail.checked)}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-save-split-button',
+  template: \`
+    <md-split-button
+      icon="save" label="Save" menu-label="More save options"
+      (mdLeadingClick)="save()"
+      (mdTrailingClick)="onTrailing($event)"
+    ></md-split-button>
+  \`,
+})
+export class SaveSplitButtonComponent {
+  save() { /* … */ }
+  onTrailing(e: CustomEvent<{ checked: boolean }>) {
+    console.log('toggle is now', e.detail.checked);
+  }
+}`}
+  vue={`<script setup lang="ts">
+function save() { /* … */ }
+
+function onTrailing(e: CustomEvent) {
+  console.log('toggle is now', e.detail.checked);
+}
+</script>
+
+<template>
+  <md-split-button
+    icon="save" label="Save" menu-label="More save options"
+    @mdLeadingClick="save"
+    @mdTrailingClick="onTrailing"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  function save() { /* … */ }
+
+  function onTrailing(e: CustomEvent) {
+    console.log('toggle is now', e.detail.checked);
+  }
+</script>
+
+<md-split-button
+  icon="save" label="Save" menu-label="More save options"
+  on:mdLeadingClick={save}
+  on:mdTrailingClick={onTrailing}
+></md-split-button>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[`trailing-checked` is the only mutable prop]
+Everything else is read-only from the component's point of view. `haspopup`
+accepts `"menu" | "listbox" | "dialog" | "grid" | "tree" | "true" | "false"`;
+`"false"` removes `aria-haspopup` from the trailing button entirely rather than
+writing the string.
+:::
+
+## Accessibility
+
+- The control is **two separate buttons**. The leading one is named by `label`
+  (or the host `aria-label`); the trailing one is named **only** by `menu-label`
+  (WCAG 4.1.2) — its default is the English `"Toggle menu"`.
+- `haspopup` sets `aria-haspopup` on the trailing button and `controls` sets
+  `aria-controls`. Set `haspopup="false"` when nothing pops up.
+- `aria-expanded` is driven by `trailing-checked`. Keep it truthful — resync it
+  from the menu's `mdClose`, not just from your own click handler.
+- Both segments activate on <kbd>Enter</kbd> and <kbd>Space</kbd>, and each takes
+  its own tab stop, so the default action is always reachable without opening
+  the menu.
+- `disabled` disables both segments and drops them from the tab order;
+  `soft-disabled` keeps them focusable.
+
+<ComponentDemo
+  html={`<md-split-button id="sb-a11y-sort" icon="sort" label="Sort" variant="tonal" haspopup="menu" controls="sb-a11y-sort-menu" menu-label="Sort options"></md-split-button>
+<md-split-button icon="favorite" label="Like" variant="outlined" haspopup="false" menu-label="Toggle like"></md-split-button>
+<md-split-button icon="save" label="Unavailable" soft-disabled menu-label="More save options"></md-split-button>
+
+<md-menu id="sb-a11y-sort-menu" anchor="sb-a11y-sort" placement="bottom-end">
+  <md-menu-item headline="Newest first"></md-menu-item>
+  <md-menu-item headline="Oldest first"></md-menu-item>
+  <md-menu-item headline="Alphabetical"></md-menu-item>
+</md-menu>`}
+  script={`
+    var sort = root.querySelector('#sb-a11y-sort');
+    var sortMenu = root.querySelector('#sb-a11y-sort-menu');
+
+    sort.addEventListener('mdTrailingClick', function (e) {
+      if (e.detail.checked) { sortMenu.show(); } else { sortMenu.close(); }
+    });
+    sortMenu.addEventListener('mdClose', function () { sort.trailingChecked = false; });
+  `}
+  label="Six tab stops across three split buttons — tab through, then press Enter"
+/>
+
+## RTL, density & i18n
+
+**RTL** — the segments swap order automatically under `dir="rtl"`; the corner
+radii and padding use logical properties, so the outer pill always lands on the
+inline-start edge and the split corner on the inline-end edge. The default
+chevron (`keyboard_arrow_down`) is vertical and needs no mirroring — a custom
+horizontal glyph does. See [RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <md-split-button icon="edit" label="تعديل" menu-label="تبديل القائمة"></md-split-button>
+</div>
+```
+
+**The same split buttons in both directions.** Nothing is re-authored between
+the rows — only `dir` changes:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-split-button variant="filled" icon="edit" label="Edit" menu-label="Toggle menu"></md-split-button>
+    <md-split-button variant="outlined" icon="add" label="Create" menu-label="Create options"></md-split-button>
+    <md-split-button variant="elevated" icon="save" label="Save" menu-label="More save options"></md-split-button>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-split-button variant="filled" icon="edit" label="تعديل" menu-label="تبديل القائمة"></md-split-button>
+    <md-split-button variant="outlined" icon="add" label="إنشاء" menu-label="خيارات الإنشاء"></md-split-button>
+    <md-split-button variant="elevated" icon="save" label="حفظ" menu-label="خيارات الحفظ"></md-split-button>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+/>
+
+### Only the trailing glyph can point the wrong way
+
+The layout mirrors itself, so the one thing left to get wrong is
+`trailing-icon`. The default `keyboard_arrow_down` points along the block axis
+and reads identically in both directions. Swap in a horizontal glyph and it
+now points *away* from the menu it opens under RTL — compare the rows:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <div dir="rtl" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-split-button variant="tonal" icon="edit" label="تعديل" menu-label="تبديل القائمة"></md-split-button>
+    <md-split-button variant="tonal" icon="add" label="إنشاء" trailing-icon="expand_more" menu-label="خيارات الإنشاء"></md-split-button>
+    <md-split-button variant="tonal" icon="save" label="حفظ" trailing-icon="more_vert" menu-label="خيارات الحفظ"></md-split-button>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <div dir="rtl" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-split-button variant="outlined" icon="edit" label="تعديل" trailing-icon="chevron_right" menu-label="تبديل القائمة"></md-split-button>
+    <md-split-button variant="outlined" icon="add" label="إنشاء" trailing-icon="arrow_forward" menu-label="خيارات الإنشاء"></md-split-button>
+    <md-split-button variant="outlined" icon="save" label="حفظ" trailing-icon="double_arrow" menu-label="خيارات الحفظ"></md-split-button>
+  </div>
+</div>`}
+  label="Vertical glyphs survive the mirror — horizontal ones do not"
+/>
+
+### Every density rung
+
+`density="-1…-4"` is a local override of the inherited `data-density`; `0` is the
+default value, not an override, so the first row below carries no attribute at
+all. The default plus all four rungs, same split button, so the taper is visible
+in one place:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;"><md-split-button variant="filled" icon="save" label="Save" menu-label="More save options"></md-split-button><md-split-button variant="outlined" icon="add" label="Create" menu-label="Create options"></md-split-button></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;"><md-split-button variant="filled" density="-1" icon="save" label="Save" menu-label="More save options"></md-split-button><md-split-button variant="outlined" density="-1" icon="add" label="Create" menu-label="Create options"></md-split-button></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;"><md-split-button variant="filled" density="-2" icon="save" label="Save" menu-label="More save options"></md-split-button><md-split-button variant="outlined" density="-2" icon="add" label="Create" menu-label="Create options"></md-split-button></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;"><md-split-button variant="filled" density="-3" icon="save" label="Save" menu-label="More save options"></md-split-button><md-split-button variant="outlined" density="-3" icon="add" label="Create" menu-label="Create options"></md-split-button></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;"><md-split-button variant="filled" density="-4" icon="save" label="Save" menu-label="More save options"></md-split-button><md-split-button variant="outlined" density="-4" icon="add" label="Create" menu-label="Create options"></md-split-button></div>
+</div>`}
+  label="Density 0 through -4 — both segments taper as one"
+/>
+
+Each rung takes **4px** off the height — 40, 36, 32, 28, 24 at the default
+`sm` size — and trims the inline padding, the label type and the icon↔label gap
+alongside, which pulls the whole control in from 133px wide to 92px. Both
+segments shrink together, so the 2px gap between them never breaks.
+
+The **glyphs do not taper.** Both the leading icon and the chevron are sized
+purely from `size` (18px and 22px at `sm`), so they stay put at every rung —
+which is what keeps the trailing toggle legible as the container closes in on
+it. Resize them yourself with `--md-split-button-icon-size` if you need to.
+
+:::caution[Height bottoms out at 24px]
+On an already-small button that floor arrives early: `size="xs"` starts at 32px,
+so `-2` already sits on it and `-3` and `-4` are the same height. Only the
+height is clamped, though — the label still steps 10.5px → 10px and the
+unclamped paddings keep shrinking, so `-4` is a few px narrower than `-3`. The
+trailing toggle is the first thing to become hard to hit — see
+[Density](/behaviour/density/#accessibility) for the media query that raises the
+target back on touch.
+:::
+
+Set it per instance, or inherit it from an ancestor and let a whole toolbar
+tighten at once:
+
+```html
+<div data-density="-2">
+  <md-split-button label="Save" icon="save" menu-label="More"></md-split-button>
+</div>
+```
+
+### Density and direction together
+
+The two are independent signals, so they compose without any extra wiring — a
+wrapper sets the rung for everything inside it, and any one control can take a
+tighter rung of its own.
+
+:::caution[`density="0"` is not an opt-out]
+Only `-1` through `-4` have a rule — there is deliberately no
+`:host([density="0"])` and no `[data-density="0"]`. Because
+`--md-sys-density-scale` is an inherited custom property, a split button written
+`density="0"` inside a `data-density="-2"` wrapper still inherits `-2` and
+renders 32px tall like its neighbours. To restore the default rung on one
+control, reset the signal directly: `style="--md-sys-density-scale: 0"`.
+:::
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+  <md-split-button variant="filled" icon="save" label="حفظ" menu-label="خيارات الحفظ"></md-split-button>
+  <md-split-button variant="outlined" icon="add" label="إنشاء" menu-label="خيارات الإنشاء"></md-split-button>
+  <md-split-button variant="tonal" icon="edit" label="أكثر إحكاما" density="-4" menu-label="تبديل القائمة"></md-split-button>
+  <md-split-button variant="tonal" icon="edit" label="افتراضي" style="--md-sys-density-scale: 0;" menu-label="تبديل القائمة"></md-split-button>
+</div>`}
+  label="dir=rtl with data-density=-2: two inherit, one tightens to -4, one resets the signal to 0"
+/>
+
+**Density** — `density="-1…-4"` shrinks both segments together and locally
+overrides the inherited `data-density` rung; `0` is the default value, not an
+override. See [Density](/behaviour/density/).
+
+**i18n** — translate `label` (or the slotted text) **and** `menu-label`.
+Translated labels run longer; prefer `full-width` with truncation over a label
+that wraps.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-split-button-container-color` | Segment background | Per variant — `--md-sys-color-primary` on `filled`, `transparent` on `outlined` |
+| `--md-split-button-label-color` | Label + icon color | Per variant — `--md-sys-color-on-primary` on `filled` |
+| `--md-split-button-icon-color` | Icon override | Inherits the label color |
+| `--md-split-button-outline-color` | `outlined` border | `--md-sys-color-outline` |
+| `--md-split-button-container-shape` | Outer corner radius | Half the segment height (a pill) |
+| `--md-split-button-icon-size` | Leading icon size | Per size — 18px at `sm` |
+
+<ComponentDemo
+  html={`<md-split-button icon="delete" label="Delete" menu-label="More delete options" style="--md-split-button-container-color: var(--md-sys-color-error); --md-split-button-label-color: var(--md-sys-color-on-error); --md-split-button-icon-color: var(--md-sys-color-on-error);"></md-split-button>
+<md-split-button icon="save" label="Squared off" menu-label="More save options" style="--md-split-button-container-shape: 6px;"></md-split-button>
+<md-split-button variant="outlined" icon="tune" label="Custom outline" menu-label="More options" style="--md-split-button-outline-color: var(--md-sys-color-tertiary); --md-split-button-label-color: var(--md-sys-color-tertiary); --md-split-button-icon-size: 24px;"></md-split-button>`}
+  label="Themed instances"
+/>
+
+Seven CSS parts are exposed: `leading`, `leading-state-layer`, `icon`, `label`,
+`trailing`, `trailing-state-layer` and `trailing-icon` — enough to reach either
+segment, its state overlay and its glyph independently.
+
+<ComponentDemo
+  html={`<style>
+  .sb-parts-demo::part(trailing) { min-inline-size: 56px; }
+  .sb-parts-demo::part(label) { text-transform: uppercase; letter-spacing: .08em; }
+  .sb-parts-demo::part(trailing-icon) { color: var(--md-sys-color-tertiary); }
+</style>
+<md-split-button class="sb-parts-demo" variant="outlined" icon="download" label="Export" menu-label="Export options"></md-split-button>
+<md-split-button variant="outlined" icon="download" label="Export" menu-label="Export options"></md-split-button>`}
+  label="::part() overrides on the left, stock on the right"
+/>
+
+```css
+md-split-button::part(trailing) {
+  min-inline-size: 48px;
+}
+```
+
+
+## Related
+
+[`md-button`](/components/button/) ·
+[`md-button-group`](/components/button-group/) ·
+[`md-menu`](/components/menu/) ·
+[`md-menu-item`](/components/menu/#md-menu-item) ·
+[`md-segmented-button`](/components/segmented-button/) ·
+[`md-icon-button`](/components/icon-button/) ·
+[`md-ripple`](/components/ripple/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-split-button" />

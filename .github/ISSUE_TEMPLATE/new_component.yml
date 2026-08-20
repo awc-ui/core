@@ -1,0 +1,79 @@
+name: New component request
+description: A component that does not exist in AWC UI yet
+labels: ["new component", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A component is a permanent commitment — implementation, readme, unit and
+        e2e tests, a Storybook story, docs and a bundle budget, all maintained
+        afterwards. So the bar here is higher than for a feature, and the
+        questions below are what we need to say yes.
+
+        **Please check the [component list](https://awcui.io/components/) first.**
+        There are 56, and some hide under a name you might not guess:
+        `md-otp-field`, `md-transfer-list`, `md-organization-chart`,
+        `md-segmented-button`, `md-split-button`.
+
+  - type: input
+    id: name
+    attributes:
+      label: Component
+      description: What it is called, in MD3's terms if it has a spec name.
+      placeholder: "Navigation drawer"
+    validations:
+      required: true
+
+  - type: input
+    id: spec
+    attributes:
+      label: MD3 spec link
+      description: |
+        AWC UI tracks Material Design 3. A component with no spec entry needs a
+        much stronger argument, because we would be designing it as well as
+        building it.
+      placeholder: "https://m3.material.io/components/navigation-drawer/overview"
+
+  - type: textarea
+    id: usecase
+    attributes:
+      label: What would you build with it
+      description: Concretely — what does the user see and do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: composition
+    attributes:
+      label: Why is composing existing components not enough?
+      description: |
+        Many requests are already reachable by slotting existing components
+        together. If you tried that and it fell short, what fell short?
+    validations:
+      required: true
+
+  - type: textarea
+    id: prior-art
+    attributes:
+      label: Prior art
+      description: |
+        How do Material Web, Vaadin, Spectrum or Shoelace handle it — and where
+        does theirs fall down for your case?
+
+  - type: textarea
+    id: api
+    attributes:
+      label: Rough API sketch
+      description: Props, events, slots. A shape to argue about beats no shape.
+      render: html
+
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Would you like to implement it?
+      description: |
+        This makes a real difference. We will agree the API with you before you
+        write anything, so review is about correctness rather than direction.
+      options:
+        - label: I am willing to open a PR
+        - label: I have read the [contributing guide](https://github.com/awc-ui/core/blob/main/CONTRIBUTING.md#adding-a-component)

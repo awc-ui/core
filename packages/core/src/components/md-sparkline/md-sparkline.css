@@ -1,0 +1,35 @@
+/* ==========================================================
+   md-sparkline — Material Design 3 compact inline chart
+
+   PUBLIC CSS CUSTOM PROPERTIES:
+     --md-sparkline-block-size           Default block-size (default: 28px)
+     --md-sparkline-inline-size          Default inline-size (default: 100%)
+     --md-sparkline-min-inline-size      Minimum inline-size before clipping (default: 32px)
+
+   CSS PARTS:
+     canvas                              ECharts SVG container
+   ========================================================== */
+
+:host {
+  --_block-size: var(--md-sparkline-block-size, 28px);
+  --_inline-size: var(--md-sparkline-inline-size, 100%);
+  --_min-inline-size: var(--md-sparkline-min-inline-size, 32px);
+
+  display: inline-block;
+  vertical-align: middle;
+  inline-size: var(--_inline-size);
+  block-size: var(--_block-size);
+  min-inline-size: var(--_min-inline-size);
+  /* Sparklines sit inline with text labels in tables and KPI
+     cards; line-height: 1 keeps the host the same height as
+     its declared block-size (avoids the inherited line-height
+     adding spurious vertical space). */
+  line-height: 1;
+}
+
+.md-sparkline__canvas {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+@media (forced-colors: active) { :host { forced-color-adjust: auto; } }

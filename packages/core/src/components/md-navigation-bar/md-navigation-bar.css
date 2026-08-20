@@ -1,0 +1,116 @@
+/* ==========================================================
+   md-navigation-bar — Material Design 3 Navigation Bar
+   Spec:  https://m3.material.io/components/navigation-bar/specs
+   Guide: https://m3.material.io/components/navigation-bar/guidelines
+   A11y:  https://m3.material.io/components/navigation-bar/accessibility
+
+   Bottom-anchored row of 3–5 top-level destinations for
+   compact-width layouts (mobile / responsive).
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-navigation-bar-container-color   Background
+     --md-navigation-bar-container-height  Total height (default 64px)
+     --md-navigation-bar-container-shape   Outer corner radius
+     --md-navigation-bar-container-elevation
+                                           Box-shadow (default: none)
+     --md-navigation-bar-divider-color     Optional top border color
+     --md-navigation-bar-divider-width     Optional top border width
+     --md-navigation-bar-z-index           Stacking order
+
+   CSS PARTS:
+     container  The inner `tablist` flex row.
+
+   SLOTS:
+     (default)  One <md-navigation-tab> per destination (3–5).
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST
+   ========================================================== */
+:host {
+  --_container-color: var(
+    --md-navigation-bar-container-color,
+    var(--md-sys-color-surface-container, #F3EDF7)
+  );
+  --_container-height: var(--md-navigation-bar-container-height, 64px);
+  --_container-shape: var(--md-navigation-bar-container-shape, 0);
+  --_container-elevation: var(--md-navigation-bar-container-elevation, none);
+  --_divider-color: var(--md-navigation-bar-divider-color, transparent);
+  --_divider-width: var(--md-navigation-bar-divider-width, 0);
+  --_z-index: var(--md-navigation-bar-z-index, var(--md-sys-z-index-navigation, 200));
+
+  /* Per M3 spec the navigation bar is bottom-anchored; we render
+     inline (display: block) so authors can position it explicitly.
+     For mobile layouts callers typically wrap us in a fixed bottom
+     container. */
+  display: block;
+  inline-size: 100%;
+  box-sizing: border-box;
+  background-color: var(--_container-color);
+  border-radius: var(--_container-shape);
+  border-block-start: var(--_divider-width) solid var(--_divider-color);
+  box-shadow: var(--_container-elevation);
+  color: var(--md-sys-color-on-surface, #1C1B1F);
+  z-index: var(--_z-index);
+  position: relative;
+}
+
+/* The container is responsible for the equal-distribution layout
+   and the canonical 64dp height. */
+.md-navigation-bar__container {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-around;
+  inline-size: 100%;
+  min-block-size: max(48px, calc(var(--_container-height) + var(--md-sys-density-scale, 0) * 4px));
+  block-size: max(48px, calc(var(--_container-height) + var(--md-sys-density-scale, 0) * 4px));
+  box-sizing: border-box;
+}
+
+/* ==========================================================
+   2. SLOTTED TABS
+   Each tab claims an equal share of the row. The minimum
+   width matches the M3 64dp item width recommendation while
+   still leaving room for narrow 3-destination layouts.
+   ========================================================== */
+::slotted(md-navigation-tab) {
+  flex: 1 1 0;
+  min-inline-size: 64px;
+}
+
+/* ==========================================================
+   3. RTL — no overrides needed, layout uses logical properties.
+   ========================================================== */
+
+/* ==========================================================
+   4. FORCED-COLORS / HIGH-CONTRAST MODE
+   In Windows High Contrast mode, propagate system colors to
+   the container surface and add an explicit top border so the
+   bar separates from the page content.
+   ========================================================== */
+@media (forced-colors: active) {
+  :host {
+    --_container-color: Canvas;
+    --_divider-color: CanvasText;
+    --_divider-width: 1px;
+  }
+}
+
+/* ==========================================================
+   5. REDUCED MOTION
+   The bar itself has no animations; child indicator motion is
+   handled inside md-navigation-tab.css.
+   ========================================================== */
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

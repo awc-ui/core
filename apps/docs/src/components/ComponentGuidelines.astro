@@ -1,0 +1,158 @@
+---
+// ComponentGuidelines.astro
+//
+// Story 2.6: renders side-by-side Do/Don't usage guidelines per component.
+// Each guideline renders a small live preview of the actual AWC UI
+// component plus a short prose explanation.
+//
+// Reuses the [data-component-demo] hook from ComponentDemo.astro so the
+// shared lazy-loader picks these up alongside the main "## Preview" demo.
+
+interface Guideline {
+  /** "do" renders green; "dont" renders red. */
+  type: "do" | "dont";
+  /** Short imperative title e.g. "Use filled buttons for primary actions". */
+  title: string;
+  /** Inline HTML to render live. Defaults to nothing if omitted. */
+  demo?: string;
+  /** One-or-two-sentence explanation. */
+  description: string;
+}
+
+interface Props {
+  guidelines: Guideline[];
+}
+
+const { guidelines } = Astro.props;
+
+// Sort so all `do`s come before all `dont`s for a consistent visual rhythm.
+// Authors don't need to think about ordering when curating the array.
+const sorted = [...guidelines].sort((a, b) => {
+  if (a.type === b.type) return 0;
+  return a.type === "do" ? -1 : 1;
+});
+---
+
+<div class="component-guidelines">
+  {sorted.map((g) => (
+    <article class:list={["guideline", `guideline--${g.type}`]} data-component-demo>
+      <header class="guideline__header">
+        <span class="guideline__icon" aria-hidden="true">
+          {g.type === "do" ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          )}
+        </span>
+        <span class="guideline__label">{g.type === "do" ? "Do" : "Don't"}</span>
+      </header>
+      {g.demo && (
+        <div class="guideline__demo" set:html={g.demo} />
+      )}
+      <div class="guideline__body">
+        <h3 class="guideline__title">{g.title}</h3>
+        <p class="guideline__description">{g.description}</p>
+      </div>
+    </article>
+  ))}
+</div>
+
+<style>
+  .component-guidelines {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-block: 1.5rem;
+  }
+
+  .guideline {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--sl-color-bg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  }
+
+  .guideline--do {
+    --_accent: #16a34a;
+    --_accent-bg: rgba(22, 163, 74, 0.08);
+  }
+
+  .guideline--dont {
+    --_accent: #dc2626;
+    --_accent-bg: rgba(220, 38, 38, 0.08);
+  }
+
+  .guideline__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--_accent-bg);
+    color: var(--_accent);
+    border-block-end: 1px solid var(--sl-color-gray-5);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .guideline__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 18px;
+    block-size: 18px;
+  }
+
+  .guideline__label {
+    line-height: 1;
+  }
+
+  .guideline__demo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 1.5rem;
+    min-block-size: 64px;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(103, 80, 164, 0.02) 0%, transparent 50%);
+    border-block-end: 1px solid var(--sl-color-gray-5);
+  }
+
+  .guideline__body {
+    padding: 0.875rem 1rem 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .guideline__title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .guideline__description {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--sl-color-gray-3);
+  }
+
+  @media (max-width: 40rem) {
+    .component-guidelines {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

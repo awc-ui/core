@@ -1,0 +1,2485 @@
+---
+title: Bar Chart
+description: "Compare values across categories — vertical or horizontal bars, grouped or stacked, with zoom and drill-down"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ChartDemo from "../../../components/ChartDemo.astro";
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/bar-chart.json";
+
+**Compare magnitudes across categories.** Vertical or horizontal bars, grouped
+or stacked, with legend, tooltips, zoom, drill-down and an expressive entrance
+animation. Bars are corner-rounded by default so they rhyme with the surrounding
+chip and button shape.
+
+:::note[Not a Material Design 3 component]
+M3 ships no charts. The rendering engine is **in-house Canvas2D with a DOM
+overlay** (`utils/charts/engine`) — not a third-party charting library, whatever
+the dependency tree suggests. The guidance below is house rules.
+:::
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Live preview"
+  storyId="charts-bar-chart--playground"
+  attrs={{ label: 'Sales by quarter', legend: 'top-end' }}
+  fixture={{
+    series: [
+      { label: 'Desktop', data: [120, 200, 150, 80] },
+      { label: 'Mobile', data: [220, 182, 191, 234] },
+      { label: 'Tablet', data: [150, 232, 201, 154] },
+    ],
+    xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4'] },
+  }}
+/>
+
+## Install
+
+<ComponentSetup tag="md-bar-chart" example="" />
+
+## When to use
+
+- **Comparing magnitudes across categories**: revenue by region, count by
+  status.
+- Part-to-whole across categories (`stack="normal"` / `stack="percentage"`).
+- Ranked comparisons with long category names (`layout="horizontal"`).
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| A trend over time | [`md-line-chart`](/components/line-chart/) |
+| Trend plus cumulative volume | [`md-area-chart`](/components/area-chart/) |
+| Parts of a single whole (≤ ~6) | [`md-pie-chart`](/components/pie-chart/) |
+| An inline micro-trend | [`md-sparkline`](/components/sparkline/) |
+| Exact values users must read | [`md-table`](/components/table/) |
+| Two or three numbers | Plain text |
+| A continuous distribution | A histogram — build the bins yourself into `series` |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Long category labels | `layout="horizontal"` |
+| Compare composition | `stack="normal"` |
+| Compare share | `stack="percentage"` |
+| Values on the bars | `show-labels` |
+| Stack totals | `show-totals` |
+| Explore a long series | `zoom="inside \| slider \| both"` |
+| Radial bars | `polar` (plus `polar-hole`, `polar-sweep`) |
+| Click-through | `clickable` (plus `mdBarClick`) |
+| Reduced motion | `no-animation`, or `animation="none"` |
+
+## Layouts
+
+### Vertical (default)
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Vertical"
+  storyId="charts-bar-chart--basic"
+  attrs={{ layout: 'vertical' }}
+  fixture={{
+    series: [{ label: 'Visits', data: [120, 200, 150, 80, 70, 110, 130] }],
+    xAxis: { data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
+  }}
+/>
+
+### Horizontal
+
+Use it for long category names. Don't rotate labels to 90° to make a vertical
+chart fit — turn the chart instead.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Horizontal"
+  storyId="charts-bar-chart--horizontal"
+  attrs={{ layout: 'horizontal' }}
+  fixture={{
+    series: [{ label: 'Score', data: [89, 76, 92, 68, 81] }],
+    xAxis: { data: ['Performance', 'Accessibility', 'Best practices', 'SEO', 'PWA'] },
+  }}
+/>
+
+### Grouped horizontal
+
+`layout` and `stack` are independent, so grouped series work sideways too. This
+is the layout for a ranked comparison of a few series across named categories —
+the labels get the room they need and each group still reads as one row.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Grouped bars, horizontal"
+  storyId="charts-bar-chart--grouped-horizontal"
+  attrs={{ layout: 'horizontal', legend: 'bottom', 'show-labels': true }}
+  fixture={{
+    series: [
+      { label: '2023', data: [52, 61, 44, 38, 29] },
+      { label: '2024', data: [64, 58, 51, 47, 33] },
+    ],
+    xAxis: { data: ['North America', 'Europe', 'Asia Pacific', 'Latin America', 'Middle East'] },
+    yAxis: { label: 'Revenue (€M)' },
+  }}
+/>
+
+## Stack modes
+
+:::caution[The default is `none`, not `normal`]
+`md-bar-chart` renders grouped bars by default. That is the opposite of
+[`md-area-chart`](/components/area-chart/), where `stack` defaults to `normal`.
+:::
+
+### Grouped (default)
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Grouped"
+  storyId="charts-bar-chart--grouped"
+  fixture={{
+    series: [
+      { label: 'Desktop', data: [120, 200, 150, 80] },
+      { label: 'Mobile', data: [220, 182, 191, 234] },
+    ],
+    xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4'] },
+  }}
+/>
+
+### Stacked
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Stacked, with totals"
+  attrs={{ stack: 'normal', 'show-totals': true }}
+  fixture={{
+    series: [
+      { label: 'Desktop', data: [120, 200, 150, 80] },
+      { label: 'Mobile', data: [220, 182, 191, 234] },
+      { label: 'Tablet', data: [150, 232, 201, 154] },
+    ],
+    xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4'] },
+  }}
+/>
+
+### Percentage (share-of-total)
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Share-of-total"
+  storyId="charts-bar-chart--percentage"
+  attrs={{ stack: 'percentage' }}
+  fixture={{
+    series: [
+      { label: 'Desktop', data: [120, 200, 150, 80] },
+      { label: 'Mobile', data: [220, 182, 191, 234] },
+      { label: 'Tablet', data: [150, 232, 201, 154] },
+    ],
+    xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4'] },
+  }}
+/>
+
+Stacks hide individual magnitudes. If readers need to compare per-series values,
+use grouped bars.
+
+### Horizontal percentage
+
+Percentage stacking sideways gives one full-width bar per category, which is the
+cleanest way to compare *composition* when the category names are long: every
+row starts and ends in the same place, so the eye compares segment boundaries
+rather than bar ends.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Share of traffic per channel"
+  storyId="charts-bar-chart--stacked-bar"
+  attrs={{ layout: 'horizontal', stack: 'percentage', legend: 'bottom', 'corner-radius': 4 }}
+  fixture={{
+    series: [
+      { label: 'Direct', color: 'primary', data: [42, 31, 25, 38] },
+      { label: 'Organic', color: 'secondary', data: [33, 44, 51, 36] },
+      { label: 'Referral', color: 'tertiary', data: [25, 25, 24, 26] },
+    ],
+    xAxis: { data: ['Documentation', 'Marketing site', 'Blog', 'Support centre'] },
+  }}
+/>
+
+### Stack groups
+
+A series' `stack` field is a **group key**, not a boolean. Series sharing a key
+stack together; different keys sit side by side. That gives you both comparisons
+at once — composition *within* each group, and totals *between* groups — which
+neither plain stacking nor plain grouping can show alone.
+
+```ts
+const series = [
+  { label: 'John',  stack: 'male',   data: [5, 3, 4, 7, 2] },
+  { label: 'Joe',   stack: 'male',   data: [3, 4, 4, 2, 5] },
+  { label: 'Jane',  stack: 'female', data: [2, 5, 6, 2, 1] },
+  { label: 'Janet', stack: 'female', data: [3, 0, 4, 4, 3] },
+];
+```
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Two stacks per category, side by side"
+  storyId="charts-bar-chart--stacked-and-grouped"
+  attrs={{ stack: 'normal', legend: 'bottom', 'corner-radius': 4, 'show-labels': true }}
+  fixture={{
+    series: [
+      { label: 'John', stack: 'male', data: [5, 3, 4, 7, 2] },
+      { label: 'Joe', stack: 'male', data: [3, 4, 4, 2, 5] },
+      { label: 'Jane', stack: 'female', data: [2, 5, 6, 2, 1] },
+      { label: 'Janet', stack: 'female', data: [3, 0, 4, 4, 3] },
+    ],
+    xAxis: { data: ['Apples', 'Oranges', 'Pears', 'Grapes', 'Bananas'] },
+    yAxis: { label: 'Units sold' },
+  }}
+/>
+
+`show-totals` prints one total per **group**, not per category, since each group
+is its own stack.
+
+## Title and subtitle
+
+`label` is the chart's title and `subtitle` the line under it — the place for a
+unit, a period or a source, so the axis label doesn't have to carry it.
+`title-align` puts the pair at the `start` (default), `center` or `end` of the
+plot.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Title, subtitle and a formatted value axis"
+  storyId="charts-bar-chart--column-chart"
+  attrs={{ label: 'Cereal production', subtitle: 'Source: FAOSTAT, 2023', legend: 'bottom' }}
+  fixture={{
+    series: [
+      { label: 'Wheat', data: [808, 771, 761, 790] },
+      { label: 'Maize', data: [1163, 1210, 1148, 1232] },
+      { label: 'Rice', data: [520, 514, 522, 535] },
+    ],
+    xAxis: { data: ['2020', '2021', '2022', '2023'] },
+    yAxis: { label: 'Million tonnes' },
+  }}
+/>
+
+Centre the title when the chart is the whole story rather than one panel in a
+grid — a centred title over a share-of-total chart reads as a headline:
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="title-align=center over a percentage stack"
+  storyId="charts-bar-chart--percentage-stacked"
+  attrs={{
+    label: 'How people get to work',
+    subtitle: 'Share of commuters by mode',
+    'title-align': 'center',
+    stack: 'percentage',
+    legend: 'bottom',
+    'corner-radius': 2,
+    'category-gap': '45%',
+  }}
+  fixture={{
+    series: [
+      { label: 'Car', color: 'primary', data: [64, 51, 38, 29] },
+      { label: 'Public transport', color: 'secondary', data: [21, 30, 39, 44] },
+      { label: 'Bicycle', color: 'tertiary', data: [9, 13, 16, 20] },
+      { label: 'Walking', color: 'surface-variant', data: [6, 6, 7, 7] },
+    ],
+    xAxis: { data: ['2000', '2010', '2020', '2030 (proj.)'] },
+  }}
+/>
+
+## Bar geometry
+
+`category-gap` (between categories) and `bar-gap` (between sibling series)
+accept either a CSS-style percentage string (`"30%"`) or a raw number.
+`corner-radius` tunes the bar shape — set `corner-radius="0"` in data-table
+contexts where rounded corners cost too many pixels.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Soft corners, MD3 Expressive"
+  storyId="charts-bar-chart--rounded-corners"
+  attrs={{ 'corner-radius': 12, 'category-gap': '40%' }}
+  fixture={{
+    series: [{ label: 'value', data: [12, 18, 14, 22, 28, 24] }],
+    xAxis: { data: ['A', 'B', 'C', 'D', 'E', 'F'] },
+  }}
+/>
+
+### Variable-width bars
+
+`pointWidths` maps a category index to a **width**, so a bar can carry two
+measures at once: its length is one variable, its thickness another, and its
+area is their product. A variwide chart of cost-per-hour against share of output
+shows at a glance where the money actually goes — a tall thin bar is expensive
+but marginal, a short wide one is cheap but everywhere.
+
+```ts
+const series = [{
+  label: 'Labour cost (€/h)',
+  data:        [46.9, 43.7, 38.1, 29.2, 11.7],  // bar LENGTH
+  pointWidths: { 0: 24, 1: 18, 2: 31, 3: 14, 4: 9 },  // bar THICKNESS
+}];
+```
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Length = cost per hour, width = share of GDP"
+  storyId="charts-bar-chart--variwide"
+  attrs={{ legend: 'none', 'corner-radius': 4, 'category-gap': '12%', 'show-labels': true }}
+  fixture={{
+    series: [
+      {
+        label: 'Labour cost (€/h)',
+        color: 'primary',
+        data: [46.9, 43.7, 38.1, 29.2, 22.4, 11.7],
+        pointWidths: { 0: 26, 1: 20, 2: 33, 3: 16, 4: 11, 5: 8 },
+      },
+    ],
+    xAxis: { data: ['Denmark', 'Belgium', 'Germany', 'Spain', 'Poland', 'Romania'], labelRotation: -45 },
+    yAxis: { label: 'Labour cost (€/h)' },
+  }}
+/>
+
+:::caution[Area is persuasive, and easy to misread]
+Widths make the eye compare rectangles, and people judge area poorly. Use it
+when the second measure is a genuine weight — population, output, exposure — and
+say what the width means in the tooltip or a caption. Never vary width for
+decoration.
+:::
+
+### Rotated category labels
+
+`labelRotation` on the category axis tilts the tick labels by a number of
+degrees. Negative angles lean the text up to the right with its end under the
+tick, which is the convention for names too long to sit upright. Without it,
+labels that don't fit their own band are truncated with an ellipsis instead.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="labelRotation: -45 — long city names leaning under their ticks"
+  storyId="charts-bar-chart--rotated-labels"
+  attrs={{ legend: 'none', 'corner-radius': 6, 'show-labels': true }}
+  fixture={{
+    series: [{ label: 'Population (M)', color: 'primary', data: [37.4, 30.3, 27.1, 22.0, 21.8, 20.4] }],
+    xAxis: {
+      data: ['Tokyo, Japan', 'Delhi, India', 'Shanghai, China', 'São Paulo, Brazil', 'Mexico City, Mexico', 'Cairo, Egypt'],
+      labelRotation: -45,
+    },
+    yAxis: { label: 'Population (M)' },
+  }}
+/>
+
+Prefer `layout="horizontal"` when every label is long — rotating is a fix for a
+few awkward names, not a substitute for turning the chart.
+
+## Inline data labels
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="show-labels — the value printed on each bar"
+  storyId="charts-bar-chart--with-data-labels"
+  attrs={{ 'show-labels': true }}
+  fixture={{
+    series: [{ label: 'Score', data: [82, 91, 67, 88, 75] }],
+    xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4', 'Q1'] },
+  }}
+/>
+
+### Stacked totals
+
+`show-totals` adds one number above each stack — the column's sum. It reads the
+whole column, so it only means anything on a stacked chart; on a grouped one the
+bars sit side by side and there is no total to print.
+
+Pair it with `show-labels` when the segments are large enough to hold their own
+number, and drop `show-labels` when they aren't: a total above a stack of thin
+slivers still tells the reader the thing they came for.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="show-totals with a normal stack"
+  storyId="charts-bar-chart--stacked-with-totals"
+  attrs={{ label: 'Sessions by device', stack: 'normal', 'show-totals': true, legend: 'bottom' }}
+  fixture={{
+    series: [
+      { label: 'Desktop', data: [24, 31, 28, 36] },
+      { label: 'Mobile', data: [38, 42, 47, 51] },
+      { label: 'Tablet', data: [9, 11, 10, 13] },
+    ],
+    xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4'] },
+  }}
+/>
+
+## Series colour
+
+`color` on a series takes an **MD3 role name** or any CSS colour. Prefer the
+role: it follows the theme and stays legible in dark mode, where a hardcoded hex
+will not.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Role names — primary, secondary, tertiary"
+  storyId="charts-bar-chart--custom-colors"
+  attrs={{ legend: 'bottom' }}
+  fixture={{
+    series: [
+      { label: 'primary', color: 'primary', data: [24, 31, 28, 36] },
+      { label: 'secondary', color: 'secondary', data: [38, 42, 47, 51] },
+      { label: 'tertiary', color: 'tertiary', data: [9, 11, 10, 13] },
+    ],
+    xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4'] },
+  }}
+/>
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Explicit CSS colours — hex, rgb and named"
+  storyId="charts-bar-chart--series-color-formats"
+  attrs={{ legend: 'bottom' }}
+  fixture={{
+    series: [
+      { label: 'hex', color: '#6750A4', data: [24, 31, 28, 36] },
+      { label: 'rgb', color: 'rgb(125, 82, 96)', data: [38, 42, 47, 51] },
+      { label: 'named', color: 'teal', data: [9, 11, 10, 13] },
+    ],
+    xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4'] },
+  }}
+/>
+
+## Axis breaks
+
+One outlier can flatten every other bar into a stub. `breaks: 'auto'` on the
+value axis detects the gap and folds it away, so the small bars get their range
+back while the outlier stays honestly larger.
+
+The break is drawn on the axis, not hidden — the reader can see the scale was
+cut. Reach for it when a category is genuinely an order of magnitude out; if the
+spread is merely wide, a log scale or a second chart is the better answer.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="breaks: 'auto' — Infra dwarfs the rest"
+  storyId="charts-bar-chart--axis-breaks"
+  attrs={{ legend: 'none', 'show-labels': true }}
+  fixture={{
+    series: [{ label: 'Spend ($k)', color: '#6750A4', data: [42, 55, 38, 1200, 61, 47] }],
+    xAxis: { data: ['Design', 'Eng', 'Sales', 'Infra', 'Support', 'Ops'] },
+    yAxis: { label: 'Spend ($k)', breaks: 'auto' },
+  }}
+/>
+
+## Range bars
+
+A series can carry `range` instead of `data`: an array of `[low, high]` pairs.
+Each bar then floats between its two values rather than growing from the
+baseline — the shape for a spread (daily temperature range, min/max latency,
+a salary band) where zero is not the interesting reference point.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="range: [[low, high], …] — monthly temperature spread"
+  storyId="charts-bar-chart--column-range"
+  attrs={{ legend: 'none' }}
+  fixture={{
+    series: [
+      {
+        label: 'Temperature (°C)',
+        range: [
+          [-9.7, 9.4], [-8.7, 6.5], [-3.5, 9.4], [-1.4, 19.9],
+          [0.0, 22.6], [2.9, 29.5], [9.2, 30.7], [7.3, 26.5],
+        ],
+      },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'] },
+  }}
+/>
+
+## Negative values
+
+Bars that cross zero fill both ways, and the axis keeps the zero line where the
+data puts it.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Net change"
+  storyId="charts-bar-chart--negative-values"
+  attrs={{ 'show-labels': true, legend: 'none' }}
+  fixture={{
+    series: [{ label: 'Net change', data: [24, -12, 18, -6, 31, -19] }],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+  }}
+/>
+
+### Population pyramid
+
+Give one series negative values and the other positive, lay the chart out
+horizontally, and the rows run out from a centre line in both directions. The
+sign is a *direction* here, not a quantity — so format the axis and tooltips to
+print magnitudes, or the left half reads as negative people.
+
+`mirrorLabels` on the category axis repeats the tick labels in the opposite
+gutter. It exists for exactly this chart: with labels on one side only, a name
+sits a long way from half the data it names.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Age structure — mirrored labels, one side negated"
+  storyId="charts-bar-chart--population-pyramid"
+  attrs={{ label: 'Population by age', layout: 'horizontal', stack: 'normal', legend: 'bottom', 'corner-radius': 8 }}
+  fixture={{
+    series: [
+      { label: 'Male', color: '#5fa8f5', data: [-1.3, -2.4, -2.9, -4.0, -4.1, -4.4, -3.4, -2.1, -1.0] },
+      { label: 'Female', color: '#2ee06a', data: [1.4, 2.5, 2.7, 3.6, 4.0, 4.2, 3.3, 1.9, 1.0] },
+    ],
+    xAxis: { data: ['0–9', '10–19', '20–29', '30–39', '40–49', '50–59', '60–69', '70–79', '80+'], label: 'Age group', mirrorLabels: true },
+    yAxis: { label: 'Share of population (%)' },
+  }}
+/>
+
+## Two value axes and overlaid bars
+
+Three series fields cover the "one chart, two units" case:
+
+<div class="md-table-scroll">
+
+| Field | Effect |
+|---|---|
+| `yAxisIndex: 1` | Measure this series against `yAxis2` instead of the primary axis |
+| `overlay: true` | Draw it centred **on** the category band rather than taking a slot beside its siblings |
+| `widthRatio` | How much of the band the overlaid series covers (`0.34` = a third) |
+
+</div>
+
+Overlay is what stops a second unit from stealing horizontal space: the narrow
+bar sits in front of the wide one, sharing the same category, so both are read
+against the same position. The engine zero-aligns the two axes, so the chart
+keeps one baseline and negative months open downward on both.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Rainfall on the left axis, temperature overlaid on the right"
+  storyId="charts-bar-chart--fixed-placement"
+  attrs={{ label: 'Oslo climate', legend: 'bottom', 'corner-radius': 4, 'category-gap': '34%' }}
+  fixture={{
+    series: [
+      { label: 'Rainfall (mm)', color: '#5fa8f5', data: [49, 36, 47, 41, 53, 65, 81, 89, 90, 84, 73, 55] },
+      {
+        label: 'Temperature (°C)',
+        color: '#f0a05a',
+        yAxisIndex: 1,
+        overlay: true,
+        widthRatio: 0.34,
+        data: [-4.3, -4.0, -0.2, 4.5, 10.8, 15.2, 16.4, 15.2, 10.8, 6.3, 0.7, -3.1],
+      },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
+    yAxis: { label: 'Rainfall (mm)' },
+    yAxis2: { label: 'Temperature (°C)' },
+  }}
+/>
+
+### Comparing against a baseline
+
+The same `overlay` field does a second job: a translucent full-width column for
+the reference period with the current one drawn narrower in front. Both sit on
+the same category, so the comparison is a single glance rather than two bars to
+mentally pair up.
+
+Keep the baseline **translucent and behind**. It's a reference mark, not a
+reading competing for attention — give it equal weight and the chart stops
+having a subject.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="2015 baseline behind, 2024 in front"
+  storyId="charts-bar-chart--column-comparison"
+  attrs={{ label: 'Renewable generation', legend: 'top-end', 'corner-radius': 6, 'category-gap': '30%' }}
+  fixture={{
+    series: [
+      { label: '2015', color: 'rgba(190, 180, 255, 0.28)', data: [396, 191, 122, 78, 44] },
+      { label: '2024', color: '#b9a7ff', overlay: true, widthRatio: 0.5, data: [812, 344, 208, 96, 71] },
+    ],
+    xAxis: { data: ['Wind', 'Solar', 'Hydro', 'Biomass', 'Geothermal'] },
+    yAxis: { label: 'TWh' },
+  }}
+/>
+
+## Force diagram
+
+`chevron` draws the bars as arrowheads pointing away from the baseline instead
+of rectangles. Along a stack they interlock, each segment's point sitting in the
+next one's notch — so the contributions read as being *handed along in a
+direction* rather than merely piled up. It's the shape for a force balance,
+where sign means "which way" and the total is what's left over.
+
+Strip the chrome that a single-category chart doesn't need: `hidden` on the
+category axis, `axisLine: false` on both, `hideTicks` on the value axis.
+
+:::caution[Use `tooltip="item"` on a single-category chart]
+The default `axis` trigger reports *every series at the hovered category* — and
+here there is only one category, so all seven markers land on the same line,
+overlapping each other and the inline labels. `item` reports just the segment
+under the pointer, which is the only reading that means anything in a force
+balance.
+:::
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Forces on a Mars lander — blue decelerates, red accelerates"
+  storyId="charts-bar-chart--force-chart"
+  style="block-size: 180px;"
+  attrs={{ label: 'Force balance', layout: 'horizontal', stack: 'normal', chevron: true, tooltip: 'item', legend: 'bottom', 'show-labels': true, 'bar-width': 36 }}
+  fixture={{
+    series: [
+      { label: 'Gravity', color: '#f4245e', data: [3730] },
+      { label: 'Drag', color: '#1668ff', data: [-2180] },
+      { label: 'Parachute', color: '#1668ff', data: [-980] },
+      { label: 'Retro thrust', color: '#1668ff', data: [-430] },
+    ],
+    xAxis: { data: ['Force'], hidden: true, axisLine: false },
+    yAxis: { hideTicks: true, axisLine: false },
+  }}
+/>
+
+## Polar (radial) bars
+
+`polar` bends the category axis into a circle: every category becomes its own
+ring, and a bar's *length* becomes the arc it sweeps. `polar-hole` sets the
+inner radius as a fraction of the outer (`0` is a full disc), and `polar-sweep`
+the fraction of the circle the plot covers — leaving a gap makes the start and
+end of the scale distinguishable, which a closed ring cannot do.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="One series — each ring is a category"
+  attrs={{ polar: true, 'polar-hole': 0.25, legend: 'bottom' }}
+  fixture={{
+    series: [{ label: 'Activity', data: [42, 68, 55, 91, 74, 38, 60] }],
+    xAxis: { data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
+  }}
+/>
+
+### Segmented rings
+
+Stacking works in polar exactly as it does in cartesian: `stack="normal"`
+divides each ring into segments that accumulate along the arc, so the ring's
+total length is the category total and each segment's share of it is visible at
+the same time.
+
+`corner-radius` rounds the segment ends and `category-gap` sets the space
+between rings — both matter more here than on a bar chart, because adjacent
+rings are only separated by that gap.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Stacked rings — Olympic medals by nation"
+  storyId="charts-bar-chart--radial-bars"
+  attrs={{
+    label: 'All-time Olympic medals',
+    polar: true,
+    stack: 'normal',
+    'polar-hole': 0.24,
+    'polar-sweep': 0.78,
+    'corner-radius': 4,
+    'category-gap': '26%',
+    legend: 'bottom',
+  }}
+  fixture={{
+    series: [
+      { label: 'Gold', color: '#e0b400', data: [1061, 440, 285, 285, 262] },
+      { label: 'Silver', color: '#b6b8bd', data: [837, 357, 313, 316, 199] },
+      { label: 'Bronze', color: '#c07f4a', data: [738, 325, 344, 309, 173] },
+    ],
+    xAxis: { data: ['United States', 'Soviet Union', 'Germany', 'Great Britain', 'China'] },
+  }}
+/>
+
+:::caution[Arc length is harder to compare than bar length]
+An inner ring is physically shorter than an outer one at the same value, so
+polar flatters the outermost category. Use it when the shape is the point — a
+cyclical pattern, a week, a compass — and a plain bar chart when the reader has
+to rank the values.
+:::
+
+## Drill-down
+
+`drill(index, 'down' | 'up')` plays the transition **between two levels of your
+own data**. It does not navigate for you: the chart has no idea your categories
+form a tree. You keep the hierarchy, you decide what the next level is, and you
+assign `series` — `drill()` only makes the swap read as a descent instead of a
+jump cut.
+
+Descending, the incoming columns unfold out of the band the named column
+occupies right now; `'up'` pivots on the whole plot, the same motion run inside
+out. It falls back to a plain swap when the index doesn't resolve, or under
+`prefers-reduced-motion`.
+
+```ts
+const chart = document.querySelector('md-bar-chart');
+
+chart.clickable = true;                    // hand cursor over a bar — the affordance
+
+chart.addEventListener('mdBarClick', async (e) => {
+  const node = level[e.detail.dataIndex];
+  if (!node.children?.length) return;      // a leaf — nothing to descend into
+
+  await chart.drill(e.detail.dataIndex);   // animate, then hand over the new level
+  chart.series = [{ label: node.label, data: node.children.map((c) => c.value) }];
+  chart.xAxis  = { data: node.children.map((c) => c.label) };
+});
+```
+
+Set `clickable` only while a bar can actually drill — all it does is switch the
+cursor to a hand, so leaving it on over leaf columns promises an interaction that
+does nothing. (Clearing it doesn't stop `mdBarClick`; the leaf guard above does.)
+Click a continent to descend, then use **Back** to come up again:
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;display:flex;flex-direction:column;gap:12px;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <md-button id="drill-up" variant="outlined" disabled>Back</md-button>
+    <md-breadcrumbs id="drill-trail" separator="›" aria-label="Drill-down trail" style="min-block-size:32px;"></md-breadcrumbs>
+  </div>
+  <md-bar-chart id="drill-chart" legend="none" show-labels style="inline-size:100%;block-size:300px;"></md-bar-chart>
+</div>
+<script type="module">
+  // The hierarchy is YOURS. The chart never walks it — drill() only animates
+  // the swap between two levels you hand it.
+  const TREE = [
+    { label: 'Africa', value: 1460, children: [
+      { label: 'Nigeria', value: 223 }, { label: 'Ethiopia', value: 126 },
+      { label: 'Egypt', value: 112 },   { label: 'DR Congo', value: 102 },
+      { label: 'Tanzania', value: 67 },
+    ] },
+    { label: 'Asia', value: 4753, children: [
+      { label: 'China', value: 1425 }, { label: 'India', value: 1428 },
+      { label: 'Indonesia', value: 277 }, { label: 'Pakistan', value: 240 },
+      { label: 'Bangladesh', value: 173 },
+    ] },
+    { label: 'Europe', value: 748, children: [
+      { label: 'Russia', value: 144 }, { label: 'Germany', value: 83 },
+      { label: 'UK', value: 68 },      { label: 'France', value: 65 },
+      { label: 'Italy', value: 59 },
+    ] },
+    { label: 'Americas', value: 1041, children: [
+      { label: 'USA', value: 340 },   { label: 'Brazil', value: 216 },
+      { label: 'Mexico', value: 128 }, { label: 'Colombia', value: 52 },
+      { label: 'Argentina', value: 45 },
+    ] },
+    { label: 'Oceania', value: 45, children: [
+      { label: 'Australia', value: 26 }, { label: 'Papua New Guinea', value: 10 },
+      { label: 'New Zealand', value: 5 },
+    ] },
+  ];
+
+  const chart = document.getElementById('drill-chart');
+  const back  = document.getElementById('drill-up');
+  const trail = document.getElementById('drill-trail');
+
+  let level = TREE;
+  let parentIndex = -1;
+
+  function show(items, path) {
+    chart.series = [{ label: 'Population (M)', color: 'primary', data: items.map((d) => d.value) }];
+    chart.xAxis  = { data: items.map((d) => d.label) };
+    // Only offer clicks while something below actually exists.
+    chart.clickable = items.some((d) => d.children?.length);
+    back.disabled = parentIndex < 0;
+    // The LAST crumb is the level you are on, so it is marked current and is
+    // not a link — a breadcrumb to where you already are is a dead control.
+    trail.innerHTML = path
+      .map((label, k) => '<md-breadcrumb-item href="#"' + (k === path.length - 1 ? ' current' : '') +
+                         '>' + label + '</md-breadcrumb-item>')
+      .join('');
+  }
+
+  // Crumbs navigate too: clicking "World" is the same move as Back.
+  trail.addEventListener('click', (e) => {
+    const crumb = e.target.closest?.('md-breadcrumb-item');
+    if (!crumb || crumb.hasAttribute('current')) return;
+    e.preventDefault();                       // href="#" would jump the page
+    back.click();
+  });
+
+  chart.addEventListener('mdBarClick', async (e) => {
+    const i = e.detail.dataIndex;
+    const node = level[i];
+    if (!node?.children?.length) return;      // a leaf — nothing to descend into
+    await chart.drill(i, 'down');             // animate FROM the clicked column
+    parentIndex = i;
+    level = node.children;
+    show(level, ['World', node.label]);
+  });
+
+  back.addEventListener('click', async () => {
+    if (parentIndex < 0) return;
+    await chart.drill(parentIndex, 'up');     // pivots on the whole plot
+    parentIndex = -1;
+    level = TREE;
+    show(level, ['World']);
+  });
+
+  show(level, ['World']);
+\x3C/script>`}
+  label="Click a bar to descend"
+  storyId="charts-bar-chart--drill-down"
+  react={`import { useRef, useState } from 'react';
+  import { MdBarChart, MdBreadcrumbs, MdBreadcrumbItem, MdButton } from '@awc-ui/react';
+
+  // Trimmed for the snippet — the hierarchy is YOURS, and drill() only animates
+  // the swap between two levels you hand it.
+  const TREE = [
+    { label: 'Africa', value: 1460, children: [{ label: 'Nigeria', value: 223 }, { label: 'Egypt', value: 112 }] },
+    { label: 'Asia',   value: 4753, children: [{ label: 'China', value: 1425 }, { label: 'India', value: 1428 }] },
+  ];
+
+  export function DrillDown() {
+    const chart = useRef<HTMLMdBarChartElement>(null);
+    const [level, setLevel] = useState(TREE);
+    const [parent, setParent] = useState(-1);
+    const path = parent < 0 ? ['World'] : ['World', TREE[parent].label];
+
+    const down = async (e) => {
+      const node = level[e.detail.dataIndex];
+      if (!node.children?.length) return;              // a leaf — nothing below
+      await chart.current?.drill(e.detail.dataIndex);  // animate FROM that column
+      setParent(e.detail.dataIndex);
+      setLevel(node.children);
+    };
+
+    const up = async () => {
+      if (parent < 0) return;
+      await chart.current?.drill(parent, 'up');
+      setParent(-1);
+      setLevel(TREE);
+    };
+
+    return (
+      <>
+        <MdButton variant="outlined" disabled={parent < 0} onMdClick={up}>Back</MdButton>
+        <MdBreadcrumbs separator="›" aria-label="Drill-down trail">
+          {path.map((label, i) => (
+            <MdBreadcrumbItem key={label} href="#" current={i === path.length - 1}>{label}</MdBreadcrumbItem>
+          ))}
+        </MdBreadcrumbs>
+
+        <MdBarChart
+          ref={chart}
+          legend="none"
+          showLabels
+          clickable={level.some((d) => d.children?.length)}
+          series={[{ label: 'Population (M)', color: 'primary', data: level.map((d) => d.value) }]}
+          xAxis={{ data: level.map((d) => d.label) }}
+          onMdBarClick={down}
+        />
+      </>
+    );
+  }`}
+  angular={`import { Component, ElementRef, ViewChild } from '@angular/core';
+
+  // Trimmed for the snippet — the hierarchy is YOURS, and drill() only animates
+  // the swap between two levels you hand it.
+  const TREE = [
+    { label: 'Africa', value: 1460, children: [{ label: 'Nigeria', value: 223 }, { label: 'Egypt', value: 112 }] },
+    { label: 'Asia',   value: 4753, children: [{ label: 'China', value: 1425 }, { label: 'India', value: 1428 }] },
+  ];
+
+  @Component({
+    selector: 'app-drill',
+    template: \`
+      <md-button variant="outlined" [disabled]="parent < 0" (mdClick)="up()">Back</md-button>
+      <md-breadcrumbs separator="›" aria-label="Drill-down trail">
+        <md-breadcrumb-item *ngFor="let label of path(); let i = index"
+                            href="#" [attr.current]="i === path().length - 1 ? '' : null">{{ label }}</md-breadcrumb-item>
+      </md-breadcrumbs>
+
+      <md-bar-chart #chart legend="none" show-labels
+                    [clickable]="hasChildren()"
+                    [series]="series()" [xAxis]="xAxis()"
+                    (mdBarClick)="down($event)"></md-bar-chart>
+    \`,
+  })
+  export class DrillDownComponent {
+    @ViewChild('chart') chartRef!: ElementRef<HTMLMdBarChartElement>;
+
+    level = TREE;
+    parent = -1;
+
+    path = () => (this.parent < 0 ? ['World'] : ['World', TREE[this.parent].label]);
+    hasChildren = () => this.level.some((d) => d.children?.length);
+    series = () => [{ label: 'Population (M)', color: 'primary', data: this.level.map((d) => d.value) }];
+    xAxis = () => ({ data: this.level.map((d) => d.label) });
+
+    async down(e: CustomEvent<{ dataIndex: number }>) {
+      const node = this.level[e.detail.dataIndex];
+      if (!node.children?.length) return;
+      await this.chartRef.nativeElement.drill(e.detail.dataIndex);
+      this.parent = e.detail.dataIndex;
+      this.level = node.children;
+    }
+
+    async up() {
+      if (this.parent < 0) return;
+      await this.chartRef.nativeElement.drill(this.parent, 'up');
+      this.parent = -1;
+      this.level = TREE;
+    }
+  }`}
+  vue={`<script setup>
+  import { computed, ref } from 'vue';
+
+  // Trimmed for the snippet — the hierarchy is YOURS, and drill() only animates
+  // the swap between two levels you hand it.
+  const TREE = [
+    { label: 'Africa', value: 1460, children: [{ label: 'Nigeria', value: 223 }, { label: 'Egypt', value: 112 }] },
+    { label: 'Asia',   value: 4753, children: [{ label: 'China', value: 1425 }, { label: 'India', value: 1428 }] },
+  ];
+
+  const chart = ref(null);
+  const level = ref(TREE);
+  const parent = ref(-1);
+
+  const path = computed(() => (parent.value < 0 ? ['World'] : ['World', TREE[parent.value].label]));
+  const series = computed(() => [{ label: 'Population (M)', color: 'primary', data: level.value.map((d) => d.value) }]);
+  const xAxis = computed(() => ({ data: level.value.map((d) => d.label) }));
+
+  async function down(e) {
+    const node = level.value[e.detail.dataIndex];
+    if (!node.children?.length) return;
+    await chart.value.drill(e.detail.dataIndex);
+    parent.value = e.detail.dataIndex;
+    level.value = node.children;
+  }
+
+  async function up() {
+    if (parent.value < 0) return;
+    await chart.value.drill(parent.value, 'up');
+    parent.value = -1;
+    level.value = TREE;
+  }
+  \x3C/script>
+
+  <template>
+    <md-button variant="outlined" :disabled="parent < 0" @mdClick="up">Back</md-button>
+    <md-breadcrumbs separator="›" aria-label="Drill-down trail">
+      <md-breadcrumb-item v-for="(label, i) in path" :key="label" href="#"
+                          :current="i === path.length - 1">{{ label }}</md-breadcrumb-item>
+    </md-breadcrumbs>
+
+    <!-- camelCase, not kebab: Vue sets a prop only when the name is IN the
+         element, and "x-axis" is not a property of md-bar-chart. -->
+    <md-bar-chart ref="chart" legend="none" show-labels
+                  :clickable="level.some((d) => d.children?.length)"
+                  :series="series" :xAxis="xAxis" @mdBarClick="down" />
+  </template>`}
+  svelte={`<script>
+    // Trimmed for the snippet — the hierarchy is YOURS, and drill() only animates
+    // the swap between two levels you hand it.
+    const TREE = [
+      { label: 'Africa', value: 1460, children: [{ label: 'Nigeria', value: 223 }, { label: 'Egypt', value: 112 }] },
+      { label: 'Asia',   value: 4753, children: [{ label: 'China', value: 1425 }, { label: 'India', value: 1428 }] },
+    ];
+
+    let chart;
+    let level = TREE;
+    let parent = -1;
+
+    $: path = parent < 0 ? ['World'] : ['World', TREE[parent].label];
+    $: series = [{ label: 'Population (M)', color: 'primary', data: level.map((d) => d.value) }];
+    $: xAxis = { data: level.map((d) => d.label) };
+
+    async function down(e) {
+      const node = level[e.detail.dataIndex];
+      if (!node.children?.length) return;
+      await chart.drill(e.detail.dataIndex);
+      parent = e.detail.dataIndex;
+      level = node.children;
+    }
+
+    async function up() {
+      if (parent < 0) return;
+      await chart.drill(parent, 'up');
+      parent = -1;
+      level = TREE;
+    }
+  \x3C/script>
+
+  <md-button variant="outlined" disabled={parent < 0} on:mdClick={up}>Back</md-button>
+  <md-breadcrumbs separator="›" aria-label="Drill-down trail">
+    {#each path as label, i}
+      <md-breadcrumb-item href="#" current={i === path.length - 1}>{label}</md-breadcrumb-item>
+    {/each}
+  </md-breadcrumbs>
+
+  <md-bar-chart bind:this={chart} legend="none" show-labels
+                clickable={level.some((d) => d.children?.length)}
+                {series} {xAxis} on:mdBarClick={down} />`}
+/>
+
+## Animating a race
+
+A bar race replays a ranking over time: reassign `series` on a timer and the
+engine tweens both the bar lengths **and** their reordering, so a category
+visibly overtakes another instead of teleporting.
+
+The chart animates whatever you hand it — the loop is yours. Keep the category
+list stable across frames so a bar keeps its identity as it moves; a category
+that appears and disappears reads as a new bar each time.
+
+```ts
+let frame = 0;
+const timer = setInterval(() => {
+  if (frame >= years.length) return clearInterval(timer);
+  chart.label  = String(years[frame]);
+  chart.series = [{ label: 'Population', data: valuesFor(years[frame]) }];
+  frame++;
+}, 600);
+```
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;display:flex;flex-direction:column;gap:12px;">
+  <div style="display:flex;align-items:center;gap:16px;min-inline-size:0;">
+    <md-icon-button id="bar-race-play" variant="filled" icon="play_arrow" aria-label="Play or pause"></md-icon-button>
+    <md-slider id="bar-race-slider" min="1950" max="2020" step="0.1" value="2020" style="flex:1; min-inline-size:0;" aria-label="Year"></md-slider>
+    <span id="bar-race-year" style="font-size:1rem;font-weight:600;min-inline-size:5ch;text-align:end;">2020</span>
+  </div>
+  <md-bar-chart id="bar-race-chart" layout="horizontal" legend="none" show-labels no-animation style="inline-size:100%;min-inline-size:0;block-size:320px;"></md-bar-chart>
+</div>
+<script type="module">
+  const CITIES = ['New York', 'Tokyo', 'Delhi', 'Shanghai', 'Mexico City', 'São Paulo'];
+  const FRAMES = [
+    { year: 1950, values: [12.3, 11.3, 1.4, 4.3, 3.4, 2.3] },
+    { year: 1960, values: [14.2, 16.7, 2.3, 6.9, 5.4, 4.0] },
+    { year: 1970, values: [16.2, 23.3, 3.5, 6.0, 8.8, 7.6] },
+    { year: 1980, values: [15.6, 28.5, 5.6, 5.9, 13.0, 12.1] },
+    { year: 1990, values: [16.1, 32.5, 9.4, 7.8, 15.6, 14.8] },
+    { year: 2000, values: [17.8, 34.5, 15.7, 14.2, 18.5, 17.0] },
+    { year: 2010, values: [18.4, 36.9, 21.9, 19.9, 20.1, 19.7] },
+    { year: 2020, values: [18.8, 37.4, 30.3, 27.1, 21.8, 22.0] },
+  ];
+
+  const chart  = document.getElementById('bar-race-chart');
+  const play   = document.getElementById('bar-race-play');
+  const slider = document.getElementById('bar-race-slider');
+  const yearEl = document.getElementById('bar-race-year');
+
+  // The category list never changes, so a bar keeps its identity across frames
+  // and the engine can tween the reorder instead of drawing a fresh chart.
+  chart.xAxis = { data: CITIES };
+  // Pin the value axis: letting it rescale every frame would make bars shrink
+  // as the leader grows, which reads as the opposite of what happened.
+  chart.yAxis = { min: 0, max: 40 };
+
+  // Start on the LAST frame, not the first: a docs page that greets you with a
+  // near-empty plot reads as broken.
+  const FIRST = FRAMES[0].year;
+  const LAST = FRAMES[FRAMES.length - 1].year;
+  const STEP = 10;                              // years between samples
+  const SPEED = (LAST - FIRST) / 9000;          // full sweep ≈ 9s
+
+  // Start COMPLETE, not at 1950: a docs page that greets you with stub bars
+  // reads as broken. Play rewinds and sweeps.
+  let year = LAST, raf = 0, last = 0, dragging = false;
+
+  // The data is decadal; the animation is not. Interpolating between the two
+  // bracketing samples is what makes the bars glide instead of jumping once a
+  // second — the chart's own tween can't do it, because every frame we hand it
+  // is a finished value, which is also why the chart runs with no-animation.
+  function valuesAt(y) {
+    const t = (y - FIRST) / STEP;
+    const i = Math.max(0, Math.min(FRAMES.length - 1, Math.floor(t)));
+    const j = Math.min(FRAMES.length - 1, i + 1);
+    const f = t - i;
+    return FRAMES[i].values.map((v, k) => Math.round((v + (FRAMES[j].values[k] - v) * f) * 10) / 10);
+  }
+
+  function apply() {
+    chart.series = [{ label: 'Population (M)', color: 'primary', data: valuesAt(year) }];
+    yearEl.textContent = Math.round(year);
+    if (!dragging) slider.value = year;          // don't fight a held thumb
+  }
+
+  function stop() {
+    cancelAnimationFrame(raf);
+    raf = 0;
+    last = 0;
+    play.icon = 'play_arrow';
+  }
+
+  function frame(ts) {
+    if (!last) last = ts;
+    year = Math.min(LAST, year + (ts - last) * SPEED);
+    last = ts;
+    apply();
+    if (year >= LAST) return stop();
+    raf = requestAnimationFrame(frame);
+  }
+
+  play.addEventListener('mdClick', () => {
+    if (raf) return stop();
+    if (year >= LAST) year = FIRST;              // parked at the end: play means replay
+    play.icon = 'pause';
+    last = 0;
+    raf = requestAnimationFrame(frame);
+  });
+
+  // Scrubbing takes over: a running sweep would yank the thumb back.
+  slider.addEventListener('mdInput', (e) => {
+    dragging = true;
+    stop();
+    year = e.detail?.value ?? slider.value;
+    apply();
+  });
+  slider.addEventListener('mdChange', () => { dragging = false; });
+
+  apply();
+\x3C/script>`}
+  label="Press play — city populations, 1950 → 2020"
+  storyId="charts-bar-chart--bar-race"
+  react={`import { useRef, useState } from 'react';
+  import { MdBarChart, MdIconButton, MdSlider } from '@awc-ui/react';
+
+  const CITIES = ['New York', 'Tokyo', 'Delhi', 'Shanghai', 'Mexico City', 'São Paulo'];
+  const FRAMES = [
+    { year: 1950, values: [12.3, 11.3, 1.4, 4.3, 3.4, 2.3] },
+    { year: 1980, values: [15.6, 28.5, 5.6, 5.9, 13.0, 12.1] },
+    { year: 2020, values: [18.8, 37.4, 30.3, 27.1, 21.8, 22.0] },
+  ];
+  const FIRST = FRAMES[0].year;
+  const LAST = FRAMES[FRAMES.length - 1].year;
+  const SPEED = (LAST - FIRST) / 9000;            // full sweep ~9s
+
+  // The data is decadal; the animation is not. Interpolating between the two
+  // bracketing samples is what makes the bars glide instead of jumping once a
+  // second — and it is why the chart runs with no-animation: every frame we hand
+  // it is already a finished value, so its own tween would restart 60x a second.
+  function valuesAt(year) {
+    const t = (year - FIRST) / 10;
+    const i = Math.max(0, Math.min(FRAMES.length - 1, Math.floor(t)));
+    const j = Math.min(FRAMES.length - 1, i + 1);
+    const f = t - i;
+    return FRAMES[i].values.map((v, k) => Math.round((v + (FRAMES[j].values[k] - v) * f) * 10) / 10);
+  }
+
+  export function BarRace() {
+    // Start COMPLETE, not at 1950: a page that greets you with stub bars reads
+    // as broken. Play rewinds and sweeps.
+    const [year, setYear] = useState(LAST);
+    const [playing, setPlaying] = useState(false);
+    const raf = useRef(0);
+    const last = useRef(0);
+
+    const stop = () => {
+      cancelAnimationFrame(raf.current);
+      raf.current = 0;
+      last.current = 0;
+      setPlaying(false);
+    };
+
+    const frame = (ts) => {
+      if (!last.current) last.current = ts;
+      const delta = (ts - last.current) * SPEED;
+      last.current = ts;
+      setYear((y) => {
+        const next = Math.min(LAST, y + delta);
+        if (next >= LAST) stop();
+        return next;
+      });
+      if (raf.current) raf.current = requestAnimationFrame(frame);
+    };
+
+    const toggle = () => {
+      if (raf.current) return stop();
+      if (year >= LAST) setYear(FIRST);           // parked at the end: replay
+      setPlaying(true);
+      last.current = 0;
+      raf.current = requestAnimationFrame(frame);
+    };
+
+    return (
+      <>
+        <MdIconButton variant="filled" icon={playing ? 'pause' : 'play_arrow'}
+                      aria-label="Play or pause" onMdClick={toggle} />
+        <MdSlider min={FIRST} max={LAST} step={0.1} value={year} aria-label="Year"
+                  onMdInput={(e) => { stop(); setYear(e.detail.value); }} />
+        <span>{Math.round(year)}</span>
+
+        <MdBarChart
+          layout="horizontal" legend="none" showLabels noAnimation
+          xAxis={{ data: CITIES }}
+          yAxis={{ min: 0, max: 40 }}
+          series={[{ label: 'Population (M)', color: 'primary', data: valuesAt(year) }]}
+        />
+      </>
+    );
+  }`}
+  angular={`import { Component, OnDestroy } from '@angular/core';
+
+  const CITIES = ['New York', 'Tokyo', 'Delhi', 'Shanghai', 'Mexico City', 'São Paulo'];
+  const FRAMES = [
+    { year: 1950, values: [12.3, 11.3, 1.4, 4.3, 3.4, 2.3] },
+    { year: 1980, values: [15.6, 28.5, 5.6, 5.9, 13.0, 12.1] },
+    { year: 2020, values: [18.8, 37.4, 30.3, 27.1, 21.8, 22.0] },
+  ];
+  const FIRST = FRAMES[0].year;
+  const LAST = FRAMES[FRAMES.length - 1].year;
+  const SPEED = (LAST - FIRST) / 9000;            // full sweep ~9s
+
+  // The data is decadal; the animation is not. Interpolating between the two
+  // bracketing samples is what makes the bars glide instead of jumping once a
+  // second — and it is why the chart runs with no-animation: every frame we hand
+  // it is already a finished value, so its own tween would restart 60x a second.
+  function valuesAt(year) {
+    const t = (year - FIRST) / 10;
+    const i = Math.max(0, Math.min(FRAMES.length - 1, Math.floor(t)));
+    const j = Math.min(FRAMES.length - 1, i + 1);
+    const f = t - i;
+    return FRAMES[i].values.map((v, k) => Math.round((v + (FRAMES[j].values[k] - v) * f) * 10) / 10);
+  }
+
+  @Component({
+    selector: 'app-bar-race',
+    template: \`
+      <md-icon-button variant="filled" [icon]="playing ? 'pause' : 'play_arrow'"
+                      aria-label="Play or pause" (mdClick)="toggle()"></md-icon-button>
+      <md-slider [min]="FIRST" [max]="LAST" step="0.1" [value]="year"
+                 aria-label="Year" (mdInput)="scrub($event)"></md-slider>
+      <span>{{ year | number: '1.0-0' }}</span>
+
+      <md-bar-chart layout="horizontal" legend="none" show-labels no-animation
+                    [xAxis]="xAxis" [yAxis]="yAxis" [series]="series()"></md-bar-chart>
+    \`,
+  })
+  export class BarRaceComponent implements OnDestroy {
+    FIRST = FIRST;
+    LAST = LAST;
+    year = LAST;
+    playing = false;
+
+    xAxis = { data: CITIES };
+    yAxis = { min: 0, max: 40 };
+    series = () => [{ label: 'Population (M)', color: 'primary', data: valuesAt(this.year) }];
+
+    private raf = 0;
+    private last = 0;
+
+    toggle() {
+      if (this.raf) return this.stop();
+      if (this.year >= LAST) this.year = FIRST;
+      this.playing = true;
+      this.last = 0;
+      this.raf = requestAnimationFrame(this.frame);
+    }
+
+    scrub(e: CustomEvent<{ value: number }>) {
+      this.stop();
+      this.year = e.detail.value;
+    }
+
+    // Arrow property: rAF calls it unbound, so a method would lose \`this\`.
+    private frame = (ts: number) => {
+      if (!this.last) this.last = ts;
+      this.year = Math.min(LAST, this.year + (ts - this.last) * SPEED);
+      this.last = ts;
+      if (this.year >= LAST) return this.stop();
+      this.raf = requestAnimationFrame(this.frame);
+    };
+
+    private stop() {
+      cancelAnimationFrame(this.raf);
+      this.raf = 0;
+      this.last = 0;
+      this.playing = false;
+    }
+
+    // A rAF loop outlives the component unless you cancel it on teardown.
+    ngOnDestroy() {
+      this.stop();
+    }
+  }`}
+  vue={`<script setup>
+  import { computed, onBeforeUnmount, ref } from 'vue';
+
+  const CITIES = ['New York', 'Tokyo', 'Delhi', 'Shanghai', 'Mexico City', 'São Paulo'];
+  const FRAMES = [
+    { year: 1950, values: [12.3, 11.3, 1.4, 4.3, 3.4, 2.3] },
+    { year: 1980, values: [15.6, 28.5, 5.6, 5.9, 13.0, 12.1] },
+    { year: 2020, values: [18.8, 37.4, 30.3, 27.1, 21.8, 22.0] },
+  ];
+  const FIRST = FRAMES[0].year;
+  const LAST = FRAMES[FRAMES.length - 1].year;
+  const SPEED = (LAST - FIRST) / 9000;            // full sweep ~9s
+
+  // The data is decadal; the animation is not. Interpolating between the two
+  // bracketing samples is what makes the bars glide instead of jumping once a
+  // second — and it is why the chart runs with no-animation: every frame we hand
+  // it is already a finished value, so its own tween would restart 60x a second.
+  function valuesAt(year) {
+    const t = (year - FIRST) / 10;
+    const i = Math.max(0, Math.min(FRAMES.length - 1, Math.floor(t)));
+    const j = Math.min(FRAMES.length - 1, i + 1);
+    const f = t - i;
+    return FRAMES[i].values.map((v, k) => Math.round((v + (FRAMES[j].values[k] - v) * f) * 10) / 10);
+  }
+
+  const year = ref(LAST);
+  const playing = ref(false);
+  let raf = 0;
+  let last = 0;
+
+  const series = computed(() => [{ label: 'Population (M)', color: 'primary', data: valuesAt(year.value) }]);
+
+  function stop() {
+    cancelAnimationFrame(raf);
+    raf = 0;
+    last = 0;
+    playing.value = false;
+  }
+
+  function frame(ts) {
+    if (!last) last = ts;
+    year.value = Math.min(LAST, year.value + (ts - last) * SPEED);
+    last = ts;
+    if (year.value >= LAST) return stop();
+    raf = requestAnimationFrame(frame);
+  }
+
+  function toggle() {
+    if (raf) return stop();
+    if (year.value >= LAST) year.value = FIRST;
+    playing.value = true;
+    last = 0;
+    raf = requestAnimationFrame(frame);
+  }
+
+  function scrub(e) {
+    stop();
+    year.value = e.detail.value;
+  }
+
+  onBeforeUnmount(stop);          // don't let the loop outlive the component
+  \x3C/script>
+
+  <template>
+    <md-icon-button variant="filled" :icon="playing ? 'pause' : 'play_arrow'"
+                    aria-label="Play or pause" @mdClick="toggle" />
+    <md-slider :min="FIRST" :max="LAST" step="0.1" :value="year" aria-label="Year" @mdInput="scrub" />
+    <span>{{ Math.round(year) }}</span>
+
+    <!-- camelCase, not kebab: Vue only sets a PROPERTY when the name is in the
+         element, and "x-axis" is not a property of md-bar-chart. -->
+    <md-bar-chart layout="horizontal" legend="none" show-labels no-animation
+                  :xAxis="{ data: CITIES }" :yAxis="{ min: 0, max: 40 }" :series="series" />
+  </template>`}
+  svelte={`<script>
+    import { onDestroy } from 'svelte';
+
+    const CITIES = ['New York', 'Tokyo', 'Delhi', 'Shanghai', 'Mexico City', 'São Paulo'];
+    const FRAMES = [
+      { year: 1950, values: [12.3, 11.3, 1.4, 4.3, 3.4, 2.3] },
+      { year: 1980, values: [15.6, 28.5, 5.6, 5.9, 13.0, 12.1] },
+      { year: 2020, values: [18.8, 37.4, 30.3, 27.1, 21.8, 22.0] },
+    ];
+    const FIRST = FRAMES[0].year;
+    const LAST = FRAMES[FRAMES.length - 1].year;
+    const SPEED = (LAST - FIRST) / 9000;            // full sweep ~9s
+
+    // The data is decadal; the animation is not. Interpolating between the two
+    // bracketing samples is what makes the bars glide instead of jumping once a
+    // second — and it is why the chart runs with no-animation: every frame we hand
+    // it is already a finished value, so its own tween would restart 60x a second.
+    function valuesAt(year) {
+      const t = (year - FIRST) / 10;
+      const i = Math.max(0, Math.min(FRAMES.length - 1, Math.floor(t)));
+      const j = Math.min(FRAMES.length - 1, i + 1);
+      const f = t - i;
+      return FRAMES[i].values.map((v, k) => Math.round((v + (FRAMES[j].values[k] - v) * f) * 10) / 10);
+    }
+
+    let year = LAST;
+    let playing = false;
+    let raf = 0;
+    let last = 0;
+
+    $: series = [{ label: 'Population (M)', color: 'primary', data: valuesAt(year) }];
+
+    function stop() {
+      cancelAnimationFrame(raf);
+      raf = 0;
+      last = 0;
+      playing = false;
+    }
+
+    function frame(ts) {
+      if (!last) last = ts;
+      year = Math.min(LAST, year + (ts - last) * SPEED);
+      last = ts;
+      if (year >= LAST) return stop();
+      raf = requestAnimationFrame(frame);
+    }
+
+    function toggle() {
+      if (raf) return stop();
+      if (year >= LAST) year = FIRST;
+      playing = true;
+      last = 0;
+      raf = requestAnimationFrame(frame);
+    }
+
+    onDestroy(stop);              // don't let the loop outlive the component
+  \x3C/script>
+
+  <md-icon-button variant="filled" icon={playing ? 'pause' : 'play_arrow'}
+                  aria-label="Play or pause" on:mdClick={toggle} />
+  <md-slider min={FIRST} max={LAST} step="0.1" value={year} aria-label="Year"
+             on:mdInput={(e) => { stop(); year = e.detail.value; }} />
+  <span>{Math.round(year)}</span>
+
+  <md-bar-chart layout="horizontal" legend="none" show-labels no-animation
+                xAxis={{ data: CITIES }} yAxis={{ min: 0, max: 40 }} {series} />`}
+/>
+
+:::tip[Horizontal is the racing layout]
+`layout="horizontal"` puts the category labels on the vertical axis, where they
+have room and where a bar changing rank moves up or down — the direction people
+read a leaderboard.
+:::
+
+## Zoom
+
+`zoom` turns on two independent gestures: `inside` drags across the plot to
+select a range, `slider` adds a range band under the plot, `both` enables each.
+Zoom is a **view** — the window slices what the engine draws and leaves your
+`series` array untouched, so every event still reports **absolute** indices.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Long series with a zoom band"
+  storyId="charts-bar-chart--zoom"
+  attrs={{ zoom: 'both', legend: 'none' }}
+  fixture={{
+    series: [{ label: 'Requests', data: Array.from({ length: 48 }, (_, i) => Math.round(Math.abs(Math.sin(i / 5)) * 60 + 20 + (i % 5) * 4)) }],
+    xAxis: { data: Array.from({ length: 48 }, (_, i) => 'W' + (i + 1)), hideTicks: true },
+  }}
+/>
+
+```ts
+await chart.setZoom(10, 40);   // absolute indices
+await chart.resetZoom();
+```
+
+## Loading and empty states
+
+`loading` covers the plot with an opaque overlay and marks the host `aria-busy`.
+It has to be opaque: the engine still draws a placeholder axis when there is no
+data, and a translucent loader would let that ghost grid read as real. An empty
+`series` shows the empty state instead — the two never stack, because "no data"
+is the wrong answer to "where is my data?" mid-fetch.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Default loader"
+  attrs={{ label: 'Revenue by region', loading: true, 'loading-label': 'Fetching revenue…' }}
+  fixture={{ series: [], xAxis: { data: [] } }}
+/>
+
+`loading-label` names the state for screen readers *and* prints under the
+spinner. The demos here hold `loading` on permanently; in practice you clear it
+when the fetch resolves:
+
+```ts
+const chart = document.querySelector('md-bar-chart');
+
+chart.loading = true;
+const rows = await fetch('/api/revenue').then((r) => r.json());
+chart.series = rows;
+chart.loading = false;      // data first, then drop the overlay
+```
+
+Assign `series` **before** clearing `loading`, not after: the overlay is what
+hides the placeholder axis, so clearing it first flashes an empty grid between
+the spinner and the bars. On the way out the entry animation replays, so the
+bars grow in rather than appearing fully formed.
+
+### Replacing the loader
+
+The default is a **circular** indicator plus the `loading-label` text. Slot your
+own into `loader` — the older name `loading` still works — to replace it
+entirely: a linear bar suits a wide tile, where a small circle floating in the
+middle reads as lost.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Slotted linear loader"
+  attrs={{ label: 'Revenue by region', loading: true }}
+  fixture={{ series: [], xAxis: { data: [] } }}
+  innerHtml={`<div slot="loading" style="inline-size: min(320px, 70%); display: grid; gap: 12px; justify-items: center;">
+  <md-progress-indicator variant="linear" indeterminate label="Fetching revenue" style="inline-size: 100%;"></md-progress-indicator>
+  <span>Fetching revenue…</span>
+</div>`}
+/>
+
+A circular [`md-progress-indicator`](/components/progress-indicator/) in the
+`loader` slot keeps the default shape while letting you set its size, colour or
+label — the route to a branded mark or a skeleton is the same slot.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="A circular md-progress-indicator slotted over the default loader"
+  attrs={{ label: 'Revenue by region', loading: true, 'loading-label': 'Fetching revenue…' }}
+  fixture={{ series: [], xAxis: { data: [] } }}
+  innerHtml={`<md-progress-indicator slot="loader" variant="circular" indeterminate size="40" label="Loading"></md-progress-indicator>`}
+/>
+
+:::caution[Use the indicator components, not your own spinner]
+`md-progress-indicator` (linear or circular) and `md-loading-indicator` already
+carry the MD3 motion tokens, the reduced-motion fallback and the right ARIA. A
+hand-rolled spinner in a `loading` slot gets none of that.
+:::
+
+### Empty state
+
+With no series at all, the chart paints an empty state instead of an axis with
+nothing under it. The trigger is strictly `series.length === 0` (and not
+`loading`): hiding every series from the legend leaves `series` populated, so the
+plot stays up — empty, but not the empty state. Replace the message by
+slotting into `empty`, and style it with the `--md-bar-chart-empty-*` custom
+properties.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="No data"
+  attrs={{ label: 'Revenue by region', legend: 'none' }}
+  fixture={{ series: [], xAxis: { data: [] } }}
+/>
+
+```html
+<md-bar-chart>
+  <div slot="empty">No revenue recorded for this period.</div>
+</md-bar-chart>
+```
+
+The slot replaces the message, not the surface: a slotted empty state still sits
+on the chart's own opaque background — the thing that masks the phantom 0–1 axis
+the engine draws with no data — and picks up the `--md-bar-chart-empty-*` type
+and colour. The slot is a centred column, so pass **each line as its own
+element** rather than one wrapper: a Material Symbols icon is auto-sized to
+`--md-bar-chart-empty-icon-size` by a `::slotted()` rule, which only reaches
+direct children and would miss an icon nested inside a `<div>`.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="A slotted empty state"
+  attrs={{ label: 'Revenue by region', legend: 'none' }}
+  fixture={{ series: [], xAxis: { data: [] } }}
+  innerHtml={`<span class="material-symbols-outlined" slot="empty" aria-hidden="true">inbox</span>
+<strong slot="empty">No revenue recorded for this period.</strong>
+<span slot="empty" style="opacity:.7;">Pick a wider date range to see results.</span>`}
+/>
+
+## Tooltips
+
+`tooltip` selects the trigger: `axis` (default) lists every series at the hovered
+category, `item` reports only the series under the pointer, `none` disables
+pointer hover — keyboard navigation and the live region keep working either way.
+
+On a grouped chart `item` is often the better default: the bars are already
+separated, so the pointer really is on one of them, and listing the whole
+category buries it. On a stacked chart `axis` is usually right, since the
+segments only mean something relative to their column.
+
+### Custom tooltip
+
+`tooltipRenderer` replaces the card's **content** — the chart keeps owning the
+card itself: its surface, elevation, and placement. It's a property, not an
+attribute, so it's set in JS (or bound with `.prop` / `:prop` / `[prop]` in a
+framework).
+
+Hover the chart below. The card leads with the column's total, then gives each
+series its share of that column with a proportional bar — figures that only
+exist once you have every series at the hovered category, which is exactly what
+`ctx.series` is.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="tooltipRenderer — column total and per-series share"
+  storyId="charts-bar-chart--stacked"
+  react={`import { useCallback } from 'react';
+  import { MdBarChart } from '@awc-ui/react';
+  // The renderer builds plain DOM — nothing React-specific — so it lives in its
+  // own module rather than being redefined per framework. See the HTML tab for
+  // the full body.
+  import { sessionsCard } from './sessions-card';
+
+  const series = [
+    { label: 'Desktop', data: [24, 31, 28, 36] },
+    { label: 'Mobile', data: [38, 42, 47, 51] },
+    { label: 'Tablet', data: [9, 11, 10, 13] },
+  ];
+  const xAxis = { data: ['Q1', 'Q2', 'Q3', 'Q4'] };
+
+  export function Chart() {
+    // useCallback matters here. tooltipRenderer is a PROP on a Stencil
+    // component with an @Watch on it: a new function identity every render is a
+    // new value every render, so the chart tears down and rebuilds its tooltip
+    // on each parent re-render. Defining it inline in JSX is the common bug.
+    const tooltipRenderer = useCallback(sessionsCard, []);
+
+    return (
+      <MdBarChart
+        series={series}
+        xAxis={xAxis}
+        tooltipRenderer={tooltipRenderer}
+        label="Sessions by device"
+        stack="normal"
+        tooltip="axis"
+        legend="bottom"
+      />
+    );
+  }`}
+  angular={`import { Component } from '@angular/core';
+  import { sessionsCard } from './sessions-card';
+
+  @Component({
+    selector: 'app-sessions',
+    template: \`
+      <md-bar-chart
+        [series]="series"
+        [xAxis]="xAxis"
+        [tooltipRenderer]="tooltipRenderer"
+        label="Sessions by device"
+        stack="normal"
+        tooltip="axis"
+        legend="bottom"
+      ></md-bar-chart>
+    \`,
+  })
+  export class SessionsComponent {
+    series = [
+      { label: 'Desktop', data: [24, 31, 28, 36] },
+      { label: 'Mobile', data: [38, 42, 47, 51] },
+      { label: 'Tablet', data: [9, 11, 10, 13] },
+    ];
+    xAxis = { data: ['Q1', 'Q2', 'Q3', 'Q4'] };
+
+    // An ARROW PROPERTY, not a method: the chart calls it unbound, so a method
+    // would arrive with this === undefined the moment it touches component state.
+    // Assigned once, so the [tooltipRenderer] binding is referentially stable and
+    // Angular's change detection has nothing new to push each cycle.
+    tooltipRenderer = (ctx: MdChartTooltipContext) => sessionsCard(ctx);
+  }`}
+  vue={`<script setup>
+  import { sessionsCard } from './sessions-card';
+
+  const series = [
+    { label: 'Desktop', data: [24, 31, 28, 36] },
+    { label: 'Mobile', data: [38, 42, 47, 51] },
+    { label: 'Tablet', data: [9, 11, 10, 13] },
+  ];
+  const xAxis = { data: ['Q1', 'Q2', 'Q3', 'Q4'] };
+
+  // A plain const — deliberately NOT ref()/reactive(). The renderer is called by
+  // the chart, not rendered by Vue: making it reactive buys nothing and reactive()
+  // would proxy a function you then hand to non-Vue code.
+  const tooltipRenderer = sessionsCard;
+  \x3C/script>
+
+  <template>
+    <!-- camelCase, not kebab. Vue sets a PROPERTY only when the name is IN the
+         element; "tooltip-renderer" is not, so the kebab form would setAttribute
+         a stringified function and the chart would ignore it. -->
+    <md-bar-chart
+      :series="series"
+      :xAxis="xAxis"
+      :tooltipRenderer="tooltipRenderer"
+      label="Sessions by device"
+      stack="normal"
+      tooltip="axis"
+      legend="bottom"
+    />
+  </template>`}
+  svelte={`<script>
+    import { sessionsCard } from './sessions-card';
+
+    const series = [
+      { label: 'Desktop', data: [24, 31, 28, 36] },
+      { label: 'Mobile', data: [38, 42, 47, 51] },
+      { label: 'Tablet', data: [9, 11, 10, 13] },
+    ];
+    const xAxis = { data: ['Q1', 'Q2', 'Q3', 'Q4'] };
+
+    // const, not let: a reassignable binding would make Svelte re-set the
+    // property on every invalidation, and the renderer never changes.
+    const tooltipRenderer = sessionsCard;
+  \x3C/script>
+
+  <!-- Shorthand only works because the local names match the prop names; Svelte
+       assigns these as PROPERTIES on an upgraded custom element. -->
+  <md-bar-chart
+    {series}
+    {xAxis}
+    {tooltipRenderer}
+    label="Sessions by device"
+    stack="normal"
+    tooltip="axis"
+    legend="bottom"
+  />`}
+  attrs={{ label: 'Sessions by device', stack: 'normal', tooltip: 'axis', legend: 'bottom' }}
+  fixture={{
+    series: [
+      { label: 'Desktop', data: [24, 31, 28, 36] },
+      { label: 'Mobile', data: [38, 42, 47, 51] },
+      { label: 'Tablet', data: [9, 11, 10, 13] },
+    ],
+    xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4'] },
+  }}
+  fnFixture={{
+    tooltipRenderer: `(ctx) => {
+      const el = (tag, css, text) => {
+        const n = document.createElement(tag);
+        if (css) n.style.cssText = css;
+        if (text != null) n.textContent = text;
+        return n;
+      };
+
+      const rows = ctx.series;
+      const total = rows.reduce((sum, r) => sum + (r.value ?? 0), 0);
+      // -1 means "nothing is emphasised", i.e. light every row — not "none".
+      const lit = (r) => ctx.focusedSeriesIndex < 0 || r.focused;
+
+      const card = el('div', 'min-width:196px;font-variant-numeric:tabular-nums');
+
+      card.append(el('div',
+        'font-size:0.68em;letter-spacing:0.1em;text-transform:uppercase;opacity:0.55',
+        ctx.axisLabel));
+      const head = el('div', 'display:flex;align-items:baseline;gap:5px;margin:1px 0 9px');
+      head.append(el('span', 'font-size:1.5em;font-weight:700;line-height:1.05', total.toLocaleString()));
+      head.append(el('span', 'font-size:0.76em;opacity:0.55', 'sessions'));
+      card.append(head);
+
+      rows.forEach((r) => {
+        const pct = total ? (r.value ?? 0) / total : 0;
+        const row = el('div',
+          'display:grid;grid-template-columns:9px 1fr auto 38px;gap:9px;align-items:center;' +
+          'padding:2.5px 0;opacity:' + (lit(r) ? '1' : '0.45'));
+        row.append(el('span', 'width:9px;height:9px;border-radius:3px;background:' + r.color));
+        row.append(el('span', null, r.label));
+        row.append(el('span', 'font-weight:700', r.formattedValue));
+        row.append(el('span', 'opacity:0.55;text-align:end', Math.round(pct * 100) + '%'));
+        card.append(row);
+
+        // A proportional rule under each row — the share, read as a length.
+        const rule = el('div', 'display:grid;grid-template-columns:9px 1fr;gap:9px;margin-bottom:4px');
+        rule.append(
+          el('span', ''),
+          el('div', 'height:3px;border-radius:999px;background:' + r.color +
+                    ';width:' + (pct * 100).toFixed(1) + '%'),
+        );
+        card.append(rule);
+      });
+
+      return card;
+    }`,
+  }}
+/>
+
+The context gives you `dataIndex`, `axisValue`, `axisLabel`, `series` (those with
+a value at this category), `missing` (those without) and `focusedSeriesIndex`.
+Return a `Node`, a `string` (set as text, so markup is shown rather than
+parsed), `{ unsafeHtml }`, `undefined` to fall back to the built-in card, or
+`null` to draw none. See [the area chart's custom tooltip](/components/area-chart/#custom-tooltip)
+for the full field-by-field reference — the contract is identical across charts.
+
+:::caution[It runs on every hover frame]
+Build the node, don't recompute a dataset. And don't set `position` / `left` /
+`top` on the outermost node — the engine positions whatever you return.
+:::
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdBarClick` | no | `MdChartClickDetail<MdChartSeries>` | A bar is clicked, or activated from the keyboard |
+| `mdLegendClick` | no | `{ seriesIndex, seriesId?, selected }` | A legend chip toggles a series |
+| `mdHover` | no | `MdChartHoverDetail` | The hovered data index changes (rAF-throttled) |
+| `mdZoom` | no | `{ startIndex, endIndex, reset }` | The zoom window changes (drag, slider, `setZoom`, `resetZoom`) |
+| `mdReady` | no | `void` | The engine has mounted and drawn |
+
+:::tip[Gate exports on `mdReady`]
+`toDataURL()` immediately after setting data returns an image of nothing — the
+chart may not have drawn yet.
+:::
+
+`clickable` does not gate `mdBarClick`. It is a **cursor affordance only** — it
+switches the pointer to a hand over a bar. The event fires on any click that
+lands inside a bar (and on <kbd>Enter</kbd> / <kbd>Space</kbd>) whether or not
+`clickable` is set, so set it whenever you listen, and gate the behaviour in your
+own handler rather than by clearing the prop.
+
+### Event payloads
+
+**`MdChartClickDetail<MdChartSeries>`** — `mdBarClick`
+
+<div class="md-table-scroll">
+
+| Field | Type | Meaning |
+|---|---|---|
+| `seriesIndex` | `number` | 0-based index within the `series` array |
+| `seriesId` | `string \| undefined` | The series' `id`, when one was given |
+| `dataIndex` | `number` | Index of the category — the value you pass to `drill()` |
+| `value` | `number \| null` | Raw value of the clicked bar — `null` for an empty slot |
+| `axisValue` | `string \| number \| Date \| undefined` | Original category value there |
+| `series` | `MdChartSeries` | The original series object you passed in |
+| `nativeEvent` | `PointerEvent \| MouseEvent \| KeyboardEvent` | A `KeyboardEvent` when the bar was activated from the keyboard rather than clicked |
+
+</div>
+
+**`MdChartHoverDetail`** — `mdHover`
+
+<div class="md-table-scroll">
+
+| Field | Type | Meaning |
+|---|---|---|
+| `dataIndex` | `number` | Index of the highlighted category |
+| `axisValue` | `string \| number \| Date \| undefined` | Category value there |
+| `seriesIndices` | `number[]` | Every **visible** series at that category — one entry per series the legend hasn't hidden, whatever the `tooltip` trigger. It is not narrowed to the one series under the pointer |
+
+</div>
+
+`mdLegendClick` carries `{ seriesIndex, seriesId?, selected }`, and `mdZoom`
+carries `{ startIndex, endIndex, reset }` — **absolute** indices into your
+`series` array, since zoom is a view and never rewrites the data.
+
+:::note[`nativeEvent` is not always a pointer event]
+The chart is keyboard-operable, so a handler that assumes `PointerEvent`
+(reading `clientX`, say) breaks when the same event arrives from <kbd>Enter</kbd>.
+Narrow on `instanceof` before reading pointer-only fields.
+:::
+
+Every event is on the chart below. Click a bar (it is `clickable`), toggle a
+legend chip, hover the plot, drag the zoom slider — the readout names the event
+and the fields it carried. `mdReady` fires once, when the engine first draws, so
+it has already been and gone by the time you read this.
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;display:flex;flex-direction:column;gap:12px;">
+  <md-bar-chart id="ev-chart" label="Revenue by region" legend="top-end" zoom="slider" clickable style="inline-size:100%;block-size:300px;"></md-bar-chart>
+  <div id="ev-hover" style="font-family:ui-monospace,monospace;font-size:.75rem;opacity:.65;">mdHover — hover the plot</div>
+  <output id="ev-log" style="display:block;min-block-size:5.5rem;padding:10px 12px;border-radius:12px;background:var(--md-sys-color-surface-container-highest);font-family:ui-monospace,monospace;font-size:.75rem;line-height:1.7;white-space:pre-wrap;">Click a bar, toggle a legend chip, or drag the zoom slider.</output>
+</div>`}
+  label="Every event, live — click a bar, toggle a legend chip, drag the zoom slider"
+  script={`const chart = root.querySelector('#ev-chart');
+const log = root.querySelector('#ev-log');
+const hover = root.querySelector('#ev-hover');
+if (!chart || !log || !hover) return;
+
+// Arrays and functions are PROPERTIES, not attributes: an attribute is a
+// string, so series has to be assigned rather than written into the markup.
+chart.xAxis = { data: ['North', 'South', 'East', 'West'] };
+chart.series = [
+  { label: '2025', color: 'primary', data: [12, 19, 7, 14] },
+  { label: '2026', color: 'tertiary', data: [15, 17, 11, 16] },
+];
+chart.valueFormatter = (v) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v ?? 0);
+
+const seen = [];
+const push = (line) => {
+  seen.unshift(line);
+  if (seen.length > 5) seen.length = 5;
+  log.textContent = seen.join(String.fromCharCode(10));
+};
+
+chart.addEventListener('mdReady', () => push('mdReady'));
+chart.addEventListener('mdBarClick', (e) =>
+  push('mdBarClick     series ' + e.detail.seriesIndex + '  category ' + e.detail.dataIndex + '  value ' + e.detail.value));
+chart.addEventListener('mdLegendClick', (e) =>
+  push('mdLegendClick  series ' + e.detail.seriesIndex + '  ' + (e.detail.selected ? 'shown' : 'hidden')));
+chart.addEventListener('mdZoom', (e) =>
+  push('mdZoom         ' + e.detail.startIndex + ' to ' + e.detail.endIndex + (e.detail.reset ? '  (reset)' : '')));
+
+// rAF-throttled and still the noisiest of the five, so it gets its own readout:
+// one stray mouse move would otherwise push every click out of the log.
+chart.addEventListener('mdHover', (e) => {
+  hover.textContent = 'mdHover — category ' + e.detail.dataIndex + '  series ' + e.detail.seriesIndices.join(', ');
+});`}
+  htmlCode={`<md-bar-chart id="revenue" label="Revenue by region" legend="top-end" zoom="slider" clickable></md-bar-chart>
+
+\x3Cscript type="module">
+  const chart = document.getElementById('revenue');
+
+  chart.xAxis  = { data: ['North', 'South', 'East', 'West'] };
+  chart.series = [
+    { label: '2025', color: 'primary', data: [12, 19, 7, 14] },
+    { label: '2026', color: 'tertiary', data: [15, 17, 11, 16] },
+  ];
+  chart.valueFormatter = (v) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v ?? 0);
+
+  chart.addEventListener('mdReady',       () => console.log('drawn'));
+  chart.addEventListener('mdBarClick',    (e) => console.log('bar', e.detail.seriesIndex, e.detail.dataIndex, e.detail.value));
+  chart.addEventListener('mdLegendClick', (e) => console.log('legend', e.detail.seriesIndex, e.detail.selected));
+  chart.addEventListener('mdHover',       (e) => console.log('hover', e.detail.dataIndex));
+  chart.addEventListener('mdZoom',        (e) => console.log('zoom', e.detail.startIndex, e.detail.endIndex));
+\x3C/script>`}
+  react={`import { MdBarChart } from '@awc-ui/react';
+
+const series = [
+  { label: '2025', color: 'primary', data: [12, 19, 7, 14] },
+  { label: '2026', color: 'tertiary', data: [15, 17, 11, 16] },
+];
+const xAxis = { data: ['North', 'South', 'East', 'West'] };
+
+// Module scope, so the identity is stable. valueFormatter is a WATCHED prop:
+// a fresh arrow on every render is a fresh value on every render, and the
+// chart redraws each time the parent does.
+const usd = (v?: number | null) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v ?? 0);
+
+export function RevenueChart() {
+  return (
+    <MdBarChart
+      label="Revenue by region"
+      legend="top-end"
+      zoom="slider"
+      clickable
+      series={series}
+      xAxis={xAxis}
+      valueFormatter={usd}
+      onMdReady={() => console.log('drawn')}
+      onMdBarClick={(e) => console.log('bar', e.detail.seriesIndex, e.detail.dataIndex, e.detail.value)}
+      onMdLegendClick={(e) => console.log('legend', e.detail.seriesIndex, e.detail.selected)}
+      onMdHover={(e) => console.log('hover', e.detail.dataIndex)}
+      onMdZoom={(e) => console.log('zoom', e.detail.startIndex, e.detail.endIndex)}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-revenue-chart',
+  template: \`
+    <md-bar-chart
+      label="Revenue by region"
+      legend="top-end"
+      zoom="slider"
+      clickable
+      [series]="series"
+      [xAxis]="xAxis"
+      [valueFormatter]="usd"
+      (mdReady)="onReady()"
+      (mdBarClick)="onBarClick($event)"
+      (mdLegendClick)="onLegendClick($event)"
+      (mdHover)="onHover($event)"
+      (mdZoom)="onZoom($event)"
+    ></md-bar-chart>
+  \`,
+})
+export class RevenueChartComponent {
+  series = [
+    { label: '2025', color: 'primary', data: [12, 19, 7, 14] },
+    { label: '2026', color: 'tertiary', data: [15, 17, 11, 16] },
+  ];
+  xAxis = { data: ['North', 'South', 'East', 'West'] };
+
+  // An arrow PROPERTY assigned once, not a method: the chart calls it unbound,
+  // and a stable identity keeps change detection from pushing a new formatter
+  // on every cycle.
+  usd = (v?: number | null) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v ?? 0);
+
+  onReady() { console.log('drawn'); }
+  onBarClick(e: CustomEvent) { console.log('bar', e.detail.seriesIndex, e.detail.dataIndex, e.detail.value); }
+  onLegendClick(e: CustomEvent) { console.log('legend', e.detail.seriesIndex, e.detail.selected); }
+  onHover(e: CustomEvent) { console.log('hover', e.detail.dataIndex); }
+  onZoom(e: CustomEvent) { console.log('zoom', e.detail.startIndex, e.detail.endIndex); }
+}`}
+  vue={`\x3Cscript setup lang="ts">
+const series = [
+  { label: '2025', color: 'primary', data: [12, 19, 7, 14] },
+  { label: '2026', color: 'tertiary', data: [15, 17, 11, 16] },
+];
+const xAxis = { data: ['North', 'South', 'East', 'West'] };
+
+// A plain const, deliberately not ref(): the chart calls the formatter, Vue
+// never renders it, so reactivity buys nothing and reactive() would proxy a
+// function you then hand to non-Vue code.
+const valueFormatter = (v) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v ?? 0);
+
+function onReady() { console.log('drawn'); }
+function onBarClick(e) { console.log('bar', e.detail.seriesIndex, e.detail.dataIndex, e.detail.value); }
+function onLegendClick(e) { console.log('legend', e.detail.seriesIndex, e.detail.selected); }
+function onHover(e) { console.log('hover', e.detail.dataIndex); }
+function onZoom(e) { console.log('zoom', e.detail.startIndex, e.detail.endIndex); }
+\x3C/script>
+
+<template>
+  <!-- camelCase, not kebab: Vue sets a PROPERTY only when the name is IN the
+       element, and "x-axis" is not a property of md-bar-chart. -->
+  <md-bar-chart
+    label="Revenue by region"
+    legend="top-end"
+    zoom="slider"
+    clickable
+    :series="series"
+    :xAxis="xAxis"
+    :valueFormatter="valueFormatter"
+    @mdReady="onReady"
+    @mdBarClick="onBarClick"
+    @mdLegendClick="onLegendClick"
+    @mdHover="onHover"
+    @mdZoom="onZoom"
+  />
+</template>`}
+  svelte={`\x3Cscript lang="ts">
+  const series = [
+    { label: '2025', color: 'primary', data: [12, 19, 7, 14] },
+    { label: '2026', color: 'tertiary', data: [15, 17, 11, 16] },
+  ];
+  const xAxis = { data: ['North', 'South', 'East', 'West'] };
+
+  // const, not let: a reassignable binding makes Svelte re-set the property on
+  // every invalidation, and the formatter never changes.
+  const valueFormatter = (v) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v ?? 0);
+
+  function onReady() { console.log('drawn'); }
+  function onBarClick(e) { console.log('bar', e.detail.seriesIndex, e.detail.dataIndex, e.detail.value); }
+  function onLegendClick(e) { console.log('legend', e.detail.seriesIndex, e.detail.selected); }
+  function onHover(e) { console.log('hover', e.detail.dataIndex); }
+  function onZoom(e) { console.log('zoom', e.detail.startIndex, e.detail.endIndex); }
+\x3C/script>
+
+<!-- Shorthand works because the local names match the prop names; Svelte
+     assigns these as PROPERTIES on an upgraded custom element. -->
+<md-bar-chart
+  label="Revenue by region"
+  legend="top-end"
+  zoom="slider"
+  clickable
+  {series}
+  {xAxis}
+  {valueFormatter}
+  on:mdReady={onReady}
+  on:mdBarClick={onBarClick}
+  on:mdLegendClick={onLegendClick}
+  on:mdHover={onHover}
+  on:mdZoom={onZoom}
+/>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[Methods]
+`resize()` · `replay()` · `drill()` · `toDataURL()` · `getInstance()` ·
+`setZoom()` · `resetZoom()`. Call `resize()` after a container size change your
+layout doesn't propagate — a revealed tab panel renders at zero size otherwise.
+`replay()` re-runs the entrance animation; `drill()` performs a drill-down
+transition. `getInstance()` is an escape hatch onto the engine; anything you do
+through it is outside the component's contract.
+:::
+
+## Accessibility
+
+- The canvas is **opaque to assistive tech**. `label`, `label-plot` and
+  `label-point` build the accessible description and the per-point
+  announcements — they are the chart's accessibility, not decoration.
+- **Provide the same data as a table** for anything users must read precisely;
+  the chart is a summary view.
+- Don't rely on colour alone to distinguish series — the legend, direct labels
+  (`show-labels`) and a meaningful order all help.
+- Honour `prefers-reduced-motion` with `no-animation` (or `animation="none"`).
+- Zoom controls are [`md-slider`](/components/slider/)s and need
+  `label-zoom-start` / `label-zoom-end` translated.
+
+The host is `role="figure"`. Its accessible name is a summary the component
+generates — `label`, then the chart type, series count and category range, e.g.
+_"Revenue by region, Bar chart, with 2 series, from Q1 to Q4."_ — so `label` is
+the first fragment of what a screen reader reads, not the whole of it. It also
+carries a
+screen-reader-only data table of the same numbers. The plot itself is a single
+tab stop (`role="application"`, `tabindex="0"`) whose accessible name is
+`label-plot` — the instructions. Once inside, <kbd>←</kbd> / <kbd>→</kbd> walk
+the categories, <kbd>Home</kbd> / <kbd>End</kbd> jump to the ends,
+<kbd>Enter</kbd> or <kbd>Space</kbd> activates the focused bar (the same
+`mdBarClick` a mouse fires), and <kbd>Escape</kbd> leaves the data without
+leaving the page. Each move is spoken through a polite live region, formatted by
+`label-point`.
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Tab into the plot, then walk it with the arrow keys"
+  attrs={{
+    label: 'Revenue by region',
+    clickable: true,
+    'show-labels': true,
+    legend: 'bottom',
+    'label-point': '%x% — %values%',
+    'label-plot': 'Revenue by region. Arrow keys move between regions, Home and End jump to the ends, Enter opens a region, Escape leaves.',
+  }}
+  fixture={{
+    series: [
+      { label: '2025', color: 'primary', data: [12, 19, 7, 14] },
+      { label: '2026', color: 'tertiary', data: [15, 17, 11, 16] },
+    ],
+    xAxis: { data: ['North', 'South', 'East', 'West'] },
+  }}
+/>
+
+:::note[`label-point` interpolates, so keep its tokens]
+`%x%` is the category and `%values%` the readings there. A translation that
+drops them announces a constant string on every move.
+:::
+
+## RTL, density & i18n
+
+Under `dir="rtl"` the engine mirrors the finished frame about the canvas' centre:
+the value axis and its gutter move to the right, the category axis runs
+right-to-left, the title and labels anchor from the other side, and a
+`top-end` legend resolves to the other physical corner. Keyboard arrows follow
+the reading direction too — <kbd>←</kbd> advances in RTL.
+
+```html
+<div dir="rtl">
+  <md-bar-chart label="الإيرادات حسب المنطقة" locale="ar-EG"></md-bar-chart>
+</div>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <md-bar-chart id="dir-ltr" dir="ltr" label="Revenue by region" legend="top-end" style="inline-size:100%;block-size:220px;"></md-bar-chart>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <md-bar-chart id="dir-rtl" dir="rtl" label="Revenue by region" legend="top-end" style="inline-size:100%;block-size:220px;"></md-bar-chart>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+  script={`const fixture = {
+  xAxis: { data: ['North', 'South', 'East', 'West'] },
+  series: [{ label: 'Revenue', color: 'primary', data: [12, 19, 7, 14] }],
+};
+for (const id of ['#dir-ltr', '#dir-rtl']) {
+  const chart = root.querySelector(id);
+  if (chart) Object.assign(chart, fixture);
+}`}
+/>
+
+### Mirroring is automatic; numerals are not
+
+Text is repositioned, never reversed — the glyphs themselves stay the browser's
+business. So an RTL chart whose values still read `1,234` is not a mirroring
+bug: nothing has told it which numbering system to use. `locale` does, for the
+axis ticks, the data labels and the tooltip alike, because they all fall back to
+`toLocaleString(locale)`.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <md-bar-chart id="loc-right" dir="rtl" locale="ar-EG" label="الإيرادات حسب المنطقة" legend="none" show-labels style="inline-size:100%;block-size:220px;"></md-bar-chart>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <md-bar-chart id="loc-wrong" dir="rtl" label="الإيرادات حسب المنطقة" legend="none" show-labels style="inline-size:100%;block-size:220px;"></md-bar-chart>
+</div>`}
+  label="dir=rtl with locale=ar-EG vs dir=rtl alone"
+  script={`const fixture = {
+  xAxis: { data: ['الشمال', 'الجنوب', 'الشرق', 'الغرب'] },
+  series: [{ label: 'الإيرادات', color: 'primary', data: [1240, 1930, 760, 1410] }],
+};
+for (const id of ['#loc-right', '#loc-wrong']) {
+  const chart = root.querySelector(id);
+  if (chart) Object.assign(chart, fixture);
+}`}
+/>
+
+### Every density rung
+
+`density="-1…-4"` drives the same `--md-sys-density-scale` signal a global
+`data-density` ancestor sets, so a local value simply overrides the inherited
+one. It tightens the chart's padding, its corner radius and the floor its height
+never drops below — the plot keeps its proportions while the chrome around it
+gives ground.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <md-bar-chart class="rung" density="0" legend="none" show-labels style="inline-size:100%;block-size:150px;"></md-bar-chart>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <md-bar-chart class="rung" density="-1" legend="none" show-labels style="inline-size:100%;block-size:150px;"></md-bar-chart>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <md-bar-chart class="rung" density="-2" legend="none" show-labels style="inline-size:100%;block-size:150px;"></md-bar-chart>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <md-bar-chart class="rung" density="-3" legend="none" show-labels style="inline-size:100%;block-size:150px;"></md-bar-chart>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <md-bar-chart class="rung" density="-4" legend="none" show-labels style="inline-size:100%;block-size:150px;"></md-bar-chart>
+</div>`}
+  label="Density 0 through -4 — padding, shape and the height floor all taper"
+  script={`const fixture = {
+  xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4'] },
+  series: [{ label: 'Revenue', color: 'primary', data: [12, 19, 7, 14] }],
+};
+for (const chart of root.querySelectorAll('.rung')) Object.assign(chart, fixture);`}
+/>
+
+### Density and direction together
+
+The two are independent signals: `dir` decides which way the frame is mirrored,
+`density` how tight it is. A compact RTL dashboard tile sets both.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;" dir="rtl">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl / 0</span>
+  <md-bar-chart class="rtl-rung" density="0" locale="ar-EG" label="الإيرادات" legend="none" show-labels style="inline-size:100%;block-size:170px;"></md-bar-chart>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl / -4</span>
+  <md-bar-chart class="rtl-rung" density="-4" locale="ar-EG" label="الإيرادات" legend="none" show-labels style="inline-size:100%;block-size:170px;"></md-bar-chart>
+</div>`}
+  label="dir=rtl at density 0 and -4"
+  script={`const fixture = {
+  xAxis: { data: ['الشمال', 'الجنوب', 'الشرق', 'الغرب'] },
+  series: [{ label: 'الإيرادات', color: 'primary', data: [1240, 1930, 760, 1410] }],
+};
+for (const chart of root.querySelectorAll('.rtl-rung')) Object.assign(chart, fixture);`}
+/>
+
+**Density** — the rung is inherited from any `data-density` ancestor unless the
+chart sets its own. See [Density](/behaviour/density/).
+
+**i18n** — set `locale` and use `Intl` inside `valueFormatter`. Translate
+`label`, `subtitle`, `label-plot`, `label-point` and the zoom labels
+(`label-zoom-start` / `label-zoom-end`). `label-point` uses the **`%x%` /
+`%values%`** percent tokens — keep them when translating; they interpolate the
+values. See [RTL](/behaviour/rtl/).
+
+## Theming
+
+<div class="md-table-scroll">
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-bar-chart-block-size` | Explicit height, overriding the aspect ratio | `auto` |
+| `--md-bar-chart-min-block-size` | Floor the height never drops below | `max(120px, 160px + density × 8px)` |
+| `--md-bar-chart-aspect-ratio` | Width : height when no `block-size` is set | `16 / 9` |
+| `--md-bar-chart-background` | Chart surface fill | `surface-container-low` |
+| `--md-bar-chart-padding` | Inset between the host edge and the plot | `max(8px, 16px + density × 2px)` |
+| `--md-bar-chart-shape` | Corner radius of the surface | `max(8px, 16px + density × 2px)` |
+| `--md-bar-chart-empty-color` | Empty-state text colour | `on-surface-variant` |
+| `--md-bar-chart-empty-background` | Empty-state overlay fill | the chart background |
+| `--md-bar-chart-empty-font` / `-empty-font-size` | Empty-state type | `body-medium` / `14px` |
+| `--md-bar-chart-empty-icon-size` | Icon slotted into the empty state | `40px` |
+| `--md-bar-chart-zoom-size` | Height reserved for the zoom slider | `28px` |
+| `--md-bar-chart-zoom-track-color` | Zoom slider track | `surface-container-highest` |
+| `--md-bar-chart-zoom-window-color` | Selected window in the zoom slider | `secondary-container` |
+| `--md-bar-chart-zoom-handle-color` | Zoom thumb and drag-band edge | `primary` |
+| `--md-bar-chart-zoom-band-color` | Drag-to-zoom selection fill | `primary` at 16% |
+
+</div>
+
+```css
+md-bar-chart.dashboard {
+  --md-bar-chart-background: var(--md-sys-color-surface-container);
+  --md-bar-chart-padding: 16px;
+  --md-bar-chart-shape: 16px;
+  --md-bar-chart-aspect-ratio: 16 / 7;
+}
+```
+
+<ChartDemo
+  tag="md-bar-chart"
+  label="Custom surface via CSS custom properties"
+  storyId="charts-bar-chart--custom-css"
+  attrs={{ label: 'Themed surface', legend: 'bottom', 'corner-radius': 8 }}
+  style="--md-bar-chart-background: var(--md-sys-color-surface-container-highest); --md-bar-chart-shape: 20px; --md-bar-chart-padding: 20px;"
+  fixture={{
+    series: [
+      { label: 'Desktop', color: 'primary', data: [120, 200, 150, 80] },
+      { label: 'Mobile', color: 'tertiary', data: [220, 182, 191, 234] },
+    ],
+    xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4'] },
+  }}
+/>
+
+**CSS parts** — `header`, `canvas`, `footer`, `empty`, `loading`, `zoom`,
+`zoom-slider`, `zoom-pan`, `zoom-track`, `zoom-window`, `zoom-handle`,
+`zoom-band`, plus three the engine builds at runtime inside `canvas`:
+`plot-canvas` (the `<canvas>` element itself), `legend` (the chip strip) and
+`tooltip`.
+**Slots** — `header`, `footer`, `empty`, `loader` (and its older name,
+`loading`).
+
+Parts are the hook for the boxes the custom properties don't reach. `canvas` is
+the plot surface itself — an absolutely positioned box inset by
+`--md-bar-chart-padding` — and `zoom` the band reserved under it:
+
+```css
+md-bar-chart.framed::part(canvas) {
+  outline: 1px dashed var(--md-sys-color-outline-variant);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+```
+
+<ComponentDemo
+  html={`<style>
+  md-bar-chart.framed::part(canvas) {
+    outline: 1px dashed var(--md-sys-color-outline-variant);
+    outline-offset: 4px;
+    border-radius: 8px;
+  }
+</style>
+<md-bar-chart id="part-demo" class="framed" label="::part(canvas) outlined" legend="bottom" style="inline-size:100%;block-size:260px;"></md-bar-chart>`}
+  label="::part(canvas) — the plot box, outlined"
+  script={`const chart = root.querySelector('#part-demo');
+if (chart) Object.assign(chart, {
+  xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4'] },
+  series: [
+    { label: 'Desktop', color: 'primary', data: [120, 200, 150, 80] },
+    { label: 'Mobile', color: 'tertiary', data: [220, 182, 191, 234] },
+  ],
+});`}
+  htmlCode={`<style>
+  md-bar-chart.framed::part(canvas) {
+    outline: 1px dashed var(--md-sys-color-outline-variant);
+    outline-offset: 4px;
+    border-radius: 8px;
+  }
+</style>
+
+<md-bar-chart id="framed" class="framed" label="Sessions by device" legend="bottom"></md-bar-chart>
+
+\x3Cscript type="module">
+  Object.assign(document.getElementById('framed'), {
+    xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4'] },
+    series: [
+      { label: 'Desktop', color: 'primary', data: [120, 200, 150, 80] },
+      { label: 'Mobile', color: 'tertiary', data: [220, 182, 191, 234] },
+    ],
+  });
+\x3C/script>`}
+  react={`import { MdBarChart } from '@awc-ui/react';
+import './framed.css';   // holds the ::part(canvas) rule above
+
+const series = [
+  { label: 'Desktop', color: 'primary', data: [120, 200, 150, 80] },
+  { label: 'Mobile', color: 'tertiary', data: [220, 182, 191, 234] },
+];
+const xAxis = { data: ['Q1', 'Q2', 'Q3', 'Q4'] };
+
+export function FramedChart() {
+  return (
+    <MdBarChart
+      className="framed"
+      label="Sessions by device"
+      legend="bottom"
+      series={series}
+      xAxis={xAxis}
+    />
+  );
+}`}
+  angular={`import { Component, ViewEncapsulation } from '@angular/core';
+
+@Component({
+  selector: 'app-framed-chart',
+  template: \`
+    <md-bar-chart class="framed" label="Sessions by device" legend="bottom"
+                  [series]="series" [xAxis]="xAxis"></md-bar-chart>
+  \`,
+  // Emulated encapsulation rewrites every selector with an _ngcontent attribute
+  // that Angular cannot put inside a shadow root, so a ::part() rule written in
+  // \`styles\` silently stops matching. Turn encapsulation off here, or move the
+  // rule to global styles.css.
+  encapsulation: ViewEncapsulation.None,
+  styles: [\`
+    md-bar-chart.framed::part(canvas) {
+      outline: 1px dashed var(--md-sys-color-outline-variant);
+      outline-offset: 4px;
+      border-radius: 8px;
+    }
+  \`],
+})
+export class FramedChartComponent {
+  series = [
+    { label: 'Desktop', color: 'primary', data: [120, 200, 150, 80] },
+    { label: 'Mobile', color: 'tertiary', data: [220, 182, 191, 234] },
+  ];
+  xAxis = { data: ['Q1', 'Q2', 'Q3', 'Q4'] };
+}`}
+  vue={`\x3Cscript setup lang="ts">
+const series = [
+  { label: 'Desktop', color: 'primary', data: [120, 200, 150, 80] },
+  { label: 'Mobile', color: 'tertiary', data: [220, 182, 191, 234] },
+];
+const xAxis = { data: ['Q1', 'Q2', 'Q3', 'Q4'] };
+\x3C/script>
+
+<template>
+  <md-bar-chart class="framed" label="Sessions by device" legend="bottom"
+                :series="series" :xAxis="xAxis" />
+</template>
+
+<!-- Deliberately NOT scoped: Vue's scoped transform rewrites the selector with
+     the component's data-v attribute, which nothing inside the shadow root
+     carries, so the ::part() rule would stop matching. -->
+<style>
+md-bar-chart.framed::part(canvas) {
+  outline: 1px dashed var(--md-sys-color-outline-variant);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+</style>`}
+  svelte={`\x3Cscript lang="ts">
+  const series = [
+    { label: 'Desktop', color: 'primary', data: [120, 200, 150, 80] },
+    { label: 'Mobile', color: 'tertiary', data: [220, 182, 191, 234] },
+  ];
+  const xAxis = { data: ['Q1', 'Q2', 'Q3', 'Q4'] };
+\x3C/script>
+
+<md-bar-chart class="framed" label="Sessions by device" legend="bottom"
+              {series} {xAxis} />
+
+<!-- Svelte scopes component styles and prunes selectors it cannot see in the
+     markup, so a bare ::part() rule is dropped at compile time. :global() keeps it. -->
+<style>
+  :global(md-bar-chart.framed::part(canvas)) {
+    outline: 1px dashed var(--md-sys-color-outline-variant);
+    outline-offset: 4px;
+    border-radius: 8px;
+  }
+</style>`}
+/>
+
+:::note[`header` and `footer` are `display: contents`]
+They exist to place slotted content in the chart's grid, so they have no box of
+their own — styling those two parts does nothing until you give them a `display`
+first. Style the slotted element instead.
+:::
+
+The chart reads its colours from the MD3 token layer, so it follows the page's
+light / dark mode with no per-chart configuration — series given a **role name**
+(`primary`, `tertiary`, …) re-resolve on theme change, while a hardcoded hex
+does not. See the [dark theme story](/storybook/?path=/story/charts-bar-chart--dark-theme)
+for the same chart under both schemes.
+
+:::caution[Charts don't repaint on theme change by themselves]
+Switching theme after the chart has drawn leaves the old colours on the canvas —
+`resize()` early-returns. Reassign `series` to force a repaint.
+:::
+
+
+## Related
+
+[`md-line-chart`](/components/line-chart/) ·
+[`md-area-chart`](/components/area-chart/) ·
+[`md-pie-chart`](/components/pie-chart/) ·
+[`md-sparkline`](/components/sparkline/) ·
+[`md-slider`](/components/slider/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-bar-chart" />

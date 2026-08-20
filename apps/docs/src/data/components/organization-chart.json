@@ -1,0 +1,180 @@
+{
+  "tag": "md-organization-chart",
+  "title": "Organization Chart",
+  "slug": "organization-chart",
+  "category": "Data Display",
+  "subComponentOf": null,
+  "storyId": "data-display-organization-chart--playground",
+  "props": [
+    {
+      "name": "nodes",
+      "attribute": "",
+      "type": "NodeInput",
+      "default": "[]",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "selectionMode",
+      "attribute": "selection-mode",
+      "type": "'none' | 'single' | 'multiple'",
+      "default": "'none'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "selectedIds",
+      "attribute": "",
+      "type": "string[]",
+      "default": "[]",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "collapsible",
+      "attribute": "collapsible",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "orientation",
+      "attribute": "orientation",
+      "type": "'vertical' | 'horizontal'",
+      "default": "'vertical'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "'Organization chart'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "expandLabel",
+      "attribute": "expand-label",
+      "type": "string",
+      "default": "'Expand'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "collapseLabel",
+      "attribute": "collapse-label",
+      "type": "string",
+      "default": "'Collapse'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdSelectionChange",
+      "detail": "OrgChartSelectionChangeDetail"
+    },
+    {
+      "name": "mdNodeToggle",
+      "detail": "OrgChartToggleDetail"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "empty",
+      "description": "Custom empty-state content"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": "Hover / selected overlay"
+    },
+    {
+      "name": "avatar",
+      "description": "The md-avatar"
+    },
+    {
+      "name": "name",
+      "description": "Primary label"
+    },
+    {
+      "name": "title",
+      "description": "Secondary label"
+    },
+    {
+      "name": "toggle",
+      "description": "Expand / collapse affordance"
+    },
+    {
+      "name": "group",
+      "description": "A role=\"group\" child list"
+    },
+    {
+      "name": "viewport",
+      "description": "Scroll/pan container"
+    },
+    {
+      "name": "empty",
+      "description": "Empty-state container"
+    },
+    {
+      "name": "tree",
+      "description": "The role=\"tree\" root list"
+    },
+    {
+      "name": "avatar-image",
+      "description": "The avatar's <img> (exported)"
+    }
+  ],
+  "cssCustomProps": [],
+  "dependencies": [
+    "md-ripple",
+    "md-avatar",
+    "md-tooltip",
+    "md-icon-button"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [
+    {
+      "name": "OrgChartSelectionChangeDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** The node that was clicked / toggled. */\n  node: OrgChartNode;\n  /** The full set of selected ids after the change. */\n  selectedIds: string[];"
+    },
+    {
+      "name": "OrgChartNode",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Stable identifier — used for selection, expansion, and eventing. */\n  id: string;\n  /** Primary label (person / unit name), rendered in the emphasis weight. */\n  name: string;\n  /** Secondary label (role / department), rendered muted under the name. */\n  title?: string;\n  /** Avatar image URL. Falls back to initials → name-derived initials. */\n  avatar?: string;\n  /** Explicit avatar initials (overrides name-derived ones). */\n  avatarInitials?: string;\n  /** Optional accent colour for the node's avatar ring + selected tint. */\n  accent?: string;\n  /** Initial expanded state for this node's subtree (default: expanded). */\n  expanded?: boolean;\n  /** When false the node cannot be selected (default: selectable). */\n  selectable?: boolean;\n  /** Child nodes. */\n  children?: OrgChartNode[];"
+    },
+    {
+      "name": "OrgChartToggleDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** The node whose subtree was expanded / collapsed. */\n  node: OrgChartNode;\n  /** Whether the node is now expanded. */\n  expanded: boolean;"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdSelectionChange",
+      "detail": "OrgChartSelectionChangeDetail"
+    },
+    {
+      "name": "mdNodeToggle",
+      "detail": "OrgChartToggleDetail"
+    }
+  ]
+}

@@ -1,0 +1,444 @@
+{
+  "tag": "md-slider",
+  "title": "Slider",
+  "slug": "slider",
+  "category": "Selection",
+  "subComponentOf": null,
+  "storyId": "selection-slider--playground",
+  "props": [
+    {
+      "name": "min",
+      "attribute": "min",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "max",
+      "attribute": "max",
+      "type": "number",
+      "default": "100",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "number",
+      "default": "50",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "step",
+      "attribute": "step",
+      "type": "number",
+      "default": "1",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "name",
+      "attribute": "name",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "nameStart",
+      "attribute": "name-start",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "nameEnd",
+      "attribute": "name-end",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'standard' | 'centered'",
+      "default": "'standard'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "range",
+      "attribute": "range",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "stops",
+      "attribute": "stops",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "valueStart",
+      "attribute": "value-start",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "valueEnd",
+      "attribute": "value-end",
+      "type": "number",
+      "default": "100",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "size",
+      "attribute": "size",
+      "type": "'xs' | 'sm' | 'md' | 'lg' | 'xl'",
+      "default": "'xs'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "orientation",
+      "attribute": "orientation",
+      "type": "'horizontal' | 'vertical'",
+      "default": "'horizontal'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "fullHeight",
+      "attribute": "full-height",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "valueIndicator",
+      "attribute": "value-indicator",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "labeled",
+      "attribute": "labeled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "insetIcon",
+      "attribute": "inset-icon",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "sliderAriaLabel",
+      "attribute": "aria-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "ariaLabelStart",
+      "attribute": "label-start",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "ariaLabelEnd",
+      "attribute": "label-end",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "valueText",
+      "attribute": "value-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "valueStartText",
+      "attribute": "value-start-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "valueEndText",
+      "attribute": "value-end-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "controlled",
+      "attribute": "controlled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdInput",
+      "detail": "MdSliderValueDetail"
+    },
+    {
+      "name": "mdChange",
+      "detail": "MdSliderValueDetail"
+    },
+    {
+      "name": "mdFocus",
+      "detail": "MdSliderThumbDetail"
+    },
+    {
+      "name": "mdBlur",
+      "detail": "MdSliderThumbDetail"
+    },
+    {
+      "name": "mdDragStart",
+      "detail": "MdSliderDragDetail"
+    },
+    {
+      "name": "mdDragEnd",
+      "detail": "MdSliderDragDetail"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "inset-icon",
+      "description": "— Custom icon (standard slider only; use with inset-icon)"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "surface",
+      "description": "Outer container"
+    },
+    {
+      "name": "track",
+      "description": "Track container (clips corners)"
+    },
+    {
+      "name": "track-inactive",
+      "description": "Inactive track segment"
+    },
+    {
+      "name": "track-active",
+      "description": "Active (filled) track segment"
+    },
+    {
+      "name": "inset",
+      "description": "Inset icon area"
+    },
+    {
+      "name": "thumb-knob",
+      "description": "Thumb knob element"
+    },
+    {
+      "name": "state-layer",
+      "description": "State layer overlay"
+    },
+    {
+      "name": "value-indicator",
+      "description": "Value label bubble"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-slider-track-length",
+      "description": "Vertical track length (block axis)"
+    },
+    {
+      "name": "--md-slider-active-color",
+      "description": "Active track fill"
+    },
+    {
+      "name": "--md-slider-inactive-color",
+      "description": "Inactive track fill"
+    },
+    {
+      "name": "--md-slider-track-shape",
+      "description": "Track border-radius"
+    },
+    {
+      "name": "--md-slider-track-height",
+      "description": "Track cross-axis thickness"
+    },
+    {
+      "name": "--md-slider-tick-active-color",
+      "description": "Stop dot under thumb (hidden)"
+    },
+    {
+      "name": "--md-slider-tick-filled-color",
+      "description": "Stop dots on filled (active) track"
+    },
+    {
+      "name": "--md-slider-tick-inactive-color",
+      "description": "Stop dots on empty (inactive) track"
+    },
+    {
+      "name": "--md-slider-thumb-color",
+      "description": "Thumb knob fill"
+    },
+    {
+      "name": "--md-slider-thumb-width",
+      "description": "Thumb inline size"
+    },
+    {
+      "name": "--md-slider-thumb-height",
+      "description": "Thumb block size"
+    },
+    {
+      "name": "--md-slider-value-bg",
+      "description": "Value indicator background"
+    },
+    {
+      "name": "--md-slider-value-color",
+      "description": "Value indicator text"
+    },
+    {
+      "name": "--md-slider-value-shape",
+      "description": "Value indicator border-radius"
+    },
+    {
+      "name": "--md-slider-value-font-family",
+      "description": "Value indicator font family"
+    },
+    {
+      "name": "--md-slider-value-font-size",
+      "description": "Value indicator font size"
+    },
+    {
+      "name": "--md-slider-value-font-weight",
+      "description": "Value indicator font weight"
+    },
+    {
+      "name": "--md-slider-value-line-height",
+      "description": "Value indicator line height"
+    },
+    {
+      "name": "--md-slider-value-padding-inline",
+      "description": "Value indicator horizontal padding"
+    },
+    {
+      "name": "--md-slider-value-padding-block",
+      "description": "Value indicator vertical padding"
+    },
+    {
+      "name": "--md-slider-inset-icon-color",
+      "description": "Inset icon color (defaults to tick-inactive-color)"
+    },
+    {
+      "name": "--md-slider-inset-icon-active-color",
+      "description": "Inset icon color when over the active track segment"
+    },
+    {
+      "name": "--md-slider-min-track-length",
+      "description": ""
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [
+    {
+      "name": "MdSliderValueDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  value: number;\n  valueStart?: number;\n  valueEnd?: number;"
+    },
+    {
+      "name": "MdSliderThumbDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  thumb: 'single' | 'start' | 'end';"
+    },
+    {
+      "name": "MdSliderDragDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  thumb: 'single' | 'start' | 'end';\n  value: number;\n  valueStart?: number;\n  valueEnd?: number;"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdInput",
+      "detail": "MdSliderValueDetail"
+    },
+    {
+      "name": "mdChange",
+      "detail": "MdSliderValueDetail"
+    },
+    {
+      "name": "mdFocus",
+      "detail": "MdSliderThumbDetail"
+    },
+    {
+      "name": "mdBlur",
+      "detail": "MdSliderThumbDetail"
+    },
+    {
+      "name": "mdDragStart",
+      "detail": "MdSliderDragDetail"
+    },
+    {
+      "name": "mdDragEnd",
+      "detail": "MdSliderDragDetail"
+    }
+  ]
+}

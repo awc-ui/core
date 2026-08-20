@@ -1,0 +1,238 @@
+{
+  "tag": "md-switch",
+  "title": "Switch",
+  "slug": "switch",
+  "category": "Selection",
+  "subComponentOf": null,
+  "storyId": "selection-switch--playground",
+  "props": [
+    {
+      "name": "valueMissingLabel",
+      "attribute": "value-missing-label",
+      "type": "string",
+      "default": "'Please turn this on if you want to proceed.'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "selected",
+      "attribute": "selected",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "required",
+      "attribute": "required",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "name",
+      "attribute": "name",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "'on'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "icons",
+      "attribute": "icons",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "showOnlySelectedIcon",
+      "attribute": "show-only-selected-icon",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "selectedIcon",
+      "attribute": "selected-icon",
+      "type": "string",
+      "default": "'check'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "unselectedIcon",
+      "attribute": "unselected-icon",
+      "type": "string",
+      "default": "'close'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdInput",
+      "detail": "{ selected: boolean }"
+    },
+    {
+      "name": "mdChange",
+      "detail": "{ selected: boolean }"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ],
+  "methods": [
+    {
+      "name": "setFocus",
+      "params": ""
+    },
+    {
+      "name": "getValidity",
+      "params": ""
+    },
+    {
+      "name": "checkValidity",
+      "params": ""
+    },
+    {
+      "name": "reportValidity",
+      "params": ""
+    },
+    {
+      "name": "setCustomValidity",
+      "params": "message: string"
+    }
+  ],
+  "slots": [
+    {
+      "name": "selected-icon",
+      "description": ""
+    },
+    {
+      "name": "unselected-icon",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "track",
+      "description": "Track container"
+    },
+    {
+      "name": "state-layer",
+      "description": "State-layer overlay (centered on handle)"
+    },
+    {
+      "name": "handle",
+      "description": "Handle / thumb"
+    },
+    {
+      "name": "icon",
+      "description": "Check or close icon"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-switch-track-width",
+      "description": "Track width (52px)"
+    },
+    {
+      "name": "--md-switch-track-height",
+      "description": "Track height (32px) — density knob"
+    },
+    {
+      "name": "--md-switch-handle-size",
+      "description": "Selected handle diameter (derived"
+    },
+    {
+      "name": "--md-switch-track-color",
+      "description": "Unselected track fill"
+    },
+    {
+      "name": "--md-switch-track-outline-color",
+      "description": "Unselected track outline"
+    },
+    {
+      "name": "--md-switch-handle-color",
+      "description": "Unselected handle fill"
+    },
+    {
+      "name": "--md-switch-selected-track-color",
+      "description": "Selected track fill"
+    },
+    {
+      "name": "--md-switch-selected-handle-color",
+      "description": "Selected handle fill"
+    },
+    {
+      "name": "--md-switch-icon-color",
+      "description": "Unselected icon color"
+    },
+    {
+      "name": "--md-switch-selected-icon-color",
+      "description": "Selected icon color"
+    },
+    {
+      "name": "--md-switch-state-layer-color",
+      "description": "Hover / focus / press overlay"
+    },
+    {
+      "name": "--md-switch-focus-ring-color",
+      "description": "Focus-ring color"
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdInput",
+      "detail": "{ selected: boolean }"
+    },
+    {
+      "name": "mdChange",
+      "detail": "{ selected: boolean }"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ]
+}

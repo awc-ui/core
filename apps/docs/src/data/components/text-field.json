@@ -1,0 +1,601 @@
+{
+  "tag": "md-text-field",
+  "title": "Text Field",
+  "slug": "text-field",
+  "category": "Text Inputs",
+  "subComponentOf": null,
+  "storyId": "text-inputs-text-field--playground",
+  "props": [
+    {
+      "name": "reserveSupportingSpace",
+      "attribute": "reserve-supporting-space",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'filled' | 'outlined'",
+      "default": "'filled'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "placeholder",
+      "attribute": "placeholder",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "type",
+      "attribute": "type",
+      "type": "string",
+      "default": "'text'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "name",
+      "attribute": "name",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "pattern",
+      "attribute": "pattern",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "minLength",
+      "attribute": "min-length",
+      "type": "number | undefined",
+      "default": "",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "min",
+      "attribute": "min",
+      "type": "string | number | undefined",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "max",
+      "attribute": "max",
+      "type": "string | number | undefined",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "step",
+      "attribute": "step",
+      "type": "string | number | undefined",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "autocomplete",
+      "attribute": "autocomplete",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "inputMode",
+      "attribute": "inputmode",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "enterKeyHint",
+      "attribute": "enterkeyhint",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "autoCapitalize",
+      "attribute": "autocapitalize",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "spellcheck",
+      "attribute": "spellcheck",
+      "type": "boolean | undefined",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "readOnly",
+      "attribute": "readonly",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "required",
+      "attribute": "required",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "error",
+      "attribute": "error",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "errorText",
+      "attribute": "error-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "supportingText",
+      "attribute": "supporting-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "prefixText",
+      "attribute": "prefix-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "suffixText",
+      "attribute": "suffix-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "maxLength",
+      "attribute": "max-length",
+      "type": "number | undefined",
+      "default": "",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "clearable",
+      "attribute": "clearable",
+      "type": "'internal' | 'external' | false",
+      "default": "false",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "passwordToggle",
+      "attribute": "password-toggle",
+      "type": "'internal' | 'external' | false",
+      "default": "false",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "multiline",
+      "attribute": "multiline",
+      "type": "'auto-grow' | 'fixed' | false",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "rows",
+      "attribute": "rows",
+      "type": "number | undefined",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "speechToText",
+      "attribute": "speech-to-text",
+      "type": "'internal' | 'external' | false",
+      "default": "false",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "speechLang",
+      "attribute": "speech-lang",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "restrict",
+      "attribute": "restrict",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "formatter",
+      "attribute": "",
+      "type": "(value: string) => string",
+      "default": "",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "parser",
+      "attribute": "",
+      "type": "(displayValue: string) => string",
+      "default": "",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "formatOn",
+      "attribute": "format-on",
+      "type": "'blur' | 'input'",
+      "default": "'blur'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "focusBorderWidth",
+      "attribute": "focus-border-width",
+      "type": "number",
+      "default": "3",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "appearFocused",
+      "attribute": "appear-focused",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "chipsWrap",
+      "attribute": "chips-wrap",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "debounce",
+      "attribute": "debounce",
+      "type": "number",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "throttle",
+      "attribute": "throttle",
+      "type": "number",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "inputRole",
+      "attribute": "input-role",
+      "type": "'' | 'combobox'",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "inputExpanded",
+      "attribute": "input-expanded",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "inputAriaAutocomplete",
+      "attribute": "input-aria-autocomplete",
+      "type": "'' | 'none' | 'inline' | 'list' | 'both'",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdInput",
+      "detail": "string"
+    },
+    {
+      "name": "mdChange",
+      "detail": "string"
+    },
+    {
+      "name": "mdSearch",
+      "detail": "string"
+    },
+    {
+      "name": "mdClear",
+      "detail": "void"
+    },
+    {
+      "name": "mdPasswordToggle",
+      "detail": "{ visible: boolean }"
+    },
+    {
+      "name": "mdSpeechResult",
+      "detail": "{ transcript: string; listening: boolean }"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ],
+  "methods": [
+    {
+      "name": "setFocus",
+      "params": ""
+    },
+    {
+      "name": "select",
+      "params": ""
+    },
+    {
+      "name": "getInputElement",
+      "params": ""
+    },
+    {
+      "name": "getValidity",
+      "params": ""
+    },
+    {
+      "name": "setCustomValidity",
+      "params": "message: string"
+    },
+    {
+      "name": "checkValidity",
+      "params": ""
+    },
+    {
+      "name": "reportValidity",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "leading-icon",
+      "description": "Custom leading icon (overrides nothing — pure decoration)"
+    },
+    {
+      "name": "chips",
+      "description": ""
+    },
+    {
+      "name": "clear-icon",
+      "description": "Custom clear-button glyph (replaces the default \"cancel\" icon)"
+    },
+    {
+      "name": "password-toggle-icon",
+      "description": "Custom password-toggle glyph"
+    },
+    {
+      "name": "speech-icon",
+      "description": "Custom microphone glyph"
+    },
+    {
+      "name": "error-icon",
+      "description": "Custom error-state icon (replaces the default filled \"error\")"
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Custom trailing icon"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "input",
+      "description": "The native input / textarea"
+    },
+    {
+      "name": "container",
+      "description": "Field container (state layer + input row)"
+    },
+    {
+      "name": "label",
+      "description": "Floating label"
+    },
+    {
+      "name": "chips",
+      "description": ""
+    },
+    {
+      "name": "supporting-text",
+      "description": "Supporting / error text line"
+    },
+    {
+      "name": "counter",
+      "description": "Character counter"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-text-field-container-color",
+      "description": "Filled-variant container background"
+    },
+    {
+      "name": "--md-text-field-input-color",
+      "description": "Input text colour"
+    },
+    {
+      "name": "--md-text-field-label-color",
+      "description": "Resting label colour"
+    },
+    {
+      "name": "--md-text-field-active-indicator-color",
+      "description": "Filled bottom line + outlined border on focus"
+    },
+    {
+      "name": "--md-text-field-outline-color",
+      "description": "Outlined-variant resting border"
+    },
+    {
+      "name": "--md-text-field-error-color",
+      "description": "Error accent (label, indicator, icon, helper)"
+    },
+    {
+      "name": "--md-text-field-supporting-text-color",
+      "description": "Supporting text + character counter"
+    },
+    {
+      "name": "--md-text-field-icon-color",
+      "description": "Leading / trailing / clear / password / speech icons"
+    },
+    {
+      "name": "--md-text-field-icon-size",
+      "description": "All glyph sizes (24dp; tapers with"
+    },
+    {
+      "name": "--md-text-field-optical-nudge",
+      "description": "Outlined only: px the input text is"
+    },
+    {
+      "name": "--md-text-field-container-shape",
+      "description": "Border-radius for both variants"
+    },
+    {
+      "name": "--md-text-field-filled-pill",
+      "description": "Filled only: 1 rounds all corners (pill);"
+    },
+    {
+      "name": "--md-text-field-cursor",
+      "description": "Cursor over the field (default: text)"
+    },
+    {
+      "name": "--md-text-field-focus-border-width",
+      "description": "Border thickness on focus (1, 2, or 3 px)"
+    },
+    {
+      "name": "--md-text-field-focus-inset",
+      "description": "Negative inset that compensates for the focus border"
+    },
+    {
+      "name": "--md-text-field-padding-inline-start",
+      "description": ""
+    },
+    {
+      "name": "--md-text-field-padding-inline-end",
+      "description": ""
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [
+    {
+      "name": "formatter",
+      "kind": "callable",
+      "body": "(value: string) => string"
+    },
+    {
+      "name": "parser",
+      "kind": "callable",
+      "body": "(displayValue: string) => string"
+    }
+  ],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdInput",
+      "detail": "string"
+    },
+    {
+      "name": "mdChange",
+      "detail": "string"
+    },
+    {
+      "name": "mdSearch",
+      "detail": "string"
+    },
+    {
+      "name": "mdClear",
+      "detail": "void"
+    },
+    {
+      "name": "mdPasswordToggle",
+      "detail": "{ visible: boolean }"
+    },
+    {
+      "name": "mdSpeechResult",
+      "detail": "{ transcript: string; listening: boolean }"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ]
+}

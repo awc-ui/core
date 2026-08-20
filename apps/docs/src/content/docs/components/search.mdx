@@ -1,0 +1,1188 @@
+---
+title: Search
+description: "Material Design 3 search — contained or divided, full-screen or docked, with debounced querying, built-in voice search and an external trigger"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/search.json";
+
+A **full search surface, not a text field** — a bar that opens into a results
+panel. Two orthogonal axes (`contained` / `divided` × `full-screen` / `docked`)
+cover all four spec-canonical configurations, with debounced querying, a
+built-in voice affordance and an external trigger.
+
+<ComponentDemo
+  html={`<md-search placeholder="Search mail" style="max-inline-size: 480px;">
+  <md-avatar slot="trailing" initials="MV" size="small"></md-avatar>
+</md-search>`}
+  label="Live preview"
+  storyId="text-inputs-search--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-search" example="" />
+
+## When to use
+
+- **Search is a primary way in** — mail, files, a catalogue, a large settings
+  surface.
+- **Results arrive while typing** — suggestions update per keystroke, not after
+  a page load.
+- **The query is open-ended** — free text, not a pick from a known set.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Filtering a list already on screen | [`md-text-field`](/components/text-field/) with a debounce |
+| Picking one known value | [`md-select`](/components/select/) / [`md-autocomplete`](/components/autocomplete/) |
+| Search as a secondary action in the header | [`md-app-bar`](/components/app-bar/)'s `search` variant |
+| A handful of preset filters | [`md-chip`](/components/chip/) |
+
+## Variants
+
+| Variant | Look | Use for |
+|---|---|---|
+| `contained` | Expressive filled pill | **Default.** Search as a first-class surface |
+| `divided` | Baseline bar with a hairline divider | Search inside a denser app frame |
+
+Both variants are available in both layouts, so `contained × full-screen`,
+`contained × docked`, `divided × full-screen` and `divided × docked` are all
+spec-canonical and all four are fully supported.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">contained</span>
+  <md-search variant="contained" layout="docked" placeholder="Search mail" style="max-inline-size: 440px;"></md-search>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">divided</span>
+  <md-search variant="divided" layout="docked" placeholder="Search mail" style="max-inline-size: 440px;"></md-search>
+</div>`}
+  htmlForCode={`<md-search variant="contained" placeholder="Search mail"></md-search>
+<md-search variant="divided" placeholder="Search mail"></md-search>`}
+  label="Contained and divided — click either to open it"
+/>
+
+## Layouts
+
+| Layout | Opens as | Use for |
+|---|---|---|
+| `full-screen` | Opaque full-viewport surface, scroll-locked and focus-trapped | **Default.** Mobile, and search-first surfaces |
+| `docked` | Anchored drawer under the bar, no scrim, no scroll lock | Desktop, and search beside other content |
+
+:::caution[`full-screen` is the default, not `docked`]
+A `md-search` with no `layout` renders a bare search **icon** at rest and takes
+over the viewport when activated. If you want a resting bar with a drawer under
+it — the shape most desktop pages want — you must say `layout="docked"`.
+:::
+
+### Full-screen
+
+While **closed**, `layout="full-screen"` (both `contained` and `divided`) shows a
+compact **search icon button** — not the resting search bar. Clicking it (or
+calling `show()`) opens the full-screen view. Override with `trigger="bar"` if
+you need the legacy resting bar entry point, or slot a custom control in
+`slot="trigger"`.
+
+When `open` is `true`, the results panel becomes an opaque surface that fills
+the **entire viewport** edge-to-edge (`inset: 0`,
+`--md-sys-color-surface-container-low`) and animates in. There is **no scrim** —
+the open/close transition matches `md-dialog`'s full-screen pattern: the surface
+and the bar rise together from `translateY(30px)` to `0` while fading in (no
+dimmer, no scale, no container-grow, no gray bands). The bar floats on top of
+the surface. Behaviour differs by `variant`:
+
+| Variant | Bar chrome |
+|---|---|
+| `contained` | Floating expressive pill bar, inset from the viewport edges by `--md-search-fullscreen-bar-offset-inline` (8dp) / `--md-search-fullscreen-bar-offset-block-start` (16dp). Its gutters sit over the opaque results surface, so they read as the surface — never a page band |
+| `divided` | Edge-bleed flat app-bar header (no rounding) flush to the viewport top (safe-area only) |
+
+Because the panel surface fills `inset: 0` (behind the bar too) there are no
+gaps for the page to show through. Override the surface colour via
+`--md-search-fullscreen-results-color`.
+
+The component:
+
+- Locks document scroll while open
+- Traps focus inside the bar + panel
+- Closes on Escape (configurable via `escape-closes`)
+- Closes via the leading back/close button
+- Renders a close button in place of the leading icon — `chevron_left`
+  for the Expressive `contained` variant, `arrow_back` for the baseline
+  `divided` variant. Override per-instance via `open-leading-icon`.
+
+Tune contained full-screen spacing with `--md-search-fullscreen-bar-offset-block-start`,
+`--md-search-fullscreen-bar-offset-inline`, and `--md-search-fullscreen-bar-panel-gap`.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">contained</span>
+  <md-search variant="contained" layout="full-screen" placeholder="Search mail">
+    <md-list slot="results">
+      <md-list-item headline="Quarterly report.pdf" supporting-text="Shared folder"></md-list-item>
+      <md-list-item headline="Roadmap.key" supporting-text="Recent"></md-list-item>
+    </md-list>
+  </md-search>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">divided</span>
+  <md-search variant="divided" layout="full-screen" placeholder="Search mail">
+    <md-list slot="results">
+      <md-list-item headline="Quarterly report.pdf" supporting-text="Shared folder"></md-list-item>
+      <md-list-item headline="Roadmap.key" supporting-text="Recent"></md-list-item>
+    </md-list>
+  </md-search>
+</div>`}
+  htmlForCode={`<md-search variant="contained" layout="full-screen" placeholder="Search mail">
+  <md-list slot="results">
+    <md-list-item headline="Quarterly report.pdf" supporting-text="Shared folder"></md-list-item>
+    <md-list-item headline="Roadmap.key" supporting-text="Recent"></md-list-item>
+  </md-list>
+</md-search>`}
+  label="Full-screen — click either icon to take over the viewport, Escape to close"
+/>
+
+### Docked
+
+When `layout="docked"` and `open` is `true`, the results drawer anchors beneath
+the bar with just enough offset to clear the bar's focus ring (8dp by default —
+focus-ring offset + thickness + 3dp), a **content-driven** height (no fixed
+empty bay — the drawer shrinks to fit few rows), and a max-height of
+`min(400px, 60vh)` (`--md-search-panel-max-block-size`).
+The drawer's inline width matches the **open bar exactly** — both are
+inset by the focused expand margin (`--md-search-expand-focused-inset`, 12dp),
+so the bar and the drawer share identical left and right edges across the whole
+responsive range (the overall component stays within the 360–720dp clamp). The
+component:
+
+- Does **not** lock document scroll
+- Does **not** show a scrim
+- Closes on outside click (configurable via `dismiss-on-outside-click`)
+- Closes on Escape (configurable via `escape-closes`)
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">contained</span>
+  <md-search variant="contained" layout="docked" placeholder="Search mail" style="max-inline-size: 440px;">
+    <md-list slot="results">
+      <md-list-item headline="Quarterly report.pdf" supporting-text="Shared folder"></md-list-item>
+      <md-list-item headline="Roadmap.key" supporting-text="Recent"></md-list-item>
+    </md-list>
+  </md-search>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">divided</span>
+  <md-search variant="divided" layout="docked" placeholder="Search mail" style="max-inline-size: 440px;">
+    <md-list slot="results">
+      <md-list-item headline="Quarterly report.pdf" supporting-text="Shared folder"></md-list-item>
+      <md-list-item headline="Roadmap.key" supporting-text="Recent"></md-list-item>
+    </md-list>
+  </md-search>
+</div>`}
+  htmlForCode={`<md-search layout="docked" placeholder="Search mail">
+  <md-list slot="results">
+    <md-list-item headline="Quarterly report.pdf" supporting-text="Shared folder"></md-list-item>
+    <md-list-item headline="Roadmap.key" supporting-text="Recent"></md-list-item>
+  </md-list>
+</md-search>`}
+  label="Docked — results drop under the bar, the page keeps scrolling"
+/>
+
+## Anatomy
+
+The MD3 spec lists the following anatomy items. They map to the API surface as
+follows:
+
+| Spec item | API |
+|---|---|
+| Search bar container | `[part="bar"]` |
+| Leading icon | `leading-icon` prop, or `slot="leading"` for full replacement |
+| Supporting text (placeholder hint) | `placeholder` prop |
+| Trailing icon and avatar (optional) | `slot="trailing"` (any number / combination of icon-buttons + avatar) |
+| Input text | `value` prop / `mdInput` event / `[part="input"]` |
+| Container for search suggestions or results | `slot="results"`, rendered inside `[part="panel"]` → `[part="panel-body"]` → `[part="results-host"]` → `[part="results-viewport"]` |
+| Divider (`divided` variant) | `[part="divider"]` |
+| Search icon trigger (full-screen closed) | `[part="trigger"]` / `[part="trigger-button"]` or `slot="trigger"` |
+
+### Trailing configurations
+
+The spec calls out four canonical trailing clusters. All are produced just by
+filling the trailing slot:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">avatar</span>
+  <md-search layout="docked" placeholder="Search mail" style="max-inline-size:420px;"><md-avatar slot="trailing" name="Jane Doe" size="small"></md-avatar></md-search>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">one icon</span>
+  <md-search layout="docked" placeholder="Search mail" style="max-inline-size:420px;"><md-icon-button slot="trailing" icon="mic" aria-label="Voice search"></md-icon-button></md-search>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">two icons</span>
+  <md-search layout="docked" placeholder="Search mail" style="max-inline-size:420px;"><md-icon-button slot="trailing" icon="mic" aria-label="Voice search"></md-icon-button><md-icon-button slot="trailing" icon="tune" aria-label="Filters"></md-icon-button></md-search>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">icon + avatar</span>
+  <md-search layout="docked" placeholder="Search mail" style="max-inline-size:420px;"><md-icon-button slot="trailing" icon="mic" aria-label="Voice search"></md-icon-button><md-avatar slot="trailing" name="Jane Doe" size="small"></md-avatar></md-search>
+</div>`}
+  htmlForCode={`<md-search>
+  <md-icon-button slot="trailing" icon="mic" aria-label="Voice search"></md-icon-button>
+  <md-avatar slot="trailing" name="Jane Doe"></md-avatar>
+</md-search>`}
+  label="The four canonical trailing clusters — all just slot content"
+/>
+
+The component renders a built-in clear (×) button automatically as soon as the
+input has a value. Set `show-clear-button="false"` to opt out.
+
+## Voice search
+
+Set **`voice-search`** to render a built-in microphone button in the trailing
+cluster, wired to the browser's Web Speech API
+(`SpeechRecognition` / `webkitSpeechRecognition`).
+
+Clicking the mic starts recognition and streams the interim + final transcript
+straight into the input — firing the normal `mdInput` / `mdSearch` flow exactly
+as if the text had been typed — and the mic shows a pulsing "listening" state
+while active. Recognition stops automatically on the final result, on
+`Escape`, or when the panel closes. Listen to the `mdVoice` event for the raw
+transcript stream, style the button via `::part(voice-button)`, or drive it
+programmatically with the `startVoice()` / `stopVoice()` methods. For a fully
+custom mic, slot your own `<md-icon-button slot="trailing">` instead.
+
+<ComponentDemo
+  html={`<div style="display:grid;gap:10px;inline-size:100%;max-inline-size:460px;">
+  <md-search data-voice layout="docked" voice-search placeholder="Search by voice"></md-search>
+  <output data-voice-log style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant); white-space: pre-line; min-block-size: 3.2em;">Click the mic and speak. Where the Web Speech API is unavailable the mic is not rendered at all.</output>
+</div>`}
+  htmlForCode={`<md-search layout="docked" voice-search placeholder="Search by voice"></md-search>`}
+  script={`
+    var el = root.querySelector('[data-voice]');
+    var log = root.querySelector('[data-voice-log]');
+    el.addEventListener('mdVoice', function (e) {
+      log.textContent = (e.detail.final ? 'final: ' : 'interim: ') + JSON.stringify(e.detail.value);
+    });
+  `}
+  label="Built-in voice search — the transcript streams straight into the input"
+/>
+
+:::caution[The mic disappears where the API is missing]
+`voice-search` renders nothing when `SpeechRecognition` /
+`webkitSpeechRecognition` is unavailable (Firefox, most non-Chromium engines).
+It is a graceful no-op, so it is safe to leave on — but never make it the only
+way to run a query.
+:::
+
+## External trigger
+
+The built-in icon trigger and `slot="trigger"` both have to live **inside**
+`md-search`. When the opener belongs somewhere else on the page — an app-bar
+icon, an overflow menu item, a keyboard-shortcut hint — point `trigger-for` at
+it instead. The component **wires** that element rather than rendering it:
+
+- Activating it toggles the view, and activating it again while open closes it —
+  the outside-click dismissal is exempted for the trigger, so a single click
+  never closes and reopens in the same gesture.
+- `aria-haspopup="dialog"` is set on it, and `aria-expanded` tracks `open`.
+- Closing returns focus to it.
+- The search renders **nothing at rest** — no icon, no bar — so the page never
+  offers two ways in.
+
+Use a real button. Activation rides on `click`, which native buttons,
+`md-button` and `md-icon-button` already emit for `Enter` and `Space`.
+
+:::tip[`triggerElement` wins over `trigger-for`]
+`trigger-for` is a selector resolved against the document, so it cannot reach a
+button inside another shadow root. When you already hold the element — a
+framework ref — assign it to the `triggerElement` property instead; it takes
+precedence.
+:::
+
+```html
+<md-icon-button id="app-bar-search" icon="search" aria-label="Search files"></md-icon-button>
+<md-search trigger-for="#app-bar-search"></md-search>
+```
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:12px;inline-size:100%;max-inline-size:480px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 4px 4px 16px;border-radius:16px;background:var(--md-sys-color-surface-container);">
+    <span style="font:var(--md-sys-typescale-title-medium);color:var(--md-sys-color-on-surface);">Files</span>
+    <md-icon-button id="search-external-trigger" icon="search" aria-label="Search files"></md-icon-button>
+  </div>
+  <md-search trigger-for="#search-external-trigger" layout="docked" placeholder="Search files">
+    <md-list slot="results">
+      <md-list-item headline="Quarterly report.pdf" supporting-text="Shared folder"></md-list-item>
+      <md-list-item headline="Roadmap.key" supporting-text="Recent"></md-list-item>
+    </md-list>
+  </md-search>
+</div>`}
+  htmlForCode={`<md-icon-button id="app-bar-search" icon="search" aria-label="Search files"></md-icon-button>
+
+<md-search trigger-for="#app-bar-search" layout="docked" placeholder="Search files">
+  <md-list slot="results">
+    <md-list-item headline="Quarterly report.pdf"></md-list-item>
+    <md-list-item headline="Roadmap.key"></md-list-item>
+  </md-list>
+</md-search>`}
+  label="An app-bar icon button drives a search that renders nothing at rest"
+  react={`import { useState } from 'react';
+import { MdSearch, MdIconButton, MdList, MdListItem } from '@awc-ui/react';
+
+export function FileSearch() {
+  // A ref is the natural handle in React, so pass the element itself.
+  const [trigger, setTrigger] = useState<HTMLElement | null>(null);
+
+  return (
+    <>
+      <MdIconButton ref={setTrigger} icon="search" aria-label="Search files" />
+
+      <MdSearch triggerElement={trigger} layout="docked" placeholder="Search files">
+        <MdList slot="results">
+          <MdListItem headline="Quarterly report.pdf" />
+          <MdListItem headline="Roadmap.key" />
+        </MdList>
+      </MdSearch>
+    </>
+  );
+}`}
+  angular={`import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+
+@Component({
+  selector: 'app-file-search',
+  standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: \`
+    <md-icon-button #trigger icon="search" aria-label="Search files"></md-icon-button>
+
+    <md-search [triggerElement]="trigger" layout="docked" placeholder="Search files">
+      <md-list slot="results">
+        <md-list-item headline="Quarterly report.pdf"></md-list-item>
+        <md-list-item headline="Roadmap.key"></md-list-item>
+      </md-list>
+    </md-search>
+  \`,
+})
+export class FileSearchComponent {}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const trigger = ref<HTMLElement | null>(null);
+</script>
+
+<template>
+  <md-icon-button ref="trigger" icon="search" aria-label="Search files" />
+
+  <!-- camelCase: triggerElement is a property with no attribute form, so a
+       kebab binding would be written out as a useless string attribute. -->
+  <md-search :triggerElement="trigger" layout="docked" placeholder="Search files">
+    <md-list slot="results">
+      <md-list-item headline="Quarterly report.pdf" />
+      <md-list-item headline="Roadmap.key" />
+    </md-list>
+  </md-search>
+</template>`}
+  svelte={`<script lang="ts">
+  let trigger: HTMLElement;
+</script>
+
+<md-icon-button bind:this={trigger} icon="search" aria-label="Search files"></md-icon-button>
+
+<md-search triggerElement={trigger} layout="docked" placeholder="Search files">
+  <md-list slot="results">
+    <md-list-item headline="Quarterly report.pdf"></md-list-item>
+    <md-list-item headline="Roadmap.key"></md-list-item>
+  </md-list>
+</md-search>`}
+/>
+
+## States
+
+| State | Token usage |
+|---|---|
+| Enabled | Container: `--md-sys-color-surface-container-high` |
+| Hover | State layer at `--md-sys-state-hover-state-layer-opacity` |
+| Focus | No state-layer wash — the layer is zeroed and a `--md-search-focus-indicator-color` ring is drawn instead (3dp at 2dp offset, keyboard-only). The bar's side inset springs from 24dp → 12dp (Expressive motion) |
+| Pressed | `md-ripple` plus state layer at `--md-search-pressed-state-layer-opacity` (literal `0.1`) |
+| Disabled | Bar at 38% opacity, ripple disabled, input disabled |
+
+<ComponentDemo
+  html={`<div style="display:grid; gap:20px; max-inline-size:420px;">
+  <md-search layout="docked" placeholder="Enabled"></md-search>
+  <md-search layout="docked" placeholder="With a value" value="material design"></md-search>
+  <md-search layout="docked" placeholder="Loading" value="design" loading></md-search>
+  <md-search layout="docked" placeholder="Disabled" disabled></md-search>
+</div>`}
+  label="Enabled, populated, loading and disabled"
+/>
+
+## Events
+
+| Event | Detail | Fires when… |
+|---|---|---|
+| `mdInput` | `{ value: string }` | The user types into the input or clears it via the × button (immediate, every keystroke) |
+| `mdSearch` | `{ value: string }` | A query is ready to fetch — debounced/throttled + distinct-until-changed (trimmed). The event to wire your async fetch to. |
+| `mdSubmit` | `{ value: string }` | The user presses Enter inside the input |
+| `mdChange` | `{ value: string }` | Focus leaves the input and the value differs from focus-time |
+| `mdOpen` | `void` | The panel transitions from closed → open |
+| `mdClose` | `void` | The panel transitions from open → closed |
+| `mdClear` | `void` | The user activates the built-in clear (×) button |
+| `mdVoice` | `{ value: string; final: boolean }` | Voice search is active and a transcript chunk streamed in (`final` true on the recognised result) |
+| `mdLeadingIconClick` | `MdSearchLeadingIconClickDetail` | The interactive leading affordance is clicked — the morphing back/dismiss button while open, or a custom slotted `leading` icon. Additive (the default back button still dismisses). The closed resting search glyph is **not** a click target, so it never emits. |
+| `mdTrailingIconClick` | `MdSearchTrailingIconClickDetail` | A slotted `trailing` affordance is clicked. The built-in clear (×) and voice (mic) buttons emit `mdClear` / `mdVoice` instead and never trigger this. Only fires when slotted trailing content is present and was the click target. |
+
+<ComponentDemo
+  html={`<div style="display:grid; gap:10px; max-inline-size:460px;">
+  <md-search data-ev layout="docked" placeholder="Search the docs…" debounce="300"></md-search>
+  <output data-ev-log style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant); white-space: pre-line; min-block-size: 7em;">Type, press Enter, then clear — oldest first. Watch mdSearch lag mdInput by the 300ms debounce.</output>
+</div>`}
+  script={`
+    var el = root.querySelector('[data-ev]');
+    var log = root.querySelector('[data-ev-log]');
+    var lines = [];
+    var n = 0;
+    function push(text) {
+      lines.push(String(++n).padStart(2, ' ') + '  ' + text);
+      lines = lines.slice(-7);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+    root.addEventListener('mdInput', function (e) { push('mdInput'.padEnd(10) + JSON.stringify(e.detail.value)); });
+    root.addEventListener('mdSearch', function (e) { push('mdSearch'.padEnd(10) + JSON.stringify(e.detail.value)); });
+    root.addEventListener('mdSubmit', function (e) { push('mdSubmit'.padEnd(10) + JSON.stringify(e.detail.value)); });
+    root.addEventListener('mdChange', function (e) { push('mdChange'.padEnd(10) + JSON.stringify(e.detail.value)); });
+    root.addEventListener('mdOpen', function () { push('mdOpen'); });
+    root.addEventListener('mdClose', function () { push('mdClose'); });
+    root.addEventListener('mdClear', function () { push('mdClear'); });
+  `}
+  label="Every event, live — mdInput fires per keystroke, mdSearch after the debounce"
+  htmlCode={`<md-search id="docs-search" layout="docked" debounce="300" placeholder="Search the docs…"></md-search>
+
+<script type="module">
+  const search = document.getElementById('docs-search');
+
+  search.addEventListener('mdInput', (e) => {
+    const { value } = e.detail;                 // every keystroke
+    console.log('typing', value);
+  });
+
+  search.addEventListener('mdSearch', (e) => {
+    const { value } = e.detail;                 // debounced + de-duplicated
+    console.log('fetch', value);
+  });
+
+  search.addEventListener('mdSubmit', (e) => {
+    console.log('submit', e.detail.value);      // Enter inside the input
+  });
+
+  search.addEventListener('mdClear', () => {
+    console.log('cleared');
+  });
+</script>`}
+  react={`import { MdSearch } from '@awc-ui/react';
+
+export function DocsSearch() {
+  return (
+    <MdSearch
+      layout="docked"
+      debounce={300}
+      placeholder="Search the docs…"
+      onMdInput={(e) => console.log('typing', e.detail.value)}
+      onMdSearch={(e) => console.log('fetch', e.detail.value)}
+      onMdSubmit={(e) => console.log('submit', e.detail.value)}
+      onMdClear={() => console.log('cleared')}
+    />
+  );
+}`}
+  angular={`import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+
+@Component({
+  selector: 'app-docs-search',
+  standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: \`
+    <md-search
+      layout="docked"
+      debounce="300"
+      placeholder="Search the docs…"
+      (mdInput)="onInput($event)"
+      (mdSearch)="onSearch($event)"
+      (mdSubmit)="onSubmit($event)"
+      (mdClear)="onClear()"
+    ></md-search>
+  \`,
+})
+export class DocsSearchComponent {
+  onInput(e: CustomEvent<{ value: string }>) { console.log('typing', e.detail.value); }
+  onSearch(e: CustomEvent<{ value: string }>) { console.log('fetch', e.detail.value); }
+  onSubmit(e: CustomEvent<{ value: string }>) { console.log('submit', e.detail.value); }
+  onClear() { console.log('cleared'); }
+}`}
+  vue={`<script setup lang="ts">
+function onInput(e: CustomEvent) { console.log('typing', e.detail.value); }
+function onSearch(e: CustomEvent) { console.log('fetch', e.detail.value); }
+function onSubmit(e: CustomEvent) { console.log('submit', e.detail.value); }
+function onClear() { console.log('cleared'); }
+</script>
+
+<template>
+  <md-search
+    layout="docked"
+    debounce="300"
+    placeholder="Search the docs…"
+    @mdInput="onInput"
+    @mdSearch="onSearch"
+    @mdSubmit="onSubmit"
+    @mdClear="onClear"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  function onInput(e: CustomEvent) { console.log('typing', e.detail.value); }
+  function onSearch(e: CustomEvent) { console.log('fetch', e.detail.value); }
+  function onSubmit(e: CustomEvent) { console.log('submit', e.detail.value); }
+  function onClear() { console.log('cleared'); }
+</script>
+
+<md-search
+  layout="docked"
+  debounce="300"
+  placeholder="Search the docs…"
+  on:mdInput={onInput}
+  on:mdSearch={onSearch}
+  on:mdSubmit={onSubmit}
+  on:mdClear={onClear}
+/>`}
+/>
+
+### Why `mdSearch` and not `mdInput`
+
+`mdInput` is a *keystroke*: it fires on every character, including the ones the
+user is about to delete. `mdSearch` is a *query*: it is debounced, throttled and
+de-duplicated on the trimmed value, so wiring a fetch to it costs one request
+per intention rather than one per key.
+
+:::tip[Wire fetches to `mdSearch`, never `mdInput`]
+Use `mdInput` for anything that must track the field character-by-character —
+a character counter, a local filter over data already in memory. Everything
+that leaves the page belongs on `mdSearch`.
+:::
+
+## Async results
+
+Wire an asynchronous fetch to the **`mdSearch`** event rather than `mdInput`.
+`mdSearch` is rate-limited so you don't hammer the server on every keystroke:
+
+- **`debounce`** (ms) — waits for a typing pause before emitting. `0` (default)
+  emits on every change.
+- **`throttle`** (ms) — a `maxWait` safety net: during sustained typing where the
+  debounce never settles, force an emit at least this often so the user still
+  sees interim results. `0` (default) disables it; only meaningful alongside a
+  non-zero `debounce`.
+- **distinct-until-changed** — the emit is de-duplicated on the *trimmed* query,
+  so re-typing the same term (or only adding surrounding whitespace) won't
+  re-trigger a fetch. Pressing `Enter` or clearing the field flushes immediately.
+
+Set **`loading`** while the request is in flight to show the M3 loading
+indicator (the looping shape-morph) in the bar's trailing cluster; it replaces
+the clear button until the fetch resolves and is announced to assistive tech
+via the live region (`loading-label`, default "Searching"). The swap is an
+expressive cross-fade — the loading indicator and clear-× morph (opacity +
+scale + rotate) into one another in both directions over the same fixed-size
+box, so the trailing cluster never jumps.
+
+<ComponentDemo
+  html={`<div style="display:grid; gap:10px; max-inline-size:460px;">
+  <md-search data-async layout="docked" placeholder="Search fruit…" debounce="300" results-label="{count} results available">
+    <div slot="results" data-async-results style="padding:8px 0;"></div>
+  </md-search>
+  <output data-async-log style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant); white-space: pre-line; min-block-size: 2.6em;">Type “a” — the fetch is faked with a 700ms delay so the loading indicator is visible.</output>
+</div>`}
+  script={`
+    var el = root.querySelector('[data-async]');
+    var box = root.querySelector('[data-async-results]');
+    var log = root.querySelector('[data-async-log]');
+    var FRUIT = ['Apple', 'Apricot', 'Avocado', 'Banana', 'Blackberry', 'Cherry', 'Grape', 'Mango', 'Papaya', 'Peach'];
+    var token = 0;
+
+    el.addEventListener('mdSearch', function (e) {
+      var query = (e.detail.value || '').trim();
+      var ticket = ++token;
+
+      if (!query) { el.loading = false; box.textContent = ''; log.textContent = 'Cleared — no request sent.'; return; }
+
+      el.loading = true;
+      log.textContent = 'mdSearch fired for ' + JSON.stringify(query) + ' — fetching…';
+
+      setTimeout(function () {
+        // Ignore a response that arrived after a newer request went out.
+        if (ticket !== token) return;
+        var hits = FRUIT.filter(function (f) { return f.toLowerCase().indexOf(query.toLowerCase()) === 0; });
+        el.loading = false;
+        box.innerHTML = hits.length
+          ? hits.map(function (h) { return '<md-list-item headline="' + h + '"></md-list-item>'; }).join('')
+          : '<div style="padding:12px 16px; opacity:.7;">No results</div>';
+        log.textContent = 'Resolved ' + hits.length + ' result(s) for ' + JSON.stringify(query) + '.';
+      }, 700);
+    });
+  `}
+  label="Debounced fetch with a loading indicator and out-of-order guard"
+  htmlCode={`<md-search id="product-search" layout="docked" debounce="300" throttle="1000" placeholder="Search products">
+  <md-list slot="results" id="product-results"></md-list>
+</md-search>
+
+<script type="module">
+  const search = document.getElementById('product-search');
+  let token = 0;
+
+  search.addEventListener('mdSearch', async (e) => {
+    const { value } = e.detail;
+    const ticket = ++token;                 // ignore out-of-order responses
+
+    if (!value) {
+      search.loading = false;
+      renderResults([]);
+      return;
+    }
+
+    search.loading = true;
+    try {
+      const results = await fetchFromServer(value);
+      if (ticket !== token) return;         // a newer query superseded this one
+      renderResults(results);
+    } finally {
+      if (ticket === token) search.loading = false;
+    }
+  });
+</script>`}
+  react={`import { useRef, useState } from 'react';
+import { MdSearch, MdList, MdListItem } from '@awc-ui/react';
+
+export function ProductSearch() {
+  const [rows, setRows] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const token = useRef(0);
+
+  return (
+    <MdSearch
+      layout="docked"
+      debounce={300}
+      throttle={1000}
+      loading={loading}
+      placeholder="Search products"
+      onMdSearch={async (e) => {
+        const ticket = ++token.current;
+        const { value } = e.detail;
+        if (!value) { setRows([]); return; }
+        setLoading(true);
+        const hits = await fetchFromServer(value);
+        if (ticket !== token.current) return;   // a newer query superseded this one
+        setRows(hits);
+        setLoading(false);
+      }}
+    >
+      <MdList slot="results">
+        {rows.map((row) => <MdListItem key={row} headline={row} />)}
+      </MdList>
+    </MdSearch>
+  );
+}`}
+  angular={`import { CommonModule } from '@angular/common';
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+
+@Component({
+  selector: 'app-product-search',
+  standalone: true,
+  imports: [CommonModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: \`
+    <md-search
+      layout="docked"
+      debounce="300"
+      throttle="1000"
+      [loading]="loading"
+      placeholder="Search products"
+      (mdSearch)="onSearch($event)"
+    >
+      <md-list slot="results">
+        <md-list-item *ngFor="let row of rows" [headline]="row"></md-list-item>
+      </md-list>
+    </md-search>
+  \`,
+})
+export class ProductSearchComponent {
+  rows: string[] = [];
+  loading = false;
+  private token = 0;
+
+  async onSearch(e: CustomEvent<{ value: string }>) {
+    const ticket = ++this.token;
+    const { value } = e.detail;
+    if (!value) { this.rows = []; return; }
+    this.loading = true;
+    const hits = await fetchFromServer(value);
+    if (ticket !== this.token) return;   // a newer query superseded this one
+    this.rows = hits;
+    this.loading = false;
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const rows = ref<string[]>([]);
+const loading = ref(false);
+let token = 0;
+
+async function onSearch(e: CustomEvent) {
+  const ticket = ++token;
+  const { value } = e.detail;
+  if (!value) { rows.value = []; return; }
+  loading.value = true;
+  const hits = await fetchFromServer(value);
+  if (ticket !== token) return;          // a newer query superseded this one
+  rows.value = hits;
+  loading.value = false;
+}
+</script>
+
+<template>
+  <md-search
+    layout="docked"
+    debounce="300"
+    throttle="1000"
+    :loading="loading"
+    placeholder="Search products"
+    @mdSearch="onSearch"
+  >
+    <md-list slot="results">
+      <md-list-item v-for="row in rows" :key="row" :headline="row" />
+    </md-list>
+  </md-search>
+</template>`}
+  svelte={`<script lang="ts">
+  let rows: string[] = [];
+  let loading = false;
+  let token = 0;
+
+  async function onSearch(e: CustomEvent) {
+    const ticket = ++token;
+    const { value } = e.detail;
+    if (!value) { rows = []; return; }
+    loading = true;
+    const hits = await fetchFromServer(value);
+    if (ticket !== token) return;        // a newer query superseded this one
+    rows = hits;
+    loading = false;
+  }
+</script>
+
+<md-search
+  layout="docked"
+  debounce="300"
+  throttle="1000"
+  {loading}
+  placeholder="Search products"
+  on:mdSearch={onSearch}
+>
+  <md-list slot="results">
+    {#each rows as row (row)}
+      <md-list-item headline={row}></md-list-item>
+    {/each}
+  </md-list>
+</md-search>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[`triggerElement` is a property, not an attribute]
+`triggerElement` takes a live `HTMLElement`, so it has no attribute form — set
+it from JavaScript or a framework binding (camelCase in Vue and Svelte too; a
+kebab binding is written out as a useless string attribute). Use `trigger-for`
+when a document selector can reach the opener.
+:::
+
+## Accessibility
+
+- **Role & labeling.** The bar's `<input>` has `role="combobox"` with
+  `aria-autocomplete="list"` (APG popup search / autosuggest pattern). Per the
+  M3 labeling guidance the hinted search text describes the bar, so the
+  accessible name defaults to `placeholder`; set `input-aria-label` only when
+  the visible hint and the accessible name should differ. `aria-expanded`
+  mirrors `open` and `aria-controls` points to the results panel.
+- **Result announcements.** Render suggestions with
+  [`md-list`](/components/list/) + `md-list-item` so screen readers announce
+  them as a list. A visually-hidden polite live region (`role="status"`,
+  `part="status"`) announces the count whenever the slotted list changes while
+  the panel is open. Customize with `results-label` (`{count}` token) and
+  `no-results-label`, or disable it with `announce-results="false"`.
+- **Visible empty state.** Open, with a query and zero results, a visible
+  message (`part="empty"`) shows the same `no-results-label` copy (default
+  `"No results available"`); the hidden live region defers to it so the string
+  is never announced twice.
+- **Initial focus.** The resting bar's first tab stop is a slotted leading icon
+  **button** when one is present, otherwise the text field — a non-interactive
+  resting glyph stays out of the tab order. On open, focus moves to the text
+  field (`initial-focus="auto"` / `"input"`); use `initial-focus="leading"` to
+  focus the leading button instead. Focus is restored on close.
+- **Modality.** The panel has `role="dialog"`. `aria-modal` is `"true"` only
+  when `layout` is `full-screen` and `open` is `true`; docked panels are
+  popup-style and stay non-modal so the rest of the page stays traversable.
+- **Naming the affordances.** The open full-screen leading button carries
+  `aria-label="Close search"` and the clear (×) button `"Clear search"`. Label
+  any slotted leading / trailing icon buttons yourself.
+- **Keyboard.** The full set of keys the component handles:
+
+| Keys | Action |
+|---|---|
+| `Tab` / `Shift`+`Tab` | Navigate between interactive elements. In the `full-screen` layout focus is trapped to the bar + panel + slotted buttons and cycles without leaving the dialog. |
+| `Space` / `Enter` | Activate the text field for input. While closed they open the search view (focus alone never opens it); while open, `Enter` submits the query via `mdSubmit`. |
+| `Arrow Down` / `Arrow Up` | Navigate between slotted result items. `Arrow Down` from the field steps into the first item; `Arrow Up` from the first item returns to the field. Result rows are given a roving `tabindex` so focus can land on them. |
+| `Escape` | Close the panel (configurable via `escape-closes`). |
+
+Tab into the bar, type a letter, then use `Arrow Down` to walk into the results
+and `Escape` to close. A screen reader announces the row count from the hidden
+live region as the list changes.
+
+<ComponentDemo
+  html={`<md-search layout="docked" placeholder="Search contacts" input-aria-label="Search contacts" results-label="{count} contacts available" style="max-inline-size:460px;">
+  <md-icon-button slot="trailing" icon="tune" aria-label="Filters"></md-icon-button>
+  <md-list slot="results">
+    <md-list-item headline="Amelia Novak" supporting-text="amelia@example.com"></md-list-item>
+    <md-list-item headline="Bruno Sadiq" supporting-text="bruno@example.com"></md-list-item>
+    <md-list-item headline="Carmen Diaz" supporting-text="carmen@example.com"></md-list-item>
+  </md-list>
+</md-search>`}
+  label="Keyboard and screen-reader behaviour"
+/>
+
+The trailing `tune` button is yours to label — the built-in clear (×) and mic
+already carry their own names. Verified against axe-core with zero WCAG 2.1 AA
+violations.
+
+## RTL, density & i18n
+
+**RTL** — every box metric is a logical property (`inset-inline`,
+`padding-inline`, `margin-inline-start`…), so the bar mirrors automatically
+inside any `dir="rtl"` ancestor. The leading and trailing slots swap visually
+with no consumer-side adjustment. See [RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr"><md-search layout="docked" placeholder="Search mail" style="max-inline-size: 440px;"><md-avatar slot="trailing" initials="AL" size="small"></md-avatar></md-search></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl"><md-search layout="docked" placeholder="بحث في البريد" style="max-inline-size: 440px;"><md-avatar slot="trailing" initials="AL" size="small"></md-avatar></md-search></div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl — leading and trailing swap"
+/>
+
+### Every density rung
+
+`md-search` takes a local `density` rung (`-1` … `-4`) and also honours a global
+`data-density` ancestor; a local `-1` … `-4` rung wins over the inherited one.
+`0` is the undensified baseline you get when nothing sets a rung. Each rung
+takes 4dp off the bar (`56px` at `0`, floor `40px`), 4dp off the leading /
+trailing tap targets (`48px` at `0`, floor `32px`), 1dp off the icon glyphs
+(`24px` at `0`, floor `18px`) and 0.5dp off the input type (`16px` at `0`, floor
+`13px`). Override any of it directly with `--md-search-container-height` or
+`--md-search-icon-button-size`.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <md-search layout="docked" density="0" placeholder="Search mail" style="max-inline-size:420px;"></md-search>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <md-search layout="docked" density="-1" placeholder="Search mail" style="max-inline-size:420px;"></md-search>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <md-search layout="docked" density="-2" placeholder="Search mail" style="max-inline-size:420px;"></md-search>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <md-search layout="docked" density="-3" placeholder="Search mail" style="max-inline-size:420px;"></md-search>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <md-search layout="docked" density="-4" placeholder="Search mail" style="max-inline-size:420px;"></md-search>
+</div>`}
+  label="Density 0 through -4 — bar height, tap targets, glyphs and input type all taper"
+/>
+
+:::caution[At `-2` and below, check your touch targets]
+The leading / trailing icon buttons shrink 4dp per rung: 44dp at `-1`, 40dp at
+`-2`, 36dp at `-3`, 32dp at `-4` — under the minimum recommended by
+[Density](/behaviour/density/#accessibility). Reserve those rungs for
+pointer-first, information-dense surfaces.
+:::
+
+### Density and direction together
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:flex;flex-direction:column;gap:16px;inline-size:100%;max-inline-size:460px;">
+  <md-search layout="docked" placeholder="بحث في البريد"><md-avatar slot="trailing" initials="AL" size="small"></md-avatar></md-search>
+  <md-search layout="docked" density="-4" placeholder="بحث في الملفات"><md-avatar slot="trailing" initials="AL" size="small"></md-avatar></md-search>
+  <md-search layout="docked" style="--md-sys-density-scale: 0;" placeholder="بحث في الصور"><md-avatar slot="trailing" initials="AL" size="small"></md-avatar></md-search>
+</div>`}
+  label="dir=rtl with data-density=-2 — the second bar tightens further with density=-4, the third resets to the baseline with --md-sys-density-scale: 0"
+/>
+
+:::caution[`density="0"` is not an opt-out]
+No component defines a `[density="0"]` rule — the token layer leaves it out on
+purpose, so `0` means "inherit whatever the ancestor says". A
+`<md-search density="0">` inside `data-density="-2"` still renders at `-2`. To
+reset a subtree, set `--md-sys-density-scale: 0` directly.
+:::
+
+<ComponentDemo
+  html={`<md-search layout="docked" placeholder="Rechercher dans les messages" input-aria-label="Rechercher" results-label="{count} résultats disponibles" no-results-label="Aucun résultat" loading-label="Recherche en cours" style="max-inline-size: 460px;">
+  <md-icon-button slot="trailing" icon="mic" aria-label="Recherche vocale"></md-icon-button>
+</md-search>`}
+  htmlForCode={`<md-search
+  placeholder="Rechercher dans les messages"
+  input-aria-label="Rechercher"
+  results-label="{count} résultats disponibles"
+  no-results-label="Aucun résultat"
+  loading-label="Recherche en cours"
+>
+  <md-icon-button slot="trailing" icon="mic" aria-label="Recherche vocale"></md-icon-button>
+</md-search>`}
+  label="Localized placeholder, announcement strings and affordance names"
+/>
+
+**Density** — the rungs are declared on `:host`, so a local `density` of `-1` …
+`-4` out-ranks the inherited `data-density` ancestor value. There is no
+`[density="0"]` rule, so `0` inherits instead of resetting; use
+`--md-sys-density-scale: 0` for that. See [Density](/behaviour/density/).
+
+**i18n** — translate `placeholder`, `input-aria-label`, `results-label`,
+`no-results-label` and `loading-label`, plus every slotted control's
+`aria-label`. The results you slot are yours to localize.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-search-container-color` | Bar background | `--md-sys-color-surface-container-high` |
+| `--md-search-container-elevation` | Custom bar shadow — overrides the `elevation` prop level | `0px 0px 0px 0px transparent` (a transparent zero-shadow, **not** `none` — see the caution below) |
+| `--md-search-container-shape` | Bar border-radius | `--md-sys-shape-corner-full` |
+| `--md-search-container-height` | Bar block-size (contained + divided docked) | `56px` at density `0` |
+| `--md-search-divided-fullscreen-bar-height` | Divided × full-screen header height | `72px` at density `0` |
+| `--md-search-container-min-inline-size` | Bar minimum width | `360px` |
+| `--md-search-container-max-inline-size` | Bar maximum width | `720px` |
+| `--md-search-container-padding-inline` | Extra inline padding on the bar (rare; defaults to 0 so the clusters control their own gutters) | `0px` |
+| `--md-search-container-padding-inline-focused` | Inline padding when focused / open | inherits resting |
+| `--md-search-leading-padding-inline` | Bar leading edge → leading tap target | `4px` |
+| `--md-search-trailing-padding-inline` | Bar trailing edge → trailing tap target | `8px` |
+| `--md-search-icon-button-size` | Leading / trailing tap-target diameter (M3 48dp) | `48px` at density `0` |
+| `--md-search-leading-icon-label-gap` | Leading tap target → input text | `4px` |
+| `--md-search-trailing-icon-label-gap` | Input text → trailing tap target | `4px` |
+| `--md-search-input-color` | Input text colour | `--md-sys-color-on-surface` |
+| `--md-search-input-font-family` | Input / placeholder font (M3 body-large) | `--md-sys-typescale-body-large-font-family` |
+| `--md-search-input-font-size` | Input / placeholder size | `16px` at density `0` |
+| `--md-search-input-line-height` | Input / placeholder line height | `24px` |
+| `--md-search-input-font-weight` | Input / placeholder weight | `400` |
+| `--md-search-input-letter-spacing` | Input / placeholder tracking | `0.5px` |
+| `--md-search-placeholder-color` | Placeholder (supporting text) colour | `--md-sys-color-on-surface-variant` |
+| `--md-search-leading-icon-color` | Leading / back icon colour | `--md-sys-color-on-surface` |
+| `--md-search-trailing-icon-color` | Trailing + clear icon colour | `--md-sys-color-on-surface-variant` |
+| `--md-search-icon-color` | Alias for trailing icon colour | same as trailing |
+| `--md-search-icon-size` | Icon font-size | `24px` at density `0` |
+| `--md-search-loading-color` | In-bar loading indicator shape colour | `--md-sys-color-primary` |
+| `--md-search-state-layer-color` | Hover / press wash | `--md-sys-color-on-surface` |
+| `--md-search-focus-indicator-color` | Focus ring colour | `--md-sys-color-secondary` |
+| `--md-search-focus-indicator-thickness` | Focus ring thickness | `3px` |
+| `--md-search-focus-indicator-offset` | Focus ring offset | `2px` |
+| `--md-search-avatar-size` | Slotted avatar diameter | `40px` |
+| `--md-search-panel-min-block-size` | Docked panel floor — `0` shrinks to content | `0px` |
+| `--md-search-panel-max-block-size` | Docked panel maximum height; results beyond it scroll | `min(400px, 60vh)` |
+| `--md-search-max-block-size` | Open surface cap — full-screen overlay or docked panel (overrides panel max when set) | unset |
+| `--md-search-docked-panel-shape` | Contained docked results card corner radius | `16px` |
+| `--md-search-panel-offset` | Gap between bar and docked panel | focus-ring offset + thickness + `3px` (`8px`) |
+| `--md-search-contained-docked-panel-offset` | Contained docked: bar ↔ results gap | falls back to `--md-search-panel-offset`'s formula (`8px`) |
+| `--md-search-empty-color` | No-results empty-state text colour | `--md-sys-color-on-surface-variant` |
+| `--md-search-empty-padding-block` | No-results empty-state vertical padding | `24px` |
+| `--md-search-empty-padding-inline` | No-results empty-state horizontal padding | `16px` |
+| `--md-search-bar-fullscreen-color` | Divided full-screen bar background while open | `--md-sys-color-surface-container-low` |
+| `--md-search-fullscreen-results-color` | Opaque full-viewport results surface (no scrim) | `--md-sys-color-surface-container-low` |
+| `--md-search-fullscreen-bar-offset-block-start` | Full-screen inset from viewport top | `max(16px, safe-area)` |
+| `--md-search-fullscreen-bar-offset-inline` | Contained full-screen bar inset from inline edges | `max(8px, safe-area)` |
+| `--md-search-fullscreen-bar-panel-gap` | Contained full-screen gap between bar and panel | focus-ring offset + thickness + `3px` (`8px`) for `contained`; `0px` for `divided`, which wants a flush seam under its hairline |
+| `--md-search-panel-padding-block-start` | Full-screen panel padding above results | `0px` |
+| `--md-search-fullscreen-expand-duration` | Full-screen open (slide + fade) duration | `--md-sys-motion-duration-medium2` (300ms fallback) |
+| `--md-search-fullscreen-expand-easing` | Full-screen open easing | `--md-sys-motion-easing-standard` |
+| `--md-search-fullscreen-collapse-duration` | Full-screen close duration — keep it in sync with the component's 300ms close timer | `--md-sys-motion-duration-medium2` (300ms fallback) |
+| `--md-search-fullscreen-collapse-easing` | Full-screen close easing | `--md-sys-motion-easing-standard` |
+| `--md-search-divider-color` | Hairline colour (divided variant) | `--md-sys-color-outline` |
+| `--md-search-divider-thickness` | Hairline thickness | `1px` |
+| `--md-search-expand-inset` | Docked/inline bar **resting** side margin | `24px` |
+| `--md-search-expand-focused-inset` | Docked/inline bar **focused** side margin | `12px` |
+| `--md-search-expand-duration` | Springy expand duration (also drives the synced ripple wave) | `medium4` (`400ms`) |
+| `--md-search-expand-easing` | Springy back-out curve — overshoots ~17% then snaps back | `cubic-bezier(0.34, 1.56, 0.64, 1)` |
+
+:::caution[Never set `--md-search-container-elevation: none`]
+The bar's shadow is composed into the same comma-separated `box-shadow` list as
+the keyboard focus ring. A bare `none` in that list invalidates the whole
+declaration and the focus indicator disappears. For "no shadow" use the
+transparent zero-shadow `0px 0px 0px 0px transparent` (the default), or
+`elevation="0"`.
+:::
+
+:::note[`--md-search-panel-motion-duration` is inert]
+It is listed in the generated API Reference above, but nothing reads it: the
+docked panel fade is driven straight off `--md-sys-motion-duration-medium2`
+(250ms fallback), and the full-screen transition off the
+`--md-search-fullscreen-expand-*` / `--md-search-fullscreen-collapse-*`
+properties. Retime the panel via the motion token or the full-screen properties
+instead.
+:::
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:20px;inline-size:100%;">
+  <md-search layout="docked" placeholder="Default" style="max-inline-size: 440px;"></md-search>
+  <md-search layout="docked" placeholder="Squared and short" style="max-inline-size: 440px; --md-search-container-shape: 8px; --md-search-container-height: 44px; --md-search-icon-button-size: 40px;"></md-search>
+  <md-search layout="docked" placeholder="Branded" style="max-inline-size: 440px; --md-search-container-color: var(--md-sys-color-primary-container); --md-search-input-color: var(--md-sys-color-on-primary-container);"></md-search>
+</div>`}
+  label="Themed instances — shape, height, tap-target size and a branded bar"
+/>
+
+Every default resolves through an `md-sys-color` role, so a bar that sets no
+custom properties follows the theme on its own.
+
+<ComponentDemo
+  html={`<md-search layout="docked" placeholder="Untouched defaults" style="max-inline-size: 460px;">
+  <md-avatar slot="trailing" initials="AL" size="small"></md-avatar>
+</md-search>`}
+  label="Untouched defaults — follows the page theme"
+/>
+
+### Expressive expansion
+
+This is the single, unified expansion mechanism for **all docked/inline
+bars** — `contained` and `divided` alike. The bar rests with a **24dp** side
+margin (`--md-search-expand-inset`) and springs to a **12dp** side margin
+(`--md-search-expand-focused-inset`) on focus / open, symmetrically (even
+left + right). Each edge travels the `24 − 12 = 12dp` delta, so the container
+grows evenly on both sides.
+
+:::note[Full-screen does not use margin expansion]
+It zeroes both insets and carries its open / close with a `translateY(30px)`
+slide + opacity fade instead (see [Full-screen](#full-screen)); only docked /
+inline bars spring from 24dp to 12dp.
+:::
+
+The default easing is a **back-out spring curve**: the bar briefly
+overshoots the target width by ~17 % and snaps back into place. Combined
+with a 400 ms duration this reads as deliberate, expressive, and a
+touch playful — the M3 expressive aesthetic — without needing the Web
+Animations API. The same duration drives the synced ripple wave so the
+press response and the bar settle land at the same instant.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.7;font-size:.8rem;font-family:ui-monospace,monospace;">default</span>
+  <md-search layout="docked" placeholder="24 → 12dp" style="max-inline-size:440px;"></md-search>
+  <span style="inline-size:4.5rem;opacity:.7;font-size:.8rem;font-family:ui-monospace,monospace;">theatrical</span>
+  <md-search layout="docked" placeholder="48 → 12dp" style="max-inline-size:440px; --md-search-expand-inset: 48px; --md-search-expand-focused-inset: 12px; --md-search-expand-duration: 350ms;"></md-search>
+  <span style="inline-size:4.5rem;opacity:.7;font-size:.8rem;font-family:ui-monospace,monospace;">no expand</span>
+  <md-search layout="docked" placeholder="Fixed margin" style="max-inline-size:440px; --md-search-expand-inset: 12px; --md-search-expand-focused-inset: 12px;"></md-search>
+</div>`}
+  label="Expansion — focus each bar and watch the side margins spring"
+  storyId="text-inputs-search--expressive-expansion"
+/>
+
+```css
+/* Calmer, no overshoot — falls back to the standard M3 emphasized curve. */
+md-search.calm {
+  --md-search-expand-easing: var(--md-sys-motion-easing-emphasized);
+  --md-search-expand-duration: 400ms;
+}
+```
+
+### Full-width
+
+Set the `full-width` boolean prop to make a docked/inline bar span its
+container edge-to-edge with **no** side gutters. It zeroes both expand insets
+for that instance (resting + focused = `0`), so there is no 24 → 12dp margin
+animation and the aligned results drawer fills the same full width. It has no
+effect on `full-screen` (already edge-to-edge).
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.7;font-size:.8rem;font-family:ui-monospace,monospace;">default</span>
+  <md-search layout="docked" placeholder="Search"></md-search>
+  <span style="inline-size:4.5rem;opacity:.7;font-size:.8rem;font-family:ui-monospace,monospace;">full-width</span>
+  <md-search layout="docked" full-width placeholder="Search"></md-search>
+</div>`}
+  htmlForCode={`<md-search layout="docked" full-width placeholder="Search"></md-search>`}
+  label="full-width — zeroes both expand insets, so the bar and drawer bleed to the container edges"
+/>
+
+`full-width` is purely a shorthand over the CSS vars — the identical effect is
+available by zeroing both insets directly:
+
+```css
+md-search.bleed {
+  --md-search-expand-inset: 0;
+  --md-search-expand-focused-inset: 0;
+}
+```
+
+### Scrollable results
+
+:::caution[The panel has no surface of its own]
+No background, no rounded corners, no elevation — `md-search` is a positioning
+and dialog wrapper. Style the element you put in `slot="results"` (usually
+[`md-list`](/components/list/)) to provide the visible surface.
+:::
+
+Long lists scroll inside an inner viewport (`part="results-viewport"`) so the
+scrollbar stays aligned with the slotted surface. Cap the scroll area with
+`--md-search-panel-max-block-size` (docked) or `--md-search-max-block-size`
+(full-screen overlay, or a docked override). The bar height stays on
+`--md-search-container-height`.
+
+<ComponentDemo
+  html={`<md-search layout="docked" open value="Eli" placeholder="Search contacts" style="max-inline-size:440px; --md-search-panel-max-block-size: 220px;">
+  <md-list slot="results">
+    <md-list-item headline="Eli Bassi"></md-list-item>
+    <md-list-item headline="Elias Fournier"></md-list-item>
+    <md-list-item headline="Elif Demir"></md-list-item>
+    <md-list-item headline="Elijah Mensah"></md-list-item>
+    <md-list-item headline="Elisa Moretti"></md-list-item>
+    <md-list-item headline="Ellis Ward"></md-list-item>
+  </md-list>
+</md-search>`}
+  label="Capped drawer — results scroll inside the panel"
+/>
+
+:::note[`scroll-shadow` is a retained no-op]
+The prop is kept for API compatibility but has no visual effect: an overflowing
+results list always plain-scrolls inside `part="results-viewport"`, with no edge
+fades to turn off.
+:::
+
+**CSS Parts** — `bar`, `state-layer`, `leading`, `leading-state-layer`, `input`,
+`trailing`, `clear-button`, `voice-button`, `loading`, `loading-shape`,
+`trigger`, `trigger-button`, `panel`, `panel-body`, `divider`, `empty`,
+`results-host`, `results-viewport`, `status`.
+
+<ComponentDemo
+  html={`<style>
+  md-search.branded::part(bar) { border: 2px solid var(--md-sys-color-primary); }
+  md-search.branded::part(input) { font-weight: 600; }
+  md-search.branded::part(clear-button) { color: var(--md-sys-color-error); }
+</style>
+<md-search class="branded" layout="docked" value="invoice" placeholder="Search files" style="max-inline-size:440px; --md-search-container-color: var(--md-sys-color-surface-container-low);"></md-search>`}
+  label="CSS parts and custom-property overrides"
+/>
+
+```css
+md-search::part(bar) {
+  border: 2px solid var(--md-sys-color-primary);
+}
+```
+
+
+## Related
+
+[`md-app-bar`](/components/app-bar/) ·
+[`md-autocomplete`](/components/autocomplete/) ·
+[`md-text-field`](/components/text-field/) ·
+[`md-select`](/components/select/) ·
+[`md-list`](/components/list/) ·
+[`md-chip`](/components/chip/) ·
+[`md-icon-button`](/components/icon-button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-search" />

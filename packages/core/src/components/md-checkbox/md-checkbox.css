@@ -1,0 +1,471 @@
+/* ==========================================================
+   md-checkbox — Material Design 3 Checkbox
+   Spec: https://m3.material.io/components/checkbox/specs
+
+   Three visual states: unchecked, checked (✓), indeterminate (—)
+
+   Measurements (MD3 spec):
+     Container size:        18px
+     Container shape:       2px corner radius
+     Icon size:             18px
+     Icon alignment:        Center-aligned
+     Target (touch) size:   48px
+     State-layer size:      40px
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-checkbox-container-color              Unchecked container (transparent)
+     --md-checkbox-selected-container-color     Checked / indeterminate fill
+     --md-checkbox-outline-color                Border color (unchecked)
+     --md-checkbox-outline-width                Border width
+     --md-checkbox-icon-color                   Checkmark / dash color
+     --md-checkbox-container-shape              Container corner radius
+     --md-checkbox-container-size               Container size
+     --md-checkbox-icon-size                    Icon size
+     --md-checkbox-state-layer-size             State-layer diameter
+     --md-checkbox-state-layer-color            State-layer color (unchecked)
+     --md-checkbox-selected-state-layer-color   State-layer color (checked/indeterminate)
+
+   CSS PARTS:
+     state-layer   Hover / focus / press overlay
+     container     The 18px checkbox box
+     icon          The SVG icon (checkmark or dash)
+
+   SLOTS:
+     (none — standalone control, label provided externally)
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST — TOUCH TARGET
+   color controls md-ripple wave color (md-ripple uses currentColor).
+   ========================================================== */
+
+:host {
+  --_container-color: var(--md-checkbox-container-color, transparent);
+  --_selected-container-color: var(--md-checkbox-selected-container-color, var(--md-sys-color-primary));
+  --_outline-color: var(--md-checkbox-outline-color, var(--md-sys-color-on-surface-variant));
+  --_outline-width: var(--md-checkbox-outline-width, 2px);
+  --_icon-color: var(--md-checkbox-icon-color, var(--md-sys-color-on-primary));
+  --_container-shape: var(--md-checkbox-container-shape, 2px);
+  /* The visible box + checkmark shrink with global density (18px at 0 → 14px at
+     -4, 1px/rung) so the control itself densifies, not just the tap target. */
+  --_container-size: var(--md-checkbox-container-size, max(14px, calc(18px + var(--md-sys-density-scale, 0) * 1px)));
+  --_icon-size: var(--md-checkbox-icon-size, max(14px, calc(18px + var(--md-sys-density-scale, 0) * 1px)));
+  /* Overall touch-target (host) size — shrink for dense layouts (e.g. compact
+     tables). Global density: each `data-density` rung (0…-4) trims 4px, floored
+     at 32px to keep breathing room around the 18px box. Unchanged at density 0.
+     The 40px state layer is min(40px, touch) so it scales with — and never
+     exceeds — the host at every rung. */
+  --_touch-size: max(32px, calc(var(--md-checkbox-touch-target-size, 48px) + var(--md-sys-density-scale, 0) * 4px));
+  --_state-layer-size: var(--md-checkbox-state-layer-size, min(40px, var(--_touch-size)));
+  --_state-layer-color: var(--md-checkbox-state-layer-color, var(--md-sys-color-on-surface));
+  --_selected-state-layer-color: var(--md-checkbox-selected-state-layer-color, var(--md-sys-color-primary));
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  inline-size: var(--_touch-size);
+  block-size: var(--_touch-size);
+  cursor: pointer;
+  border-radius: var(--md-sys-shape-corner-full, 50%);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  vertical-align: middle;
+  outline: none;
+  color: var(--_state-layer-color);
+}
+
+:host(.md-checkbox--selected) {
+  color: var(--_selected-state-layer-color);
+}
+
+/* ==========================================================
+   2. HIDDEN NATIVE INPUT
+   ========================================================== */
+
+.md-checkbox__native {
+  position: absolute;
+  opacity: 0;
+  inline-size: 0;
+  block-size: 0;
+  pointer-events: none;
+  margin: 0;
+}
+
+/* ==========================================================
+   3. RIPPLE LAYER (40px — constrains md-ripple to state-layer size)
+   md-ripple resolves this span as its host via parentElement,
+   so its wave is sized and clipped to the 40px circle.
+   ========================================================== */
+
+.md-checkbox__ripple-layer {
+  position: absolute;
+  inline-size: var(--_state-layer-size);
+  block-size: var(--_state-layer-size);
+  border-radius: var(--md-sys-shape-corner-full, 50%);
+  overflow: hidden;
+}
+
+:host(.md-checkbox--disabled) .md-checkbox__ripple-layer,
+:host([soft-disabled]) .md-checkbox__ripple-layer {
+  display: none;
+}
+
+/* ==========================================================
+   4. STATE LAYER (40px centered inside 48px touch target)
+   ========================================================== */
+
+.md-checkbox__state-layer {
+  position: absolute;
+  inline-size: var(--_state-layer-size);
+  block-size: var(--_state-layer-size);
+  border-radius: var(--md-sys-shape-corner-full, 50%);
+  background-color: var(--_state-layer-color);
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short1, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  pointer-events: none;
+}
+
+/* Unchecked state-layer colors */
+:host(.md-checkbox--unselected:hover) .md-checkbox__state-layer {
+  opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+}
+
+:host(.md-checkbox--unselected:focus-visible) .md-checkbox__state-layer {
+  opacity: var(--md-sys-state-focus-state-layer-opacity, 0.12);
+}
+
+:host(.md-checkbox--unselected:active) .md-checkbox__state-layer {
+  opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+}
+
+/* Selected state-layer colors */
+:host(.md-checkbox--selected) .md-checkbox__state-layer {
+  background-color: var(--_selected-state-layer-color);
+}
+
+:host(.md-checkbox--selected:hover) .md-checkbox__state-layer {
+  opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+}
+
+:host(.md-checkbox--selected:focus-visible) .md-checkbox__state-layer {
+  opacity: var(--md-sys-state-focus-state-layer-opacity, 0.12);
+}
+
+:host(.md-checkbox--selected:active) .md-checkbox__state-layer {
+  opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+}
+
+/* ==========================================================
+   4. FOCUS RING
+   ========================================================== */
+
+:host(:focus-visible) {
+  /* Hug the state layer instead of the (larger) touch-target host — a +offset
+     on the 48px host made a ~52px ring around the 18px box (lots of white
+     space). Negative offset pulls it to the state-layer edge; scales with
+     density since the offset is derived from the host/state-layer sizes. */
+  outline: 2px solid var(--md-sys-color-secondary);
+  outline-offset: calc((var(--_state-layer-size) - var(--_touch-size)) / 2);
+}
+
+/* ==========================================================
+   5. CONTAINER (18px box)
+   Transitions use the same motion tokens as md-button:
+     Release: medium4 (400ms) + emphasized-decelerate  (spring-back)
+     Press:   short4  (200ms) + standard               (snap-in)
+   ========================================================== */
+
+.md-checkbox__container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_container-size);
+  block-size: var(--_container-size);
+  border-radius: var(--_container-shape);
+  border: var(--_outline-width) solid var(--_outline-color);
+  background-color: var(--_container-color);
+  box-sizing: border-box;
+  pointer-events: none;
+  transition:
+    background-color var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    border-color var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    transform var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
+}
+
+/* Selected (checked or indeterminate) container */
+:host(.md-checkbox--selected) .md-checkbox__container {
+  background-color: var(--_selected-container-color);
+  border-color: var(--_selected-container-color);
+}
+
+/* ==========================================================
+   5b. PRESS ANIMATION — M3 Expressive
+   Same approach as md-button shape-morph: squish on press,
+   spring back on release with asymmetric timing.
+   ========================================================== */
+
+:host(.md-checkbox--pressed) .md-checkbox__container {
+  transform: scale(0.82);
+  transition:
+    background-color var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    border-color var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    transform var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* Error state support via custom property */
+:host([aria-invalid="true"]) .md-checkbox__container {
+  border-color: var(--md-sys-color-error);
+}
+
+:host([aria-invalid="true"].md-checkbox--selected) .md-checkbox__container {
+  background-color: var(--md-sys-color-error);
+  border-color: var(--md-sys-color-error);
+}
+
+/* ==========================================================
+   6. ICON (Material Symbols check / remove)
+   ========================================================== */
+
+/* The glyph is the SAME Material Symbols `check` md-step uses for a completed
+   step — see md-step.css §"bubble". The font-family has to be declared here
+   too: the global `.material-symbols-outlined` rule lives in the document
+   stylesheet and does not cross the shadow boundary, so a shadow-DOM glyph with
+   no local font-family renders as the literal word "check". */
+.md-checkbox__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  color: var(--_icon-color);
+  overflow: visible;
+}
+
+.md-checkbox__icon .material-symbols-outlined {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-size: var(--_icon-size);
+  line-height: 1;
+  font-weight: normal;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  /* FILL 1 / wght 600 — the same face md-step gives a completed step, which is
+     what makes the two marks read as one shape rather than two weights. */
+  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Scale-in when the mark appears, replacing the old stroke-draw animation a
+   font glyph cannot do. Matches md-step's glyph entrance. */
+@keyframes md-checkbox-glyph-in {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+:host(.md-checkbox--checked) .md-checkbox__icon .material-symbols-outlined,
+:host(.md-checkbox--indeterminate) .md-checkbox__icon .material-symbols-outlined {
+  animation: md-checkbox-glyph-in
+    var(--md-sys-motion-duration-short2, 200ms)
+    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)) both;
+}
+
+/* Unselected: hide icon entirely */
+:host(.md-checkbox--unselected) .md-checkbox__icon {
+  opacity: 0;
+}
+
+:host(.md-checkbox--selected) .md-checkbox__icon {
+  opacity: 1;
+}
+
+/* ==========================================================
+   7. DISABLED
+   ========================================================== */
+
+:host(.md-checkbox--disabled) {
+  cursor: default;
+  pointer-events: none;
+}
+
+:host(.md-checkbox--disabled.md-checkbox--unselected) .md-checkbox__container {
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  background-color: transparent;
+}
+
+:host(.md-checkbox--disabled.md-checkbox--selected) .md-checkbox__container {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  border-color: transparent;
+}
+
+:host(.md-checkbox--disabled.md-checkbox--selected) .md-checkbox__icon {
+  color: var(--md-sys-color-surface);
+}
+
+:host(.md-checkbox--disabled) .md-checkbox__state-layer {
+  display: none;
+}
+
+/* Soft-disabled: disabled visuals but remains focusable */
+:host([soft-disabled]) {
+  cursor: default;
+  pointer-events: auto;
+}
+
+:host([soft-disabled].md-checkbox--unselected) .md-checkbox__container {
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  background-color: transparent;
+}
+
+:host([soft-disabled].md-checkbox--selected) .md-checkbox__container {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  border-color: transparent;
+}
+
+:host([soft-disabled].md-checkbox--selected) .md-checkbox__icon {
+  color: var(--md-sys-color-surface);
+}
+
+:host([soft-disabled]) .md-checkbox__state-layer {
+  display: none;
+}
+
+/* ==========================================================
+   8. REDUCED MOTION
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-checkbox__container,
+  .md-checkbox__state-layer {
+    transition: none;
+  }
+
+  .md-checkbox__icon .material-symbols-outlined {
+    animation: none;
+  }
+}
+
+/* ==========================================================
+   9. FORCED COLORS — Windows High Contrast
+   ========================================================== */
+
+@media (forced-colors: active) {
+  :host {
+    forced-color-adjust: none;
+  }
+
+  .md-checkbox__container {
+    border-color: ButtonText;
+    background-color: ButtonFace;
+  }
+
+  :host(.md-checkbox--selected) .md-checkbox__container {
+    background-color: Highlight;
+    border-color: Highlight;
+  }
+
+  :host(.md-checkbox--selected) .md-checkbox__icon {
+    color: HighlightText;
+  }
+
+  :host(:focus-visible) {
+    outline-color: Highlight;
+  }
+
+  :host(.md-checkbox--disabled) .md-checkbox__container {
+    border-color: GrayText;
+    opacity: 1;
+  }
+
+  :host(.md-checkbox--disabled.md-checkbox--selected) .md-checkbox__container {
+    background-color: GrayText;
+    border-color: GrayText;
+  }
+
+  .md-checkbox__state-layer {
+    display: none;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }
+
+
+/* ==========================================================
+   TARGET WRAPPER + SUPPORTING LINE
+   The 48px touch target, its ripple clipping and its circular overflow now
+   live on .md-checkbox__target rather than on :host. That indirection exists
+   for one reason: `:host { overflow: hidden }` clips the ripple to a circle,
+   and it was silently clipping the supporting message out of existence too.
+   The host can now grow to fit a message while the target keeps its exact
+   size and clipping.
+
+   Layout only changes when there IS a message, so a checkbox without one
+   renders byte-identically to before.
+   ========================================================== */
+.md-checkbox__target {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_touch-size);
+  block-size: var(--_touch-size);
+  border-radius: var(--md-sys-shape-corner-full, 50%);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+:host(.md-checkbox--has-support) {
+  /* Stack target over message. Height becomes auto so the line is IN FLOW —
+     an absolutely positioned one was clipped by the target's overflow and,
+     once escaped, painted underneath the following row. */
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* Stay as NARROW as the touch target. max-content here stretched the host to
+     the width of the sentence, which shoved the adjacent label text far to the
+     right. The message overflows horizontally instead (overflow is visible), so
+     it is readable without affecting the row's layout. */
+  inline-size: var(--_touch-size);
+  block-size: auto;
+  overflow: visible;
+  border-radius: 0;
+}
+
+.md-checkbox__support {
+  display: block;
+  margin-block-start: 2px;
+  /* Align the message with the VISIBLE box, not the touch target. The box is
+     centred inside the larger target, so a message flush to the host's edge
+     started ~15px to its left and read as misaligned. Inset it by exactly the
+     gap between the two. */
+  margin-inline-start: calc((var(--_touch-size) - var(--_container-size)) / 2);
+  /* Sized to its content and allowed to overflow the narrow host — the host
+     reserves the vertical space, not the horizontal. */
+  inline-size: max-content;
+  max-inline-size: 60ch;
+
+  font-family: var(--md-sys-typescale-body-small-font-family, Roboto, sans-serif);
+  font-size: max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px));
+  line-height: max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  color: var(--md-checkbox-supporting-text-color, var(--md-sys-color-on-surface-variant, #49454F));
+}
+
+.md-checkbox__support--error {
+  color: var(--md-checkbox-error-text-color, var(--md-sys-color-error, #B3261E));
+}

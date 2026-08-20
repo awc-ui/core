@@ -1,0 +1,407 @@
+---
+const features = [
+  {
+    icon: "deployed_code",
+    tone: "primary",
+    title: "Technology agnostic",
+    text:
+      "Standard web components that work with any technology, or none at all. Typed wrappers are published for React, Angular, Vue, and Svelte.",
+    highlight: "5 technologies",
+  },
+  {
+    icon: "palette",
+    tone: "tertiary",
+    title: "Deep theming",
+    text:
+      "Over 200 MD3 design tokens, 950+ component-level CSS custom properties, and ::part() selectors, with light and dark themes included.",
+    highlight: "200+ tokens",
+  },
+  {
+    icon: "accessibility_new",
+    tone: "secondary",
+    title: "Accessible by default",
+    text:
+      "WAI-ARIA roles, keyboard navigation, focus management, and screen-reader support, audited against WCAG 2.1 AA in continuous integration.",
+    highlight: "WCAG 2.1 AA",
+  },
+  {
+    icon: "design_services",
+    tone: "primary",
+    title: "Built to the MD3 spec",
+    text:
+      "Variants, sizes, states, and motion follow the Material Design 3 specification, including state layers, ripples, and shape morphing.",
+    highlight: "M3 spec",
+  },
+  {
+    icon: "format_textdirection_r_to_l",
+    tone: "tertiary",
+    title: "RTL & i18n ready",
+    text:
+      "CSS logical properties throughout, with directional icons that mirror automatically. Layout, positioning, and keyboard navigation all follow the document's reading direction.",
+    highlight: "Full RTL",
+  },
+  {
+    icon: "smart_toy",
+    tone: "secondary",
+    title: "AI-ready",
+    text:
+      "Ships with an LLM manifest that gives AI coding assistants accurate component APIs and usage guidance for generating correct code.",
+    highlight: "LLM manifest",
+  },
+  {
+    icon: "colorize",
+    tone: "primary",
+    title: "Custom theme generator",
+    text:
+      "Generate a complete MD3 theme from seed colors with the built-in theme generator — matching light and dark palettes, exported as CSS tokens.",
+    highlight: "Theme generator",
+  },
+  {
+    icon: "inventory_2",
+    tone: "tertiary",
+    title: "Zero dependencies",
+    text:
+      "The core package has no runtime dependencies. Components load lazily and individually, with a CI-enforced budget of 10 kB per component.",
+    highlight: "0 dependencies",
+  },
+  {
+    icon: "fact_check",
+    tone: "secondary",
+    title: "Native form validation",
+    text:
+      "Inputs are form-associated custom elements built on ElementInternals: they submit real FormData, honor required and reset, and report validity to the surrounding form.",
+    highlight: "Form-associated",
+  },
+  {
+    icon: "translate",
+    tone: "primary",
+    title: "Translation ready",
+    text:
+      "Every user-visible string is a component prop with an English default, so any i18n stack plugs in without adapters. The documentation demos ship in seven locales.",
+    highlight: "Any i18n stack",
+  },
+  {
+    icon: "dns",
+    tone: "tertiary",
+    title: "Server-side rendering",
+    text:
+      "A hydrate module renders components to declarative shadow DOM on the server, with validated reference apps for Next.js, Nuxt, SvelteKit, Astro, and Angular SSR.",
+    highlight: "SSR + DSD",
+  },
+  {
+    icon: "compress",
+    tone: "secondary",
+    title: "Density system",
+    text:
+      "A global density scale condenses every component through four steps for data-heavy screens — set one attribute on any ancestor, or tune per component.",
+    highlight: "4 density steps",
+  },
+];
+---
+
+<section class="awc-features">
+  <div class="awc-features__header" data-awc-reveal>
+    <span class="awc-features__eyebrow">Why AWC UI</span>
+    <h2 class="awc-features__title">
+      Material Design 3,<br/>
+      <span class="awc-features__title-accent">end to end.</span>
+    </h2>
+    <p class="awc-features__lede">
+      Every component follows the Material&nbsp;Design&nbsp;3 specification &mdash;
+      variants, states, motion, and accessibility included &mdash; and every release
+      is verified by unit, end-to-end, and accessibility test suites.
+    </p>
+  </div>
+
+  <div class="awc-features__grid" data-awc-reveal-stagger>
+    {features.map((f) => (
+      <article class={`awc-feature awc-feature--${f.tone}`}>
+        <div class="awc-feature__icon" aria-hidden="true">
+          <span class="material-symbols-outlined">{f.icon}</span>
+        </div>
+
+        <div class="awc-feature__body">
+          <span class="awc-feature__highlight">{f.highlight}</span>
+          <h3 class="awc-feature__title">{f.title}</h3>
+          <p class="awc-feature__text">{f.text}</p>
+        </div>
+
+        <div class="awc-feature__shape" aria-hidden="true"></div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+  .awc-features {
+    position: relative;
+    background: var(--md-sys-color-surface);
+    padding-block: clamp(4rem, 8vw, 7rem);
+    padding-inline: clamp(1.5rem, 5vw, 4rem);
+    overflow: hidden;
+  }
+
+  .awc-features__header {
+    max-inline-size: 720px;
+    margin-inline: auto;
+    text-align: center;
+    margin-block-end: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .awc-features__eyebrow {
+    display: inline-block;
+    padding-block: 0.3125rem;
+    padding-inline: 0.875rem;
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-block-end: 1.25rem;
+  }
+
+  .awc-features__title {
+    font-size: clamp(1.875rem, 4vw, 2.875rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 1rem;
+    text-wrap: balance;
+  }
+
+  .awc-features__title-accent {
+    display: inline-block;
+    background: linear-gradient(
+      105deg,
+      var(--md-sys-color-primary),
+      var(--md-sys-color-tertiary)
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .awc-features__lede {
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--md-sys-color-on-surface-variant);
+    text-wrap: pretty;
+  }
+
+  /* Uniform 3-col grid on desktop; reflows cleanly at narrow widths. */
+  .awc-features__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    max-inline-size: 1240px;
+    margin-inline: auto;
+  }
+
+  .awc-features__grid > * {
+    /* While the stagger reveal hasn't fired, keep cards invisible so the
+       grid doesn't pop in unstyled. */
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  .awc-features__grid.is-visible > * {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .awc-feature {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 1.5rem;
+    padding: 1.75rem;
+    border-radius: var(--md-sys-shape-corner-extra-large, 28px);
+    background: var(--md-sys-color-surface-container-lowest);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    transition:
+      transform var(--md-sys-motion-duration-medium2, 300ms) var(--awc-spring-spatial),
+      box-shadow var(--md-sys-motion-duration-medium2, 300ms) var(--awc-spring-effects),
+      border-color var(--awc-dur-default) var(--awc-spring-effects);
+  }
+
+  .awc-feature:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--md-sys-elevation-3);
+  }
+
+  /* Decorative shape — large blurred container-tone blob, pinned to the
+     bottom-right corner of each card. Shifts on hover for a tiny bit of
+     spatial energy. */
+  .awc-feature__shape {
+    position: absolute;
+    inset-block-end: -25%;
+    inset-inline-end: -25%;
+    inline-size: 60%;
+    block-size: 60%;
+    border-radius: 50%;
+    z-index: -1;
+    filter: blur(40px);
+    opacity: 0.55;
+    transition: transform var(--md-sys-motion-duration-medium4, 400ms) var(--awc-spring-spatial);
+  }
+
+  .awc-feature:hover .awc-feature__shape {
+    transform: translate(-12%, -12%) scale(1.1);
+  }
+
+  /* Tonal variants — three families that rotate to feel "Material" */
+  .awc-feature--primary {
+    background: linear-gradient(
+      155deg,
+      var(--md-sys-color-surface-container-lowest) 30%,
+      color-mix(in srgb, var(--md-sys-color-primary-container) 60%, transparent) 100%
+    );
+  }
+
+  .awc-feature--primary .awc-feature__icon {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+  }
+
+  .awc-feature--primary .awc-feature__highlight {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+  }
+
+  .awc-feature--primary .awc-feature__shape {
+    background: var(--md-sys-color-primary-container);
+  }
+
+  .awc-feature--secondary {
+    background: linear-gradient(
+      155deg,
+      var(--md-sys-color-surface-container-lowest) 30%,
+      color-mix(in srgb, var(--md-sys-color-secondary-container) 60%, transparent) 100%
+    );
+  }
+
+  .awc-feature--secondary .awc-feature__icon {
+    background: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+  }
+
+  .awc-feature--secondary .awc-feature__highlight {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .awc-feature--secondary .awc-feature__shape {
+    background: var(--md-sys-color-secondary-container);
+  }
+
+  .awc-feature--tertiary {
+    background: linear-gradient(
+      155deg,
+      var(--md-sys-color-surface-container-lowest) 30%,
+      color-mix(in srgb, var(--md-sys-color-tertiary-container) 60%, transparent) 100%
+    );
+  }
+
+  .awc-feature--tertiary .awc-feature__icon {
+    background: var(--md-sys-color-tertiary);
+    color: var(--md-sys-color-on-tertiary);
+  }
+
+  .awc-feature--tertiary .awc-feature__highlight {
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+  }
+
+  .awc-feature--tertiary .awc-feature__shape {
+    background: var(--md-sys-color-tertiary-container);
+  }
+
+  /* Icon — solid tonal pill */
+  .awc-feature__icon {
+    inline-size: 56px;
+    block-size: 56px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: var(--md-sys-shape-corner-large, 16px);
+    box-shadow: var(--md-sys-elevation-1);
+    transition: transform var(--md-sys-motion-duration-medium2, 300ms) var(--awc-spring-spatial);
+  }
+
+  .awc-feature:hover .awc-feature__icon {
+    transform: scale(1.05) rotate(-4deg);
+  }
+
+  .awc-feature__icon .material-symbols-outlined {
+    font-size: 28px;
+  }
+
+  .awc-feature__highlight {
+    display: inline-block;
+    margin-block-end: 0.625rem;
+    padding-block: 0.1875rem;
+    padding-inline: 0.625rem;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .awc-feature__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.3125rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .awc-feature__text {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  /* ============================================================
+     Responsive
+     ============================================================ */
+  @media (max-width: 64rem) {
+    .awc-features__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .awc-features__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .awc-feature {
+      padding: 1.5rem;
+    }
+
+    .awc-feature__icon {
+      inline-size: 48px;
+      block-size: 48px;
+    }
+
+    .awc-feature__icon .material-symbols-outlined {
+      font-size: 24px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .awc-feature,
+    .awc-feature__shape,
+    .awc-feature__icon {
+      transition: none !important;
+      transform: none !important;
+    }
+  }
+</style>

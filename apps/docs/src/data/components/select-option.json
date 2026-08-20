@@ -1,0 +1,93 @@
+{
+  "tag": "md-select-option",
+  "title": "Select Option",
+  "slug": "select-option",
+  "category": "Selection",
+  "subComponentOf": "md-select",
+  "storyId": null,
+  "props": [
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "selected",
+      "attribute": "selected",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "iconColor",
+      "attribute": "icon-color",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "supportingText",
+      "attribute": "supporting-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdSelectOptionChange",
+      "detail": "void"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [],
+  "cssCustomProps": [],
+  "dependencies": [
+    "md-select"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdSelectOptionChange",
+      "detail": "void"
+    }
+  ]
+}

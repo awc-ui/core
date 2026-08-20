@@ -1,0 +1,336 @@
+{
+  "tag": "md-number-field",
+  "title": "Number Field",
+  "slug": "number-field",
+  "category": "Text Inputs",
+  "subComponentOf": null,
+  "storyId": "text-inputs-number-field--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'filled' | 'outlined'",
+      "default": "'filled'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "placeholder",
+      "attribute": "placeholder",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "supportingText",
+      "attribute": "supporting-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "error",
+      "attribute": "error",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "errorText",
+      "attribute": "error-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "readOnly",
+      "attribute": "readonly",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "required",
+      "attribute": "required",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "name",
+      "attribute": "name",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "number | null",
+      "default": "null",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "locale",
+      "attribute": "locale",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "formatOptions",
+      "attribute": "format-options",
+      "type": "Intl.NumberFormatOptions | string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "min",
+      "attribute": "min",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "max",
+      "attribute": "max",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "step",
+      "attribute": "step",
+      "type": "number",
+      "default": "1",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "smallStep",
+      "attribute": "small-step",
+      "type": "number",
+      "default": "0.1",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "largeStep",
+      "attribute": "large-step",
+      "type": "number",
+      "default": "10",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "snapOnStep",
+      "attribute": "snap-on-step",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "allowOutOfRange",
+      "attribute": "allow-out-of-range",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "allowWheelScrub",
+      "attribute": "allow-wheel-scrub",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "steppers",
+      "attribute": "steppers",
+      "type": "'inline' | 'split' | 'none'",
+      "default": "'inline'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "incrementLabel",
+      "attribute": "increment-label",
+      "type": "string",
+      "default": "'Increment'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "decrementLabel",
+      "attribute": "decrement-label",
+      "type": "string",
+      "default": "'Decrement'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "valueMissingLabel",
+      "attribute": "value-missing-label",
+      "type": "string",
+      "default": "'Please enter a number.'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "reserveSupportingSpace",
+      "attribute": "reserve-supporting-space",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdInput",
+      "detail": "MdNumberFieldChangeDetail"
+    },
+    {
+      "name": "mdChange",
+      "detail": "MdNumberFieldChangeDetail"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ],
+  "methods": [
+    {
+      "name": "setFocus",
+      "params": ""
+    },
+    {
+      "name": "select",
+      "params": ""
+    },
+    {
+      "name": "stepUp",
+      "params": "times: number = 1"
+    },
+    {
+      "name": "stepDown",
+      "params": "times: number = 1"
+    },
+    {
+      "name": "getValidity",
+      "params": ""
+    },
+    {
+      "name": "checkValidity",
+      "params": ""
+    },
+    {
+      "name": "reportValidity",
+      "params": ""
+    },
+    {
+      "name": "setCustomValidity",
+      "params": "message: string"
+    }
+  ],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "field",
+      "description": "Inner md-text-field"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-number-field-width",
+      "description": "Host inline-size (default 100% of container)"
+    },
+    {
+      "name": "--md-number-field-min-width",
+      "description": "Minimum host inline-size"
+    },
+    {
+      "name": "--md-number-field-stepper-icon-size",
+      "description": "Stepper glyph size (density-tapered 20px)"
+    },
+    {
+      "name": "--md-number-field-stepper-color",
+      "description": "Stepper icon ink"
+    },
+    {
+      "name": "--md-number-field-split-stepper-size",
+      "description": "Split-layout stepper circle (density-tapered 40px)"
+    }
+  ],
+  "dependencies": [
+    "md-icon-button",
+    "md-text-field"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [
+    {
+      "name": "MdNumberFieldChangeDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** The raw numeric value (`null` = empty). Never the formatted string. */\n  value: number | null;\n  /** The formatted display text at emit time. */\n  formattedValue: string;\n  /** What caused the change. */\n  reason: MdNumberFieldChangeReason;"
+    },
+    {
+      "name": "MdNumberFieldChangeReason",
+      "kind": "type",
+      "body": "| 'input-change' | 'input-clear' | 'input-blur' | 'keyboard' | 'increment-press' | 'decrement-press' | 'wheel' | 'none'"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdInput",
+      "detail": "MdNumberFieldChangeDetail"
+    },
+    {
+      "name": "mdChange",
+      "detail": "MdNumberFieldChangeDetail"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ]
+}

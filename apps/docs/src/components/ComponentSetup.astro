@@ -1,0 +1,175 @@
+---
+import TechnologyTabs from './TechnologyTabs.astro';
+
+interface Props {
+  /** The custom-element tag, e.g. "md-button". The class name is derived automatically. */
+  tag: string;
+  /**
+   * Optional inner text content used inside the tag in every snippet.
+   * Defaults to a title-cased form of the tag (e.g. "md-icon-button" -> "Icon Button").
+   * Components that take attributes instead of children can pass `example=""`.
+   */
+  example?: string;
+}
+
+const { tag, example } = Astro.props;
+
+// "md-button"        -> "MdButton"
+// "md-icon-button"   -> "MdIconButton"
+const className = tag
+  .split('-')
+  .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+  .join('');
+
+// "md-button"      -> "Button"
+// "md-icon-button" -> "Icon Button"
+const friendlyTitle = tag
+  .replace(/^md-/, '')
+  .split('-')
+  .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+  .join(' ');
+
+const inner = example ?? friendlyTitle;
+
+// Per-stack snippets. Each shows TWO patterns:
+//   A) Global registration — register every component once (typically in
+//      your app entry); fewer imports per file but ships the whole library.
+//   B) Single-component import — register / import only this one component;
+//      genuinely tree-shake friendly.
+// Fonts / tokens / one-time package install live in the Installation guide.
+
+// NOTE: every script tag in these developer-facing snippets is
+// written with the `\x3C` escape for `<`. The string value is
+// byte-identical to a literal opening script tag (so the highlighted
+// code panel renders verbatim), but the escape keeps the tags
+// invisible to Vite's naive dev-time dependency scanner, which would
+// otherwise try to parse the template-literal `${…}` interpolations
+// as JavaScript and fail (e.g. `import { ${className} } from '…'`).
+const htmlSnippet = `<!-- ─── Option A: global registration (all components) ─── -->
+\x3Cscript type="module">
+  import '@awc-ui/core/define';
+\x3C/script>
+
+
+<!-- ─── Option B: single import (tree-shake only ${tag}) ─── -->
+\x3Cscript type="module">
+  import '@awc-ui/core/components/${tag}';
+\x3C/script>
+
+
+<${tag}>${inner}</${tag}>`;
+
+const reactSnippet = `// ─── Option A: typed React wrapper (registers all components) ───
+//   Importing from '@awc-ui/react' calls defineCustomElements() as a
+//   side effect, so every md-* element becomes available in the browser.
+import { ${className} } from '@awc-ui/react';
+
+export function Example() {
+  return <${className}>${inner}</${className}>;
+}
+
+
+// ─── Option B: single import (tree-shake to only ${tag}) ───
+//   Skip the wrapper and use the raw custom element. Smallest bundle,
+//   but you lose typed props/events on JSX.
+import '@awc-ui/core/components/${tag}';
+
+export function ExampleTreeShaken() {
+  return <${tag}>${inner}</${tag}>;
+}`;
+
+const vueSnippet = `<!-- ─── Option A: typed Vue wrapper (registers all components) ─── -->
+\x3Cscript setup lang="ts">
+import { ${className} } from '@awc-ui/vue';
+\x3C/script>
+
+<template>
+  <${className}>${inner}</${className}>
+</template>
+
+
+<!-- ─── Option B: single import (tree-shake to only ${tag}) ─── -->
+\x3Cscript setup lang="ts">
+import '@awc-ui/core/components/${tag}';
+\x3C/script>
+
+<template>
+  <${tag}>${inner}</${tag}>
+</template>`;
+
+const angularSnippet = `// ─── Option A: schema module (any md-* element accepted) ───
+//   Pair with \`defineCustomElements(window)\` in main.ts.
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { AwcUiModule } from '@awc-ui/angular';
+
+@Component({
+  standalone: true,
+  imports: [AwcUiModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: \`<${tag}>${inner}</${tag}>\`,
+})
+export class ExampleComponent {}
+
+
+// ─── Option B: typed directive (tree-shake friendly) ───
+//   Pair with \`import '@awc-ui/core/components/${tag}'\` in main.ts.
+import { Component } from '@angular/core';
+import { ${className} } from '@awc-ui/angular';
+
+@Component({
+  standalone: true,
+  imports: [${className}],
+  template: \`<${tag}>${inner}</${tag}>\`,
+})
+export class ExampleTreeShakenComponent {}`;
+
+const svelteSnippet = `<!-- ─── Option A: global registration (done once in main entry) ─── -->
+<!-- main.ts:                                                          -->
+<!--   import { defineCustomElements } from '@awc-ui/svelte';        -->
+<!--   defineCustomElements(window);                                   -->
+
+<${tag}>${inner}</${tag}>
+
+
+<!-- ─── Option B: single import (tree-shake to only ${tag}) ─── -->
+\x3Cscript lang="ts">
+  import '@awc-ui/core/components/${tag}';
+\x3C/script>
+
+<${tag}>${inner}</${tag}>`;
+---
+
+<p class="component-setup__intro">
+  Already installed? See the
+  <a href="/getting-started/installation/">Installation guide</a> for one-time package setup
+  (core + tokens, fonts). Each tab below shows two patterns for using
+  <code>{tag}</code> in your project: <strong>Option A</strong> registers every AWC UI
+  component at once (simplest), <strong>Option B</strong> imports only this component for
+  tree-shake-friendly bundles.
+</p>
+
+<TechnologyTabs
+  html={htmlSnippet}
+  react={reactSnippet}
+  vue={vueSnippet}
+  angular={angularSnippet}
+  svelte={svelteSnippet}
+/>
+
+<style>
+  .component-setup__intro {
+    margin-block: 0.5rem 0.75rem;
+    color: var(--md-sys-color-on-surface-variant, var(--sl-color-gray-2));
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+  .component-setup__intro code {
+    font-family:
+      var(--sl-font-system-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+    font-size: 0.875em;
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    background: var(--md-sys-color-surface-container, var(--sl-color-gray-6));
+    color: var(--md-sys-color-on-surface, inherit);
+  }
+</style>

@@ -1,0 +1,243 @@
+{
+  "tag": "md-icon-button",
+  "title": "Icon Button",
+  "slug": "icon-button",
+  "category": "Actions",
+  "subComponentOf": null,
+  "storyId": "actions-icon-button--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'standard' | 'filled' | 'outlined' | 'tonal'",
+      "default": "'standard'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "size",
+      "attribute": "size",
+      "type": "'xs' | 'sm' | 'md' | 'lg' | 'xl'",
+      "default": "'sm'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "shape",
+      "attribute": "shape",
+      "type": "'round' | 'square'",
+      "default": "'round'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "buttonWidth",
+      "attribute": "button-width",
+      "type": "'narrow' | 'default' | 'wide'",
+      "default": "'default'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "toggle",
+      "attribute": "toggle",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "selected",
+      "attribute": "selected",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "shapeMorph",
+      "attribute": "shape-morph",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "ripple",
+      "attribute": "ripple",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "selectedIcon",
+      "attribute": "selected-icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "href",
+      "attribute": "href",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "target",
+      "attribute": "target",
+      "type": "string",
+      "default": "'_self'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "connectedLeft",
+      "attribute": "connected-left",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "connectedRight",
+      "attribute": "connected-right",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "groupTabindex",
+      "attribute": "group-tabindex",
+      "type": "number | null",
+      "default": "null",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdClick",
+      "detail": "{ selected: boolean }"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "selected",
+      "description": "Custom selected icon (toggle)"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": "State-layer overlay"
+    },
+    {
+      "name": "icon",
+      "description": "Default icon wrapper"
+    },
+    {
+      "name": "selected-icon",
+      "description": "Selected icon wrapper (toggle)"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-icon-button-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-icon-button-icon-color",
+      "description": "Icon color"
+    },
+    {
+      "name": "--md-icon-button-state-layer-color",
+      "description": "State-layer ink (hover / focus / press)"
+    },
+    {
+      "name": "--md-icon-button-icon-size",
+      "description": "Icon dimensions"
+    },
+    {
+      "name": "--md-icon-button-container-shape",
+      "description": "Border-radius override"
+    },
+    {
+      "name": "--md-icon-button-outline-color",
+      "description": "Outlined border color"
+    },
+    {
+      "name": "--md-icon-button-outline-width",
+      "description": "Outlined border width"
+    },
+    {
+      "name": "--md-icon-button-container-width",
+      "description": "Container width override"
+    },
+    {
+      "name": "--md-icon-button-container-height",
+      "description": "Container height override"
+    }
+  ],
+  "dependencies": [
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdClick",
+      "detail": "{ selected: boolean }"
+    }
+  ]
+}

@@ -1,0 +1,317 @@
+{
+  "tag": "md-step",
+  "title": "Step",
+  "slug": "step",
+  "category": "Navigation",
+  "subComponentOf": "md-stepper",
+  "storyId": null,
+  "props": [
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "description",
+      "attribute": "description",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "completed",
+      "attribute": "completed",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "active",
+      "attribute": "active",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "error",
+      "attribute": "error",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "errorText",
+      "attribute": "error-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "optional",
+      "attribute": "optional",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "editable",
+      "attribute": "editable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "completedIcon",
+      "attribute": "completed-icon",
+      "type": "string",
+      "default": "'check'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "errorIcon",
+      "attribute": "error-icon",
+      "type": "string",
+      "default": "'priority_high'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "accessibleName",
+      "attribute": "accessible-name",
+      "type": "string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "hideActions",
+      "attribute": "hide-actions",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdStepClick",
+      "detail": "{ index: number }"
+    },
+    {
+      "name": "mdStepNext",
+      "detail": "{ index: number }"
+    },
+    {
+      "name": "mdStepBack",
+      "detail": "{ index: number }"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "bubble",
+      "description": ""
+    },
+    {
+      "name": "dot",
+      "description": ""
+    },
+    {
+      "name": "connector connector-leading",
+      "description": ""
+    },
+    {
+      "name": "inner",
+      "description": ""
+    },
+    {
+      "name": "indicator",
+      "description": ""
+    },
+    {
+      "name": "state-layer",
+      "description": ""
+    },
+    {
+      "name": "text",
+      "description": ""
+    },
+    {
+      "name": "label",
+      "description": ""
+    },
+    {
+      "name": "optional",
+      "description": ""
+    },
+    {
+      "name": "description",
+      "description": ""
+    },
+    {
+      "name": "connector connector-trailing",
+      "description": ""
+    },
+    {
+      "name": "content",
+      "description": ""
+    },
+    {
+      "name": "actions",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-step-indicator-size",
+      "description": "Bubble diameter (32px; 28px compact)"
+    },
+    {
+      "name": "--md-step-indicator-ring",
+      "description": "Hover / ripple ring thickness around the"
+    },
+    {
+      "name": "--md-step-indicator-color",
+      "description": "Pending bubble background"
+    },
+    {
+      "name": "--md-step-indicator-text",
+      "description": "Pending bubble text"
+    },
+    {
+      "name": "--md-step-active-color",
+      "description": "Active bubble background"
+    },
+    {
+      "name": "--md-step-active-text",
+      "description": "Active bubble text"
+    },
+    {
+      "name": "--md-step-active-halo-color",
+      "description": "Soft halo around the active bubble"
+    },
+    {
+      "name": "--md-step-completed-color",
+      "description": "Completed bubble background"
+    },
+    {
+      "name": "--md-step-completed-text",
+      "description": "Completed bubble text"
+    },
+    {
+      "name": "--md-step-error-color",
+      "description": "Error bubble background"
+    },
+    {
+      "name": "--md-step-error-text",
+      "description": "Error bubble text"
+    },
+    {
+      "name": "--md-step-connector-color",
+      "description": "Inactive connector track"
+    },
+    {
+      "name": "--md-step-connector-filled-color",
+      "description": "Filled connector"
+    },
+    {
+      "name": "--md-step-connector-thickness",
+      "description": "Connector thickness (4px)"
+    },
+    {
+      "name": "--md-step-connector-duration",
+      "description": "Connector fill duration"
+    },
+    {
+      "name": "--md-step-label-color",
+      "description": "Resting label colour"
+    },
+    {
+      "name": "--md-step-label-active-color",
+      "description": "Active label colour"
+    },
+    {
+      "name": "--md-step-description-color",
+      "description": "Supporting / optional caption colour"
+    },
+    {
+      "name": "--md-step-state-layer-color",
+      "description": "Hover / focus / press overlay"
+    },
+    {
+      "name": "--md-step-expand-duration",
+      "description": "Vertical panel expand duration"
+    },
+    {
+      "name": "--md-step-collapse-duration",
+      "description": "Vertical panel collapse duration"
+    },
+    {
+      "name": "--md-step-idx",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-stepper",
+    "md-ripple",
+    "md-button"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdStepClick",
+      "detail": "{ index: number }"
+    },
+    {
+      "name": "mdStepNext",
+      "detail": "{ index: number }"
+    },
+    {
+      "name": "mdStepBack",
+      "detail": "{ index: number }"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+/* ==========================================================
+   md-select-option — declarative data carrier
+
+   Renders nothing visible. The parent md-select / md-multi-select
+   reads this element's value / label / icon / disabled and projects
+   it into the md-menu dropdown as a real md-menu-item row. Keeping it
+   display:none avoids any flash of unstyled options before hydration.
+   ========================================================== */
+
+:host {
+  display: none;
+}

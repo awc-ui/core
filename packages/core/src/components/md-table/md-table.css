@@ -1,0 +1,456 @@
+/* ==========================================================
+   md-table — MD3 Expressive table (composable primitive)
+
+   Layout: the shadow `.md-table__grid` owns the column tracks; every
+   slotted `md-table-row` is a REAL grid item spanning all tracks that
+   lays its cells on the shared tracks via `grid-template-columns:
+   subgrid`. Rows being real boxes is what makes row hover, stripes,
+   dividers, sticky rows and focus rings work.
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-table-row-height-compact         36px (dense)
+     --md-table-row-height-standard        52px
+     --md-table-row-height-comfortable     60px
+     --md-table-header-height              56px
+     --md-table-cell-padding-inline        per-density default
+     --md-table-divider-color              between rows
+     --md-table-stripe-color               every-other-row overlay color
+     --md-table-head-bg                    background for thead rows
+     --md-table-head-color                 text color for thead
+     --md-table-foot-bg                    background for tfoot rows
+     --md-table-row-hover-color            row hover state-layer color
+     --md-table-row-selected-bg            selected row background
+     --md-table-row-selected-color         selected row text
+     --md-table-columns-template           grid-template-columns override
+
+   CSS PARTS:
+     caption    The optional caption above the head
+     grid       The grid container holding all rows
+     loading    The loading overlay (when `loading`)
+     empty      The empty-state region (when `empty`)
+   ========================================================== */
+
+:host {
+  /* Motion: effects springs for color/opacity (house pairing rule). */
+  --_fx-fast: var(--md-sys-motion-spring-effects-fast-duration, 150ms)
+    var(--md-sys-motion-spring-effects-fast-easing, cubic-bezier(0.31, 0.94, 0.34, 1));
+  --_fx-default: var(--md-sys-motion-spring-effects-default-duration, 200ms)
+    var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.8, 0.34, 1));
+
+  /* Density → row heights. Compact is a genuinely dense 36px data row (tighten
+     further via --md-table-row-height-compact); the header is 56px regardless
+     of body density (data-table idiom). */
+  --_row-h-compact: var(--md-table-row-height-compact, max(28px, calc(36px + var(--md-sys-density-scale, 0) * 4px)));
+  /* Standard (default) rows follow a global `data-density` ancestor (0…-4,
+     4px/rung); density-scale is 0 by default so 52px is unchanged. The explicit
+     `density="compact|comfortable"` prop overrides via the blocks below. */
+  --_row-h-standard: var(--md-table-row-height-standard, calc(52px + var(--md-sys-density-scale, 0) * 4px));
+  --_row-h-comfortable: var(--md-table-row-height-comfortable, max(40px, calc(60px + var(--md-sys-density-scale, 0) * 4px)));
+  --_row-h: var(--_row-h-standard);
+  --_head-h: var(--md-table-header-height, max(40px, calc(56px + var(--md-sys-density-scale, 0) * 4px)));
+  /* Standard cell padding rides the spacing tokens (16/8 at density 0), so it
+     tightens with global density; compact/comfortable pin their own below. */
+  --_cell-pad-inline: var(--md-table-cell-padding-inline, var(--md-sys-spacing-inset-lg, 16px));
+  --_cell-pad-block: var(--md-table-cell-padding-block, var(--md-sys-spacing-inset-sm, 8px));
+
+  --_divider-color: var(--md-table-divider-color, var(--md-sys-color-outline-variant, #CAC4D0));
+  --_divider: var(--_divider-color);
+  --_stripe-color: var(
+    --md-table-stripe-color,
+    color-mix(
+      in srgb,
+      var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 50%),
+      transparent
+    )
+  );
+  --_head-bg: var(--md-table-head-bg, var(--md-sys-color-surface-container, #F3EDF7));
+  --_head-color: var(--md-table-head-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_foot-bg: var(--md-table-foot-bg, var(--md-sys-color-surface-container-low, #F7F2FA));
+
+  /* Row hover state layer — derived from the M3 state opacity token; zeroed
+     when `hoverable` is off (rows consume the var unconditionally). */
+  --_hover-layer: color-mix(
+    in srgb,
+    var(--md-table-row-hover-color, var(--md-sys-color-on-surface, #1C1B1F))
+      calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 100%),
+    transparent
+  );
+  --_row-selected-bg: var(--md-table-row-selected-bg, var(--md-sys-color-secondary-container, #E8DEF8));
+  --_row-selected-color: var(
+    --md-table-row-selected-color,
+    var(--md-sys-color-on-secondary-container, #1E192B)
+  );
+
+  display: block;
+  inline-size: 100%;
+  position: relative;
+  isolation: isolate;
+  color: var(--md-sys-color-on-surface, #1C1B1F);
+  font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif);
+  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-body-medium-letter-spacing, 0.25px);
+}
+
+:host(.md-table--density-compact) {
+  --_row-h: var(--_row-h-compact);
+  --_cell-pad-inline: var(--md-table-cell-padding-inline, 12px);
+  --_cell-pad-block: var(--md-table-cell-padding-block, 4px);
+  /* Shrink slotted checkboxes to the compact row height so their 48px touch
+     target doesn't force the row taller (inherits to the light-DOM cells). */
+  --md-checkbox-touch-target-size: 32px;
+}
+:host(.md-table--density-comfortable) {
+  --_row-h: var(--_row-h-comfortable);
+  --_cell-pad-inline: var(--md-table-cell-padding-inline, 20px);
+}
+
+:host(.md-table--no-dividers) {
+  --_divider: transparent;
+}
+:host(:not(.md-table--hoverable)) {
+  --_hover-layer: transparent;
+}
+
+.md-table__caption {
+  padding: 12px var(--_cell-pad-inline);
+  font-family: var(--md-sys-typescale-title-small-font-family, Roboto, sans-serif);
+  font-size: var(--md-sys-typescale-title-small-font-size, 14px);
+  font-weight: var(--md-sys-typescale-title-small-font-weight, 500);
+  line-height: var(--md-sys-typescale-title-small-line-height, 20px);
+  color: var(--md-sys-color-on-surface-variant, #49454F);
+}
+
+/* The single grid every row subgrids into. Template resolution:
+   explicit prop (inline --_columns-template) → public override var →
+   derived-from-first-row count (inline --_derived-template). */
+.md-table__grid {
+  display: grid;
+  grid-template-columns: var(
+    --_columns-template,
+    var(--md-table-columns-template, var(--_derived-template, none))
+  );
+  align-items: stretch;
+  /* Never squish OR wrap columns to fit: keep at least `min-width` if set,
+     otherwise the grid's natural (unwrapped) max-content width. When the
+     container is narrower the grid overflows and the scroll wrapper shows a
+     horizontal scrollbar (spreadsheet-style) instead of collapsing. */
+  min-inline-size: var(--_min-width, var(--md-table-min-width, max-content));
+}
+
+/* ── Frozen header (sticky-header): header grid pinned above a vertically
+   scrolling body grid, so the scrollbar spans only the body. ───────────── */
+.md-table__frozen {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 0;
+  inline-size: 100%;
+  /* Containing block for the custom overlay scrollbars. */
+  position: relative;
+}
+.md-table__head-scroll {
+  flex: 0 0 auto;
+  inline-size: 100%;
+  /* Clipped; horizontal position is mirrored from the body (see onBodyScroll). */
+  overflow: hidden;
+  /* Paint the header band on the WRAPPER: the header grid is synced to the
+     body's tracks, which stop a scrollbar-gutter short of the full width —
+     without this the last ~10px of the header showed the container surface
+     through. The inset hairline continues the header divider across that
+     gutter zone (it coincides with the row's own divider elsewhere). */
+  background-color: var(--_head-bg, var(--md-sys-color-surface-container, #F3EDF7));
+  box-shadow: inset 0 -1px var(--_divider, transparent);
+}
+.md-table__body-scroll {
+  flex: 1 1 auto;
+  inline-size: 100%;
+  min-block-size: 0;
+  max-block-size: var(--md-table-body-max-h, none);
+  /* Vertical scrolls natively; horizontal is fully owned by the custom bar
+     (.md-table__hscroll) — overflow-x:hidden kills the native horizontal bar
+     (so it never doubles with the custom one) while programmatic scrollLeft +
+     the wheel handler still scroll it. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* Default `scrollbar="overlay"`: the native vertical bar is fully hidden —
+   the custom overlay bar (.md-table__vscroll) floats over the rows' right
+   edge instead, so NO gutter is reserved: row backgrounds and dividers run
+   the full width and a bar can never take space or shift content. */
+:host(:not([scrollbar='gutter'])) .md-table__body-scroll {
+  scrollbar-width: none;
+}
+.md-table__body-scroll:focus-visible {
+  /* Inset ring: an outer outline would be clipped by the container's
+     overflow/border-radius. */
+  outline: 2px solid var(--md-sys-color-secondary, #625B71);
+  outline-offset: -2px;
+}
+/* Scoped to OVERLAY mode only — an unscoped display:none here once killed
+   the gutter mode's native bar (its width rule won, but nothing re-declared
+   display). */
+:host(:not([scrollbar='gutter'])) .md-table__body-scroll::-webkit-scrollbar {
+  display: none;
+}
+/* `scrollbar="gutter"`: classic inset bar in a reserved strip INSIDE the
+   table — rows stop short of the edge and the native bar crosses the row
+   borders. NB: no `scrollbar-width` here — modern Chrome ignores the styled
+   ::-webkit-scrollbar when it's set (see project memory). */
+:host([scrollbar='gutter']) .md-table__body-scroll {
+  scrollbar-gutter: stable;
+}
+:host([scrollbar='gutter']) .md-table__body-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+:host([scrollbar='gutter']) .md-table__body-scroll::-webkit-scrollbar-thumb {
+  /* >= 3:1 non-text contrast (surface-container-highest measured ~1.25:1). */
+  background: var(--md-sys-color-outline, #79747E);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+:host([scrollbar='gutter']) .md-table__body-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--md-sys-color-on-surface-variant, #49454F);
+  background-clip: content-box;
+}
+:host([scrollbar='gutter']) .md-table__vscroll {
+  display: none !important;
+}
+
+/* ── Custom horizontal scrollbar (frozen mode) ─────────────── */
+/* Custom vertical OVERLAY scrollbar (frozen mode): floats over the rows near
+   the body's right edge. Always visible while the body overflows — unlike the
+   auto-hiding macOS overlay bar — and takes NO layout space. */
+.md-table__vscroll {
+  position: absolute;
+  inset-inline-end: 3px;
+  inline-size: 8px;
+  display: none;
+  z-index: 3;
+  pointer-events: none;
+}
+.md-table__vscroll-thumb {
+  position: absolute;
+  inset-inline: 0;
+  border-radius: 999px;
+  /* WCAG 1.4.11 non-text contrast: 50% alpha of on-surface computes >=3.2:1
+     over every light surface in the family (45% measured 2.81-2.86:1 — just
+     UNDER the 3:1 line; the minimum passing alpha is 48%). */
+  background: color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 50%, transparent);
+  pointer-events: auto;
+  touch-action: none;
+}
+.md-table__vscroll-thumb:hover,
+.md-table__vscroll-thumb:active {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 60%, transparent);
+}
+
+.md-table__hscroll {
+  display: none; /* JS shows it (block) only when the body overflows */
+  position: relative;
+  flex: 0 0 auto;
+  block-size: 10px;
+  margin-inline: 8px;
+  margin-block: 2px;
+}
+.md-table__hscroll-thumb {
+  position: absolute;
+  inset-block: 1px;
+  inline-size: 40px;
+  min-inline-size: 24px;
+  background: var(--md-sys-color-outline, #79747E); /* >= 3:1 (was outline-variant ~1.6:1) */
+  border-radius: 999px;
+  cursor: grab;
+  touch-action: none;
+  transition: background-color var(--_fx-fast, 150ms ease);
+}
+.md-table__hscroll-thumb:hover {
+  background: var(--md-sys-color-outline, #79747E);
+}
+.md-table__hscroll-thumb:active {
+  cursor: grabbing;
+  background: var(--md-sys-color-on-surface-variant, #49454F);
+}
+/* The header grid's tracks are set to the body's resolved pixel widths by JS;
+   its width still fills the row so the leftover (scrollbar gutter) sits at the
+   end, keeping the columns aligned with the body. */
+.md-table__grid--head {
+  min-inline-size: max(100%, var(--_min-width, var(--md-table-min-width, 0px)));
+  inline-size: max-content;
+}
+.md-table__grid--body {
+  min-inline-size: max(100%, var(--_min-width, var(--md-table-min-width, 0px)));
+}
+
+/* ── Loading: shared shimmer bar ──────────────────────────── */
+.md-table__bar {
+  block-size: 16px;
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  background: linear-gradient(
+    90deg,
+    var(--md-sys-color-surface-container-high, #ECE6F0) 25%,
+    var(--md-sys-color-surface-container, #F3EDF7) 37%,
+    var(--md-sys-color-surface-container-high, #ECE6F0) 63%
+  );
+  background-size: 400% 100%;
+  animation: md-table-shimmer 1.4s ease infinite;
+}
+
+@keyframes md-table-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* ── Loading: SKELETON mode ───────────────────────────────────
+   Body (and footer) are hidden and replaced by shimmer rows; the header stays.
+   md-table-head/body/foot are the slot assignees, so display:none on them hides
+   their whole subtree. */
+:host(.md-table--loading-skeleton) ::slotted(md-table-body),
+:host(.md-table--loading-skeleton) ::slotted(md-table-foot) {
+  display: none;
+}
+
+.md-table__skeleton-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  align-items: center;
+  min-block-size: var(--_row-h);
+  border-block-end: 1px solid var(--_divider);
+}
+.md-table__skeleton-row:last-child {
+  border-block-end: none;
+}
+/* One bar per column, inset by the cell padding — fills the row. */
+.md-table__skeleton-row .md-table__bar {
+  margin-inline: var(--_cell-pad-inline);
+}
+
+/* ── Loading: OVERLAY mode ────────────────────────────────────
+   An indeterminate progress line just under the header + a scrim that dims and
+   blocks the body. Header/footer are untouched (the scrim starts below the
+   header). */
+.md-table__loading {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.md-table__scrim {
+  position: absolute;
+  inset-block-start: var(--_head-h);
+  inset-block-end: 0;
+  inset-inline: 0;
+  background: color-mix(in srgb, var(--md-sys-color-surface, #FEF7FF) 55%, transparent);
+  /* Block interaction with the (loading) body. */
+  pointer-events: auto;
+}
+
+/* The library's own linear indeterminate indicator, pinned under the header. */
+.md-table__progress {
+  position: absolute;
+  inset-block-start: var(--_head-h);
+  inset-inline: 0;
+}
+.md-table__progress md-progress-indicator {
+  display: block;
+  inline-size: 100%;
+}
+
+/* ── Empty state ──────────────────────────────────────────── */
+.md-table__empty {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* Fallback height when there's no bounded container to fill (a plain,
+     auto-height table). Override with --md-table-empty-min-height. */
+  min-block-size: var(--md-table-empty-min-height, 160px);
+  padding: 32px var(--_cell-pad-inline);
+  text-align: center;
+  color: var(--md-sys-color-on-surface-variant, #49454F);
+}
+
+/* When the table is empty, fill the scroll viewport as a flex column so the
+   empty region takes exactly the height left below the header — its content
+   centers on both axes with NO extra height / scrollbar. box-sizing:border-box
+   above keeps the padding inside that flexed height. */
+:host(.md-table--empty) {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100%;
+}
+:host(.md-table--empty) .md-table__grid {
+  flex: 0 0 auto;
+}
+:host(.md-table--empty) .md-table__empty {
+  flex: 1 1 auto;
+}
+
+/* Frozen mode: the empty message lives inside the body scroll area — fill it so
+   the content centers below the header. */
+.md-table__body-scroll {
+  display: flex;
+  flex-direction: column;
+}
+.md-table__body-scroll .md-table__empty {
+  flex: 1 1 auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-table__bar {
+    animation: none;
+  }
+}
+
+@media (forced-colors: active) {
+  /* WHCM strips background colors — without this the custom thumbs vanish
+     while the native bars stay suppressed (no scrollbar at all). */
+  .md-table__vscroll-thumb,
+  .md-table__hscroll-thumb {
+    background: ButtonText;
+    border: 1px solid ButtonText;
+    forced-color-adjust: none;
+  }
+}
+
+@media (forced-colors: active) {
+  :host {
+    --_divider: CanvasText;
+  }
+}
+
+/* Visually hidden, AT-audible (empty-state announcements). */
+.md-table__sr-status {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ==========================================================
+   DENSITY (numeric rungs — local override)
+   `density` here accepts two vocabularies: the semantic sizes
+   (compact/standard/comfortable, handled by the .md-table--density-* classes
+   above) and the library-wide numeric scale. A numeric rung maps onto the same
+   --md-sys-density-scale signal a global `data-density` ancestor sets, so a
+   local value overrides the inherited one and every scale-driven value in this
+   file (row height, header height, type) follows.
+
+   The semantic sizes are scale-aware too — their row heights are calcs, not
+   literals — so `density="compact"` nested in a `data-density="-2"` region
+   condenses further instead of pinning 36px.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

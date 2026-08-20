@@ -1,0 +1,2366 @@
+---
+title: Line Chart
+description: "A trend over a continuous axis — many series, six curve types, multiple y-axes, mark lines and interactive zoom"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ChartDemo from "../../../components/ChartDemo.astro";
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/line-chart.json";
+
+**A trend over a continuous axis.** One or many series, six curve types,
+category / time / value / log scales, multiple y-axes, mark lines, drag-zoom and
+a slider band, plus a built-in loading state. Series colours resolve to MD3
+colour roles, so dark theme and brand-token overrides re-tint automatically.
+
+:::note[Not a Material Design 3 component]
+M3 ships no charts. The rendering engine is **in-house Canvas2D with a DOM
+overlay** (`utils/charts/engine`) — not a third-party charting library, whatever
+the dependency tree suggests. The guidance below is house rules.
+:::
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Live preview"
+  storyId="charts-line-chart--playground"
+  attrs={{ label: 'Revenue', legend: 'top-end' }}
+  fixture={{
+    series: [
+      { label: '2024', data: [12, 18, 14, 22, 28, 24, 30, 35, 32, 38, 42, 47] },
+      { label: '2025', data: [16, 24, 21, 30, 38, 34, 42, 49, 47, 56, 62, 71] },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
+    yAxis: { label: 'USD (M)' },
+  }}
+/>
+
+## Install
+
+<ComponentSetup tag="md-line-chart" example="" />
+
+## When to use
+
+- **Change over time**, or over any continuous axis.
+- Comparing the **shape** of several series.
+- Dense series the user needs to zoom into.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Comparing discrete categories | [`md-bar-chart`](/components/bar-chart/) |
+| Emphasising cumulative volume | [`md-area-chart`](/components/area-chart/) |
+| Parts of a whole | [`md-pie-chart`](/components/pie-chart/) |
+| An inline micro-trend in a cell | [`md-sparkline`](/components/sparkline/) |
+| Exact values users must read | [`md-table`](/components/table/) |
+| Very few points (2–3) | Plain text, or a bar chart |
+| Unordered categories | [`md-bar-chart`](/components/bar-chart/) — lines imply continuity |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Curve style | `curve="linear \| smooth \| monotone \| step \| step-before \| step-middle"` |
+| Stack the series | `stack="normal \| percentage \| silhouette \| wiggle"` |
+| Fill under the line | `area` (or use [`md-area-chart`](/components/area-chart/)) |
+| Points visible | `show-marks` |
+| Bridge gaps in data | `connect-nulls` |
+| A second scale | `yAxes` (array **property**) |
+| Thresholds and dividers | `markLines` (array **property**) |
+| Zoom | `zoom="inside \| slider \| both"` |
+| Async data | `loading` (plus `loading-label`) |
+| Swap the axes | `inverted` |
+
+## Curve types
+
+`smooth` (the default) feels MD3 Expressive. `linear` and `monotone` suit
+financial and scientific precision — `monotone` won't overshoot. The `step`
+variants encode "value holds, then jumps", which is what finance and DevOps
+dashboards usually mean.
+
+| Curve | Behaviour |
+|---|---|
+| `linear` | Straight segments |
+| `smooth` | Catmull-Rom spline — **default** |
+| `monotone` | Monotone cubic — won't overshoot |
+| `step` | Step-after (value holds, then jumps) |
+| `step-before` | Step-before (value jumps, then holds) |
+| `step-middle` | Step-middle (value jumps at the midpoint between points) |
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Smooth curve"
+  attrs={{ curve: 'smooth', 'show-marks': true }}
+  fixture={{
+    series: [{ label: 'value', data: [5, 12, 8, 18, 14, 22, 28] }],
+    xAxis: { data: ['A', 'B', 'C', 'D', 'E', 'F', 'G'] },
+  }}
+/>
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Step curve"
+  attrs={{ curve: 'step', 'show-marks': true }}
+  fixture={{
+    series: [{ label: 'value', data: [5, 12, 8, 18, 14, 22, 28] }],
+    xAxis: { data: ['A', 'B', 'C', 'D', 'E', 'F', 'G'] },
+  }}
+/>
+
+## Multi-series
+
+Keep the count to about five. Beyond that it becomes a plate of spaghetti —
+split the chart, or highlight one series and mute the rest.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Sales by region"
+  attrs={{ label: 'Sales by region', legend: 'top-end', grid: 'horizontal' }}
+  fixture={{
+    series: [
+      { label: 'EMEA', data: [400, 320, 510, 480, 600, 690] },
+      { label: 'AMER', data: [320, 410, 380, 450, 580, 640] },
+      { label: 'APAC', data: [180, 240, 290, 320, 410, 470] },
+    ],
+    xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4', 'Q1', 'Q2'] },
+  }}
+/>
+
+## Area fill and stacking
+
+`area` fills under the line for a one-off emphasis on volume. When the fill is
+the *point*, use [`md-area-chart`](/components/area-chart/) — the same family,
+with stacking defaults tuned for it.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Filled gradient"
+  attrs={{ area: true, label: 'Server load' }}
+  fixture={{
+    series: [{ label: 'CPU %', data: [40, 52, 48, 60, 65, 72, 68, 80, 74, 82], color: 'tertiary' }],
+    xAxis: { data: ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9', 't10'], hideTicks: true },
+  }}
+/>
+
+`stack` adds the series together instead of overlaying them. Five modes:
+
+<div class="md-table-scroll">
+
+| Mode | Behaviour |
+|---|---|
+| `none` | Series overlay one another — **default** |
+| `normal` | Additive stacking |
+| `percentage` | Each x-tick rescaled to total 100% |
+| `silhouette` | Symmetric around zero (streamgraph) |
+| `wiggle` | Slope changes minimised (streamgraph) |
+
+</div>
+
+Stacking only reads as stacking when the bands are filled, so pair it with
+`area`.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Stacked (percentage)"
+  storyId="charts-line-chart--stacked"
+  attrs={{ area: true, stack: 'percentage', label: 'Device share', legend: 'bottom' }}
+  fixture={{
+    series: [
+      { label: 'Mobile', data: [40, 45, 48, 55, 62, 64] },
+      { label: 'Desktop', data: [45, 40, 35, 30, 25, 20] },
+      { label: 'Tablet', data: [15, 15, 17, 15, 13, 16] },
+    ],
+    xAxis: { data: ['2020', '2021', '2022', '2023', '2024', '2025'] },
+  }}
+/>
+
+## Marks and scatter plots
+
+`show-line="false"` combined with `show-marks` gives a scatter-like plot. Note
+the quoted string: `showLine` defaults to **true**, so the attribute has to be
+present and set to `"false"` to switch the line off.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Marks only (scatter)"
+  attrs={{ 'show-line': 'false', 'show-marks': true, grid: 'both', legend: 'top-end' }}
+  fixture={{
+    series: [
+      { label: 'Cohort A', data: [12, 30, 18, 42, 25, 51, 33, 47], symbol: 'circle' },
+      { label: 'Cohort B', data: [40, 22, 35, 15, 48, 28, 55, 20], symbol: 'diamond' },
+    ],
+    xAxis: { data: ['1', '2', '3', '4', '5', '6', '7', '8'] },
+  }}
+/>
+
+## Mark lines
+
+`markLines` draws labelled **vertical** dividers at an x position — a release
+date, "now", a policy change. Each entry is
+`{ value, label?, color?, dash? }`, where `value` is an axis value or a
+(possibly fractional) category index. Use them instead of free-floating
+annotation text.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="A 'now' divider"
+  attrs={{ curve: 'smooth', 'show-marks': true, legend: 'none' }}
+  fixture={{
+    series: [{ label: 'Temperature', data: [8, 9, 11, 14, 16, 15, 13, 11] }],
+    xAxis: { data: ['06', '08', '10', '12', '14', '16', '18', '20'] },
+    markLines: [{ value: 4, label: 'Now', color: 'secondary', dash: 'dashed' }],
+  }}
+/>
+
+## Two scales
+
+:::caution[`yAxis` and `yAxes` are different props — never set both]
+`yAxes` (plural, an array) is the multi-axis form; `yAxis` is the single-axis
+form. A series picks its scale with `yAxisIndex`.
+:::
+
+```ts
+const yAxes = [
+  { label: 'Sessions', position: 'left' },
+  { label: 'Revenue', position: 'right', valueFormatter: (v) => '$' + v },
+];
+const series = [
+  { label: 'Sessions', yAxisIndex: 0, data: sessions },
+  { label: 'Revenue', yAxisIndex: 1, data: revenue },
+];
+```
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Sessions against revenue"
+  attrs={{ curve: 'smooth', legend: 'bottom', grid: 'horizontal' }}
+  fixture={{
+    series: [
+      { label: 'Sessions', yAxisIndex: 0, data: [400, 460, 520, 610, 580, 700] },
+      { label: 'Revenue', yAxisIndex: 1, data: [12, 15, 14, 21, 19, 26], color: 'tertiary' },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    yAxes: [
+      { position: 'left', label: 'Sessions' },
+      { position: 'right', label: 'Revenue (k)' },
+    ],
+  }}
+/>
+
+## Bridging gaps
+
+By default a `null` is a gap, not a zero: the line breaks at it, so a hole in
+the record reads as a hole. `connect-nulls` bridges it with a straight segment —
+right for a dropped sensor reading, wrong for a period a series genuinely did
+not exist, where bridging fabricates data.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="connect-nulls"
+  attrs={{ 'connect-nulls': true, 'show-marks': true, label: 'Bridged gaps' }}
+  fixture={{
+    series: [{ label: 'value', data: [10, 18, null, null, 22, 28, null, 36] }],
+    xAxis: { data: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] },
+  }}
+/>
+
+## Zoom
+
+Zoom has **two independent mechanisms**: drag-to-zoom inside the plot
+(`zoom="inside"`) and the slider band below it (`zoom="slider"`). `both` enables
+each. `setZoom()` / `resetZoom()` drive it programmatically.
+
+Zoom is a **view**. The window slices what the engine draws and leaves your
+`series` array untouched, so every event still reports **absolute** indices into
+the data you supplied.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Drag the plot, or use the slider"
+  storyId="charts-line-chart--with-zoom"
+  attrs={{ zoom: 'both', label: 'Dense series' }}
+  fixture={{
+    series: [{ label: 'value', data: Array.from({ length: 50 }, (_, i) => Math.sin(i / 5) * 20 + 80 + (i % 3) * 4) }],
+    xAxis: { data: Array.from({ length: 50 }, (_, i) => 'T' + (i + 1)) },
+  }}
+/>
+
+```ts
+await chart.setZoom(10, 40);   // absolute indices
+await chart.resetZoom();
+```
+
+## Loading and empty states
+
+`loading` shows an opaque overlay with a progress indicator over the plot — it
+has to be opaque, because the engine still draws a placeholder axis when there
+is no data. An empty `series` shows `label-empty` instead. The two never stack:
+"no data" is the wrong answer to "where is my data?" mid-load. Both accept
+slotted content (`slot="loading"`, `slot="empty"`) when text is not enough.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Empty state"
+  attrs={{ 'label-empty': 'No sessions recorded yet' }}
+  fixture={{ series: [] }}
+/>
+
+### Replacing the loader
+
+`loading` shows a circular indicator and the `loading-label` text. When that is
+not the right shape — a wide dashboard tile, a skeleton that mirrors the chart's
+own layout, a branded mark — slot your own into `loader` (the older name
+`loading` still works); it replaces the default entirely.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Default — circular indicator + loading-label"
+  storyId="charts-line-chart--async-loading"
+  attrs={{ label: 'Monthly revenue', loading: true, 'loading-label': 'Fetching revenue…' }}
+  fixture={{ series: [], xAxis: { data: [] }, yAxis: { label: 'EUR' } }}
+/>
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Slotted — a linear indicator across the tile"
+  attrs={{ label: 'Monthly revenue', loading: true }}
+  fixture={{ series: [], xAxis: { data: [] }, yAxis: { label: 'EUR' } }}
+  innerHtml={`<div slot="loading" style="inline-size: min(320px, 70%); display: grid; gap: 12px; justify-items: center;">
+  <md-progress-indicator variant="linear" indeterminate label="Fetching revenue" style="inline-size: 100%;"></md-progress-indicator>
+  <span>Fetching revenue…</span>
+</div>`}
+/>
+
+A circular [`md-progress-indicator`](/components/progress-indicator/) in the
+`loader` slot keeps the default's shape while letting you set its size and
+label.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="A circular md-progress-indicator slotted over the default loader"
+  attrs={{ label: 'Sessions', loading: true, 'loading-label': 'Fetching sessions…' }}
+  fixture={{ series: [], xAxis: { data: [] } }}
+  innerHtml={`<md-progress-indicator slot="loader" variant="circular" indeterminate size="40" label="Loading"></md-progress-indicator>`}
+/>
+
+:::caution[Use the indicator components, not your own spinner]
+`md-progress-indicator` (linear or circular) and `md-loading-indicator` already
+carry the MD3 motion tokens, the reduced-motion fallback and the right ARIA. A
+hand-rolled spinner in a `loader` slot gets none of that.
+:::
+
+## Legend placement
+
+`legend` takes an anchor — `top`, `bottom`, `left`, `right`, `top-start`,
+`top-end`, `bottom-start`, `bottom-end` — or `none`. The side anchors (`left` /
+`right`) reserve a gutter beside the plot; the top/bottom anchors reserve a row
+above or below it. Pick the edge the reader arrives from, and drop it entirely
+when the series are labelled on the plot.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="legend=top-end"
+  attrs={{ legend: 'top-end', label: 'Revenue' }}
+  fixture={{
+    series: [
+      { label: 'EMEA', data: [400, 320, 510, 480, 600, 690] },
+      { label: 'AMER', data: [320, 410, 380, 450, 580, 640] },
+    ],
+    xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4', 'Q1', 'Q2'] },
+  }}
+/>
+
+## Series colour
+
+`color` takes an **MD3 role name** or any CSS colour. Prefer the role: it
+follows the theme and stays legible in dark mode, where a hardcoded hex will not.
+On a filled chart the same colour drives the gradient under the line.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Role names and explicit colours"
+  attrs={{ legend: 'bottom', 'show-marks': true }}
+  fixture={{
+    series: [
+      { label: 'primary', color: 'primary', data: [12, 18, 14, 22, 28, 24] },
+      { label: 'tertiary', color: 'tertiary', data: [8, 12, 10, 16, 20, 18] },
+      { label: 'hex', color: '#e0b400', data: [4, 7, 6, 10, 13, 12] },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+  }}
+/>
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Area fills take the series colour"
+  attrs={{ area: true, legend: 'bottom' }}
+  fixture={{
+    series: [
+      { label: 'rgb', color: 'rgb(125, 82, 96)', data: [20, 28, 24, 34, 41, 38] },
+      { label: 'named', color: 'teal', data: [10, 14, 12, 19, 24, 22] },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+  }}
+/>
+
+## Formatting values
+
+`valueFormatter` owns the value text — axis ticks, tooltip rows and the
+screen-reader table. Set `locale` for the default `Intl` formatting; once you
+pass a formatter, it wins outright, so localise inside it.
+
+```ts
+const valueFormatter = (v) =>
+  new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(v ?? 0);
+```
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Currency formatting"
+  attrs={{ label: 'Revenue', legend: 'none', 'show-marks': true }}
+  fixture={{
+    series: [{ label: 'Revenue', data: [1200, 1850, 1640, 2310, 2780, 2450] }],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+    yAxis: { label: 'EUR' },
+  }}
+/>
+
+## Data labels
+
+`show-labels` prints each point's value on the plot. Use it for a handful of
+points; on a dense series the numbers collide and the line stops being readable.
+A label with no room above it flips below the point rather than overflowing the
+plot.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="show-labels"
+  attrs={{ 'show-labels': true, 'show-marks': true, legend: 'none', label: 'Weekly signups' }}
+  fixture={{
+    series: [{ label: 'Signups', color: 'primary', data: [42, 61, 55, 78, 96, 88] }],
+    xAxis: { data: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6'] },
+  }}
+/>
+
+## Marker symbols
+
+`symbol` on a series picks the point marker. Five shapes are drawn on the
+canvas — `circle` (default), `square`, `diamond`, `triangle`, `triangle-down` —
+and `none` suppresses that series' markers even when marks are on.
+
+Any **other** string is not an error: it is drawn as a text glyph at every
+point. That is the emoji case below — but it also means a typo (`cross`, say)
+silently prints the word rather than falling back to a shape.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Emoji markers"
+  attrs={{ 'show-marks': true, curve: 'smooth', legend: 'bottom', grid: 'horizontal' }}
+  fixture={{
+    series: [
+      { label: 'Sunny', symbol: '☀️', color: 'tertiary', data: [12, 16, 21, 25, 28, 24] },
+      { label: 'Rain', symbol: '🌧️', color: 'primary', data: [8, 6, 9, 5, 3, 7] },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+  }}
+/>
+
+## Log scale
+
+`scale: 'log'` on the value axis turns equal *ratios* into equal distances, so a
+series spanning orders of magnitude stays readable instead of flattening into
+the baseline. Ticks snap to powers of ten.
+
+:::caution[A log axis has no zero]
+The scale is undefined at and below zero, so non-positive values are dropped
+from the extent. Don't reach for it to tidy up an outlier — that is what
+`breaks` is for.
+:::
+
+<ChartDemo
+  tag="md-line-chart"
+  label="scale: 'log'"
+  attrs={{ curve: 'linear', legend: 'bottom', grid: 'horizontal', 'show-marks': true }}
+  fixture={{
+    series: [
+      { label: 'Requests', color: 'primary', data: [12, 140, 1800, 24000, 310000, 4200000] },
+      { label: 'Errors', color: 'error', data: [2, 9, 40, 180, 900, 4100] },
+    ],
+    xAxis: { data: ['2019', '2020', '2021', '2022', '2023', '2024'] },
+    yAxis: { scale: 'log', label: 'Count' },
+  }}
+/>
+
+## Inverted axes
+
+`inverted` transposes the plot: the category axis runs down the side and values
+run across the bottom. Reach for it when the independent variable reads as depth
+— altitude, a drill core — or when the category names are too long to sit under
+a horizontal axis.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="inverted with a smooth curve"
+  attrs={{ inverted: true, curve: 'smooth', grid: 'both', legend: 'bottom', 'show-marks': true }}
+  fixture={{
+    series: [{ label: 'Temperature (°C)', color: 'primary', data: [15, 9, 2, -6, -18, -35] }],
+    xAxis: { data: ['0 km', '2 km', '4 km', '6 km', '8 km', '10 km'], label: 'Altitude' },
+  }}
+/>
+
+## Axis bands
+
+`bands` on an axis shades a range and labels it — a forecast half, a weekend, an
+outage window, a target zone. It reads as context behind the data rather than
+another series competing with it, so keep the fill faint.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="A shaded weekend"
+  attrs={{ curve: 'smooth', grid: 'horizontal', legend: 'none', label: 'Daily active users' }}
+  fixture={{
+    series: [{ label: 'DAU', color: 'primary', data: [820, 910, 880, 940, 1010, 520, 480] }],
+    xAxis: {
+      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      bands: [{ from: 5, to: 6, color: 'color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent)', label: 'Weekend' }],
+    },
+  }}
+/>
+
+## Axis breaks
+
+One outlier flattens everything else. `breaks: 'auto'` on the value axis detects
+the gap and folds it away, so the small values get their range back while the
+outlier stays honestly larger. The cut is **drawn** on the axis — the reader can
+see the scale was interrupted.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="breaks: 'auto'"
+  attrs={{ curve: 'linear', legend: 'none', 'show-marks': true, label: 'Monthly active users' }}
+  fixture={{
+    series: [{ label: 'MAU (k)', color: 'primary', data: [8, 12, 18, 25, 1150, 1320, 1280, 1400] }],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'] },
+    yAxis: { label: 'MAU (k)', breaks: 'auto' },
+  }}
+/>
+
+## Partial and irregular data
+
+Series need not share a length or a sampling rhythm. A series that starts later
+simply has no point before its first sample — that is different from a `null`,
+which is a measured gap. On a `time` scale the x positions come from the values
+themselves, so irregular intervals are spaced truthfully rather than evenly.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="A series that starts halfway"
+  attrs={{ curve: 'smooth', grid: 'horizontal', legend: 'bottom', area: true }}
+  fixture={{
+    series: [
+      { label: 'Legacy', color: 'tertiary', data: [40, 38, 35, 30, 24, 18] },
+      { label: 'Rewrite', color: 'primary', data: [null, null, 5, 14, 28, 46] },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+  }}
+/>
+
+## Line, axis and grid styling
+
+Three separate `dash` settings, easy to confuse:
+
+<div class="md-table-scroll">
+
+| Where | Field | Styles |
+|---|---|---|
+| On a **series** | `dash` | that series' own drawn line |
+| On an **axis** | `dash` | the axis line and its tick marks |
+| On an **axis** | `gridDash` | the gridlines that axis draws across the plot |
+
+</div>
+
+A dotted **series** is the conventional way to mark a line that isn't a
+measurement — a target, an average, a forecast — so it reads as a reference
+without needing a legend entry to explain it.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="A dotted average against solid actuals"
+  attrs={{ curve: 'smooth', grid: 'horizontal', legend: 'bottom', 'show-marks': true, label: 'Response time' }}
+  fixture={{
+    series: [
+      { label: 'p50', color: 'primary', data: [120, 138, 129, 152, 141, 133, 147] },
+      { label: 'p95', color: 'tertiary', data: [280, 310, 295, 360, 332, 318, 351] },
+      { label: 'Target', color: 'error', dash: 'dotted', data: [300, 300, 300, 300, 300, 300, 300] },
+    ],
+    xAxis: { data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
+    yAxis: { label: 'ms' },
+  }}
+/>
+
+Dotted or dashed **gridlines** let the grid recede behind the data instead of
+competing with it.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Dashed gridlines"
+  attrs={{ curve: 'smooth', grid: 'both', legend: 'none', 'show-marks': true }}
+  fixture={{
+    series: [{ label: 'Load', color: 'primary', data: [40, 52, 48, 60, 65, 72, 68] }],
+    xAxis: { data: ['t1', 't2', 't3', 't4', 't5', 't6', 't7'], gridDash: 'dotted' },
+    yAxis: { gridDash: 'dashed', label: 'CPU %' },
+  }}
+/>
+
+## Animation variants
+
+`animation` picks the entrance: `expressive` (default), `grow`, `fade`, `draw`
+(a left-to-right reveal, the line drawing itself), `stagger` (the same, one
+series at a time) or `none`. `animation-duration` overrides the timing, and
+every variant honours `prefers-reduced-motion`.
+
+<ComponentDemo
+  hideCode
+  html={`<div style="inline-size:100%; display:grid; gap:24px;">
+  <div id="anim-variants" style="display:grid; gap:20px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));">
+  </div>
+  <md-button id="anim-replay" variant="filled" trailing-icon="replay" style="justify-self:start;">
+    Replay all
+  </md-button>
+</div>
+<script type="module">
+  const VARIANTS = ['expressive', 'grow', 'fade', 'draw', 'stagger', 'none'];
+  const DATA = [40, 62, 55, 78, 70, 96, 88, 110, 102, 128];
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'];
+
+  const grid = document.getElementById('anim-variants');
+
+  for (const variant of VARIANTS) {
+    const figure = document.createElement('figure');
+    figure.style.cssText = 'margin:0;';
+
+    const caption = document.createElement('figcaption');
+    caption.textContent = 'animation="' + variant + '"';
+    caption.style.cssText =
+      'font:600 13px/1.4 var(--md-sys-typescale-label-large-font, Roboto, sans-serif);' +
+      'color:var(--md-sys-color-on-surface);margin-block-end:4px;';
+
+    const chart = document.createElement('md-line-chart');
+    chart.setAttribute('animation', variant);
+    chart.setAttribute('curve', 'smooth');
+    chart.setAttribute('grid', 'both');
+    chart.setAttribute('legend', 'none');
+    chart.style.cssText = 'block-size:200px;';
+    // Properties, not attributes — arrays and objects cannot travel through
+    // markup. Assigning before the element upgrades is fine.
+    chart.series = [{ label: 'Users', color: 'primary', data: DATA }];
+    chart.xAxis = { data: MONTHS };
+
+    figure.append(caption, chart);
+    grid.append(figure);
+  }
+
+  // replay() re-runs the entry animation without touching the data — the only
+  // way to see it a second time, since it plays once on first render.
+  document.getElementById('anim-replay').addEventListener('click', () => {
+    grid.querySelectorAll('md-line-chart').forEach((c) => c.replay());
+  });
+\x3C/script>`}
+  label="Every variant — press Replay all to run them again"
+  storyId="charts-line-chart--animation-variants"
+/>
+
+Picking a variant is declarative — `animation` is a plain string attribute and
+`animation-duration` overrides the timing in milliseconds.
+
+<TechnologyTabs
+  html={`<md-line-chart id="trend" animation="draw" animation-duration="900"
+               curve="smooth" grid="both" legend="none"></md-line-chart>
+
+<script type="module">
+const chart = document.getElementById('trend');
+chart.series = [{ label: 'Users', color: 'primary', data: [40, 62, 55, 78, 70, 96, 88, 110, 102, 128] }];
+chart.xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'] };
+\x3C/script>`}
+  react={`import { MdLineChart } from '@awc-ui/react';
+
+const SERIES = [{ label: 'Users', color: 'primary', data: [40, 62, 55, 78, 70, 96, 88, 110, 102, 128] }];
+const X_AXIS = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'] };
+
+export function Trend() {
+  return (
+    <MdLineChart
+      animation="draw"
+      animationDuration={900}
+      curve="smooth"
+      grid="both"
+      legend="none"
+      series={SERIES}
+      xAxis={X_AXIS}
+    />
+  );
+}`}
+  angular={`import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+
+@Component({
+  selector: 'app-trend',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: \`
+    <md-line-chart
+      animation="draw"
+      animation-duration="900"
+      curve="smooth"
+      grid="both"
+      legend="none"
+      [series]="series"
+      [xAxis]="xAxis"
+    ></md-line-chart>
+  \`,
+})
+export class TrendComponent {
+  series = [{ label: 'Users', color: 'primary', data: [40, 62, 55, 78, 70, 96, 88, 110, 102, 128] }];
+  xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'] };
+}`}
+  vue={`<script setup lang="ts">
+const series = [{ label: 'Users', color: 'primary', data: [40, 62, 55, 78, 70, 96, 88, 110, 102, 128] }];
+const xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'] };
+\x3C/script>
+
+<template>
+  <md-line-chart
+    animation="draw"
+    animation-duration="900"
+    curve="smooth"
+    grid="both"
+    legend="none"
+    .series="series"
+    .xAxis="xAxis"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+const series = [{ label: 'Users', color: 'primary', data: [40, 62, 55, 78, 70, 96, 88, 110, 102, 128] }];
+const xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'] };
+\x3C/script>
+
+<md-line-chart
+  animation="draw"
+  animation-duration="900"
+  curve="smooth"
+  grid="both"
+  legend="none"
+  {series}
+  {xAxis}
+/>`}
+/>
+
+### Sequential draw
+
+`stagger` is `draw` run one series at a time — line 1 completes, then line 2
+starts — so the chart reads as a sequence rather than a race. `animation-duration`
+is the time for **each** series, not the total, so four lines at 700ms take about
+2.8 seconds end to end. Keep it for a handful of lines; past that the last one
+arrives long after the reader has moved on.
+
+<ComponentDemo
+  hideCode
+  html={`<div style="inline-size:100%; display:grid; gap:24px;">
+  <md-line-chart id="stagger-demo" animation="stagger" animation-duration="700"
+                 curve="smooth" grid="horizontal" legend="bottom"
+                 label="Units sold by region"
+                 style="inline-size:100%; min-inline-size:0; block-size:340px;"></md-line-chart>
+  <!-- gap, not margin: the demo preview zeroes sibling margins with
+       !important, so an inline margin here would silently do nothing. -->
+  <md-button id="stagger-replay" variant="filled" trailing-icon="replay"
+             style="justify-self:start;">Replay</md-button>
+</div>
+<script type="module">
+  const chart = document.getElementById('stagger-demo');
+
+  chart.series = [
+    { label: 'North', color: 'primary',   data: [12, 20, 18, 32, 28, 44, 40, 56] },
+    { label: 'South', color: 'tertiary',  data: [30, 26, 34, 28, 40, 36, 48, 44] },
+    { label: 'East',  color: 'secondary', data: [8, 14, 22, 18, 30, 34, 42, 52] },
+    { label: 'West',  color: 'error',     data: [40, 44, 38, 46, 42, 50, 46, 58] },
+  ];
+  chart.xAxis = { data: [0, 1, 2, 3, 4, 5, 6, 7], scale: 'value', label: 'Quarter' };
+  chart.yAxis = { label: 'Units (k)', min: 0 };
+
+  // The entry animation plays once on first render, so replay() is the only way
+  // to watch it again — it re-runs the animation without touching the data.
+  document.getElementById('stagger-replay').addEventListener('click', () => chart.replay());
+\x3C/script>`}
+  label="Press replay to watch the lines draw in turn"
+  storyId="charts-line-chart--sequential-draw"
+/>
+
+The entry animation plays once on first render, so watching it again means
+calling the `replay()` method — which needs a handle on the element rather than
+a prop.
+
+<TechnologyTabs
+  html={`<md-line-chart id="stagger" animation="stagger" animation-duration="700"
+               curve="smooth" grid="horizontal" legend="bottom"
+               label="Units sold by region"></md-line-chart>
+<md-button id="replay" variant="filled" trailing-icon="replay">Replay</md-button>
+
+<script type="module">
+const chart = document.getElementById('stagger');
+
+chart.xAxis = { data: [0, 1, 2, 3, 4, 5, 6, 7], scale: 'value', label: 'Quarter' };
+chart.yAxis = { label: 'Units (k)', min: 0 };
+chart.series = [
+  { label: 'North', color: 'primary', data: [12, 20, 18, 32, 28, 44, 40, 56] },
+  { label: 'South', color: 'tertiary', data: [30, 26, 34, 28, 40, 36, 48, 44] },
+  { label: 'East', color: 'secondary', data: [8, 14, 22, 18, 30, 34, 42, 52] },
+  { label: 'West', color: 'error', data: [40, 44, 38, 46, 42, 50, 46, 58] },
+];
+
+// replay() re-runs the entrance without touching the data.
+document.getElementById('replay').addEventListener('click', () => chart.replay());
+\x3C/script>`}
+  react={`import { useRef } from 'react';
+import { MdLineChart, MdButton } from '@awc-ui/react';
+
+const X_AXIS = { data: [0, 1, 2, 3, 4, 5, 6, 7], scale: 'value', label: 'Quarter' };
+const Y_AXIS = { label: 'Units (k)', min: 0 };
+const SERIES = [
+  { label: 'North', color: 'primary', data: [12, 20, 18, 32, 28, 44, 40, 56] },
+  { label: 'South', color: 'tertiary', data: [30, 26, 34, 28, 40, 36, 48, 44] },
+  { label: 'East', color: 'secondary', data: [8, 14, 22, 18, 30, 34, 42, 52] },
+  { label: 'West', color: 'error', data: [40, 44, 38, 46, 42, 50, 46, 58] },
+];
+
+export function StaggeredChart() {
+  // A ref, not a prop: replay() is an @Method on the element, so it is called
+  // on the DOM node the wrapper renders.
+  const chart = useRef(null);
+
+  return (
+    <>
+      <MdLineChart
+        ref={chart}
+        animation="stagger"
+        animationDuration={700}
+        curve="smooth"
+        grid="horizontal"
+        legend="bottom"
+        label="Units sold by region"
+        series={SERIES}
+        xAxis={X_AXIS}
+        yAxis={Y_AXIS}
+      />
+      <MdButton variant="filled" trailingIcon="replay" onClick={() => chart.current?.replay()}>
+        Replay
+      </MdButton>
+    </>
+  );
+}`}
+  angular={`import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, ViewChild } from '@angular/core';
+
+@Component({
+  selector: 'app-staggered-chart',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: \`
+    <md-line-chart
+      #chart
+      animation="stagger"
+      animation-duration="700"
+      curve="smooth"
+      grid="horizontal"
+      legend="bottom"
+      label="Units sold by region"
+      [series]="series"
+      [xAxis]="xAxis"
+      [yAxis]="yAxis"
+    ></md-line-chart>
+    <md-button variant="filled" trailing-icon="replay" (click)="replay()">Replay</md-button>
+  \`,
+})
+export class StaggeredChartComponent {
+  @ViewChild('chart') chart!: ElementRef<HTMLElement & { replay(): Promise<void> }>;
+
+  xAxis = { data: [0, 1, 2, 3, 4, 5, 6, 7], scale: 'value', label: 'Quarter' };
+  yAxis = { label: 'Units (k)', min: 0 };
+  series = [
+    { label: 'North', color: 'primary', data: [12, 20, 18, 32, 28, 44, 40, 56] },
+    { label: 'South', color: 'tertiary', data: [30, 26, 34, 28, 40, 36, 48, 44] },
+    { label: 'East', color: 'secondary', data: [8, 14, 22, 18, 30, 34, 42, 52] },
+    { label: 'West', color: 'error', data: [40, 44, 38, 46, 42, 50, 46, 58] },
+  ];
+
+  replay() { this.chart.nativeElement.replay(); }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const chart = ref();
+
+const xAxis = { data: [0, 1, 2, 3, 4, 5, 6, 7], scale: 'value', label: 'Quarter' };
+const yAxis = { label: 'Units (k)', min: 0 };
+const series = [
+  { label: 'North', color: 'primary', data: [12, 20, 18, 32, 28, 44, 40, 56] },
+  { label: 'South', color: 'tertiary', data: [30, 26, 34, 28, 40, 36, 48, 44] },
+  { label: 'East', color: 'secondary', data: [8, 14, 22, 18, 30, 34, 42, 52] },
+  { label: 'West', color: 'error', data: [40, 44, 38, 46, 42, 50, 46, 58] },
+];
+\x3C/script>
+
+<template>
+  <md-line-chart
+    ref="chart"
+    animation="stagger"
+    animation-duration="700"
+    curve="smooth"
+    grid="horizontal"
+    legend="bottom"
+    label="Units sold by region"
+    .series="series"
+    .xAxis="xAxis"
+    .yAxis="yAxis"
+  />
+  <md-button variant="filled" trailing-icon="replay" @click="chart.replay()">Replay</md-button>
+</template>`}
+  svelte={`<script lang="ts">
+let chart;
+
+const xAxis = { data: [0, 1, 2, 3, 4, 5, 6, 7], scale: 'value', label: 'Quarter' };
+const yAxis = { label: 'Units (k)', min: 0 };
+const series = [
+  { label: 'North', color: 'primary', data: [12, 20, 18, 32, 28, 44, 40, 56] },
+  { label: 'South', color: 'tertiary', data: [30, 26, 34, 28, 40, 36, 48, 44] },
+  { label: 'East', color: 'secondary', data: [8, 14, 22, 18, 30, 34, 42, 52] },
+  { label: 'West', color: 'error', data: [40, 44, 38, 46, 42, 50, 46, 58] },
+];
+\x3C/script>
+
+<md-line-chart
+  bind:this={chart}
+  animation="stagger"
+  animation-duration="700"
+  curve="smooth"
+  grid="horizontal"
+  legend="bottom"
+  label="Units sold by region"
+  {series}
+  {xAxis}
+  {yAxis}
+/>
+<md-button variant="filled" trailing-icon="replay" on:click={() => chart.replay()}>Replay</md-button>`}
+/>
+
+## Large datasets
+
+The engine decimates before it draws: at more points than the plot has pixels it
+keeps the min and max of each column, so spikes survive but the path stays cheap.
+You do not opt in — hand it the whole series.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="2,000 points"
+  storyId="charts-line-chart--massive-dataset"
+  attrs={{ curve: 'linear', legend: 'none', zoom: 'both', label: 'Sensor trace' }}
+  fixture={{
+    series: [{
+      label: 'Signal',
+      color: 'primary',
+      data: Array.from({ length: 2000 }, (_, i) =>
+        Math.round((Math.sin(i / 40) * 30 + Math.sin(i / 7) * 8 + 50) * 10) / 10),
+    }],
+    xAxis: { data: Array.from({ length: 2000 }, (_, i) => String(i)), hideTicks: true },
+  }}
+/>
+
+## Custom tooltip
+
+`tooltipRenderer` replaces the card's **content** — the chart keeps owning the
+card itself: its surface, elevation and placement. It's a property, not an
+attribute, so it's set in JS.
+
+The context describes the hovered x: `dataIndex`, `axisValue`, `axisLabel`,
+`series` (those with a value there), `missing` (those without) and
+`focusedSeriesIndex`. Return a `Node`, a `string` (set as **text**, so markup is
+shown rather than parsed), `{ unsafeHtml }`, `undefined` to fall back to the
+built-in card, or `null` to draw none. See
+[the area chart's custom tooltip](/components/area-chart/#custom-tooltip) for the
+field-by-field reference — the contract is identical across charts.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="tooltipRenderer — delta against the previous point"
+  storyId="charts-line-chart--custom-tooltip"
+  attrs={{ label: 'Sessions', curve: 'smooth', grid: 'horizontal', legend: 'bottom', 'show-marks': true }}
+  fixture={{
+    series: [
+      { label: 'Sessions', color: 'primary', data: [1200, 1850, 1640, 2310, 2780, 2450] },
+      { label: 'Signups', color: 'tertiary', data: [180, 260, 240, 390, 480, 410] },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+  }}
+  fnFixture={{
+    tooltipRenderer: `(ctx) => {
+      const el = (tag, css, text) => {
+        const n = document.createElement(tag);
+        if (css) n.style.cssText = css;
+        if (text != null) n.textContent = text;
+        return n;
+      };
+
+      const card = el('div', 'min-width:190px;font-variant-numeric:tabular-nums');
+      card.append(el('div',
+        'font-size:0.68em;letter-spacing:0.1em;text-transform:uppercase;opacity:0.55',
+        ctx.axisLabel));
+
+      ctx.series.forEach((r) => {
+        const row = el('div',
+          'display:grid;grid-template-columns:9px 1fr auto;gap:9px;align-items:center;padding:2.5px 0');
+        row.append(el('span', 'width:9px;height:9px;border-radius:3px;background:' + r.color));
+        row.append(el('span', null, r.label));
+        row.append(el('span', 'font-weight:700', r.formattedValue));
+        card.append(row);
+      });
+
+      // Series with no reading here get their own dimmed row rather than
+      // vanishing — an absence the reader can see beats a silent omission.
+      ctx.missing.forEach((r) => {
+        const row = el('div',
+          'display:grid;grid-template-columns:9px 1fr auto;gap:9px;align-items:center;padding:2.5px 0;opacity:0.45');
+        row.append(el('span', 'width:9px;height:9px;border-radius:3px;background:' + r.color));
+        row.append(el('span', null, r.label));
+        row.append(el('span', null, 'no reading'));
+        card.append(row);
+      });
+
+      return card;
+    }`,
+  }}
+/>
+
+## Animating a race
+
+A race sweeps the plot from the first sample to the last, revealing the line as
+it goes. There is no `race` prop — you reassign `series` on a timer and the
+chart redraws. Keep the x axis fixed across frames so it doesn't rescale under
+the animation.
+
+<ComponentDemo
+  hideCode
+  html={`<style>
+  /* Material Symbols default to outlined; fill the play/pause glyph. */
+  .race-play::part(icon) { font-variation-settings: 'FILL' 1; }
+</style>
+<div style="inline-size:100%; min-inline-size:0; display:grid; gap:12px;">
+  <div style="display:flex; align-items:center; gap:16px; min-inline-size:0;">
+    <md-icon-button id="race-play" class="race-play" variant="filled" shape="round"
+                    icon="play_arrow" aria-label="Play or pause"></md-icon-button>
+    <md-slider id="race-slider" min="0" max="10" step="0.01" value="3" style="flex:1; min-inline-size:0;"
+               aria-label="Race progress"></md-slider>
+  </div>
+  <md-line-chart id="race-chart" label="F1 drivers' championship" curve="linear"
+                 series-labels no-animation legend="bottom" grid="horizontal"
+                 style="inline-size:100%; min-inline-size:0; block-size:420px;"></md-line-chart>
+</div>
+<script type="module">
+  const ROUNDS = 10;
+  const DRIVERS = [
+    { label: 'Antonelli', color: '#00D7B6', cum: [0, 18, 47, 72, 100, 131, 156, 156, 171, 179, 204] },
+    { label: 'Hamilton',  color: '#E8002D', cum: [0, 12, 33, 41, 51, 72, 90, 115, 125, 147, 159] },
+    { label: 'Russell',   color: '#28E6C6', cum: [0, 25, 51, 63, 80, 88, 88, 106, 131, 154, 154] },
+    { label: 'Leclerc',   color: '#FF5A6E', cum: [0, 15, 34, 49, 59, 75, 75, 75, 79, 108, 126] },
+    { label: 'Norris',    color: '#FF8000', cum: [0, 10, 15, 25, 51, 58, 58, 73, 79, 97, 103] },
+    { label: 'Piastri',   color: '#FFB366', cum: [0, 0, 3, 21, 43, 48, 58, 68, 80, 82, 92] },
+    { label: 'Verstappen',color: '#3671C6', cum: [0, 8, 8, 12, 26, 43, 43, 55, 73, 76, 91] },
+    { label: 'Hadjar',    color: '#8FB3F0', cum: [0, 0, 4, 4, 4, 14, 26, 34, 42, 52, 60] },
+    { label: 'Gasly',     color: '#0093CC', cum: [0, 1, 9, 15, 16, 20, 35, 41, 41, 42, 42] },
+    { label: 'Lawson',    color: '#6692FF', cum: [0, 0, 8, 10, 10, 16, 24, 28, 30, 39, 39] },
+  ];
+  const CUM = DRIVERS.map((d) => d.cum);
+  const SPEED = ROUNDS / 14000;          // rounds per ms -> full race about 14s
+
+  const chart  = document.getElementById('race-chart');
+  const slider = document.getElementById('race-slider');
+  const play   = document.getElementById('race-play');
+
+  let progress = 3;                      // fractional round, parked partway in
+  let raf = 0, last = 0, dragging = false;
+
+  const intLabel = (v) => (Number.isInteger(v) ? String(v) : '');
+
+  function apply() {
+    const fl = Math.floor(progress);
+    const frac = progress - fl;
+    // The FULL axis (rounds 0…10) is always present so every tick renders from
+    // the start; only the DATA grows. Future rounds are null, and the leading
+    // edge is an interpolated point inserted just after the current round —
+    // that is what makes the line advance smoothly between whole rounds.
+    const xs = [];
+    const rows = DRIVERS.map(() => []);
+    for (let r = 0; r <= ROUNDS; r++) {
+      xs.push(r);
+      DRIVERS.forEach((_, i) => rows[i].push(r <= fl ? CUM[i][r] : null));
+      if (r === fl && frac > 1e-4 && fl < ROUNDS) {
+        xs.push(fl + frac);
+        DRIVERS.forEach((_, i) => rows[i].push(CUM[i][fl] + (CUM[i][fl + 1] - CUM[i][fl]) * frac));
+      }
+    }
+    chart.xAxis = { data: xs, scale: 'value', label: 'Round', valueFormatter: intLabel };
+    chart.series = DRIVERS.map((d, i) => ({ label: d.label, color: d.color, data: rows[i] }));
+    if (!dragging) slider.value = progress;
+  }
+
+  function stop() {
+    cancelAnimationFrame(raf);
+    raf = 0;
+    last = 0;
+    play.icon = 'play_arrow';
+  }
+
+  function frame(now) {
+    // A rAF loop outlives the element unless you stop it.
+    if (!chart.isConnected) return stop();
+    if (!last) last = now;
+    progress = Math.min(ROUNDS, progress + (now - last) * SPEED);
+    last = now;
+    apply();
+    if (progress >= ROUNDS) return stop();
+    raf = requestAnimationFrame(frame);
+  }
+
+  play.addEventListener('click', () => {
+    if (raf) return stop();
+    if (progress >= ROUNDS) progress = 0;    // parked at the end: replay
+    play.icon = 'pause';
+    last = 0;
+    raf = requestAnimationFrame(frame);
+  });
+
+  slider.addEventListener('mdDragStart', () => { dragging = true; stop(); });
+  slider.addEventListener('mdDragEnd', () => { dragging = false; });
+  slider.addEventListener('mdInput', (e) => {
+    stop();
+    progress = e.detail.value;
+    apply();
+  });
+
+  apply();
+\x3C/script>`}
+  label="Press play, or drag the slider"
+  storyId="charts-line-chart--line-race"
+/>
+
+The shape of it in every technology — a fixed x axis, a `progress` value driven
+by `requestAnimationFrame`, and a `series` array rebuilt from it on each frame.
+Two rules carry over unchanged: keep the **whole** axis present from the start
+(only the data grows, with `null` for the rounds that have not happened yet), and
+stop the loop when the element goes away.
+
+<TechnologyTabs
+  html={`<md-line-chart id="race" label="Championship" curve="linear" series-labels
+               no-animation legend="bottom" grid="horizontal"></md-line-chart>
+<md-button id="race-play" variant="filled">Play</md-button>
+
+<script type="module">
+const ROUNDS = 10;
+const DRIVERS = [
+  { label: 'Antonelli', color: 'primary', cum: [0, 18, 47, 72, 100, 131, 156, 156, 171, 179, 204] },
+  { label: 'Hamilton', color: 'error', cum: [0, 12, 33, 41, 51, 72, 90, 115, 125, 147, 159] },
+  { label: 'Russell', color: 'tertiary', cum: [0, 25, 51, 63, 80, 88, 88, 106, 131, 154, 154] },
+];
+
+const chart = document.getElementById('race');
+const xs = Array.from({ length: ROUNDS + 1 }, (_, r) => r);
+
+// The FULL axis is set once and never changes — if it grew with the data the
+// scale would rescale under the animation and the lines would slide sideways.
+chart.xAxis = { data: xs, scale: 'value', label: 'Round' };
+
+let progress = ROUNDS, raf = 0, last = 0;
+
+function apply() {
+  chart.series = DRIVERS.map((d) => ({
+    label: d.label,
+    color: d.color,
+    data: xs.map((r) => (r <= progress ? d.cum[r] : null)),
+  }));
+}
+
+function frame(now) {
+  // A rAF loop outlives the element unless you stop it.
+  if (!chart.isConnected) return cancelAnimationFrame(raf);
+  if (!last) last = now;
+  progress = Math.min(ROUNDS, progress + (now - last) * (ROUNDS / 14000));
+  last = now;
+  apply();
+  raf = progress < ROUNDS ? requestAnimationFrame(frame) : 0;
+}
+
+document.getElementById('race-play').addEventListener('click', () => {
+  progress = 0;
+  last = 0;
+  raf = requestAnimationFrame(frame);
+});
+
+apply();
+\x3C/script>`}
+  react={`import { useEffect, useRef, useState } from 'react';
+import { MdLineChart, MdButton } from '@awc-ui/react';
+
+const ROUNDS = 10;
+const DRIVERS = [
+  { label: 'Antonelli', color: 'primary', cum: [0, 18, 47, 72, 100, 131, 156, 156, 171, 179, 204] },
+  { label: 'Hamilton', color: 'error', cum: [0, 12, 33, 41, 51, 72, 90, 115, 125, 147, 159] },
+  { label: 'Russell', color: 'tertiary', cum: [0, 25, 51, 63, 80, 88, 88, 106, 131, 154, 154] },
+];
+const XS = Array.from({ length: ROUNDS + 1 }, (_, r) => r);
+const X_AXIS = { data: XS, scale: 'value', label: 'Round' };
+
+// The frame builder is pure, so it can live outside the component.
+const frameAt = (progress) =>
+  DRIVERS.map((d) => ({
+    label: d.label,
+    color: d.color,
+    data: XS.map((r) => (r <= progress ? d.cum[r] : null)),
+  }));
+
+export function Race() {
+  const [series, setSeries] = useState(() => frameAt(ROUNDS));
+  const raf = useRef(0);
+
+  // Effect cleanup is the teardown — React unmounts, the loop stops.
+  useEffect(() => () => cancelAnimationFrame(raf.current), []);
+
+  const play = () => {
+    let progress = 0;
+    let last = 0;
+    const step = (now) => {
+      if (!last) last = now;
+      progress = Math.min(ROUNDS, progress + (now - last) * (ROUNDS / 14000));
+      last = now;
+      setSeries(frameAt(progress));
+      if (progress < ROUNDS) raf.current = requestAnimationFrame(step);
+    };
+    raf.current = requestAnimationFrame(step);
+  };
+
+  return (
+    <>
+      <MdLineChart
+        label="Championship"
+        curve="linear"
+        seriesLabels
+        noAnimation
+        legend="bottom"
+        grid="horizontal"
+        xAxis={X_AXIS}
+        series={series}
+      />
+      <MdButton variant="filled" onClick={play}>Play</MdButton>
+    </>
+  );
+}`}
+  angular={`import { Component, CUSTOM_ELEMENTS_SCHEMA, NgZone, OnDestroy } from '@angular/core';
+
+const ROUNDS = 10;
+const DRIVERS = [
+  { label: 'Antonelli', color: 'primary', cum: [0, 18, 47, 72, 100, 131, 156, 156, 171, 179, 204] },
+  { label: 'Hamilton', color: 'error', cum: [0, 12, 33, 41, 51, 72, 90, 115, 125, 147, 159] },
+  { label: 'Russell', color: 'tertiary', cum: [0, 25, 51, 63, 80, 88, 88, 106, 131, 154, 154] },
+];
+const XS = Array.from({ length: ROUNDS + 1 }, (_, r) => r);
+
+@Component({
+  selector: 'app-race',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: \`
+    <md-line-chart
+      label="Championship"
+      curve="linear"
+      series-labels
+      no-animation
+      legend="bottom"
+      grid="horizontal"
+      [xAxis]="xAxis"
+      [series]="series"
+    ></md-line-chart>
+    <md-button variant="filled" (click)="play()">Play</md-button>
+  \`,
+})
+export class RaceComponent implements OnDestroy {
+  xAxis = { data: XS, scale: 'value', label: 'Round' };
+  series = this.frameAt(ROUNDS);
+
+  private raf = 0;
+
+  // runOutsideAngular: 60 change-detection passes a second would dominate the
+  // frame budget, and the only thing the loop touches is one bound array.
+  constructor(private zone: NgZone) {}
+
+  play() {
+    this.zone.runOutsideAngular(() => {
+      let progress = 0;
+      let last = 0;
+      const step = (now: number) => {
+        if (!last) last = now;
+        progress = Math.min(ROUNDS, progress + (now - last) * (ROUNDS / 14000));
+        last = now;
+        this.series = this.frameAt(progress);
+        if (progress < ROUNDS) this.raf = requestAnimationFrame(step);
+      };
+      this.raf = requestAnimationFrame(step);
+    });
+  }
+
+  ngOnDestroy() { cancelAnimationFrame(this.raf); }
+
+  private frameAt(progress: number) {
+    return DRIVERS.map((d) => ({
+      label: d.label,
+      color: d.color,
+      data: XS.map((r) => (r <= progress ? d.cum[r] : null)),
+    }));
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, onBeforeUnmount, ref } from 'vue';
+
+const ROUNDS = 10;
+const DRIVERS = [
+  { label: 'Antonelli', color: 'primary', cum: [0, 18, 47, 72, 100, 131, 156, 156, 171, 179, 204] },
+  { label: 'Hamilton', color: 'error', cum: [0, 12, 33, 41, 51, 72, 90, 115, 125, 147, 159] },
+  { label: 'Russell', color: 'tertiary', cum: [0, 25, 51, 63, 80, 88, 88, 106, 131, 154, 154] },
+];
+const XS = Array.from({ length: ROUNDS + 1 }, (_, r) => r);
+
+const xAxis = { data: XS, scale: 'value', label: 'Round' };
+const progress = ref(ROUNDS);
+
+const series = computed(() =>
+  DRIVERS.map((d) => ({
+    label: d.label,
+    color: d.color,
+    data: XS.map((r) => (r <= progress.value ? d.cum[r] : null)),
+  })),
+);
+
+let raf = 0;
+
+function play() {
+  let last = 0;
+  progress.value = 0;
+  const step = (now: number) => {
+    if (!last) last = now;
+    progress.value = Math.min(ROUNDS, progress.value + (now - last) * (ROUNDS / 14000));
+    last = now;
+    if (progress.value < ROUNDS) raf = requestAnimationFrame(step);
+  };
+  raf = requestAnimationFrame(step);
+}
+
+onBeforeUnmount(() => cancelAnimationFrame(raf));
+\x3C/script>
+
+<template>
+  <md-line-chart
+    label="Championship"
+    curve="linear"
+    series-labels
+    no-animation
+    legend="bottom"
+    grid="horizontal"
+    .xAxis="xAxis"
+    .series="series"
+  />
+  <md-button variant="filled" @click="play">Play</md-button>
+</template>`}
+  svelte={`<script lang="ts">
+import { onDestroy } from 'svelte';
+
+const ROUNDS = 10;
+const DRIVERS = [
+  { label: 'Antonelli', color: 'primary', cum: [0, 18, 47, 72, 100, 131, 156, 156, 171, 179, 204] },
+  { label: 'Hamilton', color: 'error', cum: [0, 12, 33, 41, 51, 72, 90, 115, 125, 147, 159] },
+  { label: 'Russell', color: 'tertiary', cum: [0, 25, 51, 63, 80, 88, 88, 106, 131, 154, 154] },
+];
+const XS = Array.from({ length: ROUNDS + 1 }, (_, r) => r);
+const xAxis = { data: XS, scale: 'value', label: 'Round' };
+
+let progress = ROUNDS;
+let raf = 0;
+
+// Reactive, so every frame that moves progress rebuilds the bound array.
+$: series = DRIVERS.map((d) => ({
+  label: d.label,
+  color: d.color,
+  data: XS.map((r) => (r <= progress ? d.cum[r] : null)),
+}));
+
+function play() {
+  let last = 0;
+  progress = 0;
+  const step = (now) => {
+    if (!last) last = now;
+    progress = Math.min(ROUNDS, progress + (now - last) * (ROUNDS / 14000));
+    last = now;
+    if (progress < ROUNDS) raf = requestAnimationFrame(step);
+  };
+  raf = requestAnimationFrame(step);
+}
+
+onDestroy(() => cancelAnimationFrame(raf));
+\x3C/script>
+
+<md-line-chart
+  label="Championship"
+  curve="linear"
+  series-labels
+  no-animation
+  legend="bottom"
+  grid="horizontal"
+  {xAxis}
+  {series}
+/>
+<md-button variant="filled" on:click={play}>Play</md-button>`}
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdMarkerClick` | no | `MdChartClickDetail<MdChartXYSeries>` | A data-point marker is clicked |
+| `mdLineClick` | no | `MdChartClickDetail<MdChartXYSeries>` | A series line is clicked *between* its points |
+| `mdAreaClick` | no | `MdChartClickDetail<MdChartXYSeries>` | A filled area is clicked |
+| `mdAxisClick` | no | `MdChartAxisClickDetail` | The plot background, or `Enter` / `Space` from the keyboard |
+| `mdLegendClick` | no | `{ seriesIndex, seriesId?, selected }` | A legend chip toggles a series |
+| `mdHover` | no | `MdChartHoverDetail` | The hovered data index changes (rAF-throttled) |
+| `mdZoom` | no | `{ startIndex, endIndex, reset }` | The zoom window changes (drag, slider, `setZoom`, `resetZoom`) |
+| `mdReady` | no | `void` | The engine has mounted and drawn |
+
+:::tip[Gate exports on `mdReady`]
+`toDataURL()` before `mdReady` returns an image of nothing — the chart may not
+have drawn yet.
+:::
+
+### Event payloads
+
+The three click events share one payload, so one handler can serve markers,
+lines and areas. Every field is already in your coordinates — the series object
+you passed in, the index within it, the original axis value — so drill-down and
+selection need no re-mapping to chart internals.
+
+```ts
+// `T` defaults to `unknown`; md-line-chart emits it as
+// `MdChartClickDetail<MdChartXYSeries>`, so name the argument to get a typed
+// `series` back.
+interface MdChartClickDetail<T = unknown> {
+  seriesIndex: number;                 // 0-based index into `series`
+  seriesId?: string;                   // the series' `id`, when one was given
+  dataIndex: number;                   // index of the point within that series
+  value: number | null;                // raw value — `null` for an empty slot
+  axisValue?: string | number | Date;  // original x value at that column
+  series: T;                           // the series object you passed in
+  nativeEvent: PointerEvent | MouseEvent | KeyboardEvent;
+}
+
+interface MdChartAxisClickDetail {
+  dataIndex: number;                   // nearest x position
+  axisValue?: string | number | Date;
+  // One row per VISIBLE series at that x — `dataIndex` is -1 where a series
+  // has no point there. Series hidden by a legend toggle are left out.
+  seriesValues: MdChartAxisSeriesValue[];
+  nativeEvent: PointerEvent | MouseEvent | KeyboardEvent;
+}
+
+interface MdChartAxisSeriesValue {
+  seriesIndex: number;
+  seriesId?: string;
+  label: string;
+  dataIndex: number;
+  value: number | null;
+}
+
+interface MdChartHoverDetail {
+  dataIndex: number;                   // highlighted x position
+  axisValue?: string | number | Date;
+  seriesIndices: number[];             // one entry under tooltip="item",
+}                                      // every series at that x under "axis"
+```
+
+:::note[`nativeEvent` is not always a pointer event]
+The plot is keyboard-operable, so a handler that assumes `PointerEvent` (reading
+`clientX`, say) breaks when the same event arrives from <kbd>Enter</kbd>. Narrow
+with `instanceof` before reading pointer-only fields.
+:::
+
+This is the chart the snippets below wire up. Click a marker, click the plot
+background, toggle a legend chip or drag the zoom slider — each payload lands in
+the footer under the plot.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Live preview — click, toggle and zoom to fire the events"
+  storyId="charts-line-chart--click-handlers"
+  hideCode
+  attrs={{ label: 'Sessions', zoom: 'slider', grid: 'horizontal', legend: 'top-end', 'show-marks': true }}
+  fixture={{
+    series: [
+      { label: 'Sessions', color: 'primary', data: [1200, 1850, 1640, 2310, 2780, 2450, 2900, 3120] },
+      { label: 'Signups', color: 'tertiary', data: [180, 260, 240, 390, 480, 410, 520, 610] },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'] },
+    markLines: [{ value: 4, label: 'Launch' }],
+  }}
+  fnFixture={{
+    valueFormatter: `(v) => new Intl.NumberFormat('en-US').format(v ?? 0)`,
+  }}
+  innerHtml={`<div slot="footer" data-event-log style="min-block-size:76px; display:grid; align-content:start; gap:4px; padding-block-start:8px; font-size:.8rem; font-family:ui-monospace,monospace;">
+  <span style="opacity:.6;">No events yet — click a point, the plot background, a legend chip, or drag the zoom slider.</span>
+</div>`}
+  boot={`
+    const log = el.querySelector('[data-event-log]');
+
+    // Newest first, four rows deep: a docs log that grows forever pushes the
+    // chart off screen.
+    const show = (name, text) => {
+      // Drop the placeholder line the first time something actually fires.
+      if (log.dataset.ready !== '1') {
+        log.textContent = '';
+        log.dataset.ready = '1';
+      }
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; gap:8px; align-items:baseline;';
+      const tag = document.createElement('strong');
+      tag.textContent = name;
+      tag.style.cssText = 'color:var(--md-sys-color-primary);';
+      const body = document.createElement('span');
+      body.textContent = text;
+      row.append(tag, body);
+      log.prepend(row);
+      while (log.children.length > 4) log.lastElementChild.remove();
+    };
+
+    // One table of handlers, so the teardown below can remove exactly what was
+    // added. The demo is re-booted every time it scrolls back into view, and a
+    // boot that returns nothing gets run again — leaving the previous set of
+    // listeners attached and logging every click twice.
+    const handlers = {
+      mdMarkerClick: (e) =>
+        show('mdMarkerClick', e.detail.series.label + ' at ' + e.detail.axisValue + ' = ' + e.detail.value),
+      mdLineClick: (e) =>
+        show('mdLineClick', 'series ' + e.detail.seriesIndex + ', nearest point ' + e.detail.dataIndex),
+      mdAxisClick: (e) =>
+        show('mdAxisClick', e.detail.axisValue + ' → ' +
+          e.detail.seriesValues.map((r) => r.label + ' ' + r.value).join(', ')),
+      mdLegendClick: (e) =>
+        show('mdLegendClick', 'series ' + e.detail.seriesIndex + (e.detail.selected ? ' shown' : ' hidden')),
+      mdZoom: (e) =>
+        show('mdZoom', e.detail.reset ? 'reset' : e.detail.startIndex + ' … ' + e.detail.endIndex),
+    };
+
+    for (const [name, fn] of Object.entries(handlers)) el.addEventListener(name, fn);
+
+    return () => {
+      for (const [name, fn] of Object.entries(handlers)) el.removeEventListener(name, fn);
+    };
+  `}
+/>
+
+<TechnologyTabs
+  html={`<md-line-chart id="sessions" label="Sessions" zoom="slider" grid="horizontal"
+               legend="top-end" show-marks></md-line-chart>
+
+<script type="module">
+const chart = document.getElementById('sessions');
+
+chart.xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'] };
+chart.series = [
+  { label: 'Sessions', color: 'primary', data: [1200, 1850, 1640, 2310, 2780, 2450, 2900, 3120] },
+  { label: 'Signups', color: 'tertiary', data: [180, 260, 240, 390, 480, 410, 520, 610] },
+];
+chart.markLines = [{ value: 4, label: 'Launch' }];
+chart.valueFormatter = (v) => new Intl.NumberFormat('en-US').format(v ?? 0);
+
+chart.addEventListener('mdMarkerClick', (e) =>
+  console.log(e.detail.series.label, e.detail.axisValue, e.detail.value));
+chart.addEventListener('mdLineClick', (e) =>
+  console.log('line', e.detail.seriesIndex, e.detail.dataIndex));
+chart.addEventListener('mdAxisClick', (e) =>
+  console.log('axis', e.detail.axisValue, e.detail.seriesValues));
+chart.addEventListener('mdLegendClick', (e) =>
+  console.log('legend', e.detail.seriesIndex, e.detail.selected));
+chart.addEventListener('mdZoom', (e) =>
+  console.log(e.detail.reset ? 'reset' : [e.detail.startIndex, e.detail.endIndex]));
+\x3C/script>`}
+  react={`import { useMemo } from 'react';
+import { MdLineChart } from '@awc-ui/react';
+
+// Hoisted: these never change, so they keep one identity for the life of the
+// module. An object literal written inline in JSX is a NEW value every render,
+// and each of these is a @Watch-ed prop — the chart would rebuild its scene on
+// every parent re-render.
+const X_AXIS = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'] };
+const MARK_LINES = [{ value: 4, label: 'Launch' }];
+const FORMAT = (v) => new Intl.NumberFormat('en-US').format(v ?? 0);
+
+export function SessionsChart({ sessions, signups }) {
+  // Derived from props, so it has to be memoised rather than hoisted.
+  const series = useMemo(
+    () => [
+      { label: 'Sessions', color: 'primary', data: sessions },
+      { label: 'Signups', color: 'tertiary', data: signups },
+    ],
+    [sessions, signups],
+  );
+
+  // Direct props — no ref, no effect. The React wrapper is generated with
+  // createComponent(), which assigns non-primitive values as element
+  // PROPERTIES, so arrays, objects and functions arrive intact.
+  return (
+    <MdLineChart
+      label="Sessions"
+      zoom="slider"
+      grid="horizontal"
+      legend="top-end"
+      showMarks
+      xAxis={X_AXIS}
+      series={series}
+      markLines={MARK_LINES}
+      valueFormatter={FORMAT}
+      onMdMarkerClick={(e) => console.log(e.detail.series.label, e.detail.value)}
+      onMdLineClick={(e) => console.log('line', e.detail.seriesIndex)}
+      onMdAxisClick={(e) => console.log('axis', e.detail.axisValue, e.detail.seriesValues)}
+      onMdLegendClick={(e) => console.log('legend', e.detail.seriesIndex, e.detail.selected)}
+      onMdZoom={(e) => console.log(e.detail.startIndex, e.detail.endIndex)}
+    />
+  );
+}`}
+  angular={`import { Component, CUSTOM_ELEMENTS_SCHEMA, Input, OnChanges } from '@angular/core';
+
+@Component({
+  selector: 'app-sessions-chart',
+  // Without CUSTOM_ELEMENTS_SCHEMA the template compiler rejects every
+  // property binding below: "Can't bind to 'xAxis' since it isn't a known
+  // property of 'md-line-chart'". Import the generated @awc-ui/angular module
+  // instead if you prefer typed wrappers.
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: \`
+    <md-line-chart
+      label="Sessions"
+      zoom="slider"
+      grid="horizontal"
+      legend="top-end"
+      show-marks
+      [xAxis]="xAxis"
+      [series]="series"
+      [markLines]="markLines"
+      [valueFormatter]="valueFormatter"
+      (mdMarkerClick)="onMarker($event)"
+      (mdLineClick)="onLine($event)"
+      (mdAxisClick)="onAxis($event)"
+      (mdLegendClick)="onLegend($event)"
+      (mdZoom)="onZoom($event)"
+    ></md-line-chart>
+  \`,
+})
+export class SessionsChartComponent implements OnChanges {
+  @Input() sessions: number[] = [];
+  @Input() signups: number[] = [];
+
+  // Property bindings on a custom element — Angular assigns these as DOM
+  // properties, so no ViewChild and no AfterViewInit are needed.
+  xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'] };
+  markLines = [{ value: 4, label: 'Launch' }];
+  valueFormatter = (v: number | null) => new Intl.NumberFormat('en-US').format(v ?? 0);
+  series: { label: string; color: string; data: number[] }[] = [];
+
+  // Rebuild in ngOnChanges, not a getter: a getter returning a fresh array runs
+  // on every change-detection pass and re-sets the prop each time.
+  ngOnChanges() {
+    this.series = [
+      { label: 'Sessions', color: 'primary', data: this.sessions },
+      { label: 'Signups', color: 'tertiary', data: this.signups },
+    ];
+  }
+
+  onMarker(e: CustomEvent) { console.log(e.detail.series.label, e.detail.value); }
+  onLine(e: CustomEvent) { console.log('line', e.detail.seriesIndex); }
+  onAxis(e: CustomEvent) { console.log('axis', e.detail.axisValue, e.detail.seriesValues); }
+  onLegend(e: CustomEvent) { console.log('legend', e.detail.seriesIndex, e.detail.selected); }
+  onZoom(e: CustomEvent) { console.log(e.detail.startIndex, e.detail.endIndex); }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const series = ref([
+  { label: 'Sessions', color: 'primary', data: [1200, 1850, 1640, 2310, 2780, 2450, 2900, 3120] },
+  { label: 'Signups', color: 'tertiary', data: [180, 260, 240, 390, 480, 410, 520, 610] },
+]);
+const xAxis = ref({ data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'] });
+const markLines = ref([{ value: 4, label: 'Launch' }]);
+
+// A plain function, not a ref: it never changes, and wrapping it would only
+// add a .value hop for the property binding to unwrap.
+const valueFormatter = (v: number | null) => new Intl.NumberFormat('en-US').format(v ?? 0);
+\x3C/script>
+
+<template>
+  <md-line-chart
+    label="Sessions"
+    zoom="slider"
+    grid="horizontal"
+    legend="top-end"
+    show-marks
+    .series="series"
+    .xAxis="xAxis"
+    .markLines="markLines"
+    .valueFormatter="valueFormatter"
+    @mdMarkerClick="(e) => console.log(e.detail.series.label, e.detail.value)"
+    @mdLineClick="(e) => console.log('line', e.detail.seriesIndex)"
+    @mdAxisClick="(e) => console.log('axis', e.detail.axisValue, e.detail.seriesValues)"
+    @mdLegendClick="(e) => console.log('legend', e.detail.seriesIndex, e.detail.selected)"
+    @mdZoom="(e) => console.log(e.detail.startIndex, e.detail.endIndex)"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+export let sessions: number[] = [];
+export let signups: number[] = [];
+
+const xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'] };
+const markLines = [{ value: 4, label: 'Launch' }];
+const valueFormatter = (v: number | null) => new Intl.NumberFormat('en-US').format(v ?? 0);
+
+// Reactive, because it derives from props.
+$: series = [
+  { label: 'Sessions', color: 'primary', data: sessions },
+  { label: 'Signups', color: 'tertiary', data: signups },
+];
+\x3C/script>
+
+<!-- Svelte assigns these as PROPERTIES on an upgraded custom element, so the
+     shorthand carries arrays and functions through unchanged — no bind:this. -->
+<md-line-chart
+  label="Sessions"
+  zoom="slider"
+  grid="horizontal"
+  legend="top-end"
+  show-marks
+  {xAxis}
+  {series}
+  {markLines}
+  {valueFormatter}
+  on:mdMarkerClick={(e) => console.log(e.detail.series.label, e.detail.value)}
+  on:mdLineClick={(e) => console.log('line', e.detail.seriesIndex)}
+  on:mdAxisClick={(e) => console.log('axis', e.detail.axisValue, e.detail.seriesValues)}
+  on:mdLegendClick={(e) => console.log('legend', e.detail.seriesIndex, e.detail.selected)}
+  on:mdZoom={(e) => console.log(e.detail.startIndex, e.detail.endIndex)}
+/>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[Methods]
+`resize()` · `replay()` · `toDataURL()` · `getInstance()` · `setZoom()` ·
+`resetZoom()`. Call `resize()` when the container changes size in a way the
+layout doesn't propagate — a revealed tab panel renders at zero size otherwise.
+`getInstance()` exposes the underlying engine (a `LineChartEngine`, not ECharts
+— the library wraps no charting dependency); it is an escape hatch, and anything
+you do through it is outside the component's contract.
+:::
+
+## Accessibility
+
+- The host gets `role="figure"` and an `aria-label` summary such as *"Revenue,
+  line chart with 2 series, from Jan to Jun."* `label`, `summary`, `label-plot`
+  and `label-point` carry that description; `tableLabels` names the underlying
+  data dimensions. Treat them as required, not optional.
+- A visually-hidden `<table>` mirrors every data point. **Provide the numbers as
+  a visible table** wherever precision matters.
+- **Keyboard**: the plot is a focus stop. Arrow keys walk the data points,
+  `Home` / `End` jump to the ends, `Escape` leaves, and `Enter` / `Space` emits
+  `mdAxisClick` for the focused position. Arrows follow the reading direction,
+  so in RTL the left arrow advances.
+- Each move drives the same crosshair and tooltip a mouse gets, and writes a
+  polite `aria-live` announcement.
+- Legend chips are toggle buttons carrying `aria-pressed`, so a screen reader
+  says whether a series is shown or hidden.
+- Don't distinguish series by colour alone — legends, `series-labels`, and
+  differing curve or mark styles all help.
+- `loading` plus `loading-label` makes the fetch state perceivable.
+- Respects `prefers-reduced-motion`; `no-animation` forces the static path.
+  Inherits Windows high-contrast colours via `forced-color-adjust: auto`.
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Keyboard — tab into the plot, then arrow keys, Home / End, Enter, Escape"
+  attrs={{ label: 'Sessions per week', summary: 'Sessions per week, line chart, 8 points from W1 to W8', legend: 'bottom', grid: 'horizontal', 'show-marks': true }}
+  fixture={{
+    series: [{ label: 'Sessions', color: 'primary', data: [1200, 1850, 1640, 2310, 2780, 2450, 2900, 3120] }],
+    xAxis: { data: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8'] },
+    yAxis: { label: 'Sessions' },
+  }}
+/>
+
+## RTL, density & i18n
+
+**RTL** — inside a `dir="rtl"` parent the whole plot mirrors: the value axis and
+its labels move to the right, the category axis runs right-to-left, and the
+tooltip opens along the reading direction. `dataIndex`, `axisValue` and every
+event payload are identical in both directions — only pixels move. See
+[RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <md-line-chart label="Sessions" legend="top-end"></md-line-chart>
+</div>
+```
+
+<ComponentDemo
+  hideCode
+  html={`<div style="inline-size:100%; display:grid; grid-template-columns:auto 1fr; gap:14px 16px; align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <md-line-chart id="rtl-cmp-ltr" label="Sessions" legend="top-end" grid="horizontal" show-marks
+                 style="inline-size:100%; min-inline-size:0; block-size:220px;"></md-line-chart>
+
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="min-inline-size:0;">
+    <md-line-chart id="rtl-cmp-rtl" label="Sessions" legend="top-end" grid="horizontal" show-marks
+                   style="inline-size:100%; min-inline-size:0; block-size:220px;"></md-line-chart>
+  </div>
+</div>
+<script type="module">
+  // Identical data in both: only the container's direction differs.
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+  const ROWS = [{ label: 'Sessions', color: 'primary', data: [400, 460, 520, 610, 580, 700] }];
+
+  for (const id of ['rtl-cmp-ltr', 'rtl-cmp-rtl']) {
+    const chart = document.getElementById(id);
+    chart.series = ROWS.map((r) => ({ ...r }));
+    chart.xAxis = { data: MONTHS };
+  }
+\x3C/script>`}
+  label="Same markup and the same data, dir=ltr vs dir=rtl"
+  storyId="charts-line-chart--rtl"
+/>
+
+Direction, density and locale are all declarative, and none of them touches the
+data: the arrays stay in source order in every technology.
+
+<TechnologyTabs
+  html={`<md-line-chart id="sessions" dir="rtl" density="-2" locale="ar-EG"
+               label="الجلسات" legend="top-end" grid="horizontal" show-marks></md-line-chart>
+
+<script type="module">
+const chart = document.getElementById('sessions');
+
+// Source order, never pre-reversed — the engine mirrors the scene, not the data.
+chart.xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+chart.series = [{ label: 'Sessions', color: 'primary', data: [400, 460, 520, 610, 580, 700] }];
+\x3C/script>`}
+  react={`import { MdLineChart } from '@awc-ui/react';
+
+const X_AXIS = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+const SERIES = [{ label: 'Sessions', color: 'primary', data: [400, 460, 520, 610, 580, 700] }];
+
+export function Sessions() {
+  return (
+    <MdLineChart
+      dir="rtl"
+      density={-2}
+      locale="ar-EG"
+      label="الجلسات"
+      legend="top-end"
+      grid="horizontal"
+      showMarks
+      xAxis={X_AXIS}
+      series={SERIES}
+    />
+  );
+}`}
+  angular={`import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+
+@Component({
+  selector: 'app-sessions',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: \`
+    <md-line-chart
+      dir="rtl"
+      density="-2"
+      locale="ar-EG"
+      label="الجلسات"
+      legend="top-end"
+      grid="horizontal"
+      show-marks
+      [xAxis]="xAxis"
+      [series]="series"
+    ></md-line-chart>
+  \`,
+})
+export class SessionsComponent {
+  xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+  series = [{ label: 'Sessions', color: 'primary', data: [400, 460, 520, 610, 580, 700] }];
+}`}
+  vue={`<script setup lang="ts">
+const xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+const series = [{ label: 'Sessions', color: 'primary', data: [400, 460, 520, 610, 580, 700] }];
+\x3C/script>
+
+<template>
+  <md-line-chart
+    dir="rtl"
+    density="-2"
+    locale="ar-EG"
+    label="الجلسات"
+    legend="top-end"
+    grid="horizontal"
+    show-marks
+    .xAxis="xAxis"
+    .series="series"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+const xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+const series = [{ label: 'Sessions', color: 'primary', data: [400, 460, 520, 610, 580, 700] }];
+\x3C/script>
+
+<md-line-chart
+  dir="rtl"
+  density="-2"
+  locale="ar-EG"
+  label="الجلسات"
+  legend="top-end"
+  grid="horizontal"
+  show-marks
+  {xAxis}
+  {series}
+/>`}
+/>
+
+### Mirroring is the chart's job, not the data's
+
+The engine mirrors the *scene* — it never touches your arrays. So keep `series`
+and `xAxis.data` in their natural order and let the direction do the work.
+Reversing them by hand for an RTL page mirrors twice: the axis runs
+right-to-left as it should, but the values are laid onto it backwards, so the
+trend reads inverted and every `dataIndex` in an event payload points at the
+wrong month.
+
+<ComponentDemo
+  hideCode
+  html={`<div style="inline-size:100%; display:grid; grid-template-columns:auto 1fr; gap:14px 16px; align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <div dir="rtl" style="min-inline-size:0;">
+    <md-line-chart id="rtl-order-good" label="Sessions" legend="none" grid="horizontal" show-marks
+                   style="inline-size:100%; min-inline-size:0; block-size:200px;"></md-line-chart>
+  </div>
+
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <div dir="rtl" style="min-inline-size:0;">
+    <md-line-chart id="rtl-order-bad" label="Sessions" legend="none" grid="horizontal" show-marks
+                   style="inline-size:100%; min-inline-size:0; block-size:200px;"></md-line-chart>
+  </div>
+</div>
+<script type="module">
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+  const VALUES = [400, 460, 520, 610, 580, 700];   // rising through the half-year
+
+  // Correct: source order, container is rtl, the chart mirrors.
+  const good = document.getElementById('rtl-order-good');
+  good.series = [{ label: 'Sessions', color: 'primary', data: VALUES }];
+  good.xAxis = { data: MONTHS };
+
+  // Wrong: pre-reversed "for RTL". The mirroring cancels it out, so the rise
+  // now reads as a fall and Jan sits where Jun belongs.
+  const bad = document.getElementById('rtl-order-bad');
+  bad.series = [{ label: 'Sessions', color: 'error', data: [...VALUES].reverse() }];
+  bad.xAxis = { data: [...MONTHS].reverse() };
+\x3C/script>`}
+  label="Both in dir=rtl — source order vs hand-reversed arrays"
+/>
+
+### Every density rung
+
+<ComponentDemo
+  hideCode
+  html={`<div id="density-rungs" style="inline-size:100%; display:grid; grid-template-columns:auto 1fr; gap:14px 16px; align-items:center;"></div>
+<script type="module">
+  const RUNGS = [0, -1, -2, -3, -4];
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+  const VALUES = [400, 460, 520, 610, 580, 700];
+
+  const grid = document.getElementById('density-rungs');
+
+  for (const rung of RUNGS) {
+    const caption = document.createElement('span');
+    caption.textContent = String(rung);
+    caption.style.cssText =
+      'inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;';
+
+    const chart = document.createElement('md-line-chart');
+    chart.setAttribute('density', String(rung));
+    chart.setAttribute('label', 'Sessions');
+    chart.setAttribute('legend', 'top-end');
+    chart.setAttribute('grid', 'horizontal');
+    chart.setAttribute('show-marks', '');
+    chart.style.cssText = 'inline-size:100%; min-inline-size:0; block-size:180px;';
+    // Arrays and objects cannot travel through markup — assign them as
+    // properties. Doing it before upgrade is fine; Stencil picks them up.
+    chart.series = [{ label: 'Sessions', color: 'primary', data: VALUES }];
+    chart.xAxis = { data: MONTHS };
+
+    grid.append(caption, chart);
+  }
+\x3C/script>`}
+  label="Density 0 through -4 — padding, axis labels and the legend all taper"
+/>
+
+### Density and direction together
+
+<ChartDemo
+  tag="md-line-chart"
+  label="dir=rtl at density -2"
+  attrs={{ dir: 'rtl', density: -2, label: 'Sessions', legend: 'top-end', grid: 'horizontal', 'show-marks': true }}
+  fixture={{
+    series: [{ label: 'Sessions', color: 'primary', data: [400, 460, 520, 610, 580, 700] }],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+  }}
+/>
+
+**Density** — `density="-1…-4"` tightens padding and label sizes. See
+[Density](/behaviour/density/).
+
+**i18n** — number and date formatting follows the **`locale` prop**, not the
+document's `lang`: `Intl` with no locale resolves to the *browser's*, which is
+rarely what a localised page wants.
+
+```html
+<md-line-chart locale="de-DE"></md-line-chart>
+<!-- the axis reads 1.234,5 rather than 1,234.5 -->
+```
+
+<ChartDemo
+  tag="md-line-chart"
+  label="locale=de-DE — the axis and tooltip switch separators"
+  storyId="charts-line-chart--localized"
+  attrs={{ locale: 'de-DE', label: 'Umsatz', subtitle: 'Erstes Halbjahr', legend: 'bottom', grid: 'horizontal', 'show-marks': true, 'label-point': '%x%: %values%' }}
+  fixture={{
+    series: [{ label: 'Umsatz', color: 'primary', data: [1234.5, 1810.25, 1640.75, 2310.5, 2780.4, 2450.9] }],
+    xAxis: { data: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun'] },
+    yAxis: { label: 'EUR' },
+  }}
+/>
+
+Every string the chart renders itself is a prop, so it can be handed over from
+whatever i18n engine the app already uses: `label`, `subtitle`, `summary`
+(replaces the generated `aria-label`), `label-empty`, `loading-label`,
+`label-plot`, `label-point`, `label-zoom-start` / `label-zoom-end`, and
+`tableLabels` (a **property** — it takes an object). `label-point` uses the
+**`%x%` / `%values%`** percent tokens; keep them when translating.
+
+## Theming
+
+### Axis and grid colour
+
+Two of these are **not** namespaced to the component. The axis and gridlines are
+drawn by the shared chart engine, so they read family-wide properties that every
+chart type honours:
+
+<div class="md-table-scroll">
+
+| Custom property | Draws | Default |
+|---|---|---|
+| `--md-chart-axis-color` | The axis line and its ticks | `--md-sys-color-outline-variant` |
+| `--md-chart-grid-color` | The gridlines across the plot | `--md-sys-color-outline-variant` at 50% alpha |
+
+</div>
+
+Both fall back to the same role — MD3 data-viz keeps chart chrome light — but
+the gridlines are dimmed to half alpha so they read as faint guides beneath a
+slightly more present axis line. An explicit override is used verbatim, not
+dimmed.
+
+They're read off the element's computed style, so setting them on any ancestor
+tints every chart beneath it — a dashboard section, or the whole page — without
+touching each component.
+
+```css
+.dashboard {
+  --md-chart-axis-color: #7c6fd6;
+  --md-chart-grid-color: rgba(124, 111, 214, 0.22);
+}
+```
+
+<ChartDemo
+  tag="md-line-chart"
+  label="Tinted axis and grid, set on the wrapper"
+  wrapperStyle="--md-chart-axis-color: #7c6fd6; --md-chart-grid-color: rgba(124, 111, 214, 0.22);"
+  attrs={{ label: 'Signups', grid: 'both', legend: 'none', 'show-marks': true }}
+  fixture={{
+    series: [{ label: 'Signups', color: '#7c6fd6', data: [12, 19, 15, 24, 28, 22, 30] }],
+    xAxis: { data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
+  }}
+/>
+
+:::caution[Read at draw time, not watched]
+The engine samples these when it renders. Changing them on a chart that has
+already drawn leaves the old colours on the canvas — reassign `series` to force
+a repaint, the same as for a theme switch.
+:::
+
+The rest are namespaced to the component:
+
+<div class="md-table-scroll">
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-line-chart-block-size` | Chart box height | `auto` (the aspect ratio drives it) |
+| `--md-line-chart-min-block-size` | Height floor | `max(120px, 160px + density × 8px)` |
+| `--md-line-chart-aspect-ratio` | Width : height | `16 / 9` |
+| `--md-line-chart-background` | Surface behind the chart | `--md-sys-color-surface-container-low` |
+| `--md-line-chart-padding` | Inset around the canvas | `max(8px, 16px + density × 2px)` |
+| `--md-line-chart-shape` | Container corner radius | `max(8px, 16px + density × 2px)` |
+| `--md-line-chart-empty-color` | Empty-state text | `--md-sys-color-on-surface-variant` |
+| `--md-line-chart-empty-background` | Empty-state surface | the chart's own background |
+| `--md-line-chart-empty-font` | Empty-state font **family** (not a shorthand) | `--md-sys-typescale-body-medium-font-family` |
+| `--md-line-chart-empty-font-size` | Empty-state font size | `--md-sys-typescale-body-medium-font-size` (14px) |
+| `--md-line-chart-empty-icon-size` | Slotted empty-state icon | `40px` |
+| `--md-line-chart-zoom-size` | Height reserved for the zoom slider | `28px` |
+| `--md-line-chart-zoom-track-color` | Slider track | `--md-sys-color-surface-container-highest` |
+| `--md-line-chart-zoom-window-color` | Selected window | `--md-sys-color-secondary-container` |
+| `--md-line-chart-zoom-handle-color` | Thumbs and drag-band edges | `--md-sys-color-primary` |
+| `--md-line-chart-zoom-band-color` | Drag-to-zoom selection fill | `--md-sys-color-primary` at 16% |
+
+</div>
+
+```css
+md-line-chart.dashboard {
+  --md-line-chart-background: var(--md-sys-color-surface-container);
+  --md-line-chart-padding: 16px;
+  --md-line-chart-shape: 16px;
+  --md-line-chart-aspect-ratio: 16 / 6;
+}
+```
+
+<ChartDemo
+  tag="md-line-chart"
+  label="A themed instance — surface, padding, corner and aspect ratio"
+  style="--md-line-chart-background: var(--md-sys-color-surface-container); --md-line-chart-padding: 16px; --md-line-chart-shape: 16px; --md-line-chart-aspect-ratio: 16 / 6;"
+  attrs={{ label: 'Sessions', legend: 'top-end', grid: 'horizontal', 'show-marks': true }}
+  fixture={{
+    series: [
+      { label: 'Sessions', color: 'primary', data: [400, 460, 520, 610, 580, 700] },
+      { label: 'Signups', color: 'tertiary', data: [120, 150, 140, 210, 190, 260] },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+  }}
+/>
+
+Series colours are best customised with the per-series `color` field, which
+accepts an MD3 role (`primary`, `tertiary`, …) or any CSS colour.
+
+**CSS parts** — `header`, `canvas`, `footer`, `empty`, `loading`, `zoom`,
+`zoom-slider`, `zoom-pan`, `zoom-band`, plus three forwarded from the zoom
+slider: `zoom-track`, `zoom-window`, `zoom-handle`. **Slots** — `header`,
+`footer`, `empty`, `loader` (older alias `loading`).
+
+```css
+md-line-chart.framed::part(canvas) {
+  border: 1px dashed var(--md-sys-color-outline-variant);
+  border-radius: 12px;
+}
+md-line-chart.framed::part(footer) {
+  border-block-start: 1px solid var(--md-sys-color-outline-variant);
+  padding-block-start: 8px;
+}
+```
+
+<ComponentDemo
+  hideCode
+  html={`<style>
+  .framed-chart::part(canvas) {
+    border: 1px dashed var(--md-sys-color-outline-variant);
+    border-radius: 12px;
+  }
+  .framed-chart::part(footer) {
+    border-block-start: 1px solid var(--md-sys-color-outline-variant);
+    padding-block-start: 8px;
+    font-size: .8rem;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+</style>
+<md-line-chart id="framed-chart" class="framed-chart" label="Sessions" legend="top-end"
+               grid="horizontal" show-marks
+               style="inline-size:100%; min-inline-size:0; block-size:280px;">
+  <span slot="footer">Source: internal analytics, sampled hourly</span>
+</md-line-chart>
+<script type="module">
+  const chart = document.getElementById('framed-chart');
+  chart.series = [{ label: 'Sessions', color: 'primary', data: [400, 460, 520, 610, 580, 700] }];
+  chart.xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+\x3C/script>`}
+  label="::part(canvas) and ::part(footer) overridden from outside the shadow root"
+  storyId="charts-line-chart--custom-css"
+/>
+
+The parts are addressed from a stylesheet, so the wiring is the same everywhere —
+give the element a class, style `::part()` outside the shadow root, and put the
+caption in the `footer` slot.
+
+<TechnologyTabs
+  html={`<style>
+  .framed::part(canvas) {
+    border: 1px dashed var(--md-sys-color-outline-variant);
+    border-radius: 12px;
+  }
+  .framed::part(footer) {
+    border-block-start: 1px solid var(--md-sys-color-outline-variant);
+    padding-block-start: 8px;
+  }
+\x3C/style>
+
+<md-line-chart id="framed" class="framed" label="Sessions" legend="top-end"
+               grid="horizontal" show-marks>
+  <span slot="footer">Source: internal analytics, sampled hourly</span>
+</md-line-chart>
+
+<script type="module">
+const chart = document.getElementById('framed');
+chart.series = [{ label: 'Sessions', color: 'primary', data: [400, 460, 520, 610, 580, 700] }];
+chart.xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+\x3C/script>`}
+  react={`import { MdLineChart } from '@awc-ui/react';
+import './framed.css';   // holds the ::part() rules — they cannot be inline styles
+
+const X_AXIS = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+const SERIES = [{ label: 'Sessions', color: 'primary', data: [400, 460, 520, 610, 580, 700] }];
+
+export function FramedChart() {
+  return (
+    <MdLineChart
+      className="framed"
+      label="Sessions"
+      legend="top-end"
+      grid="horizontal"
+      showMarks
+      xAxis={X_AXIS}
+      series={SERIES}
+    >
+      <span slot="footer">Source: internal analytics, sampled hourly</span>
+    </MdLineChart>
+  );
+}`}
+  angular={`import { Component, CUSTOM_ELEMENTS_SCHEMA, ViewEncapsulation } from '@angular/core';
+
+@Component({
+  selector: 'app-framed-chart',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  // ::part() has to escape Angular's emulated encapsulation — either turn it
+  // off for this component, or put the rules in the global stylesheet.
+  encapsulation: ViewEncapsulation.None,
+  styles: [\`
+    .framed::part(canvas) {
+      border: 1px dashed var(--md-sys-color-outline-variant);
+      border-radius: 12px;
+    }
+    .framed::part(footer) {
+      border-block-start: 1px solid var(--md-sys-color-outline-variant);
+      padding-block-start: 8px;
+    }
+  \`],
+  template: \`
+    <md-line-chart
+      class="framed"
+      label="Sessions"
+      legend="top-end"
+      grid="horizontal"
+      show-marks
+      [xAxis]="xAxis"
+      [series]="series"
+    >
+      <span slot="footer">Source: internal analytics, sampled hourly</span>
+    </md-line-chart>
+  \`,
+})
+export class FramedChartComponent {
+  xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+  series = [{ label: 'Sessions', color: 'primary', data: [400, 460, 520, 610, 580, 700] }];
+}`}
+  vue={`<script setup lang="ts">
+const xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+const series = [{ label: 'Sessions', color: 'primary', data: [400, 460, 520, 610, 580, 700] }];
+\x3C/script>
+
+<template>
+  <md-line-chart
+    class="framed"
+    label="Sessions"
+    legend="top-end"
+    grid="horizontal"
+    show-marks
+    .xAxis="xAxis"
+    .series="series"
+  >
+    <span slot="footer">Source: internal analytics, sampled hourly</span>
+  </md-line-chart>
+</template>
+
+<!-- Not scoped: a scoped block adds a data attribute the shadow part never
+     carries, so the rule would never match. -->
+<style>
+.framed::part(canvas) {
+  border: 1px dashed var(--md-sys-color-outline-variant);
+  border-radius: 12px;
+}
+.framed::part(footer) {
+  border-block-start: 1px solid var(--md-sys-color-outline-variant);
+  padding-block-start: 8px;
+}
+\x3C/style>`}
+  svelte={`<script lang="ts">
+const xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+const series = [{ label: 'Sessions', color: 'primary', data: [400, 460, 520, 610, 580, 700] }];
+\x3C/script>
+
+<md-line-chart
+  class="framed"
+  label="Sessions"
+  legend="top-end"
+  grid="horizontal"
+  show-marks
+  {xAxis}
+  {series}
+>
+  <span slot="footer">Source: internal analytics, sampled hourly</span>
+</md-line-chart>
+
+<style>
+  /* :global, because Svelte scopes styles per component and would otherwise
+     strip a selector it cannot see used in the markup. */
+  :global(.framed::part(canvas)) {
+    border: 1px dashed var(--md-sys-color-outline-variant);
+    border-radius: 12px;
+  }
+  :global(.framed::part(footer)) {
+    border-block-start: 1px solid var(--md-sys-color-outline-variant);
+    padding-block-start: 8px;
+  }
+\x3C/style>`}
+/>
+
+
+## Related
+
+[`md-area-chart`](/components/area-chart/) ·
+[`md-bar-chart`](/components/bar-chart/) ·
+[`md-pie-chart`](/components/pie-chart/) ·
+[`md-sparkline`](/components/sparkline/) ·
+[`md-slider`](/components/slider/) ·
+[`md-progress-indicator`](/components/progress-indicator/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-line-chart" />

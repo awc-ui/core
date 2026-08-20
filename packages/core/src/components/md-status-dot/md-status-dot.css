@@ -1,0 +1,203 @@
+/* ==========================================================
+   md-status-dot — Material Design 3 presence indicator
+   Spec: https://m3.material.io/components/badges/specs
+         (status / presence variant of the badge pattern)
+
+   A small absolutely-positioned pip that pairs with an avatar
+   (or any other tile) to surface user state. Drops into any
+   `position: relative` parent and anchors at the bottom-end
+   corner via logical-property insets so the pip auto-flips in
+   RTL with no extra CSS.
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-status-dot-size              Dot diameter (overrides preset)
+     --md-status-dot-color             Dot fill color
+     --md-status-dot-pulse-color       Halo color used by the live pulse
+     --md-status-dot-outline-color     Halo outline (default surface)
+     --md-status-dot-outline-width     Halo outline width (default 2px)
+     --md-status-dot-inset-end         inline-end anchor offset (default -2px)
+     --md-status-dot-inset-block-end   block-end anchor offset (default -2px)
+     --md-status-dot-pulse-duration    Pulse animation period (default 1.6s)
+
+   STATES:
+     state="online"    Green — available
+     state="away"      Amber — back soon
+     state="busy"      Red   — do-not-disturb
+     state="offline"   Grey  — signed out
+     state="invisible" Hollow ring on a surface fill — appear-offline
+     state="neutral"   Default surface tone — no semantic meaning
+
+   CSS PARTS:
+     (none — the dot is a leaf element)
+
+   SLOTS:
+     (none — content is purely decorative)
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST — anchor + custom properties
+   ========================================================== */
+:host {
+  /* Sizing — overridden per-preset below. Custom diameters via
+     `--md-status-dot-size` flow through the same pipeline. */
+  --_size: var(--md-status-dot-size, max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1.5px)));
+
+  /* Default neutral surface tone — overridden by state modifiers below. */
+  --_color: var(--md-status-dot-color, var(--md-sys-color-on-surface-variant, #49454F));
+
+  /* Pulse halo color — defaults to transparent so the keyframes are
+     no-ops unless the state modifier sets a real color. */
+  --_pulse-color: var(--md-status-dot-pulse-color, transparent);
+
+  /* Halo outline — separates the dot from the avatar tile. Surface-toned
+     so it tracks the active theme. */
+  --_outline-color: var(--md-status-dot-outline-color, var(--md-sys-color-surface, #FEF7FF));
+  --_outline-width: var(--md-status-dot-outline-width, max(1px, calc(2px + var(--md-sys-density-scale, 0) * 0.25px)));
+
+  position: absolute;
+  inset-inline-end: var(--md-status-dot-inset-end, 0px);
+  inset-block-end: var(--md-status-dot-inset-block-end, 0px);
+  inline-size: var(--_size);
+  block-size: var(--_size);
+  border-radius: 50%;
+  background-color: var(--_color);
+  box-sizing: border-box;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+
+  /* Surface-toned halo. `outline` (rather than `border`) is used so the
+     halo lives outside the dot's box and the dot's true diameter stays
+     equal to `--_size`. */
+  outline: var(--_outline-width) solid var(--_outline-color);
+  outline-offset: 0;
+
+  /* Smooth color transitions when the state attribute is toggled
+     dynamically (e.g. websocket presence updates). */
+  transition:
+    background-color var(--md-sys-motion-duration-short2, 200ms)
+      var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    outline-color var(--md-sys-motion-duration-short2, 200ms)
+      var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* ==========================================================
+   2. SIZE PRESETS
+   ========================================================== */
+:host(.md-status-dot--small) {
+  --_size: var(--md-status-dot-size, max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px)));
+  --_outline-width: var(--md-status-dot-outline-width, max(1px, calc(1.5px + var(--md-sys-density-scale, 0) * 0.125px)));
+}
+:host(.md-status-dot--medium) {
+  --_size: var(--md-status-dot-size, max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1.5px)));
+}
+:host(.md-status-dot--large) {
+  --_size: var(--md-status-dot-size, max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px)));
+  --_outline-width: var(--md-status-dot-outline-width, max(1.5px, calc(3px + var(--md-sys-density-scale, 0) * 0.375px)));
+  /* Slightly larger anchor offset so the bigger dot still kisses the
+     avatar edge without bleeding inside the tile. */
+  inset-inline-end: var(--md-status-dot-inset-end, -3px);
+  inset-block-end: var(--md-status-dot-inset-block-end, -3px);
+}
+
+/* ==========================================================
+   3. STATE MODIFIERS — semantic colors
+   Each state writes to `--_color` (dot fill) and `--_pulse-color`
+   (live-pulse halo). Custom properties on the host take priority,
+   so consumers can override per-instance:
+
+     <md-status-dot state="online"
+                    style="--md-status-dot-color: var(--brand-success);">
+     </md-status-dot>
+   ========================================================== */
+:host(.md-status-dot--online) {
+  --_color: var(--md-status-dot-color, #2DC653);
+  --_pulse-color: var(--md-status-dot-pulse-color, rgba(45, 198, 83, 0.55));
+}
+
+:host(.md-status-dot--away) {
+  --_color: var(--md-status-dot-color, #F4B400);
+  --_pulse-color: var(--md-status-dot-pulse-color, rgba(244, 180, 0, 0.55));
+}
+
+:host(.md-status-dot--busy) {
+  --_color: var(--md-status-dot-color, #DB4437);
+  --_pulse-color: var(--md-status-dot-pulse-color, rgba(219, 68, 55, 0.55));
+}
+
+:host(.md-status-dot--offline) {
+  --_color: var(--md-status-dot-color, var(--md-sys-color-outline, #79747E));
+}
+
+/* "Invisible" reads as intentionally empty — surface fill in the centre
+   plus an inset 2 px ring in the outline color. The base surface halo
+   stays in place so the pip is still detached from the avatar tile.
+   Combining `live` with `invisible` is supported but the inner ring is
+   covered by the pulse keyframe; that combination is rarely meaningful
+   semantically (you can't pulse-while-hidden) so it's documented as a
+   minor visual conflict rather than special-cased. */
+:host(.md-status-dot--invisible) {
+  --_color: var(--md-status-dot-color, var(--md-sys-color-surface, #FEF7FF));
+  box-shadow: inset 0 0 0 2px var(--md-sys-color-outline, #79747E);
+}
+
+/* `state="neutral"` is the default — no extra rules needed. */
+
+/* ==========================================================
+   4. LIVE PULSE
+   The keyframes interpolate the box-shadow color from the
+   variant's `--_pulse-color` (semi-transparent variant hue) to
+   `transparent` (alpha 0). The browser smooths both the spread
+   (0px → 8px) and the alpha in one go, producing a clean
+   outward-fading ring in the dot's own color.
+   ========================================================== */
+@keyframes md-status-dot-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--_pulse-color);
+  }
+  70% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* Honour the OS reduced-motion preference: only animate when the
+   user has expressed no preference (or explicitly opted in). */
+@media (prefers-reduced-motion: no-preference) {
+  :host(.md-status-dot--live) {
+    animation: md-status-dot-pulse
+      var(--md-status-dot-pulse-duration, 1.6s)
+      ease-out infinite;
+  }
+}
+
+/* ==========================================================
+   5. FORCED COLORS — Windows High Contrast
+   System tokens replace the design-system tokens so the dot
+   stays visible against any palette.
+   ========================================================== */
+@media (forced-colors: active) {
+  :host {
+    forced-color-adjust: none;
+    background-color: Mark;
+    outline-color: ButtonFace;
+  }
+  :host(.md-status-dot--invisible) {
+    background-color: ButtonFace;
+    box-shadow: inset 0 0 0 2px ButtonText;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

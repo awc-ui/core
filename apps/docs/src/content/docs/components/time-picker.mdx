@@ -1,0 +1,514 @@
+---
+title: Time Picker
+description: "Choose a time by dial or by typing — 12h/24h display, min/max bounds and templated validation messages"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/time-picker.json";
+
+**Choose a time, by dial or by typing.** 12h/24h display, `min`/`max` bounds
+with templated validation messages, and full constraint validation through
+`ElementInternals`.
+
+:::danger[`value` is always a 24-hour `HH:MM` string]
+`format="12h"` changes only the *display*. A consumer reading `value` never has
+to parse AM/PM — `2:30 PM` is always `"14:30"`. `min` and `max` use the same
+form.
+:::
+
+<ComponentDemo
+  html={`<md-time-picker label="Start time" value="09:30"></md-time-picker>
+<md-time-picker label="24-hour" format="24h" value="17:45"></md-time-picker>
+<md-time-picker label="Dial first" variant="dial" value="12:15"></md-time-picker>`}
+  label="Live preview — click a field to open the picker"
+  storyId="selection-time-picker--all-variants"
+/>
+
+## Install
+
+<ComponentSetup tag="md-time-picker" example="" />
+
+## When to use
+
+- Any **time-of-day** entry: appointments, reminders, opening hours.
+- Where a coarse selection is typical (`minute-step="5"` / `"15"`).
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| A date | [`md-date-picker`](/components/date-picker/) |
+| A duration ("90 minutes") | [`md-text-field`](/components/text-field/) `type="number"` / [`md-select`](/components/select/) |
+| A time range | Two pickers with `min`/`max` wired to each other |
+| A few fixed slots | [`md-select`](/components/select/) / [`md-chip`](/components/chip/) |
+| A timestamp the user shouldn't edit | Formatted text |
+| Timezone selection | [`md-select`](/components/select/) |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Typed entry | `variant="input"` |
+| A clock face | `variant="dial"` |
+| Wide layout for landscape | `variant="dial-landscape"` |
+| Pick by viewport | `variant="responsive"` |
+| 12- or 24-hour | `format` |
+| Coarser minutes | `minute-step` |
+| Restrict the range | `min` / `max` |
+| No built-in trigger | `hide-trigger` + `show()` |
+
+## Variants
+
+| Need | Setting |
+|---|---|
+| Keyboard entry first (default) | `variant="input"` |
+| Clock dial first | `variant="dial"` |
+| Adapt to viewport | `responsive` |
+| Landscape dial | `orientation="horizontal"` |
+| AM/PM side by side | `period-layout="horizontal"` |
+
+Prefer `variant="input"` as the default: typing is faster and more accessible
+than dragging a dial for most users. Either way both modes stay reachable — the
+dialog carries a toggle in its footer.
+
+<ComponentDemo
+  html={`<md-time-picker label="Input variant" variant="input" value="08:00"></md-time-picker>
+<md-time-picker label="Dial variant" variant="dial" value="08:00"></md-time-picker>
+<md-time-picker label="Dial, landscape" variant="dial" orientation="horizontal" value="08:00"></md-time-picker>
+<md-time-picker label="Responsive" responsive value="08:00"></md-time-picker>`}
+  label="Input, dial, landscape dial, responsive"
+  storyId="selection-time-picker--all-variants"
+/>
+
+## Format
+
+`format="12h"` is the default and shows an AM/PM toggle; `format="24h"` drops
+it. Set it from the user's locale convention — do not hardcode `12h`.
+
+<ComponentDemo
+  html={`<md-time-picker label="12-hour (default)" format="12h" value="14:30"></md-time-picker>
+<md-time-picker label="24-hour" format="24h" value="14:30"></md-time-picker>
+<md-time-picker label="12h, horizontal AM/PM" format="12h" period-layout="horizontal" value="14:30"></md-time-picker>`}
+  label="Formats — all three hold the same 14:30 value"
+  storyId="selection-time-picker--input-formats-comparison"
+/>
+
+## Minute step
+
+`minute-step` snaps the dial and the entry field to real granularity. Offering
+minute precision for hour-long slots is needless precision.
+
+<ComponentDemo
+  html={`<md-time-picker label="Every minute (default)" variant="dial" value="10:07"></md-time-picker>
+<md-time-picker label="Every 5 minutes" variant="dial" minute-step="5" value="10:05"></md-time-picker>
+<md-time-picker label="Every 15 minutes" variant="dial" minute-step="15" value="10:15"></md-time-picker>`}
+  label="Minute step 1, 5 and 15"
+  storyId="selection-time-picker--minute-step5"
+/>
+
+## Bounds & validation
+
+`min`/`max` bound the range, `required` demands a value, and the messages are
+**templates**: `{min}` and `{max}` interpolate. Keep those tokens when
+translating or the message loses the values it exists to state.
+
+| Prop | Message shown when |
+|---|---|
+| `value-missing-label` | `required` and nothing chosen |
+| `range-underflow-label` | Before `min` |
+| `range-overflow-label` | After `max` |
+| `range-outside-label` | Outside a wrapping range (`min` later than `max`) |
+
+<ComponentDemo
+  html={`<md-time-picker
+  label="Office hours"
+  name="start"
+  format="24h"
+  min="09:00"
+  max="17:00"
+  minute-step="15"
+  required
+  value="09:30"
+  range-underflow-label="Please choose a time at or after {min}."
+  range-overflow-label="Please choose a time at or before {max}."
+  value-missing-label="Please select a time."
+></md-time-picker>
+
+<md-time-picker label="Overnight shift" format="24h" min="22:00" max="06:00" value="23:00"
+  range-outside-label="Please choose a time at or after {min} or at or before {max}."></md-time-picker>`}
+  label="Bounded pickers with templated messages"
+  storyId="selection-time-picker--value-normalization-and-validity"
+/>
+
+## States
+
+<ComponentDemo
+  html={`<md-time-picker label="Enabled" value="09:00"></md-time-picker>
+<md-time-picker label="Disabled" value="09:00" disabled></md-time-picker>
+<md-time-picker label="Required, empty" required></md-time-picker>`}
+  label="States"
+  storyId="selection-time-picker--states"
+/>
+
+## Embedding without the trigger
+
+`hide-trigger` renders the picker without its own field, for embedding in your
+own layout. You call `show()` — and **`hide()` to close it**, not `close()`.
+
+:::caution[This picker uses `hide()`, not `close()`]
+It is the one member of the picker family that does.
+[`md-date-picker`](/components/date-picker/) uses `close()`. Calling `close()`
+here is a silent no-op.
+:::
+
+<ComponentDemo
+  html={`<md-button id="tp-open" variant="filled" icon="schedule">Pick a time</md-button>
+<span id="tp-out" style="align-self:center; font-family:ui-monospace, monospace; color:var(--md-sys-color-on-surface-variant);">no time chosen</span>
+<md-time-picker id="tp-embedded" hide-trigger format="24h" minute-step="5"></md-time-picker>
+
+\x3Cscript type="module">
+  const picker = document.getElementById('tp-embedded');
+  const out = document.getElementById('tp-out');
+
+  document.getElementById('tp-open').addEventListener('mdClick', () => picker.show());
+  picker.addEventListener('mdChange', (e) => { out.textContent = 'value = ' + picker.value; });
+  picker.addEventListener('mdCancel', () => { out.textContent = 'dismissed'; });
+\x3C/script>`}
+  htmlForCode={`<md-button id="tp-open" variant="filled" icon="schedule">Pick a time</md-button>
+<md-time-picker id="tp" hide-trigger format="24h" minute-step="5"></md-time-picker>
+
+<script type="module">
+  const picker = document.getElementById('tp');
+
+  document.getElementById('tp-open')
+    .addEventListener('mdClick', () => picker.show());
+
+  picker.addEventListener('mdChange', () => console.log(picker.value));
+  // close it with hide(), not close()
+</script>`}
+  label="hide-trigger — your own button drives show()"
+  storyId="selection-time-picker--programmatic-control"
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdChange` | no | `MdTimePickerChangeDetail` | A time is committed |
+| `mdInput` | no | `MdTimePickerChangeDetail` | During entry — do **not** wire a save to this |
+| `mdOpen` / `mdClose` | no | `void` | The dialog opens / closes |
+| `mdCancel` | no | `void` | The dialog is dismissed |
+| `mdModeChange` | no | dial ⇄ input | The footer mode toggle is used |
+| `mdValidityChange` | no | `{ valid, validationMessage, flags }` | Validity is recomputed |
+
+:::caution[`mdValidityChange` is not composed]
+Listen on the element itself — a delegated listener on a shadow ancestor will
+never see it.
+:::
+
+<ComponentDemo
+  html={`<md-time-picker id="tp-ev" label="Start time" name="start"
+  format="24h" min="09:00" max="17:00" minute-step="15" required
+  range-underflow-label="Please choose a time at or after {min}."
+  range-overflow-label="Please choose a time at or before {max}."
+></md-time-picker>
+<output id="tp-ev-log" style="display: block; margin-block-start: 16px; min-block-size: 3.4em; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant); white-space: pre-line;">Open the picker, commit a time, then try one outside 09:00–17:00.</output>`}
+  script={`
+    var t = root.querySelector('#tp-ev');
+    var log = root.querySelector('#tp-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 3);
+      // A '\\n' escape inside this template literal would be interpolated into a
+      // real newline and break the emitted string, so build the separator instead.
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    t.addEventListener('mdChange', function (e) { push('mdChange  →  ' + e.detail.value); });
+    t.addEventListener('mdCancel', function () { push('mdCancel  →  dismissed, value unchanged'); });
+    t.addEventListener('mdOpen', function () { push('mdOpen'); });
+    // Not composed: this has to be bound on the element itself.
+    t.addEventListener('mdValidityChange', function (e) {
+      push('mdValidityChange  →  ' + (e.detail.valid ? 'valid' : 'invalid: ' + e.detail.validationMessage));
+    });
+  `}
+  label="mdChange, mdCancel and mdValidityChange as they fire"
+  htmlCode={`<md-time-picker id="start" label="Start time" name="start"
+  format="24h" min="09:00" max="17:00" minute-step="15" required
+  range-underflow-label="Please choose a time at or after {min}."
+  range-overflow-label="Please choose a time at or before {max}."
+></md-time-picker>
+
+<script type="module">
+  const t = document.getElementById('start');
+
+  t.addEventListener('mdChange', (e) => save(e.detail));   // value stays "HH:MM"
+  t.addEventListener('mdCancel', () => console.log('dismissed'));
+  t.addEventListener('mdValidityChange', (e) => {
+    console.log(e.detail.valid, e.detail.validationMessage);
+  });
+</script>`}
+  react={`import { MdTimePicker } from '@awc-ui/react';
+import { useState } from 'react';
+
+export function StartTime() {
+  const [value, setValue] = useState('09:00');
+
+  return (
+    <MdTimePicker
+      label="Start time"
+      name="start"
+      format="24h"
+      min="09:00"
+      max="17:00"
+      minuteStep={15}
+      required
+      value={value}
+      rangeUnderflowLabel="Please choose a time at or after {min}."
+      rangeOverflowLabel="Please choose a time at or before {max}."
+      onMdChange={(e) => setValue(e.detail.value)}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-start-time',
+  template: \`
+    <md-time-picker
+      label="Start time" name="start" format="24h"
+      min="09:00" max="17:00" minute-step="15" required
+      [value]="value"
+      (mdChange)="onChange($event)"
+    ></md-time-picker>
+  \`,
+})
+export class StartTimeComponent {
+  value = '09:00';
+  onChange(e: CustomEvent<{ value: string }>) {
+    this.value = e.detail.value;   // always "HH:MM"
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+const value = ref('09:00');
+
+function onChange(e: CustomEvent) {
+  value.value = e.detail.value;    // always "HH:MM"
+}
+</script>
+
+<template>
+  <md-time-picker
+    label="Start time" name="start" format="24h"
+    min="09:00" max="17:00" minute-step="15" required
+    :value="value"
+    @mdChange="onChange"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  let value = '09:00';
+
+  function onChange(e: CustomEvent) {
+    value = e.detail.value;        // always "HH:MM"
+  }
+</script>
+
+<md-time-picker
+  label="Start time" name="start" format="24h"
+  min="09:00" max="17:00" minute-step="15" required
+  {value}
+  on:mdChange={onChange}
+></md-time-picker>`}
+/>
+
+## Ranges
+
+There is no range variant. Two pickers make one by feeding each other's bounds:
+committing the **From** time becomes the **To** picker's `min`, and vice versa,
+so the pair can never end up inverted. Set a time in either one and watch the
+other's bounds tighten.
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+  <md-time-picker id="tp-from" label="From" format="24h" minute-step="15" value="09:00"></md-time-picker>
+  <md-time-picker id="tp-to" label="To" format="24h" minute-step="15" value="17:00"></md-time-picker>
+</div>
+<output id="tp-range-out" style="display: block; margin-block-start: 16px; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">From 09:00 to 17:00 — no bounds applied yet.</output>`}
+  script={`
+    var from = root.querySelector('#tp-from');
+    var to = root.querySelector('#tp-to');
+    var out = root.querySelector('#tp-range-out');
+
+    function report() {
+      out.textContent =
+        'From ' + (from.value || '—') + ' to ' + (to.value || '—') +
+        '   ·   To.min = ' + (to.min || 'unset') + '   ·   From.max = ' + (from.max || 'unset');
+    }
+
+    from.addEventListener('mdChange', function () { to.min = from.value; report(); });
+    to.addEventListener('mdChange', function () { from.max = to.value; report(); });
+  `}
+  htmlForCode={`<md-time-picker id="from" label="From" format="24h" minute-step="15" value="09:00"></md-time-picker>
+<md-time-picker id="to" label="To" format="24h" minute-step="15" value="17:00"></md-time-picker>
+
+<script type="module">
+  const from = document.getElementById('from');
+  const to = document.getElementById('to');
+
+  // Each committed value becomes the other picker's bound, so the pair can
+  // never invert. mdChange fires on commit — mdInput would fight the user
+  // mid-edit.
+  from.addEventListener('mdChange', () => { to.min = from.value; });
+  to.addEventListener('mdChange', () => { from.max = to.value; });
+</script>`}
+  label="Two coupled pickers form a range"
+/>
+
+Use `mdChange`, not `mdInput`: bounds applied mid-edit would fight the user as
+they type. Both pickers keep their own validation — a value outside the bound it
+was given reports `rangeUnderflow` / `rangeOverflow` with the localized
+`range-underflow-label` / `range-overflow-label` message.
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- The dial and the input fields are both keyboard operable. `hour-label`,
+  `minute-label` and `period-label` are the accessible names of the entry
+  fields and the AM/PM control.
+- `toggle-dial-label` / `toggle-input-label` name the mode switch — translate
+  them.
+- The dialog traps focus and returns it to the trigger on close.
+- Validation messages are announced. The templated range messages are far more
+  useful than a generic "invalid" because they state the actual bound.
+- Prefer `variant="input"` as the default for the reasons above.
+
+## RTL, density & i18n
+
+**RTL** — the dialog, field order and AM/PM toggle mirror under `dir="rtl"`. The
+clock dial itself keeps clockwise numbering — that is not a directional cue. See
+[RTL](/behaviour/rtl/).
+
+**Density** — `density="-1…-4"` compacts the **trigger field**. The dialog is
+deliberately unaffected: measured across the rungs, the dial keeps a 327px
+diameter and its numbers keep 48dp hit targets, so a compact form can never
+produce a dial you cannot hit. See [Density](/behaviour/density/).
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap;">
+  <md-time-picker label="Density 0" format="24h" value="09:00" density="0"></md-time-picker>
+  <md-time-picker label="-1" format="24h" value="09:00" density="-1"></md-time-picker>
+  <md-time-picker label="-2" format="24h" value="09:00" density="-2"></md-time-picker>
+  <md-time-picker label="-3" format="24h" value="09:00" density="-3"></md-time-picker>
+  <md-time-picker label="-4" format="24h" value="09:00" density="-4"></md-time-picker>
+</div>`}
+  label="Trigger field — density 0 through -4 (56 → 40dp)"
+/>
+
+**i18n** — **every visible string is a prop**, all defaulting to English:
+`label`, `headline`, `headline-input-label`, `headline-dial-label`, `am-label`,
+`pm-label`, `hour-label`, `minute-label`, `period-label`, `cancel-label`,
+`ok-label`, `toggle-dial-label`, `toggle-input-label`, and the four validation
+messages. Keep `{min}` / `{max}` intact in the range messages, and set `format`
+from the locale's convention.
+
+<ComponentDemo
+  html={`<md-time-picker
+  label="Heure de début"
+  format="24h"
+  value="09:30"
+  headline-input-label="Saisir l'heure"
+  headline-dial-label="Sélectionner l'heure"
+  hour-label="Heure"
+  minute-label="Minute"
+  cancel-label="Annuler"
+  ok-label="Valider"
+  toggle-dial-label="Basculer vers le cadran"
+  toggle-input-label="Basculer vers la saisie"
+  value-missing-label="Veuillez sélectionner une heure."
+></md-time-picker>`}
+  label="Fully localized (fr)"
+  storyId="selection-time-picker--localized"
+/>
+
+## Theming
+
+| Custom property | Purpose |
+|---|---|
+| `--md-time-picker-trigger-color` / `-outline-color` / `-hover-color` / `-focus-color` | Trigger field |
+| `--md-time-picker-trigger-icon-color` | Trigger glyph |
+| `--md-time-picker-dialog-color` / `-dialog-on-color` | Dialog surface |
+| `--md-time-picker-scrim-color` | Backdrop |
+| `--md-time-picker-headline-color` | Headline |
+| `--md-time-picker-period-bg` / `-period-active-bg` | AM/PM toggle |
+| `--md-time-picker-dial-bg` / `-dial-hand-color` | Clock dial |
+| `--md-time-picker-input-bg` / `-input-active-bg` | Entry fields |
+
+<ComponentDemo
+  html={`<md-time-picker label="Tertiary accent" value="11:20"
+  style="--md-time-picker-dial-hand-color: var(--md-sys-color-tertiary); --md-time-picker-headline-color: var(--md-sys-color-tertiary); --md-time-picker-input-active-bg: var(--md-sys-color-tertiary-container);"></md-time-picker>
+<md-time-picker label="Squared trigger" value="11:20"
+  style="--md-time-picker-trigger-shape: 6px; --md-time-picker-dialog-shape: 8px;"></md-time-picker>`}
+  label="Themed instances — open one to see the dialog tokens"
+  storyId="selection-time-picker--custom-css"
+/>
+
+Every default resolves through an `md-sys-color` role, so a picker that sets no
+custom properties follows the theme on its own.
+
+## CSS parts
+
+| Part | Element |
+|---|---|
+| `trigger` / `trigger-icon` | The field trigger and its glyph |
+| `scrim` / `dialog` | Modal backdrop and panel |
+| `headline` / `body` / `footer` | Dialog regions |
+| `dial` / `dial-hand` / `dial-wrap` | The clock face, its hand, its wrapper |
+| `input-area` / `input-hour` / `input-minute` | Typed-entry region and its two fields |
+| `time-area` | The hour–minute cluster |
+| `period-toggle` / `period-am` / `period-pm` | AM/PM control and its halves |
+| `toggle-mode` | The dial ⇄ input switch |
+| `actions` / `cancel-button` / `confirm-button` | The action row |
+
+<ComponentDemo
+  html={`<style>
+  .parts-tp::part(trigger-icon) { color: var(--md-sys-color-primary); }
+  .parts-tp::part(dial-hand) { opacity: .9; }
+  .parts-tp::part(headline) { font-style: italic; }
+  .parts-tp::part(confirm-button) { font-weight: 700; }
+</style>
+<md-time-picker class="parts-tp" label="Styled parts" value="14:30" variant="dial" style="min-inline-size: 240px;"></md-time-picker>`}
+  label="trigger-icon, dial-hand, headline and confirm-button — open it"
+  storyId="selection-time-picker--css-parts"
+/>
+
+```css
+md-time-picker::part(dial-hand) {
+  opacity: 0.9;
+}
+```
+
+
+## Related
+
+[`md-date-picker`](/components/date-picker/) ·
+[`md-text-field`](/components/text-field/) ·
+[`md-select`](/components/select/) ·
+[`md-dialog`](/components/dialog/) ·
+[`md-icon-button`](/components/icon-button/) ·
+[`md-button`](/components/button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-time-picker" />

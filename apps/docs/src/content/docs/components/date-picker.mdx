@@ -1,0 +1,924 @@
+---
+title: Date Picker
+description: "Pick a calendar date — modal, docked or typed, locale-aware and keyboard-first"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/date-picker.json";
+
+A Material Design 3 date picker implementing the
+[MD3 Date Pickers](https://m3.material.io/components/date-pickers/overview)
+specification:
+
+- [Specs](https://m3.material.io/components/date-pickers/specs)
+- [Guidelines](https://m3.material.io/components/date-pickers/guidelines)
+- [Accessibility](https://m3.material.io/components/date-pickers/accessibility)
+
+Pick a single calendar date through one of three presentations:
+
+- **`modal-input`** *(default)* — outlined text field with a trailing calendar
+  icon that opens a modal calendar dialog. Best for typed-or-pointed entry on
+  any viewport.
+- **`modal`** — a bare modal dialog with no inline trigger; surface it from
+  your own button via `el.show()` or two-way `open` binding.
+- **`docked`** — outlined text field that pops a calendar directly beneath the
+  input. Best for desktop forms where the calendar can stay on screen. Its header
+  uses **month** and **year dropdown menu buttons**, each flanked by prev/next
+  chevron icon buttons (`‹ [Aug ▾] ›   ‹ [2025 ▾] ›`), and a Cancel / OK action
+  row commits the staged selection.
+
+Inside the modal, a header toggle flips the calendar to a **typed date-input**
+view (the MD3 "modal date input" pattern), which parses and validates entered
+dates and shows inline errors.
+
+Calendar navigation is keyboard-first, fully ARIA-labelled, locale-aware via the
+`Intl.DateTimeFormat` / `Intl.Locale` APIs (including locale-driven
+first-day-of-week), and renders correctly in RTL.
+
+<ComponentDemo
+  html={`<md-date-picker style="min-width: 280px;"></md-date-picker>`}
+  label="Live preview"
+  storyId="selection-date-picker--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-date-picker" example="" />
+
+## When to use
+
+- A **single calendar date** the user picks or types: a due date, a birthday, a
+  booking.
+- Dates far from today, or where the day of the week matters — that is what a
+  calendar grid buys you over a plain field.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| A time of day | [`md-time-picker`](/components/time-picker/) |
+| A date very close to today | A few [`md-chip`](/components/chip/) shortcuts ("Today", "Tomorrow") |
+| A free-form string | [`md-text-field`](/components/text-field/) |
+| Choosing from a fixed list | [`md-select`](/components/select/) |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Field plus modal calendar | `variant="modal-input"` (default) |
+| A bare dialog you open yourself | `variant="modal"` + `show()` |
+| Calendar under the field, desktop forms | `variant="docked"` |
+| Restrict the range | `min` / `max`, or `isDateDisabled` for gaps |
+| A clear affordance | `clearable` |
+| Filled field instead of outlined | `field-variant="filled"` |
+| Force a locale | `locale`, else the document's |
+| Compact panel | `density="-1…-4"` |
+| One-click picking, no confirm step | `commit-on-select` |
+| Keep a docked panel open on click-away | `outside-click-dismissible="false"` |
+| Keep a modal open when the scrim is clicked | `scrim-dismissible="false"` |
+
+## Variants
+
+| Variant       | Trigger             | Surface                | Commit behavior                 | Use case                          |
+| ------------- | ------------------- | ---------------------- | ------------------------------- | --------------------------------- |
+| `modal-input` | Outlined text field | Centered modal dialog  | OK button                       | General-purpose date entry        |
+| `modal`       | None (`show()`)     | Centered modal dialog  | OK button                       | Surfaced from a custom trigger    |
+| `docked`      | Outlined text field | Popup beneath the field | OK button                       | Desktop forms                     |
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+  <md-date-picker label="modal-input" style="min-width: 240px;"></md-date-picker>
+  <md-date-picker variant="docked" label="docked" style="min-width: 240px;"></md-date-picker>
+  <md-date-picker field-variant="filled" label="filled field" style="min-width: 240px;"></md-date-picker>
+</div>`}
+  htmlForCode={`<md-date-picker label="Due date"></md-date-picker>
+<md-date-picker variant="docked" label="Due date"></md-date-picker>
+<md-date-picker field-variant="filled" label="Due date"></md-date-picker>`}
+  label="modal-input, docked, and a filled field — click one to open it"
+  storyId="selection-date-picker--variants"
+/>
+
+## Docked anatomy
+
+The `docked` variant follows the MD3 docked date-picker anatomy:
+
+1. **Outlined text field** — the trigger renders the shared **`md-text-field`**
+   (`variant="outlined"`, `label="Date"`, supporting text `MM/DD/YYYY`) with a
+   trailing **`md-icon-button`** calendar toggle that opens the calendar.
+2. **Month menu button** (`month-menu-button`) — opens a baseline **`md-menu`**
+   with **`md-menu-item`** radio checks on the left; the day grid is hidden until
+   a month is chosen.
+3. **Year menu button** (`year-menu-button`) — same pattern for years in the
+   `min`/`max` range; scrollable list, day grid hidden while open.
+4. **Icon buttons** — `md-icon-button` prev/next chevrons flank each menu button
+   (`prev-month-button` / `next-month-button`, `prev-year-button` /
+   `next-year-button`) and step the view by one month / year. Chevrons mirror in
+   RTL. Each chevron is wrapped in **`md-tooltip`** showing the action and its
+   keyboard shortcut (e.g. “Previous year (Shift+Page Up)”). The tooltip sets
+   `aria-description` on the trigger so screen readers announce the shortcut on
+   focus. The menu buttons expose **Shift+M** / **Shift+Y** shortcuts (via
+   `md-tooltip`) to jump from the day grid into the month / year listboxes.
+   Each unit is both **cyclable** (chevrons) and **selectable** (dropdown).
+5. **Weekday labels** — the S M T W T F S row (24px-tall column headers).
+6. **Unselected date** (`day-unselected`) — plain in-month day text.
+7. **Today's date** (`day-today`) — outlined circle ring.
+8. **Outside-month date** (`day-outside`) — muted adjacent-month day.
+9. **Text buttons** — Cancel / OK action row.
+10. **Selected date** (`day-selected`) — filled circle.
+11. **Container** (`panel`) — `corner-large` elevated surface.
+
+<ComponentDemo
+  html={`<md-date-picker variant="docked" label="Date" supporting-text="MM/DD/YYYY" style="max-inline-size: 300px;"></md-date-picker>`}
+  htmlForCode={`<md-date-picker
+  variant="docked"
+  label="Date"
+  supporting-text="MM/DD/YYYY"
+></md-date-picker>`}
+  label="Open it to see the anatomy above — menu buttons, flanking chevrons, weekday row, action row"
+  storyId="selection-date-picker--docked-open"
+/>
+
+Month/year selection uses the shared **`md-menu`** / **`md-menu-item`** baseline
+menu (`type="radio"`, `check-position="start"`). Arrow keys, Home/End, Enter,
+and Space follow `md-menu` roving focus; Escape closes the menu and restores
+the day grid.
+
+## States
+
+- **Enabled / populated** — empty or holding a selected value.
+- **Focused** — 2px primary outline on the field; primary label color.
+- **Error** — `error` + `error-text` paint the field and helper text with the
+  error color; the input is marked `aria-invalid`.
+- **Disabled** — `disabled` removes the field from the tab order and blocks
+  interaction.
+- **Day-cell states** — unselected (plain text), today (outline ring),
+  selected (filled circle), disabled / out-of-range, and out-of-month (muted).
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+  <md-date-picker label="Empty" style="min-width: 220px;"></md-date-picker>
+  <md-date-picker label="Populated" value="2026-08-17" style="min-width: 220px;"></md-date-picker>
+  <md-date-picker label="Supporting" supporting-text="DD/MM/YYYY" style="min-width: 220px;"></md-date-picker>
+  <md-date-picker label="Error" error error-text="Date is in the past" style="min-width: 220px;"></md-date-picker>
+  <md-date-picker label="Disabled" disabled style="min-width: 220px;"></md-date-picker>
+  <md-date-picker label="Clearable" value="2026-08-17" clearable style="min-width: 220px;"></md-date-picker>
+</div>`}
+  label="Empty, populated, supporting text, error, disabled and clearable"
+  storyId="selection-date-picker--states"
+/>
+
+## Accessibility
+
+- **Typed entry (no input masks)** — `modal-input` and `docked` text fields do
+  not insert separators or reformat while typing. The raw characters you type are
+  preserved until you **commit** with **Enter** or by leaving the field (blur).
+  On commit the value is parsed flexibly (slashes, dashes, dots, or spaces when
+  `date-separator` is unset; only the configured separator when set; optional
+  leading zeros; compact digit strings such as `06122025` or `6122025`) and
+  reformatted for the configured `locale` and `date-separator`. Ambiguous
+  month/day order (e.g. `06/12/2025` or `12062025`) is resolved with day-first
+  heuristics when a segment exceeds 12, otherwise the locale hint applies. The
+  `value` prop and `mdChange` / `mdSelected` events always use ISO
+  `YYYY-MM-DD`. This avoids mid-keystroke mutations that confuse screen readers
+  and voice dictation.
+- Trigger input exposes `aria-haspopup="dialog"` and `aria-expanded`.
+- Dialog uses `role="dialog"` + `aria-modal="true"`, traps Tab focus, closes on
+  `Escape`, and restores focus to the trigger on close.
+- Calendar uses `role="grid"` with a presentational weekday row (`aria-hidden`)
+  and `role="gridcell"` day buttons using **roving `tabindex`**; each day
+  exposes a full localized `aria-label` and `aria-selected`. Today is
+  `aria-current="date"`. Weekday abbreviations rely on locale convention for
+  assistive technology; sighted users see the full weekday name in an
+  **`md-tooltip` on hover** (weekdays are not focusable).
+- **Day-grid keyboard shortcuts** (modal, modal-input, and docked variants):
+
+  | Key | Action |
+  | --- | --- |
+  | **Arrow keys** | Move one day (left/right) or one week (up/down) |
+  | **Home** | First day of the focused month |
+  | **End** | Last day of the focused month |
+  | **Page Up / Page Down** | Same calendar day in the previous / next month (clamped, e.g. Jan 31 → Feb 28) |
+  | **Shift+Page Up / Shift+Page Down** | Same calendar day in the previous / next year |
+  | **Shift+M** *(docked only)* | Open the month list and move focus into it |
+  | **Shift+Y** *(docked only)* | Open the year list and move focus into it |
+  | **Enter** | Select the focused day, commit, and close *(single variants)* |
+  | **Space** | Select the focused day *(staged until OK in single variants)* |
+  | **Escape** | Dismiss without committing |
+
+  Shortcuts are handled at the **panel level** while the picker is open, so they
+  work when focus is anywhere inside the calendar panel (day grid, nav chevrons,
+  docked month/year buttons, or action row) — not only on a focused day cell.
+
+  On keyboards without dedicated Page Up / Page Down keys (many Mac laptops),
+  use **Fn+↑** / **Fn+↓** for Page Up / Page Down (browsers report these as
+  `PageUp` / `PageDown`). Some Mac layouts also emit **Option+↑** /
+  **Option+↓** instead — the picker maps those to the same month navigation.
+  Tooltips and `aria-description` text use the **Page Up** / **Page Down** labels
+  per the MD3 spec. **Shift+M** / **Shift+Y** use `Shift` + the letter key
+  (`m` / `y`, case-insensitive); they work from the day grid, nav controls, and
+  the docked trigger field while the panel is open.
+- Month/year nav chevrons (docked and modal) expose **`md-tooltip`** hints on
+  hover and focus with the matching shortcut: **Page Up** / **Page Down** for
+  month, **Shift+Page Up** / **Shift+Page Down** for year. Screen readers receive
+  the shortcut via `aria-description` on the trigger (set by `md-tooltip`).
+- Docked month/year menu buttons expose **Shift+M** / **Shift+Y** via
+  `md-tooltip` `aria-description`. The truncated month label (e.g. **Aug**)
+  shows the full month name in the tooltip on hover and keyboard focus.
+- Docked month/year dropdown menus use the shared **`md-menu`** baseline list;
+  Arrow Up/Down, Home/End, Enter/Space to select, and Escape to close
+  (returning focus to the menu button).
+- Tested with axe-core — zero WCAG 2.1 AA violations.
+
+## Localization
+
+The `locale` prop drives **Intl formatting only** — month and weekday names,
+date display order, first day of week, and typed-input format hints. It does
+**not** auto-translate button labels, headlines, tooltips, or other static UI
+copy; pass explicit `*-label` attributes for non-English locales.
+
+### Header and actions
+
+| UI string | Prop | HTML attribute |
+| --- | --- | --- |
+| Field / dialog label | `label` | `label` |
+| Header supporting text | `headline` | `headline` |
+| Large headline (no date staged) | `selectDateLabel` | `select-date-label` |
+| Large headline (typed-entry mode) | `enterDatesLabel` | `enter-dates-label` |
+| Cancel button | `cancelLabel` | `cancel-label` |
+| OK button | `okLabel` | `ok-label` |
+| Invalid typed date error | `invalidDateLabel` | `invalid-date-label` |
+
+### Tooltips and navigation (`md-tooltip`)
+
+Tooltip visible text reuses the same `*-label` props as `aria-label` on each
+control. Keyboard shortcut suffixes (`Page Up`, `Shift+M`, etc.) are appended
+in English and are not localized.
+
+| Control | `aria-label` prop | Tooltip pattern |
+| --- | --- | --- |
+| Previous / next month chevron | `previousMonthLabel` / `nextMonthLabel` | `{label} (Page Up)` or `(Page Down)` |
+| Previous / next year chevron (docked) | `previousYearLabel` / `nextYearLabel` | `{label} (Shift+Page Up)` or `(Shift+Page Down)` |
+| Docked month menu button | `chooseMonthLabel` | `{fullMonth} · {label} (Shift+M)` |
+| Docked year menu button | `chooseYearLabel` | `{label} (Shift+Y)` |
+| Modal month/year toggle | `chooseMonthYearLabel` | `{monthYear} · {chooseMonthAndYearLabel}` |
+| Calendar / text mode toggle | `toggleCalendarLabel` / `toggleTextLabel` | Same as `aria-label` |
+| Calendar trigger icon | `openCalendarLabel` / `closeCalendarLabel` | `aria-label` only (no tooltip) |
+
+Weekday column headers show locale-formatted full weekday names via
+`md-tooltip` (derived from `locale`, not overridable).
+
+<ComponentDemo
+  html={`<md-date-picker
+  label="日付"
+  locale="ja-JP"
+  headline="日付を選択"
+  select-date-label="日付を選択"
+  enter-dates-label="日付を入力"
+  cancel-label="キャンセル"
+  ok-label="OK"
+  previous-month-label="前の月"
+  next-month-label="次の月"
+  previous-year-label="前の年"
+  next-year-label="次の年"
+  choose-month-label="月を選択"
+  choose-year-label="年を選択"
+  choose-month-year-label="月と年を選択"
+  choose-month-and-year-label="月と年を選択"
+  toggle-calendar-label="カレンダー入力に切り替え"
+  toggle-text-label="テキスト入力に切り替え"
+  open-calendar-label="カレンダーを開く"
+  close-calendar-label="カレンダーを閉じる"
+  year-grid-label="年"
+  value="2025-06-15"
+  style="max-inline-size: 320px;"
+></md-date-picker>`}
+  htmlForCode={`<md-date-picker
+  label="日付"
+  locale="ja-JP"
+  headline="日付を選択"
+  select-date-label="日付を選択"
+  enter-dates-label="日付を入力"
+  cancel-label="キャンセル"
+  ok-label="OK"
+  previous-month-label="前の月"
+  next-month-label="次の月"
+  previous-year-label="前の年"
+  next-year-label="次の年"
+  choose-month-label="月を選択"
+  choose-year-label="年を選択"
+  choose-month-year-label="月と年を選択"
+  choose-month-and-year-label="月と年を選択"
+  toggle-calendar-label="カレンダー入力に切り替え"
+  toggle-text-label="テキスト入力に切り替え"
+  open-calendar-label="カレンダーを開く"
+  close-calendar-label="カレンダーを閉じる"
+  year-grid-label="年"
+  value="2025-06-15"
+></md-date-picker>`}
+  label="Open the calendar — headline, month names, weekday tooltips and the キャンセル / OK row are all localized"
+  storyId="selection-date-picker--japanese-locale"
+/>
+
+## RTL, density & i18n
+
+**RTL** — every box metric is a logical property. The previous/next month and
+year chevrons mirror automatically, and the docked month/year menus anchor to
+the inline-start edge of their buttons. See [RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+  <div dir="ltr"><md-date-picker label="Date" style="min-width: 240px;"></md-date-picker></div>
+  <div dir="rtl"><md-date-picker locale="ar" label="التاريخ" style="min-width: 240px;"></md-date-picker></div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl — open both to compare the calendars"
+  storyId="selection-date-picker--rtl"
+/>
+
+**Density** — `density="-1…-4"` compacts the field and the panel, and locally
+overrides an inherited `data-density` rung. See [Density](/behaviour/density/).
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">
+  <md-date-picker density="0" label="0" value="2026-08-17" style="min-width: 170px;"></md-date-picker>
+  <md-date-picker density="-1" label="-1" value="2026-08-17" style="min-width: 170px;"></md-date-picker>
+  <md-date-picker density="-2" label="-2" value="2026-08-17" style="min-width: 170px;"></md-date-picker>
+  <md-date-picker density="-3" label="-3" value="2026-08-17" style="min-width: 170px;"></md-date-picker>
+  <md-date-picker density="-4" label="-4" value="2026-08-17" style="min-width: 170px;"></md-date-picker>
+</div>`}
+  label="Density 0 through -4 — open one to see the panel follow"
+  storyId="selection-date-picker--responsiveness"
+/>
+
+:::caution[Day cells are the first thing to get hard to hit]
+A calendar is a 7-column grid of small targets. Below `-2` the cells fall well
+under the 48dp pointer-coarse devices want, and a mis-tap picks the wrong day —
+a quieter failure than mis-tapping a button. See
+[Density](/behaviour/density/#accessibility).
+:::
+
+**i18n** — see [Localization](#localization) above: the locale drives month and
+weekday names, the first day of the week, and the parse/format order, while
+**every** user-facing string (`headline`, `cancel-label`, `ok-label`,
+`invalid-date-label`, the nav labels…) is a prop you must translate.
+
+## Theming
+
+### CSS custom properties
+
+Override these on the host element for per-instance theming:
+
+| Property                              | Description                          | Default                              |
+| ------------------------------------- | ------------------------------------ | ------------------------------------ |
+| `--md-date-picker-container-color`    | Dialog / popup background            | `--md-sys-color-surface-container-high` |
+| `--md-date-picker-container-shape`    | Dialog / popup corner radius         | `--md-sys-shape-corner-extra-large`  |
+| `--md-date-picker-field-color`        | Text-field outline / active indicator color | `--md-sys-color-outline`      |
+| `--md-date-picker-field-text-color`   | Text-field input text color          | `--md-sys-color-on-surface`          |
+| `--md-date-picker-field-container-color` | Filled-field container background | `--md-sys-color-surface-container-highest` |
+| `--md-date-picker-field-container-shape` | Text-field corner radius         | `--md-sys-shape-corner-extra-small` |
+| `--md-date-picker-field-filled-pill` | Filled field: `1` rounds all corners (capsule); omit for MD3 top-only | `0` |
+| `--md-date-picker-field-supporting-color` | Supporting text below the field | `--md-sys-color-on-surface-variant` |
+| `--md-date-picker-label-color`        | Floating label color                 | `--md-sys-color-on-surface-variant`  |
+| `--md-date-picker-headline-color`     | Modal headline (selected date) color | `--md-sys-color-on-surface`          |
+| `--md-date-picker-supporting-color`   | Header supporting-text color         | `--md-sys-color-on-surface-variant`  |
+| `--md-date-picker-weekday-color`      | Weekday column-header color          | `--md-sys-color-on-surface-variant`  |
+| `--md-date-picker-day-color`          | Day cell text color                  | `--md-sys-color-on-surface`          |
+| `--md-date-picker-day-selected-color` | Selected day text color              | `--md-sys-color-on-primary`          |
+| `--md-date-picker-day-selected-bg`    | Selected day container color         | `--md-sys-color-primary`             |
+| `--md-date-picker-today-outline-color`| Today's outline ring color           | `--md-sys-color-primary`             |
+| `--md-date-picker-day-outline-color`  | Deprecated (unselected days are plain text) | —                          |
+| `--md-date-picker-action-color`       | Cancel / OK action label color       | `--md-sys-color-primary`             |
+| `--md-date-picker-menu-color`         | Docked month/year menu surface       | `--md-sys-color-surface-container-high` |
+| `--md-date-picker-scrim-color`        | Modal scrim color                    | `--md-sys-color-scrim`               |
+| `--md-date-picker-icon-color`         | Trailing / nav icon color            | `--md-sys-color-on-surface-variant`  |
+| `--md-date-picker-panel-width`        | Modal / docked popup panel width     | `360px`                              |
+| `--md-date-picker-panel-max-block-size` | Modal / docked popup max height    | `524px`                              |
+| `--md-date-picker-docked-panel-width` | Docked popup width override          | `--md-date-picker-panel-width`       |
+
+<ComponentDemo
+  html={`<style>
+  .dp-brand {
+    --md-date-picker-day-selected-bg: #7c4dff;
+    --md-date-picker-headline-color: #7c4dff;
+    --md-date-picker-today-outline-color: #7c4dff;
+    --md-date-picker-action-color: #7c4dff;
+    --md-date-picker-container-shape: 12px;
+  }
+  .dp-tonal {
+    --md-date-picker-container-color: var(--md-sys-color-secondary-container);
+    --md-date-picker-day-selected-bg: var(--md-sys-color-tertiary);
+    --md-date-picker-day-selected-color: var(--md-sys-color-on-tertiary);
+    --md-date-picker-weekday-color: var(--md-sys-color-on-secondary-container);
+  }
+  .dp-squared {
+    --md-date-picker-day-selected-shape: 6px;
+    --md-date-picker-day-today-shape: 6px;
+    --md-date-picker-panel-width: 320px;
+  }
+</style>
+<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+  <md-date-picker class="dp-brand" variant="docked" label="Branded" value="2026-08-17" style="min-inline-size: 230px;"></md-date-picker>
+  <md-date-picker class="dp-tonal" variant="docked" label="Tonal" value="2026-08-17" style="min-inline-size: 230px;"></md-date-picker>
+  <md-date-picker class="dp-squared" variant="docked" label="Squared days" value="2026-08-17" style="min-inline-size: 230px;"></md-date-picker>
+</div>`}
+  label="Branded, tonal, and squared day cells — open each to see the panel"
+  storyId="selection-date-picker--custom-css"
+/>
+
+Every default resolves through an `md-sys-color` role, so a picker that sets no
+custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+  <md-date-picker label="Untouched defaults" value="2026-08-17" clearable style="min-width: 240px;"></md-date-picker>
+  <md-date-picker variant="docked" label="Docked" value="2026-08-17" style="min-width: 240px;"></md-date-picker>
+</div>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="selection-date-picker--dark-theme"
+/>
+
+## CSS parts
+
+Style internal elements through the shadow boundary:
+
+| Part              | Element                                  |
+| ----------------- | ---------------------------------------- |
+| `field`           | Text-field container (trigger)           |
+| `leading-icon`    | Slotted leading-icon wrapper             |
+| `label`           | Floating field label                     |
+| `input`           | Field text input                         |
+| `calendar-button` | Trailing calendar toggle button          |
+| `supporting-text` | Helper / error text below the field      |
+| `modal` / `scrim` | Modal wrapper / scrim overlay            |
+| `panel`           | Dialog / docked popup surface            |
+| `header`          | Modal header region                      |
+| `supporting`      | Header supporting text                   |
+| `headline`        | Large selected-date headline             |
+| `mode-toggle`     | Calendar / text-input switch button      |
+| `body`            | Calendar / year / input body region      |
+| `nav`             | Month label + prev/next nav row (also docked nav) |
+| `month-toggle`    | Month-year label button (year grid; modal) |
+| `prev-button` / `next-button` | Month navigation buttons (modal) |
+| `month-menu-button` / `year-menu-button` | Docked month / year dropdown buttons |
+| `prev-month-button` / `next-month-button` | Docked month chevron icon buttons |
+| `prev-year-button` / `next-year-button` | Docked year chevron icon buttons |
+| `selection-divider` | Divider between docked nav and month/year menu |
+| `month-menu` / `year-menu` | Docked inline baseline month / year menus |
+| `month-option` / `month-option-selected` | Month menu option / selected |
+| `year-option` / `year-option-selected` | Year menu option / selected |
+| `calendar`        | Calendar grid wrapper                    |
+| `weekdays` / `weekday` | Weekday header row / single column header |
+| `grid`            | Day-cell grid                            |
+| `day`             | A day cell button                        |
+| `day-unselected` / `day-selected` / `day-today` / `day-disabled` / `day-outside` | Day cell state parts |
+| `year-grid` / `year` / `year-selected` | Year selection grid + options |
+| `entry` / `entry-input` | In-dialog typed date-entry region   |
+| `actions`         | Cancel / OK action row                   |
+| `cancel-button` / `ok-button` | Action buttons               |
+
+<ComponentDemo
+  html={`<style>
+  .parts-dp::part(field) { --md-date-picker-field-color: var(--md-sys-color-primary); }
+  .parts-dp::part(day-selected) { border-radius: 6px; }
+  .parts-dp::part(day-today) { outline-width: 2px; }
+  .parts-dp::part(weekday) { text-transform: uppercase; letter-spacing: .1em; font-size: 10px; }
+  .parts-dp::part(headline) { font-style: italic; }
+  .parts-dp::part(ok-button) { font-weight: 700; }
+</style>
+<md-date-picker class="parts-dp" variant="docked" label="Styled parts" value="2026-08-17" style="min-width: 260px;"></md-date-picker>`}
+  label="day-selected, day-today, weekday, headline and ok-button — open it"
+  storyId="selection-date-picker--css-parts"
+/>
+
+:::caution[The day-state parts are mutually exclusive]
+A cell carries `day` plus exactly one of `day-unselected` / `day-selected` /
+`day-disabled` / `day-outside`, and `day-today` only on today. `::part(day)`
+matches every cell; the state parts match one bucket each. A rule written
+against the wrong bucket fails silently.
+:::
+
+### Named slots
+
+| Slot           | Description                                        |
+| -------------- | -------------------------------------------------- |
+| `leading-icon` | Custom leading icon for the field                  |
+| `header`       | Replaces the entire modal header                   |
+| `actions`      | Replaces the Cancel / OK action row                |
+
+<ComponentDemo
+  html={`<md-date-picker label="Custom icon" style="min-width: 260px;">
+  <span slot="leading-icon" class="material-symbols-outlined">event</span>
+</md-date-picker>`}
+  htmlForCode={`<md-date-picker label="Custom icon">
+  <span slot="leading-icon" class="material-symbols-outlined">event</span>
+</md-date-picker>`}
+  label="A slotted leading icon"
+  storyId="selection-date-picker--slots"
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdInput` | no | `{ value: string }` | Every keystroke in the text field |
+| `mdSelected` | no | `MdDatePickerSelectedDetail` | A day cell is picked — **staged**, not committed |
+| `mdChange` | no | `MdDatePickerChangeDetail` | The value **commits** — OK, `Enter`, or a docked pick |
+| `mdOpen` / `mdClose` | no | `void` | The panel opened / closed |
+| `mdCancel` | no | `void` | Dismissed without committing — Cancel, `Escape`, the scrim, or a click outside a docked panel |
+| `mdViewChange` | no | `MdDatePickerViewChangeDetail` | The calendar moved month or year, or switched to the year grid |
+| `mdMenuOpen` / `mdMenuSelect` | no | `MdDatePickerMenu*Detail` | The docked month / year dropdowns |
+| `mdModeChange` | no | `MdDatePickerModeChangeDetail` | The calendar ⇄ text-input toggle |
+
+:::caution[`mdSelected` is staged; `mdChange` is committed]
+Clicking a day **stages** it — `mdSelected` fires, the headline updates, and
+`value` has not changed. Only **OK** commits, which is what emits `mdChange`.
+Cancel discards the staging and emits `mdCancel` — as does dismissing by
+clicking away or pressing `Escape`.
+
+**This is true of every variant, docked included.** All three carry the same
+Cancel / OK action row, so a docked day click is a preview too — it does not
+commit on its own.
+
+Persist on `mdChange`; treat `mdSelected` as a preview.
+
+`commit-on-select` collapses the two into one click — see below.
+:::
+
+### Committing on click
+
+Set `commit-on-select` and a day click stages **and** commits: `mdSelected` then
+`mdChange` fire together, the panel dismisses, and the built-in Cancel / OK row
+is not rendered — there is nothing left for it to confirm.
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+  <md-date-picker label="Default — stages, then OK" value="2026-08-10" style="min-inline-size: 230px;"></md-date-picker>
+  <md-date-picker label="commit-on-select" value="2026-08-10" commit-on-select style="min-inline-size: 230px;"></md-date-picker>
+  <md-date-picker label="docked + commit-on-select" variant="docked" value="2026-08-10" commit-on-select style="min-inline-size: 230px;"></md-date-picker>
+</div>`}
+  htmlForCode={`<!-- default: a day click only stages; OK commits -->
+<md-date-picker label="Due date" value="2026-08-10"></md-date-picker>
+
+<!-- one click, no confirm step, no action row -->
+<md-date-picker label="Due date" value="2026-08-10" commit-on-select></md-date-picker>`}
+  label="Open each and pick a day — only the first waits for OK"
+  storyId="selection-date-picker--controlled"
+/>
+
+:::tip[Which one?]
+`commit-on-select` suits a **low-stakes, reversible** field — a filter, a
+preference, anything the user can change again in a second. Keep the default
+confirm step when the choice is expensive to get wrong, or when the picker sits
+inside a form the user submits once.
+
+A slotted `actions` row is still honoured either way: it is yours, and it may
+hold controls other than confirm.
+:::
+
+### Dismissing by clicking away
+
+A **modal** puts a scrim between the panel and the page, and clicking it
+dismisses — `scrim-dismissible` turns that off. A **docked** panel has no scrim,
+so the click that lands outside it is caught on the document instead;
+`outside-click-dismissible` is its opt-out.
+
+Either way the dismissal is a **cancel**: `mdCancel` fires and anything staged is
+discarded. Set `outside-click-dismissible="false"` when a stray click must not
+throw away a half-made choice, or when the picker sits inside another popup whose
+own click-away handling would otherwise close both at once.
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+  <md-date-picker label="Default — click away closes" variant="docked" value="2026-08-10" style="min-inline-size: 250px;"></md-date-picker>
+  <md-date-picker label="Stays open" variant="docked" value="2026-08-10" outside-click-dismissible="false" style="min-inline-size: 250px;"></md-date-picker>
+</div>`}
+  htmlForCode={`<md-date-picker variant="docked" label="Start"></md-date-picker>
+
+<md-date-picker
+  variant="docked"
+  label="Start"
+  outside-click-dismissible="false"
+></md-date-picker>`}
+  label="Open each, then click on the page background — only the first closes"
+  storyId="selection-date-picker--outside-click-dismissible"
+/>
+
+:::note[Esc and the trigger always work]
+Turning click-away off does not strip the other exits: `Escape` still dismisses,
+the trigger still toggles, and Cancel / OK are untouched. It only stops a click
+on unrelated page content from counting as a dismissal.
+:::
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;inline-size:100%;">
+  <md-date-picker id="ev-dp" label="Due date" value="2026-08-18" clearable style="min-inline-size: 240px;"></md-date-picker>
+  <div data-ev-log style="flex:1;min-inline-size:260px;font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;opacity:.85;min-block-size:8em;"></div>
+</div>`}
+  script={`
+  var dp = root.querySelector('#ev-dp');
+  var log = root.querySelector('[data-ev-log]');
+  var lines = [];
+  var push = function (text) {
+    lines.unshift(text);
+    lines = lines.slice(0, 7);
+    log.textContent = lines.join(String.fromCharCode(10));
+  };
+  var show = function (v) { return v === undefined || v === null ? '(none)' : String(v); };
+
+  dp.addEventListener('mdOpen',   function () { push('mdOpen'); });
+  dp.addEventListener('mdClose',  function () { push('mdClose'); });
+  dp.addEventListener('mdCancel', function () { push('mdCancel      staged selection discarded'); });
+  dp.addEventListener('mdInput',  function (e) { push('mdInput       ' + show(e.detail && e.detail.value)); });
+  dp.addEventListener('mdSelected', function (e) { push('mdSelected    ' + show(e.detail && e.detail.value) + '   STAGED'); });
+  dp.addEventListener('mdChange', function (e) { push('mdChange      ' + show(e.detail && e.detail.value) + '   COMMITTED'); });
+  dp.addEventListener('mdViewChange', function (e) { push('mdViewChange  ' + JSON.stringify(e.detail)); });
+  dp.addEventListener('mdModeChange', function (e) { push('mdModeChange  ' + JSON.stringify(e.detail)); });
+  dp.addEventListener('mdMenuOpen', function (e) { push('mdMenuOpen    ' + JSON.stringify(e.detail)); });
+  dp.addEventListener('mdMenuSelect', function (e) { push('mdMenuSelect  ' + JSON.stringify(e.detail)); });
+
+  push('Open the calendar and pick a day — watch mdSelected land before mdChange.');`}
+  label="Every event, live — newest first"
+  storyId="selection-date-picker--controlled"
+  htmlForCode={`<md-date-picker id="demo"></md-date-picker>
+
+<script type="module">
+  import { defineCustomElements } from '@awc-ui/core/loader';
+  defineCustomElements(window);
+
+  const el = document.querySelector('#demo');
+
+  el.addEventListener('mdChange', (event) => {
+    // e.detail: MdDatePickerChangeDetail
+    console.log('mdChange', event.detail);
+  });
+
+  el.addEventListener('mdSelected', (event) => {
+    // e.detail: MdDatePickerSelectedDetail
+    console.log('mdSelected', event.detail);
+  });
+
+  el.addEventListener('mdInput', (event) => {
+    // e.detail: { value: string }
+    console.log('mdInput', event.detail);
+  });
+
+  el.addEventListener('mdOpen', (event) => {
+    console.log('mdOpen', event.detail);
+  });
+
+  el.addEventListener('mdClose', (event) => {
+    console.log('mdClose', event.detail);
+  });
+
+  el.addEventListener('mdCancel', (event) => {
+    console.log('mdCancel', event.detail);
+  });
+
+  el.addEventListener('mdViewChange', (event) => {
+    // e.detail: MdDatePickerViewChangeDetail
+    console.log('mdViewChange', event.detail);
+  });
+
+  el.addEventListener('mdMenuOpen', (event) => {
+    // e.detail: MdDatePickerMenuOpenDetail
+    console.log('mdMenuOpen', event.detail);
+  });
+
+  el.addEventListener('mdMenuSelect', (event) => {
+    // e.detail: MdDatePickerMenuSelectDetail
+    console.log('mdMenuSelect', event.detail);
+  });
+
+  el.addEventListener('mdModeChange', (event) => {
+    // e.detail: MdDatePickerModeChangeDetail
+    console.log('mdModeChange', event.detail);
+  });
+</script>`}
+  react={`import { MdDatePicker } from '@awc-ui/react';
+
+export function Demo() {
+  return (
+    <MdDatePicker
+      onMdChange={(event) => {
+        // e.detail: MdDatePickerChangeDetail
+        console.log('mdChange', event.detail);
+      }}
+      onMdSelected={(event) => {
+        // e.detail: MdDatePickerSelectedDetail
+        console.log('mdSelected', event.detail);
+      }}
+      onMdInput={(event) => {
+        // e.detail: { value: string }
+        console.log('mdInput', event.detail);
+      }}
+      onMdOpen={(event) => {
+        console.log('mdOpen', event.detail);
+      }}
+      onMdClose={(event) => {
+        console.log('mdClose', event.detail);
+      }}
+      onMdCancel={(event) => {
+        console.log('mdCancel', event.detail);
+      }}
+      onMdViewChange={(event) => {
+        // e.detail: MdDatePickerViewChangeDetail
+        console.log('mdViewChange', event.detail);
+      }}
+      onMdMenuOpen={(event) => {
+        // e.detail: MdDatePickerMenuOpenDetail
+        console.log('mdMenuOpen', event.detail);
+      }}
+      onMdMenuSelect={(event) => {
+        // e.detail: MdDatePickerMenuSelectDetail
+        console.log('mdMenuSelect', event.detail);
+      }}
+      onMdModeChange={(event) => {
+        // e.detail: MdDatePickerModeChangeDetail
+        console.log('mdModeChange', event.detail);
+      }}
+    />
+  );
+}`}
+  angular={`// app.module.ts — register once
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { AwcUiModule } from '@awc-ui/angular';
+
+@NgModule({
+  imports: [AwcUiModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+})
+export class AppModule {}
+
+// app.component.ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  template: \`
+    <md-date-picker (mdChange)="onChange(\$event)" (mdSelected)="onSelected(\$event)" (mdInput)="onInput(\$event)" (mdOpen)="onOpen(\$event)" (mdClose)="onClose(\$event)" (mdCancel)="onCancel(\$event)" (mdViewChange)="onViewChange(\$event)" (mdMenuOpen)="onMenuOpen(\$event)" (mdMenuSelect)="onMenuSelect(\$event)" (mdModeChange)="onModeChange(\$event)"></md-date-picker>
+  \`,
+})
+export class AppComponent {
+  onChange(event: CustomEvent<MdDatePickerChangeDetail>) {
+    console.log('mdChange', event.detail);
+  }
+  onSelected(event: CustomEvent<MdDatePickerSelectedDetail>) {
+    console.log('mdSelected', event.detail);
+  }
+  onInput(event: CustomEvent<{ value: string }>) {
+    console.log('mdInput', event.detail);
+  }
+  onOpen(event: CustomEvent<void>) {
+    console.log('mdOpen', event.detail);
+  }
+  onClose(event: CustomEvent<void>) {
+    console.log('mdClose', event.detail);
+  }
+  onCancel(event: CustomEvent<void>) {
+    console.log('mdCancel', event.detail);
+  }
+  onViewChange(event: CustomEvent<MdDatePickerViewChangeDetail>) {
+    console.log('mdViewChange', event.detail);
+  }
+  onMenuOpen(event: CustomEvent<MdDatePickerMenuOpenDetail>) {
+    console.log('mdMenuOpen', event.detail);
+  }
+  onMenuSelect(event: CustomEvent<MdDatePickerMenuSelectDetail>) {
+    console.log('mdMenuSelect', event.detail);
+  }
+  onModeChange(event: CustomEvent<MdDatePickerModeChangeDetail>) {
+    console.log('mdModeChange', event.detail);
+  }
+}`}
+  vue={`<script setup>
+import '@awc-ui/core/define';
+
+function onMdChange(event) {
+  // e.detail: MdDatePickerChangeDetail
+  console.log('mdChange', event.detail);
+}
+
+function onMdSelected(event) {
+  // e.detail: MdDatePickerSelectedDetail
+  console.log('mdSelected', event.detail);
+}
+
+function onMdInput(event) {
+  // e.detail: { value: string }
+  console.log('mdInput', event.detail);
+}
+
+function onMdOpen(event) {
+  console.log('mdOpen', event.detail);
+}
+
+function onMdClose(event) {
+  console.log('mdClose', event.detail);
+}
+
+function onMdCancel(event) {
+  console.log('mdCancel', event.detail);
+}
+
+function onMdViewChange(event) {
+  // e.detail: MdDatePickerViewChangeDetail
+  console.log('mdViewChange', event.detail);
+}
+
+function onMdMenuOpen(event) {
+  // e.detail: MdDatePickerMenuOpenDetail
+  console.log('mdMenuOpen', event.detail);
+}
+
+function onMdMenuSelect(event) {
+  // e.detail: MdDatePickerMenuSelectDetail
+  console.log('mdMenuSelect', event.detail);
+}
+
+function onMdModeChange(event) {
+  // e.detail: MdDatePickerModeChangeDetail
+  console.log('mdModeChange', event.detail);
+}
+
+</script>
+
+<template>
+  <md-date-picker @md-change="onMdChange" @md-selected="onMdSelected" @md-input="onMdInput" @md-open="onMdOpen" @md-close="onMdClose" @md-cancel="onMdCancel" @md-view-change="onMdViewChange" @md-menu-open="onMdMenuOpen" @md-menu-select="onMdMenuSelect" @md-mode-change="onMdModeChange" />
+</template>`}
+  svelte={`<script>
+  import '@awc-ui/core/define';
+
+  function onMdChange(event) {
+    // e.detail: MdDatePickerChangeDetail
+    console.log('mdChange', event.detail);
+  }
+
+  function onMdSelected(event) {
+    // e.detail: MdDatePickerSelectedDetail
+    console.log('mdSelected', event.detail);
+  }
+
+  function onMdInput(event) {
+    // e.detail: { value: string }
+    console.log('mdInput', event.detail);
+  }
+
+  function onMdOpen(event) {
+    console.log('mdOpen', event.detail);
+  }
+
+  function onMdClose(event) {
+    console.log('mdClose', event.detail);
+  }
+
+  function onMdCancel(event) {
+    console.log('mdCancel', event.detail);
+  }
+
+  function onMdViewChange(event) {
+    // e.detail: MdDatePickerViewChangeDetail
+    console.log('mdViewChange', event.detail);
+  }
+
+  function onMdMenuOpen(event) {
+    // e.detail: MdDatePickerMenuOpenDetail
+    console.log('mdMenuOpen', event.detail);
+  }
+
+  function onMdMenuSelect(event) {
+    // e.detail: MdDatePickerMenuSelectDetail
+    console.log('mdMenuSelect', event.detail);
+  }
+
+  function onMdModeChange(event) {
+    // e.detail: MdDatePickerModeChangeDetail
+    console.log('mdModeChange', event.detail);
+  }
+
+</script>
+
+<md-date-picker on:mdChange={onMdChange} on:mdSelected={onMdSelected} on:mdInput={onMdInput} on:mdOpen={onMdOpen} on:mdClose={onMdClose} on:mdCancel={onMdCancel} on:mdViewChange={onMdViewChange} on:mdMenuOpen={onMdMenuOpen} on:mdMenuSelect={onMdMenuSelect} on:mdModeChange={onMdModeChange} />`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+
+## Related
+
+[`md-time-picker`](/components/time-picker/) ·
+[`md-text-field`](/components/text-field/) ·
+[`md-select`](/components/select/) ·
+[`md-menu`](/components/menu/) ·
+[`md-dialog`](/components/dialog/) ·
+[`md-icon-button`](/components/icon-button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-date-picker" />

@@ -1,0 +1,20 @@
+/* ==========================================================
+   md-tab-panels — size-stable tab panel region
+   ========================================================== */
+
+:host {
+  display: grid;
+  min-inline-size: 0;
+}
+
+/* All panels share ONE grid cell: the region is always as wide/tall as the
+   LARGEST panel, so switching tabs never resizes the surrounding layout
+   (the whole point — a one-letter panel can't collapse the card). */
+::slotted(md-tab-panel) {
+  grid-area: 1 / 1;
+}
+
+/* Opt-out: size to the active panel only. */
+:host([sizing='active']) ::slotted(md-tab-panel:not([active])) {
+  display: none;
+}

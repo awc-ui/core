@@ -1,0 +1,424 @@
+---
+// BottomSheetDemo.astro
+//
+// Multi-section live demo for `md-bottom-sheet`. Mirrors the
+// architecture of `DialogDemo.astro`:
+//
+//   1. Each section's markup goes through `<ComponentDemo set:html>`,
+//      which hydrates custom-elements but does NOT execute inline
+//      script tags. So all the trigger / close / portal wiring lives
+//      in a single module-level script at the bottom of this file
+//      and runs once per page-load.
+//
+//   2. Both bottom-sheet variants (`standard`, `detached`) are modal —
+//      they always render a scrim, trap focus, lock body scroll, and
+//      close on Escape / scrim click / drag-down. Both need to escape
+//      any ancestor that creates a containing block — Starlight's
+//      article column can apply `transform`, `filter`, `contain`, or
+//      `will-change` via page-in animations, which would trap the
+//      `position: fixed` container inside that box and let the side-nav
+//      paint over it. We portal every
+//      `md-bottom-sheet[data-bottom-sheet-instance]` to <body> on first
+//      run, exactly like DialogDemo does for dialogs.
+
+import ComponentDemo from "./ComponentDemo.astro";
+
+interface Section {
+  id: string;
+  label: string;
+  /** Markup for the live preview pane. Uses demo-only
+   *  `data-bottom-sheet-open|close|instance` hooks the global wiring
+   *  script binds to. */
+  html: string;
+  /** Idiomatic copy-paste markup for the per-technology code tabs.
+   *  Drops the demo-only data-* hooks in favour of the canonical
+   *  `id` + `sheet.show()` / `sheet.close()` pattern. */
+  codeHtml: string;
+}
+
+// ── Section 1: Standard (anchored) patterns ────────────────────────
+//
+// Five flavours of the default `standard` variant — anchored to the
+// bottom edge of the viewport with rounded top corners only:
+//   1. Basic               — headline + list (closes via scrim/escape/drag)
+//   2. With actions slot   — Cancel / Save buttons in `slot="actions"`
+//   3. No drag handle      — `show-drag-handle="false"` for forms / non-gestural surfaces
+//   4. Persistent          — `scrim-dismissible="false"` forces an explicit choice
+//   5. Custom headline     — rich `slot="headline"` with avatar + multi-line title
+
+const standardCodeHtml = `<md-button id="open-share" variant="filled" icon="share">Share</md-button>
+<md-bottom-sheet id="share-sheet" headline="Share">
+  <md-list>
+    <md-list-item>
+      <span slot="leading-icon" class="material-symbols-outlined">link</span>
+      Copy link
+    </md-list-item>
+    <md-list-item>
+      <span slot="leading-icon" class="material-symbols-outlined">mail</span>
+      Email
+    </md-list-item>
+    <md-list-item>
+      <span slot="leading-icon" class="material-symbols-outlined">chat</span>
+      Message
+    </md-list-item>
+  </md-list>
+</md-bottom-sheet>
+
+<md-button id="open-edit" variant="filled" icon="edit">Edit profile</md-button>
+<md-bottom-sheet id="edit-sheet" headline="Edit profile">
+  <md-text-field variant="outlined" label="Display name" value="AWC Dev"></md-text-field>
+  <md-text-field variant="outlined" label="Bio" multiline="auto-grow" value="Building MD3 components in the open."></md-text-field>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Save</md-button>
+</md-bottom-sheet>
+
+<md-button id="open-form" variant="filled" icon="add">New task</md-button>
+<md-bottom-sheet id="form-sheet" headline="New task" show-drag-handle="false">
+  <md-text-field variant="outlined" label="Title" required></md-text-field>
+  <md-text-field variant="outlined" label="Notes" multiline="auto-grow"></md-text-field>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Add task</md-button>
+</md-bottom-sheet>
+
+<md-button id="open-confirm" variant="filled" icon="warning">Persistent</md-button>
+<md-bottom-sheet id="confirm-sheet" headline="Apply changes?" scrim-dismissible="false">
+  <p>Saving will overwrite the existing draft. The scrim is non-dismissible — pick an explicit action.</p>
+  <md-button slot="actions" variant="text">Discard</md-button>
+  <md-button slot="actions" variant="filled">Save</md-button>
+</md-bottom-sheet>
+
+<md-button id="open-rich" variant="filled" icon="account_circle">Custom headline</md-button>
+<md-bottom-sheet id="rich-sheet">
+  <div slot="headline">
+    <span>AWC Dev shared a file</span>
+    <span>design-tokens-v2.fig · 2 MB</span>
+  </div>
+  <md-list>
+    <md-list-item><span slot="leading-icon" class="material-symbols-outlined">visibility</span>Preview</md-list-item>
+    <md-list-item><span slot="leading-icon" class="material-symbols-outlined">download</span>Download</md-list-item>
+  </md-list>
+  <md-button slot="actions" variant="filled">Open file</md-button>
+</md-bottom-sheet>`;
+
+const standardHtml = `<md-button data-bottom-sheet-open="demo-share-sheet" variant="filled" icon="share">Share</md-button>
+<md-button data-bottom-sheet-open="demo-edit-sheet" variant="filled" icon="edit">Edit profile</md-button>
+<md-button data-bottom-sheet-open="demo-form-sheet" variant="filled" icon="add">New task</md-button>
+<md-button data-bottom-sheet-open="demo-confirm-sheet" variant="filled" icon="warning">Persistent</md-button>
+<md-button data-bottom-sheet-open="demo-rich-sheet" variant="filled" icon="account_circle">Custom headline</md-button>
+
+<md-bottom-sheet id="demo-share-sheet" headline="Share" data-bottom-sheet-instance>
+  <md-list>
+    <md-list-item data-bottom-sheet-close="demo-share-sheet">
+      <span slot="leading-icon" class="material-symbols-outlined">link</span>
+      Copy link
+    </md-list-item>
+    <md-list-item data-bottom-sheet-close="demo-share-sheet">
+      <span slot="leading-icon" class="material-symbols-outlined">mail</span>
+      Email
+    </md-list-item>
+    <md-list-item data-bottom-sheet-close="demo-share-sheet">
+      <span slot="leading-icon" class="material-symbols-outlined">chat</span>
+      Message
+    </md-list-item>
+    <md-list-item data-bottom-sheet-close="demo-share-sheet">
+      <span slot="leading-icon" class="material-symbols-outlined">qr_code</span>
+      QR code
+    </md-list-item>
+  </md-list>
+</md-bottom-sheet>
+
+<md-bottom-sheet id="demo-edit-sheet" headline="Edit profile" data-bottom-sheet-instance>
+  <div class="bottom-sheet-demo__form">
+    <md-text-field variant="outlined" label="Display name" value="AWC Dev"></md-text-field>
+    <md-text-field variant="outlined" label="Bio" multiline="auto-grow" value="Building MD3 components in the open."></md-text-field>
+  </div>
+  <md-button slot="actions" variant="text" data-bottom-sheet-close="demo-edit-sheet">Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-bottom-sheet-close="demo-edit-sheet">Save</md-button>
+</md-bottom-sheet>
+
+<md-bottom-sheet id="demo-form-sheet" headline="New task" show-drag-handle="false" data-bottom-sheet-instance>
+  <div class="bottom-sheet-demo__form">
+    <md-text-field variant="outlined" label="Title" required></md-text-field>
+    <md-text-field variant="outlined" label="Notes" multiline="auto-grow" supporting-text="Optional"></md-text-field>
+  </div>
+  <md-button slot="actions" variant="text" data-bottom-sheet-close="demo-form-sheet">Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-bottom-sheet-close="demo-form-sheet">Add task</md-button>
+</md-bottom-sheet>
+
+<md-bottom-sheet id="demo-confirm-sheet" headline="Apply changes?" scrim-dismissible="false" data-bottom-sheet-instance>
+  <p style="margin: 0;">Saving will overwrite the existing draft. The scrim is non-dismissible — pick one of the explicit actions below.</p>
+  <md-button slot="actions" variant="text" data-bottom-sheet-close="demo-confirm-sheet">Discard</md-button>
+  <md-button slot="actions" variant="filled" data-bottom-sheet-close="demo-confirm-sheet">Save</md-button>
+</md-bottom-sheet>
+
+<md-bottom-sheet id="demo-rich-sheet" data-bottom-sheet-instance>
+  <div slot="headline" class="bottom-sheet-demo__rich-headline">
+    <span class="bottom-sheet-demo__avatar" aria-hidden="true">AD</span>
+    <span class="bottom-sheet-demo__rich-headline-stack">
+      <span class="bottom-sheet-demo__rich-headline-title">AWC Dev shared a file</span>
+      <span class="bottom-sheet-demo__rich-headline-sub">design-tokens-v2.fig · 2 MB · Just now</span>
+    </span>
+  </div>
+  <md-list>
+    <md-list-item data-bottom-sheet-close="demo-rich-sheet"><span slot="leading-icon" class="material-symbols-outlined">visibility</span>Preview</md-list-item>
+    <md-list-item data-bottom-sheet-close="demo-rich-sheet"><span slot="leading-icon" class="material-symbols-outlined">download</span>Download</md-list-item>
+    <md-list-item data-bottom-sheet-close="demo-rich-sheet"><span slot="leading-icon" class="material-symbols-outlined">forum</span>Comment</md-list-item>
+  </md-list>
+  <md-button slot="actions" variant="filled" data-bottom-sheet-close="demo-rich-sheet">Open file</md-button>
+</md-bottom-sheet>`;
+
+// ── Section 2: Detached variant ────────────────────────────────────
+//
+// `variant="detached"` floats the sheet with margin on every side and
+// rounds all four corners. It's still a modal dialog (scrim, focus
+// trap, body lock, drag-to-dismiss); only the visual chrome changes.
+// Best for compact dialog-like sheets on tablet / desktop where the
+// floating presentation reads more like a prompt than a drawer.
+
+const detachedCodeHtml = `<md-button id="open-detached-share" variant="tonal" icon="share">Share (detached)</md-button>
+<md-bottom-sheet id="detached-share-sheet" variant="detached" headline="Share" closeable>
+  <md-list>
+    <md-list-item>
+      <span slot="leading-icon" class="material-symbols-outlined">link</span>
+      Copy link
+    </md-list-item>
+    <md-list-item>
+      <span slot="leading-icon" class="material-symbols-outlined">mail</span>
+      Email
+    </md-list-item>
+  </md-list>
+</md-bottom-sheet>
+
+<md-button id="open-detached-confirm" variant="tonal" icon="task_alt">Confirm (detached)</md-button>
+<md-bottom-sheet id="detached-confirm-sheet" variant="detached" headline="Delete this draft?">
+  <p>Drafts are removed permanently after 30 days. This action can't be undone.</p>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Delete</md-button>
+</md-bottom-sheet>`;
+
+const detachedHtml = `<md-button data-bottom-sheet-open="demo-detached-share-sheet" variant="tonal" icon="share">Share (detached)</md-button>
+<md-button data-bottom-sheet-open="demo-detached-confirm-sheet" variant="tonal" icon="task_alt">Confirm (detached)</md-button>
+
+<md-bottom-sheet
+  id="demo-detached-share-sheet"
+  variant="detached"
+  headline="Share"
+  closeable
+  data-bottom-sheet-instance
+>
+  <md-list>
+    <md-list-item data-bottom-sheet-close="demo-detached-share-sheet">
+      <span slot="leading-icon" class="material-symbols-outlined">link</span>
+      Copy link
+    </md-list-item>
+    <md-list-item data-bottom-sheet-close="demo-detached-share-sheet">
+      <span slot="leading-icon" class="material-symbols-outlined">mail</span>
+      Email
+    </md-list-item>
+    <md-list-item data-bottom-sheet-close="demo-detached-share-sheet">
+      <span slot="leading-icon" class="material-symbols-outlined">chat</span>
+      Message
+    </md-list-item>
+  </md-list>
+</md-bottom-sheet>
+
+<md-bottom-sheet
+  id="demo-detached-confirm-sheet"
+  variant="detached"
+  headline="Delete this draft?"
+  data-bottom-sheet-instance
+>
+  <p style="margin: 0;">Drafts are removed permanently after 30 days. This action can't be undone, and any unsaved changes will be lost.</p>
+  <md-button slot="actions" variant="text" data-bottom-sheet-close="demo-detached-confirm-sheet">Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-bottom-sheet-close="demo-detached-confirm-sheet">Delete</md-button>
+</md-bottom-sheet>`;
+
+const sections: Section[] = [
+  {
+    id: "standard",
+    label: "Standard (anchored) — open with the buttons",
+    html: standardHtml,
+    codeHtml: standardCodeHtml,
+  },
+  {
+    id: "detached",
+    label: "Detached (floating) — same modal behaviour, different chrome",
+    html: detachedHtml,
+    codeHtml: detachedCodeHtml,
+  },
+];
+---
+
+<div class="bottom-sheet-demo-host">
+  {
+    sections.map((section) => (
+      <ComponentDemo
+        label={section.label}
+        html={section.html}
+        htmlForCode={section.codeHtml}
+        storyId="components-bottomsheet--playground"
+      />
+    ))
+  }
+</div>
+
+<script>
+  // Global wiring + portal script. Mirrors DialogDemo's bootstrap so
+  // multi-section pages and SPA navigations both work cleanly.
+
+  type SheetEl = HTMLElement & {
+    open: boolean;
+    show: () => Promise<void>;
+    close: () => Promise<void>;
+  };
+
+  // Portal every modal sheet to <body> on first run. Both variants
+  // (`standard` anchored, `detached` floating) are modal — they all
+  // need to escape any ancestor that creates a containing block
+  // (transform, filter, contain, will-change) so that
+  // `position: fixed` resolves against the viewport, not the
+  // ancestor. Without this, Starlight's animated article column can
+  // capture the sheet and let the side-nav paint over it.
+  function portalSheets(): void {
+    document
+      .querySelectorAll<HTMLElement>(
+        "md-bottom-sheet[data-bottom-sheet-instance]",
+      )
+      .forEach((sheet) => {
+        if (sheet.dataset.bottomSheetPortaled === "true") return;
+        if (sheet.parentElement === document.body) {
+          sheet.dataset.bottomSheetPortaled = "true";
+          return;
+        }
+        document.body.appendChild(sheet);
+        sheet.dataset.bottomSheetPortaled = "true";
+      });
+  }
+
+  function teardownPortaledSheets(): void {
+    document
+      .querySelectorAll<HTMLElement>(
+        "md-bottom-sheet[data-bottom-sheet-portaled]",
+      )
+      .forEach((sheet) => {
+        sheet.remove();
+      });
+  }
+
+  // Tag-scoped lookup so heading slugs (e.g. <h3 id="standard">) can
+  // never collide with sheet ids of the same name.
+  function findSheet(id: string): SheetEl | null {
+    return document.querySelector<HTMLElement>(
+      `md-bottom-sheet#${CSS.escape(id)}`,
+    ) as SheetEl | null;
+  }
+
+  function wireTriggers(): void {
+    document
+      .querySelectorAll<HTMLElement>("[data-bottom-sheet-open]")
+      .forEach((trigger) => {
+        if (trigger.dataset.bottomSheetWired === "true") return;
+        trigger.dataset.bottomSheetWired = "true";
+        trigger.addEventListener("click", () => {
+          const id = trigger.dataset.bottomSheetOpen;
+          if (!id) return;
+          const sheet = findSheet(id);
+          if (!sheet) return;
+          if (typeof sheet.show === "function") {
+            void sheet.show();
+          } else {
+            sheet.open = true;
+          }
+        });
+      });
+
+    document
+      .querySelectorAll<HTMLElement>("[data-bottom-sheet-close]")
+      .forEach((trigger) => {
+        if (trigger.dataset.bottomSheetWired === "true") return;
+        trigger.dataset.bottomSheetWired = "true";
+        trigger.addEventListener("click", () => {
+          const id = trigger.dataset.bottomSheetClose;
+          if (!id) return;
+          const sheet = findSheet(id);
+          if (!sheet) return;
+          if (typeof sheet.close === "function") {
+            void sheet.close();
+          } else {
+            sheet.open = false;
+          }
+        });
+      });
+  }
+
+  function bootstrap(): void {
+    portalSheets();
+    wireTriggers();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootstrap, { once: true });
+  } else {
+    bootstrap();
+  }
+  document.addEventListener("astro:page-load", bootstrap);
+  document.addEventListener(
+    "astro:before-preparation",
+    teardownPortaledSheets,
+  );
+</script>
+
+<style is:global>
+  /* Same global-scope rationale as DialogDemo: <ComponentDemo>
+     injects markup via `set:html`, so Astro's scoped styles can't
+     reach inside. Every selector is namespaced under
+     `bottom-sheet-demo__*` to prevent leakage. */
+
+  .bottom-sheet-demo__form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-block: 8px;
+  }
+
+  /* Rich headline slot — small avatar circle + two-line title. */
+  .bottom-sheet-demo__rich-headline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    inline-size: 100%;
+  }
+
+  .bottom-sheet-demo__avatar {
+    flex: 0 0 auto;
+    inline-size: 40px;
+    block-size: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--md-sys-color-primary, #6750a4);
+    color: var(--md-sys-color-on-primary, #ffffff);
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.04em;
+  }
+
+  .bottom-sheet-demo__rich-headline-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-inline-size: 0;
+  }
+
+  .bottom-sheet-demo__rich-headline-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface, inherit);
+  }
+
+  .bottom-sheet-demo__rich-headline-sub {
+    font-size: 0.8125rem;
+    color: var(--md-sys-color-on-surface-variant, var(--sl-color-gray-3));
+  }
+</style>

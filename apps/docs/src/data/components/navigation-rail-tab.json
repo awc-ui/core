@@ -1,0 +1,253 @@
+{
+  "tag": "md-navigation-rail-tab",
+  "title": "Navigation Rail Tab",
+  "slug": "navigation-rail-tab",
+  "category": "Navigation",
+  "subComponentOf": "md-navigation-rail",
+  "storyId": null,
+  "props": [
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "active",
+      "attribute": "active",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "badge",
+      "attribute": "badge",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "badgeValue",
+      "attribute": "badge-value",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "href",
+      "attribute": "href",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "target",
+      "attribute": "target",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelVisibility",
+      "attribute": "label-visibility",
+      "type": "'all' | 'selected' | 'none'",
+      "default": "'all'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "expanded",
+      "attribute": "expanded",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdTabClick",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdSubmenuToggle",
+      "detail": "{ open: boolean }"
+    }
+  ],
+  "methods": [
+    {
+      "name": "clearSubmenuSelection",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "icon",
+      "description": "Replace prop-based icon with custom SVG/font/component"
+    },
+    {
+      "name": "submenu",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "icon",
+      "description": "The Material Symbols icon"
+    },
+    {
+      "name": "indicator",
+      "description": "Active-indicator pill"
+    },
+    {
+      "name": "state-layer",
+      "description": "Hover/press overlay"
+    },
+    {
+      "name": "icon-wrapper",
+      "description": "Wrapper holding the icon and badge"
+    },
+    {
+      "name": "label",
+      "description": "Label text"
+    },
+    {
+      "name": "caret",
+      "description": ""
+    },
+    {
+      "name": "anchor",
+      "description": "The internal <a> element when `href` is set"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-navigation-rail-tab-icon-color",
+      "description": "Icon color (inactive)"
+    },
+    {
+      "name": "--md-navigation-rail-tab-active-icon-color",
+      "description": "Icon color when active"
+    },
+    {
+      "name": "--md-navigation-rail-tab-label-color",
+      "description": "Label color (inactive)"
+    },
+    {
+      "name": "--md-navigation-rail-tab-active-label-color",
+      "description": "Label color when active"
+    },
+    {
+      "name": "--md-navigation-rail-tab-indicator-color",
+      "description": "Active-indicator pill color"
+    },
+    {
+      "name": "--md-navigation-rail-tab-indicator-shape",
+      "description": "Indicator border-radius"
+    },
+    {
+      "name": "--md-navigation-rail-tab-indicator-width",
+      "description": "Indicator pill width (default 56px)"
+    },
+    {
+      "name": "--md-navigation-rail-tab-indicator-height",
+      "description": "Indicator pill height (default 32px)"
+    },
+    {
+      "name": "--md-navigation-rail-tab-icon-size",
+      "description": "Icon size (default 24px)"
+    },
+    {
+      "name": "--md-navigation-rail-tab-min-height",
+      "description": "Tap target min height (default 56px)"
+    },
+    {
+      "name": "--md-navigation-rail-tab-label-typography",
+      "description": "Composite font shorthand for label"
+    },
+    {
+      "name": "--md-navigation-rail-tab-badge-color",
+      "description": "Badge background"
+    },
+    {
+      "name": "--md-navigation-rail-tab-badge-content-color",
+      "description": "Badge text color"
+    },
+    {
+      "name": "--md-navigation-rail-tab-focus-ring-color",
+      "description": "Focus outline color"
+    },
+    {
+      "name": "--md-navigation-rail-tab-state-layer-color",
+      "description": "Hover/press state-layer color (on-secondary-container)"
+    },
+    {
+      "name": "--md-navigation-rail-tab-focus-state-layer-opacity",
+      "description": "Focused state-layer opacity (default 0.10 per spec)"
+    },
+    {
+      "name": "--md-navigation-rail-tab-press-state-layer-opacity",
+      "description": "Pressed state-layer opacity (default 0.10 per spec)"
+    },
+    {
+      "name": "--md-navigation-rail-tab-caret-duration",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-navigation-rail",
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdTabClick",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdSubmenuToggle",
+      "detail": "{ open: boolean }"
+    }
+  ]
+}

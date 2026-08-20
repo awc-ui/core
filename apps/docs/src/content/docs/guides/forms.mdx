@@ -1,0 +1,452 @@
+---
+title: Forms
+description: Building forms with AWC UI — every input control, native FormData participation, and constraint validation
+sidebar:
+  order: 2
+---
+
+## Forms Work Natively
+
+Every AWC UI input is a **form-associated custom element**. It contributes to
+`FormData` under its `name`, participates in constraint validation, and resets
+with the form — no adapters, no hidden inputs, no framework glue.
+
+```html
+<form id="signup">
+  <md-text-field name="email" label="Email" type="email" required></md-text-field>
+  <md-button type="submit" variant="filled">Create account</md-button>
+</form>
+```
+
+```js
+signup.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target));
+  // { email: "ada@example.com" }
+});
+```
+
+`new FormData(form)` is all you need. Because the controls use
+[`ElementInternals`](https://developer.mozilla.org/docs/Web/API/ElementInternals)
+rather than a hidden `<input>` in the shadow root, their values are visible to
+the outer form. A shadow-DOM form control would be invisible to `FormData`,
+which is the trap this design avoids.
+
+## The Controls
+
+Every control below submits under `name` and restores on form reset.
+
+| Control | Submits | Empty means |
+|---|---|---|
+| `md-text-field` | its `value` | `""` |
+| `md-select` | selected `value` | nothing submitted |
+| `md-multi-select` | one entry per selection | nothing submitted |
+| `md-autocomplete` | selected `value` | nothing submitted |
+| `md-checkbox` | `value` (default `"on"`) when `checked` | nothing submitted |
+| `md-switch` | `value` (default `"on"`) when `selected` | nothing submitted |
+| `md-radio` | `value` of the **checked** member of the `name` group | nothing submitted |
+| `md-date-picker` | ISO date string | nothing submitted |
+| `md-time-picker` | time string | nothing submitted |
+| `md-rating` | numeric rating | nothing submitted |
+
+Unchecked boxes, switches and radios submit **nothing at all** — this matches
+native behaviour, where an unchecked control is simply absent from the payload
+rather than present-and-false. Read them with a presence check:
+
+```js
+const data = new FormData(form);
+const subscribed = data.has('subscribe'); // not data.get(...) === 'false'
+```
+
+:::caution[md-switch uses `selected`, not `checked`]
+`md-checkbox` and `md-radio` take `checked`; `md-switch` takes `selected`.
+Setting `.checked` on a switch silently does nothing — it is not a property the
+component defines, so the assignment lands on the element and is ignored.
+:::
+
+### Radio groups
+
+Radios sharing a `name` form one exclusive group. Only the checked member
+submits, and checking one unchecks the rest automatically.
+
+```html
+<form>
+  <md-radio name="plan" value="free" checked>Free</md-radio>
+  <md-radio name="plan" value="pro">Pro</md-radio>
+  <md-radio name="plan" value="team">Team</md-radio>
+</form>
+<!-- FormData: { plan: "free" } -->
+```
+
+## Validation
+
+Validation is the **native** constraint-validation API. There is no parallel
+system to learn — if you know how `<input required>` behaves, you know how these
+behave.
+
+### `required`
+
+Marking a control `required` blocks form submission while it is empty and
+surfaces the browser's own validation message.
+
+```html
+<form>
+  <md-select name="country" label="Country" required>
+    <md-select-option value="pt">Portugal</md-select-option>
+    <md-select-option value="ro">Romania</md-select-option>
+  </md-select>
+  <md-checkbox name="terms" required>I accept the terms</md-checkbox>
+  <md-button type="submit" variant="filled">Continue</md-button>
+</form>
+```
+
+Submitting with either untouched will not fire `submit`. For a radio group,
+`required` is a property of the **group** — marking any one member required
+means a selection must be made, and picking *any* member satisfies it.
+
+### Asking a control whether it is valid
+
+Every form-associated control exposes the standard trio. They are `async`
+because Stencil methods are promise-based:
+
+```js
+await field.checkValidity();   // true / false, silent
+await field.reportValidity();  // same, but also shows the message
+await field.setCustomValidity('That username is taken'); // '' clears it
+```
+
+`setCustomValidity()` takes precedence over `required`, exactly as it does
+natively — a control with a custom message is invalid regardless of whether it
+has a value.
+
+### Server-side and cross-field rules
+
+`setCustomValidity()` is how you push rules the browser cannot know about —
+uniqueness, "these two must match", anything answered by your server:
+
+```js
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  if (password.value !== confirm.value) {
+    await confirm.setCustomValidity('Passwords do not match');
+    await confirm.reportValidity();
+    return;
+  }
+  await confirm.setCustomValidity(''); // clear it once they match
+
+  const res = await fetch('/api/signup', { method: 'POST', body: new FormData(form) });
+  if (res.status === 409) {
+    await email.setCustomValidity('That email is already registered');
+    await email.reportValidity();
+  }
+});
+```
+
+Clear the message with `''` whenever the condition no longer holds, or the
+control stays invalid forever.
+
+### Showing your own error text
+
+The native bubble is fine for quick work, but most designs want the message
+inline. `md-text-field`, `md-select`, `md-multi-select`, `md-autocomplete` and
+`md-date-picker` take `error` and `error-text`, which render in the
+supporting-text slot beneath the field:
+
+```html
+<md-text-field
+  name="email"
+  label="Email"
+  error
+  error-text="Enter a valid email address"
+></md-text-field>
+```
+
+`md-time-picker` does not currently expose these two, so pair it with your own
+message element if you need inline text there.
+
+Drive them from validity rather than duplicating the rules:
+
+```js
+email.addEventListener('blur', async () => {
+  const valid = await email.checkValidity();
+  email.error = !valid;
+  email.errorText = valid ? '' : 'Enter a valid email address';
+});
+```
+
+:::tip[Validate on blur, not on every keystroke]
+Reporting an error while someone is still typing their first character is
+hostile. Validate on `blur` and on submit; once a field has *become* invalid, it
+is reasonable to re-check on input so the error clears the moment it is fixed.
+:::
+
+## Complex Validation
+
+`required` and `setCustomValidity()` cover a lot, but real forms need rules the
+platform cannot express: *required only when another field says so*, *must match
+this other field*, *must not already exist on the server*. `createFormController`
+adds those without replacing anything.
+
+```js
+import { createFormController } from '@awc-ui/core';
+
+const controller = createFormController(form, {
+  rules: {
+    // CONDITIONAL — required only when another field has a given value
+    otherReason: {
+      dependsOn: ['reason'],
+      requiredWhen: (v) => v.reason === 'other',
+      requiredMessage: 'Please tell us more',
+    },
+
+    // CHAINED / CROSS-FIELD — compares against another field
+    confirm: {
+      dependsOn: ['password'],
+      validate: (v) => v.password === v.confirm || 'Passwords do not match',
+    },
+
+    // ASYNC — server checks, debounced
+    email: {
+      debounce: 300,
+      validate: async (v) => (await isEmailFree(v.email)) || 'Already registered',
+    },
+  },
+  onValidate: ({ errors }) => renderSummary(errors),
+});
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const { valid, values, errors } = await controller.validate();
+  if (valid) send(values);
+});
+```
+
+### When errors appear
+
+The controller validates continuously but shows errors on the rhythm people
+expect:
+
+| Moment | What happens |
+|---|---|
+| On load | nothing — a form does not open in red |
+| While typing a field for the first time | validated, but **not** shown |
+| On blur | the field is marked touched; its message appears |
+| While typing a touched field | message clears the moment it is fixed |
+| On submit | **every** field is revealed, including ones never visited |
+
+The message is written onto the control's own `error` / `error-text`, so it
+renders inline under the field rather than only in the native bubble. Controls
+without those props (`md-checkbox`, `md-radio`, `md-switch`) are skipped — they
+still carry `aria-invalid`. Pass `showErrors: false` to drive the display
+yourself.
+
+:::note[Why blur and not input]
+Reporting an error while someone is still typing the first character of their
+email is technically accurate and hostile. Validation runs the whole time; only
+the *display* waits for the field to be finished with. Once a field has failed,
+it re-checks on every keystroke so the error disappears the instant it is fixed.
+:::
+
+### It writes into the platform, not around it
+
+Every rule result is pushed into the control's own `setCustomValidity()`. That
+matters more than it sounds: `form.checkValidity()` stays authoritative, the
+browser still blocks submission, the native message still appears, and an error
+summary built from the controller **cannot disagree with the form**. A library
+that kept its own error map beside the platform would drift the moment anything
+else touched validity.
+
+### `dependsOn` is what keeps chained rules honest
+
+Declare the fields a rule reads. When any of them changes, the dependent field
+is re-validated.
+
+Without it, chained rules go stale in the most confusing way possible: the user
+fixes `password`, but `confirm` — marked invalid by comparing against the *old*
+password — keeps its error until it is edited again. The form looks broken while
+every visible value is correct.
+
+### Error summaries and focus
+
+`validate()` returns everything a WCAG-conformant submit needs:
+
+```js
+const { valid, errors, firstInvalid } = await controller.validate();
+// errors      → { email: 'Already registered', name: 'Please fill out this field.' }
+// firstInvalid → the control, already focused and scrolled into view
+```
+
+Focus moves to the first invalid control automatically (pass
+`focusInvalid: false` to opt out). Build the summary panel from `errors`, and
+link each entry to its control — that is the pattern
+[WCAG 3.3.1](https://www.w3.org/WAI/WCAG22/Understanding/error-identification.html)
+expects on a long form.
+
+### Async races are handled
+
+Each field carries a monotonic token, so a slow earlier check cannot overwrite a
+newer result — the race that makes an error flash back seconds after the user
+already fixed it.
+
+Call `controller.destroy()` when the form unmounts to drop its listeners and
+cancel pending debounces.
+
+## Submitting and Resetting
+
+`md-button` supports the native button types, so submit and reset need no
+JavaScript at all:
+
+```html
+<form>
+  <md-text-field name="q" label="Search"></md-text-field>
+  <md-button type="submit" variant="filled">Search</md-button>
+  <md-button type="reset" variant="text">Clear</md-button>
+</form>
+```
+
+Reset restores every control to the value it had at first render — including
+selections, switches, radio groups and dates.
+
+### Why isn't the submit button disabled?
+
+Because a disabled button cannot explain itself. Leaving it enabled is the
+native behaviour and the more usable one:
+
+- **It says what is wrong.** Pressing it focuses the first unsatisfied control
+  and shows its message. A disabled button just sits there.
+- **Disabled controls are not focusable**, so keyboard and screen-reader users
+  cannot reach it to discover what is blocking them — the form reads as broken
+  rather than incomplete.
+- **On a long form, "nothing happened" is a search task.** The browser instead
+  scrolls to and focuses the offending field.
+
+Gating the button is still a legitimate house style. If you want it, drive it
+from the form's own validity rather than re-implementing the rules:
+
+```js
+const submit = form.querySelector('md-button[type="submit"]');
+
+// Read validity on the NEXT frame, not inside the handler. A control publishes
+// its new value first and re-publishes validity on its next render, so a
+// synchronous checkValidity() here still sees the PREVIOUS state — the button
+// would latch disabled even after the last field was filled.
+const sync = () =>
+  requestAnimationFrame(() => {
+    submit.disabled = !form.checkValidity();
+  });
+
+form.addEventListener('mdChange', sync);
+form.addEventListener('mdInput', sync);
+sync();
+```
+
+If you do, pair it with visible inline `error-text` on the incomplete fields —
+otherwise you have removed the only affordance that explained the problem.
+
+## A Complete Form
+
+```html
+<form id="profile">
+  <md-text-field name="name" label="Full name" required></md-text-field>
+  <md-text-field name="email" label="Email" type="email" required></md-text-field>
+
+  <md-select name="country" label="Country" required>
+    <md-select-option value="pt">Portugal</md-select-option>
+    <md-select-option value="ro">Romania</md-select-option>
+  </md-select>
+
+  <md-multi-select name="skills" label="Skills">
+    <md-select-option value="ts">TypeScript</md-select-option>
+    <md-select-option value="css">CSS</md-select-option>
+  </md-multi-select>
+
+  <md-date-picker name="start" label="Start date" required></md-date-picker>
+  <md-time-picker name="time" label="Preferred time"></md-time-picker>
+
+  <fieldset>
+    <legend>Plan</legend>
+    <md-radio name="plan" value="free" checked>Free</md-radio>
+    <md-radio name="plan" value="pro">Pro</md-radio>
+  </fieldset>
+
+  <md-rating name="experience" rating-label="Experience"></md-rating>
+  <md-switch name="newsletter"></md-switch>
+  <md-checkbox name="terms" required>I accept the terms</md-checkbox>
+
+  <md-button type="submit" variant="filled">Save</md-button>
+  <md-button type="reset" variant="text">Reset</md-button>
+</form>
+
+<script type="module">
+  profile.addEventListener('submit', (e) => {
+    e.preventDefault();
+    // Only reached once every `required` control is satisfied.
+    console.log(Object.fromEntries(new FormData(e.target)));
+  });
+</script>
+```
+
+## Framework Notes
+
+### React
+
+React does not yet set custom-element properties for non-primitive values, so
+`@awc-ui/react` ships wrappers that assign properties directly. Use them rather
+than the raw tags:
+
+```jsx
+import { MdTextField, MdButton } from '@awc-ui/react';
+
+<form onSubmit={onSubmit}>
+  <MdTextField name="email" label="Email" required />
+  <MdButton type="submit" variant="filled">Send</MdButton>
+</form>
+```
+
+### Angular
+
+Import `AwcUiModule` from `@awc-ui/angular` (or add `CUSTOM_ELEMENTS_SCHEMA` if
+you use the raw tags).
+
+The generated directives do **not** implement `ControlValueAccessor`, so
+`[(ngModel)]` and `formControlName` will not bind to these controls. Read values
+from the form itself — which works precisely because the controls are
+form-associated:
+
+```ts
+onSubmit(e: Event) {
+  const data = new FormData(e.target as HTMLFormElement);
+}
+```
+
+For reactive forms, sync on the component's own event:
+
+```html
+<md-text-field label="Email" (mdInput)="form.controls.email.setValue($any($event.target).value)"></md-text-field>
+```
+
+### Vue
+
+Values bind with `.prop` where a property rather than an attribute is wanted:
+
+```vue
+<md-select :value.prop="country" @mdChange="country = $event.detail" />
+```
+
+## Accessibility
+
+Label every control. `label` on a field renders a real floating label; for
+checkboxes, switches and radios, either wrap in a `<label>` or pass
+`aria-label`:
+
+```html
+<label>
+  <md-checkbox name="terms"></md-checkbox>
+  I accept the terms
+</label>
+```
+
+Group related radios in a `<fieldset>` with a `<legend>` so assistive technology
+announces what the choice is for. See the
+[Accessibility guide](/guides/accessibility/) for the full picture.

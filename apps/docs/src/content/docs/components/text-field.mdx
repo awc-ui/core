@@ -1,0 +1,960 @@
+---
+title: Text Field
+description: "The library's single text-entry primitive — filled and outlined, single-line or auto-growing, with masking, debounce and full constraint validation"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/text-field.json";
+
+**The library's single text-entry primitive.** Filled and outlined, single-line
+or auto-growing, with built-in clear / password-toggle / speech affordances,
+input masking via `formatter` / `parser`, debounced search, and the full
+constraint-validation API — form-associated via `ElementInternals`.
+
+<ComponentDemo
+  html={`<md-text-field variant="filled" label="Email" type="email" supporting-text="We'll never share it" style="min-width: 240px;"></md-text-field>
+<md-text-field variant="outlined" label="Email" type="email" supporting-text="We'll never share it" style="min-width: 240px;"></md-text-field>`}
+  label="Live preview"
+  storyId="text-inputs-text-field--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-text-field" example="" />
+
+## When to use
+
+- **Any** free-text or numeric entry: names, emails, passwords, amounts,
+  comments.
+- Multi-line entry (`multiline="auto-grow"` or `"fixed"`).
+- As the input surface inside a composite you're building.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Entry with a suggestion list | [`md-autocomplete`](/components/autocomplete/) |
+| App-wide search with a results surface | [`md-search`](/components/search/) |
+| Choosing from a fixed set | [`md-select`](/components/select/) / [`md-multi-select`](/components/multi-select/) |
+| A date or a time | [`md-date-picker`](/components/date-picker/) / [`md-time-picker`](/components/time-picker/) |
+| A bounded numeric range the user should feel | [`md-slider`](/components/slider/) |
+| A colour | [`md-color-picker`](/components/color-picker/) |
+| Rich text | Not in this library — integrate a third-party editor |
+| A yes / no | [`md-checkbox`](/components/checkbox/) / [`md-switch`](/components/switch/) |
+
+## Variants
+
+| Variant | Container | Use for |
+|---|---|---|
+| `filled` | Tonal fill + bottom active indicator | **Default.** Dense forms, surfaces that need the field to read as a distinct target |
+| `outlined` | Transparent, notched outline | Sparse layouts, forms over patterned or coloured surfaces |
+
+:::caution[The default is `filled`, not `outlined`]
+M3 also says the two shouldn't be mixed: separate them by region, and don't put
+both in the same form.
+:::
+
+<ComponentDemo
+  html={`<md-text-field variant="filled" label="Filled" value="Jane Doe" style="min-width: 240px;"></md-text-field>
+<md-text-field variant="outlined" label="Outlined" value="Jane Doe" style="min-width: 240px;"></md-text-field>`}
+  label="Filled and outlined"
+/>
+
+## Icons
+
+Icons are **slots**, not props: `leading-icon` and `trailing-icon` take any
+glyph — a Material Symbol, an SVG, an emoji.
+
+<ComponentDemo
+  html={`<md-text-field variant="filled" label="Search" style="min-width: 240px;">
+  <span slot="leading-icon" class="material-symbols-outlined">search</span>
+</md-text-field>
+
+<md-text-field variant="outlined" label="Email" style="min-width: 240px;">
+  <span slot="leading-icon" class="material-symbols-outlined">mail</span>
+  <span slot="trailing-icon" class="material-symbols-outlined">cancel</span>
+</md-text-field>`}
+  label="Leading and trailing icons"
+/>
+
+## Prefix, suffix & the character counter
+
+`prefix-text` and `suffix-text` sit inside the field; `max-length` renders a
+counter.
+
+<ComponentDemo
+  html={`<md-text-field variant="outlined" label="Amount" prefix-text="$" inputmode="decimal" style="min-width: 200px;"></md-text-field>
+<md-text-field variant="outlined" label="Weight" suffix-text="kg" type="number" style="min-width: 200px;"></md-text-field>
+<md-text-field variant="filled" label="Headline" max-length="60" value="Shipping update" style="min-width: 240px;"></md-text-field>`}
+  label="Prefix, suffix, counter"
+/>
+
+## States & the message line
+
+| State | Focusable | Use when |
+|---|---|---|
+| Default | **Yes** | Normal entry |
+| `error` + `error-text` | **Yes** | The value failed validation — set **both** |
+| `readonly` | **Yes** | The value is shown for reading and copying, not editing |
+| `disabled` | No | The control is unavailable in this context |
+
+:::danger[`error-text` **replaces** `supporting-text`]
+That's by design, matching M3 — don't try to show both. And setting
+`error-text` alone doesn't turn the field red: **set `error` too.**
+:::
+
+Without `reserve-supporting-space` the message line only exists when there's a
+message, so content below shifts when an error appears. Turn it on in dense
+forms.
+
+<ComponentDemo
+  html={`<md-text-field variant="outlined" label="Email" supporting-text="We'll never share it" style="min-width: 220px;"></md-text-field>
+<md-text-field variant="outlined" label="Email" value="not-an-email" error error-text="Enter a valid email address" style="min-width: 220px;"></md-text-field>
+<md-text-field variant="outlined" label="Read only" value="Locked value" readonly style="min-width: 220px;"></md-text-field>
+<md-text-field variant="outlined" label="Disabled" value="Unavailable" disabled style="min-width: 220px;"></md-text-field>`}
+  label="Supporting text, error, readonly, disabled"
+/>
+
+`readonly` stays focusable and readable; `disabled` does not.
+
+## Affordances: clear, password toggle, speech
+
+| Prop | Values | Use for |
+|---|---|---|
+| `clearable` | `"internal"` / `"external"` / `false` | A clear icon button. `internal` empties `value` itself; `external` only emits `mdClear` and leaves the value to you |
+| `password-toggle` | `"internal"` / `"external"` / `false` | A visibility toggle. `internal` flips the input `type` itself; `external` only emits `mdPasswordToggle` and leaves the type to you |
+| `speech-to-text` | `"internal"` / `"external"` / `false` | A mic button. `internal` drives the browser's SpeechRecognition and appends the transcript; `external` only emits `mdSpeechResult`, so you can run your own engine |
+
+:::danger[`"external"` does not move the button outside the field]
+All three modes render the **same** in-field icon button. What `"external"`
+changes is **who owns the mutation**: the component stops touching `value`,
+`type` or recognition and emits its event instead, so a controlled parent can do
+the work. Choose `"external"` and forget to handle the event and you get a
+button that visibly does nothing.
+:::
+
+Writing the bare attribute — `clearable`, `password-toggle` or `speech-to-text`
+with no value — is normalised to `"internal"` on load, so it is a supported
+shorthand rather than a silent off.
+
+<ComponentDemo
+  html={`<md-text-field variant="outlined" label="Search" type="search" clearable="internal" value="query" style="min-width: 220px;"></md-text-field>
+<md-text-field variant="outlined" label="Password" type="password" password-toggle="internal" value="hunter2" style="min-width: 220px;"></md-text-field>
+<md-text-field variant="outlined" label="Notes" speech-to-text="internal" speech-lang="en-US" style="min-width: 220px;"></md-text-field>`}
+  label="Clear, password toggle, speech-to-text"
+/>
+
+Speech-to-text depends on the browser's SpeechRecognition API — feature-detect
+before advertising it.
+
+Every built-in glyph is a slot, and slotting your own replaces the default:
+
+<ComponentDemo
+  html={`<md-text-field variant="outlined" label="Custom clear glyph" clearable="internal" value="query" style="min-width: 220px;">
+  <span slot="clear-icon" class="material-symbols-outlined">backspace</span>
+</md-text-field>
+<md-text-field variant="outlined" label="Custom toggle glyph" type="password" password-toggle="internal" value="hunter2" style="min-width: 220px;">
+  <span slot="password-toggle-icon" class="material-symbols-outlined">key</span>
+</md-text-field>
+<md-text-field variant="outlined" label="Custom error glyph" value="not-an-email" error error-text="Enter a valid email address" style="min-width: 220px;">
+  <span slot="error-icon" class="material-symbols-outlined">report</span>
+</md-text-field>`}
+  label="clear-icon, password-toggle-icon and error-icon slots"
+/>
+
+The `speech-icon` slot works the same way. `chips` is composite-owned — see the
+Internal props note under the [API Reference](#api-reference).
+
+## Multiline
+
+`multiline="auto-grow"` expands as the user types; `"fixed"` keeps a fixed
+`rows` height.
+
+<ComponentDemo
+  html={`<md-text-field variant="outlined" label="Notes" multiline="auto-grow" rows="2" max-length="500" style="min-width: 280px;"></md-text-field>
+<md-text-field variant="filled" label="Comment" multiline="fixed" rows="4" style="min-width: 280px;"></md-text-field>`}
+  label="Auto-grow and fixed textarea"
+/>
+
+## Types & input hints
+
+Use `type`, `inputmode` and `autocomplete` accurately — `type="text"` for an
+email address is a real accessibility and UX cost.
+
+<ComponentDemo
+  html={`<md-text-field variant="outlined" label="Email" type="email" inputmode="email" autocomplete="email" style="min-width: 200px;"></md-text-field>
+<md-text-field variant="outlined" label="Phone" type="tel" inputmode="tel" autocomplete="tel" style="min-width: 200px;"></md-text-field>
+<md-text-field variant="outlined" label="Quantity" type="number" min="1" max="99" step="1" style="min-width: 200px;"></md-text-field>
+<md-text-field variant="outlined" label="Website" type="url" inputmode="url" style="min-width: 200px;"></md-text-field>`}
+  label="Email, tel, number, url"
+/>
+
+Use `type="tel"` with `inputmode="tel"` for phone numbers — `type="number"`
+brings spinners and locale parsing that get in the way.
+
+## Masking with `formatter` / `parser`
+
+`formatter` and `parser` are **function props** — assign them in JS, they can't
+cross the attribute boundary. They are a pair: `formatter` renders the display
+value, `parser` converts it back.
+
+:::tip[`value` is always the parsed value]
+`formatter` only affects display. `value`, `mdInput` and `mdChange` all carry
+the parsed value. `format-on="blur"` is the default, and it avoids fighting the
+caret. `format-on="input"` needs a `parser` — without one the component falls
+back to blur formatting and warns in dev.
+:::
+
+```js
+field.formatter = (raw) => new Intl.NumberFormat('en-US').format(Number(raw));
+field.parser    = (shown) => shown.replace(/,/g, '');
+```
+
+<ComponentDemo
+  html={`<md-text-field id="tf-fmt" variant="outlined" label="Amount" prefix-text="$" inputmode="decimal" value="1234567" style="min-width: 240px;"></md-text-field>
+<output id="tf-fmt-log" style="display:block; margin-block-start:16px; min-block-size:3.2em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Focus the field to edit the raw value, blur to see it re-formatted. The event detail is always the parsed value.</output>`}
+  script={`
+    var field = root.querySelector('#tf-fmt');
+    var log = root.querySelector('#tf-fmt-log');
+
+    field.formatter = function (raw) {
+      return raw ? new Intl.NumberFormat('en-US').format(Number(raw)) : '';
+    };
+    field.parser = function (shown) {
+      return shown.replace(/,/g, '');
+    };
+
+    field.addEventListener('mdChange', function (e) {
+      log.textContent = 'mdChange detail = ' + JSON.stringify(e.detail)
+        + String.fromCharCode(10)
+        + 'field.value     = ' + JSON.stringify(field.value);
+    });
+  `}
+  label="formatter / parser — the display is grouped, the value stays raw"
+  storyId="text-inputs-text-field--formatters"
+  htmlCode={`<md-text-field id="amount" variant="outlined" label="Amount"
+               prefix-text="$" inputmode="decimal" value="1234567"></md-text-field>
+
+<script type="module">
+  const field = document.getElementById('amount');
+
+  field.formatter = (raw) => (raw ? new Intl.NumberFormat('en-US').format(Number(raw)) : '');
+  field.parser    = (shown) => shown.replace(/,/g, '');
+
+  field.addEventListener('mdChange', (e) => save(Number(e.detail)));
+</script>`}
+  react={`import { MdTextField } from '@awc-ui/react';
+
+const format = (raw: string) => (raw ? new Intl.NumberFormat('en-US').format(Number(raw)) : '');
+const parse  = (shown: string) => shown.replace(/,/g, '');
+
+export function AmountField() {
+  return (
+    <MdTextField
+      variant="outlined"
+      label="Amount"
+      prefixText="$"
+      inputMode="decimal"
+      value="1234567"
+      formatter={format}
+      parser={parse}
+      onMdChange={(e) => save(Number(e.detail))}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-amount-field',
+  template: \`
+    <md-text-field
+      variant="outlined"
+      label="Amount"
+      prefix-text="$"
+      inputmode="decimal"
+      value="1234567"
+      [formatter]="format"
+      [parser]="parse"
+      (mdChange)="onChange($event)"
+    ></md-text-field>
+  \`,
+})
+export class AmountFieldComponent {
+  format = (raw: string) => (raw ? new Intl.NumberFormat('en-US').format(Number(raw)) : '');
+  parse  = (shown: string) => shown.replace(/,/g, '');
+
+  onChange(e: CustomEvent<string>) {
+    save(Number(e.detail));
+  }
+}`}
+  vue={`<script setup lang="ts">
+const format = (raw: string) => (raw ? new Intl.NumberFormat('en-US').format(Number(raw)) : '');
+const parse  = (shown: string) => shown.replace(/,/g, '');
+
+function onChange(e: CustomEvent<string>) {
+  save(Number(e.detail));
+}
+</script>
+
+<template>
+  <md-text-field
+    variant="outlined"
+    label="Amount"
+    prefix-text="$"
+    inputmode="decimal"
+    value="1234567"
+    :formatter.prop="format"
+    :parser.prop="parse"
+    @mdChange="onChange"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  const format = (raw: string) => (raw ? new Intl.NumberFormat('en-US').format(Number(raw)) : '');
+  const parse  = (shown: string) => shown.replace(/,/g, '');
+
+  function onChange(e: CustomEvent<string>) {
+    save(Number(e.detail));
+  }
+</script>
+
+<md-text-field
+  variant="outlined"
+  label="Amount"
+  prefix-text="$"
+  inputmode="decimal"
+  value="1234567"
+  formatter={format}
+  parser={parse}
+  on:mdChange={onChange}
+></md-text-field>`}
+/>
+
+`restrict` blocks disallowed characters as they are typed. It takes a regex
+character class (`"[0-9]"`, `"[0-9+() -]"`) or one of five named presets —
+`numeric`, `integer`, `decimal`, `alpha`, `alphanumeric`.
+
+<ComponentDemo
+  html={`<md-text-field variant="outlined" label="Digits only" restrict="[0-9]" inputmode="numeric" style="min-width: 180px;"></md-text-field>
+<md-text-field variant="outlined" label="numeric" restrict="numeric" inputmode="numeric" style="min-width: 180px;"></md-text-field>
+<md-text-field variant="outlined" label="decimal" restrict="decimal" inputmode="decimal" style="min-width: 180px;"></md-text-field>
+<md-text-field variant="outlined" label="alphanumeric" restrict="alphanumeric" style="min-width: 180px;"></md-text-field>`}
+  label="restrict blocks characters at input time"
+/>
+
+## Debounce & throttle
+
+`debounce` and `throttle` gate **`mdSearch`** — not `mdInput`. `mdInput` always
+fires on every keystroke; `mdSearch` is the rate-limited twin you point at an
+API call. The usual search-as-you-type setup is `debounce="300"`. Clearing the
+field re-emits `mdSearch` with an empty string, so stale results get dropped.
+
+:::caution[`debounce` does not slow `mdInput` down]
+It only gates `mdSearch`. If you listen to `mdInput` and expect the delay you
+will fire one request per keystroke. Listen to `mdSearch` instead.
+:::
+
+<ComponentDemo
+  html={`<md-text-field variant="outlined" label="Search" type="search" clearable="internal" debounce="300" style="min-width: 260px;">
+  <span slot="leading-icon" class="material-symbols-outlined">search</span>
+</md-text-field>`}
+  label="Debounced search field"
+/>
+
+## Events
+
+| Event | Vetoable | Detail | Fires |
+|---|---|---|---|
+| `mdInput` | no | `string` | On every keystroke — **never** debounced or throttled |
+| `mdChange` | no | `string` | On commit (blur / `Enter`), and when the field is cleared |
+| `mdSearch` | no | `string` | Same trigger as `mdInput`, but gated by `debounce` / `throttle`, de-duplicated against the last emitted value, and re-emitted as `''` on clear |
+| `mdClear` | no | `void` | The clear affordance was used (icon or `Escape`) |
+| `mdPasswordToggle` | no | `{ visible }` | Password visibility toggled |
+| `mdSpeechResult` | no | `{ transcript, listening }` | Speech recognition update |
+| `mdValidityChange` | no | `{ valid, validationMessage, flags }` | Validity changed — **not composed** |
+
+These are notifications, not hooks — `preventDefault()` on any of them is a
+no-op (unlike [`md-button`](/components/button/)'s `mdClick`). Cancel at the
+source instead: `restrict` to block characters, or `setCustomValidity()` to
+reject a value.
+
+:::caution[`mdValidityChange` is `composed: false` on purpose]
+So that composites like [`md-select`](/components/select/), which embed a text
+field, don't leak the inner control's validity. It still **bubbles**, so a
+light-DOM ancestor — a `<form>`, an app root — hears every control beneath it.
+What `composed: false` blocks is escaping the shadow root of a composite that
+embeds the field: from outside one of those, bind on the field itself.
+:::
+
+<ComponentDemo
+  html={`<md-text-field id="tf-ev" variant="outlined" label="Search" type="search" clearable="internal" debounce="300" required style="min-width: 260px;">
+  <span slot="leading-icon" class="material-symbols-outlined">search</span>
+</md-text-field>
+<output id="tf-ev-log" style="display:block; margin-block-start:16px; min-block-size:3.2em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Type, then pause. mdInput fires per keystroke; mdSearch waits 300ms.</output>`}
+  script={`
+    var field = root.querySelector('#tf-ev');
+    var log = root.querySelector('#tf-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 4);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    // mdInput / mdSearch / mdChange / mdClear are composed, so one delegated
+    // listener on the wrapper catches them all.
+    root.addEventListener('mdInput', function (e) {
+      push('mdInput    -> ' + JSON.stringify(e.detail));
+    });
+    root.addEventListener('mdSearch', function (e) {
+      push('mdSearch   -> ' + JSON.stringify(e.detail) + '   (after the 300ms debounce)');
+    });
+    root.addEventListener('mdChange', function (e) {
+      push('mdChange   -> ' + JSON.stringify(e.detail));
+    });
+    root.addEventListener('mdClear', function () {
+      push('mdClear');
+    });
+
+    // mdValidityChange bubbles but is composed:false — it reaches a light-DOM
+    // ancestor, yet cannot escape the shadow root of a composite that embeds
+    // a field. Bound here on the element itself.
+    field.addEventListener('mdValidityChange', function (e) {
+      push('mdValidity -> valid=' + e.detail.valid + '  ' + JSON.stringify(e.detail.validationMessage));
+    });
+  `}
+  label="mdInput fires per keystroke, mdSearch after the debounce"
+  htmlCode={`<md-text-field id="search" label="Search" type="search"
+               clearable="internal" debounce="300"></md-text-field>
+
+<script type="module">
+  const field = document.getElementById('search');
+
+  field.addEventListener('mdInput',  (e) => setQuery(e.detail));      // every keystroke
+  field.addEventListener('mdSearch', (e) => fetchResults(e.detail));  // debounced 300ms
+  field.addEventListener('mdClear',  () => fetchResults(''));
+  field.addEventListener('mdValidityChange', (e) => {
+    console.log(e.detail.valid, e.detail.validationMessage);
+  });
+</script>`}
+  react={`import { MdTextField } from '@awc-ui/react';
+
+export function SearchField() {
+  return (
+    <MdTextField
+      label="Search"
+      type="search"
+      clearable="internal"
+      debounce={300}
+      onMdInput={(e) => setQuery(e.detail)}
+      onMdSearch={(e) => fetchResults(e.detail)}
+      onMdClear={() => fetchResults('')}
+      onMdValidityChange={(e) => console.log(e.detail.valid, e.detail.validationMessage)}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-search-field',
+  template: \`
+    <md-text-field label="Search" type="search"
+                   clearable="internal" debounce="300"
+                   (mdInput)="onInput($event)"
+                   (mdSearch)="onSearch($event)"
+                   (mdClear)="onClear()"
+                   (mdValidityChange)="onValidity($event)"></md-text-field>
+  \`,
+})
+export class SearchFieldComponent {
+  onInput(e: CustomEvent<string>) { this.setQuery(e.detail); }
+  onSearch(e: CustomEvent<string>) { this.fetchResults(e.detail); }
+  onClear() { this.fetchResults(''); }
+  onValidity(e: CustomEvent) { console.log(e.detail.valid, e.detail.validationMessage); }
+}`}
+  vue={`<script setup lang="ts">
+function onInput(e: CustomEvent<string>) { setQuery(e.detail); }
+function onSearch(e: CustomEvent<string>) { fetchResults(e.detail); }
+function onClear() { fetchResults(''); }
+function onValidity(e: CustomEvent) { console.log(e.detail.valid, e.detail.validationMessage); }
+</script>
+
+<template>
+  <md-text-field
+    label="Search"
+    type="search"
+    clearable="internal"
+    debounce="300"
+    @mdInput="onInput"
+    @mdSearch="onSearch"
+    @mdClear="onClear"
+    @mdValidityChange="onValidity"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  function onInput(e: CustomEvent<string>) { setQuery(e.detail); }
+  function onSearch(e: CustomEvent<string>) { fetchResults(e.detail); }
+  function onClear() { fetchResults(''); }
+  function onValidity(e: CustomEvent) { console.log(e.detail.valid, e.detail.validationMessage); }
+</script>
+
+<md-text-field
+  label="Search"
+  type="search"
+  clearable="internal"
+  debounce="300"
+  on:mdInput={onInput}
+  on:mdSearch={onSearch}
+  on:mdClear={onClear}
+  on:mdValidityChange={onValidity}
+></md-text-field>`}
+/>
+
+## Forms & validation
+
+`md-text-field` is **form-associated** via `ElementInternals`, so `name` puts
+the value into `FormData` across the shadow boundary — no hidden `<input>`
+needed. `required`, `pattern`, `min-length`, `max-length`, `min`, `max` and
+`step` all feed native constraint validation, and `setCustomValidity()` covers
+server-side errors.
+
+<ComponentDemo
+  html={`<form id="tf-profile" style="display:flex;flex-direction:column;gap:16px;align-items:flex-start;" onsubmit="event.preventDefault(); this.querySelector('[data-out]').textContent = 'FormData -> ' + JSON.stringify(Object.fromEntries(new FormData(this)));">
+  <md-text-field variant="outlined" label="Email" type="email" name="email" required autocomplete="email" inputmode="email" supporting-text="We'll never share it" error-text="Enter a valid email address" reserve-supporting-space style="min-width:280px;"></md-text-field>
+  <md-text-field variant="outlined" label="Display name" name="name" required min-length="2" max-length="32" supporting-text="2 to 32 characters" reserve-supporting-space style="min-width:280px;"></md-text-field>
+  <md-button variant="filled" type="submit">Save</md-button>
+  <output data-out style="display:block; white-space:pre-line; min-block-size:3.2em; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Press Save with an empty field — native constraint validation blocks the submit.</output>
+</form>`}
+  htmlForCode={`<form id="profile">
+  <md-text-field
+    label="Email" type="email" name="email" required
+    autocomplete="email" inputmode="email"
+    supporting-text="We'll never share it"
+    error-text="Enter a valid email address"
+    reserve-supporting-space
+  ></md-text-field>
+
+  <md-text-field
+    label="Display name" name="name" required
+    min-length="2" max-length="32"
+    supporting-text="2 to 32 characters"
+    reserve-supporting-space
+  ></md-text-field>
+
+  <md-button variant="filled" type="submit">Save</md-button>
+</form>`}
+  label="Form association — submit runs native validation"
+/>
+
+<TechnologyTabs
+  html={`<form id="profile">
+  <md-text-field
+    label="Email" type="email" name="email" required
+    autocomplete="email" inputmode="email"
+    supporting-text="We'll never share it"
+    error-text="Enter a valid email address"
+    reserve-supporting-space
+  ></md-text-field>
+
+  <md-text-field
+    label="Display name" name="name" required
+    min-length="2" max-length="32"
+    supporting-text="2 to 32 characters"
+    reserve-supporting-space
+  ></md-text-field>
+
+  <md-button variant="filled" type="submit">Save</md-button>
+</form>
+
+<script type="module">
+  const form  = document.getElementById('profile');
+  const field = form.querySelector('md-text-field');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    console.log(Object.fromEntries(new FormData(e.target)));   // { email: '…', name: '…' }
+  });
+
+  // Server-side validation
+  field.setCustomValidity('That email is already registered');
+  // clear it again with: field.setCustomValidity('')
+</script>`}
+  react={`import { MdTextField, MdButton } from '@awc-ui/react';
+
+export function ProfileForm() {
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    console.log(Object.fromEntries(new FormData(e.currentTarget)));
+  }
+
+  return (
+    <form onSubmit={onSubmit}>
+      <MdTextField
+        label="Email"
+        type="email"
+        name="email"
+        required
+        autocomplete="email"
+        supportingText="We'll never share it"
+        errorText="Enter a valid email address"
+        reserveSupportingSpace
+      />
+
+      <MdTextField
+        label="Display name"
+        name="name"
+        required
+        minLength={2}
+        maxLength={32}
+        supportingText="2 to 32 characters"
+        reserveSupportingSpace
+      />
+
+      <MdButton variant="filled" type="submit">Save</MdButton>
+    </form>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-profile-form',
+  template: \`
+    <form (submit)="onSubmit($event)">
+      <md-text-field label="Email" type="email" name="email" required
+                     autocomplete="email"
+                     supporting-text="We'll never share it"
+                     error-text="Enter a valid email address"
+                     reserve-supporting-space></md-text-field>
+
+      <md-text-field label="Display name" name="name" required
+                     min-length="2" max-length="32"
+                     supporting-text="2 to 32 characters"
+                     reserve-supporting-space></md-text-field>
+
+      <md-button variant="filled" type="submit">Save</md-button>
+    </form>
+  \`,
+})
+export class ProfileFormComponent {
+  onSubmit(e: Event) {
+    e.preventDefault();
+    console.log(Object.fromEntries(new FormData(e.target as HTMLFormElement)));
+  }
+}`}
+  vue={`<script setup lang="ts">
+function onSubmit(e: Event) {
+  e.preventDefault();
+  console.log(Object.fromEntries(new FormData(e.target as HTMLFormElement)));
+}
+</script>
+
+<template>
+  <form @submit="onSubmit">
+    <md-text-field
+      label="Email"
+      type="email"
+      name="email"
+      required
+      autocomplete="email"
+      supporting-text="We'll never share it"
+      error-text="Enter a valid email address"
+      reserve-supporting-space
+    />
+
+    <md-text-field
+      label="Display name"
+      name="name"
+      required
+      min-length="2"
+      max-length="32"
+      supporting-text="2 to 32 characters"
+      reserve-supporting-space
+    />
+
+    <md-button variant="filled" type="submit">Save</md-button>
+  </form>
+</template>`}
+  svelte={`<script lang="ts">
+  function onSubmit(e: Event) {
+    e.preventDefault();
+    console.log(Object.fromEntries(new FormData(e.target as HTMLFormElement)));
+  }
+</script>
+
+<form on:submit={onSubmit}>
+  <md-text-field
+    label="Email"
+    type="email"
+    name="email"
+    required
+    autocomplete="email"
+    supporting-text="We'll never share it"
+    error-text="Enter a valid email address"
+    reserve-supporting-space
+  ></md-text-field>
+
+  <md-text-field
+    label="Display name"
+    name="name"
+    required
+    min-length="2"
+    max-length="32"
+    supporting-text="2 to 32 characters"
+    reserve-supporting-space
+  ></md-text-field>
+
+  <md-button variant="filled" type="submit">Save</md-button>
+</form>`}
+/>
+
+`getValidity()`, `checkValidity()` and `reportValidity()` mirror the native API;
+`setFocus()` and `select()` handle focus and selection.
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[Internal props]
+`input-role`, `input-expanded`, `input-aria-autocomplete`, `appear-focused` and
+`chips-wrap` (with the `chips` slot) exist so composites can drive an embedded
+field — [`md-select`](/components/select/),
+[`md-multi-select`](/components/multi-select/) and
+[`md-autocomplete`](/components/autocomplete/) set them for you. Setting them by
+hand on a standalone field produces ARIA that promises a popup which does not
+exist.
+:::
+
+## Accessibility
+
+- `label` provides the accessible name — always set it. `aria-label` works too,
+  but a visible label is better.
+- Errors are announced through the supporting line; keep messages specific.
+- `readonly` stays focusable and readable; `disabled` does not.
+- The focus indicator is a 3px border by default
+  (`--md-text-field-focus-border-width`), and `appear-focused` can force the
+  focused look for composite triggers.
+- The counter (`max-length`) is exposed alongside the field, not only visually.
+- The clear, password-toggle and speech affordances are real buttons — each is
+  reachable by keyboard, in DOM order after the input.
+- `Escape` clears a `clearable="internal"` field and stops there, so an
+  enclosing `<dialog>` does not also close.
+- Verified against axe-core with zero WCAG 2.1 AA violations.
+
+Tab through these: the read-only field takes focus and can be copied from, the
+disabled one is skipped, the error field announces its message, and the last has
+no visible label so it leans entirely on `aria-label`.
+
+<ComponentDemo
+  html={`<md-text-field variant="outlined" label="Editable" value="Ada Lovelace" style="min-width: 220px;"></md-text-field>
+<md-text-field variant="outlined" label="Read only — still focusable" value="AWC-4021" readonly style="min-width: 220px;"></md-text-field>
+<md-text-field variant="outlined" label="Disabled — skipped" value="Unavailable" disabled style="min-width: 220px;"></md-text-field>
+<md-text-field variant="outlined" label="Email" type="email" value="not-an-email" required error error-text="Enter a valid email address" style="min-width: 220px;"></md-text-field>
+<md-text-field variant="outlined" placeholder="Filter invoices" aria-label="Filter invoices" clearable="internal" value="4021" style="min-width: 220px;"></md-text-field>`}
+  label="Keyboard and screen-reader behaviour"
+/>
+
+The last field has no visible `label`, so `aria-label` is the only accessible
+name it has — prefer a visible label wherever the layout allows one. Note that
+its clear button is its own tab stop, and that `Escape` clears the field without
+leaving it.
+
+:::note[Promoting the inner input to a combobox]
+ARIA IDREFs don't cross the shadow boundary, so `aria-controls` /
+`aria-activedescendant` added from outside can never resolve. The role and its
+state are handed over as **props** instead: `input-role="combobox"`,
+`input-expanded` and `input-aria-autocomplete` land on the real `<input>`, and
+`aria-haspopup="dialog"` / `"listbox"` are mirrored from the host. A composite
+that also needs the popup reference attaches it by element reflection —
+`(await field.getInputElement()).ariaControlsElements = [listbox]` — which is
+what [`md-autocomplete`](/components/autocomplete/) does.
+:::
+
+## RTL, density & i18n
+
+**RTL** — layout, prefix / suffix and icon sides mirror automatically. Set the
+direction on an ancestor and the whole field follows; nothing on the component
+needs changing. See [RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <md-text-field label="بحث" clearable="internal"></md-text-field>
+</div>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-text-field variant="outlined" label="Search" value="Hello world" clearable="internal" style="min-width:200px;"><span slot="leading-icon" class="material-symbols-outlined">search</span></md-text-field>
+    <md-text-field variant="outlined" label="Amount" prefix-text="$" suffix-text="USD" value="1200" inputmode="decimal" style="min-width:200px;"></md-text-field>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-text-field variant="outlined" label="بحث" value="مرحبا بالعالم" clearable="internal" style="min-width:200px;"><span slot="leading-icon" class="material-symbols-outlined">search</span></md-text-field>
+    <md-text-field variant="outlined" label="المبلغ" prefix-text="$" suffix-text="USD" value="1200" inputmode="decimal" style="min-width:200px;"></md-text-field>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+/>
+
+`prefix-text` and `suffix-text` swap sides with the direction — check that a
+currency symbol still lands where the locale expects it, because a `$` that
+belongs on the leading side in English belongs there in Arabic too, and the
+mirror will move it.
+
+### Every density rung
+
+`density="-1…-4"` compresses the container from 56dp down to 40dp, 4dp per rung,
+and the label, input line box and every glyph taper with it.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-text-field variant="filled" label="Email" density="0" value="ada@example.com" style="min-width:200px;"></md-text-field>
+    <md-text-field variant="outlined" label="Email" density="0" value="ada@example.com" style="min-width:200px;"></md-text-field>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-text-field variant="filled" label="Email" density="-1" value="ada@example.com" style="min-width:200px;"></md-text-field>
+    <md-text-field variant="outlined" label="Email" density="-1" value="ada@example.com" style="min-width:200px;"></md-text-field>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-text-field variant="filled" label="Email" density="-2" value="ada@example.com" style="min-width:200px;"></md-text-field>
+    <md-text-field variant="outlined" label="Email" density="-2" value="ada@example.com" style="min-width:200px;"></md-text-field>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-text-field variant="filled" label="Email" density="-3" value="ada@example.com" style="min-width:200px;"></md-text-field>
+    <md-text-field variant="outlined" label="Email" density="-3" value="ada@example.com" style="min-width:200px;"></md-text-field>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-text-field variant="filled" label="Email" density="-4" value="ada@example.com" style="min-width:200px;"></md-text-field>
+    <md-text-field variant="outlined" label="Email" density="-4" value="ada@example.com" style="min-width:200px;"></md-text-field>
+  </div>
+</div>`}
+  label="Density 0 through -4 — height, padding, label and glyphs all taper"
+/>
+
+:::caution[Below `-2`, check your touch targets]
+The rungs shrink the field box with the row — 56dp at `0` down to 40dp at `-4`
+— and the internal clear / password-toggle / speech buttons shrink with it
+(24dp glyphs taper 1px per rung to an 18px floor). 40dp is under the 48px that
+pointer-coarse devices want. See [Density](/behaviour/density/#accessibility).
+:::
+
+### Density and direction together
+
+The `density` prop and a global `data-density` ancestor drive the same signal —
+`--md-sys-density-scale` — so a wrapper sets the rung for everything inside it
+and any one field can override it with a rung of its own.
+
+:::caution[`density="0"` is not an opt-out]
+Only the rungs `-1` through `-4` have a rule; there is no `:host([density="0"])`
+and no `[data-density="0"]`. Because the signal is an inherited custom property,
+a field written `density="0"` inside a `data-density="-2"` wrapper still
+inherits `-2` and renders at 48dp like its neighbours. To restore the default
+rung on one element, reset the signal directly:
+`style="--md-sys-density-scale: 0"`.
+:::
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+  <md-text-field variant="outlined" label="البريد الإلكتروني" value="ada@example.com" style="min-width:200px;"><span slot="leading-icon" class="material-symbols-outlined">mail</span></md-text-field>
+  <md-text-field variant="outlined" label="كلمة المرور" type="password" password-toggle="internal" value="hunter2" style="min-width:200px;"></md-text-field>
+  <md-text-field variant="outlined" label="أكثر إحكاما" density="-4" value="مرحبا" style="min-width:200px;"></md-text-field>
+  <md-text-field variant="outlined" label="افتراضي" value="مرحبا" style="--md-sys-density-scale: 0; min-width:200px;"></md-text-field>
+</div>`}
+  label="dir=rtl with data-density=-2: two fields inherit, one tightens to -4, one resets the signal to 0"
+/>
+
+**Density** — reach for a rung, not a hand-tuned height: the rung tapers the
+container, the padding, the label and the glyphs together, which a `height`
+override cannot. See [Density](/behaviour/density/).
+
+**i18n** — translate `label`, `supporting-text`, `error-text`, `placeholder`,
+`prefix-text` and `suffix-text`. Set `speech-lang` per locale, and use `Intl`
+inside `formatter` for locale-correct numbers and currency.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-text-field-container-color` | Filled-variant container background | `--md-sys-color-surface-container-highest` |
+| `--md-text-field-input-color` | Input text and caret colour | `--md-sys-color-on-surface` |
+| `--md-text-field-label-color` | Resting label colour | `--md-sys-color-on-surface-variant` |
+| `--md-text-field-active-indicator-color` | Filled underline, outlined border on focus | `--md-sys-color-primary` |
+| `--md-text-field-outline-color` | Outlined-variant resting border | `--md-sys-color-outline` |
+| `--md-text-field-error-color` | Error accent (label, indicator, icon, helper) | `--md-sys-color-error` |
+| `--md-text-field-supporting-text-color` | Supporting text and character counter | `--md-sys-color-on-surface-variant` |
+| `--md-text-field-icon-color` | Every glyph: leading, trailing, clear, password, speech | `--md-sys-color-on-surface-variant` |
+| `--md-text-field-icon-size` | Every glyph's size; tapers 1px per density rung | `24px` (18px floor) |
+| `--md-text-field-container-shape` | Corner radius, both variants | `--md-sys-shape-corner-extra-small` (4px) |
+| `--md-text-field-filled-pill` | Filled only: `1` rounds the bottom corners too (pill) | `0` |
+| `--md-text-field-padding-inline-start` / `-end` | Per-side container inset | `--md-sys-spacing-inset-lg` + 7px |
+| `--md-text-field-optical-nudge` | Outlined only: px the input text is nudged down | `0px` |
+| `--md-text-field-focus-border-width` | Border thickness on focus | `3px` |
+| `--md-text-field-focus-inset` | Negative inset compensating for the focus border | `-2px` |
+| `--md-text-field-cursor` | Cursor over the field | `text` |
+
+<ComponentDemo
+  html={`<md-text-field variant="outlined" label="Squared off" value="Custom" style="--md-text-field-container-shape: 0px; --md-text-field-outline-color: var(--md-sys-color-primary); min-width: 220px;"></md-text-field>
+<md-text-field variant="filled" label="Pill" value="Custom" style="--md-text-field-filled-pill: 1; --md-text-field-container-shape: 28px; min-width: 220px;"></md-text-field>`}
+  label="Themed instances"
+/>
+
+Every default resolves through an `md-sys-color` role, so a field that sets no
+custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<md-text-field label="Outlined" value="Ada Lovelace" style="min-width: 220px;"></md-text-field>
+<md-text-field variant="filled" label="Filled" value="Ada Lovelace" style="min-width: 220px;"></md-text-field>
+<md-text-field label="With error" value="not-an-email" error error-text="Enter a valid email" style="min-width: 220px;"></md-text-field>`}
+  label="Untouched defaults — follows the page theme"
+/>
+
+**CSS Parts** — `container` (the field box), `input` (the native `<input>` /
+`<textarea>`), `label` (the floating label), `chips` (the slotted chip region a
+composite fills), `supporting-text` (the message line) and `counter` (the
+character counter). The icons are **slots**, not parts — style them from your
+own light-DOM CSS.
+
+<ComponentDemo
+  html={`<style>
+  .parts-tf::part(container) { border-radius: 4px; }
+  .parts-tf::part(label) { text-transform: uppercase; letter-spacing: .08em; font-size: 11px; }
+  .parts-tf::part(supporting-text) { font-style: italic; }
+  .parts-tf::part(counter) { font-weight: 700; }
+</style>
+<md-text-field class="parts-tf" label="Styled parts" value="Ada Lovelace" max-length="40" supporting-text="Styled supporting text" style="--md-text-field-label-color: var(--md-sys-color-primary); min-width: 260px;"></md-text-field>`}
+  label="CSS parts and custom-property overrides"
+/>
+
+```css
+md-text-field::part(container) { border-radius: 4px; }
+md-text-field::part(supporting-text) { font-style: italic; }
+```
+
+
+## Related
+
+[`md-autocomplete`](/components/autocomplete/) ·
+[`md-search`](/components/search/) ·
+[`md-select`](/components/select/) ·
+[`md-multi-select`](/components/multi-select/) ·
+[`md-date-picker`](/components/date-picker/) ·
+[`md-time-picker`](/components/time-picker/) ·
+[`md-color-picker`](/components/color-picker/) ·
+[`md-icon-button`](/components/icon-button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-text-field" />

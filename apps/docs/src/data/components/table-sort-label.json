@@ -1,0 +1,128 @@
+{
+  "tag": "md-table-sort-label",
+  "title": "Table Sort Label",
+  "slug": "table-sort-label",
+  "category": "Data Display",
+  "subComponentOf": "md-table",
+  "storyId": null,
+  "props": [
+    {
+      "name": "column",
+      "attribute": "column",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "defaultOrder",
+      "attribute": "default-order",
+      "type": "'asc' | 'desc'",
+      "default": "'asc'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "iconPosition",
+      "attribute": "icon-position",
+      "type": "'start' | 'end'",
+      "default": "'end'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "active",
+      "attribute": "active",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "order",
+      "attribute": "order",
+      "type": "'asc' | 'desc' | 'none'",
+      "default": "'none'",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdSortRequest",
+      "detail": "{ column: string; defaultOrder: 'asc' | 'desc' }"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "icon",
+      "description": "The arrow indicator"
+    },
+    {
+      "name": "label",
+      "description": "The text label"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-table-sort-label-color",
+      "description": "Inactive color"
+    },
+    {
+      "name": "--md-table-sort-label-active-color",
+      "description": "Active color"
+    },
+    {
+      "name": "--md-table-sort-label-icon-size",
+      "description": "Icon size (default 18px)"
+    },
+    {
+      "name": "--md-table-sort-label-gap",
+      "description": "Gap between text and icon"
+    }
+  ],
+  "dependencies": [
+    "md-table-cell",
+    "md-table"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdSortRequest",
+      "detail": "{ column: string; defaultOrder: 'asc' | 'desc' }"
+    }
+  ]
+}

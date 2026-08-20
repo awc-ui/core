@@ -1,0 +1,130 @@
+---
+title: Documentation
+description: Start here — install AWC UI, render your first Material Design 3 component, theme it with design tokens, and browse the full component set.
+sidebar:
+  label: Overview
+  order: 0
+---
+
+import NavCardGrid from "../../../components/NavCardGrid.astro";
+
+AWC UI — short for **Advanced Web Components UI** — is a
+**Material Design 3** component library built with
+[Stencil.js](https://stenciljs.com/), currently in **beta**. Every component ships as a
+standard web component with full shadow-DOM encapsulation, so it drops into **React,
+Angular, Vue, Svelte, or plain HTML** with zero configuration, and follows the MD3
+specification for tokens, states and motion.
+
+:::caution[Beta]
+The API is stable enough to build with, but it is not frozen — expect occasional
+breaking changes before 1.0, and check each component's page for what is covered.
+:::
+
+This page is your map. If you're brand new, start with **Installation** and
+**Quick Start**; everything else is one click away below.
+
+## Install in seconds
+
+```bash
+npm install @awc-ui/core @awc-ui/tokens
+```
+
+```ts
+// Register every component + load the design tokens
+import '@awc-ui/core/define';
+```
+
+```html
+<md-button variant="filled" icon="add">Add item</md-button>
+```
+
+That's a real, accessible, themeable MD3 button — no build step, no wrapper required.
+
+## Start here
+
+<NavCardGrid
+  columns={2}
+  cards={[
+    {
+      title: "Installation",
+      description: "Add the packages, register components, and load the fonts. Covers HTML, React, Angular, Vue, and Svelte.",
+      href: "/getting-started/installation/",
+      icon: "download",
+      tone: "primary",
+    },
+    {
+      title: "Quick Start",
+      description: "Render your first component, build a form, lay out cards, and flip on dark mode — in under five minutes.",
+      href: "/getting-started/quick-start/",
+      icon: "rocket_launch",
+      tone: "tertiary",
+    },
+  ]}
+/>
+
+## Go deeper
+
+<NavCardGrid
+  columns={3}
+  cards={[
+    {
+      title: "Components",
+      description: "Browse all 56 components by category, each with live demos and per-framework code.",
+      href: "/components/",
+      icon: "widgets",
+      tone: "primary",
+    },
+    {
+      title: "Theming",
+      description: "Recolor and reshape everything with 200+ MD3 design tokens and CSS parts.",
+      href: "/theming/overview/",
+      icon: "palette",
+      tone: "tertiary",
+    },
+    {
+      title: "Theme Generator",
+      description: "Generate a complete MD3 palette from a single seed color and export the tokens.",
+      href: "/theme-generator/",
+      icon: "format_paint",
+      tone: "secondary",
+      badge: "New",
+    },
+    {
+      title: "Accessibility",
+      description: "WAI-ARIA roles, keyboard navigation, and focus management built into every component.",
+      href: "/guides/accessibility/",
+      icon: "accessibility_new",
+      tone: "secondary",
+    },
+    {
+      title: "RTL & i18n",
+      description: "CSS logical properties throughout. Drop components into any dir=\"rtl\" context.",
+      href: "/guides/rtl/",
+      icon: "format_textdirection_r_to_l",
+      tone: "tertiary",
+    },
+    {
+      title: "For AI Agents",
+      description: "An LLM manifest any coding assistant can consume to generate correct MD3 component code.",
+      href: "/llm/",
+      icon: "smart_toy",
+      tone: "primary",
+      badge: "LLM",
+    },
+  ]}
+/>
+
+## Why AWC UI
+
+- **Technology agnostic** — standard custom elements that work everywhere, plus typed wrappers for the four big frameworks.
+- **Built to the MD3 spec** — variants, sizes, states and motion follow Material Design 3, with the deviations called out on each component's page.
+- **Themeable to the core** — 200+ `--md-sys-*` design tokens, per-component CSS custom properties, and `::part()` hooks.
+- **Accessible by default** — WAI-ARIA roles, keyboard support, and focus management with zero WCAG 2.1 AA violations.
+- **RTL-ready** — logical properties and auto-mirroring directional icons.
+- **AI-ready** — a machine-readable manifest so assistants generate correct code on the first try.
+
+## Need the source?
+
+AWC UI is open source under the MIT license. Star it, file issues, or contribute new
+components on [GitHub](https://github.com/awc-ui/core), or read the
+[contributing guide](/contributing/) to ship your first component.

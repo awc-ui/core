@@ -1,0 +1,29 @@
+{
+  "name": "@awc-ui/example-angular-ssr",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Angular 17 SSR/prerender reference app for AWC UI (DSD via a postbuild inject step)",
+  "scripts": {
+    "build": "ng build && node scripts/inject-dsd.mjs"
+  },
+  "dependencies": {
+    "@angular/animations": "~17.3.0",
+    "@angular/common": "~17.3.0",
+    "@angular/compiler": "~17.3.0",
+    "@angular/core": "~17.3.0",
+    "@angular/platform-browser": "~17.3.0",
+    "@angular/platform-browser-dynamic": "~17.3.0",
+    "@angular/platform-server": "~17.3.0",
+    "@angular/router": "~17.3.0",
+    "@angular/ssr": "~17.3.0",
+    "@awc-ui/core": "workspace:*",
+    "rxjs": "^7.8.0",
+    "zone.js": "~0.14.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "~17.3.0",
+    "@angular/cli": "~17.3.0",
+    "@angular/compiler-cli": "~17.3.0",
+    "typescript": "~5.4.0"
+  }
+}

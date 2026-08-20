@@ -1,0 +1,45 @@
+{
+  "tag": "md-table-expand-toggle",
+  "title": "Table Expand Toggle",
+  "slug": "table-expand-toggle",
+  "category": "Data Display",
+  "subComponentOf": "md-table",
+  "storyId": null,
+  "props": [
+    {
+      "name": "buttonLabel",
+      "attribute": "button-label",
+      "type": "string",
+      "default": "'Expand row'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "'chevron_right'",
+      "reflect": false,
+      "mutable": false
+    }
+  ],
+  "events": [],
+  "methods": [],
+  "slots": [],
+  "cssParts": [],
+  "cssCustomProps": [
+    {
+      "name": "--md-table-expand-toggle-rotation",
+      "description": "Expanded rotation (default 90deg)"
+    }
+  ],
+  "dependencies": [
+    "md-table-row",
+    "md-table-cell",
+    "md-icon-button"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": []
+}

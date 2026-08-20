@@ -1,0 +1,74 @@
+{
+  "tag": "md-divider",
+  "title": "Divider",
+  "slug": "divider",
+  "category": "Containment",
+  "subComponentOf": null,
+  "storyId": "containment-divider--playground",
+  "props": [
+    {
+      "name": "inset",
+      "attribute": "inset",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "insetStart",
+      "attribute": "inset-start",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "insetEnd",
+      "attribute": "inset-end",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "vertical",
+      "attribute": "vertical",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [],
+  "methods": [],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "divider",
+      "description": "The divider element itself (host)"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-divider-color",
+      "description": "Divider line color"
+    },
+    {
+      "name": "--md-divider-thickness",
+      "description": "Line thickness (default 1px)"
+    },
+    {
+      "name": "--md-divider-inset-start",
+      "description": "Start-side inset margin"
+    },
+    {
+      "name": "--md-divider-inset-end",
+      "description": "End-side inset margin"
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": []
+}

@@ -1,0 +1,785 @@
+---
+title: Tabs
+description: "The tab strip for switching between sibling views on one screen — owns the active index, roving focus and the indicator"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/tabs.json";
+import tabApi from "../../../data/components/tab.json";
+import tabPanelsApi from "../../../data/components/tab-panels.json";
+import tabPanelApi from "../../../data/components/tab-panel.json";
+
+**Switch between sibling views within one screen.** `md-tabs` is the strip
+only: it owns the active index, the roving focus and the indicator. The content
+lives in a separate [`md-tab-panels`](/components/tabs/#md-tab-panels) region, and each
+tab is a [`md-tab`](/components/tabs/#md-tab) child.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 500px;">
+  <md-tabs aria-label="Travel sections">
+    <md-tab label="Flights" icon="flight"></md-tab>
+    <md-tab label="Hotels" icon="hotel"></md-tab>
+    <md-tab label="Trips" icon="explore"></md-tab>
+  </md-tabs>
+</div>`}
+  label="Live preview"
+  storyId="navigation-tabs--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-tabs" example="" />
+
+## When to use
+
+- **Peer categories of related content** on one screen: Overview / Activity /
+  Settings.
+- The user should be able to move between them freely, in any order.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Sequential content meant to be read in order | Hierarchy in the content — typography and spacing |
+| A linear process with validation | [`md-stepper`](/components/stepper/) |
+| Top-level app destinations | [`md-navigation-bar`](/components/navigation-bar/) / [`md-navigation-rail`](/components/navigation-rail/) |
+| Independent collapsible sections | [`md-accordion`](/components/accordion/) |
+| Choosing a value or mode | [`md-segmented-button`](/components/segmented-button/) |
+| Actions rather than views | [`md-button-group`](/components/button-group/) / [`md-toolbar`](/components/toolbar/) |
+| Many categories that won't fit | [`md-select`](/components/select/), or a menu |
+
+:::caution[`md-tabs` has no `density` prop]
+One of the few components without one. Density lives on the individual
+[`md-tab`](/components/tabs/#md-tab) children.
+:::
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Top-level sections of a screen | `variant="primary"` (default) |
+| Sub-sections inside a primary tab's panel | `variant="secondary"` |
+| Equal-width tabs filling the strip | `tab-width="equal"` (default) |
+| Tabs sized to their labels | `tab-width="auto"` |
+| More tabs than fit | They scroll — no prop needed |
+| Wire tabs to panels for you | Wrap panels in `md-tab-panels` |
+| Tighter rows | `density` on each `md-tab` |
+
+## Variants
+
+`primary` is for the top-level tab set on a surface; `secondary` is for a nested
+set inside a primary one. The **children carry their own `variant`** — the strip
+propagates its value to them, so keep them consistent if you also set it by
+hand.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 460px;">
+  <md-tabs variant="primary" aria-label="Primary tabs">
+    <md-tab label="Flights"></md-tab>
+    <md-tab label="Hotels"></md-tab>
+    <md-tab label="Trips"></md-tab>
+  </md-tabs>
+</div>
+<div style="inline-size: 100%; max-inline-size: 460px;">
+  <md-tabs variant="secondary" aria-label="Secondary tabs">
+    <md-tab label="Music"></md-tab>
+    <md-tab label="Podcasts"></md-tab>
+    <md-tab label="Audiobooks"></md-tab>
+  </md-tabs>
+</div>`}
+  label="primary (default, 3dp inset indicator) and secondary (full-width 2dp indicator)"
+  storyId="navigation-tabs--secondary-tabs"
+/>
+
+## Icons and badges
+
+Icons stack above the label by default; `inline-icon` puts them side by side.
+`badge` with a value renders a pill, `badge=""` renders a dot. M3 forbids mixing
+icon+text tabs with icon-only or text-only tabs **in the same set**.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 460px;">
+  <md-tabs variant="primary" aria-label="Stacked icons">
+    <md-tab label="Flights" icon="flight"></md-tab>
+    <md-tab label="Hotels" icon="hotel"></md-tab>
+    <md-tab label="Trips" icon="explore"></md-tab>
+  </md-tabs>
+</div>
+<div style="inline-size: 100%; max-inline-size: 460px;">
+  <md-tabs variant="primary" aria-label="Inline icons">
+    <md-tab label="Flights" icon="flight" inline-icon></md-tab>
+    <md-tab label="Hotels" icon="hotel" inline-icon></md-tab>
+    <md-tab label="Trips" icon="explore" inline-icon></md-tab>
+  </md-tabs>
+</div>
+<div style="inline-size: 100%; max-inline-size: 500px;">
+  <md-tabs variant="primary" aria-label="Badges">
+    <md-tab label="Inbox" icon="inbox" badge="12"></md-tab>
+    <md-tab label="Sent" icon="send"></md-tab>
+    <md-tab label="Drafts" icon="drafts" badge=""></md-tab>
+    <md-tab label="Spam" icon="report" badge="3"></md-tab>
+  </md-tabs>
+</div>`}
+  label="Stacked icons, inline icons, and count / dot badges"
+  storyId="navigation-tabs--with-badges"
+/>
+
+Custom glyphs go in the tab's `icon` slot and replace the `icon` prop:
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 460px;">
+  <md-tabs variant="primary" aria-label="Slotted icons">
+    <md-tab label="Starred">
+      <svg slot="icon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    </md-tab>
+    <md-tab label="Loved">
+      <svg slot="icon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+    </md-tab>
+    <md-tab label="Music">
+      <span slot="icon" style="font-size: 24px;">🎵</span>
+    </md-tab>
+  </md-tabs>
+</div>`}
+  label="Slotted SVG and emoji icons"
+  storyId="navigation-tabs--slotted-icons"
+/>
+
+## States
+
+A `disabled` tab is skipped by arrow-key navigation and ignored by clicks.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 460px;">
+  <md-tabs variant="primary" aria-label="Primary states">
+    <md-tab label="Active" icon="home"></md-tab>
+    <md-tab label="Inactive" icon="search"></md-tab>
+    <md-tab label="Disabled" icon="block" disabled></md-tab>
+  </md-tabs>
+</div>
+<div style="inline-size: 100%; max-inline-size: 460px;">
+  <md-tabs variant="secondary" aria-label="Secondary states">
+    <md-tab label="Active"></md-tab>
+    <md-tab label="Inactive"></md-tab>
+    <md-tab label="Disabled" disabled></md-tab>
+  </md-tabs>
+</div>`}
+  label="Active, inactive and disabled — in both variants"
+  storyId="navigation-tabs--states"
+/>
+
+## Tab width and strip width
+
+Two separate knobs, and confusing them is the usual bug.
+
+| Prop | Controls | Values |
+|---|---|---|
+| `tab-width` | How each **tab** sizes along the strip | `equal` (default, share the parent's full width) · `auto` (content width, strip scrolls) · any CSS length, e.g. `140px` |
+| `width` | The width of the **whole strip** | Any CSS size. Default: `100%` of the parent |
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 620px;">
+  <md-tabs tab-width="equal" aria-label="Equal tab width">
+    <md-tab label="Inbox" badge="3"></md-tab>
+    <md-tab label="Payments"></md-tab>
+    <md-tab label="Documents and archived"></md-tab>
+    <md-tab label="Settings"></md-tab>
+  </md-tabs>
+</div>
+<div style="inline-size: 100%; max-inline-size: 620px;">
+  <md-tabs tab-width="auto" aria-label="Auto tab width">
+    <md-tab label="Inbox" badge="3"></md-tab>
+    <md-tab label="Payments"></md-tab>
+    <md-tab label="Documents and archived"></md-tab>
+    <md-tab label="Settings"></md-tab>
+  </md-tabs>
+</div>
+<div style="inline-size: 100%; max-inline-size: 620px;">
+  <md-tabs tab-width="140px" aria-label="Fixed tab width">
+    <md-tab label="Inbox" badge="3"></md-tab>
+    <md-tab label="Payments"></md-tab>
+    <md-tab label="Documents and archived"></md-tab>
+    <md-tab label="Settings"></md-tab>
+  </md-tabs>
+</div>`}
+  label="tab-width: equal (default) · auto · 140px"
+  storyId="navigation-tabs--width-modes"
+/>
+
+:::caution[A shrink-to-fit parent lets the panel resize the strip]
+In an inline-block card, an auto grid column or a flex item, the parent's width
+follows the **active panel**. Switch to a tab whose content is one letter and
+the whole tablist collapses. Either set `width` to anchor the strip, or — better
+— use [`md-tab-panels`](/components/tabs/#md-tab-panels), whose default
+`sizing="stable"` keeps the region the size of the largest panel.
+:::
+
+## Scrolling
+
+More tabs than fit? The strip scrolls horizontally, activating an off-screen tab
+scrolls it into view, and a fade marks the clipped edge. M3 asks you to offset
+the first tab from the leading edge so it's clear more exist.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 400px;">
+  <md-tabs variant="primary" tab-width="auto" aria-label="Scrollable tabs">
+    <md-tab label="Tab 1"></md-tab>
+    <md-tab label="Tab 2"></md-tab>
+    <md-tab label="Tab 3"></md-tab>
+    <md-tab label="Tab 4"></md-tab>
+    <md-tab label="Tab 5"></md-tab>
+    <md-tab label="Tab 6"></md-tab>
+    <md-tab label="Tab 7"></md-tab>
+    <md-tab label="Tab 8"></md-tab>
+  </md-tabs>
+</div>`}
+  label="Eight tabs in a 400px strip — scroll it, or press End"
+  storyId="navigation-tabs--scrollable-tabs"
+/>
+
+## Pairing with panels
+
+`md-tabs` renders no content. Put a
+[`md-tab-panels`](/components/tabs/#md-tab-panels) region directly after the strip with
+one [`md-tab-panel`](/components/tabs/#md-tab-panel) per tab, in tab order. The region
+finds the nearest preceding `md-tabs` sibling (or point `for` at its `id`),
+follows `mdTabChange` itself, and wires the ARIA both ways — `aria-controls` on
+each tab, `aria-labelledby` on each panel, ids auto-assigned where missing.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 500px;">
+  <md-tabs id="analytics-strip" aria-label="Analytics sections">
+    <md-tab label="Overview"></md-tab>
+    <md-tab label="Activity"></md-tab>
+    <md-tab label="Reports" badge="2"></md-tab>
+  </md-tabs>
+  <md-tab-panels for="analytics-strip">
+    <md-tab-panel>
+      <div style="padding: 16px 4px; font: 14px/1.6 system-ui;">Sessions up 18% week over week. Peak traffic Tuesday 14:00.</div>
+    </md-tab-panel>
+    <md-tab-panel>
+      <div style="padding: 16px 4px; font: 14px/1.6 system-ui;">S</div>
+    </md-tab-panel>
+    <md-tab-panel>
+      <div style="padding: 16px 4px; font: 14px/1.6 system-ui;">Weekly user growth · Revenue breakdown Q1</div>
+    </md-tab-panel>
+  </md-tab-panels>
+</div>`}
+  label="Strip plus panels — note the region does not shrink on the one-letter panel"
+  storyId="navigation-tabs--with-tab-panels"
+/>
+
+If you are wiring your own panels instead, they must be in the **same DOM
+scope** as the tabs — `controls` is an IDREF, and IDREFs don't cross shadow
+boundaries.
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdTabChange` | no | `{ index, previousIndex }` | The active tab changed — click, keyboard, or `selectTab()` |
+
+Re-activating the already-active tab does **not** emit. Out-of-range
+`selectTab()` calls are ignored, and setting `activeTabIndex` as a property
+normalizes (rounds and clamps) **without** emitting — the property path is
+consumer-initiated, so you already know.
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;max-inline-size:520px;">
+  <md-tabs id="ev-strip" aria-label="Project sections">
+    <md-tab label="Overview" active></md-tab>
+    <md-tab label="Activity"></md-tab>
+    <md-tab label="Settings"></md-tab>
+  </md-tabs>
+
+  <md-tab-panels for="ev-strip">
+    <md-tab-panel>Overview…</md-tab-panel>
+    <md-tab-panel>Activity…</md-tab-panel>
+    <md-tab-panel>Settings…</md-tab-panel>
+  </md-tab-panels>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-block:12px;">
+    <md-button data-ev="same" variant="outlined" size="sm">Re-activate the active tab</md-button>
+    <md-button data-ev="prop" variant="outlined" size="sm">Set activeTabIndex = 2.7</md-button>
+    <md-button data-ev="oor" variant="outlined" size="sm">selectTab(9)</md-button>
+  </div>
+
+  <div data-ev-log style="font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;opacity:.85;min-block-size:5.5em;"></div>
+</div>`}
+  script={`
+  var strip = root.querySelector('#ev-strip');
+  var log = root.querySelector('[data-ev-log]');
+  var lines = [];
+  var push = function (text) {
+    lines.unshift(text);
+    lines = lines.slice(0, 5);
+    log.textContent = lines.join(String.fromCharCode(10));
+  };
+
+  strip.addEventListener('mdTabChange', function (e) {
+    push('mdTabChange  { index: ' + e.detail.index + ', previousIndex: ' + e.detail.previousIndex + ' }');
+  });
+
+  // Re-activating the tab that is already active emits nothing.
+  root.querySelector('[data-ev="same"]').addEventListener('mdClick', function () {
+    var i = strip.activeTabIndex;
+    push('called selectTab(' + i + ') — already active, so no event follows');
+    strip.selectTab(i);
+  });
+
+  // The property path normalizes (rounds + clamps) but never emits: you set it,
+  // so you already know.
+  root.querySelector('[data-ev="prop"]').addEventListener('mdClick', function () {
+    strip.activeTabIndex = 2.7;
+    push('set activeTabIndex = 2.7 -> normalized to ' + strip.activeTabIndex + ', no event');
+  });
+
+  // Out-of-range selectTab() is ignored outright.
+  root.querySelector('[data-ev="oor"]').addEventListener('mdClick', function () {
+    strip.selectTab(9);
+    push('called selectTab(9) — out of range, ignored, still on ' + strip.activeTabIndex);
+  });
+
+  push('Click a tab — then try the three buttons, which all emit nothing.');`}
+  label="mdTabChange live — and the three paths that deliberately stay silent"
+  storyId="navigation-tabs--with-tab-panels"
+  htmlForCode={`<md-tabs id="strip" aria-label="Project sections">
+  <md-tab label="Overview"></md-tab>
+  <md-tab label="Activity"></md-tab>
+  <md-tab label="Settings"></md-tab>
+</md-tabs>
+
+<md-tab-panels for="strip">
+  <md-tab-panel>Overview…</md-tab-panel>
+  <md-tab-panel>Activity…</md-tab-panel>
+  <md-tab-panel>Settings…</md-tab-panel>
+</md-tab-panels>
+
+<script type="module">
+  const strip = document.getElementById('strip');
+
+  // Fires on click, keyboard, and an in-range selectTab().
+  strip.addEventListener('mdTabChange', (e) => {
+    console.log(e.detail.index, e.detail.previousIndex);
+  });
+
+  // None of these emit:
+  strip.selectTab(strip.activeTabIndex);   // already active
+  strip.selectTab(9);                      // out of range, ignored
+  strip.activeTabIndex = 2.7;              // property path normalizes silently
+</script>`}
+  react={`import { MdTabs, MdTab, MdTabPanels, MdTabPanel } from '@awc-ui/react';
+import { useState } from 'react';
+
+export function ProjectTabs() {
+  const [index, setIndex] = useState(0);
+
+  return (
+    <>
+      <MdTabs
+        id="strip"
+        aria-label="Project sections"
+        activeTabIndex={index}
+        onMdTabChange={(e) => setIndex(e.detail.index)}
+      >
+        <MdTab label="Overview" />
+        <MdTab label="Activity" />
+        <MdTab label="Settings" />
+      </MdTabs>
+
+      <MdTabPanels for="strip">
+        <MdTabPanel>Overview…</MdTabPanel>
+        <MdTabPanel>Activity…</MdTabPanel>
+        <MdTabPanel>Settings…</MdTabPanel>
+      </MdTabPanels>
+    </>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-project-tabs',
+  template: \`
+    <md-tabs id="strip" aria-label="Project sections" (mdTabChange)="onChange($event)">
+      <md-tab label="Overview"></md-tab>
+      <md-tab label="Activity"></md-tab>
+      <md-tab label="Settings"></md-tab>
+    </md-tabs>
+
+    <md-tab-panels for="strip">
+      <md-tab-panel>Overview…</md-tab-panel>
+      <md-tab-panel>Activity…</md-tab-panel>
+      <md-tab-panel>Settings…</md-tab-panel>
+    </md-tab-panels>
+  \`,
+})
+export class ProjectTabsComponent {
+  onChange(e: CustomEvent<{ index: number; previousIndex: number }>) {
+    console.log(e.detail.index, e.detail.previousIndex);
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const index = ref(0);
+
+function onChange(e: CustomEvent) {
+  index.value = e.detail.index;
+}
+</script>
+
+<template>
+  <md-tabs id="strip" aria-label="Project sections" :active-tab-index="index" @mdTabChange="onChange">
+    <md-tab label="Overview" />
+    <md-tab label="Activity" />
+    <md-tab label="Settings" />
+  </md-tabs>
+
+  <md-tab-panels for="strip">
+    <md-tab-panel>Overview…</md-tab-panel>
+    <md-tab-panel>Activity…</md-tab-panel>
+    <md-tab-panel>Settings…</md-tab-panel>
+  </md-tab-panels>
+</template>`}
+  svelte={`<script lang="ts">
+  let index = 0;
+
+  function onChange(e: CustomEvent) {
+    index = e.detail.index;
+  }
+</script>
+
+<md-tabs id="strip" aria-label="Project sections" active-tab-index={index} on:mdTabChange={onChange}>
+  <md-tab label="Overview" />
+  <md-tab label="Activity" />
+  <md-tab label="Settings" />
+</md-tabs>
+
+<md-tab-panels for="strip">
+  <md-tab-panel>Overview…</md-tab-panel>
+  <md-tab-panel>Activity…</md-tab-panel>
+  <md-tab-panel>Settings…</md-tab-panel>
+</md-tab-panels>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[`aria-label` is a real prop]
+It is declared as `ariaLabelProp` with the `aria-label` attribute, so writing
+`aria-label="…"` in HTML — or `ariaLabelProp` in a framework wrapper — both name
+the tablist. Never ship an unnamed tab strip.
+:::
+
+## The sub-components
+
+A tabbed view is composed from three sub-components. They are documented here
+rather than on their own pages: none of them mean anything outside a tabbed
+view, and the strip owns the active index for all of them.
+
+### `md-tab`
+
+**One tab in the strip** — a label and/or icon, an optional badge, and the
+active indicator.
+
+:::caution[Four things that bite]
+- **`active` is managed by `md-tabs`** through its `active-tab-index` (or
+  `selectTab()`). Setting `active` by hand on several tabs gives you two sources
+  of truth and desynchronises the indicator.
+- **`variant` exists on both the strip and each tab, and must match.** The tab
+  does **not** inherit it from the parent — the default is `primary` on both.
+- **`controls` takes the panel's `id`, and IDREFs cannot cross a shadow
+  boundary.** Tab and panel must live in the same DOM scope.
+- **`mdTabClick` is internal** — no payload, low-level. Application code listens
+  to the strip's `mdTabChange`, whose detail is `{ index, previousIndex }`.
+:::
+
+- `inline-icon` switches icon+label from stacked to side-by-side.
+- `badge=""` (empty string) renders a dot badge rather than no badge.
+- **Unlike `md-tabs`, `md-tab` does have a `density` prop** — set density here,
+  not on the strip.
+
+<ApiTable {...tabApi} />
+
+### `md-tab-panels`
+
+**The content half of a tabbed view** — holds one
+[`md-tab-panel`](#md-tab-panel) per tab, follows the strip's active index, and
+controls how the region is sized as panels change.
+
+- **It wires itself.** The region listens for the strip's `mdTabChange` and sets
+  `active` / `inert` on the panels. You do **not** toggle `active` by hand — and
+  you do not need a `mdTabChange` listener just to switch panels.
+- **ARIA is wired both ways**: each tab gets `aria-controls`, each panel gets
+  `aria-labelledby`, and ids are auto-assigned where missing. Set your own
+  `id` / `controls` only when you need stable, meaningful ids.
+- `for` resolves against the panel region's own root, so the strip must be in the
+  **same DOM scope** — IDREFs don't cross shadow boundaries.
+- Panels are matched to tabs **by position**, so keep them in tab order.
+- Neither this nor [`md-tab-panel`](#md-tab-panel) has a `density` prop.
+- Panels are **not lazily rendered**: inactive panel content stays in the DOM.
+  Mount expensive content yourself on first activation.
+
+<ApiTable {...tabPanelsApi} />
+
+### `md-tab-panel`
+
+**The content of one tab.** A single `active` flag decides whether it is shown;
+everything else is your content. The host renders `role="tabpanel"` and takes a
+`tabindex` of `0` while active, `-1` otherwise.
+
+- **`active` is the entire API — and the parent owns it.**
+  [`md-tab-panels`](#md-tab-panels) sets `active` and `inert` from the strip's
+  `mdTabChange`. Setting `active` yourself fights it, and two active panels is an
+  ambiguous state.
+- **The id ↔ tab association is automatic.** The region assigns ids where they
+  are missing and sets `aria-controls` / `aria-labelledby` both ways. Give the
+  panel a stable `id` only when you want a meaningful one (deep links, tests) —
+  and then match it with the tab's `controls` in the **same DOM scope**, because
+  IDREFs don't cross shadow boundaries.
+- **Inactive panels keep their layout box** — that is what makes the region
+  size-stable — but their content is `visibility: hidden` and the host is
+  `inert`, so it is out of paint, hit-testing and the accessibility tree.
+- Content of inactive panels **stays in the DOM**. Mount expensive widgets on
+  first activation.
+- No `density` prop.
+
+<ApiTable {...tabPanelApi} />
+
+## Accessibility
+
+- Give the strip an `aria-label` naming what the tabs switch between.
+- The strip manages roving focus: one tab stop for the whole set, arrow keys to
+  move (they wrap), `Home` / `End` to jump to the ends. Arrow direction follows
+  the **visual** order, so it inverts under RTL.
+- Disabled tabs are skipped by the arrow-key tour.
+- Wire each tab to its panel: [`md-tab-panels`](/components/tabs/#md-tab-panels) does it
+  for you, otherwise set the tab's `controls` to the panel's `id`. Both must be
+  in the same DOM scope — IDREFs don't cross shadow boundaries.
+- Keep exactly one tab active; an empty tab set has no valid state.
+
+### Keyboard
+
+| Key | Action |
+|---|---|
+| `Tab` | One stop for the whole strip (roving tabindex), then into the active panel |
+| `←` / `→` | Move between enabled tabs, wrapping at the ends (inverted under `dir="rtl"`) |
+| `Home` / `End` | First / last enabled tab |
+| `Enter` / `Space` | Activate the focused tab |
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 460px;">
+  <md-tabs variant="primary" aria-label="Account sections">
+    <md-tab label="Profile" icon="person" active></md-tab>
+    <md-tab label="Security" icon="lock"></md-tab>
+    <md-tab label="Billing" icon="credit_card" disabled></md-tab>
+    <md-tab label="Alerts" icon="notifications" badge-value="3"></md-tab>
+  </md-tabs>
+</div>`}
+  label="Tab in, arrow across — the disabled tab is skipped"
+  storyId="navigation-tabs--accessibility"
+/>
+
+## RTL, density & i18n
+
+**RTL** — strip order, indicator travel and arrow-key direction all follow
+reading order under `dir="rtl"`. See [RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:grid;gap:20px;inline-size:100%;max-inline-size:460px;">
+  <div dir="ltr">
+    <md-tabs variant="primary" aria-label="Sections">
+      <md-tab label="Home" icon="home" active></md-tab>
+      <md-tab label="Search" icon="search"></md-tab>
+      <md-tab label="Alerts" icon="notifications" badge-value="3"></md-tab>
+    </md-tabs>
+  </div>
+  <div dir="rtl">
+    <md-tabs variant="primary" aria-label="الأقسام">
+      <md-tab label="الرئيسية" icon="home" active></md-tab>
+      <md-tab label="بحث" icon="search"></md-tab>
+      <md-tab label="التنبيهات" icon="notifications" badge-value="3"></md-tab>
+    </md-tabs>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl — badge side flips too"
+  storyId="navigation-tabs--rtl"
+/>
+
+**Density** — there is **no `density` prop on the strip**. Set it on each
+[`md-tab`](/components/tabs/#md-tab) child; the strip height follows the tallest
+tab. See [Density](/behaviour/density/).
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;inline-size:100%;max-inline-size:520px;">
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <md-tabs aria-label="d0"><md-tab density="0" label="Home" icon="home" active></md-tab><md-tab density="0" label="Search" icon="search"></md-tab><md-tab density="0" label="Profile" icon="person"></md-tab></md-tabs>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <md-tabs aria-label="d-1"><md-tab density="-1" label="Home" icon="home" active></md-tab><md-tab density="-1" label="Search" icon="search"></md-tab><md-tab density="-1" label="Profile" icon="person"></md-tab></md-tabs>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <md-tabs aria-label="d-2"><md-tab density="-2" label="Home" icon="home" active></md-tab><md-tab density="-2" label="Search" icon="search"></md-tab><md-tab density="-2" label="Profile" icon="person"></md-tab></md-tabs>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <md-tabs aria-label="d-3"><md-tab density="-3" label="Home" icon="home" active></md-tab><md-tab density="-3" label="Search" icon="search"></md-tab><md-tab density="-3" label="Profile" icon="person"></md-tab></md-tabs>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <md-tabs aria-label="d-4"><md-tab density="-4" label="Home" icon="home" active></md-tab><md-tab density="-4" label="Search" icon="search"></md-tab><md-tab density="-4" label="Profile" icon="person"></md-tab></md-tabs>
+</div>`}
+  label="Density 0 through -4 — set per tab"
+/>
+
+:::caution[Set the same rung on every tab]
+Nothing enforces consistency. One tab left at `0` in a `-2` strip makes the whole
+strip as tall as that tab, and its indicator sits at a different height.
+:::
+
+**i18n** — translate tab labels. Translations change tab widths, which matters
+under `tab-width="equal"`; re-check for truncation per locale.
+
+<ComponentDemo
+  html={`<div style="display:grid;gap:20px;inline-size:100%;max-inline-size:460px;">
+  <md-tabs variant="primary" aria-label="Kontobereiche">
+    <md-tab label="Profil" icon="person" active></md-tab>
+    <md-tab label="Sicherheit" icon="lock"></md-tab>
+    <md-tab label="Abrechnung" icon="credit_card"></md-tab>
+  </md-tabs>
+
+  <md-tabs variant="primary" tab-width="auto" aria-label="Kontobereiche, auto">
+    <md-tab label="Profil" icon="person" active></md-tab>
+    <md-tab label="Sicherheit" icon="lock"></md-tab>
+    <md-tab label="Abrechnung" icon="credit_card"></md-tab>
+  </md-tabs>
+</div>`}
+  label="German labels — equal width, then auto width"
+  storyId="navigation-tabs--localization"
+/>
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-tabs-container-color` | Strip background | `surface` |
+| `--md-tabs-divider-color` | Rule under the strip — read by each child tab's own divider default | `outline-variant` |
+
+Per-tab appearance (label colour, icon colour, indicator) uses the `--md-tab-*`
+properties documented on [`md-tab`](/components/tabs/#md-tab).
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 460px;">
+  <md-tabs variant="primary" aria-label="Themed tabs" style="--md-tabs-container-color: var(--md-sys-color-surface-container-highest); --md-tabs-divider-color: var(--md-sys-color-primary);">
+    <md-tab label="Home" icon="home"></md-tab>
+    <md-tab label="Search" icon="search"></md-tab>
+    <md-tab label="Profile" icon="person"></md-tab>
+  </md-tabs>
+</div>`}
+  label="Themed strip"
+  storyId="navigation-tabs--custom-css"
+/>
+
+Every default resolves through an `md-sys-color` role, so a strip that sets no
+custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 460px;">
+  <md-tabs variant="primary" aria-label="Untouched defaults">
+    <md-tab label="Home" icon="home" active></md-tab>
+    <md-tab label="Search" icon="search"></md-tab>
+    <md-tab label="Alerts" icon="notifications" badge-value="3"></md-tab>
+  </md-tabs>
+</div>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="navigation-tabs--dark-theme"
+/>
+
+### Theming the tabs
+
+| Custom property | On | Purpose |
+|---|---|---|
+| `--md-tab-active-label-color` / `-inactive-label-color` | `md-tab` | Label colour |
+| `--md-tab-active-icon-color` / `-inactive-icon-color` | `md-tab` | Glyph colour |
+| `--md-tab-active-indicator-color` / `-height` | `md-tab` | The indicator bar |
+| `--md-tab-container-color` | `md-tab` | The tab's own background |
+| `--md-tab-divider-color` | `md-tab` | The rule under this tab |
+| `--md-tab-glide-duration` / `-glide-scale` / `-glide-x` | `md-tab` | Indicator travel motion |
+
+<ComponentDemo
+  html={`<div style="display:grid;gap:20px;inline-size:100%;max-inline-size:460px;">
+  <md-tabs aria-label="Tonal" style="--md-tab-active-indicator-color: var(--md-sys-color-tertiary); --md-tab-active-label-color: var(--md-sys-color-tertiary); --md-tab-active-icon-color: var(--md-sys-color-tertiary);">
+    <md-tab label="Home" icon="home" active></md-tab>
+    <md-tab label="Search" icon="search"></md-tab>
+    <md-tab label="Profile" icon="person"></md-tab>
+  </md-tabs>
+
+  <md-tabs aria-label="Thick indicator" style="--md-tab-active-indicator-height: 6px; --md-tab-active-indicator-color: #7c4dff; --md-tab-active-label-color: #311b92;">
+    <md-tab label="Home" icon="home" active></md-tab>
+    <md-tab label="Search" icon="search"></md-tab>
+    <md-tab label="Profile" icon="person"></md-tab>
+  </md-tabs>
+
+  <md-tabs aria-label="Filled strip" style="--md-tabs-container-color: var(--md-sys-color-secondary-container); --md-tabs-divider-color: transparent; --md-tab-active-label-color: var(--md-sys-color-on-secondary-container); --md-tab-active-indicator-color: var(--md-sys-color-on-secondary-container);">
+    <md-tab label="Home" icon="home" active></md-tab>
+    <md-tab label="Search" icon="search"></md-tab>
+    <md-tab label="Profile" icon="person"></md-tab>
+  </md-tabs>
+</div>`}
+  label="Tonal, thick indicator, and a filled strip"
+/>
+
+## CSS parts
+
+| Part | On | Element |
+|---|---|---|
+| `container` | `md-tabs` | The scrollable tab container |
+| `content` | `md-tab` | Icon + label wrapper |
+| `icon` | `md-tab` | The glyph |
+| `label` | `md-tab` | Label text |
+| `indicator` | `md-tab` | The active bar |
+| `divider` | `md-tab` | This tab's slice of the rule under the strip |
+| `state-layer` | `md-tab` | Hover / focus / press overlay |
+
+`md-tab-panels` and `md-tab-panel` expose **no** parts — they are layout and
+plumbing, with nothing of their own to paint.
+
+<ComponentDemo
+  html={`<style>
+  .parts-tabs::part(container) { padding-inline-start: 16px; }
+  .parts-tabs md-tab::part(label) { text-transform: uppercase; letter-spacing: .08em; font-size: 11px; }
+  .parts-tabs md-tab::part(indicator) { border-radius: 999px; }
+  .parts-tabs md-tab::part(divider) { background: var(--md-sys-color-primary); opacity: .25; }
+</style>
+<div style="inline-size: 100%; max-inline-size: 460px;">
+  <md-tabs class="parts-tabs" aria-label="Styled parts">
+    <md-tab label="Home" icon="home" active></md-tab>
+    <md-tab label="Search" icon="search"></md-tab>
+    <md-tab label="Profile" icon="person"></md-tab>
+  </md-tabs>
+</div>`}
+  label="container, label, indicator and divider"
+  storyId="navigation-tabs--css-parts"
+/>
+
+```css
+md-tabs::part(container) {
+  padding-inline-start: 16px;   /* M3: offset the first scrollable tab */
+}
+```
+
+
+## Related
+
+[`md-tab`](/components/tabs/#md-tab) ·
+[`md-tab-panels`](/components/tabs/#md-tab-panels) ·
+[`md-tab-panel`](/components/tabs/#md-tab-panel) ·
+[`md-navigation-bar`](/components/navigation-bar/) ·
+[`md-navigation-rail`](/components/navigation-rail/) ·
+[`md-stepper`](/components/stepper/) ·
+[`md-segmented-button`](/components/segmented-button/) ·
+[`md-accordion`](/components/accordion/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-tabs" />

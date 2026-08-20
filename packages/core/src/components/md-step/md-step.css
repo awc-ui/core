@@ -1,0 +1,615 @@
+/* ==========================================================
+   md-step — one step inside <md-stepper>
+   MD3 Expressive: spring bubble on the active step, a rounded expressive
+   progress connector, spring-animated (grid-rows 0fr↔1fr) vertical content
+   panels, staggered entrance, a hover/ripple disc kept proportional to each
+   indicator variant, and a fixed indicator baseline so connectors stay
+   aligned regardless of label/description height.
+
+   Motion vocabulary (house idiom — see md-fab / md-accordion-item):
+     spatial springs  → transform, box-shadow, border-radius, sizes (overshoot ok)
+     effects springs  → background-color, color, opacity (never overshoot)
+
+   PUBLIC CSS CUSTOM PROPERTIES:
+     --md-step-indicator-size           Bubble diameter (32px; 28px compact)
+     --md-step-indicator-ring           Hover / ripple ring thickness around the
+                                        indicator (8px).
+     --md-step-indicator-color          Pending bubble background
+     --md-step-indicator-text           Pending bubble text
+     --md-step-active-color             Active bubble background
+     --md-step-active-text              Active bubble text
+     --md-step-active-halo-color        Soft halo around the active bubble
+     --md-step-completed-color          Completed bubble background
+     --md-step-completed-text           Completed bubble text
+     --md-step-error-color              Error bubble background
+     --md-step-error-text               Error bubble text
+     --md-step-connector-color          Inactive connector track
+     --md-step-connector-filled-color   Filled connector
+     --md-step-connector-thickness      Connector thickness (4px)
+     --md-step-connector-duration       Connector fill duration
+     --md-step-label-color              Resting label colour
+     --md-step-label-active-color       Active label colour
+     --md-step-description-color        Supporting / optional caption colour
+     --md-step-state-layer-color        Hover / focus / press overlay
+     --md-step-expand-duration          Vertical panel expand duration
+     --md-step-collapse-duration        Vertical panel collapse duration
+
+   PARTS: inner · indicator · bubble · dot · state-layer · text · label ·
+          optional · description · connector · connector-leading ·
+          connector-trailing · content · actions
+   ========================================================== */
+
+:host {
+  --_size: var(--md-step-indicator-size, max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px)));
+  --_indicator-h: var(--_size);
+  --_indicator-ring: var(--md-step-indicator-ring, max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px)));
+  --_color: var(--md-step-indicator-color, var(--md-sys-color-surface-container-highest, #E6E0E9));
+  --_text: var(--md-step-indicator-text, var(--md-sys-color-on-surface-variant, #49454F));
+  --_active-color: var(--md-step-active-color, var(--md-sys-color-primary, #6750A4));
+  --_active-text: var(--md-step-active-text, var(--md-sys-color-on-primary, #FFFFFF));
+  --_active-halo: var(--md-step-active-halo-color, var(--md-sys-color-primary, #6750A4));
+  --_completed-color: var(--md-step-completed-color, var(--md-sys-color-primary, #6750A4));
+  --_completed-text: var(--md-step-completed-text, var(--md-sys-color-on-primary, #FFFFFF));
+  --_error-color: var(--md-step-error-color, var(--md-sys-color-error, #B3261E));
+  --_error-text: var(--md-step-error-text, var(--md-sys-color-on-error, #FFFFFF));
+  --_connector: var(--md-step-connector-color, var(--md-sys-color-outline-variant, #CAC4D0));
+  --_connector-filled: var(--md-step-connector-filled-color, var(--md-sys-color-primary, #6750A4));
+  --_connector-thickness: var(--md-step-connector-thickness, max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px)));
+  --_label-color: var(--md-step-label-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_label-active-color: var(--md-step-label-active-color, var(--md-sys-color-on-surface, #1C1B1F));
+  --_description-color: var(--md-step-description-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_state-layer-color: var(--md-step-state-layer-color, var(--md-sys-color-on-surface, #1C1B1F));
+
+  /* Motion: spatial spring for movement/shape; effects spring for color;
+     LINEAR for the connector so it visibly "progresses" toward the next step
+     like a determinate indicator. Panel expand rides the spatial spring,
+     collapse accelerates out (asymmetric, like md-accordion-item). */
+  --_spring-duration: var(--md-sys-motion-spring-spatial-default-duration, 500ms);
+  --_spring-easing: var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1.00));
+  --_state-duration: var(--md-sys-motion-spring-effects-default-duration, 200ms);
+  --_state-easing: var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.80, 0.34, 1.00));
+  --_expand-duration: var(--md-step-expand-duration, var(--md-sys-motion-spring-spatial-default-duration, 500ms));
+  --_expand-easing: var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1.00));
+  --_collapse-duration: var(--md-step-collapse-duration, var(--md-sys-motion-duration-short4, 200ms));
+  --_collapse-easing: var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15));
+  --_connector-duration: var(--md-step-connector-duration, var(--md-sys-motion-duration-medium3, 350ms));
+  --_connector-easing: linear;
+  /* Halo ring around the active indicator. Kept modest so the connector fill /
+     rail can clear it with a small --_connector-gap on every side (letting the
+     rail reach close enough to read as connected). */
+  --_active-halo-size: 3px;
+
+  display: flex;
+  box-sizing: border-box;
+  position: relative;
+  font-family: var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif);
+  animation: md-step-enter var(--md-sys-motion-spring-effects-slow-duration, 300ms) var(--_state-easing) backwards;
+  animation-delay: calc(var(--md-step-idx, 0) * 40ms);
+}
+
+/* Staggered entrance — opacity only, so measured geometry is stable from the
+   first frame. --md-step-idx is stamped by the parent stepper. */
+@keyframes md-step-enter {
+  from { opacity: 0; }
+}
+
+/* ── Orientation / indicator variants ─────────────────────── */
+:host(.md-step--indicator-dot) {
+  --_indicator-h: 10px;
+  /* Dots carry no glyph: the pending fill alone must clear 3:1 against
+     surface, so default to outline instead of surface-container-highest. */
+  --_color: var(--md-step-indicator-color, var(--md-sys-color-outline, #79747E));
+}
+
+:host(.md-step--horizontal) {
+  --_indicator-pad: max(0px, calc(4px + var(--md-sys-density-scale, 0) * 1px));
+  --_connector-gap: max(4px, calc(10px + var(--md-sys-density-scale, 0) * 1px));
+  flex: 1 1 0;
+  min-inline-size: 0;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* ── Horizontal panel mode (opt-in) ──────────────────────────────────────────
+   The host dissolves so its two boxes become grid items of the stepper's row:
+   the header keeps every flex property the host used to carry (so the
+   indicator, labels and connectors lay out exactly as before), and the panel
+   spans the full row underneath. Only reached via .md-step--panel-step, which
+   md-step sets solely in this mode — the plain horizontal step is untouched. */
+:host(.md-step--horizontal.md-step--panel-step) {
+  display: contents;
+}
+
+:host(.md-step--horizontal.md-step--panel-step) .md-step__header {
+  grid-row: 1;
+  display: flex;
+  flex: 1 1 0;
+  min-inline-size: 0;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+}
+
+:host(.md-step--horizontal.md-step--panel-step) .md-step__content {
+  grid-row: 2;
+  grid-column: 1 / -1;
+}
+
+:host(.md-step--vertical) {
+  flex: initial;
+  flex-direction: row;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  /* Small gap around the indicator (rounded caps like the horizontal
+     connector) — kept tight so the rail reaches close to both bubbles and
+     reads as connected, not a floating pill, even between adjacent steps. */
+  --_connector-gap: 6px;
+  /* Rhythm between stacked headers — gives the rail real length between
+     collapsed steps so it connects rather than showing a stub. On-grid 16px
+     tracks global density via --md-sys-spacing-inset-lg (byte-for-byte at 0). */
+  padding-block-end: var(--md-sys-spacing-inset-lg, 16px);
+}
+:host(.md-step--vertical.md-step--last) { padding-block-end: 0; }
+
+/* ==========================================================
+   1. INNER (clickable header — layout only; affordance lives on the indicator)
+   ========================================================== */
+.md-step__inner {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  /* Global density: indicator↔label gap tracks --md-sys-spacing-gap-md. The
+     vertical content panel's margin-inline-start mirrors this same token so the
+     panel stays aligned under the label at every density rung. */
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: start;
+  color: inherit;
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:host(.md-step--horizontal) .md-step__inner {
+  flex-direction: column;
+  align-items: center;
+  gap: max(2px, calc(6px + var(--md-sys-density-scale, 0) * 1px));
+  padding-block-start: var(--_indicator-pad);
+  padding-inline: var(--md-sys-spacing-inset-sm, 8px);
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  z-index: 1;
+}
+
+:host(.md-step--vertical) .md-step__inner {
+  padding-inline-start: 8px;
+  z-index: 1;
+}
+
+/* ==========================================================
+   2. INDICATOR — circular affordance wrapper (hover / focus / ripple)
+   ========================================================== */
+.md-step__indicator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: calc(var(--_indicator-h) + 2 * var(--_indicator-ring));
+  block-size: calc(var(--_indicator-h) + 2 * var(--_indicator-ring));
+  border-radius: 50%;
+  flex-shrink: 0;
+  /* md-ripple's wave uses currentColor (library convention — see md-radio):
+     this `color` is inherited into the ripple only, since the bubble/number
+     and dot set their own colours. */
+  color: var(--_state-layer-color);
+}
+
+/* md-ripple is display:contents; its clip uses border-radius: inherit which
+   resolves against the ripple HOST — give it the round shape so the wave is a
+   disc, not a square. */
+.md-step__indicator md-ripple {
+  border-radius: 50%;
+}
+
+.md-step__state-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-color: var(--_state-layer-color);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--_state-duration) var(--_state-easing);
+}
+.md-step__inner:hover:not([aria-disabled="true"]) .md-step__state-layer {
+  opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+}
+.md-step__inner:focus-visible .md-step__state-layer {
+  opacity: var(--md-sys-state-focus-state-layer-opacity, 0.12);
+}
+.md-step__inner:active:not([aria-disabled="true"]) .md-step__state-layer {
+  opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+}
+
+/* Circular focus ring on the indicator (box-shadow follows the 50% radius on
+   every engine — unlike outline). */
+.md-step__inner:focus-visible { outline: none; }
+.md-step__inner:focus-visible .md-step__indicator {
+  box-shadow:
+    0 0 0 2px var(--md-sys-color-surface, #FEF7FF),
+    0 0 0 5px var(--md-sys-color-secondary, #625B71);
+}
+
+:host(.md-step--disabled) .md-step__inner { cursor: not-allowed; }
+:host(.md-step--disabled) .md-step__indicator { opacity: 0.38; }
+:host(.md-step--disabled) md-ripple,
+:host(.md-step--disabled) .md-step__state-layer { display: none; }
+
+/* ==========================================================
+   3. BUBBLE + DOT
+   ========================================================== */
+.md-step__bubble {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_size);
+  block-size: var(--_size);
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  background-color: var(--_color);
+  color: var(--_text);
+  font-family: var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif);
+  font-size: var(--md-sys-typescale-label-large-font-size, 14px);
+  font-weight: var(--md-sys-typescale-label-large-font-weight, 500);
+  line-height: var(--md-sys-typescale-label-large-line-height, 20px);
+  flex-shrink: 0;
+  /* Spatial spring for movement; effects spring for paint. */
+  transition:
+    background-color var(--_state-duration) var(--_state-easing),
+    color var(--_state-duration) var(--_state-easing),
+    transform var(--_spring-duration) var(--_spring-easing),
+    box-shadow var(--_spring-duration) var(--_spring-easing);
+}
+
+.md-step__bubble .material-symbols-outlined {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-size: calc(var(--_size) * 0.56);
+  line-height: 1;
+  font-weight: normal;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+:host(.md-step--active) .md-step__bubble .material-symbols-outlined,
+:host(.md-step--completed) .md-step__bubble .material-symbols-outlined,
+:host(.md-step--error) .md-step__bubble .material-symbols-outlined {
+  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Scale-in the glyph when it appears (check / edit / error). */
+@keyframes md-step-glyph-in {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+:host(.md-step--completed) .md-step__bubble .material-symbols-outlined,
+:host(.md-step--error) .md-step__bubble .material-symbols-outlined {
+  animation: md-step-glyph-in var(--_spring-duration) var(--_spring-easing) both;
+}
+
+/* Active: spring up (stays circular) + a single soft halo. No elevation drop
+   shadow — its grey key/ambient layers stacked with the halo read as several
+   concentric grey rings around the bubble. */
+:host(.md-step--active) .md-step__bubble {
+  background-color: var(--_active-color);
+  color: var(--_active-text);
+  transform: scale(1.12);
+  box-shadow: 0 0 0 var(--_active-halo-size) color-mix(in srgb, var(--_active-halo) 14%, transparent);
+}
+:host(.md-step--completed) .md-step__bubble {
+  background-color: var(--_completed-color);
+  color: var(--_completed-text);
+}
+:host(.md-step--error) .md-step__bubble {
+  background-color: var(--_error-color);
+  color: var(--_error-text);
+  animation: md-step-error-pulse var(--md-sys-motion-duration-medium2, 300ms) var(--_state-easing) both;
+}
+@keyframes md-step-error-pulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.md-step__dot {
+  display: inline-block;
+  inline-size: var(--_indicator-h);
+  block-size: var(--_indicator-h);
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  background-color: var(--_color);
+  flex-shrink: 0;
+  transition:
+    background-color var(--_state-duration) var(--_state-easing),
+    box-shadow var(--_spring-duration) var(--_spring-easing),
+    transform var(--_spring-duration) var(--_spring-easing);
+}
+/* Active dot springs up but stays a circle — same pattern as the numbered
+   bubble (scale, not shape-morph). */
+:host(.md-step--active) .md-step__dot {
+  background-color: var(--_active-color);
+  transform: scale(1.4);
+  box-shadow: 0 0 0 var(--_active-halo-size) color-mix(in srgb, var(--_active-halo) 18%, transparent);
+}
+:host(.md-step--completed) .md-step__dot { background-color: var(--_completed-color); }
+:host(.md-step--error) .md-step__dot { background-color: var(--_error-color); }
+
+/* ==========================================================
+   4. TEXT — label, optional caption, supporting / error text
+   ========================================================== */
+.md-step__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-inline-size: 0;
+}
+:host(.md-step--horizontal) .md-step__text {
+  align-items: center;
+  text-align: center;
+  max-inline-size: 100%;
+}
+
+.md-step__label {
+  color: var(--_label-color);
+  font-family: var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif);
+  font-size: max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-label-large-font-weight, 500);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  transition:
+    color var(--_state-duration) var(--_state-easing),
+    font-variation-settings var(--_state-duration) var(--_state-easing);
+}
+:host(.md-step--horizontal) .md-step__label {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+:host(.md-step--active) .md-step__label {
+  color: var(--_label-active-color);
+  font-weight: 600;
+  font-variation-settings: 'wght' 600;
+}
+:host(.md-step--error) .md-step__label { color: var(--_error-color); }
+:host(.md-step--disabled) .md-step__text { opacity: 0.38; }
+
+.md-step__optional,
+.md-step__description {
+  color: var(--_description-color);
+  font-family: var(--md-sys-typescale-body-small-font-family, Roboto, sans-serif);
+  font-size: max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-small-font-weight, 400);
+  line-height: max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+}
+.md-step__optional { font-style: italic; }
+:host(.md-step--error) .md-step__description { color: var(--_error-color); }
+
+/* ==========================================================
+   5. CONNECTORS — expressive determinate-progress styling: a rounded 4px
+   track whose fill sweeps linearly toward the next step.
+   ========================================================== */
+.md-step__connector {
+  position: relative;
+  flex: 1;
+  align-self: center;
+  background-color: var(--_connector);
+  overflow: hidden;
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+}
+.md-step__connector::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--_connector-filled);
+  border-radius: inherit;
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform var(--_connector-duration) var(--_connector-easing);
+}
+.md-step__connector--filled::after { transform: scaleX(1); }
+
+:host([dir="rtl"]) .md-step__connector::after,
+:host-context([dir="rtl"]) .md-step__connector::after { transform-origin: right center; }
+
+/* Horizontal: ONE connector per gap, spanning from this indicator's edge to
+   the NEXT indicator's edge (overflowing into the next step's box). A single
+   element means the fill sweeps continuously across the whole gap — not two
+   half segments meeting at the midpoint. Pinned to the indicator's fixed
+   centre line (sized off --_indicator-h so the dot variant aligns too), so it
+   stays put regardless of label height. */
+:host(.md-step--horizontal) .md-step__connector--trailing {
+  position: absolute;
+  inset-block-start: calc(var(--_indicator-pad) + var(--_indicator-ring) + var(--_indicator-h) / 2);
+  transform: translateY(-50%);
+  block-size: var(--_connector-thickness);
+  inset-inline-start: calc(50% + var(--_indicator-h) / 2 + var(--_connector-gap));
+  inline-size: calc(100% - var(--_indicator-h) - 2 * var(--_connector-gap));
+  flex: none;
+  align-self: auto;
+  z-index: 0;
+}
+
+/* Vertical rail — ONE rounded connector per gap, exactly like the horizontal
+   connector: same rounded caps and same --_connector-gap clearance around the
+   indicators. A single element per gap (no leading/trailing halves) means no
+   mid-gap junction and no stray cap nub, and the uniform gap clears the active
+   bubble's scaled halo on both sides regardless of which step is active. The
+   span is pinned to the bubble centre (a FIXED `ring + h/2` from the box top),
+   never a percentage of the box, so a tall (active) content step doesn't
+   stretch the line through its content: the trailing runs from `gap` below THIS
+   bubble to `gap` above the NEXT one (crossing the box boundary via the
+   negative block-end). The half-thickness offset centres the rail without
+   transforms, so RTL mirrors purely via the logical inset. */
+:host(.md-step--vertical) .md-step__connector {
+  position: absolute;
+  flex: none;
+  align-self: auto;
+  z-index: 0; /* stays behind the bubble (the inner is z-index: 1) */
+  inline-size: var(--_connector-thickness);
+  inset-inline-start: calc(8px + var(--_indicator-ring) + (var(--_indicator-h) - var(--_connector-thickness)) / 2);
+}
+:host(.md-step--vertical) .md-step__connector--leading { display: none; }
+:host(.md-step--vertical) .md-step__connector--trailing {
+  inset-block-start: calc(var(--_indicator-ring) + var(--_indicator-h) + var(--_connector-gap));
+  inset-block-end: calc(var(--_connector-gap) - var(--_indicator-ring));
+}
+:host(.md-step--vertical) .md-step__connector::after {
+  transform-origin: center top;
+  transform: scaleY(0);
+}
+:host(.md-step--vertical) .md-step__connector--filled::after { transform: scaleY(1); }
+
+/* ==========================================================
+   6. VERTICAL CONTENT PANEL + ACTIONS — spring expand / accelerate collapse
+   via the modern grid-rows 0fr↔1fr height trick (same pattern as
+   md-accordion-item): no measurement JS, RTL-safe, reduced-motion safe.
+   Closed panels stay in the tree (so closing animates too) but flip to
+   visibility:hidden after the collapse, leaving the a11y tree + tab order.
+   ========================================================== */
+.md-step__content {
+  flex: 1 1 100%;
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  /* Aligns the panel under the label: the leading 8px matches the vertical
+     inner's padding-inline-start (positional — kept literal in lockstep with the
+     connector inset), and the trailing gap mirrors the inner's gap token so the
+     indent follows global density. */
+  margin-inline-start: calc(8px + var(--_indicator-h) + 2 * var(--_indicator-ring) + var(--md-sys-spacing-gap-md, 12px));
+  color: var(--md-sys-color-on-surface, #1C1B1F);
+  transition:
+    grid-template-rows var(--_collapse-duration) var(--_collapse-easing),
+    opacity var(--_collapse-duration) var(--_collapse-easing),
+    visibility 0s linear var(--_collapse-duration);
+}
+.md-step__content--open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows var(--_expand-duration) var(--_expand-easing),
+    opacity var(--_state-duration) var(--_state-easing),
+    visibility 0s;
+}
+.md-step__content-sizer {
+  /* The grid item must have NO block padding/border, or its intrinsic
+     min-size defeats the 0fr collapse — spacing lives on the inner wrapper. */
+  min-block-size: 0;
+  overflow: hidden;
+}
+.md-step__content-inner {
+  /* On-grid panel padding tracks global density (4/16 = inset-xs/lg). */
+  padding-block-start: var(--md-sys-spacing-inset-xs, 4px);
+  padding-block-end: var(--md-sys-spacing-inset-lg, 16px);
+}
+
+/* Lazy panel — only the active step's panel is mounted, so there is no collapse
+   to animate: drop the grid-rows trick and just fade+slide it in on mount. */
+.md-step__content--lazy {
+  display: block;
+  grid-template-rows: none;
+  opacity: 1;
+  visibility: visible;
+  transition: none;
+  animation: md-step-content-enter var(--_expand-duration) var(--_expand-easing) both;
+}
+.md-step__content--lazy .md-step__content-sizer { overflow: visible; }
+@keyframes md-step-content-enter {
+  from { opacity: 0; transform: translateY(-6px); }
+}
+.md-step__actions {
+  display: flex;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  margin-block-start: var(--md-sys-spacing-gap-lg, 16px);
+}
+
+/* ==========================================================
+   7. COMPACT / RESPONSIVE (horizontal)
+   ========================================================== */
+@media (max-width: 599px) {
+  :host(.md-step--horizontal) {
+    --_size: var(--md-step-indicator-size, 28px);
+    --_connector-gap: 8px;
+  }
+  :host(.md-step--horizontal) .md-step__inner { gap: var(--md-sys-spacing-gap-xs, 4px); padding-inline: var(--md-sys-spacing-inset-xs, 4px); }
+  :host(.md-step--horizontal) .md-step__label {
+    font-size: var(--md-sys-typescale-label-medium-font-size, 12px);
+    line-height: var(--md-sys-typescale-label-medium-line-height, 16px);
+  }
+  :host(.md-step--horizontal) .md-step__optional,
+  :host(.md-step--horizontal) .md-step__description { display: none; }
+}
+
+/* ==========================================================
+   8. REDUCED MOTION
+   ========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  :host { animation: none !important; }
+  .md-step__bubble,
+  .md-step__dot,
+  .md-step__connector,
+  .md-step__connector::after,
+  .md-step__state-layer,
+  .md-step__label,
+  .md-step__content,
+  .md-step__bubble .material-symbols-outlined {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    animation: none !important;
+  }
+  :host(.md-step--active) .md-step__bubble,
+  :host(.md-step--active) .md-step__dot {
+    transform: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--_active-halo) 25%, transparent);
+  }
+}
+
+/* ==========================================================
+   9. FORCED COLORS
+   ========================================================== */
+@media (forced-colors: active) {
+  .md-step__bubble,
+  .md-step__dot {
+    background-color: Canvas;
+    border: 2px solid CanvasText;
+    forced-color-adjust: none;
+  }
+  :host(.md-step--active) .md-step__bubble,
+  :host(.md-step--completed) .md-step__bubble { background-color: Highlight; color: HighlightText; }
+  /* The rail is pure background paint — without this it vanishes in WHC. */
+  .md-step__connector {
+    background-color: GrayText;
+    forced-color-adjust: none;
+  }
+  .md-step__connector::after { background-color: Highlight; }
+  .md-step__state-layer { display: none; }
+  .md-step__inner:focus-visible .md-step__indicator { box-shadow: 0 0 0 3px Highlight; }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

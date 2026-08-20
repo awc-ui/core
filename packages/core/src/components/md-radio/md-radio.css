@@ -1,0 +1,343 @@
+/* ==========================================================
+   md-radio — Material Design 3 Radio Button
+   Spec: https://m3.material.io/components/radio-button/specs
+
+   Measurements (MD3 spec):
+     Icon size:             20px (outer circle)
+     Inner dot:             10px (when checked)
+     State-layer size:      40px
+     Target (touch) size:   48px
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-radio-icon-color                 Unchecked outer circle color
+     --md-radio-selected-icon-color        Checked outer circle + inner dot color
+     --md-radio-icon-size                  Outer circle size
+     --md-radio-inner-circle-size          Inner dot size
+     --md-radio-state-layer-size           State-layer diameter
+     --md-radio-state-layer-color          State-layer color (unchecked)
+     --md-radio-selected-state-layer-color State-layer color (checked)
+
+   CSS PARTS:
+     state-layer     Hover / focus / press overlay
+     container       Wrapper around outer + inner circles
+     outer-circle    The 20px circle border
+     inner-circle    The 10px filled dot
+
+   SLOTS:
+     (none — standalone control, label provided externally)
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST — TOUCH TARGET (48px)
+   color controls md-ripple wave (md-ripple uses currentColor).
+   ========================================================== */
+
+:host {
+  --_icon-color: var(--md-radio-icon-color, var(--md-sys-color-on-surface-variant));
+  --_selected-icon-color: var(--md-radio-selected-icon-color, var(--md-sys-color-primary));
+  /* The visible circle + dot shrink with global density (20/10 at 0 → 16/8 at
+     -4) so the control densifies, not just the tap target; ratio preserved. */
+  --_icon-size: var(--md-radio-icon-size, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)));
+  --_inner-circle-size: var(--md-radio-inner-circle-size, max(8px, calc(10px + var(--md-sys-density-scale, 0) * 0.5px)));
+  /* Global density: the state layer shrinks in step with the host touch target
+     (both trim 4px per `data-density` rung), so it stays 8px inside the host at
+     every rung. Floored at 24px; unchanged at density 0. */
+  --_state-layer-size: max(24px, calc(var(--md-radio-state-layer-size, 40px) + var(--md-sys-density-scale, 0) * 4px));
+  --_state-layer-color: var(--md-radio-state-layer-color, var(--md-sys-color-on-surface));
+  --_selected-state-layer-color: var(--md-radio-selected-state-layer-color, var(--md-sys-color-primary));
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  /* Global density: each `data-density` rung (0…-4) trims 4px off the touch
+     target, floored at 32px to keep breathing room around the 20px circle.
+     Unchanged at density 0. */
+  inline-size: max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px));
+  block-size: max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px));
+  cursor: pointer;
+  border-radius: var(--md-sys-shape-corner-full, 50%);
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  vertical-align: middle;
+  outline: none;
+  color: var(--_state-layer-color);
+}
+
+:host(.md-radio--checked) {
+  color: var(--_selected-state-layer-color);
+}
+
+/* ==========================================================
+   2. HIDDEN NATIVE INPUT
+   The host is the interactive radio (role="radio" + roving
+   tabindex). This decorative input must be fully removed from
+   the focus order and accessibility tree — a native <input> stays
+   natively focusable despite tabindex="-1"/aria-hidden, which would
+   nest a second interactive control inside the role="radio" host
+   (axe: nested-interactive). display:none is the only reliable way
+   to strip a native control's focusability; opacity/zero-size do not.
+   ========================================================== */
+
+.md-radio__native {
+  display: none;
+}
+
+/* ==========================================================
+   3. RIPPLE LAYER (40px — constrains md-ripple to state-layer size)
+   md-ripple resolves this span as its host via parentElement,
+   so its wave is sized and clipped to the 40px circle.
+   ========================================================== */
+
+.md-radio__ripple-layer {
+  position: absolute;
+  inline-size: var(--_state-layer-size);
+  block-size: var(--_state-layer-size);
+  border-radius: var(--md-sys-shape-corner-full, 50%);
+  overflow: hidden;
+}
+
+:host(.md-radio--disabled) .md-radio__ripple-layer,
+:host([soft-disabled]) .md-radio__ripple-layer {
+  display: none;
+}
+
+/* ==========================================================
+   4. STATE LAYER (40px centered inside 48px touch target)
+   ========================================================== */
+
+.md-radio__state-layer {
+  position: absolute;
+  inline-size: var(--_state-layer-size);
+  block-size: var(--_state-layer-size);
+  border-radius: var(--md-sys-shape-corner-full, 50%);
+  background-color: var(--_state-layer-color);
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  pointer-events: none;
+}
+
+/* Unchecked state-layer */
+:host(.md-radio--unchecked:hover) .md-radio__state-layer {
+  opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+}
+
+:host(.md-radio--unchecked:active) .md-radio__state-layer {
+  opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+}
+
+/* Checked state-layer */
+:host(.md-radio--checked) .md-radio__state-layer {
+  background-color: var(--_selected-state-layer-color);
+}
+
+:host(.md-radio--checked:hover) .md-radio__state-layer {
+  opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+}
+
+:host(.md-radio--checked:active) .md-radio__state-layer {
+  opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+}
+
+/* ==========================================================
+   5. FOCUS RING — separate pseudo so it is NOT affected by the
+   state-layer's opacity (which would make the ring ~12% visible).
+   Sized to the 40px state-layer, with a 2px gap from the 20px
+   container.
+   ========================================================== */
+
+:host(:focus-visible)::after,
+:host(.md-radio--focus-ring)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  inline-size: var(--_state-layer-size);
+  block-size: var(--_state-layer-size);
+  border-radius: var(--md-sys-shape-corner-full, 50%);
+  outline: 3px solid var(--md-sys-color-secondary);
+  /* Sits ON the state layer, not pulled inside it. At -8px the ring drew at
+     24px around a 20px radio — a 2px gap — so it read as a bullseye welded to
+     the control rather than as a focus indicator. On the state layer it clears
+     the circle by a visible margin and still fits the touch target: the ring's
+     outer edge is state-layer + 6px (46px inside a 48px host at density 0,
+     30px inside 32px at -4). */
+  outline-offset: 0;
+  pointer-events: none;
+}
+
+/* ==========================================================
+   6. CONTAINER (positions outer + inner circles)
+   Transition uses same motion tokens as md-checkbox:
+     Release: medium4 (400ms) + emphasized-decelerate (spring-back)
+     Press:   short4  (200ms) + standard (snap-in)
+   ========================================================== */
+
+.md-radio__container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  pointer-events: none;
+  transition:
+    transform var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
+}
+
+/* Press animation — M3 Expressive squish */
+:host(.md-radio--pressed) .md-radio__container {
+  transform: scale(0.82);
+  transition:
+    transform var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* ==========================================================
+   7. OUTER CIRCLE (20px, 2px border)
+   ========================================================== */
+
+.md-radio__outer {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--md-sys-shape-corner-full, 50%);
+  border: 2px solid var(--_icon-color);
+  box-sizing: border-box;
+  transition:
+    border-color var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+:host(.md-radio--checked) .md-radio__outer {
+  border-color: var(--_selected-icon-color);
+}
+
+/* ==========================================================
+   8. INNER CIRCLE (10px filled dot)
+   Grows from scale(0) to scale(1) when checked.
+   ========================================================== */
+
+.md-radio__inner {
+  inline-size: var(--_inner-circle-size);
+  block-size: var(--_inner-circle-size);
+  border-radius: var(--md-sys-shape-corner-full, 50%);
+  background-color: var(--_selected-icon-color);
+  transform: scale(0);
+  transition:
+    transform var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
+}
+
+:host(.md-radio--checked) .md-radio__inner {
+  transform: scale(1);
+}
+
+/* ==========================================================
+   9. DISABLED
+   ========================================================== */
+
+:host(.md-radio--disabled) {
+  cursor: default;
+  pointer-events: none;
+}
+
+:host(.md-radio--disabled.md-radio--unchecked) .md-radio__outer {
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+}
+
+:host(.md-radio--disabled.md-radio--checked) .md-radio__outer {
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+}
+
+:host(.md-radio--disabled.md-radio--checked) .md-radio__inner {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+}
+
+:host(.md-radio--disabled) .md-radio__state-layer {
+  display: none;
+}
+
+/* Soft-disabled: disabled visuals but remains focusable */
+:host([soft-disabled]) {
+  cursor: default;
+  pointer-events: auto;
+}
+
+:host([soft-disabled].md-radio--unchecked) .md-radio__outer {
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+}
+
+:host([soft-disabled].md-radio--checked) .md-radio__outer {
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+}
+
+:host([soft-disabled].md-radio--checked) .md-radio__inner {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+}
+
+:host([soft-disabled]) .md-radio__state-layer {
+  display: none;
+}
+
+/* ==========================================================
+   10. REDUCED MOTION
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-radio__container,
+  .md-radio__state-layer,
+  .md-radio__outer,
+  .md-radio__inner {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   11. FORCED COLORS — Windows High Contrast
+   ========================================================== */
+
+@media (forced-colors: active) {
+  :host {
+    forced-color-adjust: none;
+  }
+
+  .md-radio__outer {
+    border-color: ButtonText;
+  }
+
+  :host(.md-radio--checked) .md-radio__outer {
+    border-color: Highlight;
+  }
+
+  :host(.md-radio--checked) .md-radio__inner {
+    background-color: Highlight;
+  }
+
+  :host(:focus-visible)::after,
+  :host(.md-radio--focus-ring)::after {
+    outline-color: Highlight;
+  }
+
+  :host(.md-radio--disabled) .md-radio__outer {
+    border-color: GrayText;
+  }
+
+  :host(.md-radio--disabled.md-radio--checked) .md-radio__inner {
+    background-color: GrayText;
+  }
+
+  .md-radio__state-layer {
+    display: none;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

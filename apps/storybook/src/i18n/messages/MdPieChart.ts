@@ -1,0 +1,60 @@
+import type { Entry } from '../index';
+
+/** Demo strings for the Charts/Pie Chart stories. Following the Bar/Area Chart
+ *  precedent, only user-facing chart content is localized: the chart title
+ *  (`label` = "Traffic"), the slice/legend labels (traffic channels + the
+ *  storage and status categories) and the centre-slot copy (Visitors / storage
+ *  used). Technical demo captions that name a prop ("paddingAngle=…"), the
+ *  numeric readouts (68%, the visitor totals), placeholder colours, radius/angle
+ *  enum values and CSS custom properties stay in English. */
+export const messages: Record<string, Entry> = {
+  'pieChart.traffic': { 'en-US': 'Traffic', 'ar-SA': 'الزيارات', 'he-IL': 'תנועה', 'ja-JP': 'トラフィック', 'de-DE': 'Zugriffe', 'fr-FR': 'Trafic', 'zh-CN': '流量' },
+  'pieChart.direct': { 'en-US': 'Direct', 'ar-SA': 'مباشر', 'he-IL': 'ישיר', 'ja-JP': '直接', 'de-DE': 'Direkt', 'fr-FR': 'Direct', 'zh-CN': '直接' },
+  'pieChart.organicSearch': { 'en-US': 'Organic search', 'ar-SA': 'بحث عضوي', 'he-IL': 'חיפוש אורגני', 'ja-JP': 'オーガニック検索', 'de-DE': 'Organische Suche', 'fr-FR': 'Recherche organique', 'zh-CN': '自然搜索' },
+  'pieChart.paidSocial': { 'en-US': 'Paid social', 'ar-SA': 'التواصل الاجتماعي المدفوع', 'he-IL': 'מדיה חברתית בתשלום', 'ja-JP': '有料ソーシャル', 'de-DE': 'Bezahlte soziale Medien', 'fr-FR': 'Réseaux sociaux payants', 'zh-CN': '付费社交' },
+  'pieChart.referral': { 'en-US': 'Referral', 'ar-SA': 'إحالة', 'he-IL': 'הפניה', 'ja-JP': '参照元', 'de-DE': 'Verweis', 'fr-FR': 'Référent', 'zh-CN': '引荐' },
+  'pieChart.email': { 'en-US': 'Email', 'ar-SA': 'البريد الإلكتروني', 'he-IL': 'אימייל', 'ja-JP': 'メール', 'de-DE': 'E-Mail', 'fr-FR': 'E-mail', 'zh-CN': '电子邮件' },
+  'pieChart.visitors': { 'en-US': 'Visitors', 'ar-SA': 'الزوّار', 'he-IL': 'מבקרים', 'ja-JP': '訪問者', 'de-DE': 'Besucher', 'fr-FR': 'Visiteurs', 'zh-CN': '访客' },
+  'pieChart.visitorsLc': { 'en-US': 'visitors', 'ar-SA': 'الزوّار', 'he-IL': 'מבקרים', 'ja-JP': '訪問者', 'de-DE': 'Besucher', 'fr-FR': 'visiteurs', 'zh-CN': '访客' },
+  'pieChart.used': { 'en-US': 'Used', 'ar-SA': 'مستخدَم', 'he-IL': 'בשימוש', 'ja-JP': '使用中', 'de-DE': 'Belegt', 'fr-FR': 'Utilisé', 'zh-CN': '已用' },
+  'pieChart.free': { 'en-US': 'Free', 'ar-SA': 'متاح', 'he-IL': 'פנוי', 'ja-JP': '空き', 'de-DE': 'Frei', 'fr-FR': 'Libre', 'zh-CN': '可用' },
+  'pieChart.storageUsed': { 'en-US': 'storage used', 'ar-SA': 'مساحة التخزين المستخدَمة', 'he-IL': 'אחסון בשימוש', 'ja-JP': '使用済みストレージ', 'de-DE': 'Speicher belegt', 'fr-FR': 'stockage utilisé', 'zh-CN': '已用存储' },
+  'pieChart.success': { 'en-US': 'Success', 'ar-SA': 'نجاح', 'he-IL': 'הצלחה', 'ja-JP': '成功', 'de-DE': 'Erfolg', 'fr-FR': 'Succès', 'zh-CN': '成功' },
+  'pieChart.warning': { 'en-US': 'Warning', 'ar-SA': 'تحذير', 'he-IL': 'אזהרה', 'ja-JP': '警告', 'de-DE': 'Warnung', 'fr-FR': 'Avertissement', 'zh-CN': '警告' },
+  'pieChart.error': { 'en-US': 'Error', 'ar-SA': 'خطأ', 'he-IL': 'שגיאה', 'ja-JP': 'エラー', 'de-DE': 'Fehler', 'fr-FR': 'Erreur', 'zh-CN': '错误' },
+  'pieChart.nuclearRace': { 'en-US': "Nuclear generation, 1965–2024", 'ar-SA': "توليد الطاقة النووية، ١٩٦٥–٢٠٢٤", 'he-IL': "ייצור גרעיני, 1965–2024", 'ja-JP': "原子力発電量、1965〜2024年", 'de-DE': "Kernenergieerzeugung, 1965–2024", 'fr-FR': "Production nucléaire, 1965–2024", 'zh-CN': "核能发电量，1965–2024" },
+  'pieChart.nuclearSub': { 'en-US': "Five countries · TWh · Our World in Data", 'ar-SA': "خمس دول · تيراواط·ساعة · Our World in Data", 'he-IL': "חמש מדינות · TWh · Our World in Data", 'ja-JP': "5か国 · TWh · Our World in Data", 'de-DE': "Fünf Länder · TWh · Our World in Data", 'fr-FR': "Cinq pays · TWh · Our World in Data", 'zh-CN': "五国 · TWh · Our World in Data" },
+  'pieChart.total': { 'en-US': "Total", 'ar-SA': "الإجمالي", 'he-IL': "סה״כ", 'ja-JP': "合計", 'de-DE': "Gesamt", 'fr-FR': "Total", 'zh-CN': "总计" },
+  'pieChart.browserShare': { 'en-US': "Browser market share, January 2022", 'ar-SA': "حصة سوق المتصفحات، يناير ٢٠٢٢", 'he-IL': "נתח שוק הדפדפנים, ינואר 2022", 'ja-JP': "ブラウザ市場シェア、2022年1月", 'de-DE': "Browser-Marktanteil, Januar 2022", 'fr-FR': "Part de marché des navigateurs, janvier 2022", 'zh-CN': "浏览器市场份额，2022 年 1 月" },
+  'pieChart.browserSub': { 'en-US': "Families inside, versions outside · StatCounter", 'ar-SA': "العائلات في الداخل والإصدارات في الخارج · StatCounter", 'he-IL': "משפחות בפנים, גרסאות בחוץ · StatCounter", 'ja-JP': "内側がファミリー、外側がバージョン · StatCounter", 'de-DE': "Familien innen, Versionen außen · StatCounter", 'fr-FR': "Familles à l’intérieur, versions à l’extérieur · StatCounter", 'zh-CN': "内环为浏览器，外环为版本 · StatCounter" },
+  'pieChart.monochrome': { 'en-US': "Browser market share, monochrome", 'ar-SA': "حصة سوق المتصفحات، أحادي اللون", 'he-IL': "נתח שוק הדפדפנים, מונוכרום", 'ja-JP': "ブラウザ市場シェア（単色）", 'de-DE': "Browser-Marktanteil, monochrom", 'fr-FR': "Part de marché des navigateurs, monochrome", 'zh-CN': "浏览器市场份额（单色）" },
+  'pieChart.monochromeSub': { 'en-US': "One hue, darkest share first · StatCounter", 'ar-SA': "لون واحد، الحصة الأكبر أولًا · StatCounter", 'he-IL': "גוון אחד, הנתח הגדול ראשון · StatCounter", 'ja-JP': "単一色相、シェアの大きい順 · StatCounter", 'de-DE': "Ein Farbton, größter Anteil zuerst · StatCounter", 'fr-FR': "Une teinte, plus grande part en premier · StatCounter", 'zh-CN': "单一色相，份额最大在前 · StatCounter" },
+  'pieChart.drilldownSub': { 'en-US': "Click a slice to go a level deeper · StatCounter", 'ar-SA': "انقر شريحة للانتقال مستوى أعمق · StatCounter", 'he-IL': "לחצו על פלח כדי לרדת רמה · StatCounter", 'ja-JP': "スライスをクリックすると 1 階層下ります · StatCounter", 'de-DE': "Auf ein Segment klicken, um eine Ebene tiefer zu gehen · StatCounter", 'fr-FR': "Cliquez sur une part pour descendre d’un niveau · StatCounter", 'zh-CN': "点击扇区可下钻一层 · StatCounter" },
+  'pieChart.back': { 'en-US': "Back", 'ar-SA': "رجوع", 'he-IL': "חזרה", 'ja-JP': "戻る", 'de-DE': "Zurück", 'fr-FR': "Retour", 'zh-CN': "返回" },
+  'pieChart.fuelTitle': { 'en-US': "Registered private vehicles by fuel, Norway 2020", 'ar-SA': "المركبات الخاصة المسجلة حسب الوقود، النرويج ٢٠٢٠", 'he-IL': "רכבים פרטיים רשומים לפי דלק, נורווגיה 2020", 'ja-JP': "燃料別の登録乗用車、ノルウェー 2020年", 'de-DE': "Zugelassene Pkw nach Kraftstoff, Norwegen 2020", 'fr-FR': "Véhicules particuliers immatriculés par carburant, Norvège 2020", 'zh-CN': "按燃料划分的登记私家车，挪威 2020" },
+  'pieChart.petrol': { 'en-US': "Petrol", 'ar-SA': "بنزين", 'he-IL': "בנזין", 'ja-JP': "ガソリン", 'de-DE': "Benzin", 'fr-FR': "Essence", 'zh-CN': "汽油" },
+  'pieChart.diesel': { 'en-US': "Diesel", 'ar-SA': "ديزل", 'he-IL': "דיזל", 'ja-JP': "ディーゼル", 'de-DE': "Diesel", 'fr-FR': "Diesel", 'zh-CN': "柴油" },
+  'pieChart.electricity': { 'en-US': "Electricity", 'ar-SA': "كهرباء", 'he-IL': "חשמל", 'ja-JP': "電気", 'de-DE': "Strom", 'fr-FR': "Électricité", 'zh-CN': "电力" },
+  'pieChart.other': { 'en-US': "Other", 'ar-SA': "أخرى", 'he-IL': "אחר", 'ja-JP': "その他", 'de-DE': "Sonstige", 'fr-FR': "Autre", 'zh-CN': "其他" },
+  'pieChart.densityTitle': { 'en-US': "Countries by area and population density, 2024", 'ar-SA': "الدول حسب المساحة والكثافة السكانية، ٢٠٢٤", 'he-IL': "מדינות לפי שטח וצפיפות אוכלוסין, 2024", 'ja-JP': "面積と人口密度による国、2024年", 'de-DE': "Länder nach Fläche und Bevölkerungsdichte, 2024", 'fr-FR': "Pays par superficie et densité de population, 2024", 'zh-CN': "按面积与人口密度划分的国家，2024" },
+  'pieChart.densitySub': { 'en-US': "Angle is land area, radius is people per km²", 'ar-SA': "الزاوية هي المساحة ونصف القطر هو السكان لكل كم²", 'he-IL': "הזווית היא שטח והרדיוס הוא תושבים לקמ״ר", 'ja-JP': "角度は面積、半径は人口密度（人/km²）", 'de-DE': "Winkel ist Fläche, Radius Einwohner je km²", 'fr-FR': "L’angle est la superficie, le rayon la densité par km²", 'zh-CN': "角度表示面积，半径表示每平方公里人口" },
+  'pieChart.semiTitle': { 'en-US': "Browser shares, January 2022", 'ar-SA': "حصص المتصفحات، يناير ٢٠٢٢", 'he-IL': "נתחי הדפדפנים, ינואר 2022", 'ja-JP': "ブラウザシェア、2022年1月", 'de-DE': "Browser-Anteile, Januar 2022", 'fr-FR': "Parts des navigateurs, janvier 2022", 'zh-CN': "浏览器份额，2022 年 1 月" },
+  'pieChart.allBrowsers': { 'en-US': "All browsers", 'ar-SA': "جميع المتصفحات", 'he-IL': "כל הדפדפנים", 'ja-JP': "すべてのブラウザ", 'de-DE': "Alle Browser", 'fr-FR': "Tous les navigateurs", 'zh-CN': "所有浏览器" },
+  'pieChart.desktop': { 'en-US': "Desktop", 'ar-SA': "سطح المكتب", 'he-IL': "שולחני", 'ja-JP': "デスクトップ", 'de-DE': "Desktop", 'fr-FR': "Ordinateur", 'zh-CN': "桌面" },
+  'pieChart.mobile': { 'en-US': "Mobile", 'ar-SA': "الهاتف المحمول", 'he-IL': "נייד", 'ja-JP': "モバイル", 'de-DE': "Mobil", 'fr-FR': "Mobile", 'zh-CN': "移动设备" },
+  'pieChart.tablet': { 'en-US': "Tablet", 'ar-SA': "الجهاز اللوحي", 'he-IL': "טאבלט", 'ja-JP': "タブレット", 'de-DE': "Tablet", 'fr-FR': "Tablette", 'zh-CN': "平板" },
+  'country.France': { 'en-US': "France", 'ar-SA': "فرنسا", 'he-IL': "צרפת", 'ja-JP': "フランス", 'de-DE': "Frankreich", 'fr-FR': "France", 'zh-CN': "法国" },
+  'country.Spain': { 'en-US': "Spain", 'ar-SA': "إسبانيا", 'he-IL': "ספרד", 'ja-JP': "スペイン", 'de-DE': "Spanien", 'fr-FR': "Espagne", 'zh-CN': "西班牙" },
+  'country.Germany': { 'en-US': "Germany", 'ar-SA': "ألمانيا", 'he-IL': "גרמניה", 'ja-JP': "ドイツ", 'de-DE': "Deutschland", 'fr-FR': "Allemagne", 'zh-CN': "德国" },
+  'country.Poland': { 'en-US': "Poland", 'ar-SA': "بولندا", 'he-IL': "פולין", 'ja-JP': "ポーランド", 'de-DE': "Polen", 'fr-FR': "Pologne", 'zh-CN': "波兰" },
+  'country.Italy': { 'en-US': "Italy", 'ar-SA': "إيطاليا", 'he-IL': "איטליה", 'ja-JP': "イタリア", 'de-DE': "Italien", 'fr-FR': "Italie", 'zh-CN': "意大利" },
+  'country.Czechia': { 'en-US': "Czechia", 'ar-SA': "التشيك", 'he-IL': "צ׳כיה", 'ja-JP': "チェコ", 'de-DE': "Tschechien", 'fr-FR': "Tchéquie", 'zh-CN': "捷克" },
+  'country.Switzerland': { 'en-US': "Switzerland", 'ar-SA': "سويسرا", 'he-IL': "שווייץ", 'ja-JP': "スイス", 'de-DE': "Schweiz", 'fr-FR': "Suisse", 'zh-CN': "瑞士" },
+  'country.US': { 'en-US': "US", 'ar-SA': "أمريكا", 'he-IL': "ארה״ב", 'ja-JP': "米国", 'de-DE': "USA", 'fr-FR': "É.-U.", 'zh-CN': "美国" },
+  'country.UK': { 'en-US': "UK", 'ar-SA': "بريطانيا", 'he-IL': "בריטניה", 'ja-JP': "英国", 'de-DE': "UK", 'fr-FR': "R.-U.", 'zh-CN': "英国" },
+  'country.FR': { 'en-US': "FR", 'ar-SA': "فرنسا", 'he-IL': "צרפת", 'ja-JP': "仏", 'de-DE': "FR", 'fr-FR': "FR", 'zh-CN': "法国" },
+  'country.DE': { 'en-US': "DE", 'ar-SA': "ألمانيا", 'he-IL': "גרמניה", 'ja-JP': "独", 'de-DE': "DE", 'fr-FR': "DE", 'zh-CN': "德国" },
+  'country.JP': { 'en-US': "JP", 'ar-SA': "اليابان", 'he-IL': "יפן", 'ja-JP': "日本", 'de-DE': "JP", 'fr-FR': "JP", 'zh-CN': "日本" },
+  'unit.twh': { 'en-US': "TWh", 'ar-SA': "تيراواط·ساعة", 'he-IL': "טרה-וואט־שעה", 'ja-JP': "TWh", 'de-DE': "TWh", 'fr-FR': "TWh", 'zh-CN': "太瓦时" },
+  'unit.thousandKm2': { 'en-US': "thousand km²", 'ar-SA': "ألف كم²", 'he-IL': "אלף קמ״ר", 'ja-JP': "千km²", 'de-DE': "Tsd. km²", 'fr-FR': "milliers de km²", 'zh-CN': "千平方公里" },
+};

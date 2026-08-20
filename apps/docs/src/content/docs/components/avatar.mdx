@@ -1,0 +1,942 @@
+---
+title: Avatar
+description: "A person or entity as an image, initials, or a fallback glyph — with an automatic fallback chain"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/avatar.json";
+
+**A person or entity, as an image, initials, or a fallback glyph.** It falls
+back on its own — image → initials → derived initials → a person icon — and
+picks a deterministic colour from the name so the same person keeps the same
+tile everywhere.
+
+<ComponentDemo
+  html={`<md-avatar src="https://i.pravatar.cc/80?img=11" alt="Ada Lovelace" name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+<md-avatar name="Grace Hopper" label="Grace Hopper"></md-avatar>
+<md-avatar initials="AC" name="Acme Corp" shape="rounded" label="Acme Corp"></md-avatar>
+<md-avatar label="Unknown user"></md-avatar>`}
+  label="Live preview"
+  storyId="data-display-avatar--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-avatar" example="" />
+
+## When to use
+
+:::note[Not a Material Design 3 component]
+M3 has no avatar page. Everything below is **house rules**, derived from this
+component's behaviour rather than from `m3.material.io`.
+:::
+
+- Representing a **person, team, or organisation** in a list, table, comment,
+  app bar, or org chart.
+- Anywhere a photo may be missing and initials should stand in.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| A decorative or content image | Plain `<img>` |
+| An icon-only action | [`md-icon-button`](/components/icon-button/) |
+| A removable person token | [`md-chip`](/components/chip/) with `variant="input"` |
+| Presence state on its own | [`md-status-dot`](/components/status-dot/) |
+| A count marker | [`md-badge`](/components/badge/) |
+| A logo in an app bar | Plain `<img>` in the [`md-app-bar`](/components/app-bar/) slot |
+
+## The fallback chain
+
+`src` (if it loads) → `initials` → initials derived from `name` → a generic
+person icon. A 404 emits `mdError` and falls through automatically.
+
+| Set | You get |
+|---|---|
+| `src` that loads | The `<img>`, exposed as CSS part `image` |
+| `src` that 404s, plus `initials` | `mdError`, then the explicit initials |
+| `src` that 404s, plus `name` | `mdError`, then initials derived from `name` |
+| Neither `initials` nor `name` | The default slot, or the built-in `person` glyph |
+
+:::tip[You do not need your own `onerror`]
+The chain is built in. Writing an `onerror` handler that swaps the `src`
+fights the component.
+:::
+
+<ComponentDemo
+  html={`<md-avatar src="https://i.pravatar.cc/80?img=11" alt="Loads" name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+<md-avatar src="https://broken.invalid/nope.png" name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+<md-avatar src="https://broken.invalid/nope.png" initials="JD" label="John Doe"></md-avatar>
+<md-avatar src="https://broken.invalid/nope.png" label="Unknown user"></md-avatar>`}
+  label="Photo → derived initials → explicit initials → icon"
+/>
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 20px; align-items: center;">
+  <md-avatar src="https://i.pravatar.cc/80?img=11" alt="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+  <md-avatar src="https://i.pravatar.cc/80?img=32" alt="" name="Grace Hopper" label="Grace Hopper"></md-avatar>
+  <md-avatar src="https://i.pravatar.cc/80?img=15" alt="" name="Alan Turing" shape="rounded" label="Alan Turing"></md-avatar>
+</div>`}
+  label="Photo avatars"
+/>
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 20px; align-items: center;">
+  <md-avatar name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+  <md-avatar name="Grace Brewster Murray Hopper" label="Grace Hopper"></md-avatar>
+  <md-avatar initials="AT" label="Alan Turing"></md-avatar>
+  <md-avatar initials="+5" color-from-name="false" label="Five more"></md-avatar>
+</div>`}
+  label="Derived initials, explicit initials, and a counter"
+/>
+
+## Sizes
+
+:::note[`size` is not a closed enum]
+The three presets get editor autocomplete, but **any CSS length works**, and a
+unitless number is treated as pixels. `size="72"` and `size="72px"` are the
+same thing.
+:::
+
+| Value | Result |
+|---|---|
+| `small` | 24×24 |
+| `medium` | **Default.** 40×40 |
+| `large` | 56×56 |
+| `72` | 72px |
+| `4rem`, `clamp(28px, 4vw, 72px)` | Any CSS length |
+
+<ComponentDemo
+  html={`<md-avatar size="small" name="Ada Lovelace" label="Small"></md-avatar>
+<md-avatar size="medium" name="Ada Lovelace" label="Medium"></md-avatar>
+<md-avatar size="large" name="Ada Lovelace" label="Large"></md-avatar>
+<md-avatar size="72" name="Ada Lovelace" label="72px"></md-avatar>
+<md-avatar size="4rem" name="Ada Lovelace" label="4rem"></md-avatar>
+<md-avatar size="clamp(28px, 4vw, 72px)" name="Ada Lovelace" label="Fluid"></md-avatar>`}
+  label="Presets and arbitrary lengths"
+  storyId="data-display-avatar--sizes"
+/>
+
+## Shapes
+
+`circle` is the default and the right choice for people. Keep one shape per
+entity type.
+
+<ComponentDemo
+  html={`<md-avatar shape="circle" src="https://i.pravatar.cc/80?img=11" alt="Circle" name="Ada Lovelace"></md-avatar>
+<md-avatar shape="rounded" src="https://i.pravatar.cc/80?img=11" alt="Rounded" name="Ada Lovelace"></md-avatar>
+<md-avatar shape="square" src="https://i.pravatar.cc/80?img=11" alt="Square" name="Ada Lovelace"></md-avatar>
+<md-avatar shape="circle" name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+<md-avatar shape="rounded" name="Acme Corp" label="Acme Corp"></md-avatar>
+<md-avatar shape="square" name="Beta Industries" label="Beta Industries"></md-avatar>`}
+  label="Circle, rounded and square"
+/>
+
+## Initials & the name palette
+
+`color-from-name` is **on by default**. It hashes a seed into one of seven
+palette slots, so the same person is the same colour on every screen. The seed
+is the first non-empty of `initials`, `name`, `label` — so an avatar with only
+`initials`, or only `label`, still gets a palette tile. Turn it off for a
+uniform look — never randomise it per render, because the determinism *is* the
+feature.
+
+<ComponentDemo
+  html={`<md-avatar name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+<md-avatar name="Grace Hopper" label="Grace Hopper"></md-avatar>
+<md-avatar name="Alan Turing" label="Alan Turing"></md-avatar>
+<md-avatar name="Katherine Johnson" label="Katherine Johnson"></md-avatar>
+<md-avatar name="Linus Torvalds" label="Linus Torvalds"></md-avatar>
+<md-avatar name="Barbara Liskov" label="Barbara Liskov"></md-avatar>
+<md-avatar name="Donald Knuth" label="Donald Knuth"></md-avatar>
+<md-avatar name="Ada Lovelace" color-from-name="false" label="Uniform"></md-avatar>`}
+  label="Seven palette slots, then the same name with color-from-name off"
+  storyId="data-display-avatar--tonal-palette"
+/>
+
+Initials are sliced from `name` in the string's own script, so non-Latin names
+work — but a two-character slice is often meaningless in CJK. Pass `initials`
+explicitly there.
+
+## Custom content
+
+The default slot replaces the whole image / initials / icon stack.
+
+:::caution[Turn `color-from-name` off before you set a container colour]
+The palette rule that `color-from-name` switches on is
+`:host(.md-avatar--palette-N)`, which out-specifies the `:host` rule that reads
+`--md-avatar-container-color` / `--md-avatar-label-color`. So an override on a
+palette-tinted avatar is **silently ignored** — and every avatar with a seed
+(`initials`, `name`, or even just `label`) is palette-tinted. Pair the override
+with `color-from-name="false"`, as the demos below do.
+:::
+
+<ComponentDemo
+  html={`<md-avatar label="Starred" color-from-name="false" style="--md-avatar-container-color: var(--md-sys-color-tertiary-container); --md-avatar-label-color: var(--md-sys-color-on-tertiary-container);">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+</md-avatar>
+<md-avatar label="Team emoji" color-from-name="false" style="--md-avatar-container-color: var(--md-sys-color-secondary-container);">🚀</md-avatar>
+<md-avatar shape="rounded" label="Custom mark" color-from-name="false" style="--md-avatar-container-color: var(--md-sys-color-primary); --md-avatar-label-color: var(--md-sys-color-on-primary);">
+  <span style="font-weight: 700; font-size: 14px;">AW</span>
+</md-avatar>`}
+  label="Slotted SVG, emoji and custom text"
+/>
+
+## Avatar groups
+
+Stack with a negative inline margin and a descending `z-index`. Each tile is
+opaque, so the front avatar fully covers the one behind — the classic
+"bite-mark" pattern. Over imagery, add a surface-coloured ring instead.
+
+<ComponentDemo
+  html={`<div style="display: inline-flex; align-items: center;">
+  <md-avatar name="Ada Lovelace" label="Ada Lovelace" style="margin-inline-end: -12px; z-index: 4;"></md-avatar>
+  <md-avatar name="Linus Torvalds" label="Linus Torvalds" style="margin-inline-end: -12px; z-index: 3;"></md-avatar>
+  <md-avatar name="Grace Hopper" label="Grace Hopper" style="margin-inline-end: -12px; z-index: 2;"></md-avatar>
+  <md-avatar initials="+5" color-from-name="false" label="5 more members" style="z-index: 1;"></md-avatar>
+</div>
+
+<div style="display: inline-flex; align-items: center;">
+  <md-avatar name="Ada Lovelace" label="Ada Lovelace" style="--md-avatar-outline-color: var(--md-sys-color-surface); --md-avatar-outline-width: 2px; margin-inline-end: -8px; z-index: 4;"></md-avatar>
+  <md-avatar name="Linus Torvalds" label="Linus Torvalds" style="--md-avatar-outline-color: var(--md-sys-color-surface); --md-avatar-outline-width: 2px; margin-inline-end: -8px; z-index: 3;"></md-avatar>
+  <md-avatar name="Grace Hopper" label="Grace Hopper" style="--md-avatar-outline-color: var(--md-sys-color-surface); --md-avatar-outline-width: 2px; margin-inline-end: -8px; z-index: 2;"></md-avatar>
+  <md-avatar initials="+5" color-from-name="false" label="5 more members" style="--md-avatar-outline-color: var(--md-sys-color-surface); --md-avatar-outline-width: 2px; z-index: 1;"></md-avatar>
+</div>`}
+  label="Stacked group, and the outlined variant for busy backgrounds"
+  storyId="data-display-avatar--avatar-group"
+/>
+
+<ComponentDemo
+  html={`<div style="display: grid; gap: 20px;">
+  <div>
+    <p style="margin: 0 0 8px; font: 500 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">Outlined — a surface-coloured ring separates each tile</p>
+    <div style="display: inline-flex; align-items: center; padding: 8px; border-radius: 12px; background: linear-gradient(135deg, var(--md-sys-color-primary-container), var(--md-sys-color-tertiary-container));">
+      <md-avatar name="Ada Lovelace" label="Ada Lovelace" style="--md-avatar-outline-color: var(--md-sys-color-surface); --md-avatar-outline-width: 2px; margin-inline-end: -8px; z-index: 4;"></md-avatar>
+      <md-avatar name="Linus Torvalds" label="Linus Torvalds" style="--md-avatar-outline-color: var(--md-sys-color-surface); --md-avatar-outline-width: 2px; margin-inline-end: -8px; z-index: 3;"></md-avatar>
+      <md-avatar name="Grace Hopper" label="Grace Hopper" style="--md-avatar-outline-color: var(--md-sys-color-surface); --md-avatar-outline-width: 2px; margin-inline-end: -8px; z-index: 2;"></md-avatar>
+      <md-avatar initials="+5" color-from-name="false" label="Five more" style="--md-avatar-outline-color: var(--md-sys-color-surface); --md-avatar-outline-width: 2px; z-index: 1;"></md-avatar>
+    </div>
+  </div>
+  <div>
+    <p style="margin: 0 0 8px; font: 500 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">Blended — the ring picks up the surface behind the group</p>
+    <div style="display: inline-flex; align-items: center; padding: 8px; border-radius: 12px; background: var(--md-sys-color-surface-container-highest);">
+      <md-avatar name="Ada Lovelace" label="Ada Lovelace" style="--md-avatar-outline-color: var(--md-sys-color-surface-container-highest); --md-avatar-outline-width: 2px; margin-inline-end: -8px; z-index: 3;"></md-avatar>
+      <md-avatar name="Linus Torvalds" label="Linus Torvalds" style="--md-avatar-outline-color: var(--md-sys-color-surface-container-highest); --md-avatar-outline-width: 2px; margin-inline-end: -8px; z-index: 2;"></md-avatar>
+      <md-avatar name="Grace Hopper" label="Grace Hopper" style="--md-avatar-outline-color: var(--md-sys-color-surface-container-highest); --md-avatar-outline-width: 2px; z-index: 1;"></md-avatar>
+    </div>
+  </div>
+</div>`}
+  label="Outlined and blended groups"
+/>
+
+In a real app the group comes from data: cap the visible members and roll the
+rest into a `+N` tile whose `color-from-name` is off, so the counter never
+borrows a person's colour.
+
+<TechnologyTabs
+  html={`<div id="team" style="display: inline-flex; align-items: center;"></div>
+
+<script type="module">
+  const members = [
+    { name: 'Ada Lovelace', photo: '/u/ada.jpg' },
+    { name: 'Linus Torvalds' },
+    { name: 'Grace Hopper' },
+    { name: 'Alan Turing' },
+    { name: 'Barbara Liskov' },
+  ];
+  const MAX = 3;
+  const visible = members.slice(0, MAX);
+  const remaining = members.length - visible.length;
+  const team = document.getElementById('team');
+
+  visible.forEach((m, i) => {
+    const a = document.createElement('md-avatar');
+    if (m.photo) a.src = m.photo;
+    a.name = m.name;
+    a.label = m.name;
+    a.style.marginInlineEnd = '-12px';
+    a.style.zIndex = String(visible.length - i + 1);
+    team.append(a);
+  });
+
+  if (remaining > 0) {
+    const more = document.createElement('md-avatar');
+    more.initials = '+' + remaining;
+    more.colorFromName = false;
+    more.label = remaining + ' more members';
+    team.append(more);
+  }
+</script>`}
+  react={`import { MdAvatar } from '@awc-ui/react';
+
+const MAX = 3;
+
+type Member = { name: string; photo?: string };
+
+export function AvatarGroup({ members }: { members: Member[] }) {
+  const visible = members.slice(0, MAX);
+  const remaining = members.length - visible.length;
+
+  return (
+    <div style={{ display: 'inline-flex', alignItems: 'center' }}>
+      {visible.map((m, i) => (
+        <MdAvatar
+          key={m.name}
+          src={m.photo ?? ''}
+          name={m.name}
+          label={m.name}
+          style={{ marginInlineEnd: '-12px', zIndex: visible.length - i + 1 }}
+        />
+      ))}
+      {remaining > 0 && (
+        <MdAvatar
+          initials={'+' + remaining}
+          colorFromName={false}
+          label={remaining + ' more members'}
+        />
+      )}
+    </div>
+  );
+}`}
+  angular={`import { Component, Input } from '@angular/core';
+
+interface Member { name: string; photo?: string; }
+
+@Component({
+  selector: 'app-avatar-group',
+  template: \`
+    <div style="display: inline-flex; align-items: center;">
+      <md-avatar
+        *ngFor="let m of visible; let i = index"
+        [src]="m.photo || ''"
+        [name]="m.name"
+        [label]="m.name"
+        [style.margin-inline-end]="'-12px'"
+        [style.z-index]="visible.length - i + 1"
+      ></md-avatar>
+      <md-avatar
+        *ngIf="remaining > 0"
+        [initials]="'+' + remaining"
+        [colorFromName]="false"
+        [label]="remaining + ' more members'"
+      ></md-avatar>
+    </div>
+  \`,
+})
+export class AvatarGroupComponent {
+  @Input() members: Member[] = [];
+  readonly max = 3;
+  get visible() { return this.members.slice(0, this.max); }
+  get remaining() { return this.members.length - this.visible.length; }
+}`}
+  vue={`<script setup lang="ts">
+import { computed } from 'vue';
+
+interface Member { name: string; photo?: string }
+
+const props = defineProps<{ members: Member[] }>();
+const MAX = 3;
+const visible = computed(() => props.members.slice(0, MAX));
+const remaining = computed(() => props.members.length - visible.value.length);
+</script>
+
+<template>
+  <div style="display: inline-flex; align-items: center;">
+    <md-avatar
+      v-for="(m, i) in visible"
+      :key="m.name"
+      :src="m.photo || ''"
+      :name="m.name"
+      :label="m.name"
+      :style="{ marginInlineEnd: '-12px', zIndex: visible.length - i + 1 }"
+    />
+    <md-avatar
+      v-if="remaining > 0"
+      :initials="'+' + remaining"
+      color-from-name="false"
+      :label="remaining + ' more members'"
+    />
+  </div>
+</template>`}
+  svelte={`<script lang="ts">
+  interface Member { name: string; photo?: string }
+
+  export let members: Member[] = [];
+  const MAX = 3;
+
+  $: visible = members.slice(0, MAX);
+  $: remaining = members.length - visible.length;
+</script>
+
+<div style="display: inline-flex; align-items: center;">
+  {#each visible as m, i (m.name)}
+    <md-avatar
+      src={m.photo || ''}
+      name={m.name}
+      label={m.name}
+      style="margin-inline-end: -12px; z-index: {visible.length - i + 1};"
+    />
+  {/each}
+  {#if remaining > 0}
+    <md-avatar
+      initials={'+' + remaining}
+      color-from-name="false"
+      label={remaining + ' more members'}
+    />
+  {/if}
+</div>`}
+/>
+
+## With a status dot
+
+The avatar does **not** position a dot for you. Wrap both in a
+`position: relative` host.
+
+<ComponentDemo
+  html={`<span style="position: relative; display: inline-block;">
+  <md-avatar name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+  <md-status-dot state="online" label="Online"></md-status-dot>
+</span>
+<span style="position: relative; display: inline-block;">
+  <md-avatar name="Grace Hopper" label="Grace Hopper"></md-avatar>
+  <md-status-dot state="away" label="Away"></md-status-dot>
+</span>
+<span style="position: relative; display: inline-block;">
+  <md-avatar name="Alan Turing" label="Alan Turing"></md-avatar>
+  <md-status-dot state="offline" label="Offline"></md-status-dot>
+</span>`}
+  label="Presence via md-status-dot"
+/>
+
+## In a list
+
+[`md-list-item`](/components/list/#the-row--md-list-item) reuses this component for its leading
+slot and runs the same fallback chain via `leading-avatar`,
+`leading-avatar-name` and `leading-avatar-label`.
+
+<ComponentDemo
+  html={`<md-list label="Team" style="inline-size: 100%; max-inline-size: 420px;">
+  <md-list-item type="button" headline="Ada Lovelace" supporting-text="ada@example.com" leading-avatar="https://i.pravatar.cc/80?img=47" leading-avatar-alt="Ada Lovelace"></md-list-item>
+  <md-list-item type="button" headline="Grace Hopper" supporting-text="grace@example.com" leading-avatar-name="Grace Hopper"></md-list-item>
+  <md-list-item type="button" headline="Alan Turing" supporting-text="alan@example.com" leading-avatar-name="Alan Turing"></md-list-item>
+</md-list>`}
+  label="Avatars inside md-list-item"
+/>
+
+When the person's name is already the adjacent text, the avatar is decorative.
+Hide it by leaving `label`, `alt` **and** `name` empty — the component then
+renders `role="presentation"` and `aria-hidden="true"` itself. Do not write
+`aria-hidden="true"` on a labelled avatar: `render()` sets that attribute from
+the resolved accessible name, so an author-set value is removed on the first
+render whenever any of the three is present.
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdLoad` | yes | `{ src: string }` | The image finished loading |
+| `mdError` | yes | `{ src: string }` | The image failed; the component falls back |
+
+Both are plain `@Event()` declarations, so they carry Stencil's defaults —
+`bubbles`, `composed` **and** `cancelable`. Nothing inside the component reads
+`defaultPrevented`, though, so cancelling one changes nothing; it is a
+side-effect of the default, not a control point.
+
+```ts
+interface MdAvatarEventDetail {
+  /** The `src` that was being resolved when the event fired. */
+  src: string;
+}
+```
+
+Both events bubble and cross shadow boundaries, so one listener on a container
+covers a whole list. Press **Reload both** below: the first avatar re-fetches
+and emits `mdLoad`; the second 404s and emits `mdError`. The fallback is
+automatic but not yet painted when your listener runs — `mdError` is emitted
+synchronously from the image's `error` handler and the re-render is queued, so
+the initials appear a tick later. Report the failure; don't try to repair it.
+
+<ComponentDemo
+  html={`<div style="display: grid; gap: 16px;">
+  <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+    <md-avatar data-who="ada" data-base="https://i.pravatar.cc/80?img=11" src="https://i.pravatar.cc/80?img=11" alt="Ada Lovelace" name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+    <md-avatar data-who="grace" data-base="https://broken.invalid/nope.png" src="https://broken.invalid/nope.png" name="Grace Hopper" label="Grace Hopper"></md-avatar>
+    <md-button variant="outlined" data-reload>Reload both</md-button>
+  </div>
+  <output data-ev-log style="display: block; min-block-size: 5.5rem; white-space: pre; overflow-x: auto; border-radius: 8px; padding: 12px 14px; background: var(--md-sys-color-surface-container-low); color: var(--md-sys-color-on-surface-variant); font: 400 12px/1.6 ui-monospace, SFMono-Regular, monospace;">Waiting for image events…</output>
+</div>`}
+  script={`var log = root.querySelector('[data-ev-log]');
+var lines = [];
+
+function push(text) {
+  lines.push(text);
+  if (lines.length > 6) lines.shift();
+  log.textContent = lines.join(String.fromCharCode(10));
+}
+
+root.addEventListener('mdLoad', function (e) {
+  push('mdLoad   ' + e.target.getAttribute('data-who') + '   image shown');
+});
+
+root.addEventListener('mdError', function (e) {
+  push('mdError  ' + e.target.getAttribute('data-who') + '   falling back');
+});
+
+root.querySelector('[data-reload]').addEventListener('click', function () {
+  var stamp = String(Date.now());
+  root.querySelectorAll('md-avatar[data-base]').forEach(function (a) {
+    var base = a.getAttribute('data-base');
+    a.src = base + (base.indexOf('?') > -1 ? '&' : '?') + 'v=' + stamp;
+  });
+});`}
+  label="mdLoad and mdError — one listener on the container"
+  htmlCode={`<div id="roster">
+  <md-avatar src="/u/ada.jpg" name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+  <md-avatar src="/u/grace.jpg" name="Grace Hopper" label="Grace Hopper"></md-avatar>
+</div>
+
+<script type="module">
+  const roster = document.getElementById('roster');
+
+  roster.addEventListener('mdLoad', (e) => {
+    console.log('loaded', e.detail.src);
+  });
+
+  roster.addEventListener('mdError', (e) => {
+    // The avatar falls back on its own — just report it.
+    console.warn('avatar missing', e.detail.src);
+  });
+</script>`}
+  react={`import { MdAvatar } from '@awc-ui/react';
+
+type Member = { name: string; photo: string };
+
+export function Roster({ members }: { members: Member[] }) {
+  const onLoad = (e: CustomEvent<{ src: string }>) => {
+    console.log('loaded', e.detail.src);
+  };
+
+  const onError = (e: CustomEvent<{ src: string }>) => {
+    // The avatar falls back on its own — just report it.
+    console.warn('avatar missing', e.detail.src);
+  };
+
+  return (
+    <div>
+      {members.map((m) => (
+        <MdAvatar
+          key={m.name}
+          src={m.photo}
+          name={m.name}
+          label={m.name}
+          onMdLoad={onLoad}
+          onMdError={onError}
+        />
+      ))}
+    </div>
+  );
+}`}
+  angular={`import { Component, Input } from '@angular/core';
+
+interface Member { name: string; photo: string; }
+
+@Component({
+  selector: 'app-roster',
+  template: \`
+    <div>
+      <md-avatar
+        *ngFor="let m of members"
+        [src]="m.photo"
+        [name]="m.name"
+        [label]="m.name"
+        (mdLoad)="onLoad($event)"
+        (mdError)="onError($event)"
+      ></md-avatar>
+    </div>
+  \`,
+})
+export class RosterComponent {
+  @Input() members: Member[] = [];
+
+  onLoad(e: CustomEvent<{ src: string }>) {
+    console.log('loaded', e.detail.src);
+  }
+
+  onError(e: CustomEvent<{ src: string }>) {
+    // The avatar falls back on its own — just report it.
+    console.warn('avatar missing', e.detail.src);
+  }
+}`}
+  vue={`<script setup lang="ts">
+interface Member { name: string; photo: string }
+
+defineProps<{ members: Member[] }>();
+
+function onLoad(e: CustomEvent<{ src: string }>) {
+  console.log('loaded', e.detail.src);
+}
+
+function onError(e: CustomEvent<{ src: string }>) {
+  // The avatar falls back on its own — just report it.
+  console.warn('avatar missing', e.detail.src);
+}
+</script>
+
+<template>
+  <div>
+    <md-avatar
+      v-for="m in members"
+      :key="m.name"
+      :src="m.photo"
+      :name="m.name"
+      :label="m.name"
+      @mdLoad="onLoad"
+      @mdError="onError"
+    />
+  </div>
+</template>`}
+  svelte={`<script lang="ts">
+  interface Member { name: string; photo: string }
+
+  export let members: Member[] = [];
+
+  function onLoad(e: CustomEvent<{ src: string }>) {
+    console.log('loaded', e.detail.src);
+  }
+
+  function onError(e: CustomEvent<{ src: string }>) {
+    // The avatar falls back on its own — just report it.
+    console.warn('avatar missing', e.detail.src);
+  }
+</script>
+
+<div>
+  {#each members as m (m.name)}
+    <md-avatar
+      src={m.photo}
+      name={m.name}
+      label={m.name}
+      on:mdLoad={onLoad}
+      on:mdError={onError}
+    />
+  {/each}
+</div>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- Decide deliberately: either the avatar **carries** the identity (set `label`)
+  or it is **decorative** beside the name. Both are correct; doing neither, or
+  both, is not.
+- The accessible name resolves as `label` → `alt` → `name`. When all three are
+  empty the host renders `role="presentation"` and `aria-hidden="true"`, which
+  is exactly what you want next to a row that already says the name.
+- When any of them is set, the host renders `role="img"` with that string as
+  `aria-label`, and the inner `<img>` is `aria-hidden` so the name is announced
+  once.
+- `alt` describes the **image**; `label` is the **accessible name of the
+  avatar**. They are not the same slot.
+- The initials fallback must have adequate contrast. The built-in palette is
+  designed for it — custom container colours need checking.
+- The avatar is **not focusable**. If the whole row is interactive, put the
+  affordance on the row.
+- `loading="lazy"` is the default; use `eager` only above the fold.
+- Set `crossorigin` for CDN images you intend to read from a canvas, or you get
+  a tainted canvas.
+
+Walk the four rows below with a screen reader: only the first three are
+announced at all, and the fourth — initials with no `label`, `alt` or `name` —
+is silent by construction.
+
+<ComponentDemo
+  html={`<div style="display: grid; grid-template-columns: auto 1fr; gap: 14px 16px; align-items: center;">
+  <span style="inline-size: 6rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">label</span>
+  <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+    <md-avatar name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+    <span style="font: 400 13px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">role="img", announced as "Ada Lovelace"</span>
+  </div>
+
+  <span style="inline-size: 6rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">alt</span>
+  <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+    <md-avatar src="https://i.pravatar.cc/80?img=32" alt="Grace Hopper"></md-avatar>
+    <span style="font: 400 13px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">no label — alt becomes the accessible name</span>
+  </div>
+
+  <span style="inline-size: 6rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">name</span>
+  <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+    <md-avatar name="Alan Turing"></md-avatar>
+    <span style="font: 400 13px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">no label or alt — name becomes the accessible name</span>
+  </div>
+
+  <span style="inline-size: 6rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">none</span>
+  <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+    <md-avatar initials="BL"></md-avatar>
+    <span style="font: 400 13px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">Barbara Liskov — role="presentation", the avatar stays silent</span>
+  </div>
+</div>`}
+  label="How the accessible name resolves — label, alt, name, then silence"
+/>
+
+:::caution[`initials` alone does not name the avatar]
+`initials` seeds the palette but never the accessible name — only `label`,
+`alt` and `name` do. That is the mechanism behind the decorative row above, and
+it is why an avatar with only `initials` is safe to place beside text that
+already says who it is.
+:::
+
+## RTL, density & i18n
+
+**RTL** — the avatar itself is symmetric and needs nothing. What moves is
+everything attached to it: an [`md-status-dot`](/components/status-dot/)
+anchors with `inset-inline-end` / `inset-block-end`, and a group stacked with
+`margin-inline-end` lays itself out from the right. Write both with logical
+properties and the same markup works in both directions. See
+[RTL](/behaviour/rtl/).
+
+```html
+<span style="position: relative; display: inline-flex;">
+  <md-avatar name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+  <md-status-dot state="online" label="Online"></md-status-dot>
+</span>
+```
+
+<ComponentDemo
+  html={`<div style="display: grid; grid-template-columns: auto 1fr; gap: 14px 16px; align-items: center;">
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">ltr</span>
+  <div dir="ltr" style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap;">
+    <span style="position: relative; display: inline-flex;">
+      <md-avatar name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+      <md-status-dot state="online" label="Online"></md-status-dot>
+    </span>
+    <div style="display: inline-flex; align-items: center;">
+      <md-avatar name="Ada Lovelace" label="Ada Lovelace" style="margin-inline-end: -12px; z-index: 3;"></md-avatar>
+      <md-avatar name="Alan Turing" label="Alan Turing" style="margin-inline-end: -12px; z-index: 2;"></md-avatar>
+      <md-avatar name="Grace Hopper" label="Grace Hopper" style="z-index: 1;"></md-avatar>
+    </div>
+  </div>
+
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">rtl</span>
+  <div dir="rtl" style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap;">
+    <span style="position: relative; display: inline-flex;">
+      <md-avatar name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+      <md-status-dot state="online" label="Online"></md-status-dot>
+    </span>
+    <div style="display: inline-flex; align-items: center;">
+      <md-avatar name="Ada Lovelace" label="Ada Lovelace" style="margin-inline-end: -12px; z-index: 3;"></md-avatar>
+      <md-avatar name="Alan Turing" label="Alan Turing" style="margin-inline-end: -12px; z-index: 2;"></md-avatar>
+      <md-avatar name="Grace Hopper" label="Grace Hopper" style="z-index: 1;"></md-avatar>
+    </div>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+/>
+
+### The dot and the stack are the directional parts
+
+The dot places itself with logical insets, and the built-in
+`--md-status-dot-inset-end` hook is logical too. Reach past it for a physical
+`right` and the pip lands on the wrong corner the moment the page flips —
+both rows below are under `dir="rtl"`.
+
+<ComponentDemo
+  html={`<div dir="rtl" style="display: grid; grid-template-columns: auto 1fr; gap: 14px 16px; align-items: center;">
+  <span style="inline-size: 4.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">correct</span>
+  <div style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap;">
+    <span style="position: relative; display: inline-flex;">
+      <md-avatar name="آدا لوفلايس" label="آدا لوفلايس"></md-avatar>
+      <md-status-dot state="online" label="متصل"></md-status-dot>
+    </span>
+    <span style="font: 400 13px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">logical insets — the pip follows the text direction</span>
+  </div>
+
+  <span style="inline-size: 4.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">wrong</span>
+  <div style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap;">
+    <span style="position: relative; display: inline-flex;">
+      <md-avatar name="آلان تورنغ" label="آلان تورنغ"></md-avatar>
+      <md-status-dot state="busy" label="مشغول" style="inset-inline-end: auto; right: -2px;"></md-status-dot>
+    </span>
+    <span style="font: 400 13px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">a physical right: pinned to the wrong corner</span>
+  </div>
+</div>`}
+  label="dir=rtl — logical insets vs a hard-coded physical right"
+/>
+
+### Every density rung
+
+<ComponentDemo
+  html={`<div style="display: grid; grid-template-columns: auto 1fr; gap: 14px 16px; align-items: center;">
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">default</span>
+  <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+    <md-avatar size="small" name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+    <md-avatar name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+    <md-avatar size="large" name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+  </div>
+
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">-1</span>
+  <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+    <md-avatar size="small" name="Ada Lovelace" label="Ada Lovelace" density="-1"></md-avatar>
+    <md-avatar name="Ada Lovelace" label="Ada Lovelace" density="-1"></md-avatar>
+    <md-avatar size="large" name="Ada Lovelace" label="Ada Lovelace" density="-1"></md-avatar>
+  </div>
+
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">-2</span>
+  <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+    <md-avatar size="small" name="Ada Lovelace" label="Ada Lovelace" density="-2"></md-avatar>
+    <md-avatar name="Ada Lovelace" label="Ada Lovelace" density="-2"></md-avatar>
+    <md-avatar size="large" name="Ada Lovelace" label="Ada Lovelace" density="-2"></md-avatar>
+  </div>
+
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">-3</span>
+  <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+    <md-avatar size="small" name="Ada Lovelace" label="Ada Lovelace" density="-3"></md-avatar>
+    <md-avatar name="Ada Lovelace" label="Ada Lovelace" density="-3"></md-avatar>
+    <md-avatar size="large" name="Ada Lovelace" label="Ada Lovelace" density="-3"></md-avatar>
+  </div>
+
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">-4</span>
+  <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+    <md-avatar size="small" name="Ada Lovelace" label="Ada Lovelace" density="-4"></md-avatar>
+    <md-avatar name="Ada Lovelace" label="Ada Lovelace" density="-4"></md-avatar>
+    <md-avatar size="large" name="Ada Lovelace" label="Ada Lovelace" density="-4"></md-avatar>
+  </div>
+
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">48px</span>
+  <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+    <md-avatar size="48px" name="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+    <md-avatar size="48px" name="Ada Lovelace" label="Ada Lovelace" density="-2"></md-avatar>
+    <md-avatar size="48px" name="Ada Lovelace" label="Ada Lovelace" density="-4"></md-avatar>
+  </div>
+</div>`}
+  label="Default through -4 across all three presets — and an explicit size that ignores them"
+/>
+
+:::caution[Below `-2`, check the initials, not the touch target]
+The avatar is not focusable, so the 48dp touch rule never applies to it — but
+each rung shrinks the tile and its initials with it, and every preset bottoms
+out at a floor (`medium` at 28px, `small` at 18px). At `-3` and `-4` a
+two-character initial is genuinely small; if the row is interactive, the hit
+area belongs to the row, not the avatar.
+:::
+
+### Density and direction together
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap; padding: 12px; border-radius: 12px; background: var(--md-sys-color-surface-container-low);">
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="آدا لوفلايس" label="آدا لوفلايس"></md-avatar>
+    <md-status-dot state="online" label="متصل"></md-status-dot>
+  </span>
+  <div style="display: inline-flex; align-items: center;">
+    <md-avatar name="آدا لوفلايس" label="آدا لوفلايس" style="margin-inline-end: -10px; z-index: 3;"></md-avatar>
+    <md-avatar name="آلان تورنغ" label="آلان تورنغ" style="margin-inline-end: -10px; z-index: 2;"></md-avatar>
+    <md-avatar name="غريس هوبر" label="غريس هوبر" style="z-index: 1;"></md-avatar>
+  </div>
+  <md-avatar name="آدا لوفلايس" label="آدا لوفلايس" density="-4"></md-avatar>
+  <md-avatar name="آدا لوفلايس" label="آدا لوفلايس" size="40px"></md-avatar>
+</div>`}
+  label="dir=rtl under data-density=-2 — then a local -4 rung, then an explicit 40px size"
+/>
+
+**Density** — `density="-1…-4"` (or a `data-density` ancestor) shrinks the
+**preset** sizes by driving `--md-sys-density-scale`. An explicit CSS length in
+`size` writes `--md-avatar-size` directly and is unaffected — that is the last
+avatar above, sitting at 40px inside a `-2` container.
+
+A local rung wins over the inherited global one, because
+`:host([density='-1'])` … `:host([density='-4'])` land the custom property
+directly on the host. **`density="0"` is not a rung.** There is deliberately no
+`[density="0"]` rule anywhere in the token layer — reflected props write
+`density="0"` onto nearly every element, so such a rule would pin density-0 on
+everything and break global inheritance. Absence of a rung means "inherit
+whatever the ancestor says", so `density="0"` inside `data-density="-2"` still
+renders at `-2`. To opt a single avatar out of an inherited rung, pin its
+`size` to a CSS length. See [Density](/behaviour/density/).
+
+**i18n** — initials derived from `name` follow the string's own script via
+`Intl.Segmenter`, so non-Latin names work; check that a two-character slice is
+meaningful in your locales (it usually isn't for CJK — pass `initials` there).
+Translate `label` and `alt`.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-avatar-size` | Box size | 40px, tapers with density |
+| `--md-avatar-container-color` | Tile background | Name-derived palette slot |
+| `--md-avatar-container-shape` | Corner radius | Per `shape` |
+| `--md-avatar-label-color` | Initials colour | Palette slot label |
+| `--md-avatar-label-font-family` / `-font-size` / `-font-weight` / `-letter-spacing` | Initials typography | Font size is 40% of the box |
+| `--md-avatar-icon-size` | Fallback glyph | 60% of the box |
+| `--md-avatar-outline-color` / `--md-avatar-outline-width` | Ring | none |
+| `--md-avatar-palette-1-container` … `-7-container` (and `-label`) | Name-derived palette | Tonal set |
+
+<ComponentDemo
+  html={`<md-avatar name="Ada Lovelace" label="Ringed" style="--md-avatar-outline-color: var(--md-sys-color-primary); --md-avatar-outline-width: 3px;"></md-avatar>
+<md-avatar name="Ada Lovelace" label="Branded" color-from-name="false" style="--md-avatar-container-color: var(--md-sys-color-primary); --md-avatar-label-color: var(--md-sys-color-on-primary);"></md-avatar>
+<md-avatar name="Ada Lovelace" label="Squared" shape="rounded" style="--md-avatar-container-shape: 6px; --md-avatar-size: 56px;"></md-avatar>`}
+  label="Themed instances — note color-from-name=false on the branded tile"
+/>
+
+`--md-avatar-container-color` and `--md-avatar-label-color` are read only by the
+base `:host` rule, which the palette rule out-specifies — so they take effect
+only when `color-from-name` is `false` (or the seed is empty). Everything else
+in the table above (`--md-avatar-size`, `-container-shape`, `-outline-*`,
+`-icon-size`, the typography hooks) is unaffected by the palette; the palette
+itself is retinted through `--md-avatar-palette-N-container` / `-label`.
+
+The name-derived palette is tuned per theme, so check any override in both.
+
+**CSS parts** — `image` (the `<img>`), `initials` (the text span) and `icon`
+(the built-in person glyph). Each is reachable from the light DOM with
+`::part()`, which is how you restyle the inside without touching the tokens.
+
+<ComponentDemo
+  html={`<style>
+  .avatar-parts-demo md-avatar::part(initials) {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .06em;
+  }
+  .avatar-parts-demo md-avatar::part(image) {
+    filter: grayscale(1) contrast(1.05);
+  }
+  .avatar-parts-demo md-avatar::part(icon) {
+    opacity: .55;
+  }
+</style>
+<div class="avatar-parts-demo" style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+  <md-avatar initials="18" name="Eighteen" label="18 open items"></md-avatar>
+  <md-avatar src="https://i.pravatar.cc/80?img=11" alt="Ada Lovelace" label="Ada Lovelace"></md-avatar>
+  <md-avatar label="Unknown user"></md-avatar>
+</div>`}
+  label="CSS parts — initials, image and icon restyled from the light DOM"
+/>
+
+```css
+md-avatar::part(initials) {
+  font-variant-numeric: tabular-nums;
+}
+```
+
+
+## Related
+
+[`md-status-dot`](/components/status-dot/) ·
+[`md-badge`](/components/badge/) ·
+[`md-chip`](/components/chip/) ·
+[`md-list-item`](/components/list/#the-row--md-list-item) ·
+[`md-organization-chart`](/components/organization-chart/) ·
+[`md-app-bar`](/components/app-bar/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-avatar" />

@@ -1,0 +1,261 @@
+/* ==========================================================
+   md-meter — Material Design 3 Meter
+   A read-only display of a numeric value within a known range
+   (storage used, quota, password strength), drawn on
+   md-progress-indicator's linear track geometry.
+
+   Deliberately a PLAIN track + fill: the M3-Expressive 4dp gap
+   and stop dot are md-progress-indicator's activity identity;
+   a meter shows a state, so it keeps the clean classic bar.
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-meter-indicator-color  Fill colour (defaults to the `color` role)
+     --md-meter-track-color      Track background (defaults to the role's container)
+     --md-meter-track-shape      Track + fill corner radius (default corner-full pill)
+     --md-meter-height           Track thickness (overrides the `thickness` prop)
+     --md-meter-label-color      Header label text colour
+     --md-meter-value-color      Header value text colour
+     --md-meter-size             Ring diameter (circular variant)
+
+   CSS PARTS:
+     track      Background track / ring (the full range)
+     indicator  Value fill inside the track / the value arc
+     label      Header label text (rendered when `show-label`)
+     value      Header value text (rendered when `show-value`)
+     circular   The ring's box (circular variant only)
+
+   RTL: geometry is 100% logical properties (inset-inline-start,
+   inline-size), so the fill anchors to the inline start and the
+   whole meter mirrors for free under dir="rtl". No JS branch.
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST
+   ========================================================== */
+
+:host {
+  /* Colour-role slots. These two are the ONLY thing the `color` prop swaps
+     (md-chip pattern); the track/indicator rules below are written against
+     them, so a new theme role never touches these rules. The neutral defaults
+     reproduce md-progress-indicator's look exactly: primary fill on a
+     secondary-container track. */
+  --_c-main: var(--md-sys-color-primary, #6750A4);
+  --_c-container: var(--md-sys-color-secondary-container, #E8DEF8);
+
+  /* Public hooks resolve onto private slots; the hook must stay outermost so a
+     per-instance override always beats the `color` role. */
+  --_indicator-color: var(--md-meter-indicator-color, var(--_c-main));
+  --_track-color: var(--md-meter-track-color, var(--_c-container));
+  --_track-shape: var(--md-meter-track-shape, var(--md-sys-shape-corner-full, 9999px));
+
+  /* 4dp default bar, density-scaled at 0.5px per rung, floored at 2px.
+     A `thickness` prop ≠ 4 re-declares this inline on the host with the same
+     hook + taper + floor (see thicknessVar in md-meter.tsx). */
+  --_thickness: var(--md-meter-height, max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px)));
+  /* Ring diameter for the circular variant. Density tapers the whole ring
+     (2px per rung) rather than the stroke alone, so radius and stroke stay in
+     proportion; floored at the M3 24dp minimum. A `size` prop != 48
+     re-declares this inline on the host with the same hook + taper + floor
+     (see sizeVar in md-meter.tsx). */
+  --_size: var(--md-meter-size, max(24px, calc(48px + var(--md-sys-density-scale, 0) * 2px)));
+  --_label-color: var(--md-meter-label-color, var(--md-sys-color-on-surface, #1C1B1F));
+  --_value-color: var(--md-meter-value-color, var(--md-sys-color-on-surface-variant, #49454F));
+
+  display: block;
+  inline-size: 100%;
+  box-sizing: border-box;
+}
+
+/* ==========================================================
+   2. HEADER (optional label / value row)
+   ========================================================== */
+
+.md-meter__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  /* Label-to-track spacing tapers with density, floored at half base. */
+  margin-block-end: max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px));
+}
+
+/* MD3 body-medium, start-aligned. Density trims the type ~0.5px per rung with
+   a legibility floor — same taper the chip label uses. */
+.md-meter__label {
+  font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif);
+  font-size: max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-medium-font-weight, 400);
+  line-height: max(14px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-body-medium-letter-spacing, 0.25px);
+  color: var(--_label-color);
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* MD3 label-medium, end-aligned. tabular-nums so a live value doesn't wobble
+   as digits change (md-rating's value-label convention). */
+.md-meter__value {
+  font-family: var(--md-sys-typescale-label-medium-font-family, Roboto, sans-serif);
+  font-size: max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-label-medium-font-weight, 500);
+  line-height: max(12px, calc(16px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-label-medium-letter-spacing, 0.5px);
+  color: var(--_value-color);
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================
+   3. TRACK
+   ========================================================== */
+
+.md-meter__track {
+  position: relative;
+  block-size: var(--_thickness);
+  border-radius: var(--_track-shape);
+  background-color: var(--_track-color);
+  /* Clips the fill's square start edge to the pill shape at low values. */
+  overflow: hidden;
+}
+
+/* ==========================================================
+   4. INDICATOR (value fill)
+   ========================================================== */
+
+.md-meter__indicator {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block: 0;
+  inline-size: var(--_fill-pct, 0%);
+  background-color: var(--_indicator-color);
+  /* Follows the track's radius so the trailing edge is rounded at mid values;
+     the container clip owns the leading edge. */
+  border-radius: inherit;
+  /* Value changes glide rather than jump. inline-size is what actually
+     changes when --_fill-pct is rewritten, so the transition applies. */
+  transition: inline-size var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* ==========================================================
+   5. CIRCULAR VARIANT (ring)
+   Same reading, same colour slots, same thickness — only the
+   geometry differs. The host stops being a full-width block and
+   becomes a shrink-to-fit column: ring, then optional caption.
+   ========================================================== */
+
+:host([variant='circular']) {
+  inline-size: max-content;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px));
+}
+
+.md-meter__circular {
+  position: relative;
+  inline-size: var(--_size);
+  block-size: var(--_size);
+  flex: none;
+}
+
+.md-meter__ring {
+  inline-size: 100%;
+  block-size: 100%;
+  display: block;
+  /* The ring fills clockwise from 12 o'clock in every locale — Material's
+     circular progress does not mirror, and neither does a clock face. Nothing
+     here is direction-dependent, so RTL needs no branch. */
+}
+
+.md-meter__ring-track {
+  stroke: var(--_track-color);
+}
+
+.md-meter__ring-indicator {
+  stroke: var(--_indicator-color);
+  /* dashoffset is a single number, so it interpolates; a dasharray list does
+     not reliably. Same duration/easing as the bar's inline-size glide. */
+  transition:
+    stroke-dashoffset var(--md-sys-motion-duration-medium2, 300ms)
+      var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    opacity var(--md-sys-motion-duration-short4, 200ms) linear;
+}
+
+/* Value sits on the ring's centre. Sized off the ring so it scales with it
+   instead of needing a size-specific override at every diameter. */
+.md-meter__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--md-sys-typescale-label-medium-font-family, Roboto, sans-serif);
+  font-size: calc(var(--_size) * 0.26);
+  font-weight: var(--md-sys-typescale-label-medium-font-weight, 500);
+  line-height: 1;
+  color: var(--_value-color);
+  font-variant-numeric: tabular-nums;
+  /* The arc's round cap can reach the text at large thicknesses; keep clear. */
+  padding: calc(var(--_size) * 0.18);
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* Caption under the ring — the circular counterpart of the header label. */
+.md-meter__caption {
+  font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif);
+  font-size: max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-medium-font-weight, 400);
+  line-height: max(14px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-body-medium-letter-spacing, 0.25px);
+  color: var(--_label-color);
+  max-inline-size: calc(var(--_size) * 2);
+  text-align: center;
+}
+
+/* ==========================================================
+   6. REDUCED MOTION
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-meter__indicator,
+  .md-meter__ring-indicator {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   7. FORCED COLORS (high contrast)
+   ========================================================== */
+
+@media (forced-colors: active) {
+  .md-meter__indicator {
+    background-color: CanvasText;
+  }
+
+  .md-meter__track {
+    background-color: GrayText;
+  }
+
+  .md-meter__ring-indicator {
+    stroke: CanvasText;
+  }
+
+  .md-meter__ring-track {
+    stroke: GrayText;
+  }
+}
+
+/* ==========================================================
+   8. DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

@@ -1,0 +1,141 @@
+---
+title: Building with AI
+description: Install the package and your AI assistant already knows the library — Claude, Cursor, Copilot and Codex read the docs that ship inside it
+sidebar:
+  order: 3
+---
+
+AWC UI ships its own documentation **inside the npm package**. Every component
+has a manual next to the code, so an assistant reads the real API instead of
+guessing at prop names and inventing components that do not exist.
+
+Nothing is fetched from the network. Everything below works offline, from
+`node_modules`.
+
+## Two commands
+
+```bash
+npm install @awc-ui/core
+npx awc-ui ai-setup
+```
+
+The second command points the assistants in your project at the docs that came
+with the package. It writes one small block into each file your tools already
+read:
+
+| File | Read by |
+|---|---|
+| `AGENTS.md` | Codex, Amp, and anything following the AGENTS.md convention |
+| `CLAUDE.md` | Claude Code |
+| `.cursor/rules/awc-ui.mdc` | Cursor |
+| `.github/copilot-instructions.md` | GitHub Copilot |
+
+Each block is wrapped in `<!-- BEGIN awc-ui -->` / `<!-- END awc-ui -->`
+markers. Re-running updates that block in place — your own instructions in
+those files are never touched. Run it again after upgrading the package.
+
+```bash
+npx awc-ui ai-setup --dry-run   # show what would change, write nothing
+npx awc-ui ai-setup --check     # exit 1 if a pointer is missing or stale (CI)
+```
+
+:::note[Why a command instead of automatic]
+No assistant scans `node_modules` on its own — each one reads a specific file
+in your project root. A postinstall hook could write those files for you, but
+package managers increasingly block postinstall by default, and silently
+editing a project's instruction files is not something a dependency should do
+uninvited. One explicit command is both more reliable and better manners.
+:::
+
+## What the assistant now has
+
+| Path | What it is |
+|---|---|
+| `main-llm.md` | **The build director.** Interviews you about scope, theming, density, RTL and forms, then routes each need through a decision matrix. Its inventory lists every component |
+| `src/components/<tag>/readme.md` | One component: when to use it, when **not** to, its full API, the accessibility contract, and an anti-patterns table |
+
+All paths are relative to `node_modules/@awc-ui/core/`.
+
+The per-component manuals are the part that matters most. Each one carries a
+*When NOT to use* table pointing at the component you probably wanted instead,
+and an *Anti-patterns* table of mistakes models actually make — which is what
+stops an assistant confidently generating the wrong thing.
+
+## Prompts that work
+
+**Start from the director.** It asks before it builds:
+
+```
+Read the AWC UI build director and build me a settings page.
+```
+
+**Be explicit about the surface, not the markup.** The decision matrix does the
+component selection:
+
+```
+Build an admin console shell: navigation rail on desktop,
+top app bar with search, dense (-2) data table with row
+selection and pagination. Dark mode toggle in the app bar.
+```
+
+**Name the constraints up front.** These change component choice:
+
+```
+Mobile-first, RTL support required (Arabic + Hebrew),
+WCAG 2.1 AA, forms must submit natively with FormData.
+```
+
+**Ask for the check.** Every manual has an anti-patterns table:
+
+```
+Review this against the anti-patterns section of the manual
+for each component you used.
+```
+
+## What agents get wrong
+
+Even with the docs installed, these recur:
+
+| Mistake | Correct |
+|---|---|
+| `<md-list items='[…]'>` | `el.items = [...]` — arrays are JS properties |
+| Wrapping `md-button` in `<button>` or `<a>` | The host **is** the control; use `href`/`type` |
+| Icon-only `md-button` | `md-icon-button` with `aria-label` |
+| `max-selected="0"` to block selection | `0` means **unlimited** |
+| `density="0"` to escape an inherited rung | `0` is inert; set `--md-sys-density-scale: 0` |
+| Hardcoding `#6750A4` | `var(--md-sys-color-primary)` |
+| Adding a hidden `<input>` to submit a value | The form-associated components already do this |
+| Building a table by hand | `md-table` with `md-table-row` / `md-table-cell` |
+
+## Components that do not exist
+
+Agents hallucinate these. There is no rich text editor, file upload/dropzone,
+calendar view, map, toast queue manager, or data-driven grid — `md-table` is
+composable: it tracks sort, selection and pagination state, and you render the
+rows.
+
+If you need one, ask for a third-party library **styled with the MD3 tokens**:
+
+```
+There's no RTE in AWC UI. Integrate TipTap and style it with
+--md-sys-color-* and --md-sys-typescale-* so it matches.
+```
+
+## Verifying the output
+
+Ask the assistant to check its own work against the library's own rules:
+
+```
+Run through the ship checklist at the end of the AWC UI build
+director against what you built.
+```
+
+That covers accessible names on icon-only controls, a keyboard-only pass,
+light **and** dark, RTL if applicable, density, form submission, and no
+hardcoded strings.
+
+## Related
+
+- [Components](/components/) — the browsable component set
+- [Accessibility](/guides/accessibility/) — what the checklist is checking
+- [Theming](/theming/) — the token layer the assistant is told to use

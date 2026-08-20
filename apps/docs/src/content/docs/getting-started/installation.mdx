@@ -1,0 +1,112 @@
+---
+title: Installation
+description: How to install AWC UI web components in your project
+sidebar:
+  order: 1
+---
+
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+
+## Package Manager
+
+Install the core component library and design tokens:
+
+```bash
+npm install @awc-ui/core @awc-ui/tokens
+```
+
+Or with other package managers:
+
+```bash
+# pnpm
+pnpm add @awc-ui/core @awc-ui/tokens
+
+# yarn
+yarn add @awc-ui/core @awc-ui/tokens
+```
+
+## Technology Wrappers
+
+For the best developer experience, install the wrapper package for your technology:
+
+<TechnologyTabs
+  html={`# No wrapper needed — use the core package directly
+npm install @awc-ui/core @awc-ui/tokens`}
+  react={`npm install @awc-ui/core @awc-ui/tokens @awc-ui/react`}
+  angular={`npm install @awc-ui/core @awc-ui/tokens @awc-ui/angular`}
+  vue={`npm install @awc-ui/core @awc-ui/tokens @awc-ui/vue`}
+  svelte={`npm install @awc-ui/core @awc-ui/tokens @awc-ui/svelte`}
+/>
+
+## Required Fonts
+
+Add these to your HTML `<head>` for icons and typography:
+
+```html
+<!-- Material Symbols Outlined — the icon font the library is built around.
+     The four axis ranges are required: a default request returns a static
+     instance and the FILL transition silently stops working. -->
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap">
+
+<!-- Roboto (default MD3 body font) -->
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+```
+
+Or install from npm:
+
+```bash
+npm install material-icons material-symbols
+```
+
+```ts
+import 'material-icons/iconfont/material-icons.css';
+import 'material-symbols/outlined.css';
+```
+
+## Component Registration
+
+There are three ways to register components:
+
+### Option A: Auto-register all (recommended)
+
+```ts
+import '@awc-ui/core/define';
+```
+
+This registers every component and loads the AWC UI design-token stylesheet.
+
+### Option B: Lazy-load via the loader
+
+```ts
+import { defineCustomElements } from '@awc-ui/core/loader';
+defineCustomElements(window);
+```
+
+Components are registered on-demand when first encountered in the DOM.
+
+### Option C: Per-component tree-shaking
+
+```ts
+import '@awc-ui/core/components/md-button';
+import '@awc-ui/core/components/md-text-field';
+```
+
+Only the imported components are included in your bundle.
+
+## Design Tokens
+
+The tokens CSS is automatically loaded with Option A. For Options B and C, import the tokens separately:
+
+```ts
+import '@awc-ui/tokens/tokens.css';
+```
+
+This provides all the `--md-sys-*` CSS custom properties for colors, typography, shape, elevation, and motion.
+
+## Next Steps
+
+- [Quick Start](/getting-started/quick-start/) — build your first page with AWC UI components
+- [Components](/components/) — browse all 48 MD3 components, each with HTML, React, Angular, Vue, and Svelte tabs in-page
+- [Theming](/theming/overview/) — customize colors, shapes, and typography

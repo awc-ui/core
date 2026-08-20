@@ -1,0 +1,806 @@
+---
+title: Status Dot
+description: "Small absolutely-positioned presence indicator — six states, three sizes and an optional pulse"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/status-dot.json";
+
+**A presence or health indicator.** A small coloured dot with six states, three
+sizes and an optional pulse — typically anchored to the corner of an avatar, or
+sitting inline in a dense table row.
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 24px; align-items: center;">
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="Ada Lovelace" size="large"></md-avatar>
+    <md-status-dot state="online" label="Online"></md-status-dot>
+  </span>
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="Grace Hopper" size="large"></md-avatar>
+    <md-status-dot state="busy" label="Busy"></md-status-dot>
+  </span>
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="Alan Turing" size="large"></md-avatar>
+    <md-status-dot state="away" label="Away"></md-status-dot>
+  </span>
+</div>`}
+  label="Live preview"
+  storyId="communication-status-dot--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-status-dot" example="" />
+
+## When to use
+
+:::note[Not a Material Design 3 component]
+M3 has badges, not status dots. The guidance on this page is **house rules**,
+derived from M3's badge guidance plus general status-indicator practice — there
+is no M3 status-dot page to cite.
+:::
+
+- **Presence**: online / away / busy / offline / invisible on an avatar.
+- A compact **health or state** marker in a dense list or table row.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| A count of unread items | [`md-badge`](/components/badge/) |
+| An interactive filter or tag | [`md-chip`](/components/chip/) |
+| A status with a text label the user reads | [`md-chip`](/components/chip/) |
+| Progress or loading | [`md-progress-indicator`](/components/progress-indicator/) / [`md-loading-indicator`](/components/loading-indicator/) |
+| A large, prominent state banner | [`md-card`](/components/card/) with a semantic colour |
+| Something clickable | [`md-button`](/components/button/) / [`md-icon-button`](/components/icon-button/) |
+
+:::tip[Dot vs badge]
+A status dot is **presence**; [`md-badge`](/components/badge/) is a **count**.
+If the answer to "what does it show?" is a number, you want the badge.
+:::
+
+## Positioning
+
+The dot **positions itself absolutely** at the bottom inline-end corner of its
+containing block, using `--md-status-dot-inset-end` and
+`--md-status-dot-inset-block-end` (both `0` at `small` and `medium`, `-3px` at
+`large` so the bigger dot still kisses the tile edge).
+
+:::caution[The parent needs `position: relative`]
+Without a positioned ancestor the dot anchors to the nearest one further up the
+tree — often the page — and lands somewhere unrelated to its subject. Wrap the
+avatar (or row, or tile) in a `position: relative` element.
+:::
+
+```html
+<span style="position: relative; display: inline-flex;">
+  <md-avatar name="Ada Lovelace"></md-avatar>
+  <md-status-dot state="online" label="Online"></md-status-dot>
+</span>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:5.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">relative</span>
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="Ada Lovelace" size="large"></md-avatar>
+    <md-status-dot state="online" label="Online" size="large"></md-status-dot>
+  </span>
+  <span style="inline-size:5.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">static</span>
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="Grace Hopper" size="large"></md-avatar>
+    <md-status-dot state="online" label="Online" size="large" style="position: static;"></md-status-dot>
+  </span>
+</div>`}
+  label="A relative parent anchors the dot to the corner — position: static lets it flow instead"
+/>
+
+The insets are **logical**, so the dot flips to the correct corner under
+`dir="rtl"` with no extra CSS. A surface-coloured outline (`2px` at `medium`,
+`1.5px` at `small`, `3px` at `large`) keeps it visually detached from whatever
+it sits on.
+
+### Match the anchor to the tile shape
+
+The default offset is tuned for a **circular** avatar, where the corner of the
+box sits outside the drawn shape. On a rounded or square tile the same offset
+puts the dot *inside* the silhouette, overlapping the radius — push it further
+out so it kisses the corner instead.
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 32px; align-items: center;">
+  <span style="position: relative; display: inline-flex; inline-size: 48px; block-size: 48px; border-radius: 50%; background: var(--md-sys-color-primary-container);">
+    <md-status-dot state="online" label="Online"></md-status-dot>
+  </span>
+  <span style="position: relative; display: inline-flex; inline-size: 48px; block-size: 48px; border-radius: 12px; background: var(--md-sys-color-primary-container);">
+    <md-status-dot state="online" label="Online" style="--md-status-dot-inset-end: -3px; --md-status-dot-inset-block-end: -3px;"></md-status-dot>
+  </span>
+  <span style="position: relative; display: inline-flex; inline-size: 48px; block-size: 48px; border-radius: 4px; background: var(--md-sys-color-primary-container);">
+    <md-status-dot state="online" label="Online" style="--md-status-dot-inset-end: -4px; --md-status-dot-inset-block-end: -4px;"></md-status-dot>
+  </span>
+</div>`}
+  label="Anchor per tile shape"
+/>
+
+### Inline, without an anchor
+
+In a legend, a status menu or a dropdown row the dot is not decorating a tile —
+it is content in its own right. Override `position: static` and it detaches from
+corner-anchoring and flows like any inline element.
+
+<ComponentDemo
+  html={`<ul style="list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; font: 400 14px/20px system-ui, sans-serif; color: var(--md-sys-color-on-surface);">
+  <li style="display: inline-flex; align-items: center; gap: 10px;">
+    <md-status-dot state="online" style="position: static;"></md-status-dot>
+    Available now
+  </li>
+  <li style="display: inline-flex; align-items: center; gap: 10px;">
+    <md-status-dot state="away" style="position: static;"></md-status-dot>
+    Away from desk
+  </li>
+  <li style="display: inline-flex; align-items: center; gap: 10px;">
+    <md-status-dot state="busy" style="position: static;"></md-status-dot>
+    Do not disturb
+  </li>
+  <li style="display: inline-flex; align-items: center; gap: 10px;">
+    <md-status-dot state="offline" style="position: static;"></md-status-dot>
+    Signed out
+  </li>
+</ul>`}
+  label="A status legend"
+/>
+
+Used this way the dot needs no `position: relative` parent, since it is no
+longer looking for a corner to sit in.
+
+## States
+
+Six presence states, each with its own fill and pulse colour.
+
+| `state` | Meaning |
+|---|---|
+| `online` | Available |
+| `away` | Idle |
+| `busy` | Do not disturb / in a call |
+| `offline` | Not connected |
+| `invisible` | Connected but **appearing** offline — a hollow ring on a surface fill |
+| `neutral` | **Default.** No presence semantics |
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 28px; align-items: center; padding: 8px;">
+  <span style="position: relative; display: inline-flex; width: 24px; height: 24px;"><md-status-dot state="online" label="Online"></md-status-dot></span>
+  <span style="position: relative; display: inline-flex; width: 24px; height: 24px;"><md-status-dot state="away" label="Away"></md-status-dot></span>
+  <span style="position: relative; display: inline-flex; width: 24px; height: 24px;"><md-status-dot state="busy" label="Busy"></md-status-dot></span>
+  <span style="position: relative; display: inline-flex; width: 24px; height: 24px;"><md-status-dot state="offline" label="Offline"></md-status-dot></span>
+  <span style="position: relative; display: inline-flex; width: 24px; height: 24px;"><md-status-dot state="invisible" label="Invisible"></md-status-dot></span>
+  <span style="position: relative; display: inline-flex; width: 24px; height: 24px;"><md-status-dot state="neutral" label="Unknown"></md-status-dot></span>
+</div>`}
+  label="online, away, busy, offline, invisible, neutral"
+/>
+
+:::danger[Without `label` the dot is silent to assistive tech]
+With an empty `label` (the default) the dot renders as
+`role="presentation"` + `aria-hidden="true"`. Colour then becomes the *only*
+signal of state, which fails **WCAG 1.4.1 Use of Colour** on its own — and in
+Windows High Contrast every state collapses to one system colour. Treat `label`
+as required, unless the parent element's own text already says the state.
+:::
+
+:::caution[`state="invisible"` is a semantic, not `display: none`]
+It means "the user appears offline" and renders a visible hollow ring. To hide
+the indicator, **remove the element** — don't reach for `invisible`.
+:::
+
+## Sizes
+
+| `size` | Diameter | Pairs with |
+|---|---|---|
+| `small` | 8px | `md-avatar size="small"`, dense tables |
+| `medium` | 12px | **Default.** `md-avatar size="medium"` |
+| `large` | 16px | `md-avatar size="large"`, standalone use |
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 24px; align-items: center;">
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="Ada Lovelace" size="small"></md-avatar>
+    <md-status-dot size="small" state="online" label="Online"></md-status-dot>
+  </span>
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="Ada Lovelace" size="medium"></md-avatar>
+    <md-status-dot size="medium" state="online" label="Online"></md-status-dot>
+  </span>
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="Ada Lovelace" size="large"></md-avatar>
+    <md-status-dot size="large" state="online" label="Online"></md-status-dot>
+  </span>
+</div>`}
+  label="small, medium, large"
+/>
+
+Set an arbitrary diameter with `--md-status-dot-size`.
+
+## Live pulse
+
+`live` pulses the dot outward in its own colour — useful for "live now", "in a
+call" or "recording".
+
+<ComponentDemo
+  html={`<p style="margin: 0 0 10px; font: 500 12px/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);">States that pulse</p>
+<div style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin-block-end: 24px;">
+  <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 8px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><span style="position: relative; display: inline-flex; inline-size: 28px; block-size: 28px;"><md-status-dot state="online" live label="online"></md-status-dot></span>online</span>
+  <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 8px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><span style="position: relative; display: inline-flex; inline-size: 28px; block-size: 28px;"><md-status-dot state="away" live label="away"></md-status-dot></span>away</span>
+  <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 8px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><span style="position: relative; display: inline-flex; inline-size: 28px; block-size: 28px;"><md-status-dot state="busy" live label="busy"></md-status-dot></span>busy</span>
+</div>
+<p style="margin: 0 0 10px; font: 500 12px/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);">Each size</p>
+<div style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin-block-end: 24px;">
+  <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 8px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><span style="position: relative; display: inline-flex; inline-size: 30px; block-size: 30px;"><md-status-dot state="online" size="small" live label="Live, small"></md-status-dot></span>small</span>
+  <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 8px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><span style="position: relative; display: inline-flex; inline-size: 30px; block-size: 30px;"><md-status-dot state="online" size="medium" live label="Live, medium"></md-status-dot></span>medium</span>
+  <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 8px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><span style="position: relative; display: inline-flex; inline-size: 30px; block-size: 30px;"><md-status-dot state="online" size="large" live label="Live, large"></md-status-dot></span>large</span>
+</div>
+<p style="margin: 0 0 10px; font: 500 12px/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);">States with no halo of their own</p>
+<div style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin-block-end: 24px;">
+  <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 8px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><span style="position: relative; display: inline-flex; inline-size: 28px; block-size: 28px;"><md-status-dot state="offline" live label="Offline"></md-status-dot></span>offline</span>
+  <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 8px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><span style="position: relative; display: inline-flex; inline-size: 28px; block-size: 28px;"><md-status-dot state="invisible" live label="Invisible"></md-status-dot></span>invisible</span>
+  <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 8px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><span style="position: relative; display: inline-flex; inline-size: 28px; block-size: 28px;"><md-status-dot state="neutral" live label="Neutral"></md-status-dot></span>neutral</span>
+  <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 8px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><span style="position: relative; display: inline-flex; inline-size: 28px; block-size: 28px;"><md-status-dot state="neutral" live label="Neutral, halo set" style="--md-status-dot-pulse-color: rgba(103, 80, 164, 0.55);"></md-status-dot></span>neutral + halo</span>
+</div>
+<p style="margin: 0 0 10px; font: 500 12px/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);">Tuned pulse</p>
+<div style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; margin-block-end: 24px;">
+  <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 8px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><span style="position: relative; display: inline-flex; inline-size: 30px; block-size: 30px;"><md-status-dot state="busy" live label="Fast pulse" style="--md-status-dot-pulse-duration: 0.8s;"></md-status-dot></span>0.8s</span>
+  <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 8px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><span style="position: relative; display: inline-flex; inline-size: 30px; block-size: 30px;"><md-status-dot state="busy" live label="Recording"></md-status-dot></span>1.6s (default)</span>
+  <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 8px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><span style="position: relative; display: inline-flex; inline-size: 30px; block-size: 30px;"><md-status-dot state="busy" live label="Slow pulse" style="--md-status-dot-pulse-duration: 3s;"></md-status-dot></span>3s</span>
+  <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 8px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><span style="position: relative; display: inline-flex; inline-size: 30px; block-size: 30px;"><md-status-dot state="busy" live label="Custom halo" style="--md-status-dot-pulse-color: rgba(103, 80, 164, 0.55);"></md-status-dot></span>custom halo</span>
+</div>`}
+  label="Pulsing dots"
+  storyId="communication-status-dot--live"
+/>
+
+:::danger[`live` animates — it does not announce]
+The prop's name is about **motion**, not about ARIA. Nothing you do to `state`
+is spoken as a result of setting `live`: the dot's accessible name comes from
+`aria-label`, and changing an `aria-label` is not a live-region content change.
+If a state transition matters to a screen-reader user, publish it yourself
+through your own `aria-live` region — see below.
+:::
+
+Each state pulses in **its own colour** — green pulses green, busy pulses red —
+so the halo never contradicts the dot.
+
+Only `online`, `away` and `busy` ship a halo colour, though. The base
+`--_pulse-color` is `transparent`, so `live` on **`offline`, `invisible` or
+`neutral` animates nothing you can see** — the animation runs, but the halo it
+interpolates is invisible. That is deliberate (a dot that is offline is not
+"live"), and if you do want one, set `--md-status-dot-pulse-color` yourself, as
+the fourth dot in that row does. `invisible` is the odd one out even then: its
+inset ring is drawn over by the pulse keyframe, so the two conflict visually.
+
+`--md-status-dot-pulse-duration` sets the period (default `1.6s`).
+
+The pulse is gated behind `prefers-reduced-motion: no-preference`, so users with
+reduced motion enabled at the OS level see a static dot — no opt-out prop
+needed, and nothing to configure.
+
+## Announcing state changes
+
+Since the component will not announce for you, pair it with a live region that
+you update alongside the dot. Switch presence below: the dot recolours, its
+`label` follows, and the region — visible here, visually hidden in production —
+is what a screen reader actually reads out.
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:16px;align-items:flex-start;">
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="Ada Lovelace" size="large"></md-avatar>
+    <md-status-dot state="online" label="Online" size="large"></md-status-dot>
+  </span>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <md-button variant="outlined" data-state="online">Online</md-button>
+    <md-button variant="outlined" data-state="away">Away</md-button>
+    <md-button variant="outlined" data-state="busy">Busy</md-button>
+  </div>
+  <p data-region aria-live="polite" style="margin:0;font:400 13px/20px ui-monospace,monospace;color:var(--md-sys-color-on-surface-variant);">Ada Lovelace is online</p>
+</div>`}
+  script={`var dot = root.querySelector('md-status-dot');
+var region = root.querySelector('[data-region]');
+var labels = { online: 'Online', away: 'Away', busy: 'Busy' };
+
+root.querySelectorAll('md-button[data-state]').forEach(function (btn) {
+  btn.addEventListener('mdClick', function () {
+    var next = btn.getAttribute('data-state');
+    dot.state = next;
+    dot.label = labels[next];
+    region.textContent = 'Ada Lovelace is ' + next;
+  });
+});`}
+  label="Presence switcher — change the state and watch the live region"
+  htmlCode={`<span style="position: relative; display: inline-flex;">
+  <md-avatar name="Ada Lovelace" size="large"></md-avatar>
+  <md-status-dot id="dot" state="online" label="Online" size="large"></md-status-dot>
+</span>
+
+<div style="display: flex; gap: 8px;">
+  <md-button variant="outlined" data-state="online">Online</md-button>
+  <md-button variant="outlined" data-state="away">Away</md-button>
+  <md-button variant="outlined" data-state="busy">Busy</md-button>
+</div>
+
+<!-- .sr-only = your own visually-hidden utility class -->
+<div id="presence" class="sr-only" aria-live="polite">Ada Lovelace is online</div>
+
+<script type="module">
+  const LABELS = { online: 'Online', away: 'Away', busy: 'Busy' };
+  const dot = document.getElementById('dot');
+  const region = document.getElementById('presence');
+
+  document.querySelectorAll('md-button[data-state]').forEach((btn) => {
+    btn.addEventListener('mdClick', () => {
+      const next = btn.dataset.state;
+      dot.state = next;                                  // recolours the dot
+      dot.label = LABELS[next];                          // keeps the dot labelled
+      region.textContent = 'Ada Lovelace is ' + next;    // announces the change
+    });
+  });
+</script>`}
+  react={`import { MdAvatar, MdButton, MdStatusDot } from '@awc-ui/react';
+import { useState } from 'react';
+
+const LABELS = { online: 'Online', away: 'Away', busy: 'Busy' } as const;
+type Presence = keyof typeof LABELS;
+
+export function PresenceCard({ name }: { name: string }) {
+  const [state, setState] = useState<Presence>('online');
+
+  return (
+    <>
+      <span style={{ position: 'relative', display: 'inline-flex' }}>
+        <MdAvatar name={name} size="large" />
+        <MdStatusDot state={state} label={LABELS[state]} size="large" />
+      </span>
+
+      <div style={{ display: 'flex', gap: 8 }}>
+        {(Object.keys(LABELS) as Presence[]).map((s) => (
+          <MdButton key={s} variant="outlined" onMdClick={() => setState(s)}>
+            {LABELS[s]}
+          </MdButton>
+        ))}
+      </div>
+
+      <div className="sr-only" aria-live="polite">
+        {name} is {state}
+      </div>
+    </>
+  );
+}`}
+  angular={`@Component({
+  selector: 'app-presence',
+  template: \`
+    <span style="position: relative; display: inline-flex;">
+      <md-avatar [name]="name" size="large"></md-avatar>
+      <md-status-dot [state]="state" [label]="label" size="large"></md-status-dot>
+    </span>
+
+    <div style="display: flex; gap: 8px;">
+      <md-button variant="outlined" (mdClick)="setPresence('online')">Online</md-button>
+      <md-button variant="outlined" (mdClick)="setPresence('away')">Away</md-button>
+      <md-button variant="outlined" (mdClick)="setPresence('busy')">Busy</md-button>
+    </div>
+
+    <div class="sr-only" aria-live="polite">{{ name }} is {{ state }}</div>
+  \`,
+})
+export class PresenceComponent {
+  readonly labels = { online: 'Online', away: 'Away', busy: 'Busy' };
+
+  name = 'Ada Lovelace';
+  state: 'online' | 'away' | 'busy' = 'online';
+
+  get label() {
+    return this.labels[this.state];
+  }
+
+  setPresence(next: 'online' | 'away' | 'busy') {
+    this.state = next;
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+
+const LABELS = { online: 'Online', away: 'Away', busy: 'Busy' } as const;
+type Presence = keyof typeof LABELS;
+
+const name = 'Ada Lovelace';
+const state = ref<Presence>('online');
+const label = computed(() => LABELS[state.value]);
+</script>
+
+<template>
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar :name="name" size="large" />
+    <md-status-dot :state="state" :label="label" size="large" />
+  </span>
+
+  <div style="display: flex; gap: 8px;">
+    <md-button variant="outlined" @mdClick="state = 'online'">Online</md-button>
+    <md-button variant="outlined" @mdClick="state = 'away'">Away</md-button>
+    <md-button variant="outlined" @mdClick="state = 'busy'">Busy</md-button>
+  </div>
+
+  <div class="sr-only" aria-live="polite">{{ name }} is {{ state }}</div>
+</template>`}
+  svelte={`<script lang="ts">
+  const LABELS = { online: 'Online', away: 'Away', busy: 'Busy' } as const;
+  type Presence = keyof typeof LABELS;
+
+  const name = 'Ada Lovelace';
+  let state: Presence = 'online';
+  $: label = LABELS[state];
+</script>
+
+<span style="position: relative; display: inline-flex;">
+  <md-avatar {name} size="large" />
+  <md-status-dot {state} {label} size="large" />
+</span>
+
+<div style="display: flex; gap: 8px;">
+  <md-button variant="outlined" on:mdClick={() => (state = 'online')}>Online</md-button>
+  <md-button variant="outlined" on:mdClick={() => (state = 'away')}>Away</md-button>
+  <md-button variant="outlined" on:mdClick={() => (state = 'busy')}>Busy</md-button>
+</div>
+
+<div class="sr-only" aria-live="polite">{name} is {state}</div>`}
+/>
+
+:::note[Why the region and not the dot]
+`role="status"` (what a labelled `live` dot renders as) announces *text content*
+changes, and the dot has no text content — its name comes from `aria-label`,
+which screen readers do not re-announce. The separate region is what carries the
+change.
+:::
+
+## In a table row
+
+`size="small"` plus adjacent text is the dense-row pattern. The text carries the
+meaning; the dot is the scannable cue — never ship the dot alone in a status
+column, since colour is the only thing distinguishing the states and that fails
+for colour-blind readers and in a printed table alike.
+
+Inside a cell the dot still anchors absolutely, so give it a small positioned
+box of its own (`position: relative`) rather than letting it hunt for the
+nearest positioned ancestor — the row.
+
+<ComponentDemo
+  html={`<md-table-container variant="outlined">
+  <md-table column-template="2fr 1fr 1fr" label="Service health">
+    <md-table-head>
+      <md-table-row rowgroup="head">
+        <md-table-cell head scope="col">Service</md-table-cell>
+        <md-table-cell head scope="col">Region</md-table-cell>
+        <md-table-cell head scope="col">Status</md-table-cell>
+      </md-table-row>
+    </md-table-head>
+    <md-table-body>
+      <md-table-row value="api-gateway">
+        <md-table-cell head scope="row">api-gateway</md-table-cell>
+        <md-table-cell>eu-west-1</md-table-cell>
+        <md-table-cell>
+          <span style="display: inline-flex; align-items: center; gap: 8px;">
+            <span style="position: relative; display: inline-flex; inline-size: 8px; block-size: 8px;"><md-status-dot size="small" state="online" label="Healthy"></md-status-dot></span>
+            Healthy
+          </span>
+        </md-table-cell>
+      </md-table-row>
+      <md-table-row value="billing-worker">
+        <md-table-cell head scope="row">billing-worker</md-table-cell>
+        <md-table-cell>eu-west-1</md-table-cell>
+        <md-table-cell>
+          <span style="display: inline-flex; align-items: center; gap: 8px;">
+            <span style="position: relative; display: inline-flex; inline-size: 8px; block-size: 8px;"><md-status-dot size="small" state="busy" label="Deploying"></md-status-dot></span>
+            Deploying
+          </span>
+        </md-table-cell>
+      </md-table-row>
+      <md-table-row value="search-indexer">
+        <md-table-cell head scope="row">search-indexer</md-table-cell>
+        <md-table-cell>us-east-1</md-table-cell>
+        <md-table-cell>
+          <span style="display: inline-flex; align-items: center; gap: 8px;">
+            <span style="position: relative; display: inline-flex; inline-size: 8px; block-size: 8px;"><md-status-dot size="small" state="away" label="Degraded"></md-status-dot></span>
+            Degraded
+          </span>
+        </md-table-cell>
+      </md-table-row>
+      <md-table-row value="legacy-cron">
+        <md-table-cell head scope="row">legacy-cron</md-table-cell>
+        <md-table-cell>us-east-1</md-table-cell>
+        <md-table-cell>
+          <span style="display: inline-flex; align-items: center; gap: 8px;">
+            <span style="position: relative; display: inline-flex; inline-size: 8px; block-size: 8px;"><md-status-dot size="small" state="offline" label="Stopped"></md-status-dot></span>
+            Stopped
+          </span>
+        </md-table-cell>
+      </md-table-row>
+    </md-table-body>
+  </md-table>
+</md-table-container>`}
+  label="A status column"
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[No events, methods, slots or CSS parts]
+The dot is a pure indicator — a single leaf element with no shadow children to
+address, so the custom properties are the whole surface.
+
+Two defaults quoted in that table are **stale**: it repeats the CSS file's
+header comment, which still says `-2px` for `--md-status-dot-inset-end` and
+`--md-status-dot-inset-block-end`. The rules themselves say `0` for both
+(`-3px` at `large`). `--md-status-dot-outline-width` is likewise `2px` only at
+`size="medium"` and density `0` — it is `1.5px` at `small`, `3px` at `large`,
+and tapers with the density rung. [Theming](#theming) below quotes the rules,
+not the comment.
+:::
+
+## Accessibility
+
+- **`label` is effectively required.** Empty (the default) →
+  `role="presentation"` + `aria-hidden="true"`, i.e. invisible to assistive
+  tech, with colour as the only cue. The one acceptable exception is a dot that
+  decorates an element whose own accessible name already carries the state
+  (`<md-avatar label="Ada Lovelace, online">`).
+- With a `label` and `live` off, the dot becomes `role="img"` with that label —
+  a static, named status image.
+- With a `label` and `live` on, it becomes `role="status"`. That role does not
+  rescue you: the name comes from `aria-label`, not from text content, so
+  presence *changes* still need your own live region.
+- The dot is **not focusable** and has no interactive role. Don't attach click
+  handlers — use [`md-icon-button`](/components/icon-button/) if the indicator
+  must be actionable.
+- **WCAG 1.4.1** — never let the six state colours be the only signal. Under
+  Windows High Contrast they all collapse to one system colour.
+- Honour reduced motion: the pulse is already gated behind
+  `prefers-reduced-motion`, and you can drop `live` or override
+  `--md-status-dot-pulse-duration`.
+
+The three exposure modes side by side — the first is invisible to assistive
+tech, the other two are named:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:9rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">presentation</span>
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="Ada Lovelace" size="large" label="Ada Lovelace, online"></md-avatar>
+    <md-status-dot state="online" size="large"></md-status-dot>
+  </span>
+  <span style="inline-size:9rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">img</span>
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="Grace Hopper" size="large"></md-avatar>
+    <md-status-dot state="away" size="large" label="Away"></md-status-dot>
+  </span>
+  <span style="inline-size:9rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">status</span>
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="Alan Turing" size="large"></md-avatar>
+    <md-status-dot state="busy" size="large" label="Busy" live></md-status-dot>
+  </span>
+</div>`}
+  label="No label, label only, and label + live — presentation, img and status"
+/>
+
+## RTL, density & i18n
+
+`--md-status-dot-inset-end` and `--md-status-dot-inset-block-end` are logical
+insets, so the same markup anchors bottom-right in LTR and bottom-left in RTL
+with no extra CSS. See [RTL](/behaviour/rtl/).
+
+```html
+<span dir="rtl" style="position: relative; display: inline-flex;">
+  <md-avatar name="آدا لوفلايس"></md-avatar>
+  <md-status-dot state="online" label="متصل"></md-status-dot>
+</span>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;gap:20px;align-items:center;">
+    <span style="position: relative; display: inline-flex;"><md-avatar name="Ada Lovelace" size="large"></md-avatar><md-status-dot state="online" size="large" label="Online"></md-status-dot></span>
+    <span style="position: relative; display: inline-flex;"><md-avatar name="Grace Hopper" size="large"></md-avatar><md-status-dot state="busy" size="large" label="Busy"></md-status-dot></span>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;gap:20px;align-items:center;">
+    <span style="position: relative; display: inline-flex;"><md-avatar name="Ada Lovelace" size="large"></md-avatar><md-status-dot state="online" size="large" label="متصل"></md-status-dot></span>
+    <span style="position: relative; display: inline-flex;"><md-avatar name="Grace Hopper" size="large"></md-avatar><md-status-dot state="busy" size="large" label="مشغول"></md-status-dot></span>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl — the dot swaps corners on its own"
+/>
+
+### Override the insets logically, not physically
+
+Retuning the anchor for a squarer tile is fine — do it through
+`--md-status-dot-inset-end` / `--md-status-dot-inset-block-end` and the flip
+survives. Reach for the physical `right` / `bottom` instead and the dot stays
+pinned to the right-hand corner in RTL, drifting off the tile it belongs to.
+
+<ComponentDemo
+  html={`<div dir="rtl" style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <span style="position: relative; display: inline-flex; inline-size: 48px; block-size: 48px; border-radius: 12px; background: var(--md-sys-color-primary-container);">
+    <md-status-dot state="online" label="متصل" style="--md-status-dot-inset-end: -3px; --md-status-dot-inset-block-end: -3px;"></md-status-dot>
+  </span>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <span style="position: relative; display: inline-flex; inline-size: 48px; block-size: 48px; border-radius: 12px; background: var(--md-sys-color-primary-container);">
+    <md-status-dot state="online" label="متصل" style="right: -3px; bottom: -3px;"></md-status-dot>
+  </span>
+</div>`}
+  label="dir=rtl — logical insets flip, hard-coded right/bottom do not"
+/>
+
+### Every density rung
+
+`density="-1…-4"` is a local override of the inherited `data-density`, and it
+compounds with `size`. All five rungs at all three sizes, so the taper is
+visible in one place. The `0` row carries no `density` attribute at all —
+there is no `[density="0"]` rule to write, so the undensified default *is* the
+absence of the prop:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <div style="display:flex;gap:20px;align-items:center;"><md-status-dot state="online" size="small" style="position: static;"></md-status-dot><md-status-dot state="online" style="position: static;"></md-status-dot><md-status-dot state="online" size="large" style="position: static;"></md-status-dot></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <div style="display:flex;gap:20px;align-items:center;"><md-status-dot state="online" size="small" density="-1" style="position: static;"></md-status-dot><md-status-dot state="online" density="-1" style="position: static;"></md-status-dot><md-status-dot state="online" size="large" density="-1" style="position: static;"></md-status-dot></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <div style="display:flex;gap:20px;align-items:center;"><md-status-dot state="online" size="small" density="-2" style="position: static;"></md-status-dot><md-status-dot state="online" density="-2" style="position: static;"></md-status-dot><md-status-dot state="online" size="large" density="-2" style="position: static;"></md-status-dot></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <div style="display:flex;gap:20px;align-items:center;"><md-status-dot state="online" size="small" density="-3" style="position: static;"></md-status-dot><md-status-dot state="online" density="-3" style="position: static;"></md-status-dot><md-status-dot state="online" size="large" density="-3" style="position: static;"></md-status-dot></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div style="display:flex;gap:20px;align-items:center;"><md-status-dot state="online" size="small" density="-4" style="position: static;"></md-status-dot><md-status-dot state="online" density="-4" style="position: static;"></md-status-dot><md-status-dot state="online" size="large" density="-4" style="position: static;"></md-status-dot></div>
+</div>`}
+  label="Density 0 (no attribute) through -4 — small, medium and large in each row"
+/>
+
+:::caution[`small` at `-4` is 4px]
+The `medium` ladder runs 12 → 10.5 → 9 → 7.5 → 6px, and `small` runs
+8 → 7 → 6 → 5 → 4px — small enough that the outline is doing most of the work
+of making the dot visible. Check the rung you actually ship, and pair the dot
+with text rather than shrinking it further. See
+[Density](/behaviour/density/#accessibility).
+:::
+
+Every state stays legible at the rung you pick, since the outline tapers with it:
+
+<ComponentDemo
+  html={`<div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap;">
+  <span style="display: inline-flex; align-items: center; gap: 6px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><md-status-dot state="online" density="-2" style="position: static;"></md-status-dot>online</span>
+  <span style="display: inline-flex; align-items: center; gap: 6px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><md-status-dot state="away" density="-2" style="position: static;"></md-status-dot>away</span>
+  <span style="display: inline-flex; align-items: center; gap: 6px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><md-status-dot state="busy" density="-2" style="position: static;"></md-status-dot>busy</span>
+  <span style="display: inline-flex; align-items: center; gap: 6px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><md-status-dot state="offline" density="-2" style="position: static;"></md-status-dot>offline</span>
+  <span style="display: inline-flex; align-items: center; gap: 6px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><md-status-dot state="invisible" density="-2" style="position: static;"></md-status-dot>invisible</span>
+  <span style="display: inline-flex; align-items: center; gap: 6px; font: 400 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);"><md-status-dot state="neutral" density="-2" style="position: static;"></md-status-dot>neutral</span>
+</div>`}
+  label="Every state at density -2"
+/>
+
+### Density and direction together
+
+The two are independent signals, so they compose without any extra wiring — a
+global `data-density` ancestor sets the rung, `dir` sets the corner. The second
+dot in each row takes `density="-4"`, tightening past the inherited `-2`; the
+third resets to full size with an inline `--md-sys-density-scale: 0`, which is
+the only thing that actually escapes the ambient rung:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" data-density="-2" style="display:flex;gap:20px;align-items:center;">
+    <span style="position: relative; display: inline-flex;"><md-avatar name="Ada Lovelace" size="large"></md-avatar><md-status-dot state="online" size="large" label="Online"></md-status-dot></span>
+    <span style="position: relative; display: inline-flex;"><md-avatar name="Grace Hopper" size="large"></md-avatar><md-status-dot state="away" size="large" label="Away" density="-4"></md-status-dot></span>
+    <span style="position: relative; display: inline-flex;"><md-avatar name="Alan Turing" size="large"></md-avatar><md-status-dot state="busy" size="large" label="Busy" style="--md-sys-density-scale: 0;"></md-status-dot></span>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" data-density="-2" style="display:flex;gap:20px;align-items:center;">
+    <span style="position: relative; display: inline-flex;"><md-avatar name="Ada Lovelace" size="large"></md-avatar><md-status-dot state="online" size="large" label="متصل"></md-status-dot></span>
+    <span style="position: relative; display: inline-flex;"><md-avatar name="Grace Hopper" size="large"></md-avatar><md-status-dot state="away" size="large" label="غائب" density="-4"></md-status-dot></span>
+    <span style="position: relative; display: inline-flex;"><md-avatar name="آلان تورينج" size="large"></md-avatar><md-status-dot state="busy" size="large" label="مشغول" style="--md-sys-density-scale: 0;"></md-status-dot></span>
+  </div>
+</div>`}
+  label="data-density=-2 in both directions — second dot pushed to -4, third reset with --md-sys-density-scale: 0"
+/>
+
+:::caution[`density="0"` does not undo an inherited rung]
+The rungs are declared as `:host([density='-1'])` … `:host([density='-4'])`,
+and `0` — the prop's default — has no rule of its own. Inside a
+`data-density="-2"` ancestor, `density="0"` therefore changes nothing: the dot
+keeps inheriting `-2`. `density` tightens past the ambient rung, it does not
+reset to base. To get a full-size dot inside a dense region, move it out of the
+dense subtree or set `--md-sys-density-scale: 0` on a wrapper.
+:::
+
+**Density** — `density="-1…-4"` locally overrides the inherited `data-density`
+rung, shrinking the dot and its outline together. See
+[Density](/behaviour/density/).
+
+**i18n** — `label` is user-facing text. Translate it, along with the state names
+("Away", "Busy") in your dictionary, and let `dir` come from the document rather
+than hard-coding a corner.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-status-dot-size` | Diameter (overrides the `size` preset) | `12px` (`8px` small, `16px` large) |
+| `--md-status-dot-color` | Fill | Per state — `--md-sys-color-on-surface-variant` for `neutral` |
+| `--md-status-dot-pulse-color` | Halo colour used by the `live` pulse | Per state — `transparent` for `offline`, `invisible`, `neutral` |
+| `--md-status-dot-pulse-duration` | Pulse period | `1.6s` |
+| `--md-status-dot-outline-color` | Ring separating the dot from its host | `--md-sys-color-surface` |
+| `--md-status-dot-outline-width` | Ring width | `2px` (`1.5px` small, `3px` large) |
+| `--md-status-dot-inset-end` | Inline-end anchor offset | `0` (`-3px` at `large`) |
+| `--md-status-dot-inset-block-end` | Block-end anchor offset | `0` (`-3px` at `large`) |
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:32px;align-items:center;">
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="Ada Lovelace" size="large"></md-avatar>
+    <md-status-dot state="online" label="Online"></md-status-dot>
+  </span>
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="Grace Hopper" size="large"></md-avatar>
+    <md-status-dot
+      state="online"
+      label="Online"
+      style="--md-status-dot-size: 14px; --md-status-dot-outline-width: 3px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;"
+    ></md-status-dot>
+  </span>
+  <span style="position: relative; display: inline-flex;">
+    <md-avatar name="Alan Turing" size="large"></md-avatar>
+    <md-status-dot
+      state="neutral"
+      label="On brand"
+      live
+      style="--md-status-dot-color: var(--md-sys-color-primary); --md-status-dot-pulse-color: rgba(103, 80, 164, 0.55); --md-status-dot-outline-color: var(--md-sys-color-surface-container-high);"
+    ></md-status-dot>
+  </span>
+</div>`}
+  label="Default, resized, and fully themed instances"
+/>
+
+Set them per instance, or once for every dot in a region:
+
+```css
+md-status-dot {
+  --md-status-dot-size: 14px;
+  --md-status-dot-outline-width: 3px;
+  --md-status-dot-outline-color: var(--md-sys-color-surface-container-high);
+}
+```
+
+:::note[No CSS parts or slots to target]
+The dot is a single leaf element, so the custom properties above are the whole
+styling surface — there is nothing inside the shadow root to reach with
+`::part()`, and nothing to slot content into.
+:::
+
+If you override `--md-status-dot-color`, check the contrast yourself — the six
+built-in state colours are the verified set, and the outline is what keeps the
+dot legible on whatever it sits on, so check any override in both the light and
+the dark theme.
+
+## Related
+
+[`md-badge`](/components/badge/) ·
+[`md-avatar`](/components/avatar/) ·
+[`md-chip`](/components/chip/) ·
+[`md-list`](/components/list/) ·
+[`md-progress-indicator`](/components/progress-indicator/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-status-dot" />

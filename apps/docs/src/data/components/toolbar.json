@@ -1,0 +1,160 @@
+{
+  "tag": "md-toolbar",
+  "title": "Toolbar",
+  "slug": "toolbar",
+  "category": "Navigation",
+  "subComponentOf": null,
+  "storyId": "navigation-toolbar--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'docked' | 'floating'",
+      "default": "'docked'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "color",
+      "attribute": "color",
+      "type": "'standard' | 'vibrant'",
+      "default": "'standard'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "layout",
+      "attribute": "layout",
+      "type": "'horizontal' | 'vertical'",
+      "default": "'horizontal'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "alignment",
+      "attribute": "alignment",
+      "type": "'start' | 'center' | 'end' | 'space-between'",
+      "default": "'start'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "containerSemantics",
+      "attribute": "container-semantics",
+      "type": "'toolbar' | 'generic'",
+      "default": "'toolbar'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "ariaLabelProp",
+      "attribute": "aria-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "ariaLabelledby",
+      "attribute": "aria-labelledby",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [],
+  "methods": [
+    {
+      "name": "setFocus",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "leading",
+      "description": "Leading (start) section"
+    },
+    {
+      "name": "trailing",
+      "description": "Trailing (end) section"
+    },
+    {
+      "name": "fab",
+      "description": "Paired FAB element"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "container",
+      "description": "Inner container holding slotted content"
+    },
+    {
+      "name": "fab-container",
+      "description": "FAB wrapper"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-toolbar-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-toolbar-icon-color",
+      "description": "Slotted control tint (defaults: on-surface-variant / on-surface)"
+    },
+    {
+      "name": "--md-toolbar-container-shape",
+      "description": "Border-radius"
+    },
+    {
+      "name": "--md-toolbar-container-height",
+      "description": "Container height"
+    },
+    {
+      "name": "--md-toolbar-padding",
+      "description": "Padding"
+    },
+    {
+      "name": "--md-toolbar-gap",
+      "description": "Gap between items"
+    },
+    {
+      "name": "--md-toolbar-fab-gap",
+      "description": "Gap between toolbar and FAB"
+    },
+    {
+      "name": "--md-toolbar-scrollbar-width",
+      "description": "Scrollbar width for opt-in scrolling (set to"
+    },
+    {
+      "name": "--md-toolbar-flex-wrap",
+      "description": ""
+    },
+    {
+      "name": "--md-toolbar-overflow-x",
+      "description": ""
+    },
+    {
+      "name": "--md-toolbar-overflow-y",
+      "description": ""
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": []
+}

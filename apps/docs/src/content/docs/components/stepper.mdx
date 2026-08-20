@@ -1,0 +1,1709 @@
+---
+title: Stepper
+description: "A linear, ordered process broken into steps — owns the active index, navigation, and whether the user may jump ahead"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/stepper.json";
+import stepApi from "../../../data/components/step.json";
+
+**A linear, ordered process broken into steps.** It orchestrates slotted
+[`md-step`](/components/stepper/#md-step) children: it owns the active index, the
+navigation buttons, and whether the user may jump ahead.
+
+:::note[Not a Material Design 3 component]
+M3 has no stepper page. The guidance below is **house rules**, informed by M3's
+progress-indicator and tab rules rather than taken from `m3.material.io`.
+:::
+
+<ComponentDemo
+  html={`<md-stepper id="st-checkout" label="Checkout progress" style="inline-size: 100%;">
+  <md-step label="Cart"></md-step>
+  <md-step label="Shipping" description="Address and method"></md-step>
+  <md-step label="Payment"></md-step>
+  <md-step label="Review"></md-step>
+  <div slot="content">
+    <div data-panel="0" style="padding: 4px 0 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+      <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Your cart</div>
+      <div>3 items · $128.40 — step forward to choose delivery.</div>
+    </div>
+    <div data-panel="1" hidden style="padding: 4px 0 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+      <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Shipping</div>
+      <div>Standard delivery, 3–5 days. Free over $50.</div>
+    </div>
+    <div data-panel="2" hidden style="padding: 4px 0 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+      <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Payment</div>
+      <div>Card ending 4242. Billing address matches shipping.</div>
+    </div>
+    <div data-panel="3" hidden style="padding: 4px 0 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+      <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Review</div>
+      <div>Everything looks right? Finishing places the order.</div>
+    </div>
+  </div>
+</md-stepper>`}
+  script={`
+  var stepper = root.querySelector('#st-checkout');
+  var panels = Array.prototype.slice.call(root.querySelectorAll('#st-checkout [data-panel]'));
+  // A horizontal stepper has ONE content slot — the consumer swaps what is in it.
+  // (Vertical steppers are different: content lives inside each md-step.)
+  var show = function (i) {
+    panels.forEach(function (p) { p.hidden = Number(p.dataset.panel) !== i; });
+  };
+  stepper.addEventListener('mdStepChange', function (e) { show(e.detail.index); });
+  show(Number(stepper.getAttribute('active') || 0));`}
+  label="Live preview"
+  storyId="navigation-stepper--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-stepper" example="" />
+
+## When to use
+
+- A **sequential** task with a clear order: checkout, onboarding, a multi-page
+  form, a setup wizard.
+- Steps that need validation before advancing (`mdBeforeChange`).
+- The user benefits from seeing progress and what remains.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Peer views the user switches between freely | [`md-tabs`](/components/tabs/) |
+| Independent collapsible sections | `md-accordion` |
+| Top-level destinations | [`md-navigation-bar`](/components/navigation-bar/) / [`md-navigation-rail`](/components/navigation-rail/) |
+| Simple progress reporting | [`md-progress-indicator`](/components/progress-indicator/) |
+| A two-field form | Just show the form |
+| Hierarchy rather than sequence | Breadcrumbs |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Steps must be done in order | `mode="linear"` (default) |
+| Any step reachable | `mode="non-linear"` **and** `editable` on the steps |
+| Panel per step, expanding in place | `orientation="vertical"` |
+| One shared panel you swap | `orientation="horizontal"` + the `content` slot |
+| Minimal dots instead of numbers | `indicator="dot"` |
+| Compact bar for phones | `variant="mobile"` |
+| Your own buttons | `nav="false"` |
+| Block a transition | Cancel `mdBeforeChange` |
+
+## Validation: `mdBeforeChange`
+
+:::danger[`mdBeforeChange` is the gate — `mdStepChange` is too late]
+`mdBeforeChange` fires **before** a user-driven step change commits (step click,
+built-in nav, or `next()` / `prev()` / `goTo()`) and is **cancelable**. Call
+`preventDefault()` and the user stays on the current step. By the time
+`mdStepChange` fires the move has already happened, so validating there means
+the invalid step is already behind the user.
+:::
+
+:::caution[`error` does not block anything on its own]
+Setting `error` on a step paints it and announces it — it is **presentational**.
+`next()` never consults it. Advancing is stopped by exactly two things:
+cancelling `mdBeforeChange`, or `next-disabled` disabling the built-in Continue.
+Set `error` without one of those and the user sails straight past the invalid
+step, red icon and all.
+
+The two are not interchangeable. `mdBeforeChange` is evaluated **per
+transition**, so it can pass on one step and block on another. `next-disabled`
+is a plain prop: it disables Continue wherever the user happens to be, so
+driving validation with it means recomputing it on every step change — forget
+that and a valid step is left stranded behind a dead button.
+:::
+
+The demo below runs exactly the handler in its code panel. Continue advances
+normally from Cart and Shipping; on Payment the gate cancels the move and paints
+the reason on the step. Back is never gated:
+
+<ComponentDemo
+  html={`<md-stepper id="val-wiz" label="Checkout" style="inline-size: 100%;">
+  <md-step label="Cart"></md-step>
+  <md-step label="Shipping"></md-step>
+  <md-step label="Payment"></md-step>
+  <md-step label="Review"></md-step>
+  <div slot="content" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <span data-val-msg>Press Continue. Cart and Shipping advance normally — Payment is the one that fails.</span>
+    <md-button data-val-fix variant="tonal" size="sm" hidden>Use a valid card</md-button>
+  </div>
+</md-stepper>`}
+  script={`
+  var wiz = root.querySelector('#val-wiz');
+  var steps = Array.prototype.slice.call(wiz.querySelectorAll('md-step'));
+  var msg = root.querySelector('[data-val-msg]');
+  var fix = root.querySelector('[data-val-fix]');
+
+  // Stand-in for your real validation: the card is bad until the user fixes it.
+  var cardValid = false;
+  var validateStep = function (i) { return i !== 2 || cardValid; };
+
+  // Continue is offered only when it can actually succeed: disabled exactly
+  // while the CURRENT step is flagged. next-disabled applies wherever the user
+  // is, so it has to be recomputed on every change — that is what this does.
+  var syncNav = function () {
+    var current = steps[wiz.active];
+    wiz.nextDisabled = !!(current && current.error);
+  };
+
+  wiz.addEventListener('mdBeforeChange', function (e) {
+    var index = e.detail.index, previous = e.detail.previous;
+    var step = steps[previous];
+    if (index > previous && !validateStep(previous)) {
+      e.preventDefault();                                    // blocks the move
+      step.error = true;                                     // and says why
+      step.errorText = 'Enter a valid card number';
+      msg.textContent = 'Blocked — mdBeforeChange was cancelled, so Continue is disabled until it passes.';
+      fix.hidden = false;
+      syncNav();
+    } else {
+      step.error = false;
+    }
+  });
+
+  wiz.addEventListener('mdStepChange', function (e) {
+    msg.textContent = e.detail.index > e.detail.previous
+      ? 'That step passed, so the move went through.'
+      : 'Going back is never gated.';
+    syncNav();
+  });
+
+  fix.addEventListener('mdClick', function () {
+    cardValid = true;
+    steps[2].error = false;
+    fix.hidden = true;
+    msg.textContent = 'Card accepted — Continue is live again.';
+    syncNav();
+  });
+
+  syncNav();`}
+  label="A real mdBeforeChange gate — Continue disables itself while the step is in error"
+  storyId="navigation-stepper--validation-and-async"
+  htmlForCode={`<md-stepper id="wiz" label="Checkout">
+  <md-step label="Cart"></md-step>
+  <md-step label="Shipping"></md-step>
+  <md-step label="Payment"></md-step>
+  <md-step label="Review"></md-step>
+  <div slot="content">
+    <span id="msg">Press Continue. Cart and Shipping advance normally — Payment is the one that fails.</span>
+    <md-button id="fix" variant="tonal" size="sm" hidden>Use a valid card</md-button>
+  </div>
+</md-stepper>
+
+<script type="module">
+  const wiz = document.getElementById('wiz');
+  const steps = wiz.querySelectorAll('md-step');
+  const msg = document.getElementById('msg');
+  const fix = document.getElementById('fix');
+
+  // Stand-in for your real validation: the card is bad until the user fixes it.
+  let cardValid = false;
+  const validateStep = (i) => i !== 2 || cardValid;
+
+  // Offer Continue only when it can succeed: disabled exactly while the CURRENT
+  // step is flagged. next-disabled applies wherever the user is, so recompute it
+  // on every change — otherwise a valid step is stranded behind a dead button.
+  const syncNav = () => { wiz.nextDisabled = !!steps[wiz.active]?.error; };
+
+  wiz.addEventListener('mdBeforeChange', (e) => {
+    const { index, previous } = e.detail;
+    if (index > previous && !validateStep(previous)) {
+      e.preventDefault();                                    // blocks the move
+      steps[previous].error = true;                          // and says why
+      steps[previous].errorText = 'Enter a valid card number';
+      msg.textContent = 'Blocked — mdBeforeChange was cancelled, so Continue is disabled until it passes.';
+      fix.hidden = false;
+      syncNav();
+    } else {
+      steps[previous].error = false;                         // clear it once it passes
+    }
+  });
+
+  wiz.addEventListener('mdStepChange', (e) => {
+    msg.textContent = e.detail.index > e.detail.previous
+      ? 'That step passed, so the move went through.'
+      : 'Going back is never gated.';
+    syncNav();
+  });
+
+  fix.addEventListener('mdClick', () => {
+    cardValid = true;
+    steps[2].error = false;
+    fix.hidden = true;
+    msg.textContent = 'Card accepted — Continue is live again.';
+    syncNav();
+  });
+
+  syncNav();
+</script>`}
+  react={`import { useRef, useState } from 'react';
+import { MdButton, MdStep, MdStepper } from '@awc-ui/react';
+
+export function Checkout() {
+  const wiz = useRef(null);
+  const steps = useRef([]);
+  const [cardValid, setCardValid] = useState(false);
+  const [showFix, setShowFix] = useState(false);
+  const [msg, setMsg] = useState(
+    'Press Continue. Cart and Shipping advance normally — Payment is the one that fails.',
+  );
+
+  // Stand-in for your real validation: the card is bad until the user fixes it.
+  const validateStep = (i) => i !== 2 || cardValid;
+
+  // Offer Continue only when it can succeed: disabled exactly while the CURRENT
+  // step is flagged. next-disabled applies wherever the user is, so it has to be
+  // recomputed on every change.
+  const syncNav = () => {
+    const current = steps.current[wiz.current?.active ?? 0];
+    wiz.current.nextDisabled = !!current?.error;
+  };
+
+  function onBeforeChange(e) {
+    const { index, previous } = e.detail;
+    const step = steps.current[previous];
+    if (index > previous && !validateStep(previous)) {
+      e.preventDefault();                                    // blocks the move
+      step.error = true;                                     // and says why
+      step.errorText = 'Enter a valid card number';
+      setMsg('Blocked — mdBeforeChange was cancelled, so Continue is disabled until it passes.');
+      setShowFix(true);
+      syncNav();
+    } else {
+      step.error = false;
+    }
+  }
+
+  function onStepChange(e) {
+    setMsg(e.detail.index > e.detail.previous
+      ? 'That step passed, so the move went through.'
+      : 'Going back is never gated.');
+    syncNav();
+  }
+
+  function onFix() {
+    setCardValid(true);
+    steps.current[2].error = false;
+    setShowFix(false);
+    setMsg('Card accepted — Continue is live again.');
+    syncNav();
+  }
+
+  return (
+    <MdStepper
+      ref={wiz}
+      label="Checkout"
+      onMdBeforeChange={onBeforeChange}
+      onMdStepChange={onStepChange}
+    >
+      <MdStep ref={(el) => (steps.current[0] = el)} label="Cart" />
+      <MdStep ref={(el) => (steps.current[1] = el)} label="Shipping" />
+      <MdStep ref={(el) => (steps.current[2] = el)} label="Payment" />
+      <MdStep ref={(el) => (steps.current[3] = el)} label="Review" />
+      <div slot="content">
+        <span>{msg}</span>
+        {showFix && (
+          <MdButton variant="tonal" size="sm" onMdClick={onFix}>Use a valid card</MdButton>
+        )}
+      </div>
+    </MdStepper>
+  );
+}`}
+  angular={`import { Component, ElementRef, QueryList, ViewChild, ViewChildren } from '@angular/core';
+
+@Component({
+  selector: 'app-checkout',
+  template: \`
+    <md-stepper
+      #wiz
+      label="Checkout"
+      (mdBeforeChange)="onBeforeChange($event)"
+      (mdStepChange)="onStepChange($event)"
+    >
+      <md-step #step label="Cart"></md-step>
+      <md-step #step label="Shipping"></md-step>
+      <md-step #step label="Payment"></md-step>
+      <md-step #step label="Review"></md-step>
+      <div slot="content">
+        <span>{{ msg }}</span>
+        <md-button *ngIf="showFix" variant="tonal" size="sm" (mdClick)="onFix()">
+          Use a valid card
+        </md-button>
+      </div>
+    </md-stepper>
+  \`,
+})
+export class CheckoutComponent {
+  @ViewChild('wiz') wiz!: ElementRef<HTMLMdStepperElement>;
+  @ViewChildren('step') steps!: QueryList<ElementRef<HTMLMdStepElement>>;
+
+  cardValid = false;
+  showFix = false;
+  msg = 'Press Continue. Cart and Shipping advance normally — Payment is the one that fails.';
+
+  // Stand-in for your real validation: the card is bad until the user fixes it.
+  private validateStep = (i: number) => i !== 2 || this.cardValid;
+
+  private step(i: number) { return this.steps.get(i)!.nativeElement; }
+
+  // Offer Continue only when it can succeed: disabled exactly while the CURRENT
+  // step is flagged. next-disabled applies wherever the user is, so recompute it.
+  private syncNav() {
+    const el = this.wiz.nativeElement;
+    el.nextDisabled = !!this.step(el.active).error;
+  }
+
+  onBeforeChange(e: CustomEvent<{ index: number; previous: number }>) {
+    const { index, previous } = e.detail;
+    const step = this.step(previous);
+    if (index > previous && !this.validateStep(previous)) {
+      e.preventDefault();                                    // blocks the move
+      step.error = true;                                     // and says why
+      step.errorText = 'Enter a valid card number';
+      this.msg = 'Blocked — mdBeforeChange was cancelled, so Continue is disabled until it passes.';
+      this.showFix = true;
+      this.syncNav();
+    } else {
+      step.error = false;
+    }
+  }
+
+  onStepChange(e: CustomEvent<{ index: number; previous: number }>) {
+    this.msg = e.detail.index > e.detail.previous
+      ? 'That step passed, so the move went through.'
+      : 'Going back is never gated.';
+    this.syncNav();
+  }
+
+  onFix() {
+    this.cardValid = true;
+    this.step(2).error = false;
+    this.showFix = false;
+    this.msg = 'Card accepted — Continue is live again.';
+    this.syncNav();
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const wiz = ref<HTMLMdStepperElement>();
+const steps = ref<HTMLMdStepElement[]>([]);
+const cardValid = ref(false);
+const showFix = ref(false);
+const msg = ref('Press Continue. Cart and Shipping advance normally — Payment is the one that fails.');
+
+// Stand-in for your real validation: the card is bad until the user fixes it.
+const validateStep = (i: number) => i !== 2 || cardValid.value;
+
+// Offer Continue only when it can succeed: disabled exactly while the CURRENT
+// step is flagged. next-disabled applies wherever the user is, so recompute it.
+function syncNav() {
+  const el = wiz.value!;
+  el.nextDisabled = !!steps.value[el.active]?.error;
+}
+
+function onBeforeChange(e: CustomEvent) {
+  const { index, previous } = e.detail;
+  const step = steps.value[previous];
+  if (index > previous && !validateStep(previous)) {
+    e.preventDefault();                                      // blocks the move
+    step.error = true;                                       // and says why
+    step.errorText = 'Enter a valid card number';
+    msg.value = 'Blocked — mdBeforeChange was cancelled, so Continue is disabled until it passes.';
+    showFix.value = true;
+    syncNav();
+  } else {
+    step.error = false;
+  }
+}
+
+function onStepChange(e: CustomEvent) {
+  msg.value = e.detail.index > e.detail.previous
+    ? 'That step passed, so the move went through.'
+    : 'Going back is never gated.';
+  syncNav();
+}
+
+function onFix() {
+  cardValid.value = true;
+  steps.value[2].error = false;
+  showFix.value = false;
+  msg.value = 'Card accepted — Continue is live again.';
+  syncNav();
+}
+</script>
+
+<template>
+  <md-stepper
+    ref="wiz"
+    label="Checkout"
+    @mdBeforeChange="onBeforeChange"
+    @mdStepChange="onStepChange"
+  >
+    <md-step :ref="(el) => (steps[0] = el)" label="Cart" />
+    <md-step :ref="(el) => (steps[1] = el)" label="Shipping" />
+    <md-step :ref="(el) => (steps[2] = el)" label="Payment" />
+    <md-step :ref="(el) => (steps[3] = el)" label="Review" />
+    <div slot="content">
+      <span>{{ msg }}</span>
+      <md-button v-if="showFix" variant="tonal" size="sm" @mdClick="onFix">
+        Use a valid card
+      </md-button>
+    </div>
+  </md-stepper>
+</template>`}
+  svelte={`<script lang="ts">
+  let wiz: HTMLMdStepperElement;
+  let steps: HTMLMdStepElement[] = [];
+  let cardValid = false;
+  let showFix = false;
+  let msg = 'Press Continue. Cart and Shipping advance normally — Payment is the one that fails.';
+
+  // Stand-in for your real validation: the card is bad until the user fixes it.
+  const validateStep = (i: number) => i !== 2 || cardValid;
+
+  // Offer Continue only when it can succeed: disabled exactly while the CURRENT
+  // step is flagged. next-disabled applies wherever the user is, so recompute it.
+  function syncNav() {
+    wiz.nextDisabled = !!steps[wiz.active]?.error;
+  }
+
+  function onBeforeChange(e: CustomEvent) {
+    const { index, previous } = e.detail;
+    const step = steps[previous];
+    if (index > previous && !validateStep(previous)) {
+      e.preventDefault();                                    // blocks the move
+      step.error = true;                                     // and says why
+      step.errorText = 'Enter a valid card number';
+      msg = 'Blocked — mdBeforeChange was cancelled, so Continue is disabled until it passes.';
+      showFix = true;
+      syncNav();
+    } else {
+      step.error = false;
+    }
+  }
+
+  function onStepChange(e: CustomEvent) {
+    msg = e.detail.index > e.detail.previous
+      ? 'That step passed, so the move went through.'
+      : 'Going back is never gated.';
+    syncNav();
+  }
+
+  function onFix() {
+    cardValid = true;
+    steps[2].error = false;
+    showFix = false;
+    msg = 'Card accepted — Continue is live again.';
+    syncNav();
+  }
+</script>
+
+<md-stepper
+  bind:this={wiz}
+  label="Checkout"
+  on:mdBeforeChange={onBeforeChange}
+  on:mdStepChange={onStepChange}
+>
+  <md-step bind:this={steps[0]} label="Cart" />
+  <md-step bind:this={steps[1]} label="Shipping" />
+  <md-step bind:this={steps[2]} label="Payment" />
+  <md-step bind:this={steps[3]} label="Review" />
+  <div slot="content">
+    <span>{msg}</span>
+    {#if showFix}
+      <md-button variant="tonal" size="sm" on:mdClick={onFix}>Use a valid card</md-button>
+    {/if}
+  </div>
+</md-stepper>`}
+/>
+
+Pair a cancellation with a visible, announced reason — the in-step surface is
+[`md-step`](/components/stepper/#md-step)'s `error` + `error-text`. A silent block is
+invisible to screen-reader users.
+
+`mdBeforeChange` does **not** fire for a direct `active` assignment, which makes
+`active` the authoritative commit path after async work:
+
+<ComponentDemo
+  html={`<md-stepper id="async-wiz" label="Checkout" style="inline-size: 100%;">
+  <md-step label="Cart"></md-step>
+  <md-step label="Shipping"></md-step>
+  <md-step label="Payment"></md-step>
+  <md-step label="Review"></md-step>
+  <div slot="content" data-async-msg>Press Continue — each move is saved first, then committed.</div>
+</md-stepper>`}
+  script={`
+  var wiz = root.querySelector('#async-wiz');
+  var msg = root.querySelector('[data-async-msg]');
+
+  // Stand-in for your real request.
+  var save = function () {
+    return new Promise(function (resolve) { setTimeout(function () { resolve(true); }, 1200); });
+  };
+
+  wiz.addEventListener('mdBeforeChange', function (e) {
+    var target = e.detail.index;
+    e.preventDefault();                    // nothing commits yet
+    wiz.loading = true;                    // spinner on Continue, Back disabled
+    msg.textContent = 'Saving step ' + (e.detail.previous + 1) + '…';
+
+    save().then(function (ok) {
+      // Direct assignment does NOT re-fire mdBeforeChange, so this cannot loop.
+      if (ok) wiz.active = target;
+      wiz.loading = false;
+      msg.textContent = ok
+        ? 'Saved, then committed via active — mdBeforeChange did not fire again.'
+        : 'Save failed, so the move never committed.';
+    });
+  });`}
+  label="Async commit — Continue spins for 1.2s, then the move lands"
+  storyId="navigation-stepper--validation-and-async"
+  htmlForCode={`<md-stepper id="wiz" label="Checkout">
+  <md-step label="Cart"></md-step>
+  <md-step label="Shipping"></md-step>
+  <md-step label="Payment"></md-step>
+  <md-step label="Review"></md-step>
+  <div slot="content">…</div>
+</md-stepper>
+
+<script type="module">
+  const wiz = document.getElementById('wiz');
+
+  wiz.addEventListener('mdBeforeChange', async (e) => {
+    const target = e.detail.index;
+    e.preventDefault();                    // nothing commits yet
+    wiz.loading = true;                    // spinner on Continue, Back disabled
+
+    // Direct assignment does NOT re-fire mdBeforeChange, so this cannot loop.
+    if (await save()) wiz.active = target;
+    wiz.loading = false;
+  });
+</script>`}
+  react={`import { useRef } from 'react';
+import { MdStep, MdStepper } from '@awc-ui/react';
+
+export function Checkout({ save }) {
+  const wiz = useRef(null);
+
+  async function onBeforeChange(e) {
+    const target = e.detail.index;
+    e.preventDefault();                    // nothing commits yet
+    wiz.current.loading = true;            // spinner on Continue, Back disabled
+
+    // Direct assignment does NOT re-fire mdBeforeChange, so this cannot loop.
+    if (await save()) wiz.current.active = target;
+    wiz.current.loading = false;
+  }
+
+  return (
+    <MdStepper ref={wiz} label="Checkout" onMdBeforeChange={onBeforeChange}>
+      <MdStep label="Cart" />
+      <MdStep label="Shipping" />
+      <MdStep label="Payment" />
+      <MdStep label="Review" />
+      <div slot="content">…</div>
+    </MdStepper>
+  );
+}`}
+  angular={`import { Component, ElementRef, ViewChild } from '@angular/core';
+
+@Component({
+  selector: 'app-checkout',
+  template: \`
+    <md-stepper #wiz label="Checkout" (mdBeforeChange)="onBeforeChange($event)">
+      <md-step label="Cart"></md-step>
+      <md-step label="Shipping"></md-step>
+      <md-step label="Payment"></md-step>
+      <md-step label="Review"></md-step>
+      <div slot="content">…</div>
+    </md-stepper>
+  \`,
+})
+export class CheckoutComponent {
+  @ViewChild('wiz') wizRef!: ElementRef<HTMLMdStepperElement>;
+
+  async onBeforeChange(e: CustomEvent<{ index: number; previous: number }>) {
+    const wiz = this.wizRef.nativeElement;
+    const target = e.detail.index;
+    e.preventDefault();                    // nothing commits yet
+    wiz.loading = true;                    // spinner on Continue, Back disabled
+
+    // Direct assignment does NOT re-fire mdBeforeChange, so this cannot loop.
+    if (await this.save()) wiz.active = target;
+    wiz.loading = false;
+  }
+
+  async save() { return true; }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const wiz = ref<HTMLMdStepperElement>();
+
+async function onBeforeChange(e: CustomEvent) {
+  const target = e.detail.index;
+  e.preventDefault();                      // nothing commits yet
+  wiz.value!.loading = true;               // spinner on Continue, Back disabled
+
+  // Direct assignment does NOT re-fire mdBeforeChange, so this cannot loop.
+  if (await save()) wiz.value!.active = target;
+  wiz.value!.loading = false;
+}
+</script>
+
+<template>
+  <md-stepper ref="wiz" label="Checkout" @mdBeforeChange="onBeforeChange">
+    <md-step label="Cart" />
+    <md-step label="Shipping" />
+    <md-step label="Payment" />
+    <md-step label="Review" />
+    <div slot="content">…</div>
+  </md-stepper>
+</template>`}
+  svelte={`<script lang="ts">
+  let wiz: HTMLMdStepperElement;
+
+  async function onBeforeChange(e: CustomEvent) {
+    const target = e.detail.index;
+    e.preventDefault();                    // nothing commits yet
+    wiz.loading = true;                    // spinner on Continue, Back disabled
+
+    // Direct assignment does NOT re-fire mdBeforeChange, so this cannot loop.
+    if (await save()) wiz.active = target;
+    wiz.loading = false;
+  }
+</script>
+
+<md-stepper bind:this={wiz} label="Checkout" on:mdBeforeChange={onBeforeChange}>
+  <md-step label="Cart" />
+  <md-step label="Shipping" />
+  <md-step label="Payment" />
+  <md-step label="Review" />
+  <div slot="content">…</div>
+</md-stepper>`}
+/>
+
+Use `next-disabled` for the simpler, declarative case — it disables the built-in
+Continue / Finish button (not Back, not step clicks) so you can bind it to the
+current step's form validity.
+
+## Completion
+
+`auto-complete` is **on by default**: advancing marks the step you leave as
+`completed`, so the progress line and check marks just work.
+
+:::caution[Turn `auto-complete` off when completion needs confirmation]
+With it on, a step looks finished the moment the user leaves it — even if the
+server later rejects the submission. Set `auto-complete="false"` and set
+`completed` on the [`md-step`](/components/stepper/#md-step) yourself once the server
+confirms.
+:::
+
+:::note[It acts on transitions, not on the starting position]
+`auto-complete` marks the step you **leave**. A stepper that opens on step 3
+because you set `active="2"` has no completed steps at all — nothing was ever
+advanced through. Completion appears as the user moves, or when you set
+`completed` yourself.
+:::
+
+Both steppers below start on step 1 — press **Continue** a few times in each.
+The first leaves check marks behind; the second never does, because completion
+is yours to confirm:
+
+<ComponentDemo
+  html={`<div style="display:grid;gap:28px;inline-size:100%;">
+  <md-stepper label="auto-complete on (default)" style="inline-size: 100%;">
+    <md-step label="Cart"></md-step>
+    <md-step label="Shipping"></md-step>
+    <md-step label="Payment"></md-step>
+    <md-step label="Review"></md-step>
+    <div slot="content">Default — advancing marks the step you leave as completed.</div>
+  </md-stepper>
+
+  <md-stepper auto-complete="false" label="auto-complete off" style="inline-size: 100%;">
+    <md-step label="Cart"></md-step>
+    <md-step label="Shipping"></md-step>
+    <md-step label="Payment"></md-step>
+    <md-step label="Review"></md-step>
+    <div slot="content">auto-complete="false" — no check marks until your code sets completed.</div>
+  </md-stepper>
+</div>`}
+  label="Press Continue in each — only the first leaves check marks"
+  storyId="navigation-stepper--states-showcase"
+  htmlForCode={`<md-stepper id="w" auto-complete="false" label="Checkout">
+  <md-step label="Cart"></md-step>
+  <md-step label="Payment"></md-step>
+  <md-step label="Review"></md-step>
+</md-stepper>
+
+<script type="module">
+  const w = document.getElementById('w');
+  const steps = w.querySelectorAll('md-step');
+
+  // Mark the step completed only once the server has actually accepted it.
+  w.addEventListener('mdStepChange', async (e) => {
+    const { previous } = e.detail;
+    if (await saveToServer(previous)) steps[previous].completed = true;
+  });
+</script>`}
+  react={`import { useRef } from 'react';
+import { MdStep, MdStepper } from '@awc-ui/react';
+
+export function Checkout({ saveToServer }) {
+  const steps = useRef([]);
+
+  async function onStepChange(e) {
+    const { previous } = e.detail;
+    if (await saveToServer(previous)) steps.current[previous].completed = true;
+  }
+
+  return (
+    <MdStepper label="Checkout" autoComplete={false} onMdStepChange={onStepChange}>
+      <MdStep ref={(el) => (steps.current[0] = el)} label="Cart" />
+      <MdStep ref={(el) => (steps.current[1] = el)} label="Payment" />
+      <MdStep ref={(el) => (steps.current[2] = el)} label="Review" />
+    </MdStepper>
+  );
+}`}
+  angular={`import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
+
+@Component({
+  selector: 'app-checkout',
+  template: \`
+    <md-stepper label="Checkout" auto-complete="false" (mdStepChange)="onStepChange($event)">
+      <md-step #step label="Cart"></md-step>
+      <md-step #step label="Payment"></md-step>
+      <md-step #step label="Review"></md-step>
+    </md-stepper>
+  \`,
+})
+export class CheckoutComponent {
+  @ViewChildren('step') steps!: QueryList<ElementRef<HTMLMdStepElement>>;
+
+  async onStepChange(e: CustomEvent<{ previous: number }>) {
+    const { previous } = e.detail;
+    if (await this.saveToServer(previous)) {
+      this.steps.get(previous)!.nativeElement.completed = true;
+    }
+  }
+
+  async saveToServer(_i: number) { return true; }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const steps = ref<HTMLMdStepElement[]>([]);
+
+async function onStepChange(e: CustomEvent) {
+  const { previous } = e.detail;
+  if (await saveToServer(previous)) steps.value[previous].completed = true;
+}
+</script>
+
+<template>
+  <md-stepper label="Checkout" auto-complete="false" @mdStepChange="onStepChange">
+    <md-step :ref="(el) => (steps[0] = el)" label="Cart" />
+    <md-step :ref="(el) => (steps[1] = el)" label="Payment" />
+    <md-step :ref="(el) => (steps[2] = el)" label="Review" />
+  </md-stepper>
+</template>`}
+  svelte={`<script lang="ts">
+  let steps: HTMLMdStepElement[] = [];
+
+  async function onStepChange(e: CustomEvent) {
+    const { previous } = e.detail;
+    if (await saveToServer(previous)) steps[previous].completed = true;
+  }
+</script>
+
+<md-stepper label="Checkout" auto-complete="false" on:mdStepChange={onStepChange}>
+  <md-step bind:this={steps[0]} label="Cart" />
+  <md-step bind:this={steps[1]} label="Payment" />
+  <md-step bind:this={steps[2]} label="Review" />
+</md-stepper>`}
+/>
+
+## Linear vs non-linear
+
+| Mode | Behaviour |
+|---|---|
+| `linear` (default) | Steps must be done in order; future steps are unreachable until the prior ones are done or `optional` |
+| `non-linear` | Any step can be selected |
+
+:::caution[Revisiting a finished step also needs `editable`]
+`mode="non-linear"` alone is not enough. A completed step is only revisitable if
+that `md-step` carries `editable` — otherwise clicking it does nothing (and with
+`auto-complete` on, `editable` is also what preserves downstream completion when
+the user edits in place).
+:::
+
+<ComponentDemo
+  html={`<md-stepper id="st-nonlinear" mode="non-linear" active="2" label="Non-linear" style="inline-size: 100%;">
+  <md-step label="Account" completed editable></md-step>
+  <md-step label="Shipping" completed editable></md-step>
+  <md-step label="Payment"></md-step>
+  <div slot="content">
+    <div data-panel="0" hidden style="padding: 4px 0 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+      <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Account</div>
+      <div>Jump straight back here — an editable step stays clickable.</div>
+    </div>
+    <div data-panel="1" hidden style="padding: 4px 0 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+      <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Shipping</div>
+      <div>Also editable, so revisiting it keeps the later progress.</div>
+    </div>
+    <div data-panel="2" style="padding: 4px 0 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+      <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Payment</div>
+      <div>The step you are on. Click a completed header to go back.</div>
+    </div>
+  </div>
+</md-stepper>`}
+  script={`
+  var stepper = root.querySelector('#st-nonlinear');
+  var panels = Array.prototype.slice.call(root.querySelectorAll('#st-nonlinear [data-panel]'));
+  // A horizontal stepper has ONE content slot — the consumer swaps what is in it.
+  // (Vertical steppers are different: content lives inside each md-step.)
+  var show = function (i) {
+    panels.forEach(function (p) { p.hidden = Number(p.dataset.panel) !== i; });
+  };
+  stepper.addEventListener('mdStepChange', function (e) { show(e.detail.index); });
+  show(Number(stepper.getAttribute('active') || 0));`}
+  label="Non-linear with editable steps"
+  storyId="navigation-stepper--non-linear"
+/>
+
+## Orientation, indicator & variant
+
+`orientation="horizontal"` (default) keeps the step row clean — put the active
+panel in the stepper's **`content` slot** and swap it on `mdStepChange`.
+`orientation="vertical"` renders each step's own slotted content in an expanding
+panel with built-in Back / Continue.
+
+Panels can live in **either** place, and the stepper picks the layout for you:
+
+| Where you put the panel | What happens |
+|---|---|
+| One `<div slot="content">` on the **stepper** | The shared region under the row — you swap it on `mdStepChange` |
+| Inside each `<md-step>` | Vertical: expands in place. Horizontal: spans the full width under the row |
+
+:::note[Per-step panels are detected, not configured]
+There is no prop. The moment any `md-step` has light-DOM content of its own, a
+horizontal stepper switches its row from a flex line to a grid so each step's
+panel can span every column underneath. A horizontal stepper whose steps are all
+empty renders exactly as it always did.
+
+Under the hood this is why the two placements exist at all: a slot cannot reach
+a *grandchild*, so `md-stepper` can never project a step's children into its own
+`content` region — only `md-step` can render them, and the grid is what lets its
+panel escape a `flex: 1 1 0` column that would otherwise be 1/N of the row.
+:::
+
+<ComponentDemo
+  html={`<md-stepper active="1" label="Checkout" style="inline-size: 100%;">
+  <md-step label="Cart"><div style="padding-block: 8px;">3 items · $128.40</div></md-step>
+  <md-step label="Shipping" description="Address and method"><div style="padding-block: 8px;">Pick a delivery method.</div></md-step>
+  <md-step label="Payment"><div style="padding-block: 8px;">Card details.</div></md-step>
+  <md-step label="Review"><div style="padding-block: 8px;">Confirm and pay.</div></md-step>
+</md-stepper>`}
+  htmlForCode={`<!-- horizontal, but each step carries its own panel -->
+<md-stepper active="1" label="Checkout">
+  <md-step label="Cart">3 items · $128.40</md-step>
+  <md-step label="Shipping" description="Address and method">Pick a delivery method.</md-step>
+  <md-step label="Payment">Card details.</md-step>
+  <md-step label="Review">Confirm and pay.</md-step>
+</md-stepper>`}
+  label="Horizontal with per-step panels — no content slot, no swapping code"
+  storyId="navigation-stepper--horizontal"
+/>
+
+:::tip[Which one should you reach for?]
+**Per-step** is less code and keeps each panel next to the step it belongs to —
+reach for it first. **The shared `content` slot** is worth the plumbing when the
+panel is one region your app already owns: a form whose state spans steps, a
+route-driven panel, or lazy-mounted content you want to control precisely.
+
+Using both at once is allowed — the per-step panels render inside the row, the
+shared region below them — but it is almost always a mistake.
+:::
+
+<ComponentDemo
+  html={`<md-stepper orientation="vertical" label="Deploy" style="inline-size: 100%;">
+  <md-step label="Connect repo" icon="cable">Pick the repository to deploy.</md-step>
+  <md-step label="Configure build" icon="tune">Set the build command.</md-step>
+  <md-step label="Deploy" icon="rocket_launch">Ship it.</md-step>
+</md-stepper>`}
+  label="Vertical — content renders inside each step"
+  storyId="navigation-stepper--vertical-wizard"
+/>
+
+`indicator="numbered"` (default) draws numbered circles; `indicator="dot"` draws
+minimal dots. `icon` on a step overrides the glyph.
+
+<ComponentDemo
+  html={`<md-stepper id="st-dot" indicator="dot" label="Dot stepper" style="inline-size: 100%;">
+  <md-step label="Welcome"></md-step>
+  <md-step label="Profile"></md-step>
+  <md-step label="Preferences"></md-step>
+  <md-step label="Done"></md-step>
+  <div slot="content">
+    <div data-panel="0" style="padding: 4px 0 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+      <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Welcome</div>
+      <div>Panel for “Welcome”. The dot indicator drops the numbers; the content still swaps.</div>
+    </div>
+    <div data-panel="1" hidden style="padding: 4px 0 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+      <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Profile</div>
+      <div>Panel for “Profile”. The dot indicator drops the numbers; the content still swaps.</div>
+    </div>
+    <div data-panel="2" hidden style="padding: 4px 0 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+      <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Preferences</div>
+      <div>Panel for “Preferences”. The dot indicator drops the numbers; the content still swaps.</div>
+    </div>
+    <div data-panel="3" hidden style="padding: 4px 0 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+      <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Done</div>
+      <div>Panel for “Done”. The dot indicator drops the numbers; the content still swaps.</div>
+    </div>
+  </div>
+</md-stepper>`}
+  script={`
+  var stepper = root.querySelector('#st-dot');
+  var panels = Array.prototype.slice.call(root.querySelectorAll('#st-dot [data-panel]'));
+  // A horizontal stepper has ONE content slot — the consumer swaps what is in it.
+  // (Vertical steppers are different: content lives inside each md-step.)
+  var show = function (i) {
+    panels.forEach(function (p) { p.hidden = Number(p.dataset.panel) !== i; });
+  };
+  stepper.addEventListener('mdStepChange', function (e) { show(e.detail.index); });
+  show(Number(stepper.getAttribute('active') || 0));`}
+  label="Dot indicator"
+  storyId="navigation-stepper--horizontal"
+/>
+
+`variant="mobile"` swaps the whole header row for a compact bar — Back, a
+centered progress readout (dots for `indicator="dot"`, otherwise a "Step N of M"
+caption), and Continue / Finish. The step headers are hidden, so the active
+panel must go in the `content` slot.
+
+### Step states
+
+A step is `completed`, `error`, `optional`, `disabled` or plain — and the state
+shows in the indicator glyph **and** the announced text, never colour alone.
+
+<ComponentDemo
+  html={`<md-stepper mode="non-linear" active="3" label="States" style="inline-size: 100%;">
+  <md-step label="Account" completed editable></md-step>
+  <md-step label="Shipping" error error-text="Postcode not recognised"></md-step>
+  <md-step label="Gift wrap" optional></md-step>
+  <md-step label="Payment"></md-step>
+  <md-step label="Review" disabled></md-step>
+  <div slot="content">Completed, error, optional, current and disabled.</div>
+</md-stepper>`}
+  label="Completed, error, optional, current, disabled"
+  storyId="navigation-stepper--states-showcase"
+/>
+
+### The mobile variant
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;max-inline-size:420px;">
+  <md-stepper id="st-mobile" variant="mobile" active="1" label="Checkout" style="inline-size: 100%;">
+    <md-step label="Account" completed></md-step>
+    <md-step label="Shipping"></md-step>
+    <md-step label="Payment"></md-step>
+    <div slot="content">
+    <div data-panel="0" hidden style="padding: 4px 0 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+      <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Account</div>
+      <div>Signed in as ada@example.com.</div>
+    </div>
+    <div data-panel="1" style="padding: 4px 0 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+      <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Shipping</div>
+      <div>12 Ampere Way, London — standard delivery.</div>
+    </div>
+    <div data-panel="2" hidden style="padding: 4px 0 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+      <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Payment</div>
+      <div>Card ending 4242. Continue becomes Finish on the last step.</div>
+    </div>
+    </div>
+  </md-stepper>
+</div>`}
+  script={`
+  var stepper = root.querySelector('#st-mobile');
+  var panels = Array.prototype.slice.call(root.querySelectorAll('#st-mobile [data-panel]'));
+  // A horizontal stepper has ONE content slot — the consumer swaps what is in it.
+  // (Vertical steppers are different: content lives inside each md-step.)
+  var show = function (i) {
+    panels.forEach(function (p) { p.hidden = Number(p.dataset.panel) !== i; });
+  };
+  stepper.addEventListener('mdStepChange', function (e) { show(e.detail.index); });
+  show(Number(stepper.getAttribute('active') || 0));`}
+  label="variant=mobile — Back, a progress readout, Continue"
+  storyId="navigation-stepper--mobile"
+/>
+
+## Your own navigation
+
+`nav` (default `true`) renders the built-in Back / Continue — under each active
+step when vertical, as a single bar below the stepper when horizontal. Set
+`nav="false"` and you drive the flow with `next()`, `prev()` and `goTo(index)`
+(all of which still emit the cancelable `mdBeforeChange`); `reset()` returns to
+the first step and clears completed / error state.
+
+The demo below is live — the buttons are ordinary `md-button`s calling the
+stepper's methods:
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;">
+  <md-stepper id="own-nav" nav="false" label="Checkout" style="inline-size: 100%;">
+    <md-step label="Cart"></md-step>
+    <md-step label="Shipping"></md-step>
+    <md-step label="Payment"></md-step>
+    <md-step label="Review"></md-step>
+    <div slot="content">Drive it with the buttons below — they call prev(), next() and reset().</div>
+  </md-stepper>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-block-start:12px;">
+    <md-button variant="text" onclick="document.getElementById('own-nav').reset()">Reset</md-button>
+    <md-button variant="text" onclick="document.getElementById('own-nav').prev()">Back</md-button>
+    <md-button variant="filled" onclick="document.getElementById('own-nav').next()">Continue</md-button>
+  </div>
+</div>`}
+  label="nav=false — your buttons, the stepper's methods"
+  storyId="navigation-stepper--imperative-controls"
+  htmlForCode={`<md-stepper id="w" nav="false" label="Checkout">
+  <md-step label="Cart"></md-step>
+  <md-step label="Payment"></md-step>
+  <md-step label="Review"></md-step>
+  <div slot="content">…</div>
+</md-stepper>
+
+<md-button id="back">Back</md-button>
+<md-button id="next" variant="filled">Continue</md-button>
+
+<script type="module">
+  const w = document.getElementById('w');
+
+  // next() / prev() / goTo() all still emit the cancelable mdBeforeChange,
+  // so your validation gate keeps working with your own buttons.
+  document.getElementById('back').addEventListener('mdClick', () => w.prev());
+  document.getElementById('next').addEventListener('mdClick', () => w.next());
+</script>`}
+  react={`import { useRef } from 'react';
+import { MdButton, MdStep, MdStepper } from '@awc-ui/react';
+
+export function Checkout() {
+  const wiz = useRef(null);
+
+  return (
+    <>
+      <MdStepper ref={wiz} nav={false} label="Checkout">
+        <MdStep label="Cart" />
+        <MdStep label="Payment" />
+        <MdStep label="Review" />
+        <div slot="content">…</div>
+      </MdStepper>
+
+      <MdButton onMdClick={() => wiz.current?.prev()}>Back</MdButton>
+      <MdButton variant="filled" onMdClick={() => wiz.current?.next()}>Continue</MdButton>
+    </>
+  );
+}`}
+  angular={`import { Component, ElementRef, ViewChild } from '@angular/core';
+
+@Component({
+  selector: 'app-checkout',
+  template: \`
+    <md-stepper #wiz nav="false" label="Checkout">
+      <md-step label="Cart"></md-step>
+      <md-step label="Payment"></md-step>
+      <md-step label="Review"></md-step>
+      <div slot="content">…</div>
+    </md-stepper>
+
+    <md-button (mdClick)="wiz.prev()">Back</md-button>
+    <md-button variant="filled" (mdClick)="wiz.next()">Continue</md-button>
+  \`,
+})
+export class CheckoutComponent {
+  @ViewChild('wiz') wiz!: ElementRef<HTMLMdStepperElement>;
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+const wiz = ref<HTMLMdStepperElement>();
+</script>
+
+<template>
+  <md-stepper ref="wiz" nav="false" label="Checkout">
+    <md-step label="Cart" />
+    <md-step label="Payment" />
+    <md-step label="Review" />
+    <div slot="content">…</div>
+  </md-stepper>
+
+  <md-button @mdClick="wiz?.prev()">Back</md-button>
+  <md-button variant="filled" @mdClick="wiz?.next()">Continue</md-button>
+</template>`}
+  svelte={`<script lang="ts">
+  let wiz: HTMLMdStepperElement;
+</script>
+
+<md-stepper bind:this={wiz} nav="false" label="Checkout">
+  <md-step label="Cart" />
+  <md-step label="Payment" />
+  <md-step label="Review" />
+  <div slot="content">…</div>
+</md-stepper>
+
+<md-button on:mdClick={() => wiz.prev()}>Back</md-button>
+<md-button variant="filled" on:mdClick={() => wiz.next()}>Continue</md-button>`}
+/>
+
+With `nav="false"` the button labels are yours too — `next-label`, `back-label`
+and `finish-label` only name the built-in buttons.
+
+## Lazy content
+
+`lazy` mounts only the **active** vertical step's content panel; inactive panels
+leave layout and the accessibility tree (no collapse animation). Worth it for
+wizards with heavy per-step forms.
+
+<ComponentDemo
+  html={`<md-stepper orientation="vertical" lazy label="Deploy" style="inline-size: 100%;">
+  <md-step label="Connect repo" icon="cable">Only this panel is mounted right now.</md-step>
+  <md-step label="Configure build" icon="tune">This one mounts when you reach it.</md-step>
+  <md-step label="Deploy" icon="rocket_launch">And so does this one.</md-step>
+</md-stepper>`}
+  label="lazy — step through it and watch each panel mount on arrival"
+  storyId="navigation-stepper--lazy-content"
+  htmlForCode={`<!-- Plain HTML has no conditional rendering, so lazy is as far as it goes.
+     Remove the child yourself if it must truly tear down. -->
+<md-stepper id="w" orientation="vertical" lazy label="Deploy">
+  <md-step label="Connect repo">…</md-step>
+  <md-step label="Configure build">…</md-step>
+</md-stepper>
+
+<script type="module">
+  const w = document.getElementById('w');
+  w.addEventListener('mdStepChange', (e) => {
+    // Full teardown: drop the previous step's children entirely.
+    w.querySelectorAll('md-step')[e.detail.previous].replaceChildren();
+  });
+</script>`}
+  react={`import { useState } from 'react';
+import { MdStep, MdStepper } from '@awc-ui/react';
+
+export function Deploy() {
+  const [active, setActive] = useState(0);
+
+  // Rendering the panel only when it is active tears the child down for real —
+  // lazy alone leaves slotted elements connected in the light DOM.
+  return (
+    <MdStepper
+      orientation="vertical"
+      label="Deploy"
+      active={active}
+      onMdStepChange={(e) => setActive(e.detail.index)}
+    >
+      <MdStep label="Connect repo">{active === 0 && <RepoPicker />}</MdStep>
+      <MdStep label="Configure build">{active === 1 && <BuildForm />}</MdStep>
+      <MdStep label="Deploy">{active === 2 && <DeployPanel />}</MdStep>
+    </MdStepper>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-deploy',
+  template: \`
+    <md-stepper orientation="vertical" label="Deploy" [active]="active"
+                (mdStepChange)="active = $event.detail.index">
+      <md-step label="Connect repo">
+        <app-repo-picker *ngIf="active === 0"></app-repo-picker>
+      </md-step>
+      <md-step label="Configure build">
+        <app-build-form *ngIf="active === 1"></app-build-form>
+      </md-step>
+    </md-stepper>
+  \`,
+})
+export class DeployComponent {
+  active = 0;
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+const active = ref(0);
+</script>
+
+<template>
+  <md-stepper
+    orientation="vertical"
+    label="Deploy"
+    :active="active"
+    @mdStepChange="active = $event.detail.index"
+  >
+    <md-step label="Connect repo"><RepoPicker v-if="active === 0" /></md-step>
+    <md-step label="Configure build"><BuildForm v-if="active === 1" /></md-step>
+  </md-stepper>
+</template>`}
+  svelte={`<script lang="ts">
+  let active = 0;
+</script>
+
+<md-stepper
+  orientation="vertical"
+  label="Deploy"
+  {active}
+  on:mdStepChange={(e) => (active = e.detail.index)}
+>
+  <md-step label="Connect repo">{#if active === 0}<RepoPicker />{/if}</md-step>
+  <md-step label="Configure build">{#if active === 1}<BuildForm />{/if}</md-step>
+</md-stepper>`}
+/>
+
+:::caution[`lazy` un-mounts the panel, not your component]
+Slotted custom elements stay **connected** in the light DOM — `lazy` only
+controls whether `md-step` renders the panel that projects them. A heavy child
+keeps its state, its timers and its subscriptions. For a genuine teardown,
+conditionally render the step's content in your framework, as the tabs below do.
+:::
+
+## i18n: every user-facing word is a prop
+
+:::danger[Leaving the word props in English half-translates the flow]
+`step-word`, `of-word`, `completed-word`, `current-word`, `error-word`,
+`optional-word`, `next-label`, `back-label`, `finish-label` and `label` **all
+default to English**, and the first six are assembled into each step's
+screen-reader announcement — "Step 2 of 4, current". Translate the visible
+labels but not these, and the announcement stays English while the screen looks
+localized.
+:::
+
+<ComponentDemo
+  html={`<md-stepper label="Progression" step-word="Étape" of-word="sur"
+            completed-word="terminée" current-word="actuelle" error-word="erreur"
+            optional-word="Facultatif" next-label="Continuer" back-label="Retour"
+            finish-label="Terminer" style="inline-size: 100%;">
+  <md-step label="Panier"></md-step>
+  <md-step label="Livraison" optional></md-step>
+  <md-step label="Paiement"></md-step>
+  <div slot="content">Votre panier contient 3 articles.</div>
+</md-stepper>`}
+  label="Fully localized — including the announced words"
+  storyId="navigation-stepper--localization"
+/>
+
+The `optional-word` is rendered by each `md-step` marked `optional`, so that
+string is translated **here on the parent**, not on the step. Per-step strings
+(`label`, `description`, `error-text`, `accessible-name`) are translated on the
+step. The assembled order ("Step 2 of 4") is fixed — locales needing a different
+order may need the wording adjusted to fit.
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdBeforeChange` | **yes** | `{ index, previous }` | Before a user-driven move commits — not on a direct `active` assignment |
+| `mdStepChange` | no | `{ index, previous }` | After the move commits |
+| `mdComplete` | no | `void` | Continue pressed on the last step |
+
+<ComponentDemo
+  html={`<md-stepper id="ev-wiz" label="Checkout progress" style="inline-size: 100%;">
+  <md-step label="Account"></md-step>
+  <md-step label="Payment"></md-step>
+  <md-step label="Review"></md-step>
+  <div slot="content">
+    <div data-ev-log style="font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;opacity:.85;min-block-size:5.5em;"></div>
+  </div>
+</md-stepper>`}
+  script={`
+  var wiz = root.querySelector('#ev-wiz');
+  var log = root.querySelector('[data-ev-log]');
+  var lines = [];
+  var push = function (text) {
+    lines.unshift(text);
+    lines = lines.slice(0, 5);
+    log.textContent = lines.join(String.fromCharCode(10));
+  };
+
+  // Cancelable, and fires BEFORE the move commits.
+  wiz.addEventListener('mdBeforeChange', function (e) {
+    push('mdBeforeChange  { index: ' + e.detail.index + ', previous: ' + e.detail.previous + ' }  cancelable');
+  });
+
+  // Fires AFTER the move commits.
+  wiz.addEventListener('mdStepChange', function (e) {
+    push('mdStepChange    { index: ' + e.detail.index + ', previous: ' + e.detail.previous + ' }');
+  });
+
+  // Continue pressed on the LAST step.
+  wiz.addEventListener('mdComplete', function () {
+    push('mdComplete      (void)  — the flow finished');
+  });
+
+  push('Press Continue — every event lands here, newest first.');`}
+  label="All three events, live — press Continue to the end"
+  storyId="navigation-stepper--imperative-controls"
+  htmlForCode={`<md-stepper id="wiz" label="Checkout progress">
+  <md-step label="Account"></md-step>
+  <md-step label="Payment"></md-step>
+  <md-step label="Review"></md-step>
+  <div slot="content" id="panel">Account details…</div>
+</md-stepper>
+
+<script type="module">
+  const wiz = document.getElementById('wiz');
+
+  // Cancelable, before the move commits — this is the validation gate.
+  wiz.addEventListener('mdBeforeChange', (e) => {
+    const { index, previous } = e.detail;
+    if (index > previous && !validateStep(previous)) e.preventDefault();
+  });
+
+  // After the move commits — swap the shared panel here.
+  wiz.addEventListener('mdStepChange', (e) => renderPanel(e.detail.index));
+
+  // Continue pressed on the last step.
+  wiz.addEventListener('mdComplete', () => submitOrder());
+</script>`}
+  react={`import { useState } from 'react';
+import { MdStep, MdStepper } from '@awc-ui/react';
+
+export function Checkout({ panels, validateStep, submitOrder }) {
+  const [step, setStep] = useState(0);
+
+  return (
+    <MdStepper
+      label="Checkout progress"
+      onMdBeforeChange={(e) => {
+        const { index, previous } = e.detail;                // cancelable
+        if (index > previous && !validateStep(previous)) e.preventDefault();
+      }}
+      onMdStepChange={(e) => setStep(e.detail.index)}        // after the move
+      onMdComplete={() => submitOrder()}                     // last step finished
+    >
+      <MdStep label="Account" />
+      <MdStep label="Payment" />
+      <MdStep label="Review" />
+      <div slot="content">{panels[step]}</div>
+    </MdStepper>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-checkout',
+  template: \`
+    <md-stepper
+      label="Checkout progress"
+      (mdBeforeChange)="onBeforeChange($event)"
+      (mdStepChange)="step = $event.detail.index"
+      (mdComplete)="submitOrder()"
+    >
+      <md-step label="Account"></md-step>
+      <md-step label="Payment"></md-step>
+      <md-step label="Review"></md-step>
+      <div slot="content">{{ panels[step] }}</div>
+    </md-stepper>
+  \`,
+})
+export class CheckoutComponent {
+  step = 0;
+  panels = ['Account details…', 'Payment details…', 'Review your order'];
+
+  onBeforeChange(e: CustomEvent<{ index: number; previous: number }>) {
+    const { index, previous } = e.detail;                    // cancelable
+    if (index > previous && !this.validateStep(previous)) e.preventDefault();
+  }
+
+  validateStep(_i: number) { return true; }
+  submitOrder() { /* … */ }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const step = ref(0);
+const panels = ['Account details…', 'Payment details…', 'Review your order'];
+
+function onBeforeChange(e: CustomEvent) {
+  const { index, previous } = e.detail;                      // cancelable
+  if (index > previous && !validateStep(previous)) e.preventDefault();
+}
+</script>
+
+<template>
+  <md-stepper
+    label="Checkout progress"
+    @mdBeforeChange="onBeforeChange"
+    @mdStepChange="step = $event.detail.index"
+    @mdComplete="submitOrder"
+  >
+    <md-step label="Account" />
+    <md-step label="Payment" />
+    <md-step label="Review" />
+    <div slot="content">{{ panels[step] }}</div>
+  </md-stepper>
+</template>`}
+  svelte={`<script lang="ts">
+  let step = 0;
+  const panels = ['Account details…', 'Payment details…', 'Review your order'];
+
+  function onBeforeChange(e: CustomEvent) {
+    const { index, previous } = e.detail;                    // cancelable
+    if (index > previous && !validateStep(previous)) e.preventDefault();
+  }
+</script>
+
+<md-stepper
+  label="Checkout progress"
+  on:mdBeforeChange={onBeforeChange}
+  on:mdStepChange={(e) => (step = e.detail.index)}
+  on:mdComplete={submitOrder}
+>
+  <md-step label="Account" />
+  <md-step label="Payment" />
+  <md-step label="Review" />
+  <div slot="content">{panels[step]}</div>
+</md-stepper>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## The sub-components
+
+A stepper is composed from one sub-component, documented here rather than on its
+own page: it means nothing outside `md-stepper`, which owns the active index,
+completion and the navigation events.
+
+### `md-step`
+
+**One step in the stepper** — an indicator (number, dot, check or error glyph),
+a label, an optional description, and the step's content.
+
+- **`active` and `completed` are stepper-managed.** The stepper's `active` index
+  drives `active`, and its `auto-complete` drives `completed`. Set `completed`
+  yourself only after turning `auto-complete="false"` off on the parent —
+  otherwise the two fight.
+- **`mdStepClick`, `mdStepNext` and `mdStepBack` are internal plumbing** behind
+  the header and the built-in action buttons; the stepper consumes (and stops)
+  them. Application logic belongs on the stepper's `mdBeforeChange` /
+  `mdStepChange` / `mdComplete`.
+- **`error` + `error-text` is the in-step validation surface** — pair it with
+  cancelling the stepper's `mdBeforeChange` so the block has a visible,
+  announced reason. `error-text` replaces `description` while the error is set.
+- In `mode="linear"`, a finished step is only revisitable if you set
+  `editable` — which, with `auto-complete` on, also preserves downstream
+  completion when the user edits in place. Revisiting a **non**-editable step
+  restarts progress from there.
+- **`optional` renders the `optional-word` supplied by the stepper**, so that
+  string is translated once on the parent rather than per step.
+
+<ApiTable {...stepApi} />
+
+## Accessibility
+
+- `label` names the progress landmark. `step-word` / `of-word` /
+  `completed-word` / `current-word` / `error-word` / `optional-word` are
+  assembled into each step's announcement ("Step 2 of 4, current").
+- The current step is exposed as current; completed and error states are
+  conveyed by icon **and** text, not by colour alone.
+- Cancelling `mdBeforeChange` should be paired with a visible, announced reason
+  — a silent block is invisible to screen-reader users.
+- With `nav="false"` you own the navigation buttons **and** their accessible
+  names.
+- Keep DOM order equal to step order.
+
+### Keyboard
+
+| Key | Action |
+|---|---|
+| `Tab` | The step headers (when reachable), then the navigation buttons |
+| `←` / `→` | Move between reachable headers on a horizontal stepper (mirrored under `dir="rtl"`) |
+| `↑` / `↓` | Move between headers on a vertical stepper |
+| `Home` / `End` | First / last reachable step |
+| `Enter` / `Space` | Select the focused step — still subject to `mdBeforeChange` |
+
+<ComponentDemo
+  html={`<md-stepper mode="non-linear" active="1" label="Checkout progress" style="inline-size: 100%;">
+  <md-step label="Account" description="Signed in as ada@example.com" completed editable></md-step>
+  <md-step label="Shipping" description="Where it goes"></md-step>
+  <md-step label="Gift wrap" description="Skippable" optional></md-step>
+  <md-step label="Payment" description="Card details"></md-step>
+  <div slot="content">Tab to the step headers, then arrow between them.</div>
+</md-stepper>`}
+  label="Roving focus across reachable steps"
+  storyId="navigation-stepper--imperative-controls"
+/>
+
+## RTL, density & i18n
+
+**RTL** — the horizontal layout, connectors and navigation buttons mirror under
+`dir="rtl"`, and the horizontal arrow keys invert with them. See
+[RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:grid;gap:24px;inline-size:100%;">
+  <div dir="ltr">
+    <md-stepper active="1" label="Checkout" style="inline-size: 100%;">
+      <md-step label="Account" completed></md-step>
+      <md-step label="Shipping"></md-step>
+      <md-step label="Payment"></md-step>
+      <div slot="content">Content</div>
+    </md-stepper>
+  </div>
+  <div dir="rtl">
+    <md-stepper active="1" label="الدفع" step-word="خطوة" of-word="من" style="inline-size: 100%;">
+      <md-step label="الحساب" completed></md-step>
+      <md-step label="الشحن"></md-step>
+      <md-step label="الدفع"></md-step>
+      <div slot="content">المحتوى</div>
+    </md-stepper>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+/>
+
+**Density** — `density="-1…-4"` compacts indicators, connectors and content, and
+overrides an inherited `data-density` ancestor. See
+[Density](/behaviour/density/).
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:18px 16px;align-items:center;inline-size:100%;">
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <md-stepper density="0" active="1" label="d0" nav="false" style="inline-size:100%;"><md-step label="Account" completed></md-step><md-step label="Shipping"></md-step><md-step label="Payment"></md-step></md-stepper>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <md-stepper density="-1" active="1" label="d-1" nav="false" style="inline-size:100%;"><md-step label="Account" completed></md-step><md-step label="Shipping"></md-step><md-step label="Payment"></md-step></md-stepper>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <md-stepper density="-2" active="1" label="d-2" nav="false" style="inline-size:100%;"><md-step label="Account" completed></md-step><md-step label="Shipping"></md-step><md-step label="Payment"></md-step></md-stepper>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <md-stepper density="-3" active="1" label="d-3" nav="false" style="inline-size:100%;"><md-step label="Account" completed></md-step><md-step label="Shipping"></md-step><md-step label="Payment"></md-step></md-stepper>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <md-stepper density="-4" active="1" label="d-4" nav="false" style="inline-size:100%;"><md-step label="Account" completed></md-step><md-step label="Shipping"></md-step><md-step label="Payment"></md-step></md-stepper>
+</div>`}
+  label="Density 0 through -4"
+  storyId="navigation-stepper--compact-responsive"
+/>
+
+**i18n** — translate every `*-word` and `*-label` on the stepper, plus each
+step's `label`, `description` and `error-text`. See the
+[i18n section](#i18n-every-user-facing-word-is-a-prop) above.
+
+## Theming
+
+The stepper owns one property — the gap between steps. Everything visible
+belongs to `md-step`, and those properties cascade from the stepper.
+
+| Custom property | On | Purpose |
+|---|---|---|
+| `--md-stepper-gap` | `md-stepper` | Space between steps |
+| `--md-step-indicator-size` | `md-step` | Indicator diameter |
+| `--md-step-indicator-color` / `-indicator-text` / `-indicator-ring` | `md-step` | Resting indicator fill, number, ring |
+| `--md-step-active-color` / `-active-text` / `-active-halo-color` | `md-step` | Current step indicator |
+| `--md-step-completed-color` / `-completed-text` | `md-step` | Completed indicator |
+| `--md-step-error-color` / `-error-text` | `md-step` | Error indicator |
+| `--md-step-connector-color` / `-connector-filled-color` / `-connector-thickness` | `md-step` | The rule between steps |
+| `--md-step-label-color` / `-label-active-color` | `md-step` | Label text |
+| `--md-step-description-color` | `md-step` | Description text |
+| `--md-step-state-layer-color` | `md-step` | Hover / focus / press overlay |
+| `--md-step-expand-duration` / `-collapse-duration` / `-connector-duration` | `md-step` | Motion |
+
+<ComponentDemo
+  html={`<div style="display:grid;gap:24px;inline-size:100%;">
+  <md-stepper active="1" label="Tonal" style="inline-size:100%; --md-step-active-color: var(--md-sys-color-tertiary); --md-step-active-text: var(--md-sys-color-on-tertiary); --md-step-completed-color: var(--md-sys-color-tertiary-container); --md-step-completed-text: var(--md-sys-color-on-tertiary-container); --md-step-connector-filled-color: var(--md-sys-color-tertiary);">
+    <md-step label="Account" completed></md-step>
+    <md-step label="Shipping"></md-step>
+    <md-step label="Payment"></md-step>
+    <div slot="content">Tonal palette</div>
+  </md-stepper>
+
+  <md-stepper active="1" label="Big indicators" style="inline-size:100%; --md-stepper-gap: 32px; --md-step-indicator-size: 44px; --md-step-connector-thickness: 3px;">
+    <md-step label="Account" completed></md-step>
+    <md-step label="Shipping"></md-step>
+    <md-step label="Payment"></md-step>
+    <div slot="content">Larger indicators and a thicker connector</div>
+  </md-stepper>
+
+  <md-stepper active="1" label="Branded" style="inline-size:100%; --md-step-active-color: #7c4dff; --md-step-active-text: #ffffff; --md-step-completed-color: #7c4dff; --md-step-completed-text: #ffffff; --md-step-connector-filled-color: #7c4dff; --md-step-label-active-color: #311b92;">
+    <md-step label="Account" completed></md-step>
+    <md-step label="Shipping"></md-step>
+    <md-step label="Payment"></md-step>
+    <div slot="content">Branded</div>
+  </md-stepper>
+</div>`}
+  label="Tonal palette, larger indicators, and a branded stepper"
+  storyId="navigation-stepper--custom-css"
+/>
+
+Every default resolves through an `md-sys-color` role, so a stepper that sets no
+custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<md-stepper active="1" label="Untouched defaults" style="inline-size: 100%;">
+  <md-step label="Account" description="Signed in" completed></md-step>
+  <md-step label="Shipping" description="Where it goes"></md-step>
+  <md-step label="Payment" description="Card details"></md-step>
+  <div slot="content">Switch this page between light and dark.</div>
+</md-stepper>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="navigation-stepper--dark-theme"
+/>
+
+## CSS parts
+
+| Part | On | Element |
+|---|---|---|
+| `list` | `md-stepper` | The step header row / column |
+| `content` | `md-stepper` | The shared `content` slot wrapper |
+| `nav` | `md-stepper` | The built-in Back / Continue row |
+| `mobile-nav` / `mobile-progress` | `md-stepper` | `variant="mobile"` bar and its readout |
+| `indicator` / `bubble` / `dot` / `inner` | `md-step` | The indicator, by shape |
+| `connector connector-leading` / `connector connector-trailing` | `md-step` | The rules either side |
+| `text` / `label` / `description` / `optional` | `md-step` | The text block |
+| `state-layer` | `md-step` | Hover / focus / press overlay |
+| `content` / `actions` | `md-step` | Vertical-mode panel and its buttons |
+
+<ComponentDemo
+  html={`<style>
+  .parts-stepper::part(nav) { justify-content: flex-end; }
+  .parts-stepper::part(list) { padding-block-end: 8px; border-block-end: 1px solid var(--md-sys-color-outline-variant); }
+  .parts-stepper md-step::part(label) { text-transform: uppercase; letter-spacing: .08em; font-size: 11px; }
+  .parts-stepper md-step::part(description) { font-style: italic; }
+</style>
+<md-stepper class="parts-stepper" active="1" label="Styled parts" style="inline-size: 100%;">
+  <md-step label="Account" description="Signed in" completed></md-step>
+  <md-step label="Shipping" description="Where it goes"></md-step>
+  <md-step label="Payment" description="Card details"></md-step>
+  <div slot="content">The nav row is right-aligned via ::part(nav).</div>
+</md-stepper>`}
+  label="nav, list, label and description"
+/>
+
+:::caution[The connector parts carry two names]
+They are exposed as `connector connector-leading` and
+`connector connector-trailing`, so `::part(connector)` matches **both** and
+`::part(connector-trailing)` matches only the one after the step. Style the
+generic name for a uniform rule, the specific one for an end cap.
+:::
+
+```css
+md-stepper::part(nav) {
+  justify-content: flex-end;
+}
+```
+
+
+## Related
+
+[`md-step`](/components/stepper/#md-step) ·
+[`md-tabs`](/components/tabs/) ·
+[`md-progress-indicator`](/components/progress-indicator/) ·
+[`md-button`](/components/button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-stepper" />

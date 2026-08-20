@@ -1,0 +1,181 @@
+{
+  "tag": "md-table-cell",
+  "title": "Table Cell",
+  "slug": "table-cell",
+  "category": "Data Display",
+  "subComponentOf": "md-table",
+  "storyId": null,
+  "props": [
+    {
+      "name": "align",
+      "attribute": "align",
+      "type": "'start' | 'center' | 'end' | 'justify'",
+      "default": "'start'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "numeric",
+      "attribute": "numeric",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "padding",
+      "attribute": "padding",
+      "type": "'default' | 'none' | 'checkbox'",
+      "default": "'default'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "head",
+      "attribute": "head",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "scope",
+      "attribute": "scope",
+      "type": "'col' | 'row' | 'colgroup' | 'rowgroup' | ''",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "sticky",
+      "attribute": "sticky",
+      "type": "'start' | 'end' | ''",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "colSpan",
+      "attribute": "colspan",
+      "type": "number",
+      "default": "1",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "rowSpan",
+      "attribute": "rowspan",
+      "type": "number",
+      "default": "1",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "ellipsis",
+      "attribute": "ellipsis",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'body' | 'meta'",
+      "default": "'body'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "noPinIndicator",
+      "attribute": "no-pin-indicator",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "pinIcon",
+      "attribute": "pin-icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "pin",
+      "description": ""
+    },
+    {
+      "name": "content",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-table-cell-color",
+      "description": "Foreground (text) color"
+    },
+    {
+      "name": "--md-table-cell-background",
+      "description": "Background color"
+    },
+    {
+      "name": "--md-table-cell-padding-inline",
+      "description": "Horizontal padding"
+    },
+    {
+      "name": "--md-table-cell-min-height",
+      "description": "Minimum cell height"
+    },
+    {
+      "name": "--md-table-cell-sticky-bg",
+      "description": "Opaque bg for sticky columns"
+    },
+    {
+      "name": "--md-table-cell-padding-block",
+      "description": ""
+    },
+    {
+      "name": "--md-table-cell-pin-display",
+      "description": ""
+    },
+    {
+      "name": "--md-table-cell-pin-color",
+      "description": ""
+    },
+    {
+      "name": "--md-table-cell-pin-size",
+      "description": ""
+    },
+    {
+      "name": "--md-table-cell-sticky-transition",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-table-row"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": []
+}

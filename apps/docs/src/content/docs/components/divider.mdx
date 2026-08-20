@@ -1,0 +1,223 @@
+---
+title: Divider
+description: "A thin rule that separates content — full-bleed or inset, horizontal or vertical"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/divider.json";
+
+**A thin rule that separates content.** Full-bleed or inset, horizontal or
+vertical. Four boolean props, no events, no methods, no slots — and, unusually
+for this library, **no `density` prop**.
+
+<ComponentDemo
+  html={`<div style="inline-size: 340px; background: var(--md-sys-color-surface); border-radius: 12px; overflow: hidden;">
+  <div style="padding: 16px;">Item above the divider</div>
+  <md-divider></md-divider>
+  <div style="padding: 16px;">Item below the divider</div>
+</div>`}
+  label="Live preview"
+  storyId="containment-divider--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-divider" example="" />
+
+## When to use
+
+- Separating **interactive from non-interactive** areas of a container — a
+  card's actions row from its content.
+- Marking a **hierarchy** boundary in a list or menu, where whitespace alone
+  isn't enough.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Spacing between unrelated blocks | Whitespace / margin |
+| A section heading | A heading element |
+| A decorative flourish | Nothing |
+| A container edge | The container's own border or elevation |
+| Every row of a list | Nothing — M3 warns against the clutter |
+| A progress track | [`md-progress-indicator`](/components/progress-indicator/) |
+
+## Insets
+
+`inset` is exactly `inset-start` + `inset-end`. The distances come from
+`--md-divider-inset-start` / `--md-divider-inset-end`, so an icon column that
+isn't 16px wide is a one-property override, not a new variant.
+
+| Need | Setting |
+|---|---|
+| Full-bleed rule | no attributes |
+| Indented both ends (rows with leading icons) | `inset` |
+| Indented at the leading end only | `inset-start` |
+| Indented at the trailing end only | `inset-end` |
+
+<ComponentDemo
+  html={`<div style="inline-size: 320px; background: var(--md-sys-color-surface); border-radius: 12px; overflow: hidden;">
+  <div style="padding: 12px 16px;">Full-bleed (no attributes)</div>
+  <md-divider></md-divider>
+  <div style="padding: 12px 16px;">Inset start</div>
+  <md-divider inset-start></md-divider>
+  <div style="padding: 12px 16px;">Inset (both ends)</div>
+  <md-divider inset></md-divider>
+  <div style="padding: 12px 16px;">Inset end</div>
+  <md-divider inset-end></md-divider>
+  <div style="padding: 12px 16px;">Custom 72px start inset</div>
+  <md-divider inset-start style="--md-divider-inset-start: 72px;"></md-divider>
+  <div style="padding: 12px 16px;">Last row</div>
+</div>`}
+  label="Full-bleed, inset-start, inset, inset-end and a custom inset"
+  storyId="containment-divider--all-variants"
+/>
+
+## Vertical
+
+:::caution[A vertical divider needs a parent that resolves a height]
+It has no intrinsic block size. In a flex row with the default
+`align-items: stretch` it fills the row; under `align-items: flex-start` or
+`center` it collapses to nothing and you see no rule at all.
+:::
+
+<ComponentDemo
+  html={`<div style="display: flex; align-items: stretch; block-size: 40px; gap: 16px; padding: 0 16px; background: var(--md-sys-color-surface); border-radius: 12px;">
+  <span style="display: flex; align-items: center;">Draft</span>
+  <md-divider vertical></md-divider>
+  <span style="display: flex; align-items: center;">Edited 2m ago</span>
+  <md-divider vertical inset></md-divider>
+  <span style="display: flex; align-items: center;">3 comments</span>
+</div>`}
+  label="Vertical separators — the parent supplies the height"
+  storyId="containment-divider--vertical"
+/>
+
+## In a list
+
+M3's hierarchy rule in one demo: an **inset** rule groups rows that share the
+icon column, a **full-bleed** rule marks the boundary between sections. Note
+that the inset is pushed out to 56px so it lines up with the text, not with the
+icon.
+
+<ComponentDemo
+  html={`<md-list label="Mail" style="inline-size: 320px;">
+  <md-list-item type="button" headline="Inbox" leading-icon="inbox" trailing-supporting-text="24"></md-list-item>
+  <md-divider inset-start style="--md-divider-inset-start: 56px;"></md-divider>
+  <md-list-item type="button" headline="Sent" leading-icon="send"></md-list-item>
+  <md-divider></md-divider>
+  <md-list-item type="button" headline="Settings" leading-icon="settings"></md-list-item>
+</md-list>`}
+  label="Inset for grouping, full-bleed for sections"
+  storyId="containment-divider--in-a-list"
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[No `density` prop]
+`md-divider` is one of the few components in the library without one. Size it
+with `--md-divider-thickness` and the two inset properties instead.
+:::
+
+## Accessibility
+
+- A purely **decorative** rule needs no role. It stays invisible to assistive
+  tech, which is the correct outcome.
+- Where the rule conveys a real **structural** boundary — between groups in a
+  menu, say — add `role="separator"` on the host so the grouping is
+  perceivable. Don't add it to every rule; that turns a visual nicety into
+  screen-reader noise.
+- Never let a divider be the *only* signal of grouping. Headings and
+  `aria-label`led groups carry that meaning properly.
+
+## RTL, density & i18n
+
+**RTL** — `inset-start` / `inset-end` are logical, so they follow the document
+direction automatically. See [RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display: grid; gap: 20px; inline-size: 100%; max-inline-size: 360px;">
+  <div>
+    <p style="margin: 0 0 6px; font: 500 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">LTR — inset-start</p>
+    <div style="background: var(--md-sys-color-surface-container-low); border-radius: 12px; overflow: hidden;">
+      <div style="padding: 10px 16px;">Above</div>
+      <md-divider inset-start></md-divider>
+      <div style="padding: 10px 16px;">Below</div>
+    </div>
+  </div>
+  <div dir="rtl">
+    <p style="margin: 0 0 6px; font: 500 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">RTL — the same inset-start, mirrored</p>
+    <div style="background: var(--md-sys-color-surface-container-low); border-radius: 12px; overflow: hidden;">
+      <div style="padding: 10px 16px;">فوق</div>
+      <md-divider inset-start></md-divider>
+      <div style="padding: 10px 16px;">تحت</div>
+    </div>
+  </div>
+</div>`}
+  label="The same inset-start in both directions"
+  storyId="containment-divider--rtl"
+/>
+
+**Density** — no `density` prop. Adjust `--md-divider-thickness` and the inset
+properties directly.
+
+**i18n** — the component renders no text, so there is nothing to translate.
+Inset distances may still need revisiting if a translated icon column changes
+width. The [responsiveness story](/storybook/?path=/story/containment-divider--responsiveness)
+covers narrow containers, where a 16px inset eats a larger share of the row.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-divider-color` | Line colour | `outline-variant` |
+| `--md-divider-thickness` | Line thickness | 1px |
+| `--md-divider-inset-start` | Leading inset distance | 16px |
+| `--md-divider-inset-end` | Trailing inset distance | 16px |
+
+<ComponentDemo
+  html={`<div style="inline-size: 320px; background: var(--md-sys-color-surface); border-radius: 12px; overflow: hidden;">
+  <div style="padding: 12px 16px;">Default rule</div>
+  <md-divider></md-divider>
+  <div style="padding: 12px 16px;">Thicker, primary-tinted</div>
+  <md-divider style="--md-divider-thickness: 3px; --md-divider-color: var(--md-sys-color-primary);"></md-divider>
+  <div style="padding: 12px 16px;">Last row</div>
+</div>`}
+  label="Themed instances"
+  storyId="containment-divider--custom-css"
+/>
+
+A divider is one of the few components where the dark theme genuinely changes
+the design decision, not just the colour: `outline-variant` sits much closer to
+the surface on dark, so a rule that reads as a firm separator on light can all
+but vanish. See the
+[dark-theme story](/storybook/?path=/story/containment-divider--dark-theme).
+
+**CSS part** — `divider`.
+
+```css
+md-divider::part(divider) {
+  opacity: 0.6;
+}
+```
+
+
+## Related
+
+[`md-list`](/components/list/) ·
+[`md-list-item`](/components/list/#the-row--md-list-item) ·
+[`md-card`](/components/card/) ·
+[`md-menu`](/components/menu/) ·
+[`md-menu-item-group`](/components/menu/#md-menu-item-group) ·
+[`md-toolbar`](/components/toolbar/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-divider" />

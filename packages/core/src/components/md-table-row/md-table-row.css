@@ -1,0 +1,269 @@
+/* ==========================================================
+   md-table-row — a REAL grid box on the table's shared tracks.
+
+   The host spans all of the parent grid's tracks and subgrids its cells
+   onto them, so the row itself paints hover / stripe / selection /
+   dividers and can be sticky and focusable.
+
+   Context (from md-table via inherited custom properties):
+     --_row-h / --_head-h        row heights
+     --_head-bg / --_head-color  header surface
+     --_foot-bg                  footer surface
+     --_divider                  divider color (transparent when off)
+     --_hover-layer              hover state-layer color (transparent when off)
+     --_stripe-color             stripe overlay color
+     --_row-selected-bg / --_row-selected-color
+     --_fx-fast / --_fx-default  effects springs
+
+   The row CASTS cell context down via ::slotted() custom properties —
+   cells have no observers and no :host-context().
+
+   PARTS: expanded
+   ========================================================== */
+
+:host {
+  position: relative;
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: stretch;
+  border-block-end: 1px solid var(--_divider, transparent);
+  background-color: transparent;
+  /* Match the sticky cells' background transition (--_fx-fast) AND the ::before
+     hover overlay so a row's selection/stripe/hover tint animates at ONE speed
+     across fixed and unfixed columns — otherwise the row bg (unfixed) and the
+     sticky cell bg (fixed) finish at different times and flicker column-first. */
+  transition: background-color var(--_fx-fast, 150ms cubic-bezier(0.31, 0.94, 0.34, 1));
+}
+
+/* Fixed (sticky) cells need an OPAQUE background, but it must match the row's
+   effective background — otherwise the pinned column ignores the row's stripe /
+   selection / hover tint (a visible mismatch). Recompute the opaque sticky
+   background per state and cast it to the cells via --md-table-cell-sticky-bg.
+   Source order = precedence: base → stripe → selected; hover blends on top. */
+:host {
+  --_sticky-base: var(--md-table-surface, var(--md-sys-color-surface, #FEF7FF));
+  --md-table-cell-sticky-bg: var(--_sticky-base);
+}
+:host([data-stripe]) {
+  --_sticky-base: color-mix(
+    in srgb,
+    var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 50%),
+    var(--md-table-surface, var(--md-sys-color-surface, #FEF7FF))
+  );
+  --md-table-cell-sticky-bg: var(--_sticky-base);
+}
+:host(.md-table-row--selected) {
+  --_sticky-base: var(--_row-selected-bg, var(--md-sys-color-secondary-container, #E8DEF8));
+  --md-table-cell-sticky-bg: var(--_sticky-base);
+}
+:host(.md-table-row--body:hover:not(.md-table-row--disabled)) {
+  --md-table-cell-sticky-bg: color-mix(
+    in srgb,
+    var(--md-table-row-hover-color, var(--md-sys-color-on-surface, #1C1B1F))
+      calc(var(--md-sys-state-hover-state-layer-opacity, 0.08) * 100%),
+    var(--_sticky-base)
+  );
+}
+/* Head / foot rows have their own surface — pinned cells there must match it,
+   not the body table surface. */
+:host(.md-table-row--head) {
+  --md-table-cell-sticky-bg: var(--_head-bg, var(--md-sys-color-surface-container, #F3EDF7));
+  /* Static bg — don't animate it (a re-render on selection would flash white). */
+  --md-table-cell-sticky-transition: 0s;
+}
+:host(.md-table-row--foot) {
+  --md-table-cell-sticky-bg: var(--_foot-bg, var(--md-sys-color-surface-container-low, #F7F2FA));
+  --md-table-cell-sticky-transition: 0s;
+}
+
+/* Hover state layer — an overlay so it composes over stripe/selection. */
+:host::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-color: var(--_hover-layer, transparent);
+  opacity: 0;
+  transition: opacity var(--_fx-fast, 150ms cubic-bezier(0.31, 0.94, 0.34, 1));
+}
+
+:host(.md-table-row--body:hover:not(.md-table-row--disabled))::before {
+  opacity: 1;
+}
+
+/* ── Rowgroups ────────────────────────────────────────────── */
+:host(.md-table-row--head) {
+  background-color: var(--_head-bg, var(--md-sys-color-surface-container, #F3EDF7));
+}
+:host(.md-table-row--head)::before {
+  background-color: transparent;
+}
+:host(.md-table-row--foot) {
+  background-color: var(--_foot-bg, var(--md-sys-color-surface-container-low, #F7F2FA));
+  border-block-end: none;
+  border-block-start: 1px solid var(--_divider, transparent);
+}
+
+/* The final row (stamped `data-last` by md-table) sits at the container's
+   rounded bottom edge. Its 1px bottom divider would draw a straight line
+   across the rounded corner — a visible overlap. Suppress it; dividers between
+   all other rows are unaffected. */
+:host([data-last]) {
+  border-block-end: none;
+}
+
+/* The last body row before a footer drops its bottom divider — the foot row's
+   border-block-start is the single divider between body and footer (otherwise
+   the two 1px borders stack into a thick/overlapping line). */
+:host([data-adjacent-foot]) {
+  border-block-end: none;
+}
+
+/* The pin indicator is a COLUMN-header affordance: body rows (including
+   rowheader cells like a sticky Name column) suppress it via the cast var —
+   otherwise every data row would repeat the pin icon. */
+:host(.md-table-row--body) ::slotted(md-table-cell) {
+  --md-table-cell-pin-display: none;
+}
+
+/* Cast header cell context (typography + color + height). */
+:host(.md-table-row--head) ::slotted(md-table-cell) {
+  --_cell-min-h: var(--_head-h, 56px);
+  --_cell-color: var(--_head-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_cell-weight: var(--md-sys-typescale-title-small-font-weight, 500);
+  --_cell-letter-spacing: var(--md-sys-typescale-title-small-letter-spacing, 0.1px);
+}
+:host(.md-table-row--foot) ::slotted(md-table-cell) {
+  --_cell-weight: var(--md-sys-typescale-title-small-font-weight, 500);
+}
+
+/* ── Stripes (stamped by md-table as data-stripe) ─────────── */
+:host([data-stripe]) {
+  background-color: var(--_stripe-color, transparent);
+}
+
+/* ── Selection / highlight ────────────────────────────────── */
+:host(.md-table-row--selected) {
+  background-color: var(--_row-selected-bg, var(--md-sys-color-secondary-container, #E8DEF8));
+}
+:host(.md-table-row--selected) ::slotted(md-table-cell) {
+  --_cell-color: var(--_row-selected-color, var(--md-sys-color-on-secondary-container, #1E192B));
+}
+:host(.md-table-row--highlight) {
+  background-color: var(--md-sys-color-primary-container, #EADDFF);
+}
+:host(.md-table-row--highlight) ::slotted(md-table-cell) {
+  --_cell-color: var(--md-sys-color-on-primary-container, #21005D);
+}
+
+/* ── Disabled ─────────────────────────────────────────────── */
+:host(.md-table-row--disabled) ::slotted(md-table-cell) {
+  --_cell-color: color-mix(
+    in srgb,
+    var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%),
+    transparent
+  );
+}
+:host(.md-table-row--disabled) {
+  pointer-events: none;
+}
+
+/* ── Clickable rows (real box → visible focus ring) ───────── */
+:host(.md-table-row--clickable) {
+  cursor: pointer;
+}
+:host(:focus-visible) {
+  outline: 2px solid var(--md-sys-color-secondary, #625B71);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+/* ── Sticky rows (stamped by md-table as data-sticky) ─────── */
+:host([data-sticky].md-table-row--head) {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 2;
+}
+:host([data-sticky].md-table-row--foot) {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 2;
+}
+
+/* ── Expandable detail zone — accordion grid-rows spring ──── */
+.md-table-row__expanded {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--md-sys-motion-duration-short4, 200ms)
+      var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15)),
+    opacity var(--md-sys-motion-duration-short4, 200ms)
+      var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15)),
+    visibility 0s linear var(--md-sys-motion-duration-short4, 200ms);
+}
+.md-table-row__expanded--open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows var(--md-sys-motion-spring-spatial-default-duration, 500ms)
+      var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1)),
+    opacity var(--_fx-default, 200ms cubic-bezier(0.34, 0.8, 0.34, 1)),
+    visibility 0s;
+}
+.md-table-row__expanded-sizer {
+  /* The grid item must have NO block padding/border, or its intrinsic
+     min-size defeats the 0fr collapse. */
+  min-block-size: 0;
+  overflow: hidden;
+}
+/* Expressive content choreography: the PANEL leads (grid-rows spring above)
+   and the CONTENT follows — fading in while rising from under the row on a
+   spatial spring with a slight overshoot, ~60ms behind the panel. The fr
+   interpolation itself can't overshoot (it clamps at the content height), so
+   without this the expansion reads as a flat clip-reveal. */
+.md-table-row__expanded-inner {
+  padding: 12px var(--_cell-pad-inline, 16px) 16px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition:
+    transform var(--md-sys-motion-duration-short3, 150ms)
+      var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15)),
+    opacity var(--md-sys-motion-duration-short2, 100ms) linear;
+}
+.md-table-row__expanded--open .md-table-row__expanded-inner {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    transform var(--md-sys-motion-spring-spatial-fast-duration, 350ms)
+      var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1)),
+    opacity var(--_fx-default, 200ms cubic-bezier(0.34, 0.8, 0.34, 1));
+  transition-delay: 60ms;
+}
+
+/* ── Reduced motion / forced colors ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  :host,
+  :host::before,
+  .md-table-row__expanded,
+  .md-table-row__expanded-inner {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :host {
+    border-block-end-color: CanvasText;
+  }
+  :host(.md-table-row--selected) {
+    background-color: Highlight;
+  }
+  :host(.md-table-row--selected) ::slotted(md-table-cell) {
+    --_cell-color: HighlightText;
+  }
+}

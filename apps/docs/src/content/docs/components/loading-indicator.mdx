@@ -1,0 +1,644 @@
+---
+title: Loading Indicator
+description: "Material Design 3 loading indicator — a morphing-shape indeterminate wait, in two variants, with a density ladder and a themable shape part"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/loading-indicator.json";
+
+**The M3 Expressive loading moment.** A morphing-shape indicator for
+indeterminate waits — distinct from a progress indicator, which reports *how far
+along* something is. Two variants, a five-rung density ladder, a themable
+`shape` part, and a three-prop API on purpose.
+
+<ComponentDemo
+  html={`<md-loading-indicator label="Loading"></md-loading-indicator>
+<md-loading-indicator variant="contained" label="Loading results"></md-loading-indicator>`}
+  label="Live preview"
+  storyId="communication-loading-indicator--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-loading-indicator" example="" />
+
+## When to use
+
+- An **indeterminate** wait where you cannot report progress: a refresh, a
+  search, an initial fetch.
+- Pull-to-refresh and similar whole-screen refresh moments.
+- Inside pickers while options load — which is exactly how
+  [`md-select`](/components/select/),
+  [`md-multi-select`](/components/multi-select/),
+  [`md-autocomplete`](/components/autocomplete/) and
+  [`md-search`](/components/search/) use it internally.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| You know how far along the operation is | [`md-progress-indicator`](/components/progress-indicator/) (determinate) |
+| Content whose shape is known | [`md-skeleton`](/components/skeleton/) |
+| A button working after a click | [`md-button`](/components/button/) with `loading` |
+| An operation that will become determinate | [`md-progress-indicator`](/components/progress-indicator/) — M3 says don't transition *from* a loading indicator |
+| A long background job not blocking the view | Linear [`md-progress-indicator`](/components/progress-indicator/) |
+
+:::caution[Always indeterminate — there is no `value`]
+That is the whole distinction from
+[`md-progress-indicator`](/components/progress-indicator/). Three props, no
+events, no methods, no slots. If you are reaching for more control, you want the
+progress indicator instead.
+:::
+
+## Variants
+
+`variant` is the only visual switch. `uncontained` (the default) paints the bare
+morphing shape onto whatever surface it sits on; `contained` adds its own
+container behind it and re-tones the shape to `on-primary-container` so it reads
+against that backdrop.
+
+| Variant | Use for |
+|---|---|
+| `uncontained` | **Default.** On an existing surface — a list, a card body, a picker |
+| `contained` | Over content or imagery, where the shape needs its own backdrop |
+
+<ComponentDemo
+  html={`<md-loading-indicator label="Uncontained"></md-loading-indicator>
+<md-loading-indicator variant="contained" label="Contained"></md-loading-indicator>`}
+  label="Uncontained and contained"
+/>
+
+## Size
+
+There is no `size` prop — scale it with the two custom properties. The defaults
+are a 48px box around a 38px shape, so set
+`--md-loading-indicator-shape-size` alongside `--md-loading-indicator-size` to
+keep that proportion.
+
+| Custom property | Default | Scales |
+|---|---|---|
+| `--md-loading-indicator-size` | `48px` | The overall box — and the `contained` backdrop |
+| `--md-loading-indicator-shape-size` | `38px` | The morphing shape inside it |
+
+<ComponentDemo
+  html={`<md-loading-indicator label="Small" style="--md-loading-indicator-size: 32px; --md-loading-indicator-shape-size: 24px;"></md-loading-indicator>
+<md-loading-indicator label="Default"></md-loading-indicator>
+<md-loading-indicator label="Large" style="--md-loading-indicator-size: 64px; --md-loading-indicator-shape-size: 52px;"></md-loading-indicator>
+<md-loading-indicator variant="contained" label="Small contained" style="--md-loading-indicator-size: 32px; --md-loading-indicator-shape-size: 24px;"></md-loading-indicator>
+<md-loading-indicator variant="contained" label="Default contained"></md-loading-indicator>
+<md-loading-indicator variant="contained" label="Large contained" style="--md-loading-indicator-size: 64px; --md-loading-indicator-shape-size: 52px;"></md-loading-indicator>`}
+  label="Sizes — 32dp, 48dp (default), 64dp, in both variants"
+/>
+
+:::tip[Set only one and the proportion drifts]
+Both properties have independent defaults, so overriding
+`--md-loading-indicator-size` alone leaves a 38px shape inside a 32px box — it
+overflows. Change them as a pair, or reach for `density` instead, which moves
+both from one signal.
+:::
+
+## In context
+
+M3's rule is that the indicator must stay **in view** for the whole activity. An
+indicator that scrolls off-screen hides the status and implies the refresh
+belongs to one component rather than the screen — pin it.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 420px; display: flex; flex-direction: column; gap: 16px;">
+  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-block-size: 160px; padding: 16px; border-radius: 12px; background: var(--md-sys-color-surface-container-low); color: var(--md-sys-color-on-surface);">
+    <md-loading-indicator variant="contained" label="Loading content"></md-loading-indicator>
+    <span style="font-size: 14px; color: var(--md-sys-color-on-surface-variant);">Loading content…</span>
+  </div>
+  <div style="display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 12px; background: var(--md-sys-color-surface-container-low); color: var(--md-sys-color-on-surface);">
+    <md-loading-indicator label="Fetching results" style="--md-loading-indicator-size: 32px; --md-loading-indicator-shape-size: 24px;"></md-loading-indicator>
+    <span style="font-size: 14px;">Fetching results…</span>
+  </div>
+</div>`}
+  label="Whole-screen moment and an inline wait"
+/>
+
+## Resolving it
+
+It has **no timeout** — it spins until you remove it. Always resolve it on
+failure as well as on success. Press either button: the failing one removes the
+indicator just as the succeeding one does, and shows an error in its place.
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 16px; max-inline-size: 420px;">
+  <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+    <md-button variant="filled" data-load="ok">Load (succeeds)</md-button>
+    <md-button variant="outlined" data-load="fail">Load (fails)</md-button>
+  </div>
+  <div data-results style="display: flex; align-items: center; justify-content: center; min-block-size: 96px; padding: 16px; border-radius: 12px; background: var(--md-sys-color-surface-container-low); color: var(--md-sys-color-on-surface); font: 400 14px/1.4 system-ui, sans-serif; text-align: center;">Press a button to start.</div>
+</div>`}
+  script={`var out = root.querySelector('[data-results]');
+var timer = null;
+root.addEventListener('mdClick', function (e) {
+  var btn = e.target && e.target.closest ? e.target.closest('md-button[data-load]') : null;
+  if (!btn || !out) return;
+  if (timer) clearTimeout(timer);
+  var willFail = btn.getAttribute('data-load') === 'fail';
+  out.innerHTML = '<md-loading-indicator variant="contained" label="Loading results"></md-loading-indicator>';
+  timer = setTimeout(function () {
+    out.innerHTML = willFail
+      ? '<span style="color: var(--md-sys-color-error);">Could not load results — the indicator was removed anyway.</span>'
+      : '<span>3 results loaded.</span>';
+  }, 1800);
+});`}
+  label="Resolve on failure too — the spinner is never the end state"
+  htmlCode={`<div style="display: flex; gap: 12px;">
+  <md-button variant="filled" id="load-ok">Load (succeeds)</md-button>
+  <md-button variant="outlined" id="load-fail">Load (fails)</md-button>
+</div>
+<div id="results">Press a button to start.</div>
+
+<script type="module">
+  const results = document.getElementById('results');
+
+  async function load(shouldFail) {
+    results.innerHTML =
+      '<md-loading-indicator variant="contained" label="Loading results"></md-loading-indicator>';
+    try {
+      results.textContent = await fetchResults(shouldFail);
+    } catch {
+      results.textContent = 'Could not load results.';  // the indicator goes either way
+    }
+  }
+
+  document.getElementById('load-ok').addEventListener('mdClick', () => load(false));
+  document.getElementById('load-fail').addEventListener('mdClick', () => load(true));
+</script>`}
+  react={`import { MdButton, MdLoadingIndicator } from '@awc-ui/react';
+import { useState } from 'react';
+
+export function Results() {
+  const [loading, setLoading] = useState(false);
+  const [text, setText] = useState('Press a button to start.');
+
+  async function load(shouldFail: boolean) {
+    setLoading(true);
+    try {
+      setText(await fetchResults(shouldFail));
+    } catch {
+      setText('Could not load results.');
+    } finally {
+      setLoading(false);   // success or failure
+    }
+  }
+
+  return (
+    <>
+      <MdButton variant="filled" onMdClick={() => load(false)}>Load (succeeds)</MdButton>
+      <MdButton variant="outlined" onMdClick={() => load(true)}>Load (fails)</MdButton>
+
+      {loading
+        ? <MdLoadingIndicator variant="contained" label="Loading results" />
+        : <p>{text}</p>}
+    </>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-results',
+  template: \`
+    <md-button variant="filled" (mdClick)="load(false)">Load (succeeds)</md-button>
+    <md-button variant="outlined" (mdClick)="load(true)">Load (fails)</md-button>
+
+    <md-loading-indicator *ngIf="loading" variant="contained" label="Loading results"></md-loading-indicator>
+    <p *ngIf="!loading">{{ text }}</p>
+  \`,
+})
+export class ResultsComponent {
+  loading = false;
+  text = 'Press a button to start.';
+
+  async load(shouldFail: boolean) {
+    this.loading = true;
+    try {
+      this.text = await fetchResults(shouldFail);
+    } catch {
+      this.text = 'Could not load results.';
+    } finally {
+      this.loading = false;   // success or failure
+    }
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const loading = ref(false);
+const text = ref('Press a button to start.');
+
+async function load(shouldFail: boolean) {
+  loading.value = true;
+  try {
+    text.value = await fetchResults(shouldFail);
+  } catch {
+    text.value = 'Could not load results.';
+  } finally {
+    loading.value = false;   // success or failure
+  }
+}
+</script>
+
+<template>
+  <md-button variant="filled" @mdClick="load(false)">Load (succeeds)</md-button>
+  <md-button variant="outlined" @mdClick="load(true)">Load (fails)</md-button>
+
+  <md-loading-indicator v-if="loading" variant="contained" label="Loading results" />
+  <p v-else>{{ text }}</p>
+</template>`}
+  svelte={`<script lang="ts">
+  let loading = false;
+  let text = 'Press a button to start.';
+
+  async function load(shouldFail: boolean) {
+    loading = true;
+    try {
+      text = await fetchResults(shouldFail);
+    } catch {
+      text = 'Could not load results.';
+    } finally {
+      loading = false;   // success or failure
+    }
+  }
+</script>
+
+<md-button variant="filled" on:mdClick={() => load(false)}>Load (succeeds)</md-button>
+<md-button variant="outlined" on:mdClick={() => load(true)}>Load (fails)</md-button>
+
+{#if loading}
+  <md-loading-indicator variant="contained" label="Loading results" />
+{:else}
+  <p>{text}</p>
+{/if}`}
+/>
+
+The same promise for a fetch that starts on mount — note the `finally` /
+`catch` arm in every one:
+
+<TechnologyTabs
+  html={`<div id="results-slot">
+  <md-loading-indicator label="Loading results"></md-loading-indicator>
+</div>
+
+<script type="module">
+  const slot = document.getElementById('results-slot');
+
+  try {
+    renderResults(await fetchData());
+  } catch {
+    renderError();
+  } finally {
+    slot.querySelector('md-loading-indicator')?.remove();   // success or failure
+  }
+</script>`}
+  react={`import { MdLoadingIndicator } from '@awc-ui/react';
+import { useEffect, useState } from 'react';
+
+export function Results() {
+  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [rows, setRows] = useState<Row[]>([]);
+
+  useEffect(() => {
+    fetchData()
+      .then((r) => { setRows(r); setState('ready'); })
+      .catch(() => setState('error'));       // never leave it spinning
+  }, []);
+
+  if (state === 'loading') return <MdLoadingIndicator label="Loading results" />;
+  if (state === 'error') return <ErrorState />;
+  return <RowList rows={rows} />;
+}`}
+  angular={`import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-results',
+  template: \`
+    <md-loading-indicator *ngIf="state === 'loading'" label="Loading results"></md-loading-indicator>
+    <app-error-state *ngIf="state === 'error'"></app-error-state>
+    <app-row-list *ngIf="state === 'ready'" [rows]="rows"></app-row-list>
+  \`,
+})
+export class ResultsComponent implements OnInit {
+  state: 'loading' | 'ready' | 'error' = 'loading';
+  rows: Row[] = [];
+
+  async ngOnInit() {
+    try {
+      this.rows = await fetchData();
+      this.state = 'ready';
+    } catch {
+      this.state = 'error';   // never leave it spinning
+    }
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+
+const state = ref<'loading' | 'ready' | 'error'>('loading');
+const rows = ref<Row[]>([]);
+
+onMounted(async () => {
+  try {
+    rows.value = await fetchData();
+    state.value = 'ready';
+  } catch {
+    state.value = 'error';   // never leave it spinning
+  }
+});
+</script>
+
+<template>
+  <md-loading-indicator v-if="state === 'loading'" label="Loading results" />
+  <ErrorState v-else-if="state === 'error'" />
+  <RowList v-else :rows="rows" />
+</template>`}
+  svelte={`<script lang="ts">
+  import { onMount } from 'svelte';
+
+  let state: 'loading' | 'ready' | 'error' = 'loading';
+  let rows: Row[] = [];
+
+  onMount(async () => {
+    try {
+      rows = await fetchData();
+      state = 'ready';
+    } catch {
+      state = 'error';   // never leave it spinning
+    }
+  });
+</script>
+
+{#if state === 'loading'}
+  <md-loading-indicator label="Loading results" />
+{:else if state === 'error'}
+  <ErrorState />
+{:else}
+  <RowList {rows} />
+{/if}`}
+/>
+
+:::danger[An unresolved indicator is a hang, not a wait]
+There is no timeout and no failure state. If the request rejects and nothing
+removes the element, the screen keeps promising work that stopped — and
+`aria-live="polite"` keeps the stale "Loading" text in the accessibility tree.
+Remove it in `finally`, not in the success branch.
+:::
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- The host carries `role="progressbar"` with `aria-live="polite"`, plus an
+  internal `role="status"` element holding the same text — so the label is
+  announced when the indicator appears.
+- `label` is the accessible name and defaults to the English `"Loading"`. Make it
+  specific — "Refreshing messages".
+- Some assistive technologies can focus a progressbar programmatically, so the
+  component ships a focus ring: 3px `secondary` at 2px offset, following the
+  container shape.
+- `prefers-reduced-motion` is **already handled** — the morph is replaced by a
+  gentle opacity pulse on a circle. You do not need to write that CSS.
+- Because it is indeterminate, screen-reader users get **no completion cue** from
+  the component: announce the **result** yourself when loading ends.
+- Keep it in view, per M3 — an off-screen indicator is invisible to everyone.
+
+Tab into the first one below to see the focus ring; the last pair shows the
+announce-the-result pattern — a live region you own, next to the indicator you
+remove.
+
+<ComponentDemo
+  html={`<div style="display: grid; grid-template-columns: auto 1fr; gap: 14px 16px; align-items: center;">
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">focus</span>
+  <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
+    <md-loading-indicator tabindex="0" label="Refreshing messages"></md-loading-indicator>
+    <md-loading-indicator variant="contained" tabindex="0" label="Refreshing messages"></md-loading-indicator>
+  </div>
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">label</span>
+  <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
+    <md-loading-indicator label="Loading"></md-loading-indicator>
+    <md-loading-indicator label="Refreshing messages"></md-loading-indicator>
+  </div>
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">result</span>
+  <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
+    <md-loading-indicator label="Searching invoices"></md-loading-indicator>
+    <output role="status" style="font: 400 14px/1.4 system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">Your app announces "12 invoices found" here — the component cannot.</output>
+  </div>
+</div>`}
+  label="Focus ring, specific labels, and the result you announce yourself"
+/>
+
+The middle row is the one to copy from: `"Loading"` is a default, not a
+decision. Anything that names the work — "Refreshing messages", "Searching
+invoices" — tells a screen-reader user what is actually taking time.
+
+## RTL, density & i18n
+
+**RTL** — the morph is radially symmetric and the component is a single
+centred box, so there is nothing to flip. `dir` still matters for the text you
+put *next to* it, which is where the mirroring actually happens. See
+[RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <md-loading-indicator variant="contained" label="جارٍ التحميل"></md-loading-indicator>
+</div>
+```
+
+The two rows below share one markup structure — same elements, same order, same
+styles; only `dir` and the translated strings differ. Nothing about the
+indicator is re-authored, and the text beside it moves to the other edge on its
+own:
+
+<ComponentDemo
+  html={`<div style="display: grid; grid-template-columns: auto 1fr; gap: 14px 16px; align-items: center;">
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">ltr</span>
+  <div dir="ltr" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; font: 400 14px/1.4 system-ui, sans-serif;">
+    <md-loading-indicator label="Loading results"></md-loading-indicator>
+    <span>Loading results…</span>
+    <md-loading-indicator variant="contained" label="Refreshing"></md-loading-indicator>
+  </div>
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">rtl</span>
+  <div dir="rtl" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; font: 400 14px/1.4 system-ui, sans-serif;">
+    <md-loading-indicator label="جارٍ تحميل النتائج"></md-loading-indicator>
+    <span>…جارٍ تحميل النتائج</span>
+    <md-loading-indicator variant="contained" label="جارٍ التحديث"></md-loading-indicator>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+/>
+
+### The indicator never flips — your spacing does
+
+There is no `mirror-icon` here and nothing to mirror: the morph is radially
+symmetric, so the only thing RTL can get wrong is the gap you put between the
+indicator and its text. Space it with a **logical** property and the gap follows
+the direction; hard-code `margin-right` and it lands on the outside edge, with
+the label jammed against the shape. Both rows below are `dir="rtl"`:
+
+<ComponentDemo
+  html={`<div style="display: grid; grid-template-columns: auto 1fr; gap: 14px 16px; align-items: center;">
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">correct</span>
+  <div dir="rtl" style="display: flex; gap: 0; flex-wrap: wrap; align-items: center; font: 400 14px/1.4 system-ui, sans-serif;">
+    <md-loading-indicator label="جارٍ التحميل" style="margin-inline-end: 12px;"></md-loading-indicator>
+    <span>…جارٍ تحميل النتائج</span>
+  </div>
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">wrong</span>
+  <div dir="rtl" style="display: flex; gap: 0; flex-wrap: wrap; align-items: center; font: 400 14px/1.4 system-ui, sans-serif;">
+    <md-loading-indicator label="جارٍ التحميل" style="margin-right: 12px;"></md-loading-indicator>
+    <span>…جارٍ تحميل النتائج</span>
+  </div>
+</div>`}
+  label="margin-inline-end follows dir; margin-right does not"
+/>
+
+### Every density rung
+
+`density` is a local override of the inherited `data-density`. One signal moves
+both boxes: the overall size steps **48 → 44 → 40 → 36 → 32px** and the shape
+inside it **38 → 35 → 32 → 29 → 26px**, so the proportion holds at every rung.
+
+<ComponentDemo
+  html={`<div style="display: grid; grid-template-columns: auto 1fr; gap: 14px 16px; align-items: center;">
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">0</span>
+  <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;"><md-loading-indicator density="0" label="Loading, rung 0"></md-loading-indicator><md-loading-indicator variant="contained" density="0" label="Loading, rung 0"></md-loading-indicator></div>
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">-1</span>
+  <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;"><md-loading-indicator density="-1" label="Loading, rung -1"></md-loading-indicator><md-loading-indicator variant="contained" density="-1" label="Loading, rung -1"></md-loading-indicator></div>
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">-2</span>
+  <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;"><md-loading-indicator density="-2" label="Loading, rung -2"></md-loading-indicator><md-loading-indicator variant="contained" density="-2" label="Loading, rung -2"></md-loading-indicator></div>
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">-3</span>
+  <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;"><md-loading-indicator density="-3" label="Loading, rung -3"></md-loading-indicator><md-loading-indicator variant="contained" density="-3" label="Loading, rung -3"></md-loading-indicator></div>
+  <span style="inline-size: 3.5rem; opacity: .65; font-size: .75rem; font-family: ui-monospace, monospace;">-4</span>
+  <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;"><md-loading-indicator density="-4" label="Loading, rung -4"></md-loading-indicator><md-loading-indicator variant="contained" density="-4" label="Loading, rung -4"></md-loading-indicator></div>
+</div>`}
+  label="Density 0 through -4 — box and shape taper together, both variants"
+/>
+
+:::caution[The size properties silently defeat the ladder]
+The rung is the *fallback*: the box resolves to
+`var(--md-loading-indicator-size, max(32px, calc(48px + <rung> * 4px)))`. Set
+the public property and it replaces the whole calc, so `density` stops moving
+that dimension — silently, because nothing errors. Set them only when you need a
+size the ladder does not reach, and then stop expecting the rung to do anything.
+See [Density](/behaviour/density/#accessibility).
+:::
+
+### Density and direction together
+
+The two are independent signals, so they compose without any extra wiring — a
+wrapper sets the rung for everything inside it, and any one indicator can take a
+tighter rung of its own.
+
+:::caution[`density="0"` is not an opt-out]
+Only `-1` through `-4` have a rule — there is deliberately no
+`:host([density="0"])` and no `[data-density="0"]`. Because
+`--md-sys-density-scale` is an inherited custom property, an indicator written
+`density="0"` inside a `data-density="-2"` wrapper still inherits `-2` and
+renders at 40px like its neighbours. To restore the default rung on one element,
+reset the signal directly: `style="--md-sys-density-scale: 0"`.
+:::
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center; font: 400 14px/1.4 system-ui, sans-serif;">
+  <md-loading-indicator label="جارٍ التحميل"></md-loading-indicator>
+  <md-loading-indicator variant="contained" label="جارٍ التحديث"></md-loading-indicator>
+  <span>…جارٍ التحميل</span>
+  <md-loading-indicator density="-4" label="أكثر إحكاما"></md-loading-indicator>
+  <md-loading-indicator label="افتراضي" style="--md-sys-density-scale: 0;"></md-loading-indicator>
+</div>`}
+  label="dir=rtl with data-density=-2: two inherit, one tightens to -4, one resets the signal to 0"
+/>
+
+**Density** — `density="-1…-4"` locally overrides the inherited `data-density`
+rung; `0` is the default value, not an override. See
+[Density](/behaviour/density/).
+
+**i18n** — translate `label`. It is the accessible name, and the English
+default ships silently if you forget.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-loading-indicator-color` | Shape colour | `primary`, or `on-primary-container` on `contained` |
+| `--md-loading-indicator-size` | Overall box | `48px` (density-scaled) |
+| `--md-loading-indicator-shape-size` | Inner morphing shape | `38px` (density-scaled) |
+| `--md-loading-indicator-container-color` | `contained` backdrop | `primary-container` |
+| `--md-loading-indicator-container-shape` | `contained` corner radius | `corner-full` |
+
+Every one is a plain custom property, so a class, an inline `style`, or an
+ancestor rule all work — there is no themable API beyond the cascade.
+
+<ComponentDemo
+  html={`<md-loading-indicator label="Tertiary toned" style="--md-loading-indicator-color: var(--md-sys-color-tertiary);"></md-loading-indicator>
+<md-loading-indicator label="Error toned" style="--md-loading-indicator-color: var(--md-sys-color-error);"></md-loading-indicator>
+<md-loading-indicator variant="contained" label="Brand contained" style="--md-loading-indicator-color: #ffffff; --md-loading-indicator-container-color: #6200ee;"></md-loading-indicator>
+<md-loading-indicator variant="contained" label="Squared container" style="--md-loading-indicator-container-color: var(--md-sys-color-secondary-container); --md-loading-indicator-container-shape: 8px;"></md-loading-indicator>
+<md-loading-indicator label="Inline override" style="--md-loading-indicator-color: coral;"></md-loading-indicator>`}
+  label="Themed instances"
+  storyId="communication-loading-indicator--custom-css"
+/>
+
+:::caution[On `contained`, override the pair or neither]
+The shape colour does not follow the backdrop. Set
+`--md-loading-indicator-container-color` alone and the shape stays on
+`on-primary-container`, which was picked for the *default* container — against
+your new one the pair can fall below 3:1. Check any override in both themes; the
+[dark-theme story](/storybook/?path=/story/communication-loading-indicator--dark-theme)
+is the counterpart to the demo above.
+:::
+
+**CSS part** — `shape`, the morphing element itself. Use it for what a colour
+token cannot express: opacity, or a filter.
+
+<ComponentDemo
+  html={`<style>
+  .low-opacity::part(shape) { opacity: 0.87; }
+  .shadow-shape::part(shape) { filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)); }
+</style>
+<md-loading-indicator class="low-opacity" label="Reduced opacity"></md-loading-indicator>
+<md-loading-indicator class="shadow-shape" label="Drop shadow"></md-loading-indicator>`}
+  label="::part(shape) overrides"
+/>
+
+```css
+md-loading-indicator::part(shape) {
+  opacity: 0.87;
+  filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.3));
+}
+```
+
+:::danger[Don't reach for `animation: none` on the part]
+Every shape in the morph comes from a `clip-path` declared *inside* the
+keyframes; the element's own rule declares none. Kill the animation and the
+clipping stops applying altogether, so what is left is the unclipped block —
+a plain square, not a resting shape. And you do not need it:
+`prefers-reduced-motion` is
+handled inside the component, which swaps the morph for a circle with a gentle
+opacity pulse. Writing your own reduced-motion rule overrides that with
+something worse.
+:::
+
+
+## Related
+
+[`md-progress-indicator`](/components/progress-indicator/) ·
+[`md-skeleton`](/components/skeleton/) ·
+[`md-select`](/components/select/) ·
+[`md-multi-select`](/components/multi-select/) ·
+[`md-autocomplete`](/components/autocomplete/) ·
+[`md-search`](/components/search/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-loading-indicator" />

@@ -1,0 +1,485 @@
+---
+// DialogDemo.astro
+//
+// Multi-section live demo for `md-dialog`. Each section renders as its
+// own `<ComponentDemo>` so the docs page reads like the Button page —
+// a labelled preview surface above, a collapsible per-technology code
+// strip (HTML / React / Angular / Vue / Svelte) below, auto-derived
+// from the same HTML the live preview renders.
+//
+// `<ComponentDemo>` uses `set:html`, which does NOT execute inline
+// script tags. So:
+//   1. The dialog instances live inside each section's `html` prop
+//      (alongside the trigger buttons) — `set:html` happily hydrates
+//      custom-elements, the loader picks them up on intersection.
+//   2. The wiring (open / close / portal-to-body) ships in a single
+//      module-level script at the bottom of THIS file. It runs once
+//      per page-load, queries every `[data-dialog-open]` /
+//      `[data-dialog-instance]` on the page (regardless of which
+//      section it's in) and binds listeners + portals dialogs to
+//      `document.body` so they escape any ancestor stacking contexts
+//      created by Starlight / Astro page-in animations.
+//
+// Adding a new section is two lines:
+//   1. Append an entry to `sections` (label + html string).
+//   2. The dialog code-tabs and the live preview both update from
+//      that single source-of-truth.
+
+import ComponentDemo from "./ComponentDemo.astro";
+
+interface Section {
+  id: string;
+  label: string;
+  /** Markup the live preview renders. Includes the demo-specific
+   *  `data-dialog-open` / `data-dialog-close` / `data-dialog-instance`
+   *  hooks the global wiring script binds to. */
+  html: string;
+  /** Idiomatic markup shown in the per-technology code tabs. Drops
+   *  the demo-only `data-dialog-*` hooks in favour of the canonical
+   *  `id` + `dialog.show()` / `dialog.close()` pattern a real app
+   *  would use. */
+  codeHtml: string;
+}
+
+// ── Section 1: Common patterns ─────────────────────────────────────
+//
+// The four most common confirmation-style dialogs. Each one demonstrates
+// a single new prop layered on top of the previous: `headline` →
+// `icon` → recolored destructive action → `scrim-dismissible="false"`.
+const commonCodeHtml = `<md-button id="open-confirm" variant="filled">Basic</md-button>
+<md-dialog id="confirm-dialog" headline="Reset settings?">
+  <span>This will revert every preference back to factory defaults.</span>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Reset</md-button>
+</md-dialog>
+
+<md-dialog id="permission-dialog" headline="Permission required" icon="lock">
+  <span>AWC UI needs access to your camera to scan QR codes.</span>
+  <md-button slot="actions" variant="text">Not now</md-button>
+  <md-button slot="actions" variant="filled">Allow</md-button>
+</md-dialog>
+
+<md-dialog id="delete-dialog" headline="Delete this conversation?" icon="delete_forever" style="--md-dialog-icon-color: var(--md-sys-color-error);">
+  <span>Once deleted, every message will be permanently removed.</span>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled" style="--md-button-container-color: var(--md-sys-color-error); --md-button-label-color: var(--md-sys-color-on-error);">Delete</md-button>
+</md-dialog>
+
+<md-dialog id="purchase-dialog" headline="Confirm purchase" icon="shopping_cart" scrim-dismissible="false">
+  <span>You're about to charge $24.99 to your card. The scrim is non-dismissible — choose an action.</span>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Pay $24.99</md-button>
+</md-dialog>`;
+
+// Live-demo dialog ids are prefixed `demo-` so they can NEVER collide
+// with Starlight-generated heading slugs in the readme (e.g. the
+// "Variants" section emits <h3 id="basic-dialog">Basic dialog</h3>).
+// The `htmlForCode` strings keep clean ids like `confirm-dialog`
+// because that's what real apps would write — the prefix is purely
+// a docs-site collision avoidance trick, not the documented pattern.
+const commonHtml = `<md-button data-dialog-open="demo-basic-dialog" variant="filled">Basic</md-button>
+<md-button data-dialog-open="demo-icon-dialog" variant="filled">With icon</md-button>
+<md-button data-dialog-open="demo-destructive-dialog" variant="filled">Destructive</md-button>
+<md-button data-dialog-open="demo-modal-dialog" variant="filled">Modal (no scrim dismiss)</md-button>
+
+<md-dialog id="demo-basic-dialog" headline="Reset settings?" data-dialog-instance>
+  <span>This will revert every preference back to factory defaults. You can re-apply your changes afterwards from the activity log.</span>
+  <md-button slot="actions" variant="text" data-dialog-close="demo-basic-dialog">Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-dialog-close="demo-basic-dialog">Reset</md-button>
+</md-dialog>
+
+<md-dialog id="demo-icon-dialog" headline="Permission required" icon="lock" data-dialog-instance>
+  <span>AWC UI needs access to your camera to scan QR codes. You can change this later in your browser settings.</span>
+  <md-button slot="actions" variant="text" data-dialog-close="demo-icon-dialog">Not now</md-button>
+  <md-button slot="actions" variant="filled" data-dialog-close="demo-icon-dialog">Allow</md-button>
+</md-dialog>
+
+<md-dialog id="demo-destructive-dialog" headline="Delete this conversation?" icon="delete_forever" data-dialog-instance style="--md-dialog-icon-color: var(--md-sys-color-error);">
+  <span>Once deleted, every message in <strong>Project AWC</strong> will be permanently removed. This action cannot be undone.</span>
+  <md-button slot="actions" variant="text" data-dialog-close="demo-destructive-dialog">Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-dialog-close="demo-destructive-dialog" style="--md-button-container-color: var(--md-sys-color-error); --md-button-label-color: var(--md-sys-color-on-error);">Delete</md-button>
+</md-dialog>
+
+<md-dialog id="demo-modal-dialog" headline="Confirm purchase" icon="shopping_cart" scrim-dismissible="false" data-dialog-instance>
+  <span>You're about to charge <strong>$24.99</strong> to your card ending in <strong>•••• 4242</strong>. The scrim is non-dismissible — you must choose one of the actions below.</span>
+  <md-button slot="actions" variant="text" data-dialog-close="demo-modal-dialog">Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-dialog-close="demo-modal-dialog">Pay $24.99</md-button>
+</md-dialog>`;
+
+// ── Section 2: Content variants ───────────────────────────────────
+//
+// Beyond a paragraph of copy: a form (text fields), long scrollable
+// copy (with `divider` so the actions row gains a separator once
+// content overflows), a single-choice list (radio group), and a
+// release-notes layout that uses `header-divider` to mark the headline
+// row off from a dense body.
+const contentCodeHtml = `<md-dialog id="contact-dialog" headline="Add a contact">
+  <md-text-field variant="outlined" label="Full name" required></md-text-field>
+  <md-text-field variant="outlined" label="Email" type="email"></md-text-field>
+  <md-text-field variant="outlined" label="Company"></md-text-field>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Save contact</md-button>
+</md-dialog>
+
+<md-dialog id="terms-dialog" headline="Terms of service" icon="gavel" divider>
+  <p><strong>Last updated: May 2026.</strong> Long body content scrolls inside the surface; the <code>divider</code> prop draws a rule between the body and the actions row once overflow kicks in.</p>
+  <md-button slot="actions" variant="text">Decline</md-button>
+  <md-button slot="actions" variant="filled">Accept</md-button>
+</md-dialog>
+
+<md-dialog id="ringtone-dialog" headline="Phone ringtone">
+  <md-radio name="ringtone" value="callisto" checked></md-radio>
+  <md-radio name="ringtone" value="ganymede"></md-radio>
+  <md-radio name="ringtone" value="luna"></md-radio>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">OK</md-button>
+</md-dialog>
+
+<md-dialog id="release-dialog" headline="What's new in v1.4" icon="rocket_launch" header-divider divider>
+  <ul>
+    <li>Fullscreen dialogs span the full viewport on every breakpoint</li>
+    <li>Hierarchical (tri-state) checkbox helper</li>
+    <li>Removable chips on every variant</li>
+  </ul>
+  <md-button slot="actions" variant="filled">Got it</md-button>
+</md-dialog>`;
+
+const contentHtml = `<md-button data-dialog-open="demo-form-dialog" variant="outlined">Form</md-button>
+<md-button data-dialog-open="demo-long-dialog" variant="outlined">Long content</md-button>
+<md-button data-dialog-open="demo-choice-dialog" variant="outlined">Single-choice list</md-button>
+<md-button data-dialog-open="demo-header-divider-dialog" variant="outlined">Header divider</md-button>
+
+<md-dialog id="demo-form-dialog" headline="Add a contact" data-dialog-instance>
+  <div class="dialog-demo__form">
+    <md-text-field variant="outlined" label="Full name" required></md-text-field>
+    <md-text-field variant="outlined" label="Email" type="email"></md-text-field>
+    <md-text-field variant="outlined" label="Company"></md-text-field>
+  </div>
+  <md-button slot="actions" variant="text" data-dialog-close="demo-form-dialog">Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-dialog-close="demo-form-dialog">Save contact</md-button>
+</md-dialog>
+
+<md-dialog id="demo-long-dialog" headline="Terms of service" icon="gavel" divider data-dialog-instance>
+  <p style="margin-block-start: 0;"><strong>Last updated: May 2026.</strong> Please read these terms carefully before using AWC UI in your project.</p>
+  <p>1. <strong>Acceptable use.</strong> You may use the components in any commercial or non-commercial project, including products you sell. Attribution is appreciated but not required.</p>
+  <p>2. <strong>No warranty.</strong> The components are provided "as is" without warranty of any kind, express or implied. The maintainers are not liable for any damages arising from their use.</p>
+  <p>3. <strong>Trademark.</strong> The AWC UI name and logo are trademarks of the project. You may reference them when describing your product but may not imply endorsement without written permission.</p>
+  <p>4. <strong>Contributions.</strong> Pull requests are welcomed under the repository's contributor license agreement. By submitting code you agree to license it under the same terms as the project itself.</p>
+  <p>5. <strong>Changes.</strong> These terms may change over time. We will post a notice in the repository's CHANGELOG when material changes occur. Continued use after a change constitutes acceptance.</p>
+  <p>6. <strong>Governing law.</strong> These terms are governed by the laws of the jurisdiction in which the maintainers reside. Any disputes will be resolved in that jurisdiction's courts.</p>
+  <md-button slot="actions" variant="text" data-dialog-close="demo-long-dialog">Decline</md-button>
+  <md-button slot="actions" variant="filled" data-dialog-close="demo-long-dialog">Accept</md-button>
+</md-dialog>
+
+<md-dialog id="demo-choice-dialog" headline="Phone ringtone" data-dialog-instance>
+  <fieldset class="dialog-demo__radio-group">
+    <legend class="dialog-demo__sr-only">Phone ringtone</legend>
+    <label class="dialog-demo__radio-row"><md-radio name="ringtone" value="none"></md-radio><span>None</span></label>
+    <label class="dialog-demo__radio-row"><md-radio name="ringtone" value="callisto" checked></md-radio><span>Callisto</span></label>
+    <label class="dialog-demo__radio-row"><md-radio name="ringtone" value="ganymede"></md-radio><span>Ganymede</span></label>
+    <label class="dialog-demo__radio-row"><md-radio name="ringtone" value="luna"></md-radio><span>Luna</span></label>
+    <label class="dialog-demo__radio-row"><md-radio name="ringtone" value="oberon"></md-radio><span>Oberon</span></label>
+  </fieldset>
+  <md-button slot="actions" variant="text" data-dialog-close="demo-choice-dialog">Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-dialog-close="demo-choice-dialog">OK</md-button>
+</md-dialog>
+
+<md-dialog id="demo-header-divider-dialog" headline="What's new in v1.4" icon="rocket_launch" header-divider divider data-dialog-instance>
+  <ul style="margin: 0; padding-inline-start: 20px; line-height: 1.6;">
+    <li>Fullscreen dialogs now span the full viewport on every breakpoint</li>
+    <li>Auto-generated event-listener tabs on every component page</li>
+    <li>Hierarchical (tri-state) checkbox helper</li>
+    <li>Removable chips on every variant via the new <code>removable</code> prop</li>
+    <li>Theme generator: Material You key-color extraction from images</li>
+  </ul>
+  <md-button slot="actions" variant="filled" data-dialog-close="demo-header-divider-dialog">Got it</md-button>
+</md-dialog>`;
+
+// ── Section 3: Layout variants ────────────────────────────────────
+//
+// Fullscreen takes over the viewport (mobile-first edit flows). Custom
+// headline drops the `headline` prop entirely and replaces it with rich
+// slotted content — useful when you need an avatar, an icon stack, or
+// a multi-line title that the prop's single-line ellipsis can't host.
+const layoutCodeHtml = `<md-dialog id="profile-dialog" headline="Edit profile" fullscreen header-divider>
+  <md-button slot="header-action" variant="filled" size="sm">Save</md-button>
+  <md-text-field variant="outlined" label="Display name" value="AWC Dev"></md-text-field>
+  <md-text-field variant="outlined" label="Email" type="email" value="dev@awcui.io"></md-text-field>
+  <md-text-field variant="outlined" label="Bio" value="Building MD3 components in the open."></md-text-field>
+</md-dialog>
+
+<md-dialog id="share-dialog">
+  <div slot="headline">
+    <span>AWC Dev shared a file</span>
+    <span>design-tokens-v2.fig · 2 MB</span>
+  </div>
+  <span>Open the file to review the proposed token changes.</span>
+  <md-button slot="actions" variant="text">Later</md-button>
+  <md-button slot="actions" variant="filled">Review now</md-button>
+</md-dialog>`;
+
+const layoutHtml = `<md-button data-dialog-open="demo-fullscreen-dialog" variant="tonal">Fullscreen</md-button>
+<md-button data-dialog-open="demo-custom-headline-dialog" variant="tonal">Custom headline slot</md-button>
+
+<md-dialog id="demo-fullscreen-dialog" headline="Edit profile" fullscreen header-divider data-dialog-instance>
+  <md-button slot="header-action" variant="filled" size="sm" data-dialog-close="demo-fullscreen-dialog">Save</md-button>
+  <div class="dialog-demo__form">
+    <md-text-field variant="outlined" label="Display name" value="AWC Dev"></md-text-field>
+    <md-text-field variant="outlined" label="Email" type="email" value="dev@awcui.io"></md-text-field>
+    <md-text-field variant="outlined" label="Bio" value="Building MD3 components in the open."></md-text-field>
+  </div>
+</md-dialog>
+
+<md-dialog id="demo-custom-headline-dialog" data-dialog-instance>
+  <div slot="headline" class="dialog-demo__rich-headline">
+    <span class="dialog-demo__avatar" aria-hidden="true">AD</span>
+    <span class="dialog-demo__rich-headline-stack">
+      <span class="dialog-demo__rich-headline-title">AWC Dev shared a file</span>
+      <span class="dialog-demo__rich-headline-sub">design-tokens-v2.fig · 2 MB</span>
+    </span>
+  </div>
+  <span>Open the file to review the proposed token changes. You can comment on individual values inline or leave a single review summary.</span>
+  <md-button slot="actions" variant="text" data-dialog-close="demo-custom-headline-dialog">Later</md-button>
+  <md-button slot="actions" variant="filled" data-dialog-close="demo-custom-headline-dialog">Review now</md-button>
+</md-dialog>`;
+
+const sections: Section[] = [
+  {
+    id: "common",
+    label: "Common patterns",
+    html: commonHtml,
+    codeHtml: commonCodeHtml,
+  },
+  {
+    id: "content",
+    label: "Content variants",
+    html: contentHtml,
+    codeHtml: contentCodeHtml,
+  },
+  {
+    id: "layout",
+    label: "Layout variants",
+    html: layoutHtml,
+    codeHtml: layoutCodeHtml,
+  },
+];
+---
+
+<div class="dialog-demo-host">
+  {
+    sections.map((section) => (
+      <ComponentDemo
+        label={section.label}
+        html={section.html}
+        htmlForCode={section.codeHtml}
+        storyId="components-dialog--playground"
+      />
+    ))
+  }
+</div>
+
+<script>
+  // Each docs page that imports <DialogDemo /> gets this single global
+  // wiring + portal script. It deliberately queries the document
+  // (not a scoped container) so a future page that mixes DialogDemo
+  // with hand-rolled <md-dialog> instances gets the same behaviour.
+
+  type DialogEl = HTMLElement & {
+    open: boolean;
+    show: () => Promise<void>;
+    close: () => Promise<void>;
+  };
+
+  // Portal each dialog to <body> on first run.
+  //
+  // `position: fixed` is only "fixed to the viewport" when no ancestor
+  // creates a containing block. Starlight's article column has
+  // ancestors that may apply transform/filter/contain/will-change
+  // (page-in animations, scroll-reveal staggers, backdrop blurs). Any
+  // of those traps the dialog inside the article box, leaving the
+  // side-nav and TOC painting on top of it. Moving the dialog node to
+  // <body> guarantees zero ancestors with those properties, so the
+  // dialog reaches the actual viewport edges.
+  function portalDialogs(): void {
+    document
+      .querySelectorAll<HTMLElement>("md-dialog[data-dialog-instance]")
+      .forEach((dialog) => {
+        if (dialog.dataset.dialogPortaled === "true") return;
+        if (dialog.parentElement === document.body) {
+          dialog.dataset.dialogPortaled = "true";
+          return;
+        }
+        document.body.appendChild(dialog);
+        dialog.dataset.dialogPortaled = "true";
+      });
+  }
+
+  function teardownPortaledDialogs(): void {
+    document
+      .querySelectorAll<HTMLElement>("md-dialog[data-dialog-portaled]")
+      .forEach((dialog) => {
+        dialog.remove();
+      });
+  }
+
+  // Resolve `data-dialog-open="foo"` to the actual <md-dialog id="foo">
+  // by tag-scoping the lookup. We CAN'T use `getElementById` here:
+  // the readme's "Variants" section emits headings like
+  //   <h3 id="basic-dialog">Basic dialog</h3>
+  // whose Starlight-generated slug collides with the live-demo dialog
+  // ids. After `portalDialogs()` moves the dialog to the END of <body>
+  // the heading wins tree order, so `getElementById` returned the
+  // <h3> (no `.show()` method, no `open` setter that does anything)
+  // and clicks silently no-oped. A `md-dialog#id` selector filters by
+  // tag first, so headings can never match. `CSS.escape` guards
+  // against future ids that contain selector-special characters.
+  function findDialog(id: string): DialogEl | null {
+    return document.querySelector<HTMLElement>(
+      `md-dialog#${CSS.escape(id)}`,
+    ) as DialogEl | null;
+  }
+
+  function wireDialogTriggers(): void {
+    document
+      .querySelectorAll<HTMLElement>("[data-dialog-open]")
+      .forEach((trigger) => {
+        if (trigger.dataset.dialogWired === "true") return;
+        trigger.dataset.dialogWired = "true";
+        trigger.addEventListener("click", () => {
+          const id = trigger.dataset.dialogOpen;
+          if (!id) return;
+          const dialog = findDialog(id);
+          if (!dialog) return;
+          // Prefer the public method so internal focus / scrim wiring
+          // runs; fall back to the property in case the component is
+          // still hydrating on the very first click.
+          if (typeof dialog.show === "function") {
+            void dialog.show();
+          } else {
+            dialog.open = true;
+          }
+        });
+      });
+
+    document
+      .querySelectorAll<HTMLElement>("[data-dialog-close]")
+      .forEach((trigger) => {
+        if (trigger.dataset.dialogWired === "true") return;
+        trigger.dataset.dialogWired = "true";
+        trigger.addEventListener("click", () => {
+          const id = trigger.dataset.dialogClose;
+          if (!id) return;
+          const dialog = findDialog(id);
+          if (!dialog) return;
+          if (typeof dialog.close === "function") {
+            void dialog.close();
+          } else {
+            dialog.open = false;
+          }
+        });
+      });
+  }
+
+  function bootstrap(): void {
+    portalDialogs();
+    wireDialogTriggers();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootstrap, { once: true });
+  } else {
+    bootstrap();
+  }
+  document.addEventListener("astro:page-load", bootstrap);
+  // Strip portaled dialogs before the next page swap so they don't
+  // leak into other docs pages.
+  document.addEventListener("astro:before-preparation", teardownPortaledDialogs);
+</script>
+
+<style is:global>
+  /* These styles must be `is:global` because the dialog markup is
+     injected into <ComponentDemo> via `set:html` — Astro's default
+     scoped styles don't reach `set:html`'d content. We namespace
+     every selector under `.dialog-demo__*` so they don't leak into
+     unrelated pages. */
+
+  /* Form layout used by Form / Fullscreen dialog bodies. */
+  .dialog-demo__form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-block: 8px;
+  }
+
+  /* Single-choice list (radio group) layout. */
+  .dialog-demo__radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    border: none;
+  }
+
+  .dialog-demo__radio-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-block: 6px;
+    cursor: pointer;
+    color: var(--md-sys-color-on-surface, inherit);
+  }
+
+  .dialog-demo__sr-only {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Rich headline slot — small avatar circle + two-line title + sub. */
+  .dialog-demo__rich-headline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    inline-size: 100%;
+  }
+
+  .dialog-demo__avatar {
+    flex: 0 0 auto;
+    inline-size: 40px;
+    block-size: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--md-sys-color-primary, #6750a4);
+    color: var(--md-sys-color-on-primary, #ffffff);
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.04em;
+  }
+
+  .dialog-demo__rich-headline-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-inline-size: 0;
+  }
+
+  .dialog-demo__rich-headline-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface, inherit);
+  }
+
+  .dialog-demo__rich-headline-sub {
+    font-size: 0.8125rem;
+    color: var(--md-sys-color-on-surface-variant, var(--sl-color-gray-3));
+  }
+</style>

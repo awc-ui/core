@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AWC UI — Vanilla HTML Playground</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+    />
+    <style>
+      :root {
+        color-scheme: light;
+      }
+      html[data-theme='dark'] {
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+        font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+        background: var(--md-sys-color-background);
+        color: var(--md-sys-color-on-background);
+        min-height: 100vh;
+        transition:
+          background-color 220ms ease,
+          color 220ms ease;
+      }
+      .app {
+        padding: 24px;
+        max-width: 1100px;
+        margin-inline: auto;
+      }
+      h1 {
+        font-size: 32px;
+        font-weight: 400;
+        margin: 0 0 8px;
+      }
+      h2 {
+        font-size: 22px;
+        font-weight: 500;
+        margin: 0 0 16px;
+        color: var(--md-sys-color-on-surface);
+      }
+      .subtitle {
+        color: var(--md-sys-color-on-surface-variant);
+        margin: 0 0 32px;
+      }
+      section {
+        margin-bottom: 32px;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .row--end {
+        align-items: flex-end;
+      }
+      .field {
+        inline-size: 240px;
+      }
+      .field--small {
+        inline-size: 200px;
+      }
+      .field--medium {
+        inline-size: 260px;
+      }
+      .field--nav {
+        inline-size: 400px;
+      }
+      .field--tabs {
+        inline-size: 460px;
+      }
+      .field--list {
+        inline-size: 320px;
+      }
+      .panel {
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .badge-anchor {
+        position: relative;
+        display: inline-flex;
+      }
+      .nav-stack {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        min-height: 260px;
+      }
+      .cards-row md-card {
+        inline-size: 200px;
+      }
+      .cards-row md-card [slot='header'] {
+        padding: 16px 16px 0;
+        font-weight: 500;
+        text-transform: capitalize;
+      }
+      .cards-row md-card p {
+        padding: 16px;
+        margin: 0;
+        font-size: 14px;
+        color: var(--md-sys-color-on-surface-variant);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <h1>AWC UI — Vanilla HTML Playground</h1>
+      <p class="subtitle">
+        All 34 Material Design 3 components rendered straight from
+        <code>&lt;md-*&gt;</code> custom elements (no framework wrapper).
+      </p>
+
+      <section>
+        <md-button id="theme-toggle" variant="tonal">🌙 Dark Mode</md-button>
+      </section>
+
+      <section>
+        <h2>Buttons</h2>
+        <div class="row">
+          <md-button variant="filled">Filled</md-button>
+          <md-button variant="outlined">Outlined</md-button>
+          <md-button variant="text">Text</md-button>
+          <md-button variant="elevated">Elevated</md-button>
+          <md-button variant="tonal">Tonal</md-button>
+          <md-button variant="filled" icon="add">With Icon</md-button>
+          <md-button variant="filled" disabled>Disabled</md-button>
+          <md-button variant="filled" loading>Loading</md-button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Icon Buttons</h2>
+        <div class="row">
+          <md-icon-button variant="standard" icon="favorite"></md-icon-button>
+          <md-icon-button variant="filled" icon="favorite"></md-icon-button>
+          <md-icon-button variant="outlined" icon="favorite"></md-icon-button>
+          <md-icon-button variant="tonal" icon="favorite"></md-icon-button>
+        </div>
+      </section>
+
+      <section>
+        <h2>FABs</h2>
+        <div class="row row--end">
+          <md-fab variant="primary" size="small" icon="add"></md-fab>
+          <md-fab variant="primary" size="medium" icon="add"></md-fab>
+          <md-fab variant="secondary" size="medium" icon="favorite"></md-fab>
+          <md-fab
+            variant="primary"
+            size="extended"
+            icon="add"
+            label="Create"
+          ></md-fab>
+        </div>
+      </section>
+
+      <section>
+        <h2>Text Fields</h2>
+        <div class="row">
+          <div class="field">
+            <md-text-field variant="filled" label="Filled"></md-text-field>
+          </div>
+          <div class="field">
+            <md-text-field variant="outlined" label="Outlined"></md-text-field>
+          </div>
+          <div class="field">
+            <md-text-field
+              variant="filled"
+              label="Error"
+              error
+              error-text="Required"
+            ></md-text-field>
+          </div>
+          <div class="field">
+            <md-text-field
+              variant="filled"
+              label="Disabled"
+              disabled
+            ></md-text-field>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Select</h2>
+        <div class="row">
+          <div class="field--small">
+            <md-select label="Color" variant="filled">
+              <md-select-option value="red">Red</md-select-option>
+              <md-select-option value="green">Green</md-select-option>
+              <md-select-option value="blue">Blue</md-select-option>
+            </md-select>
+          </div>
+          <div class="field--small">
+            <md-select label="Size" variant="outlined">
+              <md-select-option value="s">Small</md-select-option>
+              <md-select-option value="m">Medium</md-select-option>
+              <md-select-option value="l">Large</md-select-option>
+            </md-select>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Checkboxes &amp; Radio</h2>
+        <div class="row" style="gap: 24px">
+          <span style="display: inline-flex; align-items: center; gap: 8px">
+            <md-checkbox id="hello-cb"></md-checkbox>
+            <span id="cb-label">Checkbox (unchecked)</span>
+          </span>
+          <md-radio name="r" value="a"></md-radio>
+          <md-radio name="r" value="b"></md-radio>
+          <md-radio name="r" value="c" disabled></md-radio>
+        </div>
+      </section>
+
+      <section>
+        <h2>Switch</h2>
+        <div class="row" style="gap: 16px">
+          <md-switch id="sw1"></md-switch>
+          <span id="sw1-label">Off</span>
+          <md-switch selected icons></md-switch>
+          <md-switch disabled></md-switch>
+        </div>
+      </section>
+
+      <section>
+        <h2>Chips</h2>
+        <div class="row" style="gap: 8px">
+          <md-chip variant="assist" label="Assist"></md-chip>
+          <md-chip variant="filter" label="Filter"></md-chip>
+          <md-chip variant="input" label="Input" removable></md-chip>
+          <md-chip variant="suggestion" label="Suggestion"></md-chip>
+          <md-chip variant="filter" label="Selected" selected></md-chip>
+        </div>
+      </section>
+
+      <section>
+        <h2>Dialog</h2>
+        <md-button id="dialog-open" variant="outlined">Open Dialog</md-button>
+        <md-dialog id="dialog" headline="Confirm Action">
+          <p>Are you sure you want to proceed with this action?</p>
+          <div slot="actions">
+            <md-button id="dialog-cancel" variant="text">Cancel</md-button>
+            <md-button id="dialog-confirm" variant="filled">Confirm</md-button>
+          </div>
+        </md-dialog>
+      </section>
+
+      <section>
+        <h2>Snackbar</h2>
+        <md-button id="snackbar-open" variant="outlined">Show Snackbar</md-button>
+        <md-snackbar
+          id="snackbar"
+          message="File saved successfully"
+          action="Undo"
+          auto-hide-duration="3000"
+        ></md-snackbar>
+      </section>
+
+      <section>
+        <h2>Progress Indicators</h2>
+        <div class="row" style="gap: 24px">
+          <md-progress-indicator variant="circular" value="75"></md-progress-indicator>
+          <md-progress-indicator variant="circular" indeterminate></md-progress-indicator>
+          <div class="field--small">
+            <md-progress-indicator variant="linear" value="60"></md-progress-indicator>
+          </div>
+          <div class="field--small">
+            <md-progress-indicator variant="linear" indeterminate></md-progress-indicator>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Cards</h2>
+        <div class="row cards-row" style="gap: 16px">
+          <md-card variant="elevated">
+            <div slot="header">Elevated</div>
+            <p>Card content</p>
+          </md-card>
+          <md-card variant="filled">
+            <div slot="header">Filled</div>
+            <p>Card content</p>
+          </md-card>
+          <md-card variant="outlined">
+            <div slot="header">Outlined</div>
+            <p>Card content</p>
+          </md-card>
+        </div>
+      </section>
+
+      <section>
+        <h2>Navigation Bar</h2>
+        <div class="field--nav">
+          <md-navigation-bar>
+            <md-navigation-tab label="Home" icon="home" active></md-navigation-tab>
+            <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+            <md-navigation-tab label="Library" icon="library_music"></md-navigation-tab>
+            <md-navigation-tab
+              label="Profile"
+              icon="person"
+              badge
+              badge-value="3"
+            ></md-navigation-tab>
+          </md-navigation-bar>
+        </div>
+      </section>
+
+      <section>
+        <h2>Tabs</h2>
+        <div class="field--tabs">
+          <md-tabs active-tab-index="1">
+            <md-tab label="Overview" icon="dashboard"></md-tab>
+            <md-tab label="Details" icon="info" active></md-tab>
+            <md-tab label="Settings" icon="settings"></md-tab>
+          </md-tabs>
+        </div>
+      </section>
+
+      <section>
+        <h2>App Bar — Top</h2>
+        <div class="panel">
+          <md-app-bar title-alignment="center" headline="Inbox">
+            <md-icon-button slot="leading" icon="menu"></md-icon-button>
+            <md-icon-button slot="trailing" icon="search"></md-icon-button>
+          </md-app-bar>
+        </div>
+      </section>
+
+      <section>
+        <h2>Date Picker</h2>
+        <div class="field--medium">
+          <md-date-picker label="Meeting Date" value="2026-03-12"></md-date-picker>
+        </div>
+      </section>
+
+      <section>
+        <h2>List, Menu &amp; Sub Menu Item</h2>
+        <div class="row" style="gap: 20px; align-items: flex-start">
+          <div class="field--list">
+            <md-list>
+              <md-list-item
+                headline="Profile"
+                supporting-text="Manage account"
+                leading-icon="person"
+              ></md-list-item>
+              <md-divider></md-divider>
+              <md-list-item
+                headline="Notifications"
+                supporting-text="Push and email settings"
+                trailing-icon="chevron_right"
+              ></md-list-item>
+            </md-list>
+          </div>
+          <div>
+            <md-button id="menu-anchor" variant="outlined">Open Menu</md-button>
+            <md-menu id="menu" anchor="menu-anchor" placement="bottom-start">
+              <md-menu-item headline="Edit" leading-icon="edit"></md-menu-item>
+              <md-sub-menu-item headline="More options" leading-icon="more_horiz">
+                <md-menu slot="submenu">
+                  <md-menu-item headline="Archive"></md-menu-item>
+                  <md-menu-item headline="Delete"></md-menu-item>
+                </md-menu>
+              </md-sub-menu-item>
+            </md-menu>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Badge &amp; Tooltip</h2>
+        <div class="row" style="gap: 24px">
+          <span class="badge-anchor">
+            <md-icon-button icon="mail"></md-icon-button>
+            <md-badge value="14" max="99"></md-badge>
+          </span>
+          <md-tooltip
+            content="This is a rich tooltip"
+            headline="Tooltip title"
+            variant="rich"
+          >
+            <md-button variant="tonal">Hover target</md-button>
+          </md-tooltip>
+        </div>
+      </section>
+
+      <section>
+        <h2>Navigation Rail</h2>
+        <div class="nav-stack">
+          <md-navigation-rail alignment="top" has-fab>
+            <md-fab slot="fab" icon="add" size="small"></md-fab>
+            <md-navigation-rail-tab
+              label="Home"
+              icon="home"
+              active
+            ></md-navigation-rail-tab>
+            <md-navigation-rail-tab
+              label="Search"
+              icon="search"
+            ></md-navigation-rail-tab>
+            <md-navigation-rail-tab
+              label="Profile"
+              icon="person"
+              badge
+              badge-value="2"
+            ></md-navigation-rail-tab>
+          </md-navigation-rail>
+        </div>
+      </section>
+
+      <section style="margin-bottom: 48px">
+        <h2>App Bar — Bottom &amp; Bottom Sheet</h2>
+        <div style="display: grid; gap: 16px">
+          <div>
+            <md-button id="sheet-toggle" variant="outlined">
+              Open Bottom Sheet
+            </md-button>
+          </div>
+          <md-navigation-bar>
+            <md-navigation-tab label="Home" icon="home" active></md-navigation-tab>
+            <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+            <md-navigation-tab label="Favorites" icon="favorite"></md-navigation-tab>
+          </md-navigation-bar>
+          <md-bottom-sheet
+            id="bottom-sheet"
+            variant="standard"
+            headline="Quick actions"
+          >
+            <md-list>
+              <md-list-item headline="Share" leading-icon="share"></md-list-item>
+              <md-list-item headline="Save" leading-icon="bookmark"></md-list-item>
+            </md-list>
+          </md-bottom-sheet>
+        </div>
+      </section>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

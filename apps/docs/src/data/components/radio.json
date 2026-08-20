@@ -1,0 +1,199 @@
+{
+  "tag": "md-radio",
+  "title": "Radio",
+  "slug": "radio",
+  "category": "Selection",
+  "subComponentOf": null,
+  "storyId": "selection-radio--playground",
+  "props": [
+    {
+      "name": "valueMissingLabel",
+      "attribute": "value-missing-label",
+      "type": "string",
+      "default": "'Please select one of these options.'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "checked",
+      "attribute": "checked",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "required",
+      "attribute": "required",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "name",
+      "attribute": "name",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "{ checked: boolean; value: string }"
+    },
+    {
+      "name": "mdFocus",
+      "detail": "void"
+    },
+    {
+      "name": "mdBlur",
+      "detail": "void"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ],
+  "methods": [
+    {
+      "name": "syncValidityFromGroup",
+      "params": ""
+    },
+    {
+      "name": "getValidity",
+      "params": ""
+    },
+    {
+      "name": "checkValidity",
+      "params": ""
+    },
+    {
+      "name": "reportValidity",
+      "params": ""
+    },
+    {
+      "name": "setCustomValidity",
+      "params": "message: string"
+    },
+    {
+      "name": "setFocus",
+      "params": ""
+    },
+    {
+      "name": "setBlur",
+      "params": ""
+    },
+    {
+      "name": "select",
+      "params": ""
+    }
+  ],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": "Hover / focus / press overlay"
+    },
+    {
+      "name": "container",
+      "description": "Wrapper around outer + inner circles"
+    },
+    {
+      "name": "outer-circle",
+      "description": "The 20px circle border"
+    },
+    {
+      "name": "inner-circle",
+      "description": "The 10px filled dot"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-radio-icon-color",
+      "description": "Unchecked outer circle color"
+    },
+    {
+      "name": "--md-radio-selected-icon-color",
+      "description": "Checked outer circle + inner dot color"
+    },
+    {
+      "name": "--md-radio-icon-size",
+      "description": "Outer circle size"
+    },
+    {
+      "name": "--md-radio-inner-circle-size",
+      "description": "Inner dot size"
+    },
+    {
+      "name": "--md-radio-state-layer-size",
+      "description": "State-layer diameter"
+    },
+    {
+      "name": "--md-radio-state-layer-color",
+      "description": "State-layer color (unchecked)"
+    },
+    {
+      "name": "--md-radio-selected-state-layer-color",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdChange",
+      "detail": "{ checked: boolean; value: string }"
+    },
+    {
+      "name": "mdFocus",
+      "detail": "void"
+    },
+    {
+      "name": "mdBlur",
+      "detail": "void"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ]
+}

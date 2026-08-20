@@ -1,0 +1,38 @@
+{
+  "name": "@awc-ui/svelte",
+  "version": "0.1.0",
+  "description": "Svelte wrapper for AWC UI Material Design 3 components",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "files": [
+    "src",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "echo 'Svelte wrapper: run after stencil build'"
+  },
+  "peerDependencies": {
+    "svelte": ">=4",
+    "@awc-ui/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "license": "MIT",
+  "author": "AWC UI",
+  "homepage": "https://awcui.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awc-ui/core.git",
+    "directory": "packages/svelte"
+  },
+  "bugs": {
+    "url": "https://github.com/awc-ui/core/issues"
+  }
+}

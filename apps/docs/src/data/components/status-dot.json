@@ -1,0 +1,95 @@
+{
+  "tag": "md-status-dot",
+  "title": "Status Dot",
+  "slug": "status-dot",
+  "category": "Communication",
+  "subComponentOf": null,
+  "storyId": "communication-status-dot--playground",
+  "props": [
+    {
+      "name": "state",
+      "attribute": "state",
+      "type": "MdStatusDotState",
+      "default": "'neutral'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "size",
+      "attribute": "size",
+      "type": "MdStatusDotSize",
+      "default": "'medium'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "live",
+      "attribute": "live",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [],
+  "methods": [],
+  "slots": [],
+  "cssParts": [],
+  "cssCustomProps": [
+    {
+      "name": "--md-status-dot-size",
+      "description": "Dot diameter (overrides preset)"
+    },
+    {
+      "name": "--md-status-dot-color",
+      "description": "Dot fill color"
+    },
+    {
+      "name": "--md-status-dot-pulse-color",
+      "description": "Halo color used by the live pulse"
+    },
+    {
+      "name": "--md-status-dot-outline-color",
+      "description": "Halo outline (default surface)"
+    },
+    {
+      "name": "--md-status-dot-outline-width",
+      "description": "Halo outline width (default 2px)"
+    },
+    {
+      "name": "--md-status-dot-inset-end",
+      "description": "inline-end anchor offset (default -2px)"
+    },
+    {
+      "name": "--md-status-dot-inset-block-end",
+      "description": "block-end anchor offset (default -2px)"
+    },
+    {
+      "name": "--md-status-dot-pulse-duration",
+      "description": "Pulse animation period (default 1.6s)"
+    }
+  ],
+  "dependencies": [
+    "md-avatar"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": []
+}

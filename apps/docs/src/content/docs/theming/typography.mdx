@@ -1,0 +1,102 @@
+---
+title: Typography
+description: The MD3 typescale as CSS custom properties — 15 roles, what each is for, and how to retype the whole library from one place
+sidebar:
+  order: 3
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+Every piece of text in the library resolves through the **MD3 typescale**: 15
+roles, each a set of `--md-sys-typescale-*` custom properties. Components never
+hard-code a font size, so retyping the library is a token change, not a sweep.
+
+## The scale
+
+Five families — display, headline, title, body, label — each in large, medium
+and small.
+
+<ComponentDemo
+  html={`<div style="display:grid; gap:18px;">
+  <div style="font: var(--md-sys-typescale-display-large-font); color: var(--md-sys-color-on-surface);">Display large</div>
+  <div style="font: var(--md-sys-typescale-display-small-font); color: var(--md-sys-color-on-surface);">Display small</div>
+  <div style="font: var(--md-sys-typescale-headline-medium-font); color: var(--md-sys-color-on-surface);">Headline medium</div>
+  <div style="font: var(--md-sys-typescale-title-large-font); color: var(--md-sys-color-on-surface);">Title large</div>
+  <div style="font: var(--md-sys-typescale-title-small-font); color: var(--md-sys-color-on-surface);">Title small</div>
+  <div style="font: var(--md-sys-typescale-body-large-font); color: var(--md-sys-color-on-surface);">Body large — the quick brown fox jumps over the lazy dog.</div>
+  <div style="font: var(--md-sys-typescale-body-medium-font); color: var(--md-sys-color-on-surface-variant);">Body medium — the default for supporting copy.</div>
+  <div style="font: var(--md-sys-typescale-label-large-font); color: var(--md-sys-color-on-surface);">LABEL LARGE — buttons and tabs</div>
+  <div style="font: var(--md-sys-typescale-label-small-font); color: var(--md-sys-color-on-surface-variant);">LABEL SMALL — counters, overlines</div>
+</div>`}
+  label="Nine of the fifteen roles, at their real size, weight and line-height"
+  storyId="foundations-design-tokens--typography"
+/>
+
+## What each family is for
+
+| Family | Use it for | In the library |
+|---|---|---|
+| **Display** | One statement per screen — a hero number, a landing headline | Not used by any component |
+| **Headline** | Section headings inside a page | `md-dialog` headline, `md-app-bar` large title |
+| **Title** | The name of a surface or a row | Card titles, list headlines, app-bar titles |
+| **Body** | Running text, descriptions, supporting text | Supporting text, list supporting lines, tooltips |
+| **Label** | Text *inside* a control | Buttons, tabs, chips, badges, counters |
+
+The distinction that matters in practice: **label is not small body**. Label
+roles carry more weight and tighter tracking because they sit inside a control
+and have to hold their own against a filled background.
+
+## Using a role
+
+Each role ships as a **`-font` shorthand** (family, size, weight, line-height)
+plus each part on its own. The shorthand does **not** carry `letter-spacing` —
+add it when tracking matters:
+
+```css
+.my-heading {
+  font: var(--md-sys-typescale-headline-small-font);
+  letter-spacing: var(--md-sys-typescale-headline-small-letter-spacing);
+}
+
+/* or compose from the parts */
+.my-label {
+  font-family: var(--md-sys-typescale-label-large-font-family);
+  font-size: var(--md-sys-typescale-label-large-font-size);
+  font-weight: var(--md-sys-typescale-label-large-font-weight);
+  line-height: var(--md-sys-typescale-label-large-line-height);
+  letter-spacing: var(--md-sys-typescale-label-large-letter-spacing);
+}
+```
+
+## Changing the type
+
+Override the tokens once, above everything else, and the whole library follows:
+
+```css
+:root {
+  /* Swap the family across every role */
+  --md-sys-typescale-body-large-font-family: "Inter", system-ui, sans-serif;
+  --md-sys-typescale-label-large-font-family: "Inter", system-ui, sans-serif;
+
+  /* Or retune a single role */
+  --md-sys-typescale-title-large-font-size: 24px;
+  --md-sys-typescale-title-large-line-height: 32px;
+}
+```
+
+<ComponentDemo
+  html={`<div style="
+  --md-sys-typescale-label-large-font-family: Georgia, serif;
+  --md-sys-typescale-body-medium-font-family: Georgia, serif;
+  display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+  <md-button variant="filled">Serif button</md-button>
+  <md-button variant="outlined">Outlined</md-button>
+  <md-chip variant="assist" label="And a chip"></md-chip>
+</div>`}
+  label="Two token overrides on a wrapper — the components retype themselves"
+/>
+
+:::note[Density trims type too]
+A `data-density` rung shrinks type alongside spacing, with a legibility floor per
+role. See [Density](/behaviour/density/).
+:::

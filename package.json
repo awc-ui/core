@@ -1,0 +1,64 @@
+{
+  "name": "awc-ui-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Material Design 3 Web Components library built with StencilJS",
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "pnpm lint:eslint && pnpm lint:stylelint && turbo run lint",
+    "lint:eslint": "eslint packages/core/src",
+    "lint:stylelint": "stylelint \"packages/core/src/**/*.css\"",
+    "test:a11y": "pnpm --filter @awc-ui/storybook test:a11y",
+    "size": "pnpm --filter @awc-ui/core size",
+    "size:why": "pnpm --filter @awc-ui/core size:why",
+    "ci:wrappers": "pnpm --filter @awc-ui/react --filter @awc-ui/vue --filter @awc-ui/angular build",
+    "ci:publint": "publint packages/core && publint packages/react && publint packages/vue",
+    "ci:attw": "attw --pack packages/react --ignore-rules false-cjs && attw --pack packages/vue --ignore-rules cjs-resolves-to-esm internal-resolution-error",
+    "changeset": "changeset",
+    "changeset:status": "changeset status --since=origin/main",
+    "version-packages": "changeset version && pnpm install --lockfile-only",
+    "dev": "turbo run dev",
+    "storybook": "pnpm --filter @awc-ui/storybook storybook",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "generate:docs": "node scripts/generate-docs.mjs",
+    "dev:html": "pnpm --filter @awc-ui/test-html dev",
+    "dev:react": "pnpm --filter @awc-ui/test-react dev",
+    "dev:vue": "pnpm --filter @awc-ui/test-vue dev",
+    "dev:svelte": "pnpm --filter @awc-ui/test-svelte dev",
+    "dev:angular": "pnpm --filter @awc-ui/test-angular dev",
+    "dev:playgrounds": "pnpm --parallel --filter \"./apps/test-*\" --stream dev",
+    "coverage:merge": "node scripts/merge-coverage.mjs"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.4",
+    "@changesets/changelog-github": "^0.7.0",
+    "@changesets/cli": "^2.31.0",
+    "@playwright/test": "^1.58.2",
+    "@typescript-eslint/eslint-plugin": "^8.59.2",
+    "@typescript-eslint/parser": "^8.59.2",
+    "eslint": "^10.3.0",
+    "prettier": "^3.2.0",
+    "publint": "^0.3.21",
+    "stylelint": "^17.11.0",
+    "stylelint-config-standard": "^40.0.0",
+    "turbo": "latest",
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.59.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "@storybook/test-runner>jest": "^29.7.0",
+      "@storybook/test-runner>jest-circus": "^29.7.0",
+      "@storybook/test-runner>jest-runner": "^29.7.0",
+      "@storybook/test-runner>jest-environment-node": "^29.7.0",
+      "@storybook/test-runner>@jest/types": "^29.6.3"
+    }
+  },
+  "pnpm-note": "Pins @storybook/test-runner (0.24.4) onto the jest 29 tree. It otherwise pulls jest 30 (jest/jest-circus/jest-runner/jest-environment-node), which brings jest-runtime@30 into the store; @stencil/core's `stencil test` then loads jest-runtime@30 against the jest-29 resolver API and crashes (normalizeCoreModuleSpecifier). test-runner is the sole jest-30 consumer, so scoping its jest deps to 29 removes jest 30 entirely; core keeps its declared jest 29.",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.5.0"
+}

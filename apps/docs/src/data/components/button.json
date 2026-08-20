@@ -1,0 +1,337 @@
+{
+  "tag": "md-button",
+  "title": "Button",
+  "slug": "button",
+  "category": "Actions",
+  "subComponentOf": null,
+  "storyId": "actions-button--localized",
+  "props": [
+    {
+      "name": "type",
+      "attribute": "type",
+      "type": "'button' | 'submit' | 'reset'",
+      "default": "'button'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'filled' | 'outlined' | 'text' | 'elevated' | 'tonal'",
+      "default": "'filled'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "size",
+      "attribute": "size",
+      "type": "'xs' | 'sm' | 'md' | 'lg' | 'xl'",
+      "default": "'sm'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "shape",
+      "attribute": "shape",
+      "type": "'round' | 'square'",
+      "default": "'round'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "ripple",
+      "attribute": "ripple",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "loading",
+      "attribute": "loading",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "trailingIcon",
+      "attribute": "trailing-icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "href",
+      "attribute": "href",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "target",
+      "attribute": "target",
+      "type": "string",
+      "default": "'_self'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "toggle",
+      "attribute": "toggle",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "selected",
+      "attribute": "selected",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "shapeMorph",
+      "attribute": "shape-morph",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "mirrorIcon",
+      "attribute": "mirror-icon",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "suppressExpandIconFlip",
+      "attribute": "suppress-expand-icon-flip",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "fullWidth",
+      "attribute": "full-width",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "connectedLeft",
+      "attribute": "connected-left",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "connectedRight",
+      "attribute": "connected-right",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "groupTabindex",
+      "attribute": "group-tabindex",
+      "type": "number | null",
+      "default": "null",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "roleOverride",
+      "attribute": "role-override",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdClick",
+      "detail": "MdButtonClickDetail"
+    },
+    {
+      "name": "mdChange",
+      "detail": "MdButtonChangeDetail"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "leading-icon",
+      "description": "Custom leading icon (replaces icon prop)"
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Custom trailing icon (replaces trailingIcon prop)"
+    },
+    {
+      "name": "loader",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": "State-layer overlay"
+    },
+    {
+      "name": "icon",
+      "description": "Leading icon (fallback)"
+    },
+    {
+      "name": "label",
+      "description": "Label text wrapper"
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Trailing icon (fallback)"
+    },
+    {
+      "name": "loading",
+      "description": "Loading spinner"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-button-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-button-label-color",
+      "description": "Label + icon text color"
+    },
+    {
+      "name": "--md-button-icon-color",
+      "description": "Icon-only color override"
+    },
+    {
+      "name": "--md-button-icon-size",
+      "description": "Icon dimensions"
+    },
+    {
+      "name": "--md-button-container-shape",
+      "description": "Border-radius override"
+    },
+    {
+      "name": "--md-button-outline-color",
+      "description": "Outlined border color"
+    },
+    {
+      "name": "--md-button-outline-width",
+      "description": "Outlined border width"
+    },
+    {
+      "name": "--md-button-width",
+      "description": "Fixed inline-size (default: auto)"
+    },
+    {
+      "name": "--md-button-min-width",
+      "description": "Minimum inline-size (default: per-size touch target)"
+    },
+    {
+      "name": "--md-button-max-width",
+      "description": "Maximum inline-size (default: none)"
+    },
+    {
+      "name": "--md-button-height",
+      "description": "Fixed block-size (default: auto)"
+    },
+    {
+      "name": "--md-button-min-height",
+      "description": "Minimum block-size (default: per-size touch target)"
+    },
+    {
+      "name": "--md-button-loading-size",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-ripple",
+    "md-loading-indicator"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [
+    {
+      "name": "MdButtonClickDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** The button's `value` prop (useful when grouped via `md-button-group`). */\n  value: string;\n  /** Whether toggle mode is enabled. */\n  toggle: boolean;\n  /**\n   * Selected state the button WILL transition to if the click is not\n   * cancelled. In non-toggle mode this is identical to `selected`.\n   */\n  selected: boolean;\n  /** Navigation target (empty if the button is not a link). */\n  href: string;\n  /** Browsing context (`_self`, `_blank`, …). */\n  target: string;\n  /** The original DOM event that triggered the activation. */\n  originalEvent: MouseEvent | KeyboardEvent;"
+    },
+    {
+      "name": "MdButtonChangeDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** New selected state. */\n  selected: boolean;\n  /** The button's `value` prop. */\n  value: string;"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdClick",
+      "detail": "MdButtonClickDetail"
+    },
+    {
+      "name": "mdChange",
+      "detail": "MdButtonChangeDetail"
+    }
+  ]
+}

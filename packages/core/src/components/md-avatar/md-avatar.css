@@ -1,0 +1,334 @@
+/* ==========================================================
+   md-avatar — Material Design 3 Avatar (AWC-UI extension)
+   Reference: https://m3.material.io/styles/typography/applying-type
+              + Material Components Web avatar pattern
+
+   A small identity tile that resolves to the first available
+   source from a clear fallback chain (see md-avatar.tsx).
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-avatar-size                Square size of the host
+                                     (overrides the preset sizes)
+     --md-avatar-container-color     Container fill (initials/icon mode)
+     --md-avatar-container-shape     Border-radius override
+     --md-avatar-label-color         Initials / icon color
+     --md-avatar-label-font-family   Initials font family
+     --md-avatar-label-font-size     Initials font size
+     --md-avatar-label-font-weight   Initials font weight
+     --md-avatar-label-letter-spacing Initials letter-spacing
+     --md-avatar-icon-size           Icon glyph size
+     --md-avatar-outline-color       Optional outline color
+     --md-avatar-outline-width       Optional outline width (default 0)
+
+     Tonal palette (used when `color-from-name` is true):
+     --md-avatar-palette-{1..7}-container  Container fill for that bucket
+     --md-avatar-palette-{1..7}-label      Label color for that bucket
+
+   CSS PARTS:
+     image     The `<img>` element (image mode)
+     initials  The initials text element
+     icon      The fallback person icon
+
+   SLOTS:
+     (default) Custom fallback rendered when no src/initials are
+               available (overrides the built-in person icon).
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST — base + custom properties
+   ========================================================== */
+:host {
+  /* Sizing — overridden per-variant below; authors can pin to any
+     length via `--md-avatar-size` for non-preset values. */
+  --_size: var(--md-avatar-size, max(28px, calc(40px + var(--md-sys-density-scale, 0) * 3px)));
+
+  /* Neutral default — used when color-from-name is false or no seed. */
+  --_container-color: var(
+    --md-avatar-container-color,
+    var(--md-sys-color-surface-container-highest, #E6E0E9)
+  );
+  --_label-color: var(
+    --md-avatar-label-color,
+    var(--md-sys-color-on-surface-variant, #49454F)
+  );
+  --_shape: var(--md-avatar-container-shape, 50%);
+  --_icon-size: var(--md-avatar-icon-size, calc(var(--_size) * 0.6));
+  --_label-font-family: var(
+    --md-avatar-label-font-family,
+    var(--md-sys-typescale-title-medium-font-family, system-ui, sans-serif)
+  );
+  --_label-font-size: var(--md-avatar-label-font-size, calc(var(--_size) * 0.4));
+  --_label-font-weight: var(
+    --md-avatar-label-font-weight,
+    var(--md-sys-typescale-title-medium-font-weight, 500)
+  );
+  --_label-letter-spacing: var(--md-avatar-label-letter-spacing, 0.05em);
+  --_outline-color: var(--md-avatar-outline-color, transparent);
+  --_outline-width: var(--md-avatar-outline-width, 0);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  vertical-align: middle;
+  user-select: none;
+
+  inline-size: var(--_size);
+  block-size: var(--_size);
+  border-radius: var(--_shape);
+  background-color: var(--_container-color);
+  color: var(--_label-color);
+  overflow: hidden;
+  position: relative;
+  outline: var(--_outline-width) solid var(--_outline-color);
+  outline-offset: calc(-1 * var(--_outline-width));
+}
+
+/* ==========================================================
+   2. SIZE PRESETS
+   Each preset writes to --_size only; everything else (font
+   size, icon size) derives from it via calc() above.
+
+   Custom sizes (`size="72"`, `size="4rem"`, …) are forwarded by
+   the TSX layer as an inline `--md-avatar-size: <length>` on the
+   host. The `:host` block at the top already reads from that
+   custom property, so non-preset values flow through the same
+   pipeline without a dedicated rule. The
+   `md-avatar--custom-size` modifier class is provided as a hook
+   for callers who need to target custom-sized instances from
+   their own stylesheet (e.g. `md-avatar.md-avatar--custom-size
+   { --md-avatar-label-letter-spacing: 0; }`).
+   ========================================================== */
+:host(.md-avatar--small) {
+  --_size: var(--md-avatar-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1.5px)));
+}
+:host(.md-avatar--medium) {
+  --_size: var(--md-avatar-size, max(28px, calc(40px + var(--md-sys-density-scale, 0) * 3px)));
+}
+:host(.md-avatar--large) {
+  --_size: var(--md-avatar-size, max(40px, calc(56px + var(--md-sys-density-scale, 0) * 4px)));
+}
+
+/* ==========================================================
+   3. SHAPE VARIANTS
+   ========================================================== */
+:host(.md-avatar--circle) {
+  --_shape: var(--md-avatar-container-shape, 50%);
+}
+:host(.md-avatar--rounded) {
+  --_shape: var(--md-avatar-container-shape, var(--md-sys-shape-corner-medium, 12px));
+}
+:host(.md-avatar--square) {
+  --_shape: var(--md-avatar-container-shape, 0);
+}
+
+/* ==========================================================
+   4. IMAGE MODE
+   ========================================================== */
+:host(.md-avatar--mode-image) {
+  background-color: transparent;
+}
+
+.md-avatar__image {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: inherit;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/* ==========================================================
+   5. INITIALS MODE
+   ========================================================== */
+.md-avatar__initials {
+  font-family: var(--_label-font-family);
+  font-size: var(--_label-font-size);
+  font-weight: var(--_label-font-weight);
+  letter-spacing: var(--_label-letter-spacing);
+  line-height: 1;
+  color: inherit;
+  /* The initials inherit the host's color stack, which the palette
+     modifiers below override when color-from-name resolves to a
+     bucket. */
+  text-transform: uppercase;
+  /* M3 typography sets a baseline shift; for centered tiles we want
+     pure optical centering. */
+  font-feature-settings: "tnum";
+}
+
+/* ==========================================================
+   6. SLOT / ICON FALLBACK
+   ========================================================== */
+.md-avatar__icon {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-size: var(--_icon-size);
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  color: inherit;
+  line-height: 1;
+  font-weight: normal;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Slotted custom fallback — match icon sizing. */
+/* NOT badges. A custom property inside ::slotted() resolves in the SLOTTED
+   element's own scope, and md-badge defines its own `--_icon-size` (10px, for
+   its glyph). So `height: var(--_icon-size) !important` here picked up the
+   BADGE's 10px instead of this component's icon size and, being !important,
+   beat the badge's own 16px — squashing every badge slotted onto an icon
+   button / avatar / menu item into a 10px blob. A badge is not an icon; it
+   sizes itself. */
+::slotted(*:not(md-badge)) {
+  /* Centre the CONTENT, not just the box. The box is forced to the icon size
+     above, so a slotted <span> of text kept its single line at the top of a
+     24px box and rendered visibly high — an SVG fills its box and hid the
+     problem, while a bare emoji text node (not matched by ::slotted) was
+     centred by the wrapper and looked fine. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  font-size: var(--_icon-size);
+  color: inherit;
+  fill: currentColor;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ==========================================================
+   7. TONAL PALETTE
+   When `color-from-name` is true and a seed (initials/name) is
+   present, the host gets a `md-avatar--palette-N` class
+   (N = 1..7). Each bucket uses an M3 tonal pair so light + dark
+   themes follow tokens.
+
+   The default palette below is built from the M3 reference
+   surface-container + on-surface tonal families and the
+   secondary / tertiary / primary containers so contrast pairs
+   are guaranteed at AA.
+   ========================================================== */
+:host(.md-avatar--palette-1) {
+  --_container-color: var(
+    --md-avatar-palette-1-container,
+    var(--md-sys-color-primary-container, #EADDFF)
+  );
+  --_label-color: var(
+    --md-avatar-palette-1-label,
+    var(--md-sys-color-on-primary-container, #21005D)
+  );
+}
+:host(.md-avatar--palette-2) {
+  --_container-color: var(
+    --md-avatar-palette-2-container,
+    var(--md-sys-color-secondary-container, #E8DEF8)
+  );
+  --_label-color: var(
+    --md-avatar-palette-2-label,
+    var(--md-sys-color-on-secondary-container, #1D192B)
+  );
+}
+:host(.md-avatar--palette-3) {
+  --_container-color: var(
+    --md-avatar-palette-3-container,
+    var(--md-sys-color-tertiary-container, #FFD8E4)
+  );
+  --_label-color: var(
+    --md-avatar-palette-3-label,
+    var(--md-sys-color-on-tertiary-container, #31111D)
+  );
+}
+:host(.md-avatar--palette-4) {
+  --_container-color: var(
+    --md-avatar-palette-4-container,
+    var(--md-sys-color-error-container, #F9DEDC)
+  );
+  --_label-color: var(
+    --md-avatar-palette-4-label,
+    var(--md-sys-color-on-error-container, #410E0B)
+  );
+}
+/* Palettes 5/6/7 are soft tints of the primary / tertiary / secondary
+   tones. They were originally mixed against `transparent` for a "tinted
+   chip" look on a white surface, but that made the tile visibly
+   see-through whenever it overlapped another element (e.g. inside an
+   avatar group), which broke the bite-mark stacking. We now mix the
+   accent tone into `--md-sys-color-surface` instead so the resulting
+   color is fully opaque AND theme-aware (dark theme → tint of the dark
+   surface). The visible tint stays nearly identical to the previous
+   value on a default light surface.
+
+   The initials label used the raw accent tone, which lands at only
+   ~4.45:1 against the 22% tint container — just under WCAG AA (4.5:1).
+   We deepen the label toward `--md-sys-color-on-surface` (dark in light
+   theme, light in dark theme) so it clears AA (~6:1 light / ~7:1 dark)
+   in both themes while keeping the accent hue recognizably distinct.
+   Authors overriding `--md-avatar-palette-N-label` own their own
+   contrast. */
+:host(.md-avatar--palette-5) {
+  --_container-color: var(
+    --md-avatar-palette-5-container,
+    color-mix(in srgb, var(--md-sys-color-primary, #6750A4) 22%, var(--md-sys-color-surface, #FEF7FF))
+  );
+  --_label-color: var(
+    --md-avatar-palette-5-label,
+    color-mix(in srgb, var(--md-sys-color-primary, #6750A4) 72%, var(--md-sys-color-on-surface, #1C1B1F))
+  );
+}
+:host(.md-avatar--palette-6) {
+  --_container-color: var(
+    --md-avatar-palette-6-container,
+    color-mix(in srgb, var(--md-sys-color-tertiary, #7D5260) 22%, var(--md-sys-color-surface, #FEF7FF))
+  );
+  --_label-color: var(
+    --md-avatar-palette-6-label,
+    color-mix(in srgb, var(--md-sys-color-tertiary, #7D5260) 72%, var(--md-sys-color-on-surface, #1C1B1F))
+  );
+}
+:host(.md-avatar--palette-7) {
+  --_container-color: var(
+    --md-avatar-palette-7-container,
+    color-mix(in srgb, var(--md-sys-color-secondary, #625B71) 22%, var(--md-sys-color-surface, #FEF7FF))
+  );
+  --_label-color: var(
+    --md-avatar-palette-7-label,
+    color-mix(in srgb, var(--md-sys-color-secondary, #625B71) 72%, var(--md-sys-color-on-surface, #1C1B1F))
+  );
+}
+
+/* ==========================================================
+   8. REDUCED MOTION / FORCED COLORS
+   ========================================================== */
+@media (forced-colors: active) {
+  :host {
+    --_container-color: ButtonFace;
+    --_label-color: ButtonText;
+    --_outline-color: ButtonText;
+    --_outline-width: 1px;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

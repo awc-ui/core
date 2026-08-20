@@ -1,0 +1,276 @@
+/* ==========================================================
+   md-accordion — AWC UI Accordion container
+   Not part of the MD3 spec — modeled on MD3 expressive surfaces.
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-accordion-gap                 Gap between items in filled variant
+     --md-accordion-outline-color       Outlined variant border colour
+     --md-accordion-container-shape     Border-radius of the outer chassis
+     --md-accordion-elevation           Explicit elevation shadow override.
+                                        Wins over the `elevation` attribute.
+     --md-accordion-floating-width      Width of the floating panel
+     --md-accordion-floating-bg         Surface tint of the floating panel
+     --md-accordion-floating-elevation  Resting shadow for floating panel
+     --md-accordion-floating-elevation-active
+                                        Lifted shadow while being dragged
+     --md-accordion-floating-radius     Corner radius of the floating chassis
+     --md-accordion-drop-placeholder-color
+                                        Drop-target ghost fill (default primary-container @ ~45%)
+     --md-accordion-drop-placeholder-outline-color
+                                        Drop-target ghost outline (default primary @ ~55%, dashed)
+     --md-accordion-drop-placeholder-outline-width
+                                        Drop-target ghost outline width (default 2px)
+     --md-accordion-drop-placeholder-shape
+                                        Drop-target ghost corner radius (default the chassis shape)
+     --md-accordion-drop-placeholder-opacity
+                                        Drop-target ghost opacity (default 1)
+
+   CSS PARTS:
+     drop-placeholder  Ghost slot shown in the lifted item's vacated position
+                       during a pointer reorder (tracks the live drop target)
+
+   In `floating` mode the chassis-drag affordance is a small grip on
+   the FIRST item (see `chassis-handle` part on md-accordion-item).
+   There is no dedicated drag bar — the panel keeps its accordion
+   silhouette while gaining a discrete, recognisable handle in the
+   corner. This matches the brief: "have that handle on the first
+   accordion" rather than a row above everything.
+
+   Transition presets are exposed via the `transition` attribute on
+   the host: `expressive` (default), `standard`, `fade`, `collapse`,
+   `none`. The attribute is reflected so child items pick it up via
+   `:host-context(md-accordion[transition="…"])` and the parent
+   chassis also honours it (notably for `none`).
+
+   CSS PARTS:
+     (none)
+
+   SLOTS:
+     (default)            Accordion items
+   ========================================================== */
+
+:host {
+  --_gap: var(--md-accordion-gap, var(--md-sys-spacing-gap-sm, 8px));
+  --_outline-color: var(--md-accordion-outline-color, var(--md-sys-color-outline-variant, #CAC4D0));
+  --_container-shape: var(--md-accordion-container-shape, max(8px, calc(12px + var(--md-sys-density-scale, 0) * 1px)));
+  /* Internal elevation token resolved from the `elevation` attribute via
+     the `.md-accordion--elevation-N` classes below. Any explicit
+     `--md-accordion-elevation` override still wins. */
+  --_elevation: var(--md-accordion-elevation, var(--md-sys-elevation-0, none));
+  --_elevation-easing: var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
+
+  /* Drop-target ghost (pointer reorder). Same recipe as md-list so the two
+     reorder surfaces read as one pattern: a low-opacity tint of the dragged
+     card's colour with a dashed outline, mixed from the theme roles so it
+     tracks the dynamic seed rather than being a fixed grey. */
+  --_drop-placeholder-color: var(--md-accordion-drop-placeholder-color, color-mix(in srgb, var(--md-sys-color-primary-container, #eaddff) 45%, transparent));
+  --_drop-placeholder-outline-color: var(--md-accordion-drop-placeholder-outline-color, color-mix(in srgb, var(--md-sys-color-primary, #6750a4) 55%, transparent));
+  --_drop-placeholder-outline-width: var(--md-accordion-drop-placeholder-outline-width, 2px);
+  --_drop-placeholder-shape: var(--md-accordion-drop-placeholder-shape, var(--_container-shape));
+  --_drop-placeholder-opacity: var(--md-accordion-drop-placeholder-opacity, 1);
+  --_elevation-duration: var(--md-sys-motion-duration-medium2, 300ms);
+
+  display: block;
+  inline-size: 100%;
+}
+
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }
+
+:host {
+  box-sizing: border-box;
+  font-family: var(--md-sys-typescale-body-large-font, Roboto, sans-serif);
+  color: var(--md-sys-color-on-surface, #1C1B1F);
+  /* Containing block for the absolutely-positioned drop ghost. `relative` with
+     an auto z-index creates no stacking context, so item elevation and the
+     floating panel's own `position: fixed` are unaffected. */
+  position: relative;
+}
+
+/* ── Drop-target ghost, shown while an item is dragged.
+   Sits BEHIND the slotted items (the lifted item carries its own stacking)
+   so it reads as the empty slot the item will drop into, not an overlay. */
+.md-accordion__drop-placeholder {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  z-index: 0;
+  box-sizing: border-box;
+  pointer-events: none;
+  border-radius: var(--_drop-placeholder-shape);
+  background-color: var(--_drop-placeholder-color);
+  border: var(--_drop-placeholder-outline-width) dashed var(--_drop-placeholder-outline-color);
+  opacity: var(--_drop-placeholder-opacity);
+  /* Glides to the new slot in step with the sibling shift. */
+  transition: transform var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-accordion__drop-placeholder {
+    transition: none;
+  }
+}
+
+/* ── Elevation levels — both the host (outlined) and the child items
+   (filled, via :host-context in md-accordion-item.css) consume these. */
+:host(.md-accordion--elevation-1) { --_elevation: var(--md-accordion-elevation, var(--md-sys-elevation-1)); }
+:host(.md-accordion--elevation-2) { --_elevation: var(--md-accordion-elevation, var(--md-sys-elevation-2)); }
+:host(.md-accordion--elevation-3) { --_elevation: var(--md-accordion-elevation, var(--md-sys-elevation-3)); }
+:host(.md-accordion--elevation-4) { --_elevation: var(--md-accordion-elevation, var(--md-sys-elevation-4)); }
+:host(.md-accordion--elevation-5) { --_elevation: var(--md-accordion-elevation, var(--md-sys-elevation-5)); }
+
+/* ── Filled (default): tiles with gaps ──
+   The gap is a FLEX GAP on the host, not a margin on the items. A margin here
+   would have to be written through `::slotted()`, and document-tree rules beat
+   `::slotted()` regardless of specificity — so a consumer's `* { margin: 0 }`
+   reset (Starlight's, Tailwind's preflight, any normalise) silently collapsed
+   the tiles flush against each other. `row-gap` on the container is out of
+   reach of that reset. */
+:host(.md-accordion--filled) {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--_gap);
+}
+:host(.md-accordion--filled) ::slotted(md-accordion-item) {
+  display: block;
+}
+
+/* ── Outlined: shared chassis, items share borders ── */
+:host(.md-accordion--outlined) {
+  border: 1px solid var(--_outline-color);
+  border-radius: var(--_container-shape);
+  overflow: hidden;
+  box-shadow: var(--_elevation);
+  transition: box-shadow var(--_elevation-duration) var(--_elevation-easing);
+}
+:host(.md-accordion--outlined) ::slotted(md-accordion-item) {
+  display: block;
+  border-block-end: 1px solid var(--_outline-color);
+}
+:host(.md-accordion--outlined) ::slotted(md-accordion-item:last-child) {
+  border-block-end: none;
+}
+
+/* When an item inside an outlined chassis is expanded we don't lift the
+   chassis itself — that would shift every sibling. The "expansion lift"
+   only happens for filled tiles. */
+
+/* ==========================================================
+   Transition presets — `transition` attribute on the host
+   ----------------------------------------------------------
+   Mirrors the per-item presets in md-accordion-item.css. The
+   floating chassis has its own box-shadow / border-radius
+   transition; for `transition="none"` we kill it so the panel
+   feels truly instant (useful for tests / screenshot harnesses
+   / "ambient" UI that shouldn't bring attention to itself).
+   ========================================================== */
+:host([transition='none']),
+:host([transition='none']) * {
+  transition: none !important;
+  animation-duration: 0.001ms !important;
+}
+
+/* ==========================================================
+   Floating panel mode
+   ----------------------------------------------------------
+   The accordion lifts out of normal flow and becomes a free-form
+   draggable surface. Position is driven by an inline `transform`
+   from the component; everything else is styled here.
+   ========================================================== */
+
+:host(.md-accordion--floating) {
+  /* Floating-only public tokens */
+  --_floating-bg: var(--md-accordion-floating-bg, var(--md-sys-color-surface-container-low, #F7F2F9));
+  --_floating-elevation:
+    var(--md-accordion-floating-elevation, var(--md-sys-elevation-3, 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.3)));
+  --_floating-elevation-active:
+    var(--md-accordion-floating-elevation-active, var(--md-sys-elevation-5, 0 8px 12px 6px rgba(0, 0, 0, 0.15), 0 4px 4px 0 rgba(0, 0, 0, 0.3)));
+  --_floating-width: var(--md-accordion-floating-width, 360px);
+  --_floating-radius: var(--md-accordion-floating-radius, var(--md-sys-shape-corner-large, 16px));
+
+  position: fixed;
+  /*
+    The floating panel uses PHYSICAL viewport coordinates so its
+    position stays predictable regardless of writing direction —
+    `initial-x="40"` always means "40px from the left edge of the
+    viewport", and the drag delta (which comes from `clientX`,
+    also physical) stays in lockstep with the translate. Using
+    logical `inset-inline-start` here would flip the anchor in
+    RTL, then the positive translate would push the panel off
+    the trailing edge of the screen.
+  */
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  inline-size: var(--_floating-width);
+  max-inline-size: calc(100vw - 16px);
+  background-color: var(--_floating-bg);
+  border-radius: var(--_floating-radius);
+  box-shadow: var(--_floating-elevation);
+  overflow: hidden;
+  /* GPU compositing — keeps the panel sharp while transforming. */
+  will-change: transform;
+  /* Smooth resting transitions for elevation / shape changes; the
+     drag itself is driven by an inline transform with no transition
+     so the panel tracks the pointer 1:1. */
+  transition:
+    box-shadow var(--_elevation-duration) var(--_elevation-easing),
+    border-radius var(--_elevation-duration) var(--_elevation-easing);
+}
+
+/* When the panel is the floating variant, neutralise the inline-size
+   inherited from the base `:host { inline-size: 100% }` rule. */
+:host(.md-accordion--floating) {
+  inline-size: var(--_floating-width);
+}
+
+/* Lift while being dragged */
+:host(.md-accordion--floating-dragging) {
+  box-shadow: var(--_floating-elevation-active);
+  /* Subtle scale-up to confirm the grab */
+  transform-origin: top left;
+  cursor: grabbing;
+}
+
+/* Cancel the body's text selection while a drag is active. We can't
+   reach `body` from a shadow root, but `user-select: none` on the
+   host + drag-bar prevents the panel itself from picking up text. */
+:host(.md-accordion--floating-dragging) ::slotted(*) {
+  user-select: none;
+}
+
+/* When floating, the outer chassis already provides the surface —
+   filled items go flush so the panel reads as one card. We also
+   flatten the expanded shape so the secondary-container highlight
+   doesn't poke out past the chassis's rounded corners. */
+:host(.md-accordion--floating.md-accordion--filled) ::slotted(md-accordion-item) {
+  margin-block-end: 0;
+  --md-accordion-item-container-shape: 0;
+  --md-accordion-item-container-shape-expanded: 0;
+  --md-accordion-item-container-color: transparent;
+  --md-accordion-item-elevation: none;
+  --md-accordion-item-elevation-expanded: none;
+}
+
+/* Outlined floating: the chassis already supplies the bounding
+   surface and shadow — drop the inner outline so we keep one clean
+   silhouette. */
+:host(.md-accordion--floating.md-accordion--outlined) {
+  border: none;
+}
+
+/* ── A11y: respect reduced motion ─────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  :host(.md-accordion--floating) {
+    transition: none;
+  }
+}
+
+/* ── A11y: forced-colors mode (Windows High Contrast) ─────── */
+@media (forced-colors: active) {
+  :host(.md-accordion--floating) {
+    border: 1px solid CanvasText;
+  }
+}

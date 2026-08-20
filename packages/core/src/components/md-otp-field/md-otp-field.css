@@ -1,0 +1,264 @@
+/* ==========================================================
+   md-otp-field — Material Design 3 one-time-code field
+   Derived from the outlined text-field treatment:
+   https://m3.material.io/components/text-fields/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-otp-field-cell-width     Cell inline size (48px, tapers with density, 32px floor)
+     --md-otp-field-cell-height    Cell block size (56px, tapers with density, 40px floor)
+     --md-otp-field-cell-gap       Gap between cells (spacing-gap-sm token)
+     --md-otp-field-cell-shape     Cell corner radius (shape-corner-small)
+     --md-otp-field-outline-color  Resting cell border colour
+     --md-otp-field-focus-color    Focused cell border + caret colour
+     --md-otp-field-font-size      Cell glyph size (24px, tapers with density, 16px floor)
+
+   SLOTS:
+     separator  Custom separator content between cell groups (falls back to a
+                dot; fills the FIRST gap — later gaps repeat the dot)
+
+   CSS PARTS:
+     cells            The cell row (role="group" container)
+     cell             Every character input
+     separator        Each group separator wrapper
+     supporting-text  Supporting / error text line
+
+   RTL:
+     The component (supporting text, layout) follows the document direction
+     via logical properties. The CELL ROW is deliberately pinned LTR — codes
+     read left-to-right in RTL locales too (standard practice; also set as
+     dir="ltr" in the markup). Arrow keys are therefore physical AND logical
+     at once inside the row.
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST — public → internal var mapping
+   ========================================================== */
+:host {
+  /* Three-layer override chain: per-instance public hook → system token →
+     literal fallback. */
+  --_cell-width: var(--md-otp-field-cell-width, max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px)));
+  --_cell-height: var(--md-otp-field-cell-height, max(40px, calc(56px + var(--md-sys-density-scale, 0) * 4px)));
+  --_cell-gap: var(--md-otp-field-cell-gap, var(--md-sys-spacing-gap-sm, 8px));
+  --_cell-shape: var(--md-otp-field-cell-shape, var(--md-sys-shape-corner-small, 8px));
+  --_outline-color: var(--md-otp-field-outline-color, var(--md-sys-color-outline, #79747E));
+  --_focus-color: var(--md-otp-field-focus-color, var(--md-sys-color-primary, #6750A4));
+  /* Headline-small-ish glyphs, 1px/rung taper with a 16px floor. */
+  --_font-size: var(--md-otp-field-font-size, max(16px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
+  --_error-color: var(--md-sys-color-error, #B3261E);
+  --_text-color: var(--md-sys-color-on-surface, #1C1B1F);
+  --_support-color: var(--md-sys-color-on-surface-variant, #49454F);
+
+  display: inline-flex;
+  flex-direction: column;
+  font-family: var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif);
+  box-sizing: border-box;
+}
+
+/* ==========================================================
+   2. CELL ROW
+   ========================================================== */
+.md-otp-field__cells {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--_cell-gap);
+
+  /* Codes read left-to-right in RTL locales too — pinning the row LTR is the
+     standard OTP practice (the markup also carries dir="ltr" so the contract
+     holds even without this stylesheet). The rest of the component follows
+     the document direction via logical properties. */
+  direction: ltr;
+}
+
+/* ==========================================================
+   3. CELL — a small outlined field
+   ========================================================== */
+.md-otp-field__cell {
+  box-sizing: border-box;
+  inline-size: var(--_cell-width);
+  block-size: var(--_cell-height);
+  min-inline-size: 0;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--_outline-color);
+  border-radius: var(--_cell-shape);
+  background: transparent;
+  color: var(--_text-color);
+  caret-color: var(--_focus-color);
+  text-align: center;
+  font-family: inherit;
+  font-size: var(--_font-size);
+  font-weight: var(--md-sys-typescale-headline-small-font-weight, 400);
+  line-height: 1;
+  outline: none;
+  transition: border-color var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* Hover affordance mirrors the outlined text field: outline darkens. */
+.md-otp-field__cell:hover:not(:focus):not(:disabled) {
+  border-color: var(--md-sys-color-on-surface, #1C1B1F);
+}
+
+/* Focused cell: 3px primary ring via a per-cell border swap (not a fieldset —
+   each cell is its own outlined box). Colour is IMMEDIATE (transition: none),
+   the md-text-field convention: a mouse-focus sitting on the near-black hover
+   outline must never morph through black ("black ring, then primary"). The
+   border grows inward (box-sizing: border-box), so the row never reflows. */
+.md-otp-field__cell:focus {
+  border-color: var(--_focus-color);
+  border-width: 3px;
+  transition: none;
+}
+
+/* ==========================================================
+   4. ERROR — everything takes the error colour
+   ========================================================== */
+:host(.md-otp-field--error) .md-otp-field__cell {
+  border-color: var(--_error-color);
+  color: var(--_error-color);
+  caret-color: var(--_error-color);
+}
+
+:host(.md-otp-field--error) .md-otp-field__cell:hover:not(:focus):not(:disabled) {
+  border-color: var(--md-sys-color-on-error-container, #8C1D18);
+}
+
+:host(.md-otp-field--error) .md-otp-field__cell:focus {
+  border-color: var(--_error-color);
+  border-width: 3px;
+  transition: none;
+}
+
+/* ==========================================================
+   5. READONLY — resting visuals, no hover invitation
+   ========================================================== */
+:host(.md-otp-field--readonly) .md-otp-field__cell:hover:not(:focus) {
+  border-color: var(--_outline-color);
+}
+
+:host(.md-otp-field--readonly.md-otp-field--error) .md-otp-field__cell:hover:not(:focus) {
+  border-color: var(--_error-color);
+}
+
+/* ==========================================================
+   6. DISABLED
+   ========================================================== */
+:host(.md-otp-field--disabled) {
+  pointer-events: none;
+}
+
+.md-otp-field__cell:disabled {
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
+  color: color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+}
+
+:host(.md-otp-field--disabled) .md-otp-field__support-text {
+  color: color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+}
+
+:host(.md-otp-field--disabled) .md-otp-field__separator-dot {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
+}
+
+/* ==========================================================
+   7. SEPARATOR (grouped layouts)
+   ========================================================== */
+.md-otp-field__separator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--_support-color);
+  min-inline-size: max(8px, calc(12px + var(--md-sys-density-scale, 0) * 1px));
+  user-select: none;
+}
+
+.md-otp-field__separator-dot {
+  inline-size: max(6px, calc(8px + var(--md-sys-density-scale, 0) * 0.5px));
+  block-size: max(6px, calc(8px + var(--md-sys-density-scale, 0) * 0.5px));
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  background: var(--_outline-color);
+}
+
+/* ==========================================================
+   8. SUPPORTING / ERROR TEXT
+   ========================================================== */
+.md-otp-field__support-row {
+  padding-block-start: 4px;
+  padding-inline: 4px;
+}
+
+.md-otp-field__support-text {
+  /* body-small (12/16) — the library's 0.5px/rung rate for sub-22px type. */
+  font-size: max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px));
+  line-height: max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  color: var(--_support-color);
+}
+
+.md-otp-field__support-text--error {
+  color: var(--_error-color);
+}
+
+/* ==========================================================
+   9. DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }
+
+/* ==========================================================
+   10. REDUCED MOTION
+   ========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .md-otp-field__cell {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================
+   11. FORCED COLORS (Windows High Contrast)
+   ========================================================== */
+@media (forced-colors: active) {
+  .md-otp-field__cell {
+    forced-color-adjust: none;
+    border-color: ButtonText;
+    background: Field;
+    color: FieldText;
+    caret-color: FieldText;
+  }
+  .md-otp-field__cell:focus {
+    border-color: Highlight;
+  }
+  .md-otp-field__cell:hover:not(:focus):not(:disabled) {
+    border-color: Highlight;
+  }
+  :host(.md-otp-field--error) .md-otp-field__cell {
+    border-color: LinkText;
+    color: FieldText;
+    caret-color: FieldText;
+  }
+  :host(.md-otp-field--error) .md-otp-field__cell:focus,
+  :host(.md-otp-field--error) .md-otp-field__cell:hover:not(:focus):not(:disabled) {
+    border-color: LinkText;
+  }
+  .md-otp-field__cell:disabled {
+    border-color: GrayText;
+    color: GrayText;
+  }
+  .md-otp-field__support-text {
+    color: CanvasText;
+  }
+  .md-otp-field__support-text--error {
+    color: LinkText;
+  }
+  :host(.md-otp-field--disabled) .md-otp-field__support-text {
+    color: GrayText;
+  }
+  .md-otp-field__separator-dot {
+    background: CanvasText;
+  }
+}

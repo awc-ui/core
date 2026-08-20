@@ -1,0 +1,1 @@
+function r(r,n,t){if(Array.isArray(r))return r;if(typeof r!=="string")return[];const o=r.trim();if(!o)return[];try{const r=JSON.parse(o);if(Array.isArray(r))return r;console.warn(`[${n}] \`${t}\` expects a JSON array, got ${typeof r}. Ignoring.`);return[]}catch{console.warn(`[${n}] \`${t}\` is not valid JSON. Ignoring:`,o);return[]}}export{r as p};

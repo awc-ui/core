@@ -1,0 +1,263 @@
+{
+  "tag": "md-rating",
+  "title": "Rating",
+  "slug": "rating",
+  "category": "Selection",
+  "subComponentOf": null,
+  "storyId": "selection-rating--playground",
+  "props": [
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "number",
+      "default": "0",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "defaultValue",
+      "attribute": "default-value",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "max",
+      "attribute": "max",
+      "type": "number",
+      "default": "5",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "precision",
+      "attribute": "precision",
+      "type": "1 | 0.5",
+      "default": "1",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "size",
+      "attribute": "size",
+      "type": "'xs' | 'sm' | 'md' | 'lg' | 'xl'",
+      "default": "'md'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "readonly",
+      "attribute": "readonly",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "'star'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "emptyIcon",
+      "attribute": "empty-icon",
+      "type": "string",
+      "default": "'star'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "outlineEmpty",
+      "attribute": "outline-empty",
+      "type": "boolean",
+      "default": "true",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "getLabel",
+      "attribute": "",
+      "type": "(value: number) => string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "showValueLabel",
+      "attribute": "show-value-label",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "ratingLabel",
+      "attribute": "rating-label",
+      "type": "string",
+      "default": "'Rating'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "name",
+      "attribute": "name",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "hover",
+      "attribute": "hover",
+      "type": "'preview' | 'off'",
+      "default": "'preview'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdHover",
+      "detail": "number | null"
+    },
+    {
+      "name": "mdChange",
+      "detail": "number"
+    }
+  ],
+  "methods": [
+    {
+      "name": "focusRating",
+      "params": ""
+    }
+  ],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "icon-empty",
+      "description": "The background (outline) icon"
+    },
+    {
+      "name": "icon-filled",
+      "description": "The clipped foreground (filled) icon"
+    },
+    {
+      "name": "state-layer",
+      "description": "Hover / press overlay — a filled glyph tracing the icon shape"
+    },
+    {
+      "name": "ripple",
+      "description": "Press ripple — a glyph-clipped expanding circle"
+    },
+    {
+      "name": "items",
+      "description": "The slider container"
+    },
+    {
+      "name": "value-label",
+      "description": "The inline numeric value label"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-rating-item-size",
+      "description": "Icon dimension (per `size`)"
+    },
+    {
+      "name": "--md-rating-item-gap",
+      "description": "Space between items"
+    },
+    {
+      "name": "--md-rating-active-color",
+      "description": "Filled icon color"
+    },
+    {
+      "name": "--md-rating-inactive-color",
+      "description": "Empty icon color"
+    },
+    {
+      "name": "--md-rating-focus-ring-color",
+      "description": "Focus ring color"
+    },
+    {
+      "name": "--md-rating-focus-ring-width",
+      "description": "Focus ring width"
+    },
+    {
+      "name": "--md-rating-focus-ring-offset",
+      "description": "Focus ring offset"
+    },
+    {
+      "name": "--md-rating-state-layer-color",
+      "description": "Hover / press overlay color"
+    },
+    {
+      "name": "--md-rating-value-label-color",
+      "description": "Color of the inline value label"
+    },
+    {
+      "name": "--md-rating-value-label-font",
+      "description": "Font of the value label"
+    },
+    {
+      "name": "--md-rating-pop-scale",
+      "description": "Scale on hover/active (MD3 Expressive)"
+    },
+    {
+      "name": "--md-rating-duration",
+      "description": "Animation duration"
+    },
+    {
+      "name": "--md-rating-icon-font-family",
+      "description": ""
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [
+    {
+      "name": "getLabel",
+      "kind": "callable",
+      "body": "(value: number) => string"
+    }
+  ],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdHover",
+      "detail": "number | null"
+    },
+    {
+      "name": "mdChange",
+      "detail": "number"
+    }
+  ]
+}

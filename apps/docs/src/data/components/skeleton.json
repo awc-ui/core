@@ -1,0 +1,150 @@
+{
+  "tag": "md-skeleton",
+  "title": "Skeleton",
+  "slug": "skeleton",
+  "category": "Communication",
+  "subComponentOf": null,
+  "storyId": "communication-skeleton--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'text' | 'rectangular' | 'rounded' | 'circular'",
+      "default": "'text'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "animation",
+      "attribute": "animation",
+      "type": "'pulse' | 'wave' | 'none'",
+      "default": "'pulse'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "lines",
+      "attribute": "lines",
+      "type": "number",
+      "default": "1",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "width",
+      "attribute": "width",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "height",
+      "attribute": "height",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "fullWidth",
+      "attribute": "full-width",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "fullHeight",
+      "attribute": "full-height",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "ariaLabelProp",
+      "attribute": "aria-label",
+      "type": "string",
+      "default": "'Loading'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "announce",
+      "attribute": "announce",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [],
+  "methods": [],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "shape",
+      "description": "The rectangular / rounded / circular block."
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-skeleton-color",
+      "description": "Base placeholder colour"
+    },
+    {
+      "name": "--md-skeleton-highlight",
+      "description": "Wave-shimmer highlight colour"
+    },
+    {
+      "name": "--md-skeleton-radius",
+      "description": "Border-radius for rectangular variant"
+    },
+    {
+      "name": "--md-skeleton-rounded-radius",
+      "description": "Radius for `variant=\"rounded\"`"
+    },
+    {
+      "name": "--md-skeleton-width",
+      "description": "Default inline-size (text/rect)"
+    },
+    {
+      "name": "--md-skeleton-height",
+      "description": "Default block-size (text/rect)"
+    },
+    {
+      "name": "--md-skeleton-size",
+      "description": "Default size for circular variant"
+    },
+    {
+      "name": "--md-skeleton-line-gap",
+      "description": "Gap between text rows (lines > 1)"
+    },
+    {
+      "name": "--md-skeleton-pulse-duration",
+      "description": "Pulse animation duration"
+    },
+    {
+      "name": "--md-skeleton-wave-duration",
+      "description": "Wave animation duration"
+    },
+    {
+      "name": "--md-skeleton-bloom-duration",
+      "description": "Initial mount \"bloom\" duration"
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": []
+}

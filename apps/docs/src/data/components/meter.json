@@ -1,0 +1,182 @@
+{
+  "tag": "md-meter",
+  "title": "Meter",
+  "slug": "meter",
+  "category": "Communication",
+  "subComponentOf": null,
+  "storyId": "communication-meter--playground",
+  "props": [
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "min",
+      "attribute": "min",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "max",
+      "attribute": "max",
+      "type": "number",
+      "default": "100",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "showLabel",
+      "attribute": "show-label",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "showValue",
+      "attribute": "show-value",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "valueText",
+      "attribute": "value-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "locale",
+      "attribute": "locale",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "formatOptions",
+      "attribute": "",
+      "type": "Intl.NumberFormatOptions",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "color",
+      "attribute": "color",
+      "type": "| 'primary' | 'secondary' | 'tertiary' | 'error' | 'success' | 'warning' | 'info' | (string & {})",
+      "default": "'primary'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'linear' | 'circular'",
+      "default": "'linear'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "size",
+      "attribute": "size",
+      "type": "number",
+      "default": "48",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "thickness",
+      "attribute": "thickness",
+      "type": "number",
+      "default": "4",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [],
+  "methods": [],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "circular",
+      "description": "The ring's box (circular variant only)"
+    },
+    {
+      "name": "track",
+      "description": "Background track / ring (the full range)"
+    },
+    {
+      "name": "indicator",
+      "description": "Value fill inside the track / the value arc"
+    },
+    {
+      "name": "value",
+      "description": "Header value text (rendered when `show-value`)"
+    },
+    {
+      "name": "label",
+      "description": "Header label text (rendered when `show-label`)"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-meter-indicator-color",
+      "description": "Fill colour (defaults to the `color` role)"
+    },
+    {
+      "name": "--md-meter-track-color",
+      "description": "Track background (defaults to the role's container)"
+    },
+    {
+      "name": "--md-meter-track-shape",
+      "description": "Track + fill corner radius (default corner-full pill)"
+    },
+    {
+      "name": "--md-meter-height",
+      "description": "Track thickness (overrides the `thickness` prop)"
+    },
+    {
+      "name": "--md-meter-label-color",
+      "description": "Header label text colour"
+    },
+    {
+      "name": "--md-meter-value-color",
+      "description": "Header value text colour"
+    },
+    {
+      "name": "--md-meter-size",
+      "description": "Ring diameter (circular variant)"
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": []
+}

@@ -1,0 +1,115 @@
+{
+  "tag": "md-badge",
+  "title": "Badge",
+  "slug": "badge",
+  "category": "Communication",
+  "subComponentOf": null,
+  "storyId": "communication-badge--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'small' | 'large'",
+      "default": "'large'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "max",
+      "attribute": "max",
+      "type": "number",
+      "default": "999",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [],
+  "methods": [],
+  "slots": [
+    {
+      "name": "icon",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "icon",
+      "description": ""
+    },
+    {
+      "name": "label",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-badge-container-color",
+      "description": ""
+    },
+    {
+      "name": "--md-badge-label-color",
+      "description": ""
+    },
+    {
+      "name": "--md-badge-container-shape",
+      "description": ""
+    },
+    {
+      "name": "--md-badge-icon-color",
+      "description": ""
+    },
+    {
+      "name": "--md-badge-icon-size",
+      "description": ""
+    },
+    {
+      "name": "--md-badge-offset-x",
+      "description": ""
+    },
+    {
+      "name": "--md-badge-offset-y",
+      "description": ""
+    },
+    {
+      "name": "--md-badge-large-height",
+      "description": ""
+    },
+    {
+      "name": "--md-badge-large-padding",
+      "description": ""
+    },
+    {
+      "name": "--md-badge-small-size",
+      "description": ""
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": []
+}

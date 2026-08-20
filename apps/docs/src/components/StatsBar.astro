@@ -1,0 +1,260 @@
+---
+import stats from "../data/stats.json";
+
+// Numbers come from `apps/docs/src/data/stats.json`, generated at build time
+// by `scripts/generate-docs.mjs`. Story 1.3 AC: never hardcode credibility
+// numbers; always source them from build output.
+const items = [
+  {
+    icon: "widgets",
+    tone: "primary",
+    raw: stats.componentCount,
+    suffix: "+",
+    label: "Components",
+  },
+  {
+    // Real code coverage (line %) from the jest unit-test run, parsed from
+    // lcov by generate-docs.mjs — not the old components-with-tests ratio,
+    // which read as code coverage but was not.
+    icon: "verified",
+    tone: "tertiary",
+    raw: stats.unitTestCoveragePercent,
+    suffix: "%",
+    label: "Code coverage",
+  },
+  {
+    // A single size number could not describe this library honestly: components
+    // run 13-68 kB gzipped, so any one figure read as though they were uniform.
+    // Dependency count is one number that is simply true - core declares no
+    // dependencies and no peer dependencies.
+    icon: "package_2",
+    tone: "secondary",
+    raw: 0,
+    label: "Third-party deps",
+  },
+  {
+    icon: "deployed_code",
+    tone: "primary",
+    raw: 5,
+    label: "Technologies",
+  },
+  {
+    icon: "accessibility_new",
+    tone: "tertiary",
+    text: "AA",
+    label: "WCAG 2.1",
+  },
+];
+---
+
+<section class="awc-stats">
+  <div class="awc-stats__inner" data-awc-reveal-stagger>
+    {items.map((item) => (
+      <div class={`awc-stat awc-stat--${item.tone}`} data-awc-stat>
+        <div class="awc-stat__icon" aria-hidden="true">
+          <span class="material-symbols-outlined">{item.icon}</span>
+        </div>
+        <div class="awc-stat__copy">
+          <div
+            class="awc-stat__value"
+            data-awc-count={item.raw ?? ""}
+            data-prefix={item.prefix ?? ""}
+            data-suffix={item.suffix ?? ""}
+          >
+            {item.text ? item.text : `${item.prefix ?? ""}${item.raw?.toLocaleString("en-US") ?? "—"}${item.suffix ?? ""}`}
+          </div>
+          <div class="awc-stat__label">{item.label}</div>
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<script>
+  // Animated count-up when each stat scrolls into view (respects reduced motion).
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const animateCount = (el: HTMLElement, target: number) => {
+    if (reduce) {
+      const prefix = el.dataset.prefix ?? '';
+      const suffix = el.dataset.suffix ?? '';
+      el.textContent = `${prefix}${target.toLocaleString('en-US')}${suffix}`;
+      return;
+    }
+
+    const duration = 900;
+    const startTs = performance.now();
+    const ease = (t: number) => 1 - Math.pow(1 - t, 3); // ease-out cubic
+    const prefix = el.dataset.prefix ?? '';
+    const suffix = el.dataset.suffix ?? '';
+
+    const tick = (now: number) => {
+      const t = Math.min((now - startTs) / duration, 1);
+      const value = Math.round(target * ease(t));
+      el.textContent = `${prefix}${value.toLocaleString('en-US')}${suffix}`;
+      if (t < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+
+  const stats = document.querySelectorAll<HTMLElement>('.awc-stat__value[data-awc-count]');
+  if ('IntersectionObserver' in window) {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const el = entry.target as HTMLElement;
+          const raw = el.dataset.awcCount;
+          obs.unobserve(el);
+          if (!raw) continue;
+          const num = Number(raw);
+          if (!Number.isFinite(num)) continue;
+          animateCount(el, num);
+        }
+      },
+      { threshold: 0.4 },
+    );
+    stats.forEach((s) => obs.observe(s));
+  }
+</script>
+
+<style>
+  .awc-stats {
+    position: relative;
+    background: var(--md-sys-color-surface-container-low);
+    padding-block: clamp(2rem, 5vw, 3.5rem);
+    padding-inline: clamp(1.5rem, 5vw, 4rem);
+  }
+
+  .awc-stats__inner {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+    max-inline-size: 1240px;
+    margin-inline: auto;
+    padding: 0.875rem;
+    background: var(--md-sys-color-surface-container-lowest);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-extra-large, 28px);
+    box-shadow: var(--md-sys-elevation-1);
+  }
+
+  /* Override the global scroll-stagger so stat cards animate on a
+     single horizontal line instead of bobbing in from below. Each
+     card is in the same row, so the default `translateY(20px)`
+     start state visually reads as "first card is up, the rest have
+     a margin-top" until the staggered transition catches up. We
+     keep the staggered fade — only the vertical motion is removed. */
+  .awc-stats__inner > .awc-stat {
+    transform: none !important;
+  }
+
+  .awc-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding-block: 0.875rem;
+    padding-inline: 1rem;
+    /* Guarantees every card matches the others, even if a label happens to
+       wrap to a second line at a narrow width. Without this, cards in
+       different grid rows would have different heights. */
+    min-block-size: 5rem;
+    border-radius: var(--md-sys-shape-corner-large, 16px);
+    background: var(--md-sys-color-surface-container-low);
+    transition:
+      transform var(--awc-dur-default) var(--awc-spring-spatial),
+      background-color var(--awc-dur-default) var(--awc-spring-effects);
+  }
+
+  .awc-stat:hover {
+    transform: translateY(-2px);
+    background: var(--md-sys-color-surface-container);
+  }
+
+  .awc-stat__icon {
+    inline-size: 40px;
+    block-size: 40px;
+    flex-shrink: 0;
+    display: inline-grid;
+    place-items: center;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+  }
+
+  .awc-stat__icon .material-symbols-outlined {
+    font-size: 22px;
+  }
+
+  .awc-stat--primary .awc-stat__icon {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+  }
+  .awc-stat--secondary .awc-stat__icon {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+  .awc-stat--tertiary .awc-stat__icon {
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+  }
+
+  .awc-stat__copy {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+  }
+
+  .awc-stat__value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--md-sys-color-on-surface);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .awc-stat__label {
+    margin-block-start: 0.125rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface-variant);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    /* Keep on one line; ellipsise if a future label is ever too long. */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @media (max-width: 40rem) {
+    .awc-stats__inner {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.5rem;
+      padding: 0.5rem;
+      border-radius: var(--md-sys-shape-corner-large, 16px);
+    }
+
+    .awc-stat {
+      padding-inline: 0.75rem;
+      gap: 0.625rem;
+    }
+
+    .awc-stat__icon {
+      inline-size: 36px;
+      block-size: 36px;
+    }
+
+    .awc-stat__value {
+      font-size: 1.25rem;
+    }
+
+    .awc-stat__label {
+      font-size: 0.6875rem;
+    }
+  }
+
+  @media (max-width: 24rem) {
+    .awc-stats__inner {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

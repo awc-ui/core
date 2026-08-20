@@ -1,0 +1,445 @@
+{
+  "tag": "md-pie-chart",
+  "title": "Pie Chart",
+  "slug": "pie-chart",
+  "category": "Charts",
+  "subComponentOf": null,
+  "storyId": "charts-pie-chart--playground",
+  "props": [
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "titleAlign",
+      "attribute": "title-align",
+      "type": "MdChartTitleAlign",
+      "default": "'start'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "data",
+      "attribute": "",
+      "type": "MdPieDatum[]",
+      "default": "[]",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "innerRadius",
+      "attribute": "inner-radius",
+      "type": "string | number",
+      "default": "'0%'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "outerRadius",
+      "attribute": "outer-radius",
+      "type": "string | number",
+      "default": "'75%'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "startAngle",
+      "attribute": "start-angle",
+      "type": "number",
+      "default": "90",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "endAngle",
+      "attribute": "end-angle",
+      "type": "number",
+      "default": "-270",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "paddingAngle",
+      "attribute": "padding-angle",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "cornerRadius",
+      "attribute": "corner-radius",
+      "type": "number",
+      "default": "4",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "showLabels",
+      "attribute": "show-labels",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelMode",
+      "attribute": "label-mode",
+      "type": "'value' | 'name' | 'both'",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "monochrome",
+      "attribute": "monochrome",
+      "type": "string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "gradient",
+      "attribute": "gradient",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "highlight",
+      "attribute": "highlight",
+      "type": "'slice' | 'series' | 'none'",
+      "default": "'slice'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "legend",
+      "attribute": "legend",
+      "type": "MdChartLegendPosition | 'none'",
+      "default": "'right'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "tooltip",
+      "attribute": "tooltip",
+      "type": "MdChartTooltipTrigger",
+      "default": "'item'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "locale",
+      "attribute": "locale",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "subtitle",
+      "attribute": "subtitle",
+      "type": "string | undefined",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "summary",
+      "attribute": "summary",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "tableLabels",
+      "attribute": "",
+      "type": "{ category?: string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelEmpty",
+      "attribute": "label-empty",
+      "type": "string",
+      "default": "'No data to display'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "loading",
+      "attribute": "loading",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "loadingLabel",
+      "attribute": "loading-label",
+      "type": "string",
+      "default": "'Loading chart…'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelPlot",
+      "attribute": "label-plot",
+      "type": "string",
+      "default": "'Chart data. Use the arrow keys to move between slices, Home and End for the first and last, Escape to leave.'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelPoint",
+      "attribute": "label-point",
+      "type": "string",
+      "default": "'%label%: %value% (%percent%)'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "tooltipRenderer",
+      "attribute": "",
+      "type": "MdChartTooltipRenderer",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "valueFormatter",
+      "attribute": "",
+      "type": "(value: number) => string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "ringWidths",
+      "attribute": "",
+      "type": "number[]",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "heightProp",
+      "attribute": "height",
+      "type": "string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "noAnimation",
+      "attribute": "no-animation",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "animation",
+      "attribute": "animation",
+      "type": "MdChartAnimation",
+      "default": "'expressive'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "animationDuration",
+      "attribute": "animation-duration",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdSliceClick",
+      "detail": "MdChartClickDetail<MdPieDatum>"
+    },
+    {
+      "name": "mdLegendClick",
+      "detail": "{ dataIndex: number; selected: boolean }"
+    },
+    {
+      "name": "mdReady",
+      "detail": "void"
+    }
+  ],
+  "methods": [
+    {
+      "name": "resize",
+      "params": ""
+    },
+    {
+      "name": "replay",
+      "params": ""
+    },
+    {
+      "name": "drill",
+      "params": "index: number, direction: 'down' | 'up' = 'down'"
+    },
+    {
+      "name": "toDataURL",
+      "params": ""
+    },
+    {
+      "name": "getInstance",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "header",
+      "description": "Content for the header row, replacing the default title block"
+    },
+    {
+      "name": "center",
+      "description": "Centred in the donut hole — a KPI number, a label, an icon"
+    },
+    {
+      "name": "empty",
+      "description": "Replaces the empty-state message when there is no data"
+    },
+    {
+      "name": "loader",
+      "description": ""
+    },
+    {
+      "name": "loading",
+      "description": "Replaces the built-in spinner while `loading` is set"
+    },
+    {
+      "name": "footer",
+      "description": "Content for the footer row below the plot"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "header",
+      "description": "Header row above the plot (hosts the `header` slot)"
+    },
+    {
+      "name": "canvas",
+      "description": "The plot surface the chart draws into"
+    },
+    {
+      "name": "center",
+      "description": "Donut centre overlay (hosts the `center` slot)"
+    },
+    {
+      "name": "empty",
+      "description": "Empty-state overlay, shown when there is no data"
+    },
+    {
+      "name": "loading",
+      "description": "Loading overlay, shown while `loading` is set"
+    },
+    {
+      "name": "footer",
+      "description": "Footer row below the plot (hosts the `footer` slot)"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-pie-chart-block-size",
+      "description": "Explicit chart height, overriding the aspect ratio (default: auto)"
+    },
+    {
+      "name": "--md-pie-chart-min-block-size",
+      "description": "Floor the chart height never drops below (density-aware)"
+    },
+    {
+      "name": "--md-pie-chart-aspect-ratio",
+      "description": "Width:height ratio when no block-size is set (default: 1 / 1, i.e. square)"
+    },
+    {
+      "name": "--md-pie-chart-background",
+      "description": "Chart surface fill (default: surface-container-low)"
+    },
+    {
+      "name": "--md-pie-chart-padding",
+      "description": "Inset between the host edge and the plot canvas (density-aware)"
+    },
+    {
+      "name": "--md-pie-chart-shape",
+      "description": "Corner radius of the chart surface (density-aware)"
+    },
+    {
+      "name": "--md-pie-chart-empty-color",
+      "description": "Empty-state text colour (default: on-surface-variant)"
+    },
+    {
+      "name": "--md-pie-chart-empty-background",
+      "description": "Empty-state overlay fill (defaults to the chart background)"
+    },
+    {
+      "name": "--md-pie-chart-empty-font",
+      "description": "Empty-state font family (default: body-medium)"
+    },
+    {
+      "name": "--md-pie-chart-empty-font-size",
+      "description": "Empty-state font size (default: body-medium, 14px)"
+    },
+    {
+      "name": "--md-pie-chart-empty-icon-size",
+      "description": "Size of an icon slotted into the empty state"
+    },
+    {
+      "name": "--md-pie-chart-center-color",
+      "description": "Text colour of the donut centre (the `center` slot)"
+    }
+  ],
+  "dependencies": [
+    "md-progress-indicator"
+  ],
+  "dataTypes": [
+    {
+      "name": "MdPieDatum",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Slice label (used in legend, tooltip, a11y). */\n  label: string;\n  /** Slice value — proportional to the slice's angle. */\n  value: number;\n  /** Slice colour (MD3 role or raw CSS colour). */\n  color?: string;\n  /** Stable identifier (returned in click events). */\n  id?: string;\n  /** Whether this slice is \"selected\" (exploded outward). */\n  selected?: boolean;\n  /**\n   * Hide this slice — it keeps its legend chip (struck through, so it can be\n   * brought back) but contributes nothing to the ring.\n   *\n   * Setting it makes visibility YOURS: the chart otherwise remembers the\n   * reader's own legend toggles across data updates, and an explicit value here\n   * overrides that.\n   */\n  hidden?: boolean;\n  /**\n   * How far this slice reaches, 0..1 of the chart's outer radius — a SECOND\n   * dimension on top of the angle. Population density against land area, say:\n   * the angle is how big a country is, the radius how densely it is populated.\n   *\n   * Omitted means full radius, so a chart where only some slices set it still\n   * makes sense. Values are clamped, and a floor keeps a tiny one visible: a\n   * slice drawn at zero radius is indistinguishable from missing data.\n   */\n  radius?: number;\n  /**\n   * Slices drawn in a ring outside this one, dividing its own arc between them.\n   * Their values are taken in proportion to each other, so they do not have to\n   * add up to the parent's value — a parent whose children fall short is not\n   * silently redrawn smaller than the number it reports.\n   */\n  children?: MdPieDatum[];"
+    }
+  ],
+  "callableProps": [
+    {
+      "name": "valueFormatter",
+      "kind": "callable",
+      "body": "(value: number) => string"
+    }
+  ],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdSliceClick",
+      "detail": "MdChartClickDetail<MdPieDatum>"
+    },
+    {
+      "name": "mdLegendClick",
+      "detail": "{ dataIndex: number; selected: boolean }"
+    },
+    {
+      "name": "mdReady",
+      "detail": "void"
+    }
+  ]
+}

@@ -1,0 +1,268 @@
+---
+// TextFieldFormattersDemo.astro
+//
+// Live showcase of `formatter` + `parser` + `format-on` patterns for
+// `md-text-field`. Formatters and parsers are JS-only — they cannot
+// be expressed as HTML attributes — so the wiring lives in a
+// module-level script at the bottom of this file. Astro emits that
+// as a real ES module that runs after the custom elements have been
+// registered, regardless of whether the page was a fresh load or a
+// View Transition.
+//
+// Six representative real-world cases are shown:
+//   1. Credit card        (format-on=input,  numeric, 4-digit groups)
+//   2. US phone           (format-on=input,  numeric, parens + dash)
+//   3. Date MM/DD/YYYY    (format-on=input,  numeric, slashes)
+//   4. IBAN               (format-on=input,  alphanumeric, 4-char groups)
+//   5. Currency / number  (format-on=blur,   decimal, thousands separators)
+//   6. Hex colour         (format-on=blur,   custom char class, prefix #)
+
+import ComponentDemo from "./ComponentDemo.astro";
+
+// Markup for the live preview pane. `id`s are referenced by the
+// wiring script below.
+const demoHtml = `<div style="display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(220px, 1fr)); max-width: 720px;">
+  <md-text-field
+    id="tf-fmt-card"
+    variant="outlined"
+    label="Credit card"
+    placeholder="1234 5678 9012 3456"
+    restrict="numeric"
+    max-length="16"
+    format-on="input"
+    inputmode="numeric"
+    autocomplete="cc-number"
+  >
+    <span slot="leading-icon" class="material-symbols-outlined">credit_card</span>
+  </md-text-field>
+
+  <md-text-field
+    id="tf-fmt-phone"
+    variant="filled"
+    label="US phone"
+    placeholder="(555) 123-4567"
+    restrict="numeric"
+    max-length="10"
+    format-on="input"
+    inputmode="tel"
+    autocomplete="tel-national"
+  >
+    <span slot="leading-icon" class="material-symbols-outlined">call</span>
+  </md-text-field>
+
+  <md-text-field
+    id="tf-fmt-date"
+    variant="outlined"
+    label="Date (MM/DD/YYYY)"
+    placeholder="MM/DD/YYYY"
+    restrict="numeric"
+    max-length="8"
+    format-on="input"
+    inputmode="numeric"
+  >
+    <span slot="leading-icon" class="material-symbols-outlined">event</span>
+  </md-text-field>
+
+  <md-text-field
+    id="tf-fmt-iban"
+    variant="filled"
+    label="IBAN"
+    placeholder="DE89 3704 0044 0532 0130 00"
+    restrict="alphanumeric"
+    format-on="input"
+    autocomplete="off"
+  >
+    <span slot="leading-icon" class="material-symbols-outlined">account_balance</span>
+  </md-text-field>
+
+  <md-text-field
+    id="tf-fmt-currency"
+    variant="outlined"
+    label="Amount"
+    prefix-text="$"
+    suffix-text="USD"
+    restrict="decimal"
+    format-on="blur"
+    inputmode="decimal"
+    supporting-text="Type 1234567.89 then Tab away"
+  ></md-text-field>
+
+  <md-text-field
+    id="tf-fmt-hex"
+    variant="filled"
+    label="Hex colour"
+    placeholder="6 hex chars"
+    max-length="6"
+    format-on="blur"
+    supporting-text='Type "abc123" then Tab away'
+  >
+    <span slot="leading-icon" class="material-symbols-outlined">palette</span>
+  </md-text-field>
+</div>`;
+
+// Idiomatic copy-paste markup — same six fields without the demo-only
+// IDs, plus a single ES-module script that defines and assigns every
+// formatter / parser pair. Mirrors what a real consumer would write.
+//
+// NOTE: the script tags below are written with the `\x3C` escape for
+// `<` so they render verbatim in the code panel while staying
+// invisible to Vite's naive dev-time dependency scanner (which would
+// otherwise try to parse the escaped template-literal `\`…\`` /
+// `\${…}` syntax inside this string as real JavaScript).
+const codeHtml = `<!-- Six formatter recipes — each demonstrates a different format-on / restrict pairing -->
+<md-text-field id="card"      variant="outlined" label="Credit card"      restrict="numeric"      max-length="16" format-on="input" inputmode="numeric" autocomplete="cc-number"></md-text-field>
+<md-text-field id="phone"     variant="filled"   label="US phone"         restrict="numeric"      max-length="10" format-on="input" inputmode="tel"     autocomplete="tel-national"></md-text-field>
+<md-text-field id="date"      variant="outlined" label="Date (MM/DD/YYYY)" restrict="numeric"     max-length="8"  format-on="input" inputmode="numeric"></md-text-field>
+<md-text-field id="iban"      variant="filled"   label="IBAN"             restrict="alphanumeric" format-on="input"></md-text-field>
+<md-text-field id="amount"    variant="outlined" label="Amount" prefix-text="$" suffix-text="USD" restrict="decimal" format-on="blur" inputmode="decimal"></md-text-field>
+<md-text-field id="hex"       variant="filled"   label="Hex colour"       max-length="6"  format-on="blur"></md-text-field>
+
+\x3Cscript type="module">
+  import '@awc-ui/core/define';
+
+  // 1. Credit card — group every 4 digits.
+  const card = document.getElementById('card');
+  card.formatter = (raw) => raw.replace(/(\\d{4})(?=\\d)/g, '$1 ').trim();
+  card.parser    = (display) => display.replace(/\\s/g, '');
+
+  // 2. US phone — (XXX) XXX-XXXX, progressive as the user types.
+  const phone = document.getElementById('phone');
+  phone.formatter = (raw) => {
+    const d = raw.replace(/\\D/g, '').slice(0, 10);
+    if (d.length <= 3) return d;
+    if (d.length <= 6) return \`(\${d.slice(0, 3)}) \${d.slice(3)}\`;
+    return \`(\${d.slice(0, 3)}) \${d.slice(3, 6)}-\${d.slice(6)}\`;
+  };
+  phone.parser = (display) => display.replace(/\\D/g, '');
+
+  // 3. Date MM/DD/YYYY.
+  const date = document.getElementById('date');
+  date.formatter = (raw) => {
+    const d = raw.replace(/\\D/g, '').slice(0, 8);
+    if (d.length <= 2) return d;
+    if (d.length <= 4) return \`\${d.slice(0, 2)}/\${d.slice(2)}\`;
+    return \`\${d.slice(0, 2)}/\${d.slice(2, 4)}/\${d.slice(4)}\`;
+  };
+  date.parser = (display) => display.replace(/\\D/g, '');
+
+  // 4. IBAN — uppercase + 4-character groups.
+  const iban = document.getElementById('iban');
+  iban.formatter = (raw) => raw.toUpperCase().replace(/(.{4})(?=.)/g, '$1 ').trim();
+  iban.parser    = (display) => display.replace(/\\s/g, '').toUpperCase();
+
+  // 5. Currency — show raw value while focused, comma-grouped on blur.
+  const amount = document.getElementById('amount');
+  amount.formatter = (raw) => {
+    if (raw === '' || raw === '-' || raw === '.') return raw;
+    const n = Number(raw);
+    if (Number.isNaN(n)) return raw;
+    return n.toLocaleString('en-US', { maximumFractionDigits: 2 });
+  };
+  amount.parser = (display) => display.replace(/[^0-9.-]/g, '');
+
+  // 6. Hex colour — strip / re-prepend the leading "#" so the
+  // raw value stays clean for downstream consumers.
+  const hex = document.getElementById('hex');
+  hex.formatter = (raw) => (raw ? \`#\${raw}\` : '');
+  hex.parser    = (display) => display.replace(/^#/, '');
+\x3C/script>`;
+---
+
+<ComponentDemo
+  label="Six formatter recipes — try typing in each field"
+  html={demoHtml}
+  htmlForCode={codeHtml}
+  storyId="components-textfield--playground"
+/>
+
+<script>
+  // A formatter takes the post-parser raw value and returns what the
+  // user actually sees in the field; a parser is the inverse, used to
+  // strip formatting separators back out so `value` stays clean.
+  type TextFieldEl = HTMLElement & {
+    formatter?: (value: string) => string;
+    parser?: (displayValue: string) => string;
+  };
+
+  function $(id: string): TextFieldEl | null {
+    return document.getElementById(id) as TextFieldEl | null;
+  }
+
+  function wireFormatters(): void {
+    const card = $("tf-fmt-card");
+    const phone = $("tf-fmt-phone");
+    const date = $("tf-fmt-date");
+    const iban = $("tf-fmt-iban");
+    const amount = $("tf-fmt-currency");
+    const hex = $("tf-fmt-hex");
+
+    // 1. Credit card — group every 4 digits.
+    if (card && card.dataset.demoWired !== "true") {
+      card.dataset.demoWired = "true";
+      card.formatter = (raw: string) =>
+        raw.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+      card.parser = (display: string) => display.replace(/\s/g, "");
+    }
+
+    // 2. US phone — progressive (XXX) XXX-XXXX.
+    if (phone && phone.dataset.demoWired !== "true") {
+      phone.dataset.demoWired = "true";
+      phone.formatter = (raw: string) => {
+        const d = raw.replace(/\D/g, "").slice(0, 10);
+        if (d.length <= 3) return d;
+        if (d.length <= 6) return `(${d.slice(0, 3)}) ${d.slice(3)}`;
+        return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
+      };
+      phone.parser = (display: string) => display.replace(/\D/g, "");
+    }
+
+    // 3. Date MM/DD/YYYY.
+    if (date && date.dataset.demoWired !== "true") {
+      date.dataset.demoWired = "true";
+      date.formatter = (raw: string) => {
+        const d = raw.replace(/\D/g, "").slice(0, 8);
+        if (d.length <= 2) return d;
+        if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`;
+        return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
+      };
+      date.parser = (display: string) => display.replace(/\D/g, "");
+    }
+
+    // 4. IBAN — uppercase + 4-char groups.
+    if (iban && iban.dataset.demoWired !== "true") {
+      iban.dataset.demoWired = "true";
+      iban.formatter = (raw: string) =>
+        raw.toUpperCase().replace(/(.{4})(?=.)/g, "$1 ").trim();
+      iban.parser = (display: string) =>
+        display.replace(/\s/g, "").toUpperCase();
+    }
+
+    // 5. Currency — Intl.NumberFormat on blur, raw while focused.
+    if (amount && amount.dataset.demoWired !== "true") {
+      amount.dataset.demoWired = "true";
+      amount.formatter = (raw: string) => {
+        if (raw === "" || raw === "-" || raw === ".") return raw;
+        const n = Number(raw);
+        if (Number.isNaN(n)) return raw;
+        return n.toLocaleString("en-US", { maximumFractionDigits: 2 });
+      };
+      amount.parser = (display: string) => display.replace(/[^0-9.-]/g, "");
+    }
+
+    // 6. Hex colour — round-trip the leading "#".
+    if (hex && hex.dataset.demoWired !== "true") {
+      hex.dataset.demoWired = "true";
+      hex.formatter = (raw: string) => (raw ? `#${raw}` : "");
+      hex.parser = (display: string) => display.replace(/^#/, "");
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", wireFormatters, {
+      once: true,
+    });
+  } else {
+    wireFormatters();
+  }
+  document.addEventListener("astro:page-load", wireFormatters);
+</script>

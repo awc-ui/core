@@ -1,0 +1,545 @@
+---
+import stats from "../data/stats.json";
+
+// Story 1.4 AC: the waitlist CTA is currently a mailto stopgap; once the
+// Lemon Squeezy interest form ships in Epic 5, swap WAITLIST_URL.
+const WAITLIST_URL =
+  "mailto:waitlist@awcui.io?subject=AWC%20UI%20Pro%20%E2%80%94%20Waitlist&body=Please%20notify%20me%20when%20Awc%20UI%20Pro%20is%20available.%0A%0AInterested%20in%3A%20%5Bdata%20grid%20%2F%20advanced%20charts%20%2F%20export%20%2F%20other%5D";
+
+const proFeatures = [
+  {
+    icon: "table_view",
+    title: "Data Grid",
+    text: "Virtualized rows, server-side sorting, cell editing, multi-column filters, row grouping.",
+  },
+  {
+    icon: "stacked_line_chart",
+    title: "Advanced charts",
+    text: "Heatmap, treemap, candlestick, radar, multi-axis combo, and real-time streams. Brushing, zoom, drilldown, annotations — themed with the same MD3 tokens.",
+  },
+  {
+    icon: "ios_share",
+    title: "Export & Reporting",
+    text: "Print stylesheets, PDF export, CSV/Excel for grids, and a print-preview shell component.",
+  },
+  {
+    icon: "schedule",
+    title: "Calendar & Scheduling",
+    text: "Month, week, and day views with event drag-and-drop and recurring events.",
+  },
+];
+---
+
+<section class="awc-pro" id="pro-tier">
+  <div class="awc-pro__inner">
+    <div class="awc-pro__header" data-awc-reveal>
+      <span class="awc-pro__eyebrow">
+        <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
+        Coming soon &middot; AWC&nbsp;UI&nbsp;Pro
+      </span>
+      <h2 class="awc-pro__title">
+        Core is free and open source.<br/>
+        <span class="awc-pro__title-accent">Pro will extend it.</span>
+      </h2>
+      <p class="awc-pro__lede">
+        AWC&nbsp;UI Core covers the complete Material&nbsp;Design&nbsp;3 component
+        set under the MIT license. Pro will add the large application pieces
+        &mdash; data grid, advanced charts, scheduling, and export &mdash; for
+        teams that need them.
+      </p>
+    </div>
+
+    <div class="awc-pro__grid" data-awc-reveal-stagger>
+      <article class="awc-pro__plan awc-pro__plan--free">
+        <div class="awc-pro__plan-head">
+          <div class="awc-pro__plan-icon awc-pro__plan-icon--free" aria-hidden="true">
+            <span class="material-symbols-outlined">star</span>
+          </div>
+          <div>
+            <span class="awc-pro__plan-label">Free &middot; Open source</span>
+            <h3 class="awc-pro__plan-name">AWC UI Core</h3>
+          </div>
+        </div>
+
+        <p class="awc-pro__plan-price">
+          <span class="awc-pro__plan-amount">$0</span>
+          <span class="awc-pro__plan-suffix">forever &middot; MIT licensed</span>
+        </p>
+
+        <ul class="awc-pro__features">
+          <li>
+            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+            <span>{stats.componentCount} Material&nbsp;Design&nbsp;3 components</span>
+          </li>
+          <li>
+            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+            <span>Technology wrappers for React, Angular, Vue, Svelte</span>
+          </li>
+          <li>
+            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+            <span>300+ design tokens, {stats.cssCustomPropsCount} CSS theming properties, light &amp; dark, full RTL</span>
+          </li>
+          <li>
+            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+            <span>WCAG&nbsp;2.1&nbsp;AA &middot; {stats.unitTestCaseCount.toLocaleString()} unit tests</span>
+          </li>
+          <li>
+            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+            <span>Essential charts: line, bar, area, pie &amp; sparkline</span>
+          </li>
+          <li>
+            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+            <span>Self-host docs, theme generator, full source on GitHub</span>
+          </li>
+        </ul>
+
+        <a href="/getting-started/installation/" class="awc-pro__btn awc-pro__btn--ghost">
+          <span class="material-symbols-outlined" aria-hidden="true">terminal</span>
+          Install free
+        </a>
+        <p class="awc-pro__plan-note">
+          No sign-up required &mdash; <code>npm i @awc-ui/core</code> is the whole setup.
+        </p>
+      </article>
+
+      <article class="awc-pro__plan awc-pro__plan--pro">
+        <div class="awc-pro__plan-shape" aria-hidden="true"></div>
+
+        <div class="awc-pro__plan-badge" aria-hidden="true">
+          <span class="material-symbols-outlined">workspace_premium</span>
+          Coming soon
+        </div>
+
+        <div class="awc-pro__plan-head">
+          <div class="awc-pro__plan-icon awc-pro__plan-icon--pro" aria-hidden="true">
+            <span class="material-symbols-outlined">workspace_premium</span>
+          </div>
+          <div>
+            <span class="awc-pro__plan-label awc-pro__plan-label--pro">AWC UI Pro</span>
+            <h3 class="awc-pro__plan-name">Power components</h3>
+          </div>
+        </div>
+
+        <p class="awc-pro__plan-price">
+          <span class="awc-pro__plan-amount">TBD</span>
+          <span class="awc-pro__plan-suffix">pricing details soon &middot; npm&nbsp;Org delivery</span>
+        </p>
+
+        <ul class="awc-pro__features awc-pro__features--pro">
+          {proFeatures.map((f) => (
+            <li>
+              <span class="awc-pro__feature-icon" aria-hidden="true">
+                <span class="material-symbols-outlined">{f.icon}</span>
+              </span>
+              <span class="awc-pro__feature-copy">
+                <strong>{f.title}</strong>
+                <span class="awc-pro__feature-text">{f.text}</span>
+              </span>
+            </li>
+          ))}
+          <li>
+            <span class="awc-pro__feature-icon" aria-hidden="true">
+              <span class="material-symbols-outlined">support_agent</span>
+            </span>
+            <span class="awc-pro__feature-copy">
+              <strong>Priority support</strong>
+              <span class="awc-pro__feature-text">Direct maintainer support with prioritized issue handling.</span>
+            </span>
+          </li>
+        </ul>
+
+        <a href={WAITLIST_URL} class="awc-pro__btn awc-pro__btn--filled" data-waitlist-cta>
+          <span class="material-symbols-outlined" aria-hidden="true">mark_email_read</span>
+          Join the waitlist
+        </a>
+        <p class="awc-pro__plan-note">
+          We&rsquo;ll email you when Pro launches. No spam, unsubscribe with one click.
+        </p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<style>
+  .awc-pro {
+    background: var(--md-sys-color-surface-container-low);
+    padding-block: clamp(4rem, 8vw, 7rem);
+    padding-inline: clamp(1.5rem, 5vw, 4rem);
+  }
+
+  .awc-pro__inner {
+    max-inline-size: 1240px;
+    margin-inline: auto;
+  }
+
+  .awc-pro__header {
+    text-align: center;
+    max-inline-size: 720px;
+    margin-inline: auto;
+    margin-block-end: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .awc-pro__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    padding-block: 0.3125rem;
+    padding-inline: 0.75rem 0.875rem;
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-block-end: 1.25rem;
+  }
+
+  .awc-pro__eyebrow .material-symbols-outlined {
+    font-size: 16px;
+  }
+
+  .awc-pro__title {
+    font-size: clamp(1.875rem, 4vw, 2.875rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 1rem;
+    text-wrap: balance;
+  }
+
+  .awc-pro__title-accent {
+    background: linear-gradient(
+      105deg,
+      var(--md-sys-color-tertiary),
+      var(--md-sys-color-primary)
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .awc-pro__lede {
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--md-sys-color-on-surface-variant);
+    text-wrap: pretty;
+  }
+
+  /* Plans grid */
+  .awc-pro__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Make height parity explicit — don't rely on default align-self stretch
+       being honoured downstream by Starlight resets. */
+    grid-auto-rows: 1fr;
+    align-items: stretch;
+    gap: 1.5rem;
+  }
+
+  .awc-pro__plan {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    block-size: 100%;
+    padding: 2rem;
+    border-radius: var(--md-sys-shape-corner-extra-large, 28px);
+    background: var(--md-sys-color-surface-container-lowest);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    transition:
+      transform var(--md-sys-motion-duration-medium2, 300ms) var(--awc-spring-spatial),
+      box-shadow var(--md-sys-motion-duration-medium2, 300ms) var(--awc-spring-effects);
+  }
+
+  .awc-pro__plan:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--md-sys-elevation-3);
+  }
+
+  .awc-pro__plan--pro {
+    background: linear-gradient(
+      155deg,
+      var(--md-sys-color-surface-container-lowest) 30%,
+      color-mix(in srgb, var(--md-sys-color-tertiary-container) 65%, transparent) 100%
+    );
+    border-color: color-mix(in srgb, var(--md-sys-color-tertiary) 40%, transparent);
+  }
+
+  .awc-pro__plan-shape {
+    position: absolute;
+    inset-block-end: -30%;
+    inset-inline-end: -30%;
+    inline-size: 70%;
+    block-size: 70%;
+    background: var(--md-sys-color-tertiary-container);
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.55;
+    z-index: -1;
+  }
+
+  /* Plan head */
+  .awc-pro__plan-head {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    margin-block-end: 1.25rem;
+  }
+
+  /* Reserve room on the trailing edge so the absolute "Coming soon" badge
+     never collides with a long plan name. Free plan has no badge so the
+     padding only applies to the pro plan. */
+  .awc-pro__plan--pro .awc-pro__plan-head {
+    padding-inline-end: 8rem;
+  }
+
+  @media (max-width: 40rem) {
+    .awc-pro__plan--pro .awc-pro__plan-head {
+      padding-inline-end: 6.5rem;
+    }
+  }
+
+  .awc-pro__plan-icon {
+    inline-size: 48px;
+    block-size: 48px;
+    flex-shrink: 0;
+    display: inline-grid;
+    place-items: center;
+    border-radius: var(--md-sys-shape-corner-large, 16px);
+    box-shadow: var(--md-sys-elevation-1);
+  }
+
+  .awc-pro__plan-icon .material-symbols-outlined {
+    font-size: 26px;
+  }
+
+  .awc-pro__plan-icon--free {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+  }
+
+  .awc-pro__plan-icon--pro {
+    background: var(--md-sys-color-tertiary);
+    color: var(--md-sys-color-on-tertiary);
+  }
+
+  .awc-pro__plan-label {
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-block-end: 0.125rem;
+  }
+
+  .awc-pro__plan-label--pro {
+    color: var(--md-sys-color-tertiary);
+  }
+
+  .awc-pro__plan-name {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .awc-pro__plan-badge {
+    position: absolute;
+    inset-block-start: 1.25rem;
+    inset-inline-end: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3125rem;
+    padding-block: 0.25rem;
+    padding-inline: 0.625rem 0.75rem;
+    background: var(--md-sys-color-tertiary);
+    color: var(--md-sys-color-on-tertiary);
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    box-shadow: var(--md-sys-elevation-1);
+  }
+
+  .awc-pro__plan-badge .material-symbols-outlined {
+    font-size: 14px;
+  }
+
+  /* Price */
+  .awc-pro__plan-price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.625rem;
+    margin: 0 0 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .awc-pro__plan-amount {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--md-sys-color-on-surface);
+    letter-spacing: -0.025em;
+    line-height: 1;
+  }
+
+  .awc-pro__plan-suffix {
+    font-size: 0.8125rem;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  /* Features list */
+  .awc-pro__features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    flex: 1;
+  }
+
+  .awc-pro__features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .awc-pro__features > li > .material-symbols-outlined {
+    flex-shrink: 0;
+    font-size: 20px;
+    color: var(--md-sys-color-tertiary);
+    margin-block-start: 0.0625rem;
+  }
+
+  .awc-pro__features--pro li {
+    align-items: center;
+    gap: 0.875rem;
+  }
+
+  .awc-pro__feature-icon {
+    flex-shrink: 0;
+    inline-size: 36px;
+    block-size: 36px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: var(--md-sys-shape-corner-medium, 12px);
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+  }
+
+  .awc-pro__feature-icon .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  .awc-pro__feature-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  .awc-pro__feature-copy strong {
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .awc-pro__feature-text {
+    font-size: 0.8125rem;
+    color: var(--md-sys-color-on-surface-variant);
+    line-height: 1.4;
+  }
+
+  /* Buttons */
+  .awc-pro__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    inline-size: 100%;
+    block-size: 48px;
+    padding-inline: 1.5rem;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    transition:
+      transform var(--md-sys-motion-duration-medium2, 300ms) var(--awc-spring-spatial),
+      box-shadow var(--md-sys-motion-duration-short4, 200ms) var(--awc-spring-effects),
+      background var(--md-sys-motion-duration-short4, 200ms) var(--awc-spring-effects);
+  }
+
+  .awc-pro__btn .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  .awc-pro__btn--filled {
+    background: var(--md-sys-color-tertiary);
+    color: var(--md-sys-color-on-tertiary);
+    box-shadow: var(--md-sys-elevation-1);
+  }
+
+  .awc-pro__btn--filled:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--md-sys-elevation-3);
+    color: var(--md-sys-color-on-tertiary);
+    text-decoration: none;
+  }
+
+  .awc-pro__btn--ghost {
+    background: transparent;
+    color: var(--md-sys-color-primary);
+    border: 1px solid var(--md-sys-color-outline);
+  }
+
+  .awc-pro__btn--ghost:hover {
+    background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
+    border-color: var(--md-sys-color-primary);
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .awc-pro__plan-note {
+    margin: 0.875rem 0 0;
+    font-size: 0.75rem;
+    color: var(--md-sys-color-on-surface-variant);
+    text-align: center;
+  }
+
+  @media (max-width: 64rem) {
+    .awc-pro__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .awc-pro {
+      padding-inline: 1rem;
+    }
+
+    .awc-pro__plan {
+      padding: 1.5rem;
+    }
+
+    .awc-pro__plan-amount {
+      font-size: 2rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .awc-pro__plan,
+    .awc-pro__btn {
+      transition: none !important;
+      transform: none !important;
+    }
+  }
+</style>

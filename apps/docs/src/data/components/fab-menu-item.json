@@ -1,0 +1,123 @@
+{
+  "tag": "md-fab-menu-item",
+  "title": "FAB Menu Item",
+  "slug": "fab-menu-item",
+  "category": "Actions",
+  "subComponentOf": "md-fab-menu",
+  "storyId": null,
+  "props": [
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "rovingFocusVisible",
+      "attribute": "roving-focus-visible",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdClick",
+      "detail": "void"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "icon",
+      "description": "Custom leading icon (replaces icon prop)"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": "State-layer overlay"
+    },
+    {
+      "name": "icon",
+      "description": "Leading icon (fallback)"
+    },
+    {
+      "name": "label",
+      "description": "Label text wrapper"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-fab-menu-item-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-fab-menu-item-label-color",
+      "description": "Label + icon color"
+    },
+    {
+      "name": "--md-fab-menu-item-icon-color",
+      "description": "Icon color override"
+    },
+    {
+      "name": "--md-fab-menu-item-icon-size",
+      "description": "Icon dimensions"
+    },
+    {
+      "name": "--md-fab-menu-item-container-shape",
+      "description": "Border-radius override"
+    }
+  ],
+  "dependencies": [
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdClick",
+      "detail": "void"
+    }
+  ]
+}

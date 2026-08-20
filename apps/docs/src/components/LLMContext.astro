@@ -1,0 +1,768 @@
+---
+/*
+ * LLMContext.astro — the per-component AI/LLM context block at the
+ * bottom of every component docs page.
+ *
+ * Surfaces THREE things side-by-side:
+ *
+ *   1. The component's own readme.md, read straight from
+ *      packages/core/src/components/<tag>/readme.md — the single
+ *      hand-written source (when-to-use, do/don't, anti-patterns,
+ *      full API, accessibility contract).
+ *
+ *   2. A "Copy markdown" button for that slice (drop into your AI
+ *      agent's context for prop-level questions about THIS
+ *      component).
+ *
+ *   3. A pointer to the main-llm spec at /llm/ (drop into the agent's
+ *      system prompt at sprint start for protocol + decision matrix
+ *      + page recipes).
+ *
+ * Why two artefacts? The readme is rich but scoped — it does not tell
+ * the agent how to PICK the component in the first place. The main-llm
+ * spec is short and carries the decision matrix + protocol that makes
+ * pick-time correct.
+ *
+ */
+
+// The generated main-llm spec, so its card can open the same fullscreen view the
+// per-component card has instead of only linking away to /llm/.
+// @ts-ignore — Vite resolves ?raw at build time.
+import mainLlmRaw from "../../../../main-llm.md?raw";
+
+// The readmes themselves, so the fullscreen view can show the canonical
+// hand-written doc rather than a second rendering of the manifest slice.
+// Eager because the value is needed during SSR of every component page.
+// @ts-ignore — Vite resolves ?raw at build time.
+const readmeSources = import.meta.glob(
+  "../../../../packages/core/src/components/*/readme.md",
+  { query: "?raw", import: "default", eager: true },
+) as Record<string, string>;
+
+interface Props {
+  /** Component tag (e.g. "md-button"). Used to locate `### md-button` in the manifest. */
+  tag: string;
+}
+
+const { tag } = Astro.props;
+/* The readme route is keyed by tag-minus-`md-`, matching the docs pages. */
+const readmeHref = `/components/${tag.replace(/^md-/, "")}/readme.md`;
+const readmeKey = Object.keys(readmeSources).find((k) => k.includes(`/${tag}/readme.md`));
+const readmeText = readmeKey ? readmeSources[readmeKey] : "";
+/* The component's own readme.md is the single source for this block — the
+   fullscreen view and the copy button hand out the identical text. */
+const dialogText = readmeText;
+
+const hasSection = readmeText.length > 0;
+---
+
+{
+  hasSection && (
+    <section class="llm-context" aria-labelledby={`llm-${tag}-heading`}>
+      <header class="llm-context__header">
+        <h3 id={`llm-${tag}-heading`} class="llm-context__heading">
+          <svg
+            class="llm-context__icon"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 8V4H8" />
+            <rect width="16" height="12" x="4" y="8" rx="2" />
+            <path d="M2 14h2" />
+            <path d="M20 14h2" />
+            <path d="M15 13v2" />
+            <path d="M9 13v2" />
+          </svg>
+          For AI Agents &mdash; <code>{tag}</code>
+        </h3>
+        <p class="llm-context__lede">
+          Two artefacts to give your AI agent so it generates correct UI with
+          this component. The per-component spec answers <em>"how do I use
+          this exact tag?"</em>. The main-llm spec answers <em>"which tag should
+          I pick in the first place?"</em>.
+        </p>
+      </header>
+
+      <div class="llm-context__grid">
+        <article class="llm-context__card llm-context__card--component">
+          <header class="llm-context__card-header">
+            <span class="llm-context__badge">Per-component</span>
+            <h4 class="llm-context__card-title">
+              <code>{tag}</code> spec card
+            </h4>
+            <p class="llm-context__card-desc">
+              Identity · when to use / when NOT · decision cues · behavioural
+              contract · do/don't · anti-patterns · full API. Paste into your
+              agent when you're implementing with this component.
+            </p>
+          </header>
+          <div class="llm-context__card-actions">
+            <button
+              type="button"
+              class="llm-context__btn llm-context__btn--primary"
+              data-llm-context-copy
+              data-clipboard-payload={readmeText}
+              aria-label={`Copy ${tag} spec to clipboard`}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect width="14" height="14" x="8" y="8" rx="2" />
+                <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+              </svg>
+              <span class="llm-context__btn-label">Copy spec</span>
+            </button>
+            <button
+              type="button"
+              class="llm-context__btn llm-context__btn--outline"
+              data-llm-context-expand={`llm-context-dialog-${tag}`}
+              aria-label={`Open ${tag} spec in fullscreen view`}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 3 21 3 21 9" />
+                <polyline points="9 21 3 21 3 15" />
+                <line x1="21" y1="3" x2="14" y2="10" />
+                <line x1="3" y1="21" x2="10" y2="14" />
+              </svg>
+              <span class="llm-context__btn-label">Expand view</span>
+            </button>
+          </div>
+          {/* Inline <details> preview removed — the "Expand view" button
+              above opens a far better fullscreen modal with the full
+              spec, so the inline disclosure was strictly redundant.
+              Bonus: no more fighting Starlight + browser UA stylesheets
+              over <summary> markers, list-style, padding, and prose
+              margins. The card now has one obvious primary action
+              (Copy) and one secondary action (Expand). */}
+        </article>
+
+        <article class="llm-context__card llm-context__card--main-llm">
+          <header class="llm-context__card-header">
+            <span class="llm-context__badge llm-context__badge--accent">Main-LLM spec</span>
+            <h4 class="llm-context__card-title">AWC UI Operator's Manual</h4>
+            <p class="llm-context__card-desc">
+              System-prompt preamble · decision matrix · token reference · page
+              recipes · anti-patterns. Paste into the <em>system prompt</em> at
+              the start of a piece of work.
+            </p>
+          </header>
+          <div class="llm-context__card-actions">
+            <a
+              class="llm-context__btn llm-context__btn--primary"
+              href="/llm/"
+              aria-label="Open the AWC UI main-llm specification"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M7 17 17 7" />
+                <path d="M7 7h10v10" />
+              </svg>
+              <span class="llm-context__btn-label">Open spec</span>
+            </a>
+            <button
+              type="button"
+              class="llm-context__btn llm-context__btn--outline"
+              data-llm-context-expand={`llm-context-dialog-main-llm-${tag}`}
+              aria-label="Open the main-llm specification in fullscreen view"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 3 21 3 21 9" />
+                <polyline points="9 21 3 21 3 15" />
+                <line x1="21" y1="3" x2="14" y2="10" />
+                <line x1="3" y1="21" x2="10" y2="14" />
+              </svg>
+              <span class="llm-context__btn-label">Expand view</span>
+            </button>
+          </div>
+        </article>
+      </div>
+
+      {/* Fullscreen-view dialog. Native <dialog> for free focus
+          trapping + ESC handling. Lives outside the card grid so
+          modal layering and backdrop work without nested overflow
+          clipping from .llm-context (which has `overflow: hidden`
+          for its rounded corners + primary rail). */}
+      <dialog class="llm-context__dialog" id={`llm-context-dialog-${tag}`} aria-labelledby={`llm-context-dialog-title-${tag}`}>
+        <header class="llm-context__dialog-header">
+          <h4 class="llm-context__dialog-title" id={`llm-context-dialog-title-${tag}`}>
+            <code>{tag}</code> readme.md
+          </h4>
+          <div class="llm-context__dialog-actions">
+            <button
+              type="button"
+              class="llm-context__btn llm-context__btn--primary"
+              data-llm-context-copy
+              data-clipboard-payload={dialogText}
+              aria-label={`Copy the ${tag} readme to clipboard`}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect width="14" height="14" x="8" y="8" rx="2" />
+                <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+              </svg>
+              <span class="llm-context__btn-label">Copy readme</span>
+            </button>
+            <button
+              type="button"
+              class="llm-context__dialog-close"
+              data-llm-context-dialog-close
+              aria-label="Close fullscreen view"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+        </header>
+        <pre class="llm-context__dialog-pre"><code>{dialogText}</code></pre>
+      </dialog>
+      {/* Main-LLM fullscreen view. Same delegated handler, different id, so
+          both cards get the same reading experience without duplicating any
+          behaviour. */}
+      <dialog class="llm-context__dialog" id={`llm-context-dialog-main-llm-${tag}`} aria-labelledby={`llm-context-dialog-main-llm-title-${tag}`}>
+        <header class="llm-context__dialog-header">
+          <h4 class="llm-context__dialog-title" id={`llm-context-dialog-main-llm-title-${tag}`}>
+            AWC UI Operator&rsquo;s Manual
+          </h4>
+          <div class="llm-context__dialog-actions">
+            <button
+              type="button"
+              class="llm-context__btn llm-context__btn--primary"
+              data-llm-context-copy
+              data-clipboard-payload={mainLlmRaw}
+              aria-label="Copy the main-llm specification to clipboard"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect width="14" height="14" x="8" y="8" rx="2" />
+                <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+              </svg>
+              <span class="llm-context__btn-label">Copy spec</span>
+            </button>
+            <button
+              type="button"
+              class="llm-context__dialog-close"
+              data-llm-context-dialog-close
+              aria-label="Close fullscreen view"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+        </header>
+        <pre class="llm-context__dialog-pre"><code>{mainLlmRaw}</code></pre>
+      </dialog>
+    </section>
+  )
+}
+
+<script is:inline>
+  /*
+   * Single delegated click handler for the entire LLMContext family.
+   * Three responsibilities, all attribute-driven so server-rendered
+   * markup is the source of truth:
+   *
+   *   1. [data-llm-context-copy]          → copy payload to clipboard
+   *   2. [data-llm-context-expand=ID]     → open dialog #ID via showModal()
+   *   3. [data-llm-context-dialog-close]  → close enclosing dialog
+   *      (clicking the dialog's backdrop also closes it — handled by
+   *      a separate "click landed ON the dialog element itself" check)
+   *
+   * The window-level `__llmContextWired__` flag prevents duplicate
+   * wiring when Astro view transitions re-execute inline scripts.
+   */
+  (() => {
+    if (window.__llmContextWired__) return;
+    window.__llmContextWired__ = true;
+
+    document.addEventListener("click", async (ev) => {
+      // (3a) Backdrop click — when the click target IS the <dialog>
+      // element itself (not a descendant), it landed on the backdrop.
+      // Native <dialog> with showModal() shows the content via the
+      // top-layer; the dialog's own box fills the viewport via the
+      // ::backdrop pseudo. Comparing ev.target tag distinguishes.
+      if (ev.target instanceof HTMLDialogElement && ev.target.classList.contains("llm-context__dialog")) {
+        ev.target.close();
+        return;
+      }
+
+      // (3b) Explicit close button.
+      const closeBtn = ev.target.closest("[data-llm-context-dialog-close]");
+      if (closeBtn) {
+        const dlg = closeBtn.closest("dialog");
+        if (dlg && typeof dlg.close === "function") dlg.close();
+        return;
+      }
+
+      // (2) Expand-view button — opens the dialog identified by the
+      // attribute value. Falls back gracefully if <dialog> is
+      // unsupported (Safari < 15.4) by just no-oping.
+      const expandBtn = ev.target.closest("[data-llm-context-expand]");
+      if (expandBtn) {
+        const targetId = expandBtn.getAttribute("data-llm-context-expand");
+        const dlg = targetId && document.getElementById(targetId);
+        if (dlg && typeof dlg.showModal === "function") {
+          dlg.showModal();
+        }
+        return;
+      }
+
+      // (1) Copy button — also used inside the dialog, so it must
+      // come AFTER the dialog-close/expand handlers so a click on
+      // the close button doesn't accidentally trigger a copy.
+      const copyBtn = ev.target.closest("[data-llm-context-copy]");
+      if (!copyBtn) return;
+      const payload = copyBtn.getAttribute("data-clipboard-payload") || "";
+      try {
+        await navigator.clipboard.writeText(payload);
+        const label = copyBtn.querySelector(".llm-context__btn-label");
+        if (!label) return;
+        const prev = label.textContent;
+        label.textContent = "Copied!";
+        copyBtn.classList.add("llm-context__btn--copied");
+        setTimeout(() => {
+          label.textContent = prev;
+          copyBtn.classList.remove("llm-context__btn--copied");
+        }, 1500);
+      } catch (err) {
+        console.warn("[LLMContext] clipboard write failed", err);
+      }
+    });
+  })();
+</script>
+
+<style>
+  /* ════════════════════════════════════════════════════════════════
+     LLMContext — the AI/agent context handoff at the bottom of every
+     component page. Two side-by-side cards:
+       1. Per-component spec card (copy → into dev agent's context)
+       2. Main-LLM spec card (open / download → into system prompt)
+     Visually quiet but high-signal: subtle surface tint, primary
+     rail on the leading edge, no decoration that competes with the
+     component's own demos above.
+     ════════════════════════════════════════════════════════════════ */
+
+  .llm-context {
+    position: relative;
+    margin-block: 2rem 1rem;
+    padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+    border: 1px solid var(--md-sys-color-outline-variant, var(--sl-color-gray-5));
+    border-radius: var(--md-sys-shape-corner-large, 16px);
+    background: var(--md-sys-color-surface-container-low, var(--sl-color-gray-7));
+    overflow: hidden;
+  }
+
+  /* Primary rail on the leading edge — same visual idiom as
+     ComponentDemo's "Show code" toggle, signalling "this is a
+     functional developer affordance, not a marketing card". */
+  .llm-context::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: 4px;
+    background: linear-gradient(
+      to bottom,
+      var(--md-sys-color-primary) 0%,
+      var(--md-sys-color-tertiary, var(--md-sys-color-primary)) 100%
+    );
+    pointer-events: none;
+  }
+
+  .llm-context__header {
+    margin-block-end: 1rem;
+  }
+
+  /* `!important` on the top margin — Starlight ships
+     `.sl-markdown-content :is(h1..h6) { margin-block-start: 1.5em }`
+     which beats our `:where(.astro-xxx)` zero-specificity rule and
+     opens a phantom ~1.5em gap above the heading. We control vertical
+     rhythm via the parent section's own padding. */
+  .llm-context__heading {
+    margin: 0 0 0.5rem !important;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .llm-context__heading code {
+    background: color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent);
+    color: var(--md-sys-color-primary);
+    padding: 1px 8px;
+    border-radius: var(--md-sys-shape-corner-extra-small, 4px);
+    font-size: 0.875rem;
+    font-family: var(--__sl-font-mono, ui-monospace, monospace);
+  }
+
+  .llm-context__icon {
+    color: var(--md-sys-color-primary);
+    flex-shrink: 0;
+  }
+
+  .llm-context__lede {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--md-sys-color-on-surface-variant, var(--sl-color-gray-3));
+  }
+
+  .llm-context__lede em {
+    font-style: italic;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  /* Dual-card grid. `align-items: stretch` (the grid default,
+     re-stated explicitly for documentation) makes both cards size
+     to the tallest sibling's height — the Main-LLM spec card has two
+     stacked link buttons so it's the natural tall one; the
+     Per-component card grows to match. The `margin-block-start: auto`
+     on `.llm-context__card-actions` below then pushes each card's
+     button row to the bottom of the equalised card, so the action
+     rows in both cards align on the same baseline. */
+  .llm-context__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  @media (min-width: 768px) {
+    .llm-context__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .llm-context__card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--md-sys-color-surface-container, var(--sl-color-gray-6));
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-medium, 12px);
+    min-inline-size: 0; /* allow grid track to shrink below content min-size so wide <pre> can scroll instead of overflowing */
+    /* On the side-by-side desktop layout `align-items: stretch` on
+       the parent grid already equalises card heights to the tallest
+       sibling, so this `min-block-size` only matters on the narrow
+       single-column layout (≤768px). It gives each stacked card
+       enough room for `margin-block-start: auto` on .card-actions
+       to push the button row to the bottom edge instead of letting
+       it sit immediately under the description. Tuned to fit the
+       Main-LLM spec card's header (~180px) + bottom action row + the
+       2rem of card padding, comfortably. */
+    min-block-size: 16rem;
+  }
+
+  .llm-context__card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .llm-context__badge {
+    align-self: flex-start;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--md-sys-color-on-surface-variant);
+    background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+    padding: 2px 8px;
+    border-radius: var(--md-sys-shape-corner-extra-small, 4px);
+  }
+
+  .llm-context__badge--accent {
+    color: var(--md-sys-color-on-tertiary-container, var(--md-sys-color-on-surface));
+    background: color-mix(in srgb, var(--md-sys-color-tertiary) 16%, transparent);
+  }
+
+  .llm-context__card-title {
+    margin: 0 !important; /* see comment on .llm-context__heading — same Starlight prose-h4 issue */
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .llm-context__card-title code {
+    font-family: var(--__sl-font-mono, ui-monospace, monospace);
+    font-size: 0.875rem;
+    color: var(--md-sys-color-primary);
+    background: transparent;
+    padding: 0;
+  }
+
+  .llm-context__card-desc {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .llm-context__card-desc em {
+    font-style: italic;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  /* Action row. `align-items: flex-start` keeps buttons at their
+     natural inline-size (otherwise the column-flex parent inherits
+     `align-items: stretch` and the buttons become giant full-width
+     pills). `flex-wrap: wrap` lets the two main-llm spec links sit
+     side-by-side on wide cards, stacked on narrow ones.
+     `margin-block-start: auto` pushes the row to the bottom of its
+     parent card — combined with `align-items: stretch` on the grid
+     above, this makes both cards' action rows land on the same
+     horizontal baseline regardless of differing description length. */
+  .llm-context__card-actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block-start: auto;
+  }
+
+  /* `!important` on `text-decoration` and `color` because some of
+     our action elements are anchors (<a>) — and Starlight ships
+     `.sl-markdown-content a { color: var(--sl-color-accent);
+     text-decoration: underline }` which beats our `:where()`
+     scoped rule, leaving the primary "Open spec" button with
+     accent-coloured text on an accent-coloured background = the
+     label disappears entirely. Also kills the prose underline
+     that bled into all our anchor-buttons. */
+  .llm-context__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      background 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease,
+      transform 150ms ease;
+    text-decoration: none !important;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+
+  .llm-context__btn:hover {
+    transform: translateY(-1px);
+    text-decoration: none !important;
+  }
+
+  .llm-context__btn--primary {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary) !important;
+    border-color: var(--md-sys-color-primary);
+  }
+
+  .llm-context__btn--primary:hover {
+    background: color-mix(in srgb, var(--md-sys-color-primary) 92%, white 8%);
+    color: var(--md-sys-color-on-primary) !important;
+  }
+
+  .llm-context__btn--outline {
+    background: transparent;
+    color: var(--md-sys-color-primary) !important;
+    border-color: var(--md-sys-color-outline);
+  }
+
+  .llm-context__btn--outline:hover {
+    background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
+    border-color: var(--md-sys-color-primary);
+    color: var(--md-sys-color-primary) !important;
+  }
+
+  .llm-context__btn--copied {
+    background: var(--md-sys-color-tertiary, var(--md-sys-color-primary));
+    border-color: var(--md-sys-color-tertiary, var(--md-sys-color-primary));
+    color: var(--md-sys-color-on-tertiary, var(--md-sys-color-on-primary));
+  }
+
+  /* NOTE: the inline <details>/<summary>/.llm-context__pre styles
+     used to live here. Removed when the inline preview disclosure
+     was dropped in favour of the Expand-view fullscreen dialog. */
+
+  /* ── Fullscreen-view dialog ──────────────────────────────────
+     Native <dialog> opened via .showModal() — top-layer rendering,
+     free focus trap, ESC closes. Heavy `!important` here for the
+     same reason as the inline pre above: Starlight's prose CSS
+     touches <dialog>, <pre>, <code>, headings with margins,
+     padding, fonts that we want to override entirely. */
+  /* Visual rules apply unconditionally — but NO `display` here.
+     Native <dialog> defaults to `display: none` when closed; if we
+     set `display: flex` on the bare class, the unopened dialog
+     renders inline at min(960px, 92vw) wide and leaves a phantom
+     box artifact below the section. The [open] rule below is the
+     ONLY place that turns the box on. */
+  .llm-context__dialog {
+    inline-size: min(960px, 92vw) !important;
+    block-size: min(86vh, 800px) !important;
+    max-block-size: 86vh !important;
+    padding: 0 !important;
+    border: 1px solid var(--md-sys-color-outline-variant) !important;
+    border-radius: var(--md-sys-shape-corner-large, 16px) !important;
+    background: var(--md-sys-color-surface-container, var(--sl-color-gray-6)) !important;
+    color: var(--md-sys-color-on-surface) !important;
+    box-shadow:
+      0 24px 48px -12px rgba(0, 0, 0, 0.4),
+      0 12px 24px -8px rgba(0, 0, 0, 0.3);
+    overflow: hidden !important;
+    flex-direction: column;
+  }
+
+  /* Open state — explicit centering via the classic `inset: 0; margin: auto`
+     pattern. Native UA stylesheet does this for modal dialogs by default,
+     but in our docs context (Starlight + Astro + Tailwind reset on the
+     surrounding markdown content) something downstream wins specificity
+     over the UA rule on `inset`/`margin` and the dialog snaps to the top
+     of the viewport. Re-asserting both explicitly here, with `!important`,
+     guarantees the modal lands centred regardless of cascade. */
+  .llm-context__dialog[open] {
+    display: flex !important;
+    position: fixed !important;
+    inset-block-start: 0 !important;
+    inset-block-end: 0 !important;
+    inset-inline-start: 0 !important;
+    inset-inline-end: 0 !important;
+    margin-block: auto !important;
+    margin-inline: auto !important;
+  }
+
+  .llm-context__dialog::backdrop {
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .llm-context__dialog-header {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px;
+    background: var(--md-sys-color-surface-container-high, var(--sl-color-gray-5));
+    border-block-end: 1px solid var(--md-sys-color-outline-variant);
+  }
+
+  .llm-context__dialog-title {
+    margin: 0 !important;
+    font-size: 0.95rem !important;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .llm-context__dialog-title code {
+    font-family: var(--__sl-font-mono, ui-monospace, monospace);
+    font-size: 0.875rem;
+    color: var(--md-sys-color-primary);
+    background: color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent);
+    padding: 2px 8px;
+    border-radius: var(--md-sys-shape-corner-extra-small, 4px);
+  }
+
+  .llm-context__dialog-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Close (X) button — icon-only square, same visual weight as
+     the outline buttons elsewhere but compact. */
+  .llm-context__dialog-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 36px;
+    block-size: 36px;
+    padding: 0;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-full, 999px);
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+    transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+  }
+
+  .llm-context__dialog-close:hover {
+    background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+    color: var(--md-sys-color-on-surface);
+    border-color: var(--md-sys-color-outline);
+  }
+
+  .llm-context__dialog-close:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+  }
+
+  .llm-context__dialog-pre {
+    flex: 1 1 auto;
+    margin: 0 !important;
+    padding: 18px 22px !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    font-size: 0.78rem !important;
+    line-height: 1.65 !important;
+    color: var(--md-sys-color-on-surface) !important;
+    white-space: pre !important;
+    /* Always-visible scrollbar so it's clear there's content
+       to scroll. Same idiom as .llm-context__pre. */
+    scrollbar-width: thin;
+    scrollbar-color:
+      var(--md-sys-color-outline, rgba(127, 127, 127, 0.6))
+      transparent;
+  }
+
+  .llm-context__dialog-pre::-webkit-scrollbar {
+    display: block;
+    inline-size: 12px;
+    block-size: 12px;
+  }
+
+  .llm-context__dialog-pre::-webkit-scrollbar-track {
+    background: color-mix(in srgb, var(--md-sys-color-on-surface) 4%, transparent);
+  }
+
+  .llm-context__dialog-pre::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--md-sys-color-on-surface) 24%, transparent);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+
+  .llm-context__dialog-pre::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--md-sys-color-on-surface) 40%, transparent);
+    background-clip: padding-box;
+  }
+
+  .llm-context__dialog-pre code {
+    font-family: var(--__sl-font-mono, ui-monospace, monospace);
+    color: inherit !important;
+    background: transparent !important;
+    padding: 0 !important;
+    border: 0 !important;
+    font-size: inherit !important;
+    white-space: inherit !important;
+  }
+
+  /* Lock body scroll when a dialog is open (uses :has(), supported
+     in all evergreen browsers — graceful no-op in older ones). */
+  body:has(.llm-context__dialog[open]) {
+    overflow: hidden;
+  }
+</style>

@@ -1,0 +1,113 @@
+name: Bug report
+description: Something in AWC UI does not behave the way it should
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this.
+
+        **Two quick checks first** — they explain a good share of reports:
+
+        - **Icons showing as words** (`add` instead of a plus) means the Material
+          Symbols stylesheet is missing or was requested without its axis ranges.
+          See the [iconography guide](https://awcui.io/guides/iconography/).
+        - **Nothing renders, or clicks do nothing while methods still work** —
+          the component probably has not hydrated yet, rather than being broken.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+      placeholder: |
+        I picked a second option in md-multi-select and the menu closed.
+        I expected it to stay open until I click outside.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: |
+        A StackBlitz, a CodePen, a plain HTML file — or failing that, the
+        smallest markup that shows the problem.
+
+        Paste the markup **as text** rather than a picture of it, so we can run
+        it unchanged. If the bug is something you can see, add a screenshot in
+        the next field too — the two together are far better than either alone.
+      render: html
+      placeholder: |
+        <md-multi-select label="Tags">
+          <md-select-option value="a">A</md-select-option>
+          <md-select-option value="b">B</md-select-option>
+        </md-multi-select>
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Screenshot or recording
+      description: |
+        Drag an image or a short screen recording in here. Optional, but for
+        anything visual — spacing, colour, focus rings, animation, RTL — it is
+        usually the fastest way for us to see what you are seeing.
+      placeholder: Paste or drag an image here.
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: "@awc-ui/core version"
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: framework
+    attributes:
+      label: How are you using it
+      options:
+        - Plain HTML / no framework
+        - React (@awc-ui/react)
+        - Angular (@awc-ui/angular)
+        - Vue (@awc-ui/vue)
+        - Svelte (@awc-ui/svelte)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: "Chrome 141, macOS 15"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: context
+    attributes:
+      label: Anything that applies
+      options:
+        - label: It is server-side rendered (Next, Nuxt, SvelteKit, Astro, Angular SSR)
+        - label: It only happens in RTL
+        - label: It only happens in dark mode
+        - label: It only happens at a specific density
+        - label: It is a visual/layout problem (a screenshot helps — there is a field for it above)
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output
+      description: Errors, warnings, or failed requests. A 404 on a runtime chunk usually names the cause outright.
+      render: shell
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Workarounds you found, when it started, related issues.

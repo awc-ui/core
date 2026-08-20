@@ -1,0 +1,169 @@
+/* ==========================================================
+   md-fab-menu — Material Design 3 Expressive FAB Menu
+   Spec: https://m3.material.io/components/floating-action-button/specs
+
+   Opens from a FAB to show 2–6 related actions floating on screen.
+   The anchor FAB morphs to a circle with a close icon when open.
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-fab-menu-item-container-color     Item background (cascades to children)
+     --md-fab-menu-item-label-color         Item label + icon color (cascades)
+     --md-fab-menu-item-gap                  Gap between items (default 4px)
+
+   SLOTS:
+     (default)  md-fab-menu-item elements (2–6 items)
+   ========================================================== */
+
+:host {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: var(--md-sys-z-index-popup, 1000);
+  pointer-events: none;
+}
+
+:host(.md-fab-menu--open),
+:host(.md-fab-menu--closing) {
+  display: block;
+}
+
+/* ==========================================================
+   1. CONTAINER — holds items only (FAB is outside shadow DOM)
+   ========================================================== */
+
+.md-fab-menu__container {
+  position: fixed;
+  display: flex;
+  align-items: end;
+  pointer-events: auto;
+}
+
+/* ── Up: items stack above the FAB ── */
+
+:host(.md-fab-menu--up) .md-fab-menu__container {
+  flex-direction: column;
+}
+
+:host(.md-fab-menu--up) .md-fab-menu__items {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: end;
+  gap: var(--md-fab-menu-item-gap, var(--md-sys-spacing-gap-xs, 4px));
+}
+
+/* ── Down: items stack below the FAB ── */
+
+:host(.md-fab-menu--down) .md-fab-menu__container {
+  flex-direction: column;
+}
+
+:host(.md-fab-menu--down) .md-fab-menu__items {
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  gap: var(--md-fab-menu-item-gap, var(--md-sys-spacing-gap-xs, 4px));
+}
+
+/* ==========================================================
+   2. COLOR VARIANTS
+   Item container colors cascade through shadow DOM to children.
+   ========================================================== */
+
+/* ── Primary ── */
+
+:host(.md-fab-menu--primary) {
+  --md-fab-menu-item-container-color: var(--md-sys-color-primary-container);
+  --md-fab-menu-item-label-color: var(--md-sys-color-on-primary-container);
+}
+
+/* ── Secondary ── */
+
+:host(.md-fab-menu--secondary) {
+  --md-fab-menu-item-container-color: var(--md-sys-color-secondary-container);
+  --md-fab-menu-item-label-color: var(--md-sys-color-on-secondary-container);
+}
+
+/* ── Tertiary ── */
+
+:host(.md-fab-menu--tertiary) {
+  --md-fab-menu-item-container-color: var(--md-sys-color-tertiary-container);
+  --md-fab-menu-item-label-color: var(--md-sys-color-on-tertiary-container);
+}
+
+/* ==========================================================
+   3. ANIMATION — scaleY + opacity
+   Open  → emphasized-decelerate (150ms)
+   Close → emphasized-accelerate (150ms)
+   ========================================================== */
+
+.md-fab-menu__container {
+  opacity: 0;
+  transform: scaleY(0.8);
+  transition:
+    opacity var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
+    transform var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
+}
+
+:host(.md-fab-menu--up) .md-fab-menu__container {
+  transform-origin: bottom right;
+}
+
+:host(.md-fab-menu--down) .md-fab-menu__container {
+  transform-origin: top right;
+}
+
+:host(.md-fab-menu--open) .md-fab-menu__container {
+  opacity: 1;
+  transform: none;
+}
+
+@starting-style {
+  :host(.md-fab-menu--open) .md-fab-menu__container {
+    opacity: 0;
+    transform: scaleY(0.8);
+  }
+}
+
+:host(.md-fab-menu--closing) .md-fab-menu__container {
+  opacity: 0;
+  transform: scaleY(0.8);
+  transition:
+    opacity var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15)),
+    transform var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15));
+}
+
+/* ==========================================================
+   4. REDUCED MOTION
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-fab-menu__container,
+  :host(.md-fab-menu--open) .md-fab-menu__container,
+  :host(.md-fab-menu--closing) .md-fab-menu__container {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ==========================================================
+   5. FORCED COLORS — Windows High Contrast
+   ========================================================== */
+
+@media (forced-colors: active) {
+  :host {
+    forced-color-adjust: none;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

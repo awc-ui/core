@@ -1,0 +1,908 @@
+---
+title: Dialog
+description: "A modal that interrupts to get a decision — basic or full-screen, with a scrim, focus trapping and an actions row"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/dialog.json";
+
+**A modal that interrupts to get a decision.** Basic or full-screen, with an
+optional icon and headline, a scrim, focus trapping, and an actions row you
+populate yourself.
+
+<ComponentDemo
+  html={`<md-button variant="filled" onclick="document.getElementById('demo-dialog-basic').show()">Open dialog</md-button>
+<md-dialog id="demo-dialog-basic" headline="Discard draft?">
+  <p style="margin: 0;">Your changes will be lost.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-basic').close()">Cancel</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dialog-basic').close()">Discard</md-button>
+</md-dialog>`}
+  label="Live preview"
+  storyId="containment-dialog--playground"
+/>
+
+:::note[Every demo on this page starts closed]
+The demos render the **closed** dialog next to its trigger — press the button to
+open it. That is deliberate: a dialog that is `open` on mount scroll-locks the
+page it lives on.
+:::
+
+## Install
+
+<ComponentSetup tag="md-dialog" example="" />
+
+## When to use
+
+- A prompt that **blocks normal operation** and needs a decision, an
+  acknowledgement, or a specific task.
+- **Critical** information the user must not miss.
+- Confirming a destructive or irreversible action.
+- A focused sub-task on mobile (`fullscreen`).
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Low- or medium-priority information | [`md-snackbar`](/components/snackbar/) |
+| A brief confirmation of something that already happened | [`md-snackbar`](/components/snackbar/) |
+| Explaining a control | [`md-tooltip`](/components/tooltip/) |
+| Supplementary content, mobile | [`md-bottom-sheet`](/components/bottom-sheet/) |
+| Supplementary content, desktop | [`md-side-sheet`](/components/side-sheet/) |
+| A list of actions from a trigger | [`md-menu`](/components/menu/) |
+| Content that could just live on the page | A page or [`md-card`](/components/card/) |
+| Field-level validation errors | Inline error text on the field |
+
+## Actions are yours
+
+You supply the buttons through `slot="actions"`. `cancel-label` and `ok-label`
+name the **built-in fallback** buttons that appear when you slot nothing;
+slotted buttons win, so don't set both and expect them to merge.
+
+:::danger[Button order matters and the component won't fix it]
+M3 puts dismissive actions to the **leading** side of confirming actions.
+`md-dialog` renders your slotted buttons in DOM order and never reorders them —
+"Cancel" before "Discard" is on you. Because leading is logical, the pair
+mirrors correctly under `dir="rtl"` automatically; don't hardcode a side.
+:::
+
+M3 also wants confirming actions **disabled until a choice is made**, while
+dismissive actions are *never* disabled. That is your logic, not the
+component's.
+
+<ComponentDemo
+  html={`<md-button variant="filled" onclick="document.getElementById('demo-dialog-slotted').show()">Slotted actions</md-button>
+<md-button variant="outlined" onclick="document.getElementById('demo-dialog-fallback').show()">Fallback actions</md-button>
+
+<md-dialog id="demo-dialog-slotted" headline="Discard draft?">
+  <p style="margin: 0;">Both buttons are mine. Dismissive first in DOM order, confirming second — the component renders them exactly as written.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-slotted').close()">Cancel</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dialog-slotted').close()">Discard</md-button>
+</md-dialog>
+
+<md-dialog id="demo-dialog-fallback" headline="Leave without saving?" cancel-label="Stay" ok-label="Leave">
+  <p style="margin: 0;">Nothing is slotted into <code>actions</code>, so the built-in pair renders instead — named by <code>cancel-label</code> and <code>ok-label</code>. Both close the dialog; the cancel one also fires <code>mdCancel</code>.</p>
+</md-dialog>`}
+  htmlForCode={`<!-- You supply the pair: dismissive first, confirming second -->
+<md-dialog headline="Discard draft?">
+  <p>Your changes will be lost.</p>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Discard</md-button>
+</md-dialog>
+
+<!-- Nothing slotted: the built-in pair renders, named by cancel-label / ok-label -->
+<md-dialog headline="Leave without saving?" cancel-label="Stay" ok-label="Leave">
+  <p>Your changes will be lost.</p>
+</md-dialog>`}
+  label="Slotted actions versus the built-in fallback pair"
+  storyId="containment-dialog--basic-dialog"
+/>
+
+## With an icon and headline
+
+An `icon` sits above the headline and centre-aligns the header. Without one the
+header is start-aligned.
+
+The [basic-dialog story](/storybook/?path=/story/containment-dialog--basic-dialog)
+is the same shape without the icon.
+
+<ComponentDemo
+  html={`<md-button variant="tonal" onclick="document.getElementById('demo-dialog-icon').show()">Delete permanently</md-button>
+<md-dialog id="demo-dialog-icon" headline="Delete 3 files?" icon="delete">
+  <p style="margin: 0;">This cannot be undone.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-icon').close()">Cancel</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dialog-icon').close()">Delete</md-button>
+</md-dialog>
+<md-button variant="tonal" onclick="document.getElementById('demo-dialog-ack').show()">Show update notice</md-button>
+<md-dialog id="demo-dialog-ack" headline="Update installed" icon="check_circle">
+  <p style="margin: 0;">Version 2.4 is now active.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-ack').close()">Got it</md-button>
+</md-dialog>`}
+  label="Icon header, and an acknowledgement-only dialog"
+  storyId="containment-dialog--with-icon"
+/>
+
+A single action is only right when it is an **acknowledgement**. "Cancel" makes
+no sense when nothing was proposed.
+
+### A slotted icon
+
+`icon` takes a Material Symbols name; the `icon` slot replaces it when you need
+a custom glyph or an SVG.
+
+<ComponentDemo
+  html={`<md-button variant="tonal" onclick="document.getElementById('demo-dialog-svgicon').show()">Slotted icon</md-button>
+
+<md-dialog id="demo-dialog-svgicon" headline="Reset your workspace?">
+  <svg slot="icon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+  <p style="margin: 0;">Every panel returns to its default position. Saved layouts are untouched.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-svgicon').close()">Cancel</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dialog-svgicon').close()">Reset</md-button>
+</md-dialog>`}
+  label="An SVG in the icon slot"
+  storyId="containment-dialog--slotted-icon"
+/>
+
+## Non-dismissible
+
+`scrim-dismissible` defaults to **`true`** — clicking the scrim closes the
+dialog. Turn it off for destructive confirmations, where an accidental
+click-away shouldn't decide anything.
+
+<ComponentDemo
+  html={`<md-button variant="filled" onclick="document.getElementById('demo-dialog-strict').show()">Reset account</md-button>
+<md-dialog id="demo-dialog-strict" headline="Reset this account?" icon="warning" scrim-dismissible="false">
+  <p style="margin: 0;">Every setting returns to its default. Clicking outside will not dismiss this dialog.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-strict').close()">Cancel</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dialog-strict').close()">Reset</md-button>
+</md-dialog>`}
+  label="Scrim dismissal turned off"
+  storyId="containment-dialog--non-dismissible"
+/>
+
+## Dividers
+
+`divider` draws a rule between the content area and the actions row, on either
+variant. `header-divider` draws the matching rule under the header — and it is
+**full-screen only**: the component gates it on `fullscreen`, so on a basic
+dialog the attribute is inert. Both earn their place when the body scrolls;
+without them a scrolled body runs visually into the headline and the actions
+row.
+
+<ComponentDemo
+  html={`<md-button variant="outlined" onclick="document.getElementById('demo-dialog-divider').show()">Open terms (basic)</md-button>
+<md-button variant="outlined" onclick="document.getElementById('demo-dialog-divider-full').show()">Open terms (full-screen)</md-button>
+
+<md-dialog id="demo-dialog-divider" headline="Terms of service" divider>
+  <p style="margin: 0 0 12px;">A basic dialog takes <code>divider</code> only — the rule sits above the actions row.</p>
+  <p style="margin: 0 0 12px;">Section 1. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+  <p style="margin: 0 0 12px;">Section 2. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  <p style="margin: 0 0 12px;">Section 3. Ut enim ad minim veniam, quis nostrud exercitation ullamco.</p>
+  <p style="margin: 0;">Section 4. Duis aute irure dolor in reprehenderit in voluptate velit.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-divider').close()">Decline</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dialog-divider').close()">Accept</md-button>
+</md-dialog>
+
+<md-dialog id="demo-dialog-divider-full" fullscreen headline="Terms of service" close-label="Close" header-divider divider>
+  <p style="margin: 0 0 12px;">Full-screen is where <code>header-divider</code> renders — a rule under the app bar, plus the content rule from <code>divider</code>.</p>
+  <p style="margin: 0 0 12px;">Section 1. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+  <p style="margin: 0 0 12px;">Section 2. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+  <p style="margin: 0;">Section 3. Ut enim ad minim veniam, quis nostrud exercitation ullamco.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-divider-full').close()">Decline</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dialog-divider-full').close()">Accept</md-button>
+</md-dialog>`}
+  label="Content rule on a basic dialog, header plus content rules on a full-screen one"
+  storyId="containment-dialog--with-divider"
+/>
+
+## Full-screen
+
+`fullscreen` is the mobile sub-task form: an app bar with the headline, a close
+button, and the body filling the viewport.
+
+:::caution[Keep the app-bar headline short]
+M3 warns that a long headline in a full-screen dialog's bar gets truncated, and
+truncation misleads. Put the short form in `headline` and the full sentence in
+the content area.
+:::
+
+<ComponentDemo
+  html={`<md-button variant="filled" onclick="document.getElementById('demo-dialog-full').show()">New event</md-button>
+<md-dialog id="demo-dialog-full" fullscreen headline="New event" close-label="Close">
+  <h2 style="margin: 0 0 12px; font-size: 20px;">Create a calendar event</h2>
+  <p style="margin: 0;">Long headlines belong here in the body, not in the app bar.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-full').close()">Cancel</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dialog-full').close()">Create</md-button>
+</md-dialog>`}
+  htmlForCode={`<md-button variant="filled" id="new-event">New event</md-button>
+
+<md-dialog id="event" fullscreen headline="New event" close-label="Close">
+  <h2>Create a calendar event</h2>
+  <md-text-field label="Title"></md-text-field>
+  <md-button slot="actions" variant="text" data-close>Cancel</md-button>
+  <md-button slot="actions" variant="filled" disabled>Create</md-button>
+</md-dialog>
+
+<script type="module">
+  const dialog = document.getElementById('event');
+
+  document.getElementById('new-event').addEventListener('mdClick', () => dialog.show());
+  dialog.querySelectorAll('[data-close]').forEach((b) =>
+    b.addEventListener('mdClick', () => dialog.close()),
+  );
+</script>`}
+  label="Full-screen dialog"
+  storyId="containment-dialog--full-screen-dialog"
+/>
+
+## Controlled state
+
+`open` is two-way: assign it to drive the dialog from your own state, and read
+it back after a user dismissal. `show()` / `close()` do the same thing
+imperatively — pick one and stay with it, because mixing them is how state ends
+up disagreeing with what is on screen. To mirror the state elsewhere in your UI,
+listen for `mdOpen` / `mdClose` (see [Events](#events)) rather than polling the
+property; a scrim dismissal or Escape changes it without going through your
+button.
+
+<ComponentDemo
+  html={`<md-button variant="filled" onclick="document.getElementById('demo-dialog-ctl').open = true">Open by setting open = true</md-button>
+
+<md-dialog id="demo-dialog-ctl" headline="Driven by the prop">
+  <p style="margin: 0;">This dialog was opened by assigning <code>open</code>, not by calling <code>show()</code> — and the action below closes it the same way.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-ctl').open = false">Set open = false</md-button>
+</md-dialog>`}
+  label="Opened and closed through the open prop"
+  storyId="containment-dialog--controlled-state"
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdOpen` | no | `void` | The dialog opened |
+| `mdClose` | no | `void` | The dialog closed, **for any reason** |
+| `mdCancel` | no | `void` | The user *dismissed* it — `Escape`, scrim click, or the close button |
+
+:::caution[`mdCancel` and `mdClose` are not the same event]
+`mdCancel` is dismissal only. `mdClose` fires on every close, including the one
+that follows a dismissal and the one from your own `close()` call. Treat them
+as interchangeable and you will double-handle every dismissal.
+:::
+
+### Which of the two closes to listen to
+
+They overlap on purpose. Every dismissal fires **both**, in this order:
+`mdCancel`, then `mdClose`. `mdClose` is the superset — it also covers your own
+`close()` call and an `open = false` assignment. `mdCancel` is the narrow one
+that means *the user backed out*, and it is the only way to tell a dismissal
+apart from a confirmation, because the component itself doesn't know which of
+your slotted buttons meant what.
+
+Neither event is cancelable, so neither can veto a close. They report; they
+don't gate.
+
+| You want to… | Listen to |
+|---|---|
+| Tear down or resync whenever the dialog goes away | `mdClose` |
+| Mirror `open` back into your own state | `mdClose` |
+| Treat "backed out" differently from "confirmed" | `mdCancel` |
+| Log an explicit dismissal — `Escape`, scrim, close button | `mdCancel` |
+| Run something *once* per dismissal | `mdCancel` alone — not both |
+| Block a close | Neither. Set `scrim-dismissible="false"`; `Escape` always closes |
+
+**Methods** — `show()` and `close()` drive the dialog imperatively; `open` is
+the declarative equivalent.
+
+All three events **bubble** and are **composed**, so a single listener on the
+dialog — or on an ancestor of it — catches every one. Open the dialog below and
+close it four different ways; the log records what fired.
+
+<ComponentDemo
+  html={`<div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+  <md-button id="dlg-ev-open" variant="filled">Open the dialog</md-button>
+  <md-button id="dlg-ev-clear" variant="text">Clear log</md-button>
+</div>
+
+<md-dialog id="dlg-ev" headline="Discard draft?" icon="delete">
+  <p style="margin: 0;">Close me with Discard, with Cancel, with Escape, or by clicking the scrim — then read the log underneath.</p>
+  <md-button slot="actions" variant="text" data-dlg-close>Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-dlg-close>Discard</md-button>
+</md-dialog>
+
+<output id="dlg-ev-log" style="display:block; margin-block-start:16px; min-block-size:4.2em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Nothing yet. Open the dialog, then dismiss it.</output>`}
+  script={`
+    var dlg = root.querySelector('#dlg-ev');
+    var log = root.querySelector('#dlg-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 4);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    root.querySelector('#dlg-ev-open').addEventListener('mdClick', function () {
+      dlg.show();
+    });
+
+    root.querySelector('#dlg-ev-clear').addEventListener('mdClick', function () {
+      lines = [];
+      log.textContent = 'Cleared.';
+    });
+
+    dlg.querySelectorAll('[data-dlg-close]').forEach(function (b) {
+      b.addEventListener('mdClick', function () { dlg.close(); });
+    });
+
+    dlg.addEventListener('mdOpen', function () {
+      push('mdOpen    -  it is on screen');
+    });
+    dlg.addEventListener('mdCancel', function () {
+      push('mdCancel  -  dismissed: Escape, scrim or close button');
+    });
+    dlg.addEventListener('mdClose', function () {
+      push('mdClose   -  closed, whatever the reason');
+    });
+  `}
+  label="Every close path, logged — mdCancel only fires for a dismissal"
+  htmlCode={`<md-button id="open" variant="filled">Open the dialog</md-button>
+
+<md-dialog id="confirm" headline="Discard draft?" icon="delete">
+  <p>Your changes will be lost.</p>
+  <md-button slot="actions" variant="text" data-close>Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-close>Discard</md-button>
+</md-dialog>
+
+<script type="module">
+  const dialog = document.getElementById('confirm');
+
+  document.getElementById('open').addEventListener('mdClick', () => dialog.show());
+  dialog.querySelectorAll('[data-close]').forEach((b) =>
+    b.addEventListener('mdClick', () => dialog.close()),
+  );
+
+  dialog.addEventListener('mdOpen', () => console.log('opened'));
+  dialog.addEventListener('mdCancel', () => console.log('dismissed'));
+  dialog.addEventListener('mdClose', () => console.log('closed'));
+</script>`}
+  react={`import { MdButton, MdDialog } from '@awc-ui/react';
+import { useState } from 'react';
+
+export function DiscardDialog() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <MdButton variant="filled" onMdClick={() => setOpen(true)}>Open the dialog</MdButton>
+
+      <MdDialog
+        open={open}
+        headline="Discard draft?"
+        icon="delete"
+        onMdOpen={() => console.log('opened')}
+        onMdCancel={() => console.log('dismissed')}
+        onMdClose={() => setOpen(false)}
+      >
+        <p>Your changes will be lost.</p>
+        <MdButton slot="actions" variant="text" onMdClick={() => setOpen(false)}>Cancel</MdButton>
+        <MdButton slot="actions" variant="filled" onMdClick={() => setOpen(false)}>Discard</MdButton>
+      </MdDialog>
+    </>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-discard-dialog',
+  template: \`
+    <md-button variant="filled" (mdClick)="open = true">Open the dialog</md-button>
+
+    <md-dialog
+      [open]="open"
+      headline="Discard draft?"
+      icon="delete"
+      (mdOpen)="log('opened')"
+      (mdCancel)="log('dismissed')"
+      (mdClose)="open = false"
+    >
+      <p>Your changes will be lost.</p>
+      <md-button slot="actions" variant="text" (mdClick)="open = false">Cancel</md-button>
+      <md-button slot="actions" variant="filled" (mdClick)="open = false">Discard</md-button>
+    </md-dialog>
+  \`,
+})
+export class DiscardDialogComponent {
+  open = false;
+
+  log(what: string) { console.log(what); }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const open = ref(false);
+const log = (what: string) => console.log(what);
+</script>
+
+<template>
+  <md-button variant="filled" @mdClick="open = true">Open the dialog</md-button>
+
+  <md-dialog
+    :open="open"
+    headline="Discard draft?"
+    icon="delete"
+    @mdOpen="log('opened')"
+    @mdCancel="log('dismissed')"
+    @mdClose="open = false"
+  >
+    <p>Your changes will be lost.</p>
+    <md-button slot="actions" variant="text" @mdClick="open = false">Cancel</md-button>
+    <md-button slot="actions" variant="filled" @mdClick="open = false">Discard</md-button>
+  </md-dialog>
+</template>`}
+  svelte={`<script lang="ts">
+  let open = false;
+  const log = (what: string) => console.log(what);
+</script>
+
+<md-button variant="filled" on:mdClick={() => (open = true)}>Open the dialog</md-button>
+
+<md-dialog
+  {open}
+  headline="Discard draft?"
+  icon="delete"
+  on:mdOpen={() => log('opened')}
+  on:mdCancel={() => log('dismissed')}
+  on:mdClose={() => (open = false)}
+>
+  <p>Your changes will be lost.</p>
+  <md-button slot="actions" variant="text" on:mdClick={() => (open = false)}>Cancel</md-button>
+  <md-button slot="actions" variant="filled" on:mdClick={() => (open = false)}>Discard</md-button>
+</md-dialog>`}
+/>
+
+That same wiring inside a real destructive confirmation — click-away turned off,
+`open` owned by your state, and the discard branch doing actual work:
+
+<TechnologyTabs
+  html={`<md-button id="trigger" variant="filled">Discard draft</md-button>
+
+<md-dialog id="confirm" headline="Discard draft?" icon="delete" scrim-dismissible="false">
+  <p>Your changes will be lost.</p>
+  <md-button slot="actions" variant="text" id="cancel">Cancel</md-button>
+  <md-button slot="actions" variant="filled" id="discard">Discard</md-button>
+</md-dialog>
+
+<script type="module">
+  const dlg = document.getElementById('confirm');
+
+  document.getElementById('trigger').addEventListener('click', () => dlg.show());
+  document.getElementById('cancel').addEventListener('mdClick', () => dlg.close());
+  document.getElementById('discard').addEventListener('mdClick', () => {
+    discardDraft();
+    dlg.close();
+  });
+
+  dlg.addEventListener('mdCancel', () => console.log('dismissed'));
+  dlg.addEventListener('mdClose', () => restoreFocusToTrigger());
+</script>`}
+  react={`import { MdButton, MdDialog } from '@awc-ui/react';
+import { useState } from 'react';
+
+export function DiscardConfirm({ onDiscard }: { onDiscard: () => void }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <MdButton variant="filled" onClick={() => setOpen(true)}>Discard draft</MdButton>
+
+      <MdDialog
+        open={open}
+        headline="Discard draft?"
+        icon="delete"
+        scrimDismissible={false}
+        onMdCancel={() => console.log('dismissed')}
+        onMdClose={() => setOpen(false)}
+      >
+        <p>Your changes will be lost.</p>
+        <MdButton slot="actions" variant="text" onClick={() => setOpen(false)}>Cancel</MdButton>
+        <MdButton slot="actions" variant="filled" onClick={() => { onDiscard(); setOpen(false); }}>
+          Discard
+        </MdButton>
+      </MdDialog>
+    </>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-discard-confirm',
+  template: \`
+    <md-button variant="filled" (click)="open = true">Discard draft</md-button>
+
+    <md-dialog
+      [open]="open"
+      headline="Discard draft?"
+      icon="delete"
+      [scrimDismissible]="false"
+      (mdCancel)="onCancel()"
+      (mdClose)="open = false"
+    >
+      <p>Your changes will be lost.</p>
+      <md-button slot="actions" variant="text" (mdClick)="open = false">Cancel</md-button>
+      <md-button slot="actions" variant="filled" (mdClick)="discard()">Discard</md-button>
+    </md-dialog>
+  \`,
+})
+export class DiscardConfirmComponent {
+  open = false;
+
+  onCancel() { console.log('dismissed'); }
+  discard() { /* your logic */ this.open = false; }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+const open = ref(false);
+</script>
+
+<template>
+  <md-button variant="filled" @click="open = true">Discard draft</md-button>
+
+  <md-dialog
+    :open="open"
+    headline="Discard draft?"
+    icon="delete"
+    :scrim-dismissible="false"
+    @mdCancel="console.log('dismissed')"
+    @mdClose="open = false"
+  >
+    <p>Your changes will be lost.</p>
+    <md-button slot="actions" variant="text" @mdClick="open = false">Cancel</md-button>
+    <md-button slot="actions" variant="filled" @mdClick="open = false">Discard</md-button>
+  </md-dialog>
+</template>`}
+  svelte={`<script lang="ts">
+  let open = false;
+</script>
+
+<md-button variant="filled" on:click={() => (open = true)}>Discard draft</md-button>
+
+<md-dialog
+  {open}
+  headline="Discard draft?"
+  icon="delete"
+  scrim-dismissible="false"
+  on:mdCancel={() => console.log('dismissed')}
+  on:mdClose={() => (open = false)}
+>
+  <p>Your changes will be lost.</p>
+  <md-button slot="actions" variant="text" on:mdClick={() => (open = false)}>Cancel</md-button>
+  <md-button slot="actions" variant="filled" on:mdClick={() => (open = false)}>Discard</md-button>
+</md-dialog>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::caution[Never `open` on mount inside docs or Storybook autodocs]
+The dialog locks body scroll while open. A story or page that mounts it open
+floats it over the shared DOM and freezes it. In Storybook, gate it with
+`?open=${viewMode !== 'docs'}`; in docs, render the trigger instead — which is
+exactly what every demo on this page does.
+:::
+
+## Accessibility
+
+- The dialog is **modal**: focus is trapped while it is open, content behind
+  the scrim is inert, and `Escape` dismisses (firing `mdCancel`). Don't try to
+  keep background controls reachable.
+- **Focus restoration is built in.** The dialog records the active element when
+  it opens and refocuses it on every close, with `preventScroll` so the page
+  never jumps. You don't need an `mdClose` handler for it — use `mdClose` for
+  whatever *else* the surrounding UI has to resync.
+- `headline` supplies the accessible name. If you slot a custom headline, make
+  sure the dialog still ends up with one.
+- On a `fullscreen` dialog, give the app-bar close button a localized name via
+  `close-label`. A basic dialog has no close button, so the prop does nothing
+  there.
+- Keep the action order logical for keyboard users as well as visually — DOM
+  order is what screen readers follow, and it is also what decides the visual
+  order.
+
+Open this one and hold `Tab` down: focus cycles through the field and the two
+actions and never reaches the page behind the scrim. Press `Escape` and focus
+lands back on the button you pressed — the component does that itself.
+
+<ComponentDemo
+  html={`<md-button variant="filled" onclick="document.getElementById('demo-dialog-a11y').show()">Open, then press Tab</md-button>
+
+<md-dialog id="demo-dialog-a11y" headline="Rename project" icon="edit">
+  <p style="margin: 0 0 16px;">The field and both buttons are the whole tab cycle. Nothing behind the scrim is reachable.</p>
+  <md-text-field label="Project name" value="Untitled"></md-text-field>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-a11y').close()">Cancel</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dialog-a11y').close()">Rename</md-button>
+</md-dialog>`}
+  htmlForCode={`<md-button variant="filled" id="rename">Rename project</md-button>
+
+<md-dialog id="rename-dialog" headline="Rename project" icon="edit">
+  <md-text-field label="Project name" value="Untitled"></md-text-field>
+  <md-button slot="actions" variant="text" data-close>Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-close>Rename</md-button>
+</md-dialog>
+
+<script type="module">
+  const trigger = document.getElementById('rename');
+  const dialog = document.getElementById('rename-dialog');
+
+  trigger.addEventListener('mdClick', () => dialog.show());
+  dialog.querySelectorAll('[data-close]').forEach((b) =>
+    b.addEventListener('mdClick', () => dialog.close()),
+  );
+
+  // Focus is restored to the opener for you. Use mdClose for anything else
+  // the surrounding UI needs to resync after any close.
+  dialog.addEventListener('mdClose', () => refreshProjectList());
+</script>`}
+  label="Focus trap, Escape to dismiss, focus returned to the trigger"
+  storyId="containment-dialog--accessibility"
+/>
+
+The trap reaches *into* slotted custom elements: the `<input>` inside
+`md-text-field` is a real tab stop even though it lives behind a shadow
+boundary. `role` follows the variant — a basic dialog is an `alertdialog`, a
+`fullscreen` one is a plain `dialog`.
+
+The [accessibility story](/storybook/?path=/story/containment-dialog--accessibility)
+walks the focus trap, the restored focus target and the announced role, and
+[responsiveness](/storybook/?path=/story/containment-dialog--responsiveness)
+covers narrow viewports.
+
+## RTL, density & i18n
+
+**RTL** — the container and the actions row mirror under `dir="rtl"`.
+"Dismissive on the left" means **leading**, so it lands on the right in RTL
+automatically. Don't hardcode a side. See [RTL](/behaviour/rtl/).
+
+```html
+<md-dialog dir="rtl" headline="حذف الملف؟" icon="delete">
+  <md-button slot="actions" variant="text">إلغاء</md-button>
+  <md-button slot="actions" variant="filled">حذف</md-button>
+</md-dialog>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;">
+    <md-button variant="filled" onclick="document.getElementById('demo-dialog-ltr').show()">Delete file</md-button>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;flex-wrap:wrap;gap:12px;">
+    <md-button variant="filled" onclick="document.getElementById('demo-dialog-rtl').show()">حذف الملف</md-button>
+  </div>
+</div>
+
+<md-dialog id="demo-dialog-ltr" headline="Delete file?" icon="delete">
+  <p style="margin: 0;">This cannot be undone.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-ltr').close()">Cancel</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dialog-ltr').close()">Delete</md-button>
+</md-dialog>
+
+<md-dialog id="demo-dialog-rtl" dir="rtl" headline="حذف الملف؟" icon="delete">
+  <p style="margin: 0;">لا يمكن التراجع عن هذا الإجراء.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-rtl').close()">إلغاء</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dialog-rtl').close()">حذف</md-button>
+</md-dialog>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+  storyId="containment-dialog--rtl"
+/>
+
+### Action order is leading, not left
+
+The pair mirrors because the actions row is a logical-direction flex row and
+your slotted buttons keep their DOM order. Force a physical side — with
+`::part(actions)` and `row-reverse`, say — and RTL breaks: the confirming action
+ends up where the dismissive one belongs.
+
+<ComponentDemo
+  html={`<style>
+  #demo-dialog-rtl-wrong::part(actions) { flex-direction: row-reverse; }
+</style>
+<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <div dir="rtl" style="display:flex;flex-wrap:wrap;gap:12px;">
+    <md-button variant="filled" onclick="document.getElementById('demo-dialog-rtl-right').show()">DOM order only</md-button>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <div dir="rtl" style="display:flex;flex-wrap:wrap;gap:12px;">
+    <md-button variant="outlined" onclick="document.getElementById('demo-dialog-rtl-wrong').show()">Hardcoded row-reverse</md-button>
+  </div>
+</div>
+
+<md-dialog id="demo-dialog-rtl-right" dir="rtl" headline="حذف الملف؟" icon="delete">
+  <p style="margin: 0;">الإجراء الرافض في الجهة الأمامية — تلقائياً.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-rtl-right').close()">إلغاء</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dialog-rtl-right').close()">حذف</md-button>
+</md-dialog>
+
+<md-dialog id="demo-dialog-rtl-wrong" dir="rtl" headline="حذف الملف؟" icon="delete">
+  <p style="margin: 0;">نفس ترتيب العناصر، لكن الصف مقلوب يدوياً — والنتيجة خاطئة.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-rtl-wrong').close()">إلغاء</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dialog-rtl-wrong').close()">حذف</md-button>
+</md-dialog>`}
+  label="Correct vs hardcoded — both under dir=rtl"
+/>
+
+### Every density rung
+
+`density="-1…-4"` is a local override of the inherited `data-density`. The
+resting state is simply *no* `density` attribute — there is no `[density="0"]`
+rule to opt back in with (see the caution below). All five steps, same dialog,
+so the taper — inset, headline size, corner radius and the actions row — is
+visible in one place:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">default</span>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;"><md-button variant="filled" onclick="document.getElementById('demo-dlg-d0').show()">Open default</md-button></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;"><md-button variant="outlined" onclick="document.getElementById('demo-dlg-d1').show()">Open rung -1</md-button></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;"><md-button variant="outlined" onclick="document.getElementById('demo-dlg-d2').show()">Open rung -2</md-button></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;"><md-button variant="outlined" onclick="document.getElementById('demo-dlg-d3').show()">Open rung -3</md-button></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;"><md-button variant="outlined" onclick="document.getElementById('demo-dlg-d4').show()">Open rung -4</md-button></div>
+</div>
+
+<md-dialog id="demo-dlg-d0" headline="Default density"><p style="margin:0;">Inset, headline size, corner radius and the actions row all taper together.</p><md-button slot="actions" variant="text" onclick="document.getElementById('demo-dlg-d0').close()">Close</md-button></md-dialog>
+<md-dialog id="demo-dlg-d1" density="-1" headline="Density -1"><p style="margin:0;">Inset, headline size, corner radius and the actions row all taper together.</p><md-button slot="actions" variant="text" onclick="document.getElementById('demo-dlg-d1').close()">Close</md-button></md-dialog>
+<md-dialog id="demo-dlg-d2" density="-2" headline="Density -2"><p style="margin:0;">Inset, headline size, corner radius and the actions row all taper together.</p><md-button slot="actions" variant="text" onclick="document.getElementById('demo-dlg-d2').close()">Close</md-button></md-dialog>
+<md-dialog id="demo-dlg-d3" density="-3" headline="Density -3"><p style="margin:0;">Inset, headline size, corner radius and the actions row all taper together.</p><md-button slot="actions" variant="text" onclick="document.getElementById('demo-dlg-d3').close()">Close</md-button></md-dialog>
+<md-dialog id="demo-dlg-d4" density="-4" headline="Density -4"><p style="margin:0;">Inset, headline size, corner radius and the actions row all taper together.</p><md-button slot="actions" variant="text" onclick="document.getElementById('demo-dlg-d4').close()">Close</md-button></md-dialog>`}
+  label="Default through -4 — inset, headline and actions row all taper"
+/>
+
+:::caution[Below `-2`, check your touch targets]
+The dialog's own padding keeps shrinking, but the action buttons inside it are
+what a finger has to hit. `-3` and `-4` are for dense desktop tooling; on touch,
+stop at `-2`. See [Density](/behaviour/density/#accessibility).
+:::
+
+### Density and direction together
+
+They are independent signals: `dir` mirrors the layout and `data-density`
+compacts it, and a local `density` prop retunes one dialog without touching
+direction. All three dialogs below sit in the same `dir="rtl" data-density="-1"`
+wrapper: the first inherits `-1`, the second declares `density="-4"` and that
+lower local rung wins, and the third resets to default spacing the only way that
+works — `style="--md-sys-density-scale: 0"`, not `density="0"`.
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-1" style="display:flex;flex-wrap:wrap;gap:12px;">
+  <md-button variant="filled" onclick="document.getElementById('demo-dlg-rtl-dense').show()">مضغوط (‎-1 موروث)</md-button>
+  <md-button variant="outlined" onclick="document.getElementById('demo-dlg-rtl-denser').show()">أكثر ضغطاً (‎-4 محلي)</md-button>
+  <md-button variant="text" onclick="document.getElementById('demo-dlg-rtl-reset').show()">إعادة الضبط (متغير مخصص)</md-button>
+
+  <md-dialog id="demo-dlg-rtl-dense" headline="حذف الملف؟" icon="delete">
+    <p style="margin:0;">يرث الرُتبة ‎-1 من العنصر الأب.</p>
+    <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dlg-rtl-dense').close()">إلغاء</md-button>
+    <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dlg-rtl-dense').close()">حذف</md-button>
+  </md-dialog>
+
+  <md-dialog id="demo-dlg-rtl-denser" density="-4" headline="حذف الملف؟" icon="delete">
+    <p style="margin:0;">نفس العنصر الأب، لكن الرُتبة المحلية ‎-4 تتغلب عليه.</p>
+    <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dlg-rtl-denser').close()">إلغاء</md-button>
+    <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dlg-rtl-denser').close()">حذف</md-button>
+  </md-dialog>
+
+  <md-dialog id="demo-dlg-rtl-reset" style="--md-sys-density-scale: 0;" headline="حذف الملف؟" icon="delete">
+    <p style="margin:0;">نفس العنصر الأب، لكن المتغير المخصص يعيد التباعد الافتراضي.</p>
+    <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dlg-rtl-reset').close()">إلغاء</md-button>
+    <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dlg-rtl-reset').close()">حذف</md-button>
+  </md-dialog>
+</div>`}
+  label="dir=rtl with data-density=-1: inherited, overridden to -4, and reset via --md-sys-density-scale"
+/>
+
+:::caution[`density="0"` is not an opt-out]
+Rungs only go downward. The token layer deliberately ships **no**
+`[density="0"]` rule: reflected props write `density="0"` onto nearly every
+element in the tree, so such a rule would pin them all to default spacing and
+break global inheritance outright. `density="0"` therefore means "inherit
+whatever the ancestor says", not "reset to default" — inside a
+`data-density="-2"` region a `density="0"` dialog is still at `-2`. Only a
+*lower* rung overrides. To genuinely reset a dialog — or a whole subtree — set
+the custom property directly: `style="--md-sys-density-scale: 0"` beats both the
+inherited value and the `[density="-1…-4"]` rules.
+:::
+
+**Density** — `density="-1…-4"` compacts the padding, the headline and the
+actions row. A global `data-density` ancestor drives the same signal, and a
+*lower* rung declared on the dialog itself overrides it. See
+[Density](/behaviour/density/).
+
+**i18n** — translate `headline`, the body content, `close-label`,
+`cancel-label` and `ok-label` (the
+[localization story](/storybook/?path=/story/containment-dialog--localization)
+switches the whole set). `locale` drives any `Intl`-formatted values the
+dialog renders. Translated action labels run longer, so check whether the pair
+still fits side by side or needs stacking (confirming above dismissive).
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-dialog-container-color` | Surface fill | `surface-container-high` |
+| `--md-dialog-container-shape` | Corner radius | 28px (0 when `fullscreen`) |
+| `--md-dialog-headline-color` / `--md-dialog-content-color` | Text | `on-surface` / `on-surface-variant` |
+| `--md-dialog-icon-color` / `--md-dialog-icon-size` | Header glyph | `secondary` / 24px |
+| `--md-dialog-scrim-color` | Backdrop | `rgba(0, 0, 0, 0.32)` |
+| `--md-dialog-divider-color` | Header and content rules | `outline-variant` |
+| `--md-dialog-z-index` / `--md-dialog-scrim-z-index` | Stacking | 2147483647 / 2147483646 |
+
+<ComponentDemo
+  html={`<md-button variant="outlined" onclick="document.getElementById('demo-dialog-themed').show()">Open themed dialog</md-button>
+<md-dialog id="demo-dialog-themed" headline="Themed" icon="palette" style="--md-dialog-container-shape: 8px; --md-dialog-icon-color: var(--md-sys-color-error); --md-dialog-scrim-color: rgba(0, 0, 0, 0.6);">
+  <p style="margin: 0;">8px corners, an error-tinted icon and a heavier scrim.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-themed').close()">Close</md-button>
+</md-dialog>`}
+  label="Themed instance"
+  storyId="containment-dialog--custom-css"
+/>
+
+Check any override in both themes — the scrim sits at a different opacity in
+each, so a container colour that separates cleanly on light can disappear into
+the backdrop on dark. See the
+[dark-theme story](/storybook/?path=/story/containment-dialog--dark-theme).
+
+**CSS parts** — `container`, `header`, `headline`, `content`, `divider` and
+`actions` render on both variants. The rest are conditional: `scrim` and `icon`
+are **basic-only** (a full-screen dialog has neither), `close-button` is
+**full-screen only**, and `cancel-button` / `ok-button` exist only while nothing
+is slotted into `actions`. Styling a part the current variant doesn't render is
+a silent no-op.
+
+<ComponentDemo
+  html={`<style>
+  #demo-dialog-parts::part(container) { border: 2px solid var(--md-sys-color-primary); max-inline-size: 420px; }
+  #demo-dialog-parts::part(headline) { font-style: italic; letter-spacing: .04em; }
+  #demo-dialog-parts::part(scrim) { background: color-mix(in srgb, var(--md-sys-color-primary) 28%, transparent); }
+  #demo-dialog-parts::part(actions) { gap: 16px; }
+</style>
+<md-button variant="filled" onclick="document.getElementById('demo-dialog-parts').show()">Styled parts</md-button>
+
+<md-dialog id="demo-dialog-parts" headline="Styled with ::part()" icon="palette">
+  <p style="margin: 0;">Outlined container, italic headline, tinted scrim and a wider action gap.</p>
+  <md-button slot="actions" variant="text" onclick="document.getElementById('demo-dialog-parts').close()">Cancel</md-button>
+  <md-button slot="actions" variant="filled" onclick="document.getElementById('demo-dialog-parts').close()">Apply</md-button>
+</md-dialog>`}
+  label="::part() overrides"
+/>
+
+```css
+md-dialog::part(container) {
+  max-inline-size: 420px;
+}
+```
+
+
+## Related
+
+[`md-snackbar`](/components/snackbar/) ·
+[`md-bottom-sheet`](/components/bottom-sheet/) ·
+[`md-side-sheet`](/components/side-sheet/) ·
+[`md-menu`](/components/menu/) ·
+[`md-card`](/components/card/) ·
+[`md-button`](/components/button/) ·
+[`md-tooltip`](/components/tooltip/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-dialog" />

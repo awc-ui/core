@@ -1,0 +1,49 @@
+{
+  "name": "@awc-ui/storybook",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Storybook for AWC UI components",
+  "scripts": {
+    "storybook": "pnpm --filter @awc-ui/core build:dev && concurrently -n CORE,SB -c blue,magenta \"pnpm --filter @awc-ui/core build:watch:dev\" \"storybook dev -p 6006\"",
+    "build": "pnpm --filter @awc-ui/core build && storybook build",
+    "build-storybook": "pnpm --filter @awc-ui/core build && storybook build",
+    "test:a11y": "vitest run --project storybook",
+    "test:visual": "echo \"Visual snapshots are not yet ported to Vitest (jest-image-snapshot was test-runner-only). See docs/testing.\" && exit 1",
+    "test:coverage": "pnpm --filter @awc-ui/core build:coverage-sb && node scripts/story-coverage.mjs",
+    "test:stories": "vitest run --project storybook",
+    "test:stories:watch": "vitest --project storybook"
+  },
+  "dependencies": {
+    "@awc-ui/core": "workspace:*",
+    "@awc-ui/theme": "workspace:*",
+    "@awc-ui/tokens": "workspace:*",
+    "material-icons": "^1.13.14",
+    "material-symbols": "^0.40.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@storybook/addon-a11y": "^10.5.5",
+    "@storybook/addon-docs": "^10.5.5",
+    "@storybook/addon-vitest": "^10.5.5",
+    "@storybook/web-components": "^10.5.5",
+    "@storybook/web-components-vite": "^10.5.5",
+    "@types/react": "^18.3.0",
+    "@vitest/browser": "^4.1.10",
+    "@vitest/browser-playwright": "^4",
+    "@vitest/coverage-v8": "^4.1.10",
+    "concurrently": "^9.2.1",
+    "http-server": "^14.1.1",
+    "lit": "^3.0.0",
+    "monocart-coverage-reports": "2.12.9",
+    "playwright": "^1.50.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "storybook": "^10.5.5",
+    "storybook-addon-pseudo-states": "^10.5.5",
+    "typescript": "^5.4.0",
+    "vite": "^7.3.6",
+    "vitest": "^4.1.10",
+    "wait-on": "^9.0.5"
+  },
+  "license": "MIT"
+}

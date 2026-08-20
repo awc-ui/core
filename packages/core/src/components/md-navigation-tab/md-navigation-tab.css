@@ -1,0 +1,458 @@
+/* ==========================================================
+   md-navigation-tab — Material Design 3 Navigation Bar Item
+   Spec:  https://m3.material.io/components/navigation-bar/specs
+   A11y:  https://m3.material.io/components/navigation-bar/accessibility
+
+   Anatomy:
+     - State layer       (hover / focus / pressed tint)
+     - Active indicator  (56×32 secondary-container pill)
+     - Icon              (outlined inactive, filled active)
+     - Label             (label-medium type)
+     - Badge             (small dot or large numeric capsule)
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-navigation-tab-active-indicator-color
+     --md-navigation-tab-active-indicator-width   (default 56px)
+     --md-navigation-tab-active-indicator-height  (default 32px)
+     --md-navigation-tab-active-indicator-shape   (default full-rounded)
+     --md-navigation-tab-active-icon-color
+     --md-navigation-tab-inactive-icon-color
+     --md-navigation-tab-active-label-color
+     --md-navigation-tab-inactive-label-color
+     --md-navigation-tab-label-font            (label-medium font shorthand)
+     --md-navigation-tab-label-font-weight     (active label weight; defaults 600)
+     --md-navigation-tab-icon-size             (default 24px)
+     --md-navigation-tab-padding-block-start   (default 5px — centers 54px content in 64dp bar)
+     --md-navigation-tab-padding-block-end     (default 5px)
+     --md-navigation-tab-hover-state-layer-color
+     --md-navigation-tab-focus-state-layer-color
+     --md-navigation-tab-pressed-state-layer-color
+     --md-navigation-tab-badge-color
+     --md-navigation-tab-badge-on-color
+     --md-navigation-tab-disabled-opacity      (default 0.38)
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST — base layout, sizing, focus
+   ========================================================== */
+:host {
+  --_indicator-color: var(
+    --md-navigation-tab-active-indicator-color,
+    var(--md-sys-color-secondary-container, #E8DEF8)
+  );
+  --_indicator-w: var(--md-navigation-tab-active-indicator-width, max(40px, calc(56px + var(--md-sys-density-scale, 0) * 4px)));
+  --_indicator-h: var(--md-navigation-tab-active-indicator-height, max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px)));
+  --_indicator-shape: var(
+    --md-navigation-tab-active-indicator-shape,
+    var(--md-sys-shape-corner-full, 9999px)
+  );
+
+  --_active-icon-color: var(
+    --md-navigation-tab-active-icon-color,
+    var(--md-sys-color-on-secondary-container, #1E192B)
+  );
+  --_inactive-icon-color: var(
+    --md-navigation-tab-inactive-icon-color,
+    var(--md-sys-color-on-surface-variant, #49454F)
+  );
+
+  --_active-label-color: var(
+    --md-navigation-tab-active-label-color,
+    var(--md-sys-color-on-surface, #1C1B1F)
+  );
+  --_inactive-label-color: var(
+    --md-navigation-tab-inactive-label-color,
+    var(--md-sys-color-on-surface-variant, #49454F)
+  );
+
+  --_icon-size: var(--md-navigation-tab-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
+  --_pad-top: var(--md-navigation-tab-padding-block-start, calc(5px + var(--md-sys-density-scale, 0) * 1px));
+  --_pad-bottom: var(--md-navigation-tab-padding-block-end, calc(5px + var(--md-sys-density-scale, 0) * 1px));
+
+  --_hover-color: var(
+    --md-navigation-tab-hover-state-layer-color,
+    var(--md-sys-color-on-surface, #1C1B1F)
+  );
+  --_focus-color: var(
+    --md-navigation-tab-focus-state-layer-color,
+    var(--md-sys-color-on-surface, #1C1B1F)
+  );
+  --_pressed-color: var(
+    --md-navigation-tab-pressed-state-layer-color,
+    var(--md-sys-color-on-surface, #1C1B1F)
+  );
+
+  --_badge-color: var(
+    --md-navigation-tab-badge-color,
+    var(--md-sys-color-error, #B3261E)
+  );
+  --_badge-on-color: var(
+    --md-navigation-tab-badge-on-color,
+    var(--md-sys-color-on-error, #FFFFFF)
+  );
+
+  --_disabled-opacity: var(--md-navigation-tab-disabled-opacity, 0.38);
+
+  --_label-font: var(
+    --md-navigation-tab-label-font,
+    var(--md-sys-typescale-label-medium-font, 500 12px/16px Roboto, sans-serif)
+  );
+  --_label-size: var(--md-navigation-tab-label-font-size, max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px)));
+  --_label-weight-active: var(--md-navigation-tab-label-font-weight, 600);
+
+  --_motion-duration: var(--md-sys-motion-duration-short4, 200ms);
+  --_motion-easing: var(
+    --md-sys-motion-easing-emphasized-decelerate,
+    cubic-bezier(0.05, 0.7, 0.1, 1)
+  );
+
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  inline-size: 100%;
+  min-inline-size: 48px; /* M3 minimum touch target */
+  block-size: 100%;
+  padding-block: var(--_pad-top) var(--_pad-bottom);
+  box-sizing: border-box;
+  cursor: pointer;
+  position: relative;
+  outline: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  color: var(--_inactive-icon-color);
+  /* Color transitions are quick and additive — they don't trigger layout. */
+  transition:
+    color var(--_motion-duration) var(--_motion-easing);
+}
+
+:host(.md-navigation-tab--active) {
+  color: var(--_active-icon-color);
+}
+
+/* ==========================================================
+   2. DISABLED STATE
+   M3 nav-bar doesn't formally define disabled, but our API
+   needs one — match the global disabled-content opacity.
+   `--soft-disabled` shares the dim but stays keyboard-focusable
+   (it keeps pointer-events + the focus ring) so screen-reader
+   users can discover a temporarily-unavailable destination.
+   ========================================================== */
+:host(.md-navigation-tab--disabled),
+:host(.md-navigation-tab--soft-disabled) {
+  cursor: not-allowed;
+  opacity: var(--_disabled-opacity);
+}
+
+:host(.md-navigation-tab--disabled) {
+  pointer-events: none;
+}
+
+/* ==========================================================
+   3. STATE LAYER
+   Spans the full hit-area so hover/focus/pressed feedback
+   covers the whole tab — not just the active-indicator pill.
+   Opacities come from the M3 state-layer tokens.
+   ========================================================== */
+.md-navigation-tab__state-layer {
+  position: absolute;
+  inset: 0;
+  background-color: currentColor;
+  opacity: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short2, 100ms) ease;
+}
+
+:host(:hover:not(.md-navigation-tab--disabled):not(.md-navigation-tab--soft-disabled)) .md-navigation-tab__state-layer {
+  background-color: var(--_hover-color);
+  opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+}
+
+:host(:active:not(.md-navigation-tab--disabled):not(.md-navigation-tab--soft-disabled)) .md-navigation-tab__state-layer {
+  background-color: var(--_pressed-color);
+  opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+}
+
+:host(:focus-visible:not(.md-navigation-tab--disabled)) .md-navigation-tab__state-layer {
+  background-color: var(--_focus-color);
+  /* M3 nav-bar focus state-layer opacity is 0.10 (the global sys token is 0.12);
+     keep a component override so it matches the spec regardless of the sys value. */
+  opacity: var(--md-navigation-tab-focus-state-layer-opacity, 0.1);
+}
+
+/* Visible 3dp focus ring per M3 accessibility guidance.
+   Wraps the active-indicator pill (centered, rounded) rather than the whole
+   tab: a full-tab inset outline gets clipped at the navigation bar's rounded
+   corners, and `secondary` matches the focus-ring color used library-wide
+   (the old full-tab ring used `primary`, which stood out from every other
+   component). */
+:host(:focus-visible:not(.md-navigation-tab--disabled)) .md-navigation-tab__icon-container::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 3px solid var(--md-sys-color-secondary, #625B71);
+  border-radius: var(--_indicator-shape, 9999px);
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+/* ==========================================================
+   4. STACK CONTAINER
+   The icon-container + indicator + label are stacked centered
+   so the visual layout matches MD3 even when extra width is
+   available.
+   ========================================================== */
+.md-navigation-tab__container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  /* M3 vertical item: active-indicator → label "container between space" = 6dp.
+     (The 24dp icon centered in the 32dp indicator yields the 4dp icon inset.) */
+  gap: max(2px, calc(6px + var(--md-sys-density-scale, 0) * 1px));
+  inline-size: 100%;
+  pointer-events: none; /* Click goes through to host. */
+}
+
+/* ==========================================================
+   5. ACTIVE INDICATOR PILL
+   Animates from a vertically-collapsed shape into the full
+   56×32dp pill — per M3's emphasized-decelerate spec.
+   ========================================================== */
+.md-navigation-tab__indicator {
+  position: absolute;
+  /* Aligned to the icon-container vertical box. */
+  inset-block-start: 0;
+  inline-size: var(--_indicator-w);
+  block-size: var(--_indicator-h);
+  border-radius: var(--_indicator-shape);
+  background-color: var(--_indicator-color);
+  /* Start collapsed; grow on activation. */
+  transform: scale(0, 1);
+  transform-origin: center center;
+  opacity: 0;
+  transition:
+    transform var(--_motion-duration) var(--_motion-easing),
+    opacity var(--md-sys-motion-duration-short2, 100ms) ease;
+  pointer-events: none;
+}
+
+.md-navigation-tab__indicator--active {
+  transform: scale(1, 1);
+  opacity: 1;
+}
+
+/* ==========================================================
+   6. ICON CONTAINER & ICON
+   The container is exactly the size of the active indicator
+   so the indicator sits behind the icon at 100% coverage.
+   ========================================================== */
+.md-navigation-tab__icon-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_indicator-w);
+  block-size: var(--_indicator-h);
+  pointer-events: none;
+}
+
+.md-navigation-tab__icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--_icon-size);
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  line-height: 1;
+  color: inherit;
+  z-index: 1;
+  transition: font-variation-settings var(--md-sys-motion-duration-short2, 100ms) ease;
+}
+
+/* Custom icons via slot="icon" / "active-icon" (SVG, emoji, custom font):
+   slotted light-DOM nodes don't inherit the shadow icon-span's sizing, so a
+   bare <span>★</span> would render at the host font-size. Pin them to the 24dp
+   Material Symbols footprint, inherit the active/inactive icon color (so SVGs
+   using currentColor tint correctly), and center within the box. */
+.md-navigation-tab__icon ::slotted(*) {
+  /* Fixed 24dp flex box so text glyphs (★, emoji) and SVGs share one footprint
+     and center identically — a bare inline glyph otherwise gets a taller line
+     box and rides off-center against an SVG's box. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  font-size: var(--_icon-size);
+  line-height: 1;
+  /* Reset the icon span's Material Symbols font: slotted text/emoji inherit it
+     through the flattened tree, but that icon font has no ★/emoji glyph and its
+     line metrics drop the fallback glyph ~5px below center. A normal UI font
+     centers them; authors slotting a custom icon font override this from light DOM. */
+  font-family: var(--md-navigation-tab-slotted-icon-font, system-ui, sans-serif);
+  color: inherit;
+  object-fit: contain;
+}
+
+/* Material Symbols variable-font: flip the FILL axis on active. */
+.md-navigation-tab__icon--filled {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* When Material Symbols is the icon font, the outlined font already
+   gives us the inactive look. When Material Icons (legacy) is used,
+   we still get the inactive look via the font family. */
+.material-symbols-outlined {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons'), sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  /* No `display` here: the element is also `.md-navigation-tab__icon`, which must
+     stay an `inline-flex` centering box (this class is later in source with equal
+     specificity, so an inline-block here would silently win and break centering of
+     slotted custom icons — they'd sit on the text baseline ~5px low). */
+  white-space: nowrap;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ==========================================================
+   7. BADGES
+   Two flavors per M3 spec:
+     - small  → 6dp dot
+     - large  → numeric / textual capsule (16dp min height)
+   Both anchor to the top-right of the icon container.
+   ========================================================== */
+.md-navigation-tab__badge {
+  position: absolute;
+  /* Above the icon — the icon glyph has z-index:1, so without this the SVG
+     strokes paint over the badge ("polluted" badge). */
+  z-index: 2;
+  background-color: var(--_badge-color);
+  color: var(--_badge-on-color);
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  box-sizing: border-box;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.md-navigation-tab__badge--small {
+  inset-block-start: 2px;
+  inset-inline-end: 14px;
+  inline-size: 6px;
+  block-size: 6px;
+}
+
+.md-navigation-tab__badge--large {
+  inset-block-start: -2px;
+  inset-inline-start: 50%;
+  margin-inline-start: 4px;
+  min-inline-size: 16px;
+  block-size: 16px;
+  padding-inline: 4px;
+  font: var(
+    --md-sys-typescale-label-small-font,
+    500 11px/16px Roboto, sans-serif
+  );
+  letter-spacing: var(
+    --md-sys-typescale-label-small-letter-spacing,
+    0.5px
+  );
+}
+
+/* ==========================================================
+   8. LABEL
+   label-medium typography per M3. Active label gains a
+   slightly heavier weight to convey selection.
+   ========================================================== */
+.md-navigation-tab__label {
+  font: var(--_label-font);
+  font-size: var(--_label-size);
+  letter-spacing: var(
+    --md-sys-typescale-label-medium-letter-spacing,
+    0.5px
+  );
+  color: var(--_inactive-label-color);
+  max-inline-size: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  pointer-events: none;
+  transition:
+    color var(--md-sys-motion-duration-short2, 100ms) ease,
+    opacity var(--md-sys-motion-duration-short2, 100ms) ease;
+}
+
+:host(.md-navigation-tab--active) .md-navigation-tab__label {
+  color: var(--_active-label-color);
+  font-weight: var(--_label-weight-active);
+}
+
+/* When `labelBehavior="selected"` keep the label slot in the layout
+   but hide it visually for inactive tabs so heights stay constant. */
+.md-navigation-tab__label--hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* When `labelBehavior="none"` is applied on the host the label is
+   not rendered at all — collapse the vertical padding so the icon
+   sits centered in the row. */
+:host(.md-navigation-tab--label-hidden) {
+  /* No label: center the 32dp icon-container in the 64dp bar → 16dp each side. */
+  --_pad-top: var(--md-sys-spacing-inset-lg, 16px);
+  --_pad-bottom: var(--md-sys-spacing-inset-lg, 16px);
+  justify-content: center;
+}
+
+:host(.md-navigation-tab--label-hidden) .md-navigation-tab__container {
+  justify-content: center;
+}
+
+/* ==========================================================
+   9. FORCED COLORS / REDUCED MOTION
+   ========================================================== */
+@media (forced-colors: active) {
+  :host {
+    --_indicator-color: Highlight;
+    --_active-icon-color: HighlightText;
+    --_active-label-color: HighlightText;
+    --_inactive-icon-color: ButtonText;
+    --_inactive-label-color: ButtonText;
+  }
+  :host(:focus-visible:not(.md-navigation-tab--disabled)) {
+    outline: 2px solid CanvasText;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host,
+  .md-navigation-tab__state-layer,
+  .md-navigation-tab__indicator,
+  .md-navigation-tab__icon,
+  .md-navigation-tab__label {
+    transition: none !important;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

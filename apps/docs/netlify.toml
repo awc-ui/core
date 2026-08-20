@@ -1,0 +1,14 @@
+# This file ships in the publish dir; only [[headers]] and [[redirects]] apply at runtime.
+# The build is orchestrated by .github/workflows/deploy.yml (see Story 4.7).
+# If you ever re-enable Netlify Git integration as a fallback, add a [build] section
+# here pointing to `bash scripts/build-docs.sh` and disable the deploy workflow.
+
+[[headers]]
+  for = "/storybook/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+
+[[redirects]]
+  from = "/storybook"
+  to = "/storybook/index.html"
+  status = 200

@@ -1,0 +1,1841 @@
+---
+import stats from "../data/stats.json";
+
+// Components rendered live somewhere on the landing page — surfaced as a
+// pill row above the demo card so visitors can see at a glance what
+// they're looking at across the whole page (hero + demo card).
+//
+// INVARIANT — every tag in this list MUST be a custom element actually
+// mounted by the page (HeroSection.astro or this file). The section's
+// lede ("Every component in the list below is an actual AWC UI custom
+// element rendered live on this page") only holds if this list stays
+// 1:1 with what the hero + demo card mount. If you add or remove a
+// component from either, update this list in lockstep.
+//
+// Order roughly groups family-members together (loading near progress,
+// button-group near button) rather than strict visual order — the row
+// reads more like a label cloud than a scan-from-top list.
+const usedComponents = [
+  { tag: "md-card", label: "Card" },
+  { tag: "md-icon-button", label: "Icon button" },
+  { tag: "md-tooltip", label: "Tooltip" },
+  { tag: "md-text-field", label: "Text field" },
+  { tag: "md-segmented-button-set", label: "Segmented set" },
+  { tag: "md-segmented-button", label: "Segmented" },
+  { tag: "md-slider", label: "Slider" },
+  { tag: "md-divider", label: "Divider" },
+  { tag: "md-switch", label: "Switch" },
+  { tag: "md-checkbox", label: "Checkbox" },
+  { tag: "md-radio", label: "Radio" },
+  { tag: "md-chip", label: "Chip" },
+  { tag: "md-loading-indicator", label: "Loading" },
+  { tag: "md-progress-indicator", label: "Progress" },
+  { tag: "md-button", label: "Button" },
+  { tag: "md-button-group", label: "Button group" },
+  { tag: "md-menu", label: "Menu" },
+  { tag: "md-menu-item", label: "Menu item" },
+  { tag: "md-dialog", label: "Dialog" },
+  { tag: "md-date-picker", label: "Date picker" },
+  { tag: "md-time-picker", label: "Time picker" },
+  { tag: "md-number-field", label: "Number field" },
+  { tag: "md-otp-field", label: "OTP field" },
+  { tag: "md-list", label: "List" },
+  { tag: "md-list-item", label: "List item" },
+  { tag: "md-meter", label: "Meter" },
+  { tag: "md-rating", label: "Rating" },
+  { tag: "md-status-dot", label: "Status dot" },
+  { tag: "md-area-chart", label: "Area chart" },
+  { tag: "md-sparkline", label: "Sparkline" },
+  { tag: "md-pie-chart", label: "Pie chart" },
+];
+---
+
+<section class="awc-showcase" id="component-showcase">
+  <div class="awc-showcase__bg" aria-hidden="true">
+    <div class="awc-showcase__blob"></div>
+  </div>
+
+  <div class="awc-showcase__inner">
+    <div class="awc-showcase__header" data-awc-reveal>
+      <span class="awc-showcase__eyebrow">Live on this page</span>
+      <h2 class="awc-showcase__title">
+        Every demo here<br/>
+        <span class="awc-showcase__title-accent">is the library itself.</span>
+      </h2>
+      <p class="awc-showcase__lede">
+        Each component in the list below is an AWC&nbsp;UI custom element
+        rendered live on this page &mdash; in the hero above, in the demo card
+        below, or both. The demos run the same code you install from npm.
+      </p>
+    </div>
+
+    <div class="awc-showcase__pills" data-awc-reveal-stagger>
+      {usedComponents.map((c) => (
+        <a class="awc-showcase__pill" href={`/components/${c.tag.replace('md-', '')}/`}>
+          <span class="awc-showcase__pill-code">&lt;{c.tag}&gt;</span>
+          <span class="awc-showcase__pill-label">{c.label}</span>
+        </a>
+      ))}
+    </div>
+
+    <div class="awc-showcase__stage" data-awc-reveal data-live-section>
+      <div class="awc-showcase__bento" data-awc-reveal-stagger>
+      <div class="awc-showcase__card awc-showcase__cell awc-showcase__cell--settings">
+        <md-card variant="elevated" class="awc-showcase__demo-card">
+          <div class="awc-showcase__demo-header">
+            <div class="awc-showcase__demo-avatar" aria-hidden="true">
+              <span class="material-symbols-outlined">manage_accounts</span>
+            </div>
+            <div class="awc-showcase__demo-headtext">
+              <span class="awc-showcase__demo-eyebrow">Profile preferences</span>
+              <h3 class="awc-showcase__demo-title">Account settings</h3>
+            </div>
+            <md-tooltip text="View account help" position="left">
+              <md-icon-button
+                variant="standard"
+                size="sm"
+                icon="help_outline"
+                aria-label="Help"
+              ></md-icon-button>
+            </md-tooltip>
+          </div>
+
+          <div class="awc-showcase__demo-body">
+            <md-text-field
+              variant="outlined"
+              label="Display name"
+              value="AWC Builder"
+              leading-icon="person"
+            ></md-text-field>
+
+            <md-text-field
+              variant="outlined"
+              label="Email"
+              value="builder@awcui.io"
+              leading-icon="mail"
+            ></md-text-field>
+
+            {/* "Language" select built from md-text-field (readonly,
+                with leading globe icon + trailing chevron) anchoring
+                an md-menu of choices. Demonstrates how composable
+                AWC primitives can replace a single packaged
+                component when richer trigger styling is needed. The
+                menu itself lives at section-level (below) so its
+                position: fixed surface doesn't get clipped by any
+                transformed ancestor like the scroll-reveal stage. */}
+            <md-text-field
+              id="awc-language-trigger"
+              variant="outlined"
+              label="Language"
+              value="English (US)"
+              readonly
+              class="awc-showcase__demo-language-trigger"
+              data-awc-language-trigger
+            >
+              <span
+                slot="leading-icon"
+                class="material-symbols-outlined"
+                aria-hidden="true"
+              >language</span>
+              <span
+                slot="trailing-icon"
+                class="material-symbols-outlined awc-showcase__demo-language-chevron"
+                aria-hidden="true"
+              >arrow_drop_down</span>
+            </md-text-field>
+
+            <div class="awc-showcase__demo-field">
+              <span class="awc-showcase__demo-field-label">Appearance</span>
+              <md-segmented-button-set aria-label="Theme">
+                <md-segmented-button
+                  value="auto"
+                  label="Auto"
+                  icon="auto_mode"
+                ></md-segmented-button>
+                <md-segmented-button
+                  value="light"
+                  label="Light"
+                  icon="light_mode"
+                ></md-segmented-button>
+                <md-segmented-button
+                  value="dark"
+                  label="Dark"
+                  icon="dark_mode"
+                  selected
+                ></md-segmented-button>
+              </md-segmented-button-set>
+            </div>
+
+            <div class="awc-showcase__demo-field" data-awc-sync-field>
+              <div class="awc-showcase__demo-field-row">
+                <span class="awc-showcase__demo-field-label">Sync interval</span>
+                <span
+                  class="awc-showcase__demo-field-value"
+                  data-awc-sync-value
+                >
+                  30 min
+                </span>
+              </div>
+              <md-slider
+                min="0"
+                max="60"
+                value="30"
+                step="5"
+                stops
+                value-indicator
+                aria-label="Sync interval in minutes"
+                data-awc-sync-slider
+              ></md-slider>
+            </div>
+
+            <md-divider></md-divider>
+
+            <div class="awc-showcase__demo-row">
+              <span class="awc-showcase__demo-row-icon" aria-hidden="true">
+                <span class="material-symbols-outlined">notifications_active</span>
+              </span>
+              <span class="awc-showcase__demo-row-label">Email notifications</span>
+              <md-switch selected aria-label="Email notifications"></md-switch>
+            </div>
+
+            <div class="awc-showcase__demo-row">
+              <span class="awc-showcase__demo-row-icon" aria-hidden="true">
+                <span class="material-symbols-outlined">verified_user</span>
+              </span>
+              <span class="awc-showcase__demo-row-label">Two-factor authentication</span>
+              <md-checkbox checked aria-label="Two-factor authentication"></md-checkbox>
+            </div>
+
+            <md-divider></md-divider>
+
+            <div class="awc-showcase__demo-field">
+              <span class="awc-showcase__demo-field-label">Profile visibility</span>
+              <div
+                class="awc-showcase__demo-radios"
+                role="radiogroup"
+                aria-label="Profile visibility"
+              >
+                <label class="awc-showcase__demo-radio">
+                  <md-radio
+                    name="awc-visibility"
+                    value="public"
+                    aria-label="Public"
+                  ></md-radio>
+                  <span class="material-symbols-outlined" aria-hidden="true">public</span>
+                  <span class="awc-showcase__demo-radio-label">Public</span>
+                </label>
+                <label class="awc-showcase__demo-radio">
+                  <md-radio
+                    name="awc-visibility"
+                    value="friends"
+                    checked
+                    aria-label="Friends only"
+                  ></md-radio>
+                  <span class="material-symbols-outlined" aria-hidden="true">group</span>
+                  <span class="awc-showcase__demo-radio-label">Friends</span>
+                </label>
+                <label class="awc-showcase__demo-radio">
+                  <md-radio
+                    name="awc-visibility"
+                    value="private"
+                    aria-label="Private"
+                  ></md-radio>
+                  <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+                  <span class="awc-showcase__demo-radio-label">Private</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="awc-showcase__demo-field">
+              <span class="awc-showcase__demo-field-label">Interests</span>
+              <div class="awc-showcase__demo-chips" role="group" aria-label="Interests">
+                <md-chip variant="filter" selected>Design</md-chip>
+                <md-chip variant="filter" selected>Web</md-chip>
+                <md-chip variant="filter">Mobile</md-chip>
+                <md-chip variant="filter">A11y</md-chip>
+              </div>
+            </div>
+
+            <md-divider></md-divider>
+
+            <div class="awc-showcase__demo-field">
+              <span class="awc-showcase__demo-field-label">Active sessions</span>
+              <md-list density="-2" label="Active sessions">
+                <md-list-item
+                  lines="2"
+                  leading-icon="laptop_mac"
+                  headline="MacBook Pro 16&quot;"
+                  supporting-text="Bucharest &middot; active now"
+                  trailing-supporting-text="This device"
+                ></md-list-item>
+                <md-list-item
+                  type="button"
+                  lines="2"
+                  leading-icon="smartphone"
+                  headline="iPhone 15"
+                  supporting-text="Bucharest &middot; 2 hours ago"
+                  trailing-icon="logout"
+                ></md-list-item>
+              </md-list>
+            </div>
+
+            <div class="awc-showcase__demo-progress">
+              <div class="awc-showcase__demo-field-row">
+                <span class="awc-showcase__demo-field-label">Profile completeness</span>
+                <span class="awc-showcase__demo-field-value">75%</span>
+              </div>
+              <md-progress-indicator
+                variant="linear"
+                value="75"
+                wave
+                label="Profile completeness"
+              ></md-progress-indicator>
+            </div>
+          </div>
+
+          <div class="awc-showcase__demo-footer">
+            <md-button variant="text" data-awc-action="cancel">Cancel</md-button>
+            <md-button variant="filled" icon="check" data-awc-action="save">
+              Save changes
+            </md-button>
+          </div>
+        </md-card>
+      </div>
+
+      {/* ── Analytics panel — area chart + sparkline stat tiles ── */}
+      <div class="awc-showcase__cell awc-showcase__cell--analytics">
+        <md-card variant="elevated" class="awc-showcase__demo-card awc-showcase__panel awc-showcase__panel--analytics">
+          <div class="awc-showcase__demo-header awc-showcase__panel-header">
+            <div class="awc-showcase__demo-avatar awc-showcase__demo-avatar--tertiary" aria-hidden="true">
+              <span class="material-symbols-outlined">monitoring</span>
+            </div>
+            <div class="awc-showcase__demo-headtext">
+              <span class="awc-showcase__demo-eyebrow">Canvas chart engine</span>
+              <h3 class="awc-showcase__demo-title">Analytics overview</h3>
+            </div>
+            <md-chip appearance="filled" color="success" class="awc-showcase__trend-chip">
+              <span slot="leading-icon" class="material-symbols-outlined" aria-hidden="true">trending_up</span>
+              +18.4% YoY
+            </md-chip>
+          </div>
+
+          <md-area-chart
+            id="awc-demo-area"
+            label="Quarterly revenue"
+            curve="smooth"
+            class="awc-showcase__area-chart"
+          ></md-area-chart>
+
+          <div class="awc-showcase__spark-strip">
+            <div class="awc-showcase__spark-tile">
+              <span class="awc-showcase__spark-label">Sessions</span>
+              <span class="awc-showcase__spark-value">48.2k</span>
+              <md-sparkline
+                id="awc-demo-spark-sessions"
+                variant="area"
+                color="primary"
+                height="30px"
+                aria-label="Sessions trend"
+              ></md-sparkline>
+            </div>
+            <div class="awc-showcase__spark-tile">
+              <span class="awc-showcase__spark-label">Conversion</span>
+              <span class="awc-showcase__spark-value">4.6%</span>
+              <md-sparkline
+                id="awc-demo-spark-conversion"
+                variant="line"
+                color="tertiary"
+                height="30px"
+                aria-label="Conversion trend"
+              ></md-sparkline>
+            </div>
+            <div class="awc-showcase__spark-tile">
+              <span class="awc-showcase__spark-label">CSAT</span>
+              <span class="awc-showcase__spark-value">4.6 / 5</span>
+              <md-rating value="4.6" readonly density="-3" rating-label="Customer satisfaction"></md-rating>
+            </div>
+          </div>
+        </md-card>
+      </div>
+
+      {/* ── Scheduling panel — pickers + the new number field ── */}
+      <div class="awc-showcase__cell awc-showcase__cell--schedule">
+        <md-card variant="elevated" class="awc-showcase__demo-card awc-showcase__panel awc-showcase__panel--schedule">
+          <div class="awc-showcase__demo-header awc-showcase__panel-header">
+            <div class="awc-showcase__demo-avatar" aria-hidden="true">
+              <span class="material-symbols-outlined">event</span>
+            </div>
+            <div class="awc-showcase__demo-headtext">
+              <span class="awc-showcase__demo-eyebrow">Pickers &amp; fields</span>
+              <h3 class="awc-showcase__demo-title">Plan a session</h3>
+            </div>
+          </div>
+
+          <div class="awc-showcase__panel-body">
+            <!-- `docked` anchors the calendar to the field, and the panel it
+                 sits in is `overflow: hidden` — so the popup was clipped by the
+                 card and overlapped the field. `modal-input` keeps the text
+                 field but lifts the calendar into a dialog. (Plain `modal` is
+                 the headless variant: dialog only, no field to click.) -->
+            <md-date-picker
+              variant="modal-input"
+              label="Date"
+              value="2026-09-14"
+              field-variant="outlined"
+            ></md-date-picker>
+            <md-time-picker
+              variant="input"
+              label="Start time"
+              value="09:30"
+            ></md-time-picker>
+            <md-number-field
+              variant="outlined"
+              label="Participants"
+              value="8"
+              min="1"
+              max="50"
+            ></md-number-field>
+          </div>
+
+          <div class="awc-showcase__panel-footer">
+            <md-button variant="text">Clear</md-button>
+            <md-button variant="tonal" icon="event_available">Schedule</md-button>
+          </div>
+        </md-card>
+      </div>
+
+      {/* ── Status panel — meters, wavy progress, live status ── */}
+      <div class="awc-showcase__cell awc-showcase__cell--status">
+        <md-card variant="elevated" class="awc-showcase__demo-card awc-showcase__panel awc-showcase__panel--status">
+          <div class="awc-showcase__demo-header awc-showcase__panel-header">
+            <div class="awc-showcase__demo-avatar awc-showcase__demo-avatar--secondary" aria-hidden="true">
+              <span class="material-symbols-outlined">monitor_heart</span>
+            </div>
+            <div class="awc-showcase__demo-headtext">
+              <span class="awc-showcase__demo-eyebrow">Meters &amp; progress</span>
+              <h3 class="awc-showcase__demo-title">System status</h3>
+            </div>
+            <md-status-dot state="online" live label="All systems operational"></md-status-dot>
+          </div>
+
+          <div class="awc-showcase__panel-body awc-showcase__panel-body--loose">
+            <md-meter
+              value="82"
+              label="Storage used"
+              color="warning"
+              show-label
+              show-value
+            ></md-meter>
+            <md-meter
+              value="34"
+              label="API quota"
+              color="success"
+              show-label
+              show-value
+            ></md-meter>
+
+            <div class="awc-showcase__demo-field">
+              <div class="awc-showcase__demo-field-row">
+                <span class="awc-showcase__demo-field-label">Deploy rollout</span>
+                <span class="awc-showcase__demo-field-value">64%</span>
+              </div>
+              <md-progress-indicator
+                variant="linear"
+                value="64"
+                wave
+                label="Deploy rollout"
+              ></md-progress-indicator>
+            </div>
+
+            <div class="awc-showcase__status-row">
+              <md-loading-indicator class="awc-showcase__status-loader"></md-loading-indicator>
+              <span class="awc-showcase__status-caption">Ingesting events&hellip;</span>
+              <md-chip appearance="filled" color="success">Operational</md-chip>
+            </div>
+          </div>
+        </md-card>
+      </div>
+
+      {/* ── Verification panel — the new OTP field ── */}
+      <div class="awc-showcase__cell awc-showcase__cell--verify">
+        <md-card variant="elevated" class="awc-showcase__demo-card awc-showcase__panel awc-showcase__panel--verify">
+          <div class="awc-showcase__demo-header awc-showcase__panel-header">
+            <div class="awc-showcase__demo-avatar" aria-hidden="true">
+              <span class="material-symbols-outlined">verified_user</span>
+            </div>
+            <div class="awc-showcase__demo-headtext">
+              <span class="awc-showcase__demo-eyebrow">New in AWC UI</span>
+              <h3 class="awc-showcase__demo-title">Two-step verification</h3>
+            </div>
+          </div>
+
+          <div class="awc-showcase__panel-body">
+            <md-otp-field
+              length="6"
+              group-size="3"
+              density="-2"
+              value="284"
+              label="One-time code"
+              supporting-text="Sent to the device ending in 4821"
+            ></md-otp-field>
+
+            <div class="awc-showcase__demo-field">
+              <div class="awc-showcase__demo-field-row">
+                <span class="awc-showcase__demo-field-label">Code expires in</span>
+                <span
+                  class="awc-showcase__demo-field-value"
+                  id="awc-verify-countdown"
+                  aria-live="off"
+                >0:42</span>
+              </div>
+              <md-progress-indicator
+                id="awc-verify-progress"
+                variant="linear"
+                value="100"
+                label="Time remaining before this code expires"
+              ></md-progress-indicator>
+            </div>
+
+            <md-divider></md-divider>
+
+            <div class="awc-showcase__demo-field">
+              <span class="awc-showcase__demo-field-label">Send the code via</span>
+              <md-button-group
+                variant="connected"
+                size="md"
+                full-width
+                required
+                aria-label="Send the code via"
+              >
+                <md-button value="sms" icon="sms" selected>SMS</md-button>
+                <md-button value="app" icon="phonelink_lock">App</md-button>
+                <md-button value="email" icon="mail">Email</md-button>
+              </md-button-group>
+            </div>
+
+            <div class="awc-showcase__demo-row">
+              <span class="awc-showcase__demo-row-icon" aria-hidden="true">
+                <span class="material-symbols-outlined">devices</span>
+              </span>
+              <span class="awc-showcase__demo-row-label">Trust this device for 30 days</span>
+              <md-switch selected aria-label="Trust this device for 30 days"></md-switch>
+            </div>
+          </div>
+
+          <div class="awc-showcase__panel-footer">
+            <md-button variant="text">Resend code</md-button>
+            <md-button variant="filled" icon="lock_open">Verify</md-button>
+          </div>
+        </md-card>
+      </div>
+
+      {/* ── Donut panel — pie chart with the centre slot ── */}
+      <div class="awc-showcase__cell awc-showcase__cell--donut">
+        <md-card variant="elevated" class="awc-showcase__demo-card awc-showcase__panel awc-showcase__panel--donut">
+          <div class="awc-showcase__demo-header awc-showcase__panel-header">
+            <div class="awc-showcase__demo-avatar awc-showcase__demo-avatar--tertiary" aria-hidden="true">
+              <span class="material-symbols-outlined">donut_small</span>
+            </div>
+            <div class="awc-showcase__demo-headtext">
+              <span class="awc-showcase__demo-eyebrow">Donut + centre slot</span>
+              <h3 class="awc-showcase__demo-title">Traffic sources</h3>
+            </div>
+          </div>
+
+          <md-pie-chart
+            id="awc-demo-pie"
+            label="Traffic sources"
+            inner-radius="58%"
+            legend="bottom"
+            show-labels="false"
+            class="awc-showcase__pie-chart"
+          >
+            <div slot="center" class="awc-showcase__donut-center">
+              <span class="awc-showcase__donut-value">48.2k</span>
+              <span class="awc-showcase__donut-caption">sessions / week</span>
+            </div>
+          </md-pie-chart>
+        </md-card>
+      </div>
+      </div>
+
+      <div class="awc-showcase__tags">
+        <span class="awc-showcase__tag awc-showcase__tag--ok">
+          <span class="awc-showcase__tag-dot"></span>
+          Live shadow DOM
+        </span>
+        <span class="awc-showcase__tag">Rendered in-page</span>
+        <span class="awc-showcase__tag">Lazy-loaded</span>
+      </div>
+    </div>
+
+    <div class="awc-showcase__footer" data-awc-reveal>
+      <a href="/components/" class="awc-btn awc-btn--filled">
+        Browse all {stats.componentCount} components
+        <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+
+  {/* Language menu — anchored to the readonly md-text-field that
+      acts as its trigger. Lives at section-level for the same
+      reason as the dialogs below: md-menu uses `position: fixed`
+      and would otherwise be clipped to the transformed
+      `.awc-showcase__stage` reveal-wrapper. */}
+  <md-menu
+    id="awc-language-menu"
+    anchor="awc-language-trigger"
+    placement="bottom-start"
+    match-anchor-width
+  >
+    <md-menu-item
+      headline="English (US)"
+      data-awc-language="English (US)"
+      selected
+    ></md-menu-item>
+    <md-menu-item
+      headline="English (UK)"
+      data-awc-language="English (UK)"
+    ></md-menu-item>
+    <md-menu-item
+      headline="Deutsch"
+      data-awc-language="Deutsch"
+    ></md-menu-item>
+    <md-menu-item
+      headline="Français"
+      data-awc-language="Français"
+    ></md-menu-item>
+    <md-menu-item
+      headline="Español"
+      data-awc-language="Español"
+    ></md-menu-item>
+    <md-menu-item
+      headline="日本語"
+      data-awc-language="日本語"
+    ></md-menu-item>
+  </md-menu>
+
+  {/* Confirmation dialogs — wired up to the demo footer's Cancel
+      and Save changes buttons. They live OUTSIDE every
+      `data-awc-reveal` wrapper because those wrappers carry a
+      `transform` (translateY) for the scroll-reveal animation,
+      and any non-`none` transform on an ancestor creates a new
+      containing block for `position: fixed` descendants — which
+      would clip the dialog's full-screen scrim to the reveal
+      container's box. Anchored at section level (overflow:hidden
+      but no transform) so the scrim escapes to the viewport. */}
+  <md-dialog
+    id="awc-showcase-save-dialog"
+    headline="Save changes?"
+    icon="cloud_upload"
+    divider
+  >
+    Your profile updates will be applied across every device
+    where you're signed in. You can revert from
+    <strong>Settings → Account history</strong> within 30 days.
+
+    <div slot="actions">
+      <md-button variant="text" data-awc-dialog-close>
+        Not now
+      </md-button>
+      <md-button variant="filled" icon="check" data-awc-dialog-confirm="save">
+        Save
+      </md-button>
+    </div>
+  </md-dialog>
+
+  <md-dialog
+    id="awc-showcase-cancel-dialog"
+    headline="Discard unsaved changes?"
+    icon="restore_page"
+    divider
+  >
+    You'll lose the edits you just made to your display name,
+    email, theme, sync interval, and interests. This action
+    can't be undone.
+
+    <div slot="actions">
+      <md-button variant="text" data-awc-dialog-close>
+        Keep editing
+      </md-button>
+      <md-button
+        variant="filled"
+        icon="delete_sweep"
+        data-awc-dialog-confirm="discard"
+        class="awc-showcase__discard-btn"
+      >
+        Discard
+      </md-button>
+    </div>
+  </md-dialog>
+</section>
+
+<script>
+  // Lazy-hydrate AWC UI custom elements only when the showcase enters the
+  // viewport. We share a global flag so this runs once even if multiple
+  // sections need hydration.
+  declare global {
+    interface Window {
+      __awcUiLoaded?: boolean;
+    }
+  }
+
+  const loadComponents = async () => {
+    if (window.__awcUiLoaded) return;
+    window.__awcUiLoaded = true;
+    try {
+      // Dev and build need DIFFERENT loader paths (the recurring trap):
+      // - dev: Vite's transform middleware refuses module-imports of /public
+      //   files, so import the workspace package — Vite serves it fine.
+      // - build: the npm specifier would bundle the loader into /_astro/,
+      //   where Stencil's lazy entry chunks 404 — import the COPIED runtime.
+      //   The URL sits in a variable because Rollup resolves literal dynamic
+      //   imports even behind @vite-ignore and fails the build.
+      let mod: { defineCustomElements: (win?: Window) => Promise<unknown> };
+      if (import.meta.env.DEV) {
+        mod = await import('@awc-ui/core/loader');
+      } else {
+        const runtimeUrl = '/awc-runtime/md3/md3.esm.js';
+        await import(/* @vite-ignore */ runtimeUrl);
+        await customElements.whenDefined("md-button");
+        return;
+      }
+      await mod.defineCustomElements(window);
+    } catch (err) {
+      console.warn('[AWC UI] showcase loader failed:', err);
+    }
+  };
+
+  const target = document.querySelector('[data-live-section]');
+  if (!target) {
+    /* nothing to do */
+  } else if ('IntersectionObserver' in window) {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          obs.disconnect();
+          loadComponents();
+        }
+      },
+      { rootMargin: '300px' },
+    );
+    obs.observe(target);
+  } else if ('requestIdleCallback' in window) {
+    (window as any).requestIdleCallback(loadComponents);
+  } else {
+    setTimeout(loadComponents, 800);
+  }
+
+  /* Wire the demo footer's Cancel / Save changes buttons to the
+     two confirmation dialogs. We use querySelector("md-dialog")
+     by id so we don't depend on Stencil custom-element types
+     being defined yet. The dialog itself exposes `open` as a
+     reflected boolean prop, so toggling the attribute is enough.
+     Confirm buttons close the dialog after a short pause so a
+     "saved" state feels like real work happened. */
+  const openDialog = (id: string) => {
+    const dlg = document.getElementById(id) as
+      | (HTMLElement & { open?: boolean })
+      | null;
+    if (!dlg) return;
+    dlg.setAttribute('open', '');
+    if ('open' in dlg) (dlg as any).open = true;
+  };
+
+  const closeDialog = (dlg: HTMLElement) => {
+    dlg.removeAttribute('open');
+    if ('open' in dlg) (dlg as any).open = false;
+  };
+
+  /* Language picker — readonly md-text-field acts as the visible
+     trigger for an md-menu rendered at section level. Clicking
+     anywhere on the trigger toggles the menu; clicking a menu
+     item updates the trigger's `value` and the menu auto-closes
+     via its own MenuItem behaviour. Selection state is mirrored
+     onto each item so the highlighted row tracks the chosen
+     language. */
+  type Toggleable = HTMLElement & {
+    open?: boolean;
+    show?: () => Promise<void> | void;
+    close?: () => Promise<void> | void;
+    value?: string;
+    selected?: boolean;
+  };
+
+  const langTrigger = document.getElementById(
+    'awc-language-trigger',
+  ) as Toggleable | null;
+  const langMenu = document.getElementById(
+    'awc-language-menu',
+  ) as Toggleable | null;
+
+  if (langTrigger && langMenu) {
+    const setSelectedItem = (chosen: string) => {
+      const items = langMenu.querySelectorAll<Toggleable>(
+        '[data-awc-language]',
+      );
+      items.forEach((item) => {
+        const isMatch = item.dataset.awcLanguage === chosen;
+        item.selected = isMatch;
+        if (isMatch) {
+          item.setAttribute('selected', '');
+        } else {
+          item.removeAttribute('selected');
+        }
+      });
+    };
+
+    langTrigger.addEventListener('click', () => {
+      const isOpen = langMenu.open === true;
+      if (isOpen) {
+        langMenu.close?.();
+      } else {
+        langMenu.show?.();
+      }
+    });
+
+    /* Drive the chevron rotation off the menu's own open/close
+       events so the indicator is always accurate (including when
+       the user dismisses the menu by clicking the scrim, pressing
+       Escape, or selecting an item). */
+    langMenu.addEventListener('mdOpen', () => {
+      langTrigger.setAttribute('data-menu-open', '');
+    });
+    langMenu.addEventListener('mdClose', () => {
+      langTrigger.removeAttribute('data-menu-open');
+    });
+
+    langMenu.addEventListener('click', (e) => {
+      const item = (e.target as HTMLElement | null)?.closest?.(
+        '[data-awc-language]',
+      ) as HTMLElement | null;
+      if (!item) return;
+      const next = item.dataset.awcLanguage ?? '';
+      langTrigger.value = next;
+      langTrigger.setAttribute('value', next);
+      setSelectedItem(next);
+    });
+  }
+
+  /* Live-bind the "Sync interval" slider to its right-aligned
+     value pill. md-slider emits `mdInput` continuously while
+     dragging (and once on keyboard step), with detail `{ value }`.
+     Special-case `0 min` → "Off" so the demo doesn't read as
+     "0 min sync" (which would actually be invalid for a real app). */
+  const syncSlider = document.querySelector(
+    '[data-awc-sync-slider]',
+  ) as HTMLElement | null;
+  const syncValueEl = document.querySelector(
+    '[data-awc-sync-value]',
+  ) as HTMLElement | null;
+  if (syncSlider && syncValueEl) {
+    const formatSync = (raw: number) => {
+      if (!Number.isFinite(raw) || raw <= 0) return 'Off';
+      if (raw >= 60) return '1 hr';
+      return `${Math.round(raw)} min`;
+    };
+    syncSlider.addEventListener('mdInput', ((e: Event) => {
+      const detail = (e as CustomEvent<{ value: number }>).detail;
+      if (detail && typeof detail.value === 'number') {
+        syncValueEl.textContent = formatSync(detail.value);
+      }
+    }) as EventListener);
+  }
+
+  document.addEventListener('click', (e) => {
+    const triggerEl = (e.target as HTMLElement | null)?.closest?.(
+      '[data-awc-action]',
+    ) as HTMLElement | null;
+    if (triggerEl) {
+      const action = triggerEl.dataset.awcAction;
+      if (action === 'save') {
+        openDialog('awc-showcase-save-dialog');
+      } else if (action === 'cancel') {
+        openDialog('awc-showcase-cancel-dialog');
+      }
+      return;
+    }
+
+    const closeEl = (e.target as HTMLElement | null)?.closest?.(
+      '[data-awc-dialog-close], [data-awc-dialog-confirm]',
+    ) as HTMLElement | null;
+    if (!closeEl) return;
+    const dlg = closeEl.closest('md-dialog') as HTMLElement | null;
+    if (!dlg) return;
+    closeDialog(dlg);
+  });
+</script>
+
+<script>
+  /* Chart data for the analytics + donut panels. Charts take arrays as JS
+     properties, and pre-upgrade own properties would shadow Stencil's
+     accessors — so every assignment waits for the element definition
+     (the lazy loader above defines them when the section scrolls in). */
+  const QUARTERS = ['Q1 25', 'Q2 25', 'Q3 25', 'Q4 25', 'Q1 26', 'Q2 26'];
+
+  customElements.whenDefined('md-area-chart').then(() => {
+    const area = document.getElementById('awc-demo-area') as any;
+    if (!area) return;
+    area.xAxis = { data: QUARTERS };
+    area.series = [
+      { label: 'Subscriptions', color: 'primary', data: [42, 48, 55, 61, 72, 84] },
+      { label: 'Services', color: 'tertiary', data: [18, 21, 20, 26, 29, 34] },
+    ];
+  });
+
+  customElements.whenDefined('md-sparkline').then(() => {
+    const sessions = document.getElementById('awc-demo-spark-sessions') as any;
+    if (sessions) sessions.data = [31, 34, 33, 38, 41, 39, 44, 48];
+    const conversion = document.getElementById('awc-demo-spark-conversion') as any;
+    if (conversion) conversion.data = [3.2, 3.4, 3.9, 3.7, 4.1, 4.4, 4.2, 4.6];
+  });
+
+  /* The verification card's code-expiry countdown. Drives both the mm:ss
+     readout and the progress bar off one timer so they can never disagree,
+     and loops back to full so the card still demos on a long-lived page.
+     Ticks only while the section is on screen — a background interval on a
+     marketing page is pure waste. */
+  customElements.whenDefined('md-progress-indicator').then(() => {
+    const readout = document.getElementById('awc-verify-countdown');
+    const bar = document.getElementById('awc-verify-progress') as any;
+    if (!readout || !bar) return;
+
+    const TOTAL = 42;
+    let left = TOTAL;
+    let timer = 0;
+
+    const paint = () => {
+      readout.textContent = `0:${String(left).padStart(2, '0')}`;
+      bar.value = (left / TOTAL) * 100;
+    };
+
+    const tick = () => {
+      left = left > 0 ? left - 1 : TOTAL;
+      paint();
+    };
+
+    const start = () => {
+      if (!timer) timer = window.setInterval(tick, 1000);
+    };
+    const stop = () => {
+      if (timer) {
+        window.clearInterval(timer);
+        timer = 0;
+      }
+    };
+
+    paint();
+
+    const card = readout.closest('.awc-showcase__panel--verify');
+    if (card && 'IntersectionObserver' in window) {
+      new IntersectionObserver(
+        (entries) => entries.forEach((e) => (e.isIntersecting ? start() : stop())),
+        { threshold: 0.2 },
+      ).observe(card);
+    } else {
+      start();
+    }
+    document.addEventListener('visibilitychange', () =>
+      document.hidden ? stop() : start(),
+    );
+  });
+
+  customElements.whenDefined('md-pie-chart').then(() => {
+    const pie = document.getElementById('awc-demo-pie') as any;
+    if (!pie) return;
+    pie.data = [
+      { label: 'Organic search', value: 21.4, color: 'primary' },
+      { label: 'Direct', value: 12.8, color: 'tertiary' },
+      { label: 'Referral', value: 8.6, color: 'secondary' },
+      { label: 'Social', value: 5.4, color: 'info' },
+    ];
+  });
+</script>
+
+<style>
+  .awc-showcase {
+    position: relative;
+    /* Top breathing room as usual; tighter bottom because the next section
+       (ProTier) supplies its own top padding, so a full 7rem on this side
+       just creates dead space under the CTA. */
+    padding-block-start: clamp(4rem, 8vw, 7rem);
+    padding-block-end: clamp(2rem, 4vw, 3.5rem);
+    padding-inline: clamp(1.5rem, 5vw, 4rem);
+    background: var(--md-sys-color-surface-container-low);
+    overflow: hidden;
+  }
+
+  .awc-showcase__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .awc-showcase__blob {
+    position: absolute;
+    inset-block-start: -20%;
+    inset-inline-end: -10%;
+    inline-size: 50%;
+    block-size: 60%;
+    background: var(--md-sys-color-tertiary-container);
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.4;
+  }
+
+  .awc-showcase__inner {
+    position: relative;
+    z-index: 1;
+    max-inline-size: 1240px;
+    margin-inline: auto;
+  }
+
+  .awc-showcase__header {
+    text-align: center;
+    max-inline-size: 720px;
+    margin-inline: auto;
+    margin-block-end: 2rem;
+  }
+
+  .awc-showcase__eyebrow {
+    display: inline-block;
+    padding-block: 0.3125rem;
+    padding-inline: 0.875rem;
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-block-end: 1.25rem;
+  }
+
+  .awc-showcase__title {
+    font-size: clamp(1.875rem, 4vw, 2.875rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 1rem;
+    text-wrap: balance;
+  }
+
+  .awc-showcase__title-accent {
+    background: linear-gradient(
+      105deg,
+      var(--md-sys-color-tertiary),
+      var(--md-sys-color-primary)
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .awc-showcase__lede {
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--md-sys-color-on-surface-variant);
+    text-wrap: pretty;
+  }
+
+  /* ────────────────────────────────────────────────────────────────
+     Component pill row — every chip same height & baseline.
+
+     We deliberately use <span class="awc-showcase__pill-code"> here
+     instead of <code> because <code> picks up the docs theme rule
+     `.sl-markdown-content :not(pre) > code` (background + border +
+     padding + font-size: 0.85em), which makes the inner tag-name
+     render as a chip-inside-a-chip and shifts the baseline of the
+     first (shortest) pill.
+     ──────────────────────────────────────────────────────────────── */
+  .awc-showcase__pills {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-block: 0 2.5rem;
+    padding: 0;
+    list-style: none;
+    text-align: center;
+  }
+
+  .awc-showcase__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    block-size: 2rem;
+    padding-block: 0;
+    padding-inline: 0.875rem;
+    background: var(--md-sys-color-surface-container-lowest);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    font-size: 0.75rem;
+    line-height: 1;
+    color: var(--md-sys-color-on-surface);
+    text-decoration: none;
+    transition:
+      transform var(--awc-dur-default) var(--awc-spring-spatial),
+      border-color var(--awc-dur-default) var(--awc-spring-effects),
+      background-color var(--awc-dur-default) var(--awc-spring-effects);
+  }
+
+  .awc-showcase__pill:hover {
+    transform: translateY(-2px);
+    border-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-surface-container);
+    text-decoration: none;
+  }
+
+  .awc-showcase__pill-code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+      "Liberation Mono", monospace;
+    font-weight: 600;
+    font-size: 0.75rem;
+    line-height: 1;
+    color: var(--md-sys-color-primary);
+    /* Hard reset against any cascading rule (e.g. Starlight) */
+    background: transparent;
+    border: 0;
+    padding: 0;
+  }
+
+  .awc-showcase__pill-label {
+    font-size: 0.75rem;
+    line-height: 1;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  /* Stage with the live demo card */
+  .awc-showcase__stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  .awc-showcase__card {
+    inline-size: 100%;
+    max-inline-size: 540px;
+  }
+
+  .awc-showcase__demo-card {
+    --md-card-container-shape: var(--md-sys-shape-corner-extra-large, 28px);
+    display: block;
+    /* Roomier padding so each row has more air around it. */
+    padding: 2.25rem;
+    box-shadow: var(--md-sys-elevation-3);
+    background: var(--md-sys-color-surface-container-lowest);
+    transition: transform var(--md-sys-motion-duration-medium2, 300ms)
+      var(--awc-spring-spatial);
+  }
+
+  .awc-showcase__demo-card:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Header row */
+  .awc-showcase__demo-header {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    margin-block-end: 2rem;
+  }
+
+  .awc-showcase__demo-avatar {
+    inline-size: 44px;
+    block-size: 44px;
+    flex-shrink: 0;
+    display: inline-grid;
+    place-items: center;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+  }
+
+  .awc-showcase__demo-avatar .material-symbols-outlined {
+    font-size: 22px;
+  }
+
+  .awc-showcase__demo-headtext {
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  .awc-showcase__demo-eyebrow {
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--md-sys-color-primary);
+    margin-block-end: 0.125rem;
+  }
+
+  .awc-showcase__demo-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  /* Body stack — generous gap so each row (text fields, segmented
+     buttons, slider, toggle/checkbox tiles, chip strip, progress)
+     reads as its own block instead of crowding its neighbours. */
+  .awc-showcase__demo-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* Generic field block (segmented buttons / slider / chips / progress) */
+  .awc-showcase__demo-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .awc-showcase__demo-field-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .awc-showcase__demo-field-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .awc-showcase__demo-field-value {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--md-sys-color-primary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Segmented buttons span the full row.
+     `md-segmented-button-set` uses `display: inline-grid` with
+     `grid-auto-columns: 1fr` so children share equal columns —
+     overriding `display` with `block` would kill that, so we keep
+     `grid` (with !important to beat the component's :host rule)
+     and just stretch the host to 100% inline-size. */
+  .awc-showcase__demo-field md-segmented-button-set {
+    display: grid !important;
+    inline-size: 100%;
+  }
+
+  /* Slider sits flush with field labels above */
+  .awc-showcase__demo-field md-slider {
+    display: block;
+    inline-size: 100%;
+  }
+
+  /* Language picker (composite md-text-field + md-menu) — the
+     text-field acts as the visible select trigger. Cursor + flex
+     defaults already make it look identical to a packaged select. */
+  .awc-showcase__demo-language-trigger {
+    display: block;
+    inline-size: 100%;
+    cursor: pointer;
+  }
+
+  /* Smoothly rotate the trailing chevron up when the anchored
+     menu is open so the trigger reads as a real combobox. */
+  .awc-showcase__demo-language-chevron {
+    transition: transform var(--awc-dur-default) var(--awc-spring-effects);
+  }
+
+  md-menu#awc-language-menu[open]
+    + *
+    .awc-showcase__demo-language-chevron,
+  .awc-showcase__demo-language-trigger[data-menu-open]
+    .awc-showcase__demo-language-chevron {
+    transform: rotate(180deg);
+  }
+
+  /* Profile-visibility radio group — three side-by-side radio
+     tiles. Each tile contains an md-radio + a Material Symbols
+     icon + label so the choice reads as "Public 🌐 / Friends 👥 /
+     Private 🔒". The label element makes the whole tile a click
+     target for its inner radio for free. */
+  .awc-showcase__demo-radios {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .awc-showcase__demo-radio {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-block: 0.5rem;
+    padding-inline: 0.625rem;
+    border-radius: var(--md-sys-shape-corner-medium, 12px);
+    background: var(--md-sys-color-surface-container);
+    cursor: pointer;
+    transition:
+      background-color var(--awc-dur-fast) var(--awc-spring-effects);
+  }
+
+  .awc-showcase__demo-radio:hover {
+    background: color-mix(
+      in srgb,
+      var(--md-sys-color-primary) 8%,
+      var(--md-sys-color-surface-container)
+    );
+  }
+
+  .awc-showcase__demo-radio .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .awc-showcase__demo-radio-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  /* Toggle / checkbox rows — surface tile with leading icon */
+  .awc-showcase__demo-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.875rem;
+    padding-block: 0.5rem;
+    padding-inline: 0.625rem;
+    border-radius: var(--md-sys-shape-corner-medium, 12px);
+    background: var(--md-sys-color-surface-container);
+  }
+
+  .awc-showcase__demo-row-icon {
+    inline-size: 32px;
+    block-size: 32px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .awc-showcase__demo-row-icon .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  .awc-showcase__demo-row-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  /* Chip strip */
+  .awc-showcase__demo-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Progress block */
+  .awc-showcase__demo-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .awc-showcase__demo-progress md-progress-indicator {
+    display: block;
+    inline-size: 100%;
+  }
+
+  /* Footer — uses padding-block-start instead of margin-block-start
+     so it can't be zeroed out by Starlight's sibling-margin rule
+     (or our own awc-* margin override). The visual spacing
+     between the body's last row and the action buttons is identical
+     either way. */
+  .awc-showcase__demo-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+    padding-block-start: 2rem;
+  }
+
+  .awc-showcase__demo-footer md-button {
+    --md-button-container-height: 40px;
+    block-size: 40px;
+  }
+
+  /* Confirmation-dialog action rows — buttons right-aligned with
+     the same gap the demo footer uses. */
+  md-dialog [slot="actions"] {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  /* Destructive confirm style for the "Discard" action — uses the
+     M3 error tonal pair so the destructive intent reads instantly. */
+  .awc-showcase__discard-btn {
+    --md-button-container-color: var(--md-sys-color-error);
+    --md-button-label-color: var(--md-sys-color-on-error);
+    --md-button-icon-color: var(--md-sys-color-on-error);
+  }
+
+  /* Showcase-side dialog tweak: when we turn on the `divider` prop the
+     dialog renders a 1dp stripe between content and actions, but the
+     core component's action row has `padding-block-start: 0` (it
+     assumes the content's bottom padding supplies the gap). With the
+     divider added, that means the buttons sit flush against the
+     divider line. We reach into the dialog's exposed shadow `part`
+     to add 16dp of top padding — matching the content's 16dp bottom
+     padding so the divider lands centered between symmetric gaps.
+     This stays in showcase CSS instead of `md-dialog.css` because
+     the consumer (us) is the one who flipped `divider` on; the core
+     component shouldn't bake an opinion about consumer-toggled
+     spacing trade-offs. */
+  .awc-showcase md-dialog[divider]::part(actions) {
+    padding-block-start: 16px;
+  }
+
+  /* Status tags below the card */
+  .awc-showcase__tags {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    flex-wrap: wrap;
+  }
+
+  .awc-showcase__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding-block: 0.25rem;
+    padding-inline: 0.625rem;
+    background: var(--md-sys-color-surface-container-lowest);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .awc-showcase__tag--ok {
+    color: var(--md-sys-color-tertiary);
+    border-color: color-mix(
+      in srgb,
+      var(--md-sys-color-tertiary) 50%,
+      transparent
+    );
+  }
+
+  /* "Live shadow DOM" status dot — pulses continuously so the
+     tag reads as an active heartbeat. The dot itself breathes
+     (scale + opacity) while the soft outer ring expands and
+     fades, creating the classic "live signal" pulse pattern.
+     Both animations share the same 1.6s rhythm so they read as
+     a single coherent beat. */
+  .awc-showcase__tag-dot {
+    inline-size: 6px;
+    block-size: 6px;
+    border-radius: 50%;
+    background: var(--md-sys-color-tertiary);
+    box-shadow: 0 0 0 4px
+      color-mix(in srgb, var(--md-sys-color-tertiary) 25%, transparent);
+    animation: awc-showcase-dot-pulse 1.6s ease-in-out infinite;
+    position: relative;
+  }
+
+  /* Outer halo ring — sits behind the dot via ::before and
+     expands outward on every beat, fading as it grows. */
+  .awc-showcase__tag-dot::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: var(--md-sys-color-tertiary);
+    opacity: 0.45;
+    animation: awc-showcase-dot-halo 1.6s ease-out infinite;
+  }
+
+  @keyframes awc-showcase-dot-pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(0.85);
+    }
+  }
+
+  @keyframes awc-showcase-dot-halo {
+    0% {
+      opacity: 0.45;
+      transform: scale(1);
+    }
+    70% {
+      opacity: 0;
+      transform: scale(2.6);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(2.6);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .awc-showcase__tag-dot,
+    .awc-showcase__tag-dot::before {
+      animation: none !important;
+    }
+    .awc-showcase__tag-dot::before {
+      display: none;
+    }
+  }
+
+  /* Use padding-block-start instead of margin-block-start so this
+     spacing isn't zeroed out by our global awc-* margin override
+     (specificity (0,2,0) > .awc-showcase__footer's (0,1,0)). */
+  .awc-showcase__footer {
+    text-align: center;
+    padding-block-start: 3rem;
+  }
+  /* The .awc-btn class is defined globally in custom.css so the showcase
+     CTA stays 1:1 consistent with the hero & CTA buttons. */
+
+  /* Responsive */
+  @media (max-width: 50rem) {
+    .awc-showcase {
+      padding-inline: 1.25rem;
+    }
+
+    .awc-showcase__demo-card {
+      padding: 1.25rem;
+    }
+
+    .awc-showcase__demo-header {
+      gap: 0.625rem;
+    }
+
+    .awc-showcase__demo-title {
+      font-size: 1.125rem;
+    }
+
+    .awc-showcase__demo-footer {
+      flex-direction: column-reverse;
+      align-items: stretch;
+    }
+
+    .awc-showcase__demo-footer md-button {
+      inline-size: 100%;
+    }
+
+    /* On narrow stages, a 3-column radio row gets too cramped
+       (icons + labels overflow). Stack them vertically instead so
+       each tile keeps its full hit-target. */
+    .awc-showcase__demo-radios {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .awc-showcase {
+      padding-block-start: 3rem;
+      padding-block-end: 1.75rem;
+      padding-inline: 1rem;
+    }
+
+    .awc-showcase__pills {
+      gap: 0.375rem;
+    }
+
+    .awc-showcase__pill {
+      block-size: 1.75rem;
+      padding-inline: 0.625rem;
+      font-size: 0.6875rem;
+    }
+
+    .awc-showcase__pill-code,
+    .awc-showcase__pill-label {
+      font-size: 0.6875rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .awc-showcase__pill,
+    .awc-showcase__demo-card {
+      transition: none !important;
+      transform: none !important;
+    }
+  }
+
+  /* ============================================================
+     Bento grid — the multi-panel live-demo stage
+     ============================================================ */
+  .awc-showcase__bento {
+    display: grid;
+    inline-size: 100%;
+    max-inline-size: 1180px;
+    gap: 1.25rem;
+    grid-template-columns: minmax(0, 1.06fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "settings analytics analytics"
+      "settings schedule  status"
+      "settings verify    donut";
+    align-items: stretch;
+  }
+
+  .awc-showcase__cell--settings  { grid-area: settings; }
+  .awc-showcase__cell--analytics { grid-area: analytics; }
+  .awc-showcase__cell--schedule  { grid-area: schedule; }
+  .awc-showcase__cell--status    { grid-area: status; }
+  .awc-showcase__cell--verify    { grid-area: verify; }
+  .awc-showcase__cell--donut     { grid-area: donut; }
+
+  /* The settings card previously capped itself for the single-column
+     layout; inside the bento it fills its cell instead. */
+  .awc-showcase__bento .awc-showcase__card {
+    max-inline-size: none;
+  }
+
+  .awc-showcase__cell > .awc-showcase__demo-card {
+    block-size: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Panels are denser than the settings card — same surface, less air. */
+  .awc-showcase__panel {
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .awc-showcase__panel-header {
+    margin-block-end: 1.25rem;
+  }
+
+  /* md-status-dot is an anchored pip: its host is `position: absolute` so it
+     can pin to the corner of an avatar. Here it is a standalone row item, so
+     it has to be put back in flow — otherwise it leaves the flex row entirely
+     and renders at its static position, past the header's trailing edge. */
+  .awc-showcase__panel-header md-status-dot {
+    position: relative;
+    inset: auto;
+    align-self: center;
+    flex: none;
+  }
+
+  /* The head text is the flexible child, so it — not the dot — absorbs the
+     free space and the dot lands on the trailing edge. */
+  .awc-showcase__panel-header .awc-showcase__demo-headtext {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+  }
+
+  .awc-showcase__demo-avatar--tertiary {
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+  }
+
+  .awc-showcase__demo-avatar--secondary {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .awc-showcase__panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex: 1;
+  }
+
+  .awc-showcase__panel-body--loose {
+    gap: 1.25rem;
+  }
+
+  /* Pickers host as inline-block and size their trigger to content (with a
+     240px floor), so in this column they came out narrower than the number
+     field. Stretch the host, then widen the trigger through its public hook. */
+  .awc-showcase__panel--schedule .awc-showcase__panel-body > * {
+    inline-size: 100%;
+  }
+
+  .awc-showcase__panel--schedule md-time-picker {
+    --md-time-picker-trigger-min-width: 100%;
+  }
+
+  .awc-showcase__panel-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-block-start: 1.25rem;
+  }
+
+  /* No hover-lift on the scheduling panel: the date/time pickers open
+     position: fixed panels while the pointer is INSIDE the card, and the
+     lift's transform would make the card their containing block —
+     mispositioning and clipping the popups mid-interaction. */
+  .awc-showcase__panel--schedule,
+  .awc-showcase__panel--schedule:hover {
+    transform: none;
+  }
+
+  /* The visibility radios are a rigid 3-track grid that clips at bento
+     width — auto-fit lets the third pill wrap to its own row instead. */
+  .awc-showcase__demo-radios {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  }
+
+  /* Analytics internals */
+  .awc-showcase__trend-chip {
+    margin-inline-start: auto;
+    flex-shrink: 0;
+  }
+
+  .awc-showcase__area-chart {
+    inline-size: 100%;
+    /* Was a hard 200px. The card is a flex column stretched by its bento row,
+       so any slack collected at the BOTTOM as dead space while the chart
+       stayed short. Letting the chart take the free space keeps the space
+       below it equal to the card's own top padding at every width. */
+    flex: 1 1 auto;
+    min-block-size: 200px;
+    /* Capped: uncapped flex let the chart eat every bit of row slack and the
+       card turned into the tallest thing on the page. Past this the leftover
+       goes to the sparkline strip below instead, which keeps the space under
+       the chart equal to the card's top padding without inflating the card. */
+    max-block-size: 260px;
+  }
+
+  .awc-showcase__spark-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-block-start: 1.25rem;
+    /* Takes whatever the capped chart leaves, so no dead band at the card's
+       bottom edge. */
+    flex: 1 1 auto;
+  }
+
+  .awc-showcase__spark-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem 0.875rem;
+    border-radius: var(--md-sys-shape-corner-large, 16px);
+    background: var(--md-sys-color-surface-container-high);
+  }
+
+  .awc-showcase__spark-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .awc-showcase__spark-value {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Status internals */
+  .awc-showcase__status-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .awc-showcase__status-loader {
+    --md-loading-indicator-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .awc-showcase__status-caption {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  /* Donut internals */
+  .awc-showcase__pie-chart {
+    inline-size: 100%;
+    --md-pie-chart-aspect-ratio: auto;
+    /* Grows into the cell instead of sitting at a fixed height and leaving a
+       band of dead space under the legend. A bigger chart means a bigger
+       hole, so the centre caption only gets more room, never less. */
+    --md-pie-chart-block-size: 100%;
+    flex: 1 1 auto;
+    min-block-size: 290px;
+  }
+
+  .awc-showcase__donut-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.125rem;
+  }
+
+  .awc-showcase__donut-value {
+    font-size: 1.2rem;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--md-sys-color-on-surface);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .awc-showcase__donut-caption {
+    /* No width cap here on purpose: the component publishes the hole's
+       inscribed square as a max-width on the centre overlay, so wrapping is
+       already correct. An extra cap only bought a third line, and it was the
+       stack's HEIGHT — not its width — that was crossing the arc. */
+    text-align: center;
+    text-wrap: balance;
+    font-size: 0.6rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  /* Bento responsive collapse: 2 columns, then 1 */
+  @media (max-width: 1100px) {
+    .awc-showcase__bento {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas:
+        "settings analytics"
+        "settings schedule"
+        "settings status"
+        "verify   donut";
+    }
+  }
+
+  @media (max-width: 760px) {
+    .awc-showcase__bento {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        "settings"
+        "analytics"
+        "schedule"
+        "status"
+        "verify"
+        "donut";
+    }
+  }
+</style>

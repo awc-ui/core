@@ -1,0 +1,35 @@
+{
+  "name": "@awc-ui/tokens",
+  "version": "0.1.0",
+  "description": "Material Design 3 design tokens as CSS custom properties",
+  "main": "src/tokens.css",
+  "style": "src/tokens.css",
+  "exports": {
+    ".": "./src/tokens.css",
+    "./tokens.css": "./src/tokens.css"
+  },
+  "files": [
+    "src",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "echo 'tokens: nothing to build'"
+  },
+  "keywords": [
+    "material-design",
+    "md3",
+    "design-tokens",
+    "css-variables"
+  ],
+  "license": "MIT",
+  "author": "AWC UI",
+  "homepage": "https://awcui.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awc-ui/core.git",
+    "directory": "packages/tokens"
+  },
+  "bugs": {
+    "url": "https://github.com/awc-ui/core/issues"
+  }
+}

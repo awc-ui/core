@@ -1,0 +1,183 @@
+{
+  "tag": "md-tab",
+  "title": "Tab",
+  "slug": "tab",
+  "category": "Navigation",
+  "subComponentOf": "md-tabs",
+  "storyId": null,
+  "props": [
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "active",
+      "attribute": "active",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "inlineIcon",
+      "attribute": "inline-icon",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'primary' | 'secondary'",
+      "default": "'primary'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "badge",
+      "attribute": "badge",
+      "type": "string | undefined",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "controls",
+      "attribute": "controls",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdTabClick",
+      "detail": "void"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "icon",
+      "description": "Custom leading icon"
+    },
+    {
+      "name": "badge",
+      "description": "Badge overlay on the icon"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": "Hover / focus / press overlay"
+    },
+    {
+      "name": "content",
+      "description": "Inner content wrapper (icon + label)"
+    },
+    {
+      "name": "icon",
+      "description": "Icon element"
+    },
+    {
+      "name": "label",
+      "description": "Label text element"
+    },
+    {
+      "name": "indicator",
+      "description": "Active indicator bar"
+    },
+    {
+      "name": "divider",
+      "description": "Bottom divider line"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-tab-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-tab-active-label-color",
+      "description": "Active label color (primary)"
+    },
+    {
+      "name": "--md-tab-inactive-label-color",
+      "description": "Inactive label color"
+    },
+    {
+      "name": "--md-tab-active-icon-color",
+      "description": "Active icon color (primary)"
+    },
+    {
+      "name": "--md-tab-inactive-icon-color",
+      "description": "Inactive icon color"
+    },
+    {
+      "name": "--md-tab-active-indicator-color",
+      "description": "Indicator bar color"
+    },
+    {
+      "name": "--md-tab-active-indicator-height",
+      "description": "Indicator bar thickness"
+    },
+    {
+      "name": "--md-tab-divider-color",
+      "description": "Bottom divider color"
+    },
+    {
+      "name": "--md-tab-glide-duration",
+      "description": ""
+    },
+    {
+      "name": "--md-tab-glide-x",
+      "description": ""
+    },
+    {
+      "name": "--md-tab-glide-scale",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdTabClick",
+      "detail": "void"
+    }
+  ]
+}

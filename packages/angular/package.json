@@ -1,0 +1,60 @@
+{
+  "name": "@awc-ui/angular",
+  "version": "0.1.0",
+  "description": "Angular wrapper for AWC UI Material Design 3 components",
+  "module": "dist/fesm2022/awc-ui-angular.mjs",
+  "typings": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "esm2022": "./dist/esm2022/awc-ui-angular.mjs",
+      "esm": "./dist/esm2022/awc-ui-angular.mjs",
+      "default": "./dist/fesm2022/awc-ui-angular.mjs"
+    },
+    "./package.json": {
+      "default": "./package.json"
+    }
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": false
+  },
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json -c tsconfig.lib.json",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "tslib": "^2.8.1"
+  },
+  "peerDependencies": {
+    "@angular/common": ">=17",
+    "@angular/core": ">=17",
+    "@angular/forms": ">=17",
+    "@awc-ui/core": "workspace:*",
+    "rxjs": "^7.4.0"
+  },
+  "devDependencies": {
+    "@angular/common": "~17.3.0",
+    "@angular/compiler": "~17.3.0",
+    "@angular/compiler-cli": "~17.3.0",
+    "@angular/core": "~17.3.0",
+    "@angular/forms": "~17.3.0",
+    "ng-packagr": "~17.3.0",
+    "rxjs": "^7.8.2",
+    "typescript": "~5.4.5",
+    "zone.js": "~0.14.0"
+  },
+  "license": "MIT",
+  "author": "AWC UI",
+  "homepage": "https://awcui.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awc-ui/core.git",
+    "directory": "packages/angular"
+  },
+  "bugs": {
+    "url": "https://github.com/awc-ui/core/issues"
+  }
+}

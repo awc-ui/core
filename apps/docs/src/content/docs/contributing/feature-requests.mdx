@@ -1,0 +1,72 @@
+---
+title: Requesting a feature
+description: Asking for a new prop, variant, event or CSS hook on a component that already exists
+sidebar:
+  order: 3
+---
+
+Open a **Feature request** at
+[github.com/awc-ui/core/issues/new/choose](https://github.com/awc-ui/core/issues/new/choose).
+
+This is for extending a component that already exists — a new prop, variant,
+event, slot or CSS custom property. If a whole component is missing, see
+[Requesting a component](/contributing/new-component-requests/) instead.
+
+## Lead with the problem
+
+The single most useful thing you can do is describe the problem rather than the
+solution you have in mind.
+
+> **Instead of:** "Add a `match` prop to `md-select`."
+>
+> **Try:** "Our users pick from a list of countries. They type `ger` expecting
+> Germany, but typeahead only matches from the start of the label, so they get
+> nothing."
+
+The second version is more work to write and much more useful. It lets us find a
+shape that also covers the adjacent cases, and often the answer turns out to be
+an API that already exists under a name you did not think to search for.
+
+## What to include
+
+**The use case.** What are you building, and what does the user see and do?
+
+**What you already tried.** Existing props, slots, `::part()`, the CSS custom
+properties in the component's reference page. If a workaround exists but is bad,
+say why it is bad — "it works but breaks keyboard navigation" is a strong
+argument for a real API.
+
+**A rough API sketch**, if you have one. Markup is fine and you will not be held
+to it. A shape to argue about beats no shape.
+
+**Whether MD3 specifies it.** A link to [m3.material.io](https://m3.material.io)
+makes the decision much faster. A feature the spec already describes is close to
+an automatic yes, because the design question is already settled.
+
+## What usually gets declined
+
+Knowing this in advance saves you writing an issue that was never going to land:
+
+**Making prescriptive MD3 behaviour configurable.** Where the spec is specific —
+state layer opacities, motion durations, the shape of a focus ring — the answer
+is normally a CSS custom property or a `::part()` hook rather than a prop, so
+you can override it in your app without the component growing a decision.
+
+**Props that duplicate composition.** If slotting existing components together
+gets you there, that is usually the answer, because it stays flexible in ways a
+prop cannot.
+
+**One-off styling.** Most of these are already reachable through the component's
+custom properties or parts. Check its reference page first — components expose
+956 CSS custom properties between them, and the one you need may already exist.
+
+## After you open it
+
+Expect questions about edge cases: RTL, density, keyboard, screen readers, and
+what happens when the value is empty or enormous. That is not resistance — every
+prop is permanent once shipped, so it is worth getting the shape right before it
+exists.
+
+If you are willing to implement it, say so. We will agree the API with you first,
+so the review is about correctness rather than direction. The
+[contributing guide](/contributing/) covers the local setup.

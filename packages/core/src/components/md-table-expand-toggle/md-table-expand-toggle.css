@@ -1,0 +1,32 @@
+/* ==========================================================
+   md-table-expand-toggle — the standard expand caret for an
+   expandable md-table-row.
+
+   One consistent size everywhere (xs / 32px button, 20px icon); the
+   chevron rotates 90° (right → down) on the MD3 spatial spring while
+   the row's accordion zone opens on its own matched spring.
+
+   PUBLIC CSS CUSTOM PROPERTIES:
+     --md-table-expand-toggle-rotation   Expanded rotation (default 90deg)
+   ========================================================== */
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+md-icon-button {
+  transition: transform var(--md-sys-motion-spring-spatial-fast-duration, 350ms)
+    var(--md-sys-motion-spring-spatial-fast-easing, cubic-bezier(0.42, 1.67, 0.21, 0.9));
+}
+
+:host(.md-table-expand-toggle--expanded) md-icon-button {
+  transform: rotate(var(--md-table-expand-toggle-rotation, 90deg));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  md-icon-button {
+    transition-duration: 0.01ms !important;
+  }
+}

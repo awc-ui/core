@@ -1,0 +1,158 @@
+{
+  "tag": "md-table-toolbar",
+  "title": "Table Toolbar",
+  "slug": "table-toolbar",
+  "category": "Data Display",
+  "subComponentOf": "md-table",
+  "storyId": null,
+  "props": [
+    {
+      "name": "headline",
+      "attribute": "headline",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "supportingText",
+      "attribute": "supporting-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "numSelected",
+      "attribute": "num-selected",
+      "type": "number",
+      "default": "0",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "autoBind",
+      "attribute": "auto-bind",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelSelected",
+      "attribute": "label-selected",
+      "type": "string",
+      "default": "'%count% selected'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "compact",
+      "attribute": "compact",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [],
+  "methods": [],
+  "slots": [
+    {
+      "name": "leading",
+      "description": ""
+    },
+    {
+      "name": "headline",
+      "description": ""
+    },
+    {
+      "name": "supporting-text",
+      "description": ""
+    },
+    {
+      "name": "title-area",
+      "description": ""
+    },
+    {
+      "name": "selection-actions",
+      "description": ""
+    },
+    {
+      "name": "actions",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "leading",
+      "description": "Container for the `leading` slot"
+    },
+    {
+      "name": "main",
+      "description": "Container for headline / supporting text"
+    },
+    {
+      "name": "selection-caption",
+      "description": "\"%count% selected\" caption (selection mode)"
+    },
+    {
+      "name": "headline",
+      "description": "<h2> element"
+    },
+    {
+      "name": "supporting-text",
+      "description": "<p> element"
+    },
+    {
+      "name": "actions",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-table-toolbar-color",
+      "description": "Foreground color"
+    },
+    {
+      "name": "--md-table-toolbar-bg",
+      "description": "Background color (default mode)"
+    },
+    {
+      "name": "--md-table-toolbar-selection-bg",
+      "description": "Background color (selection mode)"
+    },
+    {
+      "name": "--md-table-toolbar-selection-color",
+      "description": "Foreground color (selection mode)"
+    },
+    {
+      "name": "--md-table-toolbar-padding-block",
+      "description": "Top/bottom padding"
+    },
+    {
+      "name": "--md-table-toolbar-padding-inline",
+      "description": "Left/right padding"
+    },
+    {
+      "name": "--md-table-toolbar-min-height",
+      "description": "Minimum height (default: 64px)"
+    }
+  ],
+  "dependencies": [
+    "md-table",
+    "md-table-container"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": []
+}

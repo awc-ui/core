@@ -1,0 +1,404 @@
+/* ==========================================================
+   md-dialog — Material Design 3 Dialog
+   Spec: https://m3.material.io/components/dialogs/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-dialog-container-color         Container background
+     --md-dialog-container-shape         Container corner radius
+     --md-dialog-headline-color          Headline text color
+     --md-dialog-content-color           Supporting text color
+     --md-dialog-icon-color              Icon color
+     --md-dialog-icon-size               Icon dimensions
+     --md-dialog-scrim-color             Scrim overlay color
+     --md-dialog-divider-color           Divider color
+     --md-dialog-z-index                 Surface z-index (default near int32 max)
+     --md-dialog-scrim-z-index           Scrim z-index (one below the surface)
+
+   CSS PARTS:
+     scrim          Scrim overlay (basic only)
+     container      Dialog surface
+     header         Header area (both variants)
+     icon           Icon element (basic)
+     headline       Headline text
+     content        Supporting text / body
+     divider        Horizontal divider
+     actions        Action buttons row
+     cancel-button  Default cancel button (slot fallback)
+     ok-button      Default confirm button (slot fallback)
+     close-button   Close button (full-screen)
+
+   SLOTS:
+     (default)      Supporting text / body content
+     icon           Custom icon (replaces icon prop)
+     headline       Custom headline content
+     actions        Action buttons
+     header-action  Full-screen header action (e.g. Save button)
+   ========================================================== */
+
+:host {
+  --_container-color: var(--md-dialog-container-color, var(--md-sys-color-surface-container-high, #ECE6F0));
+  --_container-shape: var(--md-dialog-container-shape, max(16px, calc(28px + var(--md-sys-density-scale, 0) * 2px)));
+  --_headline-color: var(--md-dialog-headline-color, var(--md-sys-color-on-surface, #1C1B1F));
+  --_content-color: var(--md-dialog-content-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_icon-color: var(--md-dialog-icon-color, var(--md-sys-color-secondary, #625B71));
+  --_icon-size: var(--md-dialog-icon-size, 24px);
+  --_scrim-color: var(--md-dialog-scrim-color, rgba(0, 0, 0, 0.32));
+  --_divider-color: var(--md-dialog-divider-color, var(--md-sys-color-outline-variant, #CAC4D0));
+
+  display: contents;
+}
+
+/* ==========================================================
+   SCRIM — fixed backdrop (basic dialogs only)
+   ========================================================== */
+
+.md-dialog__scrim {
+  position: fixed;
+  inset: 0;
+  background-color: var(--_scrim-color);
+  /* Modal dialogs must paint above any host-app chrome (sticky site
+     headers, sidebars, fixed CTAs, AI chat widgets, etc.). The design
+     token's 1000 is fine for in-app components but loses to host
+     environments that use higher values (some marketing sites push
+     toolbars to 9999). We pick a value that wins anywhere short of
+     int32 max, leaving headroom (1) for the dialog container above. */
+  z-index: var(--md-dialog-scrim-z-index, 2147483646);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+:host(.md-dialog--open) .md-dialog__scrim {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ==========================================================
+   CONTAINER — dialog surface
+   Min 280px, max 560px, centered, 28px radius (basic)
+   ========================================================== */
+
+.md-dialog__container {
+  position: fixed;
+  /* Physical properties for viewport centering — must not flip in RTL */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, calc(-50% + 20px));
+  /* Sits exactly one stacking step above the scrim (see scrim rule
+     for the rationale on the high baseline). Override either via
+     `--md-dialog-z-index` for the surface or `--md-dialog-scrim-z-index`
+     for the backdrop on a per-instance basis. */
+  z-index: var(--md-dialog-z-index, 2147483647);
+  background-color: var(--_container-color);
+  border-radius: var(--_container-shape);
+  box-shadow: var(--md-sys-elevation-3);
+  min-inline-size: 280px;
+  max-inline-size: 560px;
+  inline-size: calc(100% - 48px);
+  max-block-size: calc(100vh - 96px);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  outline: none;
+  overflow: hidden;
+  transition:
+    opacity var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    transform var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+:host(.md-dialog--open) .md-dialog__container {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+}
+
+/* ==========================================================
+   BASIC HEADER — icon (optional, centered) + headline
+   ========================================================== */
+
+.md-dialog__basic-header {
+  display: flex;
+  flex-direction: column;
+  padding: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px)) max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px)) 0;
+  gap: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px));
+}
+
+/* With icon: center-aligned */
+:host(.md-dialog--has-icon) .md-dialog__basic-header {
+  align-items: center;
+  text-align: center;
+}
+
+/* Without icon: start-aligned */
+:host(:not(.md-dialog--has-icon)) .md-dialog__basic-header {
+  align-items: flex-start;
+  text-align: start;
+}
+
+/* Icon (Material Symbols shorthand) */
+.md-dialog__icon {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-size: var(--_icon-size);
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  color: var(--_icon-color);
+  line-height: 1;
+  font-weight: normal;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Slotted custom icon */
+::slotted([slot="icon"]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  font-size: var(--_icon-size);
+  color: var(--_icon-color);
+  fill: currentColor;
+}
+
+/* Headline */
+.md-dialog__headline {
+  font-family: var(--md-sys-typescale-headline-small-font-family, Roboto, sans-serif);
+  font-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+  font-weight: var(--md-sys-typescale-headline-small-font-weight, 400);
+  line-height: max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px));
+  letter-spacing: var(--md-sys-typescale-headline-small-letter-spacing, 0px);
+  color: var(--_headline-color);
+}
+
+/* ==========================================================
+   CONTENT — supporting text / body
+   Padding: 16px between headline and body, 24px sides
+   ========================================================== */
+
+.md-dialog__content {
+  padding: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px)) max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  flex: 1;
+  overflow-y: auto;
+  font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif);
+  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-medium-font-weight, 400);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-body-medium-letter-spacing, 0.25px);
+  color: var(--_content-color);
+}
+
+/* ==========================================================
+   DIVIDER — 1px between content and actions
+   ========================================================== */
+
+.md-dialog__divider {
+  block-size: 1px;
+  background-color: var(--_divider-color);
+  margin-inline: 0;
+  flex-shrink: 0;
+}
+
+/* ==========================================================
+   ACTIONS — button row
+   Padding: 24px from body, 24px bottom, 8px gap
+   ========================================================== */
+
+/* Actions row.
+   The 0 top-padding is intentional: without a divider the body's
+   16px bottom padding already gives the buttons breathing room, and
+   keeping the top inset visually shorter pulls the actions tight
+   against the body the way M3 specs them. The moment a divider is
+   inserted (see `:host([divider])` rule below) we MUST restore the
+   24px top padding — otherwise the buttons end up pinned to the
+   divider line while the 24px bottom padding stays, producing the
+   asymmetric "buttons crowded at the top" look. */
+.md-dialog__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  padding: var(--md-sys-spacing-inset-xl, 24px);
+  padding-block-start: 0;
+}
+
+:host([divider]) .md-dialog__actions {
+  padding-block-start: var(--md-sys-spacing-inset-xl, 24px);
+}
+
+/* Hide actions row when empty */
+.md-dialog__actions:empty {
+  display: none;
+}
+
+/* ==========================================================
+   FULL-SCREEN VARIANT
+   0px radius, 100% w/h, max-width 560px, 56px header
+   ========================================================== */
+
+/* Full-screen dialogs occupy the entire viewport on every breakpoint
+   (per MD3 spec: "full-screen dialogs provide a focused experience
+   without distractions"). We pin to all four edges instead of the
+   centered-with-translate trick used by basic dialogs so the surface
+   reaches the viewport edges regardless of containing-block context.
+   `inset: 0` covers all four physical edges and is RTL-safe (it does
+   not flip). The translateY entry/exit animation is preserved via
+   `transform` only. */
+:host(.md-dialog--fullscreen) .md-dialog__container {
+  border-radius: 0;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  max-inline-size: none;
+  max-block-size: none;
+  /* Reset basic-dialog centering — fullscreen does not center. */
+  top: 0;
+  left: 0;
+  box-shadow: none;
+  transform: translateY(30px);
+}
+
+:host(.md-dialog--fullscreen.md-dialog--open) .md-dialog__container {
+  transform: translateY(0);
+}
+
+/* Full-screen header — 64px (matches top app-bar), row layout.
+   Padding is symmetric (16px both ends) so the close icon's hit
+   area sits an equal optical distance from the leading edge as the
+   trailing action sits from the trailing edge. The 12px gap gives
+   the headline enough air against the close button's 48px hit area
+   without leaving the trailing action floating away from it. */
+.md-dialog__header {
+  display: flex;
+  align-items: center;
+  gap: max(4px, calc(12px + var(--md-sys-density-scale, 0) * 2px));
+  block-size: max(48px, calc(64px + var(--md-sys-density-scale, 0) * 4px));
+  min-block-size: max(48px, calc(64px + var(--md-sys-density-scale, 0) * 4px));
+  padding-inline: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px));
+  flex-shrink: 0;
+  background-color: var(--_container-color);
+}
+
+.md-dialog__header-headline {
+  flex: 1;
+  font-family: var(--md-sys-typescale-title-large-font-family, Roboto, sans-serif);
+  font-size: max(16px, calc(22px + var(--md-sys-density-scale, 0) * 1px));
+  font-weight: var(--md-sys-typescale-title-large-font-weight, 400);
+  line-height: max(22px, calc(28px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-title-large-letter-spacing, 0px);
+  color: var(--_headline-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Close button — 40px icon-button hit area sits comfortably inside
+   the 64px fullscreen header without dwarfing the trailing filled
+   action. The 24px svg child stays centered via inline-flex. */
+.md-dialog__close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  inline-size: 40px;
+  block-size: 40px;
+  min-inline-size: 40px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full, 50%);
+  background: none;
+  color: var(--md-sys-color-on-surface, #1C1B1F);
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+  transition: background-color var(--md-sys-motion-duration-short1, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+.md-dialog__close-btn:hover {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 8%, transparent);
+}
+
+.md-dialog__close-btn:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: -3px;
+}
+
+.md-dialog__close-btn:active {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 12%, transparent);
+}
+
+.md-dialog__close-btn svg {
+  pointer-events: none;
+}
+
+/* Full-screen: header-action slot (e.g. Save text button) */
+::slotted([slot="header-action"]) {
+  margin-inline-start: auto;
+}
+
+/* Full-screen: hide basic header, show full-screen header */
+:host(.md-dialog--fullscreen) .md-dialog__basic-header {
+  display: none;
+}
+
+/* Full-screen: content takes remaining space with top padding */
+:host(.md-dialog--fullscreen) .md-dialog__content {
+  padding-block-start: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+}
+
+/* Full-screen: actions at bottom (bar-style) */
+:host(.md-dialog--fullscreen) .md-dialog__actions {
+  min-block-size: max(40px, calc(56px + var(--md-sys-density-scale, 0) * 4px));
+  padding: max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px)) max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  border-block-start: none;
+}
+
+/* ==========================================================
+   REDUCED MOTION
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-dialog__scrim,
+  .md-dialog__container,
+  .md-dialog__close-btn {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   FORCED COLORS (High Contrast)
+   ========================================================== */
+
+@media (forced-colors: active) {
+  .md-dialog__container {
+    border: 2px solid CanvasText;
+  }
+
+  .md-dialog__divider {
+    background-color: CanvasText;
+  }
+
+  .md-dialog__close-btn {
+    color: ButtonText;
+  }
+
+  .md-dialog__close-btn:focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

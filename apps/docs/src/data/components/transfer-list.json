@@ -1,0 +1,361 @@
+{
+  "tag": "md-transfer-list",
+  "title": "Transfer List",
+  "slug": "transfer-list",
+  "category": "Selection",
+  "subComponentOf": null,
+  "storyId": "selection-transfer-list--playground",
+  "props": [
+    {
+      "name": "items",
+      "attribute": "items",
+      "type": "MdTransferListItem[] | string",
+      "default": "[]",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "",
+      "type": "string[]",
+      "default": "[]",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "sourceTitle",
+      "attribute": "source-title",
+      "type": "string",
+      "default": "'Choices'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "targetTitle",
+      "attribute": "target-title",
+      "type": "string",
+      "default": "'Chosen'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "searchable",
+      "attribute": "searchable",
+      "type": "boolean",
+      "default": "true",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "sourceSearchPlaceholder",
+      "attribute": "source-search-placeholder",
+      "type": "string",
+      "default": "'Search choices'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "targetSearchPlaceholder",
+      "attribute": "target-search-placeholder",
+      "type": "string",
+      "default": "'Search chosen'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "showSelectAll",
+      "attribute": "show-select-all",
+      "type": "boolean",
+      "default": "true",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "searchIcon",
+      "attribute": "search-icon",
+      "type": "string",
+      "default": "'search'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "moveRightIcon",
+      "attribute": "move-right-icon",
+      "type": "string",
+      "default": "'chevron_right'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "moveLeftIcon",
+      "attribute": "move-left-icon",
+      "type": "string",
+      "default": "'chevron_left'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "moveAllRightIcon",
+      "attribute": "move-all-right-icon",
+      "type": "string",
+      "default": "'keyboard_double_arrow_right'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "moveAllLeftIcon",
+      "attribute": "move-all-left-icon",
+      "type": "string",
+      "default": "'keyboard_double_arrow_left'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "emptyIcon",
+      "attribute": "empty-icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "emptyText",
+      "attribute": "empty-text",
+      "type": "string",
+      "default": "'No items'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "countTemplate",
+      "attribute": "count-template",
+      "type": "string",
+      "default": "'{checked}/{total} selected'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "singleStepOnly",
+      "attribute": "single-step-only",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "moveRightLabel",
+      "attribute": "move-right-label",
+      "type": "string",
+      "default": "'Move selected to target'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "moveLeftLabel",
+      "attribute": "move-left-label",
+      "type": "string",
+      "default": "'Move selected to source'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "moveAllRightLabel",
+      "attribute": "move-all-right-label",
+      "type": "string",
+      "default": "'Move all to target'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "moveAllLeftLabel",
+      "attribute": "move-all-left-label",
+      "type": "string",
+      "default": "'Move all to source'",
+      "reflect": false,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "string[]"
+    },
+    {
+      "name": "mdMove",
+      "detail": "{ direction: 'left' | 'right'; moved: string[]; target: string[]; }"
+    }
+  ],
+  "methods": [
+    {
+      "name": "moveSelectedRight",
+      "params": ""
+    },
+    {
+      "name": "moveSelectedLeft",
+      "params": ""
+    }
+  ],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "header",
+      "description": "Header bar"
+    },
+    {
+      "name": "header-title",
+      "description": "Header title cluster"
+    },
+    {
+      "name": "count",
+      "description": "\"{n}/{total} selected\" pill"
+    },
+    {
+      "name": "search",
+      "description": "Search field per side"
+    },
+    {
+      "name": "empty",
+      "description": "Empty-state message"
+    },
+    {
+      "name": "empty-icon",
+      "description": "Optional empty-state glyph (via `empty-icon` prop)"
+    },
+    {
+      "name": "list",
+      "description": "The <ul> listbox per side"
+    },
+    {
+      "name": "item",
+      "description": "Each <li> row"
+    },
+    {
+      "name": "controls",
+      "description": "Centre column with move buttons"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-transfer-list-width",
+      "description": "Explicit inline-size (default: auto; 100% supported)"
+    },
+    {
+      "name": "--md-transfer-list-min-width",
+      "description": "Minimum inline-size"
+    },
+    {
+      "name": "--md-transfer-list-max-width",
+      "description": "Maximum inline-size"
+    },
+    {
+      "name": "--md-transfer-list-height",
+      "description": "Explicit block-size (default: auto; 100% supported —"
+    },
+    {
+      "name": "--md-transfer-list-min-height",
+      "description": "Minimum block-size"
+    },
+    {
+      "name": "--md-transfer-list-max-height",
+      "description": "Maximum block-size"
+    },
+    {
+      "name": "--md-transfer-list-column-min-width",
+      "description": "Min-width of each column"
+    },
+    {
+      "name": "--md-transfer-list-column-max-block",
+      "description": "Max-height of each column (default 360px,"
+    },
+    {
+      "name": "--md-transfer-list-container-shape",
+      "description": "Container corner radius"
+    },
+    {
+      "name": "--md-transfer-list-container-color",
+      "description": "Column background"
+    },
+    {
+      "name": "--md-transfer-list-header-color",
+      "description": "Header background"
+    },
+    {
+      "name": "--md-transfer-list-header-text-color",
+      "description": "Header text color"
+    },
+    {
+      "name": "--md-transfer-list-item-inset",
+      "description": "Row plate inset from the panel edge"
+    },
+    {
+      "name": "--md-transfer-list-item-padding",
+      "description": "Padding of each row (derived from"
+    },
+    {
+      "name": "--md-transfer-list-item-gap",
+      "description": "Gap between checkbox and label"
+    },
+    {
+      "name": "--md-transfer-list-divider-color",
+      "description": "Divider color"
+    },
+    {
+      "name": "--md-transfer-list-controls-gap",
+      "description": "Gap between controls buttons"
+    },
+    {
+      "name": "--md-transfer-list-empty-icon-size",
+      "description": "Empty-state icon size (default 32px,"
+    },
+    {
+      "name": "--md-transfer-list-control-size",
+      "description": ""
+    },
+    {
+      "name": "--md-transfer-list-control-icon-size",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-checkbox",
+    "md-text-field",
+    "md-ripple",
+    "md-icon-button"
+  ],
+  "dataTypes": [
+    {
+      "name": "MdTransferListItem",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Stable identifier. */\n  value: string;\n  /** Visible label. */\n  label: string;\n  /** Optional secondary description. */\n  description?: string;\n  /** Disable selection / movement of this item. */\n  disabled?: boolean;"
+    }
+  ],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdChange",
+      "detail": "string[]"
+    },
+    {
+      "name": "mdMove",
+      "detail": "{ direction: 'left' | 'right'; moved: string[]; target: string[]; }"
+    }
+  ]
+}

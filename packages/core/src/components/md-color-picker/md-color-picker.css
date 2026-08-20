@@ -1,0 +1,537 @@
+/* ==========================================================
+   md-color-picker — AWC UI Color Picker
+   Designed in the MD3 Expressive vocabulary: tonal surface
+   tokens, the M3 Menu enter/exit motion (scale-up +
+   emphasized-decelerate on open, scale-down + emphasized-
+   accelerate on close), spring-scaled preset swatches, M3
+   outlined text field focus rings, and a settling spring on
+   the saturation/value thumb when released.
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-color-picker-width              Panel inline-size
+     --md-color-picker-plate-height       Saturation/value plate height
+     --md-color-picker-radius             Outer container radius
+     --md-color-picker-surface-color      Panel background colour
+     --md-color-picker-on-surface         Panel text colour
+     --md-color-picker-outline-color      Field outlines
+     --md-color-picker-thumb-size         Slider thumb size
+     --md-color-picker-thumb-border       Thumb ring colour
+     --md-color-picker-preset-size        Preset swatch size
+     --md-color-picker-popover-elevation  Popover shadow/elevation
+
+   CSS PARTS:
+     state-layer    Trigger state layer (exported from md-button)
+     popover, panel, plate, hue, alpha, sliders, preview, thumb,
+     field-hex, inputs, field-r, field-g, field-b,
+     field-h, field-s, field-l, field-a,
+     presets, preset, label
+
+   SLOTS:
+     (none)
+   ========================================================== */
+
+:host {
+  --_width: var(--md-color-picker-width, 296px);
+  --_plate-height: var(--md-color-picker-plate-height, 176px);
+  --_radius: var(--md-color-picker-radius, var(--md-sys-shape-corner-extra-large, 28px));
+  --_surface: var(--md-color-picker-surface-color, var(--md-sys-color-surface-container-high, #ECE6F0));
+  --_on-surface: var(--md-color-picker-on-surface, var(--md-sys-color-on-surface, #1C1B1F));
+  --_outline: var(--md-color-picker-outline-color, var(--md-sys-color-outline-variant, #CAC4D0));
+  --_outline-strong: var(--md-color-picker-outline-strong, var(--md-sys-color-outline, #79747E));
+  --_primary: var(--md-sys-color-primary, #6750A4);
+  --_thumb-size: var(--md-color-picker-thumb-size, 18px);
+  --_thumb-border: var(--md-color-picker-thumb-border, #FFFFFF);
+  --_preset-size: var(--md-color-picker-preset-size, 32px);
+  --_popover-elevation: var(--md-color-picker-popover-elevation, var(--md-sys-elevation-3, 0px 4px 8px 3px rgba(0,0,0,0.15), 0px 1px 3px rgba(0,0,0,0.3)));
+
+  /* MD3 motion tokens. */
+  --_state-easing: var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.80, 0.34, 1.00));
+  --_state-duration: var(--md-sys-motion-spring-effects-default-duration, 200ms);
+  --_spring-easing: var(--md-sys-motion-spring-spatial-fast-easing, cubic-bezier(0.42, 1.67, 0.21, 0.90));
+  --_spring-duration: var(--md-sys-motion-spring-spatial-fast-duration, 350ms);
+  --_emphasized-decelerate: var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
+  --_emphasized-accelerate: var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15));
+  --_popover-in-duration: var(--md-sys-motion-duration-medium2, 300ms);
+  --_popover-out-duration: var(--md-sys-motion-duration-short4, 200ms);
+
+  display: inline-block;
+  box-sizing: border-box;
+  direction: inherit;
+  font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif);
+  color: var(--_on-surface);
+}
+
+:host(.md-color-picker--inline) {
+  inline-size: var(--_width);
+}
+
+/* ==========================================================
+   1. TRIGGER (popover variant)
+   Rendered with the library <md-button variant="tonal">. The
+   button supplies its own container, state layer, ripple and
+   focus ring — we only theme the slotted swatch (via the
+   button's --md-button-icon-size sizing token) and keep the
+   hex label numerals monospaced/tabular.
+   ========================================================== */
+
+/* ==========================================================
+   2. POPOVER — M3 Menu enter/exit choreography
+   Open: scale 0.8 → 1.0 + fade in with emphasized-decelerate
+         (the panel "settles into place")
+   Close: scale 1.0 → 0.95 + fade out with emphasized-accelerate
+         (the panel "gets out of the way")
+   The transform-origin is anchored at the inline-start top so
+   the popover appears to grow out of the trigger.
+   ========================================================== */
+
+.md-color-picker__popover {
+  position: absolute;
+  z-index: var(--md-sys-z-index-popup, 1000);
+  margin-block-start: 8px;
+  inline-size: var(--_width);
+  background: var(--_surface);
+  color: var(--_on-surface);
+  border-radius: var(--_radius);
+  box-shadow: var(--_popover-elevation);
+  padding: max(4px, calc(20px + var(--md-sys-density-scale, 0) * 2px));
+  box-sizing: border-box;
+  transform-origin: top left;
+  animation: md-color-picker-pop-in var(--_popover-in-duration) var(--_emphasized-decelerate) both;
+}
+
+.md-color-picker__popover[data-state="closing"] {
+  animation: md-color-picker-pop-out var(--_popover-out-duration) var(--_emphasized-accelerate) both;
+}
+
+@keyframes md-color-picker-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes md-color-picker-pop-out {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+}
+
+/* RTL mirrors transform-origin so the popover grows out of the
+   appropriate trigger corner. */
+:host([dir="rtl"]) .md-color-picker__popover,
+:host-context([dir="rtl"]) .md-color-picker__popover {
+  transform-origin: top right;
+}
+
+/* ==========================================================
+   3. PANEL
+   ========================================================== */
+
+.md-color-picker__panel {
+  display: flex;
+  flex-direction: column;
+  gap: max(4px, calc(14px + var(--md-sys-density-scale, 0) * 2px));
+  inline-size: 100%;
+  background: var(--_surface);
+  border-radius: var(--_radius);
+  padding: max(4px, calc(20px + var(--md-sys-density-scale, 0) * 2px));
+  box-sizing: border-box;
+}
+
+:host(.md-color-picker--popover) .md-color-picker__panel {
+  padding: 0;
+  background: transparent;
+}
+
+/* ==========================================================
+   4. SATURATION / VALUE PLATE
+   The thumb gets a settling spring on release via the
+   `transition` only firing on non-dragging frames.
+   ========================================================== */
+
+.md-color-picker__plate {
+  position: relative;
+  inline-size: 100%;
+  block-size: var(--_plate-height);
+  border-radius: var(--md-sys-shape-corner-large, 16px);
+  overflow: hidden;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.md-color-picker__plate:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary, #625B71);
+  outline-offset: 2px;
+}
+
+.md-color-picker__plate-saturation,
+.md-color-picker__plate-value {
+  position: absolute;
+  inset: 0;
+}
+
+.md-color-picker__plate-saturation {
+  background: linear-gradient(to right, #ffffff, rgba(255, 255, 255, 0));
+}
+
+:host(:dir(rtl)) .md-color-picker__plate-saturation,
+:host([dir="rtl"]) .md-color-picker__plate-saturation,
+:host-context([dir="rtl"]) .md-color-picker__plate-saturation {
+  background: linear-gradient(to left, #ffffff, rgba(255, 255, 255, 0));
+}
+.md-color-picker__plate-value {
+  background: linear-gradient(to top, #000000, rgba(0, 0, 0, 0));
+}
+
+/* ==========================================================
+   5. THUMBS
+   ========================================================== */
+
+.md-color-picker__thumb {
+  position: absolute;
+  inline-size: var(--_thumb-size);
+  block-size: var(--_thumb-size);
+  border-radius: 50%;
+  border: 2px solid var(--_thumb-border);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.4),
+    var(--md-sys-elevation-1, 0px 1px 2px rgba(0,0,0,0.3));
+  margin-inline-start: calc(-0.5 * var(--_thumb-size));
+  margin-block-start: calc(-0.5 * var(--_thumb-size));
+  pointer-events: none;
+  background-color: currentColor;
+  transition:
+    box-shadow var(--_state-duration) var(--_state-easing),
+    transform var(--_state-duration) var(--_state-easing);
+}
+
+/* Press-on plate / slider: scale up the thumb to mimic the
+   MD3 slider's "expanded handle". */
+.md-color-picker__plate:active .md-color-picker__thumb,
+.md-color-picker__hue:active .md-color-picker__thumb,
+.md-color-picker__alpha:active .md-color-picker__thumb {
+  transform: scale(1.15);
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--_primary) 16%, transparent),
+    var(--md-sys-elevation-2, 0px 1px 2px rgba(0,0,0,0.3));
+}
+
+.md-color-picker__thumb--slider {
+  inset-block-start: 50%;
+  margin-block-start: 0;
+  transform: translateY(-50%);
+}
+
+.md-color-picker__hue:active .md-color-picker__thumb--slider,
+.md-color-picker__alpha:active .md-color-picker__thumb--slider {
+  transform: translateY(-50%) scale(1.15);
+}
+
+/* ==========================================================
+   6. SLIDERS
+   ========================================================== */
+
+.md-color-picker__sliders {
+  display: flex;
+  gap: max(4px, calc(14px + var(--md-sys-density-scale, 0) * 2px));
+  align-items: center;
+}
+
+.md-color-picker__sliders-stack {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+.md-color-picker__hue,
+.md-color-picker__alpha {
+  position: relative;
+  inline-size: 100%;
+  block-size: 14px;
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  touch-action: none;
+  cursor: pointer;
+  transition: box-shadow var(--_state-duration) var(--_state-easing);
+}
+
+.md-color-picker__hue {
+  background: linear-gradient(
+    to right,
+    #ff0000 0%, #ffff00 17%, #00ff00 33%,
+    #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%
+  );
+}
+
+:host(:dir(rtl)) .md-color-picker__hue,
+:host([dir="rtl"]) .md-color-picker__hue,
+:host-context([dir="rtl"]) .md-color-picker__hue {
+  background: linear-gradient(
+    to left,
+    #ff0000 0%, #ffff00 17%, #00ff00 33%,
+    #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%
+  );
+}
+
+.md-color-picker__alpha {
+  background-image:
+    linear-gradient(45deg, #ccc 25%, transparent 25%),
+    linear-gradient(-45deg, #ccc 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #ccc 75%),
+    linear-gradient(-45deg, transparent 75%, #ccc 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+}
+
+.md-color-picker__alpha-track {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+/* Pointer hit-area extender. The thumb is centred on its value position, so at
+   0% / 100% (e.g. alpha = 1, or a primary hue) half of it sits OUTSIDE the
+   track — grabbing the knob there landed on the container, not the slider, so
+   the drag never started (most visible in RTL, where alpha = 1 parks the knob
+   at the inline-end edge by the preview). This transparent pseudo grows the
+   slider's clickable box by half a thumb on every side to catch those grabs;
+   pointer events over it still target the slider, and the cached rect (and thus
+   the value mapping) is unchanged. */
+.md-color-picker__hue::before,
+.md-color-picker__alpha::before {
+  content: '';
+  position: absolute;
+  inset-block: calc((100% - var(--_thumb-size)) / 2);
+  inset-inline: calc(var(--_thumb-size) / -2);
+}
+
+.md-color-picker__hue:focus-visible,
+.md-color-picker__alpha:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary, #625B71);
+  outline-offset: 4px;
+}
+
+.md-color-picker__hue:hover,
+.md-color-picker__alpha:hover {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--_on-surface) 8%, transparent);
+}
+
+/* ==========================================================
+   7. PREVIEW
+   ========================================================== */
+
+.md-color-picker__preview {
+  flex-shrink: 0;
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: 50%;
+  background-image:
+    linear-gradient(45deg, #ccc 25%, transparent 25%),
+    linear-gradient(-45deg, #ccc 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #ccc 75%),
+    linear-gradient(-45deg, transparent 75%, #ccc 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+  border: 1px solid var(--_outline);
+  overflow: hidden;
+  transition: transform var(--_spring-duration) var(--_spring-easing);
+}
+
+.md-color-picker__preview-inner {
+  inline-size: 100%;
+  block-size: 100%;
+  transition: background-color var(--_state-duration) var(--_state-easing);
+}
+
+/* ==========================================================
+   8. INPUT FIELDS — M3 outlined-field treatment
+   ========================================================== */
+
+.md-color-picker__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.md-color-picker__field label {
+  font-family: var(--md-sys-typescale-label-small-font-family, Roboto, sans-serif);
+  font-size: var(--md-sys-typescale-label-small-font-size, 11px);
+  font-weight: var(--md-sys-typescale-label-small-font-weight, 500);
+  line-height: var(--md-sys-typescale-label-small-line-height, 16px);
+  letter-spacing: var(--md-sys-typescale-label-small-letter-spacing, 0.5px);
+  color: var(--md-sys-color-on-surface-variant, #49454F);
+  text-transform: uppercase;
+}
+
+.md-color-picker__field input {
+  inline-size: 100%;
+  /* 6px inline padding (not 12px): a 56px channel field must fit a centred
+     3-digit value (255 / 360) — 12px clipped the leading digit (e.g. 103 -> "03"),
+     most visibly in RTL. The wide hex field has ample room either way. */
+  padding: var(--md-sys-spacing-inset-sm, 8px) 6px;
+  border: 1px solid var(--_outline);
+  border-radius: var(--md-sys-shape-corner-extra-small, 4px);
+  background: var(--md-sys-color-surface-container-lowest, #FFFFFF);
+  color: var(--_on-surface);
+  font: inherit;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  box-sizing: border-box;
+  text-align: center;
+  transition:
+    border-color var(--_state-duration) var(--_state-easing),
+    box-shadow var(--_state-duration) var(--_state-easing);
+}
+
+.md-color-picker__field input:hover:not(:disabled) {
+  border-color: var(--_outline-strong);
+}
+
+.md-color-picker__field input:focus-visible {
+  outline: none;
+  border-color: var(--_primary);
+  /* M3 outlined-field "active" treatment: double-line via box-shadow. */
+  box-shadow: 0 0 0 1px var(--_primary);
+}
+
+.md-color-picker__field input[aria-invalid="true"] {
+  border-color: var(--md-sys-color-error, #B3261E);
+}
+
+.md-color-picker__field input[aria-invalid="true"]:focus-visible {
+  box-shadow: 0 0 0 1px var(--md-sys-color-error, #B3261E);
+}
+
+.md-color-picker__field input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.md-color-picker__field--hex input {
+  text-align: start;
+  font-family: var(--md-sys-typescale-mono-font, ui-monospace, 'SF Mono', Menlo, monospace);
+  letter-spacing: 0.05em;
+}
+
+.md-color-picker__inputs {
+  display: flex;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+/* ==========================================================
+   9. PRESETS — spring scale, animated selection ring
+   ========================================================== */
+
+.md-color-picker__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+.md-color-picker__preset {
+  position: relative;
+  inline-size: var(--_preset-size);
+  block-size: var(--_preset-size);
+  border: 1px solid var(--_outline);
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    transform var(--_spring-duration) var(--_spring-easing),
+    box-shadow var(--_spring-duration) var(--_spring-easing);
+}
+
+.md-color-picker__preset:hover:not(:disabled) {
+  transform: scale(1.15) rotate(-4deg);
+  box-shadow: var(--md-sys-elevation-1, 0px 1px 2px rgba(0,0,0,0.3));
+}
+
+.md-color-picker__preset:active:not(:disabled) {
+  transform: scale(1.05) rotate(0deg);
+}
+
+.md-color-picker__preset:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary, #625B71);
+  outline-offset: 3px;
+}
+
+/* The selection ring animates out from the swatch when selected. */
+.md-color-picker__preset[aria-selected="true"] {
+  box-shadow:
+    0 0 0 2px var(--_surface),
+    0 0 0 4px var(--_primary),
+    var(--md-sys-elevation-1, 0px 1px 2px rgba(0,0,0,0.3));
+  transform: scale(1.1);
+}
+
+.md-color-picker__preset[aria-selected="true"]:hover:not(:disabled) {
+  transform: scale(1.18);
+}
+
+/* ==========================================================
+   10. DISABLED STATE
+   ========================================================== */
+:host(.md-color-picker--disabled) .md-color-picker__plate,
+:host(.md-color-picker--disabled) .md-color-picker__hue,
+:host(.md-color-picker--disabled) .md-color-picker__alpha {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* ==========================================================
+   11. REDUCED MOTION
+   ========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .md-color-picker__popover {
+    animation-duration: 0.01ms !important;
+  }
+  .md-color-picker__preset,
+  .md-color-picker__field input,
+  .md-color-picker__thumb,
+  .md-color-picker__preview,
+  .md-color-picker__hue,
+  .md-color-picker__alpha {
+    transition-duration: 0.01ms !important;
+  }
+  .md-color-picker__preset:hover:not(:disabled) {
+    transform: scale(1.06);
+  }
+}
+
+/* ==========================================================
+   12. FORCED COLORS
+   ========================================================== */
+@media (forced-colors: active) {
+  .md-color-picker__field input,
+  .md-color-picker__preset {
+    border: 1px solid CanvasText;
+  }
+  .md-color-picker__plate,
+  .md-color-picker__hue,
+  .md-color-picker__alpha {
+    forced-color-adjust: none;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

@@ -1,0 +1,949 @@
+---
+title: Checkbox
+description: "Select none, one or many from a related set — tri-state, form-associated, with its own supporting and error line"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/checkbox.json";
+
+**Select none, one, or many from a related set.** Tri-state (checked /
+unchecked / indeterminate), form-associated via `ElementInternals` with the
+full constraint-validation API, and its own supporting/error line under the
+box.
+
+<ComponentDemo
+  html={`<label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+  <md-checkbox></md-checkbox> Unchecked
+</label>
+<label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+  <md-checkbox checked></md-checkbox> Checked
+</label>
+<label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+  <md-checkbox indeterminate></md-checkbox> Indeterminate
+</label>`}
+  label="Live preview"
+  storyId="selection-checkbox--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-checkbox" example="" />
+
+## When to use
+
+- Several **related** options where any number may be selected.
+- A single opt-in that must be **submitted with a form** (terms, consent) —
+  note this needs an explicit submit to take effect, unlike a switch.
+- A **parent/child** selection tree, using `indeterminate` for the partial
+  state.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Exactly one option from a list | [`md-radio`](/components/radio/) |
+| A setting that takes effect **immediately** | [`md-switch`](/components/switch/) |
+| More than ~7 options, or space is tight | [`md-multi-select`](/components/multi-select/) |
+| Assigning a subset from a large pool | [`md-transfer-list`](/components/transfer-list/) |
+| Filtering by removable criteria | [`md-chip`](/components/chip/) |
+| Two opposing choices (on/off framing) | [`md-switch`](/components/switch/), or [`md-button-group`](/components/button-group/) |
+| Running an action | [`md-button`](/components/button/) |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Independent on/off choices | This component |
+| A mixed "some children checked" state | `indeterminate` |
+| A hint under the control | `supporting-text` |
+| A validation message | `error-text` |
+| Blocks form submission when unchecked | `required` |
+| Unavailable but still discoverable | `soft-disabled` |
+| Smaller box | `density="-1…-4"` |
+
+## Labelling — there is no slot
+
+:::danger[`<md-checkbox>Label</md-checkbox>` renders nothing]
+The component has **no default slot**. Text placed between the tags is
+discarded, and a bare checkbox has no accessible name at all (axe
+`aria-toggle-field-name`). Wrap it in a `<label>` — that gives both the name
+and a larger hit target — or set `aria-label` / `aria-labelledby` on the host.
+:::
+
+<ComponentDemo
+  html={`<label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+  <md-checkbox name="news" value="yes"></md-checkbox> Email me updates
+</label>
+<md-checkbox aria-label="Standalone checkbox with an aria-label"></md-checkbox>
+<span id="cb-external-label">Labelled by another element</span>
+<md-checkbox aria-labelledby="cb-external-label"></md-checkbox>`}
+  label="label wrapper, aria-label, aria-labelledby"
+/>
+
+## States
+
+Five states, three of them value-carrying and two of them availability
+modifiers:
+
+| State | Set with | Notes |
+|---|---|---|
+| Unchecked | *(default)* | `checked` absent |
+| Checked | `checked` | Submits `value` under `name` |
+| Indeterminate | `indeterminate` | `aria-checked="mixed"` — presentation only |
+| Disabled | `disabled` | Skipped by `Tab` |
+| Soft-disabled | `soft-disabled` | Same visuals, still focusable |
+
+<ComponentDemo
+  html={`<label style="display: inline-flex; align-items: center; gap: 8px;">
+  <md-checkbox></md-checkbox> Unchecked
+</label>
+<label style="display: inline-flex; align-items: center; gap: 8px;">
+  <md-checkbox checked></md-checkbox> Checked
+</label>
+<label style="display: inline-flex; align-items: center; gap: 8px;">
+  <md-checkbox indeterminate></md-checkbox> Indeterminate
+</label>
+<label style="display: inline-flex; align-items: center; gap: 8px;">
+  <md-checkbox disabled checked></md-checkbox> Disabled
+</label>
+<label style="display: inline-flex; align-items: center; gap: 8px;">
+  <md-checkbox soft-disabled></md-checkbox> Soft-disabled
+</label>`}
+  label="All five states — try tabbing through them"
+/>
+
+`disabled` leaves the tab order entirely. `soft-disabled` keeps the same
+visuals but stays focusable, so a contextually-unavailable option is still
+discoverable by keyboard — M3's preference.
+
+## Indeterminate is a presentation state
+
+`indeterminate` renders the dash and exposes `aria-checked="mixed"`. It is
+**not** a third user-selectable value: a click resolves the checkbox to
+checked or unchecked and clears the flag. A parent checkbox therefore has to
+recompute it every time a child changes.
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 4px; inline-size: 100%;">
+  <label style="display: inline-flex; align-items: center; gap: 8px;">
+    <md-checkbox id="cb-tree-all" indeterminate></md-checkbox> Select all
+  </label>
+  <label style="display: inline-flex; align-items: center; gap: 8px; margin-inline-start: 32px;">
+    <md-checkbox class="cb-tree-kid" checked></md-checkbox> Analytics
+  </label>
+  <label style="display: inline-flex; align-items: center; gap: 8px; margin-inline-start: 32px;">
+    <md-checkbox class="cb-tree-kid"></md-checkbox> Billing
+  </label>
+</div>`}
+  script={`
+    var all = root.querySelector('#cb-tree-all');
+    var kids = Array.prototype.slice.call(root.querySelectorAll('.cb-tree-kid'));
+
+    function sync() {
+      var n = kids.filter(function (k) { return k.checked; }).length;
+      all.checked = n === kids.length;
+      all.indeterminate = n > 0 && n < kids.length;   // recompute — a click clears it
+    }
+
+    kids.forEach(function (k) { k.addEventListener('mdChange', sync); });
+    all.addEventListener('mdChange', function () {
+      kids.forEach(function (k) { k.checked = all.checked; });
+      all.indeterminate = false;
+    });
+    sync();
+  `}
+  label="Parent / child — click a child and the parent recomputes"
+  htmlForCode={`<label><md-checkbox id="all"></md-checkbox> Select all</label>
+<label><md-checkbox class="child" value="a"></md-checkbox> Analytics</label>
+<label><md-checkbox class="child" value="b"></md-checkbox> Billing</label>
+
+<script type="module">
+  const all = document.getElementById('all');
+  const kids = [...document.querySelectorAll('.child')];
+
+  const sync = () => {
+    const n = kids.filter((k) => k.checked).length;
+    all.checked = n === kids.length;
+    all.indeterminate = n > 0 && n < kids.length;   // recompute — a click clears it
+  };
+
+  kids.forEach((k) => k.addEventListener('mdChange', sync));
+  all.addEventListener('mdChange', () => {
+    kids.forEach((k) => (k.checked = all.checked));
+    all.indeterminate = false;
+  });
+  sync();
+</script>`}
+  react={`import { MdCheckbox } from '@awc-ui/react';
+import { useMemo, useState } from 'react';
+
+export function PermissionTree() {
+  const [kids, setKids] = useState({ a: false, b: false });
+  const values = Object.values(kids);
+  const allChecked = values.every(Boolean);
+  const indeterminate = useMemo(
+    () => values.some(Boolean) && !allChecked,
+    [values, allChecked],
+  );
+
+  return (
+    <>
+      <label>
+        <MdCheckbox
+          checked={allChecked}
+          indeterminate={indeterminate}
+          onMdChange={(e) => setKids({ a: e.detail.checked, b: e.detail.checked })}
+        />
+        Select all
+      </label>
+      <label>
+        <MdCheckbox
+          checked={kids.a}
+          onMdChange={(e) => setKids((k) => ({ ...k, a: e.detail.checked }))}
+        />
+        Analytics
+      </label>
+      <label>
+        <MdCheckbox
+          checked={kids.b}
+          onMdChange={(e) => setKids((k) => ({ ...k, b: e.detail.checked }))}
+        />
+        Billing
+      </label>
+    </>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-permission-tree',
+  template: \`
+    <label>
+      <md-checkbox
+        [checked]="allChecked"
+        [indeterminate]="indeterminate"
+        (mdChange)="setAll($event)"
+      ></md-checkbox>
+      Select all
+    </label>
+    <label>
+      <md-checkbox [checked]="kids.a" (mdChange)="set('a', $event)"></md-checkbox>
+      Analytics
+    </label>
+    <label>
+      <md-checkbox [checked]="kids.b" (mdChange)="set('b', $event)"></md-checkbox>
+      Billing
+    </label>
+  \`,
+})
+export class PermissionTreeComponent {
+  kids = { a: false, b: false };
+
+  get allChecked() { return this.kids.a && this.kids.b; }
+  get indeterminate() { return (this.kids.a || this.kids.b) && !this.allChecked; }
+
+  set(key: 'a' | 'b', e: CustomEvent) { this.kids[key] = e.detail.checked; }
+  setAll(e: CustomEvent) { this.kids = { a: e.detail.checked, b: e.detail.checked }; }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, reactive } from 'vue';
+
+const kids = reactive({ a: false, b: false });
+const allChecked = computed(() => kids.a && kids.b);
+const indeterminate = computed(() => (kids.a || kids.b) && !allChecked.value);
+
+function setAll(e: CustomEvent) {
+  kids.a = e.detail.checked;
+  kids.b = e.detail.checked;
+}
+</script>
+
+<template>
+  <label>
+    <md-checkbox
+      :checked="allChecked"
+      :indeterminate="indeterminate"
+      @mdChange="setAll"
+    />
+    Select all
+  </label>
+  <label>
+    <md-checkbox :checked="kids.a" @mdChange="(e) => (kids.a = e.detail.checked)" />
+    Analytics
+  </label>
+  <label>
+    <md-checkbox :checked="kids.b" @mdChange="(e) => (kids.b = e.detail.checked)" />
+    Billing
+  </label>
+</template>`}
+  svelte={`<script lang="ts">
+  let kids = { a: false, b: false };
+
+  $: allChecked = kids.a && kids.b;
+  $: indeterminate = (kids.a || kids.b) && !allChecked;
+
+  function setAll(e: CustomEvent) {
+    kids = { a: e.detail.checked, b: e.detail.checked };
+  }
+</script>
+
+<label>
+  <md-checkbox
+    checked={allChecked}
+    {indeterminate}
+    on:mdChange={setAll}
+  />
+  Select all
+</label>
+<label>
+  <md-checkbox checked={kids.a} on:mdChange={(e) => (kids.a = e.detail.checked)} />
+  Analytics
+</label>
+<label>
+  <md-checkbox checked={kids.b} on:mdChange={(e) => (kids.b = e.detail.checked)} />
+  Billing
+</label>`}
+/>
+
+## Supporting and error text
+
+A checkbox has nowhere else to show a failed `required` except the browser's
+transient validation balloon, so it carries its own message line. One line is
+rendered, and `error-text` wins it whenever it is set — the component renders
+`errorText || supportingText`. `error` does not choose between them: it
+recolours that line to the error role and gives it `role="alert"`.
+
+:::caution[`error` colours the line, `aria-invalid` colours the box]
+Three separate signals, easy to conflate:
+
+| Want | Set |
+|---|---|
+| The message line in the error colour, announced live | `error` |
+| A different message while invalid | `error-text` (shown whenever set) |
+| The **box** outlined/filled in the error colour | nothing — the host sets `aria-invalid` itself |
+
+The box recolour is driven by `:host([aria-invalid="true"])`, and the component
+sets `aria-invalid` when `required` is unsatisfied or `setCustomValidity()`
+holds a message. Setting `error` alone leaves the box in its normal colours;
+setting `required` on an unchecked box recolours it whether or not you set
+`error`.
+:::
+
+:::caution[Don't show both at once]
+Swap supporting → error rather than stacking them. Two lines where there was
+one shifts the layout under the user's pointer.
+:::
+
+:::note[Wrap the label text when a message is present]
+A checkbox carrying a message stacks as **[touch target, message]**, so a bare
+text node beside it aligns to the *top of the touch target* rather than to the
+box — about 15px high. Put the label in a `<span>` given the target's height and
+centred, as the snippets below do.
+:::
+
+<ComponentDemo
+  html={`<label style="display: inline-flex; align-items: flex-start; gap: 8px;">
+  <md-checkbox supporting-text="You can change this later"></md-checkbox>
+  <span style="display: flex; align-items: center; min-block-size: 48px;">Email me updates</span>
+</label>
+<label style="display: inline-flex; align-items: flex-start; gap: 8px;">
+  <md-checkbox error error-text="You must accept to continue" required></md-checkbox>
+  <span style="display: flex; align-items: center; min-block-size: 48px;">I accept the terms</span>
+</label>`}
+  htmlForCode={`<label style="display: inline-flex; align-items: flex-start; gap: 8px;">
+  <md-checkbox supporting-text="You can change this later"></md-checkbox>
+  <span style="display: flex; align-items: center; min-block-size: 48px;">Email me updates</span>
+</label>
+
+<label style="display: inline-flex; align-items: flex-start; gap: 8px;">
+  <md-checkbox error error-text="You must accept to continue" required></md-checkbox>
+  <span style="display: flex; align-items: center; min-block-size: 48px;">I accept the terms</span>
+</label>`}
+  label="Supporting text and error text"
+/>
+
+## Forms
+
+`md-checkbox` is form-associated through `ElementInternals`. When checked it
+submits `value` (default `"on"`) under `name`, and it restores its authored
+state on form reset. **Don't add a hidden `<input>`** — the mirror
+double-submits.
+
+`required` genuinely blocks submission. `value-missing-label` is a prop rather
+than a hardcoded string precisely so you can localize the "please check this
+box" message.
+
+<ComponentDemo
+  html={`<form style="display: flex; flex-direction: column; gap: 12px; inline-size: 100%;"
+        onsubmit="event.preventDefault(); this.querySelector('[data-out]').textContent = 'Submitted — terms=' + new FormData(this).get('terms');"
+        onreset="this.querySelector('[data-out]').textContent = '';">
+  <label style="display: inline-flex; align-items: flex-start; gap: 8px;">
+    <md-checkbox name="terms" value="accepted" required value-missing-label="Please accept the terms." error-text="You must accept to continue"></md-checkbox>
+    <span style="display: flex; align-items: center; min-block-size: 48px;">I accept the terms</span>
+  </label>
+  <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+    <md-button variant="filled" type="submit">Continue</md-button>
+    <md-button variant="text" type="reset">Reset</md-button>
+    <span data-out style="opacity:.75;font-size:.85rem;"></span>
+  </div>
+</form>`}
+  htmlForCode={`<form>
+  <label style="display: inline-flex; align-items: flex-start; gap: 8px;">
+    <md-checkbox
+      name="terms"
+      value="accepted"
+      required
+      value-missing-label="Please accept the terms."
+      error-text="You must accept to continue"
+    ></md-checkbox>
+    <span style="display: flex; align-items: center; min-block-size: 48px;">I accept the terms</span>
+  </label>
+
+  <md-button variant="filled" type="submit">Continue</md-button>
+  <md-button variant="text" type="reset">Reset</md-button>
+</form>`}
+  label="Required consent — submit with the box unchecked"
+/>
+
+Reading the submitted value back out — the checkbox appears in `FormData` under
+`name` only when it is checked, so `get('terms')` is `null` for an unchecked box:
+
+<TechnologyTabs
+  html={`<form id="signup">
+  <label>
+    <md-checkbox name="terms" value="accepted" required></md-checkbox>
+    I accept the terms
+  </label>
+
+  <md-button variant="filled" type="submit">Continue</md-button>
+  <md-button variant="text" type="reset">Reset</md-button>
+</form>
+
+<script type="module">
+  document.getElementById('signup').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(e.target);
+    console.log(data.get('terms'));   // 'accepted', or null when unchecked
+  });
+</script>`}
+  react={`import { MdButton, MdCheckbox } from '@awc-ui/react';
+
+export function SignupForm() {
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    console.log(data.get('terms'));   // 'accepted', or null when unchecked
+  }
+
+  return (
+    <form onSubmit={onSubmit}>
+      <label>
+        <MdCheckbox name="terms" value="accepted" required />
+        I accept the terms
+      </label>
+
+      <MdButton variant="filled" type="submit">Continue</MdButton>
+      <MdButton variant="text" type="reset">Reset</MdButton>
+    </form>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-signup-form',
+  template: \`
+    <form (submit)="onSubmit($event)">
+      <label>
+        <md-checkbox name="terms" value="accepted" required></md-checkbox>
+        I accept the terms
+      </label>
+
+      <md-button variant="filled" type="submit">Continue</md-button>
+      <md-button variant="text" type="reset">Reset</md-button>
+    </form>
+  \`,
+})
+export class SignupFormComponent {
+  onSubmit(e: Event) {
+    e.preventDefault();
+    const data = new FormData(e.target as HTMLFormElement);
+    console.log(data.get('terms'));   // 'accepted', or null when unchecked
+  }
+}`}
+  vue={`<script setup lang="ts">
+function onSubmit(e: Event) {
+  e.preventDefault();
+  const data = new FormData(e.target as HTMLFormElement);
+  console.log(data.get('terms'));   // 'accepted', or null when unchecked
+}
+</script>
+
+<template>
+  <form @submit="onSubmit">
+    <label>
+      <md-checkbox name="terms" value="accepted" required />
+      I accept the terms
+    </label>
+
+    <md-button variant="filled" type="submit">Continue</md-button>
+    <md-button variant="text" type="reset">Reset</md-button>
+  </form>
+</template>`}
+  svelte={`<script lang="ts">
+  function onSubmit(e: Event) {
+    e.preventDefault();
+    const data = new FormData(e.target as HTMLFormElement);
+    console.log(data.get('terms'));   // 'accepted', or null when unchecked
+  }
+</script>
+
+<form on:submit={onSubmit}>
+  <label>
+    <md-checkbox name="terms" value="accepted" required />
+    I accept the terms
+  </label>
+
+  <md-button variant="filled" type="submit">Continue</md-button>
+  <md-button variant="text" type="reset">Reset</md-button>
+</form>`}
+/>
+
+**Methods** — `getValidity()`, `checkValidity()`, `reportValidity()` and
+`setCustomValidity(message)` mirror the native constraint-validation API. Use
+`setCustomValidity('')` to clear a server-side message.
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdChange` | no | `{ checked, indeterminate }` | Whenever the state changes |
+| `mdValidityChange` | no | `{ valid, validationMessage, flags }` | Only when validity **changes** |
+
+Both details are inline shapes — there is no exported `…Detail` type for either.
+The typed handle the library does export is `MdCheckboxCustomEvent<T>`:
+
+```ts
+import type { MdCheckboxCustomEvent } from '@awc-ui/core';
+
+type ChangeEvent = MdCheckboxCustomEvent<{
+  checked: boolean;
+  indeterminate: boolean;   // always false after a user click
+}>;
+
+type ValidityEvent = MdCheckboxCustomEvent<{
+  valid: boolean;
+  validationMessage: string;
+  flags: Record<string, boolean>;   // e.g. { valueMissing: true }
+}>;
+```
+
+:::caution[`mdValidityChange` is not composed]
+It deliberately does **not** cross shadow boundaries, so a delegated listener
+on an ancestor in another shadow root will never see it. Bind it on the
+checkbox itself. `mdChange` *is* composed, so one delegated listener on a
+light-DOM wrapper catches every checkbox inside it.
+:::
+
+:::tip[The first validity state is not a change]
+`mdValidityChange` primes its baseline on mount and stays silent, so a page of
+required checkboxes does not emit one event per control on load. Read the
+starting state with `getValidity()` instead.
+:::
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:8px;">
+  <label style="display:inline-flex;align-items:center;gap:8px;">
+    <md-checkbox id="cb-ev-terms" name="terms" value="accepted" required></md-checkbox> I accept the terms (required)
+  </label>
+  <label style="display:inline-flex;align-items:center;gap:8px;">
+    <md-checkbox id="cb-ev-mixed" indeterminate></md-checkbox> Partial selection (starts indeterminate)
+  </label>
+</div>
+<output id="cb-ev-log" style="display:block; margin-block-start:16px; min-block-size:3.2em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Toggle either box. The first is required, so its validity flips too; the second resolves its mixed state on the first click.</output>`}
+  script={`
+    var log = root.querySelector('#cb-ev-log');
+    var terms = root.querySelector('#cb-ev-terms');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 3);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    // mdChange is composed, so one delegated listener on the wrapper sees both.
+    root.addEventListener('mdChange', function (e) {
+      var d = e.detail;
+      push('mdChange          checked=' + d.checked + '  indeterminate=' + d.indeterminate);
+    });
+
+    // mdValidityChange is composed: false — bind it on the checkbox itself.
+    terms.addEventListener('mdValidityChange', function (e) {
+      var d = e.detail;
+      push('mdValidityChange  valid=' + d.valid + '  message=' + (d.validationMessage || '(none)'));
+    });
+  `}
+  label="mdChange delegated on the wrapper, mdValidityChange bound on the box"
+  htmlCode={`<md-checkbox id="terms" name="terms" required></md-checkbox>
+
+<script type="module">
+  const cb = document.getElementById('terms');
+
+  cb.addEventListener('mdChange', (e) => {
+    console.log(e.detail.checked, e.detail.indeterminate);
+  });
+
+  // Bind on the element itself — this event is composed: false.
+  cb.addEventListener('mdValidityChange', (e) => {
+    console.log(e.detail.valid, e.detail.validationMessage);
+  });
+</script>`}
+  react={`import { MdCheckbox } from '@awc-ui/react';
+
+export function TermsCheckbox() {
+  return (
+    <MdCheckbox
+      name="terms"
+      required
+      onMdChange={(e) => console.log(e.detail.checked, e.detail.indeterminate)}
+      onMdValidityChange={(e) => console.log(e.detail.valid, e.detail.validationMessage)}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-terms-checkbox',
+  template: \`
+    <md-checkbox
+      name="terms"
+      required
+      (mdChange)="onChange($event)"
+      (mdValidityChange)="onValidity($event)"
+    ></md-checkbox>
+  \`,
+})
+export class TermsCheckboxComponent {
+  onChange(e: CustomEvent) {
+    console.log(e.detail.checked, e.detail.indeterminate);
+  }
+  onValidity(e: CustomEvent) {
+    console.log(e.detail.valid, e.detail.validationMessage);
+  }
+}`}
+  vue={`<script setup lang="ts">
+function onChange(e: CustomEvent) {
+  console.log(e.detail.checked, e.detail.indeterminate);
+}
+function onValidity(e: CustomEvent) {
+  console.log(e.detail.valid, e.detail.validationMessage);
+}
+</script>
+
+<template>
+  <md-checkbox
+    name="terms"
+    required
+    @mdChange="onChange"
+    @mdValidityChange="onValidity"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  function onChange(e: CustomEvent) {
+    console.log(e.detail.checked, e.detail.indeterminate);
+  }
+  function onValidity(e: CustomEvent) {
+    console.log(e.detail.valid, e.detail.validationMessage);
+  }
+</script>
+
+<md-checkbox
+  name="terms"
+  required
+  on:mdChange={onChange}
+  on:mdValidityChange={onValidity}
+/>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- Wrapping in `<label>` gives both the accessible name and a larger hit target
+  — the preferred pattern. Otherwise use `aria-label` or `aria-labelledby`.
+- Tri-state is exposed as `aria-checked="mixed"` when `indeterminate`.
+- `disabled` leaves the tab order; `soft-disabled` stays focusable.
+- Errors surface in `error-text` next to the control, not only in a transient
+  browser balloon.
+- The hit area is a full 48px at density 0, comfortably over the WCAG 2.5.8
+  target size. It tapers 4px per density rung (down to a 32px floor), so a dense
+  layout that still has to be tappable needs
+  `--md-checkbox-touch-target-size` raised by 4px per rung — `64px` at `-4` to
+  get 48px back.
+- Group related checkboxes in a `fieldset` with a `legend`, or a container with
+  `role="group"` and an `aria-label`.
+
+### Keyboard
+
+| Key | Action |
+|---|---|
+| `Tab` | Focus the checkbox (`disabled` is skipped, `soft-disabled` is not) |
+| `Space` | Toggle it |
+
+Tab through these four: the `soft-disabled` SMS row still takes focus so a
+screen-reader user can discover the option, the `disabled` Fax row is skipped
+entirely, and the mixed Push row announces as "partially checked" until the
+first `Space` resolves it.
+
+<ComponentDemo
+  html={`<div role="group" aria-label="Notification preferences" style="display:flex;flex-direction:column;gap:8px;">
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox checked></md-checkbox> Email</label>
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox indeterminate></md-checkbox> Push (some channels)</label>
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox soft-disabled></md-checkbox> SMS — unavailable on your plan</label>
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox disabled></md-checkbox> Fax — skipped by Tab</label>
+</div>`}
+  label="A named group — Tab through it, Space to toggle"
+/>
+
+## RTL, density & i18n
+
+**RTL** — the box, its state layer and the supporting line are all laid out
+with logical properties, so the control flips side with the document direction
+on its own. Nothing on `md-checkbox` needs setting. See
+[RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <label><md-checkbox checked></md-checkbox> تذكرني</label>
+</div>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;gap:20px;flex-wrap:wrap;">
+    <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox checked></md-checkbox> Remember me</label>
+    <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox indeterminate></md-checkbox> Partial</label>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;gap:20px;flex-wrap:wrap;">
+    <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox checked></md-checkbox> تذكرني</label>
+    <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox indeterminate></md-checkbox> جزئي</label>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+/>
+
+### The nesting indent is yours, and it must be logical
+
+The component flips itself, but the indent you put on a parent/child tree is
+your own CSS — and that is where direction usually breaks. Use
+`margin-inline-start`, not `margin-left`: under `dir="rtl"` the physical
+property pushes the child away from the *end* edge, so the child row lines up
+flush with its parent instead of stepping in from it.
+
+<ComponentDemo
+  html={`<div dir="rtl" style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <div style="display:flex;flex-direction:column;gap:4px;">
+    <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox indeterminate></md-checkbox> تحديد الكل</label>
+    <label style="display:inline-flex;align-items:center;gap:8px;margin-inline-start:32px;"><md-checkbox checked></md-checkbox> التحليلات</label>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <div style="display:flex;flex-direction:column;gap:4px;">
+    <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox indeterminate></md-checkbox> تحديد الكل</label>
+    <label style="display:inline-flex;align-items:center;gap:8px;margin-left:32px;"><md-checkbox checked></md-checkbox> التحليلات</label>
+  </div>
+</div>`}
+  label="margin-inline-start vs margin-left — both rows under dir=rtl"
+/>
+
+### Every density rung
+
+`density="-1…-4"` shrinks the box (18px → 14px, 1px per rung) and the touch
+target (48px → 32px, 4px per rung). The state layer is `min(40px, target)`, so
+it holds at 40px through rung -2 and only starts shrinking at -3. See
+[Density](/behaviour/density/).
+
+| Rung | Box | Touch target | State layer |
+|---|---|---|---|
+| `0` | 18px | 48px | 40px |
+| `-1` | 17px | 44px | 40px |
+| `-2` | 16px | 40px | 40px |
+| `-3` | 15px | 36px | 36px |
+| `-4` | 14px | 32px | 32px |
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <div style="display:flex;gap:16px;align-items:center;"><md-checkbox density="0" checked></md-checkbox><md-checkbox density="0" indeterminate></md-checkbox><md-checkbox density="0"></md-checkbox></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <div style="display:flex;gap:16px;align-items:center;"><md-checkbox density="-1" checked></md-checkbox><md-checkbox density="-1" indeterminate></md-checkbox><md-checkbox density="-1"></md-checkbox></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <div style="display:flex;gap:16px;align-items:center;"><md-checkbox density="-2" checked></md-checkbox><md-checkbox density="-2" indeterminate></md-checkbox><md-checkbox density="-2"></md-checkbox></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <div style="display:flex;gap:16px;align-items:center;"><md-checkbox density="-3" checked></md-checkbox><md-checkbox density="-3" indeterminate></md-checkbox><md-checkbox density="-3"></md-checkbox></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div style="display:flex;gap:16px;align-items:center;"><md-checkbox density="-4" checked></md-checkbox><md-checkbox density="-4" indeterminate></md-checkbox><md-checkbox density="-4"></md-checkbox></div>
+</div>`}
+  label="Density 0 through -4"
+  storyId="selection-checkbox--responsiveness"
+/>
+
+:::caution[The hit area shrinks too — and the custom property will not pin it]
+Each rung trims 4px off the touch target as well as the box, floored at 32px,
+so a `-4` checkbox is a 32px target: fine for a dense data table on a mouse,
+genuinely hard to hit on touch.
+
+`--md-checkbox-touch-target-size` is the **input** to that subtraction, not the
+result:
+
+```css
+/* the component's own calc */
+--_touch-size: max(32px, calc(var(--md-checkbox-touch-target-size, 48px)
+                              + var(--md-sys-density-scale, 0) * 4px));
+```
+
+So setting it "back to 48px" at rung -4 still resolves to 32px — no change at
+all. To recover a real 48px target you have to pre-pay the trim: add `4px` per
+rung.
+
+```css
+/* a 48px target at density -4 */
+md-checkbox[density="-4"].needs-touch {
+  --md-checkbox-touch-target-size: 64px;   /* 64 − 4×4 = 48 */
+}
+```
+
+See [Density](/behaviour/density/#accessibility).
+:::
+
+### Density and direction together
+
+A global `data-density` ancestor and a local `density` prop drive the same
+signal — `--md-sys-density-scale` — and the prop lands directly on the host, so
+a local rung wins over the inherited one, including inside an RTL subtree.
+
+:::danger[`density="0"` does not opt back out]
+There is deliberately **no** `[density="0"]` rule, in the checkbox or in the
+token layer: reflected props write `density="0"` onto virtually every element,
+so such a rule would pin density-0 values everywhere and break global
+inheritance. Absence of a rung means *"inherit whatever the ancestor says"* —
+`density="0"` inside `data-density="-2"` still renders at -2. Only `-1` … `-4`
+override an ancestor; to escape a dense subtree, put the checkbox outside it.
+:::
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:flex;flex-direction:column;gap:8px;inline-size:100%;">
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox checked></md-checkbox> بريد إلكتروني</label>
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox indeterminate></md-checkbox> إشعارات</label>
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox density="-4" checked></md-checkbox> رسائل قصيرة — density=&quot;-4&quot;</label>
+</div>`}
+  label="dir=rtl with data-density=-2, and one checkbox overriding to -4"
+/>
+
+**Density** — the box and the touch target taper on every rung; the state layer
+is clamped by the target (`min(40px, target)`) so it only starts moving at -3.
+`--md-checkbox-container-size` and `--md-checkbox-icon-size` are **independent**
+properties that merely share the same density-derived default, so overriding one
+by hand does not move the other — set both together, as the Theming demo below
+does.
+
+**i18n** — translate `supporting-text`, `error-text`, `value-missing-label` and
+the visible label text. A hardcoded English `value-missing-label` in a
+localized app is the usual oversight; it is a prop precisely so you can feed it
+from your dictionary.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-checkbox-container-color` / `--md-checkbox-selected-container-color` | Box fill, unselected / selected | Transparent / `primary` |
+| `--md-checkbox-outline-color` / `--md-checkbox-outline-width` | Box border | `on-surface-variant` / 2px |
+| `--md-checkbox-icon-color` / `--md-checkbox-icon-size` | Checkmark and dash | `on-primary` |
+| `--md-checkbox-container-shape` / `--md-checkbox-container-size` | Box radius and size | 2px / 18px |
+| `--md-checkbox-state-layer-size` / `-color` / `--md-checkbox-selected-state-layer-color` | Hover/press overlay | 40px |
+| `--md-checkbox-touch-target-size` | Base hit area, before density trims it | 48px |
+| `--md-checkbox-supporting-text-color` / `--md-checkbox-error-text-color` | Message line | `on-surface-variant` / `error` |
+
+<ComponentDemo
+  html={`<label style="display: inline-flex; align-items: center; gap: 8px;">
+  <md-checkbox checked style="--md-checkbox-selected-container-color: var(--md-sys-color-tertiary); --md-checkbox-container-shape: 999px;"></md-checkbox> Round and tertiary
+</label>
+<label style="display: inline-flex; align-items: center; gap: 8px;">
+  <md-checkbox checked style="--md-checkbox-container-size: 24px; --md-checkbox-icon-size: 22px;"></md-checkbox> Larger box
+</label>`}
+  label="Themed instances"
+/>
+
+Every default resolves through an `md-sys-color` role, so a checkbox that sets
+no custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;">
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox checked></md-checkbox> Checked</label>
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox indeterminate></md-checkbox> Mixed</label>
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox></md-checkbox> Unchecked</label>
+</div>`}
+  label="Untouched defaults — follows the page theme"
+/>
+
+## CSS parts
+
+| Part | Element |
+|---|---|
+| `target` | The hit area — 48px at density 0, 32px at `-4` |
+| `state-layer` | Hover / focus / press overlay |
+| `container` | The box itself |
+| `icon` | The mark — a **Material Symbols glyph**, not an SVG |
+| `supporting-text` | The message line under the control |
+
+:::note[`icon` is a font glyph]
+It renders `check`, or `remove` when `indeterminate`, at `FILL 1 / wght 600` —
+the same face [`md-step`](/components/stepper/#md-step) uses for a completed
+step, so the two marks match exactly. Style it with font properties
+(`font-size`, `color`, `font-variation-settings`) or `transform`; SVG
+properties like `stroke` and `fill` have nothing to act on.
+:::
+
+<ComponentDemo
+  html={`<style>
+  .parts-cb::part(container) { border-radius: 999px; }
+  .parts-cb::part(icon) { transform: scale(1.15); }
+  .parts-cb::part(state-layer) { background: var(--md-sys-color-tertiary); }
+  .parts-cb::part(supporting-text) { font-style: italic; letter-spacing: .02em; }
+</style>
+<div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
+  <label style="display:inline-flex;align-items:center;gap:8px;"><md-checkbox class="parts-cb" checked></md-checkbox> Round box</label>
+  <md-checkbox class="parts-cb" checked supporting-text="Styled supporting text" aria-label="With supporting text"></md-checkbox>
+</div>`}
+  label="container, icon, state-layer and supporting-text"
+/>
+
+```css
+md-checkbox::part(supporting-text) {
+  font-style: italic;
+}
+```
+
+
+## Related
+
+[`md-radio`](/components/radio/) ·
+[`md-switch`](/components/switch/) ·
+[`md-multi-select`](/components/multi-select/) ·
+[`md-transfer-list`](/components/transfer-list/) ·
+[`md-chip`](/components/chip/) ·
+[`md-ripple`](/components/ripple/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-checkbox" />

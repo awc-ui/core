@@ -1,0 +1,253 @@
+---
+title: Contributing
+description: Build, test, and ship AWC UI components — the maintainer's playbook
+sidebar:
+  order: 1
+---
+
+AWC UI is open source under MIT. PRs are welcome, especially from designers and developers who use it daily. This guide walks you through everything from cloning the repo to shipping a new component.
+
+## Prerequisites
+
+| Tool | Version |
+| ---- | ------- |
+| Node.js | `>= 18` |
+| pnpm | `>= 9` |
+| Git | any recent |
+
+## Setup
+
+```bash
+git clone https://github.com/awc-ui/core.git
+cd core
+pnpm install
+pnpm build
+```
+
+Cold install runs in ~30s on a fast connection. The build emits Stencil's `dist-custom-elements`, the technology wrappers, and the design tokens.
+
+## Local development
+
+```bash
+# Start Storybook for visual development (most common)
+pnpm storybook
+
+# Run unit tests in watch mode
+pnpm --filter @awc-ui/core test:spec --watch
+
+# Run lint
+pnpm lint:eslint
+pnpm lint:stylelint
+
+# Build the docs site
+bash scripts/build-docs.sh
+```
+
+Storybook hot-reloads as you edit `.tsx` and `.css` files. The docs site does not — you'll need to rebuild after editing component readmes or generation scripts.
+
+## Monorepo structure
+
+```
+packages/core/        Stencil web components (shadow DOM)
+packages/tokens/      MD3 design tokens (CSS custom properties)
+packages/angular/     Angular wrappers (auto-generated)
+packages/react/       React wrappers (auto-generated)
+packages/vue/         Vue wrappers (auto-generated)
+packages/svelte/      Svelte wrappers (auto-generated)
+apps/storybook/       Storybook 8 (web-components-vite)
+apps/docs/            Astro Starlight documentation site
+docs/                 Markdown guides + LLM manifest
+scripts/              Build, generation, and audit scripts
+.github/workflows/    CI/CD pipelines
+```
+
+## Naming conventions
+
+AWC UI follows a strict naming scheme — pick the right name once and the rest of the patterns fall into place automatically.
+
+| Concept | Pattern | Example |
+| ------- | ------- | ------- |
+| Tag | `md-{name}` | `md-button`, `md-text-field` |
+| Class | `Md{PascalName}` | `MdButton`, `MdTextField` |
+| Host CSS class | `md-{name}` | `md-button` |
+| Modifier class | `md-{name}--{modifier}` | `md-button--filled` |
+| Element class | `md-{name}__{element}` | `md-button__label` |
+| Event | `md{PascalAction}` | `mdClick`, `mdChange`, `mdOpen` |
+| CSS public var | `--md-{name}-{property}` | `--md-button-container-color` |
+| CSS internal var | `--_{property}` | `--_container-color` |
+
+## Adding a new component
+
+### 1. Create the component directory
+
+```
+packages/core/src/components/md-{name}/
+  md-{name}.tsx       Component logic (Stencil .tsx)
+  md-{name}.css       Styles (tokens, RTL, states)
+  md-{name}.spec.ts   Unit tests (newSpecPage)
+  md-{name}.e2e.ts    E2E tests (newE2EPage) — optional but preferred
+  readme.md           Documentation (hand-written + auto-generated)
+```
+
+### 2. Implement the component
+
+Required patterns for every component:
+
+- `shadow: true` in `@Component`
+- All props have JSDoc comments and sensible defaults
+- Custom events are prefixed with `md` (e.g. `mdClick`, `mdChange`)
+- All styleable internal elements have a `part` attribute
+- All layout uses CSS logical properties (`inset-inline-start`, `padding-inline`, etc.) — never `left` / `right` / `margin-left`
+- All colors / shapes / elevations / typography reference design tokens (`var(--md-sys-color-*)`, never hardcoded)
+- State layers implemented at MD3 spec opacities (8% hover, 12% focus, 12% press)
+- Keyboard handlers (Enter, Space, Escape, Arrows) per WAI-ARIA Authoring Practices
+- ARIA role + `aria-disabled` + `tabindex` management on the host
+
+For a worked example of every point above, read an existing component end to
+end — `packages/core/src/components/md-checkbox/` is small enough to hold in
+your head and exercises the form-association, ARIA and density patterns.
+
+### 3. Write unit tests
+
+Every spec must cover, at minimum:
+
+- Rendering with defaults and all variants
+- Reflected attributes and prop defaults
+- ARIA roles and attributes
+- Event emission and detail payloads
+- Disabled state preventing interaction
+- Keyboard navigation
+- Slot rendering
+- CSS parts exposure (`part` attribute presence)
+- RTL context rendering (`<div dir="rtl">`)
+
+```bash
+pnpm --filter @awc-ui/core test:spec
+```
+
+### 4. Write a Storybook story
+
+Create `apps/storybook/src/stories/Md{Name}.stories.ts` with these stories:
+
+- `Playground` — interactive controls for every prop
+- `AllVariants` — every variant side by side
+- `States` — enabled / disabled / soft-disabled / loading / focused / selected
+- `RTL` — wrapped in `<div dir="rtl">`
+- `DarkTheme` — wrapped in `<div data-theme="dark">`
+- `CustomCSS` — CSS custom-property overrides
+- `CSSParts` — `::part()` styling examples
+
+Storybook stories also serve as the source for accessibility regression tests (`pnpm test:a11y`).
+
+### 5. Write the readme
+
+The `readme.md` in the component directory must include hand-written content above the `<!-- Auto Generated Below -->` marker:
+
+- Description (with link to the MD3 spec)
+- Installation
+- Usage examples
+- Variants table
+- Sizes table (if applicable)
+- States documentation
+- Accessibility section (ARIA, keyboard, screen reader)
+- RTL section
+- CSS custom properties table
+- CSS parts table
+- Slots documentation
+
+The hand-written content is included in the LLM manifest verbatim.
+
+### 6. Regenerate generated artifacts
+
+```bash
+# Regenerate the LLM manifest (used by AI tools)
+pnpm generate:llm
+
+# Regenerate documentation pages and aggregate JSON
+pnpm generate:docs
+```
+
+## Quality checklist
+
+Run before opening a PR:
+
+- [ ] `pnpm lint:eslint` passes (no warnings)
+- [ ] `pnpm lint:stylelint` passes (no warnings)
+- [ ] `pnpm --filter @awc-ui/core test:spec` passes
+- [ ] `pnpm size` passes (your component within budget)
+- [ ] Storybook stories render correctly in Chromium, Firefox, and WebKit
+- [ ] Manual screen-reader pass on the new component (NVDA or VoiceOver)
+- [ ] RTL test added and passing
+- [ ] Dark mode renders correctly
+- [ ] The component's `readme.md` is created or updated — it is the manual that
+      ships to npm, so it is part of the change, not a follow-up
+- [ ] `main-llm.md`'s component inventory and decision matrix mention the component
+- [ ] A changeset added (`pnpm changeset`) describing the change
+
+## Commit convention
+
+We follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+feat(button): add soft-disabled state
+fix(text-field): correct focus ring in RTL
+docs(checkbox): add accessibility section
+test(switch): add keyboard navigation tests
+chore(deps): bump @stencil/core to 4.x
+```
+
+The CI pipeline rejects PRs that touch `packages/*` without an accompanying changeset.
+
+## CI / CD
+
+Every PR runs the full quality pipeline:
+
+1. **Install** with pnpm (cached)
+2. **Lint** (ESLint + Stylelint, max-warnings 0)
+3. **Unit tests** (Jest via Stencil)
+4. **Build** (all packages + technology wrappers)
+5. **Accessibility tests** (axe via `@storybook/test-runner`)
+6. **Changeset check** (require changeset for any `packages/*` change)
+7. **Docs build** (`bash scripts/build-docs.sh` — Astro + Pagefind + Storybook embed)
+
+On merge to `main`, the docs site auto-deploys to Netlify (`awcui.io`). Tagged releases publish to npm under the `@awc-ui` scope with [Sigstore provenance](https://docs.npmjs.com/generating-provenance-statements).
+
+## Working with AI agents
+
+The repository ships its own machine-readable context, and it is the same
+context the published package carries:
+
+| File | What it gives an agent |
+|---|---|
+| `main-llm.md` | The build director: interview, decision matrix, token reference, composition rules, page recipes, ship checklist |
+| `packages/core/src/components/<tag>/readme.md` | One component: when to use it, when **not** to, full API, accessibility contract, anti-patterns |
+
+Point your assistant at `main-llm.md` first — it routes to the right component
+rather than letting the model pick by name-similarity — then at that
+component's `readme.md` before writing its markup.
+
+Working in a project that only *consumes* the package, run `npx awc-ui ai-setup`
+there instead: it writes the same pointers into `AGENTS.md`, `CLAUDE.md`,
+`.cursor/rules/` and `.github/copilot-instructions.md`, aimed at the copies
+installed in `node_modules`. See [Building with AI](/guides/building-with-ai/).
+
+## Raising an issue
+
+You do not need to write code to help — a report we can reproduce is worth more
+than a patch we cannot verify. Each of these has its own template, and its own
+guide for what makes it actionable:
+
+| You want to | Guide |
+|---|---|
+| Report something broken | [Reporting a bug](/contributing/reporting-a-bug/) |
+| Ask for a prop, variant or event on an existing component | [Requesting a feature](/contributing/feature-requests/) |
+| Ask for a component that does not exist yet | [Requesting a component](/contributing/new-component-requests/) |
+
+Start at [new issue](https://github.com/awc-ui/core/issues/new/choose) and
+pick the matching template.
+
+- **General questions** — [Discussions](https://github.com/awc-ui/core/discussions).
+  No template, no triage, usually a faster answer.
+- **Security vulnerabilities** — report privately via a
+  [security advisory](https://github.com/awc-ui/core/security/advisories/new),
+  never as a public issue.

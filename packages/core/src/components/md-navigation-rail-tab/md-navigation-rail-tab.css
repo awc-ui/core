@@ -1,0 +1,609 @@
+/* ==========================================================
+   md-navigation-rail-tab — Material Design 3 Navigation Rail Destination
+   Spec:
+     https://m3.material.io/components/navigation-rail/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-navigation-rail-tab-icon-color                Icon color (inactive)
+     --md-navigation-rail-tab-active-icon-color         Icon color when active
+     --md-navigation-rail-tab-label-color               Label color (inactive)
+     --md-navigation-rail-tab-active-label-color        Label color when active
+     --md-navigation-rail-tab-indicator-color           Active-indicator pill color
+     --md-navigation-rail-tab-indicator-shape           Indicator border-radius
+     --md-navigation-rail-tab-indicator-width           Indicator pill width (default 56px)
+     --md-navigation-rail-tab-indicator-height          Indicator pill height (default 32px)
+     --md-navigation-rail-tab-icon-size                 Icon size (default 24px)
+     --md-navigation-rail-tab-min-height                Tap target min height (default 56px)
+     --md-navigation-rail-tab-label-typography          Composite font shorthand for label
+     --md-navigation-rail-tab-badge-color               Badge background
+     --md-navigation-rail-tab-badge-content-color       Badge text color
+     --md-navigation-rail-tab-focus-ring-color          Focus outline color
+     --md-navigation-rail-tab-state-layer-color         Hover/press state-layer color (on-secondary-container)
+     --md-navigation-rail-tab-focus-state-layer-opacity  Focused state-layer opacity (default 0.10 per spec)
+     --md-navigation-rail-tab-press-state-layer-opacity  Pressed state-layer opacity (default 0.10 per spec)
+
+   CSS PARTS:
+     state-layer    Hover/press overlay
+     indicator      Active-indicator pill
+     icon-wrapper   Wrapper holding the icon and badge
+     icon           The Material Symbols icon
+     label          Label text
+     badge          The notification badge (dot or large)
+     badge-dot      Modifier part on dot variant
+     badge-large    Modifier part on label/numeric variant
+     anchor         The internal <a> element when `href` is set
+
+   SLOTS:
+     icon           Replace prop-based icon with custom SVG/font/component
+     (default)      Reserved (not used)
+   ========================================================== */
+
+:host {
+  /* Public theming */
+  --_icon-color: var(
+    --md-navigation-rail-tab-icon-color,
+    var(--md-sys-color-on-surface-variant, #49454F)
+  );
+  /* Spec: active icon = on-secondary-container. The spec's baseline palette
+     resolves this to #4A4458 (differs from the old #1E192B fallback). */
+  --_active-icon-color: var(
+    --md-navigation-rail-tab-active-icon-color,
+    var(--md-sys-color-on-secondary-container, #4A4458)
+  );
+  --_label-color: var(
+    --md-navigation-rail-tab-label-color,
+    var(--md-sys-color-on-surface-variant, #49454F)
+  );
+  /* Spec (current token set): active label text = secondary. */
+  --_active-label-color: var(
+    --md-navigation-rail-tab-active-label-color,
+    var(--md-sys-color-secondary, #625B71)
+  );
+  --_indicator-color: var(
+    --md-navigation-rail-tab-indicator-color,
+    var(--md-sys-color-secondary-container, #E8DEF8)
+  );
+  --_indicator-shape: var(
+    --md-navigation-rail-tab-indicator-shape,
+    var(--md-sys-shape-corner-full, 9999px)
+  );
+  --_indicator-width: var(--md-navigation-rail-tab-indicator-width, max(40px, calc(56px + var(--md-sys-density-scale, 0) * 4px)));
+  --_indicator-height: var(--md-navigation-rail-tab-indicator-height, max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px)));
+  --_icon-size: var(--md-navigation-rail-tab-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
+  --_min-height: var(--md-navigation-rail-tab-min-height, 56px);
+  --_badge-color: var(
+    --md-navigation-rail-tab-badge-color,
+    var(--md-sys-color-error, #B3261E)
+  );
+  --_badge-content-color: var(
+    --md-navigation-rail-tab-badge-content-color,
+    var(--md-sys-color-on-error, #FFFFFF)
+  );
+  --_focus-ring-color: var(
+    --md-navigation-rail-tab-focus-ring-color,
+    var(--md-sys-color-secondary, #625B71)
+  );
+  /* Spec: all state layers (active+inactive, hover/focus/press) use
+     on-secondary-container (#4A4458 in the spec's baseline palette). */
+  --_state-layer-color: var(
+    --md-navigation-rail-tab-state-layer-color,
+    var(--md-sys-color-on-secondary-container, #4A4458)
+  );
+  /* M3 Expressive motion. Effects spring (fast) for color / opacity / icon-fill
+     micro-interactions; spatial spring (fast) for the active-indicator pill
+     size/shape morph. */
+  --_motion-duration: var(--md-sys-motion-spring-effects-fast-duration, 150ms);
+  --_motion-easing: var(
+    --md-sys-motion-spring-effects-fast-easing,
+    cubic-bezier(0.31, 0.94, 0.34, 1)
+  );
+  --_motion-spatial-duration: var(--md-sys-motion-spring-spatial-fast-duration, 350ms);
+  --_motion-spatial-easing: var(
+    --md-sys-motion-spring-spatial-fast-easing,
+    cubic-bezier(0.42, 1.67, 0.21, 0.9)
+  );
+  --_hover-opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+  /* Spec: focused and pressed state layer opacity = 0.10 for nav rail items. */
+  --_focus-opacity: var(--md-navigation-rail-tab-focus-state-layer-opacity, 0.10);
+  --_press-opacity: var(--md-navigation-rail-tab-press-state-layer-opacity, 0.10);
+  --_disabled-opacity: var(--md-sys-state-disabled-content-opacity, 0.38);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: max(2px, calc(4px + var(--md-sys-density-scale, 0) * 1px));
+  inline-size: 100%;
+  min-block-size: max(48px, calc(var(--_min-height) + var(--md-sys-density-scale, 0) * 4px));
+  padding-block: max(0px, calc(2px + var(--md-sys-density-scale, 0) * 0.5px));
+  padding-inline: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  color: var(--_icon-color);
+  transition: color var(--_motion-duration) var(--_motion-easing);
+}
+
+/* ---------- Active state ---------- */
+:host(.md-navigation-rail-tab--active) {
+  color: var(--_active-icon-color);
+}
+
+/* ---------- Disabled ---------- */
+:host(.md-navigation-rail-tab--disabled) {
+  cursor: default;
+  pointer-events: none;
+  color: color-mix(
+    in srgb,
+    var(--md-sys-color-on-surface, #1C1B1F) calc(var(--_disabled-opacity) * 100%),
+    transparent
+  );
+}
+
+/* ---------- Focus ring (WCAG 2.4.7) ---------- */
+:host(:focus-visible) {
+  outline: none;
+}
+
+:host(:focus-visible) .md-navigation-rail-tab__indicator {
+  outline: 3px solid var(--_focus-ring-color);
+  outline-offset: 2px;
+}
+
+/* Expanded pills sit close together (4dp apart); an outset ring would overlap
+   the neighbour's. Draw it just inside the pill edge instead — it follows the
+   pill's rounded shape and can never bleed into the adjacent item. (Collapsed
+   items are tall with ample spacing, so they keep the outset ring above.) */
+:host(.md-navigation-rail-tab--expanded:focus-visible) .md-navigation-rail-tab__indicator {
+  outline-offset: -3px;
+}
+
+/* ---------- Ripple ----------
+   md-ripple is display:contents; its inner clip uses border-radius: inherit, so
+   give it the host's radius. Expanded, the host IS the pill (full corner), so
+   the ripple wave is clipped to the pill's stadium instead of overflowing as a
+   square-cornered rectangle. */
+md-ripple {
+  border-radius: inherit;
+}
+
+/* ---------- Indicator pill ---------- */
+.md-navigation-rail-tab__indicator {
+  position: absolute;
+  /* The pill's containing block is the HOST, but the thing it has to wrap — the
+     icon wrapper — starts one host padding down. A hard 4px assumed a 4px
+     padding that isn't there, so the pill hung ~2px below the icon (and ate the
+     gap to the label). The pill's own offset has to track where that wrapper
+     actually lands: at density 0 the icon + gap + label column exactly fills the
+     content box, so the wrapper starts one 2px padding down; at the compact
+     rungs the 48px min-height floor takes over and the whole column is centred
+     lower instead. Measured per rung, this expression lands the pill on the icon
+     to within a pixel everywhere (exactly at 0 and at -4). */
+  inset-block-start: max(2px, calc(2px + var(--md-sys-density-scale, 0) * -0.5px));
+  /* Centre horizontally via auto margins (direction-agnostic). The old
+     `inset-inline-start: 50% + translateX(-50%)` broke in RTL because the
+     logical inset flips but the physical transform doesn't. */
+  inset-inline: 0;
+  margin-inline: auto;
+  inline-size: var(--_indicator-width);
+  block-size: var(--_indicator-height);
+  border-radius: var(--_indicator-shape);
+  background-color: transparent;
+  pointer-events: none;
+  overflow: hidden;
+  transition:
+    background-color var(--_motion-duration) var(--_motion-easing),
+    inline-size var(--_motion-spatial-duration) var(--_motion-spatial-easing);
+  z-index: 0;
+}
+
+:host(.md-navigation-rail-tab--active) .md-navigation-rail-tab__indicator {
+  background-color: var(--_indicator-color);
+}
+
+/* When no label is shown (labels=none, or an inactive item in labels=selected),
+   the icon-wrapper is vertically CENTRED in the tap target — so centre the
+   indicator pill on it too, instead of top-aligning it (which assumes a label
+   sits below, pushing the icon up). Otherwise the icon sits low in the pill. */
+:host(.md-navigation-rail-tab--labels-none:not(.md-navigation-rail-tab--expanded))
+  .md-navigation-rail-tab__indicator,
+:host(.md-navigation-rail-tab--labels-selected:not(.md-navigation-rail-tab--active):not(.md-navigation-rail-tab--expanded))
+  .md-navigation-rail-tab__indicator {
+  inset-block: 0;
+  margin-block: auto;
+}
+
+/* ---------- State layer (hover/focus/press) ---------- */
+.md-navigation-rail-tab__state-layer {
+  position: absolute;
+  inset: 0;
+  background-color: var(--_state-layer-color);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--_motion-duration) var(--_motion-easing);
+  border-radius: inherit;
+}
+
+:host(:hover:not(.md-navigation-rail-tab--disabled)) .md-navigation-rail-tab__state-layer {
+  opacity: var(--_hover-opacity);
+}
+
+:host(:focus-visible:not(.md-navigation-rail-tab--disabled)) .md-navigation-rail-tab__state-layer {
+  opacity: var(--_focus-opacity);
+}
+
+:host(:active:not(.md-navigation-rail-tab--disabled)) .md-navigation-rail-tab__state-layer {
+  opacity: var(--_press-opacity);
+}
+
+/* ---------- Icon wrapper / icon ---------- */
+.md-navigation-rail-tab__icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_indicator-width);
+  block-size: var(--_indicator-height);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Icon-sized box that anchors the badge. Sized to the icon (24dp) and centred
+   in the wrapper, so the badge sits at the ICON's corner in both layouts —
+   collapsed (56×32 wrapper) and expanded (24×24 wrapper) alike. */
+.md-navigation-rail-tab__icon-box {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+}
+
+.md-navigation-rail-tab__icon {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-size: var(--_icon-size);
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  line-height: 1;
+  font-weight: normal;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  transition: font-variation-settings var(--_motion-duration) var(--_motion-easing);
+  color: inherit;
+}
+
+:host(.md-navigation-rail-tab--active) .md-navigation-rail-tab__icon {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Style for slotted custom icons */
+::slotted([slot='icon']) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  font-size: var(--_icon-size);
+  color: currentColor;
+  fill: currentColor;
+  pointer-events: none;
+}
+
+/* ---------- Label ---------- */
+.md-navigation-rail-tab__label {
+  /* Above the active-indicator pill: the indicator is positioned (z-index 0),
+     so in-flow text would otherwise paint UNDER the opaque pill — fatal in
+     expanded mode where the label sits inside the pill. */
+  position: relative;
+  z-index: 1;
+  font-family: var(--md-sys-typescale-label-medium-font-family, Roboto, sans-serif);
+  font-size: max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-label-medium-font-weight, 500);
+  line-height: max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  letter-spacing: var(--md-sys-typescale-label-medium-letter-spacing, 0.5px);
+  text-align: center;
+  color: var(--_label-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-inline-size: 100%;
+  transition:
+    color var(--_motion-duration) var(--_motion-easing),
+    font-weight var(--_motion-duration) var(--_motion-easing),
+    opacity var(--_motion-duration) var(--_motion-easing);
+  padding-inline: var(--md-sys-spacing-inset-xs, 4px);
+  box-sizing: border-box;
+}
+
+:host(.md-navigation-rail-tab--active) .md-navigation-rail-tab__label {
+  color: var(--_active-label-color);
+  font-weight: var(--md-sys-typescale-label-medium-prominent-font-weight, 700);
+}
+
+/* Label visibility modes */
+:host(.md-navigation-rail-tab--labels-none) .md-navigation-rail-tab__label {
+  display: none;
+}
+
+/* Collapsed labels-selected: the label animates in/out as the active
+   destination changes — collapsing its height + fading — instead of popping via
+   display:none. The negative margin cancels the icon→label flex gap so the
+   space fully closes when hidden. */
+:host(.md-navigation-rail-tab--labels-selected:not(.md-navigation-rail-tab--expanded))
+  .md-navigation-rail-tab__label {
+  max-block-size: 1.25rem;
+  transition:
+    color var(--_motion-duration) var(--_motion-easing),
+    font-weight var(--_motion-duration) var(--_motion-easing),
+    opacity var(--_motion-duration) var(--_motion-easing),
+    max-block-size var(--_motion-duration) var(--_motion-easing),
+    margin-block-start var(--_motion-duration) var(--_motion-easing);
+}
+
+:host(.md-navigation-rail-tab--labels-selected:not(.md-navigation-rail-tab--active):not(.md-navigation-rail-tab--expanded))
+  .md-navigation-rail-tab__label {
+  opacity: 0;
+  max-block-size: 0;
+  margin-block-start: -4px;
+}
+
+/* Expanded labels-selected: inactive destinations are icon-only pills. */
+:host(.md-navigation-rail-tab--labels-selected.md-navigation-rail-tab--expanded:not(.md-navigation-rail-tab--active))
+  .md-navigation-rail-tab__label {
+  display: none;
+}
+
+/* ---------- Expanded variant (labels inline with icons) ----------
+   Spec "horizontal item": 56dp-tall pill that HUGS the icon + label
+   (left-aligned, not full-width — see the spec's "Expanded layout"
+   figure), 16dp leading/trailing space inside the pill, 8dp icon→label
+   space, label-large typography. */
+:host(.md-navigation-rail-tab--expanded) {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  padding-inline: var(--md-sys-spacing-inset-lg, 16px);
+  padding-block: 0;
+  inline-size: fit-content;
+  min-block-size: max(48px, calc(56px + var(--md-sys-density-scale, 0) * 4px));
+  border-radius: var(--_indicator-shape);
+}
+
+:host(.md-navigation-rail-tab--expanded) .md-navigation-rail-tab__indicator {
+  position: absolute;
+  /* The pill covers the item's own bounds (which hug the content). */
+  inset: 0;
+  transform: none;
+  inline-size: auto;
+  block-size: auto;
+  border-radius: var(--_indicator-shape);
+}
+
+:host(.md-navigation-rail-tab--expanded) .md-navigation-rail-tab__icon-wrapper {
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  flex: 0 0 auto;
+}
+
+:host(.md-navigation-rail-tab--expanded) .md-navigation-rail-tab__label {
+  text-align: start;
+  flex: 1 1 auto;
+  /* Allow the flex item to shrink below its content width so the label clips
+     (with the ellipsis above) as the rail narrows, rather than forcing the row
+     wider than the animating rail. This is what keeps the reveal/conceal in
+     sync with the width instead of overflowing. */
+  min-inline-size: 0;
+  display: inline-block;
+  /* Spec: horizontal items use label-large (vertical items keep label-medium). */
+  font-family: var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif);
+  font-size: var(--md-sys-typescale-label-large-font-size, 14px);
+  font-weight: var(--md-sys-typescale-label-large-font-weight, 500);
+  line-height: var(--md-sys-typescale-label-large-line-height, 20px);
+  letter-spacing: var(--md-sys-typescale-label-large-letter-spacing, 0.1px);
+}
+
+:host(.md-navigation-rail-tab--expanded.md-navigation-rail-tab--active)
+  .md-navigation-rail-tab__label {
+  font-weight: var(--md-sys-typescale-label-large-prominent-font-weight, 700);
+}
+
+:host(.md-navigation-rail-tab--expanded.md-navigation-rail-tab--labels-none)
+  .md-navigation-rail-tab__label {
+  display: none;
+}
+
+/* ---------- Badges ---------- */
+.md-navigation-rail-tab__badge {
+  position: absolute;
+  background-color: var(--_badge-color);
+  color: var(--_badge-content-color);
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  line-height: 1;
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.md-navigation-rail-tab__badge--dot {
+  inline-size: 6px;
+  block-size: 6px;
+  inset-block-start: -2px;
+  inset-inline-end: -2px;
+}
+
+.md-navigation-rail-tab__badge--large {
+  min-inline-size: 16px;
+  block-size: 16px;
+  padding-inline: 4px;
+  inset-block-start: -6px;
+  inset-inline-end: -6px;
+  font-family: var(--md-sys-typescale-label-small-font-family, Roboto, sans-serif);
+  font-size: 11px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- Anchor (link mode) ---------- */
+.md-navigation-rail-tab__anchor {
+  display: contents;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  :host,
+  .md-navigation-rail-tab__indicator,
+  .md-navigation-rail-tab__state-layer,
+  .md-navigation-rail-tab__icon,
+  .md-navigation-rail-tab__label {
+    transition: none;
+  }
+}
+
+/* ---------- High-contrast / forced-colors ---------- */
+@media (forced-colors: active) {
+  :host(.md-navigation-rail-tab--active) .md-navigation-rail-tab__indicator {
+    background-color: Highlight;
+    forced-color-adjust: none;
+  }
+  :host(.md-navigation-rail-tab--active) {
+    color: HighlightText;
+  }
+  :host(:focus-visible) .md-navigation-rail-tab__indicator {
+    outline: 3px solid CanvasText;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }
+
+/* ==========================================================
+   HORIZONTAL RAIL (a top-of-page bar)
+   The rail stamps `data-orientation`. The destination fills the bar's height so
+   the RIPPLE — clipped to this box — sweeps the whole bar instead of a short
+   band. The active pill and the hover tint must NOT stretch with it: they are
+   pinned 4dp from the host's top, which stops matching the icon once the host
+   is taller than its content. In a bar they ride on the icon wrapper instead,
+   which is already exactly the pill's size and sits with the centred content.
+   ========================================================== */
+:host([data-orientation='horizontal']) {
+  block-size: 100%;
+}
+
+:host([data-orientation='horizontal']) .md-navigation-rail-tab__indicator,
+:host([data-orientation='horizontal']) .md-navigation-rail-tab__state-layer {
+  display: none;
+}
+
+:host([data-orientation='horizontal']) .md-navigation-rail-tab__icon-wrapper {
+  border-radius: var(--_indicator-shape);
+  background-color: transparent;
+  transition: background-color var(--_motion-duration) var(--_motion-easing);
+}
+
+:host([data-orientation='horizontal'].md-navigation-rail-tab--active)
+  .md-navigation-rail-tab__icon-wrapper {
+  background-color: var(--_indicator-color);
+}
+
+/* Hover / press tint on the same pill, so every state shares one silhouette. */
+:host([data-orientation='horizontal']) .md-navigation-rail-tab__icon-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--_state-layer-color);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--_motion-duration) var(--_motion-easing);
+}
+
+:host([data-orientation='horizontal']:hover:not(.md-navigation-rail-tab--disabled))
+  .md-navigation-rail-tab__icon-wrapper::after {
+  opacity: var(--_hover-opacity);
+}
+
+:host([data-orientation='horizontal']:active:not(.md-navigation-rail-tab--disabled))
+  .md-navigation-rail-tab__icon-wrapper::after {
+  opacity: var(--_press-opacity);
+}
+
+:host([data-orientation='horizontal']:focus-visible) .md-navigation-rail-tab__icon-wrapper {
+  outline: 3px solid var(--_focus-ring-color);
+  outline-offset: 2px;
+}
+
+/* ---------- Disclosure caret ----------
+   Shown only when a dropdown is slotted into the `submenu` slot, so a
+   destination that discloses reads differently from one that navigates. */
+.md-navigation-rail-tab__caret {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-size: max(14px, calc(18px + var(--md-sys-density-scale, 0) * 1px));
+  line-height: 1;
+  vertical-align: middle;
+  margin-inline-start: 2px;
+  /* Deliberately slower than the tab's own 150ms state transitions: the caret
+     is an 18px glyph, and at spring-fast the flip is over before the eye
+     registers it as a rotation rather than a repaint. */
+  transition: transform
+    var(--md-navigation-rail-tab-caret-duration, var(--md-sys-motion-duration-medium2, 300ms))
+    var(
+      --md-sys-motion-easing-emphasized,
+      cubic-bezier(0.2, 0, 0, 1)
+    );
+}
+
+:host([aria-expanded='true']) .md-navigation-rail-tab__caret {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-navigation-rail-tab__caret {
+    transition-duration: 1ms;
+  }
+}
+
+/* ---------- Selection inside the dropdown ----------
+   When a row in a destination's dropdown is the chosen one, the destination
+   itself must read as active — otherwise navigating via the menu leaves the bar
+   with no indication of where you are. Same indicator treatment as `active`,
+   applied only when the rail has not already marked this destination active. */
+:host(.md-navigation-rail-tab--child-selected) .md-navigation-rail-tab__indicator {
+  background-color: var(--_indicator-color);
+}
+
+:host(.md-navigation-rail-tab--child-selected[data-orientation='horizontal'])
+  .md-navigation-rail-tab__icon-wrapper {
+  background-color: var(--_indicator-color);
+}
+
+:host(.md-navigation-rail-tab--child-selected) .md-navigation-rail-tab__icon,
+:host(.md-navigation-rail-tab--child-selected) .md-navigation-rail-tab__label {
+  color: var(--_active-icon-color);
+}

@@ -1,0 +1,1133 @@
+---
+title: Menu
+description: "A temporary set of actions or options anchored to a trigger — placement, flipping, roving focus, typeahead and dismissal"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/menu.json";
+import menuItemApi from "../../../data/components/menu-item.json";
+import menuItemGroupApi from "../../../data/components/menu-item-group.json";
+import subMenuItemApi from "../../../data/components/sub-menu-item.json";
+
+**A temporary set of actions or options, anchored to a trigger.** It handles
+placement, flipping, roving focus, typeahead and dismissal. It is also the
+dropdown surface inside [`md-select`](/components/select/),
+[`md-multi-select`](/components/multi-select/),
+[`md-autocomplete`](/components/autocomplete/) and
+[`md-date-picker`](/components/date-picker/).
+
+The menus below start **closed** — click a trigger to open one.
+
+<ComponentDemo
+  html={`<md-icon-button id="menu-demo-more" icon="more_vert" aria-label="More actions" onclick="document.getElementById('menu-demo-overflow').show()"></md-icon-button>
+<md-menu id="menu-demo-overflow" anchor="menu-demo-more" placement="bottom-start">
+  <md-menu-item headline="Rename"></md-menu-item>
+  <md-menu-item headline="Duplicate"></md-menu-item>
+  <md-menu-item headline="Delete"></md-menu-item>
+</md-menu>`}
+  htmlForCode={`<md-icon-button id="more" icon="more_vert" aria-label="More actions"></md-icon-button>
+
+<md-menu id="overflow" anchor="more" placement="bottom-start">
+  <md-menu-item headline="Rename"></md-menu-item>
+  <md-menu-item headline="Duplicate"></md-menu-item>
+  <md-menu-item headline="Delete"></md-menu-item>
+</md-menu>
+
+<script type="module">
+  const trigger = document.getElementById('more');
+  const menu = document.getElementById('overflow');
+
+  // The menu never wires its own trigger — opening it, and the trigger's ARIA,
+  // are both yours.
+  trigger.setAttribute('aria-haspopup', 'menu');
+  trigger.addEventListener('click', () => menu.show());
+  menu.addEventListener('mdOpen',  () => trigger.setAttribute('aria-expanded', 'true'));
+  menu.addEventListener('mdClose', () => trigger.setAttribute('aria-expanded', 'false'));
+</script>`}
+  label="Live preview — click the trigger"
+  storyId="navigation-menu--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-menu" example="" />
+
+## When to use
+
+- A **temporary** set of actions from a trigger: overflow menus, context menus,
+  row actions.
+- More options than fit comfortably on screen — M3 notes a menu takes less
+  space than a set of radio buttons or chips.
+- Nested action groups via [`md-sub-menu-item`](/components/menu/#md-sub-menu-item).
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Actions that should always be visible | [`md-toolbar`](/components/toolbar/) |
+| Choosing a value in a form | [`md-select`](/components/select/) / [`md-multi-select`](/components/multi-select/) |
+| 2–5 exclusive options | [`md-segmented-button`](/components/segmented-button/) |
+| A list of records | [`md-list`](/components/list/) |
+| A blocking decision | [`md-dialog`](/components/dialog/) |
+| Supplementary panel content | [`md-side-sheet`](/components/side-sheet/) / [`md-bottom-sheet`](/components/bottom-sheet/) |
+| Top-level navigation | [`md-navigation-bar`](/components/navigation-bar/) / [`md-navigation-rail`](/components/navigation-rail/) |
+| One default action plus variants | [`md-split-button`](/components/split-button/) |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Commands (rename, delete) | Default `menu` semantics |
+| Values the user picks from | `listbox` + `presentation="option"` rows |
+| Multi-select rows | `keep-open` on the items (add `persistent` only if the menu should also survive an outside click) |
+| Sections with headings | `layout="grouped"` + `md-menu-item-group` |
+| Surface at least as wide as the trigger | `match-anchor-width` |
+| A sheet on compact viewports | `responsive` |
+| No open animation | `quick` |
+
+## Anchoring
+
+:::caution[`anchor` is a global DOM `id`, resolved with `getElementById`]
+The trigger stays **your** element — the menu only positions against it. An id
+that lives inside another shadow root will not be found.
+:::
+
+The menu does **not** wire the trigger for you. Call `show()` yourself, and set
+`aria-haspopup` / `aria-expanded` on the trigger — see
+[Accessibility](#accessibility).
+
+Any element can be the trigger — a button, an icon button, a chip, a row:
+
+<ComponentDemo
+  html={`<md-button id="mt-btn" variant="filled" trailing-icon="arrow_drop_down" onclick="document.getElementById('mt-m1').show()">Button</md-button>
+<md-menu id="mt-m1" anchor="mt-btn"><md-menu-item headline="Rename"></md-menu-item><md-menu-item headline="Duplicate"></md-menu-item></md-menu>
+
+<md-icon-button id="mt-icon" icon="more_vert" aria-label="More actions" onclick="document.getElementById('mt-m2').show()"></md-icon-button>
+<md-menu id="mt-m2" anchor="mt-icon"><md-menu-item headline="Rename"></md-menu-item><md-menu-item headline="Delete"></md-menu-item></md-menu>
+
+<md-chip id="mt-chip" appearance="assist" onclick="document.getElementById('mt-m3').show()">Filter</md-chip>
+<md-menu id="mt-m3" anchor="mt-chip"><md-menu-item headline="Newest" type="radio" selected></md-menu-item><md-menu-item headline="Oldest" type="radio"></md-menu-item></md-menu>`}
+  label="Three trigger shapes — the wiring is identical"
+  storyId="navigation-menu--menu-triggers"
+/>
+
+### Placement and auto-flipping
+
+`placement` is logical, so `bottom-start` follows the reading direction. The
+menu flips to the opposite side when it would overflow the viewport, and slides
+along the anchor when it would run off the inline edge — you do not opt in.
+
+<ComponentDemo
+  html={`<md-button id="ap-1" variant="outlined" onclick="document.getElementById('ap-m1').show()">bottom-start</md-button>
+<md-menu id="ap-m1" anchor="ap-1" placement="bottom-start"><md-menu-item headline="One"></md-menu-item><md-menu-item headline="Two"></md-menu-item></md-menu>
+
+<md-button id="ap-2" variant="outlined" onclick="document.getElementById('ap-m2').show()">bottom-end</md-button>
+<md-menu id="ap-m2" anchor="ap-2" placement="bottom-end"><md-menu-item headline="One"></md-menu-item><md-menu-item headline="Two"></md-menu-item></md-menu>
+
+<md-button id="ap-3" variant="outlined" onclick="document.getElementById('ap-m3').show()">top-start</md-button>
+<md-menu id="ap-m3" anchor="ap-3" placement="top-start"><md-menu-item headline="One"></md-menu-item><md-menu-item headline="Two"></md-menu-item></md-menu>`}
+  label="Placement — and it flips itself near a viewport edge"
+  storyId="navigation-menu--auto-positioning"
+/>
+
+## Variants
+
+`baseline` is the default. `vibrant` is high emphasis — M3 says use it
+sparingly.
+
+<ComponentDemo
+  html={`<md-button id="menu-demo-t-baseline" variant="outlined" onclick="document.getElementById('menu-demo-m-baseline').show()">Baseline</md-button>
+<md-menu id="menu-demo-m-baseline" anchor="menu-demo-t-baseline" variant="baseline">
+  <md-menu-item headline="Rename"></md-menu-item>
+  <md-menu-item headline="Duplicate"></md-menu-item>
+</md-menu>
+
+<md-button id="menu-demo-t-standard" variant="outlined" onclick="document.getElementById('menu-demo-m-standard').show()">Standard</md-button>
+<md-menu id="menu-demo-m-standard" anchor="menu-demo-t-standard" variant="standard">
+  <md-menu-item headline="Rename"></md-menu-item>
+  <md-menu-item headline="Duplicate"></md-menu-item>
+</md-menu>
+
+<md-button id="menu-demo-t-vibrant" variant="outlined" onclick="document.getElementById('menu-demo-m-vibrant').show()">Vibrant</md-button>
+<md-menu id="menu-demo-m-vibrant" anchor="menu-demo-t-vibrant" variant="vibrant">
+  <md-menu-item headline="Rename"></md-menu-item>
+  <md-menu-item headline="Duplicate"></md-menu-item>
+</md-menu>`}
+  label="Three surface tones"
+  storyId="navigation-menu--baseline"
+/>
+
+### Selection rows
+
+`type="checkbox"` and `type="radio"` turn rows into selection controls. Pair them
+with `keep-open` so picking one doesn\'t dismiss the menu, and use
+`check-position="start"` when the checkmark should lead instead of trail. Note
+that `keep-open` is all you need here: adding `persistent` to the menu would
+*also* switch off outside-click dismissal, which a preference or sort menu
+should keep:
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 32px; flex-wrap: wrap;">
+  <div style="display: grid; gap: 8px; justify-items: start;">
+    <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface-variant);">Checkbox — check end (default)</span>
+    <md-button id="sel-cb-end-t" variant="outlined" onclick="document.getElementById('sel-cb-end-m').show()">Preferences</md-button>
+    <md-menu id="sel-cb-end-m" anchor="sel-cb-end-t" variant="standard">
+      <md-menu-item headline="Notifications" type="checkbox" keep-open selected><span slot="leading-icon" class="material-symbols-outlined">notifications</span></md-menu-item>
+      <md-menu-item headline="Dark mode" type="checkbox" keep-open><span slot="leading-icon" class="material-symbols-outlined">dark_mode</span></md-menu-item>
+      <md-menu-item headline="Compact view" type="checkbox" keep-open><span slot="leading-icon" class="material-symbols-outlined">view_compact</span></md-menu-item>
+    </md-menu>
+  </div>
+  <div style="display: grid; gap: 8px; justify-items: start;">
+    <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface-variant);">Checkbox — check start</span>
+    <md-button id="sel-cb-start-t" variant="outlined" onclick="document.getElementById('sel-cb-start-m').show()">Preferences</md-button>
+    <md-menu id="sel-cb-start-m" anchor="sel-cb-start-t" variant="standard" check-position="start">
+      <md-menu-item headline="Notifications" type="checkbox" keep-open selected><span slot="leading-icon" class="material-symbols-outlined">notifications</span></md-menu-item>
+      <md-menu-item headline="Dark mode" type="checkbox" keep-open><span slot="leading-icon" class="material-symbols-outlined">dark_mode</span></md-menu-item>
+      <md-menu-item headline="Compact view" type="checkbox" keep-open><span slot="leading-icon" class="material-symbols-outlined">view_compact</span></md-menu-item>
+    </md-menu>
+  </div>
+  <div style="display: grid; gap: 8px; justify-items: start;">
+    <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface-variant);">Radio — check end (default)</span>
+    <md-button id="sel-rd-end-t" variant="outlined" onclick="document.getElementById('sel-rd-end-m').show()">Sort</md-button>
+    <md-menu id="sel-rd-end-m" anchor="sel-rd-end-t" variant="standard">
+      <md-menu-item headline="Newest first" type="radio" keep-open selected><span slot="leading-icon" class="material-symbols-outlined">arrow_upward</span></md-menu-item>
+      <md-menu-item headline="Oldest first" type="radio" keep-open><span slot="leading-icon" class="material-symbols-outlined">arrow_downward</span></md-menu-item>
+      <md-menu-item headline="Name" type="radio" keep-open><span slot="leading-icon" class="material-symbols-outlined">sort_by_alpha</span></md-menu-item>
+    </md-menu>
+  </div>
+  <div style="display: grid; gap: 8px; justify-items: start;">
+    <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface-variant);">Radio — check start</span>
+    <md-button id="sel-rd-start-t" variant="outlined" onclick="document.getElementById('sel-rd-start-m').show()">Sort</md-button>
+    <md-menu id="sel-rd-start-m" anchor="sel-rd-start-t" variant="standard" check-position="start">
+      <md-menu-item headline="Newest first" type="radio" keep-open selected><span slot="leading-icon" class="material-symbols-outlined">arrow_upward</span></md-menu-item>
+      <md-menu-item headline="Oldest first" type="radio" keep-open><span slot="leading-icon" class="material-symbols-outlined">arrow_downward</span></md-menu-item>
+      <md-menu-item headline="Name" type="radio" keep-open><span slot="leading-icon" class="material-symbols-outlined">sort_by_alpha</span></md-menu-item>
+    </md-menu>
+  </div>
+</div>`}
+  label="Checkbox and radio rows, with the check leading or trailing"
+  storyId="navigation-menu--selection"
+/>
+
+One menu can mix a command, a checkbox and a radio group — the row `type` is
+per row, not per menu:
+
+<ComponentDemo
+  html={`<md-button id="sel-mix-t" variant="outlined" onclick="document.getElementById('sel-mix-m').show()">View</md-button>
+<md-menu id="sel-mix-m" anchor="sel-mix-t" variant="standard">
+  <md-menu-item headline="Reload"><span slot="leading-icon" class="material-symbols-outlined">refresh</span></md-menu-item>
+  <md-menu-item headline="Show sidebar" type="checkbox" keep-open selected divider><span slot="leading-icon" class="material-symbols-outlined">view_sidebar</span></md-menu-item>
+  <md-menu-item headline="Comfortable" type="radio" keep-open selected><span slot="leading-icon" class="material-symbols-outlined">density_large</span></md-menu-item>
+  <md-menu-item headline="Compact" type="radio" keep-open><span slot="leading-icon" class="material-symbols-outlined">density_small</span></md-menu-item>
+</md-menu>`}
+  label="Mixed row types in one menu"
+  storyId="navigation-menu--selection"
+/>
+
+### Trigger shape and surface tone
+
+Any control can anchor a menu — the wiring is identical, only the trigger and
+the menu's `variant` change:
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 40px; flex-wrap: wrap;">
+  <div style="display: grid; gap: 8px; justify-items: start;">
+    <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface-variant);">Filled button — baseline menu</span>
+    <md-button id="tr-bl-t" variant="filled" onclick="document.getElementById('tr-bl-m').show()">Actions</md-button>
+    <md-menu id="tr-bl-m" anchor="tr-bl-t" variant="baseline">
+      <md-menu-item headline="Edit"><span slot="leading-icon" class="material-symbols-outlined">edit</span></md-menu-item>
+      <md-menu-item headline="Duplicate"><span slot="leading-icon" class="material-symbols-outlined">content_copy</span></md-menu-item>
+      <md-menu-item headline="Delete" divider><span slot="leading-icon" class="material-symbols-outlined">delete</span></md-menu-item>
+      <md-menu-item headline="Move to"><span slot="leading-icon" class="material-symbols-outlined">drive_file_move</span></md-menu-item>
+    </md-menu>
+  </div>
+
+  <div style="display: grid; gap: 8px; justify-items: start;">
+    <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface-variant);">Outlined button — standard menu</span>
+    <md-button id="tr-st-t" variant="outlined" onclick="document.getElementById('tr-st-m').show()">File</md-button>
+    <md-menu id="tr-st-m" anchor="tr-st-t" variant="standard">
+      <md-menu-item headline="New" trailing-text="⌘N"><span slot="leading-icon" class="material-symbols-outlined">note_add</span></md-menu-item>
+      <md-menu-item headline="Open" trailing-text="⌘O"><span slot="leading-icon" class="material-symbols-outlined">folder_open</span></md-menu-item>
+      <md-menu-item headline="Save" trailing-text="⌘S" divider><span slot="leading-icon" class="material-symbols-outlined">save</span></md-menu-item>
+      <md-menu-item headline="Export"><span slot="leading-icon" class="material-symbols-outlined">download</span></md-menu-item>
+    </md-menu>
+  </div>
+
+  <div style="display: grid; gap: 8px; justify-items: start;">
+    <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface-variant);">Icon button — vibrant menu</span>
+    <md-icon-button id="tr-vb-t" icon="more_vert" aria-label="More actions" onclick="document.getElementById('tr-vb-m').show()"></md-icon-button>
+    <md-menu id="tr-vb-m" anchor="tr-vb-t" variant="vibrant">
+      <md-menu-item headline="Rename"><span slot="leading-icon" class="material-symbols-outlined">edit</span></md-menu-item>
+      <md-menu-item headline="Share"><span slot="leading-icon" class="material-symbols-outlined">share</span></md-menu-item>
+      <md-menu-item headline="Archive"><span slot="leading-icon" class="material-symbols-outlined">archive</span></md-menu-item>
+    </md-menu>
+  </div>
+</div>`}
+  label="Three trigger shapes, three surface tones"
+  storyId="navigation-menu--playground-button"
+/>
+
+### The vibrant variant
+
+`variant="vibrant"` tints the surface and the selected row with the primary /
+secondary container roles instead of the flat neutral surface — for menus that
+carry navigation rather than one-off commands.
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 24px; flex-wrap: wrap;">
+  <md-button id="vib-flat-t" variant="outlined" onclick="document.getElementById('vib-flat-m').show()">Vibrant, flat</md-button>
+  <md-menu id="vib-flat-m" anchor="vib-flat-t" variant="vibrant">
+    <md-menu-item headline="Inbox"><span slot="leading-icon" class="material-symbols-outlined">inbox</span></md-menu-item>
+    <md-menu-item headline="Starred" selected><span slot="leading-icon" class="material-symbols-outlined">star</span></md-menu-item>
+    <md-menu-item headline="Sent"><span slot="leading-icon" class="material-symbols-outlined">send</span></md-menu-item>
+    <md-menu-item headline="Drafts"><span slot="leading-icon" class="material-symbols-outlined">drafts</span></md-menu-item>
+  </md-menu>
+
+  <md-button id="vib-gap-t" variant="outlined" onclick="document.getElementById('vib-gap-m').show()">Vibrant, grouped</md-button>
+  <md-menu id="vib-gap-m" anchor="vib-gap-t" variant="vibrant" layout="grouped" use-gap>
+    <md-menu-item-group label="Overview">
+        <md-menu-item headline="Dashboard"><span slot="leading-icon" class="material-symbols-outlined">dashboard</span></md-menu-item>
+        <md-menu-item headline="Analytics"><span slot="leading-icon" class="material-symbols-outlined">analytics</span></md-menu-item>
+    </md-menu-item-group>
+    <md-menu-item-group label="Tools">
+        <md-menu-item headline="Reports"><span slot="leading-icon" class="material-symbols-outlined">description</span></md-menu-item>
+        <md-menu-item headline="Settings"><span slot="leading-icon" class="material-symbols-outlined">settings</span></md-menu-item>
+    </md-menu-item-group>
+  </md-menu>
+</div>`}
+  label="Vibrant — flat, and grouped with gaps"
+  storyId="navigation-menu--vertical-vibrant"
+/>
+
+## Grouped layout & header
+
+`layout="grouped"` sections the surface; the `header` slot sits above the rows
+and scrolls with them.
+
+`use-gap` on a grouped menu swaps the divider between sections for real
+whitespace, and each `md-menu-item-group` keeps its own label. Compare the two
+variants — `standard` keeps the flat surface, `vibrant` tints the group bands:
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 24px; flex-wrap: wrap;">
+  <md-button id="gap-std-t" variant="outlined" onclick="document.getElementById('gap-std-m').show()">Standard</md-button>
+  <md-menu id="gap-std-m" anchor="gap-std-t" variant="standard" layout="grouped" use-gap>
+    <md-menu-item-group label="File">
+        <md-menu-item headline="New"><span slot="leading-icon" class="material-symbols-outlined">note_add</span></md-menu-item>
+        <md-menu-item headline="Open"><span slot="leading-icon" class="material-symbols-outlined">folder_open</span></md-menu-item>
+        <md-menu-item headline="Save" trailing-text="⌘S"><span slot="leading-icon" class="material-symbols-outlined">save</span></md-menu-item>
+    </md-menu-item-group>
+    <md-menu-item-group label="Edit">
+        <md-menu-item headline="Undo" trailing-text="⌘Z"><span slot="leading-icon" class="material-symbols-outlined">undo</span></md-menu-item>
+        <md-menu-item headline="Redo" trailing-text="⌘⇧Z"><span slot="leading-icon" class="material-symbols-outlined">redo</span></md-menu-item>
+    </md-menu-item-group>
+  </md-menu>
+
+  <md-button id="gap-vib-t" variant="outlined" onclick="document.getElementById('gap-vib-m').show()">Vibrant</md-button>
+  <md-menu id="gap-vib-m" anchor="gap-vib-t" variant="vibrant" layout="grouped" use-gap>
+    <md-menu-item-group label="Mail">
+        <md-menu-item headline="Inbox"><span slot="leading-icon" class="material-symbols-outlined">inbox</span></md-menu-item>
+        <md-menu-item headline="Starred" selected><span slot="leading-icon" class="material-symbols-outlined">star</span></md-menu-item>
+        <md-menu-item headline="Sent"><span slot="leading-icon" class="material-symbols-outlined">send</span></md-menu-item>
+    </md-menu-item-group>
+    <md-menu-item-group label="Manage">
+        <md-menu-item headline="Archive"><span slot="leading-icon" class="material-symbols-outlined">archive</span></md-menu-item>
+        <md-menu-item headline="Delete"><span slot="leading-icon" class="material-symbols-outlined">delete</span></md-menu-item>
+    </md-menu-item-group>
+  </md-menu>
+</div>`}
+  label="Grouped with use-gap — standard next to vibrant"
+  storyId="navigation-menu--grouped-with-gap"
+/>
+
+Groups work without labels too — the cards alone carry the grouping — and
+`use-gap` is what swaps the divider for that separation:
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 32px; flex-wrap: wrap;">
+  <div style="display: grid; gap: 8px; justify-items: start;">
+    <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface-variant);">Standard — no labels</span>
+    <md-button id="gap-nl-std-t" variant="outlined" onclick="document.getElementById('gap-nl-std-m').show()">Edit</md-button>
+    <md-menu id="gap-nl-std-m" anchor="gap-nl-std-t" variant="standard" layout="grouped" use-gap>
+      <md-menu-item-group>
+        <md-menu-item headline="Undo" trailing-text="⌘Z"><span slot="leading-icon" class="material-symbols-outlined">undo</span></md-menu-item>
+        <md-menu-item headline="Redo" trailing-text="⌘⇧Z"><span slot="leading-icon" class="material-symbols-outlined">redo</span></md-menu-item>
+      </md-menu-item-group>
+      <md-menu-item-group>
+        <md-menu-item headline="Cut" trailing-text="⌘X"><span slot="leading-icon" class="material-symbols-outlined">content_cut</span></md-menu-item>
+        <md-menu-item headline="Copy" trailing-text="⌘C"><span slot="leading-icon" class="material-symbols-outlined">content_copy</span></md-menu-item>
+      </md-menu-item-group>
+    </md-menu>
+  </div>
+  <div style="display: grid; gap: 8px; justify-items: start;">
+    <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface-variant);">Vibrant — no labels</span>
+    <md-button id="gap-nl-vib-t" variant="outlined" onclick="document.getElementById('gap-nl-vib-m').show()">Edit</md-button>
+    <md-menu id="gap-nl-vib-m" anchor="gap-nl-vib-t" variant="vibrant" layout="grouped" use-gap>
+      <md-menu-item-group>
+        <md-menu-item headline="Undo" trailing-text="⌘Z"><span slot="leading-icon" class="material-symbols-outlined">undo</span></md-menu-item>
+        <md-menu-item headline="Redo" trailing-text="⌘⇧Z"><span slot="leading-icon" class="material-symbols-outlined">redo</span></md-menu-item>
+      </md-menu-item-group>
+      <md-menu-item-group>
+        <md-menu-item headline="Cut" trailing-text="⌘X"><span slot="leading-icon" class="material-symbols-outlined">content_cut</span></md-menu-item>
+        <md-menu-item headline="Copy" trailing-text="⌘C"><span slot="leading-icon" class="material-symbols-outlined">content_copy</span></md-menu-item>
+      </md-menu-item-group>
+    </md-menu>
+  </div>
+  <div style="display: grid; gap: 8px; justify-items: start;">
+    <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface-variant);">use-gap — cards</span>
+    <md-button id="gap-cmp-gap-t" variant="outlined" onclick="document.getElementById('gap-cmp-gap-m').show()">With gap</md-button>
+    <md-menu id="gap-cmp-gap-m" anchor="gap-cmp-gap-t" variant="standard" layout="grouped" use-gap>
+      <md-menu-item-group label="History">
+        <md-menu-item headline="Undo" trailing-text="⌘Z"><span slot="leading-icon" class="material-symbols-outlined">undo</span></md-menu-item>
+        <md-menu-item headline="Redo" trailing-text="⌘⇧Z"><span slot="leading-icon" class="material-symbols-outlined">redo</span></md-menu-item>
+      </md-menu-item-group>
+      <md-menu-item-group label="Clipboard">
+        <md-menu-item headline="Cut" trailing-text="⌘X"><span slot="leading-icon" class="material-symbols-outlined">content_cut</span></md-menu-item>
+        <md-menu-item headline="Copy" trailing-text="⌘C"><span slot="leading-icon" class="material-symbols-outlined">content_copy</span></md-menu-item>
+      </md-menu-item-group>
+    </md-menu>
+  </div>
+  <div style="display: grid; gap: 8px; justify-items: start;">
+    <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface-variant);">no use-gap — divider</span>
+    <md-button id="gap-cmp-div-t" variant="outlined" onclick="document.getElementById('gap-cmp-div-m').show()">With divider</md-button>
+    <md-menu id="gap-cmp-div-m" anchor="gap-cmp-div-t" variant="standard" layout="grouped">
+      <md-menu-item-group label="History">
+        <md-menu-item headline="Undo" trailing-text="⌘Z"><span slot="leading-icon" class="material-symbols-outlined">undo</span></md-menu-item>
+        <md-menu-item headline="Redo" trailing-text="⌘⇧Z"><span slot="leading-icon" class="material-symbols-outlined">redo</span></md-menu-item>
+      </md-menu-item-group>
+      <md-menu-item-group label="Clipboard">
+        <md-menu-item headline="Cut" trailing-text="⌘X"><span slot="leading-icon" class="material-symbols-outlined">content_cut</span></md-menu-item>
+        <md-menu-item headline="Copy" trailing-text="⌘C"><span slot="leading-icon" class="material-symbols-outlined">content_copy</span></md-menu-item>
+      </md-menu-item-group>
+    </md-menu>
+  </div>
+</div>`}
+  label="Unlabelled groups, and gap against divider"
+  storyId="navigation-menu--grouped-with-gap"
+/>
+
+## Staying open
+
+The menu **closes on item activation by default**. Use `persistent` on the
+menu, or `keep-open` on individual items, for multi-select-style menus.
+`listbox` switches the surface to option semantics — use it when the menu
+presents *values*, not commands.
+
+<ComponentDemo
+  html={`<md-button id="menu-demo-t-cols" variant="outlined" onclick="document.getElementById('menu-demo-m-cols').show()">Columns</md-button>
+<md-menu id="menu-demo-m-cols" anchor="menu-demo-t-cols" persistent listbox list-label="Columns">
+  <md-menu-item headline="Name" type="checkbox" keep-open selected></md-menu-item>
+  <md-menu-item headline="Owner" type="checkbox" keep-open></md-menu-item>
+  <md-menu-item headline="Modified" type="checkbox" keep-open selected></md-menu-item>
+</md-menu>`}
+  label="Persistent listbox"
+  storyId="navigation-menu--selection"
+/>
+
+## Submenus
+
+<ComponentDemo
+  html={`<md-button id="menu-demo-t-sub" variant="outlined" onclick="document.getElementById('menu-demo-m-sub').show()">File</md-button>
+<md-menu id="menu-demo-m-sub" anchor="menu-demo-t-sub">
+  <md-menu-item headline="New"></md-menu-item>
+  <md-sub-menu-item headline="Share">
+    <md-menu slot="submenu">
+      <md-menu-item headline="Copy link"></md-menu-item>
+      <md-menu-item headline="Email"></md-menu-item>
+    </md-menu>
+  </md-sub-menu-item>
+  <md-menu-item headline="Delete"></md-menu-item>
+</md-menu>`}
+  label="Nested groups"
+  storyId="navigation-menu--submenus"
+/>
+
+## Sizing & empty state
+
+`match-anchor-width` makes the surface at least as wide as the trigger — it
+still grows wider if the rows need it. `max-height` caps the surface;
+`empty-text` covers the no-rows case.
+
+<ComponentDemo
+  html={`<md-button id="menu-demo-t-wide" variant="outlined" onclick="document.getElementById('menu-demo-m-wide').show()">Match anchor width</md-button>
+<md-menu id="menu-demo-m-wide" anchor="menu-demo-t-wide" match-anchor-width max-height="200">
+  <md-menu-item headline="One"></md-menu-item>
+  <md-menu-item headline="Two"></md-menu-item>
+  <md-menu-item headline="Three"></md-menu-item>
+  <md-menu-item headline="Four"></md-menu-item>
+  <md-menu-item headline="Five"></md-menu-item>
+</md-menu>
+
+<md-button id="menu-demo-t-empty" variant="outlined" onclick="document.getElementById('menu-demo-m-empty').show()">Empty</md-button>
+<md-menu id="menu-demo-m-empty" anchor="menu-demo-t-empty" empty-text="No actions"></md-menu>`}
+  label="Anchor width, max height, empty text"
+  storyId="navigation-menu--responsive"
+/>
+
+Set `responsive` to present a near-full-width sheet on compact viewports, and
+`quick` to skip the open animation.
+
+## Row anatomy
+
+A row carries a headline plus any of: a leading icon, supporting text, a badge,
+trailing text, and a trailing icon. Everything is optional — a menu of plain
+headlines is a perfectly good menu.
+
+<ComponentDemo
+  html={`<md-button id="ra-t" variant="outlined" onclick="document.getElementById('ra-m').show()">Full anatomy</md-button>
+<md-menu id="ra-m" anchor="ra-t">
+  <md-menu-item headline="Rename" icon="edit" trailing-text="⌘R"></md-menu-item>
+  <md-menu-item headline="Duplicate" icon="content_copy" supporting-text="Creates a copy in place"></md-menu-item>
+  <md-menu-item headline="Notifications" icon="notifications" badge="3"></md-menu-item>
+  <md-menu-item headline="Delete" icon="delete" trailing-text="⌫"></md-menu-item>
+</md-menu>
+
+<md-button id="ra-t2" variant="outlined" onclick="document.getElementById('ra-m2').show()">No icons</md-button>
+<md-menu id="ra-m2" anchor="ra-t2">
+  <md-menu-item headline="Rename"></md-menu-item>
+  <md-menu-item headline="Duplicate"></md-menu-item>
+  <md-menu-item headline="Delete"></md-menu-item>
+</md-menu>`}
+  label="Icons, supporting text, badges, trailing text — and a menu with none of it"
+  storyId="navigation-menu--no-leading-icon"
+/>
+
+:::caution[Mixing icon and no-icon rows misaligns the column]
+M3 wants a menu's rows to agree: either every row reserves the leading slot or
+none does. A single icon among plain rows leaves the rest hanging in the gutter.
+:::
+
+### Row states
+
+`disabled` takes the row out of the roving focus order. Selection state comes
+from `type="checkbox"` / `type="radio"` plus `selected`; `indeterminate` is a
+presentational mixed state on checkbox rows only.
+
+<ComponentDemo
+  html={`<md-button id="rs-t" variant="outlined" onclick="document.getElementById('rs-m').show()">States</md-button>
+<md-menu id="rs-m" anchor="rs-t">
+  <md-menu-item headline="Enabled" icon="check_circle"></md-menu-item>
+  <md-menu-item headline="Disabled" icon="block" disabled></md-menu-item>
+  <md-menu-item headline="Checked" type="checkbox" selected keep-open></md-menu-item>
+  <md-menu-item headline="Unchecked" type="checkbox" keep-open></md-menu-item>
+  <md-menu-item headline="Indeterminate" type="checkbox" indeterminate keep-open></md-menu-item>
+</md-menu>`}
+  label="Enabled, disabled, checked, unchecked, indeterminate"
+  storyId="navigation-menu--states"
+/>
+
+### Badges
+
+<ComponentDemo
+  html={`<md-button id="bd-t" variant="outlined" onclick="document.getElementById('bd-m').show()">Badges</md-button>
+<md-menu id="bd-m" anchor="bd-t">
+  <md-menu-item headline="Inbox" icon="inbox" badge="3"></md-menu-item>
+  <md-menu-item headline="Drafts" icon="drafts" badge="12"></md-menu-item>
+  <md-menu-item headline="Spam" icon="report" badge="99+"></md-menu-item>
+  <md-menu-item headline="Archive" icon="archive"></md-menu-item>
+</md-menu>`}
+  label="Counts on menu rows"
+  storyId="navigation-menu--badges"
+/>
+
+### Nested submenus
+
+<ComponentDemo
+  html={`<md-button id="ns-t" variant="outlined" onclick="document.getElementById('ns-m').show()">Nested</md-button>
+<md-menu id="ns-m" anchor="ns-t">
+  <md-menu-item headline="New" icon="add"></md-menu-item>
+  <md-sub-menu-item headline="Share" icon="share">
+    <md-menu slot="submenu">
+      <md-menu-item headline="Copy link"></md-menu-item>
+      <md-sub-menu-item headline="Send to">
+        <md-menu slot="submenu">
+          <md-menu-item headline="Email"></md-menu-item>
+          <md-menu-item headline="Slack"></md-menu-item>
+        </md-menu>
+      </md-sub-menu-item>
+    </md-menu>
+  </md-sub-menu-item>
+  <md-menu-item headline="Delete" icon="delete"></md-menu-item>
+</md-menu>`}
+    label="Two levels — which is one level more than you should ship"
+    storyId="navigation-menu--nested-submenus"
+  />
+
+Three levels, both variants, as a stress test — every level is its own
+`md-menu` in the parent row's `submenu` slot, and each one flips side or
+direction on its own when it would leave the viewport:
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 40px; flex-wrap: wrap;">
+  <div style="display: grid; gap: 8px; justify-items: start;">
+    <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface-variant);">Standard — 3 levels</span>
+    <md-button id="deep-std-t" variant="filled" onclick="document.getElementById('deep-std-m').show()">File</md-button>
+    <md-menu id="deep-std-m" anchor="deep-std-t" variant="standard">
+      <md-menu-item headline="New file" trailing-text="⌘N"><span slot="leading-icon" class="material-symbols-outlined">note_add</span></md-menu-item>
+      <md-sub-menu-item headline="Open recent" supporting-text="Last 5 files">
+        <span slot="leading-icon" class="material-symbols-outlined">history</span>
+        <md-menu slot="submenu" variant="standard">
+          <md-menu-item headline="document.txt" supporting-text="Modified yesterday"></md-menu-item>
+          <md-menu-item headline="styles.css" supporting-text="Modified 3 days ago"></md-menu-item>
+          <md-sub-menu-item headline="Projects" supporting-text="Browse all">
+            <span slot="leading-icon" class="material-symbols-outlined">folder</span>
+            <md-menu slot="submenu" variant="standard">
+              <md-menu-item headline="my-app" supporting-text="React project"></md-menu-item>
+              <md-menu-item headline="website" supporting-text="Static site"></md-menu-item>
+              <md-menu-item headline="design-system" supporting-text="Stencil components"></md-menu-item>
+            </md-menu>
+          </md-sub-menu-item>
+        </md-menu>
+      </md-sub-menu-item>
+      <md-sub-menu-item headline="Export as" supporting-text="Save to disk" divider>
+        <span slot="leading-icon" class="material-symbols-outlined">download</span>
+        <md-menu slot="submenu" variant="standard">
+          <md-sub-menu-item headline="Image" supporting-text="Raster or vector">
+            <span slot="leading-icon" class="material-symbols-outlined">image</span>
+            <md-menu slot="submenu" variant="standard">
+              <md-menu-item headline="PNG"></md-menu-item>
+              <md-menu-item headline="JPEG"></md-menu-item>
+              <md-menu-item headline="SVG"></md-menu-item>
+            </md-menu>
+          </md-sub-menu-item>
+          <md-menu-item headline="PDF"><span slot="leading-icon" class="material-symbols-outlined">picture_as_pdf</span></md-menu-item>
+          <md-menu-item headline="CSV"><span slot="leading-icon" class="material-symbols-outlined">table_chart</span></md-menu-item>
+        </md-menu>
+      </md-sub-menu-item>
+      <md-menu-item headline="Save" trailing-text="⌘S"><span slot="leading-icon" class="material-symbols-outlined">save</span></md-menu-item>
+    </md-menu>
+  </div>
+
+  <div style="display: grid; gap: 8px; justify-items: start;">
+    <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface-variant);">Vibrant — 3 levels</span>
+    <md-button id="deep-vib-t" variant="tonal" onclick="document.getElementById('deep-vib-m').show()">Share</md-button>
+    <md-menu id="deep-vib-m" anchor="deep-vib-t" variant="vibrant">
+      <md-menu-item headline="Copy link" supporting-text="To clipboard"><span slot="leading-icon" class="material-symbols-outlined">link</span></md-menu-item>
+      <md-sub-menu-item headline="Social" supporting-text="Post to a network">
+        <span slot="leading-icon" class="material-symbols-outlined">public</span>
+        <md-menu slot="submenu" variant="vibrant">
+          <md-menu-item headline="Twitter" supporting-text="Post a tweet"><span slot="leading-icon" class="material-symbols-outlined">tag</span></md-menu-item>
+          <md-menu-item headline="LinkedIn" supporting-text="Share with your network"><span slot="leading-icon" class="material-symbols-outlined">work</span></md-menu-item>
+          <md-sub-menu-item headline="More" supporting-text="Other platforms">
+            <span slot="leading-icon" class="material-symbols-outlined">more_horiz</span>
+            <md-menu slot="submenu" variant="vibrant">
+              <md-menu-item headline="Facebook"></md-menu-item>
+              <md-menu-item headline="Reddit"></md-menu-item>
+              <md-menu-item headline="Mastodon"></md-menu-item>
+            </md-menu>
+          </md-sub-menu-item>
+        </md-menu>
+      </md-sub-menu-item>
+      <md-sub-menu-item headline="Send to" supporting-text="Direct message" divider>
+        <span slot="leading-icon" class="material-symbols-outlined">send</span>
+        <md-menu slot="submenu" variant="vibrant">
+          <md-menu-item headline="Email" supporting-text="Compose a message"><span slot="leading-icon" class="material-symbols-outlined">email</span></md-menu-item>
+          <md-menu-item headline="Messages" supporting-text="Via iMessage"><span slot="leading-icon" class="material-symbols-outlined">chat</span></md-menu-item>
+          <md-menu-item headline="AirDrop" supporting-text="Nearby devices"><span slot="leading-icon" class="material-symbols-outlined">wifi</span></md-menu-item>
+        </md-menu>
+      </md-sub-menu-item>
+      <md-menu-item headline="Embed" supporting-text="Get the embed code"><span slot="leading-icon" class="material-symbols-outlined">code</span></md-menu-item>
+    </md-menu>
+  </div>
+</div>`}
+  label="Three levels deep — standard and vibrant"
+  storyId="navigation-menu--nested-submenus"
+/>
+
+  :::caution[Stop at one level]
+  The demo above nests twice to show that it works, not to recommend it. M3 warns
+  submenus do not translate to touch; two levels is already hard with a keyboard,
+  and three is unusable.
+  :::
+
+  ## Events
+
+  | Event | Cancelable | Detail | Fires |
+  |---|---|---|---|
+  | `mdOpen` | no | `void` | The menu opened |
+  | `mdClose` | no | `void` | The menu closed |
+
+  :::danger[Both events are `composed: true`]
+  They also fire on an **embedding shadow host** at `AT_TARGET`. If you wrap
+  `md-menu` in your own component, guard with `e.target === menu` or you will
+  handle each open/close twice — this has caused real duplicate open/close bugs
+  in `md-select` / `md-multi-select`.
+  :::
+
+  <TechnologyTabs
+    html={`<md-icon-button id="more" icon="more_vert" aria-label="More actions"></md-icon-button>
+  <md-menu id="menu" anchor="more" placement="bottom-end">
+    <md-menu-item headline="Rename"></md-menu-item>
+    <md-menu-item headline="Delete"></md-menu-item>
+  </md-menu>
+
+  <script type="module">
+    const menu = document.getElementById('menu');
+    document.getElementById('more').addEventListener('mdClick', () => menu.show());
+
+    menu.addEventListener('mdOpen', (e) => {
+      if (e.target !== menu) return;   // composed: ignore the re-fire on a host
+      trackOpen();
+    });
+    menu.addEventListener('mdClose', (e) => {
+      if (e.target !== menu) return;
+      trackClose();
+    });
+  </script>`}
+    react={`import { useRef } from 'react';
+  import { MdIconButton, MdMenu, MdMenuItem } from '@awc-ui/react';
+
+  export function OverflowMenu() {
+    const menu = useRef<HTMLMdMenuElement>(null);
+
+    return (
+      <>
+        <MdIconButton
+          id="more"
+          icon="more_vert"
+          aria-label="More actions"
+          onMdClick={() => menu.current?.show()}
+        />
+
+        <MdMenu
+          ref={menu}
+          anchor="more"
+          placement="bottom-end"
+          onMdOpen={(e) => {
+            if (e.target !== menu.current) return;
+            trackOpen();
+          }}
+        >
+          <MdMenuItem headline="Rename" />
+          <MdMenuItem headline="Delete" />
+        </MdMenu>
+      </>
+    );
+  }`}
+    angular={`import { Component, ViewChild, ElementRef } from '@angular/core';
+
+  @Component({
+    selector: 'app-overflow-menu',
+    template: \`
+      <md-icon-button id="more" icon="more_vert" aria-label="More actions"
+                      (mdClick)="menu.nativeElement.show()"></md-icon-button>
+
+      <md-menu #menu anchor="more" placement="bottom-end" (mdOpen)="onOpen($event)">
+        <md-menu-item headline="Rename"></md-menu-item>
+        <md-menu-item headline="Delete"></md-menu-item>
+      </md-menu>
+    \`,
+  })
+  export class OverflowMenuComponent {
+    @ViewChild('menu') menu!: ElementRef<HTMLElement>;
+
+    onOpen(e: CustomEvent) {
+      if (e.target !== this.menu.nativeElement) return;
+      trackOpen();
+    }
+  }`}
+    vue={`<script setup lang="ts">
+  import { ref } from 'vue';
+  const menu = ref<HTMLElement | null>(null);
+
+  function onOpen(e: CustomEvent) {
+    if (e.target !== menu.value) return;
+    trackOpen();
+  }
+  </script>
+
+  <template>
+    <md-icon-button
+      id="more"
+      icon="more_vert"
+      aria-label="More actions"
+      @mdClick="menu?.show()"
+    />
+
+    <md-menu ref="menu" anchor="more" placement="bottom-end" @mdOpen="onOpen">
+      <md-menu-item headline="Rename" />
+      <md-menu-item headline="Delete" />
+    </md-menu>
+  </template>`}
+    svelte={`<script lang="ts">
+    let menu: HTMLElement;
+
+    function onOpen(e: CustomEvent) {
+      if (e.target !== menu) return;
+      trackOpen();
+    }
+  </script>
+
+  <md-icon-button
+    id="more"
+    icon="more_vert"
+    aria-label="More actions"
+    on:mdClick={() => menu.show()}
+  ></md-icon-button>
+
+  <md-menu bind:this={menu} anchor="more" placement="bottom-end" on:mdOpen={onOpen}>
+    <md-menu-item headline="Rename"></md-menu-item>
+    <md-menu-item headline="Delete"></md-menu-item>
+  </md-menu>`}
+  />
+
+  ## Methods
+
+  `show(opts?)` and `close()` drive the menu. `reposition()` exists for when the
+  anchor moves — the menu reacts to scroll and resize, but does **not** observe
+  arbitrary layout changes:
+
+  ```js
+  window.addEventListener('resize', () => menu.open && menu.reposition());
+  ```
+
+  `setComboboxElement()` and `setVirtualProvider()` are integration hooks for
+  composite pickers with virtualized option lists. Application code should not
+  call them.
+
+  ## API Reference
+
+  
+
+<ApiTable {...apiData} />
+
+  ## The sub-components
+
+  A menu is composed from three row types. They are documented here rather than
+  on their own pages: none of them mean anything outside a menu, and the parent
+  owns focus, keyboard navigation and dismissal for all of them.
+
+  ### `md-menu-item`
+
+  **One row in the menu** — a command, or a checkbox/radio option, with optional
+  icons, supporting text, a badge and trailing text.
+
+  :::danger[The item self-toggles before the parent reconciles]
+  Clicking a `checkbox` / `radio` row flips `selected` on the item itself, then
+  `mdClick` fires. A controlled parent that **rejects** the change — a
+  `max-selected` cap, a failed save — must revert via `e.target`, or the user is
+  left looking at a phantom check.
+
+  ```js
+  item.addEventListener('mdClick', (e) => {
+    if (atCap()) e.target.selected = false;   // undo the optimistic toggle
+  });
+  ```
+  :::
+
+  - **Activating a row closes the menu** unless `keep-open` is set on the item or
+    `persistent` on the menu. `keep-open` is the per-row opt-out; `persistent`
+  is the whole-menu one and additionally disables outside-click dismissal, so
+  reach for it only when you manage closing yourself.
+  - **`type="radio"` does not group itself.** Put radio rows in an
+    [`md-menu-item-group`](#md-menu-item-group) and enforce exclusivity in your
+    handler — nothing does it for you.
+  - `mdClick` carries **no payload**. Identify the row by the element you bound
+    the listener to, or by its `headline`.
+  - `indeterminate` is presentational only — a mixed state on a `checkbox` row.
+    It is ignored for `button` / `radio` types and when `selected` is true.
+  - `presentation` and `role-override` change the announced role. Leave them
+    alone unless you are building a picker; `md-select` uses
+    `presentation="option"` so its popup is a real listbox rather than a menu.
+  - `density` here overrides the density inherited from the menu.
+
+  <ApiTable {...menuItemApi} />
+
+  ### `md-menu-item-group`
+
+  **A labelled section within the menu** — groups related rows under a heading so
+  a long menu stays scannable.
+
+  :::caution[It groups; it does not manage selection]
+  Radio rows inside a group are **not** made exclusive automatically. The group is
+  visual and semantic grouping only — you enforce the one-of-many rule yourself:
+
+  ```js
+  for (const group of document.querySelectorAll('md-menu-item-group')) {
+    const items = [...group.querySelectorAll('md-menu-item[type="radio"]')];
+    items.forEach((i) =>
+      i.addEventListener('mdClick', () => {
+        items.forEach((o) => (o.selected = o === i));
+      }),
+    );
+  }
+  ```
+
+  An unmanaged group can announce two selected radios at once, which is
+  contradictory to assistive technology.
+  :::
+
+  - **An empty `label` defeats the point.** An unlabelled group adds nothing over
+    flat rows — either provide a heading, or use `divider` on an item instead.
+  - **Pair it with the menu's `layout="grouped"`.** Without it the spacing between
+    sections doesn't render as intended.
+  - Its only theming knob is `--md-menu-group-gap`, set on the menu — it exposes
+    no custom properties, no events, no methods and no CSS parts of its own.
+  - The default slot accepts [`md-menu-item`](#md-menu-item) and
+    [`md-sub-menu-item`](#md-sub-menu-item) children.
+
+  <ApiTable {...menuItemGroupApi} />
+
+  ### `md-sub-menu-item`
+
+  **A menu row that opens a nested submenu** — the same anatomy as
+  [`md-menu-item`](#md-menu-item), plus a `submenu` slot holding the nested
+  content.
+
+  :::caution[Submenus are a web-only affordance]
+  M3 notes that submenus do not translate to touch. **Never make a submenu the
+  only route to an action** — provide a flat alternative on small screens, and
+  keep nesting to **one** level. Three-level menu trees are unusable, especially
+  with a keyboard.
+  :::
+
+  - **Nothing selectable here.** Unlike `md-menu-item` there is **no `type`, no
+    `selected`, no `keep-open`** — a submenu row is a branch, not an option. If
+    you are reaching for those, you want [`md-menu-item`](#md-menu-item).
+  - **`collapse()` exists; there is no `expand()`.** Opening is driven by user
+    interaction; `collapse()` closes the branch and resets its visual state, and
+    an ancestor menu calls it on close so reopening always starts fresh.
+  - `mdClick` fires for the **row itself** (not the submenu) and carries no
+    payload.
+  - The row exposes **no `--md-sub-menu-item-*` custom properties**. It inherits
+    the `--md-menu-item-*` metrics from the menu.
+
+  <ApiTable {...subMenuItemApi} />
+
+  ## Accessibility
+
+  - The menu manages roving focus, typeahead, `Escape` to close, and returns
+    focus to the anchor.
+  - **Wire the trigger yourself** with `aria-haspopup="menu"` (or `listbox` in
+    `listbox` mode) and `aria-expanded`.
+  - Provide `list-label` when the menu's purpose isn't obvious from the trigger.
+  - A **closed** menu is `inert` and `aria-hidden` — don't fight that; it's what
+    keeps hidden items out of the accessibility tree.
+  - `auto-focus="false"` is for composites where focus must stay in a text field.
+    In that case you must manage the announcements yourself, and note that ARIA
+    IDREFs can't cross shadow boundaries.
+
+  ### Keyboard
+
+  | Key | Action |
+  |---|---|
+  | `↓` / `↑` | Move between enabled rows, wrapping at the ends |
+  | `Home` / `End` | First / last row |
+  | A–Z | Typeahead — jumps to the next row whose headline starts with the letters |
+  | `Enter` / `Space` | Activate the row (closes unless `keep-open` / `persistent`) |
+  | `→` | On a submenu row, open it and move into it (inverted under `dir="rtl"`) |
+  | `←` | Close the submenu and return to its parent row |
+  | `Escape` | Close, returning focus to the anchor |
+  | `Tab` | Close and move on — a menu is not a tab stop |
+
+  <ComponentDemo
+    html={`<md-button id="a11y-t" variant="outlined" onclick="document.getElementById('a11y-m').show()">Open and drive it from the keyboard</md-button>
+  <md-menu id="a11y-m" anchor="a11y-t" list-label="Document actions">
+    <md-menu-item headline="Rename" icon="edit"></md-menu-item>
+    <md-menu-item headline="Duplicate" icon="content_copy"></md-menu-item>
+    <md-menu-item headline="Download" icon="download" disabled></md-menu-item>
+    <md-sub-menu-item headline="Share" icon="share">
+      <md-menu slot="submenu">
+        <md-menu-item headline="Copy link"></md-menu-item>
+        <md-menu-item headline="Email"></md-menu-item>
+      </md-menu>
+    </md-sub-menu-item>
+  <md-menu-item headline="Delete" icon="delete"></md-menu-item>
+</md-menu>`}
+  label="Roving focus, typeahead, Escape to close"
+  storyId="navigation-menu--accessibility"
+/>
+
+## RTL, density & i18n
+
+**RTL** — `placement` is logical (`bottom-start` follows reading order) and the
+surface mirrors under `dir="rtl"`, including the submenu open direction and the
+arrow keys that drive it. See [RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:20px 16px;align-items:center;">
+  <span style="inline-size:2.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr">
+    <md-button id="rtl-a" variant="outlined" onclick="document.getElementById('rtl-ma').show()">Actions</md-button>
+    <md-menu id="rtl-ma" anchor="rtl-a" placement="bottom-start">
+      <md-menu-item headline="Rename" icon="edit"></md-menu-item>
+      <md-sub-menu-item headline="Share" icon="share"><md-menu slot="submenu"><md-menu-item headline="Copy link"></md-menu-item></md-menu></md-sub-menu-item>
+    </md-menu>
+  </div>
+  <span style="inline-size:2.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl">
+    <md-button id="rtl-b" variant="outlined" onclick="document.getElementById('rtl-mb').show()">إجراءات</md-button>
+    <md-menu id="rtl-mb" anchor="rtl-b" placement="bottom-start">
+      <md-menu-item headline="إعادة تسمية" icon="edit"></md-menu-item>
+      <md-sub-menu-item headline="مشاركة" icon="share"><md-menu slot="submenu"><md-menu-item headline="نسخ الرابط"></md-menu-item></md-menu></md-sub-menu-item>
+    </md-menu>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+  storyId="navigation-menu--rtl"
+/>
+
+**Density** — `density="-1…-4"` compacts rows and cascades to items; a row's own
+`density` overrides the menu's. See [Density](/behaviour/density/).
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 12px; flex-wrap: wrap;">
+<md-button id="dn-0" variant="outlined" onclick="document.getElementById('dn-m0').show()">0</md-button>
+<md-menu id="dn-m0" anchor="dn-0" density="0"><md-menu-item headline="Rename" icon="edit"></md-menu-item><md-menu-item headline="Duplicate" icon="content_copy"></md-menu-item><md-menu-item headline="Delete" icon="delete"></md-menu-item></md-menu>
+
+<md-button id="dn-1" variant="outlined" onclick="document.getElementById('dn-m1').show()">-1</md-button>
+<md-menu id="dn-m1" anchor="dn-1" density="-1"><md-menu-item headline="Rename" icon="edit"></md-menu-item><md-menu-item headline="Duplicate" icon="content_copy"></md-menu-item><md-menu-item headline="Delete" icon="delete"></md-menu-item></md-menu>
+
+<md-button id="dn-2" variant="outlined" onclick="document.getElementById('dn-m2').show()">-2</md-button>
+<md-menu id="dn-m2" anchor="dn-2" density="-2"><md-menu-item headline="Rename" icon="edit"></md-menu-item><md-menu-item headline="Duplicate" icon="content_copy"></md-menu-item><md-menu-item headline="Delete" icon="delete"></md-menu-item></md-menu>
+
+<md-button id="dn-3" variant="outlined" onclick="document.getElementById('dn-m3').show()">-3</md-button>
+<md-menu id="dn-m3" anchor="dn-3" density="-3"><md-menu-item headline="Rename" icon="edit"></md-menu-item><md-menu-item headline="Duplicate" icon="content_copy"></md-menu-item><md-menu-item headline="Delete" icon="delete"></md-menu-item></md-menu>
+
+<md-button id="dn-4" variant="outlined" onclick="document.getElementById('dn-m4').show()">-4</md-button>
+<md-menu id="dn-m4" anchor="dn-4" density="-4"><md-menu-item headline="Rename" icon="edit"></md-menu-item><md-menu-item headline="Duplicate" icon="content_copy"></md-menu-item><md-menu-item headline="Delete" icon="delete"></md-menu-item></md-menu>
+</div>`}
+  label="Rows at every density rung — open each to compare"
+/>
+
+Rows go 48px at `0` down to 32px at `-4`, and the icons taper 24 → 20px with
+them. `--md-menu-item-height` and `--md-menu-item-icon-size` opt a menu out of
+that curve entirely.
+
+**i18n** — translate `empty-text`, `list-label`, header content and every item's
+text. Menu width follows content, so longer translations widen the surface —
+check `--md-menu-max-width`.
+
+<ComponentDemo
+  html={`<md-button id="i18-de" variant="outlined" onclick="document.getElementById('i18-mde').show()">Aktionen</md-button>
+<md-menu id="i18-mde" anchor="i18-de" list-label="Dokumentaktionen" empty-text="Keine Aktionen">
+  <md-menu-item headline="Umbenennen" icon="edit"></md-menu-item>
+  <md-menu-item headline="Vervielfältigen" icon="content_copy" supporting-text="Erstellt eine Kopie am selben Ort"></md-menu-item>
+  <md-menu-item headline="Löschen" icon="delete"></md-menu-item>
+</md-menu>
+
+<md-button id="i18-empty" variant="outlined" onclick="document.getElementById('i18-mempty').show()">Leer</md-button>
+<md-menu id="i18-mempty" anchor="i18-empty" empty-text="Keine Aktionen verfügbar"></md-menu>`}
+  label="Localised rows, list label and empty text"
+  storyId="navigation-menu--localization"
+/>
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-menu-min-width` / `--md-menu-max-width` | Surface width bounds | `112px` / viewport-clamped |
+| `--md-menu-inline-surface-color` | Inline (embedded) surface tone | `transparent` |
+| `--md-menu-inline-fill-radius-end` | Inline surface corner | `0` |
+| `--md-menu-viewport-margin` | Gap from the viewport edge | — |
+| `--md-menu-section-gap` | Space between groups | `2px` |
+| `--md-menu-group-gap` | Space after a `md-menu-item-group` | `2px` |
+| `--md-menu-item-height` | Row height (opts out of density) | 48px, density-derived |
+| `--md-menu-item-padding-inline` | Row padding | `12px` |
+| `--md-menu-item-gap` | Gap between row elements | `12px` |
+| `--md-menu-item-icon-size` | Leading / trailing glyph | 24px (20px in `standard`/`vibrant`) |
+| `--md-menu-item-check-size` | Selection check / radio glyph | `20px` |
+
+<ComponentDemo
+  html={`<md-button id="th-1" variant="outlined" onclick="document.getElementById('th-m1').show()">Wide and roomy</md-button>
+<md-menu id="th-m1" anchor="th-1" style="--md-menu-min-width: 260px; --md-menu-item-height: 56px; --md-menu-item-padding-inline: 20px; --md-menu-item-gap: 16px;">
+  <md-menu-item headline="Rename" icon="edit"></md-menu-item>
+  <md-menu-item headline="Duplicate" icon="content_copy"></md-menu-item>
+  <md-menu-item headline="Delete" icon="delete"></md-menu-item>
+</md-menu>
+
+<md-button id="th-2" variant="outlined" onclick="document.getElementById('th-m2').show()">Narrow and dense</md-button>
+<md-menu id="th-m2" anchor="th-2" style="--md-menu-min-width: 140px; --md-menu-max-width: 180px; --md-menu-item-height: 34px; --md-menu-item-icon-size: 18px; --md-menu-item-gap: 8px;">
+  <md-menu-item headline="Rename" icon="edit"></md-menu-item>
+  <md-menu-item headline="Duplicate" icon="content_copy"></md-menu-item>
+  <md-menu-item headline="Delete" icon="delete"></md-menu-item>
+</md-menu>
+
+<md-button id="th-3" variant="outlined" onclick="document.getElementById('th-m3').show()">Grouped, wide gaps</md-button>
+<md-menu id="th-m3" anchor="th-3" layout="grouped" style="--md-menu-section-gap: 12px; --md-menu-group-gap: 12px;">
+  <md-menu-item-group label="Order">
+    <md-menu-item headline="Newest" type="radio" selected></md-menu-item>
+    <md-menu-item headline="Oldest" type="radio"></md-menu-item>
+  </md-menu-item-group>
+  <md-menu-item-group label="Field">
+    <md-menu-item headline="Name" type="radio"></md-menu-item>
+    <md-menu-item headline="Size" type="radio"></md-menu-item>
+  </md-menu-item-group>
+</md-menu>`}
+  label="Width, row height, padding, icon size and section gaps"
+/>
+
+:::caution[`--md-menu-item-height` opts the menu out of density]
+Row height, icon size and check size normally taper with `data-density`. Set the
+custom property and the row stops responding to the rung entirely — that is the
+point of it, and also the trap.
+:::
+
+## CSS parts
+
+The menu exposes three parts; the rows expose their own seven.
+
+| Part | On | Element |
+|---|---|---|
+| `surface` | `md-menu` | The elevated popup surface |
+| `menu-viewport` | `md-menu` | The scrolling region inside the surface |
+| `empty-text` | `md-menu` | The `empty-text` message |
+| `state-layer` | `md-menu-item` | Hover / focus / press overlay |
+| `leading-icon` | `md-menu-item` | Leading glyph container |
+| `content` | `md-menu-item` | Headline + supporting-text wrapper |
+| `headline` | `md-menu-item` | Primary label |
+| `supporting-text` | `md-menu-item` | Secondary label |
+| `badge` | `md-menu-item` | The badge |
+| `trailing` | `md-menu-item` | Trailing text / icon region |
+
+<ComponentDemo
+  html={`<style>
+  .parts-menu::part(surface) {
+    box-shadow: none;
+    border: 2px solid var(--md-sys-color-primary);
+    border-radius: 4px;
+  }
+  .parts-menu::part(menu-viewport) { padding-block: 6px; }
+  .parts-menu md-menu-item::part(headline) { text-transform: uppercase; letter-spacing: .06em; font-size: 13px; }
+  .parts-menu md-menu-item::part(trailing) { opacity: .6; font-variant-numeric: tabular-nums; }
+</style>
+<md-button id="pm-t" variant="outlined" onclick="document.getElementById('pm-m').show()">Styled parts</md-button>
+<md-menu id="pm-m" class="parts-menu" anchor="pm-t">
+  <md-menu-item headline="Rename" icon="edit" trailing-text="⌘R"></md-menu-item>
+  <md-menu-item headline="Duplicate" icon="content_copy" trailing-text="⌘D"></md-menu-item>
+  <md-menu-item headline="Delete" icon="delete" trailing-text="⌫"></md-menu-item>
+</md-menu>
+
+<md-button id="pm-t2" variant="outlined" onclick="document.getElementById('pm-m2').show()">Styled empty state</md-button>
+<md-menu id="pm-m2" class="parts-menu" anchor="pm-t2" empty-text="Nothing here yet"></md-menu>`}
+  label="surface, menu-viewport, headline and trailing"
+/>
+
+```css
+md-menu::part(surface) {
+  box-shadow: none;
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+```
+
+
+## Related
+
+[`md-menu-item`](/components/menu/#md-menu-item) ·
+[`md-menu-item-group`](/components/menu/#md-menu-item-group) ·
+[`md-sub-menu-item`](/components/menu/#md-sub-menu-item) ·
+[`md-select`](/components/select/) ·
+[`md-multi-select`](/components/multi-select/) ·
+[`md-autocomplete`](/components/autocomplete/) ·
+[`md-toolbar`](/components/toolbar/) ·
+[`md-split-button`](/components/split-button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-menu" />

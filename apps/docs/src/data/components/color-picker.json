@@ -1,0 +1,284 @@
+{
+  "tag": "md-color-picker",
+  "title": "Color Picker",
+  "slug": "color-picker",
+  "category": "Selection",
+  "subComponentOf": null,
+  "storyId": "selection-color-picker--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "ColorPickerVariant",
+      "default": "'inline'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "'#6750A4'",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "format",
+      "attribute": "format",
+      "type": "ColorFormat",
+      "default": "'hex'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "alpha",
+      "attribute": "alpha",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "showHex",
+      "attribute": "show-hex",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "showInputs",
+      "attribute": "show-inputs",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "presets",
+      "attribute": "presets",
+      "type": "string | string[]",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "ariaLabelProp",
+      "attribute": "aria-label",
+      "type": "string",
+      "default": "'Color picker'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "open",
+      "attribute": "open",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "dismissOnOutsideClick",
+      "attribute": "dismiss-on-outside-click",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdInput",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdChange",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdOpenChange",
+      "detail": "{ open: boolean }"
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "params": ""
+    },
+    {
+      "name": "close",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "trigger",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "plate",
+      "description": ""
+    },
+    {
+      "name": "thumb",
+      "description": ""
+    },
+    {
+      "name": "hue",
+      "description": ""
+    },
+    {
+      "name": "alpha",
+      "description": ""
+    },
+    {
+      "name": "field-hex",
+      "description": ""
+    },
+    {
+      "name": "label",
+      "description": ""
+    },
+    {
+      "name": "field-a",
+      "description": ""
+    },
+    {
+      "name": "inputs",
+      "description": ""
+    },
+    {
+      "name": "field-r",
+      "description": ""
+    },
+    {
+      "name": "field-g",
+      "description": ""
+    },
+    {
+      "name": "field-b",
+      "description": ""
+    },
+    {
+      "name": "field-h",
+      "description": ""
+    },
+    {
+      "name": "field-s",
+      "description": ""
+    },
+    {
+      "name": "field-l",
+      "description": ""
+    },
+    {
+      "name": "presets",
+      "description": ""
+    },
+    {
+      "name": "preset",
+      "description": ""
+    },
+    {
+      "name": "panel",
+      "description": ""
+    },
+    {
+      "name": "sliders",
+      "description": ""
+    },
+    {
+      "name": "preview",
+      "description": ""
+    },
+    {
+      "name": "popover",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-color-picker-width",
+      "description": "Panel inline-size"
+    },
+    {
+      "name": "--md-color-picker-plate-height",
+      "description": "Saturation/value plate height"
+    },
+    {
+      "name": "--md-color-picker-radius",
+      "description": "Outer container radius"
+    },
+    {
+      "name": "--md-color-picker-surface-color",
+      "description": "Panel background colour"
+    },
+    {
+      "name": "--md-color-picker-on-surface",
+      "description": "Panel text colour"
+    },
+    {
+      "name": "--md-color-picker-outline-color",
+      "description": "Field outlines"
+    },
+    {
+      "name": "--md-color-picker-thumb-size",
+      "description": "Slider thumb size"
+    },
+    {
+      "name": "--md-color-picker-thumb-border",
+      "description": "Thumb ring colour"
+    },
+    {
+      "name": "--md-color-picker-preset-size",
+      "description": "Preset swatch size"
+    },
+    {
+      "name": "--md-color-picker-popover-elevation",
+      "description": "Popover shadow/elevation"
+    },
+    {
+      "name": "--md-color-picker-outline-strong",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-button"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdInput",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdChange",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdOpenChange",
+      "detail": "{ open: boolean }"
+    }
+  ]
+}

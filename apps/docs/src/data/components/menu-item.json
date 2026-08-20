@@ -1,0 +1,211 @@
+{
+  "tag": "md-menu-item",
+  "title": "Menu Item",
+  "slug": "menu-item",
+  "category": "Navigation",
+  "subComponentOf": "md-menu",
+  "storyId": null,
+  "props": [
+    {
+      "name": "headline",
+      "attribute": "headline",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "supportingText",
+      "attribute": "supporting-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "trailingText",
+      "attribute": "trailing-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "selected",
+      "attribute": "selected",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "indeterminate",
+      "attribute": "indeterminate",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "keepOpen",
+      "attribute": "keep-open",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "divider",
+      "attribute": "divider",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "gap",
+      "attribute": "gap",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "badge",
+      "attribute": "badge",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "type",
+      "attribute": "type",
+      "type": "'button' | 'checkbox' | 'radio'",
+      "default": "'button'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "checkPosition",
+      "attribute": "check-position",
+      "type": "'start' | 'end'",
+      "default": "'end'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "presentation",
+      "attribute": "presentation",
+      "type": "'menuitem' | 'option'",
+      "default": "'menuitem'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "roleOverride",
+      "attribute": "role-override",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdClick",
+      "detail": "void"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "leading-icon",
+      "description": ""
+    },
+    {
+      "name": "trailing-icon",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": ""
+    },
+    {
+      "name": "leading-icon",
+      "description": ""
+    },
+    {
+      "name": "content",
+      "description": ""
+    },
+    {
+      "name": "headline",
+      "description": ""
+    },
+    {
+      "name": "supporting-text",
+      "description": ""
+    },
+    {
+      "name": "badge",
+      "description": ""
+    },
+    {
+      "name": "trailing",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-menu-item-height",
+      "description": "Item height (default 48px)"
+    },
+    {
+      "name": "--md-menu-item-padding-inline",
+      "description": "Horizontal padding (default 12px)"
+    },
+    {
+      "name": "--md-menu-item-gap",
+      "description": "Gap between elements (default 12px)"
+    },
+    {
+      "name": "--md-menu-item-icon-size",
+      "description": "Leading/trailing icon (default 24px,"
+    },
+    {
+      "name": "--md-menu-item-check-size",
+      "description": "Selection check/radio glyph (default 20px)"
+    }
+  ],
+  "dependencies": [
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdClick",
+      "detail": "void"
+    }
+  ]
+}

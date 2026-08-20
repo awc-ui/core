@@ -1,0 +1,547 @@
+/* ==========================================================
+   md-progress-indicator — Material Design 3 Progress Indicator
+   (Expressive generation)
+   Spec: https://m3.material.io/components/progress-indicators/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-progress-indicator-active-indicator-color   Active indicator fill
+     --md-progress-indicator-active-indicator-shape   Active indicator corner radius
+     --md-progress-indicator-track-color              Track background
+     --md-progress-indicator-track-shape              Track corner radius
+     --md-progress-indicator-stop-indicator-color     Stop dot color
+     --md-progress-indicator-stop-indicator-shape     Stop dot corner radius
+     --md-progress-indicator-stop-indicator-size      Stop dot diameter
+     --md-progress-indicator-stop-indicator-trailing-space  Space past the stop dot to the trailing edge (default 0)
+     --md-progress-indicator-track-active-indicator-space   Gap between track and active indicator (default 4px)
+     --md-progress-indicator-four-color-1..4          Four-color cycle colors
+
+   CSS PARTS:
+     track               Background track (rect or SVG circle/path)
+     active-indicator    Active progress fill
+     stop-indicator      Stop dot at track end (linear determinate)
+   ========================================================== */
+
+/* ── Host ──────────────────────────────────────────────── */
+
+:host {
+  --_active-color: var(--md-progress-indicator-active-indicator-color, var(--md-sys-color-primary, #6750A4));
+  --_active-shape: var(--md-progress-indicator-active-indicator-shape, var(--_track-shape));
+  --_track-color: var(--md-progress-indicator-track-color, var(--md-sys-color-secondary-container, #E8DEF8));
+  --_track-shape: var(--md-progress-indicator-track-shape, var(--md-sys-shape-corner-full, 9999px));
+  --_stop-color: var(--md-progress-indicator-stop-indicator-color, var(--md-sys-color-primary, #6750A4));
+  --_stop-shape: var(--md-progress-indicator-stop-indicator-shape, var(--md-sys-shape-corner-full, 9999px));
+  --_stop-size: var(--md-progress-indicator-stop-indicator-size, max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px)));
+
+  /* M3 verified four-color order: primary → primary-container → tertiary → tertiary-container */
+  --_four-color-1: var(--md-progress-indicator-four-color-1, var(--md-sys-color-primary, #6750A4));
+  --_four-color-2: var(--md-progress-indicator-four-color-2, var(--md-sys-color-primary-container, #EADDFF));
+  --_four-color-3: var(--md-progress-indicator-four-color-3, var(--md-sys-color-tertiary, #7D5260));
+  --_four-color-4: var(--md-progress-indicator-four-color-4, var(--md-sys-color-tertiary-container, #FFD8E4));
+
+  /* Linear baseline dimensions (M3): gap between track and active indicator,
+     and the space reserved past the stop dot to the trailing edge. */
+  --_gap: var(--md-progress-indicator-track-active-indicator-space, max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px)));
+  --_stop-trailing-space: var(--md-progress-indicator-stop-indicator-trailing-space, 0px);
+  --_thickness: max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px));
+  --_linear-height: max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px));
+  --_size: max(28px, calc(40px + var(--md-sys-density-scale, 0) * 3px));
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* ── Linear layout ─────────────────────────────────────── */
+
+:host(.md-progress-indicator--linear) {
+  display: flex;
+  inline-size: 100%;
+  block-size: var(--_linear-height, 4px);
+}
+
+.md-progress-indicator__linear {
+  position: relative;
+  display: flex;
+  align-items: center;
+  inline-size: 100%;
+  block-size: 100%;
+  /* Clip the indeterminate bars (translateX from -100% → +80/100%) to the
+     track bounds so they don't appear sliding in from outside the component;
+     border-radius keeps the clipped ends following the rounded track shape. */
+  overflow: hidden;
+  border-radius: var(--_track-shape);
+}
+
+/* ── Track (inactive) ──────────────────────────────────── */
+
+.md-progress-indicator__track {
+  position: absolute;
+  inset-inline-start: var(--_track-start, 0);
+  inset-inline-end: 0;
+  inset-block: 0;
+  margin-block: auto;
+  block-size: var(--_thickness, 4px);
+  border-radius: var(--_track-shape);
+  background-color: var(--_track-color);
+}
+
+.md-progress-indicator__track--full {
+  inset-inline-start: 0;
+}
+
+/* Determinate (flat) track: its start edge is rAF-driven per-frame by
+   updateLinearFlat() from the same eased fraction as the active fill, so the two
+   move in lockstep and the gap stays a constant 4dp. No CSS transition — that
+   would re-tween each per-frame write and break the lockstep with the fill. */
+.md-progress-indicator__track--determinate {
+  transition: none;
+}
+
+/* ── Active indicator (determinate) ────────────────────── */
+
+.md-progress-indicator__active {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block: 0;
+  margin-block: auto;
+  inline-size: var(--_fill-width, 0);
+  block-size: var(--_thickness, 4px);
+  background-color: var(--_active-color);
+  border-radius: var(--_active-shape);
+  /* No CSS transition: the fill is rAF-driven per-frame by updateLinearFlat()
+     using the SAME eased fraction as the wavy variant, so the flat and wavy
+     determinate bars move identically and in lockstep. A CSS transition here
+     would re-tween each per-frame write and lag the flat variant behind wavy. */
+  transition: none;
+}
+
+/* Wavy active indicator — a band masked to a travelling stroked sine.
+   Amplitude (mask geometry) is driven from JS via --_wave-mask;
+   the crest travel is GPU-only via mask-position. */
+.md-progress-indicator__active--wave {
+  block-size: var(--_linear-height, 10px);
+  border-radius: 0;
+  background-color: var(--_active-color);
+  mask-image: var(--_wave-mask);
+  mask-size: var(--_wave-mask-size);
+  mask-repeat: repeat-x;
+  mask-position: left center;
+  animation: md-wave-travel var(--_wave-duration, 1000ms) linear infinite;
+}
+
+/* crests travel toward the leading edge (+x in LTR); tile is exactly one
+   wavelength wide so the loop is seamless */
+@keyframes md-wave-travel {
+  to {
+    mask-position: var(--_wave-length-px, 40px) center;
+  }
+}
+
+/* ── Wavy linear determinate SVG path ──────────────────────── */
+
+/* Full-width SVG overlay; the rAF loop writes a closed filled path that
+   contains both the wave body and the right-side round cap in one element,
+   so there is no coordinate-space mismatch between the two. */
+.md-progress-indicator__linear-wave-svg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.md-progress-indicator__linear-wave-path {
+  fill: var(--_active-color);
+}
+
+/* RTL (determinate) is handled in JS: updateLinearPath() draws the wave at
+   [W−fillX, W] so it anchors at the right edge — matching the track and stop dot,
+   which flip via CSS logical properties. No CSS transform needed here (transforms
+   on <svg> elements have cross-browser transform-origin/transform-box quirks).
+   Indeterminate RTL is handled by the .__linear container scaleX(-1) flip below. */
+
+/* ── Stop indicator (linear determinate, all states incl. 0%) ─ */
+
+.md-progress-indicator__stop {
+  position: absolute;
+  inset-inline-end: var(--_stop-trailing-space, 0);
+  inset-block: 0;
+  margin-block: auto;
+  /* clamp to the track thickness so a thin track never overflows */
+  inline-size: min(var(--_stop-size), var(--_thickness, 4px));
+  block-size: min(var(--_stop-size), var(--_thickness, 4px));
+  border-radius: var(--_stop-shape);
+  background-color: var(--_stop-color);
+}
+
+/* ── Linear indeterminate bars (authentic M3 two-bar motion, 2000ms) ─────
+   Two phase-offset bars sweep the track. The translate lives on the OUTER
+   `.md-progress-indicator__bar` and the width-pulse (scale) on the INNER
+   `.md-progress-indicator__bar-inner`, run as separate animations with
+   per-keyframe easing — this split is what produces the continuous "chasing"
+   motion (one bar is always entering while the other exits, so the track is
+   never empty → no full stop). The keyframes + the off-screen
+   `inset-inline-start` pre-offsets are the verified Material Design values; the
+   0px translate holds are masked because the bar is parked off-screen-left
+   during them. translateX is physical %, so the container scaleX(-1) flip
+   (below) handles RTL. */
+.md-progress-indicator__bar {
+  position: absolute;
+  inset-block: 0;
+  margin-block: auto;
+  inline-size: 100%;
+  block-size: var(--_thickness, 4px);
+  transform-origin: left center;
+}
+
+.md-progress-indicator__bar-inner {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  background-color: var(--_active-color);
+  border-radius: var(--_active-shape);
+  /* scale from the CENTRE (the M3 keyframes assume this): the width pulse keeps
+     the band centred in its translating .bar, so the shrinking tail sweeps off
+     the right edge instead of pinning a sliver mid-track. */
+  transform-origin: center;
+}
+
+/* Two DISTINCT sweeps timed to hand off with minimal gap. The secondary enters
+   immediately (secondary visible ~0–1400ms); the primary is phase-shifted by
+   -1666ms so it enters visible right as the secondary exits (~1400ms) and itself
+   exits right before the cycle wraps (~1940ms) — gap ≈60ms, the minimum
+   possible with these two keyframe windows. Both bars start off-screen-left so
+   neither pops in mid-track at load. */
+.md-progress-indicator__bar--primary {
+  inset-inline-start: -145%;
+  animation: md-linear-primary-translate 2000ms linear infinite;
+  animation-delay: -1666ms;
+}
+.md-progress-indicator__bar--primary > .md-progress-indicator__bar-inner {
+  animation: md-linear-primary-scale 2000ms linear infinite;
+  animation-delay: -1666ms;
+}
+.md-progress-indicator__bar--secondary {
+  inset-inline-start: -55%;
+  animation: md-linear-secondary-translate 2000ms linear infinite;
+}
+.md-progress-indicator__bar--secondary > .md-progress-indicator__bar-inner {
+  animation: md-linear-secondary-scale 2000ms linear infinite;
+}
+
+/* Primary: parks off-left, then ACCELERATES across (per-keyframe ease curves). */
+@keyframes md-linear-primary-translate {
+  0%     { transform: translateX(0); }
+  20%    { animation-timing-function: cubic-bezier(0.5, 0, 0.7017, 0.4958); transform: translateX(0); }
+  59.15% { animation-timing-function: cubic-bezier(0.3024, 0.3814, 0.55, 0.9564); transform: translateX(83.6714%); }
+  100%   { transform: translateX(250%); }
+}
+
+/* Primary width: expands as it accelerates, then HOLDS wide through the exit so
+   it slides off the end at full width (M3 shrinks here; we keep it wide). */
+@keyframes md-linear-primary-scale {
+  0%     { transform: scaleX(0.08); }
+  36.65% { animation-timing-function: cubic-bezier(0.3347, 0.1248, 0.7858, 1); transform: scaleX(0.08); }
+  69.15% { animation-timing-function: cubic-bezier(0.06, 0.11, 0.6, 1); transform: scaleX(0.58); }
+  100%   { transform: scaleX(0.62); }
+}
+
+/* Secondary: enters from the left edge straight away (no park), its own faster
+   accelerating sweep — this is what fills the track while the primary is parked,
+   so each bar still reads as entering from 0. */
+@keyframes md-linear-secondary-translate {
+  0%     { animation-timing-function: cubic-bezier(0.15, 0, 0.5151, 0.4097); transform: translateX(0); }
+  25%    { animation-timing-function: cubic-bezier(0.3103, 0.2841, 0.8, 0.7337); transform: translateX(37.6519%); }
+  48.35% { animation-timing-function: cubic-bezier(0.4, 0.627, 0.6, 0.902); transform: translateX(84.3862%); }
+  100%   { transform: translateX(160.278%); }
+}
+@keyframes md-linear-secondary-scale {
+  0%     { animation-timing-function: cubic-bezier(0.205, 0.0571, 0.5766, 0.454); transform: scaleX(0.08); }
+  19.15% { animation-timing-function: cubic-bezier(0.1523, 0.1964, 0.6484, 1.0043); transform: scaleX(0.4571); }
+  44.15% { animation-timing-function: cubic-bezier(0.2578, -0.0032, 0.2118, 1.3818); transform: scaleX(0.58); }
+  100%   { transform: scaleX(0.62); }
+}
+
+/* ── Wavy indeterminate (M3 Expressive) ──────────────────────────────────
+   Same continuous two-bar choreography, rendered as bold wavy bands. The OUTER
+   bar carries the travelling wave mask: the wave is rigid in the bar's own box
+   (so it slides bodily with the bar) plus a gentle crest travel; the INNER
+   scale still grows/shrinks the band's length. The bolder stroke makes the
+   band tall enough to cover the flat track where it passes. */
+.md-progress-indicator__bar--wave {
+  block-size: var(--_linear-height, 10px);
+  mask-image: var(--_wave-mask);
+  mask-size: var(--_wave-mask-size);
+  mask-repeat: repeat-x;
+  mask-position: left center;
+}
+.md-progress-indicator__bar--wave > .md-progress-indicator__bar-inner {
+  border-radius: 0;
+}
+
+/* Ghost bar-inner: drives CSS animations for position tracking but no visual */
+.md-progress-indicator__bar-inner--ghost {
+  background-color: transparent;
+}
+
+/* Add the crest travel alongside each bar's sweep (two animations on the outer;
+   the mask-position travel is independent of the transform). These rules
+   override the base single-animation sweep, so they must re-declare the sweep
+   translate (and the secondary's half-cycle offset) to keep both bars moving. */
+.md-progress-indicator__bar--primary.md-progress-indicator__bar--wave {
+  animation:
+    md-linear-primary-translate 2000ms linear infinite,
+    md-wave-travel var(--_wave-duration, 500ms) linear infinite;
+  animation-delay: -1666ms, 0ms;
+}
+.md-progress-indicator__bar--secondary.md-progress-indicator__bar--wave {
+  animation:
+    md-linear-secondary-translate 2000ms linear infinite,
+    md-wave-travel var(--_wave-duration, 500ms) linear infinite;
+}
+
+/* RTL: flip the indeterminate animation (the bars translate with physical %,
+   so the container flip reverses their sweep direction). */
+:host-context([dir="rtl"]).md-progress-indicator--indeterminate .md-progress-indicator__linear,
+:host([dir="rtl"]).md-progress-indicator--indeterminate .md-progress-indicator__linear {
+  transform: scaleX(-1);
+}
+
+/* ── Circular layout ───────────────────────────────────── */
+
+:host(.md-progress-indicator--circular) {
+  inline-size: var(--_size, 40px);
+  block-size: var(--_size, 40px);
+}
+
+.md-progress-indicator__circular {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.md-progress-indicator__circular-track {
+  stroke: var(--_track-color);
+}
+
+/* Determinate (flat) circular track: rAF-driven per-frame by updateCircularFlat()
+   from the eased renderFraction, in lockstep with the active arc, so the 4dp gap
+   stays constant and the track recedes exactly as the arc grows (its final sliver
+   fades via opacity instead of popping). No CSS transition — that would re-tween
+   each per-frame write and reintroduce the lag/pop this fix removes. */
+.md-progress-indicator__circular-track--determinate {
+  transition: none;
+}
+
+.md-progress-indicator__circular-active {
+  stroke: var(--_active-color);
+  /* Flat determinate arc is rAF-driven per-frame by updateCircularFlat() from the
+     SAME eased renderFraction (and ease) as its track, so the two move in lockstep.
+     No CSS transition — it would re-tween each per-frame write and desync the track.
+     (The wavy active is a <path>; the indeterminate active overrides this with
+     transition:none plus its own md-circular-dash animation.) */
+  transition: none;
+}
+
+/* Flat completion arc: an explicit round-capped <path> used only during the closing
+   animation (drawn instead of the dashed circle so the shrinking head stays smooth).
+   Empty (d="") at all other times, so it paints nothing in steady state. */
+.md-progress-indicator__circular-active-path {
+  stroke: var(--_active-color);
+}
+
+/* ── Circular indeterminate (rotation + arc grow/shrink) ─
+   These CSS animations drive the FLAT spinner only — :not(--wave). The wavy
+   variant is painted + rotated entirely in JS (rAF); without the guard the
+   md-circular-dash dasharray would shatter the JS-drawn wavy <path> (it has no
+   pathLength) and md-circular-rotate would double-rotate it on top of the JS
+   rotation. Reduced-motion re-adds a slow rotation for the wavy variant below. */
+
+:host(.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))
+  .md-progress-indicator__circular {
+  animation: md-circular-rotate 1568ms linear infinite;
+}
+
+:host(.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))
+  .md-progress-indicator__circular-active {
+  transition: none;
+  animation: md-circular-dash 1333ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Indeterminate track follows the active arc as its angular complement, leaving a
+   gap on each side. Same keyframe timing as md-circular-dash so the two stay
+   complementary at every frame; the dash/offset values are precomputed per
+   instance (gap-aware) into --_spin-* vars by syncSpinnerTrackVars(). */
+:host(.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))
+  .md-progress-indicator__circular-track--spinner {
+  transition: none;
+  animation: md-circular-dash-track 1333ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes md-circular-rotate {
+  100% { transform: rotate(360deg); }
+}
+
+/* pathLength=1 → dash values are fractions of the circumference */
+@keyframes md-circular-dash {
+  0%   { stroke-dasharray: 0.05 1; stroke-dashoffset: 0; }
+  50%  { stroke-dasharray: 0.70 1; stroke-dashoffset: -0.18; }
+  100% { stroke-dasharray: 0.05 1; stroke-dashoffset: -0.92; }
+}
+
+/* Complement of md-circular-dash (gap-aware). --_spin-* are resolved numbers.
+   The dash is `T (1−T)` so the period equals the path length (1) and a track arc
+   crossing the 12-o'clock seam wraps correctly (see syncSpinnerTrackVars). */
+@keyframes md-circular-dash-track {
+  0%   { stroke-dasharray: var(--_spin-da-0, 0.81) var(--_spin-gap-0, 0.19);   stroke-dashoffset: var(--_spin-do-0, -0.12); }
+  50%  { stroke-dasharray: var(--_spin-da-50, 0.16) var(--_spin-gap-50, 0.84); stroke-dashoffset: var(--_spin-do-50, -0.95); }
+  100% { stroke-dasharray: var(--_spin-da-100, 0.81) var(--_spin-gap-100, 0.19); stroke-dashoffset: var(--_spin-do-100, -1.04); }
+}
+
+/* ── Four-color cycle (circular indeterminate) ─────────── */
+
+:host(.md-progress-indicator--four-color.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))
+  .md-progress-indicator__circular-active {
+  animation:
+    md-circular-dash 1333ms cubic-bezier(0.4, 0, 0.2, 1) infinite,
+    md-four-color 5332ms linear infinite;
+}
+
+@keyframes md-four-color {
+  0%,    15%  { stroke: var(--_four-color-1); }
+  25%,   40%  { stroke: var(--_four-color-2); }
+  50%,   65%  { stroke: var(--_four-color-3); }
+  75%,   90%  { stroke: var(--_four-color-4); }
+  100%        { stroke: var(--_four-color-1); }
+}
+
+/* ── Reduced motion ────────────────────────────────────── */
+/* Wave amplitude is flattened to 0 from JS; here we stop the crest travel
+   and slow (never freeze) the looping indeterminate so progress is still
+   conveyed. Determinate transitions are made instant. */
+@media (prefers-reduced-motion: reduce) {
+  .md-progress-indicator__active,
+  .md-progress-indicator__circular-active {
+    transition-duration: 0s;
+  }
+
+  /* Stop crest travel on the determinate wave (amplitude flattened to 0 from
+     JS). */
+  .md-progress-indicator__active--wave {
+    animation: none;
+  }
+
+  /* Linear indeterminate two-bar motion: slow it down (never freeze) so progress
+     is still conveyed, and drop the wavy crest travel (the wave is already flat
+     from JS). Re-declare the wavy bars' single (translate-only) animation so the
+     base dual-animation rule doesn't reinstate the crest travel; keep both bars'
+     translate+scale on the same period so primary/secondary stay in sync. */
+  .md-progress-indicator__bar--primary,
+  .md-progress-indicator__bar--primary > .md-progress-indicator__bar-inner,
+  .md-progress-indicator__bar--secondary,
+  .md-progress-indicator__bar--secondary > .md-progress-indicator__bar-inner {
+    animation-duration: 6s;
+  }
+  /* Scale the primary phase-offset proportionally to the slowed duration. */
+  .md-progress-indicator__bar--primary,
+  .md-progress-indicator__bar--primary > .md-progress-indicator__bar-inner {
+    animation-delay: -4998ms;
+  }
+  .md-progress-indicator__bar--primary.md-progress-indicator__bar--wave {
+    animation: md-linear-primary-translate 6s linear infinite;
+    animation-delay: -4998ms;
+  }
+  .md-progress-indicator__bar--secondary.md-progress-indicator__bar--wave {
+    animation: md-linear-secondary-translate 6s linear infinite;
+  }
+
+  :host(.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))
+    .md-progress-indicator__circular {
+    animation-duration: 4s;
+  }
+
+  /* Keep the active arc and its complement track on the same period so the gap
+     stays aligned when slowed for reduced motion. */
+  :host(.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))
+    .md-progress-indicator__circular-active,
+  :host(.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))
+    .md-progress-indicator__circular-track--spinner {
+    animation-duration: 3s;
+  }
+
+  :host(.md-progress-indicator--four-color.md-progress-indicator--circular.md-progress-indicator--indeterminate:not(.md-progress-indicator--wave))
+    .md-progress-indicator__circular-active {
+    animation-duration: 3s, 16s;
+  }
+
+  /* Wavy circular indeterminate is JS-driven and its rAF loop is paused under
+     reduced motion (shouldAnimate() returns false), which would otherwise leave
+     it frozen. Give it a slow CSS rotation of the last-painted wavy arc+track so
+     progress is still conveyed (the gap between them was baked in at paint time,
+     so they rotate together and stay aligned). */
+  :host(.md-progress-indicator--circular.md-progress-indicator--indeterminate.md-progress-indicator--wave)
+    .md-progress-indicator__circular {
+    animation: md-circular-rotate 4s linear infinite;
+  }
+}
+
+/* ── Completion ("closing TV") animation ──────────────────
+   Linear: the full container collapses vertically from the centre (both the
+   top and bottom edges meet at the midline), like a CRT powering off.
+   Flat circular: handled via WAAPI in JS (arc retracts from its starting
+   point). Wavy circular: handled via the rAF loop tween in JS.
+   After any variant finishes, --complete hides the host. */
+
+@keyframes md-linear-complete {
+  0%   { transform: scaleY(1); }
+  60%  { transform: scaleY(0.1); }
+  100% { transform: scaleY(0); }
+}
+
+:host(.md-progress-indicator--linear.md-progress-indicator--completing) .md-progress-indicator__linear {
+  transform-origin: center;
+  animation: md-linear-complete 300ms cubic-bezier(0.2, 0, 1, 0.8) forwards;
+}
+
+:host(.md-progress-indicator--complete) {
+  visibility: hidden;
+}
+
+/* ── Forced colors (high contrast) ─────────────────────── */
+
+@media (forced-colors: active) {
+  .md-progress-indicator__active,
+  .md-progress-indicator__active--wave,
+  .md-progress-indicator__bar,
+  .md-progress-indicator__stop {
+    background-color: CanvasText;
+  }
+
+  .md-progress-indicator__track {
+    background-color: GrayText;
+  }
+
+  .md-progress-indicator__circular-track {
+    stroke: GrayText;
+  }
+
+  .md-progress-indicator__circular-active,
+  .md-progress-indicator__circular-active-path {
+    stroke: CanvasText;
+  }
+
+  .md-progress-indicator__linear-wave-path {
+    fill: CanvasText;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

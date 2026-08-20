@@ -1,0 +1,589 @@
+/*
+ * Shared demo chrome.
+ *
+ * Extracted from ComponentDemo.astro's scoped <style>. ChartDemo.astro renders
+ * the SAME .component-demo__* markup, but Astro scopes styles per component, so
+ * those rules never reached it — the chart pages showed a bare "Live preview"
+ * heading and an unstyled Storybook link above an unframed chart.
+ *
+ * Imported by both components. Keep it global: the class names are specific
+ * enough not to leak, and a second scoped copy would drift.
+ */
+  .component-demo {
+    margin-block: 2rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 12px;
+    /* Intentionally NO `overflow: hidden` here. Live demos like tooltips,
+       menus, dropdowns and snackbars render absolutely-positioned popups
+       that need to escape the demo's bounding box (a tooltip with
+       position="top" on the topmost trigger floats upward by ~32px and
+       was previously being clipped at the demo's top edge). Instead, the
+       inner sections round their own corners so the rounded silhouette
+       is preserved while popups are free to overflow. */
+    background: var(--sl-color-bg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  }
+
+  .component-demo__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: var(--sl-color-gray-7);
+    border-block-end: 1px solid var(--sl-color-gray-5);
+    /* Header is always the first child — round the top corners so the
+       opaque header background doesn't poke past the wrapper's
+       border-radius now that we've dropped overflow: hidden. */
+    border-start-start-radius: inherit;
+    border-start-end-radius: inherit;
+  }
+
+  /* Whatever section ends the demo (the preview when there's no code
+     panel, or the code panel when expanded) rounds the bottom corners.
+     Same rationale as the header. */
+  .component-demo > :last-child {
+    border-end-start-radius: inherit;
+    border-end-end-radius: inherit;
+  }
+
+  /* Clip the chrome elements (header + code panel) to their own
+     rounded corners using `overflow: clip` instead of `overflow: hidden`.
+     `clip` clips identically *without* establishing a stacking or
+     scrolling context, so it doesn't reintroduce the popup-clipping
+     issue that motivated this change. The preview pane is intentionally
+     left unclipped — that's where tooltip / menu / dropdown popups
+     originate and need to overflow. */
+  .component-demo__header,
+  .component-demo__code {
+    overflow: clip;
+  }
+
+  /* Pulsating "live" dot. Mirrors the hero/showcase dot animations so the
+     same affordance reads identically across the site. The core pulse
+     scales the dot itself; the ::before halo expands outward and fades. */
+  .component-demo__indicator {
+    position: relative;
+    display: block;
+    inline-size: 8px;
+    block-size: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 4px color-mix(in srgb, #22c55e 25%, transparent);
+    animation: component-demo-dot-pulse 1.6s ease-in-out infinite;
+  }
+
+  .component-demo__indicator::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: #22c55e;
+    opacity: 0.45;
+    animation: component-demo-dot-halo 1.6s ease-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes component-demo-dot-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(0.85);
+    }
+  }
+
+  @keyframes component-demo-dot-halo {
+    0% {
+      opacity: 0.45;
+      transform: scale(1);
+    }
+    70% {
+      opacity: 0;
+      transform: scale(2.6);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(2.6);
+    }
+  }
+
+  .component-demo__label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--sl-color-gray-3);
+  }
+
+  /* "Open in Storybook" link — pushed to the far end of the header via
+     margin-inline-start: auto so it floats right (in LTR) / left (in RTL)
+     without forcing flexbox spacers. */
+  .component-demo__storybook-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-inline-start: auto;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--sl-color-text-accent);
+    text-decoration: none;
+    padding: 0.3125rem 0.625rem;
+    border-radius: 6px;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
+  }
+
+  .component-demo__storybook-link:hover,
+  .component-demo__storybook-link:focus-visible {
+    background: color-mix(in srgb, var(--sl-color-text-accent) 10%, transparent);
+    color: var(--sl-color-text-accent);
+    text-decoration: none;
+  }
+
+  .component-demo__storybook-link:focus-visible {
+    outline: 2px solid var(--sl-color-text-accent);
+    outline-offset: 2px;
+  }
+
+  .component-demo__storybook-link svg {
+    flex-shrink: 0;
+  }
+
+  .component-demo__preview {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding: 2.5rem;
+    min-block-size: 80px;
+    /* The preview pane deliberately sits OFF the neutral surface ramp.
+
+       It used to be raw surface-container-high — the same token
+       md-organization-chart gives its expand/collapse toggler
+       (--md-icon-button-container-color), so panel and affordance resolved
+       to byte-identical colours (rgb(43,41,48) dark / rgb(236,230,240)
+       light) and the toggler vanished into the pane.
+
+       Moving to another RAMP TIER just relocates the problem: every tier is
+       some component's own container, and surface-container-highest alone
+       collides with md-card, md-app-bar, md-text-field, md-switch,
+       md-avatar, md-skeleton, md-icon-button, md-button, md-list and
+       md-tabs. So the pane is mixed off-ramp instead — a primary-tinted
+       surface no component paints itself, which keeps a measurable delta
+       against every neutral tier while still reading as the raised chassis
+       that components on `surface` sit on. The radial wash adds depth.
+       The base declaration keeps the old flat token (and Starlight's bg
+       under that) so the pane still paints where color-mix is missing; the
+       @supports block below opts into the tint. */
+    background:
+      radial-gradient(
+        circle at 50% 50%,
+        rgba(103, 80, 164, 0.04) 0%,
+        transparent 60%
+      ),
+      var(--md-sys-color-surface-container-high, var(--sl-color-bg));
+  }
+
+  @supports (background: color-mix(in srgb, red 50%, blue)) {
+    .component-demo__preview {
+      background:
+        radial-gradient(
+          circle at 50% 50%,
+          rgba(103, 80, 164, 0.04) 0%,
+          transparent 60%
+        ),
+        color-mix(
+          in srgb,
+          var(--md-sys-color-surface-container-high, #ece6f0) 88%,
+          var(--md-sys-color-primary, #6750a4) 12%
+        );
+    }
+  }
+
+  /* ChartDemo's preview surface. These two rules live here, in the shared
+     (unscoped) sheet, rather than in ChartDemo.astro's <style> — Astro compiles
+     a scoped child selector to `> :where(.astro-cid)`, and the chart element is
+     injected with `set:html`, so it never carries the scope class and the rule
+     silently never matched. The visible symptom was a content-sized component
+     (md-organization-chart shrink-wraps its tree) growing past the card's right
+     edge instead of panning inside its own `viewport` part: as a flex item with
+     `min-inline-size: auto` it refuses to shrink below its max-content width.
+     Charts with an intrinsic aspect-ratio hid the bug by already fitting. */
+  .chart-demo__preview > * {
+    flex: 1 1 0;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+  }
+
+  /* Empty-state preview for components that can't be statically rendered
+     (dialog, snackbar, tooltip, ...). The Storybook link is the primary
+     CTA; the surrounding box keeps the visual rhythm of other demos. */
+  .component-demo__preview--empty {
+    justify-content: center;
+    text-align: center;
+    padding-block: 2rem;
+  }
+
+  .component-demo__empty-text {
+    margin: 0;
+    color: var(--sl-color-gray-3);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    max-inline-size: 36ch;
+  }
+
+  .component-demo__empty-text a {
+    color: var(--sl-color-text-accent);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .component-demo__empty-text a:hover,
+  .component-demo__empty-text a:focus-visible {
+    text-decoration: underline;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .component-demo__indicator,
+    .component-demo__indicator::before {
+      animation: none;
+    }
+    .component-demo__indicator {
+      box-shadow: none;
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .component-demo {
+      margin-block: 1.5rem;
+      border-radius: 10px;
+    }
+
+    .component-demo__header {
+      flex-wrap: wrap;
+      row-gap: 0.375rem;
+    }
+
+    .component-demo__storybook-link {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.6875rem;
+    }
+
+    .component-demo__preview {
+      padding: 1.5rem 1rem;
+      gap: 12px;
+    }
+  }
+
+  /* ============================================================
+     Collapsible "Show code" section under the live preview.
+     Reuses the same `.technology-tabs__*` class hierarchy as the
+     standalone <TechnologyTabs> component so the inline JS in
+     TechnologyTabs.astro picks up these tab strips too (it binds
+     to every `[data-technology-tabs]` container on the page) and
+     `localStorage` keeps the chosen technology in sync across all
+     demos + the Usage section.
+
+     The toggle uses on-surface-variant by default (high enough
+     contrast on both light + dark M3 surfaces, ~AA) and brightens
+     to the full on-surface token on hover, with a primary-tinted
+     background wash so the row reads as an interactive affordance
+     and not as a static caption — matching the visibility of
+     primary nav links elsewhere in the docs.
+     ============================================================ */
+  .component-demo__code {
+    position: relative;
+    border-block-start: 1px solid
+      var(--md-sys-color-outline-variant, var(--sl-color-gray-5));
+    background: var(--md-sys-color-surface-container-low,
+      var(--sl-color-gray-7));
+    /* Cancel Starlight's `<details>` 1rem inline padding so the
+       toggle content sits flush against the parent .component-demo
+       edge. Starlight's 2px border-inline-start stays — it's our
+       resting-state divider; the primary rail (::before below)
+       paints on TOP of it on hover/open so the two never stack. */
+    padding-inline-start: 0 !important;
+  }
+
+  /* Always-on primary rail. Lives on the <details> itself so it
+     spans the entire expanded section (header + body), and sits at
+     `inset-inline-start: 0` to overlap Starlight's resting-state
+     2px gray border. The 3px width fully covers the gray underneath
+     so we never see a "double rail" gray+primary stack. */
+  .component-demo__code::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: 3px;
+    background: var(--md-sys-color-primary);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .component-demo__code-toggle {
+    position: relative;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.75rem 1.125rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--md-sys-color-on-surface,
+      var(--sl-color-white, #fafafa));
+    user-select: none;
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+
+
+  .component-demo__code-toggle::-webkit-details-marker {
+    display: none;
+  }
+  .component-demo__code-toggle::marker {
+    display: none;
+    content: "";
+  }
+
+  .component-demo__code-toggle:hover {
+    background: color-mix(in srgb,
+      var(--md-sys-color-primary) 10%, transparent);
+    color: var(--md-sys-color-primary);
+  }
+
+  /* When the section is expanded, anchor the toggle visually to its
+     panel: keep the primary tint as the "active" affordance even
+     when the mouse leaves the row. */
+  .component-demo__code[open] > .component-demo__code-toggle {
+    color: var(--md-sys-color-primary);
+  }
+
+  .component-demo__code-toggle:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: -2px;
+  }
+
+  .component-demo__code-icon {
+    flex-shrink: 0;
+    color: currentColor;
+    opacity: 0.85;
+  }
+
+  .component-demo__code-toggle-label {
+    flex: 1;
+  }
+
+  /* No extra divider — the tab strip's own border-block-end on the
+     active tab is enough. Adding another line here was producing the
+     "double seam" effect between the toggle row and the tab nav. */
+  .component-demo__code-tabs {
+    margin-block-start: 0 !important;
+  }
+
+  .technology-tabs__nav {
+    display: flex;
+    gap: 0;
+    border-block-end: 1px solid
+      var(--md-sys-color-outline-variant, var(--sl-color-gray-5));
+    background: var(--md-sys-color-surface-container-low, var(--sl-color-gray-7));
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .technology-tabs__nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .technology-tabs__tab {
+    all: unset;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface-variant);
+    border-block-end: 2px solid transparent;
+    transition:
+      color 150ms ease,
+      background-color 150ms ease,
+      border-color 150ms ease;
+    white-space: nowrap;
+  }
+
+  .technology-tabs__tab-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 18px;
+    block-size: 18px;
+    line-height: 1;
+    opacity: 0.85;
+    transition: opacity 150ms ease;
+  }
+
+  .technology-tabs__tab-icon svg {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  :root[data-theme="dark"] .technology-tabs__tab-icon .component-demo__vue-inner {
+    fill: var(--md-sys-color-on-surface-variant, #cfcfcf);
+  }
+
+  .technology-tabs__tab:hover {
+    color: var(--md-sys-color-on-surface);
+    background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, transparent);
+  }
+  .technology-tabs__tab:hover .technology-tabs__tab-icon {
+    opacity: 1;
+  }
+  .technology-tabs__tab:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: -2px;
+    border-radius: 6px;
+  }
+  .technology-tabs__tab--active {
+    color: var(--md-sys-color-primary);
+    border-block-end-color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-surface, transparent);
+  }
+  .technology-tabs__tab--active .technology-tabs__tab-icon {
+    opacity: 1;
+  }
+
+  .technology-tabs__panel {
+    display: none;
+  }
+  .technology-tabs__panel--active {
+    display: block;
+  }
+
+  .technology-tabs__code-wrapper {
+    position: relative;
+  }
+
+  /* Shiki paints its own dark-grey-with-a-green-cast background which
+     fights with our M3 surface. Repaint the body to the surface token
+     so the code area merges with the live preview frame above. */
+  .technology-tabs__code pre.shiki {
+    margin: 0;
+    padding: 1.125rem 1.25rem;
+    overflow-x: auto;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    font-family:
+      var(--sl-font-system-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    tab-size: 2;
+    background-color: var(--md-sys-color-surface) !important;
+    color: var(--shiki-light);
+  }
+
+  .technology-tabs__code pre.shiki span {
+    color: var(--shiki-light);
+    background-color: transparent !important;
+  }
+
+  :root[data-theme="dark"] .technology-tabs__code pre.shiki {
+    color: var(--shiki-dark);
+  }
+  :root[data-theme="dark"] .technology-tabs__code pre.shiki span {
+    color: var(--shiki-dark);
+  }
+
+  .technology-tabs__code pre.shiki code {
+    background: transparent;
+    padding: 0;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    border-radius: 0;
+    border: 0;
+  }
+
+  .technology-tabs__copy {
+    position: absolute;
+    inset-block-start: 0.625rem;
+    inset-inline-end: 0.625rem;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-small, 8px);
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 150ms ease, background-color 150ms ease, color 150ms ease;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    font-family: var(--sl-font, system-ui, sans-serif);
+  }
+
+  .technology-tabs__code-wrapper:hover .technology-tabs__copy,
+  .technology-tabs__code-wrapper:focus-within .technology-tabs__copy,
+  .technology-tabs__copy:focus-visible {
+    opacity: 1;
+  }
+  .technology-tabs__copy:hover {
+    background: var(--md-sys-color-surface-container-high);
+    color: var(--md-sys-color-on-surface);
+  }
+  .technology-tabs__copy:focus-visible {
+    outline: 2px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+  }
+  .technology-tabs__copy--copied {
+    opacity: 1;
+    color: var(--md-sys-color-tertiary, #16a34a);
+    border-color: currentColor;
+  }
+  .technology-tabs__copy-label {
+    line-height: 1;
+  }
+
+  @media (hover: none) {
+    .technology-tabs__copy {
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .component-demo__code-toggle {
+      padding: 0.5rem 0.75rem;
+    }
+    .technology-tabs__tab {
+      padding: 0.5rem 0.625rem;
+      font-size: 0.6875rem;
+      gap: 0.375rem;
+    }
+    .technology-tabs__tab-icon {
+      inline-size: 16px;
+      block-size: 16px;
+    }
+    .technology-tabs__code pre.shiki {
+      padding: 0.875rem 1rem;
+      font-size: 0.75rem;
+      line-height: 1.6;
+    }
+    .technology-tabs__copy {
+      opacity: 1;
+      padding: 0.125rem 0.5rem;
+    }
+    .technology-tabs__copy-label {
+      display: none;
+    }
+  }

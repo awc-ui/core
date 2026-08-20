@@ -1,0 +1,27 @@
+/* ==========================================================
+   md-tab-panel — one panel of an md-tab-panels region
+   ========================================================== */
+
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+.md-tab-panel__body {
+  min-inline-size: 0;
+}
+
+/* Inactive panels KEEP THEIR LAYOUT BOX (the md-tab-panels grid stacks all
+   panels in one cell, so the region is always as large as the largest
+   panel) — visibility removes them from paint, AT, and hit-testing. On the
+   inner wrapper, NOT the host: Stencil's `.hydrated { visibility: inherit }`
+   document rule would override any :host-level visibility. */
+:host(:not([active])) .md-tab-panel__body {
+  visibility: hidden;
+}
+
+:host(:focus-visible) {
+  outline: 3px solid var(--md-sys-color-primary, #6750A4);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

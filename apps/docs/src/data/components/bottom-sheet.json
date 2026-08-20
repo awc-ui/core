@@ -1,0 +1,288 @@
+{
+  "tag": "md-bottom-sheet",
+  "title": "Bottom Sheet",
+  "slug": "bottom-sheet",
+  "category": "Containment",
+  "subComponentOf": null,
+  "storyId": "containment-bottom-sheet--playground",
+  "props": [
+    {
+      "name": "open",
+      "attribute": "open",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'standard' | 'detached'",
+      "default": "'standard'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "headline",
+      "attribute": "headline",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "showDragHandle",
+      "attribute": "show-drag-handle",
+      "type": "boolean",
+      "default": "true",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "closeable",
+      "attribute": "closeable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "scrimDismissible",
+      "attribute": "scrim-dismissible",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "topDivider",
+      "attribute": "top-divider",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "bottomDivider",
+      "attribute": "bottom-divider",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "sheetAriaLabel",
+      "attribute": "aria-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "scrollShadow",
+      "attribute": "scroll-shadow",
+      "type": "boolean",
+      "default": "true",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "headlineAlign",
+      "attribute": "headline-align",
+      "type": "'start' | 'center' | 'end'",
+      "default": "'start'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "contentAlign",
+      "attribute": "content-align",
+      "type": "'start' | 'center' | 'end'",
+      "default": "'start'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdCancel",
+      "detail": "void"
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "params": ""
+    },
+    {
+      "name": "close",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "headline",
+      "description": "Custom headline content"
+    },
+    {
+      "name": "close",
+      "description": "Custom close element"
+    },
+    {
+      "name": "actions",
+      "description": "Bottom action buttons"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "scrim",
+      "description": "Scrim overlay"
+    },
+    {
+      "name": "container",
+      "description": "Sheet surface"
+    },
+    {
+      "name": "drag-handle",
+      "description": "Drag handle hit area"
+    },
+    {
+      "name": "drag-handle-indicator",
+      "description": "Drag handle visible bar"
+    },
+    {
+      "name": "header",
+      "description": "Header row"
+    },
+    {
+      "name": "headline",
+      "description": "Headline text"
+    },
+    {
+      "name": "close",
+      "description": "Close button wrapper"
+    },
+    {
+      "name": "divider-top",
+      "description": "Divider between header and content"
+    },
+    {
+      "name": "content",
+      "description": "Content area wrapper (inline padding)"
+    },
+    {
+      "name": "divider-bottom",
+      "description": "Divider between content and actions"
+    },
+    {
+      "name": "actions",
+      "description": "Bottom action bar"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-bottom-sheet-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-bottom-sheet-container-shape",
+      "description": "Corner radius (top corners"
+    },
+    {
+      "name": "--md-bottom-sheet-content-color",
+      "description": "Content text color"
+    },
+    {
+      "name": "--md-bottom-sheet-headline-color",
+      "description": "Headline text color"
+    },
+    {
+      "name": "--md-bottom-sheet-scrim-color",
+      "description": "Scrim overlay color"
+    },
+    {
+      "name": "--md-bottom-sheet-drag-handle-color",
+      "description": "Drag handle indicator color"
+    },
+    {
+      "name": "--md-bottom-sheet-divider-color",
+      "description": "Top / bottom divider color"
+    },
+    {
+      "name": "--md-bottom-sheet-icon-color",
+      "description": "Close icon color"
+    },
+    {
+      "name": "--md-bottom-sheet-width",
+      "description": "Inline size (default 100%"
+    },
+    {
+      "name": "--md-bottom-sheet-min-width",
+      "description": "Minimum inline size"
+    },
+    {
+      "name": "--md-bottom-sheet-max-width",
+      "description": "Maximum inline size"
+    },
+    {
+      "name": "--md-bottom-sheet-height",
+      "description": "Block size (default `auto`)"
+    },
+    {
+      "name": "--md-bottom-sheet-min-height",
+      "description": "Minimum block size"
+    },
+    {
+      "name": "--md-bottom-sheet-max-height",
+      "description": "Maximum block size"
+    },
+    {
+      "name": "--md-bottom-sheet-detached-margin",
+      "description": "Margin around the container"
+    },
+    {
+      "name": "--md-bottom-sheet-content-padding-inline",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-icon-button"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdCancel",
+      "detail": "void"
+    }
+  ]
+}

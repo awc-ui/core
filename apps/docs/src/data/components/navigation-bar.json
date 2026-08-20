@@ -1,0 +1,112 @@
+{
+  "tag": "md-navigation-bar",
+  "title": "Navigation Bar",
+  "slug": "navigation-bar",
+  "category": "Navigation",
+  "subComponentOf": null,
+  "storyId": "navigation-navigation-bar--playground",
+  "props": [
+    {
+      "name": "activeIndex",
+      "attribute": "active-index",
+      "type": "number",
+      "default": "0",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "labelBehavior",
+      "attribute": "label-behavior",
+      "type": "MdNavigationBarLabelBehavior",
+      "default": "'always'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "manualActivation",
+      "attribute": "manual-activation",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "{ index: number; previousIndex: number }"
+    }
+  ],
+  "methods": [
+    {
+      "name": "select",
+      "params": "index: number"
+    },
+    {
+      "name": "focusTab",
+      "params": "index: number"
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "container",
+      "description": "The inner `tablist` flex row."
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-navigation-bar-container-color",
+      "description": "Background"
+    },
+    {
+      "name": "--md-navigation-bar-container-height",
+      "description": "Total height (default 64px)"
+    },
+    {
+      "name": "--md-navigation-bar-container-shape",
+      "description": "Outer corner radius"
+    },
+    {
+      "name": "--md-navigation-bar-divider-color",
+      "description": "Optional top border color"
+    },
+    {
+      "name": "--md-navigation-bar-divider-width",
+      "description": "Optional top border width"
+    },
+    {
+      "name": "--md-navigation-bar-z-index",
+      "description": "Stacking order"
+    },
+    {
+      "name": "--md-navigation-bar-container-elevation",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-navigation-tab"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdChange",
+      "detail": "{ index: number; previousIndex: number }"
+    }
+  ]
+}

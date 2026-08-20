@@ -1,0 +1,305 @@
+/* ==========================================================
+   md-line-chart — Material Design 3 line chart
+   Spec: https://m3.material.io/styles/charts/overview
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-line-chart-block-size          Chart block-size (default: aspect-ratio driven)
+     --md-line-chart-min-block-size      Floor for the chart's height (default: 160px)
+     --md-line-chart-aspect-ratio        Width:height ratio (default: 16/9)
+     --md-line-chart-background          Surface behind the chart (default: --md-sys-color-surface-container-low;
+                                         set `transparent` to sit flush on the page)
+     --md-line-chart-padding             Inset padding around the canvas (default: 16px)
+     --md-line-chart-shape               Container corner radius (default: --md-sys-shape-corner-large)
+     --md-line-chart-empty-color         Empty-state text colour
+     --md-line-chart-empty-background    Empty-state surface (default: the chart's own background)
+     --md-line-chart-empty-font          Empty-state font FAMILY — not a font shorthand
+     --md-line-chart-empty-font-size     Empty-state font size (default: 14px)
+     --md-line-chart-empty-icon-size     Slotted Material Symbols icon size (default: 40px)
+     --md-line-chart-zoom-size           Height reserved for the zoom slider (default: 28px)
+     --md-line-chart-zoom-track-color    Zoom slider track colour (md-slider inactive track)
+     --md-line-chart-zoom-window-color   Zoom slider selected-window colour (md-slider active track)
+     --md-line-chart-zoom-handle-color   Zoom slider thumb + drag-band edge colour
+     --md-line-chart-zoom-band-color     Drag-to-zoom selection fill
+     (the zoom slider is an md-slider — its own --md-slider-* variables also
+      apply, scoped to .md-line-chart__zoom-slider)
+     --md-chart-axis-color               Axis-line colour (default: --md-sys-color-outline)
+     --md-chart-grid-color               Gridline colour (default: --md-sys-color-outline-variant)
+
+   CSS PARTS:
+     header                              Header slot wrapper (title, toolbar)
+     canvas                              Plot canvas container
+     empty                               Empty-state container
+     zoom                                Zoom slider container
+     zoom-slider                         The md-slider itself
+     zoom-track                          Zoom slider track (forwarded)
+     zoom-window                         Selected window / active track (forwarded)
+     zoom-handle                         Zoom slider thumb (forwarded)
+     zoom-pan                            Drag-to-pan grip over the window
+     zoom-band                           Drag-to-zoom selection band
+     footer                              Footer slot wrapper (caption, legend)
+
+   SLOTS:
+     header                              Renders above the plot
+     empty                               Empty-state content (overrides default text)
+     footer                              Renders below the plot
+   ========================================================== */
+
+:host {
+  --_block-size: var(--md-line-chart-block-size, auto);
+  --_min-block-size: var(--md-line-chart-min-block-size, max(120px, calc(160px + var(--md-sys-density-scale, 0) * 8px)));
+  --_aspect-ratio: var(--md-line-chart-aspect-ratio, 16 / 9);
+  --_background: var(--md-line-chart-background, var(--md-sys-color-surface-container-low, #F7F2FA));
+  --_padding: var(--md-line-chart-padding, max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px)));
+  --_shape: var(--md-line-chart-shape, max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px)));
+  --_empty-color: var(--md-line-chart-empty-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_empty-background: var(--md-line-chart-empty-background, var(--_background));
+  --_empty-font: var(--md-line-chart-empty-font, var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif));
+  --_empty-font-size: var(--md-line-chart-empty-font-size, var(--md-sys-typescale-body-medium-font-size, 14px));
+  --_empty-icon-size: var(--md-line-chart-empty-icon-size, 40px);
+  --_zoom-size: var(--md-line-chart-zoom-size, 28px);
+  --_zoom-track-color: var(--md-line-chart-zoom-track-color, var(--md-sys-color-surface-container-highest, #E6E0E9));
+  --_zoom-window-color: var(--md-line-chart-zoom-window-color, var(--md-sys-color-secondary-container, #E8DEF8));
+  --_zoom-handle-color: var(--md-line-chart-zoom-handle-color, var(--md-sys-color-primary, #6750A4));
+  --_zoom-band-color: var(--md-line-chart-zoom-band-color, color-mix(in srgb, var(--md-sys-color-primary, #6750A4) 16%, transparent));
+  /* Clearance kept at each end of the pan grip so the thumbs stay grabbable. */
+  --_zoom-pan-inset: 10px;
+
+  display: block;
+  position: relative;
+  inline-size: 100%;
+  block-size: var(--_block-size);
+  min-block-size: var(--_min-block-size);
+  background: var(--_background);
+  padding: var(--_padding);
+  border-radius: var(--_shape);
+  box-sizing: border-box;
+  /* aspect-ratio + 100% inline-size = fluid responsive sizing,
+     no JS measurements needed for the host's box. ECharts
+     inside still uses ResizeObserver to react to those CSS
+     dimension changes. */
+  aspect-ratio: var(--_aspect-ratio);
+}
+
+/* Header / footer wrappers — only take vertical space when
+   their slot has content (Stencil slots are empty by default,
+   so the `:not(:empty)` check works after slot assignment). */
+.md-line-chart__header,
+.md-line-chart__footer {
+  display: contents;
+}
+
+.md-line-chart__header > slot[name='header']::slotted(*),
+.md-line-chart__footer > slot[name='footer']::slotted(*) {
+  display: block;
+  margin-block: 8px;
+}
+
+/* Plot surface — fills the host so ECharts has a measurable
+   box to size against. `min-block-size: 0` lets it shrink
+   inside a flex parent without overflowing. */
+.md-line-chart__canvas {
+  position: absolute;
+  inset: var(--_padding);
+  min-block-size: 0;
+  min-inline-size: 0;
+}
+
+/* Empty state — overlaid on the canvas so the host's box keeps its
+   full responsive size and the message centres. */
+.md-line-chart__empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-sizing: border-box;
+  padding: 24px;
+  /* Mirrors the chart's own container — same surface and corner radius. The
+     engine still draws a phantom 0-1 axis for an empty series, so an OPAQUE
+     surface here masks that ghost grid instead of letting it show through
+     behind the message. Column layout stacks a slotted icon above the text. */
+  background: var(--_empty-background);
+  border-radius: var(--_shape);
+  color: var(--_empty-color);
+  font-family: var(--_empty-font);
+  font-size: var(--_empty-font-size);
+  line-height: var(--md-sys-typescale-body-medium-line-height, 20px);
+  pointer-events: none;
+  text-align: center;
+}
+
+/* Loading state — the same opaque overlay as the empty state (it has to mask
+   the phantom 0-1 axis the engine draws while there is no data), with the
+   default indicator + label stacked in the middle. Slot `loading` replaces the
+   content; the box keeps its size either way. */
+.md-line-chart__loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-sizing: border-box;
+  padding: 24px;
+  background: var(--_empty-background);
+  border-radius: var(--_shape);
+  color: var(--_empty-color);
+  font-family: var(--_empty-font);
+  font-size: var(--_empty-font-size);
+  text-align: center;
+}
+
+.md-line-chart__spinner {
+  /* Sized against the empty-state icon so a loading chart and an empty one
+     read as the same family. */
+  inline-size: var(--_empty-icon-size);
+  block-size: var(--_empty-icon-size);
+}
+
+/* A slotted icon (e.g. a Material Symbols span) gets a sensible size and the
+   muted empty-state colour without the consumer restyling it. */
+.md-line-chart__empty ::slotted(.material-symbols-outlined),
+.md-line-chart__empty ::slotted(.material-symbols-rounded),
+.md-line-chart__empty ::slotted(.material-symbols-sharp),
+.md-line-chart__empty ::slotted(.material-icons) {
+  /* Document-level .material-symbols rules outrank ::slotted() in the cascade,
+     so the size needs !important to win (same reason md-icon-button does it). */
+  font-size: var(--_empty-icon-size) !important;
+  line-height: 1;
+  opacity: 0.55;
+}
+
+/* ── Zoom ──────────────────────────────────────────────────
+   The slider sits inside the host's padding at the bottom, and the plot gives
+   up exactly that much height (the canvas is inset by --_padding, so its bottom
+   is pushed up by the slider's height). */
+:host(.md-line-chart--zoom-slider) .md-line-chart__canvas {
+  bottom: calc(var(--_padding) + var(--_zoom-size));
+}
+
+:host(.md-line-chart--zoom-drag) .md-line-chart__canvas {
+  /* Signals the plot is draggable; the band itself is pointer-transparent. */
+  cursor: ew-resize;
+}
+
+.md-line-chart__zoom {
+  position: absolute;
+  inset-inline: var(--_padding);
+  bottom: var(--_padding);
+  block-size: var(--_zoom-size);
+  display: flex;
+  align-items: center;
+}
+
+/* The house slider draws the track and thumbs; the chart only maps its own
+   public zoom tokens onto the slider's and sizes it to the reserved band. */
+.md-line-chart__zoom-slider {
+  --md-slider-active-color: var(--_zoom-window-color);
+  --md-slider-inactive-color: var(--_zoom-track-color);
+  --md-slider-thumb-color: var(--_zoom-handle-color);
+  /* Full-height thumbs in a band that is shorter than the MD3 default (44px),
+     so the slider never overflows into the plot. */
+  --md-slider-thumb-height: var(--_zoom-size);
+  --md-slider-track-height: 12px;
+}
+
+/* Pan grip over the selected window: drag it to move the window without
+   resizing. Inset at both ends (see renderZoomSlider) so a press near a thumb
+   still reaches the slider's rail and resizes. */
+.md-line-chart__zoom-pan {
+  position: absolute;
+  inset-block: 0;
+  z-index: 1;
+  cursor: grab;
+  touch-action: none;
+}
+
+.md-line-chart__zoom-pan:active {
+  cursor: grabbing;
+}
+
+/* Live drag selection over the plot. */
+.md-line-chart__zoom-band {
+  position: absolute;
+  background: var(--_zoom-band-color);
+  border-inline: 1px solid var(--_zoom-handle-color);
+  pointer-events: none;
+}
+
+/* Screen-reader-only data table. Visually hidden but readable
+   by AT; positioned absolute so it doesn't disturb layout.
+   Uses the standard "sr-only" pattern (1px box with overflow
+   hidden) — `display:none` would hide it from AT too. */
+/* Same visually-hidden technique as the data table below: readable by AT,
+   invisible on screen, and out of the layout. */
+.md-line-chart__live {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The plot takes focus for keyboard navigation, so it needs a visible ring —
+   inset, because the canvas fills its box and an outset ring would be clipped
+   by the host's padding. */
+/* The legend chips are engine-created buttons styled inline, and inline styles
+   can't express :focus-visible — so their focus ring comes from here. Same
+   neutral outline as the plot's, rather than the browser's blue default. */
+[part='legend'] button:focus-visible {
+  /* Same ring md-button uses, so focus looks the same wherever it lands. */
+  outline: 3px solid var(--md-sys-color-secondary, #625B71);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.md-line-chart__canvas:focus-visible {
+  /* Same ring as md-button. Inset, because the canvas fills its box and an
+     outward ring would be clipped by the host's padding. */
+  outline: 3px solid var(--md-sys-color-secondary, #625B71);
+  outline-offset: -3px;
+  border-radius: 4px;
+}
+
+.md-line-chart__a11y-table {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Forced-colors (Windows high-contrast): we let ECharts use
+   the system's CanvasText / Highlight colours by NOT pinning
+   our own colour vars, so the chart inherits readable contrast
+   automatically. Reduced-motion is handled in the theme reader
+   (motion-duration → 0) so no animation overrides needed here. */
+@media (forced-colors: active) {
+  :host {
+    forced-color-adjust: auto;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

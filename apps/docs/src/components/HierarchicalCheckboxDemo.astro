@@ -1,0 +1,224 @@
+---
+// HierarchicalCheckboxDemo.astro
+//
+// Live demo for the "Select-all" / tri-state checkbox pattern.
+//
+// `<ComponentDemo>` injects its HTML via `set:html` — Astro's HTML parser
+// will not execute inline script tags inserted that way. This demo needs
+// real two-way sync between a parent checkbox and its children, so we ship
+// a dedicated component with its own Astro script block (which Astro
+// bundles + runs on every page load).
+//
+// Behavior:
+//   * Child toggled →
+//       all checked → parent: checked, indeterminate=false
+//       none checked → parent: unchecked, indeterminate=false
+//       mixed → parent: indeterminate=true
+//   * Parent toggled →
+//       all children set to parent.checked, indeterminate cleared
+//
+// We assign children programmatically. Per md-checkbox docs the component
+// only emits `mdChange` on user interaction, NOT on programmatic property
+// writes — so this two-way wiring can't loop infinitely.
+
+interface Props {
+  /** Optional label shown above the demo. */
+  label?: string;
+}
+
+const { label = "Live Preview" } = Astro.props;
+---
+
+<div class="component-demo" data-component-demo>
+  <div class="component-demo__header">
+    <span class="component-demo__indicator" aria-hidden="true"></span>
+    <span class="component-demo__label">{label}</span>
+  </div>
+
+  <div class="component-demo__preview hierarchical-demo" data-checkbox-tree>
+    <div class="hierarchical-demo__group">
+      <label class="hierarchical-demo__row hierarchical-demo__row--parent">
+        <md-checkbox
+          data-tree-parent
+          indeterminate
+          aria-controls="opt-fruits opt-veggies opt-dairy"
+        ></md-checkbox>
+        <span class="hierarchical-demo__parent-label">Select all groceries</span>
+      </label>
+
+      <div
+        class="hierarchical-demo__children"
+        role="group"
+        aria-label="Grocery categories"
+      >
+        <label class="hierarchical-demo__row">
+          <md-checkbox id="opt-fruits" data-tree-child checked></md-checkbox>
+          <span>Fruits</span>
+        </label>
+        <label class="hierarchical-demo__row">
+          <md-checkbox id="opt-veggies" data-tree-child></md-checkbox>
+          <span>Vegetables</span>
+        </label>
+        <label class="hierarchical-demo__row">
+          <md-checkbox id="opt-dairy" data-tree-child checked></md-checkbox>
+          <span>Dairy</span>
+        </label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  type CheckboxEl = HTMLElement & {
+    checked: boolean;
+    indeterminate: boolean;
+  };
+
+  type ChangeEvt = CustomEvent<{ checked: boolean; indeterminate: boolean }>;
+
+  function wireCheckboxTrees() {
+    document.querySelectorAll<HTMLElement>("[data-checkbox-tree]").forEach((tree) => {
+      const parent = tree.querySelector<CheckboxEl>("[data-tree-parent]");
+      const children = Array.from(
+        tree.querySelectorAll<CheckboxEl>("[data-tree-child]"),
+      );
+      if (!parent || children.length === 0) return;
+      if (tree.dataset.wired === "true") return;
+      tree.dataset.wired = "true";
+
+      const syncParent = () => {
+        const checkedCount = children.filter((c) => c.checked).length;
+        if (checkedCount === 0) {
+          parent.checked = false;
+          parent.indeterminate = false;
+        } else if (checkedCount === children.length) {
+          parent.checked = true;
+          parent.indeterminate = false;
+        } else {
+          parent.checked = false;
+          parent.indeterminate = true;
+        }
+      };
+
+      const syncChildren = (nextChecked: boolean) => {
+        children.forEach((child) => {
+          if (child.checked !== nextChecked) {
+            child.checked = nextChecked;
+          }
+          if (child.indeterminate) child.indeterminate = false;
+        });
+      };
+
+      // Child → parent. md-checkbox only emits mdChange on real user
+      // interaction, so this listener is safe to keep always-on.
+      children.forEach((child) => {
+        child.addEventListener("mdChange", () => syncParent());
+      });
+
+      // Parent → children. After md-checkbox's own click logic flips
+      // .checked / .indeterminate, mirror the new checked state onto
+      // every child. (Clicking an indeterminate parent toggles it to
+      // checked → children all check.)
+      parent.addEventListener("mdChange", (evt) => {
+        const detail = (evt as ChangeEvt).detail;
+        syncChildren(detail.checked);
+        // syncParent runs after to reconcile parent's indeterminate
+        // (e.g. user clicked a checked-but-indeterminate parent —
+        // children flip to checked, so parent should be plain checked).
+        syncParent();
+      });
+
+      // Reconcile on initial mount so static `checked` / `indeterminate`
+      // attributes in the markup converge to a consistent state.
+      syncParent();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", wireCheckboxTrees, {
+      once: true,
+    });
+  } else {
+    wireCheckboxTrees();
+  }
+  // Re-wire on Astro's client-side navigation events.
+  document.addEventListener("astro:page-load", wireCheckboxTrees);
+</script>
+
+<style>
+  /* Match <ComponentDemo>'s outer chrome so the two demos sit visually
+     consistent on the page. The selectors duplicate (rather than @extend)
+     because both components scope their styles, and Astro doesn't share
+     class definitions across components. */
+  .component-demo {
+    margin-block: 2rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--sl-color-bg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  }
+
+  .component-demo__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--sl-color-gray-5);
+    background: var(--sl-color-bg-sidebar, var(--sl-color-bg));
+  }
+
+  .component-demo__indicator {
+    inline-size: 8px;
+    block-size: 8px;
+    border-radius: 50%;
+    background: #4caf50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+  }
+
+  .component-demo__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sl-color-gray-2);
+  }
+
+  .component-demo__preview {
+    padding: 24px;
+    background: var(--sl-color-bg);
+  }
+
+  /* Tree-specific layout. */
+  .hierarchical-demo__group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-inline-size: 380px;
+  }
+
+  .hierarchical-demo__row {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding-block: 4px;
+    cursor: pointer;
+  }
+
+  .hierarchical-demo__row--parent {
+    font-weight: 600;
+  }
+
+  .hierarchical-demo__parent-label {
+    color: var(--sl-color-text);
+  }
+
+  .hierarchical-demo__children {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-inline-start: 32px;
+    border-inline-start: 1px solid var(--sl-color-gray-5);
+    margin-inline-start: 8px;
+  }
+</style>

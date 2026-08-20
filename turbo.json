@@ -1,0 +1,43 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "www/**", "loader/**"]
+    },
+    "@awc-ui/docs#generate-data": {
+      "dependsOn": ["@awc-ui/core#build"],
+      "inputs": [
+        "../../packages/core/src/components/**/*.tsx",
+        "../../packages/core/src/components/**/*.css",
+        "../../packages/core/src/components/**/readme.md",
+        "../../apps/storybook/src/stories/*.stories.ts",
+        "../../scripts/generate-docs.mjs"
+      ],
+      "outputs": ["src/data/**", "src/content/docs/components/**"]
+    },
+    "@awc-ui/docs#build": {
+      "dependsOn": ["@awc-ui/docs#generate-data"],
+      "outputs": ["dist/**"]
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "outputs": []
+    },
+    "lint": {
+      "outputs": []
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "storybook": {
+      "cache": false,
+      "persistent": true
+    },
+    "build-storybook": {
+      "dependsOn": ["@awc-ui/core#build"],
+      "outputs": ["storybook-static/**"]
+    }
+  }
+}

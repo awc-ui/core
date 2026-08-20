@@ -1,0 +1,851 @@
+---
+title: Select
+description: "Pick exactly one value from a list — a text-field trigger with a menu dropdown, in-menu filtering, async loading and row virtualization"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/select.json";
+import optionApi from "../../../data/components/select-option.json";
+
+**Pick exactly one value from a list.** A [`md-text-field`](/components/text-field/)
+trigger with a [`md-menu`](/components/menu/) dropdown, optional in-menu
+filtering, async option loading, and **row virtualization** for large lists.
+Form-associated via `ElementInternals`, with full constraint validation.
+
+<ComponentDemo
+  html={`<md-select label="Priority" value="med" style="min-width: 220px;">
+  <md-select-option value="low">Low</md-select-option>
+  <md-select-option value="med">Medium</md-select-option>
+  <md-select-option value="high" supporting-text="Pages on-call">High</md-select-option>
+</md-select>`}
+  label="Live preview"
+  storyId="selection-select--playground"
+/>
+
+:::note[Not a Material Design 3 component]
+M3 has no select page: it specs the [text field](/components/text-field/) and
+the [menu](https://m3.material.io/components/menus/guidelines) this component is
+assembled from, but not the picker itself. The listbox semantics, the filtering
+and the virtualization are this library's own contract, and the guidance below
+is **house rules** informed by M3's menu and text-field specs.
+:::
+
+## Install
+
+<ComponentSetup tag="md-select" example="" />
+
+## When to use
+
+- **One** value from a list of roughly **5 or more** options.
+- Options are known — static, fetched, or filtered server-side.
+- Space is constrained: the list should stay collapsed until needed.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Five or fewer options that should all be visible | [`md-radio`](/components/radio/) |
+| Several values may be chosen | [`md-select-option`](/components/select/#md-select-option) ·
+[`md-multi-select`](/components/multi-select/) |
+| The user types free text with suggestions | [`md-autocomplete`](/components/autocomplete/) |
+| 2–5 exclusive view/mode options | [`md-segmented-button`](/components/segmented-button/) |
+| A date or a time | [`md-date-picker`](/components/date-picker/) / [`md-time-picker`](/components/time-picker/) |
+| Running actions rather than choosing a value | [`md-menu`](/components/menu/) |
+| A boolean | [`md-switch`](/components/switch/) / [`md-checkbox`](/components/checkbox/) |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Options written in markup | `md-select-option` children |
+| Options from data or a fetch | The `options` **property** |
+| Filled field | `variant="filled"` |
+| A clear affordance | `clearable` |
+| An in-menu search box | `filterable` |
+| Thousands of rows | `virtualize` |
+| Menu as wide as the trigger | `match-trigger-width` |
+| Compact trigger and rows | `density="-1…-4"` |
+
+## Authoring the options
+
+:::caution[Two sources — never mix them]
+Use **either** [`md-select-option`](/components/select-option/) children **or**
+the `options` array property. Two sources of truth fight each other.
+:::
+
+Arrays don't cross the attribute boundary, so `options` must be set as a JS
+**property**:
+
+<ComponentDemo
+  html={`<md-select id="opts-sel" label="Country" style="min-inline-size: 260px;"></md-select>`}
+  script={`
+  var el = root.querySelector('#opts-sel');
+  var countries = [
+    { code: 'fr', name: 'France' },
+    { code: 'de', name: 'Germany' },
+    { code: 'ro', name: 'Romania' },
+    { code: 'nl', name: 'Netherlands' },
+  ];
+  el.options = countries.map(function (c) { return { value: c.code, label: c.name }; });
+  el.value = 'de';`}
+  htmlForCode={`<md-select id="country" label="Country"></md-select>
+
+<script type="module">
+  const select = document.getElementById('country');
+
+  // Arrays don't cross the attribute boundary — set it as a property.
+  select.options = countries.map((c) => ({ value: c.code, label: c.name }));
+  select.value = 'de';
+</script>`}
+  label="options set as a JS property — no markup children"
+  storyId="selection-select--playground"
+/>
+
+`value` is a **single string**, not an array. `getLabels(values)` resolves
+values back to display labels.
+
+`md-select-option` is a **declarative data carrier**, shared with
+[`md-multi-select`](/components/multi-select/). It renders **nothing**
+(`:host { display: none }`) — the parent reads its props and projects them into
+its own [`md-menu`](/components/menu/) as real `md-menu-item` rows.
+
+<ComponentDemo
+  html={`<md-select label="Priority" value="med" style="min-inline-size: 260px;">
+  <md-select-option value="low" icon="arrow_downward">Low</md-select-option>
+  <md-select-option value="med" icon="remove">Medium</md-select-option>
+  <md-select-option value="high" icon="arrow_upward" icon-color="var(--md-sys-color-error)">High</md-select-option>
+</md-select>`}
+  label="Markup-authored options — open it to see the rows the carriers describe"
+  storyId="selection-select--with-icons"
+/>
+
+- **It is a carrier, not the rendered row.** In devtools it is an empty, hidden
+  host — that is correct, and it means the option never flashes unstyled before
+  hydration. **Style the parent, not the carrier**: the visible row lives in the
+  select's `md-menu`, so reach it with the select's parts and custom properties.
+- `label` falls back to the **slotted text** when it is empty.
+- **`selected` is a hint** — honoured only while the parent's own `value` is
+  unset. If the select has a value, the select wins.
+- Adding and removing options at runtime works; connect / disconnect trigger a
+  re-read.
+- Give every option a unique, stable `value`. Matching and every emitted payload
+  depend on it — translate the label and `supporting-text`, keep `value`
+  untranslated.
+
+:::caution[`mdSelectOptionChange` is not for you]
+It fires on `connectedCallback`, `disconnectedCallback` and any watched prop
+change so the parent can re-read its option set. **It is the internal
+parent↔child sync channel** — listen to the select's `mdChange` instead.
+:::
+
+<ComponentDemo
+  html={`<md-select label="Country" placeholder="Choose…" style="min-width: 240px;">
+  <md-select-option value="fr">France</md-select-option>
+  <md-select-option value="de">Germany</md-select-option>
+  <md-select-option value="es" supporting-text="Ships in 3 days">Spain</md-select-option>
+  <md-select-option value="it" disabled>Italy</md-select-option>
+</md-select>`}
+  label="Declarative options"
+  storyId="selection-select--authoring-modes"
+/>
+
+## Variants
+
+`outlined` is the default.
+
+<ComponentDemo
+  html={`<md-select variant="outlined" label="Outlined" value="a" style="min-width: 200px;">
+  <md-select-option value="a">Option A</md-select-option>
+  <md-select-option value="b">Option B</md-select-option>
+</md-select>
+
+<md-select variant="filled" label="Filled" value="a" style="min-width: 200px;">
+  <md-select-option value="a">Option A</md-select-option>
+  <md-select-option value="b">Option B</md-select-option>
+</md-select>`}
+  label="Outlined and filled"
+  storyId="selection-select--variants"
+/>
+
+## Icons & supporting text
+
+Options carry an `icon`, an `icon-color` and a `supporting-text` second line.
+Use icons consistently — all rows or none.
+
+<ComponentDemo
+  html={`<md-select label="Priority" value="high" style="min-width: 260px;">
+  <md-select-option value="low" icon="arrow_downward" supporting-text="Next sprint">Low</md-select-option>
+  <md-select-option value="med" icon="remove" supporting-text="This week">Medium</md-select-option>
+  <md-select-option value="high" icon="arrow_upward" icon-color="var(--md-sys-color-error)" supporting-text="Pages on-call">High</md-select-option>
+</md-select>`}
+  label="Option icons and supporting text"
+  storyId="selection-select--with-icons-and-supporting-text"
+/>
+
+## States
+
+`error-text` **replaces** `supporting-text` when `error` is set — never show
+both. `reserve-supporting-space` keeps the message line's height allocated so
+the layout doesn't jump when an error appears.
+
+<ComponentDemo
+  html={`<md-select label="Enabled" value="a" supporting-text="Where you're billed" style="min-width: 210px;">
+  <md-select-option value="a">Option A</md-select-option>
+</md-select>
+
+<md-select label="Disabled" value="a" disabled style="min-width: 210px;">
+  <md-select-option value="a">Option A</md-select-option>
+</md-select>
+
+<md-select label="Country" required error error-text="Select a country" reserve-supporting-space style="min-width: 210px;">
+  <md-select-option value="fr">France</md-select-option>
+</md-select>`}
+  label="Default, disabled, error"
+  storyId="selection-select--states"
+/>
+
+## Clearable, filterable & loading
+
+`clearable` adds a clear affordance. `filterable` renders a search box **inside
+the menu** — turn it on past roughly 15 options. `loading` shows the progress
+affordance while options are being fetched.
+
+`filterable` works whichever way the options were supplied. A plain list filters
+client-side on **label or supporting text**, case-insensitively and immediately;
+a virtualized one filters inside the WASM engine, debounced, with a spinner. No
+match shows `no-results-text`, and closing the menu clears the query — the field
+is uncontrolled and unmounts with the menu, so reopening shows the full list.
+
+<ComponentDemo
+  html={`<md-select label="Clearable" value="fr" clearable style="min-width: 210px;">
+  <md-select-option value="fr">France</md-select-option>
+  <md-select-option value="de">Germany</md-select-option>
+</md-select>
+
+<md-select label="Filterable" filterable search-placeholder="Search…" filter-label="Filter countries" style="min-width: 210px;">
+  <md-select-option value="fr" supporting-text="Paris">France</md-select-option>
+  <md-select-option value="de" supporting-text="Berlin">Germany</md-select-option>
+  <md-select-option value="es" supporting-text="Madrid">Spain</md-select-option>
+</md-select>
+
+<md-select label="Loading" loading loading-text="Loading…" style="min-width: 210px;"></md-select>`}
+  label="Clear, filter, loading — type “berlin” in the filterable one: supporting text matches too"
+  storyId="selection-select--clearable"
+/>
+
+Slot your own affordance into `loader` when the default spinner isn't what you
+want — a circular [`md-progress-indicator`](/components/progress-indicator/), a
+branded mark, a skeleton. Everything else about the loading state is unchanged.
+
+<ComponentDemo
+  html={`<md-select label="Default loader" loading loading-text="Loading…" style="min-width: 210px;"></md-select>
+
+<md-select label="Slotted loader" loading loading-text="Loading…" style="min-width: 210px;">
+  <md-progress-indicator slot="loader" variant="circular" indeterminate size="24" label="Loading"></md-progress-indicator>
+</md-select>`}
+  label="The built-in md-loading-indicator, and an md-progress-indicator slotted over it"
+  storyId="selection-select--loading"
+/>
+
+For server-side search, combine `setQuery()` with `loadOptions()` and drive
+`loading` yourself. `setQuery(q)` filters the menu exactly as typing into the
+in-menu search field would, and fills that field with `q` so the two agree —
+call it **after** `loadOptions()` resolves, since loading replaces the whole
+option set and would overwrite the filter.
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:8px; align-items:flex-start;">
+  <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+    <md-select id="server-sel" label="Airport" filterable loading-text="Searching…" style="inline-size: 280px; flex: 0 0 auto;"></md-select>
+    <md-button data-server-q variant="outlined" size="xs">setQuery('fra')</md-button>
+  </div>
+  <output data-server-out style="font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; opacity:.85;">Open it — the first page loads on mdOpen.</output>
+</div>`}
+  script={`
+  var el = root.querySelector('#server-sel');
+  var out = root.querySelector('[data-server-out]');
+  var ALL = [
+    { value: 'fra', label: 'Frankfurt (FRA)' },
+    { value: 'cdg', label: 'Paris Charles de Gaulle (CDG)' },
+    { value: 'lhr', label: 'London Heathrow (LHR)' },
+    { value: 'ams', label: 'Amsterdam Schiphol (AMS)' },
+    { value: 'otp', label: 'Bucharest Otopeni (OTP)' },
+  ];
+  // Stands in for a paged endpoint.
+  var fetchPage = function (q) {
+    return new Promise(function (resolve) {
+      setTimeout(function () {
+        var needle = (q || '').toLowerCase();
+        resolve(ALL.filter(function (o) {
+          return o.label.toLowerCase().indexOf(needle) !== -1;
+        }));
+      }, 500);
+    });
+  };
+  var load = function (q) {
+    el.loading = true;
+    out.textContent = 'GET /airports?q=' + JSON.stringify(q || '');
+    return fetchPage(q).then(function (rows) {
+      // Chain on loadOptions itself — it resolves when the store has finished
+      // packing. Filtering before that runs against a store still loading.
+      return el.loadOptions(rows).then(function () {
+        el.loading = false;
+        out.textContent = 'GET /airports?q=' + JSON.stringify(q || '') + ' → ' + rows.length + ' rows';
+      });
+    });
+  };
+  // Fetch once, and keep the promise: loadOptions() replaces the whole option
+  // set, so anything that filters has to wait for it or it gets overwritten.
+  var loaded = null;
+  var ensureLoaded = function () {
+    if (!loaded) loaded = load('');
+    return loaded;
+  };
+  el.addEventListener('mdOpen', ensureLoaded);
+  root.querySelector('[data-server-q]').addEventListener('click', function () {
+    el.show();
+    ensureLoaded().then(function () { el.setQuery('fra'); });
+  });`}
+  htmlForCode={`<md-select id="airport" label="Airport" filterable loading-text="Searching…"></md-select>
+
+<script type="module">
+  const select = document.getElementById('airport');
+
+  const load = async (q) => {
+    select.loading = true;
+    // await it: loadOptions resolves once the store has finished packing, and
+    // filtering before that runs against a store that is still loading.
+    await select.loadOptions(await fetchPage(q));   // your endpoint
+    select.loading = false;
+  };
+
+  // Fetch the first page when the menu opens, once — loadOptions() replaces the
+  // whole option set, so a later fetch would overwrite an applied filter.
+  let loaded = null;
+  const ensureLoaded = () => (loaded ??= load(''));
+  select.addEventListener('mdOpen', ensureLoaded);
+
+  // …and drive the in-menu search box yourself when you have a query.
+  // setQuery() filters the menu AND fills the search field, exactly as typing
+  // would — after the options are in.
+  await ensureLoaded();
+  select.setQuery('fra');
+</script>`}
+  label="Fetch on open, then setQuery('fra') filters the menu and fills the search box"
+  storyId="selection-select--async-loading"
+/>
+
+## Width & menu placement
+
+`match-trigger-width` (on by default) ties the menu to the field's width; set
+`match-trigger-width="false"` to let the menu size itself. `full-width`
+stretches the trigger to its container, and `placement="top-start"` opens
+upward. Give the menu a sensible `max-height` so it stays reachable on short
+viewports.
+
+<ComponentDemo
+  html={`<md-select label="Matches the trigger" value="a" max-height="240" style="min-width: 260px;">
+  <md-select-option value="a">A fairly long option label</md-select-option>
+  <md-select-option value="b">Short</md-select-option>
+</md-select>
+
+<md-select label="Opens upward" value="a" placement="top-start" style="min-width: 200px;">
+  <md-select-option value="a">Option A</md-select-option>
+  <md-select-option value="b">Option B</md-select-option>
+</md-select>`}
+  label="Width and placement"
+  storyId="selection-select--match-trigger-width"
+/>
+
+## Density
+
+<ComponentDemo
+  html={`<md-select label="Density 0" value="a" density="0" style="min-width: 180px;">
+  <md-select-option value="a">Option A</md-select-option>
+</md-select>
+<md-select label="Density -1" value="a" density="-1" style="min-width: 180px;">
+  <md-select-option value="a">Option A</md-select-option>
+</md-select>
+<md-select label="Density -2" value="a" density="-2" style="min-width: 180px;">
+  <md-select-option value="a">Option A</md-select-option>
+</md-select>
+<md-select label="Density -3" value="a" density="-3" style="min-width: 180px;">
+  <md-select-option value="a">Option A</md-select-option>
+</md-select>
+<md-select label="Density -4" value="a" density="-4" style="min-width: 180px;">
+  <md-select-option value="a">Option A</md-select-option>
+</md-select>`}
+  label="Density rungs"
+  storyId="selection-select--density"
+/>
+
+## Virtualization
+
+`virtualize="auto"` turns on row virtualization past an internal threshold;
+`"always"` forces it.
+
+:::caution[Give virtualized rows a stable `row-height`]
+If your rows aren't uniform and `row-height` doesn't match, the scroll position
+drifts.
+:::
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:8px; align-items:flex-start;">
+  <md-select id="virt-sel" label="Option" filterable virtualize="always" row-height="48" max-height="320" style="min-inline-size: 300px;"></md-select>
+  <p data-virt-status style="font:500 12px/16px Roboto,system-ui,sans-serif; color:var(--md-sys-color-on-surface-variant); margin:0; min-block-size:16px;"></p>
+</div>`}
+  script={`
+  var el = root.querySelector('#virt-sel');
+  var status = root.querySelector('[data-virt-status]');
+  // Ten million rows, streamed through the row factory — they never exist as
+  // JS objects, so this is a WASM load rather than an array allocation.
+  el.loading = true;
+  status.textContent = 'Loading 10,000,000 options…';
+  var t0 = performance.now();
+  el.loadOptions({
+    count: 10000000,
+    getRow: function (i) { return { value: 'v' + i, label: 'Option ' + i }; },
+  }).then(function () {
+    el.loading = false;
+    status.textContent =
+      'Ready — 10,000,000 options in ' + Math.round(performance.now() - t0) + ' ms.';
+  });`}
+  htmlForCode={`<md-select
+  id="options"
+  label="Option"
+  filterable
+  virtualize="always"
+  row-height="48"
+  max-height="320"
+></md-select>
+
+<script type="module">
+  const el = document.getElementById('options');
+
+  // A row factory streams into WASM — ten million options never exist as JS
+  // objects at once. Flip the loading flag around it so the trigger says so.
+  el.loading = true;
+  await el.loadOptions({
+    count: 10_000_000,
+    getRow: (i) => ({ value: \`v\${i}\`, label: \`Option \${i}\` }),
+  });
+  el.loading = false;
+</script>`}
+  label="10,000,000 options — open it and scroll; only the visible window is in the DOM, and the filter runs in WASM"
+  storyId="selection-select--virtualized-ten-million"
+/>
+
+## Forms
+
+`md-select` is **form-associated** via `ElementInternals`, so `name` puts the
+value into `FormData` across the shadow boundary — no hidden `<input>` needed.
+`required` participates in native constraint validation, and
+`value-missing-label` supplies the message.
+
+<ComponentDemo
+  html={`<form data-billing style="display:flex; flex-direction:column; gap:16px; align-items:flex-start;">
+  <md-select label="Country" name="country" required
+             value-missing-label="Select a country" style="min-inline-size: 260px;">
+    <md-select-option value="fr">France</md-select-option>
+    <md-select-option value="de">Germany</md-select-option>
+  </md-select>
+  <md-button variant="filled" type="submit">Save</md-button>
+  <output data-billing-out style="font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; opacity:.85;">Submit with nothing chosen — required blocks it.</output>
+</form>`}
+  script={`
+  var form = root.querySelector('[data-billing]');
+  var out = root.querySelector('[data-billing-out]');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    out.textContent = 'FormData → ' +
+      JSON.stringify(Object.fromEntries(new FormData(form)));
+  });`}
+  label="Pick a country and submit — FormData carries it; submit empty and required blocks it"
+  storyId="selection-select--form-participation"
+  htmlForCode={`<form id="billing">
+  <md-select label="Country" name="country" required
+             value-missing-label="Select a country">
+    <md-select-option value="fr">France</md-select-option>
+    <md-select-option value="de">Germany</md-select-option>
+  </md-select>
+
+  <md-button variant="filled" type="submit">Save</md-button>
+</form>
+
+<script type="module">
+  const form = document.getElementById('billing');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(e.target);
+    console.log(Object.fromEntries(data));   // { country: 'fr' }
+  });
+</script>`}
+  react={`import { MdSelect, MdSelectOption, MdButton } from '@awc-ui/react';
+
+export function BillingForm() {
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    console.log(Object.fromEntries(data));
+  }
+
+  return (
+    <form onSubmit={onSubmit}>
+      <MdSelect label="Country" name="country" required>
+        <MdSelectOption value="fr">France</MdSelectOption>
+        <MdSelectOption value="de">Germany</MdSelectOption>
+      </MdSelect>
+
+      <MdButton variant="filled" type="submit">Save</MdButton>
+    </form>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-billing-form',
+  template: \`
+    <form (submit)="onSubmit($event)">
+      <md-select label="Country" name="country" required>
+        <md-select-option value="fr">France</md-select-option>
+        <md-select-option value="de">Germany</md-select-option>
+      </md-select>
+
+      <md-button variant="filled" type="submit">Save</md-button>
+    </form>
+  \`,
+})
+export class BillingFormComponent {
+  onSubmit(e: Event) {
+    e.preventDefault();
+    const data = new FormData(e.target as HTMLFormElement);
+    console.log(Object.fromEntries(data));
+  }
+}`}
+  vue={`<script setup lang="ts">
+function onSubmit(e: Event) {
+  e.preventDefault();
+  const data = new FormData(e.target as HTMLFormElement);
+  console.log(Object.fromEntries(data));
+}
+</script>
+
+<template>
+  <form @submit="onSubmit">
+    <md-select label="Country" name="country" required>
+      <md-select-option value="fr">France</md-select-option>
+      <md-select-option value="de">Germany</md-select-option>
+    </md-select>
+
+    <md-button variant="filled" type="submit">Save</md-button>
+  </form>
+</template>`}
+  svelte={`<script lang="ts">
+  function onSubmit(e: Event) {
+    e.preventDefault();
+    const data = new FormData(e.target as HTMLFormElement);
+    console.log(Object.fromEntries(data));
+  }
+</script>
+
+<form on:submit={onSubmit}>
+  <md-select label="Country" name="country" required>
+    <md-select-option value="fr">France</md-select-option>
+    <md-select-option value="de">Germany</md-select-option>
+  </md-select>
+
+  <md-button variant="filled" type="submit">Save</md-button>
+</form>`}
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdChange` | no | `string` | The selected value changed |
+| `mdOpen` | no | `void` | The dropdown opened |
+| `mdClose` | no | `void` | The dropdown closed |
+| `mdValidityChange` | no | `{ valid, validationMessage, flags }` | Validity changed |
+
+:::danger[Two different composition rules on one element]
+`mdValidityChange` is **not composed** — deliberately, so the embedded
+`md-text-field`'s validity doesn't leak out. Listen for it on `md-select`
+itself. `mdOpen` / `mdClose` **are** composed, so they also fire on an
+embedding shadow host at `AT_TARGET`; guard against double handling if you wrap
+this component.
+:::
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
+  <md-select data-ev-sel label="Priority" value="med" required style="min-inline-size: 260px;">
+    <md-select-option value="low">Low</md-select-option>
+    <md-select-option value="med">Medium</md-select-option>
+    <md-select-option value="high">High</md-select-option>
+  </md-select>
+  <div data-ev-log style="font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace; white-space:pre-wrap; opacity:.85; min-block-size:6em;"></div>
+</div>`}
+  script={`
+  var sel = root.querySelector('[data-ev-sel]');
+  var log = root.querySelector('[data-ev-log]');
+  var lines = [];
+  var push = function (text) {
+    lines.unshift(text);
+    lines = lines.slice(0, 6);
+    log.textContent = lines.join(String.fromCharCode(10));
+  };
+  sel.addEventListener('mdChange', function (e) { push('mdChange        ' + e.detail); });
+  sel.addEventListener('mdOpen', function () { push('mdOpen'); });
+  sel.addEventListener('mdClose', function () { push('mdClose'); });
+  sel.addEventListener('mdValidityChange', function (e) {
+    push('mdValidityChange valid=' + e.detail.valid);
+  });
+  push('Open it and pick a value — newest first.');`}
+  label="Every event, live"
+  storyId="selection-select--playground"
+  htmlForCode={`<md-select id="priority" label="Priority" value="med" required>
+  <md-select-option value="low">Low</md-select-option>
+  <md-select-option value="med">Medium</md-select-option>
+  <md-select-option value="high">High</md-select-option>
+</md-select>
+
+<script type="module">
+  const sel = document.getElementById('priority');
+
+  sel.addEventListener('mdChange', (e) => save(e.detail));            // string
+  sel.addEventListener('mdValidityChange', (e) => {
+    console.log(e.detail.valid, e.detail.validationMessage);
+  });
+</script>`}
+  react={`import { MdSelect, MdSelectOption } from '@awc-ui/react';
+
+export function PrioritySelect() {
+  return (
+    <MdSelect
+      label="Priority"
+      value="med"
+      required
+      onMdChange={(e) => save(e.detail)}
+      onMdValidityChange={(e) => console.log(e.detail.valid)}
+    >
+      <MdSelectOption value="low">Low</MdSelectOption>
+      <MdSelectOption value="med">Medium</MdSelectOption>
+      <MdSelectOption value="high">High</MdSelectOption>
+    </MdSelect>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-priority-select',
+  template: \`
+    <md-select label="Priority" value="med" required
+               (mdChange)="onChange($event)"
+               (mdValidityChange)="onValidity($event)">
+      <md-select-option value="low">Low</md-select-option>
+      <md-select-option value="med">Medium</md-select-option>
+      <md-select-option value="high">High</md-select-option>
+    </md-select>
+  \`,
+})
+export class PrioritySelectComponent {
+  onChange(e: CustomEvent<string>) { save(e.detail); }
+  onValidity(e: CustomEvent) { console.log(e.detail.valid); }
+}`}
+  vue={`<script setup lang="ts">
+function onChange(e: CustomEvent<string>) { save(e.detail); }
+function onValidity(e: CustomEvent) { console.log(e.detail.valid); }
+</script>
+
+<template>
+  <md-select
+    label="Priority"
+    value="med"
+    required
+    @mdChange="onChange"
+    @mdValidityChange="onValidity"
+  >
+    <md-select-option value="low">Low</md-select-option>
+    <md-select-option value="med">Medium</md-select-option>
+    <md-select-option value="high">High</md-select-option>
+  </md-select>
+</template>`}
+  svelte={`<script lang="ts">
+  function onChange(e: CustomEvent<string>) { save(e.detail); }
+  function onValidity(e: CustomEvent) { console.log(e.detail.valid); }
+</script>
+
+<md-select
+  label="Priority"
+  value="med"
+  required
+  on:mdChange={onChange}
+  on:mdValidityChange={onValidity}
+>
+  <md-select-option value="low">Low</md-select-option>
+  <md-select-option value="med">Medium</md-select-option>
+  <md-select-option value="high">High</md-select-option>
+</md-select>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+### `md-select-option`
+
+The option carrier's own surface. It renders nothing, so it has no parts or
+custom properties of its own — theme the select and its menu instead.
+
+<ApiTable {...optionApi} />
+
+## Accessibility
+
+- `label` supplies the accessible name. The dropdown is a `md-menu` with
+  managed roving focus; `Escape` closes and returns focus to the trigger.
+- Typeahead and arrow navigation are handled internally.
+- Because ARIA IDREFs can't cross shadow boundaries, the trigger uses
+  `aria-haspopup` rather than a full `combobox` / `aria-activedescendant`
+  wiring. **Don't try to add those from outside — they won't resolve.**
+- Errors appear in the supporting line; keep `reserve-supporting-space` on in
+  dense forms so the layout doesn't jump.
+- Set `max-height` so the menu stays reachable on short viewports.
+
+### Keyboard
+
+| Key | Action |
+|---|---|
+| `Enter` / `Space` / `↓` | Open the menu from the trigger |
+| `↑` / `↓` | Move between options |
+| `Home` / `End` | First / last option |
+| `Enter` | Commit the focused option and close |
+| A–Z | Typeahead, or types into the search box when `filterable` |
+| `Escape` | Close, returning focus to the trigger |
+
+<ComponentDemo
+  html={`<md-select label="Priority" value="med" supporting-text="Arrow to move, Enter to commit" style="min-width: 260px;">
+  <md-select-option value="low" icon="arrow_downward">Low</md-select-option>
+  <md-select-option value="med" icon="remove">Medium</md-select-option>
+  <md-select-option value="high" icon="arrow_upward">High</md-select-option>
+  <md-select-option value="crit" disabled>Critical — locked</md-select-option>
+</md-select>`}
+  label="Open it and drive it from the keyboard"
+  storyId="selection-select--programmatic-api"
+/>
+
+## RTL, density & i18n
+
+**RTL** — field, caret and menu alignment mirror under `dir="rtl"`. `placement`
+is logical (`bottom-start` follows reading order). See [RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
+  <div dir="ltr"><md-select label="Colour" value="blue" style="min-width: 220px;"><md-select-option value="red">Red</md-select-option><md-select-option value="blue">Blue</md-select-option></md-select></div>
+  <div dir="rtl"><md-select label="اللون" value="blue" style="min-width: 220px;"><md-select-option value="red">أحمر</md-select-option><md-select-option value="blue">أزرق</md-select-option></md-select></div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+  storyId="selection-select--rtl"
+/>
+
+**Density** — `density="-1…-4"` compacts the trigger and the menu rows. See
+[Density](/behaviour/density/).
+
+**i18n** — every user-facing string is a prop and **all of them default to
+English**: `search-placeholder`, `filter-label`, `no-results-text`,
+`no-options-text`, `clear-label`, `searching-label`, `loading-text`,
+`value-missing-label`, plus `label`, `placeholder`, `supporting-text` and
+`error-text`. Option labels come from your data or slotted text; keep `value`
+an untranslated identifier.
+
+<ComponentDemo
+  html={`<md-select label="Pays" filterable clearable value="fr"
+  search-placeholder="Rechercher…" no-results-text="Aucun résultat"
+  no-options-text="Aucune option" clear-label="Effacer la sélection"
+  style="min-width: 260px;">
+  <md-select-option value="fr">France</md-select-option>
+  <md-select-option value="de">Allemagne</md-select-option>
+  <md-select-option value="es">Espagne</md-select-option>
+</md-select>`}
+  label="Every affordance string translated — open the filter to see them"
+  storyId="selection-select--localization"
+/>
+
+## Theming
+
+| Custom property | Purpose |
+|---|---|
+| `--md-select-width` / `--md-select-min-width` | Trigger width |
+| `--md-select-caret-color` / `--md-select-caret-size` | Dropdown caret |
+| `--md-select-clear-color` | Clear affordance |
+| `--md-select-trailing-gap` | Spacing of trailing controls |
+| `--md-select-option-icon-color` | Option row icons |
+| `--md-select-spinner-size` | Loading spinner |
+
+The embedded field and menu also honour the `--md-text-field-*`, `--md-menu-*`
+and `--md-menu-item-*` properties.
+
+<ComponentDemo
+  html={`<md-select label="Themed" value="a" clearable style="--md-select-min-width: 260px; --md-select-caret-color: var(--md-sys-color-primary); --md-text-field-container-shape: 4px;">
+  <md-select-option value="a">Option A</md-select-option>
+  <md-select-option value="b">Option B</md-select-option>
+</md-select>`}
+  label="Themed instance"
+  storyId="selection-select--custom-css"
+/>
+
+Every default resolves through an `md-sys-color` role, so a select that sets no
+custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<md-select label="Untouched defaults" value="b" clearable style="min-width: 260px;">
+  <md-select-option value="a" icon="star">Option A</md-select-option>
+  <md-select-option value="b" icon="favorite" supporting-text="With supporting text">Option B</md-select-option>
+</md-select>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="selection-select--dark-theme"
+/>
+
+## CSS parts
+
+| Part | Element |
+|---|---|
+| `field` | The text-field trigger |
+| `trailing` / `caret` / `clear` | Trailing region, dropdown caret, clear affordance |
+| `menu` | The dropdown surface |
+| `search` / `search-wrap` / `search-spinner` | In-menu filter field and its busy state |
+| `option-icon` | Per-option icon |
+| `loading-spinner` / `loading-bar` / `loading-progress` | Async loading affordances |
+
+<ComponentDemo
+  html={`<style>
+  .parts-select::part(caret) { color: var(--md-sys-color-primary); }
+  .parts-select::part(field) { --md-text-field-container-shape: 4px; }
+</style>
+<md-select class="parts-select" label="Styled parts" value="a" clearable style="min-width: 260px;">
+  <md-select-option value="a" icon="star">Option A</md-select-option>
+  <md-select-option value="b" icon="favorite">Option B</md-select-option>
+</md-select>`}
+  label="caret and field"
+/>
+
+
+## Related
+
+[`md-select-option`](/components/select-option/) ·
+[`md-multi-select`](/components/multi-select/) ·
+[`md-autocomplete`](/components/autocomplete/) ·
+[`md-menu`](/components/menu/) ·
+[`md-menu-item`](/components/menu/#md-menu-item) ·
+[`md-radio`](/components/radio/) ·
+[`md-text-field`](/components/text-field/) ·
+[`md-segmented-button`](/components/segmented-button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-select" />

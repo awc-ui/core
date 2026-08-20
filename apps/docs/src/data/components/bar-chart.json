@@ -1,0 +1,616 @@
+{
+  "tag": "md-bar-chart",
+  "title": "Bar Chart",
+  "slug": "bar-chart",
+  "category": "Charts",
+  "subComponentOf": null,
+  "storyId": "charts-bar-chart--playground",
+  "props": [
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "subtitle",
+      "attribute": "subtitle",
+      "type": "string | undefined",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "titleAlign",
+      "attribute": "title-align",
+      "type": "MdChartTitleAlign",
+      "default": "'start'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "series",
+      "attribute": "",
+      "type": "MdChartSeries[]",
+      "default": "[]",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "xAxis",
+      "attribute": "",
+      "type": "MdChartAxis | undefined",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "yAxis",
+      "attribute": "",
+      "type": "MdChartAxis | undefined",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "yAxis2",
+      "attribute": "",
+      "type": "MdChartAxis | undefined",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "layout",
+      "attribute": "layout",
+      "type": "MdChartBarLayout",
+      "default": "'vertical'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "stack",
+      "attribute": "stack",
+      "type": "MdChartStackMode",
+      "default": "'none'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "categoryGap",
+      "attribute": "category-gap",
+      "type": "string | number",
+      "default": "'30%'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "barGap",
+      "attribute": "bar-gap",
+      "type": "string | number",
+      "default": "'20%'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "barWidth",
+      "attribute": "bar-width",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "cornerRadius",
+      "attribute": "corner-radius",
+      "type": "number",
+      "default": "6",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "legend",
+      "attribute": "legend",
+      "type": "MdChartLegendPosition | 'none'",
+      "default": "'top-end'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "tooltip",
+      "attribute": "tooltip",
+      "type": "MdChartTooltipTrigger",
+      "default": "'axis'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "zoom",
+      "attribute": "zoom",
+      "type": "'none' | 'inside' | 'slider' | 'both'",
+      "default": "'none'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "locale",
+      "attribute": "locale",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "valueFormatter",
+      "attribute": "",
+      "type": "(value: number | null | undefined) => string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "tooltipRenderer",
+      "attribute": "",
+      "type": "MdChartTooltipRenderer",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "heightProp",
+      "attribute": "height",
+      "type": "string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "noAnimation",
+      "attribute": "no-animation",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "animation",
+      "attribute": "animation",
+      "type": "MdChartAnimation",
+      "default": "'expressive'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "animationDuration",
+      "attribute": "animation-duration",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "showLabels",
+      "attribute": "show-labels",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "showTotals",
+      "attribute": "show-totals",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "chevron",
+      "attribute": "chevron",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "polar",
+      "attribute": "polar",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "polarHole",
+      "attribute": "polar-hole",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "polarSweep",
+      "attribute": "polar-sweep",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "axisTicks",
+      "attribute": "axis-ticks",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "clickable",
+      "attribute": "clickable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelZoomStart",
+      "attribute": "label-zoom-start",
+      "type": "string",
+      "default": "'Zoom range start'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelZoomEnd",
+      "attribute": "label-zoom-end",
+      "type": "string",
+      "default": "'Zoom range end'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelPlot",
+      "attribute": "label-plot",
+      "type": "string",
+      "default": "'Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelPoint",
+      "attribute": "label-point",
+      "type": "string",
+      "default": "'%x%: %values%'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "loading",
+      "attribute": "loading",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "loadingLabel",
+      "attribute": "loading-label",
+      "type": "string",
+      "default": "'Loading chart…'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdBarClick",
+      "detail": "MdChartClickDetail<MdChartSeries>"
+    },
+    {
+      "name": "mdLegendClick",
+      "detail": "{ seriesIndex: number; seriesId?: string; selected: boolean }"
+    },
+    {
+      "name": "mdHover",
+      "detail": "MdChartHoverDetail"
+    },
+    {
+      "name": "mdReady",
+      "detail": "void"
+    },
+    {
+      "name": "mdZoom",
+      "detail": "{ startIndex: number; endIndex: number; reset: boolean }"
+    }
+  ],
+  "methods": [
+    {
+      "name": "resize",
+      "params": ""
+    },
+    {
+      "name": "replay",
+      "params": ""
+    },
+    {
+      "name": "drill",
+      "params": "index: number, direction: 'down' | 'up' = 'down'"
+    },
+    {
+      "name": "toDataURL",
+      "params": ""
+    },
+    {
+      "name": "getInstance",
+      "params": ""
+    },
+    {
+      "name": "setZoom",
+      "params": "startIndex: number, endIndex: number"
+    },
+    {
+      "name": "resetZoom",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "header",
+      "description": "Content for the header row, replacing the default title block"
+    },
+    {
+      "name": "empty",
+      "description": "Replaces the empty-state message when there is no data"
+    },
+    {
+      "name": "loader",
+      "description": ""
+    },
+    {
+      "name": "loading",
+      "description": ""
+    },
+    {
+      "name": "footer",
+      "description": "Content for the footer row below the plot"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "zoom",
+      "description": "Wrapper around the zoom slider"
+    },
+    {
+      "name": "zoom-slider",
+      "description": "The zoom range slider itself"
+    },
+    {
+      "name": "zoom-pan",
+      "description": "Grip that drags the whole zoom window along the track"
+    },
+    {
+      "name": "header",
+      "description": "Header row above the plot (hosts the `header` slot)"
+    },
+    {
+      "name": "canvas",
+      "description": "The plot surface the chart draws into"
+    },
+    {
+      "name": "empty",
+      "description": "Empty-state overlay, shown when there is no data"
+    },
+    {
+      "name": "loading",
+      "description": ""
+    },
+    {
+      "name": "zoom-band",
+      "description": "Live selection band drawn while dragging across the plot"
+    },
+    {
+      "name": "footer",
+      "description": "Footer row below the plot (hosts the `footer` slot)"
+    },
+    {
+      "name": "zoom-track",
+      "description": "Zoom slider's inactive track (forwarded from md-slider)"
+    },
+    {
+      "name": "zoom-window",
+      "description": "Zoom slider's selected window (forwarded from md-slider)"
+    },
+    {
+      "name": "zoom-handle",
+      "description": "Zoom slider's thumbs (forwarded from md-slider)"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-bar-chart-block-size",
+      "description": "Explicit chart height, overriding the aspect ratio (default: auto)"
+    },
+    {
+      "name": "--md-bar-chart-min-block-size",
+      "description": "Floor the chart height never drops below (density-aware)"
+    },
+    {
+      "name": "--md-bar-chart-aspect-ratio",
+      "description": "Width:height ratio used when no block-size is set (default: 16 / 9)"
+    },
+    {
+      "name": "--md-bar-chart-background",
+      "description": "Chart surface fill (default: surface-container-low)"
+    },
+    {
+      "name": "--md-bar-chart-padding",
+      "description": "Inset between the host edge and the plot canvas (density-aware)"
+    },
+    {
+      "name": "--md-bar-chart-shape",
+      "description": "Corner radius of the chart surface (density-aware)"
+    },
+    {
+      "name": "--md-bar-chart-empty-color",
+      "description": "Empty-state text colour (default: on-surface-variant)"
+    },
+    {
+      "name": "--md-bar-chart-empty-background",
+      "description": "Empty-state overlay fill (defaults to the chart background)"
+    },
+    {
+      "name": "--md-bar-chart-empty-font",
+      "description": "Empty-state font family (default: body-medium)"
+    },
+    {
+      "name": "--md-bar-chart-empty-font-size",
+      "description": "Empty-state font size (default: body-medium, 14px)"
+    },
+    {
+      "name": "--md-bar-chart-empty-icon-size",
+      "description": "Size of an icon slotted into the empty state (default: 40px)"
+    },
+    {
+      "name": "--md-bar-chart-zoom-size",
+      "description": "Height reserved for the zoom slider (default: 28px)"
+    },
+    {
+      "name": "--md-bar-chart-zoom-track-color",
+      "description": "Zoom slider track colour"
+    },
+    {
+      "name": "--md-bar-chart-zoom-window-color",
+      "description": "Zoom slider selected-window colour"
+    },
+    {
+      "name": "--md-bar-chart-zoom-handle-color",
+      "description": "Zoom slider thumb + drag-band edge colour"
+    },
+    {
+      "name": "--md-bar-chart-zoom-band-color",
+      "description": "Drag-to-zoom selection fill"
+    }
+  ],
+  "dependencies": [
+    "md-slider",
+    "md-progress-indicator"
+  ],
+  "dataTypes": [
+    {
+      "name": "MdChartSeries",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Human-readable label used in legend, tooltip, and a11y announcements. */\n  label?: string;\n  /** Per-row data. Length should match the x-axis data length. */\n  data: MdChartDataPoint[];\n  /**\n   * Draw this series' line. `false` gives fill only — which is what a\n   * streamgraph wants, since a band on a floating baseline has no meaningful\n   * top edge to trace. Defaults to on, except for the `wiggle` / `silhouette`\n   * stack modes, which default to off.\n   */\n  stroke?: boolean;\n  /**\n   * Opt this one series out of the area fill (area charts only). A line drawn\n   * over a range band should not fill down to the axis itself — it would bury\n   * the band it is meant to sit inside.\n   */\n  fill?: boolean;\n  /**\n   * Draw this series as a BAND between two values per row — a min/max envelope,\n   * a confidence interval — instead of a line filled down to the baseline. When\n   * set, `data` is ignored and the band is drawn with no stroke, so a plain line\n   * series layered after it reads as the value inside the range.\n   *\n   * Area charts only; a range series never participates in stacking (a band has\n   * no single value to stack) and is measured on the axis like any other.\n   */\n  range?: MdChartRangeDatum[];\n  /**\n   * Visual tint for the series. Either an MD3 role (auto-themed)\n   * or a raw CSS colour string. If omitted, the chart cycles\n   * through `primary` → `tertiary` → `secondary` → `error`.\n   */\n  color?: MdChartColorRole | string;\n  /**\n   * Stack key. Series with the same `stack` value are stacked\n   * together. Series with no `stack` render independently. The\n   * chart-level `stack` prop sets a default for all series.\n   */\n  stack?: string;\n  /** Per-series curve override (line / area charts). */\n  curve?: MdChartCurve;\n  /** Stroke style for this series' own drawn line (line / area). `'dotted'`\n   *  suits average / reference lines; pairs with the axes' `dash`/`gridDash`. */\n  dash?: MdChartLineStyle;\n  /** Per-series visibility — useful for legend toggling. */\n  hidden?: boolean;\n  /**\n   * Whether to bridge `null` gaps with a straight line (line/area\n   * only). Overrides the chart-level `connectNulls`.\n   */\n  connectNulls?: boolean;\n  /** Show data-point markers (line / area). */\n  showMarks?: boolean;\n  /**\n   * Marker for shown marks (line / area). A shape keyword\n   * (`MdChartSymbol`) or any emoji / short text, which renders as a\n   * glyph. Default `circle`.\n   */\n  symbol?: MdChartSymbol | (string & {});\n  /**\n   * Per-point marker override, keyed by data index — a shape keyword or an\n   * emoji / short text. Renders even when `showMarks` is off, so you can accent\n   * a single point (e.g. `{ 7: '☀️' }` on a peak) without markers everywhere.\n   */\n  pointSymbols?: Record<number, MdChartSymbol | string>;\n  /**\n   * Per-datum colour override, keyed by data index — an MD3 role or a CSS\n   * colour. A datum not named here keeps the series colour.\n   *\n   * This is what a bar chart whose bars are entities rather than samples\n   * needs: a race, a ranking, a single series where each bar is its own\n   * country. It is read by `md-bar-chart`; line and area charts tint by\n   * series, not by point.\n   */\n  pointColors?: Record<number, MdChartColorRole | string>;\n  /**\n   * Per-datum band WIDTH weight, keyed by data index — a VARIWIDE chart, where\n   * a column's width carries a second variable alongside its height (price\n   * against volume, cost against the size of the economy it is measured in).\n   *\n   * Weights are relative: a category with weight `2` takes twice the axis a\n   * category with weight `1` does, and one left out takes `1`. A category band\n   * is shared by every series, so the first series to supply these sets the\n   * widths for the whole axis. Read by `md-bar-chart`.\n   */\n  pointWidths?: Record<number, number>;\n  /**\n   * Draw this series centred ON the category band at {@link widthRatio} of it,\n   * in front of the series that share the band, instead of taking a slot beside\n   * them — \"fixed placement\" columns. Read by `md-bar-chart`.\n   */\n  overlay?: boolean;\n  /**\n   * Width of an {@link overlay} series' bar as a fraction of the category\n   * band's inner width. Default `0.45`. Ignored unless `overlay` is set.\n   */\n  widthRatio?: number;\n  /** Series-level click identifier (returned in the click event detail). */\n  id?: string;\n  /** For a multi-axis chart (`y-axes`): index into `yAxes` this series is\n   *  measured against. Omitted / out-of-range falls back to the first axis. */\n  yAxisIndex?: number;\n  /** Draw the line solid up to this data index, then dotted after it (the\n   *  boundary point is shared) — for past-vs-forecast lines. */\n  dashAfter?: number;\n  /** Open (ring) markers — stroked in the series colour with a surface-filled\n   *  centre — instead of filled dots. */\n  hollow?: boolean;\n  /** Line stroke width in px (line / area). Default 2.5. */\n  lineWidth?: number;\n  /** Marker RADIUS in px (line / area). Overrides the per-symbol default. */\n  markSize?: number;"
+    },
+    {
+      "name": "MdChartDataPoint",
+      "kind": "type",
+      "body": "number | null"
+    },
+    {
+      "name": "MdChartRangeDatum",
+      "kind": "type",
+      "body": "readonly [number | null, number | null] | { low: number | null"
+    },
+    {
+      "name": "MdChartColorRole",
+      "kind": "type",
+      "body": "| 'primary' | 'secondary' | 'tertiary' | 'error' | 'primary-container' | 'secondary-container' | 'tertiary-container' | 'error-container' | 'surface-variant' /* Semantic status roles. Deliberately NOT part of the default categorical cycle: these carry meaning, so they are opt-in per series rather than something an auto-palette can hand out to an arbitrary category. */ | 'success' | 'warning' | 'info' | 'success-container' | 'warning-container' | 'info-container'"
+    },
+    {
+      "name": "MdChartCurve",
+      "kind": "type",
+      "body": "| 'linear' | 'smooth' | 'monotone' | 'step' | 'step-before' | 'step-middle'"
+    },
+    {
+      "name": "MdChartLineStyle",
+      "kind": "type",
+      "body": "'solid' | 'dashed' | 'dotted'"
+    },
+    {
+      "name": "MdChartSymbol",
+      "kind": "type",
+      "body": "'circle' | 'square' | 'diamond' | 'triangle' | 'triangle-down' | 'none'"
+    },
+    {
+      "name": "MdChartAxis",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Tick label values (category axis) or [min, max] hints (value axis). */\n  data?: MdChartAxisValue[];\n  /** Axis scale type. Defaults to `category` for x, `value` for y. */\n  scale?: MdChartScaleType;\n  /** Axis label rendered at the start/end of the axis. */\n  label?: string;\n  /** Force min — useful for fixed-scale comparisons across charts. */\n  min?: number;\n  /** Force max. */\n  max?: number;\n  /**\n   * Format tick labels. Receives the raw value; returns the\n   * string to render. Default formats numbers with the user's\n   * locale, dates with `toLocaleDateString`, and categories as-is.\n   */\n  valueFormatter?: (value: MdChartAxisValue) => string;\n  /** Shaded ranges drawn behind the data, measured on this axis. */\n  bands?: MdChartAxisBand[];\n  /**\n   * Ranges cut out of this axis, so far-apart clusters both stay readable.\n   * Data inside a cut is not drawn and the line splits there.\n   */\n  breaks?: MdChartAxisBreaks;\n  /** Hide tick labels (still renders the axis line). */\n  hideTicks?: boolean;\n  /** Hide the axis line + ticks entirely. */\n  hidden?: boolean;\n  /** Draw this axis' own line (the frame edge). Default `true`; `false` keeps the\n   *  ticks + gridlines but drops the line itself — a cleaner look for e.g. a\n   *  force diagram that reads off the gridlines alone. */\n  axisLine?: boolean;\n  /** Inversion — useful for waterfall / mortality / depth charts. */\n  reverse?: boolean;\n  /** For a multi-axis chart (`yAxes`): which side this value axis stacks on.\n   *  Default: the first axis goes left, the rest go right. */\n  position?: 'left' | 'right';\n  /** Axis colour — tints this axis' line, tick labels and title. An MD3 role\n   *  (e.g. `'primary'`) or a raw CSS colour. Defaults to the themed axis colour\n   *  (the same muted grey as the x-axis). */\n  color?: MdChartColorRole | string;\n  /**\n   * Rotate this axis' tick labels by this many degrees. Negative leans the text\n   * up to the right with its end under the tick — the convention for names too\n   * long to sit upright without colliding. Upright labels that don't fit their\n   * own band are truncated with an ellipsis instead.\n   *\n   * Read by `md-bar-chart` for the category axis of a vertical chart.\n   */\n  labelRotation?: number;\n  /**\n   * Repeat this axis' tick labels in the opposite gutter as well. A population\n   * pyramid is the case it exists for: the rows run out from a centre line in\n   * both directions, so a name printed on one side only sits a long way from\n   * half the data it names.\n   *\n   * Read by `md-bar-chart` for the category axis of a horizontal chart.\n   */\n  mirrorLabels?: boolean;\n  /** Stroke style for this axis' own line and tick marks. Default `'solid'`. */\n  dash?: MdChartLineStyle;\n  /**\n   * Stroke style for the gridlines this axis' ticks draw across the plot —\n   * horizontal ones for a y axis, vertical ones for an x axis. Default\n   * `'solid'`; `'dashed'` / `'dotted'` let the grid recede behind the data.\n   * Needs the matching `grid` mode on the chart to be on.\n   */\n  gridDash?: MdChartLineStyle;"
+    },
+    {
+      "name": "Tick",
+      "kind": "interface",
+      "extends": "",
+      "body": "  value: number;\n  /** Original axis value (for the user's valueFormatter). */\n  raw: MdChartAxisValue;"
+    },
+    {
+      "name": "MdChartAxisValue",
+      "kind": "type",
+      "body": "string | number | Date"
+    },
+    {
+      "name": "MdChartScaleType",
+      "kind": "type",
+      "body": "'category' | 'time' | 'value' | 'log'"
+    },
+    {
+      "name": "MdChartAxisBand",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Band start (inclusive). */\n  from: MdChartAxisValue;\n  /** Band end (inclusive). */\n  to: MdChartAxisValue;\n  /** Fill — an MD3 role or a CSS colour. Defaults to a faint tint of the axis\n   *  colour, which reads on both light and dark themes. */\n  color?: MdChartColorRole | string;\n  /** Text drawn inside the band. */\n  label?: string;\n  /** Where the label sits along the band. Default `start`. */\n  labelAlign?: 'start' | 'center' | 'end';\n  /** Label colour (MD3 role or CSS colour). Defaults to the muted text colour. */\n  labelColor?: MdChartColorRole | string;"
+    },
+    {
+      "name": "MdChartAxisBreaks",
+      "kind": "type",
+      "body": "MdChartAxisBreak[] | 'auto' | MdChartAxisBreakOptions"
+    }
+  ],
+  "callableProps": [
+    {
+      "name": "valueFormatter",
+      "kind": "callable",
+      "body": "(value: number | null | undefined) => string"
+    }
+  ],
+  "eventTypes": [
+    {
+      "name": "MdChartHoverDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Index of the highlighted x position (axis-trigger mode). */\n  dataIndex: number;\n  /** Axis value at the highlighted x position. */\n  axisValue?: MdChartAxisValue;\n  /** Highlighted series (item-trigger mode) or all series at the x. */\n  seriesIndices: number[];"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdBarClick",
+      "detail": "MdChartClickDetail<MdChartSeries>"
+    },
+    {
+      "name": "mdLegendClick",
+      "detail": "{ seriesIndex: number; seriesId?: string; selected: boolean }"
+    },
+    {
+      "name": "mdHover",
+      "detail": "MdChartHoverDetail"
+    },
+    {
+      "name": "mdReady",
+      "detail": "void"
+    },
+    {
+      "name": "mdZoom",
+      "detail": "{ startIndex: number; endIndex: number; reset: boolean }"
+    }
+  ]
+}

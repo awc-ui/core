@@ -1,0 +1,133 @@
+---
+// SplitButtonMenuDemo.astro
+//
+// Live demo for the "split button + dropdown menu" pattern. The
+// markup goes through `<ComponentDemo set:html>`, which DOES
+// hydrate custom elements but does NOT execute inline script
+// tags inside the html string. So the wiring script lives in a
+// module-level script block at the bottom of THIS file —
+// Astro emits that as a real module that runs after the custom
+// elements have been registered.
+//
+// The split button reflects `trailing-checked` to the host as an
+// HTML attribute, and the trailing arrow rotates 180deg via the
+// :host(.md-split-button--trailing-checked) selector. The wiring
+// just calls `menu.show()` / `menu.close()` based on the toggle
+// state and resets `trailingChecked` to false from the menu's
+// own `mdClose` event so the arrow flips back when the menu
+// auto-dismisses on outside-click.
+
+import ComponentDemo from "./ComponentDemo.astro";
+
+const demoHtml = `<md-split-button id="save-split" label="Save" icon="save" variant="filled"></md-split-button>
+<md-menu anchor="save-split" placement="bottom-end" variant="vibrant" id="save-split-menu">
+  <md-menu-item headline="Save" trailing-text="⌘S">
+    <span slot="leading-icon" class="material-symbols-outlined">save</span>
+  </md-menu-item>
+  <md-menu-item headline="Save as…" trailing-text="⌘⇧S">
+    <span slot="leading-icon" class="material-symbols-outlined">save_as</span>
+  </md-menu-item>
+  <md-menu-item headline="Save a copy">
+    <span slot="leading-icon" class="material-symbols-outlined">file_copy</span>
+  </md-menu-item>
+  <md-menu-item headline="Save and close" divider>
+    <span slot="leading-icon" class="material-symbols-outlined">exit_to_app</span>
+  </md-menu-item>
+  <md-menu-item headline="Discard changes">
+    <span slot="leading-icon" class="material-symbols-outlined">delete</span>
+  </md-menu-item>
+</md-menu>`;
+
+// Idiomatic markup for the per-technology code tabs — same demo
+// but with the wiring script alongside, the way a real app would
+// implement it (no demo-specific selectors).
+const codeHtml = `<md-split-button id="save-split" label="Save" icon="save" variant="filled"></md-split-button>
+<md-menu anchor="save-split" placement="bottom-end" variant="vibrant" id="save-split-menu">
+  <md-menu-item headline="Save" trailing-text="⌘S">
+    <span slot="leading-icon" class="material-symbols-outlined">save</span>
+  </md-menu-item>
+  <md-menu-item headline="Save as…" trailing-text="⌘⇧S">
+    <span slot="leading-icon" class="material-symbols-outlined">save_as</span>
+  </md-menu-item>
+  <md-menu-item headline="Save a copy">
+    <span slot="leading-icon" class="material-symbols-outlined">file_copy</span>
+  </md-menu-item>
+  <md-menu-item headline="Save and close" divider>
+    <span slot="leading-icon" class="material-symbols-outlined">exit_to_app</span>
+  </md-menu-item>
+  <md-menu-item headline="Discard changes">
+    <span slot="leading-icon" class="material-symbols-outlined">delete</span>
+  </md-menu-item>
+</md-menu>
+
+<script>
+  const split = document.getElementById('save-split');
+  const menu  = document.getElementById('save-split-menu');
+
+  split.addEventListener('mdLeadingClick', () => console.log('Save clicked'));
+  split.addEventListener('mdTrailingClick', (e) => {
+    if (e.detail.checked) menu.show();
+    else menu.close();
+  });
+
+  // Reset the arrow when the menu closes itself (outside click,
+  // Escape, item activation).
+  menu.addEventListener('mdClose', () => {
+    split.trailingChecked = false;
+  });
+</script>`;
+---
+
+<ComponentDemo
+  label="Split button + dropdown menu"
+  html={demoHtml}
+  htmlForCode={codeHtml}
+  storyId="components-splitbutton--playground"
+/>
+
+<script>
+  type SplitEl = HTMLElement & { trailingChecked: boolean };
+  type MenuEl = HTMLElement & {
+    open: boolean;
+    show: () => Promise<void>;
+    close: () => Promise<void>;
+  };
+
+  function wireSplitMenu(): void {
+    const split = document.getElementById("save-split") as SplitEl | null;
+    const menu = document.getElementById("save-split-menu") as MenuEl | null;
+    if (!split || !menu) return;
+    if (split.dataset.demoWired === "true") return;
+    split.dataset.demoWired = "true";
+
+    split.addEventListener("mdTrailingClick", (event: Event) => {
+      const checked = (event as CustomEvent<{ checked: boolean }>).detail
+        ?.checked;
+      if (checked) {
+        void menu.show();
+      } else {
+        void menu.close();
+      }
+    });
+
+    split.addEventListener("mdLeadingClick", () => {
+      // Demo-only: surface the leading click in the console so
+      // readers can see the second event channel firing too.
+      console.log("[demo] mdLeadingClick → Save");
+    });
+
+    // Outside click / Escape / item activation all close the menu
+    // through its own logic; sync the split-button arrow back so
+    // it isn't stuck in the rotated state.
+    menu.addEventListener("mdClose", () => {
+      split.trailingChecked = false;
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", wireSplitMenu, { once: true });
+  } else {
+    wireSplitMenu();
+  }
+  document.addEventListener("astro:page-load", wireSplitMenu);
+</script>

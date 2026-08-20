@@ -1,0 +1,208 @@
+{
+  "tag": "md-progress-indicator",
+  "title": "Progress Indicator",
+  "slug": "progress-indicator",
+  "category": "Communication",
+  "subComponentOf": null,
+  "storyId": "communication-progress-indicator--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'circular' | 'linear'",
+      "default": "'linear'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "max",
+      "attribute": "max",
+      "type": "number",
+      "default": "100",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "indeterminate",
+      "attribute": "indeterminate",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "thickness",
+      "attribute": "thickness",
+      "type": "number",
+      "default": "4",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "wave",
+      "attribute": "wave",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "waveAmplitude",
+      "attribute": "wave-amplitude",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "waveLength",
+      "attribute": "wave-length",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "waveSpeed",
+      "attribute": "wave-speed",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "size",
+      "attribute": "size",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "fourColor",
+      "attribute": "four-color",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "'Progress'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "complete",
+      "attribute": "complete",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdComplete",
+      "detail": "void"
+    }
+  ],
+  "methods": [],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "track",
+      "description": "Background track (rect or SVG circle/path)"
+    },
+    {
+      "name": "stop-indicator",
+      "description": "Stop dot at track end (linear determinate)"
+    },
+    {
+      "name": "active-indicator",
+      "description": "Active progress fill"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-progress-indicator-active-indicator-color",
+      "description": "Active indicator fill"
+    },
+    {
+      "name": "--md-progress-indicator-active-indicator-shape",
+      "description": "Active indicator corner radius"
+    },
+    {
+      "name": "--md-progress-indicator-track-color",
+      "description": "Track background"
+    },
+    {
+      "name": "--md-progress-indicator-track-shape",
+      "description": "Track corner radius"
+    },
+    {
+      "name": "--md-progress-indicator-stop-indicator-color",
+      "description": "Stop dot color"
+    },
+    {
+      "name": "--md-progress-indicator-stop-indicator-shape",
+      "description": "Stop dot corner radius"
+    },
+    {
+      "name": "--md-progress-indicator-stop-indicator-size",
+      "description": "Stop dot diameter"
+    },
+    {
+      "name": "--md-progress-indicator-stop-indicator-trailing-space",
+      "description": "Space past the stop dot to the trailing edge (default 0)"
+    },
+    {
+      "name": "--md-progress-indicator-track-active-indicator-space",
+      "description": "Gap between track and active indicator (default 4px)"
+    },
+    {
+      "name": "--md-progress-indicator-four-color-1",
+      "description": ""
+    },
+    {
+      "name": "--md-progress-indicator-four-color-2",
+      "description": ""
+    },
+    {
+      "name": "--md-progress-indicator-four-color-3",
+      "description": ""
+    },
+    {
+      "name": "--md-progress-indicator-four-color-4",
+      "description": ""
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdComplete",
+      "detail": "void"
+    }
+  ]
+}

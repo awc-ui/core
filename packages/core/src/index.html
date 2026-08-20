@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Card Drag &amp; Drop Test</title>
+  <script type="module" src="/build/md3.esm.js"></script>
+  <script nomodule src="/build/md3.js"></script>
+  <link rel="stylesheet" href="/build/md3.css" />
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 32px; background: #fffbfe; color: #1c1b1f; }
+    h2 { margin: 0 0 8px; }
+    p.subtitle { margin: 0 0 24px; color: #666; font-size: 14px; }
+
+    .zone {
+      min-height: 120px;
+      padding: 16px;
+      border-radius: 16px;
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .zone-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    #cardRow {
+      background: #f5f0ff;
+      border: 2px solid transparent;
+    }
+
+    #dropZone {
+      background: #f0f7f4;
+      border: 2px dashed #b0c9b8;
+      margin-top: 16px;
+    }
+
+    #dropZone.ready {
+      border-color: #4caf50;
+    }
+
+    #dropZone.over {
+      background: #c8e6c9;
+      border-color: #2e7d32;
+      border-style: solid;
+    }
+
+    .empty-msg {
+      color: #aaa;
+      font-size: 14px;
+      align-self: center;
+      width: 100%;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .log {
+      margin-top: 24px;
+      padding: 12px 16px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: monospace;
+      color: #555;
+      white-space: pre-wrap;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <h2>Card Drag &amp; Drop</h2>
+  <p class="subtitle">Grab a card and drag it — reorder within a zone or move it to the other zone.</p>
+
+  <div class="zone-label">Cards</div>
+  <div class="zone" id="cardRow">
+    <md-card variant="elevated" drag-enabled style="width: 240px;">
+      <div style="padding: 16px;">
+        <h3 style="margin: 0 0 8px; font-size: 16px;">Alpha</h3>
+        <p style="margin: 0; font-size: 14px; color: #666;">Drag to reorder or move.</p>
+      </div>
+    </md-card>
+
+    <md-card variant="filled" drag-enabled style="width: 240px;">
+      <div style="padding: 16px;">
+        <h3 style="margin: 0 0 8px; font-size: 16px;">Bravo</h3>
+        <p style="margin: 0; font-size: 14px; color: #666;">Drag to reorder or move.</p>
+      </div>
+    </md-card>
+
+    <md-card variant="outlined" drag-enabled style="width: 240px;">
+      <div style="padding: 16px;">
+        <h3 style="margin: 0 0 8px; font-size: 16px;">Charlie</h3>
+        <p style="margin: 0; font-size: 14px; color: #666;">Drag to reorder or move.</p>
+      </div>
+    </md-card>
+  </div>
+
+  <div class="zone-label" style="margin-top: 24px;">Drop Zone</div>
+  <div class="zone" id="dropZone">
+    <span class="empty-msg" id="emptyMsg">Drop cards here</span>
+  </div>
+
+  <div class="log" id="log">Event log:</div>
+
+  <!-- ===== Radio Button Group Test ===== -->
+  <hr style="margin: 40px 0 24px; border: none; border-top: 1px solid #ddd;" />
+  <h2>Radio Button — Group Exclusivity Test</h2>
+  <p class="subtitle">Click any radio — only one per group should be selected at a time.</p>
+
+  <div style="display: flex; gap: 48px; flex-wrap: wrap;">
+    <div>
+      <div class="zone-label">Group 1: Fruit</div>
+      <div role="radiogroup" aria-label="Fruit" id="fruitGroup" style="display: flex; flex-direction: column; gap: 4px;">
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <md-radio name="fruit" value="apple" checked></md-radio> Apple
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <md-radio name="fruit" value="banana"></md-radio> Banana
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <md-radio name="fruit" value="cherry"></md-radio> Cherry
+        </label>
+      </div>
+    </div>
+
+    <div>
+      <div class="zone-label">Group 2: Color (independent)</div>
+      <div role="radiogroup" aria-label="Color" style="display: flex; flex-direction: column; gap: 4px;">
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <md-radio name="color" value="red"></md-radio> Red
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <md-radio name="color" value="green" checked></md-radio> Green
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <md-radio name="color" value="blue"></md-radio> Blue
+        </label>
+      </div>
+    </div>
+
+    <div>
+      <div class="zone-label">States</div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <md-radio name="state" value="enabled"></md-radio> Enabled
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: not-allowed; opacity: 0.5;">
+          <md-radio name="state" value="disabled" disabled></md-radio> Disabled
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <md-radio name="state" value="checked" checked></md-radio> Pre-checked
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="log" id="radioLog">Radio event log:</div>
+  <script>
+    document.querySelectorAll('md-radio').forEach(r => {
+      r.addEventListener('mdChange', (e) => {
+        const rl = document.getElementById('radioLog');
+        const { value, checked } = e.detail;
+        const name = r.getAttribute('name');
+        rl.textContent += '\n' + new Date().toLocaleTimeString() + '  [' + name + '] value="' + value + '" checked=' + checked;
+        rl.scrollTop = rl.scrollHeight;
+      });
+    });
+  </script>
+
+  <script>
+    const cardRow = document.getElementById('cardRow');
+    const dropZone = document.getElementById('dropZone');
+    const emptyMsg = document.getElementById('emptyMsg');
+    const logEl = document.getElementById('log');
+    const zones = [cardRow, dropZone];
+
+    function addLog(msg) {
+      logEl.textContent += '\n' + new Date().toLocaleTimeString() + '  ' + msg;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    const indicator = document.createElement('div');
+    Object.assign(indicator.style, {
+      width: '3px',
+      alignSelf: 'stretch',
+      minHeight: '60px',
+      borderRadius: '2px',
+      background: '#6750a4',
+      flexShrink: '0',
+    });
+
+    function updateEmptyMsg() {
+      emptyMsg.style.display =
+        dropZone.querySelector('md-card') || dropZone.contains(indicator) ? 'none' : '';
+    }
+
+    function getZoneAtPoint(x, y) {
+      for (const z of zones) {
+        const r = z.getBoundingClientRect();
+        if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return z;
+      }
+      return null;
+    }
+
+    function getInsertionRef(zone, x, draggedCard) {
+      const cards = [...zone.querySelectorAll('md-card')].filter(c => c !== draggedCard);
+      for (const c of cards) {
+        const r = c.getBoundingClientRect();
+        if (x < r.left + r.width / 2) return c;
+      }
+      return null;
+    }
+
+    document.querySelectorAll('md-card[drag-enabled]').forEach((card) => {
+      card.addEventListener('mdDragStart', () => {
+        dropZone.classList.add('ready');
+        addLog('Drag started');
+      });
+
+      card.addEventListener('mdDragMove', (e) => {
+        const { clientX, clientY } = e.detail;
+        const zone = getZoneAtPoint(clientX, clientY);
+
+        if (zone) {
+          const ref = getInsertionRef(zone, clientX, card);
+          zone.insertBefore(indicator, ref);
+          dropZone.classList.toggle('over', zone === dropZone);
+        } else {
+          indicator.remove();
+          dropZone.classList.remove('over');
+        }
+        updateEmptyMsg();
+      });
+
+      card.addEventListener('mdDragEnd', (e) => {
+        card.style.transform = '';
+        card.style.zIndex = '';
+
+        if (indicator.parentElement) {
+          indicator.parentElement.insertBefore(card, indicator);
+          indicator.remove();
+          addLog('Dropped — new position set');
+        } else {
+          addLog('Returned to original position');
+        }
+
+        dropZone.classList.remove('ready', 'over');
+        updateEmptyMsg();
+      });
+    });
+  </script>
+
+  <hr style="margin: 48px 0 24px;">
+  <h2>Snackbar Position Test</h2>
+  <p class="subtitle">Click each button — the snackbar should appear at the labeled position.</p>
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 400px;">
+    <md-button variant="outlined" onclick="document.querySelector('#sn-tl').show()">top-start</md-button>
+    <md-button variant="outlined" onclick="document.querySelector('#sn-t').show()">top</md-button>
+    <md-button variant="outlined" onclick="document.querySelector('#sn-tr').show()">top-end</md-button>
+    <md-button variant="outlined" onclick="document.querySelector('#sn-l').show()">start</md-button>
+    <md-button variant="outlined" onclick="document.querySelector('#sn-c').show()">center</md-button>
+    <md-button variant="outlined" onclick="document.querySelector('#sn-r').show()">end</md-button>
+    <md-button variant="outlined" onclick="document.querySelector('#sn-bl').show()">bottom-start</md-button>
+    <md-button variant="filled"   onclick="document.querySelector('#sn-b').show()">bottom</md-button>
+    <md-button variant="outlined" onclick="document.querySelector('#sn-br').show()">bottom-end</md-button>
+  </div>
+
+  <md-snackbar id="sn-tl" position="top-start" message="Top-start" closeable></md-snackbar>
+  <md-snackbar id="sn-t"  position="top"       message="Top" closeable></md-snackbar>
+  <md-snackbar id="sn-tr" position="top-end"   message="Top-end" closeable></md-snackbar>
+  <md-snackbar id="sn-l"  position="start"     message="Start (left-center)" closeable></md-snackbar>
+  <md-snackbar id="sn-c"  position="center"    message="Center" closeable></md-snackbar>
+  <md-snackbar id="sn-r"  position="end"       message="End (right-center)" closeable></md-snackbar>
+  <md-snackbar id="sn-bl" position="bottom-start" message="Bottom-start" closeable></md-snackbar>
+  <md-snackbar id="sn-b"  position="bottom"    message="Bottom" closeable></md-snackbar>
+  <md-snackbar id="sn-br" position="bottom-end" message="Bottom-end" closeable></md-snackbar>
+</body>
+</html>

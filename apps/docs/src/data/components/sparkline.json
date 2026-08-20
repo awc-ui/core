@@ -1,0 +1,219 @@
+{
+  "tag": "md-sparkline",
+  "title": "Sparkline",
+  "slug": "sparkline",
+  "category": "Charts",
+  "subComponentOf": null,
+  "storyId": "charts-sparkline--playground",
+  "props": [
+    {
+      "name": "data",
+      "attribute": "",
+      "type": "MdChartDataPoint[]",
+      "default": "[]",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labels",
+      "attribute": "",
+      "type": "(string | number | Date)[] | undefined",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'line' | 'bar' | 'area'",
+      "default": "'line'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "color",
+      "attribute": "color",
+      "type": "MdChartColorRole | string",
+      "default": "'primary'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "curve",
+      "attribute": "curve",
+      "type": "MdChartCurve",
+      "default": "'smooth'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "showTooltip",
+      "attribute": "show-tooltip",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "showMarks",
+      "attribute": "show-marks",
+      "type": "'none' | 'extremes' | 'edges' | 'all'",
+      "default": "'extremes'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "referenceAreas",
+      "attribute": "",
+      "type": "MdSparklineReferenceArea[] | undefined",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "valueFormatter",
+      "attribute": "",
+      "type": "(value: number | null) => string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "heightProp",
+      "attribute": "height",
+      "type": "string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "noAnimation",
+      "attribute": "no-animation",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "cornerRadius",
+      "attribute": "corner-radius",
+      "type": "number",
+      "default": "2",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "min",
+      "attribute": "min",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "max",
+      "attribute": "max",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "lineWidth",
+      "attribute": "line-width",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "markSize",
+      "attribute": "mark-size",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "barWidth",
+      "attribute": "bar-width",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdSparkClick",
+      "detail": "{ dataIndex: number; value: number | null }"
+    },
+    {
+      "name": "mdReady",
+      "detail": "void"
+    }
+  ],
+  "methods": [
+    {
+      "name": "resize",
+      "params": ""
+    },
+    {
+      "name": "getInstance",
+      "params": ""
+    }
+  ],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "canvas",
+      "description": "ECharts SVG container"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-sparkline-block-size",
+      "description": "Default block-size (default: 28px)"
+    },
+    {
+      "name": "--md-sparkline-inline-size",
+      "description": "Default inline-size (default: 100%)"
+    },
+    {
+      "name": "--md-sparkline-min-inline-size",
+      "description": "Minimum inline-size before clipping (default: 32px)"
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [
+    {
+      "name": "MdChartDataPoint",
+      "kind": "type",
+      "body": "number | null"
+    },
+    {
+      "name": "MdSparklineReferenceArea",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Range start (index into the data array). */\n  from: number;\n  /** Range end. */\n  to: number;\n  /** Highlight colour. Defaults to a tinted version of the line. */\n  color?: string;\n  /** Optional accessible label (announced in screen-reader summary). */\n  label?: string;"
+    }
+  ],
+  "callableProps": [
+    {
+      "name": "valueFormatter",
+      "kind": "callable",
+      "body": "(value: number | null) => string"
+    }
+  ],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdSparkClick",
+      "detail": "{ dataIndex: number; value: number | null }"
+    },
+    {
+      "name": "mdReady",
+      "detail": "void"
+    }
+  ]
+}

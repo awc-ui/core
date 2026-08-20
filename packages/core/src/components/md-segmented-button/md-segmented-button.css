@@ -1,0 +1,379 @@
+/* ==========================================================
+   md-segmented-button — Material Design 3 Segmented Button
+   Spec: https://m3.material.io/components/segmented-buttons/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES:
+     --md-segmented-button-container-color           Unselected bg
+     --md-segmented-button-selected-container-color  Selected bg
+     --md-segmented-button-label-color               Unselected text
+     --md-segmented-button-selected-label-color      Selected text
+     --md-segmented-button-outline-color             Outline color
+     --md-segmented-button-container-shape           Border-radius
+     --md-segmented-button-icon-size                 Icon dimensions
+
+   CSS PARTS:
+     state-layer  Hover/press overlay
+     checkmark    Checkmark icon (selected)
+     icon         Icon element
+     label        Label text
+
+   SLOTS:
+     icon  Custom icon (replaces icon prop)
+   ========================================================== */
+
+:host {
+  --_container-color: var(--md-segmented-button-container-color, transparent);
+  --_selected-container-color: var(--md-segmented-button-selected-container-color, var(--md-sys-color-secondary-container));
+  --_label-color: var(--md-segmented-button-label-color, var(--md-sys-color-on-surface));
+  --_selected-label-color: var(--md-segmented-button-selected-label-color, var(--md-sys-color-on-secondary-container));
+  --_outline-color: var(--md-segmented-button-outline-color, var(--md-sys-color-outline));
+  --_container-shape: var(--md-segmented-button-container-shape, var(--md-sys-shape-corner-full, 9999px));
+  --_icon-size: var(--md-segmented-button-icon-size, max(14px, calc(18px + var(--md-sys-density-scale, 0) * 1px)));
+  --_state-layer-color: var(--md-sys-color-on-surface);
+  /* Follows a global `data-density` ancestor (0…-4, 4px/rung); density-scale is
+     0 by default so 40px is unchanged. The local `segmentDensity` (0..-3) still
+     overrides via the .--density-N blocks below. */
+  --_height: calc(40px + var(--md-sys-density-scale, 0) * 4px);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+  border: none;
+  outline: none;
+  box-sizing: border-box;
+  min-height: var(--_height);
+  padding: 0 var(--md-sys-spacing-inset-md, 12px);
+  gap: max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px));
+  background-color: var(--_container-color);
+  color: var(--_label-color);
+  -webkit-tap-highlight-color: transparent;
+  vertical-align: middle;
+
+  font-family: var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif);
+  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-label-large-font-weight, 500);
+  letter-spacing: var(--md-sys-typescale-label-large-letter-spacing, 0.1px);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+
+  transition: background-color 100ms var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* ==========================================================
+   1. OUTLINE — drawn as a pseudo-element of an inner span
+   Each segment has its own 1px border. Adjacent borders
+   collapse via negative margin on the set's slotted children.
+   ========================================================== */
+
+.md-segmented-button__outline {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 1px solid var(--_outline-color);
+}
+
+/* Logical corner properties auto-flip in RTL (border-start-start-radius
+   = top-left in LTR but top-right in RTL, etc.) so the rounded ends
+   always face the outer edges of the group, never the inner seams. */
+:host(.md-segmented-button--first) .md-segmented-button__outline {
+  border-start-start-radius: var(--_container-shape);
+  border-end-start-radius: var(--_container-shape);
+}
+
+:host(.md-segmented-button--last) .md-segmented-button__outline {
+  border-start-end-radius: var(--_container-shape);
+  border-end-end-radius: var(--_container-shape);
+}
+
+:host(.md-segmented-button--first.md-segmented-button--last) .md-segmented-button__outline {
+  border-radius: var(--_container-shape);
+}
+
+:host(:not(.md-segmented-button--first)) .md-segmented-button__outline {
+  border-inline-start: none;
+}
+
+/* The last segment normally borrows the previous segment's right border as its
+   leading divider. A DISABLED previous segment fades that border to ~12%, leaving
+   the last segment open on its inline-start (see the "disabled Gamma → Delta"
+   case). Give the last segment its own leading border, pulled 1px to overlap the
+   shared edge so it stays a single 1px divider when the previous segment is
+   enabled (no doubling). */
+:host(.md-segmented-button--last:not(.md-segmented-button--first)) {
+  margin-inline-start: -1px;
+}
+:host(.md-segmented-button--last:not(.md-segmented-button--first)) .md-segmented-button__outline {
+  border-inline-start: 1px solid var(--_outline-color);
+}
+
+/* ==========================================================
+   2. BORDER RADIUS ON HOST (matches outline)
+   ========================================================== */
+
+:host(.md-segmented-button--first) {
+  border-start-start-radius: var(--_container-shape);
+  border-end-start-radius: var(--_container-shape);
+}
+
+:host(.md-segmented-button--last) {
+  border-start-end-radius: var(--_container-shape);
+  border-end-end-radius: var(--_container-shape);
+}
+
+:host(.md-segmented-button--first.md-segmented-button--last) {
+  border-radius: var(--_container-shape);
+}
+
+:host(:not(.md-segmented-button--first):not(.md-segmented-button--last)) {
+  border-radius: 0;
+}
+
+/* ==========================================================
+   3. SELECTED STATE
+   ========================================================== */
+
+:host(.md-segmented-button--selected) {
+  --_container-color: var(--md-segmented-button-selected-container-color, var(--md-sys-color-secondary-container));
+  background-color: var(--_container-color);
+  color: var(--_selected-label-color);
+  --_state-layer-color: var(--md-sys-color-on-secondary-container);
+}
+
+/* ==========================================================
+   4. STATE LAYER
+   ========================================================== */
+
+.md-segmented-button__state-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--_state-layer-color);
+  opacity: 0;
+  transition: opacity 100ms var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  pointer-events: none;
+}
+
+:host(:hover) .md-segmented-button__state-layer {
+  opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+}
+
+:host(:focus-visible) .md-segmented-button__state-layer {
+  opacity: var(--md-sys-state-focus-state-layer-opacity, 0.10);
+}
+
+:host(:active) .md-segmented-button__state-layer {
+  opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.10);
+}
+
+/* ==========================================================
+   5. FOCUS RING
+   ========================================================== */
+
+:host(:focus-visible) {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: -3px;
+  z-index: 1;
+}
+
+/* ==========================================================
+   6. DISABLED
+   ========================================================== */
+
+:host(.md-segmented-button--disabled) {
+  cursor: default;
+  pointer-events: none;
+  --_label-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  --_outline-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
+}
+
+:host(.md-segmented-button--disabled.md-segmented-button--selected) {
+  --_container-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+}
+
+:host(.md-segmented-button--disabled:hover) .md-segmented-button__state-layer,
+:host(.md-segmented-button--disabled:active) .md-segmented-button__state-layer,
+:host(.md-segmented-button--disabled:focus-visible) .md-segmented-button__state-layer {
+  opacity: 0;
+}
+
+/* Soft-disabled: looks disabled but stays focusable for AT */
+:host([soft-disabled]) {
+  cursor: default;
+  pointer-events: auto;
+}
+
+:host([soft-disabled]) .md-segmented-button__state-layer { display: none; }
+
+/* ==========================================================
+   7. CONTENT — icon + label layout
+   ========================================================== */
+
+.md-segmented-button__content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px));
+  z-index: 0;
+  position: relative;
+}
+
+/* ==========================================================
+   8. ICON & CHECKMARK
+   ========================================================== */
+
+/* Icon / checkmark graphic.
+   Icon segments: always present, swaps icon ↔ checkmark in-place.
+   Text-only segments: always present for width reservation;
+   hidden when unselected, visible checkmark when selected. */
+.md-segmented-button__graphic {
+  font-size: var(--_icon-size);
+  width: var(--_icon-size);
+  height: var(--_icon-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.md-segmented-button__graphic--hidden {
+  visibility: hidden;
+}
+
+/* Trailing spacer mirrors the hidden leading graphic so that the label
+   sits perfectly centered between two equal-width invisible elements. */
+.md-segmented-button__spacer {
+  width: var(--_icon-size);
+  flex-shrink: 0;
+  visibility: hidden;
+}
+
+slot[name="icon"] {
+  display: contents;
+}
+
+::slotted([slot="icon"]) {
+  width: var(--_icon-size);
+  height: var(--_icon-size);
+  flex-shrink: 0;
+}
+
+/* ==========================================================
+   9. LABEL
+   ========================================================== */
+
+.md-segmented-button__label {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* ==========================================================
+   10. DENSITY
+   Each step removes 4px from the 40px default height.
+
+   The parent set pushes its density down as a class (this element is driven by
+   `segmentDensity`, a property, so CSS cannot key on it directly). That class
+   maps onto the SAME `--md-sys-density-scale` signal a global `data-density`
+   ancestor sets, rather than hard-coding a height.
+
+   This matters beyond tidiness: --_height was the ONLY value the old fixed
+   ladder touched, so under the local prop the icon size, gap and label
+   type (§0/§1, all scale-driven calcs) stayed at their density-0 values while a
+   global data-density condensed them. Mapping the signal instead means every
+   density-sensitive value in this file responds on both paths. The heights are
+   unchanged — calc(40px + scale*4px) reproduces 36/32/28 exactly — and -4 (24px)
+   now exists to match the library's 5-rung scale.
+   ========================================================== */
+
+:host(.md-segmented-button--density-1) { --md-sys-density-scale: -1; }
+:host(.md-segmented-button--density-2) { --md-sys-density-scale: -2; }
+:host(.md-segmented-button--density-3) { --md-sys-density-scale: -3; }
+:host(.md-segmented-button--density-4) { --md-sys-density-scale: -4; }
+
+/* ==========================================================
+   11. MATERIAL SYMBOLS (default icon font)
+   ========================================================== */
+
+.material-symbols-outlined {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-weight: normal;
+  font-style: normal;
+  font-size: var(--_icon-size, 18px);
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================
+   12. REDUCED MOTION
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+
+  .md-segmented-button__state-layer {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   13. FORCED COLORS — Windows High Contrast
+   ========================================================== */
+
+@media (forced-colors: active) {
+  :host {
+    forced-color-adjust: none;
+    background-color: ButtonFace;
+    color: ButtonText;
+  }
+
+  .md-segmented-button__outline {
+    border-color: ButtonText;
+  }
+
+  :host(:focus-visible) {
+    outline-color: Highlight;
+  }
+
+  :host(.md-segmented-button--selected) {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+
+  :host(.md-segmented-button--disabled) {
+    color: GrayText;
+    opacity: 1;
+  }
+
+  :host(.md-segmented-button--disabled) .md-segmented-button__outline {
+    border-color: GrayText;
+  }
+
+  .md-segmented-button__state-layer {
+    display: none;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

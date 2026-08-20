@@ -1,0 +1,256 @@
+{
+  "tag": "md-side-sheet",
+  "title": "Side Sheet",
+  "slug": "side-sheet",
+  "category": "Containment",
+  "subComponentOf": null,
+  "storyId": "containment-side-sheet--playground",
+  "props": [
+    {
+      "name": "open",
+      "attribute": "open",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'standard' | 'modal'",
+      "default": "'standard'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "side",
+      "attribute": "side",
+      "type": "'start' | 'end'",
+      "default": "'end'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "headline",
+      "attribute": "headline",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "closeable",
+      "attribute": "closeable",
+      "type": "boolean",
+      "default": "true",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "showBack",
+      "attribute": "show-back",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "scrimDismissible",
+      "attribute": "scrim-dismissible",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "topDivider",
+      "attribute": "top-divider",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "bottomDivider",
+      "attribute": "bottom-divider",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "detached",
+      "attribute": "detached",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "sheetAriaLabel",
+      "attribute": "aria-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdCancel",
+      "detail": "void"
+    },
+    {
+      "name": "mdBack",
+      "detail": "void"
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "params": ""
+    },
+    {
+      "name": "close",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "back",
+      "description": "Custom back icon element (modal only)"
+    },
+    {
+      "name": "headline",
+      "description": "Custom headline content"
+    },
+    {
+      "name": "close",
+      "description": "Custom close element"
+    },
+    {
+      "name": "actions",
+      "description": "Bottom action buttons"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "scrim",
+      "description": "Modal scrim overlay"
+    },
+    {
+      "name": "container",
+      "description": "Sheet surface"
+    },
+    {
+      "name": "header",
+      "description": "Header row"
+    },
+    {
+      "name": "headline",
+      "description": "Headline text"
+    },
+    {
+      "name": "close",
+      "description": "Close button wrapper"
+    },
+    {
+      "name": "divider-top",
+      "description": "Divider between header and content"
+    },
+    {
+      "name": "content",
+      "description": "Scrollable content area"
+    },
+    {
+      "name": "divider-bottom",
+      "description": "Divider between content and actions"
+    },
+    {
+      "name": "actions",
+      "description": "Bottom action bar"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-side-sheet-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-side-sheet-container-shape",
+      "description": "Container corner radius (detached)"
+    },
+    {
+      "name": "--md-side-sheet-headline-color",
+      "description": "Headline text color"
+    },
+    {
+      "name": "--md-side-sheet-content-color",
+      "description": "Content text color"
+    },
+    {
+      "name": "--md-side-sheet-scrim-color",
+      "description": "Modal scrim overlay color"
+    },
+    {
+      "name": "--md-side-sheet-divider-color",
+      "description": "Divider color"
+    },
+    {
+      "name": "--md-side-sheet-width",
+      "description": "Sheet inline size"
+    },
+    {
+      "name": "--md-side-sheet-max-width",
+      "description": "Maximum inline size"
+    },
+    {
+      "name": "--md-side-sheet-icon-color",
+      "description": "Close / back icon color"
+    }
+  ],
+  "dependencies": [
+    "md-icon-button"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdCancel",
+      "detail": "void"
+    },
+    {
+      "name": "mdBack",
+      "detail": "void"
+    }
+  ]
+}

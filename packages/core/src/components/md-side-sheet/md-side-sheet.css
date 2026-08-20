@@ -1,0 +1,390 @@
+/* ==========================================================
+   md-side-sheet — Material Design 3 Side Sheet
+   Spec: https://m3.material.io/components/side-sheets/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-side-sheet-container-color       Container background
+     --md-side-sheet-container-shape       Container corner radius (detached)
+     --md-side-sheet-headline-color        Headline text color
+     --md-side-sheet-content-color         Content text color
+     --md-side-sheet-scrim-color           Modal scrim overlay color
+     --md-side-sheet-divider-color         Divider color
+     --md-side-sheet-width                 Sheet inline size
+     --md-side-sheet-max-width             Maximum inline size
+     --md-side-sheet-icon-color            Close / back icon color
+
+   CSS PARTS:
+     scrim            Modal scrim overlay
+     container        Sheet surface
+     header           Header row
+     headline         Headline text
+     close            Close button wrapper
+     divider-top      Divider between header and content
+     divider-bottom   Divider between content and actions
+     content          Scrollable content area
+     actions          Bottom action bar
+
+   SLOTS:
+     (default)    Main content
+     headline     Custom headline content
+     back         Custom back icon element (modal only)
+     actions      Bottom action buttons
+     close        Custom close element
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST
+   ========================================================== */
+
+:host {
+  --_container-color: var(--md-side-sheet-container-color, var(--md-sys-color-surface, #FFFBFE));
+  --_container-shape: var(--md-side-sheet-container-shape, 0px);
+  --_headline-color: var(--md-side-sheet-headline-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_content-color: var(--md-side-sheet-content-color, var(--md-sys-color-on-surface, #1C1B1F));
+  --_scrim-color: var(--md-side-sheet-scrim-color, rgba(0, 0, 0, 0.32));
+  --_divider-color: var(--md-side-sheet-divider-color, var(--md-sys-color-outline-variant, #CAC4D0));
+  --_width: var(--md-side-sheet-width, max(280px, calc(360px + var(--md-sys-density-scale, 0) * 16px)));
+  --_max-width: var(--md-side-sheet-max-width, max(320px, calc(400px + var(--md-sys-density-scale, 0) * 16px)));
+  --_icon-color: var(--md-side-sheet-icon-color, var(--md-sys-color-on-surface-variant, #49454F));
+
+  display: block;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* ==========================================================
+   2. STANDARD VARIANT — inline, coexists with page content
+   ========================================================== */
+
+:host(.md-side-sheet--standard) {
+  /* Cap to the parent so a narrow layout never forces overflow. */
+  inline-size: min(var(--_width), 100%);
+  max-inline-size: min(var(--_max-width), 100%);
+  block-size: 100%;
+}
+
+:host(.md-side-sheet--standard:not(.md-side-sheet--open)) {
+  display: none;
+}
+
+:host(.md-side-sheet--standard) .md-side-sheet__container {
+  position: relative;
+  inline-size: 100%;
+  block-size: 100%;
+  background-color: var(--_container-color);
+  color: var(--_content-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Standard: optional outline divider on the adjacent edge */
+:host(.md-side-sheet--standard.md-side-sheet--end) .md-side-sheet__container {
+  border-inline-start: 1px solid var(--_divider-color);
+}
+
+:host(.md-side-sheet--standard.md-side-sheet--start) .md-side-sheet__container {
+  border-inline-end: 1px solid var(--_divider-color);
+}
+
+/* ==========================================================
+   3. MODAL VARIANT — fixed overlay with scrim
+   ========================================================== */
+
+:host(.md-side-sheet--modal) {
+  display: contents;
+}
+
+:host(.md-side-sheet--modal:not(.md-side-sheet--open)) {
+  display: contents;
+  pointer-events: none;
+}
+
+/* ─── Scrim ────────────────────────────────────────────── */
+
+.md-side-sheet__scrim {
+  position: fixed;
+  inset: 0;
+  background-color: var(--_scrim-color);
+  z-index: var(--md-sys-z-index-popup, 1000);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+:host(.md-side-sheet--modal.md-side-sheet--open) .md-side-sheet__scrim {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ─── Modal container (base) ───────────────────────────── */
+
+:host(.md-side-sheet--modal) .md-side-sheet__container {
+  position: fixed;
+  inset-block: 0;
+  z-index: var(--md-sys-z-index-dialog-scrim, 1001);
+  /* Responsive width: never wider than the viewport. On screens narrower than
+     the configured width the sheet becomes full-width (flush to the anchored
+     edge) instead of overflowing off-screen and clipping its content. */
+  inline-size: min(var(--_width), 100%);
+  max-inline-size: min(var(--_max-width), 100%);
+  background-color: var(--md-sys-color-surface-container-low, #F7F2FA);
+  color: var(--_content-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: var(--md-sys-elevation-1);
+  transition:
+    transform var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),
+    opacity var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* ─── End edge (default) — closed: off-screen right ────── */
+
+:host(.md-side-sheet--modal.md-side-sheet--end) .md-side-sheet__container {
+  inset-inline-end: 0;
+  inset-inline-start: auto;
+  transform: translateX(100%);
+}
+
+/* ─── Start edge — closed: off-screen left ─────────────── */
+
+:host(.md-side-sheet--modal.md-side-sheet--start) .md-side-sheet__container {
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+  transform: translateX(-100%);
+}
+
+/* ─── Open state (must come after position rules) ──────── */
+
+:host(.md-side-sheet--modal.md-side-sheet--open) .md-side-sheet__container {
+  pointer-events: auto;
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* ─── RTL overrides for closed state ───────────────────── */
+
+:host-context([dir="rtl"]):host(.md-side-sheet--modal.md-side-sheet--end) .md-side-sheet__container,
+:host([dir="rtl"].md-side-sheet--modal.md-side-sheet--end) .md-side-sheet__container {
+  transform: translateX(-100%);
+}
+
+:host-context([dir="rtl"]):host(.md-side-sheet--modal.md-side-sheet--start) .md-side-sheet__container,
+:host([dir="rtl"].md-side-sheet--modal.md-side-sheet--start) .md-side-sheet__container {
+  transform: translateX(100%);
+}
+
+/* RTL open state — same translateX(0) but needs higher specificity */
+:host-context([dir="rtl"]):host(.md-side-sheet--modal.md-side-sheet--open) .md-side-sheet__container,
+:host([dir="rtl"].md-side-sheet--modal.md-side-sheet--open) .md-side-sheet__container {
+  transform: translateX(0);
+}
+
+/* ==========================================================
+   4. DETACHED — rounded corners + margin
+   ========================================================== */
+
+:host(.md-side-sheet--detached) .md-side-sheet__container {
+  --_container-shape: var(--md-side-sheet-container-shape, var(--md-sys-shape-corner-large, 16px));
+  border-radius: var(--_container-shape);
+}
+
+:host(.md-side-sheet--modal.md-side-sheet--detached) .md-side-sheet__container {
+  inset-block: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px));
+  block-size: calc(100% - max(16px, calc(32px + var(--md-sys-density-scale, 0) * 4px)));
+  box-shadow: var(--md-sys-elevation-3);
+}
+
+:host(.md-side-sheet--modal.md-side-sheet--detached.md-side-sheet--end) .md-side-sheet__container {
+  inset-inline-end: 16px;
+}
+
+:host(.md-side-sheet--modal.md-side-sheet--detached.md-side-sheet--start) .md-side-sheet__container {
+  inset-inline-start: 16px;
+}
+
+:host(.md-side-sheet--standard.md-side-sheet--detached) .md-side-sheet__container {
+  border: none;
+  margin: 16px;
+  block-size: calc(100% - 32px);
+  box-shadow: var(--md-sys-elevation-1);
+}
+
+/* ==========================================================
+   5. HEADER — headline + close/back icons
+   ========================================================== */
+
+.md-side-sheet__header {
+  display: flex;
+  align-items: center;
+  gap: max(4px, calc(12px + var(--md-sys-density-scale, 0) * 2px));
+  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  padding-block: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px)) max(8px, calc(12px + var(--md-sys-density-scale, 0) * 1px));
+  flex-shrink: 0;
+}
+
+.md-side-sheet__back {
+  flex-shrink: 0;
+  margin-inline-start: calc(-12px - var(--md-sys-density-scale, 0) * 1px);
+}
+
+.md-side-sheet__headline {
+  flex: 1;
+  font-family: var(--md-sys-typescale-title-large-font-family, Roboto, sans-serif);
+  font-size: max(16px, calc(22px + var(--md-sys-density-scale, 0) * 1px));
+  font-weight: var(--md-sys-typescale-title-large-font-weight, 400);
+  line-height: max(22px, calc(28px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-title-large-letter-spacing, 0px);
+  color: var(--_headline-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.md-side-sheet__close {
+  flex-shrink: 0;
+  margin-inline-end: calc(-12px - var(--md-sys-density-scale, 0) * 1px);
+}
+
+.md-side-sheet__close md-icon-button,
+.md-side-sheet__back md-icon-button {
+  --md-icon-button-icon-color: var(--_icon-color);
+  --md-icon-button-container-width: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
+  --md-icon-button-container-height: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
+  --md-icon-button-icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+}
+
+/* ==========================================================
+   6. DIVIDER
+   ========================================================== */
+
+.md-side-sheet__divider {
+  block-size: 1px;
+  background-color: var(--_divider-color);
+  flex-shrink: 0;
+}
+
+/* ==========================================================
+   7. CONTENT — scrollable body
+   ========================================================== */
+
+.md-side-sheet__content {
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: scroll;
+  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  padding-block: max(8px, calc(12px + var(--md-sys-density-scale, 0) * 1px));
+  font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif);
+  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-medium-font-weight, 400);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-body-medium-letter-spacing, 0.25px);
+  color: var(--_content-color);
+  scrollbar-width: thin;
+  scrollbar-color: var(--md-sys-color-outline-variant, #CAC4D0) transparent;
+}
+
+.md-side-sheet__content::-webkit-scrollbar {
+  inline-size: 8px;
+}
+
+.md-side-sheet__content::-webkit-scrollbar-thumb {
+  background-color: var(--md-sys-color-outline-variant, #CAC4D0);
+  border-radius: 4px;
+}
+
+.md-side-sheet__content::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* ==========================================================
+   8. ACTIONS — bottom button bar
+   ========================================================== */
+
+.md-side-sheet__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px));
+  min-block-size: max(40px, calc(72px + var(--md-sys-density-scale, 0) * 4px));
+  box-sizing: border-box;
+  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  padding-block: max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1px));
+  flex-shrink: 0;
+  margin-block-start: auto;
+}
+
+
+/* ==========================================================
+   9. SLOTTED CONTENT
+   ========================================================== */
+
+::slotted([slot="back"]) {
+  color: var(--_icon-color);
+  --md-icon-button-container-width: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
+  --md-icon-button-container-height: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
+  --md-icon-button-icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+}
+
+::slotted([slot="close"]) {
+  color: var(--_icon-color);
+  --md-icon-button-container-width: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
+  --md-icon-button-container-height: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
+  --md-icon-button-icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+}
+
+/* ==========================================================
+   10. FOCUS GUARDS (sentinel elements for focus trap)
+   ========================================================== */
+
+.md-side-sheet__focus-guard {
+  position: fixed;
+  overflow: hidden;
+  clip-path: inset(50%);
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  border: 0;
+  margin: -1px;
+  white-space: nowrap;
+}
+
+/* ==========================================================
+   11. REDUCED MOTION
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-side-sheet__scrim,
+  :host(.md-side-sheet--modal) .md-side-sheet__container {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   11. FORCED COLORS (Windows High Contrast)
+   ========================================================== */
+
+@media (forced-colors: active) {
+  .md-side-sheet__container {
+    border: 2px solid CanvasText;
+  }
+
+  .md-side-sheet__divider {
+    background-color: CanvasText;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

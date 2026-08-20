@@ -1,0 +1,2709 @@
+---
+// Theme Generator — combines Stories 3.1, 3.2, 3.3, 3.4
+//
+// Custom Astro page outside Starlight's content directory. Reachable at
+// /theme-generator/. A sidebar link in astro.config.mjs points users here
+// from any docs page. The back link returns to /.
+//
+// Story 3.1 — Color inputs (primary/secondary/tertiary) + HCT tonal palette
+//             computation in a Web Worker, with hex validation.
+// Story 3.2 — Live preview of real AWC UI components styled with the
+//             generated MD3 role-mapped tokens (applied as inline CSS custom
+//             properties on the panel element for maximum specificity).
+// Story 3.3 — Light/dark toggle on the preview + WCAG 2.1 AA contrast
+//             validation panel for all 11 key role pairs.
+// Story 3.4 — "Download theme.css" button generates a complete MD3 token
+//             CSS file (light + [data-theme="dark"] blocks) and triggers
+//             a blob download.
+
+// IMPORTANT: This page lives outside Starlight's content directory, so the
+// Starlight `customCss` chain (which loads tokens.css for every docs page)
+// does NOT apply here. We import the MD3 token baseline explicitly so the
+// preview components have access to shape/elevation/typography/motion
+// tokens AND a default color set. The worker then overrides color tokens
+// per-panel via inline element styles, which beat :root via specificity.
+import "@awc-ui/tokens/tokens.css";
+
+const DEFAULT_PRIMARY = "#6750A4";
+const DEFAULT_SECONDARY = "#625B71";
+const DEFAULT_TERTIARY = "#7D5260";
+
+const PALETTE_KEYS = [
+  { key: "primary", label: "Primary" },
+  { key: "secondary", label: "Secondary" },
+  { key: "tertiary", label: "Tertiary" },
+  { key: "neutral", label: "Neutral" },
+  { key: "neutralVariant", label: "Neutral Variant" },
+] as const;
+
+const TONES = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99, 100];
+
+// Surfaced in the contrast panel. Order intentional — most discriminating
+// real-world pairs first, then the MD3 role-matched safety checks.
+//
+// Each entry is [foreground, background, label, minimum WCAG ratio].
+//
+// Three classes of pair:
+//   1. CROSS-ROLE TEXT (4.5:1, AA normal): pairings developers actually
+//      hit in real UIs — e.g., a primary-coloured link or label sitting
+//      directly on a plain surface. MD3 doesn't guarantee these pass;
+//      they're what the theme generator should actually validate.
+//   2. NON-TEXT UI (3:1, WCAG 2.1 SC 1.4.11): borders, dividers, focus
+//      rings, icons-only and large-text-only pairs.
+//   3. ROLE-MATCHED (4.5:1, AA normal): the on-X / X pairs MD3
+//      mathematically guarantees. Kept as a sanity check; expected to
+//      always pass under TONAL_SPOT @ contrast level 0.
+const CONTRAST_PAIRS = [
+  // ── 1. Cross-role text pairings (most likely to fail) ──
+  ["primary", "surface", "Primary text on Surface", 4.5],
+  ["primary", "background", "Primary text on Background", 4.5],
+  ["secondary", "surface", "Secondary text on Surface", 4.5],
+  ["tertiary", "surface", "Tertiary text on Surface", 4.5],
+  ["error", "surface", "Error text on Surface", 4.5],
+  ["onSurfaceVariant", "surfaceContainerHigh", "Body text on Surface Container High", 4.5],
+
+  // ── 2. Non-text UI (3:1) ──
+  // NOTE: outline-variant / surface is intentionally NOT tested here.
+  // MD3 designs outline-variant as a low-contrast divider (tone-80 light
+  // / tone-30 dark) and explicitly accepts the trade-off — it always
+  // fails 3:1, regardless of the source colours the user picks. Listing
+  // it as a "failure" in a palette-checker is misleading: there's no
+  // colour change that would fix it. The fix is at code time — use the
+  // `outline` token (tested below) for any pixel that must clear 3:1.
+  ["outline", "surface", "Outline / Surface (borders, 3:1)", 3],
+
+  // ── 3. Role-matched sanity checks (MD3 guarantees) ──
+  ["onPrimary", "primary", "On Primary / Primary", 4.5],
+  ["onSecondary", "secondary", "On Secondary / Secondary", 4.5],
+  ["onTertiary", "tertiary", "On Tertiary / Tertiary", 4.5],
+  ["onError", "error", "On Error / Error", 4.5],
+  ["onPrimaryContainer", "primaryContainer", "On Primary Container", 4.5],
+  ["onSecondaryContainer", "secondaryContainer", "On Secondary Container", 4.5],
+  ["onTertiaryContainer", "tertiaryContainer", "On Tertiary Container", 4.5],
+  ["onErrorContainer", "errorContainer", "On Error Container", 4.5],
+  ["onBackground", "background", "On Background / Background", 4.5],
+  ["onSurface", "surface", "On Surface / Surface", 4.5],
+  ["onSurfaceVariant", "surfaceVariant", "On Surface Variant / Variant", 4.5],
+] as const;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Theme Generator | AWC UI</title>
+    <meta
+      name="description"
+      content="Generate a Material Design 3 tonal palette + role-mapped tokens from your brand colors. Live preview on real AWC UI components, WCAG AA contrast validation, and one-click CSS download."
+    />
+    <link rel="canonical" href="https://awcui.io/theme-generator/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+    />
+  </head>
+  <body>
+    <header class="tg-header">
+      <a
+        href="/getting-started/installation/"
+        class="tg-header__back"
+        aria-label="Back to AWC UI documentation"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+        <span class="tg-header__back-label">AWC UI</span>
+      </a>
+      <a
+        href="https://github.com/awc-ui/core"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="tg-header__github"
+        aria-label="Open AWC UI on GitHub"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
+          ><path
+            d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+          ></path></svg
+        >
+        GitHub
+      </a>
+    </header>
+
+    <main class="tg-main">
+      <section class="tg-intro">
+        <span class="tg-intro__eyebrow">Theme generator</span>
+        <h1 class="tg-intro__title">Build your MD3 theme</h1>
+        <p class="tg-intro__subtitle">
+          Pick brand colors, get a Material Design 3 tonal palette + role-mapped tokens
+          in real time. Preview on real AWC UI components, validate WCAG AA contrast
+          in light and dark mode, and download a ready-to-use CSS file.
+        </p>
+      </section>
+
+      <section class="tg-inputs" aria-labelledby="tg-inputs-heading">
+        <h2 id="tg-inputs-heading" class="tg-inputs__heading">Source colors</h2>
+
+        <p class="tg-inputs__lede">
+          Pick <strong>one</strong> brand color. Material Design 3 derives the rest of
+          the scheme from it — secondary at the same hue with lower chroma, tertiary
+          60° around the hue wheel. Override either one only if your brand needs it.
+        </p>
+
+        {[
+          { key: "primary", label: "Primary", value: DEFAULT_PRIMARY, optional: false },
+          { key: "secondary", label: "Secondary", value: DEFAULT_SECONDARY, optional: true },
+          { key: "tertiary", label: "Tertiary", value: DEFAULT_TERTIARY, optional: true },
+        ].map(({ key, label, value, optional }) => (
+          <div class="tg-input" data-input-for={key}>
+            <div class="tg-input__head">
+              <label class="tg-input__label" for={`tg-${key}`}>{label}</label>
+              {optional && (
+                <label class="tg-input__derive">
+                  <input type="checkbox" checked data-derive-toggle data-key={key} />
+                  <span>Derive from primary</span>
+                </label>
+              )}
+            </div>
+            <div class="tg-input__row">
+              <input
+                type="color"
+                id={`tg-${key}-picker`}
+                class="tg-input__picker"
+                value={value}
+                data-color-picker
+                data-key={key}
+                aria-label={`${label} color picker`}
+              />
+              <input
+                type="text"
+                id={`tg-${key}`}
+                class="tg-input__hex"
+                value={value}
+                maxlength="7"
+                spellcheck="false"
+                autocomplete="off"
+                autocapitalize="off"
+                data-color-text
+                data-key={key}
+                aria-describedby={`tg-${key}-error`}
+              />
+            </div>
+            <p id={`tg-${key}-error`} class="tg-input__error" role="alert" data-error-for={key}></p>
+          </div>
+        ))}
+
+        <p class="tg-inputs__perf" id="tg-perf" aria-live="polite"></p>
+      </section>
+
+      <section class="tg-toolbar" aria-labelledby="tg-toolbar-heading">
+        <h2 id="tg-toolbar-heading" class="tg-visually-hidden">Preview controls</h2>
+        <div class="tg-toggle-group" role="group" aria-label="Theme mode">
+          <button
+            type="button"
+            class="tg-toggle tg-toggle--active"
+            data-mode-toggle="light"
+            aria-pressed="true"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">light_mode</span>
+            Light
+          </button>
+          <button
+            type="button"
+            class="tg-toggle"
+            data-mode-toggle="dark"
+            aria-pressed="false"
+          >
+            <span class="material-symbols-outlined" aria-hidden="true">dark_mode</span>
+            Dark
+          </button>
+        </div>
+
+        <!-- Global density. Unlike colour, density is NOT generated: the token
+             layer already implements it as a runtime switch, so a consumer just
+             sets `data-density` on <html>. This control exists so a theme can be
+             judged at the rungs it will actually ship at — every surface tightens
+             and the type steps down, which changes how the palette reads. -->
+        <!-- Plain wrapper, NOT .tg-toggle-group: that class is the segmented
+             pill for the light/dark buttons (100px radius, its own border and
+             surface), so wrapping a field in it drew a stray pill outline
+             bleeding out behind the select's own outlined border. md-select
+             brings its own label and outline; it needs no chrome around it. -->
+        <div class="tg-density-field">
+          <md-select
+            label="Density"
+            variant="outlined"
+            value="0"
+            data-density-select
+            style="min-width: 168px;"
+          >
+            <md-select-option value="0">Default (0)</md-select-option>
+            <md-select-option value="-1">Compact (-1)</md-select-option>
+            <md-select-option value="-2">Compact (-2)</md-select-option>
+            <md-select-option value="-3">Dense (-3)</md-select-option>
+            <md-select-option value="-4">Ultra (-4)</md-select-option>
+          </md-select>
+        </div>
+
+        <!-- MD3 contrast level. At standard (0) Material engineers AA-compliant
+             cross-role text pairs by construction; at -1 it relaxes them so
+             real failures appear; at 0.5 / 1 it shifts toward AAA. The value
+             flows straight to DynamicScheme.contrastLevel in the worker. -->
+        <div
+          class="tg-toggle-group tg-toggle-group--contrast"
+          role="group"
+          aria-label="MD3 contrast level"
+          data-tour-label="Contrast level"
+        >
+          <span class="tg-toggle-group__label" aria-hidden="true">Contrast</span>
+          <!-- Rich tooltip explaining what each contrast level actually does.
+               Sits inside the pill so it's discoverable right where the user
+               clicks, without dumping a paragraph into the toolbar layout. -->
+          <md-tooltip variant="rich" position="bottom" class="tg-contrast-help">
+            <button
+              type="button"
+              class="tg-toggle-group__info"
+              aria-label="About MD3 contrast levels"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true">help</span>
+            </button>
+            <span slot="subhead">What does Contrast do?</span>
+            <span slot="content">
+              MD3's algorithm derives every colour role from its source palettes at fixed perceptual
+              tones (tone-40 for <code>primary</code>, tone-98 for <code>surface</code>, and so on).
+              The <strong>Contrast</strong> control scales those targets so the algorithm
+              redistributes tones to hit a stricter or looser WCAG goal:
+              <ul>
+                <li><strong>Reduced (−1)</strong> — MD3 deliberately relaxes its targets. Tones move
+                  closer together, the UI feels softer, and some cross-role text pairs drop below
+                  4.5:1. Useful for low-stakes brand surfaces; not WCAG AA by itself.</li>
+                <li><strong>Standard (0)</strong> — MD3's default. The algorithm engineers every
+                  cross-role text pair to clear <strong>WCAG AA (4.5:1)</strong> by construction,
+                  regardless of source colours. This is what ships in the spec.</li>
+                <li><strong>Medium (0.5)</strong> — MD3 pushes tones further apart. Text and icons
+                  read more strongly against surfaces; useful when Standard feels too soft for
+                  data-heavy UIs.</li>
+                <li><strong>High (1)</strong> — AAA-aligned. MD3 targets <strong>7:1</strong> for
+                  normal text where possible. Tone-40 darkens, tone-98 brightens, and the brand
+                  flavour gives ground to readability. The right choice for accessibility-first
+                  products.</li>
+              </ul>
+              The whole theme (light + dark) and the contrast panel below update live as you change
+              levels.
+            </span>
+          </md-tooltip>
+          {[
+            { value: "-1", label: "Reduced" },
+            { value: "0", label: "Standard" },
+            { value: "0.5", label: "Medium" },
+            { value: "1", label: "High" },
+          ].map(({ value, label }) => (
+            <button
+              type="button"
+              class={`tg-toggle${value === "0" ? " tg-toggle--active" : ""}`}
+              data-contrast-toggle={value}
+              aria-pressed={value === "0" ? "true" : "false"}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <button type="button" class="tg-download" id="tg-download" disabled>
+          <span class="material-symbols-outlined" aria-hidden="true">download</span>
+          Download theme.css
+        </button>
+      </section>
+
+      <section class="tg-preview" data-mode="light" aria-labelledby="tg-preview-heading" data-live-preview>
+        <h2 id="tg-preview-heading" class="tg-section__heading">Live preview</h2>
+        <p class="tg-section__sub">
+          Real AWC UI components styled with your generated tokens. The
+          <code>--md-sys-color-*</code> variables are set as inline custom properties
+          on the panel element, so changes you make above propagate live into every
+          component's shadow DOM via standard CSS inheritance.
+        </p>
+
+        <div class="tg-preview__panel" data-preview-panel>
+          <!-- Buttons (filled, tonal, elevated, outlined, text). -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Buttons</div>
+            <div class="tg-preview__row">
+              <md-button variant="filled" size="md">Filled</md-button>
+              <md-button variant="tonal" size="md">Tonal</md-button>
+              <md-button variant="elevated" size="md">Elevated</md-button>
+              <md-button variant="outlined" size="md">Outlined</md-button>
+              <md-button variant="text" size="md">Text</md-button>
+              <md-button variant="filled" size="md" icon="add">With icon</md-button>
+            </div>
+          </div>
+
+          <!-- FAB + icon buttons. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">FAB &amp; icon buttons</div>
+            <div class="tg-preview__row">
+              <md-fab size="standard" icon="add" aria-label="Add"></md-fab>
+              <md-fab size="medium" icon="edit" aria-label="Edit"></md-fab>
+              <md-fab size="large" icon="favorite" variant="secondary-container" aria-label="Favorite"></md-fab>
+              <md-fab size="medium" icon="share" variant="tertiary-container" aria-label="Share"></md-fab>
+              <md-icon-button icon="favorite" aria-label="Favorite"></md-icon-button>
+              <md-icon-button icon="settings" variant="tonal" aria-label="Settings"></md-icon-button>
+              <md-icon-button icon="more_vert" variant="filled" aria-label="More"></md-icon-button>
+              <md-icon-button icon="bookmark" variant="outlined" aria-label="Bookmark"></md-icon-button>
+            </div>
+          </div>
+
+          <!-- Selection controls: switch, checkbox, radio, chips. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Selection &amp; chips</div>
+            <div class="tg-preview__row">
+              <md-switch checked aria-label="Notifications enabled"></md-switch>
+              <md-switch aria-label="Notifications disabled"></md-switch>
+              <md-checkbox checked aria-label="Subscribe"></md-checkbox>
+              <md-checkbox indeterminate aria-label="Partial"></md-checkbox>
+              <md-checkbox aria-label="Unchecked"></md-checkbox>
+              <md-radio name="tg-radio" value="a" checked aria-label="Radio A"></md-radio>
+              <md-radio name="tg-radio" value="b" aria-label="Radio B"></md-radio>
+              <md-chip variant="filter" label="Filter" selected></md-chip>
+              <md-chip variant="suggestion" label="Suggestion"></md-chip>
+              <md-chip variant="assist" label="With icon" icon="check" selected></md-chip>
+            </div>
+          </div>
+
+          <!-- Sliders + progress + loading. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Sliders &amp; progress</div>
+            <div class="tg-preview__row tg-preview__row--column">
+              <md-slider value="40" min="0" max="100" aria-label="Volume"></md-slider>
+              <!-- A meter is a state, not an activity: it reads the same
+                   primary / secondary-container pair as the bar above, so the
+                   two together show whether the fill roles agree. -->
+              <md-meter value="72" label="Storage used" show-label show-value></md-meter>
+              <md-meter variant="circular" value="72" size="48" label="Quota" show-value></md-meter>
+              <md-progress-indicator value="65" aria-label="Sync progress"></md-progress-indicator>
+              <!-- Wavy (M3 expressive) — determinate linear, indeterminate
+                   linear, and circular. The wave rides the active indicator, so
+                   it is the clearest read on whether the primary role landed. -->
+              <md-progress-indicator
+                value="65"
+                wave
+                aria-label="Sync progress, wavy"
+              ></md-progress-indicator>
+              <md-progress-indicator
+                indeterminate
+                wave
+                aria-label="Loading, wavy"
+              ></md-progress-indicator>
+              <div class="tg-preview__row">
+                <md-loading-indicator aria-label="Loading"></md-loading-indicator>
+                <md-progress-indicator
+                  variant="circular"
+                  indeterminate
+                  aria-label="Loading circular"
+                ></md-progress-indicator>
+                <md-progress-indicator
+                  variant="circular"
+                  value="70"
+                  wave
+                  aria-label="Sync progress, wavy circular"
+                ></md-progress-indicator>
+                <md-progress-indicator
+                  variant="circular"
+                  indeterminate
+                  wave
+                  four-color
+                  aria-label="Loading, wavy four-color"
+                ></md-progress-indicator>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cards. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Cards</div>
+            <div class="tg-preview__row tg-preview__row--cards">
+              <md-card variant="filled" class="tg-preview__card">
+                <h3 class="tg-preview__card-title">Filled card</h3>
+                <p class="tg-preview__card-body">Surface container with text on it.</p>
+              </md-card>
+              <md-card variant="elevated" class="tg-preview__card">
+                <h3 class="tg-preview__card-title">Elevated card</h3>
+                <p class="tg-preview__card-body">Shadow-separated container.</p>
+              </md-card>
+              <md-card variant="outlined" class="tg-preview__card">
+                <h3 class="tg-preview__card-title">Outlined card</h3>
+                <p class="tg-preview__card-body">Border-defined container.</p>
+              </md-card>
+            </div>
+          </div>
+
+          <!-- Text fields. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Text fields</div>
+            <div class="tg-preview__row tg-preview__row--text-fields">
+              <md-text-field variant="filled" label="Filled" value="AWC UI"></md-text-field>
+              <md-text-field variant="outlined" label="Outlined" value="AWC UI"></md-text-field>
+              <md-text-field
+                variant="outlined"
+                label="With supporting text"
+                value="hello@example.com"
+                supporting-text="We'll never share your email."
+              ></md-text-field>
+              <!-- The other two text inputs: they resolve the same field roles
+                   (container, label, outline, caret) plus their own — the
+                   stepper buttons and the OTP cell outlines. -->
+              <md-number-field
+                variant="outlined"
+                label="Quantity"
+                value="5"
+                min="0"
+                max="99"
+              ></md-number-field>
+              <md-otp-field length="4" value="24" label="One-time code"></md-otp-field>
+            </div>
+          </div>
+
+          <!-- Badges + segmented buttons. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Badges &amp; segmented</div>
+            <div class="tg-preview__row">
+              <!-- md-badge is an absolutely-positioned overlay; its anchor
+                   element must be a sibling inside a `position: relative`
+                   wrapper. Without the wrapper the badge escapes to the
+                   nearest positioned ancestor (i.e. the viewport's
+                   top-right corner). -->
+              <span class="tg-preview__badge-anchor">
+                <md-icon-button icon="notifications" aria-label="Notifications"></md-icon-button>
+                <md-badge value="5"></md-badge>
+              </span>
+              <span class="tg-preview__badge-anchor">
+                <md-icon-button icon="mail" aria-label="Inbox"></md-icon-button>
+                <md-badge value="99"></md-badge>
+              </span>
+              <md-segmented-button-set>
+                <md-segmented-button label="Day" selected></md-segmented-button>
+                <md-segmented-button label="Week"></md-segmented-button>
+                <md-segmented-button label="Month"></md-segmented-button>
+                <md-segmented-button label="Year"></md-segmented-button>
+              </md-segmented-button-set>
+            </div>
+          </div>
+
+          <!-- Tabs + navigation bar. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Tabs &amp; navigation</div>
+            <md-tabs aria-label="Theme generator demo tabs">
+              <md-tab label="Overview" active></md-tab>
+              <md-tab label="Activity"></md-tab>
+              <md-tab label="Notifications"></md-tab>
+              <md-tab label="Settings"></md-tab>
+            </md-tabs>
+
+            <md-navigation-bar class="tg-preview__navbar">
+              <md-navigation-tab label="Home" icon="home" active></md-navigation-tab>
+              <md-navigation-tab label="Search" icon="search"></md-navigation-tab>
+              <md-navigation-tab label="Library" icon="library_books"></md-navigation-tab>
+              <md-navigation-tab label="Profile" icon="person"></md-navigation-tab>
+            </md-navigation-bar>
+          </div>
+
+          <!-- App bars. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">App bars (small &amp; search)</div>
+            <md-app-bar headline="Inbox" variant="small">
+              <md-icon-button slot="leading" icon="menu" aria-label="Menu"></md-icon-button>
+              <md-icon-button slot="trailing" icon="search" aria-label="Search"></md-icon-button>
+              <md-icon-button slot="trailing" icon="more_vert" aria-label="More"></md-icon-button>
+            </md-app-bar>
+            <md-app-bar variant="search" search-placeholder="Search">
+              <md-icon-button slot="leading" icon="menu" aria-label="Menu"></md-icon-button>
+              <md-icon-button slot="search-trailing" icon="mic" aria-label="Voice"></md-icon-button>
+              <md-avatar slot="trailing" label="A"></md-avatar>
+            </md-app-bar>
+          </div>
+
+          <!-- Toolbar (rich text style). -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Toolbar</div>
+            <md-toolbar aria-label="Formatting toolbar">
+              <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+              <md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button>
+              <md-icon-button icon="format_underlined" aria-label="Underline"></md-icon-button>
+              <md-divider vertical></md-divider>
+              <md-icon-button icon="format_align_left" aria-label="Align left"></md-icon-button>
+              <md-icon-button icon="format_align_center" aria-label="Align center"></md-icon-button>
+              <md-icon-button icon="format_align_right" aria-label="Align right"></md-icon-button>
+              <md-divider vertical></md-divider>
+              <md-icon-button icon="format_list_bulleted" aria-label="Bullet list"></md-icon-button>
+              <md-icon-button icon="format_list_numbered" aria-label="Numbered list"></md-icon-button>
+              <md-icon-button icon="link" aria-label="Insert link"></md-icon-button>
+            </md-toolbar>
+          </div>
+
+          <!-- Button group + split button. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Grouped &amp; split buttons</div>
+            <div class="tg-preview__row">
+              <md-button-group variant="connected">
+                <md-button variant="outlined">Cut</md-button>
+                <md-button variant="outlined">Copy</md-button>
+                <md-button variant="outlined">Paste</md-button>
+              </md-button-group>
+              <!-- md-split-button is self-contained: it renders its own
+                   leading + trailing buttons from `label`, `icon`, and
+                   `trailingIcon` props. Passing nested <md-button> children
+                   makes it render a button-inside-a-button. -->
+              <md-split-button variant="filled" label="Save" icon="save"></md-split-button>
+              <md-split-button variant="tonal" label="Export" icon="download"></md-split-button>
+              <md-split-button variant="outlined" label="Share" icon="share"></md-split-button>
+            </div>
+          </div>
+
+          <!-- Select + tooltip trigger. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Select &amp; tooltip</div>
+            <div class="tg-preview__row tg-preview__row--top">
+              <md-select label="Country" variant="filled" value="us" style="min-width: 220px;">
+                <md-select-option value="us">United States</md-select-option>
+                <md-select-option value="uk">United Kingdom</md-select-option>
+                <md-select-option value="de">Germany</md-select-option>
+                <md-select-option value="jp">Japan</md-select-option>
+              </md-select>
+              <md-select
+                label="Priority"
+                variant="outlined"
+                value="medium"
+                style="min-width: 220px;"
+                supporting-text="How urgent is this?"
+              >
+                <md-select-option value="low">Low</md-select-option>
+                <md-select-option value="medium">Medium</md-select-option>
+                <md-select-option value="high">High</md-select-option>
+              </md-select>
+              <md-tooltip text="Saves changes locally and to the server" position="top">
+                <md-button variant="tonal" icon="save">Hover for tooltip</md-button>
+              </md-tooltip>
+            </div>
+          </div>
+
+          <!-- Date picker (docked, inline). -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Date picker (docked)</div>
+            <md-date-picker variant="docked" label="Event date" value="2026-05-12"></md-date-picker>
+          </div>
+
+          <!-- Navigation rail + list. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Navigation rail &amp; list</div>
+            <div class="tg-preview__rail-row">
+              <div class="tg-preview__rail-wrap">
+                <md-navigation-rail has-fab>
+                  <md-fab slot="fab" icon="edit" aria-label="Compose"></md-fab>
+                  <md-navigation-rail-tab label="Inbox" icon="inbox" active badge badge-value="12"></md-navigation-rail-tab>
+                  <md-navigation-rail-tab label="Starred" icon="star"></md-navigation-rail-tab>
+                  <md-navigation-rail-tab label="Sent" icon="send"></md-navigation-rail-tab>
+                  <md-navigation-rail-tab label="Drafts" icon="drafts"></md-navigation-rail-tab>
+                  <md-navigation-rail-tab label="Archive" icon="archive"></md-navigation-rail-tab>
+                </md-navigation-rail>
+              </div>
+              <div class="tg-preview__list-wrap">
+                <md-list class="tg-preview__list">
+                  <md-list-item
+                    headline="Welcome to AWC UI"
+                    overline="Today"
+                    supporting-text="Pick your brand colors to see the theme in action."
+                    leading-icon="auto_awesome"
+                    trailing-icon="chevron_right"
+                    lines="2"
+                  ></md-list-item>
+                  <md-divider></md-divider>
+                  <md-list-item
+                    headline="Sync complete"
+                    overline="Yesterday"
+                    supporting-text="3 conversations synced from the cloud."
+                    leading-icon="cloud_done"
+                    trailing-icon="chevron_right"
+                    lines="2"
+                  ></md-list-item>
+                  <md-divider></md-divider>
+                  <md-list-item
+                    headline="Inbox"
+                    supporting-text="12 unread messages"
+                    leading-icon="inbox"
+                    trailing-icon="chevron_right"
+                  ></md-list-item>
+                  <md-divider></md-divider>
+                  <md-list-item
+                    headline="Drafts"
+                    supporting-text="Last edited yesterday"
+                    leading-icon="drafts"
+                    trailing-icon="chevron_right"
+                  ></md-list-item>
+                </md-list>
+              </div>
+            </div>
+          </div>
+
+          <!-- Disclosure: accordion + stepper. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Accordion &amp; stepper</div>
+            <md-accordion style="max-width: 460px;">
+              <md-accordion-item headline="Shipping" supporting-text="Arrives in 3-5 days" expanded>
+                Standard delivery to the billing address.
+              </md-accordion-item>
+              <md-accordion-item headline="Payment" supporting-text="Visa ending 4242">
+                Charged when the order ships.
+              </md-accordion-item>
+            </md-accordion>
+            <md-stepper style="margin-block-start: 16px;">
+              <md-step label="Cart" completed></md-step>
+              <md-step label="Address" active></md-step>
+              <md-step label="Payment"></md-step>
+            </md-stepper>
+          </div>
+
+          <!-- Breadcrumbs + tab panels. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Breadcrumbs &amp; tab panels</div>
+            <md-breadcrumbs>
+              <md-breadcrumb-item href="#" icon="home">Home</md-breadcrumb-item>
+              <md-breadcrumb-item href="#">Projects</md-breadcrumb-item>
+              <md-breadcrumb-item current>Alpha</md-breadcrumb-item>
+            </md-breadcrumbs>
+            <md-tabs id="tg-tabs" style="margin-block-start: 12px;">
+              <md-tab label="Overview" active></md-tab>
+              <md-tab label="Activity"></md-tab>
+            </md-tabs>
+            <md-tab-panels for="tg-tabs">
+              <md-tab-panel active>Overview content.</md-tab-panel>
+              <md-tab-panel>Activity content.</md-tab-panel>
+            </md-tab-panels>
+          </div>
+
+          <!-- Status, rating, skeleton, ripple. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Status, rating, skeleton &amp; ripple</div>
+            <div class="tg-preview__row tg-preview__row--top">
+              <md-rating value="3" label="Rating"></md-rating>
+              <div class="tg-preview__row" style="gap: 12px;">
+                <md-status-dot status="success" label="Online"></md-status-dot>
+                <md-status-dot status="warning" label="Degraded"></md-status-dot>
+                <md-status-dot status="error" label="Offline"></md-status-dot>
+              </div>
+              <md-skeleton style="inline-size: 180px;"></md-skeleton>
+              <!-- md-ripple fills its nearest positioned ancestor. -->
+              <div style="position: relative; inline-size: 120px; block-size: 44px; border-radius: 12px;
+                          background: var(--md-sys-color-surface-container-high); display: grid;
+                          place-items: center; overflow: hidden; cursor: pointer;">
+                Ripple<md-ripple></md-ripple>
+              </div>
+            </div>
+          </div>
+
+          <!-- Remaining inputs: search, autocomplete, multi-select, color picker. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Search, autocomplete &amp; pickers</div>
+            <div class="tg-preview__row tg-preview__row--top">
+              <md-search trigger="bar" label="Search" style="min-width: 260px;"></md-search>
+              <md-autocomplete label="Fruit" variant="outlined" style="min-width: 220px;">
+                <md-select-option value="apple">Apple</md-select-option>
+                <md-select-option value="banana">Banana</md-select-option>
+                <md-select-option value="cherry">Cherry</md-select-option>
+              </md-autocomplete>
+              <md-multi-select label="Tags" variant="outlined" style="min-width: 220px;">
+                <md-select-option value="new" selected>New</md-select-option>
+                <md-select-option value="urgent" selected>Urgent</md-select-option>
+                <md-select-option value="later">Later</md-select-option>
+              </md-multi-select>
+            </div>
+            <div class="tg-preview__row tg-preview__row--top" style="margin-block-start: 12px;">
+              <md-color-picker value="#6750A4" label="Brand color"></md-color-picker>
+            </div>
+          </div>
+
+          <!-- Overlays. All CLOSED on mount: an open popup would float over the
+               generator and, for modals, scroll-lock the page. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Menus, sheets &amp; dialogs</div>
+            <div class="tg-preview__row">
+              <md-button variant="outlined" id="tg-menu-anchor" aria-haspopup="menu"
+                onclick="document.getElementById('tg-menu').show?.()">Open menu</md-button>
+              <md-menu id="tg-menu" anchor="tg-menu-anchor">
+                <md-menu-item-group label="Edit">
+                  <md-menu-item headline="Cut" leading-icon="content_cut"></md-menu-item>
+                  <md-menu-item headline="Copy" leading-icon="content_copy"></md-menu-item>
+                </md-menu-item-group>
+                <md-sub-menu-item headline="Share">
+                  <md-menu slot="submenu">
+                    <md-menu-item headline="Email"></md-menu-item>
+                    <md-menu-item headline="Link"></md-menu-item>
+                  </md-menu>
+                </md-sub-menu-item>
+              </md-menu>
+
+              <md-button variant="outlined"
+                onclick="document.getElementById('tg-dialog').show?.()">Open dialog</md-button>
+              <md-button variant="outlined"
+                onclick="document.getElementById('tg-bottom-sheet').show?.()">Bottom sheet</md-button>
+              <md-button variant="outlined"
+                onclick="document.getElementById('tg-side-sheet').show?.()">Side sheet</md-button>
+              <md-button variant="outlined"
+                onclick="document.getElementById('tg-snackbar').show?.()">Snackbar</md-button>
+              <md-button variant="outlined"
+                onclick="document.getElementById('tg-time-picker').show?.()">Time picker</md-button>
+            </div>
+
+            <md-dialog id="tg-dialog" headline="Discard draft?">
+              <span slot="content">This cannot be undone.</span>
+              <md-button slot="actions" variant="text"
+                onclick="document.getElementById('tg-dialog').close?.()">Cancel</md-button>
+              <md-button slot="actions" variant="filled"
+                onclick="document.getElementById('tg-dialog').close?.()">Discard</md-button>
+            </md-dialog>
+            <md-bottom-sheet id="tg-bottom-sheet" headline="Share to">Sheet content.</md-bottom-sheet>
+            <md-side-sheet id="tg-side-sheet" headline="Filters">Sheet content.</md-side-sheet>
+            <md-snackbar id="tg-snackbar" action="Undo">Message archived</md-snackbar>
+            <md-time-picker id="tg-time-picker" hide-trigger></md-time-picker>
+          </div>
+
+          <!-- FAB menu: anchors to a FAB by id and renders no trigger itself. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">FAB menu</div>
+            <div class="tg-preview__row" style="min-block-size: 160px; align-items: flex-end;">
+              <md-fab id="tg-fab-anchor" icon="add" aria-label="Create"></md-fab>
+              <md-fab-menu anchor="tg-fab-anchor" placement="up" menu-label="Create">
+                <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+                <md-fab-menu-item icon="image" label="Image"></md-fab-menu-item>
+              </md-fab-menu>
+            </div>
+          </div>
+
+          <!-- Composable table family. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Table (composable)</div>
+            <md-table-container variant="outlined">
+              <md-table-toolbar slot="top" headline="Invoices"></md-table-toolbar>
+              <md-table>
+                <md-table-head>
+                  <md-table-row>
+                    <md-table-cell head scope="col">
+                      <md-table-sort-label sorted="asc">Client</md-table-sort-label>
+                    </md-table-cell>
+                    <md-table-cell head scope="col" numeric align="end">Amount</md-table-cell>
+                    <md-table-cell head scope="col"></md-table-cell>
+                  </md-table-row>
+                </md-table-head>
+                <md-table-body>
+                  <md-table-row expandable>
+                    <md-table-cell>Acme</md-table-cell>
+                    <md-table-cell numeric align="end">$1,200</md-table-cell>
+                    <md-table-cell><md-table-expand-toggle></md-table-expand-toggle></md-table-cell>
+                    <div slot="expanded">Issued 3 March.</div>
+                  </md-table-row>
+                  <md-table-row>
+                    <md-table-cell>Globex</md-table-cell>
+                    <md-table-cell numeric align="end">$840</md-table-cell>
+                    <md-table-cell></md-table-cell>
+                  </md-table-row>
+                </md-table-body>
+                <md-table-foot>
+                  <md-table-row selectable="false">
+                    <md-table-cell>Total</md-table-cell>
+                    <md-table-cell numeric align="end">$2,040</md-table-cell>
+                    <md-table-cell></md-table-cell>
+                  </md-table-row>
+                </md-table-foot>
+              </md-table>
+              <md-table-pagination slot="bottom" count="2" rows-per-page="10"></md-table-pagination>
+            </md-table-container>
+          </div>
+
+          <!-- Data-driven: the transfer list takes its items as a JS
+               PROPERTY, wired in the script below. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Transfer list</div>
+            <md-transfer-list id="tg-transfer"></md-transfer-list>
+          </div>
+
+          <!-- Charts. Canvas-rendered, so they are told to repaint whenever the
+               theme changes (see refreshCharts). -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Charts</div>
+            <div class="tg-preview__row tg-preview__row--top">
+              <md-bar-chart id="tg-bar" label="Revenue" style="inline-size: 300px; block-size: 200px;"></md-bar-chart>
+              <md-line-chart id="tg-line" label="Sessions" style="inline-size: 300px; block-size: 200px;"></md-line-chart>
+              <md-area-chart id="tg-area" label="Storage" style="inline-size: 300px; block-size: 200px;"></md-area-chart>
+            </div>
+            <div class="tg-preview__row tg-preview__row--top" style="margin-block-start: 12px;">
+              <md-pie-chart id="tg-pie" label="Traffic" style="inline-size: 260px; block-size: 200px;"></md-pie-chart>
+              <!-- inner-radius takes a PERCENTAGE STRING (or px), not a 0-1
+                   fraction: "0.62" is read as 0.62 pixels and renders a solid
+                   pie. Angles are degrees with 90 at 12 o'clock. -->
+              <md-pie-chart
+                id="tg-donut"
+                label="Donut"
+                inner-radius="45%"
+                outer-radius="82%"
+                style="inline-size: 260px; block-size: 200px;"
+              ></md-pie-chart>
+              <md-pie-chart
+                id="tg-semi"
+                label="Semi-circle"
+                inner-radius="45%"
+                outer-radius="82%"
+                start-angle="180"
+                end-angle="0"
+                style="inline-size: 260px; block-size: 200px;"
+              ></md-pie-chart>
+            </div>
+
+            <!-- Stacking, layout and dual series exercise the palette BEYOND
+                 primary: a series list walks primary → secondary → tertiary →
+                 error, so a stacked chart is the fastest read on whether the
+                 whole set works together rather than just the first swatch. -->
+            <div class="tg-preview__row tg-preview__row--top" style="margin-block-start: 12px;">
+              <md-bar-chart
+                id="tg-bar-stacked"
+                label="Stacked"
+                stack="normal"
+                style="inline-size: 300px; block-size: 200px;"
+              ></md-bar-chart>
+              <md-bar-chart
+                id="tg-bar-h"
+                label="Horizontal"
+                layout="horizontal"
+                style="inline-size: 300px; block-size: 200px;"
+              ></md-bar-chart>
+              <md-area-chart
+                id="tg-area-pct"
+                label="100% stacked"
+                stack="percent"
+                style="inline-size: 300px; block-size: 200px;"
+              ></md-area-chart>
+            </div>
+
+            <div class="tg-preview__row tg-preview__row--top" style="margin-block-start: 12px;">
+              <md-line-chart
+                id="tg-line-curve"
+                label="Curved + marks"
+                curve="monotone"
+                show-marks
+                style="inline-size: 300px; block-size: 200px;"
+              ></md-line-chart>
+              <md-sparkline id="tg-spark" style="inline-size: 160px; block-size: 48px;"></md-sparkline>
+              <md-sparkline
+                id="tg-spark-bar"
+                variant="bar"
+                style="inline-size: 160px; block-size: 48px;"
+              ></md-sparkline>
+            </div>
+          </div>
+
+          <!-- Organization chart. -->
+          <div class="tg-preview__group">
+            <div class="tg-preview__group-label">Organization chart</div>
+            <md-organization-chart id="tg-org"></md-organization-chart>
+          </div>
+
+        </div>
+      </section>
+
+      <section class="tg-contrast" aria-labelledby="tg-contrast-heading">
+        <h2 id="tg-contrast-heading" class="tg-section__heading">WCAG AA contrast</h2>
+        <p class="tg-section__sub">
+          Each row checks two MD3 colour roles against the WCAG minimum
+          (<strong>4.5:1</strong> for normal text;
+          <strong>3:1</strong> for borders / dividers / icons,
+          per WCAG 2.1 SC 1.4.11) at the current
+          <strong data-contrast-level-label>Standard</strong> contrast level.
+          Change the <em>Contrast</em> control above to see how MD3's
+          algorithm redistributes tones at each level.
+        </p>
+        <ul class="tg-contrast__legend">
+          <li>
+            <strong>Cross-role pairs</strong> (top) — combinations like
+            primary-coloured text on a plain surface. Material engineers
+            these to pass at <strong>Standard</strong> contrast and above;
+            drop to <strong>Reduced</strong> to see real failures and which
+            source colours fix them. Hover the red icon on any failing row
+            for an actionable recommendation.
+          </li>
+          <li>
+            <strong>Non-text pairs</strong> (middle) — borders and
+            dividers, checked against the lower 3:1 threshold.
+          </li>
+          <li>
+            <strong>Role-matched sanity check</strong> (bottom) — pairs
+            like <code>on-primary</code> over <code>primary</code> that
+            Material's algorithm mathematically engineers to always
+            pass. Shown for completeness, not as a discriminating test.
+          </li>
+        </ul>
+
+        <ul class="tg-contrast__list" data-contrast-list>
+          {CONTRAST_PAIRS.map(([fg, bg, label, minRatio]) => (
+            <li
+              class="tg-contrast__item"
+              data-contrast-item
+              data-fg={fg}
+              data-bg={bg}
+              data-min-ratio={String(minRatio)}
+            >
+              <div class="tg-contrast__chip" data-contrast-chip>
+                <span class="tg-contrast__chip-label">Aa</span>
+              </div>
+              <div class="tg-contrast__meta">
+                <span class="tg-contrast__pair">{label}</span>
+                <span class="tg-contrast__ratio" data-contrast-ratio>—</span>
+              </div>
+              <!-- Inline info trigger shown ONLY for failing pairs.
+                   Wraps a small red error icon as the tooltip trigger;
+                   md-tooltip supplies the rich popover with subhead +
+                   actionable recommendation copy. Hidden while the pair
+                   passes so it doesn't take up layout space. -->
+              <md-tooltip
+                variant="rich"
+                position="top"
+                class="tg-contrast__tooltip"
+                data-contrast-tooltip
+                hidden
+              >
+                <button
+                  type="button"
+                  class="tg-contrast__info"
+                  aria-label="Why does this pair fail?"
+                  data-contrast-info
+                >
+                  <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                </button>
+                <span slot="subhead" data-contrast-tip-subhead></span>
+                <span slot="content" data-contrast-tip-content></span>
+              </md-tooltip>
+              <span class="tg-contrast__status" data-contrast-status></span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section class="tg-palette" aria-labelledby="tg-palette-heading">
+        <h2 id="tg-palette-heading" class="tg-section__heading">Tonal palettes</h2>
+        <p class="tg-section__sub">
+          Each row below is a tonal palette with 13 tones (0 = black, 100 = white).
+          AWC UI's color roles map to specific tones — e.g.,
+          <code>--md-sys-color-primary</code> = primary T40 (light) / T80 (dark).
+        </p>
+
+        <div class="tg-palette__grid" data-palette-grid>
+          {PALETTE_KEYS.map(({ key, label }) => (
+            <div class="tg-palette__row" data-palette-row={key}>
+              <div class="tg-palette__label">{label}</div>
+              <div class="tg-palette__swatches">
+                {TONES.map((tone) => (
+                  <div class="tg-palette__swatch" data-palette-key={key} data-palette-tone={tone}>
+                    <div class="tg-palette__swatch-color" data-swatch-color></div>
+                    <div class="tg-palette__swatch-meta">
+                      <span class="tg-palette__swatch-tone">T{tone}</span>
+                      <span class="tg-palette__swatch-hex" data-swatch-hex>—</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <footer class="tg-footer">
+        <p>
+          Theme generator powered by <code>@material/material-color-utilities</code>
+          (Apache-2.0). Computation runs in a Web Worker for sub-200ms updates.
+        </p>
+      </footer>
+    </main>
+
+    <script>
+      import ThemeWorker from "@awc-ui/theme/worker?worker";
+      import {
+        generateCss,
+        tokenName,
+        DEFAULT_SEED_COLORS,
+        type PaletteKey,
+        type RoleMap,
+        type ThemeWorkerResponse,
+      } from "@awc-ui/theme";
+
+      type StateKey = "primary" | "secondary" | "tertiary";
+      type Tones = Record<PaletteKey, Record<number, string>>;
+      type WorkerResponse = ThemeWorkerResponse;
+
+      const HEX_RE = /^#?[0-9a-fA-F]{6}$/;
+      const DEBOUNCE_MS = 50;
+
+      const state: Record<StateKey, string> = {
+        primary: DEFAULT_SEED_COLORS.primary,
+        secondary: DEFAULT_SEED_COLORS.secondary,
+        tertiary: DEFAULT_SEED_COLORS.tertiary,
+      };
+
+      // Secondary and tertiary are DERIVED from primary unless the user opts out.
+      // compute-theme.ts already does the derivation whenever the hex is absent
+      // (same hue at chroma 16 for secondary, hue + 60 at chroma 24 for
+      // tertiary) — the UI just has to send nothing instead of a seed.
+      const derived: Record<"secondary" | "tertiary", boolean> = {
+        secondary: true,
+        tertiary: true,
+      };
+
+      let lastResponse: WorkerResponse | null = null;
+      let mode: "light" | "dark" = "light";
+      let contrastLevel = 0;
+
+      // Map raw contrastLevel value → display label. Kept in sync with the
+      // toolbar buttons so the intro paragraph's inline level name updates
+      // automatically when the user changes contrast.
+      const CONTRAST_LEVEL_LABELS: Record<string, string> = {
+        "-1": "Reduced",
+        "0": "Standard",
+        "0.5": "Medium",
+        "1": "High",
+      };
+
+      function contrastLevelLabel(level: number): string {
+        return CONTRAST_LEVEL_LABELS[String(level)] ?? "Standard";
+      }
+
+      // ─── HEX UTILITIES ─────────────────────────────────────────────────
+      function normalizeHex(v: string): string | null {
+        const trimmed = v.trim();
+        if (!HEX_RE.test(trimmed)) return null;
+        return trimmed.startsWith("#") ? trimmed.toUpperCase() : `#${trimmed.toUpperCase()}`;
+      }
+
+      function hexToRgb(hex: string): [number, number, number] {
+        const h = hex.startsWith("#") ? hex.slice(1) : hex;
+        return [
+          parseInt(h.slice(0, 2), 16),
+          parseInt(h.slice(2, 4), 16),
+          parseInt(h.slice(4, 6), 16),
+        ];
+      }
+
+      // ─── WCAG 2.1 RELATIVE LUMINANCE & CONTRAST RATIO ──────────────────
+      // Per WCAG 2.1: https://www.w3.org/TR/WCAG21/#dfn-relative-luminance
+      // L = 0.2126*R + 0.7152*G + 0.0722*B with sRGB linearization.
+      // Contrast ratio = (L1 + 0.05) / (L2 + 0.05), L1 > L2.
+      function relativeLuminance(hex: string): number {
+        const [r, g, b] = hexToRgb(hex).map((c) => {
+          const sRGB = c / 255;
+          return sRGB <= 0.03928
+            ? sRGB / 12.92
+            : Math.pow((sRGB + 0.055) / 1.055, 2.4);
+        }) as [number, number, number];
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      }
+
+      function contrastRatio(fg: string, bg: string): number {
+        const l1 = relativeLuminance(fg);
+        const l2 = relativeLuminance(bg);
+        const [light, dark] = l1 > l2 ? [l1, l2] : [l2, l1];
+        return (light + 0.05) / (dark + 0.05);
+      }
+
+      // ─── ERROR / PICKER SYNC ───────────────────────────────────────────
+      function setError(key: StateKey, msg: string) {
+        const el = document.querySelector<HTMLElement>(`[data-error-for="${key}"]`);
+        if (el) el.textContent = msg;
+        const text = document.querySelector<HTMLInputElement>(
+          `[data-color-text][data-key="${key}"]`,
+        );
+        text?.classList.toggle("tg-input__hex--invalid", !!msg);
+      }
+
+      function syncPicker(key: StateKey, hex: string) {
+        const picker = document.querySelector<HTMLInputElement>(
+          `[data-color-picker][data-key="${key}"]`,
+        );
+        if (picker && picker.value.toUpperCase() !== hex.toUpperCase()) {
+          picker.value = hex;
+        }
+      }
+
+      // ─── APPLY TONAL PALETTE TO SWATCHES ───────────────────────────────
+      function applyPalette(tones: Tones) {
+        for (const row of document.querySelectorAll<HTMLElement>("[data-palette-row]")) {
+          const key = row.dataset.paletteRow as PaletteKey;
+          const palette = tones[key];
+          if (!palette) continue;
+          for (const sw of row.querySelectorAll<HTMLElement>("[data-palette-tone]")) {
+            const tone = Number(sw.dataset.paletteTone);
+            const hex = palette[tone];
+            if (!hex) continue;
+            const colorEl = sw.querySelector<HTMLElement>("[data-swatch-color]");
+            const hexEl = sw.querySelector<HTMLElement>("[data-swatch-hex]");
+            if (colorEl) colorEl.style.backgroundColor = hex;
+            if (hexEl) hexEl.textContent = hex;
+          }
+        }
+      }
+
+      // ─── APPLY ROLE TOKENS TO PREVIEW PANEL ────────────────────────────
+      // Writes the generated MD3 color tokens directly onto the preview
+      // panel element as inline CSS custom properties.
+      //
+      // Why inline `style.setProperty` instead of a global <style> rule?
+      //   1. INLINE STYLE has the highest possible specificity (1,0,0,0),
+      //      so it always wins over `:root { --md-sys-color-*: ... }` from
+      //      `@awc-ui/tokens/tokens.css` — including the `[data-theme="dark"]`
+      //      block that we'd otherwise have to fight via class selectors.
+      //   2. CSS custom properties are inheriting, so children in light DOM
+      //      (every <md-button>, <md-chip>, etc.) inherit them, and each
+      //      component's shadow root reads them via the `:host` boundary.
+      //   3. No selector mismatch / cache surprises — what we set is exactly
+      //      what the elements see.
+      function applyPreviewTokens(roles: RoleMap) {
+        const panel = document.querySelector<HTMLElement>(
+          "[data-preview-panel]",
+        );
+        if (!panel) return;
+        for (const [role, hex] of Object.entries(roles)) {
+          panel.style.setProperty(`--md-sys-color-${tokenName(role)}`, hex);
+        }
+      }
+
+      // ─── CONTRAST RECOMMENDATIONS ──────────────────────────────────────
+      // When a pair fails its threshold, surface a short headline plus a
+      // longer, actionable explanation. The structure matches md-tooltip's
+      // rich variant: subhead slot for the heading, content slot for the
+      // body. Keyed on the foreground role so each recommendation can
+      // pinpoint the source palette that's the weak link.
+      type ContrastTip = { subhead: string; content: string };
+
+      function recommend(fg: string, bg: string, ratio: number, minRatio: number): ContrastTip {
+        const shortfall = (minRatio - ratio).toFixed(2);
+
+        // Tail every recommendation with the same fallback advice: bumping
+        // MD3's contrastLevel is *always* a valid way to clear a failing
+        // pair, even when the source colours themselves are fine.
+        const levelFix =
+          ` Or raise the <em>Contrast</em> control above <strong>Standard</strong> — ` +
+          `MD3 will automatically nudge tones to clear this pair.`;
+
+        if (fg === "outline") {
+          return {
+            subhead: "Outline is too pale against Surface",
+            content:
+              `Short by <strong>${shortfall}</strong>. Increase your primary's chroma (a more saturated source colour). ` +
+              "The Neutral Variant palette inherits its tint from primary's hue — a more vivid primary " +
+              "produces a stronger outline tone." + levelFix,
+          };
+        }
+
+        // Brand-colour text on a plain surface — the most common failure.
+        // Caused by source colours that resolve to a too-light tone-40 in
+        // light mode (or too-dark tone-80 in dark mode).
+        if (
+          (fg === "primary" || fg === "secondary" || fg === "tertiary" || fg === "error") &&
+          (bg === "surface" || bg === "background" || bg === "surfaceContainerHigh")
+        ) {
+          const role = fg.charAt(0).toUpperCase() + fg.slice(1);
+          return {
+            subhead: `${role} is too close in lightness to ${bg}`,
+            content:
+              `Short by <strong>${shortfall}</strong>. Try one of: ` +
+              `<ul><li>Pick a darker, more saturated <strong>${fg}</strong> source colour — HCT tone &lt; 40, chroma &gt; 30 works well.</li>` +
+              `<li>Use the <code>on-${fg}-container</code> / <code>${fg}-container</code> pair instead — Material guarantees that pairing.</li>` +
+              `<li>Raise the <em>Contrast</em> control above Standard — MD3 darkens tone-40 automatically.</li></ul>`,
+          };
+        }
+
+        if (fg === "onSurfaceVariant" && bg === "surfaceContainerHigh") {
+          return {
+            subhead: "Body text contrast is too low",
+            content:
+              `Short by <strong>${shortfall}</strong>. Your primary's neutral palette is producing low-contrast body text. ` +
+              "Pick a primary with HCT chroma between 16 and 40 — extreme low- or high-chroma primaries " +
+              "push the neutral palette outside the 4.5:1 band." + levelFix,
+          };
+        }
+
+        // Role-matched (on-X / X) failure is rare under MD3 TONAL_SPOT but
+        // can happen with extreme source colours.
+        if (fg.startsWith("on")) {
+          const base = fg.slice(2).charAt(0).toLowerCase() + fg.slice(3);
+          return {
+            subhead: `Source colour for ${base} is too pale`,
+            content:
+              `Short by <strong>${shortfall}</strong>. The current source colour can't derive a contrasting ` +
+              `<code>on-${base}</code> tone. Pick a darker, more saturated source colour to give the algorithm more headroom.` + levelFix,
+          };
+        }
+
+        return {
+          subhead: "Contrast below threshold",
+          content: `Short by <strong>${shortfall}</strong>. Try a different source colour to push this pair above ${minRatio}:1.` + levelFix,
+        };
+      }
+
+      // ─── APPLY CONTRAST PANEL ──────────────────────────────────────────
+      // Each row carries its own minimum contrast ratio via `data-min-ratio`
+      // (set from the `CONTRAST_PAIRS` tuple at render time). Text pairs
+      // need 4.5:1 (WCAG AA SC 1.4.3), non-text UI like borders/dividers
+      // only need 3:1 (SC 1.4.11). On failures we also surface a per-pair
+      // recommendation via `recommend()` so users know which source colour
+      // to nudge to clear the threshold.
+      function applyContrast(roles: RoleMap) {
+        for (const item of document.querySelectorAll<HTMLElement>("[data-contrast-item]")) {
+          const fgRole = item.dataset.fg ?? "";
+          const bgRole = item.dataset.bg ?? "";
+          const fg = roles[fgRole];
+          const bg = roles[bgRole];
+          if (!fg || !bg) continue;
+
+          const minRatio = Number(item.dataset.minRatio) || 4.5;
+          const ratio = contrastRatio(fg, bg);
+          const passes = ratio >= minRatio;
+
+          const chip = item.querySelector<HTMLElement>("[data-contrast-chip]");
+          if (chip) {
+            chip.style.backgroundColor = bg;
+            chip.style.color = fg;
+            const label = chip.querySelector<HTMLElement>(".tg-contrast__chip-label");
+            if (label) label.style.color = fg;
+          }
+
+          const ratioEl = item.querySelector<HTMLElement>("[data-contrast-ratio]");
+          if (ratioEl) {
+            // Show both the measured ratio and the threshold this pair is
+            // tested against so a 3:1 "Outline / Surface" pair reads as a
+            // pass even when its ratio is below 4.5:1.
+            ratioEl.textContent = `${ratio.toFixed(2)}:1 (need \u2265 ${minRatio}:1)`;
+          }
+
+          item.classList.toggle("tg-contrast__item--fail", !passes);
+          item.classList.toggle("tg-contrast__item--pass", passes);
+
+          const status = item.querySelector<HTMLElement>("[data-contrast-status]");
+          if (status) {
+            const label = passes ? "AA" : "Fail";
+            const aria = passes
+              ? `Passes WCAG AA (\u2265 ${minRatio}:1)`
+              : `Fails WCAG AA (\u2265 ${minRatio}:1 required)`;
+            status.textContent = label;
+            status.setAttribute("aria-label", aria);
+          }
+
+          // Populate the rich tooltip's subhead + content slots from the
+          // recommendation. Tooltip itself is hidden while the pair
+          // passes so the row stays compact.
+          const tooltip = item.querySelector<HTMLElement>("[data-contrast-tooltip]");
+          const subheadEl = item.querySelector<HTMLElement>("[data-contrast-tip-subhead]");
+          const contentEl = item.querySelector<HTMLElement>("[data-contrast-tip-content]");
+          if (tooltip && subheadEl && contentEl) {
+            if (!passes) {
+              const tip = recommend(fgRole, bgRole, ratio, minRatio);
+              // `recommend()` returns hardcoded strings under our control,
+              // so it's safe to render the HTML fragments (strong / ul /
+              // code) via innerHTML. No user input is ever interpolated.
+              subheadEl.innerHTML = tip.subhead;
+              contentEl.innerHTML = tip.content;
+              tooltip.hidden = false;
+            } else {
+              subheadEl.textContent = "";
+              contentEl.textContent = "";
+              tooltip.hidden = true;
+            }
+          }
+        }
+      }
+
+      // ─── DENSITY ───────────────────────────────────────────────────────
+      // Same mechanism the library ships: `data-density` on an ancestor, which
+      // tokens.css turns into --md-sys-density-scale and every component reads.
+      // Applied to the PANEL rather than <html> so the generator's own chrome
+      // keeps its normal sizing while the preview condenses.
+      function setDensity(next: string) {
+        const panel = document.querySelector<HTMLElement>("[data-preview-panel]");
+        if (!panel) return;
+        if (next === "0") panel.removeAttribute("data-density");
+        else panel.setAttribute("data-density", next);
+      }
+
+      // ─── MODE TOGGLE ───────────────────────────────────────────────────
+      // Setting `data-theme` on the panel lets `tokens.css`'s
+      // `[data-theme="dark"]` block kick in for everything we DON'T override
+      // (e.g. surface-tint variants the worker doesn't emit), while our
+      // inline panel styles still override the colors we DO emit. Belt and
+      // braces — gives a sensible default if the worker fails or stalls.
+      // ─── DATA-DRIVEN PREVIEW COMPONENTS ────────────────────────────────
+      // Arrays and objects are JS PROPERTIES, never attributes. The elements
+      // are lazily upgraded, so poll a frame at a time until each one exists
+      // rather than assuming registration has already happened.
+      function wire<T extends HTMLElement>(id: string, apply: (el: T) => void) {
+        let tries = 0;
+        const attempt = () => {
+          const el = document.getElementById(id) as T | null;
+          if (el) { apply(el); return; }
+          if (++tries < 60) requestAnimationFrame(attempt);
+        };
+        requestAnimationFrame(attempt);
+      }
+
+      const CHART_IDS = [
+        "tg-bar", "tg-line", "tg-area", "tg-pie", "tg-spark",
+        "tg-donut", "tg-semi", "tg-bar-stacked", "tg-bar-h", "tg-area-pct",
+        "tg-line-curve", "tg-spark-bar",
+      ];
+
+      function wirePreviewData() {
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+
+        wire<any>("tg-bar", (el) => {
+          el.xAxis = { data: months };
+          el.series = [{ label: "Revenue", data: [12, 19, 7, 15, 22, 18] }];
+        });
+        wire<any>("tg-line", (el) => {
+          el.xAxis = { data: months };
+          el.series = [
+            { label: "Sessions", data: [30, 42, 35, 51, 48, 60] },
+            { label: "Signups", data: [12, 18, 16, 24, 21, 29] },
+          ];
+        });
+        wire<any>("tg-area", (el) => {
+          el.xAxis = { data: months };
+          el.series = [
+            { label: "Documents", data: [8, 12, 14, 18, 20, 24] },
+            { label: "Media", data: [4, 6, 9, 11, 13, 16] },
+          ];
+        });
+        wire<any>("tg-pie", (el) => {
+          el.data = [
+            { label: "Direct", value: 42 },
+            { label: "Search", value: 31 },
+            { label: "Social", value: 17 },
+            { label: "Referral", value: 10 },
+          ];
+        });
+        wire<any>("tg-spark", (el) => {
+          el.data = [4, 7, 5, 9, 8, 12, 10, 14];
+        });
+
+        // ── Variations ────────────────────────────────────────────────────
+        // Same data, different shape: what changes between them is which token
+        // roles get exercised, which is the point of having them here.
+        const traffic = [
+          { label: "Direct", value: 42 },
+          { label: "Search", value: 31 },
+          { label: "Social", value: 17 },
+          { label: "Referral", value: 10 },
+        ];
+        wire<any>("tg-donut", (el) => { el.data = traffic; });
+        wire<any>("tg-semi", (el) => { el.data = traffic; });
+
+        const stacked = [
+          { label: "Mobile", data: [12, 19, 7, 15, 22, 18] },
+          { label: "Desktop", data: [9, 11, 14, 10, 16, 13] },
+          { label: "Tablet", data: [4, 6, 3, 7, 5, 8] },
+        ];
+        wire<any>("tg-bar-stacked", (el) => {
+          el.xAxis = { data: months };
+          el.series = stacked;
+        });
+        wire<any>("tg-bar-h", (el) => {
+          el.xAxis = { data: ["Search", "Direct", "Social", "Referral"] };
+          el.series = [{ label: "Sessions", data: [31, 42, 17, 10] }];
+        });
+        wire<any>("tg-area-pct", (el) => {
+          el.xAxis = { data: months };
+          el.series = stacked;
+        });
+        wire<any>("tg-line-curve", (el) => {
+          el.xAxis = { data: months };
+          el.series = [
+            { label: "Sessions", data: [30, 42, 35, 51, 48, 60] },
+            { label: "Signups", data: [12, 18, 16, 24, 21, 29] },
+            { label: "Churn", data: [6, 5, 9, 7, 4, 6] },
+          ];
+        });
+        wire<any>("tg-spark-bar", (el) => {
+          el.data = [4, 7, 5, 9, 8, 12, 10, 14];
+        });
+
+        wire<any>("tg-transfer", (el) => {
+          el.items = [
+            { value: "read", label: "Read" },
+            { value: "write", label: "Write" },
+            { value: "deploy", label: "Deploy" },
+            { value: "admin", label: "Admin" },
+          ];
+          el.value = ["read"];
+        });
+
+        wire<any>("tg-org", (el) => {
+          el.nodes = [{
+            id: "ceo", name: "Ada Lovelace", title: "CEO", children: [
+              { id: "eng", name: "Grace Hopper", title: "Engineering" },
+              { id: "des", name: "Alan Turing", title: "Design" },
+            ],
+          }];
+        });
+      }
+
+      // Charts paint to canvas and read their colors at draw time, so a token
+      // change does NOT repaint them the way it does for DOM components. Ask
+      // each one to redraw after every recompute.
+      function refreshCharts() {
+        for (const id of CHART_IDS) {
+          const el = document.getElementById(id) as any;
+          if (!el) continue;
+          // resize() alone does NOT repaint — it early-returns when the box has
+          // not changed, so a pure token change left the old colors on the
+          // canvas. Handing the data prop a new array identity trips Stencil's
+          // prop watcher and forces a genuine re-render. replay() would also
+          // work but re-runs the entrance animation on every keystroke.
+          if (Array.isArray(el.series)) el.series = [...el.series];
+          if (Array.isArray(el.data)) el.data = [...el.data];
+          el.resize?.();
+        }
+      }
+
+      // ─── DERIVE TOGGLES ────────────────────────────────────────────────
+      // Reflect derived-ness into the two optional rows: their inputs go
+      // disabled and show whatever primary produced, so the reader can see the
+      // derived color without being able to edit a value that is not being sent.
+      function syncDerivedRow(key: "secondary" | "tertiary") {
+        const on = derived[key];
+        const row = document.querySelector<HTMLElement>(`[data-input-for="${key}"]`);
+        row?.classList.toggle("tg-input--derived", on);
+        for (const sel of [`[data-color-text][data-key="${key}"]`, `[data-color-picker][data-key="${key}"]`]) {
+          const el = document.querySelector<HTMLInputElement>(sel);
+          if (el) el.disabled = on;
+        }
+        if (on && lastResponse) {
+          // Show the color the engine actually derived, taken from the light
+          // scheme so the field matches the swatch regardless of preview mode.
+          const hex = lastResponse.roles.light[key as keyof typeof lastResponse.roles.light];
+          if (typeof hex === "string") {
+            const text = document.querySelector<HTMLInputElement>(`[data-color-text][data-key="${key}"]`);
+            const pick = document.querySelector<HTMLInputElement>(`[data-color-picker][data-key="${key}"]`);
+            if (text) text.value = hex.toUpperCase();
+            if (pick) pick.value = hex.toLowerCase();
+          }
+        }
+      }
+
+      for (const box of document.querySelectorAll<HTMLInputElement>("[data-derive-toggle]")) {
+        const key = box.dataset.key as "secondary" | "tertiary";
+        box.addEventListener("change", () => {
+          derived[key] = box.checked;
+          syncDerivedRow(key);
+          postCompute();
+        });
+        syncDerivedRow(key);
+      }
+
+      function setMode(next: "light" | "dark") {
+        mode = next;
+        const preview = document.querySelector<HTMLElement>("[data-live-preview]");
+        if (preview) preview.dataset.mode = next;
+        const panel = document.querySelector<HTMLElement>("[data-preview-panel]");
+        if (panel) {
+          if (next === "dark") panel.setAttribute("data-theme", "dark");
+          else panel.removeAttribute("data-theme");
+        }
+
+      for (const btn of document.querySelectorAll<HTMLButtonElement>("[data-mode-toggle]")) {
+          const active = btn.dataset.modeToggle === next;
+          btn.classList.toggle("tg-toggle--active", active);
+          btn.setAttribute("aria-pressed", String(active));
+        }
+
+        if (lastResponse && lastResponse.type === "palette") {
+          const roles = lastResponse.roles[next];
+          applyPreviewTokens(roles);
+          applyContrast(roles);
+        }
+      }
+
+      function downloadTheme() {
+        if (!lastResponse || lastResponse.type !== "palette") return;
+        const css = generateCss(lastResponse);
+        const blob = new Blob([css], { type: "text/css;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "awc-ui-theme.css";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      // ─── WORKER & DEBOUNCE ─────────────────────────────────────────────
+      const worker = new ThemeWorker();
+      let timer: number | undefined;
+      let pendingStart = 0;
+
+      worker.addEventListener("message", (e: MessageEvent<WorkerResponse>) => {
+        const data = e.data;
+        if (data.type === "error") {
+          console.error("[Theme Worker]", data.message);
+          return;
+        }
+        lastResponse = data;
+        applyPalette(data.tones);
+        applyPreviewTokens(data.roles[mode]);
+        applyContrast(data.roles[mode]);
+
+        refreshCharts();
+
+        // Derived rows mirror the freshly computed colors.
+        for (const k of ["secondary", "tertiary"] as const) {
+          if (derived[k]) syncDerivedRow(k);
+        }
+
+        const totalMs = Math.round(performance.now() - pendingStart);
+        const perfEl = document.getElementById("tg-perf");
+        if (perfEl) {
+          perfEl.textContent =
+            `Computed in ${totalMs}ms (worker: ${data.durationMs.toFixed(2)}ms)`;
+        }
+
+        const dl = document.getElementById("tg-download") as HTMLButtonElement | null;
+        if (dl) dl.disabled = false;
+      });
+
+      function postCompute() {
+        pendingStart = performance.now();
+        worker.postMessage({
+          type: "compute",
+          primaryHex: state.primary,
+          secondaryHex: derived.secondary ? "" : state.secondary,
+          tertiaryHex: derived.tertiary ? "" : state.tertiary,
+          contrastLevel,
+        });
+      }
+
+      // Switching contrast level recomputes the whole theme via the worker
+      // (cheap — sub-200ms). The intro paragraph reflects the active level
+      // in plain English so the panel's text stays in sync with reality.
+      function setContrastLevel(next: number) {
+        contrastLevel = next;
+        for (const btn of document.querySelectorAll<HTMLButtonElement>("[data-contrast-toggle]")) {
+          const value = Number(btn.dataset.contrastToggle);
+          const active = value === next;
+          btn.classList.toggle("tg-toggle--active", active);
+          btn.setAttribute("aria-pressed", String(active));
+        }
+        const label = document.querySelector<HTMLElement>("[data-contrast-level-label]");
+        if (label) label.textContent = contrastLevelLabel(next);
+        scheduleCompute();
+      }
+
+      function scheduleCompute() {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(postCompute, DEBOUNCE_MS);
+      }
+
+      function handleColorChange(key: StateKey, raw: string) {
+        const normalized = normalizeHex(raw);
+        if (!normalized) {
+          setError(key, "Enter a 6-digit hex (e.g. #6750A4)");
+          return;
+        }
+        setError(key, "");
+        state[key] = normalized;
+        syncPicker(key, normalized);
+        scheduleCompute();
+      }
+
+      // ─── EVENT WIRING ──────────────────────────────────────────────────
+      for (const input of document.querySelectorAll<HTMLInputElement>("[data-color-text]")) {
+        const key = input.dataset.key as StateKey;
+        input.addEventListener("input", () => handleColorChange(key, input.value));
+        input.addEventListener("blur", () => {
+          const normalized = normalizeHex(input.value);
+          if (normalized) input.value = normalized;
+        });
+      }
+
+      for (const picker of document.querySelectorAll<HTMLInputElement>("[data-color-picker]")) {
+        const key = picker.dataset.key as StateKey;
+        picker.addEventListener("input", () => {
+          const text = document.querySelector<HTMLInputElement>(
+            `[data-color-text][data-key="${key}"]`,
+          );
+          if (text) text.value = picker.value.toUpperCase();
+          handleColorChange(key, picker.value);
+        });
+      }
+
+      for (const btn of document.querySelectorAll<HTMLButtonElement>("[data-mode-toggle]")) {
+        btn.addEventListener("click", () => {
+          const m = btn.dataset.modeToggle === "dark" ? "dark" : "light";
+          setMode(m);
+        });
+      }
+
+      for (const btn of document.querySelectorAll<HTMLButtonElement>("[data-contrast-toggle]")) {
+        btn.addEventListener("click", () => {
+          const next = Number(btn.dataset.contrastToggle);
+          if (Number.isFinite(next)) setContrastLevel(next);
+        });
+      }
+
+      // md-select emits `mdChange` carrying the value in `detail` — it does not
+      // fire a native `change`, so listening for that alone would silently do
+      // nothing.
+      const densitySelect = document.querySelector("[data-density-select]");
+      densitySelect?.addEventListener("mdChange", (e) => {
+        setDensity(String((e as CustomEvent<string>).detail));
+      });
+
+      const dlBtn = document.getElementById("tg-download");
+      dlBtn?.addEventListener("click", downloadTheme);
+
+      // ─── LAZY-LOAD AWC UI CUSTOM ELEMENTS ────────────────────────────
+      // Components render as plain unstyled HTML until upgrade. We defer the
+      // loader until the preview panel scrolls into view to avoid blocking
+      // initial paint with custom-element registration.
+      let elementsLoaded = false;
+      const loadElements = async () => {
+        if (elementsLoaded) return;
+        elementsLoaded = true;
+        try {
+          // Dev and build need DIFFERENT loader paths (the recurring trap):
+          // - dev: Vite's transform middleware refuses module-imports of /public
+          //   files, so import the workspace package — Vite serves it fine.
+          // - build: the npm specifier would bundle the loader into /_astro/,
+          //   where Stencil's lazy entry chunks 404 — import the COPIED runtime.
+          //   The URL sits in a variable because Rollup resolves literal dynamic
+          //   imports even behind @vite-ignore and fails the build.
+          let mod: { defineCustomElements: (win?: Window) => Promise<unknown> };
+          if (import.meta.env.DEV) {
+            mod = await import("@awc-ui/core/loader");
+          } else {
+            const runtimeUrl = "/awc-runtime/md3/md3.esm.js";
+            await import(/* @vite-ignore */ runtimeUrl);
+        await customElements.whenDefined("md-button");
+        return;
+          }
+          await mod.defineCustomElements(window);
+          wirePreviewData();
+        } catch (err) {
+          console.warn("[AWC UI] Component loader failed:", err);
+        }
+      };
+
+      const previewSection = document.querySelector<HTMLElement>("[data-live-preview]");
+      if (previewSection && "IntersectionObserver" in window) {
+        const obs = new IntersectionObserver(
+          (entries) => {
+            if (entries.some((e) => e.isIntersecting)) {
+              obs.disconnect();
+              loadElements();
+            }
+          },
+          { rootMargin: "200px" },
+        );
+        obs.observe(previewSection);
+      }
+
+      // The toolbar's "What does Contrast do?" tooltip is an `md-tooltip`
+      // that sits above the preview, so it can be interacted with before
+      // the IntersectionObserver above ever fires. Kick the loader once
+      // the browser is idle so toolbar custom elements upgrade ASAP after
+      // first paint — without blocking that paint. Cheap because
+      // `loadElements()` is idempotent.
+      if ("requestIdleCallback" in window) {
+        (window as unknown as { requestIdleCallback: (cb: () => void) => void })
+          .requestIdleCallback(loadElements);
+      } else {
+        setTimeout(loadElements, 800);
+      }
+
+      // Initial paint with default colors.
+      postCompute();
+    </script>
+
+    <style is:global>
+      :root {
+        color-scheme: light;
+        --tg-bg: #fbfaff;
+        --tg-surface: #ffffff;
+        --tg-border: #e0dce5;
+        --tg-text: #1d1b20;
+        --tg-text-muted: #49454f;
+        --tg-accent: #6750a4;
+        --tg-accent-hover: #5a4691;
+        --tg-error: #b3261e;
+        --tg-success: #1e8e3e;
+        --tg-radius: 14px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--tg-bg);
+        color: var(--tg-text);
+        font-family: "Roboto", system-ui, sans-serif;
+        line-height: 1.5;
+        min-block-size: 100vh;
+        /* Belt-and-braces: the page is a single-column layout, nothing
+           should ever cause horizontal scroll. If a custom-element popup
+           or wide toolbar pill briefly overhangs the viewport before its
+           own clamping kicks in, clip rather than scroll. Using `clip`
+           where supported avoids forming a containing block (so position:
+           fixed / sticky descendants still work); `hidden` is the legacy
+           fallback. */
+        overflow-x: clip;
+      }
+
+      @supports not (overflow-x: clip) {
+        body {
+          overflow-x: hidden;
+        }
+      }
+
+      a {
+        color: var(--tg-accent);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      code {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.875em;
+        background: rgba(103, 80, 164, 0.08);
+        padding: 0.1em 0.35em;
+        border-radius: 4px;
+      }
+
+      :focus-visible {
+        outline: 3px solid var(--tg-accent);
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+    </style>
+
+    <style>
+      .tg-visually-hidden {
+        position: absolute;
+        inline-size: 1px;
+        block-size: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .tg-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem clamp(1rem, 4vw, 2.5rem);
+        background: var(--tg-surface);
+        border-block-end: 1px solid var(--tg-border);
+      }
+
+      .tg-header__back,
+      .tg-header__github {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--tg-text);
+      }
+
+      /* Disable the global `a:hover { text-decoration: underline }` on the
+         back link. Because the anchor is inline-flex, the inherited
+         underline draws a separate stroke under the icon span and under
+         the text span at each one's own baseline — they don't line up.
+         We need :hover / :focus-visible on the same class to beat the
+         tag+pseudo specificity of the global rule, then re-add the
+         underline on the label span only, so a single underline sits
+         under just the "AWC UI" text. */
+      .tg-header__back,
+      .tg-header__back:hover,
+      .tg-header__back:focus,
+      .tg-header__back:focus-visible {
+        text-decoration: none;
+      }
+
+      .tg-header__back .material-symbols-outlined {
+        font-size: 20px;
+        text-decoration: none;
+      }
+
+      .tg-header__back-label {
+        text-underline-offset: 4px;
+        text-decoration-thickness: 1.5px;
+      }
+
+      .tg-header__back:hover .tg-header__back-label,
+      .tg-header__back:focus-visible .tg-header__back-label {
+        text-decoration: underline;
+      }
+
+      .tg-main {
+        max-inline-size: 1200px;
+        margin-inline: auto;
+        padding: 3rem clamp(1rem, 4vw, 2.5rem) 4rem;
+      }
+
+      .tg-intro {
+        margin-block-end: 2.5rem;
+      }
+
+      .tg-intro__eyebrow {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: rgba(103, 80, 164, 0.08);
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--tg-accent);
+        margin-block-end: 0.875rem;
+      }
+
+      .tg-intro__title {
+        margin: 0 0 0.625rem;
+        font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+      }
+
+      .tg-intro__subtitle {
+        margin: 0;
+        font-size: 1.0625rem;
+        line-height: 1.65;
+        color: var(--tg-text-muted);
+        max-inline-size: 720px;
+      }
+
+      .tg-section__heading {
+        margin: 0 0 0.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      .tg-section__sub {
+        margin: 0 0 1.5rem;
+        font-size: 0.875rem;
+        color: var(--tg-text-muted);
+        line-height: 1.6;
+        max-inline-size: 720px;
+      }
+
+      .tg-inputs {
+        background: var(--tg-surface);
+        border: 1px solid var(--tg-border);
+        border-radius: var(--tg-radius);
+        padding: 1.75rem;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem 2rem;
+        margin-block-end: 1.5rem;
+      }
+
+      .tg-inputs__heading {
+        grid-column: 1 / -1;
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--tg-text);
+      }
+
+      /* Optional-palette rows: the derive checkbox sits beside the label, and a
+         derived row reads as informational (its inputs are disabled, showing
+         what primary produced) rather than broken. */
+      .tg-input__head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        /* Primary has no derive toggle, so its head is shorter than the other
+           two and its input row floated 3px high. Reserve the toggle's height
+           on every head so all three fields sit on one baseline. In rem so it
+           tracks the root font size rather than pinning a measured pixel. */
+        min-block-size: 1.8125rem;
+        margin-block-end: 6px;
+      }
+
+      .tg-input__derive {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        color: var(--md-sys-color-on-surface-variant, #49454f);
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .tg-input__derive input {
+        accent-color: var(--md-sys-color-primary, #6750a4);
+        cursor: pointer;
+      }
+
+      .tg-input--derived .tg-input__hex,
+      .tg-input--derived .tg-input__picker {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .tg-inputs__lede {
+        grid-column: 1 / -1;
+        max-inline-size: 68ch;
+        margin: 0 0 4px;
+        font-size: 0.8125rem;
+        line-height: 1.55;
+        color: var(--md-sys-color-on-surface-variant, #49454f);
+      }
+
+      .tg-input__label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--tg-text-muted);
+        margin-block-end: 0.5rem;
+      }
+
+      .tg-input__row {
+        display: flex;
+        align-items: stretch;
+        gap: 0.5rem;
+      }
+
+      .tg-input__picker {
+        inline-size: 44px;
+        block-size: 44px;
+        padding: 0;
+        border: 1px solid var(--tg-border);
+        border-radius: 10px;
+        background: var(--tg-surface);
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      .tg-input__picker::-webkit-color-swatch-wrapper {
+        padding: 4px;
+      }
+
+      .tg-input__picker::-webkit-color-swatch {
+        border: none;
+        border-radius: 6px;
+      }
+
+      .tg-input__hex {
+        flex: 1;
+        min-inline-size: 0;
+        padding: 0 0.875rem;
+        border: 1px solid var(--tg-border);
+        border-radius: 10px;
+        background: var(--tg-surface);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.9375rem;
+        color: var(--tg-text);
+        transition: border-color 0.15s ease;
+      }
+
+      .tg-input__hex:focus {
+        border-color: var(--tg-accent);
+      }
+
+      .tg-input__hex--invalid {
+        border-color: var(--tg-error);
+      }
+
+      .tg-input__error {
+        margin: 0.375rem 0 0;
+        font-size: 0.75rem;
+        color: var(--tg-error);
+        min-block-size: 1.125rem;
+      }
+
+      .tg-inputs__perf {
+        grid-column: 1 / -1;
+        margin: 0;
+        font-size: 0.75rem;
+        color: var(--tg-text-muted);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        text-align: end;
+      }
+
+      .tg-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-block-end: 1.25rem;
+        flex-wrap: wrap;
+      }
+
+      .tg-density-field {
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .tg-toggle-group {
+        display: inline-flex;
+        align-items: center;
+        background: var(--tg-surface);
+        border: 1px solid var(--tg-border);
+        border-radius: 100px;
+        padding: 4px;
+        gap: 4px;
+        /* Allow long pills (caption + help icon + 4 buttons) to wrap their
+           contents instead of overflowing the toolbar at narrow viewports.
+           The pill border bends gracefully into a soft rectangle when this
+           kicks in, but the alternative is horizontal page scroll. */
+        flex-wrap: wrap;
+        max-inline-size: 100%;
+      }
+
+      /* When the pill wraps to multiple rows the 100px pill radius looks
+         awkward; relax to a softer rectangle so wrapped buttons sit
+         neatly inside a container shape that still reads as MD3. */
+      .tg-toggle-group--contrast {
+        border-radius: 22px;
+      }
+
+      /* Caption inside the contrast-level pill — disambiguates a 4-button
+         segmented control that would otherwise just read "Reduced /
+         Standard / Medium / High" with no context. */
+      .tg-toggle-group__label {
+        padding-inline: 0.75rem 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--tg-text-muted);
+        white-space: nowrap;
+      }
+
+      /* Small (?) help button next to the caption, opens the rich tooltip
+         that documents each MD3 contrast level. Sized to match the
+         segmented control's vertical metrics so the pill stays balanced. */
+      .tg-toggle-group__info {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        inline-size: 28px;
+        block-size: 28px;
+        margin-inline-end: 0.25rem;
+        padding: 0;
+        background: transparent;
+        border: none;
+        border-radius: 50%;
+        color: var(--tg-text-muted);
+        cursor: pointer;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+
+      .tg-toggle-group__info:hover,
+      .tg-toggle-group__info:focus-visible {
+        background-color: rgba(103, 80, 164, 0.08);
+        color: var(--tg-accent);
+        outline: none;
+      }
+
+      .tg-toggle-group__info .material-symbols-outlined {
+        font-size: 18px;
+      }
+
+      /* Same rich-tooltip width treatment as the contrast-panel tooltip:
+         the supporting copy has bullet lists and inline code so the
+         default ~280px popup truncates awkwardly. */
+      md-tooltip.tg-contrast-help::part(popup) {
+        max-inline-size: min(440px, calc(100vw - 32px));
+        inline-size: max-content;
+      }
+
+      .tg-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.5rem 1rem;
+        border-radius: 100px;
+        border: none;
+        background: transparent;
+        color: var(--tg-text-muted);
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+
+      .tg-toggle .material-symbols-outlined {
+        font-size: 18px;
+      }
+
+      .tg-toggle:hover {
+        color: var(--tg-text);
+      }
+
+      .tg-toggle--active {
+        background: var(--tg-accent);
+        color: #fff;
+      }
+
+      .tg-toggle--active:hover {
+        background: var(--tg-accent-hover);
+        color: #fff;
+      }
+
+      .tg-download {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: 100px;
+        border: none;
+        background: var(--tg-accent);
+        color: #fff;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.15s ease, opacity 0.15s ease;
+      }
+
+      .tg-download .material-symbols-outlined {
+        font-size: 18px;
+      }
+
+      .tg-download:hover:not(:disabled) {
+        background: var(--tg-accent-hover);
+      }
+
+      .tg-download:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .tg-preview,
+      .tg-contrast,
+      .tg-palette {
+        background: var(--tg-surface);
+        border: 1px solid var(--tg-border);
+        border-radius: var(--tg-radius);
+        padding: 1.75rem;
+        margin-block-end: 1.5rem;
+      }
+
+      .tg-preview__panel {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        border-radius: 12px;
+        background: var(--md-sys-color-background, #fff);
+        color: var(--md-sys-color-on-background, #1d1b20);
+        border: 1px solid var(--md-sys-color-outline-variant, rgba(0, 0, 0, 0.06));
+        transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+      }
+
+      .tg-preview__group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.625rem;
+      }
+
+      /* Group headers carry the brand colour so the preview reads as
+         "MD3 Expressive": the user's chosen primary tints every section
+         label, not just the accent components. */
+      .tg-preview__group-label {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--md-sys-color-primary, #6750a4);
+      }
+
+      .tg-preview__row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.875rem;
+      }
+
+      .tg-preview__row--column {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      /* Same horizontal flex row, but anchored to the top so mixed-height
+         items (e.g. a select with supporting text next to a tooltip-wrapped
+         button) line up by their tops rather than centering vertically. */
+      .tg-preview__row--top {
+        align-items: flex-start;
+      }
+
+      .tg-preview__row--cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+
+      .tg-preview__row--text-fields {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        /* Anchor every field to the top of the row so the input boxes line
+           up across columns even when one field has supporting text below it
+           that makes its overall height taller. */
+        align-items: start;
+      }
+
+      .tg-preview__card {
+        padding: 1rem;
+        color: var(--md-sys-color-on-surface, #1d1b20);
+        font-size: 0.875rem;
+      }
+
+      /* Card titles take the brand colour for an Expressive headline,
+         while card bodies stay on the readable on-surface-variant token
+         so longer copy meets WCAG contrast on every theme. */
+      .tg-preview__card-title {
+        margin: 0 0 0.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--md-sys-color-primary, #6750a4);
+      }
+
+      .tg-preview__card-body {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--md-sys-color-on-surface-variant, #49454f);
+      }
+
+      .tg-preview__navbar {
+        display: block;
+        margin-block-start: 0.5rem;
+        border-radius: 16px;
+        overflow: hidden;
+      }
+
+      /* Containing block for md-badge. The component is intentionally a
+         positioned overlay (top:0 right:0 + translate) — without this
+         wrapper it would anchor to the viewport rather than the
+         icon button it decorates. */
+      .tg-preview__badge-anchor {
+        position: relative;
+        display: inline-flex;
+      }
+
+      /* The list is shorter than the navigation rail beside it, so stretching
+         it left the rows pinned to the top of a tall empty box. The wrapper now
+         owns the surface and centers the list on both axes, with inline padding
+         so the rows are not flush against the container edge. */
+      .tg-preview__list-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-inline: 16px;
+        padding-block: 16px;
+        border-radius: 16px;
+        background: var(--md-sys-color-surface-container-low, transparent);
+        min-block-size: 320px;
+      }
+
+      .tg-preview__list {
+        display: block;
+        inline-size: 100%;
+        border-radius: 12px;
+      }
+
+      /* Side-by-side: vertical navigation rail on the left, list of items
+         on the right. The rail is fixed-width (80px from the component
+         itself); we just box it into a card-like container so its surface
+         color reads against the panel background. */
+      .tg-preview__rail-row {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 1rem;
+        align-items: stretch;
+      }
+
+      .tg-preview__rail-wrap {
+        border-radius: 16px;
+        overflow: hidden;
+        background: var(--md-sys-color-surface, transparent);
+        min-block-size: 320px;
+        display: flex;
+      }
+
+      @media (max-width: 40rem) {
+        .tg-preview__rail-row {
+          grid-template-columns: 1fr;
+        }
+        .tg-preview__rail-wrap,
+        .tg-preview__list-wrap {
+          min-block-size: auto;
+        }
+      }
+
+      /* The contrast section is reference material with long lines of
+         explanation; let the intro paragraph and the bulleted legend span
+         the full width of the card instead of being capped at the narrow
+         reading-measure used for short marketing copy elsewhere. */
+      .tg-contrast .tg-section__sub {
+        max-inline-size: none;
+      }
+
+      /* Structured key above the contrast grid explaining the three
+         groups. Indented bullets with a coloured marker so each group
+         is visually scannable, instead of one dense paragraph. */
+      .tg-contrast__legend {
+        margin: 0 0 1.25rem;
+        padding-inline-start: 1.1rem;
+        font-size: 0.8125rem;
+        line-height: 1.6;
+        color: var(--tg-text-muted);
+        max-inline-size: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .tg-contrast__legend li::marker {
+        color: var(--tg-accent);
+        font-weight: 700;
+      }
+
+      .tg-contrast__legend strong {
+        color: var(--tg-text);
+      }
+
+      .tg-contrast__legend em {
+        font-style: normal;
+        color: var(--tg-error);
+        font-weight: 600;
+      }
+
+      .tg-contrast__legend code {
+        background: rgba(103, 80, 164, 0.08);
+        font-size: 0.85em;
+      }
+
+      .tg-contrast__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 0.75rem;
+      }
+
+      .tg-contrast__item {
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+        padding: 0.625rem;
+        border: 1px solid var(--tg-border);
+        border-radius: 10px;
+        background: var(--tg-surface);
+        transition: border-color 0.15s ease, background-color 0.15s ease;
+      }
+
+      .tg-contrast__item--fail {
+        border-color: rgba(179, 38, 30, 0.5);
+        background: rgba(179, 38, 30, 0.04);
+      }
+
+      .tg-contrast__chip {
+        flex-shrink: 0;
+        inline-size: 44px;
+        block-size: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+
+      .tg-contrast__chip-label {
+        font-family: "Roboto", system-ui, sans-serif;
+        font-weight: 700;
+      }
+
+      .tg-contrast__meta {
+        flex: 1;
+        min-inline-size: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+      }
+
+      .tg-contrast__pair {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--tg-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .tg-contrast__ratio {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.75rem;
+        color: var(--tg-text-muted);
+      }
+
+      /* Trigger for the rich-tooltip recommendation. Only rendered for
+         failing pairs (md-tooltip wrapper is `hidden` otherwise).
+         Styled as a small red error icon button — neutral chrome, brand
+         the chrome with the error colour from tokens so it inherits the
+         active theme when colours change. */
+      .tg-contrast__tooltip {
+        align-self: center;
+      }
+
+      /* md-tooltip sets `:host { display: inline-block }` inside its shadow
+         DOM, which wins over the user-agent `[hidden] { display: none }`
+         rule. We need an explicit override so the tooltip wrapper (and
+         therefore its trigger icon) actually disappears for passing rows. */
+      md-tooltip.tg-contrast__tooltip[hidden] {
+        display: none !important;
+      }
+
+      .tg-contrast__info {
+        appearance: none;
+        background: rgba(179, 38, 30, 0.1);
+        color: var(--tg-error);
+        border: 1px solid rgba(179, 38, 30, 0.25);
+        border-radius: 999px;
+        inline-size: 28px;
+        block-size: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: help;
+        flex-shrink: 0;
+        transition: background-color 0.15s ease, border-color 0.15s ease,
+          transform 0.15s ease;
+      }
+
+      .tg-contrast__info:hover,
+      .tg-contrast__info:focus-visible {
+        background: rgba(179, 38, 30, 0.18);
+        border-color: rgba(179, 38, 30, 0.45);
+        transform: scale(1.04);
+      }
+
+      .tg-contrast__info .material-symbols-outlined {
+        font-size: 18px;
+        font-variation-settings: "FILL" 1;
+      }
+
+      /* Style the rich tooltip body. Custom properties target md-tooltip's
+         public theming API so the popover picks up readable copy on a
+         neutral container regardless of the active MD3 palette. */
+      md-tooltip.tg-contrast__tooltip {
+        --md-tooltip-rich-container-color: var(--md-sys-color-surface-container-highest, #e6e0e9);
+        --md-tooltip-rich-supporting-text-color: var(--md-sys-color-on-surface, #1d1b20);
+        --md-tooltip-rich-subhead-color: var(--md-sys-color-on-surface, #1d1b20);
+      }
+
+      /* Widen the rich popup. md-tooltip caps the inner surface at
+         max-inline-size: 320px inside its shadow DOM — too narrow for
+         our multi-line recommendation copy with code chips and bullet
+         lists. We reach through `::part(popup)` to relax that cap. */
+      md-tooltip.tg-contrast__tooltip::part(popup) {
+        max-inline-size: min(440px, calc(100vw - 32px));
+        inline-size: max-content;
+      }
+
+      .tg-contrast__tooltip [slot="subhead"] {
+        font-weight: 700;
+        color: var(--tg-error);
+      }
+
+      .tg-contrast__tooltip [slot="content"] code {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.85em;
+        background: rgba(0, 0, 0, 0.08);
+        color: inherit;
+        padding: 0.05em 0.3em;
+        border-radius: 3px;
+      }
+
+      .tg-contrast__tooltip [slot="content"] ul {
+        margin: 0.5rem 0 0;
+        padding-inline-start: 1.1rem;
+      }
+
+      .tg-contrast__tooltip [slot="content"] li {
+        margin-block: 0.2rem;
+      }
+
+      .tg-contrast__status {
+        flex-shrink: 0;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        padding: 0.25rem 0.5rem;
+        border-radius: 100px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--tg-success);
+        background: rgba(30, 142, 62, 0.12);
+      }
+
+      .tg-contrast__item--fail .tg-contrast__status {
+        color: var(--tg-error);
+        background: rgba(179, 38, 30, 0.12);
+      }
+
+      .tg-palette__grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+      }
+
+      .tg-palette__row {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 1.25rem;
+        align-items: center;
+      }
+
+      .tg-palette__label {
+        font-weight: 600;
+        font-size: 0.9375rem;
+      }
+
+      .tg-palette__swatches {
+        display: grid;
+        grid-template-columns: repeat(13, 1fr);
+        gap: 0.375rem;
+      }
+
+      .tg-palette__swatch {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .tg-palette__swatch-color {
+        block-size: 56px;
+        border-radius: 8px;
+        border: 1px solid var(--tg-border);
+        background: #f5f5f5;
+        transition: background-color 0.15s ease;
+      }
+
+      .tg-palette__swatch-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.125rem;
+      }
+
+      .tg-palette__swatch-tone {
+        font-size: 0.6875rem;
+        font-weight: 600;
+        color: var(--tg-text-muted);
+      }
+
+      .tg-palette__swatch-hex {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.625rem;
+        color: var(--tg-text-muted);
+        letter-spacing: -0.02em;
+      }
+
+      .tg-footer {
+        margin-block-start: 2.5rem;
+        padding: 1.25rem;
+        text-align: center;
+        font-size: 0.875rem;
+        color: var(--tg-text-muted);
+        background: rgba(103, 80, 164, 0.04);
+        border-radius: var(--tg-radius);
+      }
+
+      .tg-footer p {
+        margin: 0;
+      }
+
+      @media (max-width: 64rem) {
+        .tg-inputs {
+          grid-template-columns: 1fr;
+          gap: 1.25rem;
+        }
+
+        .tg-palette__row {
+          grid-template-columns: 1fr;
+          gap: 0.75rem;
+        }
+
+        .tg-palette__swatches {
+          grid-template-columns: repeat(13, minmax(28px, 1fr));
+        }
+
+        .tg-palette__swatch-hex {
+          display: none;
+        }
+      }
+
+      @media (max-width: 40rem) {
+        .tg-main {
+          padding: 2rem 1rem 3rem;
+        }
+
+        .tg-inputs,
+        .tg-preview,
+        .tg-contrast,
+        .tg-palette {
+          padding: 1.25rem;
+        }
+
+        .tg-toolbar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .tg-toggle-group,
+        .tg-download {
+          inline-size: 100%;
+          justify-content: center;
+        }
+
+        .tg-palette__swatches {
+          grid-template-columns: repeat(13, 1fr);
+          gap: 0.25rem;
+        }
+
+        .tg-palette__swatch-color {
+          block-size: 36px;
+          border-radius: 6px;
+        }
+
+        .tg-palette__swatch-tone {
+          font-size: 0.5625rem;
+        }
+      }
+    </style>
+  </body>
+</html>

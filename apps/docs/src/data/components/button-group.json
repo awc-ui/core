@@ -1,0 +1,131 @@
+{
+  "tag": "md-button-group",
+  "title": "Button Group",
+  "slug": "button-group",
+  "category": "Actions",
+  "subComponentOf": null,
+  "storyId": "actions-button-group--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'standard' | 'connected'",
+      "default": "'standard'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "size",
+      "attribute": "size",
+      "type": "'xs' | 'sm' | 'md' | 'lg' | 'xl'",
+      "default": "'sm'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "shape",
+      "attribute": "shape",
+      "type": "'round' | 'square'",
+      "default": "'round'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "selectionMode",
+      "attribute": "selection-mode",
+      "type": "'single-select' | 'multi-select'",
+      "default": "'single-select'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "required",
+      "attribute": "required",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "fullWidth",
+      "attribute": "full-width",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdSelectionChange",
+      "detail": "MdButtonGroupChangeDetail"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [],
+  "cssCustomProps": [
+    {
+      "name": "--md-button-group-gap",
+      "description": "Override default gap"
+    },
+    {
+      "name": "--md-button-group-width",
+      "description": "Explicit inline-size (defaults to auto)"
+    },
+    {
+      "name": "--md-button-group-min-width",
+      "description": "Minimum inline-size"
+    },
+    {
+      "name": "--md-button-group-max-width",
+      "description": "Maximum inline-size"
+    },
+    {
+      "name": "--md-button-group-height",
+      "description": "Explicit block-size (defaults to auto)"
+    },
+    {
+      "name": "--md-button-group-min-height",
+      "description": "Minimum block-size"
+    },
+    {
+      "name": "--md-button-group-max-height",
+      "description": "Maximum block-size"
+    },
+    {
+      "name": "--md-button-group-_unset",
+      "description": ""
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [
+    {
+      "name": "MdButtonGroupChangeDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Snapshot of every selected `value` after this change. */\n  values: string[];\n  /** Values newly added by this change (usually 0 or 1 entries). */\n  added: string[];\n  /** Values newly removed by this change (usually 0 or 1 entries). */\n  removed: string[];\n  /** The original click event that triggered the change. */\n  originalEvent: MouseEvent;"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdSelectionChange",
+      "detail": "MdButtonGroupChangeDetail"
+    }
+  ]
+}

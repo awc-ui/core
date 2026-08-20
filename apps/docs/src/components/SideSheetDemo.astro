@@ -1,0 +1,270 @@
+---
+// SideSheetDemo.astro
+//
+// Multi-section live demo for `md-side-sheet`. Same pattern as
+// DialogDemo: each section ships its `html` markup straight into a
+// `<ComponentDemo>` (via `set:html`, which hydrates custom-elements
+// but does NOT run inline script tags), and a single module-level
+// script at the bottom of THIS file does the cross-section
+// wiring + portal-to-body so the demos work no matter where they
+// land in the page.
+//
+// Side sheets we live-preview are all modal — `position: fixed`
+// overlays that need to escape any ancestor stacking context (the
+// Starlight article column applies transforms / contain rules during
+// page-in animations, which would otherwise trap the sheet inside
+// its column). Portaling guarantees they reach the viewport edges.
+//
+// Standard (inline) sheets are documented in prose because they
+// require a parent box with explicit `block-size`, and embedding one
+// inside the docs flow tends to push everything around. The doc
+// page shows a code-only example for the standard variant.
+
+import ComponentDemo from "./ComponentDemo.astro";
+
+interface Section {
+  id: string;
+  label: string;
+  /** Markup the live preview renders. Includes the demo-specific
+   *  `data-sheet-open` / `data-sheet-close` / `data-sheet-instance`
+   *  hooks the global wiring script binds to. */
+  html: string;
+  /** Idiomatic markup shown in the per-technology code tabs. Drops
+   *  the `data-sheet-*` hooks in favour of the `id` + `sheet.show()`
+   *  / `sheet.close()` pattern a real app would use. */
+  codeHtml: string;
+}
+
+// ── Section 1: Common modal patterns ──────────────────────────────
+//
+// Three of the most common modal-sheet shapes:
+//   1. Plain detail panel with headline + paragraph
+//   2. Filter panel with actions slot (Apply / Reset)
+//   3. Detached sheet — rounded corners, 16px viewport margin
+const commonCodeHtml = `<md-button id="open-detail" variant="filled">Detail panel</md-button>
+<md-side-sheet id="detail-sheet" variant="modal" headline="Order details">
+  <p>Order #4242 was placed on May 14, 2026 from <strong>AWC Storefront</strong>.</p>
+  <p>Status: <strong>Shipped</strong> · ETA Friday.</p>
+</md-side-sheet>
+
+<md-button id="open-filters" variant="outlined">Filters</md-button>
+<md-side-sheet id="filters-sheet" variant="modal" headline="Filter results" top-divider bottom-divider>
+  <p>Narrow the result set by category, date, and price range.</p>
+  <md-button slot="actions" variant="text">Reset</md-button>
+  <md-button slot="actions" variant="filled">Apply</md-button>
+</md-side-sheet>
+
+<md-button id="open-detached" variant="tonal">Detached</md-button>
+<md-side-sheet id="detached-sheet" variant="modal" detached headline="What's new">
+  <p>Detached sheets float with rounded corners and a 16px margin
+     around the viewport edge.</p>
+</md-side-sheet>`;
+
+// Live-demo ids are prefixed `demo-` so they can never collide with
+// Starlight-generated heading slugs (the readme has h2/h3 like
+// "#detached" that would otherwise win tree order after portaling).
+const commonHtml = `<md-button data-sheet-open="demo-detail-sheet" variant="filled">Detail panel</md-button>
+<md-button data-sheet-open="demo-filters-sheet" variant="outlined">Filters</md-button>
+<md-button data-sheet-open="demo-detached-sheet" variant="tonal">Detached</md-button>
+
+<md-side-sheet id="demo-detail-sheet" variant="modal" headline="Order details" data-sheet-instance>
+  <p style="margin-block-start: 0;">Order <strong>#4242</strong> was placed on May 14, 2026 from <strong>AWC Storefront</strong>.</p>
+  <p>Status: <strong>Shipped</strong> · ETA Friday, May 17.</p>
+  <p>Tracking: <code>1Z999AA10123456789</code></p>
+  <md-button slot="actions" variant="text" data-sheet-close="demo-detail-sheet">Close</md-button>
+  <md-button slot="actions" variant="filled" data-sheet-close="demo-detail-sheet">View invoice</md-button>
+</md-side-sheet>
+
+<md-side-sheet id="demo-filters-sheet" variant="modal" headline="Filter results" top-divider bottom-divider data-sheet-instance>
+  <p style="margin-block-start: 0;">Narrow the result set by category, date, and price range.</p>
+  <p>The <code>top-divider</code> + <code>bottom-divider</code> props
+     give the scrollable content area its own visual frame between
+     the headline and the actions row.</p>
+  <md-button slot="actions" variant="text" data-sheet-close="demo-filters-sheet">Reset</md-button>
+  <md-button slot="actions" variant="filled" data-sheet-close="demo-filters-sheet">Apply</md-button>
+</md-side-sheet>
+
+<md-side-sheet id="demo-detached-sheet" variant="modal" detached headline="What's new" data-sheet-instance>
+  <p style="margin-block-start: 0;">Detached sheets float with rounded corners and a <strong>16px margin</strong>
+     around the viewport edge — handy when the surrounding page
+     should remain visible at the periphery.</p>
+  <md-button slot="actions" variant="filled" data-sheet-close="demo-detached-sheet">Got it</md-button>
+</md-side-sheet>`;
+
+// ── Section 2: Side & navigation ──────────────────────────────────
+//
+// Demonstrates the `side` prop (start vs end anchoring) and the
+// optional `show-back` icon for nested-navigation flows. Useful when
+// designers ask "can it slide from the left?" — yes, just flip
+// `side="start"`. Side prop also auto-flips with `dir="rtl"` because
+// the modal CSS uses `inset-inline-*` and `translateX` with
+// :host-context overrides.
+const layoutCodeHtml = `<md-button id="open-start" variant="filled">From the start</md-button>
+<md-side-sheet id="start-sheet" variant="modal" side="start" headline="Navigation">
+  <p>Anchored to the inline-start edge — left in LTR, right in RTL.</p>
+</md-side-sheet>
+
+<md-button id="open-back" variant="outlined">With back button</md-button>
+<md-side-sheet id="back-sheet" variant="modal" show-back headline="Step 2 of 3">
+  <p>Use the back chevron for nested navigation flows. It emits an
+     <code>mdBack</code> event without dismissing the sheet.</p>
+</md-side-sheet>`;
+
+const layoutHtml = `<md-button data-sheet-open="demo-start-sheet" variant="filled">From the start</md-button>
+<md-button data-sheet-open="demo-back-sheet" variant="outlined">With back button</md-button>
+
+<md-side-sheet id="demo-start-sheet" variant="modal" side="start" headline="Navigation" data-sheet-instance>
+  <p style="margin-block-start: 0;">Anchored to the <strong>inline-start</strong> edge — left in LTR, right
+     in RTL. The slide-in transform uses <code>inset-inline-*</code>
+     so it auto-mirrors with the writing mode.</p>
+  <md-button slot="actions" variant="filled" data-sheet-close="demo-start-sheet">Done</md-button>
+</md-side-sheet>
+
+<md-side-sheet id="demo-back-sheet" variant="modal" show-back headline="Step 2 of 3" data-sheet-instance>
+  <p style="margin-block-start: 0;">Use the back chevron for nested navigation flows. It emits an
+     <code>mdBack</code> event without dismissing the sheet, so your
+     app can swap content in place instead of unmounting.</p>
+  <p>Try clicking the back arrow — the sheet stays open and an
+     <code>mdBack</code> would fire in your event listener.</p>
+  <md-button slot="actions" variant="text" data-sheet-close="demo-back-sheet">Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-sheet-close="demo-back-sheet">Continue</md-button>
+</md-side-sheet>`;
+
+const sections: Section[] = [
+  {
+    id: "common",
+    label: "Common modal patterns",
+    html: commonHtml,
+    codeHtml: commonCodeHtml,
+  },
+  {
+    id: "layout",
+    label: "Side & navigation",
+    html: layoutHtml,
+    codeHtml: layoutCodeHtml,
+  },
+];
+---
+
+<div class="side-sheet-demo-host">
+  {
+    sections.map((section) => (
+      <ComponentDemo
+        label={section.label}
+        html={section.html}
+        htmlForCode={section.codeHtml}
+        storyId="components-sidesheet--playground"
+      />
+    ))
+  }
+</div>
+
+<script>
+  // Each docs page that imports <SideSheetDemo /> gets this single
+  // global wiring + portal script. It deliberately queries the
+  // document (not a scoped container) so a future page that mixes
+  // <SideSheetDemo /> with hand-rolled <md-side-sheet> instances
+  // gets the same behaviour.
+
+  type SheetEl = HTMLElement & {
+    open: boolean;
+    show: () => Promise<void>;
+    close: () => Promise<void>;
+  };
+
+  // Portal each modal sheet to <body> on first run. Modal sheets are
+  // `position: fixed`; if any ancestor in the article column applies
+  // transform/filter/contain/will-change (page-in animations,
+  // scroll-reveal staggers, backdrop blurs) the fixed positioning
+  // becomes "fixed to that ancestor" instead of the viewport, and
+  // the sheet ends up trapped inside the article column with the
+  // side nav and TOC painted on top of it. Moving the node to <body>
+  // guarantees zero ancestors with those properties.
+  function portalSheets(): void {
+    document
+      .querySelectorAll<HTMLElement>("md-side-sheet[data-sheet-instance]")
+      .forEach((sheet) => {
+        if (sheet.dataset.sheetPortaled === "true") return;
+        if (sheet.parentElement === document.body) {
+          sheet.dataset.sheetPortaled = "true";
+          return;
+        }
+        document.body.appendChild(sheet);
+        sheet.dataset.sheetPortaled = "true";
+      });
+  }
+
+  function teardownPortaledSheets(): void {
+    document
+      .querySelectorAll<HTMLElement>("md-side-sheet[data-sheet-portaled]")
+      .forEach((sheet) => {
+        sheet.remove();
+      });
+  }
+
+  // Resolve `data-sheet-open="foo"` to the actual <md-side-sheet id="foo">
+  // by tag-scoping the lookup. We can't use `getElementById` because
+  // Starlight emits headings whose slugs may collide with demo ids
+  // after portaling moves the sheet to the end of <body>.
+  function findSheet(id: string): SheetEl | null {
+    return document.querySelector<HTMLElement>(
+      `md-side-sheet#${CSS.escape(id)}`,
+    ) as SheetEl | null;
+  }
+
+  function wireSheetTriggers(): void {
+    document
+      .querySelectorAll<HTMLElement>("[data-sheet-open]")
+      .forEach((trigger) => {
+        if (trigger.dataset.sheetWired === "true") return;
+        trigger.dataset.sheetWired = "true";
+        trigger.addEventListener("click", () => {
+          const id = trigger.dataset.sheetOpen;
+          if (!id) return;
+          const sheet = findSheet(id);
+          if (!sheet) return;
+          // Prefer the public method so internal focus / scrim wiring
+          // runs; fall back to the property in case the component is
+          // still hydrating on the very first click.
+          if (typeof sheet.show === "function") {
+            void sheet.show();
+          } else {
+            sheet.open = true;
+          }
+        });
+      });
+
+    document
+      .querySelectorAll<HTMLElement>("[data-sheet-close]")
+      .forEach((trigger) => {
+        if (trigger.dataset.sheetWired === "true") return;
+        trigger.dataset.sheetWired = "true";
+        trigger.addEventListener("click", () => {
+          const id = trigger.dataset.sheetClose;
+          if (!id) return;
+          const sheet = findSheet(id);
+          if (!sheet) return;
+          if (typeof sheet.close === "function") {
+            void sheet.close();
+          } else {
+            sheet.open = false;
+          }
+        });
+      });
+  }
+
+  function bootstrap(): void {
+    portalSheets();
+    wireSheetTriggers();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootstrap, { once: true });
+  } else {
+    bootstrap();
+  }
+  document.addEventListener("astro:page-load", bootstrap);
+  // Strip portaled sheets before the next page swap so they don't
+  // leak into other docs pages.
+  document.addEventListener("astro:before-preparation", teardownPortaledSheets);
+</script>

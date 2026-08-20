@@ -1,0 +1,255 @@
+/* ==========================================================
+   md-button-group — Material Design 3 Button Group
+   Spec: https://m3.material.io/components/button-groups/specs
+
+   Two variants:
+     standard  — separate buttons with size-dependent gap
+     connected — fused buttons with 2px gap and shared shape
+
+   PUBLIC CSS CUSTOM PROPERTIES:
+     --md-button-group-gap         Override default gap
+     --md-button-group-width       Explicit inline-size (defaults to auto)
+     --md-button-group-min-width   Minimum inline-size
+     --md-button-group-max-width   Maximum inline-size
+     --md-button-group-height      Explicit block-size (defaults to auto)
+     --md-button-group-min-height  Minimum block-size
+     --md-button-group-max-height  Maximum block-size
+
+   ATTRIBUTES:
+     full-width                    Stretch group to 100% and split children
+                                   equally (flex: 1 1 0)
+
+   ========================================================== */
+
+:host {
+  /* Gap between buttons. Previously computed in TSX and written as an INLINE
+     style, which meant density could not reach it (it stayed 12px while the
+     buttons shrank 40 -> 24) and the documented --md-button-group-gap override
+     never applied, since an inline style outranks any rule. Now in CSS, so both
+     work. Each size halves across the density range, matching the taper the
+     buttons themselves use. */
+  --_gap: var(--md-button-group-gap, max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px)));
+  --_width: var(--md-button-group-width, auto);
+  --_min-width: var(--md-button-group-min-width, auto);
+  --_max-width: var(--md-button-group-max-width, none);
+  --_height: var(--md-button-group-height, auto);
+  --_min-height: var(--md-button-group-min-height, auto);
+  --_max-height: var(--md-button-group-max-height, none);
+
+  display: inline-flex;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  box-sizing: border-box;
+  vertical-align: middle;
+
+  inline-size: var(--_width);
+  min-inline-size: var(--_min-width);
+  max-inline-size: var(--_max-width);
+  block-size: var(--_height);
+  min-block-size: var(--_min-height);
+  max-block-size: var(--_max-height);
+}
+
+/* Ensure slotted children don't shrink below their min-width.
+   `align-items: stretch` on the host (above) handles the cross-axis:
+   when the group has an explicit `--md-button-group-height`, every
+   child grows to fill it; when it doesn't, the group sizes to the
+   tallest child and stretch keeps every child the same height. */
+::slotted(md-button),
+::slotted(md-icon-button) {
+  flex-shrink: 0;
+  /* Make --md-button-group-max-height actually bind. The group already sets
+     max-block-size on itself, but each child carries its own min-block-size
+     from its size tier, and per CSS min-height beats max-height — so the buttons
+     pushed straight through the ceiling and out of the group (an lg group capped
+     at 40px still rendered 96px buttons).
+
+     Capping the child's min-height is the only thing that works, but it must
+     apply ONLY when a ceiling is set. The inner `var(--md-button-group-_unset)`
+     is deliberately a property nobody defines: with no ceiling the substitution
+     fails, --md-button-min-height computes to guaranteed-invalid, and
+     md-button's own `var(--md-button-min-height, <tier height>)` falls back to
+     its natural height. With a ceiling, the child's floor becomes that ceiling.
+     That keeps the tier heights defined in exactly one place — md-button — with
+     no copy here to go stale. */
+  --md-button-min-height: var(--md-button-group-max-height, var(--md-button-group-_unset));
+  max-block-size: var(--_max-height);
+}
+
+/* ==========================================================
+   FULL-WIDTH — group spans 100%, children split it evenly
+   ========================================================== */
+:host(.md-button-group--full-width) {
+  display: flex;
+  --_width: 100%;
+}
+
+:host(.md-button-group--full-width) ::slotted(md-button),
+:host(.md-button-group--full-width) ::slotted(md-icon-button) {
+  /* Equal share of the inline axis. The intrinsic min-content of each
+     button (or the connected-XS/SM 48px touch-target floor) stays in
+     effect, so very narrow containers overflow rather than producing
+     undersized tap targets. */
+  flex: 1 1 0;
+}
+
+/* ==========================================================
+   CONNECTED — minimum 48px target area for XS / SM
+   ========================================================== */
+:host(.md-button-group--connected.md-button-group--xs) ::slotted(md-button),
+:host(.md-button-group--connected.md-button-group--xs) ::slotted(md-icon-button),
+:host(.md-button-group--connected.md-button-group--sm) ::slotted(md-button),
+:host(.md-button-group--connected.md-button-group--sm) ::slotted(md-icon-button) {
+  min-width: 48px;
+}
+
+/* ==========================================================
+   CONNECTED — per-corner border-radius
+   ::slotted() !important beats :host() rules inside the
+   child shadow DOM (outer-context important > inner-context).
+
+   Outer radius must be the exact pill value (height/2) per size
+   and per component type — NOT 9999px — because CSS clamps all
+   corner radii proportionally when adjacent radii exceed the
+   element's dimensions.
+   ========================================================== */
+
+/* ── Tokens ────────────────────────────────────────────── */
+
+/* Inner-corner resting (spec: XS 4, SM 8, MD 8, LG 16, XL 20) */
+/* Selected = pill value (height/2) so button morphs to fully rounded */
+:host(.md-button-group--connected.md-button-group--xs) { --_c-inner: 4px; --_c-sel: 16px; --_c-press: 2px;  }
+:host(.md-button-group--connected.md-button-group--sm) { --_c-inner: 8px; --_c-sel: 20px; --_c-press: 4px;  }
+:host(.md-button-group--connected.md-button-group--md) { --_c-inner: 8px; --_c-sel: 24px; --_c-press: 4px;  }
+:host(.md-button-group--connected.md-button-group--lg) { --_c-inner: 16px; --_c-sel: 28px; --_c-press: 8px; }
+:host(.md-button-group--connected.md-button-group--xl) { --_c-inner: 20px; --_c-sel: 48px; --_c-press: 12px; }
+
+/* Outer pill radius — md-button (height/2, stays fixed during morph) */
+:host(.md-button-group--connected.md-button-group--round.md-button-group--xs) { --_c-outer-btn: 16px; }
+:host(.md-button-group--connected.md-button-group--round.md-button-group--sm) { --_c-outer-btn: 20px; }
+:host(.md-button-group--connected.md-button-group--round.md-button-group--md) { --_c-outer-btn: 24px; }
+:host(.md-button-group--connected.md-button-group--round.md-button-group--lg) { --_c-outer-btn: 28px; }
+:host(.md-button-group--connected.md-button-group--round.md-button-group--xl) { --_c-outer-btn: 48px; }
+
+/* Outer pill radius — md-icon-button (height/2) */
+:host(.md-button-group--connected.md-button-group--round.md-button-group--xs) { --_c-outer-icon: 16px; }
+:host(.md-button-group--connected.md-button-group--round.md-button-group--sm) { --_c-outer-icon: 20px; }
+:host(.md-button-group--connected.md-button-group--round.md-button-group--md) { --_c-outer-icon: 28px; }
+:host(.md-button-group--connected.md-button-group--round.md-button-group--lg) { --_c-outer-icon: 48px; }
+:host(.md-button-group--connected.md-button-group--round.md-button-group--xl) { --_c-outer-icon: 68px; }
+
+/* Square: outer = inner (tracks state because each state uses its own inner var) */
+:host(.md-button-group--connected.md-button-group--square) { --_c-outer-btn: var(--_c-inner); --_c-outer-icon: var(--_c-inner); }
+
+/* ── Resting ───────────────────────────────────────────── */
+
+/* `connected-left` / `connected-right` reflect *DOM-order* siblings, not
+   physical sides — the group sets `connected-right` whenever a child has
+   a next-sibling (i.e. an inline-end neighbor) and `connected-left` when
+   it has a previous-sibling (an inline-start neighbor). The corner radii
+   below must therefore use *logical* properties so they flip with
+   `dir="rtl"` and the outer pill always lands on the free outer edge. */
+
+/* First DOM child (only inline-end neighbor): outer corners on inline-start, inner on inline-end. */
+:host(.md-button-group--connected) ::slotted(md-button[connected-right]:not([connected-left])) {
+  border-start-start-radius: var(--_c-outer-btn) !important;
+  border-end-start-radius: var(--_c-outer-btn) !important;
+  border-start-end-radius: var(--_c-inner) !important;
+  border-end-end-radius: var(--_c-inner) !important;
+}
+:host(.md-button-group--connected) ::slotted(md-icon-button[connected-right]:not([connected-left])) {
+  border-start-start-radius: var(--_c-outer-icon) !important;
+  border-end-start-radius: var(--_c-outer-icon) !important;
+  border-start-end-radius: var(--_c-inner) !important;
+  border-end-end-radius: var(--_c-inner) !important;
+}
+/* Last DOM child (only inline-start neighbor): inner corners on inline-start, outer on inline-end. */
+:host(.md-button-group--connected) ::slotted(md-button[connected-left]:not([connected-right])) {
+  border-start-start-radius: var(--_c-inner) !important;
+  border-end-start-radius: var(--_c-inner) !important;
+  border-start-end-radius: var(--_c-outer-btn) !important;
+  border-end-end-radius: var(--_c-outer-btn) !important;
+}
+:host(.md-button-group--connected) ::slotted(md-icon-button[connected-left]:not([connected-right])) {
+  border-start-start-radius: var(--_c-inner) !important;
+  border-end-start-radius: var(--_c-inner) !important;
+  border-start-end-radius: var(--_c-outer-icon) !important;
+  border-end-end-radius: var(--_c-outer-icon) !important;
+}
+/* Middle children (both neighbors): all corners inner — direction-agnostic. */
+:host(.md-button-group--connected) ::slotted([connected-left][connected-right]) {
+  border-radius: var(--_c-inner) !important;
+}
+
+/* ── Selected — all corners morph to rounded ──────────── */
+
+:host(.md-button-group--connected) ::slotted(md-button.md-button--selected[connected-right]:not([connected-left])),
+:host(.md-button-group--connected) ::slotted(md-button.md-button--selected[connected-left]:not([connected-right])),
+:host(.md-button-group--connected) ::slotted(md-button.md-button--selected[connected-left][connected-right]),
+:host(.md-button-group--connected) ::slotted(md-icon-button.md-icon-button--selected[connected-right]:not([connected-left])),
+:host(.md-button-group--connected) ::slotted(md-icon-button.md-icon-button--selected[connected-left]:not([connected-right])),
+:host(.md-button-group--connected) ::slotted(md-icon-button.md-icon-button--selected[connected-left][connected-right]) {
+  border-radius: var(--_c-sel) !important;
+}
+
+/* ── Pressed — all corners morph to more square ──────── */
+
+:host(.md-button-group--connected) ::slotted(md-button.md-button--pressed[connected-right]:not([connected-left])),
+:host(.md-button-group--connected) ::slotted(md-button.md-button--pressed[connected-left]:not([connected-right])),
+:host(.md-button-group--connected) ::slotted(md-button.md-button--pressed[connected-left][connected-right]),
+:host(.md-button-group--connected) ::slotted(md-icon-button.md-icon-button--pressed[connected-right]:not([connected-left])),
+:host(.md-button-group--connected) ::slotted(md-icon-button.md-icon-button--pressed[connected-left]:not([connected-right])),
+:host(.md-button-group--connected) ::slotted(md-icon-button.md-icon-button--pressed[connected-left][connected-right]) {
+  border-radius: var(--_c-press) !important;
+}
+
+/* ==========================================================
+   REDUCED MOTION
+   ========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   FORCED COLORS — Windows High Contrast
+   ========================================================== */
+@media (forced-colors: active) {
+  :host {
+    forced-color-adjust: none;
+  }
+}
+
+/* ── Gap per size (standard) and the connected hairline ── */
+:host(.md-button-group--xs) {
+  --_gap: var(--md-button-group-gap, max(10px, calc(18px + var(--md-sys-density-scale, 0) * 2px)));
+}
+
+:host(.md-button-group--sm) {
+  --_gap: var(--md-button-group-gap, max(6px, calc(12px + var(--md-sys-density-scale, 0) * 1.5px)));
+}
+
+/* md / lg / xl all sit on the 8px default declared on :host. */
+
+/* Connected buttons are FUSED — the 2px is a seam, not spacing, so it does not
+   taper; shrinking it would close the join and blur the shared shape. */
+:host(.md-button-group--connected) {
+  --_gap: var(--md-button-group-gap, 2px);
+}
+
+:host {
+  gap: var(--_gap);
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

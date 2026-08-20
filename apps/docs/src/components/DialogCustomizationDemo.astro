@@ -1,0 +1,277 @@
+---
+// DialogCustomizationDemo.astro
+//
+// Live preview for the "Customization" section of the dialog docs page.
+// Showcases the four most useful customization vectors so users can
+// see — and reach the underlying source code — for each:
+//
+//   1. CSS custom properties on the host (per-instance theming).
+//   2. CSS custom properties via a class (brand palettes).
+//   3. `--md-dialog-container-shape` (sharper or pillier corners).
+//   4. `::part()` selectors (style internal elements through the
+//      shadow boundary).
+//
+// `md-dialog` is an overlay (`position: fixed`, painted only when
+// `open=true`) so the generator's idle "Customization" demo emits an
+// empty preview frame. This component replaces it with three trigger
+// buttons that open re-themed dialogs.
+//
+// Wiring + portaling reuses `DialogDemo.astro`'s global script (same
+// `data-dialog-open` / `data-dialog-instance` hooks). A dedupe-guarded
+// fallback bootstrap at the bottom keeps this component self-sufficient
+// on pages that import only it.
+
+import ComponentDemo from "./ComponentDemo.astro";
+
+// Code-tab markup: idiomatic ids, no `data-dialog-*` hooks. Inline
+// styles make the customization knobs explicit in the per-technology
+// code so users can copy-paste and adjust the values.
+const codeHtml = `<style>
+  md-dialog.brand {
+    --md-dialog-container-color: #1f1b24;
+    --md-dialog-headline-color: #d0bcff;
+    --md-dialog-content-color: #e6e1e5;
+    --md-dialog-icon-color: #d0bcff;
+  }
+  md-dialog.parts::part(headline) {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+  md-dialog.parts::part(divider) {
+    background: linear-gradient(90deg, transparent, var(--md-sys-color-primary), transparent);
+    block-size: 2px;
+  }
+</style>
+
+<md-button id="open-brand">Brand colors</md-button>
+<md-button id="open-shape">Sharp corners</md-button>
+<md-button id="open-shape-pill">Pill shape</md-button>
+<md-button id="open-parts">CSS parts</md-button>
+
+<md-dialog id="brand-dialog" class="brand" headline="AWC Pro" icon="auto_awesome">
+  <span>Class-based theming swaps every public CSS custom property in one go — perfect for a marketing palette or a multi-tenant skin.</span>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Upgrade</md-button>
+</md-dialog>
+
+<md-dialog
+  id="shape-dialog"
+  headline="Save changes?"
+  icon="save"
+  style="--md-dialog-container-shape: 4px;"
+>
+  <span>Override <code>--md-dialog-container-shape</code> for a sharper, enterprise-style corner.</span>
+  <md-button slot="actions" variant="text">Discard</md-button>
+  <md-button slot="actions" variant="filled">Save</md-button>
+</md-dialog>
+
+<md-dialog
+  id="shape-pill-dialog"
+  headline="Quick action"
+  icon="bolt"
+  style="--md-dialog-container-shape: 28px 28px 28px 4px;"
+>
+  <span>Asymmetric corners are a single-line override too.</span>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Confirm</md-button>
+</md-dialog>
+
+<md-dialog
+  id="parts-dialog"
+  class="parts"
+  headline="Styled with parts"
+  icon="palette"
+  divider
+>
+  <span>The <code>::part()</code> selector reaches into the shadow DOM. We've uppercased the headline and turned the divider into a gradient.</span>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">OK</md-button>
+</md-dialog>`;
+
+// Live-preview markup: ids prefixed `demo-custom-` to avoid colliding
+// with Starlight heading slugs and other DialogDemo instances.
+const html = `<md-button data-dialog-open="demo-custom-brand-dialog" variant="filled">Brand colors</md-button>
+<md-button data-dialog-open="demo-custom-shape-dialog" variant="filled">Sharp corners</md-button>
+<md-button data-dialog-open="demo-custom-shape-pill-dialog" variant="filled">Asymmetric shape</md-button>
+<md-button data-dialog-open="demo-custom-parts-dialog" variant="filled">CSS parts</md-button>
+
+<md-dialog
+  id="demo-custom-brand-dialog"
+  class="dialog-custom-demo__brand"
+  headline="AWC Pro"
+  icon="auto_awesome"
+  data-dialog-instance
+>
+  <span>Class-based theming swaps every public CSS custom property in one go — perfect for a marketing palette or a multi-tenant skin.</span>
+  <md-button slot="actions" variant="text" data-dialog-close="demo-custom-brand-dialog">Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-dialog-close="demo-custom-brand-dialog">Upgrade</md-button>
+</md-dialog>
+
+<md-dialog
+  id="demo-custom-shape-dialog"
+  headline="Save changes?"
+  icon="save"
+  data-dialog-instance
+  style="--md-dialog-container-shape: 4px;"
+>
+  <span>Override <code>--md-dialog-container-shape</code> on the host for a sharper, enterprise-style corner.</span>
+  <md-button slot="actions" variant="text" data-dialog-close="demo-custom-shape-dialog">Discard</md-button>
+  <md-button slot="actions" variant="filled" data-dialog-close="demo-custom-shape-dialog">Save</md-button>
+</md-dialog>
+
+<md-dialog
+  id="demo-custom-shape-pill-dialog"
+  headline="Quick action"
+  icon="bolt"
+  data-dialog-instance
+  style="--md-dialog-container-shape: 28px 28px 28px 4px;"
+>
+  <span>Asymmetric corners are a single-line override too — pass any valid <code>border-radius</code> shorthand.</span>
+  <md-button slot="actions" variant="text" data-dialog-close="demo-custom-shape-pill-dialog">Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-dialog-close="demo-custom-shape-pill-dialog">Confirm</md-button>
+</md-dialog>
+
+<md-dialog
+  id="demo-custom-parts-dialog"
+  class="dialog-custom-demo__parts"
+  headline="Styled with parts"
+  icon="palette"
+  divider
+  data-dialog-instance
+>
+  <span>The <code>::part()</code> selector reaches into the shadow DOM. We've uppercased the headline and turned the divider into a gradient.</span>
+  <md-button slot="actions" variant="text" data-dialog-close="demo-custom-parts-dialog">Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-dialog-close="demo-custom-parts-dialog">OK</md-button>
+</md-dialog>`;
+---
+
+<ComponentDemo
+  label="Customization preview"
+  html={html}
+  htmlForCode={codeHtml}
+  storyId="components-dialog--playground"
+/>
+
+<style is:global>
+  /* Class-based brand theming. Lives on the dialog host so it survives
+     the wiring script's portal-to-<body> move. */
+  md-dialog.dialog-custom-demo__brand {
+    --md-dialog-container-color: #1f1b24;
+    --md-dialog-headline-color: #d0bcff;
+    --md-dialog-content-color: #e6e1e5;
+    --md-dialog-icon-color: #d0bcff;
+  }
+
+  /* `::part()` styling. The `parts` example uppercases the headline
+     and replaces the divider with a primary-colored gradient. */
+  md-dialog.dialog-custom-demo__parts::part(headline) {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+
+  md-dialog.dialog-custom-demo__parts::part(divider) {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--md-sys-color-primary, #6750a4),
+      transparent
+    );
+    block-size: 2px;
+    border: none;
+  }
+</style>
+
+<script>
+  // Dedupe-guarded fallback wiring + portal. No-op when DialogDemo's
+  // script is also on the page (its bootstrap runs first; the
+  // `data-dialog-wired` / `data-dialog-portaled` flags below short-
+  // circuit the second pass). The duplication keeps every demo Astro
+  // component self-sufficient.
+
+  type DialogEl = HTMLElement & {
+    open: boolean;
+    show: () => Promise<void>;
+    close: () => Promise<void>;
+  };
+
+  function portalDialogs(): void {
+    document
+      .querySelectorAll<HTMLElement>("md-dialog[data-dialog-instance]")
+      .forEach((dialog) => {
+        if (dialog.dataset.dialogPortaled === "true") return;
+        if (dialog.parentElement === document.body) {
+          dialog.dataset.dialogPortaled = "true";
+          return;
+        }
+        document.body.appendChild(dialog);
+        dialog.dataset.dialogPortaled = "true";
+      });
+  }
+
+  function teardownPortaledDialogs(): void {
+    document
+      .querySelectorAll<HTMLElement>("md-dialog[data-dialog-portaled]")
+      .forEach((dialog) => {
+        dialog.remove();
+      });
+  }
+
+  function findDialog(id: string): DialogEl | null {
+    return document.querySelector<HTMLElement>(
+      `md-dialog#${CSS.escape(id)}`,
+    ) as DialogEl | null;
+  }
+
+  function wireDialogTriggers(): void {
+    document
+      .querySelectorAll<HTMLElement>("[data-dialog-open]")
+      .forEach((trigger) => {
+        if (trigger.dataset.dialogWired === "true") return;
+        trigger.dataset.dialogWired = "true";
+        trigger.addEventListener("click", () => {
+          const id = trigger.dataset.dialogOpen;
+          if (!id) return;
+          const dialog = findDialog(id);
+          if (!dialog) return;
+          if (typeof dialog.show === "function") {
+            void dialog.show();
+          } else {
+            dialog.open = true;
+          }
+        });
+      });
+
+    document
+      .querySelectorAll<HTMLElement>("[data-dialog-close]")
+      .forEach((trigger) => {
+        if (trigger.dataset.dialogWired === "true") return;
+        trigger.dataset.dialogWired = "true";
+        trigger.addEventListener("click", () => {
+          const id = trigger.dataset.dialogClose;
+          if (!id) return;
+          const dialog = findDialog(id);
+          if (!dialog) return;
+          if (typeof dialog.close === "function") {
+            void dialog.close();
+          } else {
+            dialog.open = false;
+          }
+        });
+      });
+  }
+
+  function bootstrap(): void {
+    portalDialogs();
+    wireDialogTriggers();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootstrap, { once: true });
+  } else {
+    bootstrap();
+  }
+  document.addEventListener("astro:page-load", bootstrap);
+  document.addEventListener("astro:before-preparation", teardownPortaledDialogs);
+</script>

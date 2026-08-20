@@ -1,0 +1,189 @@
+{
+  "tag": "md-avatar",
+  "title": "Avatar",
+  "slug": "avatar",
+  "category": "Data Display",
+  "subComponentOf": null,
+  "storyId": "data-display-avatar--playground",
+  "props": [
+    {
+      "name": "src",
+      "attribute": "src",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "alt",
+      "attribute": "alt",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "name",
+      "attribute": "name",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "initials",
+      "attribute": "initials",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "size",
+      "attribute": "size",
+      "type": "MdAvatarSize",
+      "default": "'medium'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "shape",
+      "attribute": "shape",
+      "type": "MdAvatarShape",
+      "default": "'circle'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "colorFromName",
+      "attribute": "color-from-name",
+      "type": "boolean",
+      "default": "true",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "loading",
+      "attribute": "loading",
+      "type": "'eager' | 'lazy'",
+      "default": "'lazy'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "crossorigin",
+      "attribute": "crossorigin",
+      "type": "'' | 'anonymous' | 'use-credentials'",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdLoad",
+      "detail": "{ src: string }"
+    },
+    {
+      "name": "mdError",
+      "detail": "{ src: string }"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "image",
+      "description": "The `<img>` element (image mode)"
+    },
+    {
+      "name": "initials",
+      "description": "The initials text element"
+    },
+    {
+      "name": "icon",
+      "description": "The fallback person icon"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-avatar-size",
+      "description": "Square size of the host"
+    },
+    {
+      "name": "--md-avatar-container-color",
+      "description": "Container fill (initials/icon mode)"
+    },
+    {
+      "name": "--md-avatar-container-shape",
+      "description": "Border-radius override"
+    },
+    {
+      "name": "--md-avatar-label-color",
+      "description": "Initials / icon color"
+    },
+    {
+      "name": "--md-avatar-label-font-family",
+      "description": "Initials font family"
+    },
+    {
+      "name": "--md-avatar-label-font-size",
+      "description": "Initials font size"
+    },
+    {
+      "name": "--md-avatar-label-font-weight",
+      "description": "Initials font weight"
+    },
+    {
+      "name": "--md-avatar-icon-size",
+      "description": "Icon glyph size"
+    },
+    {
+      "name": "--md-avatar-outline-color",
+      "description": "Optional outline color"
+    },
+    {
+      "name": "--md-avatar-outline-width",
+      "description": "Optional outline width (default 0)"
+    },
+    {
+      "name": "--md-avatar-label-letter-spacing",
+      "description": ""
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdLoad",
+      "detail": "{ src: string }"
+    },
+    {
+      "name": "mdError",
+      "detail": "{ src: string }"
+    }
+  ]
+}

@@ -1,0 +1,305 @@
+# CI for the awc-ui monorepo (pnpm + Turbo + StencilJS).
+#
+# Job map
+#   core            — build @awc-ui/core, run spec tests with coverage, publish
+#                     the coverage report + dist as artifacts.
+#   e2e             — Stencil/Puppeteer e2e suite, sharded 2 ways via Jest --shard
+#                     (Stencil 4.43 resolves its Jest 29 facade; jest 29.7 supports
+#                     --shard — verified locally: shards are disjoint and complete).
+#   wrappers        — build react/vue/angular wrappers, then publint + attw
+#                     publish-readiness checks (accepted warnings documented inline).
+#   lint            — ESLint + Stylelint + `tsc --noEmit` (no build required).
+#   changeset-check — PRs touching source must carry a changeset (scripts/check-changeset.mjs).
+#
+# Notes
+# - The former standalone "build"/"test-unit" jobs were folded into "core": the old
+#   build job uploaded the whole workspace with an invalid `include:` input on
+#   upload-artifact, and test-unit's junit reporter pointed at a file nothing emits.
+# - Stencil CLI flag forwarding: `pnpm run <script> -- --flag` forwards the literal
+#   `--` to Stencil, whose Jest yargs parse then treats every later token as a
+#   positional (flags silently ignored). Jobs therefore invoke the Stencil CLI via
+#   `pnpm --filter @awc-ui/core exec stencil test ...` with `--flag=value` forms.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core:
+    name: Core build + spec tests (coverage)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build @awc-ui/core
+        # The build script chains scripts/fix-module-types.mjs, which stamps
+        # dist/{esm,components}/package.json ("type": "module") and
+        # dist/cjs/package.json ("type": "commonjs") so Node never re-parses
+        # the generated .js files (MODULE_TYPELESS_PACKAGE_JSON warning).
+        run: pnpm --filter @awc-ui/core build
+
+      - name: SSR gate (renderToString every component + DSD)
+        # Fails the build if any component throws under server render or stops
+        # emitting Declarative Shadow DOM — needs the hydrate/ output from the
+        # build step above.
+        run: pnpm --filter @awc-ui/core test:ssr
+
+      - name: Spec tests (with coverage)
+        run: pnpm --filter @awc-ui/core exec stencil test --spec --ci --coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-spec
+          path: packages/core/coverage/
+          retention-days: 30
+
+      - name: Upload core dist for downstream jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-dist
+          path: packages/core/dist/
+          retention-days: 1
+
+  e2e:
+    name: E2E tests (shard ${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ['1/2', '2/2']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install Chrome for Puppeteer
+        # Belt-and-braces: puppeteer's postinstall usually downloads Chrome for
+        # Testing already; this is a no-op when the browser is present.
+        run: pnpm --filter @awc-ui/core exec puppeteer browsers install chrome
+
+      - name: E2E tests
+        # --shard: Jest 29 shards are disjoint + complete (verified with
+        #   --listTests=true: 56 + 42 = 98 files, 0 overlap).
+        # --max-workers=2: full-parallel e2e is contention-flaky (real Chromium
+        #   instances fight for CPU and timing-sensitive tests fail).
+        run: pnpm --filter @awc-ui/core exec stencil test --e2e --ci --max-workers=2 --shard=${{ matrix.shard }}
+
+  wrappers:
+    name: Wrappers build + publish checks
+    runs-on: ubuntu-latest
+    needs: core
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Download core dist
+        uses: actions/download-artifact@v4
+        with:
+          name: core-dist
+          path: packages/core/dist/
+
+      - name: Build react + vue + angular wrappers
+        run: pnpm ci:wrappers
+
+      - name: publint (core, react, vue)
+        # publint exits 0 with warnings; current known warnings (accepted):
+        # - core/react: exports["."].types is interpreted as CJS under the
+        #   "import" condition (single .d.ts serving both conditions). Fixing
+        #   requires emitting .d.mts twins from generated type output — tracked
+        #   as a packaging follow-up, not a publish blocker.
+        # - suggestions about "type", "engines.node", "sideEffects" fields.
+        run: pnpm ci:publint
+
+      - name: Are the types wrong? (react, vue)
+        # Accepted --ignore-rules (see root "ci:attw" script), verified 2026-07:
+        # - react: false-cjs — node16 ESM import resolves dist/index.d.ts as a
+        #   CJS-flavored declaration for the ESM dist/index.mjs (needs .d.mts twin).
+        # - vue: cjs-resolves-to-esm — the package is intentionally ESM-only
+        #   ("type": "module", no "require" condition); CJS consumers must use
+        #   dynamic import.
+        # - vue: internal-resolution-error — dist/index.d.ts re-exports
+        #   './components' without an extension, which node16 ESM resolution
+        #   rejects (fix belongs in the generated wrapper source, lib/index.ts).
+        run: pnpm ci:attw
+
+  test-ct:
+    name: Component Tests (Playwright CT + coverage)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter @awc-ui/test-react exec playwright install chromium --with-deps
+
+      # The test:ct script builds @awc-ui/core itself before running Playwright.
+      - run: pnpm --filter @awc-ui/test-react test:ct
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-ct
+          path: apps/test-react/coverage/
+          retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-ct-results
+          path: apps/test-react/test-results/
+          retention-days: 7
+
+  lint:
+    name: Lint (ESLint + Stylelint + TypeScript)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: ESLint
+        run: pnpm lint:eslint
+
+      - name: Stylelint
+        run: pnpm lint:stylelint
+
+      - name: TypeScript type-check
+        run: pnpm --filter @awc-ui/core lint
+
+  changeset-check:
+    name: Changeset Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.actor != 'github-actions[bot]' && !startsWith(github.event.pull_request.title, 'chore(release):')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Verify changeset present
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: node scripts/check-changeset.mjs
+
+
+  storybook-build:
+    name: Storybook Build
+    runs-on: ubuntu-latest
+    needs: core
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Download core dist
+        uses: actions/download-artifact@v4
+        with:
+          name: core-dist
+          path: packages/core/dist/
+
+      - run: pnpm --filter @awc-ui/storybook build-storybook
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: storybook-static
+          path: apps/storybook/storybook-static/
+          retention-days: 7
+
+  test-a11y:
+    name: Accessibility (axe-core via Storybook)
+    runs-on: ubuntu-latest
+    needs: storybook-build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: storybook-static
+          path: apps/storybook/storybook-static/
+
+      - run: pnpm --filter @awc-ui/storybook exec playwright install --with-deps chromium
+
+      - name: Run axe-core a11y audit on Storybook stories
+        run: pnpm --filter @awc-ui/storybook test:a11y
+
+      - name: Upload a11y test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: A11y Test Results
+          path: apps/storybook/test-results/junit.xml
+          reporter: jest-junit
+          fail-on-error: true
+        continue-on-error: true

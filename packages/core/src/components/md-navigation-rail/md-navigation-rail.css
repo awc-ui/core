@@ -1,0 +1,767 @@
+/* ==========================================================
+   md-navigation-rail — Material Design 3 Navigation Rail
+   Spec:
+     https://m3.material.io/components/navigation-rail/overview
+     https://m3.material.io/components/navigation-rail/specs
+     https://m3.material.io/components/navigation-rail/guidelines
+     https://m3.material.io/components/navigation-rail/accessibility
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-navigation-rail-container-color       Rail background
+     --md-navigation-rail-container-width       Width when collapsed (default 80px,
+                                                the spec's collapsed-rail maximum)
+     --md-navigation-rail-expanded-width        Width when expanded (default 220px,
+                                                spec minimum; spec maximum is 360px)
+     --md-navigation-rail-expanded-max-width    Expanded width cap (default 360px)
+     --md-navigation-rail-container-shape       Border-radius
+     --md-navigation-rail-container-elevation   Box-shadow when free-floating
+     --md-navigation-rail-padding-block         Top/bottom padding (default 44px top space)
+     --md-navigation-rail-padding-inline        Start/end padding
+     --md-navigation-rail-gap                   Gap between rail sections
+     --md-navigation-rail-header-space          Min space between header/FAB group and
+                                                destinations (default 40px per spec)
+     --md-navigation-rail-destinations-gap      Gap between destinations (default 4px)
+     --md-navigation-rail-content-color         Default foreground color
+     --md-navigation-rail-logo-icon-size        Brand glyph footprint in the logo
+                                                slots; centres the logo on the rail
+                                                axis (default 24px)
+
+   CSS PARTS:
+     container       The flex column wrapping every section
+     logo            Logo/brand slot wrapper (topmost)
+     header          Header slot wrapper (top group)
+     fab             FAB slot wrapper
+     destinations    The role=tablist that holds destinations
+     footer          Footer slot wrapper (bottom group)
+
+   SLOTS:
+     logo            Optional brand/logo at the very top
+     header          Optional top group (menu button, etc.)
+     fab             Optional FAB above the destinations
+     (default)       Destinations (md-navigation-rail-tab elements, 3-7 recommended)
+     footer          Optional bottom group — settings, account / user menu, etc.
+
+   KEYBOARD:
+     Tab / Arrows    Navigate between interactive elements
+     Space / Enter   Activate the focused element
+   ========================================================== */
+
+:host {
+  /* Public theming API → internal vars */
+  --_container-color: var(
+    --md-navigation-rail-container-color,
+    var(--md-sys-color-surface, #FFFBFE)
+  );
+  /* Spec: collapsed container = 80dp (the collapsed-rail maximum width). */
+  --_container-width: var(--md-navigation-rail-container-width, max(56px, calc(80px + var(--md-sys-density-scale, 0) * 4px)));
+  /* Spec: expanded container = 220dp minimum, 360dp maximum. */
+  --_expanded-width: var(--md-navigation-rail-expanded-width, max(140px, calc(220px + var(--md-sys-density-scale, 0) * 20px)));
+  --_expanded-max-width: var(--md-navigation-rail-expanded-max-width, 360px);
+  --_container-shape: var(--md-navigation-rail-container-shape, 0px);
+  --_container-elevation: var(--md-navigation-rail-container-elevation, none);
+  --_padding-block: var(--md-navigation-rail-padding-block, max(24px, calc(44px + var(--md-sys-density-scale, 0) * 4px)));
+  --_padding-inline: var(--md-navigation-rail-padding-inline, 0px);
+  --_gap: var(--md-navigation-rail-gap, var(--md-sys-spacing-gap-md, 12px));
+  --_header-space: var(--md-navigation-rail-header-space, max(20px, calc(40px + var(--md-sys-density-scale, 0) * 4px)));
+  --_destinations-gap: var(--md-navigation-rail-destinations-gap, max(0px, calc(8px + var(--md-sys-density-scale, 0) * 2px)));
+  --_content-color: var(
+    --md-navigation-rail-content-color,
+    var(--md-sys-color-on-surface-variant, #49454F)
+  );
+  /* Footprint of the brand glyph in the `logo`/`logo-expanded` slots. Used to
+     centre the logo on the rail's axis (x=40) so it stays pixel-stationary
+     across expand/collapse. Defaults to the 24dp destination-icon size; set it
+     to match a larger brand glyph. */
+  --_logo-icon-size: var(--md-navigation-rail-logo-icon-size, 24px);
+  /* Motion — the rail width expand/collapse size/position morph. Tuned to match
+     the snappy button shape-morph (short4 / standard easing) rather than the
+     slower, overshooting spatial spring: it now drives in quick and settles with
+     no bounce. The JS that times the per-tab icon glide reads the same duration
+     (see md-navigation-rail-tab `motionDuration()`) so they stay in lockstep.
+     Effects spring drives non-spatial changes (color) which must NOT overshoot. */
+  --_motion-duration: var(--md-sys-motion-duration-short4, 200ms);
+  --_motion-easing: var(
+    --md-sys-motion-easing-standard,
+    cubic-bezier(0.2, 0, 0, 1)
+  );
+  --_motion-effects-duration: var(--md-sys-motion-spring-effects-default-duration, 200ms);
+  --_motion-effects-easing: var(
+    --md-sys-motion-spring-effects-default-easing,
+    cubic-bezier(0.34, 0.8, 0.34, 1)
+  );
+
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+
+  inline-size: var(--_container-width);
+  /* Lock min/max to the collapsed width so they don't snap the element to its
+     final size at frame 0 — min-inline-size overrides inline-size and is not
+     interpolatable from `auto`, so without concrete values here the width
+     transition is defeated and the expand/collapse looks jittery. */
+  min-inline-size: var(--_container-width);
+  max-inline-size: var(--_container-width);
+  block-size: 100%;
+  min-block-size: 100%;
+
+  padding-block: var(--_padding-block);
+  padding-inline: var(--_padding-inline);
+
+  background-color: var(--_container-color);
+  color: var(--_content-color);
+  border-radius: var(--_container-shape);
+  box-shadow: var(--_container-elevation);
+
+  position: relative;
+  isolation: isolate;
+
+  transition:
+    inline-size var(--_motion-duration) var(--_motion-easing),
+    min-inline-size var(--_motion-duration) var(--_motion-easing),
+    max-inline-size var(--_motion-duration) var(--_motion-easing),
+    background-color var(--_motion-effects-duration) var(--_motion-effects-easing);
+
+  /* M3 typography baseline */
+  font-family: var(--md-sys-typescale-label-medium-font-family, Roboto, sans-serif);
+}
+
+/* ---------- Full-height (opt-in via `full-height`) ----------
+   Span the whole viewport instead of just the parent. `dvh` tracks the dynamic
+   viewport (mobile browser chrome show/hide); `vh` is the fallback for engines
+   without `dvh`. */
+:host(.md-navigation-rail--full-height) {
+  block-size: 100dvh;
+  min-block-size: 100dvh;
+}
+
+/* ---------- Expanded variant ---------- */
+:host(.md-navigation-rail--expanded) {
+  inline-size: var(--_expanded-width);
+  min-inline-size: var(--_expanded-width);
+  max-inline-size: var(--_expanded-max-width);
+  /* Leading inset for expanded content. Spec is 16dp, but we use 12dp so each
+     control's icon lands back on the rail's centre axis (x=40) — exactly where
+     it sits while collapsed — giving ZERO horizontal icon movement during the
+     expand/collapse spring. A 24dp icon centred in the 80dp collapsed rail is at
+     x=28; with this 12dp inset the expanded icons (toggle 12+8 button inset,
+     destinations 12+16 pill inset, etc.) also resolve to x=28. */
+  --_padding-inline: var(--md-sys-spacing-inset-md, 12px);
+}
+
+/* ---------- Modal variant ----------
+   Collapsed, the modal rail is identical to the standard rail: a docked 80dp
+   surface that sits IN the content (no elevation/floating). Expanded, it
+   becomes a modal overlay — it floats over the content with a scrim behind it,
+   per the M3 spec (surface-container color, level-2 elevation, large corner
+   shape). The overlay + scrim are positioned against the rail's nearest
+   positioned ancestor, so the rail's content area should be `position: relative`
+   (a full-page app rail is already relative to the viewport).
+
+   The collapsed 80dp footprint is preserved while expanded so the page content
+   does not reflow when the modal opens. */
+/* The host is always an 80dp spacer for the modal variant — its surface lives on
+   the container overlay below. Dropping the stacking context + positioning lets
+   the overlay/scrim resolve to the content container (which must be
+   `position: relative`), and keeps the page from reflowing when the modal
+   opens (the footprint never changes width). */
+:host(.md-navigation-rail--modal) {
+  position: static;
+  isolation: auto;
+  background-color: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* Keep the footprint collapsed even when expanded (override the expanded width). */
+:host(.md-navigation-rail--modal.md-navigation-rail--expanded) {
+  --_container-color: var(
+    --md-navigation-rail-container-color,
+    var(--md-sys-color-surface-container, #F3EDF7)
+  );
+  --_container-shape: var(
+    --md-navigation-rail-container-shape,
+    var(--md-sys-shape-corner-large, 16px)
+  );
+  /* Detached overlay → level-3 elevation, matching the detached side sheet. */
+  --_container-elevation: var(
+    --md-navigation-rail-container-elevation,
+    var(--md-sys-elevation-3, 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15))
+  );
+
+  inline-size: var(--_container-width);
+  min-inline-size: var(--_container-width);
+  max-inline-size: var(--_container-width);
+}
+
+/* ---------- Scrim (modal backdrop) ---------- */
+.md-navigation-rail__scrim {
+  position: absolute;
+  inset: 0;
+  background-color: var(--md-sys-color-scrim, #000000);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity var(--_motion-duration) var(--_motion-easing);
+}
+
+:host(.md-navigation-rail--modal.md-navigation-rail--expanded) .md-navigation-rail__scrim {
+  opacity: 0.32;
+  pointer-events: auto;
+}
+
+/* ---------- Modal surface (always the overlay container) ----------
+   For the modal variant the container is always an absolutely-positioned,
+   full-height surface at the leading edge. Collapsed it is 80dp, square, no
+   elevation — visually a docked rail sitting over its own spacer. Expanded it
+   grows to the expanded width, gains elevation + a large trailing corner, and
+   the scrim fades in. Because only width/shadow/colour/radius change (never the
+   `position`), the open AND close animate symmetrically as one smooth motion —
+   the overlay grows from / shrinks back to the docked rail, like the standard
+   rail's own width spring. */
+:host(.md-navigation-rail--modal) .md-navigation-rail__container {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  box-sizing: border-box;
+  inline-size: var(--_container-width);
+  block-size: 100%;
+  padding-block: var(--_padding-block);
+  padding-inline: var(--_padding-inline);
+  background-color: var(--_container-color);
+  box-shadow: var(--_container-elevation);
+  border-start-end-radius: var(--_container-shape);
+  border-end-end-radius: var(--_container-shape);
+  z-index: 3;
+  /* The surface clips to its rounded shape; the destinations list scrolls
+     inside it (so the toggle / FAB / footer stay fixed). */
+  overflow: hidden;
+  /* Width/position/size transition on the spatial spring; colour & surface on
+     the effects spring. padding-inline is NOT transitioned (it snaps, like the
+     docked rail's host padding) — otherwise it animates while the inner
+     toggle/FAB paddings, which compensate it to net zero movement, snap, making
+     those elements drift back and forth. */
+  transition:
+    inline-size var(--_motion-duration) var(--_motion-easing),
+    inset-block-start var(--_motion-duration) var(--_motion-easing),
+    inset-inline-start var(--_motion-duration) var(--_motion-easing),
+    block-size var(--_motion-duration) var(--_motion-easing),
+    background-color var(--_motion-effects-duration) var(--_motion-effects-easing),
+    box-shadow var(--_motion-effects-duration) var(--_motion-effects-easing),
+    border-radius var(--_motion-effects-duration) var(--_motion-effects-easing);
+}
+
+:host(.md-navigation-rail--modal.md-navigation-rail--expanded) .md-navigation-rail__container {
+  inline-size: var(--_expanded-width);
+  max-inline-size: var(--_expanded-max-width);
+  /* Detached overlay — same exterior insets as the detached side sheet: 16dp
+     from every edge, all corners rounded, full elevation. (Collapsed, the
+     container is flush at the leading edge as a docked rail; this lifts it off
+     all edges as it opens.) */
+  inset-block-start: 16px;
+  inset-inline-start: 16px;
+  block-size: calc(100% - 32px);
+  border-radius: var(--_container-shape);
+}
+
+/* ---------- Container layout ---------- */
+.md-navigation-rail__container {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  gap: var(--_gap);
+  inline-size: 100%;
+}
+
+/* ---------- Logo / brand (topmost slot) ----------
+   Two variants overlap and CROSS-FADE in place — neither moves during the
+   expand/collapse. `logo` (contracted) is centred and shown collapsed;
+   `logo-expanded` is leading and shown expanded. */
+.md-navigation-rail__logo {
+  position: relative;
+  inline-size: 100%;
+  min-block-size: 48px;
+}
+
+.md-navigation-rail__logo[hidden] {
+  display: none;
+}
+
+.md-navigation-rail__logo-contracted,
+.md-navigation-rail__logo-expanded {
+  position: absolute;
+  inset-block: 0;
+  /* Span the full leading area (inset both edges) so the expanded variant's
+     wordmark has room; the leading icon is anchored by padding, not centring. */
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  /* Anchor the leading glyph on the rail's centre axis (x=40 in the 80dp rail).
+     This padding is leading-edge based (NOT justify-content: center, which would
+     track the animating host width and drift). Identical in both states — the
+     expanded rule below cancels the host padding — so the logo NEVER moves. */
+  padding-inline-start: calc((var(--_container-width) - var(--_logo-icon-size)) / 2);
+  transition: opacity var(--_motion-effects-duration) var(--_motion-effects-easing);
+}
+
+/* Expanded: the in-flow logo wrapper is pushed right by the host's expanded
+   padding. Cancel exactly that, so the glyph stays on the same centre axis
+   (x=40) it holds while collapsed — zero horizontal movement. Both variants get
+   it, so the cross-fade happens perfectly in place. */
+:host(.md-navigation-rail--expanded) .md-navigation-rail__logo-contracted,
+:host(.md-navigation-rail--expanded) .md-navigation-rail__logo-expanded {
+  margin-inline-start: calc(-1 * var(--_padding-inline));
+}
+
+.md-navigation-rail__logo-contracted {
+  opacity: 1;
+}
+
+.md-navigation-rail__logo-expanded {
+  opacity: 0;
+  pointer-events: none;
+}
+
+:host(.md-navigation-rail--expanded) .md-navigation-rail__logo-contracted {
+  opacity: 0;
+  pointer-events: none;
+}
+
+:host(.md-navigation-rail--expanded) .md-navigation-rail__logo-expanded {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Fallback: no expanded variant supplied → keep the contracted logo visible
+   when expanded (don't blank out). */
+:host(.md-navigation-rail--expanded:not(.md-navigation-rail--with-logo-expanded))
+  .md-navigation-rail__logo-contracted {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ---------- Toggle (built-in menu button) ----------
+   Spec figure: the menu button is the topmost element of the rail. Centered
+   while collapsed, it shifts to the leading edge when expanded. */
+.md-navigation-rail__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  inline-size: 100%;
+  min-block-size: 48px;
+  /* Centred while collapsed (40px = sm md-icon-button footprint), leading when
+     expanded. Static padding — uses the CSS var, NOT the animated inline-size —
+     so the button never drifts during the spring transition. NOT transitioned on
+     purpose: gliding it reads as an in-place drift, the rail-width spring
+     carries the motion instead. */
+  padding-inline-start: calc((var(--_container-width) - 40px) / 2);
+}
+
+:host(.md-navigation-rail--expanded) .md-navigation-rail__toggle {
+  padding-inline-start: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+/* ---------- Header (top group) ---------- */
+.md-navigation-rail__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  min-block-size: 56px;
+  padding-block-end: var(--md-sys-spacing-inset-xs, 4px);
+}
+
+:host(.md-navigation-rail--expanded) .md-navigation-rail__header {
+  align-items: flex-start;
+  padding-inline: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+.md-navigation-rail__header[hidden] {
+  display: none;
+}
+
+/* ---------- FAB region ---------- */
+.md-navigation-rail__fab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  padding-block-end: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+:host(.md-navigation-rail--expanded) .md-navigation-rail__fab {
+  justify-content: flex-start;
+  padding-inline-start: var(--md-sys-spacing-inset-md, 12px);
+}
+
+.md-navigation-rail__fab[hidden] {
+  display: none;
+}
+
+/* ---------- Destinations (tablist) ---------- */
+.md-navigation-rail__destinations {
+  display: flex;
+  flex-direction: column;
+  gap: var(--_destinations-gap);
+  inline-size: 100%;
+  flex: 1 1 auto;
+  min-block-size: 0;
+  /* Fill the height and scroll vertically when the destinations overflow.
+     overflow-x is `clip` (not hidden/auto) so the collapsed OUTSET focus ring —
+     which is centred within the 80dp width and never exceeds it — isn't clipped
+     horizontally, while the expanded ring is INSET (inside the pill). A small
+     block padding gives the first/last rings vertical room within the scroll
+     viewport. */
+  overflow-y: auto;
+  overflow-x: clip;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding-block: 5px;
+}
+
+/* Spec: keep ≥40dp between the header/FAB group and the first destination.
+   The container already contributes --_gap; pad the difference. */
+:host(.md-navigation-rail--with-header) .md-navigation-rail__destinations,
+:host(.md-navigation-rail--with-fab) .md-navigation-rail__destinations {
+  padding-block-start: calc(var(--_header-space) - var(--_gap));
+}
+
+:host(.md-navigation-rail--align-top) .md-navigation-rail__destinations {
+  justify-content: flex-start;
+}
+
+:host(.md-navigation-rail--align-middle) .md-navigation-rail__destinations {
+  justify-content: center;
+}
+
+:host(.md-navigation-rail--align-bottom) .md-navigation-rail__destinations {
+  justify-content: flex-end;
+}
+
+/* ---------- Footer (bottom group) ---------- */
+.md-navigation-rail__footer {
+  display: flex;
+  flex-direction: column;
+  /* `stretch` lets a slotted tab fill the width and render exactly like the
+     destinations above (full-width pill collapsed, leading row expanded). A
+     slotted icon button is pinned separately below so it doesn't drift. */
+  align-items: stretch;
+  inline-size: 100%;
+  gap: var(--_destinations-gap);
+  padding-block-start: var(--md-sys-spacing-inset-sm, 8px);
+  margin-block-start: auto; /* push to bottom even with align=top */
+}
+
+/* A slotted icon button (e.g. the account / user-menu trigger) is centred in
+   the collapsed rail and pinned to the SAME leading offset as the toggle + logo
+   when expanded — so it never drifts as the rail width / host padding change.
+   Scoped to the footer + icon button so slotted tabs are left untouched. */
+/* Centred with `align-self`, NOT a margin. A margin here has to be written
+   through `::slotted()`, and document-tree rules out-rank `::slotted()` at any
+   specificity — so a consumer's `* { margin: 0 }` reset (Starlight, Tailwind
+   preflight, any normalise) silently pushed the button to the rail's leading
+   edge. `align-self` is not a margin, so the reset cannot reach it, and the
+   expanded offset moves to padding on the footer itself (a shadow element the
+   reset never matches). */
+.md-navigation-rail__footer ::slotted(md-icon-button) {
+  align-self: center;
+}
+
+:host(.md-navigation-rail--expanded) .md-navigation-rail__footer ::slotted(md-icon-button) {
+  align-self: flex-start;
+}
+
+:host(.md-navigation-rail--expanded) .md-navigation-rail__footer {
+  padding-inline-start: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+.md-navigation-rail__footer[hidden] {
+  display: none;
+}
+
+/* ---------- Slotted descendants ----------
+   Each tab is pinned to its FINAL width for the current state (not 100% of the
+   animating rail), so its internal layout is static while the rail width
+   springs. That gives the per-tab FLIP morph a stable target to animate the
+   icon + label toward (see md-navigation-rail-tab). */
+::slotted(md-navigation-rail-tab) {
+  inline-size: var(--_container-width);
+}
+
+/* Expanded items hug their content (left-aligned pill per the spec's
+   "Expanded layout" figure) instead of stretching the full rail width. */
+:host(.md-navigation-rail--tabs-expanded) ::slotted(md-navigation-rail-tab) {
+  inline-size: fit-content;
+}
+
+::slotted(md-fab),
+::slotted(md-icon-button) {
+  flex: 0 0 auto;
+}
+
+/* The FAB sits ON the rail surface, not floating over content, so it's flat —
+   no elevation/shadow in any state. */
+::slotted(md-fab) {
+  box-shadow: none;
+}
+
+/* ---------- Section header ----------
+   A slotted label that groups destinations in the EXPANDED rail (mark it with
+   `data-section-header`). Hidden while collapsed — the icon-only rail has no
+   room for it. Spec spacing: 12dp above, 8dp below. */
+::slotted([data-section-header]) {
+  display: none;
+}
+
+:host(.md-navigation-rail--tabs-expanded) ::slotted([data-section-header]) {
+  display: block;
+  /* Don't let the flex column compress the header (which would clip its text). */
+  flex: 0 0 auto;
+  padding-block: var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-sm, 8px);
+  padding-inline: var(--md-sys-spacing-inset-lg, 16px);
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant, #49454F);
+  font-family: var(--md-sys-typescale-title-small-font-family, Roboto, sans-serif);
+  font-size: var(--md-sys-typescale-title-small-font-size, 14px);
+  font-weight: var(--md-sys-typescale-title-small-font-weight, 500);
+  line-height: var(--md-sys-typescale-title-small-line-height, 20px);
+  letter-spacing: var(--md-sys-typescale-title-small-letter-spacing, 0.1px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  :host,
+  .md-navigation-rail__toggle,
+  .md-navigation-rail__fab,
+  .md-navigation-rail__scrim,
+  :host(.md-navigation-rail--modal) .md-navigation-rail__container {
+    transition: none;
+  }
+}
+
+/* ---------- Dark theme is fully covered by --md-sys-* tokens ---------- */
+:host([data-theme='dark']),
+:host-context([data-theme='dark']) {
+  --_container-color: var(
+    --md-navigation-rail-container-color,
+    var(--md-sys-color-surface, #1C1B1F)
+  );
+}
+
+/* ---------- Forced colors ---------- */
+@media (forced-colors: active) {
+  :host {
+    border-inline-end: 1px solid CanvasText;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }
+
+/* ==========================================================
+   HORIZONTAL ORIENTATION — a top-of-page bar
+   Same parts, rotated onto the inline axis: logo leading, destinations in a
+   row, FAB + footer trailing. Every block-axis offset in the column becomes
+   inline-axis here, and the destinations scroll sideways instead of vertically.
+   The expand affordance is not rendered in this mode, so no `--tabs-expanded`
+   rule applies.
+   ========================================================== */
+:host(.md-navigation-rail--horizontal) {
+  flex-direction: row;
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: none;
+  block-size: auto;
+  /* Bar height. Taller than a destination's own 56dp so the row has some weight
+     — and because the destination stretches to fill it, the ripple still sweeps
+     edge to edge. Density-aware, and overridable in one place. */
+  min-block-size: var(
+    --md-navigation-rail-horizontal-height,
+    max(64px, calc(72px + var(--md-sys-density-scale, 0) * 4px))
+  );
+  /* No block gutter by default so the ripple reaches the bar's edges; set
+     --md-navigation-rail-horizontal-padding-block for the inset look. */
+  padding-block: var(--md-navigation-rail-horizontal-padding-block, 0px);
+  padding-inline: var(--md-navigation-rail-horizontal-padding-inline, var(--md-sys-spacing-inset-md, 12px));
+}
+
+:host(.md-navigation-rail--horizontal) .md-navigation-rail__container {
+  flex-direction: row;
+  align-items: stretch;
+  block-size: auto;
+}
+
+:host(.md-navigation-rail--horizontal) .md-navigation-rail__destinations {
+  flex-direction: row;
+  /* stretch, not center: a destination's box IS the ripple's clip surface, so
+     it must span the bar or the wave stops short of the edges. */
+  align-items: stretch;
+  inline-size: auto;
+  min-inline-size: 0;
+  block-size: auto;
+  min-block-size: 0;
+  overflow-x: auto;
+  overflow-y: clip;
+  padding-block: 0;
+  padding-inline: 5px;
+  justify-content: center;
+}
+
+/* The vertical rail pads the FAB/header gap on the block axis; here it is inline. */
+:host(.md-navigation-rail--horizontal.md-navigation-rail--with-header) .md-navigation-rail__destinations,
+:host(.md-navigation-rail--horizontal.md-navigation-rail--with-fab) .md-navigation-rail__destinations {
+  padding-block-start: 0;
+  padding-inline-start: calc(var(--_header-space) - var(--_gap));
+}
+
+/* Destinations hug their content instead of filling the rail's fixed width. */
+:host(.md-navigation-rail--horizontal) ::slotted(md-navigation-rail-tab) {
+  inline-size: auto;
+  min-inline-size: var(--_container-width);
+  flex-shrink: 0;
+}
+
+:host(.md-navigation-rail--horizontal) .md-navigation-rail__logo {
+  inline-size: auto;
+  min-block-size: 0;
+  flex: 0 0 auto;
+  /* The wrapper stretches to the bar's full height (the container aligns its
+     children `stretch` so a destination's ripple can reach both edges), but the
+     brand mark itself is content-height — without this it hangs off the top
+     instead of sitting on the same centre line as the destinations. */
+  display: flex;
+  align-items: center;
+}
+
+:host(.md-navigation-rail--horizontal) .md-navigation-rail__logo-contracted,
+:host(.md-navigation-rail--horizontal) .md-navigation-rail__logo-expanded {
+  position: static;
+  padding-inline: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+:host(.md-navigation-rail--horizontal) .md-navigation-rail__logo-expanded {
+  display: none;
+}
+
+:host(.md-navigation-rail--horizontal) .md-navigation-rail__fab {
+  flex: 0 0 auto;
+}
+
+/* The footer trails on the inline axis instead of the block end. */
+:host(.md-navigation-rail--horizontal) .md-navigation-rail__footer {
+  flex-direction: row;
+  align-items: center;
+  inline-size: auto;
+  padding-block-start: 0;
+  padding-inline-start: var(--md-sys-spacing-inset-sm, 8px);
+  margin-block-start: 0;
+  margin-inline-start: auto;
+}
+
+/* A section header groups a column; a bar has no room for it. */
+:host(.md-navigation-rail--horizontal) ::slotted([data-section-header]) {
+  display: none;
+}
+
+/* A destination may host a dropdown (`md-menu` in its `submenu` slot). That menu
+   is `position: fixed; z-index: 1000`, but `isolation: isolate` on this host
+   confines it to the rail's stacking context — so anything later in the document
+   (in the docs, the code panel under the demo) painted straight over it. Drop
+   the isolation while a dropdown is open; nothing inside the rail depends on it
+   except keeping the modal scrim local, and a modal rail has no open dropdown. */
+:host(.md-navigation-rail--submenu-open) {
+  isolation: auto;
+  z-index: 3;
+}
+
+/* ==========================================================
+   OVERFLOW — destinations past `max-visible`
+   The trigger is styled to read as one more destination, but it is a button
+   with aria-haspopup, never a tab: the destinations region is a `tablist`, and
+   a tablist may only contain tabs.
+   ========================================================== */
+::slotted(md-navigation-rail-tab[data-overflowed]) {
+  display: none;
+}
+
+.md-navigation-rail__overflow {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: center;
+}
+
+.md-navigation-rail__overflow-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  inline-size: 100%;
+  min-block-size: max(40px, calc(56px + var(--md-sys-density-scale, 0) * 2px));
+  padding: 0 var(--md-sys-spacing-inset-sm, 8px);
+  border: none;
+  background: none;
+  color: var(--_content-color);
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.md-navigation-rail__overflow-trigger:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary, #625B71);
+  outline-offset: -3px;
+  border-radius: var(--md-sys-shape-corner-small, 8px);
+}
+
+.md-navigation-rail__overflow-icon {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+  line-height: 1;
+}
+
+.md-navigation-rail__overflow-label {
+  font: var(--md-sys-typescale-label-medium, 500 12px/16px Roboto, sans-serif);
+  white-space: nowrap;
+}
+
+:host(.md-navigation-rail--label-visibility-none) .md-navigation-rail__overflow-label {
+  display: none;
+}
+
+/* In a bar the trigger sits inline with the destinations, not full width. */
+:host(.md-navigation-rail--horizontal) .md-navigation-rail__overflow-trigger {
+  inline-size: auto;
+  min-inline-size: var(--_container-width);
+}
+
+/* The overflow menu's item icons live INSIDE this shadow root, so the page's
+   global `.material-symbols-outlined` rule cannot reach them — the ligature
+   would render as the literal word ("drafts"). Style them here, where the rule
+   does apply. */
+.md-navigation-rail__overflow md-menu-item .material-symbols-outlined {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+  line-height: 1;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* A slotted submenu is a popup md-menu positions against its tab — it must not
+   take part in the rail's own layout. */
+::slotted(md-menu[slot='submenu']) {
+  position: absolute;
+}

@@ -1,0 +1,115 @@
+---
+// MenuDemo.astro
+//
+// Drop-in wiring helper for live `<md-menu>` previews on the docs page.
+//
+// `<ComponentDemo>` injects markup via `set:html`, which does NOT execute
+// inline script tags. The menu component also doesn't auto-position when
+// it mounts with a static `open` attribute (the position-relative-to-anchor
+// logic only runs inside the `@Watch('open')` Stencil hook), so we can't
+// just write `<md-menu open>` and call it done — the menu would render at
+// (0, 0) on top of the page header.
+//
+// This component drops a single page-scoped script that:
+//   1. Wires every `[data-menu-trigger="<menuId>"]` element so a click
+//      finds the matching `<md-menu id="<menuId>">` and calls `.show()`.
+//      That's the realistic real-app pattern — anchor button opens menu.
+//   2. After the loader finishes hydrating custom-elements, scans for
+//      `<md-menu data-auto-open>` instances and calls
+//      `.show({ autoFocus: false })` once. Used by comparison demos that
+//      want multiple variants visible simultaneously without forcing
+//      readers to click each anchor (and without stealing focus).
+//   3. Re-runs on Astro's `astro:page-load` so client-side navigation
+//      between docs pages re-binds new anchors.
+//
+// Drop ONE `<MenuDemo />` near the top of any docs page that contains
+// menu-anchored ComponentDemos — the wiring then covers every demo on
+// the page. The component renders nothing visible itself.
+---
+
+<script>
+  type MenuEl = HTMLElement & {
+    open: boolean;
+    show?: (opts?: { autoFocus?: boolean }) => void | Promise<void>;
+    close?: () => void | Promise<void>;
+  };
+
+  const AUTO_OPEN_RETRY_MS = 80;
+  const AUTO_OPEN_MAX_RETRIES = 25;
+
+  function findMenu(id: string): MenuEl | null {
+    return document.querySelector<HTMLElement>(
+      `md-menu#${CSS.escape(id)}`,
+    ) as MenuEl | null;
+  }
+
+  function wireTriggers(): void {
+    document
+      .querySelectorAll<HTMLElement>("[data-menu-trigger]")
+      .forEach((trigger) => {
+        if (trigger.dataset.menuTriggerWired === "true") return;
+        trigger.dataset.menuTriggerWired = "true";
+        trigger.addEventListener("click", (event) => {
+          const id = trigger.dataset.menuTrigger;
+          if (!id) return;
+          const menu = findMenu(id);
+          if (!menu) return;
+          // Outside-click handler in md-menu attaches on rAF after open,
+          // so this same click event won't immediately close it.
+          event.stopPropagation();
+          if (menu.open) {
+            menu.close?.();
+            return;
+          }
+          if (typeof menu.show === "function") {
+            void menu.show();
+          } else {
+            menu.open = true;
+          }
+        });
+      });
+  }
+
+  function autoOpenMenus(retries = AUTO_OPEN_MAX_RETRIES): void {
+    const menus = Array.from(
+      document.querySelectorAll<MenuEl>("md-menu[data-auto-open]"),
+    );
+    if (menus.length === 0) return;
+
+    // Wait until the loader has registered md-menu (so .show() exists)
+    // and until layout has settled enough that getBoundingClientRect
+    // on the anchor returns sensible numbers. Without this, multiple
+    // `data-auto-open` menus can stack at (0, 0) on the very first
+    // paint before the page chrome finishes laying out.
+    const ready = menus.every((m) => typeof m.show === "function");
+    if (!ready && retries > 0) {
+      setTimeout(() => autoOpenMenus(retries - 1), AUTO_OPEN_RETRY_MS);
+      return;
+    }
+    if (!ready) return;
+
+    menus.forEach((menu) => {
+      if (menu.dataset.autoOpenFired === "true") return;
+      menu.dataset.autoOpenFired = "true";
+      try {
+        void menu.show?.({ autoFocus: false });
+      } catch {
+        menu.open = true;
+      }
+    });
+  }
+
+  function bootstrap(): void {
+    wireTriggers();
+    // Defer auto-open one tick so any DOM Astro just hydrated has a
+    // chance to settle before we measure anchor rects.
+    requestAnimationFrame(() => autoOpenMenus());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootstrap, { once: true });
+  } else {
+    bootstrap();
+  }
+  document.addEventListener("astro:page-load", bootstrap);
+</script>

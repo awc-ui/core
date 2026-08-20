@@ -1,0 +1,121 @@
+{
+  "tag": "md-fab-menu",
+  "title": "FAB Menu",
+  "slug": "fab-menu",
+  "category": "Actions",
+  "subComponentOf": null,
+  "storyId": "actions-fab-menu--playground",
+  "props": [
+    {
+      "name": "open",
+      "attribute": "open",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "anchor",
+      "attribute": "anchor",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'primary' | 'secondary' | 'tertiary'",
+      "default": "'primary'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "placement",
+      "attribute": "placement",
+      "type": "'up' | 'down' | 'auto'",
+      "default": "'up'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "quick",
+      "attribute": "quick",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "menuLabel",
+      "attribute": "menu-label",
+      "type": "string",
+      "default": "'Actions'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "params": ""
+    },
+    {
+      "name": "close",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [],
+  "cssCustomProps": [
+    {
+      "name": "--md-fab-menu-item-container-color",
+      "description": "Item background (cascades to children)"
+    },
+    {
+      "name": "--md-fab-menu-item-label-color",
+      "description": "Item label + icon color (cascades)"
+    },
+    {
+      "name": "--md-fab-menu-item-gap",
+      "description": "Gap between items (default 4px)"
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    }
+  ]
+}

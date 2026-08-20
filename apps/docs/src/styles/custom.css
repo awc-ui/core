@@ -1,0 +1,1569 @@
+/* ============================================================
+   AWC UI — Material Design 3 Expressive theme for Starlight
+   ------------------------------------------------------------
+   Maps Starlight CSS variables onto MD3 design tokens, then
+   layers an expressive theme on top: surface-container rhythm,
+   tonal accents, spring motion, scroll-stagger reveals,
+   and a docs surface that *feels* like Material.
+   ============================================================ */
+
+/* ============================================================
+   1. Token Bridge — map Starlight vars onto MD3 system tokens
+   ============================================================ */
+:root {
+  --sl-font: 'Roboto', system-ui, -apple-system, sans-serif;
+  --sl-font-system-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  --sl-color-accent-low: var(--md-sys-color-primary-container);
+  --sl-color-accent: var(--md-sys-color-primary);
+  --sl-color-accent-high: var(--md-sys-color-on-primary-container);
+
+  --sl-color-white: var(--md-sys-color-surface);
+  --sl-color-gray-1: var(--md-sys-color-on-surface);
+  --sl-color-gray-2: var(--md-sys-color-on-surface-variant);
+  --sl-color-gray-3: var(--md-sys-color-outline);
+  --sl-color-gray-4: var(--md-sys-color-outline-variant);
+  --sl-color-gray-5: var(--md-sys-color-outline-variant);
+  --sl-color-gray-6: var(--md-sys-color-surface-container);
+  --sl-color-gray-7: var(--md-sys-color-surface-container-low);
+  --sl-color-black: var(--md-sys-color-on-surface);
+
+  --sl-color-bg: var(--md-sys-color-surface);
+  --sl-color-bg-sidebar: var(--md-sys-color-surface-container-low);
+  --sl-color-bg-nav: var(--md-sys-color-surface);
+  --sl-color-text: var(--md-sys-color-on-surface);
+  --sl-color-text-accent: var(--md-sys-color-primary);
+
+  --sl-nav-height: 4rem;
+  --sl-content-width: 80ch;
+  --sl-sidebar-width: 280px;
+
+  /* Convenience: spring easings used throughout the docs surface */
+  --awc-spring-spatial: var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1));
+  --awc-spring-fast: var(--md-sys-motion-spring-spatial-fast-easing, cubic-bezier(0.42, 1.67, 0.21, 0.9));
+  --awc-spring-effects: var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.8, 0.34, 1));
+
+  --awc-dur-fast: var(--md-sys-motion-duration-short3, 150ms);
+  --awc-dur-default: var(--md-sys-motion-duration-medium2, 300ms);
+  --awc-dur-slow: var(--md-sys-motion-duration-long2, 500ms);
+}
+
+[data-theme='dark'] {
+  --sl-color-bg: var(--md-sys-color-surface);
+  --sl-color-bg-sidebar: var(--md-sys-color-surface-container-low);
+  --sl-color-bg-nav: var(--md-sys-color-surface);
+  --sl-color-text: var(--md-sys-color-on-surface);
+  --sl-color-text-accent: var(--md-sys-color-primary);
+}
+
+/* ============================================================
+   2. Base reset
+   ============================================================ */
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+body {
+  background: var(--md-sys-color-surface);
+}
+
+/* ============================================================
+   3. Splash page — full-bleed layout for the landing
+   ============================================================ */
+html:not([data-has-sidebar]) .hero {
+  display: none !important;
+}
+
+/* Force the splash content area to go edge-to-edge.
+   IMPORTANT: do NOT override --sl-content-width on the html element here —
+   Starlight's top header re-uses that same variable to size its 3-column
+   grid (title / search / actions). Overriding it globally would collapse
+   every header element into the left corner. We only widen the content
+   tree directly. */
+html:not([data-has-sidebar]) .main-frame,
+html:not([data-has-sidebar]) main,
+html:not([data-has-sidebar]) .main-pane,
+html:not([data-has-sidebar]) .content-panel,
+html:not([data-has-sidebar]) .sl-container,
+html:not([data-has-sidebar]) .sl-markdown-content {
+  max-width: none !important;
+  max-inline-size: none !important;
+  width: 100% !important;
+  inline-size: 100% !important;
+  padding: 0 !important;
+  padding-inline: 0 !important;
+  margin-inline: 0 !important;
+}
+
+html:not([data-has-sidebar]) .sl-markdown-content > :first-child {
+  margin-block-start: 0 !important;
+}
+
+html:not([data-has-sidebar]) .sl-container > * + *,
+html:not([data-has-sidebar]) .sl-markdown-content > * + * {
+  margin-block-start: 0 !important;
+}
+
+html:not([data-has-sidebar]) .sl-markdown-content section {
+  margin-block: 0 !important;
+}
+
+html:not([data-has-sidebar]) .lg\:sl-flex {
+  display: block !important;
+}
+
+/* ------------------------------------------------------------
+   Starlight's markdown.css ships an aggressive *descendant* rule:
+       .sl-markdown-content :not(a,strong,em,…) + :not(…) { margin-top: 1rem; }
+   It injects 16px of margin-top onto *every* non-inline element
+   that follows another non-inline sibling — even deeply nested
+   ones. On our landing-page sections that means 2nd+ stat cards,
+   2nd+ chips, 2nd+ segmented buttons etc. each pick up a phantom
+   16px gap above them while the first sibling doesn't, which
+   manifests as "first item looks aligned, rest sit lower".
+
+   Since splash / non-sidebar pages are landing pages with fully
+   custom layouts (NOT markdown content), we disable Starlight's
+   sibling-margin rule entirely on them. This catches `md-*`
+   custom elements, `awc-*` wrappers, and anything else without
+   needing per-element overrides. Real docs pages keep a sidebar,
+   so they keep Starlight's spacing intact. */
+html:not([data-has-sidebar])
+  .sl-markdown-content
+  :not(a, strong, em, del, span, input, code, br)
+  + :not(a, strong, em, del, span, input, code, br) {
+  margin-block-start: 0 !important;
+}
+
+/* Belt-and-braces: also zero out margin on any `awc-*` wrapper
+   regardless of context, so a one-off use of an AWC section
+   inside a docs page also stays clean. */
+.sl-markdown-content [class*="awc-"] {
+  margin-block-start: 0;
+}
+
+/* ============================================================
+   AWC global button utility — used across landing sections
+   so the filled / outlined variants stay 1:1 consistent.
+   ============================================================ */
+.awc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  block-size: 44px;
+  padding-inline: 1.5rem;
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition:
+    transform var(--md-sys-motion-duration-medium2, 300ms) var(--awc-spring-spatial),
+    box-shadow var(--md-sys-motion-duration-short4, 200ms) var(--awc-spring-effects),
+    background-color var(--md-sys-motion-duration-short4, 200ms) var(--awc-spring-effects);
+  will-change: transform;
+}
+
+.awc-btn .material-symbols-outlined {
+  font-size: 20px;
+  transition: transform var(--awc-dur-default) var(--awc-spring-spatial);
+}
+
+.awc-btn--filled {
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  box-shadow: var(--md-sys-elevation-1);
+}
+
+.awc-btn--filled:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--md-sys-elevation-3);
+  color: var(--md-sys-color-on-primary);
+  text-decoration: none;
+}
+
+.awc-btn--filled:hover .material-symbols-outlined:last-child {
+  transform: translateX(3px);
+}
+
+.awc-btn--filled:active {
+  transform: translateY(0);
+  box-shadow: var(--md-sys-elevation-1);
+}
+
+.awc-btn--outlined {
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  border: 1px solid var(--md-sys-color-outline);
+}
+
+.awc-btn--outlined:hover {
+  background: color-mix(in srgb, var(--md-sys-color-primary) 8%, transparent);
+  border-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.awc-btn--tertiary {
+  background: var(--md-sys-color-tertiary);
+  color: var(--md-sys-color-on-tertiary);
+  box-shadow: var(--md-sys-elevation-1);
+}
+
+.awc-btn--tertiary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--md-sys-elevation-3);
+  color: var(--md-sys-color-on-tertiary);
+  text-decoration: none;
+}
+
+@media (max-width: 40rem) {
+  .awc-btn {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .awc-btn,
+  .awc-btn .material-symbols-outlined {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* ============================================================
+   4. Header / top app bar — M3 surface-bright with backdrop blur
+   ============================================================ */
+header.header {
+  backdrop-filter: blur(20px) saturate(180%);
+  background: color-mix(in srgb, var(--md-sys-color-surface) 80%, transparent);
+  border-block-end: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 50%, transparent);
+  transition: background var(--awc-dur-default) var(--awc-spring-effects);
+}
+
+.site-title {
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+  /* Starlight defaults `gap: var(--sl-nav-gap)` (~1rem) between the logo
+     <img> and the "AWC UI" <span> — that's too airy for our compact
+     badge logo. Tighten it so the wordmark sits next to the icon. */
+  gap: 0.5rem !important;
+}
+
+.site-title img {
+  transition: transform var(--awc-dur-default) var(--awc-spring-spatial);
+}
+
+.site-title:hover img {
+  transform: scale(1.06) rotate(-3deg);
+}
+
+/* ============================================================
+   5. Sidebar — Material 3 navigation drawer
+   ============================================================ */
+nav.sidebar {
+  background: var(--md-sys-color-surface-container-low);
+  border-inline-end: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 60%, transparent);
+}
+
+nav.sidebar ul {
+  padding-inline: 0.5rem;
+}
+
+nav.sidebar a,
+nav.sidebar .top-level > li > a {
+  display: block;
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    background-color var(--awc-dur-fast) var(--awc-spring-effects),
+    color var(--awc-dur-fast) var(--awc-spring-effects),
+    transform var(--awc-dur-default) var(--awc-spring-spatial);
+}
+
+nav.sidebar a::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--md-sys-color-on-surface);
+  opacity: 0;
+  transition: opacity var(--awc-dur-fast) var(--awc-spring-effects);
+  pointer-events: none;
+  z-index: -1;
+}
+
+nav.sidebar a:hover::before {
+  opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+}
+
+nav.sidebar a:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+nav.sidebar a[aria-current='page'],
+nav.sidebar a[aria-current='page'] > span,
+nav.sidebar a[aria-current='page'] > .large {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  font-weight: 600;
+}
+
+/* Inner spans should not re-paint their own background pill. */
+nav.sidebar a[aria-current='page'] > span,
+nav.sidebar a[aria-current='page'] > .large {
+  background: transparent;
+}
+
+nav.sidebar a[aria-current='page']::before {
+  display: none;
+}
+
+/* Ensure non-active link text always wins over Starlight's default span color. */
+nav.sidebar a:not([aria-current='page']),
+nav.sidebar a:not([aria-current='page']) > span,
+nav.sidebar a:not([aria-current='page']) > .large {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+nav.sidebar a > span,
+nav.sidebar a > .large {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/* ----------------------------------------------------------
+   Sidebar group headers ("GETTING STARTED", "COMPONENTS", …)
+
+   Starlight wraps each group title in:
+     <summary>
+       <div class="group-label">
+         <span class="large">Getting Started</span>
+       </div>
+       <svg class="caret">…</svg>
+     </summary>
+
+   Starlight itself ships a `.large:where(.astro-*) { color: var(--sl-color-white) }`
+   rule that is more specific than `nav.sidebar .group-label`, so coloring only
+   the outer `<div>` is not enough — the `<span>` re-overrides to the default
+   Starlight foreground, which collapses to a near-invisible grey on our M3
+   `surface-container-low` background. We therefore explicitly recolor the
+   inner span and the caret (whose `fill="currentColor"` follows along).
+   ---------------------------------------------------------- */
+nav.sidebar summary,
+nav.sidebar .group-label,
+nav.sidebar .group-label > span,
+nav.sidebar .group-label .large,
+nav.sidebar summary > svg.caret {
+  color: var(--md-sys-color-primary);
+}
+
+/* Typography lives on both wrappers (so any direct-text case still works),
+   but ONLY the outer `<summary>` owns the padding — otherwise the inner
+   `.group-label` adds its own 1rem top padding on top of the summary's
+   1rem and the label floats well below the card's rounded edge. */
+nav.sidebar summary,
+nav.sidebar .group-label {
+  font-weight: 700;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+nav.sidebar summary {
+  padding: 0.625rem 1rem;
+}
+
+nav.sidebar summary .group-label {
+  padding: 0;
+}
+
+/* Starlight's `.large` span is also bumped to text-lg / 600 weight — we want
+   the group label to read like an M3 overline, so neutralize those too. */
+nav.sidebar .group-label > span,
+nav.sidebar .group-label .large {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1.2;
+}
+
+nav.sidebar details {
+  margin-block-end: 0.25rem;
+}
+
+nav.sidebar summary {
+  cursor: pointer;
+  border-radius: var(--md-sys-shape-corner-medium, 12px);
+  transition: background-color var(--awc-dur-fast) var(--awc-spring-effects);
+}
+
+nav.sidebar summary:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, transparent);
+}
+
+nav.sidebar summary:hover,
+nav.sidebar summary:hover .group-label,
+nav.sidebar summary:hover .group-label .large,
+nav.sidebar summary:hover > svg.caret {
+  color: var(--md-sys-color-primary);
+}
+
+/* ============================================================
+   6. Content surface — docs page on a Material card
+   ============================================================ */
+html[data-has-sidebar] main {
+  padding-block: 1.5rem !important;
+  padding-inline: 1.5rem !important;
+}
+
+@media (min-width: 50rem) {
+  html[data-has-sidebar] main {
+    padding-block: 2rem !important;
+    padding-inline: 2rem !important;
+  }
+}
+
+@media (min-width: 72rem) {
+  html[data-has-sidebar] main {
+    padding-block: 2.5rem !important;
+    padding-inline: 2.5rem !important;
+  }
+}
+
+.sl-markdown-content {
+  line-height: 1.75;
+  font-size: 1rem;
+}
+
+/* H1 — display-small (36px)
+
+   Two H1s exist on a Starlight docs page:
+     1. The *page-title* H1 rendered by Starlight's ContentPanel /
+        Hero component, scoped with `.astro-vzd2kqag` and living
+        OUTSIDE `.sl-markdown-content`, inside `.sl-container`.
+     2. Any inline H1 inside `.sl-markdown-content` (rare in our docs).
+
+   Starlight ships `h1:where(.astro-vzd2kqag) { color: var(--sl-color-white) }`
+   inside `@layer starlight.core`. `--sl-color-white` collapses to an almost-
+   invisible grey on our M3 `surface` background, so the title disappears.
+   Any *unlayered* rule we write here automatically beats layered defaults
+   regardless of specificity, so we target both H1s in one block. */
+.sl-container > h1,
+.sl-markdown-content h1,
+main h1[id='_top'] {
+  font-family: var(--sl-font);
+  font-weight: 600;
+  font-size: clamp(1.875rem, 3vw + 0.5rem, 2.5rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--md-sys-color-on-surface);
+  margin: 0 0 0.75rem;
+}
+
+.sl-markdown-content h1 + p,
+.sl-container > h1 + p,
+.sl-container + .sl-markdown-content > :first-child:where(p, .lead) {
+  font-size: 1.0625rem;
+  color: var(--md-sys-color-on-surface-variant);
+  line-height: 1.65;
+  margin-block-end: 2.5rem;
+}
+
+/* H2 — primary tonal accent bar instead of underline.
+   Restricted with :not([class*="awc-"]) so the landing page's section
+   titles (.awc-features__title, .awc-cta__title, etc.) and the
+   "Material You" title inside the hero card do NOT inherit the docs
+   left-bar treatment, which would shift the title right and stamp a
+   stray gradient bar before it. */
+/* h2 typography. We intentionally do NOT touch `display` here: Starlight
+   forces the wrapper's first child (this h2) to `display: inline` and
+   reserves right-padding so the inline-flex anchor link can tuck back into
+   the same line via negative inline margin. Overriding `display` on the
+   h2 itself (e.g. `flex` or `block`) breaks that layout and drops the
+   anchor icon to its own line. */
+.sl-markdown-content h2:not([class*="awc-"]) {
+  font-weight: 600;
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+  color: var(--md-sys-color-on-surface);
+}
+
+/* h2 heading row: bar | text | anchor, all centered on the same line.
+   The wrapper becomes a flex container so we get true mid-line alignment
+   from `align-items: center` instead of fighting font-metric magic numbers.
+
+   Starlight's stock pattern relies on three interlocking rules that
+   assume inline flow:
+     1. `.sl-heading-wrapper > :first-child { display: inline;
+         padding-inline-end: var(--sl-anchor-icon-space) }` reserves room
+         after the heading text for the anchor icon.
+     2. `.sl-anchor-link { margin-inline-start: calc(-1 *
+         var(--sl-anchor-icon-size)) }` tucks the anchor back into that
+         reserved space.
+     3. `.sl-anchor-icon > svg { transform: translateY(...) }` shifts the
+         SVG down to land on the heading's optical center.
+   In flex layout we don't need any of that — `align-items: center` and a
+   real flex `gap` do the same job cleanly. We neutralize all three so
+   they don't double-up with the flex centering. */
+.sl-markdown-content .sl-heading-wrapper.level-h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-block-start: 2.25rem;
+  margin-block-end: 0.75rem;
+  --sl-anchor-icon-size: 0.5em;
+}
+
+/* First section on a page sits closer to the intro paragraph — no need
+   for a full section break before the first h2. */
+.sl-markdown-content > .sl-heading-wrapper.level-h2:first-of-type,
+.sl-markdown-content > .sl-heading-wrapper.level-h2:first-child {
+  margin-block-start: 1.25rem;
+}
+
+/* Rule #1 — drop the inline-flow padding reservation. Flex gap handles
+   the spacing between text and anchor now. */
+.sl-markdown-content .sl-heading-wrapper.level-h2 > :first-child {
+  padding-inline-end: 0;
+}
+
+/* Rule #2 — drop the negative inline margin that used to tuck the anchor
+   back into the reserved padding zone. */
+.sl-markdown-content .sl-heading-wrapper.level-h2 > .sl-anchor-link {
+  margin-inline-start: 0;
+  flex-shrink: 0;
+}
+
+/* Rule #3 — drop the baseline-correction transform. The anchor is a flex
+   item and is already centered to the heading line by `align-items`. */
+.sl-markdown-content .sl-heading-wrapper.level-h2 .sl-anchor-icon > svg {
+  transform: none;
+  vertical-align: middle;
+}
+
+/* M3 accent bar — flex-rendered as a `::before` pseudo. Sized to the
+   x-height of the heading font so it reads at the same scale as the
+   lowercase glyphs rather than the caps. */
+.sl-markdown-content .sl-heading-wrapper.level-h2::before {
+  content: '';
+  display: block;
+  flex-shrink: 0;
+  inline-size: 3px;
+  block-size: 0.65em;
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  background: linear-gradient(180deg, var(--md-sys-color-primary), var(--md-sys-color-tertiary));
+}
+
+.sl-markdown-content h3 {
+  font-weight: 600;
+  font-size: 1.125rem;
+  letter-spacing: -0.005em;
+  color: var(--md-sys-color-on-surface);
+  margin-block-start: 2.25rem;
+  margin-block-end: 0.5rem;
+}
+
+.sl-markdown-content h4 {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--md-sys-color-on-surface-variant);
+  margin-block-start: 1.5rem;
+}
+
+.sl-markdown-content p {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.sl-markdown-content strong {
+  color: var(--md-sys-color-on-surface);
+  font-weight: 600;
+}
+
+/* Markdown link styling — restricted with :not() so the landing-page
+   buttons (.awc-btn, .awc-cta__btn, .awc-pro__btn, etc.) and the
+   showcase pills keep their own typographic treatment. Without this,
+   the global "primary color + underline" rule made filled buttons
+   render their label in the same color as their background. */
+.sl-markdown-content
+  a:not(.card):not(.link-card):not(.pagination-links a):not([class*="awc-"]) {
+  color: var(--md-sys-color-primary);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--md-sys-color-primary) 30%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color var(--awc-dur-fast) var(--awc-spring-effects);
+}
+
+.sl-markdown-content
+  a:not(.card):not(.link-card):not(.pagination-links a):not([class*="awc-"]):hover {
+  text-decoration-color: var(--md-sys-color-primary);
+}
+
+/* Hard guarantee that any landing-page awc-* anchor is never
+   underlined and never inherits the markdown link color. */
+.sl-markdown-content a[class*="awc-"],
+.sl-markdown-content a[class*="awc-"]:hover,
+.sl-markdown-content a[class*="awc-"]:focus,
+.sl-markdown-content a[class*="awc-"]:visited {
+  text-decoration: none;
+}
+
+/* ============================================================
+   7. Inline & block code
+   ============================================================ */
+.sl-markdown-content :not(pre) > code {
+  background: var(--md-sys-color-surface-container);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-small, 8px);
+  padding: 0.15em 0.45em;
+  font-size: 0.85em;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+/* Fenced code blocks in Astro/Starlight go through Expressive Code, which
+   wraps every <pre> in `.expressive-code > figure.frame` and draws its own
+   continuous frame border by combining the <pre>'s side+bottom borders
+   with the title bar's top+side borders. This rule only kicks in for any
+   raw <pre> that isn't owned by Expressive Code (e.g. hand-written
+   <pre> in MDX). Using `:not(:where(...))` keeps specificity at the same
+   level as the base rule and prevents this from leaking into EC blocks
+   regardless of source order. */
+.sl-markdown-content pre:not(:where(.expressive-code *, .technology-tabs *)) {
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-large, 16px);
+  box-shadow: var(--md-sys-elevation-1, 0px 1px 2px rgba(0, 0, 0, 0.3));
+  overflow: hidden;
+}
+
+/* Expressive Code already wraps every fenced block in:
+     <div class="expressive-code">
+       <figure class="frame [is-terminal] [has-title]">
+         <figcaption class="header">…title-bar w/ traffic-light dots…</figcaption>
+         <pre>…<code>…</code>…</pre>
+         <div class="copy">…copy button…</div>
+       </figure>
+     </div>
+   so the outer `.expressive-code` is the real frame. Letting the inner <pre>
+   keep its own border + radius + shadow paints a second border *inside* that
+   frame, which is what produced the visible seam between the title bar and
+   the code body. We move the framing onto the outer wrapper and neutralize
+   the inner pre's styling so the title bar and the code body read as one
+   continuous surface. */
+.sl-markdown-content .expressive-code {
+  border-radius: var(--md-sys-shape-corner-large, 16px);
+  overflow: hidden;
+  box-shadow: var(--md-sys-elevation-1, 0px 1px 2px rgba(0, 0, 0, 0.3));
+  /* Expressive Code internals */
+  --ec-brdRad: var(--md-sys-shape-corner-large, 16px) !important;
+  --ec-brdCol: var(--md-sys-color-outline-variant) !important;
+  --ec-codeBg: var(--md-sys-color-surface-container-high) !important;
+  --ec-codeFg: var(--md-sys-color-on-surface) !important;
+  /* Title bars (terminal + editor) — match the code body so they read as
+     one continuous surface. Variable names track the bundled Expressive
+     Code stylesheet (run `pnpm --filter @awc-ui/docs build` and grep
+     `dist/_astro/ec.*.css` for `--ec-frm-` to see the full list). */
+
+  /* Terminal frame (`bash`, `sh`, …) — the strip with the 3 traffic-light
+     dots. */
+  --ec-frm-trmTtbBg: var(--md-sys-color-surface-container-high) !important;
+  --ec-frm-trmTtbFg: var(--md-sys-color-on-surface-variant) !important;
+  --ec-frm-trmTtbBrdBtmCol: var(--md-sys-color-outline-variant) !important;
+  --ec-frm-trmBg: var(--md-sys-color-surface-container-high) !important;
+
+  /* Editor frame (titled blocks like `// vite.config.ts`) — render the
+     active tab as M3 tab: text + bottom indicator only, no boxed border,
+     no separate background.
+
+     IMPORTANT — two different border variables here, easy to mix up:
+       --ec-frm-edTabBarBrdCol  outline of the ENTIRE header strip
+                                 (top + sides), drawn by a `.header::before`
+                                 pseudo. Keep this = `--ec-brdCol` so the
+                                 editor frame outline matches the terminal
+                                 frame outline. Setting it to `transparent`
+                                 makes the editor frame look borderless
+                                 while the terminal frame still has an
+                                 outline — they diverge visually.
+       --ec-frm-edActTabBrdCol  outline of JUST the active tab pill, drawn
+                                 on the tab itself. THIS is the one that
+                                 produced the earlier "boxed tab around
+                                 just the file name" look. Keep transparent
+                                 so the active tab reads as plain text plus
+                                 the bottom indicator (M3 tab pattern). */
+  --ec-frm-edBg: var(--md-sys-color-surface-container-high) !important;
+  --ec-frm-edTabBarBg: var(--md-sys-color-surface-container-high) !important;
+  --ec-frm-edTabBarBrdCol: var(--md-sys-color-outline-variant) !important;
+  --ec-frm-edTabBarBrdBtmCol: var(--md-sys-color-outline-variant) !important;
+  --ec-frm-edActTabBg: var(--md-sys-color-surface-container-high) !important;
+  --ec-frm-edActTabFg: var(--md-sys-color-on-surface) !important;
+  --ec-frm-edActTabBrdCol: transparent !important;
+  --ec-frm-edActTabIndTopCol: transparent !important;
+  --ec-frm-edActTabIndBtmCol: var(--md-sys-color-primary) !important;
+  --ec-frm-edActTabIndHt: 2px !important;
+  --ec-frm-edTabBrdRad: 0 !important;
+
+  /* Inline buttons (Copy / Wrap toggles) — M3 state-layer opacities so the
+     icon button reads like an md-icon-button on the surface. */
+  --ec-frm-inlBtnFg: var(--md-sys-color-on-surface-variant) !important;
+  --ec-frm-inlBtnBg: var(--md-sys-color-on-surface) !important;
+  --ec-frm-inlBtnBgIdleOpa: 0 !important;
+  --ec-frm-inlBtnBgHoverOrFocusOpa: 0.08 !important;
+  --ec-frm-inlBtnBgActOpa: 0.12 !important;
+
+  --ec-frm-frameBoxShdCssVal: none !important;
+}
+
+/* Don't add a second border on the figure/pre — Expressive Code's defaults
+   already draw a continuous outline by combining:
+     - `.expressive-code pre` border on left/right/bottom (for titled blocks
+       it strips the top border itself), and
+     - `.frame.is-terminal .header` / `.frame.has-title:not(.is-terminal)
+       .header::before` border on top/left/right.
+   Both layers pick their color from `--ec-brdCol`, which we override above
+   to `outline-variant`. Adding our own border on `figure.frame` here would
+   stack on top of those two and produce the double-line seam on the top
+   edge of terminal/titled blocks. */
+
+/* The terminal title bar has `border-bottom: none` upstream, so titled
+   frames look flush with no divider between the dots strip and the code
+   body. Re-introduce a thin M3 divider so the title bar reads as a
+   distinct surface. */
+.sl-markdown-content .expressive-code figure.frame.is-terminal .header {
+  border-block-end: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* ============================================================
+   8. Asides — tonal containers
+   ============================================================ */
+.starlight-aside {
+  border-radius: var(--md-sys-shape-corner-large, 16px);
+  border-inline-start: none;
+  padding: 1.25rem 1.5rem;
+  background: var(--md-sys-color-surface-container);
+  position: relative;
+  /* Clips the ::before accent to the panel's rounded silhouette. Without
+     it the bar spans the full block height while the corners curve away,
+     so it visibly detaches from the panel at top and bottom. */
+  overflow: hidden;
+}
+
+.starlight-aside::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 4px;
+  /* No radius of its own. A 16px corner on a 4px-wide box gets scaled down
+     by the browser to fit the 4px edge, which renders as a rounded lens
+     rather than a rule — the panel's own overflow clip supplies the curve. */
+  background: var(--md-sys-color-primary);
+}
+
+.starlight-aside--note {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.starlight-aside--note::before {
+  background: var(--md-sys-color-primary);
+}
+
+.starlight-aside--tip {
+  background: color-mix(in srgb, var(--md-sys-color-tertiary-container) 80%, transparent);
+  color: var(--md-sys-color-on-tertiary-container);
+}
+
+.starlight-aside--tip::before {
+  background: var(--md-sys-color-tertiary);
+}
+
+.starlight-aside--caution {
+  /* Semantic warning role, matching how note/tip/danger map to their
+     containers. The previous `color-mix(#FFE082 35%, surface-container)`
+     blended a light amber into a dark surface and resolved to a muddy
+     olive (#6E6246) in dark mode. */
+  background: var(--md-sys-color-warning-container);
+  color: var(--md-sys-color-on-warning-container);
+}
+
+.starlight-aside--caution::before {
+  background: var(--md-sys-color-warning);
+}
+
+.starlight-aside--danger {
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}
+
+.starlight-aside--danger::before {
+  background: var(--md-sys-color-error);
+}
+
+.starlight-aside-title {
+  font-weight: 600;
+  margin-block-end: 0.5rem;
+}
+
+/* ============================================================
+   9. Tables — Material 3 list-style
+   ============================================================ */
+.sl-markdown-content table {
+  /* Trade-off recorded: Starlight's stock rule is
+     `display: block; overflow: auto`. Earlier we forced `display: table`
+     to recover auto column-distribution (which keeps short tables from
+     leaving dead space to the right of the last column). But that mode
+     has no overflow container — content like long inline-code chains
+     (`primary (toggle: surface-container-highest)`) just *clips*
+     against the article's right edge, hiding cells entirely.
+     We accept the dead-space cosmetic regression in exchange for a
+     real horizontal scrollbar when content overflows. The
+     `inline-size: 1%; white-space: nowrap` trick on non-last cells
+     below still narrows them to content and donates the rest to the
+     final column, so most tables look identical — only the genuinely
+     wide ones (like Variants on /components/icon-button/) now scroll
+     instead of vanishing. */
+  /* Now that rehypeWrapTables (astro.config.mjs) puts a real container around
+     every table, the table itself can go back to `display: table` — full width
+     with proper column distribution — and the wrapper owns the scrolling. The
+     old `display: block` bought a scrollbar but shrink-wrapped the rows, which
+     is what left dead space to the right of narrow tables. */
+  display: table;
+  inline-size: 100%;
+  max-inline-size: none;
+  /* Clip to the rounded silhouette: with border-collapse: separate the header
+     cells paint their own background and bottom rule right across the corners,
+     so without this the top edge reads as a straight line overhanging the
+     radius. Safe now that .md-table-scroll owns the scrolling. */
+  overflow: hidden;
+  border-radius: var(--md-sys-shape-corner-large, 16px);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.9375rem;
+  background: var(--md-sys-color-surface-container-lowest);
+}
+
+.sl-markdown-content th {
+  background: var(--md-sys-color-surface-container);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.8125rem;
+  color: var(--md-sys-color-on-surface);
+  padding: 0.875rem 1rem;
+  text-align: start;
+}
+
+.sl-markdown-content td {
+  padding: 0.75rem 1rem;
+  vertical-align: top;
+  color: var(--md-sys-color-on-surface);
+}
+
+.sl-markdown-content td,
+.sl-markdown-content th {
+  border-color: var(--md-sys-color-outline-variant);
+}
+
+/* The container already draws the bottom edge, so a rule under the LAST row
+   renders as a doubled line just inside the rounded border. */
+.sl-markdown-content tbody tr:last-child td {
+  border-block-end: none;
+}
+
+/* Shrink-to-content trick for KEY (identifier) columns only.
+   With `table-layout: auto` the browser distributes the table's 100%
+   width proportionally to each column's max-content. For typical docs
+   tables (Property | Type | Default | Description) that leaves a lot
+   of empty space inside the short identifier columns. Setting
+   `width: 1%; white-space: nowrap` on those cells tells the
+   auto-layout algorithm "use the smallest size that fits your
+   content", and the remaining space is donated to the prose columns.
+
+   The classifier is structural — `:has(> code:only-child)` — so it
+   targets cells whose only child is an inline `<code>` element. That
+   includes BOTH leading identifier columns (Property names, token
+   names, type signatures) AND trailing constant columns (Default
+   values like `240px`, `608px`, `var(--md-sys-color-primary)`).
+   Applying nowrap to *every* code-only cell — not just non-last
+   ones — keeps short literals like `240px` on a single line, which
+   previously broke mid-character ("240p" / "x") when they happened
+   to land in a last column that was getting squeezed by a wide
+   neighbour.
+
+   Prose cells (Description, Use case, etc.) skip the rule entirely
+   and wrap naturally. They absorb whatever inline-space is left
+   after every code cell has claimed its max-content width. If the
+   sum of code-cell widths already exceeds the article column, the
+   outer `overflow-x: auto` on the table provides horizontal
+   scrolling — degrading gracefully instead of breaking values
+   mid-character.
+
+   `:has()` is broadly supported (2023+). Older browsers no-op the
+   selector and fall back to the legacy rule below. */
+.sl-markdown-content table th:has(> code:only-child),
+.sl-markdown-content table td:has(> code:only-child) {
+  inline-size: 1%;
+  white-space: nowrap;
+}
+
+/* Fallback for engines without :has() — preserves the legacy
+   behaviour (compact every non-last column, let the last one
+   absorb) so the table at least never collapses identifier text
+   to a few characters wide. Modern engines hit the :has() rule
+   above first and win on specificity (one extra :has() selector). */
+@supports not selector(:has(*)) {
+  .sl-markdown-content table th:not(:last-child),
+  .sl-markdown-content table td:not(:last-child) {
+    inline-size: 1%;
+    white-space: nowrap;
+  }
+}
+
+.sl-markdown-content tbody tr {
+  transition: background-color var(--awc-dur-fast) var(--awc-spring-effects);
+}
+
+.sl-markdown-content tbody tr:hover {
+  background: color-mix(in srgb, var(--md-sys-color-primary) 6%, transparent);
+}
+
+/* ============================================================
+   10. Cards (Starlight built-in)
+   ============================================================ */
+.card {
+  border-radius: var(--md-sys-shape-corner-large, 16px) !important;
+  border: 1px solid var(--md-sys-color-outline-variant) !important;
+  background: var(--md-sys-color-surface-container-low) !important;
+  transition:
+    transform var(--awc-dur-default) var(--awc-spring-spatial),
+    border-color var(--awc-dur-default) var(--awc-spring-effects),
+    box-shadow var(--awc-dur-default) var(--awc-spring-effects) !important;
+}
+
+.card:hover {
+  border-color: var(--md-sys-color-primary) !important;
+  box-shadow: var(--md-sys-elevation-2) !important;
+  transform: translateY(-2px);
+}
+
+.link-card {
+  border-radius: var(--md-sys-shape-corner-large, 16px) !important;
+  background: var(--md-sys-color-surface-container-low) !important;
+  border: 1px solid var(--md-sys-color-outline-variant) !important;
+  transition:
+    transform var(--awc-dur-default) var(--awc-spring-spatial),
+    border-color var(--awc-dur-default) var(--awc-spring-effects),
+    box-shadow var(--awc-dur-default) var(--awc-spring-effects) !important;
+}
+
+.link-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--md-sys-color-primary) !important;
+  box-shadow: var(--md-sys-elevation-2) !important;
+}
+
+/* ============================================================
+   11. Search modal
+   ============================================================ */
+dialog.pagefind-ui {
+  border-radius: var(--md-sys-shape-corner-extra-large, 28px);
+  box-shadow: var(--md-sys-elevation-3);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: var(--md-sys-color-surface-container-high);
+}
+
+/* ============================================================
+   12. Badges
+   ============================================================ */
+.sl-badge {
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  font-weight: 600;
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  padding: 0.125rem 0.625rem;
+}
+
+.sl-badge[data-variant='success'] {
+  background: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+}
+
+/* ============================================================
+   13. Pagination
+
+   Starlight's HTML for each footer link is:
+     <a rel="prev|next">
+       <svg>…arrow…</svg>
+       <span>
+         Previous|Next        ← the wrapper-span literal text
+         <br>
+         <span class="link-title">Page Title</span>
+       </span>
+     </a>
+
+   Starlight ships:
+     a { color: var(--sl-color-gray-2);  align-items: center; gap: .5rem }
+     .link-title { color: var(--sl-color-white); font-size: 2xl }
+
+   Two problems on our M3 surfaces:
+     1. `--sl-color-white` collapses to a near-invisible grey on our
+        `surface-container-low` button background, so the page title
+        renders but vanishes.
+     2. Because the span is two lines tall (with one line invisible),
+        the arrow — centered against the *whole* span — appears to
+        float well below the visible "Previous"/"Next" label.
+
+   We restate colors with M3 tokens (secondary on top, primary on the
+   page title) and bring the page-title font size down a notch so the
+   button reads as a single coherent control instead of a tall card.
+   ============================================================ */
+.pagination-links a {
+  border-radius: var(--md-sys-shape-corner-large, 16px) !important;
+  border: 1px solid var(--md-sys-color-outline-variant) !important;
+  background: var(--md-sys-color-surface-container-low) !important;
+  color: var(--md-sys-color-on-surface-variant) !important;
+  transition:
+    transform var(--awc-dur-default) var(--awc-spring-spatial),
+    border-color var(--awc-dur-default) var(--awc-spring-effects),
+    box-shadow var(--awc-dur-default) var(--awc-spring-effects) !important;
+  padding: 1rem 1.25rem !important;
+  gap: 0.875rem !important;
+  align-items: center !important;
+}
+
+.pagination-links a > svg {
+  color: var(--md-sys-color-on-surface);
+  flex-shrink: 0;
+}
+
+/* The wrapper <span> is the two-line label. Force a tight line-height
+   and a consistent text alignment so the visible top line ("Previous")
+   and the larger page title below it sit on the same optical baseline.
+   `min-width: 0` lets long page titles ellipsize instead of pushing
+   the arrow off-edge. */
+.pagination-links a > span {
+  display: flex;
+  flex-direction: column;
+  align-items: inherit;
+  justify-content: center;
+  line-height: 1.25;
+  min-inline-size: 0;
+  inline-size: 100%;
+}
+.pagination-links a[rel='prev'] > span {
+  align-items: flex-start;
+}
+.pagination-links a[rel='next'] > span {
+  align-items: flex-end;
+}
+
+/* The unwrapped "Previous"/"Next" text node is awkward to target
+   directly, but the immediate <br> + page title means the wrapper
+   span carries the small label color via `a { color }`. */
+
+.pagination-links a .link-title {
+  color: var(--md-sys-color-on-surface) !important;
+  font-size: 1.0625rem !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+  margin-block-start: 0.125rem;
+  max-inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pagination-links a:hover {
+  border-color: var(--md-sys-color-primary) !important;
+  box-shadow: var(--md-sys-elevation-2) !important;
+  text-decoration: none !important;
+  transform: translateY(-1px);
+}
+
+.pagination-links a:hover,
+.pagination-links a:hover .link-title,
+.pagination-links a:hover > svg {
+  color: var(--md-sys-color-primary) !important;
+}
+
+.pagination-links a:focus-visible {
+  outline: 3px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+/* ----------------------------------------------------------
+   Content-footer meta links ("Edit page", future "Last updated",
+   contributor avatars, etc.).
+
+   Starlight defaults:
+     a { color: var(--sl-color-gray-3) }
+     a:hover { color: var(--sl-color-white) }
+
+   On our M3 dark surface `--sl-color-white` collapses to a near-
+   invisible grey, so hovering "Edit page" makes the text vanish.
+   We restate both states with M3 tokens and add a focus ring,
+   scoped to `footer .meta` so the rule only touches these meta
+   links and never bleeds into pagination or markdown content.
+   ---------------------------------------------------------- */
+footer .meta a {
+  color: var(--md-sys-color-on-surface-variant);
+  text-decoration: none;
+  transition:
+    color var(--awc-dur-fast) var(--awc-spring-effects),
+    background-color var(--awc-dur-fast) var(--awc-spring-effects);
+}
+
+footer .meta a:hover,
+footer .meta a:focus-visible {
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+}
+
+footer .meta a:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   14. Table of contents
+   ============================================================ */
+starlight-toc a {
+  font-size: 0.8125rem;
+  color: var(--md-sys-color-on-surface-variant);
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  padding: 0.25rem 0.625rem;
+  transition:
+    color var(--awc-dur-fast) var(--awc-spring-effects),
+    background-color var(--awc-dur-fast) var(--awc-spring-effects);
+}
+
+starlight-toc a:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, transparent);
+  color: var(--md-sys-color-on-surface);
+}
+
+starlight-toc a[aria-current='true'] {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  font-weight: 600;
+}
+
+/* ============================================================
+   14b. Search dialog — symmetric spacing around the search bar
+   ============================================================ */
+/* Starlight's search <dialog> reserves min-height: 240px while the empty
+   Pagefind UI is only ~50px tall. The frame is a top-aligned flex column,
+   so every leftover pixel lands BELOW the search bar: ~24px above it,
+   ~165px below. Auto block margins split that free space evenly, so the
+   padding above the search bar equals the padding below it. Deliberately
+   NOT `justify-content: center`: once results make the content taller
+   than the frame, centering overflows in BOTH directions and scrolls the
+   input out of reach above the dialog — negative free space collapses
+   auto margins to zero instead, so a populated dialog stays top-aligned. */
+.dialog-frame > .search-container {
+  margin-block: auto;
+}
+
+/* ============================================================
+   15. Scroll-stagger reveal utility (used by landing sections)
+   ============================================================ */
+[data-awc-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity var(--awc-dur-slow) var(--awc-spring-effects),
+    transform var(--md-sys-motion-spring-spatial-default-duration, 500ms) var(--awc-spring-spatial);
+  will-change: opacity, transform;
+}
+
+[data-awc-reveal].is-visible {
+  opacity: 1;
+  /* `none`, not translateY(0): a kept transform makes the wrapper a
+     containing block for position: fixed descendants, which clips any
+     popup (menu, date-picker panel, dialog scrim) opened from inside a
+     revealed section. Transitions to `none` interpolate as identity. */
+  transform: none;
+  /* Same trap, second door: `will-change: transform` creates a containing
+     block on its own, even with `transform: none`. Leaving it set meant a
+     modal's `position: fixed; inset: 0` resolved against this wrapper
+     instead of the viewport — so the date/time picker opened wherever the
+     section happened to sit, drifting with scroll instead of centring.
+     The hint has done its job by the time the reveal finishes; releasing
+     it hands fixed descendants the viewport back. */
+  will-change: auto;
+}
+
+[data-awc-reveal-stagger] > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity var(--awc-dur-default) var(--awc-spring-effects),
+    transform var(--md-sys-motion-spring-spatial-default-duration, 500ms) var(--awc-spring-spatial);
+}
+
+[data-awc-reveal-stagger].is-visible > *:nth-child(1)  { transition-delay: 0ms;   opacity: 1; transform: none; }
+[data-awc-reveal-stagger].is-visible > *:nth-child(2)  { transition-delay: 60ms;  opacity: 1; transform: none; }
+[data-awc-reveal-stagger].is-visible > *:nth-child(3)  { transition-delay: 120ms; opacity: 1; transform: none; }
+[data-awc-reveal-stagger].is-visible > *:nth-child(4)  { transition-delay: 180ms; opacity: 1; transform: none; }
+[data-awc-reveal-stagger].is-visible > *:nth-child(5)  { transition-delay: 240ms; opacity: 1; transform: none; }
+[data-awc-reveal-stagger].is-visible > *:nth-child(6)  { transition-delay: 300ms; opacity: 1; transform: none; }
+[data-awc-reveal-stagger].is-visible > *:nth-child(7)  { transition-delay: 360ms; opacity: 1; transform: none; }
+[data-awc-reveal-stagger].is-visible > *:nth-child(8)  { transition-delay: 420ms; opacity: 1; transform: none; }
+/* Catch-all for children beyond position 8 — without this, any container
+   with more than 8 staggered items (e.g. the 19-item ComponentShowcase
+   pill row) leaves items 9+ permanently at opacity: 0, since the original
+   nth-child(1)..(8) rules above were the only thing flipping items
+   visible. Items 9+ all arrive in a single late wave at 480ms — the eye
+   has already absorbed the staggered motion of the first 8, so a single
+   group reveal at the tail reads fine and keeps total motion duration
+   short. */
+[data-awc-reveal-stagger].is-visible > *:nth-child(n+9) {
+  transition-delay: 480ms;
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-awc-reveal],
+  [data-awc-reveal-stagger] > * {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ============================================================
+   16. Mobile & responsive
+   ============================================================ */
+@media (max-width: 72rem) {
+  :root {
+    --sl-content-width: 70ch;
+  }
+}
+
+@media (max-width: 50rem) {
+  nav.sidebar {
+    background: var(--md-sys-color-surface);
+  }
+
+  :root {
+    --sl-content-width: 100%;
+  }
+
+  .sl-container > h1,
+  .sl-markdown-content h1 {
+    font-size: 1.875rem;
+    letter-spacing: -0.02em;
+  }
+
+  .sl-markdown-content h2 {
+    font-size: 1.25rem;
+    margin-block-start: 2.5rem;
+  }
+
+  .sl-markdown-content h3 {
+    font-size: 1rem;
+  }
+
+  .sl-markdown-content {
+    line-height: 1.7;
+  }
+
+  .sl-markdown-content table {
+    /* Base rule already covers display: block + overflow-x: auto;
+       only the typography needs to shrink on small viewports. */
+    font-size: 0.8125rem;
+  }
+
+  .sl-markdown-content th,
+  .sl-markdown-content td {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .sl-markdown-content pre:not(:where(.expressive-code *, .technology-tabs *)) {
+    border-radius: var(--md-sys-shape-corner-medium, 12px);
+    font-size: 0.8125rem;
+  }
+
+  .starlight-aside {
+    padding: 1rem 1.25rem;
+    border-radius: var(--md-sys-shape-corner-medium, 12px);
+  }
+}
+
+@media (max-width: 40rem) {
+  .sl-container > h1,
+  .sl-markdown-content h1 {
+    font-size: 1.625rem;
+  }
+
+  .sl-markdown-content h1 + p,
+  .sl-container > h1 + p {
+    font-size: 1rem;
+  }
+
+  .sl-markdown-content h2 {
+    font-size: 1.125rem;
+    margin-block-start: 2rem;
+  }
+
+  .sl-markdown-content h3 {
+    font-size: 0.9375rem;
+    margin-block-start: 1.5rem;
+  }
+
+  .pagination-links a {
+    padding: 0.875rem 1rem !important;
+  }
+
+  .sl-markdown-content pre:not(:where(.expressive-code *, .technology-tabs *)) {
+    border-radius: var(--md-sys-shape-corner-small, 8px);
+  }
+
+  .sl-markdown-content :not(pre) > code {
+    font-size: 0.8em;
+    padding: 0.1em 0.3em;
+  }
+}
+
+@media (hover: none) {
+  .features__card:hover,
+  .comp-showcase__item:hover,
+  .fw-showcase__card:hover,
+  .card:hover,
+  .link-card:hover {
+    transform: none;
+  }
+}
+
+/* ============================================================
+   17. Scrollbar
+   ============================================================ */
+::-webkit-scrollbar {
+  inline-size: 8px;
+  block-size: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--md-sys-color-outline);
+}
+
+/* ============================================================
+   18. Page entry animation (docs body)
+
+   IMPORTANT: this animation must NOT use `transform`. A descendant
+   `position: fixed` element (e.g. `<md-dialog>` opening on a docs
+   page) becomes positioned relative to the nearest ancestor with
+   `transform != none`, *including* `translateY(0)`. Even after the
+   animation finishes, some browsers retain the compositor layer and
+   continue trapping fixed descendants. We use `filter` here? No —
+   `filter` also creates a containing block. Same trap. So we limit
+   the animation to `opacity`, which is stacking-context-safe for
+   `position: fixed` (opacity creates a stacking context but does
+   *not* create a containing block for fixed positioning).
+   ============================================================ */
+main .sl-markdown-content {
+  animation: awc-page-in var(--awc-dur-slow) var(--awc-spring-effects);
+}
+
+@keyframes awc-page-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ============================================================
+   19. Component demo rows + guideline cards —
+       neutralize Starlight's adjacent-sibling top margin.
+
+   Starlight's content stylesheet ships this rule (inside the
+   `starlight.content` cascade layer):
+
+     .sl-markdown-content
+       :not(a, strong, em, del, span, input, code, br)
+       + :not(a, strong, em, del, span, input, code, br, ...)
+     { margin-top: 1rem; }
+
+   It targets MDX paragraphs/headings, but its allow-list only
+   excludes a handful of inline HTML elements — so it also hits
+   our layout containers and live previews. Five places break:
+
+     a) <md-*> custom elements after the first one inside
+        <ComponentDemo> live previews (flex row, align-items:
+        center). The 16px top margin enlarges the item's
+        margin box on the cross axis and pushes the 2nd–nth
+        button DOWN relative to the unmargined first button.
+
+     b) Same pattern inside <ComponentGuidelines>'
+        .guideline__demo flex rows.
+
+     c) The .guideline <article> grid items themselves. The
+        parent .component-guidelines is `display: grid` with
+        align-items: stretch (default), so each cell sizes to
+        `max(card heights)`. A grid item is then stretched to
+        `cell - margin`. The first card has no top margin, so
+        it fills the cell; the 2nd–nth cards in the same row
+        only fill `cell - 16px`, ending up visually shorter.
+
+     d) The .component-demo__preview pane itself, which is the
+        second child of .component-demo (header is the first).
+        Starlight's rule gives the preview pane +1rem, opening
+        a 16px gap below the header divider when those two
+        elements should sit flush against the border.
+
+     e) Same for .guideline__demo and .guideline__body which
+        follow .guideline__header inside each card — both
+        pick up a phantom 16px gap below the colored header.
+
+   The splash-page rule at §"html:not([data-has-sidebar])" above
+   already strips this margin globally for landing pages — but
+   regular docs pages (with a sidebar) keep Starlight's spacing
+   intact for prose, and that's where these layouts break.
+
+   We use `!important` here (same pattern the splash rule uses)
+   for two reasons:
+     1. Lightning CSS minification has been observed to drop
+        the `.sl-markdown-content` prefix from selector lists
+        with this shape, collapsing specificity from (0,2,0)
+        to (0,1,0) and losing to Starlight's (0,1,2).
+     2. The override is intentionally narrow — only demo and
+        guideline subtrees — so there's no risk of bleeding
+        into prose elsewhere on the page.
+   ============================================================ */
+/* Preview/demo inner content: descendant combinator (no `>`) — buttons
+   nested inside group wrappers like <md-button-group> need the override
+   too, not just direct children of the preview pane. */
+.sl-markdown-content .component-demo__preview * + *,
+.sl-markdown-content .guideline__demo * + *,
+/* Card grids + component-demo/guideline parent containers: child combinator
+   (`>`) — we only want to neutralize margins between siblings of the demo
+   container itself (header → preview, header → body, card → card), NOT
+   prose inside the cards (paragraphs, lists, etc.). */
+.sl-markdown-content .component-guidelines > * + *,
+.sl-markdown-content .component-demo > * + *,
+.sl-markdown-content .guideline > * + *,
+/* LLMContext.astro — same idiom, seven levels of sibling-margin to kill:
+   the section (header → grid), the grid (card → card), each card
+   (header → actions → preview), the action row (button + button in
+   the primary card), the modal dialog (header → pre), the dialog
+   header (title h4 → actions div), and the dialog actions (copy
+   button + close button — without this they vertically misalign
+   despite `align-items: center` because Starlight gives the second
+   button a ~1.5em margin-block-start). Layout spacing is owned by
+   `gap`/`margin-block` in the component's own scoped CSS. */
+.sl-markdown-content .llm-context > * + *,
+.sl-markdown-content .llm-context__grid > * + *,
+.sl-markdown-content .llm-context__card > * + *,
+.sl-markdown-content .llm-context__card-actions > * + *,
+.sl-markdown-content .llm-context__dialog > * + *,
+.sl-markdown-content .llm-context__dialog-header > * + *,
+.sl-markdown-content .llm-context__dialog-actions > * + * {
+  margin-block-start: 0 !important;
+}
+
+/* Re-assert `margin-block-start: auto` on the card-actions row
+   AFTER the wildcard neutralizer above. The wildcard rule sets
+   the action row's top margin to 0, which kills our intended
+   bottom-anchoring of the buttons inside the card. This rule has
+   higher specificity ((0,3,0) > the wildcard's (0,2,0) because
+   we name `.llm-context__card-actions` explicitly instead of `*`)
+   so the auto value wins. With `auto` restored, flex column +
+   the card's `min-block-size: 16rem` (or stretched height in the
+   side-by-side desktop layout) gives the button row free vertical
+   slack to push down to the bottom edge. */
+.sl-markdown-content .llm-context__card > .llm-context__card-actions {
+  margin-block-start: auto !important;
+}
+
+/* NOTE: the `.llm-context__preview-toggle` marker-hide rules used
+   to live here. Removed when the inline <details> preview was
+   dropped from LLMContext.astro in favour of the Expand-view
+   fullscreen dialog. Two carets bug is moot — no more <summary>. */
+
+
+/* ── Markdown table scroll container ─────────────────────────────
+   Added by rehypeWrapTables so a wide table scrolls instead of clipping,
+   while the table inside still fills the article width.
+   NB: no `scrollbar-width` — Chrome ignores a styled ::-webkit-scrollbar
+   when it is set (see project notes). */
+.sl-markdown-content .md-table-scroll {
+  overflow-x: auto;
+  margin-block: 1rem;
+}
+
+.sl-markdown-content .md-table-scroll:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+  border-radius: var(--md-sys-shape-corner-large, 16px);
+}
+
+.sl-markdown-content .md-table-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+
+.sl-markdown-content .md-table-scroll::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 6%, transparent);
+  border-radius: 999px;
+}
+
+.sl-markdown-content .md-table-scroll::-webkit-scrollbar-thumb {
+  background: var(--md-sys-color-outline);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.sl-markdown-content .md-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--md-sys-color-on-surface-variant);
+  background-clip: content-box;
+}
+
+
+/* ── One line per row, scroll instead of wrap ────────────────────
+   A wrapped cell turns a values list into a vertical stack of chips and makes
+   the row height jump around. Rows stay on one line; .md-table-scroll scrolls
+   when the table outgrows the article. */
+.sl-markdown-content .md-table-scroll td,
+.sl-markdown-content .md-table-scroll th {
+  white-space: nowrap;
+}
+
+/* ==========================================================
+   FIXED OVERLAYS FROM COMPONENT DEMOS
+   ==========================================================
+   Starlight sets `isolation: isolate` on `.main-pane`, which makes it a
+   stacking context. Every fixed-position overlay a demo renders is therefore
+   trapped inside it: a snackbar at `z-index: 2000` still paints BELOW the
+   fixed header (z 10) and the sidebars, because its z-index only competes
+   with siblings inside the pane. The result is a snackbar sliding under the
+   header instead of over the page, which is the opposite of what the
+   component does in a real app.
+
+   Dropping the isolation lets those overlays reach the page's own stacking
+   order. Ordinary prose is unaffected — it has `z-index: auto`, so the fixed
+   header still sits above it while scrolling. */
+.main-pane {
+  isolation: auto;
+}

@@ -1,0 +1,206 @@
+{
+  "tag": "md-card",
+  "title": "Card",
+  "slug": "card",
+  "category": "Containment",
+  "subComponentOf": null,
+  "storyId": "containment-card--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'elevated' | 'filled' | 'outlined'",
+      "default": "'elevated'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "interactive",
+      "attribute": "interactive",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "dragEnabled",
+      "attribute": "drag-enabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "ripple",
+      "attribute": "ripple",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "fullWidth",
+      "attribute": "full-width",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "fullHeight",
+      "attribute": "full-height",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdClick",
+      "detail": "MouseEvent"
+    },
+    {
+      "name": "mdDragStart",
+      "detail": "MdCardDragDetail"
+    },
+    {
+      "name": "mdDragMove",
+      "detail": "MdCardDragDetail"
+    },
+    {
+      "name": "mdDragEnd",
+      "detail": "MdCardDragDetail"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": "Hover/press overlay (interactive only)"
+    },
+    {
+      "name": "outline",
+      "description": "Border element (outlined variant only)"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-card-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-card-container-shape",
+      "description": "Border-radius override"
+    },
+    {
+      "name": "--md-card-container-elevation",
+      "description": "Box-shadow override"
+    },
+    {
+      "name": "--md-card-outline-color",
+      "description": "Outline color (outlined variant)"
+    },
+    {
+      "name": "--md-card-outline-width",
+      "description": "Outline width (outlined variant)"
+    },
+    {
+      "name": "--md-card-state-layer-color",
+      "description": "State layer color override"
+    },
+    {
+      "name": "--md-card-width",
+      "description": "Explicit inline-size (default: auto)"
+    },
+    {
+      "name": "--md-card-min-width",
+      "description": "Minimum inline-size"
+    },
+    {
+      "name": "--md-card-max-width",
+      "description": "Maximum inline-size"
+    },
+    {
+      "name": "--md-card-height",
+      "description": "Explicit block-size (default: auto)"
+    },
+    {
+      "name": "--md-card-min-height",
+      "description": "Minimum block-size"
+    },
+    {
+      "name": "--md-card-max-height",
+      "description": "Maximum block-size"
+    },
+    {
+      "name": "--md-card-padding",
+      "description": ""
+    },
+    {
+      "name": "--md-card-gap",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [
+    {
+      "name": "MdCardDragDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Pointer X in viewport coordinates */\n  clientX: number;\n  /** Pointer Y in viewport coordinates */\n  clientY: number;\n  /** Horizontal distance from the drag start point */\n  offsetX: number;\n  /** Vertical distance from the drag start point */\n  offsetY: number;\n  /** X where the drag gesture began */\n  startX: number;\n  /** Y where the drag gesture began */\n  startY: number;"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdClick",
+      "detail": "MouseEvent"
+    },
+    {
+      "name": "mdDragStart",
+      "detail": "MdCardDragDetail"
+    },
+    {
+      "name": "mdDragMove",
+      "detail": "MdCardDragDetail"
+    },
+    {
+      "name": "mdDragEnd",
+      "detail": "MdCardDragDetail"
+    }
+  ]
+}

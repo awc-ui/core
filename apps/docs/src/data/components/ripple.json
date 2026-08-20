@@ -1,0 +1,62 @@
+{
+  "tag": "md-ripple",
+  "title": "Ripple",
+  "slug": "ripple",
+  "category": "Containment",
+  "subComponentOf": null,
+  "storyId": null,
+  "props": [
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    }
+  ],
+  "events": [],
+  "methods": [
+    {
+      "name": "whenSettled",
+      "params": ""
+    },
+    {
+      "name": "trigger",
+      "params": ""
+    }
+  ],
+  "slots": [],
+  "cssParts": [],
+  "cssCustomProps": [
+    {
+      "name": "--md-ripple-color",
+      "description": "Ripple tint color (default: currentColor)"
+    },
+    {
+      "name": "--md-ripple-opacity",
+      "description": "Ripple peak opacity (default: 0.12)"
+    },
+    {
+      "name": "--md-ripple-extend-inline",
+      "description": "Extra pixels to add on each inline edge"
+    },
+    {
+      "name": "--md-ripple-extend-block",
+      "description": "Same as --md-ripple-extend-inline but"
+    },
+    {
+      "name": "--md-ripple-grow-duration",
+      "description": "Override the wave's scale 0 → 1 grow"
+    },
+    {
+      "name": "--md-ripple-grow-easing",
+      "description": "Companion to --md-ripple-grow-duration"
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": []
+}

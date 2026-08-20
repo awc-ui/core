@@ -1,0 +1,137 @@
+---
+title: Shape Morph
+description: Freeze M3 Expressive shape morphing globally, per region, or per component
+sidebar:
+  order: 4
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+Shape morph is the M3 Expressive behaviour where a control's corner radius
+animates on press or selection — a round button squaring off as you push it.
+It is on by default.
+
+## Turn it off globally
+
+```html
+<html data-shape-morph="off">
+```
+
+Shapes freeze at their **resting** radius. Nothing else changes: the control
+still presses, still ripples, still shows its state layer.
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:12px;align-items:center;margin-block-end:16px;">
+  <span style="width:5rem;opacity:.7;font-size:.8rem;">on</span>
+  <md-button variant="filled">Press and hold</md-button>
+  <md-button variant="tonal" toggle>Toggle</md-button>
+</div>
+<div data-shape-morph="off" style="display:flex;gap:12px;align-items:center;">
+  <span style="width:5rem;opacity:.7;font-size:.8rem;">off</span>
+  <md-button variant="filled">Press and hold</md-button>
+  <md-button variant="tonal" toggle>Toggle</md-button>
+</div>`}
+  label="Shape morph on vs off — press and hold, then try the toggles"
+/>
+
+## Three levels, and opting back in
+
+Same model as [ripple](/behaviour/ripple/): one custom property,
+`--md-sys-shape-morph-enabled` (`1` on, `0` frozen), settable at any level and
+reversible at any level.
+
+```html
+<html data-shape-morph="off">
+  <section data-shape-morph="on">
+    <md-button variant="filled">Morphs</md-button>
+  </section>
+
+  <md-button variant="filled" shape-morph="on">Also morphs</md-button>
+</html>
+```
+
+| Scope | Attribute | Where |
+|---|---|---|
+| Global | `data-shape-morph="off"` / `"on"` | `<html>` or any ancestor |
+| Region | `data-shape-morph="off"` / `"on"` | Any wrapper element |
+| Component | `shape-morph="off"` / `"on"` | The component host |
+
+## How the freeze works
+
+The value is `0`/`1` rather than a keyword so CSS can use it as
+**arithmetic**. Each morphed radius is blended back toward its resting value:
+
+```css
+border-radius: calc(
+  REST + var(--md-sys-shape-morph-enabled, 1) * (MORPHED - REST)
+);
+```
+
+At `1` that is exactly `MORPHED`; at `0` it collapses to `REST`. The toggle
+stays in pure CSS, so flipping it applies instantly with no re-render — and
+it avoids `:host-context()`, which Firefox does not implement.
+
+## Which components actually morph
+
+Only **7** components have shape-morph behaviour; the attribute is a no-op
+everywhere else:
+
+`md-button` · `md-icon-button` · `md-fab` · `md-fab-menu` ·
+`md-segmented-button` · `md-split-button` · `md-card`
+
+Two distinct triggers:
+
+- **Pressed** — the radius squares off by one step while held.
+- **Selected** (toggle) — a `round` control morphs to square when selected;
+  a `square` one morphs to round.
+
+## Runtime toggle
+
+```js
+document.documentElement.dataset.shapeMorph = 'off';   // freeze
+document.documentElement.dataset.shapeMorph = 'on';    // restore
+delete document.documentElement.dataset.shapeMorph;    // default (on)
+```
+
+Note the DOM property is camelCased (`dataset.shapeMorph`) for the
+`data-shape-morph` attribute.
+
+## Reduced motion
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  :root { --md-sys-shape-morph-enabled: 0; }
+}
+```
+
+Pair it with the same guard for ripple to cover both expressive behaviours:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --md-sys-ripple-enabled: 0;
+    --md-sys-shape-morph-enabled: 0;
+  }
+}
+```
+
+## When to switch it off
+
+| Situation | Recommendation |
+|---|---|
+| Utilitarian / enterprise visual language | Global `off` |
+| Brand guidelines specify static geometry | Global `off` |
+| User prefers reduced motion | `off` via the media query |
+| Consumer product wanting the M3 Expressive feel | Leave it **on** |
+
+:::note[Shape morph is not the same as `shape`]
+`shape="round\|square"` sets the **resting** geometry and is unaffected by
+this toggle. Shape morph only governs the *animation between* states. Turning
+morphing off keeps your `shape` choice exactly as authored.
+:::
+
+## Related
+
+- [Ripple](/behaviour/ripple/) — the other expressive toggle, same mechanism
+- [Motion & Animation](/theming/motion/) — durations, easings and reduced motion
+- [Design Tokens](/theming/tokens/) — the shape corner scale

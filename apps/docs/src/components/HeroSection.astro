@@ -1,0 +1,1396 @@
+---
+import stats from "../data/stats.json";
+---
+
+<section class="awc-hero" data-awc-hero>
+  <div class="awc-hero__bg" aria-hidden="true">
+    <div class="awc-hero__blob awc-hero__blob--primary"></div>
+    <div class="awc-hero__blob awc-hero__blob--secondary"></div>
+    <div class="awc-hero__blob awc-hero__blob--tertiary"></div>
+    <div class="awc-hero__grid"></div>
+  </div>
+
+  <div class="awc-hero__inner">
+    <div class="awc-hero__content">
+      <div class="awc-hero__eyebrow" data-awc-reveal>
+        <span class="awc-hero__eyebrow-dot"></span>
+        Material Design 3 &middot; Open Source &middot; {stats.componentCount}+ components
+      </div>
+
+      <h1 class="awc-hero__title" data-awc-reveal>
+        The Material Design 3 library
+        <span class="awc-hero__title-accent">for the modern web.</span>
+      </h1>
+
+      <p class="awc-hero__lede" data-awc-reveal>
+        AWC UI &mdash; Advanced Web Components UI &mdash; is an open-source
+        Material&nbsp;Design&nbsp;3 component library, currently in beta, built
+        with Stencil.js on standard web components. Use
+        the same components in React, Angular, Vue, Svelte, or plain HTML, with
+        typed wrappers and server-side rendering support for each.
+      </p>
+
+      <div class="awc-hero__actions" data-awc-reveal>
+        <a href="/getting-started/installation/" class="awc-btn awc-btn--filled">
+          <span class="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
+          Get started
+        </a>
+        <a href="/components/" class="awc-btn awc-btn--outlined">
+          Explore components
+          <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+        </a>
+      </div>
+
+      <div class="awc-hero__install" data-awc-reveal>
+        <span class="awc-hero__install-prompt" aria-hidden="true">$</span>
+        <code>npm i @awc-ui/core @awc-ui/tokens</code>
+        <button class="awc-hero__copy" type="button" aria-label="Copy install command" data-copy-hero>
+          <svg class="awc-hero__copy-icon-default" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          <svg class="awc-hero__copy-icon-done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 6 9 17l-5-5"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="awc-hero__preview" data-awc-reveal data-awc-hero-preview>
+      <div class="awc-hero__preview-stage">
+        {/* Top-right cluster — bundle metric + AI ready, stacked
+            vertically. Mirrors the top-left chip cluster but anchored
+            against the stage's right edge. */}
+        <div class="awc-hero__chips awc-hero__chips--top-right" aria-hidden="true">
+          <span
+            class="awc-hero__badge awc-hero__badge--bundle"
+            title="@awc-ui/core declares no dependencies and no peer dependencies at all — third-party or otherwise. Installing it adds exactly one package to your tree."
+          >
+            <span class="material-symbols-outlined">package_2</span>
+            <span>0&nbsp;third-party deps</span>
+          </span>
+          <span class="awc-hero__chip awc-hero__chip--secondary">
+            <span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>
+            AI ready
+          </span>
+        </div>
+
+        {/* Right-middle chip — "Token-driven theming" sits vertically
+            centred on the card's right edge, slotted between the
+            top-right cluster (bundle + AI ready, ~10–22%) and the
+            bottom-right FAB (~88–96%) so the right rail reads as an
+            evenly-spaced trio of floating annotations. */}
+        <div class="awc-hero__chips awc-hero__chips--right-middle" aria-hidden="true">
+          <span class="awc-hero__chip awc-hero__chip--tertiary">
+            <span class="material-symbols-outlined" aria-hidden="true">design_services</span>
+            Token-driven&nbsp;theming
+          </span>
+        </div>
+
+        {/* Top-left chip cluster — Tonal + WCAG AA, floating above the card.
+            The card's top edge has been pushed down (see CSS) so these chips
+            never overlap the "Now playing / Material You" title. */}
+        <div class="awc-hero__chips awc-hero__chips--top" aria-hidden="true">
+          <span class="awc-hero__chip awc-hero__chip--primary">
+            <span class="material-symbols-outlined" aria-hidden="true">style</span>
+            Tonal
+          </span>
+          <span class="awc-hero__chip awc-hero__chip--tertiary">
+            <span class="material-symbols-outlined" aria-hidden="true">all_inclusive</span>
+            RTL
+          </span>
+        </div>
+
+        <div class="awc-hero__card awc-hero__card--main">
+          <div class="awc-hero__card-header">
+            <md-loading-indicator
+              variant="contained"
+              label="Personalising"
+              class="awc-hero__card-loader"
+            ></md-loading-indicator>
+            <div class="awc-hero__card-heading">
+              <h2 class="awc-hero__card-title">Material&nbsp;You</h2>
+              <p class="awc-hero__card-subtitle">Rendered live on this page by the components themselves.</p>
+            </div>
+          </div>
+
+          <div class="awc-hero__card-controls">
+            <div class="awc-hero__control">
+              <span class="awc-hero__control-icon" aria-hidden="true">
+                <span class="material-symbols-outlined">notifications_active</span>
+              </span>
+              <span class="awc-hero__control-label">Push notifications</span>
+              <md-switch checked aria-label="Push notifications"></md-switch>
+            </div>
+
+            <div class="awc-hero__control">
+              <span class="awc-hero__control-icon awc-hero__control-icon--secondary" aria-hidden="true">
+                <span class="material-symbols-outlined">dark_mode</span>
+              </span>
+              <span class="awc-hero__control-label">Dark mode</span>
+              <md-switch data-awc-cycle aria-label="Dark mode"></md-switch>
+            </div>
+
+            <div class="awc-hero__control">
+              <span class="awc-hero__control-icon awc-hero__control-icon--tertiary" aria-hidden="true">
+                <span class="material-symbols-outlined">auto_awesome</span>
+              </span>
+              <span class="awc-hero__control-label">Smart suggestions</span>
+              <md-switch checked aria-label="Smart suggestions"></md-switch>
+            </div>
+
+            {/* Sub-panel for the "Smart suggestions" toggle: a label, a
+                slider for intensity, and an md-button-group whose
+                pressed button expands while neighbours absorb the same
+                width — the M3 Expressive shape-morph press effect.
+                The selection auto-cycles to keep the morph visible. */}
+            <div class="awc-hero__suggestion">
+              <span class="awc-hero__suggestion-label">Suggestion intensity</span>
+              <md-slider
+                value="65"
+                aria-label="Suggestion intensity"
+                class="awc-hero__suggestion-slider"
+              ></md-slider>
+              <md-button-group
+                class="awc-hero__suggestion-tones"
+                variant="standard"
+                size="sm"
+                shape="round"
+                selection-mode="single-select"
+                required
+                aria-label="Suggestion cadence"
+                data-awc-buttongroup-cycle
+              >
+                <md-tooltip
+                  text="Instant suggestions"
+                  position="top"
+                  class="awc-hero__suggestion-tip awc-hero__suggestion-tip--icon"
+                >
+                  <md-icon-button
+                    variant="tonal"
+                    icon="bolt"
+                    aria-label="Realtime"
+                  ></md-icon-button>
+                </md-tooltip>
+                <md-tooltip
+                  text="Daily digest"
+                  position="top"
+                  class="awc-hero__suggestion-tip"
+                >
+                  <md-button variant="tonal" icon="today">Daily</md-button>
+                </md-tooltip>
+                <md-tooltip
+                  text="Weekly summary"
+                  position="top"
+                  class="awc-hero__suggestion-tip"
+                >
+                  <md-button variant="tonal" icon="calendar_view_week" selected>
+                    Weekly
+                  </md-button>
+                </md-tooltip>
+                <md-tooltip
+                  text="Custom cadence"
+                  position="top"
+                  class="awc-hero__suggestion-tip awc-hero__suggestion-tip--icon"
+                >
+                  <md-icon-button
+                    variant="tonal"
+                    icon="tune"
+                    aria-label="Custom"
+                  ></md-icon-button>
+                </md-tooltip>
+              </md-button-group>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom chip cluster — WCAG AA + tested coverage, sits below the card */}
+        <div class="awc-hero__chips awc-hero__chips--bottom" aria-hidden="true">
+          <span class="awc-hero__chip awc-hero__chip--secondary">
+            <span class="material-symbols-outlined" aria-hidden="true">accessibility_new</span>
+            WCAG&nbsp;AA
+          </span>
+          <span class="awc-hero__chip awc-hero__chip--ok">
+            <span class="material-symbols-outlined" aria-hidden="true">verified</span>
+            {stats.unitTestCoveragePercent ?? stats.testCoveragePercent}% coverage
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Wire global scroll-reveal helpers used by every landing section.
+  import "../scripts/awc-reveal.ts";
+
+  // 1. Copy-to-clipboard for the install command
+  const copyBtn = document.querySelector<HTMLButtonElement>('[data-copy-hero]');
+  copyBtn?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText('npm i @awc-ui/core @awc-ui/tokens');
+      copyBtn.classList.add('is-copied');
+      setTimeout(() => copyBtn.classList.remove('is-copied'), 1600);
+    } catch (err) {
+      console.warn('[AWC UI] clipboard write failed:', err);
+    }
+  });
+
+  // 2. Lazy-load AWC UI components used in the hero preview.
+  let elementsLoaded = false;
+  const loadElements = async () => {
+    if (elementsLoaded) return;
+    elementsLoaded = true;
+    try {
+      // Dev and build need DIFFERENT loader paths (the recurring trap):
+      // - dev: Vite's transform middleware refuses module-imports of /public
+      //   files, so import the workspace package — Vite serves it fine.
+      // - build: the npm specifier would bundle the loader into /_astro/,
+      //   where Stencil's lazy entry chunks 404 — import the COPIED runtime.
+      //   The URL sits in a variable because Rollup resolves literal dynamic
+      //   imports even behind @vite-ignore and fails the build.
+      let mod: { defineCustomElements: (win?: Window) => Promise<unknown> };
+      if (import.meta.env.DEV) {
+        mod = await import('@awc-ui/core/loader');
+      } else {
+        const runtimeUrl = '/awc-runtime/md3/md3.esm.js';
+        await import(/* @vite-ignore */ runtimeUrl);
+        await customElements.whenDefined("md-button");
+        return;
+      }
+      await mod.defineCustomElements(window);
+    } catch (err) {
+      console.warn('[AWC UI] hero loader failed:', err);
+    }
+  };
+
+  const preview = document.querySelector('[data-awc-hero-preview]');
+  if (preview && 'IntersectionObserver' in window) {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          obs.disconnect();
+          loadElements();
+        }
+      },
+      { rootMargin: '300px' },
+    );
+    obs.observe(preview);
+  } else {
+    loadElements();
+  }
+
+  // 3. Cursor-driven parallax for the preview card (subtle).
+  const stage = document.querySelector<HTMLElement>('[data-awc-hero] .awc-hero__preview-stage');
+  const root = document.querySelector<HTMLElement>('[data-awc-hero]');
+  if (stage && root && window.matchMedia('(hover: hover)').matches) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduce) {
+      let ticking = false;
+      let mx = 0, my = 0;
+      const update = () => {
+        ticking = false;
+        stage.style.setProperty('--mx', mx.toFixed(3));
+        stage.style.setProperty('--my', my.toFixed(3));
+      };
+      root.addEventListener('mousemove', (e) => {
+        const rect = root.getBoundingClientRect();
+        mx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+        my = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      });
+      root.addEventListener('mouseleave', () => {
+        mx = 0; my = 0;
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      });
+    }
+  }
+
+  // 4. Auto-cycle the "Dark mode" switch so the preview reads as a
+  //    real live component, not a screenshot. We toggle the property
+  //    on the custom element (which the Stencil component reflects to
+  //    its attribute and shadow DOM). Pauses when offscreen and when
+  //    the user prefers reduced motion.
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduceMotion) {
+    const cycleTarget = document.querySelector<HTMLElement & { checked?: boolean }>(
+      '[data-awc-cycle]',
+    );
+    const previewEl = document.querySelector('[data-awc-hero-preview]');
+    if (cycleTarget && previewEl) {
+      let intervalId: number | null = null;
+      const start = () => {
+        if (intervalId !== null) return;
+        intervalId = window.setInterval(() => {
+          if (document.hidden) return;
+          if ('checked' in cycleTarget) {
+            cycleTarget.checked = !cycleTarget.checked;
+          } else if (cycleTarget.hasAttribute('checked')) {
+            cycleTarget.removeAttribute('checked');
+          } else {
+            cycleTarget.setAttribute('checked', '');
+          }
+        }, 3800);
+      };
+      const stop = () => {
+        if (intervalId !== null) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+      };
+
+      if ('IntersectionObserver' in window) {
+        const visObs = new IntersectionObserver((entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) start();
+            else stop();
+          }
+        }, { threshold: 0.2 });
+        visObs.observe(previewEl);
+      } else {
+        start();
+      }
+    }
+
+    // 5. Auto-cycle the md-button-group selection so the M3 Expressive
+    //    press shape-morph (active button expands, neighbours absorb the
+    //    width) animates without user interaction. We dispatch a real
+    //    PointerEvent (which triggers md-button-group's internal
+    //    runMotion via its pointerdown listener) followed by a click
+    //    (which moves the selection through onGroupClick). Pauses when
+    //    the preview is offscreen and skipped under prefers-reduced-motion.
+    const buttonGroup = document.querySelector<HTMLElement>(
+      '[data-awc-buttongroup-cycle]',
+    );
+    const groupPreviewEl = document.querySelector('[data-awc-hero-preview]');
+    if (buttonGroup && groupPreviewEl) {
+      const groupButtons = Array.from(
+        buttonGroup.querySelectorAll<HTMLElement>('md-button, md-icon-button'),
+      );
+      if (groupButtons.length > 0) {
+        let bIdx = groupButtons.findIndex((b) => b.hasAttribute('selected'));
+        if (bIdx < 0) bIdx = 0;
+        let bIntervalId: number | null = null;
+        const firePointer = (btn: HTMLElement, type: 'pointerdown' | 'pointerup') => {
+          try {
+            btn.dispatchEvent(
+              new PointerEvent(type, { bubbles: true, cancelable: true }),
+            );
+          } catch {
+            // Older browsers without the PointerEvent constructor — fall
+            // back to the equivalent mouse event (won't trigger every
+            // morph but won't throw either).
+            const mouseType = type === 'pointerdown' ? 'mousedown' : 'mouseup';
+            btn.dispatchEvent(new MouseEvent(mouseType, { bubbles: true }));
+          }
+        };
+        const fireMorph = (btn: HTMLElement) => {
+          // 1. pointerdown → md-button-group's runMotion (group-level
+          //    width/padding press morph) AND md-button.handlePointerDown
+          //    (sets `pressed = true`, which CSS-morphs corners to a
+          //    squarer shape).
+          firePointer(btn, 'pointerdown');
+          // 2. click → md-button.handleClick toggles `selected`, then
+          //    onGroupClick (bubbled) deselects the other children.
+          btn.click();
+          // 3. pointerup → md-button.handlePointerUp clears `pressed`,
+          //    so the corner-radius CSS-morphs back to the resting
+          //    pill shape. WITHOUT this, the previous button would
+          //    stay visually stuck in its pressed shape because we
+          //    only ever fire pointerdown.
+          window.setTimeout(() => firePointer(btn, 'pointerup'), 220);
+        };
+        const bStart = () => {
+          if (bIntervalId !== null) return;
+          bIntervalId = window.setInterval(() => {
+            if (document.hidden) return;
+            bIdx = (bIdx + 1) % groupButtons.length;
+            fireMorph(groupButtons[bIdx]);
+          }, 2400);
+        };
+        const bStop = () => {
+          if (bIntervalId !== null) {
+            clearInterval(bIntervalId);
+            bIntervalId = null;
+          }
+        };
+        if ('IntersectionObserver' in window) {
+          const bObs = new IntersectionObserver((entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) bStart();
+              else bStop();
+            }
+          }, { threshold: 0.2 });
+          bObs.observe(groupPreviewEl);
+        } else {
+          bStart();
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  /* ============================================================
+     Section foundation — surface-bright with ambient tonal blobs
+     ============================================================ */
+  .awc-hero {
+    position: relative;
+    overflow: hidden;
+    background:
+      linear-gradient(
+        180deg,
+        var(--md-sys-color-surface-bright) 0%,
+        var(--md-sys-color-surface) 100%
+      );
+    padding-block-end: clamp(3rem, 6vw, 5rem);
+  }
+
+  .awc-hero__bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .awc-hero__blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.55;
+    animation: awc-blob-drift 18s ease-in-out infinite alternate;
+  }
+
+  .awc-hero__blob--primary {
+    inset-inline-start: -10%;
+    inset-block-start: -20%;
+    inline-size: 55%;
+    block-size: 55%;
+    background: var(--md-sys-color-primary-container);
+    animation-delay: 0s;
+  }
+
+  .awc-hero__blob--secondary {
+    inset-inline-end: -15%;
+    inset-block-start: 10%;
+    inline-size: 45%;
+    block-size: 45%;
+    background: var(--md-sys-color-secondary-container);
+    animation-delay: -6s;
+  }
+
+  .awc-hero__blob--tertiary {
+    inset-inline-start: 30%;
+    inset-block-end: -25%;
+    inline-size: 50%;
+    block-size: 50%;
+    background: var(--md-sys-color-tertiary-container);
+    animation-delay: -12s;
+    opacity: 0.4;
+  }
+
+  @keyframes awc-blob-drift {
+    0%   { transform: translate(0, 0) scale(1); }
+    50%  { transform: translate(4%, -3%) scale(1.06); }
+    100% { transform: translate(-3%, 4%) scale(0.96); }
+  }
+
+  .awc-hero__grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--md-sys-color-on-surface) 4%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--md-sys-color-on-surface) 4%, transparent) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 70% 60% at 30% 40%, black, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 30% 40%, black, transparent 75%);
+  }
+
+  /* ============================================================
+     Layout
+     ============================================================ */
+  .awc-hero__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(2rem, 4vw, 4rem);
+    padding-block-start: clamp(4rem, 8vw, 7rem);
+    padding-block-end: clamp(2rem, 4vw, 4rem);
+    padding-inline: clamp(1.5rem, 5vw, 4rem);
+    max-inline-size: 1240px;
+    margin-inline: auto;
+  }
+
+  /* ============================================================
+     Content
+     ============================================================ */
+  .awc-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-block: 0.4375rem;
+    padding-inline: 0.875rem 1rem;
+    background: color-mix(in srgb, var(--md-sys-color-surface-container-high) 80%, transparent);
+    border: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 70%, transparent);
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    backdrop-filter: blur(8px);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    margin-block-end: 1.75rem;
+  }
+
+  /* Two-layer "live signal" pulse — mirrors the .awc-showcase__tag-dot
+     in ComponentShowcase.astro so both pulsating chips beat in sync
+     style-wise (inner dot squeezes, outer halo ring expands & fades). */
+  .awc-hero__eyebrow-dot {
+    position: relative;
+    inline-size: 8px;
+    block-size: 8px;
+    border-radius: 50%;
+    background: var(--md-sys-color-tertiary);
+    box-shadow: 0 0 0 4px
+      color-mix(in srgb, var(--md-sys-color-tertiary) 25%, transparent);
+    animation: awc-hero-dot-pulse 1.6s ease-in-out infinite;
+  }
+
+  .awc-hero__eyebrow-dot::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: var(--md-sys-color-tertiary);
+    opacity: 0.45;
+    animation: awc-hero-dot-halo 1.6s ease-out infinite;
+  }
+
+  @keyframes awc-hero-dot-pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(0.85);
+    }
+  }
+
+  @keyframes awc-hero-dot-halo {
+    0% {
+      opacity: 0.45;
+      transform: scale(1);
+    }
+    70% {
+      opacity: 0;
+      transform: scale(2.6);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(2.6);
+    }
+  }
+
+  /* M3 display headline — 57px at the top end, weight 600 (lighter than 700) */
+  .awc-hero__title {
+    font-family: var(--md-sys-typescale-display-large-font-family, 'Roboto', sans-serif);
+    font-size: clamp(2.25rem, 5.2vw, 3.75rem);
+    font-weight: 600;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    color: var(--md-sys-color-on-surface);
+    margin: 0 0 1.5rem;
+    text-wrap: balance;
+  }
+
+  .awc-hero__title-accent {
+    display: block;
+    background: linear-gradient(
+      105deg,
+      var(--md-sys-color-primary) 0%,
+      var(--md-sys-color-tertiary) 55%,
+      var(--md-sys-color-primary) 100%
+    );
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: awc-shift 9s ease-in-out infinite;
+  }
+
+  @keyframes awc-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+
+  .awc-hero__lede {
+    font-size: 1.125rem;
+    line-height: 1.65;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 0 0 2.25rem;
+    max-inline-size: 580px;
+    text-wrap: pretty;
+  }
+
+  /* ============================================================
+     Buttons — see custom.css for the global .awc-btn utility.
+     This block only adds the layout for the hero CTA row.
+     ============================================================ */
+  .awc-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.875rem;
+    margin-block-end: 2rem;
+  }
+
+  /* ============================================================
+     Install command
+     ============================================================ */
+  .awc-hero__install {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding-block: 0.5rem;
+    padding-inline: 0.875rem 0.5rem;
+    background: var(--md-sys-color-surface-container-high);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-medium, 12px);
+    font-family: var(--sl-font-system-mono, ui-monospace, monospace);
+    font-size: 0.8125rem;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .awc-hero__install code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+  }
+
+  .awc-hero__install-prompt {
+    color: var(--md-sys-color-tertiary);
+    font-weight: 700;
+    user-select: none;
+  }
+
+  .awc-hero__copy {
+    inline-size: 30px;
+    block-size: 30px;
+    display: inline-grid;
+    place-items: center;
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 80%, transparent);
+    border-radius: var(--md-sys-shape-corner-small, 8px);
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+    transition:
+      background-color var(--awc-dur-fast) var(--awc-spring-effects),
+      color var(--awc-dur-fast) var(--awc-spring-effects),
+      transform var(--awc-dur-default) var(--awc-spring-spatial);
+  }
+
+  .awc-hero__copy:hover {
+    background: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .awc-hero__copy:active {
+    transform: scale(0.94);
+  }
+
+  .awc-hero__copy-icon-done { display: none; }
+  .awc-hero__copy.is-copied {
+    color: var(--md-sys-color-tertiary);
+    border-color: var(--md-sys-color-tertiary);
+  }
+  .awc-hero__copy.is-copied .awc-hero__copy-icon-default { display: none; }
+  .awc-hero__copy.is-copied .awc-hero__copy-icon-done    { display: block; }
+
+  /* ============================================================
+     Preview stage — floating live components
+     ============================================================ */
+  .awc-hero__preview {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .awc-hero__preview-stage {
+    --mx: 0;
+    --my: 0;
+    position: relative;
+    margin-inline-start: auto;
+    inline-size: 100%;
+    max-inline-size: 480px;
+    /* Taller stage — gives the card breathing room above the bottom
+       chip strip + FAB without anything overlapping the card body. */
+    aspect-ratio: 1 / 1.18;
+    transform: perspective(1400px)
+               rotateY(calc(var(--mx) * -3deg))
+               rotateX(calc(var(--my) * 3deg));
+    transition: transform 0.4s cubic-bezier(0.34, 0.8, 0.34, 1);
+  }
+
+  /* ----- Floating chip clusters (top-left + bottom) ----- */
+  .awc-hero__chips {
+    position: absolute;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4375rem;
+    z-index: 4;
+    transform: translate3d(calc(var(--mx) * -4px), calc(var(--my) * 2px), 0);
+    transition: transform 0.4s cubic-bezier(0.34, 0.8, 0.34, 1);
+  }
+
+  /* Top-left cluster: Tonal + RTL, stacked vertically.
+
+     Geometry constraints (card is at inset-inline-end: 8%; inline-size: 80%):
+     - card left edge   = 12% of stage
+     - card padding     = 1.5rem (~5% of a 480px stage)
+     - card text starts = ~17% of stage
+     Cluster is anchored at inset-inline-start: 3% (a couple of percent off
+     the stage's left edge) with max-inline-size: 17%, so its chips sit
+     slightly inboard of the stage and gently overlap the card's left
+     padding band — never the eyebrow or title text. inset-block-start: 13%
+     lifts the cluster a bit toward the card's top edge so it reads as a
+     "tucked-in" annotation rather than aligned with the eyebrow row.
+
+     z-index: 4 keeps them above the card (z=2). */
+  .awc-hero__chips--top {
+    inset-block-start: 8%;
+    inset-inline-start: 3%;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 0.4375rem;
+    max-inline-size: 17%;
+  }
+
+  /* Compact size for top chips so WCAG AA fits inside the 17% width cap. */
+  .awc-hero__chips--top .awc-hero__chip {
+    padding-block: 0.25rem;
+    padding-inline: 0.4375rem 0.625rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0;
+    inline-size: max-content;
+    max-inline-size: 100%;
+  }
+
+  .awc-hero__chips--top .awc-hero__chip .material-symbols-outlined {
+    font-size: 12px;
+  }
+
+  /* Bottom cluster: RTL + N% tested, stacked vertically on the left.
+     The FAB lives at inset-inline-end: 0 (bottom-right), so left-anchoring
+     the column means we don't need any right-edge padding to keep the
+     chips clear of it. */
+  .awc-hero__chips--bottom {
+    inset-block-end: -14%;
+    /* Push past the stage's left edge so the chips break out into the
+       hero's left gutter (mirrors how the right-middle "Token-driven"
+       chip breaks out on the opposite side). The stage has no
+       overflow:hidden, so the negative inline-start is safe. */
+    inset-inline-start: 0%;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 0.4375rem;
+  }
+
+  /* Top-right cluster: bundle metric + AI ready + theming chip,
+     stacked vertically against the stage's right edge.
+
+     Geometry: the cluster sits at vertical 10–25% so the bottom chip
+     ends just before the card's subtitle row (~26%). With a 42% max
+     width on a 480px stage (~200px), even "Token-driven theming"
+     stays on a single line. The cluster overlaps the card's right
+     padding band but never crosses into the title or subtitle — the
+     card eyebrow ("Now playing") and title ("Material You") only
+     extend ~52% from the card's left, so the right 42% gutter on
+     the card is empty space that we can decorate freely.
+
+     The metric badge inside the cluster keeps its surface-container-highest
+     + primary-tinted treatment to read as a "measurement" pill, while
+     the two chips below use secondary/tertiary tonal containers for
+     visual variety. */
+  .awc-hero__chips--top-right {
+    inset-block-start: 10%;
+    inset-inline-end: 0;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+    gap: 0.4375rem;
+    max-inline-size: 42%;
+    /* Stronger parallax depth — the metric cluster reads as the
+       "front layer" of the floating card stack. */
+    transform: translate3d(calc(var(--mx) * -10px), calc(var(--my) * -8px), 0);
+  }
+
+  /* Inside the right cluster, the bundle badge becomes a flex child:
+     we strip its absolute positioning and own transform so the parent
+     cluster governs both placement and parallax. The pill's tonal
+     treatment (surface-container-highest + primary border) is
+     preserved by the base .awc-hero__badge / --bundle rules. */
+  .awc-hero__chips--top-right .awc-hero__badge {
+    position: relative;
+    inset: auto;
+    transform: none;
+  }
+
+  /* Compact chip variant for the right cluster (matches top-left)
+     so AI ready and "Token-driven theming" fit on single lines
+     within the 42% width cap. */
+  .awc-hero__chips--top-right .awc-hero__chip {
+    padding-block: 0.25rem;
+    padding-inline: 0.4375rem 0.625rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0;
+    white-space: nowrap;
+    inline-size: max-content;
+    max-inline-size: 100%;
+  }
+
+  .awc-hero__chips--top-right .awc-hero__chip .material-symbols-outlined {
+    font-size: 12px;
+  }
+
+  /* Right-middle cluster: a single tertiary chip ("Token-driven
+     development") anchored at the stage's right edge, vertically
+     centred on the card. It fills the visual gap between the
+     top-right cluster (bundle + AI ready, ending ~22%) and the
+     bottom-right FAB (~88%), so the right rail reads as three
+     evenly-spaced annotation elements.
+
+     The cluster is allowed up to 42% width so the full label fits
+     on a single line. It overlaps part of the live demo's right
+     edge (around the control switches) — by design — to feel
+     like an M3-expressive floating annotation hovering over the
+     card.
+
+     `align-items: flex-end` keeps the chip flush with the stage's
+     right edge regardless of how the row content collapses. */
+  .awc-hero__chips--right-middle {
+    /* Anchored bottom-right to mirror the WCAG/98% cluster on the
+       left (which sits at `inset-block-end: -14%` / `inset-inline-
+       start: 0%`). The two clusters now line up on the same
+       horizontal band below the card and define a clean baseline
+       for the bottom of the stage. */
+    inset-block-end: -7%;
+    inset-inline-end: -16%;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    max-inline-size: 42%;
+    /* No centering offset needed now that we're bottom-anchored;
+       just keep the parallax drift on cursor movement. */
+    transform: translate3d(calc(var(--mx) * -6px), calc(var(--my) * 4px), 0);
+  }
+
+  .awc-hero__chips--right-middle .awc-hero__chip {
+    padding-block: 0.25rem;
+    padding-inline: 0.4375rem 0.625rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0;
+    white-space: nowrap;
+    inline-size: max-content;
+    max-inline-size: 100%;
+  }
+
+  .awc-hero__chips--right-middle .awc-hero__chip .material-symbols-outlined {
+    font-size: 12px;
+  }
+
+  .awc-hero__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding-block: 0.3125rem;
+    padding-inline: 0.625rem 0.875rem;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    box-shadow: var(--md-sys-elevation-1);
+    backdrop-filter: blur(6px);
+    /* Continuous shape-morph: pill → blob → pill, evoking
+       the M3 expressive shape language. */
+    animation:
+      awc-chip-morph 8s ease-in-out infinite,
+      awc-chip-bob 7s ease-in-out infinite;
+    will-change: border-radius, transform;
+  }
+
+  .awc-hero__chip .material-symbols-outlined {
+    font-size: 14px;
+  }
+
+  .awc-hero__chip--primary {
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    animation-delay: 0s, 0s;
+  }
+  .awc-hero__chip--secondary {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    animation-delay: -2s, -1.5s;
+  }
+  .awc-hero__chip--tertiary {
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+    animation-delay: -4s, -3.5s;
+  }
+  /* The "OK / N% tested" chip used to share `surface-container-lowest`
+     with the card — which in dark theme resolves to ~#0F0D13, so the
+     chip vanished into the card. Switch to surface-container-highest
+     (denser neutral, distinct in BOTH light & dark themes) plus a
+     stronger tertiary border + tertiary glyph for the success semantic. */
+  .awc-hero__chip--ok {
+    background: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-tertiary);
+    border: 1px solid color-mix(in srgb, var(--md-sys-color-tertiary) 55%, transparent);
+    box-shadow: var(--md-sys-elevation-2);
+    animation-delay: -6s, -5s;
+  }
+
+  @keyframes awc-chip-morph {
+    0%, 100% { border-radius: 9999px; }
+    25% { border-radius: 22px 26px 18px 24px / 18px 22px 24px 20px; }
+    50% { border-radius: 18px 24px 26px 20px / 24px 18px 20px 26px; }
+    75% { border-radius: 26px 18px 24px 22px / 20px 26px 18px 22px; }
+  }
+
+  @keyframes awc-chip-bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-3px); }
+  }
+
+  /* Main card — the "Material You" mock */
+  .awc-hero__card {
+    position: absolute;
+    /* Pushed down further than before so the top-left chip cluster
+       (Tonal + WCAG AA) lives in a clean band above the card and
+       never overlaps the eyebrow / title. The FAB still owns the
+       bottom-right and the bottom-chip cluster owns the bottom band. */
+    inset-block-start: 14%;
+    inset-inline-end: 8%;
+    inline-size: 80%;
+    padding: 1.5rem;
+    background: var(--md-sys-color-surface-container-lowest);
+    border-radius: var(--md-sys-shape-corner-extra-large, 28px);
+    box-shadow: var(--md-sys-elevation-3);
+    z-index: 2;
+    transform: translate3d(calc(var(--mx) * 6px), calc(var(--my) * 6px), 0);
+    transition: transform 0.4s cubic-bezier(0.34, 0.8, 0.34, 1);
+  }
+
+  /* Defensive reset — index.mdx loads through .sl-markdown-content,
+     so the docs-theme h2 selectors could otherwise stamp a left bar
+     and a 1rem padding onto the "Material You" title. */
+  .awc-hero__card .awc-hero__card-title {
+    padding-inline-start: 0 !important;
+  }
+  .awc-hero__card .awc-hero__card-title::before {
+    display: none !important;
+  }
+
+  /* Header is now a horizontal row: contained loading indicator on
+     the inline-start, the title + subtitle stacked next to it. */
+  .awc-hero__card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    margin-block-end: 1.25rem;
+  }
+
+  .awc-hero__card-loader {
+    /* Bigger than the default 48px so it visually balances the
+       enlarged "Material You" headline. */
+    --md-loading-indicator-size: 56px;
+    --md-loading-indicator-shape-size: 44px;
+    flex-shrink: 0;
+  }
+
+  .awc-hero__card-heading {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+  }
+
+  .awc-hero__card-title {
+    margin: 0 0 0.25rem;
+    /* Bumped from 1.5rem → 2rem so the headline reads as the
+       primary anchor of the card now that the eyebrow is gone. */
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .awc-hero__card-subtitle {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .awc-hero__card-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-block-end: 1.25rem;
+  }
+
+  .awc-hero__control {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.875rem;
+    padding-block: 0.5rem;
+    padding-inline: 0.625rem;
+    border-radius: var(--md-sys-shape-corner-medium, 12px);
+    background: var(--md-sys-color-surface-container);
+    transition: background-color var(--awc-dur-fast) var(--awc-spring-effects);
+  }
+
+  .awc-hero__control:hover {
+    background: var(--md-sys-color-surface-container-high);
+  }
+
+  .awc-hero__control-icon {
+    inline-size: 32px;
+    block-size: 32px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+  }
+
+  .awc-hero__control-icon .material-symbols-outlined {
+    font-size: 18px;
+  }
+
+  .awc-hero__control-icon--secondary {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .awc-hero__control-icon--tertiary {
+    background: var(--md-sys-color-tertiary-container);
+    color: var(--md-sys-color-on-tertiary-container);
+  }
+
+  .awc-hero__control-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  /* ----- Smart-suggestions sub-panel ----------------------------------
+     Sits directly under the "Smart suggestions" toggle inside the
+     controls block. Composed of:
+       1. a small caption label,
+       2. a horizontal slider (md-slider) for intensity, and
+       3. a segmented-button group (md-segmented-button-set) whose
+          selected segment auto-cycles to showcase M3 Expressive
+          shape-morph behaviour.
+     A subtle top divider visually attaches the panel to the
+     toggle row above it. -------------------------------------------- */
+  .awc-hero__suggestion {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-block-start: 0.625rem;
+    margin-block-start: 0.25rem;
+    border-block-start: 1px solid
+      color-mix(in srgb, var(--md-sys-color-outline-variant) 55%, transparent);
+  }
+
+  .awc-hero__suggestion-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  /* The slider should fill the full panel width. */
+  .awc-hero__suggestion-slider {
+    inline-size: 100%;
+    --md-slider-active-track-color: var(--md-sys-color-primary);
+    --md-slider-handle-color: var(--md-sys-color-primary);
+  }
+
+  /* Filter-chip row for "Topics" — wraps to a second line on
+     narrow widths so we never overflow the card horizontally. */
+  .awc-hero__suggestion-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4375rem;
+    margin-block-end: 0.125rem;
+  }
+
+  /* md-button-group — we override the component's inline-flex host
+     layout with a CSS grid so every child cell has guaranteed-equal
+     row height (40px) and `align-items: center` is applied to *every*
+     cell uniformly. Flex with mixed inline-block / inline-flex
+     children was producing a baseline-derived offset on the leading
+     icon-only button; grid eliminates that variability entirely.
+
+     `!important` is required because md-button-group sets
+     `display: inline-flex` on its host inside the component's
+     shadow CSS (and the component-level rule has higher cascade
+     position than ours otherwise). */
+  .awc-hero__suggestion-tones {
+    display: grid !important;
+    grid-template-columns: auto 1fr 1fr auto;
+    align-items: center;
+    column-gap: 12px;
+    inline-size: 100%;
+    /* Every cell is exactly one button-tall so the icons and text
+       buttons share the same vertical centre line. */
+    grid-auto-rows: 40px;
+  }
+
+  /* Each button is wrapped in an md-tooltip whose shadow DOM
+     contains BOTH the trigger slot AND the popup div as siblings.
+     Even though the popup is `position: absolute`, before JS
+     positions it, its block-direction static position can leak a
+     few pixels of inline content metrics into the host's line box
+     — and because the leading icon-only tooltip has no popup text
+     ahead of it (popup is rendered same way for every tooltip but
+     content differs), the per-tooltip baselines drift relative to
+     each other.
+
+     Bulletproof fix: turn each tooltip wrapper into an explicit
+     40 px positioning container, then **absolutely centre** the
+     trigger button inside it. With absolute positioning the child
+     ignores tooltip-internal margin/padding/baseline entirely, so
+     all four cells share an identical visual centreline.
+
+     `!important` is required because md-tooltip's shadow CSS sets
+     `display: inline-block` on its own host. */
+  .awc-hero__suggestion-tip {
+    display: block !important;
+    position: relative;
+    block-size: 40px;
+    inline-size: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .awc-hero__suggestion-tip--icon {
+    inline-size: 40px;
+  }
+
+  /* Pin the trigger button to the geometric centre of its 40 px
+     wrapper. This eliminates any influence from the tooltip's
+     internal popup sibling, baseline metrics, or line-height. */
+  .awc-hero__suggestion-tip md-button,
+  .awc-hero__suggestion-tip md-icon-button {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0 !important;
+  }
+
+  /* Text buttons stretch to fill the available column width. */
+  .awc-hero__suggestion-tip md-button {
+    inline-size: 100%;
+  }
+
+  /* ----- Floating data badge (bundle size) ----- */
+  .awc-hero__badge {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding-block: 0.4375rem;
+    padding-inline: 0.625rem 0.875rem;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    font-size: 0.75rem;
+    font-weight: 600;
+    /* Don't reuse surface-container-lowest — that's what the card itself
+       uses, so any overlap blends to invisibility. surface-container-highest
+       is the densest neutral surface (clearly distinct in both light and
+       dark), and we add a thin primary border to keep the metric reading
+       as a separate pill once it lands on the card. */
+    background: var(--md-sys-color-surface-container-highest);
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid color-mix(in srgb, var(--md-sys-color-primary) 35%, transparent);
+    box-shadow: var(--md-sys-elevation-2);
+    z-index: 3;
+    transform: translate3d(calc(var(--mx) * -10px), calc(var(--my) * -8px), 0);
+    transition: transform 0.4s cubic-bezier(0.34, 0.8, 0.34, 1);
+  }
+
+  .awc-hero__badge .material-symbols-outlined {
+    font-size: 16px;
+  }
+
+  /* Bundle badge: lives inside .awc-hero__chips--top-right as the top
+     pill in a vertical stack of three (bundle metric → AI ready →
+     Token-driven theming). Placement is handled by the cluster's
+     flex column; this rule only adds the metric-specific colour and
+     the gentle floating motion. */
+  .awc-hero__badge--bundle {
+    color: var(--md-sys-color-primary);
+    animation: awc-badge-float 6s ease-in-out infinite;
+    animation-delay: -3s;
+  }
+
+  @keyframes awc-badge-float {
+    0%, 100% { translate: 0 0; }
+    50%      { translate: 0 -4px; }
+  }
+
+  /* ============================================================
+     Custom-element styling overrides for the live preview.
+     The shadow DOM honours --md-sys-* tokens already; we only need
+     to fix sizing/spacing.
+     ============================================================ */
+  .awc-hero__preview-stage md-switch {
+    --md-switch-track-shape: var(--md-sys-shape-corner-full);
+  }
+
+  .awc-hero__preview-stage md-button[variant='filled'] {
+    --md-button-container-color: var(--md-sys-color-primary);
+  }
+
+  /* ============================================================
+     Responsive
+     ============================================================ */
+  @media (max-width: 72rem) {
+    .awc-hero__inner {
+      grid-template-columns: 1fr;
+      text-align: start;
+    }
+
+    .awc-hero__lede {
+      max-inline-size: 640px;
+    }
+
+    .awc-hero__preview-stage {
+      margin-inline: auto;
+      max-inline-size: 480px;
+    }
+  }
+
+  @media (max-width: 50rem) {
+    .awc-hero__title {
+      font-size: clamp(2rem, 7vw, 2.75rem);
+    }
+
+    .awc-hero__lede {
+      font-size: 1rem;
+    }
+
+    .awc-hero__preview-stage {
+      aspect-ratio: 1 / 1.1;
+    }
+
+    .awc-hero__card {
+      padding: 1.25rem;
+    }
+
+    .awc-hero__card-title {
+      font-size: 1.5rem;
+    }
+
+    .awc-hero__card-loader {
+      --md-loading-indicator-size: 44px;
+      --md-loading-indicator-shape-size: 34px;
+    }
+
+    .awc-hero__chip {
+      font-size: 0.6875rem;
+    }
+
+    .awc-hero__chips--top,
+    .awc-hero__chips--top-right,
+    .awc-hero__chips--right-middle {
+      /* On narrower stages the 17% / 42% gutters around the card no
+         longer fit chips, so we hide the top + middle-right clusters
+         and let the bottom strip (RTL/WCAG + tested) carry all
+         spec metadata. */
+      display: none;
+    }
+
+    .awc-hero__chips--bottom {
+      gap: 0.375rem;
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .awc-hero__inner {
+      padding-block-start: 3rem;
+      padding-block-end: 2rem;
+    }
+
+    .awc-hero__title {
+      font-size: 2rem;
+      line-height: 1.1;
+    }
+
+    .awc-hero__actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .awc-hero__install {
+      flex-wrap: wrap;
+      font-size: 0.6875rem;
+    }
+
+    .awc-hero__badge {
+      display: none;
+    }
+
+    .awc-hero__chips--bottom {
+      align-items: flex-start;
+    }
+
+    .awc-hero__preview-stage {
+      max-inline-size: 100%;
+      aspect-ratio: auto;
+      min-block-size: 460px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .awc-hero__blob,
+    .awc-hero__chip,
+    .awc-hero__badge,
+    .awc-hero__title-accent,
+    .awc-hero__suggestion-tones,
+    .awc-hero__card-loader,
+    .awc-hero__eyebrow-dot,
+    .awc-hero__eyebrow-dot::before {
+      animation: none !important;
+    }
+
+    /* Hide the expanding halo ring entirely — without animation it's
+       just a static fuzzy disc behind the dot, which looks broken. */
+    .awc-hero__eyebrow-dot::before {
+      display: none;
+    }
+
+    .awc-hero__preview-stage,
+    .awc-hero__chips,
+    .awc-hero__card,
+    .awc-hero__badge {
+      transform: none !important;
+    }
+  }
+</style>

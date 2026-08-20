@@ -1,0 +1,87 @@
+---
+title: Reporting a bug
+description: What makes a bug report actionable — and two checks that explain most of them before you file
+sidebar:
+  order: 2
+---
+
+Open a **Bug report** at
+[github.com/awc-ui/core/issues/new/choose](https://github.com/awc-ui/core/issues/new/choose).
+
+You do not need to write code to help. A report we can reproduce is worth more
+than a patch we cannot verify.
+
+## Two checks first
+
+These explain a good share of reports, and both take a few seconds.
+
+### Icons are rendering as words
+
+If a button reads `add` instead of showing a plus, the Material Symbols
+stylesheet is missing — or it was requested without its axis ranges, which also
+silently disables the fill animation. See [Iconography](/guides/iconography/).
+
+```html
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap">
+```
+
+### Nothing renders, or clicks do nothing
+
+A component that has laid out at zero height, or ignores clicks **while its
+methods still work**, has usually not hydrated yet rather than broken. That
+specific combination — methods fine, clicks dead — is the fingerprint.
+
+Check the console for a failed request to a runtime chunk. If you are self-hosting
+the loader, a stale copy will 404 on a shared chunk and take every component down
+at once, which reads like a CSS bug but is not.
+
+## What makes a report actionable
+
+The one thing we cannot work around is being unable to reproduce it. Everything
+else we can chase ourselves.
+
+**A reproduction.** A [StackBlitz](https://stackblitz.com), a CodePen, or a plain
+HTML file. Failing that, the smallest markup that shows the problem — **as text,
+not a screenshot**, so we can paste and run it.
+
+**What you expected, and what happened.** "The menu closes" and "the menu should
+stay open when I pick a second option" are different bugs on the same click.
+
+**Version and environment.** Your `@awc-ui/core` version, browser and version, and
+the framework if you are using a wrapper. Say if it is server-rendered — the
+failure modes there are different.
+
+**Console output.** A stack trace, or a 404 on a runtime chunk, usually names the
+cause outright.
+
+:::tip[Visual bugs]
+Attach a screenshot **and** the markup. A screenshot shows us what you see, but
+we cannot measure one — the markup is what lets us reproduce the layout and put
+numbers on it.
+:::
+
+## Details worth mentioning
+
+These narrow the search a lot, and each one has its own class of causes:
+
+- It only happens **in RTL** — likely a physical property that should be logical.
+- It only happens **in dark mode** — likely a colour with one definition.
+- It only happens **at a specific density** — likely a fixed size that should
+  taper.
+- It only happens **under SSR** — likely a browser-only API on a server path.
+- It only happens **after an interaction** (open, then close, then reopen) —
+  say so, because state that survives a cycle is a different bug from state
+  that starts wrong.
+
+## Security issues
+
+**Do not open a public issue for a vulnerability.** Use GitHub's private
+[security advisory](https://github.com/awc-ui/core/security/advisories/new)
+flow so there is time to ship a fix before it is disclosed.
+
+## Questions are not bugs
+
+"How do I…" belongs in
+[Discussions](https://github.com/awc-ui/core/discussions) — no template, no
+triage, and usually a faster answer. If it turns out to be a bug, we will move it.

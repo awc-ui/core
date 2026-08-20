@@ -1,0 +1,875 @@
+---
+title: Slider
+description: "Choose a value, or a range, along a continuum — horizontal or vertical, discrete steps, tick marks and value indicators"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/slider.json";
+
+**Choose a value, or a range, along a continuum.** Horizontal or vertical,
+single or two-thumb range, discrete steps with tick marks, value indicators, and
+an optional inset icon that travels with the handle.
+
+<ComponentDemo
+  html={`<md-slider aria-label="Volume" value="60" value-indicator value-text="60 percent" style="inline-size: 320px;"></md-slider>`}
+  label="Live preview"
+  storyId="selection-slider--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-slider" example="" />
+
+## When to use
+
+- A value on a **bounded, continuous** scale where the relative position matters
+  more than the exact number: volume, brightness, zoom, opacity.
+- A **range** between two bounds (`range`): price filter, date span, thresholds.
+- Immediate, visible feedback as the value changes.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| A precise number the user knows | [`md-text-field`](/components/text-field/) with `type="number"` |
+| An unbounded value | [`md-text-field`](/components/text-field/) |
+| A small set of discrete choices | [`md-segmented-button`](/components/segmented-button/) / [`md-radio`](/components/radio/) |
+| On / off | [`md-switch`](/components/switch/) |
+| A subjective score out of N | [`md-rating`](/components/rating/) |
+| Fine-grained input on touch | [`md-text-field`](/components/text-field/) alongside the slider |
+
+## Sizes
+
+:::caution[The default is `xs`, not `md`]
+Set `size` explicitly when the track weight matters — inset icons in particular
+need a thick track.
+:::
+
+<ComponentDemo
+  html={`<md-slider aria-label="Extra small" size="xs" value="50" style="inline-size: 300px;"></md-slider>
+<md-slider aria-label="Small" size="sm" value="50" style="inline-size: 300px;"></md-slider>
+<md-slider aria-label="Medium" size="md" value="50" style="inline-size: 300px;"></md-slider>
+<md-slider aria-label="Large" size="lg" value="50" style="inline-size: 300px;"></md-slider>
+<md-slider aria-label="Extra large" size="xl" value="50" style="inline-size: 300px;"></md-slider>`}
+  label="Five sizes — xs, sm, md, lg, xl"
+/>
+
+## Standard, centered & range
+
+`variant="centered"` fills outward from the midpoint — use it for ± adjustments
+such as balance or exposure. `range` gives two thumbs.
+
+:::caution[In `range` mode use `value-start` / `value-end`]
+Plain `value` is the **single-thumb** prop and does nothing for a range.
+:::
+
+<ComponentDemo
+  html={`<md-slider aria-label="Standard" value="40" size="md" style="inline-size: 300px;"></md-slider>
+<md-slider aria-label="Balance" variant="centered" min="-50" max="50" value="0" size="md" style="inline-size: 300px;"></md-slider>
+<md-slider range min="0" max="1000" step="10" value-start="200" value-end="800" label-start="Minimum price" label-end="Maximum price" value-start-text="$200" value-end-text="$800" size="md" style="inline-size: 300px;"></md-slider>`}
+  label="Standard, centered, range"
+/>
+
+## Steps, ticks & labels
+
+`step` sets the increment; `stops` draws the tick marks; `labeled` shows a
+persistent value label.
+
+<ComponentDemo
+  html={`<md-slider aria-label="Rating" min="1" max="5" step="1" stops value="3" size="md" style="inline-size: 300px;"></md-slider>
+<md-slider aria-label="Rating with label" min="1" max="5" step="1" stops labeled value="3" size="md" style="inline-size: 300px;"></md-slider>
+<md-slider range min="0" max="10" step="1" stops value-start="2" value-end="8" label-start="From" label-end="To" size="md" style="inline-size: 300px;"></md-slider>`}
+  label="Discrete steps with tick marks"
+/>
+
+Only show ticks when the increments are meaningful — on a continuous scale they
+imply a precision that isn't there.
+
+## Value indicator
+
+`value-indicator` shows a value bubble above the thumb. It is **persistent**,
+not drag-only — the bubble is there at rest, so leave room above the track for
+it. `labeled` renders the same bubble. Pair either with `value-text` so screen
+readers hear units rather than a bare number.
+
+<ComponentDemo
+  html={`<md-slider aria-label="Volume" value="60" value-indicator value-text="60 percent" size="md" style="inline-size: 300px;"></md-slider>
+<md-slider range min="0" max="1000" step="10" value-start="200" value-end="800" value-indicator label-start="Minimum price" label-end="Maximum price" value-start-text="$200" value-end-text="$800" size="md" style="inline-size: 300px;"></md-slider>`}
+  label="Persistent value bubble, single and range"
+/>
+
+## Inset icon
+
+`inset-icon` puts a glyph inside the track that travels with the handle. Use the
+`icon` prop, or slot your own into `inset-icon`.
+
+:::caution[M3 restricts where the inset icon may appear]
+Single-value sliders on a **thick** track only. Don't combine it with `range` or
+`variant="centered"`, and don't use it when the track is under 40dp.
+:::
+
+<ComponentDemo
+  html={`<md-slider aria-label="Volume" size="lg" inset-icon icon="volume_up" value="60" style="inline-size: 320px;"></md-slider>
+<md-slider aria-label="Brightness" size="xl" inset-icon value="40" style="inline-size: 320px;">
+  <svg slot="inset-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 7a5 5 0 100 10 5 5 0 000-10zm0-5v3m0 14v3M4.2 4.2l2.1 2.1m11.4 11.4l2.1 2.1M2 12h3m14 0h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+</md-slider>`}
+  label="Inset icon, prop and slot"
+/>
+
+## Vertical
+
+`orientation="vertical"` turns the track upright; `full-height` lets it fill the
+container instead of holding the fixed `--md-slider-track-length`.
+
+:::caution[Keep range sliders horizontal]
+M3 is explicit: a vertical range slider imposes too much cognitive load.
+:::
+
+<ComponentDemo
+  html={`<md-slider aria-label="Brightness" orientation="vertical" value="60" size="md" style="inline-size: 64px;"></md-slider>
+<md-slider aria-label="Bass" orientation="vertical" min="0" max="10" step="1" stops value="4" size="md" style="inline-size: 64px;"></md-slider>
+<md-slider aria-label="Treble" orientation="vertical" value="30" value-indicator size="lg" inset-icon icon="graphic_eq" style="inline-size: 64px;"></md-slider>
+<div style="block-size: 240px; inline-size: 72px; display: flex; justify-content: center;">
+  <md-slider aria-label="Full height" orientation="vertical" full-height value="45" size="md"></md-slider>
+</div>`}
+  label="Vertical sliders, the last one full-height in a 240px box"
+/>
+
+## Disabled
+
+`disabled` greys the track, blocks pointer and keyboard interaction, and drops
+the slider out of form submission entirely.
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:24px;inline-size:100%;max-inline-size:340px;">
+  <md-slider aria-label="Enabled" value="40" size="md"></md-slider>
+  <md-slider aria-label="Disabled" value="40" size="md" disabled></md-slider>
+  <md-slider range value-start="20" value-end="70" step="10" stops size="md" label-start="Minimum" label-end="Maximum" disabled></md-slider>
+</div>`}
+  label="Enabled versus disabled, single and range"
+/>
+
+## Controlled mode
+
+`controlled` stops the slider from **keeping** the value it was dragged to: you
+apply the new value yourself in response to `mdInput` / `mdChange`. Without it
+the slider writes its own `value` and keeps it.
+
+The thumb still tracks the pointer during the gesture — the slider holds a live
+value internally so the drag feels normal — but on commit it clears that live
+state and snaps back to whatever `value` says.
+
+:::caution[`controlled` with no handler means a thumb that snaps back]
+The thumb follows your drag, then jumps home the moment you let go, because
+nothing ever wrote the new value to the prop. Either drop `controlled` or
+actually set the value.
+:::
+
+<ComponentDemo
+  html={`<div style="display: grid; gap: 28px; inline-size: 100%; max-inline-size: 420px;">
+  <div>
+    <div style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant); margin-block-end: 8px;">Uncontrolled — the thumb moves itself</div>
+    <md-slider id="sl-unctl" value="40" labeled aria-label="Uncontrolled"></md-slider>
+  </div>
+  <div>
+    <div style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant); margin-block-end: 8px;">Controlled — the handler caps it at 70</div>
+    <md-slider id="sl-ctl" controlled value="40" labeled aria-label="Controlled, capped at 70"></md-slider>
+  </div>
+  <output id="sl-ctl-out" style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Drag the second slider past 70.</output>
+</div>`}
+  script={`
+    var ctl = root.querySelector('#sl-ctl');
+    var out = root.querySelector('#sl-ctl-out');
+    ctl.addEventListener('mdInput', function (e) {
+      var next = Math.min(70, e.detail.value);
+      ctl.value = next;
+      out.textContent = next === 70 ? 'Capped at 70 — the handler refused ' + e.detail.value : 'Applied ' + next;
+    });
+  `}
+  label="Controlled vs uncontrolled — drag the second one past 70"
+  storyId="selection-slider--controlled-mode"
+  htmlCode={`<md-slider id="zoom" controlled labeled aria-label="Zoom" value="40"></md-slider>
+
+<script type="module">
+  const zoom = document.getElementById('zoom');
+
+  // The thumb tracks the drag, then snaps back to the value prop on
+  // commit — so the handler has to assign the value it wants kept.
+  zoom.addEventListener('mdInput', (e) => {
+    zoom.value = Math.min(70, e.detail.value);
+  });
+</script>`}
+  react={`import { useState } from 'react';
+import { MdSlider } from '@awc-ui/react';
+
+export function CappedZoom() {
+  const [value, setValue] = useState(40);
+
+  return (
+    <MdSlider
+      controlled
+      labeled
+      aria-label="Zoom"
+      value={value}
+      onMdInput={(e) => setValue(Math.min(70, e.detail.value))}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-capped-zoom',
+  template: \`
+    <md-slider
+      controlled
+      labeled
+      aria-label="Zoom"
+      [value]="value"
+      (mdInput)="onInput($event)"
+    ></md-slider>
+  \`,
+})
+export class CappedZoomComponent {
+  value = 40;
+
+  onInput(e: CustomEvent) {
+    this.value = Math.min(70, e.detail.value);
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const value = ref(40);
+
+function onInput(e: CustomEvent) {
+  value.value = Math.min(70, e.detail.value);
+}
+</script>
+
+<template>
+  <md-slider
+    controlled
+    labeled
+    aria-label="Zoom"
+    :value="value"
+    @mdInput="onInput"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  let value = 40;
+
+  function onInput(e: CustomEvent) {
+    value = Math.min(70, e.detail.value);
+  }
+</script>
+
+<md-slider
+  controlled
+  labeled
+  aria-label="Zoom"
+  value={value}
+  on:mdInput={onInput}
+></md-slider>`}
+/>
+
+## Range thumb overlap
+
+Two thumbs can meet. `valueStart` may never exceed `valueEnd`, so driving the
+lower thumb up **pushes** the upper one rather than overtaking it — the range
+stays well-ordered no matter how the user drags.
+
+<ComponentDemo
+  html={`<div style="display: grid; gap: 28px; inline-size: 100%; max-inline-size: 420px;">
+  <div>
+    <div style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant); margin-block-end: 8px;">Both thumbs at 50 — drag either way to separate</div>
+    <md-slider range value-start="50" value-end="50" value-indicator label-start="Minimum" label-end="Maximum"></md-slider>
+  </div>
+  <div>
+    <div style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant); margin-block-end: 8px;">Close together — they meet but never swap</div>
+    <md-slider range value-start="48" value-end="52" value-indicator label-start="Minimum" label-end="Maximum"></md-slider>
+  </div>
+</div>`}
+  label="Overlapping thumbs keep valueStart ≤ valueEnd"
+/>
+
+## Forms
+
+`md-slider` is form-associated: give it a `name` and its value goes into
+`FormData` on submit, exactly as a native `<input type="range">` does. No hidden
+input, no `mdChange` plumbing of your own.
+
+<ComponentDemo
+  html={`<form id="slider-form" style="display: grid; gap: 20px; inline-size: 100%; max-inline-size: 420px;">
+  <md-slider name="volume" value="60" labeled aria-label="Volume"></md-slider>
+  <md-slider name="price" range value-start="20" value-end="80" labeled label-start="Minimum price" label-end="Maximum price"></md-slider>
+  <div style="display: flex; gap: 12px;">
+    <md-button type="submit" variant="filled">Submit</md-button>
+    <md-button type="reset" variant="outlined">Reset</md-button>
+  </div>
+  <output id="slider-out" style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Submit to see the FormData entries.</output>
+</form>`}
+  script={`
+    var form = root.querySelector('#slider-form');
+    var out = root.querySelector('#slider-out');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var entries = [...new FormData(form).entries()];
+      out.textContent = entries.map(function (p) { return p[0] + ' = ' + p[1]; }).join('  ·  ');
+    });
+    form.addEventListener('reset', function () {
+      setTimeout(function () { out.textContent = 'Reset — back to the authored values.'; }, 0);
+    });
+  `}
+  label="Submit and reset a form containing sliders"
+  htmlCode={`<form id="prefs">
+  <md-slider name="volume" value="60" labeled aria-label="Volume"></md-slider>
+  <md-slider name="price" range value-start="20" value-end="80" labeled
+             label-start="Minimum price" label-end="Maximum price"></md-slider>
+
+  <md-button type="submit" variant="filled">Submit</md-button>
+  <md-button type="reset" variant="outlined">Reset</md-button>
+</form>
+
+<script type="module">
+  const form = document.getElementById('prefs');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    console.log(data.get('volume'), data.getAll('price'));   // "60", ["20", "80"]
+  });
+</script>`}
+  react={`import { MdSlider, MdButton } from '@awc-ui/react';
+
+export function PreferencesForm() {
+  function onSubmit(e) {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    console.log(data.get('volume'), data.getAll('price'));   // "60", ["20", "80"]
+  }
+
+  return (
+    <form onSubmit={onSubmit}>
+      <MdSlider name="volume" value={60} labeled aria-label="Volume" />
+      <MdSlider
+        name="price"
+        range
+        valueStart={20}
+        valueEnd={80}
+        labeled
+        ariaLabelStart="Minimum price"
+        ariaLabelEnd="Maximum price"
+      />
+      <MdButton type="submit" variant="filled">Submit</MdButton>
+      <MdButton type="reset" variant="outlined">Reset</MdButton>
+    </form>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-preferences-form',
+  template: \`
+    <form #prefs (submit)="onSubmit($event, prefs)">
+      <md-slider name="volume" value="60" labeled aria-label="Volume"></md-slider>
+      <md-slider name="price" range value-start="20" value-end="80" labeled
+                 label-start="Minimum price" label-end="Maximum price"></md-slider>
+
+      <md-button type="submit" variant="filled">Submit</md-button>
+      <md-button type="reset" variant="outlined">Reset</md-button>
+    </form>
+  \`,
+})
+export class PreferencesFormComponent {
+  onSubmit(e: Event, form: HTMLFormElement) {
+    e.preventDefault();
+    const data = new FormData(form);
+    console.log(data.get('volume'), data.getAll('price'));   // "60", ["20", "80"]
+  }
+}`}
+  vue={`<script setup lang="ts">
+function onSubmit(e: Event) {
+  e.preventDefault();
+  const data = new FormData(e.target as HTMLFormElement);
+  console.log(data.get('volume'), data.getAll('price'));   // "60", ["20", "80"]
+}
+</script>
+
+<template>
+  <form @submit="onSubmit">
+    <md-slider name="volume" value="60" labeled aria-label="Volume" />
+    <md-slider
+      name="price"
+      range
+      value-start="20"
+      value-end="80"
+      labeled
+      label-start="Minimum price"
+      label-end="Maximum price"
+    />
+    <md-button type="submit" variant="filled">Submit</md-button>
+    <md-button type="reset" variant="outlined">Reset</md-button>
+  </form>
+</template>`}
+  svelte={`<script lang="ts">
+  function onSubmit(e: Event) {
+    e.preventDefault();
+    const data = new FormData(e.target as HTMLFormElement);
+    console.log(data.get('volume'), data.getAll('price'));   // "60", ["20", "80"]
+  }
+</script>
+
+<form on:submit={onSubmit}>
+  <md-slider name="volume" value="60" labeled aria-label="Volume"></md-slider>
+  <md-slider name="price" range value-start="20" value-end="80" labeled
+             label-start="Minimum price" label-end="Maximum price"></md-slider>
+
+  <md-button type="submit" variant="filled">Submit</md-button>
+  <md-button type="reset" variant="outlined">Reset</md-button>
+</form>`}
+/>
+
+A **range** slider carries two numbers, which one name can't express, so it
+submits a `FormData` with one entry per thumb:
+
+| Markup | `FormData` entries |
+|---|---|
+| `<md-slider name="volume">` | `volume = 60` |
+| `<md-slider range name="price">` | `price = 20`, `price = 80` — read with `formData.getAll('price')` |
+| `<md-slider range name-start="from" name-end="to">` | `from = 20`, `to = 80` |
+
+Three behaviours come with it, all matching a native input:
+
+- **Reset** restores the values the markup was authored with.
+- **`disabled`** removes the slider from submission entirely.
+- **No `name`** means nothing is submitted — the slider still works.
+
+There is deliberately **no constraint validation**. A slider always holds a
+value inside `[min, max]`, so `required` would have nothing to catch; use `min`
+and `max` to bound what the user can pick.
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdInput` | no | `MdSliderValueDetail` | Continuously while dragging / on arrow keys |
+| `mdChange` | no | `MdSliderValueDetail` | On commit (drag end, key release) |
+| `mdFocus` | no | `MdSliderThumbDetail` | A thumb gained focus |
+| `mdBlur` | no | `MdSliderThumbDetail` | A thumb lost focus |
+| `mdDragStart` | no | `MdSliderDragDetail` | A drag began |
+| `mdDragEnd` | no | `MdSliderDragDetail` | A drag ended |
+
+### Three payload shapes, one `thumb` discriminator
+
+A single-thumb slider reports `value`; a range reports `valueStart` and
+`valueEnd` as well, and the drag/focus events name **which** thumb moved so one
+handler can serve both configurations.
+
+```ts
+interface MdSliderValueDetail {
+  value: number;        // single: the value. Range: see the caution below
+  valueStart?: number;  // range only
+  valueEnd?: number;    // range only
+}
+
+interface MdSliderThumbDetail {
+  thumb: 'single' | 'start' | 'end';
+}
+
+interface MdSliderDragDetail {
+  thumb: 'single' | 'start' | 'end';
+  value: number;
+  valueStart?: number;
+  valueEnd?: number;
+}
+```
+
+:::tip[Preview on `mdInput`, save on `mdChange`]
+`mdInput` fires continuously during a drag — debounce anything expensive, and
+persist only on `mdChange`.
+:::
+
+:::caution[On a range, read `valueStart` / `valueEnd`, not `value`]
+`value` is filled from whichever thumb the last **pointer** gesture grabbed, so
+after keyboard input on the start thumb it still reports the end value. Range
+handlers should use `detail.valueStart` and `detail.valueEnd`, which are always
+both correct, and take the moved thumb from `mdDragStart` / `mdFocus`
+(`detail.thumb`) when they need it.
+:::
+
+<ComponentDemo
+  html={`<div style="display:grid;gap:20px;inline-size:100%;max-inline-size:420px;">
+  <md-slider id="sl-ev" value="60" value-indicator value-text="60 percent" aria-label="Volume" size="md"></md-slider>
+  <output id="sl-ev-log" style="display:block;min-block-size:5.2em;white-space:pre-line;font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Drag the thumb, or tab to it and press an arrow key.</output>
+</div>`}
+  script={`
+    var s = root.querySelector('#sl-ev');
+    var log = root.querySelector('#sl-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 4);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    s.addEventListener('mdDragStart', function (e) { push('mdDragStart  thumb=' + e.detail.thumb); });
+    s.addEventListener('mdInput', function (e) { push('mdInput      value=' + e.detail.value); });
+    s.addEventListener('mdChange', function (e) { push('mdChange     value=' + e.detail.value + '   (committed)'); });
+    s.addEventListener('mdDragEnd', function (e) { push('mdDragEnd    thumb=' + e.detail.thumb); });
+    s.addEventListener('mdFocus', function (e) { push('mdFocus      thumb=' + e.detail.thumb); });
+    s.addEventListener('mdBlur', function (e) { push('mdBlur       thumb=' + e.detail.thumb); });
+  `}
+  label="Every event as it fires — mdInput streams, mdChange commits"
+  htmlCode={`<md-slider id="volume" aria-label="Volume" value="60"
+           value-indicator value-text="60 percent"></md-slider>
+
+<script type="module">
+  const s = document.getElementById('volume');
+
+  s.addEventListener('mdInput',  (e) => preview(e.detail.value));   // continuous
+  s.addEventListener('mdChange', (e) => save(e.detail.value));      // committed
+  s.addEventListener('mdDragEnd', (e) => console.log('drag done', e.detail.thumb));
+</script>`}
+  react={`import { MdSlider } from '@awc-ui/react';
+
+export function VolumeSlider() {
+  return (
+    <MdSlider
+      aria-label="Volume"
+      value={60}
+      valueIndicator
+      valueText="60 percent"
+      onMdInput={(e) => preview(e.detail.value)}
+      onMdChange={(e) => save(e.detail.value)}
+      onMdDragEnd={(e) => console.log('drag done', e.detail.thumb)}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-volume-slider',
+  template: \`
+    <md-slider
+      aria-label="Volume"
+      value="60"
+      value-indicator
+      value-text="60 percent"
+      (mdInput)="onInput($event)"
+      (mdChange)="onChange($event)"
+      (mdDragEnd)="onDragEnd($event)"
+    ></md-slider>
+  \`,
+})
+export class VolumeSliderComponent {
+  onInput(e: CustomEvent) { preview(e.detail.value); }
+  onChange(e: CustomEvent) { save(e.detail.value); }
+  onDragEnd(e: CustomEvent) { console.log('drag done', e.detail.thumb); }
+}`}
+  vue={`<script setup lang="ts">
+function onInput(e: CustomEvent) { preview(e.detail.value); }
+function onChange(e: CustomEvent) { save(e.detail.value); }
+function onDragEnd(e: CustomEvent) { console.log('drag done', e.detail.thumb); }
+</script>
+
+<template>
+  <md-slider
+    aria-label="Volume"
+    value="60"
+    value-indicator
+    value-text="60 percent"
+    @mdInput="onInput"
+    @mdChange="onChange"
+    @mdDragEnd="onDragEnd"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  function onInput(e: CustomEvent) { preview(e.detail.value); }
+  function onChange(e: CustomEvent) { save(e.detail.value); }
+  function onDragEnd(e: CustomEvent) { console.log('drag done', e.detail.thumb); }
+</script>
+
+<md-slider
+  aria-label="Volume"
+  value="60"
+  value-indicator
+  value-text="60 percent"
+  on:mdInput={onInput}
+  on:mdChange={onChange}
+  on:mdDragEnd={onDragEnd}
+></md-slider>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[The label props don't all start with `aria-`]
+The single-thumb name is the host attribute **`aria-label`**; range thumbs use
+**`label-start`** / **`label-end`**. That asymmetry is deliberate — custom
+`aria-*` attributes fail axe's `aria-valid-attr` rule.
+:::
+
+## Accessibility
+
+- Single-thumb: name it with `aria-label` on the host. Range: name each thumb
+  with `label-start` / `label-end`.
+- Set `value-text` (and `value-start-text` / `value-end-text`) so the
+  announcement carries units, not just a number — "50" becomes "50 percent" or
+  "$1,200".
+- Each thumb is a native `<input type="range">`, so it is focusable, keyboard
+  driven by the platform, and emits `mdFocus` / `mdBlur`. A range slider has two
+  tab stops, one per thumb.
+- Ensure the thumb hit area stays ≥48px on touch at deep density rungs.
+- **Don't clip the thumb's transparent hit-extender.** A thumb at 0% or 100%
+  overhangs the track end; the component adds a transparent extender so grabs
+  there still land, and `overflow: hidden` on a tight wrapper breaks it.
+
+| Key | Moves |
+|---|---|
+| `←` `→` (`↑` `↓` vertical) | one `step` |
+| `Page Up` / `Page Down` | a larger jump |
+| `Home` / `End` | to `min` / `max` |
+
+<ComponentDemo
+  html={`<div style="display: grid; gap: 28px; inline-size: 100%; max-inline-size: 420px;">
+  <md-slider id="sl-kbd" value="40" step="5" stops labeled aria-label="Volume" value-text="40 percent"></md-slider>
+  <md-slider range value-start="20" value-end="80" step="10" stops labeled label-start="Minimum price" label-end="Maximum price"></md-slider>
+  <output id="sl-kbd-out" style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Tab to a thumb, then use the arrow keys.</output>
+</div>`}
+  script={`
+    var sl = root.querySelector('#sl-kbd');
+    var out = root.querySelector('#sl-kbd-out');
+    sl.addEventListener('mdChange', function (e) { out.textContent = 'value = ' + e.detail.value; });
+    sl.addEventListener('mdFocus', function () { out.textContent = 'Focused — arrows step by 5, Home/End jump to the bounds.'; });
+  `}
+  label="Keyboard — try tabbing in, then arrows, Page Up/Down, Home/End"
+/>
+
+## RTL, density & i18n
+
+**RTL** — the track direction and thumb travel mirror under `dir="rtl"`, and the
+arrow keys follow reading order. Nothing is re-authored between the two columns
+below; only `dir` changes. See [RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <md-slider value="35" labeled aria-label="مستوى الصوت"></md-slider>
+</div>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid;inline-size:100%;grid-template-columns:auto minmax(0,1fr);gap:36px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:grid;gap:28px;">
+    <md-slider value="35" labeled aria-label="Volume"></md-slider>
+    <md-slider range value-start="20" value-end="70" stops step="10" label-start="Minimum" label-end="Maximum"></md-slider>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:grid;gap:28px;">
+    <md-slider value="35" labeled aria-label="مستوى الصوت"></md-slider>
+    <md-slider range value-start="20" value-end="70" stops step="10" label-start="الحد الأدنى" label-end="الحد الأقصى"></md-slider>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+/>
+
+### The track mirrors; the inset glyph does not
+
+There is no `mirror-icon` on `md-slider`. The track, the fill and the thumb
+travel all flip on their own because the geometry is written with logical
+properties — but the **glyph** you put in the track is just a glyph. A
+direction-neutral one (`volume_up`, `graphic_eq`) is fine everywhere; a
+directional one has to be swapped in your own i18n layer.
+
+<ComponentDemo
+  html={`<div style="display:grid;inline-size:100%;grid-template-columns:auto minmax(0,1fr);gap:28px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <div dir="rtl" style="display:grid;gap:24px;">
+    <md-slider size="lg" inset-icon icon="volume_up" value="60" aria-label="مستوى الصوت"></md-slider>
+    <md-slider size="lg" inset-icon icon="arrow_back" value="40" aria-label="التقدم"></md-slider>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <div dir="rtl" style="display:grid;gap:24px;">
+    <md-slider size="lg" inset-icon icon="volume_up" value="60" aria-label="مستوى الصوت"></md-slider>
+    <md-slider size="lg" inset-icon icon="arrow_forward" value="40" aria-label="التقدم"></md-slider>
+  </div>
+</div>`}
+  label="Under rtl — a neutral glyph travels fine, a directional one must be swapped"
+/>
+
+### Every density rung
+
+`density` is a local override of the inherited `data-density`. All five rungs,
+same slider, so the taper of the track and the thumb is visible in one place:
+
+<ComponentDemo
+  html={`<div style="display:grid;inline-size:100%;grid-template-columns:auto minmax(0,1fr);gap:24px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <md-slider density="0" size="md" value="40" step="10" stops aria-label="Density 0"></md-slider>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <md-slider density="-1" size="md" value="40" step="10" stops aria-label="Density -1"></md-slider>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <md-slider density="-2" size="md" value="40" step="10" stops aria-label="Density -2"></md-slider>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <md-slider density="-3" size="md" value="40" step="10" stops aria-label="Density -3"></md-slider>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <md-slider density="-4" size="md" value="40" step="10" stops aria-label="Density -4"></md-slider>
+</div>`}
+  label="Density 0 through -4 — track thickness and thumb both taper"
+/>
+
+:::caution[Below `-2`, check your touch targets]
+Density thins the track and shrinks the thumb, and the thumb is the grab target.
+At the deep rungs it drops well under the 48px pointer-coarse devices want. See
+[Density](/behaviour/density/#accessibility) for the media query that raises the
+target back on touch.
+:::
+
+### Density and direction together
+
+The two are independent signals, so they compose without any extra wiring — and
+a single slider can still override the inherited rung:
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:grid;gap:28px;inline-size:100%;max-inline-size:380px;">
+  <md-slider value="35" labeled aria-label="مستوى الصوت"></md-slider>
+  <md-slider range value-start="20" value-end="70" stops step="10" label-start="الحد الأدنى" label-end="الحد الأقصى"></md-slider>
+  <md-slider density="-4" size="md" value="60" aria-label="مكثف"></md-slider>
+</div>`}
+  label="dir=rtl with data-density=-2, and one slider forced down to -4"
+/>
+
+:::caution[`density="0"` does not opt back out of an inherited rung]
+Rung `0` is the *absence* of an override — there is deliberately no
+`[density="0"]` rule, because `density` reflects and would otherwise pin every
+slider on the page to the default. `--md-sys-density-scale` is inherited, so
+`<md-slider density="0">` inside `data-density="-2"` still renders at `-2`. To
+break out of an inherited rung, set `--md-sys-density-scale: 0` on the slider
+(or on a wrapper) yourself.
+:::
+
+**Density** — `density="-1…-4"` locally overrides the inherited `data-density`
+rung (`0` means "inherit"); re-check the grab target at every rung you ship. See
+[Density](/behaviour/density/).
+
+**i18n** — translate `aria-label`, `label-start`, `label-end` and the `*-text`
+announcements. Format numbers with `Intl` before putting them into `value-text`
+so "1200" reads as "١٢٠٠" or "1 200" where it should.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-slider-track-length` | Vertical track length (block axis) | `200px` |
+| `--md-slider-min-track-length` | Floor for a responsive vertical track | `88px` |
+| `--md-slider-track-height` | Track cross-axis thickness | Per `size`, tapered by density |
+| `--md-slider-track-shape` | Track border-radius | Per `size` |
+| `--md-slider-active-color` | Filled track | `primary` |
+| `--md-slider-inactive-color` | Unfilled track | `secondary-container` |
+| `--md-slider-tick-active-color` | Stop dot under the thumb | `primary` |
+| `--md-slider-tick-filled-color` | Stop dots on the filled track | `on-primary` |
+| `--md-slider-tick-inactive-color` | Stop dots on the empty track | `on-secondary-container` |
+| `--md-slider-thumb-color` | Handle fill | `primary` |
+| `--md-slider-thumb-width` / `-thumb-height` | Handle box | Per `size` |
+| `--md-slider-value-bg` / `-value-color` | Value bubble surface / text | `inverse-surface` / `inverse-on-surface` |
+| `--md-slider-value-shape` | Value bubble radius | `shape-corner-full` |
+| `--md-slider-value-font-family` / `-font-size` / `-font-weight` / `-line-height` | Bubble typography | `label-medium` |
+| `--md-slider-value-padding-inline` / `-padding-block` | Bubble padding | `16px` / `12px` |
+| `--md-slider-inset-icon-color` | Inset glyph over the empty track | `--md-slider-tick-inactive-color` |
+| `--md-slider-inset-icon-active-color` | Inset glyph over the filled track | `--md-slider-tick-filled-color` |
+
+<ComponentDemo
+  html={`<md-slider aria-label="Themed" value="65" size="md" value-indicator style="inline-size: 320px; --md-slider-active-color: var(--md-sys-color-tertiary); --md-slider-thumb-color: var(--md-sys-color-tertiary); --md-slider-track-shape: 2px;"></md-slider>`}
+  label="Themed instance"
+/>
+
+Every default resolves through an `md-sys-color` role, so a slider that sets no
+custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:20px;inline-size:100%;max-inline-size:340px;">
+  <md-slider value="40" aria-label="Untouched defaults"></md-slider>
+  <md-slider value="60" step="10" stops aria-label="With ticks"></md-slider>
+  <md-slider range value-start="20" value-end="70" label-start="Minimum" label-end="Maximum"></md-slider>
+</div>`}
+  label="Untouched defaults — follows the page theme"
+/>
+
+Custom properties cover the palette; the parts reach inside the shadow root for
+everything else — geometry, gradients, typography of the bubble.
+
+<ComponentDemo
+  html={`<style>
+  .parts-slider::part(thumb-knob) { border-radius: 4px; }
+  .parts-slider::part(track-active) { background: linear-gradient(90deg, var(--md-sys-color-tertiary), var(--md-sys-color-primary)); }
+  .parts-slider::part(track-inactive) { opacity: .35; }
+  .parts-slider::part(value-indicator) { font-variant-numeric: tabular-nums; font-weight: 700; }
+</style>
+<div style="display:flex;flex-direction:column;gap:20px;inline-size:100%;max-inline-size:340px;">
+  <md-slider class="parts-slider" value="55" value-indicator aria-label="Styled parts"></md-slider>
+</div>`}
+  label="thumb-knob, track-active, track-inactive and value-indicator"
+/>
+
+Two recipes the parts make easy — a round elevated knob, and a fully themed
+slider that ignores the palette entirely:
+
+<ComponentDemo
+  html={`<style>
+  .sl-round { --md-slider-thumb-width: 20px; --md-slider-thumb-height: 20px; }
+  .sl-round::part(thumb-knob) { border-radius: 50%; box-shadow: var(--md-sys-elevation-2, 0 1px 3px rgba(0,0,0,.3)); }
+
+  .sl-ocean {
+    --md-slider-active-color: #0077b6;
+    --md-slider-inactive-color: #caf0f8;
+    --md-slider-thumb-color: #0077b6;
+    --md-slider-thumb-width: 14px;
+    --md-slider-thumb-height: 14px;
+  }
+  .sl-ocean::part(thumb-knob) { border-radius: 50%; box-shadow: 0 0 0 3px #90e0ef, 0 2px 8px rgba(0,119,182,.3); }
+  .sl-ocean::part(track-active) { background: linear-gradient(90deg, #0077b6, #00b4d8); }
+  .sl-ocean::part(value-indicator) { background: #023e8a; color: #caf0f8; border-radius: 8px; font-weight: 600; }
+</style>
+<div style="display:flex;flex-direction:column;gap:24px;inline-size:100%;max-inline-size:340px;">
+  <md-slider class="sl-round" value="60" aria-label="Round thumb"></md-slider>
+  <md-slider class="sl-round" range value-start="25" value-end="75" label-start="Minimum" label-end="Maximum"></md-slider>
+  <!-- the value bubble is persistent and sits ABOVE the track, outside the
+       host's box: reserve the room on a wrapper, not on the slider itself -->
+  <div style="padding-block-start: 32px;">
+    <md-slider class="sl-ocean" value="45" value-indicator aria-label="Ocean theme"></md-slider>
+  </div>
+</div>`}
+  label="Round elevated knob, and a fully themed slider"
+/>
+
+**CSS parts** — `surface`, `track`, `track-inactive`, `track-active`, `inset`,
+`thumb-knob`, `state-layer`, `value-indicator`. The `state-layer` element is
+exported but ships `display: none`, so styling it paints nothing — put hover /
+focus / press feedback on `::part(thumb-knob)` instead.
+
+```css
+md-slider::part(thumb-knob) {
+  border-radius: 4px;
+}
+```
+
+
+## Related
+
+[`md-text-field`](/components/text-field/) ·
+[`md-rating`](/components/rating/) ·
+[`md-switch`](/components/switch/) ·
+[`md-segmented-button`](/components/segmented-button/) ·
+[`md-progress-indicator`](/components/progress-indicator/) ·
+[`md-color-picker`](/components/color-picker/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-slider" />

@@ -1,0 +1,445 @@
+---
+title: FAB
+description: "Material Design 3 floating action button — the single most prominent action on a screen, in six colour mappings and three sizes"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/fab.json";
+
+**The single most prominent action on a screen.** Floats above the UI in six
+colour mappings and three sizes, and morphs between an icon-only circle and an
+**extended** pill that carries a label.
+
+<ComponentDemo
+  html={`<md-fab icon="add" aria-label="Create"></md-fab>
+<md-fab icon="edit" label="Compose"></md-fab>
+<md-fab variant="primary" size="large" icon="add" aria-label="Create"></md-fab>`}
+  label="Live preview"
+  storyId="actions-fab--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-fab" example="" />
+
+## When to use
+
+- **One** primary, constructive action per screen: compose, add, create, edit.
+- The action is the reason the screen exists — not one option among several.
+- Inside a [`md-navigation-rail`](/components/navigation-rail/), where it
+  collapses to icon-only as the rail collapses.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| A second prominent action on the same screen | [`md-button variant="filled"`](/components/button/) |
+| Minor, overflow, unclear or **destructive** actions | [`md-button`](/components/button/) / [`md-menu`](/components/menu/) |
+| An action scoped to a card or other container | A button inside it |
+| 2–6 related creation actions behind one trigger | [`md-fab-menu`](/components/fab-menu/) |
+| Screens where imagery already represents the primary action | Nothing — M3 says a FAB isn't always needed |
+
+## Variants
+
+`primary`, `secondary`, `tertiary` and their `-container` forms. The
+`-container` variants are the softer, standard look; the bare roles are
+higher-contrast.
+
+`surface` is M3's own default FAB — a neutral container with a primary-role
+icon, for when the FAB should not compete with the content behind it. This
+component defaults to `primary-container` instead, so pass `variant="surface"`
+explicitly when you want the spec's baseline.
+
+<ComponentDemo
+  html={`<md-fab variant="surface" icon="add" aria-label="Surface"></md-fab>
+<md-fab variant="primary-container" icon="add" aria-label="Add"></md-fab>
+<md-fab variant="secondary-container" icon="add" aria-label="Add"></md-fab>
+<md-fab variant="tertiary-container" icon="add" aria-label="Add"></md-fab>
+<md-fab variant="primary" icon="add" aria-label="Add"></md-fab>
+<md-fab variant="secondary" icon="add" aria-label="Add"></md-fab>
+<md-fab variant="tertiary" icon="add" aria-label="Add"></md-fab>`}
+  label="Six colour mappings"
+/>
+
+## Sizes
+
+<ComponentDemo
+  html={`<md-fab size="standard" icon="add" aria-label="Add"></md-fab>
+<md-fab size="medium" icon="add" aria-label="Add"></md-fab>
+<md-fab size="large" icon="add" aria-label="Add"></md-fab>`}
+  label="standard · medium · large"
+/>
+
+## States
+
+`lowered` drops the resting elevation for FABs that sit on an already-elevated
+surface. `disabled` and `soft-disabled` behave as they do on
+[`md-button`](/components/button/#states) — the soft one stays focusable.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">default</span>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+    <md-fab icon="add" aria-label="Create"></md-fab>
+    <md-fab variant="secondary" icon="edit" aria-label="Edit"></md-fab>
+    <md-fab variant="tertiary" icon="share" aria-label="Share"></md-fab>
+  </div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">lowered</span>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+    <md-fab lowered icon="add" aria-label="Create, lowered"></md-fab>
+    <md-fab lowered variant="secondary" icon="edit" aria-label="Edit, lowered"></md-fab>
+    <md-fab lowered variant="tertiary" icon="share" aria-label="Share, lowered"></md-fab>
+  </div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">disabled</span>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+    <md-fab disabled icon="add" aria-label="Create, disabled"></md-fab>
+    <md-fab soft-disabled icon="edit" aria-label="Edit, soft-disabled"></md-fab>
+  </div>
+</div>`}
+  label="Elevation and disabled states — tab through the last row"
+/>
+
+## Every variant at every size
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">primary</span>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+    <md-fab size="standard" icon="add" aria-label="Create standard"></md-fab>
+    <md-fab size="medium" icon="add" aria-label="Create medium"></md-fab>
+    <md-fab size="large" icon="add" aria-label="Create large"></md-fab>
+  </div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">secondary</span>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+    <md-fab variant="secondary" size="standard" icon="edit" aria-label="Edit standard"></md-fab>
+    <md-fab variant="secondary" size="medium" icon="edit" aria-label="Edit medium"></md-fab>
+    <md-fab variant="secondary" size="large" icon="edit" aria-label="Edit large"></md-fab>
+  </div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">tertiary</span>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+    <md-fab variant="tertiary" size="standard" icon="share" aria-label="Share standard"></md-fab>
+    <md-fab variant="tertiary" size="medium" icon="share" aria-label="Share medium"></md-fab>
+    <md-fab variant="tertiary" size="large" icon="share" aria-label="Share large"></md-fab>
+  </div>
+</div>`}
+  label="The full matrix"
+/>
+
+## Extended
+
+Setting a `label` makes the FAB extended automatically.
+
+<ComponentDemo
+  html={`<md-fab icon="edit" label="Compose"></md-fab>
+<md-fab label="Start a chat"></md-fab>
+<md-fab lowered icon="add" label="Add item"></md-fab>`}
+  label="Extended, label-only, and lowered"
+/>
+
+:::note[`extended` is tri-state]
+Left unset it is **derived** — extended whenever a `label` is present. Setting
+it explicitly (`true`/`false`) pins the state and lets the FAB **morph**
+between forms, which is how `md-navigation-rail` collapses it. Don't set it
+unless you're driving that transition.
+
+An extended FAB may omit its icon, but it can never be icon-only — that's a
+plain FAB.
+:::
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:9rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">unset + label</span>
+  <div><md-fab icon="add" label="Compose"></md-fab></div>
+  <span style="inline-size:9rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">extended="false"</span>
+  <div><md-fab icon="add" label="Compose" extended="false"></md-fab></div>
+  <span style="inline-size:9rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">no label</span>
+  <div><md-fab icon="add" aria-label="Compose"></md-fab></div>
+</div>`}
+  label="The three states — same label, different extended"
+/>
+
+Pinning the value is what makes the FAB **morph** rather than swap. Press the
+button below: the label's width and opacity animate over a spring, because the
+label stays in the DOM the whole time.
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:16px;align-items:center;">
+  <md-button id="fab-morph-btn" variant="outlined">Collapse</md-button>
+  <md-fab id="fab-morph" icon="add" label="Compose"></md-fab>
+</div>
+<script type="module">
+  const fab = document.getElementById('fab-morph');
+  const btn = document.getElementById('fab-morph-btn');
+  fab.extended = true;                     // pin it, so the change can animate
+  btn.addEventListener('mdClick', () => {
+    fab.extended = !fab.extended;
+    btn.textContent = fab.extended ? 'Collapse' : 'Extend';
+  });
+</script>`}
+  label="Toggling extended morphs the FAB"
+/>
+
+## Placement
+
+The FAB does **not** position itself. Placement is yours:
+
+```html
+<md-fab icon="add" aria-label="New item"
+        style="position: fixed; inset-block-end: 24px; inset-inline-end: 24px;"></md-fab>
+```
+
+Use logical properties (`inset-inline-end`) so it moves to the correct corner
+under `dir="rtl"`.
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdClick` | no | `MouseEvent` | On activation |
+
+:::caution[The detail is a raw `MouseEvent`]
+Not an object — there is no `detail.selected`. This FAB has **no toggle mode**.
+:::
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:16px;align-items:center;">
+  <md-fab id="fab-ev" icon="favorite" aria-label="Like"></md-fab>
+  <code id="fab-ev-out" style="opacity:.75;font-size:.85rem;">not pressed yet</code>
+</div>
+<script type="module">
+  let n = 0;
+  const out = document.getElementById('fab-ev-out');
+  document.getElementById('fab-ev').addEventListener('mdClick', (e) => {
+    out.textContent = 'mdClick #' + (++n) + ' — detail is the original MouseEvent (' + e.detail.type + ')';
+  });
+</script>`}
+  htmlForCode={`<md-fab id="like" icon="favorite" aria-label="Like"></md-fab>
+
+<script type="module">
+  document.getElementById('like').addEventListener('mdClick', (e) => {
+    // e.detail IS the original MouseEvent — not a wrapper object
+    like(e.detail.shiftKey);
+  });
+</script>`}
+  label="mdClick — press the FAB"
+/>
+
+:::note[`detail` is the MouseEvent itself]
+Unlike most components here, `md-fab`'s `mdClick` carries the original
+`MouseEvent` as its detail rather than a custom payload object — so modifier
+keys and coordinates are read straight off `e.detail`. A disabled or
+soft-disabled FAB swallows the activation and emits nothing.
+:::
+
+<TechnologyTabs
+  html={`<md-fab id="create" icon="add" label="Create"></md-fab>
+
+<script type="module">
+  document.getElementById('create')
+    .addEventListener('mdClick', () => openComposer());
+</script>`}
+  react={`import { MdFab } from '@awc-ui/react';
+
+export function CreateFab() {
+  return <MdFab icon="add" label="Create" onMdClick={() => openComposer()} />;
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-create-fab',
+  template: \`<md-fab icon="add" label="Create" (mdClick)="openComposer()"></md-fab>\`,
+})
+export class CreateFabComponent {
+  openComposer() { /* … */ }
+}`}
+  vue={`<script setup lang="ts">
+function openComposer() { /* … */ }
+</script>
+
+<template>
+  <md-fab icon="add" label="Create" @mdClick="openComposer" />
+</template>`}
+  svelte={`<script lang="ts">
+  function openComposer() { /* … */ }
+</script>
+
+<md-fab icon="add" label="Create" on:mdClick={openComposer} />`}
+/>
+
+## In a navigation rail
+
+The rail owns the FAB's extended state across its collapse transition — slot
+it and leave `extended` alone.
+
+```html
+<md-navigation-rail expandable>
+  <md-fab slot="fab" icon="add" label="Create"></md-fab>
+  <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+</md-navigation-rail>
+```
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- Icon-only FABs **must** have `aria-label`. Extended FABs take their name
+  from `label`, so an extra `aria-label` is redundant unless it adds detail.
+- A fixed FAB can cover other controls. M3 requires the actionable element
+  **and its focus indicator** to stay visible — check at your smallest
+  supported viewport.
+- Its DOM position should match its importance in the reading order; don't
+  append it last purely for CSS convenience.
+- `disabled` leaves the tab order; `soft-disabled` stays focusable.
+
+### Three ways to name a FAB
+
+An icon has no text, so a FAB is only accessible if something supplies its name.
+There are exactly three sources, and the component checks for them **before its
+first render**:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;">
+  <span style="inline-size:8rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">aria-label</span>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+    <md-fab icon="add" aria-label="Create document"></md-fab>
+  </div>
+  <span style="inline-size:8rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">aria-labelledby</span>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+    <span id="fab-name-src" style="opacity:.7;font-size:.85rem;">Create document</span>
+    <md-fab icon="add" aria-labelledby="fab-name-src"></md-fab>
+  </div>
+  <span style="inline-size:8rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">label (extended)</span>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+    <md-fab extended icon="add" label="Create document"></md-fab>
+  </div>
+</div>`}
+  label="All three announce the same name"
+/>
+
+| Source | Use when |
+|---|---|
+| `aria-label` | Icon-only. The usual case. |
+| `aria-labelledby` | Visible text elsewhere already names it — no duplicated string to translate |
+| `label` | `extended` FABs. The visible label **is** the accessible name |
+
+:::danger[An unnamed icon-only FAB warns in the console]
+With no `aria-label`, no `aria-labelledby` and no `label`, the component logs a
+WCAG 1.1.1 warning naming the offending element. Check the console when a FAB
+looks fine but fails an audit.
+
+The check reads a flag captured in `componentWillLoad`, **not** the live
+attribute — because the component *writes* `aria-label` itself from `label`.
+Reading the attribute at render time was self-referential: the first render set
+it, every later render saw it present, concluded you had supplied it, and
+removed it again. That silently stripped the name on any second render.
+:::
+
+## RTL, density & i18n
+
+**RTL** — position with logical properties so it lands in the correct corner.
+`add`/`edit` need no mirroring; a directional glyph does. See [RTL](/behaviour/rtl/).
+
+**Density** — `density="-1…-4"` tightens the container; keep it ≥48px on touch.
+
+**i18n** — translate `label` and `aria-label`. Translated labels run longer, so
+re-check M3's no-wrap/no-truncate rule per locale.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+    <md-fab icon="add" aria-label="Create"></md-fab>
+    <md-fab extended icon="add" label="Create document"></md-fab>
+  </div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+    <md-fab icon="add" aria-label="إنشاء"></md-fab>
+    <md-fab extended icon="add" label="إنشاء مستند"></md-fab>
+  </div>
+</div>`}
+  label="Extended FABs mirror; the icon leads in both directions"
+/>
+
+On an `extended` FAB the icon leads the label, so under RTL it moves to the
+right edge on its own — the box metrics are logical. A plain icon-only FAB has
+nothing to mirror.
+
+### Every density rung
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;"><md-fab density="0" icon="add" aria-label="Create 0"></md-fab><md-fab density="0" extended icon="add" label="Create"></md-fab></div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;"><md-fab density="-1" icon="add" aria-label="Create -1"></md-fab><md-fab density="-1" extended icon="add" label="Create"></md-fab></div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;"><md-fab density="-2" icon="add" aria-label="Create -2"></md-fab><md-fab density="-2" extended icon="add" label="Create"></md-fab></div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;"><md-fab density="-3" icon="add" aria-label="Create -3"></md-fab><md-fab density="-3" extended icon="add" label="Create"></md-fab></div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;"><md-fab density="-4" icon="add" aria-label="Create -4"></md-fab><md-fab density="-4" extended icon="add" label="Create"></md-fab></div>
+</div>`}
+  label="density 0 through -4"
+/>
+
+:::caution[A FAB is a touch target first]
+It is the screen's primary action and usually the largest tap target on it.
+Measured on the default size, the rungs run 56 / 52 / 48 / 44 / 40px — so `-3`
+and `-4` fall under the 48px pointer-coarse minimum, and a `small` FAB crosses
+that line sooner. See [Density](/behaviour/density/#accessibility) for the media
+query that raises the target back on touch.
+:::
+
+## Theming
+
+| Custom property | Purpose |
+|---|---|
+| `--md-fab-container-color` | Container background |
+| `--md-fab-icon-color` / `--md-fab-icon-size` | Glyph |
+| `--md-fab-container-shape` | Corner radius |
+| `--md-fab-label-color` | Extended-label colour |
+
+**CSS parts** — `state-layer`, `icon`, `label`. **Slot** — `icon` for a custom glyph.
+
+<ComponentDemo
+  html={`<style>
+  .fab-brand {
+    --md-fab-container-color: #1B5E20;
+    --md-fab-icon-color: #FFFFFF;
+    --md-fab-label-color: #FFFFFF;
+  }
+  .fab-square { --md-fab-container-shape: 12px; }
+  .fab-big-icon::part(icon) { transform: scale(1.3); }
+</style>
+<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+  <md-fab class="fab-brand" icon="add" aria-label="Brand colour"></md-fab>
+  <md-fab class="fab-brand" extended icon="add" label="Brand extended"></md-fab>
+  <md-fab class="fab-square" icon="edit" aria-label="Square shape"></md-fab>
+  <md-fab class="fab-big-icon" variant="secondary" icon="share" aria-label="Larger icon via ::part"></md-fab>
+</div>`}
+  label="Custom properties for colour and shape, ::part for the icon"
+/>
+
+The three parts — `state-layer`, `icon`, `label` — cover what the custom
+properties cannot reach, such as transforming the glyph itself.
+
+
+## Related
+
+[`md-fab-menu`](/components/fab-menu/) ·
+[`md-button`](/components/button/) ·
+[`md-icon-button`](/components/icon-button/) ·
+[`md-navigation-rail`](/components/navigation-rail/) ·
+[`md-toolbar`](/components/toolbar/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-fab" />

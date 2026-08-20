@@ -1,0 +1,1089 @@
+---
+title: Autocomplete
+description: "Type to filter, then choose — single or multiple selection, free text, async loading and virtualization"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/autocomplete.json";
+
+**Type to filter, then choose.** A text field with a suggestion menu: single or
+multiple selection, optional free-text values, custom filtering, async loading,
+and virtualization for large option sets.
+
+<ComponentDemo
+  html={`<md-autocomplete label="City" placeholder="Start typing…" style="inline-size: 280px;">
+  <md-select-option value="par">Paris</md-select-option>
+  <md-select-option value="ber">Berlin</md-select-option>
+  <md-select-option value="mad">Madrid</md-select-option>
+  <md-select-option value="rom">Rome</md-select-option>
+  <md-select-option value="lis">Lisbon</md-select-option>
+  <md-select-option value="ath">Athens</md-select-option>
+</md-autocomplete>`}
+  label="Live preview — type a letter to filter"
+  storyId="text-inputs-autocomplete--playground"
+/>
+
+:::note[Not a Material Design 3 component]
+M3 has no autocomplete page. The surface mirrors
+[MUI Autocomplete](https://mui.com/material-ui/react-autocomplete/); the
+Do/Don't below combines M3's menu and text-field guidance with this
+component's own behaviour.
+:::
+
+## Install
+
+<ComponentSetup tag="md-autocomplete" example="" />
+
+## When to use
+
+- A long or open-ended option set the user narrows **by typing**: cities,
+  users, products, tags.
+- Values that may not exist yet, where the user can enter their own
+  (`free-solo`).
+- Multi-value entry rendered as chips (`multiple`).
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| A short, closed list | [`md-select`](/components/select/) |
+| Several values from a **known** closed list | [`md-multi-select`](/components/multi-select/) |
+| App-wide search with a results surface | [`md-search`](/components/search/) |
+| Plain text with no suggestions | [`md-text-field`](/components/text-field/) |
+| 2–5 exclusive options | [`md-segmented-button`](/components/segmented-button/) / [`md-radio`](/components/radio/) |
+| Assigning a subset from a pool | [`md-transfer-list`](/components/transfer-list/) |
+
+## Supplying options
+
+Three sources, and **slotted options win**:
+
+1. Slotted [`md-select-option`](/components/select-option/) children — best for
+   a static list you can write in markup.
+2. The `options` **property** — an array of
+   `{ value, label, supportingText?, icon?, iconColor?, disabled? }`, for data
+   that comes from your state layer.
+3. The `options` **attribute** — the same array as a JSON string, for a page
+   that has its data up front and no reason to reach for a script.
+
+<ComponentDemo
+  html={`<md-autocomplete
+  label="City"
+  placeholder="Search cities…"
+  style="inline-size: 300px;"
+  options='[
+    {"value":"lis","label":"Lisbon","supportingText":"Portugal"},
+    {"value":"osl","label":"Oslo","supportingText":"Norway"},
+    {"value":"kyo","label":"Kyoto","supportingText":"Japan"},
+    {"value":"qro","label":"Querétaro","supportingText":"Mexico"}
+  ]'
+></md-autocomplete>`}
+  react={`import { MdAutocomplete } from '@awc-ui/react';
+
+const CITIES = [
+  { value: 'lis', label: 'Lisbon', supportingText: 'Portugal' },
+  { value: 'osl', label: 'Oslo', supportingText: 'Norway' },
+  { value: 'kyo', label: 'Kyoto', supportingText: 'Japan' },
+  { value: 'qro', label: 'Querétaro', supportingText: 'Mexico' },
+];
+
+export function CityPicker() {
+  // The wrapper forwards \`options\` as a property, so pass the array itself —
+  // the JSON-string form is only needed where you can write attributes alone.
+  return <MdAutocomplete label="City" placeholder="Search cities…" options={CITIES} />;
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-city-picker',
+  template: \`
+    <md-autocomplete label="City" placeholder="Search cities…" [options]="cities"></md-autocomplete>
+  \`,
+})
+export class CityPickerComponent {
+  cities = [
+    { value: 'lis', label: 'Lisbon', supportingText: 'Portugal' },
+    { value: 'osl', label: 'Oslo', supportingText: 'Norway' },
+    { value: 'kyo', label: 'Kyoto', supportingText: 'Japan' },
+    { value: 'qro', label: 'Querétaro', supportingText: 'Mexico' },
+  ];
+}`}
+  vue={`<script setup lang="ts">
+import '@awc-ui/core/define';
+
+const cities = [
+  { value: 'lis', label: 'Lisbon', supportingText: 'Portugal' },
+  { value: 'osl', label: 'Oslo', supportingText: 'Norway' },
+  { value: 'kyo', label: 'Kyoto', supportingText: 'Japan' },
+  { value: 'qro', label: 'Querétaro', supportingText: 'Mexico' },
+];
+</script>
+
+<template>
+  <md-autocomplete label="City" placeholder="Search cities…" :options="cities" />
+</template>`}
+  svelte={`<script lang="ts">
+  import '@awc-ui/core/define';
+
+  const cities = [
+    { value: 'lis', label: 'Lisbon', supportingText: 'Portugal' },
+    { value: 'osl', label: 'Oslo', supportingText: 'Norway' },
+    { value: 'kyo', label: 'Kyoto', supportingText: 'Japan' },
+    { value: 'qro', label: 'Querétaro', supportingText: 'Mexico' },
+  ];
+</script>
+
+<md-autocomplete label="City" placeholder="Search cities…" options={cities}></md-autocomplete>`}
+  label="options as a JSON attribute — no script needed"
+/>
+
+:::note[Which form to use]
+The attribute is parsed once, on the element. Prefer the **property** whenever
+the data is dynamic — a framework binding re-runs on change, whereas rewriting a
+JSON attribute means re-serialising the whole list. Malformed JSON degrades to an
+empty list with a console warning rather than throwing.
+
+`filterer` is a **function** and has no attribute form — assign it in JS.
+:::
+
+<ComponentDemo
+  html={`<md-autocomplete label="Assignee" placeholder="Search people…" style="inline-size: 300px;">
+  <md-select-option value="ada" icon="person" supporting-text="Engineering">Ada Lovelace</md-select-option>
+  <md-select-option value="grace" icon="person" supporting-text="Engineering">Grace Hopper</md-select-option>
+  <md-select-option value="alan" icon="person" supporting-text="Research">Alan Turing</md-select-option>
+  <md-select-option value="katherine" icon="person" supporting-text="Research">Katherine Johnson</md-select-option>
+  <md-select-option value="linus" icon="person" disabled supporting-text="On leave">Linus Torvalds</md-select-option>
+</md-autocomplete>`}
+  label="Slotted options with icons, supporting text and a disabled row"
+  storyId="text-inputs-autocomplete--with-descriptions"
+/>
+
+## `value` vs `inputValue`
+
+The single most common mix-up on this component.
+
+| | Holds | Reported by |
+|---|---|---|
+| `value` | The **committed selection** — a `string`, or `string[]` when `multiple` | `mdChange` |
+| `inputValue` | The **raw text in the box** | `mdInput` |
+
+Reading `value` to get what the user typed returns the last selection, not the
+text. Reading `mdInput` as a selection fires on every keystroke.
+
+## Variants
+
+`filled` is the default — the opposite of
+[`md-select`](/components/select/), whose default is `outlined`.
+
+<ComponentDemo
+  html={`<md-autocomplete variant="filled" label="Filled" style="inline-size: 240px;">
+  <md-select-option value="a">Alpha</md-select-option>
+  <md-select-option value="b">Bravo</md-select-option>
+  <md-select-option value="c">Charlie</md-select-option>
+</md-autocomplete>
+<md-autocomplete variant="outlined" label="Outlined" style="inline-size: 240px;">
+  <md-select-option value="a">Alpha</md-select-option>
+  <md-select-option value="b">Bravo</md-select-option>
+  <md-select-option value="c">Charlie</md-select-option>
+</md-autocomplete>`}
+  label="Filled and outlined"
+  storyId="text-inputs-autocomplete--single-select"
+/>
+
+## Multiple selection
+
+`multiple` turns `value` into a `string[]` and renders each pick as a chip.
+`chip-position` places the chip rail — `below` (default), `top`, `left`,
+`right` or `inline`. A multi-select menu **already stays open** after a pick, so
+several can be made in a row; `disable-close-on-select` is for **single** mode,
+and it also makes the popup persistent — no outside-click dismissal, only
+Escape, the trigger or a pick closes it.
+
+<ComponentDemo
+  html={`<md-autocomplete multiple label="Tags" placeholder="Add tags…" style="inline-size: 320px;">
+  <md-select-option value="design">Design</md-select-option>
+  <md-select-option value="eng">Engineering</md-select-option>
+  <md-select-option value="docs">Documentation</md-select-option>
+  <md-select-option value="a11y">Accessibility</md-select-option>
+  <md-select-option value="perf">Performance</md-select-option>
+</md-autocomplete>
+<md-autocomplete multiple chip-position="inline" label="Inline chips" placeholder="Add tags…" style="inline-size: 320px;">
+  <md-select-option value="design">Design</md-select-option>
+  <md-select-option value="eng">Engineering</md-select-option>
+  <md-select-option value="docs">Documentation</md-select-option>
+</md-autocomplete>`}
+  label="Chips below the field, and inline in it"
+  storyId="text-inputs-autocomplete--inline-chips"
+/>
+
+:::caution[`max-selected="0"` means unlimited]
+It is not "nothing selectable". To block selection entirely use `disabled`.
+Same trap as [`md-multi-select`](/components/multi-select/).
+:::
+
+`chip-position="left"` / `"right"` are **physical**, not logical — re-check them
+in RTL.
+
+## Free text
+
+`free-solo` lets `value` hold text that isn't in `options`. The component
+accepts anything — **validating it is yours**.
+
+<ComponentDemo
+  html={`<md-autocomplete free-solo label="Tag" placeholder="Pick one or invent one" style="inline-size: 300px;">
+  <md-select-option value="bug">bug</md-select-option>
+  <md-select-option value="feature">feature</md-select-option>
+  <md-select-option value="chore">chore</md-select-option>
+</md-autocomplete>`}
+  label="Free-solo — commit text that isn't in the list"
+  storyId="text-inputs-autocomplete--free-solo"
+/>
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
+  <md-autocomplete data-fs free-solo label="Tag" placeholder="Type a tag…" style="inline-size: 300px;">
+    <md-select-option value="feat">feat</md-select-option>
+    <md-select-option value="fix">fix</md-select-option>
+    <md-select-option value="chore">chore</md-select-option>
+  </md-autocomplete>
+  <output data-fs-out style="font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; opacity:.85;">Commit a value — anything outside the list is flagged.</output>
+</div>`}
+  script={`
+  var el = root.querySelector('[data-fs]');
+  var out = root.querySelector('[data-fs-out]');
+  var known = new Set(['feat', 'fix', 'chore']);
+  el.addEventListener('mdChange', function (e) {
+    var ok = known.has(e.detail);
+    el.setCustomValidity(ok ? '' : 'Unknown tag');
+    el.error = !ok;
+    el.errorText = ok ? '' : 'Unknown tag';
+    out.textContent = ok
+      ? 'mdChange → ' + JSON.stringify(e.detail) + ' · valid'
+      : 'mdChange → ' + JSON.stringify(e.detail) + ' · setCustomValidity("Unknown tag")';
+  });`}
+  htmlForCode={`<md-autocomplete id="tag" free-solo label="Tag">
+  <md-select-option value="feat">feat</md-select-option>
+  <md-select-option value="fix">fix</md-select-option>
+  <md-select-option value="chore">chore</md-select-option>
+</md-autocomplete>
+
+<script type="module">
+  const el = document.getElementById('tag');
+  const known = new Set(['feat', 'fix', 'chore']);
+
+  el.addEventListener('mdChange', (e) => {
+    el.setCustomValidity(known.has(e.detail) ? '' : 'Unknown tag');
+  });
+</script>`}
+  react={`import { MdAutocomplete, MdSelectOption } from '@awc-ui/react';
+
+const KNOWN = new Set(['feat', 'fix', 'chore']);
+
+export function TagField() {
+  // The event carries the element, so the handler is a prop — no ref, no effect.
+  return (
+    <MdAutocomplete
+      freeSolo
+      label="Tag"
+      onMdChange={(e) => {
+        const el = e.target as HTMLElement & { setCustomValidity(m: string): void };
+        el.setCustomValidity(KNOWN.has(e.detail) ? '' : 'Unknown tag');
+      }}
+    >
+      <MdSelectOption value="feat">feat</MdSelectOption>
+      <MdSelectOption value="fix">fix</MdSelectOption>
+      <MdSelectOption value="chore">chore</MdSelectOption>
+    </MdAutocomplete>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-tag-field',
+  template: \`
+    <md-autocomplete free-solo label="Tag" (mdChange)="validate($event)">
+      <md-select-option value="feat">feat</md-select-option>
+      <md-select-option value="fix">fix</md-select-option>
+      <md-select-option value="chore">chore</md-select-option>
+    </md-autocomplete>
+  \`,
+})
+export class TagFieldComponent {
+  private known = new Set(['feat', 'fix', 'chore']);
+
+  validate(event: CustomEvent<string>) {
+    const el = event.target as HTMLElement & { setCustomValidity(m: string): void };
+    el.setCustomValidity(this.known.has(event.detail) ? '' : 'Unknown tag');
+  }
+}`}
+  vue={`<script setup lang="ts">
+import '@awc-ui/core/define';
+
+const known = new Set(['feat', 'fix', 'chore']);
+
+function validate(event: CustomEvent<string>) {
+  const el = event.target as HTMLElement & { setCustomValidity(m: string): void };
+  el.setCustomValidity(known.has(event.detail) ? '' : 'Unknown tag');
+}
+</script>
+
+<template>
+  <md-autocomplete free-solo label="Tag" @mdChange="validate">
+    <md-select-option value="feat">feat</md-select-option>
+    <md-select-option value="fix">fix</md-select-option>
+    <md-select-option value="chore">chore</md-select-option>
+  </md-autocomplete>
+</template>`}
+  svelte={`<script lang="ts">
+  import '@awc-ui/core/define';
+
+  const known = new Set(['feat', 'fix', 'chore']);
+
+  const validate = (event: CustomEvent<string>) => {
+    const el = event.target as HTMLElement & { setCustomValidity(m: string): void };
+    el.setCustomValidity(known.has(event.detail) ? '' : 'Unknown tag');
+  };
+</script>
+
+<md-autocomplete free-solo label="Tag" on:mdChange={validate}>
+  <md-select-option value="feat">feat</md-select-option>
+  <md-select-option value="fix">fix</md-select-option>
+  <md-select-option value="chore">chore</md-select-option>
+</md-autocomplete>`}
+  label="Type “wip” and commit it — free text is accepted, then flagged as invalid"
+  storyId="text-inputs-autocomplete--free-solo"
+/>
+
+`clear-on-blur` discards unmatched text when the field loses focus — **strict
+single mode only**: it is ignored when `multiple` or `free-solo` is set, and it
+never fires while the popup is open (arrowing into the listbox must not wipe the
+active filter).
+
+## Loading & empty states
+
+Three distinct messages, and they are not interchangeable:
+
+| Prop | Shown when |
+|---|---|
+| `loading-text` | `loading` is true |
+| `no-options-text` | There are no options at all |
+| `no-results-text` | There are options, but nothing matched the query |
+
+<ComponentDemo
+  html={`<md-autocomplete loading loading-text="Fetching cities…" label="Loading" placeholder="Click to open" style="inline-size: 260px;"></md-autocomplete>
+<md-autocomplete no-options-text="No cities configured" label="No options" placeholder="Click to open" style="inline-size: 260px;"></md-autocomplete>
+<md-autocomplete no-results-text="No city matches that" label="No results" placeholder="Type zzz" style="inline-size: 260px;">
+  <md-select-option value="par">Paris</md-select-option>
+  <md-select-option value="ber">Berlin</md-select-option>
+</md-autocomplete>`}
+  label="Loading, empty option set, and no match — click each field to open its menu"
+  storyId="text-inputs-autocomplete--loading"
+/>
+
+Slot your own into `loader` when the default spinner isn't the right affordance
+— a circular [`md-progress-indicator`](/components/progress-indicator/), a
+branded mark, a skeleton. Everything else about the loading state is unchanged.
+
+<ComponentDemo
+  html={`<md-autocomplete loading loading-text="Fetching…" label="Default loader" style="inline-size: 260px;"></md-autocomplete>
+
+<md-autocomplete loading loading-text="Fetching…" label="Slotted loader" style="inline-size: 260px;">
+  <md-progress-indicator slot="loader" variant="circular" indeterminate size="24" label="Loading"></md-progress-indicator>
+</md-autocomplete>`}
+  label="The built-in md-loading-indicator, and an md-progress-indicator slotted over it"
+  storyId="text-inputs-autocomplete--loading"
+/>
+
+## States
+
+<ComponentDemo
+  html={`<md-autocomplete label="Enabled" style="inline-size: 240px;">
+  <md-select-option value="a">Alpha</md-select-option>
+  <md-select-option value="b">Bravo</md-select-option>
+</md-autocomplete>
+<md-autocomplete label="Disabled" disabled style="inline-size: 240px;"></md-autocomplete>
+<md-autocomplete label="Soft-disabled" soft-disabled style="inline-size: 240px;"></md-autocomplete>
+<md-autocomplete label="Error" error error-text="Pick a city" required style="inline-size: 240px;"></md-autocomplete>
+<md-autocomplete label="Supporting text" supporting-text="Start typing to filter" reserve-supporting-space style="inline-size: 240px;">
+  <md-select-option value="a">Alpha</md-select-option>
+</md-autocomplete>`}
+  label="Disabled, soft-disabled, error and supporting text"
+  storyId="text-inputs-autocomplete--states"
+/>
+
+`reserve-supporting-space` holds the line height so the layout doesn't jump
+when an error appears. Show supporting text **or** error text — never both.
+
+## Filtering
+
+`filter-mode` picks a built-in matching strategy (`substring` by default).
+`filterer` replaces matching entirely and is a **function property**:
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
+  <md-autocomplete data-filt label="Country (prefix match)" placeholder="Type “ge”…" style="inline-size: 300px;"></md-autocomplete>
+  <output data-filt-out style="font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; opacity:.85;">substring would match “Algeria” on “ge” — this prefix filterer does not.</output>
+</div>`}
+  script={`
+  var el = root.querySelector('[data-filt]');
+  var out = root.querySelector('[data-filt-out]');
+  el.options = [
+    { value: 'de', label: 'Germany' },
+    { value: 'ge', label: 'Georgia' },
+    { value: 'dz', label: 'Algeria' },
+    { value: 'fr', label: 'France' },
+  ];
+  el.filterer = function (options, ctx) {
+    var q = (ctx.inputValue || '').toLowerCase();
+    var matches = options.filter(function (o) {
+      return o.label.toLowerCase().indexOf(q) === 0;
+    });
+    out.textContent = 'filterer(' + JSON.stringify(ctx.inputValue) + ') → ' +
+      JSON.stringify(matches.map(function (o) { return o.label; }));
+    return matches;
+  };`}
+  htmlForCode={`<md-autocomplete id="country" label="Country"></md-autocomplete>
+
+<script type="module">
+  const el = document.getElementById('country');
+
+  // Function property — there is no filterer attribute.
+  el.filterer = (options, { inputValue }) =>
+    options.filter((o) => o.label.toLowerCase().startsWith(inputValue.toLowerCase()));
+</script>`}
+  label="Type “ge” — the prefix filterer keeps Germany and Georgia, and drops Algeria"
+  storyId="text-inputs-autocomplete--playground"
+/>
+
+`limit-results` caps how many suggestions **render** on the client-side path —
+a rendering guard, not a search limit, since matching still scans every option.
+The virtualized path ignores it: the WASM listbox windows its own rows.
+
+## Large option sets
+
+`virtualize="always"` renders rows on demand; pair it with `row-height` so the
+scroller can size itself. `virtualize="auto"` (the default) decides for you.
+
+For a dataset that big, **don't hand it an array** — `options` would mean
+materialising every row on the JS heap. `loadOptions({ count, getRow })` takes a
+row *factory* and packs the rows into the WASM store one at a time, so the data
+never exists in JS. Filtering and scrolling then run against the packed store.
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
+  <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+    <md-button data-load="100000" variant="filled">100k</md-button>
+    <md-button data-load="1000000" variant="outlined">1M</md-button>
+    <md-button data-load="10000000" variant="outlined">10M</md-button>
+  </div>
+  <md-autocomplete data-virt label="Option" virtualize="always" row-height="48" style="inline-size: 300px;"></md-autocomplete>
+  <p data-virt-status style="font:500 12px/16px Roboto,system-ui,sans-serif; color:var(--md-sys-color-on-surface-variant); margin:0; min-block-size:16px;"></p>
+</div>`}
+  script={`
+  var el = root.querySelector('[data-virt]');
+  var status = root.querySelector('[data-virt-status]');
+  var buttons = [].slice.call(root.querySelectorAll('md-button[data-load]'));
+  var ticker;
+
+  function load(count, btn) {
+    if (ticker) return;                 // a pack is already running
+    buttons.forEach(function (b) {
+      b.variant = b === btn ? 'filled' : 'outlined';
+      b.disabled = true;                // a second 10M pack queued behind the first looks hung
+    });
+
+    var t0 = performance.now();
+    // Ten million rows take seconds. Count them off so the wait reads as work in
+    // progress rather than a frozen page.
+    var tick = function () {
+      status.textContent =
+        'Packing ' + count.toLocaleString() + ' rows… ' +
+        ((performance.now() - t0) / 1000).toFixed(1) + 's';
+    };
+    tick();
+    ticker = setInterval(tick, 100);
+
+    // A row FACTORY, never an array: the WASM store pulls one row at a time, so
+    // the dataset never exists on the JS heap. Keep the factory CHEAP — it runs
+    // once per row, and toLocaleString() here cost 3.4s of the 10M pack.
+    el.loadOptions({
+      count: count,
+      getRow: function (i) { return { value: 'v' + i, label: 'Option ' + i }; },
+    }).then(function () {
+      clearInterval(ticker);
+      ticker = null;
+      buttons.forEach(function (b) { b.disabled = false; });
+      status.textContent =
+        count.toLocaleString() + ' options packed in ' + Math.round(performance.now() - t0) +
+        'ms — open it, scroll, and type to filter.';
+    });
+  }
+
+  buttons.forEach(function (b) {
+    b.addEventListener('mdClick', function () { load(Number(b.getAttribute('data-load')), b); });
+  });
+
+  load(100000, buttons[0]);`}
+  htmlForCode={`<md-autocomplete
+  id="options"
+  label="Option"
+  virtualize="always"
+  row-height="48"
+></md-autocomplete>
+
+<script type="module">
+  const el = document.getElementById('options');
+
+  // A row FACTORY, not an array: loadOptions packs the dataset into the WASM
+  // store one row at a time, so the rows never exist on the JS heap.
+  // Keep the factory cheap — it runs once per row. Formatting each label with
+  // toLocaleString() added 3.4s to a 10M pack in this very demo.
+  await el.loadOptions({
+    count: 10_000_000,
+    getRow: (i) => ({ value: 'v' + i, label: 'Option ' + i }),
+  });
+</script>`}
+  label="Pick a dataset size — 100k, 1M or 10M rows"
+  storyId="text-inputs-autocomplete--virtualized-load-options"
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdInput` | no | `string` | Every change to the typed text |
+| `mdChange` | no | `string \| string[]` | The committed selection changes |
+| `mdOpen` / `mdClose` | no | `void` | The suggestion menu opens / closes |
+| `mdClear` | no | `void` | The clear affordance is used |
+| `mdValidityChange` | no | `{ valid, validationMessage, flags }` | Validity changes — **not composed** |
+
+:::note[`mdValidityChange` does not cross shadow boundaries]
+It is emitted with `composed: false`, so a listener on an ancestor **inside a
+different shadow root** will never see it. `mdOpen` / `mdClose` are composed.
+:::
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
+  <md-autocomplete data-async label="City" name="city" required placeholder="Type at least 2 letters…" style="inline-size: 300px;"></md-autocomplete>
+  <output data-async-out style="font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; opacity:.85;">mdInput carries the TYPED TEXT — each keystroke debounces a search.</output>
+</div>`}
+  script={`
+  var el = root.querySelector('[data-async]');
+  var out = root.querySelector('[data-async-out]');
+  var CITIES = ['London', 'Lisbon', 'Lyon', 'Berlin', 'Bern', 'Barcelona', 'Paris', 'Prague', 'Porto'];
+  // Stands in for a network search.
+  var searchCities = function (q) {
+    return new Promise(function (resolve) {
+      setTimeout(function () {
+        var needle = (q || '').toLowerCase();
+        resolve(CITIES.filter(function (c) { return c.toLowerCase().indexOf(needle) !== -1; })
+          .map(function (c) { return { value: c.toLowerCase(), label: c }; }));
+      }, 400);
+    });
+  };
+  var t;
+  el.addEventListener('mdInput', function (e) {
+    clearTimeout(t);
+    var q = e.detail;
+    if (!q || q.length < 2) { out.textContent = 'mdInput → ' + JSON.stringify(q) + ' · too short, no search'; return; }
+    t = setTimeout(function () {
+      el.loading = true;
+      out.textContent = 'searchCities(' + JSON.stringify(q) + ')…';
+      searchCities(q).then(function (rows) {
+        el.options = rows;
+        el.loading = false;
+        out.textContent = 'searchCities(' + JSON.stringify(q) + ') → ' + rows.length + ' rows';
+      });
+    }, 250);
+  });`}
+  label="Type “lo” — mdInput debounces, loading shows, then the options arrive"
+  storyId="text-inputs-autocomplete--virtualized-load-options"
+  htmlForCode={`<md-autocomplete id="city" label="City" name="city" required></md-autocomplete>
+
+<script type="module">
+  const el = document.getElementById('city');
+  el.options = [];
+
+  let t;
+  el.addEventListener('mdInput', (e) => {       // e.detail is the TYPED TEXT
+    clearTimeout(t);
+    t = setTimeout(async () => {
+      el.loading = true;
+      el.options = await searchCities(e.detail);
+      el.loading = false;
+    }, 250);
+  });
+
+  el.addEventListener('mdChange', (e) => save(e.detail));   // committed selection
+</script>`}
+  react={`import { MdAutocomplete } from '@awc-ui/react';
+import { useState } from 'react';
+
+export function CityField() {
+  const [options, setOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // The wrapper forwards options as a PROPERTY, so the array is just a prop —
+  // no ref, no effect. It re-forwards on every state change.
+  return (
+    <MdAutocomplete
+      label="City"
+      name="city"
+      required
+      loading={loading}
+      options={options}
+      onMdInput={async (e) => {
+        setLoading(true);
+        setOptions(await searchCities(e.detail));
+        setLoading(false);
+      }}
+      onMdChange={(e) => save(e.detail)}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-city-field',
+  template: \`
+    <md-autocomplete
+      label="City"
+      name="city"
+      required
+      [loading]="loading"
+      [options]="options"
+      (mdInput)="onInput($event)"
+      (mdChange)="onChange($event)"
+    ></md-autocomplete>
+  \`,
+})
+export class CityFieldComponent {
+  // A property binding forwards the array — no ViewChild, no imperative assign.
+  options: unknown[] = [];
+  loading = false;
+
+  async onInput(e: CustomEvent<string>) {
+    this.loading = true;
+    this.options = await searchCities(e.detail);
+    this.loading = false;
+  }
+
+  onChange(e: CustomEvent<string | string[]>) { save(e.detail); }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+// A property binding forwards the array — no template ref, no watcher.
+const options = ref<unknown[]>([]);
+const loading = ref(false);
+
+async function onInput(e: CustomEvent<string>) {
+  loading.value = true;
+  options.value = await searchCities(e.detail);
+  loading.value = false;
+}
+</script>
+
+<template>
+  <md-autocomplete
+    label="City"
+    name="city"
+    required
+    :loading="loading"
+    :options="options"
+    @mdInput="onInput"
+    @mdChange="(e) => save(e.detail)"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  // A property binding forwards the array — no bind:this, no imperative assign.
+  let options: unknown[] = [];
+  let loading = false;
+
+  async function onInput(e: CustomEvent<string>) {
+    loading = true;
+    options = await searchCities(e.detail);
+    loading = false;
+  }
+</script>
+
+<md-autocomplete
+  label="City"
+  name="city"
+  required
+  {loading}
+  {options}
+  on:mdInput={onInput}
+  on:mdChange={(e) => save(e.detail)}
+/>`}
+/>
+
+## Forms
+
+The component is **form-associated** via `ElementInternals`, so `name` and
+`required` participate in `FormData` and in native constraint validation.
+`value-missing-label` is the message shown when a required field is empty.
+`getValidity()`, `checkValidity()`, `reportValidity()` and
+`setCustomValidity()` are available as methods.
+
+<ComponentDemo
+  html={`<form data-ac-form style="display:flex; flex-direction:column; gap:16px; align-items:flex-start;">
+  <md-autocomplete data-ac-city name="city" label="City" required
+                   value-missing-label="Pick a city"
+                   supporting-text="Required — submit empty to see it block"
+                   style="inline-size: 300px;">
+    <md-select-option value="lon">London</md-select-option>
+    <md-select-option value="par">Paris</md-select-option>
+    <md-select-option value="ber">Berlin</md-select-option>
+  </md-autocomplete>
+  <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+    <md-button variant="filled" type="submit">Save</md-button>
+    <md-button variant="text" type="reset">Reset</md-button>
+    <md-button data-ac-check variant="outlined">checkValidity()</md-button>
+  </div>
+  <output data-ac-out style="font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; opacity:.85; min-block-size:2.6em; white-space:pre-wrap;"></output>
+</form>`}
+  script={`
+  var form = root.querySelector('[data-ac-form]');
+  var ac = root.querySelector('[data-ac-city]');
+  var out = root.querySelector('[data-ac-out]');
+  out.textContent = 'Submit with nothing chosen — required blocks it.';
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    out.textContent = 'FormData → ' +
+      JSON.stringify(Object.fromEntries(new FormData(form)));
+  });
+  form.addEventListener('reset', function () {
+    setTimeout(function () { out.textContent = 'reset → value = ' + JSON.stringify(ac.value); }, 0);
+  });
+  root.querySelector('[data-ac-check]').addEventListener('click', function () {
+    ac.getValidity().then(function (v) {
+      out.textContent =
+        'checkValidity() → ' + v.valid + String.fromCharCode(10) +
+        'validationMessage → ' + JSON.stringify(v.validationMessage);
+    });
+  });`}
+  htmlForCode={`<form id="signup">
+  <md-autocomplete
+    id="city"
+    name="city"
+    label="City"
+    required
+    value-missing-label="Pick a city"
+  >
+    <md-select-option value="lon">London</md-select-option>
+    <md-select-option value="par">Paris</md-select-option>
+  </md-autocomplete>
+
+  <md-button variant="filled" type="submit">Save</md-button>
+  <md-button variant="text" type="reset">Reset</md-button>
+</form>
+
+<script type="module">
+  const form = document.getElementById('signup');
+  const city = document.getElementById('city');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    // name/value land in FormData across the shadow boundary — no hidden input.
+    console.log(Object.fromEntries(new FormData(form)));   // { city: 'lon' }
+  });
+
+  // Same validity surface as a native control.
+  const { valid, validationMessage } = await city.getValidity();
+</script>`}
+  label="Submit empty and required blocks it; pick a city and FormData carries it — Reset restores the initial value"
+  storyId="text-inputs-autocomplete--form-participation"
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- `label` names the field. The suggestion count is announced through a live
+  region driven by `status-template` — keep the `{count}` placeholder when you
+  translate it.
+- Arrow keys move through suggestions, `Enter` commits, `Escape` closes.
+- Chips name their own remove control — `Remove {label}`. Note that name and
+  the clear button's `"Clear value"` are hard-coded English; neither has a prop
+  yet.
+- `reserve-supporting-space` avoids layout jump when errors appear.
+
+:::note[How the combobox crosses the shadow boundary]
+The textbox lives inside [`md-text-field`](/components/text-field/)'s shadow
+root; the listbox lives in this component's. That breaks the wiring in two
+separate ways: an `aria-controls` **IDREF between the two can never resolve**,
+and an ARIA attribute written on the `<md-text-field>` host lands on the host,
+not on the `<input>` a screen reader is actually sitting on.
+
+So each half is solved differently:
+
+- **role, `aria-expanded`, `aria-autocomplete`** are handed over as props —
+  `input-role="combobox"`, `input-expanded`, `input-aria-autocomplete` — and
+  md-text-field renders them onto the real input. The two state props are
+  emitted only alongside the role, where they are allowed attributes.
+- **the listbox reference** uses **ARIA element reflection**
+  (`input.ariaControlsElements = [listbox]`), which takes an element rather than
+  an id, and accepts a target in an ancestor tree. It is set while the popup is
+  open and cleared on close.
+
+Verified in the accessibility tree (Chrome DevTools → Accessibility): the
+combobox reports `expanded` and a real `controls` relation to the listbox.
+Where reflection is unavailable, the control is still a combobox with a truthful
+expanded state, and `↓` moves **real focus** onto an option — the APG variant
+that needs no reference at all.
+:::
+
+:::caution[axe will report `aria-required-attr` while the popup is open]
+Assigning the element reference leaves an empty `aria-controls=""` attribute
+behind, and axe reads attributes rather than the accessibility tree — so it
+reports the required attribute as missing. The relation is real; the checker
+cannot see element references. Prefer the accessibility tree when auditing this
+one.
+:::
+
+## RTL, density & i18n
+
+**RTL** — field, chips, caret and menu mirror under `dir="rtl"`.
+`chip-position="left"` / `"right"` is **physical**, so re-check it per
+direction. See [RTL](/behaviour/rtl/).
+
+**Density** — `density="-1…-4"` compacts the field, the chips and the
+suggestion rows. Chips bottom out at a **24px floor** (a tap-target guard in
+[`md-chip`](/components/chip/)), so they stop shrinking around `-2` while the
+field and rows keep going. See [Density](/behaviour/density/).
+
+<ComponentDemo
+  html={`<div data-dens style="display:flex; flex-direction:column; gap:24px; max-inline-size: 420px;">
+  <md-autocomplete data-d0 multiple label="Density 0 (default)" placeholder="Add tags…"></md-autocomplete>
+  <md-autocomplete data-d1 multiple density="-1" label="Density -1" placeholder="Add tags…"></md-autocomplete>
+  <md-autocomplete data-d2 multiple density="-2" label="Density -2" placeholder="Add tags…"></md-autocomplete>
+  <md-autocomplete data-d3 multiple density="-3" label="Density -3" placeholder="Add tags…"></md-autocomplete>
+  <md-autocomplete data-d4 multiple density="-4" label="Density -4" placeholder="Add tags…"></md-autocomplete>
+</div>`}
+  script={`
+  var opts = [
+    { value: 'design', label: 'Design' },
+    { value: 'eng', label: 'Engineering' },
+    { value: 'prd', label: 'Product' },
+    { value: 'ops', label: 'Operations' },
+  ];
+  ['[data-d0]', '[data-d1]', '[data-d2]', '[data-d3]', '[data-d4]'].forEach(function (sel) {
+    var el = root.querySelector(sel);
+    el.options = opts;
+    el.value = ['design', 'eng'];
+  });`}
+  htmlForCode={`<md-autocomplete multiple label="Tags"></md-autocomplete>
+<md-autocomplete multiple density="-1" label="Tags"></md-autocomplete>
+<md-autocomplete multiple density="-2" label="Tags"></md-autocomplete>
+<md-autocomplete multiple density="-3" label="Tags"></md-autocomplete>
+<md-autocomplete multiple density="-4" label="Tags"></md-autocomplete>
+
+<script type="module">
+  const tags = [
+    { value: 'design', label: 'Design' },
+    { value: 'eng', label: 'Engineering' },
+    { value: 'prd', label: 'Product' },
+    { value: 'ops', label: 'Operations' },
+  ];
+
+  // options also takes a JSON attribute; value has no attribute form, so it is
+  // assigned here. Every framework below binds both directly instead.
+  for (const el of document.querySelectorAll('md-autocomplete')) {
+    el.options = tags;
+    el.value = ['design', 'eng'];
+  }
+</script>`}
+  react={`import { MdAutocomplete } from '@awc-ui/react';
+
+const TAGS = [
+  { value: 'design', label: 'Design' },
+  { value: 'eng', label: 'Engineering' },
+  { value: 'prd', label: 'Product' },
+  { value: 'ops', label: 'Operations' },
+];
+const SELECTED = ['design', 'eng'];
+
+export function DensityScale() {
+  // The wrapper forwards options / value as PROPERTIES, so the arrays go
+  // straight through as props — no ref, no effect.
+  return (
+    <>
+      {[0, -1, -2, -3, -4].map((density) => (
+        <MdAutocomplete
+          key={density}
+          multiple
+          density={density}
+          label="Tags"
+          options={TAGS}
+          value={SELECTED}
+        />
+      ))}
+    </>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-density-scale',
+  template: \`
+    <md-autocomplete
+      *ngFor="let density of densities"
+      multiple
+      [density]="density"
+      label="Tags"
+      [options]="tags"
+      [value]="selected"
+    ></md-autocomplete>
+  \`,
+})
+export class DensityScaleComponent {
+  densities = [0, -1, -2, -3, -4];
+  selected = ['design', 'eng'];
+  tags = [
+    { value: 'design', label: 'Design' },
+    { value: 'eng', label: 'Engineering' },
+    { value: 'prd', label: 'Product' },
+    { value: 'ops', label: 'Operations' },
+  ];
+}`}
+  vue={`<script setup lang="ts">
+import '@awc-ui/core/define';
+
+const densities = [0, -1, -2, -3, -4];
+const selected = ['design', 'eng'];
+const tags = [
+  { value: 'design', label: 'Design' },
+  { value: 'eng', label: 'Engineering' },
+  { value: 'prd', label: 'Product' },
+  { value: 'ops', label: 'Operations' },
+];
+</script>
+
+<template>
+  <md-autocomplete
+    v-for="density in densities"
+    :key="density"
+    multiple
+    :density="density"
+    label="Tags"
+    :options="tags"
+    :value="selected"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  import '@awc-ui/core/define';
+
+  const densities = [0, -1, -2, -3, -4];
+  const selected = ['design', 'eng'];
+  const tags = [
+    { value: 'design', label: 'Design' },
+    { value: 'eng', label: 'Engineering' },
+    { value: 'prd', label: 'Product' },
+    { value: 'ops', label: 'Operations' },
+  ];
+</script>
+
+{#each densities as density}
+  <md-autocomplete
+    multiple
+    {density}
+    label="Tags"
+    options={tags}
+    value={selected}
+  ></md-autocomplete>
+{/each}`}
+  label="Every rung, 0 through -4 — the field and the suggestion rows taper; chips stop at their 24px floor"
+  storyId="text-inputs-autocomplete--playground"
+/>
+
+**i18n** — translate `label`, `placeholder`, `supporting-text`, `error-text`,
+`no-options-text`, `no-results-text`, `loading-text`, `value-missing-label`,
+and `status-template` (keeping `{count}`). Every one of them defaults to
+English.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-autocomplete-width` / `--md-autocomplete-min-width` | Field inline-size | `auto` |
+| `--md-autocomplete-chip-gap` / `--md-autocomplete-chip-radius` | Chip rail metrics | Per density |
+| `--md-autocomplete-caret-color` / `--md-autocomplete-caret-size` | Dropdown caret | `on-surface-variant` |
+| `--md-autocomplete-clear-color` | Clear affordance | `on-surface-variant` |
+| `--md-autocomplete-option-icon-size` / `--md-autocomplete-option-icon-color` | Suggestion row icons | 24px |
+| `--md-autocomplete-loading-color` / `--md-autocomplete-spinner-size` | Loading state | `primary` |
+
+<ComponentDemo
+  html={`<md-autocomplete
+  label="Themed"
+  variant="outlined"
+  style="--md-autocomplete-width: 300px; --md-autocomplete-caret-color: var(--md-sys-color-primary); --md-autocomplete-chip-radius: 4px;">
+  <md-select-option value="a">Alpha</md-select-option>
+  <md-select-option value="b">Bravo</md-select-option>
+  <md-select-option value="c">Charlie</md-select-option>
+</md-autocomplete>`}
+  label="Themed instance"
+  storyId="text-inputs-autocomplete--custom-css"
+/>
+
+Every default resolves through an `md-sys-color` role, so an autocomplete that
+sets no custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<md-autocomplete label="Untouched defaults" style="min-inline-size: 280px;">
+  <md-select-option value="lon">London</md-select-option>
+  <md-select-option value="par">Paris</md-select-option>
+  <md-select-option value="ber">Berlin</md-select-option>
+</md-autocomplete>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="text-inputs-autocomplete--dark-theme"
+/>
+
+## CSS parts
+
+| Part | Element |
+|---|---|
+| `field` | The text-field trigger |
+| `chips` / `chip` | Selected-value chips, in multiple mode |
+| `chip-remove` / `chip-label` | Forwarded out of each chip (`exportparts`) |
+| `clear` / `caret` | Trailing controls |
+| `menu` | The suggestion popup |
+| `option` / `option-selected` | Suggestion rows |
+| `option-icon` | Per-option icon |
+| `loading-spinner` | Trailing spinner while busy |
+| `loading` / `loading-progress` | The in-menu progress affordance |
+
+<ComponentDemo
+  html={`<style>
+  .parts-ac::part(caret) { color: var(--md-sys-color-primary); }
+  .parts-ac::part(chip) { border-radius: 4px; }
+</style>
+<md-autocomplete class="parts-ac" multiple label="Styled parts" style="min-inline-size: 280px;">
+  <md-select-option value="lon">London</md-select-option>
+  <md-select-option value="par">Paris</md-select-option>
+</md-autocomplete>`}
+  label="caret, and chip once you pick a value"
+/>
+
+
+## Related
+
+[`md-select`](/components/select/) ·
+[`md-multi-select`](/components/multi-select/) ·
+[`md-search`](/components/search/) ·
+[`md-text-field`](/components/text-field/) ·
+[`md-chip`](/components/chip/) ·
+[`md-menu`](/components/menu/) ·
+[`md-transfer-list`](/components/transfer-list/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-autocomplete" />

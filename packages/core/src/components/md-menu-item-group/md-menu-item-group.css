@@ -1,0 +1,92 @@
+/* ═══════════════════════════════════════════════════════════
+   md-menu-item-group
+   Visual grouping for vertical menu items (M3 Expressive)
+   ═══════════════════════════════════════════════════════════ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+}
+
+.md-menu-item-group__label {
+  font-family: var(--md-sys-typescale-label-medium-font-family, Roboto, sans-serif);
+  font-size: var(--md-sys-typescale-label-medium-size, 12px);
+  font-weight: var(--md-sys-typescale-label-medium-weight, 500);
+  line-height: var(--md-sys-typescale-label-medium-line-height, 16px);
+  color: var(--md-sys-color-on-surface-variant, #49454F);
+  /* Global density: on-grid label padding tracks --md-sys-spacing-* tokens
+     (8/12/4 = inset-sm/md/xs). Defaults resolve byte-for-byte at density 0. */
+  padding: var(--md-sys-spacing-inset-sm, 8px) var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-xs, 4px);
+  user-select: none;
+}
+
+.md-menu-item-group__items {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Divider between groups when not using gap */
+:host(:not(:last-child))::after {
+  content: '';
+  height: 1px;
+  background-color: var(--md-sys-color-outline-variant, #CAC4D0);
+  margin: var(--md-sys-spacing-gap-xs, 4px) 0;
+}
+
+/* When the menu uses gap, drop the divider and separate the group cards with a
+   real gap. The gap lives on the card (not the surface's flex `gap`) because a
+   scroll-capped menu nests the groups inside the scroll viewport, where the
+   surface's flex gap can't reach them — so it must not depend on the groups
+   being direct flex children of the surface. */
+/* The separation between cards is a flex gap on the menu's container
+   (md-menu.css) — a margin here is declared on `:host`, which any document-level
+   `* { margin: 0 }` reset out-ranks. */
+:host([data-use-gap]:not(:last-child))::after {
+  display: none;
+}
+
+/* ==========================================================
+   CARD APPEARANCE — grouped + gap + standard/vibrant
+   Each group is its own rounded card, separated by a real gap. Two things have
+   to agree or the spacing reads as lopsided:
+     • the gap must be wide enough that adjacent rounded corners don't appear to
+       pinch (a 2px seam between 12px curves looked like a bulge), and
+     • a row's state layer is inset by the card's padding, so its radius must be
+       the card's radius MINUS that padding — concentric curves, uniform band.
+   `--md-menu-group-shape` is published for both: the rows derive their pill
+   radius from it.
+   ========================================================== */
+:host([data-variant="standard"][data-use-gap]) {
+  background-color: var(--md-sys-color-surface-container-low, #F7F2FA);
+  --md-menu-group-shape: var(--md-menu-group-container-shape, 12px);
+  border-radius: var(--md-menu-group-shape);
+  /* Equal on all four sides: the first row's hover/state pill is inset by this
+     padding, so an asymmetric block value made it hug the card's top edge while
+     sitting 4px clear of the sides. */
+  padding: var(--md-sys-spacing-inset-xs, 4px);
+  overflow: hidden;
+}
+
+:host([data-variant="vibrant"][data-use-gap]) {
+  background-color: var(--md-sys-color-tertiary-container, #FFD8E4);
+  --md-menu-group-shape: var(--md-menu-group-container-shape, 12px);
+  border-radius: var(--md-menu-group-shape);
+  /* Equal on all four sides: the first row's hover/state pill is inset by this
+     padding, so an asymmetric block value made it hug the card's top edge while
+     sitting 4px clear of the sides. */
+  padding: var(--md-sys-spacing-inset-xs, 4px);
+  overflow: hidden;
+}
+
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

@@ -1,0 +1,194 @@
+# Demo translation review
+
+The Storybook Locale toolbar strings under `messages/` are **machine-assisted** and
+not authoritative. Below are the terms the generators flagged as low-confidence —
+review with a native speaker. (Everything else is common UI vocabulary, but a full
+native pass is still recommended before treating any non-English string as final.)
+
+- **MdAccordion** — accordion.review — 'Review' as a checkout step renders differently per convention (fr Récapitulatif, zh 确认, he סקירה, de Überprüfung); verify against your UX copy
+- **MdAccordion** — accordion.billing — Arabic الفوترة (billing process) vs الفواتير (invoices); chose الفوترة
+- **MdAccordion** — accordion.keepOneAccountBody — ar/he long sentence phrasing
+- **MdAccordion** — accordion.respAccountBody — ar/he/ja long multi-clause body
+- **MdAccordion** — accordion.respNotifBody — ar/he long body
+- **MdAccordion** — accordion.respBillingBody — ar/he long body
+- **MdAccordion** — accordion.darkModeBody — ar/he phrasing of version + auto-detection
+- **MdAccordion** — accordion.roadmapBody — ar/he phrasing of 'Q3 we ship…'
+- **MdAppBar** — appbar.unreadMessages / appbar.unreadShort — used Arabic-Indic numerals (١٢) for ar-SA to match the repo's existing RTL story convention (٣ إشعارات); a consumer preferring Western digits would use '12'. Hebrew keeps Western '12' per convention.
+- **MdAreaChart** — areaChart.direct / organic / paid (ar-SA, he-IL): analytics traffic-source category terms are best-effort; a native reviewer may prefer domain-standard wording
+- **MdAreaChart** — areaChart.traffic (ar-SA 'الزيارات', he-IL 'תנועה'): rendered as web-analytics 'traffic' rather than road traffic — verify domain fit
+- **MdAutocomplete** — autocomplete.tags de-DE 'Tags' (loanword; 'Schlagwörter' is the literal alternative)
+- **MdAutocomplete** — autocomplete.tags fr-FR 'Étiquettes' (some UIs keep 'Tags')
+- **MdAutocomplete** — autocomplete.assignee ar-SA 'المكلَّف' (also 'المسند إليه')
+- **MdAutocomplete** — autocomplete.assignee he-IL 'אחראי' (also 'מוקצה')
+- **MdAutocomplete** — autocomplete.assignee de-DE 'Zuständiger' (also 'Bearbeiter')
+- **MdAutocomplete** — autocomplete.assignee fr-FR 'Responsable' (also 'Assigné à')
+- **MdAutocomplete** — autocomplete.email ja-JP 'メール' (field labels often 'メールアドレス')
+- **MdAutocomplete** — autocomplete.item de-DE 'Element' (also 'Eintrag'/'Artikel')
+- **MdAvatar** — avatar.greeter ("Greeter" is an ambiguous role noun; renderings like ja 受付担当 / de Begrüßer / fr Hôte d'accueil are best-effort)
+- **MdAvatar** — avatar.euTeam (EU vs UE abbreviation localizes differently per language; kept EU where conventional, UE for fr)
+- **MdAvatar** — avatar.prideChannel (LGBTQ+ Pride term; ar قناة برايد and zh 骄傲频道 are best-effort/culturally sensitive)
+- **MdAvatar** — avatar.lastSeen (time token '9:42 AM' kept verbatim per rules; AM/PM notation is unusual in de/fr/ja/zh)
+- **MdAvatar** — avatar.awayBack (time token '11:00' and em-dash kept verbatim; phrasing around it is best-effort)
+- **MdAvatar** — avatar.partyEmoji (ar إيموجي الاحتفال / he אימוג׳י מסיבה phrasing is best-effort)
+- **MdBadge** — badge.new (NEU/NOUVEAU/新着/新 — casing & short-form conventions vary; fr NOUVEAU truncates under 4-char cap)
+- **MdBadge** — badge.sale (de Angebot vs loanword SALE; fr PROMO vs SOLDES; zh 促销 vs 特价)
+- **MdBadge** — badge.beta (ar بيتا transliteration vs تجريبي; zh 测试 vs kept 'Beta')
+- **MdBarChart** — barChart.desktop (fr 'Ordinateur' / de kept as 'Desktop' — device-category naming varies by locale)
+- **MdBarChart** — barChart.score (de 'Punktzahl' vs commonly-kept 'Score')
+- **MdBarChart** — barChart.bestPractices (de 'Best Practices' left in English, standard in German dev contexts)
+- **MdBottomSheet** — bottomSheet.openBottomSheet / openStandard / openDetached / openSheet / openDraggable — the component name 'Bottom Sheet'/'Sheet' has no settled translation in de-DE and fr-FR (kept 'Bottom Sheet'/'Sheet' in German, used 'feuille' in French); native review advised.
+- **MdBottomSheet** — 'home' chip in FilterPanel reuses the shared common.ts 'home' key per instructions, but there it means a product category (household goods), not a homepage — so de 'Startseite' / fr 'Accueil' read oddly in that context. Reused as instructed; flag if a distinct category key is preferred.
+- **MdBottomSheet** — bottomSheet.customDismiss (de 'Benutzerdefiniertes Schließen') and bottomSheet.openWithActions/openNonDismissible/openScrollable are literal renderings of demo-specific labels; wording may vary by house style.
+- **MdBreadcrumbs** — breadcrumbs.breadcrumbs (translating the component's own name as a crumb label; de 'Brotkrümelnavigation' is verbose, fr 'Fil d’Ariane' idiomatic)
+- **MdBreadcrumbs** — breadcrumbs.outdoors (store-category sense; ar 'الهواء الطلق' / he 'פעילות חוץ' are approximations)
+- **MdBreadcrumbs** — breadcrumbs.reference (he 'סימוכין' vs 'מדריך עזר')
+- **MdBreadcrumbs** — breadcrumbs.library (zh '库' — terse; could be '资源库' depending on media-vs-docs sense)
+- **MdBreadcrumbs** — breadcrumbs.analytics (fr 'Analytique' vs 'Statistiques'; ja/zh '分析')
+- **MdButtonGroup** — buttonGroup.mon/tue/wed/thu/fri (ar-SA): used full Arabic weekday names — Arabic has no widely-standard 3-letter abbreviation like the en 'Mon/Tue'
+- **MdButtonGroup** — buttonGroup.mon/tue/wed/thu/fri (he-IL): used the standard Hebrew single-letter weekday abbreviations (ב׳..ו׳) — correct but worth a native check
+- **MdButtonGroup** — buttonGroup.strike (all locales): the en label is an abbreviation of 'Strikethrough'; ja-JP/de-DE render the full term (取り消し線 / Durchgestrichen) since no natural short form exists
+- **MdButtonGroup** — buttonGroup.starred (de-DE 'Markiert', fr-FR 'Suivis'): Gmail-style folder conventions, approximate
+- **MdButtonGroup** — buttonGroup.module (view-mode label): 'Module' is an ambiguous UI term; translated literally (Modul/モジュール/模块) which may not read as a view mode in every locale
+- **MdCard** — card.elevated-title 'Elevated' / card.filled-title 'Filled' / card.outlined-title 'Outlined' (+ their Interactive/Dark compounds): rendered as card headlines so translated as content, but they double as MD3 variant names — the ja/zh renderings (エレベーテッド/塗りつぶし/アウトライン, 悬浮/填充/描边) are style-name choices a native reviewer may prefer to keep in English
+- **MdCard** — card.playground-title 'Playground Card': 'Playground' as a demo/sandbox term has no single standard rendering (used 演练场/démonstration/ניסיוני etc.)
+- **MdCard** — card.mountain-title 'Mountain View': translated as a descriptive photo title (山景/Bergblick/…); could instead be read as the California place name, in which case it should stay literal
+- **MdCard** — card.dark-elevated-body / card.dark-filled-body: kept the MD3 token words 'Surface Container Low/Highest' partly untranslated (Low/Highest) since they are token-tier names
+- **MdCheckbox** — checkbox.pepperoni — 'Pepperoni' as a pizza topping is borrowed/ambiguous: German commonly says 'Salami' in a pizza context (kept 'Pepperoni'), and zh-CN rendered descriptively as 意大利辣香肠
+- **MdCheckbox** — checkbox.bellPeppers — regional variance (de 'Paprika', fr 'Poivrons', ja 'パプリカ'); all acceptable but not one-to-one
+- **MdChip** — chip.directions — 'Directions' is ambiguous (map route vs. step-by-step instructions); translated as map-route sense (Route/Itinéraire/経路/路线/מסלול/الاتجاهات)
+- **MdChip** — chip.verified — Japanese rendered as 認証済み (authenticated) rather than 確認済み (checked); depends on whether the chip means account-verification or item-checked
+- **MdDatePicker** — date-picker.check-in (fr 'Arrivée' / de 'Check-in' / he transliteration 'צ'ק-אין' — booking-context idiom rather than a literal word-for-word render)
+- **MdDatePicker** — date-picker.check-out (fr 'Départ' / he 'צ'ק-אאוט' — same booking-idiom assumption)
+- **MdDatePicker** — date-picker.report-date (ja 'レポート日' — could also be '報告日' depending on domain)
+- **MdDatePicker** — date-picker.event-date (ar 'تاريخ الفعالية' / he 'תאריך האירוע' — 'event' word choice)
+- **MdDialog** — dialog.discard (he-IL 'מחיקה' / fr-FR 'Supprimer' overlap with delete semantics)
+- **MdDialog** — dialog.dismiss (he-IL 'סגירה', de-DE 'Schließen', fr-FR 'Ignorer' — 'dismiss' has no single settled UI term)
+- **MdDialog** — dialog.starItem / dialog.starAction ('Star' as a verb — de-DE 'Mit Stern markieren', fr-FR 'Marquer d'une étoile' are verbose)
+- **MdDialog** — dialog.darkBody, dialog.eventBody, dialog.eventLogEmpty (borderline demo-instructional copy that I treated as translatable dialog body / empty-state text; en-US preserved so no test/baseline risk)
+- **MdDialog** — dialog.bio (he-IL 'אודות')
+- **MdFab** — fab.reroute — navigation-context term (change route vs recalculate); rendered fr as 'Nouvel itinéraire', de 'Route ändern', ja '経路変更' etc.
+- **MdFab** — fab.compose — 'Compose' is ambiguous (write email/message vs compose music); translated in the message/email sense (fr 'Rédiger', de 'Verfassen', zh '撰写', ja '作成')
+- **MdFabMenu** — fabMenu.upload (fr 'Importer' — France Material convention; fr-CA official term is 'Téléverser')
+- **MdFabMenu** — fabMenu.star (playful demo noun, not a standard UI action label)
+- **MdFabMenu** — fabMenu.rocket (playful demo noun, not a standard UI action label)
+- **MdFabMenu** — fabMenu.heart (playful demo noun, not a standard UI action label)
+- **MdList** — list.playgroundList ("Playground" as a demo/sandbox concept — he/fr/zh renderings are approximate)
+- **MdList** — list.pro / list.team / list.enterprise (subscription-tier proper nouns; some locales keep them in English, e.g. de 'Enterprise', he/ja/de/fr 'Pro' — treatment is inconsistent by design)
+- **MdList** — list.sms (ar rendered as 'رسالة نصية'; the bare initialism 'SMS' is also common in Arabic UI)
+- **MdList** — list.doNotDisturb (ja 'サイレント' — platform-specific; Android/iOS use different terms)
+- **MdList** — list.silenceAll (time-range phrasing '22:00 – 07:00' varies in word order per locale)
+- **MdList** — list.collaborationSso (ar/zh expand SSO parenthetically; other locales keep the acronym)
+- **MdLoadingIndicator** — loading.list-item-one — placeholder-style list filler ('List item one'); rendered ordinals adapted (JA/ZH use numerals 1/一) rather than spelled-out words
+- **MdLoadingIndicator** — loading.list-item-two — same placeholder-style filler ('List item two')
+- **MdMenu** — menu.starred / menu.starredOnly (fr 'Suivis', de 'Markiert' — Gmail-specific star conventions vary)
+- **MdMenu** — menu.archive (he 'ארכיון' used for both the action and the folder)
+- **MdMenu** — menu.badgeBeta (ar 'تجريبي', zh '测试版' — 'Beta' is often left transliterated)
+- **MdMenu** — menu.rasterVector (he 'רסטר ווקטור' transliteration)
+- **MdMenu** — menu.updates (ja '更新情報' vs bare '更新')
+- **MdMultiSelect** — multiselect.filters (ar-SA: عوامل التصفية vs الفلاتر — both valid for a field label)
+- **MdMultiSelect** — multiselect.pickAtLeastOne (de-DE phrasing 'Mindestens eine Option auswählen' — implies feminine 'Option'; reviewer may prefer 'Mindestens eines auswählen')
+- **MdMultiSelect** — multiselect.chooseRegions (he-IL 'שאליהם אתה שולח' uses masculine 2nd-person; ar-SA/ja-JP/fr-FR sentence phrasing may vary by house style)
+- **MdMultiSelect** — multiselect.selectAtLeastOneTopic (he-IL/ar-SA imperative gender form)
+- **MdNavigationBar** — navbar.spam he-IL 'ספאם' (transliteration; 'דואר זבל' is an alternative)
+- **MdNavigationBar** — navbar.new ja-JP '新着' for the badge label (vs 新規/新)
+- **MdNavigationBar** — navbar.star zh-CN '星标'
+- **MdNavigationBar** — navbar.heart zh-CN '爱心'
+- **MdNavigationBar** — navbar.smile / navbar.star / navbar.heart are icon-demo tab labels — translated as generic nouns
+- **MdNavigationBar** — navbar.inbox he-IL 'דואר נכנס' (vs longer 'תיבת דואר נכנס')
+- **MdNavigationRail** — nav-rail.explore (he 'גילוי'; ja/zh '探索')
+- **MdNavigationRail** — nav-rail.browse (ja '見つける'; de 'Durchsuchen'; he 'עיון')
+- **MdNavigationRail** — nav-rail.liked-songs (ar 'الأغاني المفضّلة'; fr 'Titres aimés')
+- **MdNavigationRail** — nav-rail.recently-played (ar 'المشغّلة مؤخرًا'; ja '最近再生した曲')
+- **MdNavigationRail** — nav-rail.your-library (zh '你的媒体库'; fr 'Votre bibliothèque')
+- **MdNavigationRail** — nav-rail.your-music (he 'המוזיקה שלך'; ja 'マイミュージック')
+- **MdNavigationRail** — nav-rail.alerts (ja '通知'; zh '提醒' — 'Alerts' vs 'Notifications' nuance)
+- **MdNavigationRail** — nav-rail.analytics (ja '分析'; de 'Analysen'; zh '数据分析')
+- **MdNavigationRail** — nav-rail.scheduled (zh '已排定'; ar 'المجدولة')
+- **MdOrganizationChart** — orgchart.compilers (ar-SA): 'المُترجِمات' can also read as 'translators'; a stricter CS-context term for compilers is 'المصرِّفات'
+- **MdOrganizationChart** — orgchart.teamA / orgchart.teamB: letter-identifier handling is stylistic across scripts — kept Latin A/B in he-IL, transliterated أ/ب in ar-SA, spacing choices in ja-JP/zh-CN
+- **MdOrganizationChart** — orgchart.founderCeo (de-DE): used masculine-generic 'Gründer & CEO'; the node it renders for (Amy Elsner) is female, so 'Gründerin & CEO' would be gender-accurate
+- **MdPieChart** — pieChart.paidSocial (de-DE 'Bezahlte soziale Medien', fr-FR 'Réseaux sociaux payants' — marketing jargon; many teams keep the English 'Paid Social')
+- **MdPieChart** — pieChart.referral (ja-JP '参照元', fr-FR 'Référent' — analytics-tool convention chosen over literal translation)
+- **MdProgressIndicator** — progress.pause (de-DE/fr-FR 'Pause' — retains the loanword, which is standard in both media UIs)
+- **MdProgressIndicator** — progress.play (de-DE 'Wiedergabe' vs 'Abspielen' — chose the standard media-control noun)
+- **MdProgressIndicator** — progress.start (ar-SA 'بدء' noun vs imperative 'ابدأ')
+- **MdRadio** — radio.overnight (ar-SA 'ليلي', he-IL 'בן לילה', fr-FR 'De nuit' — bare shipping-tier 'Overnight' has no single crisp label parallel to Standard/Express; chose short idiomatic forms)
+- **MdRadio** — radio.dragonfruit (he-IL 'פרי דרקון' — no fully standardized Hebrew term)
+- **MdSearch** — search.tapMicSpeak (he-IL 'הקישו על המיקרופון ודברו' and ar-SA 'انقر على الميكروفون وتحدث' — imperative phrasing, native review advised)
+- **MdSearch** — search.spokenQuery (he-IL 'שאילתה קולית' — 'query' term choice)
+- **MdSegmentedButton** — segmentedButton.walk — 'Walk' as a transport-mode label (ja 徒歩, de 'Zu Fuß', fr 'À pied'); natural but context-dependent vs. an imperative verb
+- **MdSegmentedButton** — segmentedButton.small/medium/large — treated as user-facing size-selector content rather than the sm/md/lg technical enum; borderline against the 'size names' exclusion
+- **MdSegmentedButton** — segmentedButton.high (ar 'مرتفع') — chose the level-adjective over the diacritic form 'عالٍ'
+- **MdSegmentedButton** — segmentedButton.medium is intentionally shared by the Low/Medium/High level triple (Customization) and the Small/Medium/Large size triple (EventEmitters); translations coincide in all 7 locales so one key is safe
+- **MdSelect** — select.sort (fr 'Trier' is a verb; a noun label 'Tri' may read better in some UIs)
+- **MdSelect** — select.interactPrompt ('Interact with the select…' references the component by name; renderings are natural but slightly loose across locales)
+- **MdSelect** — select.checking / select.savings (banking-account terms vary by region, esp. ar-SA/he-IL — de Girokonto/Sparkonto and ja 当座預金/普通預金 are standard)
+- **MdSelect** — select.pickFavourite (register/phrasing of 'Pick your favourite' varies by locale)
+- **MdSideSheet** — sideSheet.openStartSide / sideSheet.startSideStandard / sideSheet.standardSitsStart (de-DE): rendered 'Start Side' as 'Startkante' (start edge) to avoid 'Startseite' = homepage; wording is functional but non-idiomatic
+- **MdSideSheet** — sideSheet.startSideBody (all locales): the parenthetical '(left in LTR, right in RTL)' keeps LTR/RTL acronyms untranslated inside translated prose
+- **MdSideSheet** — sideSheet.total (he-IL): used 'סה״כ' with Hebrew gershayim (U+05F4) rather than a straight quote
+- **MdSideSheet** — sideSheet.homeGarden / sideSheet.sportsOutdoors (ar-SA, he-IL): category names are best-effort standard renderings
+- **MdSideSheet** — sideSheet.orderNumber (ar-SA, he-IL): 'Order #12345' translated with the '#12345' literal kept inline under RTL, where the # placement may need review
+- **MdSlider** — ControlledMode: 'Clamp to 20–80' checkbox label — a genuine visible form control, but classified as demo-mechanic scaffolding (verbatim-quoted by the adjacent English doc caption, embeds a config range) and left byte-for-byte; a reviewer could reasonably translate just this one string.
+- **MdSlider** — Accessibility/AccessibilityKeyboard: aria-label ('Volume level','Brightness','Temperature','Day of the week','Satisfaction rating'), value-text ('Wednesday','22°C','7 out of 10, Satisfied'), value-start/end-text ('$100','$350'), label-start/label-end ('Minimum price','Maximum price','Range start','Range end') — left byte-for-byte to match the MdLoadingIndicator precedent (Accessibility-story aria props kept in English).
+- **MdSnackbar** — snackbar.styled-parts ("Styled with CSS parts") — kept the technical term "CSS parts/part" in Latin across all locales; only the surrounding verb is localized
+- **MdSnackbar** — snackbar.message-events ("Message with events") — "events" refers to component events; translated literally
+- **MdSnackbar** — snackbar.nice ("Nice" action button) — casual interjection, register is approximate (he מעולה, ja いいね, fr Super)
+- **MdSnackbar** — snackbar.explore ("Explore" action) — he גלה / ja 探索 chosen as the imperative CTA form
+- **MdSnackbar** — The noun "snackbar" itself renders as スナックバー (ja), ەلإشعار/notification (ar), הודעה/message (he), 消息条 (zh), and stays "Snackbar" in de/fr — worth a native-speaker check for house style
+- **MdSparkline** — sparkline.trend7d — the "7d" abbreviation is handled differently per locale (kept as "7d"/"7 j"/"7天"/"7日間"/"7 أيام"/"7 ימים"); verify house style
+- **MdSparkline** — sparkline.sales — the Sales column values (128/47/210) read as unit counts, so zh-CN uses 销量 (volume) rather than 销售额 (revenue amount); confirm intended meaning
+- **MdSplitButton** — splitButton.like — social-media 'Like' varies by locale (he-IL אהבתי, ar-SA إعجاب, zh-CN 赞); verify house style
+- **MdSplitButton** — splitButton.saveAndContinue — long phrase, phrasing/word-order may differ per native reviewer
+- **MdStatusDot** — statusDot.away (he-IL 'מרוחק' — 'Away' presence varies by app)
+- **MdStatusDot** — statusDot.signedOut (he-IL 'מנותק')
+- **MdStatusDot** — statusDot.appearOffline (he-IL 'הצג כלא מחובר')
+- **MdStatusDot** — statusDot.setStatusTo (ja-JP 'ステータスを設定:' — used as a prefix concatenated with an interpolated label)
+- **MdStepper** — stepper.checkoutReviewBody
+- **MdStepper** — stepper.onboardDoneBody
+- **MdStepper** — stepper.deployDeployBody
+- **MdStepper** — stepper.verticalReviewBody
+- **MdStepper** — stepper.optionalAddonsBody
+- **MdStepper** — stepper.surveyReviewBody
+- **MdStepper** — stepper.surveyPayBody
+- **MdStepper** — stepper.vaReviewNote
+- **MdStepper** — stepper.vaPlaceholder
+- **MdStepper** — stepper.reviewConfirm
+- **MdStepper** — stepper.pay
+- **MdSwitch** — switch.lockedSetting (adjective agreement in ar-SA/he-IL/de-DE/fr-FR is best-effort)
+- **MdSwitch** — switch.dangerousSetting (same adjective-agreement caveat)
+- **MdSwitch** — switch.smsNotifications he-IL (kept the 'SMS' acronym untranslated in Hebrew, as is common)
+- **MdTable** — table.sym / table.bid / table.ask — abbreviated & finance column headers (de Geldkurs/Briefkurs are precise; fr/zh/ar/he simplified to Achat/Vente etc.)
+- **MdTable** — table.availability — employment-availability nuance (values are Full-time/Part-time/On leave)
+- **MdTable** — table.unit / table.sum / table.desc / table.qty — terse invoice column-header abbreviations
+- **MdTable** — table.massT — 'Mass (t)' tonnes-unit notation
+- **MdTable** — table.pinUnpinName / table.hideShowTeam — demo-control button jargon with embedded column names
+- **MdTable** — table.blueprintCaption — stylized thematic caption 'Blueprint // registry of machines'
+- **MdTable** — table.of / table.fdgDisplayedRows — dynamic count-summary phrasing; ja/zh render 'of' as '/' since word order differs
+- **MdTable** — table.joinedFrom / table.joinedTo — date-range field labels
+- **MdTable** — table.lead / table.individualContributor — role-ladder terms
+- **MdTabs** — tabs.flights / tabs.trips — Arabic disambiguation of Flights ('رحلات جوية') vs Trips ('رحلات')
+- **MdTabs** — tabs.starred — de 'Markiert', fr 'Favoris' (generic 'starred' has no single UI convention)
+- **MdTabs** — tabs.heart — label of a heart icon; zh '心形', de 'Herz' are literal
+- **MdTabs** — tabs.issues — de kept 'Issues' (GitHub convention), fr 'Problèmes'
+- **MdTabs** — tabs.analytics — fr 'Analytique', he 'אנליטיקה'
+- **MdTabs** — tabs.reportRevenueQ1 — quarter token localized (fr 'T1', zh '第一季度'), kept 'Q1' elsewhere
+- **MdTabs** — tabs.integrations — ja '連携'
+- **MdTabs** — tabs.code — ar 'الكود'
+- **MdTabs** — tabs.uptime — fr 'Disponibilité'
+- **MdTabs** — tabs.emoji — he uses geresh 'אימוג׳י' to avoid an apostrophe breaking the string literal
+- **MdTextField** — textfield.pin (zh-CN 'PIN 码' / ja-JP '暗証番号' — conventions vary; some apps keep 'PIN' verbatim)
+- **MdTextField** — textfield.dictation (ja-JP 'ディクテーション' katakana loanword vs a native term; de-DE 'Diktat')
+- **MdTextField** — textfield.bio (de-DE/fr-FR kept short 'Bio' to match the casual English label rather than 'Biografie'/'Biographie')
+- **MdTextField** — textfield.message (zh-CN '留言' chosen for a message-box textarea; '消息' is the more generic alternative)
+- **MdTextField** — textfield.feedback (fr-FR 'Commentaires' sits close to textfield.comment 'Commentaire')
+- **MdTimePicker** — time-picker.open-picker — "Open time picker": the noun "time picker" as a UI-component name has no fixed convention across ar/he/ja/de/fr/zh; renderings are descriptive (e.g. ja 時刻選択を開く, ar فتح منتقي الوقت) and a native reviewer may prefer product-specific wording
+- **MdTimePicker** — time-picker.appointment vs time-picker.booking — both naturally collapse to 予約 in ja-JP (distinct in the other locales: de Termin/Buchung, fr Rendez-vous/Réservation, zh 预约/预订)
+- **MdToolbar** — toolbar.maybe — rendered 'Maybe' as RSVP/undecided sense (ja-JP '未定', zh-CN '待定') rather than a literal 'perhaps'; standalone demo button gives no firm context
+- **MdToolbar** — toolbar.emailReview — 'PR' jargon kept as the 'PR' abbreviation across all locales (pull-request); phrasing localized around it
+- **MdTooltip** — tooltip.ctrlSBody (de-DE): localized the shortcut token Ctrl→Strg ('Drücken Sie Strg+S') per German keyboard convention; kept 'Ctrl+S' verbatim in all other locales — reviewer may prefer keeping the literal 'Ctrl+S' in German too
+- **MdTooltip** — tooltip.dismiss: 'Dismiss' rendered as close/ignore-style verbs per locale (de 'Schließen', fr 'Ignorer', he 'סגירה', ja '閉じる') since there is no single universal UI term for a dismiss/acknowledge action
+- **MdTransferList** — transfer.backlog ar-SA (قائمة المهام) — agile 'backlog' has no settled Arabic term; used 'task list'
+- **MdTransferList** — transfer.backlog he-IL (מאגר משימות) — Hebrew agile often transliterates 'בקלוג'; used 'task pool'
+- **MdTransferList** — transfer.sprint ar-SA (سبرنت) — transliteration; some Arabic agile texts keep 'Sprint' or use 'دورة'
+- **MdTransferList** — transfer.selected ar-SA (المحددة) — feminine plural agreement assumed for implied عناصر

@@ -1,0 +1,1313 @@
+/* ==========================================================
+   md-time-picker — Material Design 3 Time Picker
+   Spec:        https://m3.material.io/components/time-pickers/specs
+   Guidelines:  https://m3.material.io/components/time-pickers/guidelines
+   A11y:        https://m3.material.io/components/time-pickers/accessibility
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     ── Colour ──
+     --md-time-picker-trigger-color             Trigger label/value color
+     --md-time-picker-trigger-outline-color     Trigger outline color
+     --md-time-picker-trigger-hover-color       Trigger leading-icon color on hover
+     --md-time-picker-trigger-focus-color       Trigger focus indicator color
+     --md-time-picker-trigger-icon-color        Trigger leading icon color
+     --md-time-picker-dialog-color              Dialog surface color
+     --md-time-picker-dialog-on-color           Dialog text color
+     --md-time-picker-scrim-color               Modal scrim color (rgba)
+     --md-time-picker-headline-color            Headline label color
+     --md-time-picker-period-bg                 Period (AM/PM) container bg
+     --md-time-picker-period-color              Period (AM/PM) text color
+     --md-time-picker-period-active-bg          Period selected bg
+     --md-time-picker-period-active-color       Period selected color
+     --md-time-picker-period-outline-color      Period outline color
+     --md-time-picker-period-hover-opacity      Period state-layer opacity on hover (e.g. 8% / 12%)
+     --md-time-picker-dial-bg                   Dial surface color
+     --md-time-picker-dial-number-color         Dial number text color
+     --md-time-picker-dial-number-active-color  Selected number color
+     --md-time-picker-dial-hand-color           Hand / centre-dot color
+     --md-time-picker-input-bg                  HH/MM tile bg (inactive)
+     --md-time-picker-input-color               HH/MM tile text color (inactive)
+     --md-time-picker-input-active-bg           HH/MM tile bg when focused (default = primary-container)
+     --md-time-picker-input-active-color        HH/MM tile text when focused (default = on-primary-container)
+     --md-time-picker-input-outline-color       HH/MM tile resting outline color (default transparent)
+     --md-time-picker-input-active-outline-color HH/MM tile outline when active
+     --md-time-picker-input-error-color         Error outline / hint color
+     --md-time-picker-input-hint-color          "Hour" / "Minute" helper-label color
+     --md-time-picker-input-separator-color     Colon glyph between HH and MM
+     --md-time-picker-input-hover-opacity       HH/MM state-layer opacity (e.g. 8%)
+     --md-time-picker-action-color              Cancel label color
+     --md-time-picker-action-primary-color      OK label color
+     --md-time-picker-action-cancel-bg          Cancel button container color (default transparent — set to apply a tonal/filled style)
+     --md-time-picker-action-confirm-bg         OK button container color (default transparent — set to apply a tonal/filled style)
+     --md-time-picker-toggle-icon-color         Mode-toggle icon color
+     --md-time-picker-toggle-bg                 Mode-toggle container color (default transparent)
+
+     ── Shape ──
+     --md-time-picker-trigger-shape             Trigger corner-radius (piped onto md-text-field)
+     --md-time-picker-dialog-shape              Dialog corner-radius
+     --md-time-picker-input-shape               HH/MM tile corner-radius (canonical name; --md-time-picker-time-display-shape kept as back-compat alias)
+     --md-time-picker-period-shape              AM/PM container corner-radius
+     --md-time-picker-action-shape              Cancel / OK button corner-radius (piped onto md-button)
+     --md-time-picker-toggle-shape              Mode-toggle corner-radius (piped onto md-icon-button)
+
+     ── Dimensions ──
+     --md-time-picker-trigger-min-width         Trigger min-inline-size (default 240px)
+     --md-time-picker-trigger-icon-size         Trigger leading icon font-size (default 24px, tapers with density)
+     --md-time-picker-dialog-padding            Dialog internal padding (default 24px)
+     --md-time-picker-dialog-min-width          Dialog width in portrait / input variants (default 328px)
+     --md-time-picker-dialog-horizontal-width-12h  Horizontal dial dialog width in 12h mode (default 572px)
+     --md-time-picker-dialog-horizontal-width-24h  Horizontal dial dialog width in 24h mode (default 608px)
+     --md-time-picker-input-width               HH/MM tile inline-size (default 96px = 4/3 of the height; derived from the font unless set)
+     --md-time-picker-input-height              HH/MM tile block-size (default 72px = 1.6 x the font; derived from the font unless set)
+     --md-time-picker-input-border-width        HH/MM tile border width (default 2px)
+     --md-time-picker-input-separator-width     Colon column width (default 24px)
+     --md-time-picker-input-hint-gap            Gap between tile and "Hour" / "Minute" hint (default 4px)
+     --md-time-picker-period-outline-width      AM/PM container border width (default 1px)
+     --md-time-picker-period-vertical-width     AM/PM vertical-stack width (default 52px)
+     --md-time-picker-period-vertical-height    AM/PM vertical-stack height in dial variant (default 80px)
+     --md-time-picker-period-vertical-height-input  AM/PM vertical-stack height in input variant (default 72px)
+     --md-time-picker-period-horizontal-width   AM/PM horizontal-pill width (default 216px)
+     --md-time-picker-period-horizontal-height  AM/PM horizontal-pill height (default 38px)
+     --md-time-picker-dial-size                 Dial face diameter (default 256px)
+     --md-time-picker-dial-target-size          Per-number touch-target diameter (default 48px)
+     --md-time-picker-dial-center-size          Centre-dot diameter (default 8px)
+     --md-time-picker-dial-hand-width           Hand-line stroke width (default 2px)
+     --md-time-picker-hand-length               Hand-line length override (default: computed — 100%, ~62% on the 24h inner ring)
+     --md-time-picker-footer-gap                Gap between mode-toggle and actions (default 8px)
+     --md-time-picker-actions-gap               Gap between Cancel and OK (default 8px)
+     --md-time-picker-toggle-icon-size          Mode-toggle icon font-size (default 24px, tapers with density)
+     --md-time-picker-headline-spacing          Margin below headline (default 20px)
+
+     ── Typography ── (all tapering with the global density scale; set any of
+        them explicitly to opt that one out)
+     --md-time-picker-headline-font-size        Headline font-size (default label-medium = 12px)
+     --md-time-picker-headline-font-weight      Headline font-weight (default 500)
+     --md-time-picker-input-font-size           HH/MM tile font-size (default display-medium = 45px)
+     --md-time-picker-input-font-weight         HH/MM tile font-weight (default 400)
+     --md-time-picker-period-font-size          AM/PM label font-size (default 14px)
+     --md-time-picker-period-font-weight        AM/PM label font-weight (default 500)
+     --md-time-picker-dial-number-font-size     Dial number font-size (default body-large = 16px)
+     --md-time-picker-dial-number-font-weight   Dial number resting font-weight (default 400)
+     --md-time-picker-dial-number-active-font-weight  Dial number active font-weight (default 500)
+
+     ── Motion ──
+     --md-time-picker-dialog-enter-duration     Dialog open animation duration (default 500ms)
+     --md-time-picker-mode-swap-duration        Dial⇄input swap animation duration (default 450ms)
+     --md-time-picker-motion-easing             Easing curve shared by both entry animations (default emphasized-decelerate)
+
+     ── Elevation ──
+     --md-time-picker-dialog-elevation          Dialog box-shadow
+
+   CSS PARTS:
+     trigger            Composed md-text-field that opens the dialog
+                        (variant="outlined", readonly). Style its internals
+                        through md-text-field's own ::part() API
+                        (e.g. ::part(trigger)::part(label)).
+     trigger-icon       Schedule icon slotted into trigger's leading slot
+     scrim              Modal scrim
+     dialog             Dialog surface
+     headline           Headline label ("Enter time" / "Select time")
+     time-area          Dial-variant wrapper around input-area + the
+                        216×38 horizontal AM/PM pill in landscape
+     input-area         Container for the typeable HH/MM input row
+                        (rendered in BOTH variants — dial mode shows
+                        the dial face below it)
+     input-hour         HH text input tile
+     input-minute       MM text input tile
+     period-toggle      AM/PM toggle group
+     period-am          AM button
+     period-pm          PM button
+     dial-wrap          Wrapper around the dial (dial variant only)
+     dial               Dial surface (drag target; dial variant only)
+     dial-hand          Selection hand (dial variant only)
+     footer             Footer with mode toggle + actions
+     toggle-mode        Icon button switching dial<->input
+     actions            Action button row (Cancel / OK)
+     cancel-button      Cancel button
+     confirm-button     OK (confirm) button
+
+   SLOTS:
+     (none)             The component is fully driven by props/attributes for
+                        full localization and consistent layout. Use CSS parts
+                        for visual customization and labels for localization.
+   ========================================================== */
+
+:host {
+  /* ── Public tokens (override per-instance) ── */
+  --_trigger-color: var(--md-time-picker-trigger-color, var(--md-sys-color-on-surface, #1c1b1f));
+  --_trigger-outline-color: var(--md-time-picker-trigger-outline-color, var(--md-sys-color-outline, #79747e));
+  --_trigger-hover-color: var(--md-time-picker-trigger-hover-color, var(--md-sys-color-on-surface, #1c1b1f));
+  --_trigger-focus-color: var(--md-time-picker-trigger-focus-color, var(--md-sys-color-primary, #6750a4));
+  --_trigger-icon-color: var(--md-time-picker-trigger-icon-color, var(--md-sys-color-on-surface-variant, #49454f));
+
+  --_dialog-color: var(--md-time-picker-dialog-color, var(--md-sys-color-surface-container-high, #ece6f0));
+  --_dialog-on-color: var(--md-time-picker-dialog-on-color, var(--md-sys-color-on-surface, #1c1b1f));
+  --_dialog-shape: var(--md-time-picker-dialog-shape, var(--md-sys-shape-corner-extra-large, 28px));
+  --_dialog-elevation: var(--md-time-picker-dialog-elevation, var(--md-sys-elevation-3, 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.3)));
+  --_scrim-color: var(--md-time-picker-scrim-color, rgba(0, 0, 0, 0.32));
+
+  --_headline-color: var(--md-time-picker-headline-color, var(--md-sys-color-on-surface-variant, #49454f));
+
+  /* Shape of the HH/MM tiles — shared with the input variant. The
+     bg / color tokens that used to live here (--_time-display-bg,
+     --_time-display-color, ...-active-*) were dropped when the dial
+     variant unified around the typeable input tile; the runtime now
+     reads --_input-bg / --_input-color / etc. directly. Authors who
+     wired the legacy `--md-time-picker-time-display-bg` etc. tokens
+     should migrate to the `--md-time-picker-input-*` namespace —
+     both knobs target the same DOM element now.
+
+     `--md-time-picker-input-shape` is the canonical name (matches the
+     rest of the input-* family). `--md-time-picker-time-display-shape`
+     is kept as a back-compat fallback for anyone who shipped overrides
+     against the old name; new code should reach for the canonical one. */
+  --_time-display-shape: var(
+    --md-time-picker-input-shape,
+    var(--md-time-picker-time-display-shape, var(--md-sys-shape-corner-small, 8px))
+  );
+
+  --_period-bg: var(--md-time-picker-period-bg, transparent);
+  --_period-color: var(--md-time-picker-period-color, var(--md-sys-color-on-surface, #1c1b1f));
+  --_period-active-bg: var(--md-time-picker-period-active-bg, var(--md-sys-color-tertiary-container, #ffd8e4));
+  --_period-active-color: var(--md-time-picker-period-active-color, var(--md-sys-color-on-tertiary-container, #370b1e));
+  --_period-outline-color: var(--md-time-picker-period-outline-color, var(--md-sys-color-outline, #79747e));
+
+  --_dial-bg: var(--md-time-picker-dial-bg, var(--md-sys-color-surface-container-highest, #e6e0e9));
+  --_dial-number-color: var(--md-time-picker-dial-number-color, var(--md-sys-color-on-surface, #1c1b1f));
+  --_dial-number-active-color: var(--md-time-picker-dial-number-active-color, var(--md-sys-color-on-primary, #ffffff));
+  --_dial-hand-color: var(--md-time-picker-dial-hand-color, var(--md-sys-color-primary, #6750a4));
+  --_dial-target-size: var(--md-time-picker-dial-target-size, 48px);
+
+  --_input-bg: var(--md-time-picker-input-bg, var(--md-sys-color-surface-container-highest, #e6e0e9));
+  --_input-color: var(--md-time-picker-input-color, var(--md-sys-color-on-surface, #1c1b1f));
+  --_input-outline-color: var(--md-time-picker-input-outline-color, transparent);
+  --_input-active-outline-color: var(--md-time-picker-input-active-outline-color, var(--md-sys-color-primary, #6750a4));
+  --_input-error-color: var(--md-time-picker-input-error-color, var(--md-sys-color-error, #b3261e));
+  --_input-hint-color: var(--md-time-picker-input-hint-color, var(--md-sys-color-on-surface-variant, #49454f));
+
+  --_action-color: var(--md-time-picker-action-color, var(--md-sys-color-primary, #6750a4));
+  --_action-primary-color: var(--md-time-picker-action-primary-color, var(--md-sys-color-primary, #6750a4));
+  --_toggle-icon-color: var(--md-time-picker-toggle-icon-color, var(--md-sys-color-on-surface-variant, #49454f));
+
+  /* ── EXTENDED public tokens (dimensions, typography, shapes, motion) ──
+     Every knob below has a sensible MD3-spec default so the picker still
+     looks like the canonical Material reference out of the box. Override
+     any of them on the host element to retheme without forking the CSS.
+
+     Token naming follows the established `--md-time-picker-<area>-<axis>`
+     pattern so authors can discover new knobs the same way they discover
+     existing colour tokens. */
+
+  /* Dialog chrome (modal surface around the body + footer) */
+  --_dialog-padding: var(--md-time-picker-dialog-padding, var(--md-sys-spacing-inset-xl, 24px));
+  --_dialog-min-width: var(--md-time-picker-dialog-min-width, 328px);
+  --_dialog-horizontal-width-12h: var(--md-time-picker-dialog-horizontal-width-12h, 572px);
+  --_dialog-horizontal-width-24h: var(--md-time-picker-dialog-horizontal-width-24h, 608px);
+  --_dialog-enter-duration: var(--md-time-picker-dialog-enter-duration, var(--md-sys-motion-duration-long2, 500ms));
+  --_mode-swap-duration: var(--md-time-picker-mode-swap-duration, var(--md-sys-motion-duration-long1, 450ms));
+  --_motion-easing: var(--md-time-picker-motion-easing, var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)));
+
+  /* Trigger (closed-state outlined field) */
+  --_trigger-min-width: var(--md-time-picker-trigger-min-width, 240px);
+  /* 1px per density rung off 24dp (18px floor) — the library-wide icon taper,
+     matching md-text-field's own glyphs so the trigger reads as one unit. */
+  --_trigger-icon-size: var(--md-time-picker-trigger-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
+  --_trigger-shape: var(--md-time-picker-trigger-shape, var(--md-sys-shape-corner-extra-small, 4px));
+
+  /* Headline ("Enter time" / "Select time") */
+  /* label-medium (12) — 0.5px/rung, the library rate for sub-22px type. */
+  --_headline-font-size: var(--md-time-picker-headline-font-size, max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px)));
+  --_headline-font-weight: var(--md-time-picker-headline-font-weight, var(--md-sys-typescale-label-medium-font-weight, 500));
+  --_headline-spacing: var(--md-time-picker-headline-spacing, max(4px, calc(20px + var(--md-sys-density-scale, 0) * 2px)));
+
+  /* HH / MM input tile (rendered in BOTH variants) */
+  /* Tile geometry is DERIVED from the number it holds, not tapered separately.
+     At density 0 the M3 defaults are already exactly 45 × 1.6 = 72 and
+     72 × 4/3 = 96, so this reproduces the spec sizes bit-for-bit while keeping
+     the tile's proportions locked to the digits at every rung — tapering the
+     three independently is how a 37px number ends up rattling around in a
+     full-size 96×72 box. Public overrides still win: set -input-width /
+     -input-height to pin them. */
+  --_input-height: var(--md-time-picker-input-height, calc(var(--_input-font-size) * 1.6));
+  --_input-width: var(--md-time-picker-input-width, calc(var(--_input-height) * 4 / 3));
+  --_input-border-width: var(--md-time-picker-input-border-width, 2px);
+  /* display-medium (45). Display type carries 2px/rung: at the library's 1px
+     rate a 45px numeral would only reach 41px at -4 (9%) while the dialog
+     around it tightens far more, so the tile would still dominate the panel. */
+  --_input-font-size: var(--md-time-picker-input-font-size, max(32px, calc(45px + var(--md-sys-density-scale, 0) * 2px)));
+  --_input-font-weight: var(--md-time-picker-input-font-weight, var(--md-sys-typescale-display-medium-font-weight, 400));
+  --_input-active-bg: var(--md-time-picker-input-active-bg, var(--md-sys-color-primary-container, #eaddff));
+  --_input-active-color: var(--md-time-picker-input-active-color, var(--md-sys-color-on-primary-container, #21005d));
+  --_input-separator-color: var(--md-time-picker-input-separator-color, var(--_dialog-on-color));
+  --_input-separator-width: var(--md-time-picker-input-separator-width, 24px);
+  --_input-hint-gap: var(--md-time-picker-input-hint-gap, var(--md-sys-spacing-gap-xs, 4px));
+  --_input-hover-opacity: var(--md-time-picker-input-hover-opacity, 8%);
+
+  /* AM / PM period selector */
+  --_period-shape: var(--md-time-picker-period-shape, var(--md-sys-shape-corner-small, 8px));
+  --_period-outline-width: var(--md-time-picker-period-outline-width, 1px);
+  --_period-vertical-width: var(--md-time-picker-period-vertical-width, 52px);
+  --_period-vertical-height: var(--md-time-picker-period-vertical-height, 80px);
+  --_period-vertical-height-input: var(--md-time-picker-period-vertical-height-input, 72px);
+  --_period-horizontal-width: var(--md-time-picker-period-horizontal-width, 216px);
+  --_period-horizontal-height: var(--md-time-picker-period-horizontal-height, 38px);
+  /* label-large (14) — 0.5px/rung. */
+  --_period-font-size: var(--md-time-picker-period-font-size, max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px)));
+  --_period-font-weight: var(--md-time-picker-period-font-weight, 500);
+  --_period-hover-opacity: var(--md-time-picker-period-hover-opacity, 8%);
+
+  /* Dial face */
+  --_dial-size: var(--md-time-picker-dial-size, 256px);
+  --_dial-center-size: var(--md-time-picker-dial-center-size, 8px);
+  --_dial-hand-width: var(--md-time-picker-dial-hand-width, 2px);
+  /* body-large (16) — 0.5px/rung. The dial FACE keeps its 256px diameter:
+     number positions and hand length are computed against it, so retuning that
+     is a layout change rather than a type change. */
+  --_dial-number-font-size: var(--md-time-picker-dial-number-font-size, max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px)));
+  --_dial-number-font-weight: var(--md-time-picker-dial-number-font-weight, var(--md-sys-typescale-body-large-font-weight, 400));
+  --_dial-number-active-font-weight: var(--md-time-picker-dial-number-active-font-weight, 500);
+
+  /* Footer + action buttons */
+  --_footer-gap: var(--md-time-picker-footer-gap, var(--md-sys-spacing-gap-sm, 8px));
+  --_actions-gap: var(--md-time-picker-actions-gap, var(--md-sys-spacing-gap-sm, 8px));
+  --_action-shape: var(--md-time-picker-action-shape, var(--md-sys-shape-corner-full, 9999px));
+  --_action-confirm-bg: var(--md-time-picker-action-confirm-bg, transparent);
+  --_action-cancel-bg: var(--md-time-picker-action-cancel-bg, transparent);
+  --_toggle-bg: var(--md-time-picker-toggle-bg, transparent);
+  --_toggle-icon-size: var(--md-time-picker-toggle-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
+  --_toggle-shape: var(--md-time-picker-toggle-shape, var(--md-sys-shape-corner-full, 9999px));
+
+  display: inline-block;
+  position: relative;
+  font-family: var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif);
+  color: var(--_dialog-on-color);
+}
+
+:host([hide-trigger]) {
+  display: contents;
+}
+
+:host([disabled]) {
+  cursor: not-allowed;
+}
+
+/* ── Trigger (composes md-text-field, outlined variant) ──
+   We delegate every aspect of the trigger surface — notched outline,
+   floating label, hover / focus / disabled states, density — to the
+   canonical md-text-field component. This file only forwards the
+   time-picker-scoped public tokens onto md-text-field's own custom
+   properties so author overrides like
+   `--md-time-picker-trigger-outline-color` keep working without the
+   author having to learn md-text-field's variable names.
+
+   The leading-icon slot carries the schedule glyph; we tighten its
+   color so it picks up the time-picker icon token rather than the
+   text-field's inherit-from-label default. */
+.md-time-picker__field {
+  /* Width parity with the legacy trigger so dialogs / forms keep the
+     same intrinsic field width after the swap. md-text-field is
+     inline-flex internally so this is just a min-inline-size hint. */
+  min-inline-size: var(--_trigger-min-width);
+  display: inline-flex;
+  inline-size: auto;
+  cursor: pointer;
+
+  /* Forward time-picker public tokens onto md-text-field's API surface.
+     md-text-field only exposes resting tokens for outline / label /
+     input colour (hover & focus colours are computed from sys tokens
+     internally), so we wire the ones it supports and rely on its own
+     focus / hover styling for the rest. Authors who set the
+     `--md-time-picker-trigger-hover-color` token will see it apply on
+     the icon (below); the outline hover stays driven by md-text-field
+     so the field reads as a real text-field at all states.
+
+     `--md-time-picker-trigger-shape` is piped onto the text-field's
+     `--md-text-field-container-shape` so authors can swap the trigger
+     corners from the M3 default (extra-small / 4dp) to anything between
+     sharp and pill without having to learn md-text-field's own API. */
+  --md-text-field-label-color: var(--_trigger-icon-color);
+  --md-text-field-input-color: var(--_trigger-color);
+  --md-text-field-outline-color: var(--_trigger-outline-color);
+  --md-text-field-active-indicator-color: var(--_trigger-focus-color);
+  --md-text-field-icon-color: var(--_trigger-icon-color);
+  --md-text-field-container-shape: var(--_trigger-shape);
+}
+
+.md-time-picker__field--disabled {
+  cursor: not-allowed;
+}
+
+.md-time-picker__field-icon {
+  /* Material Symbols glyph styling — match the field's typographic
+     weight and pick up the icon token so authors can tint the icon
+     independently of the label/value text. */
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons'), sans-serif;
+  font-size: var(--_trigger-icon-size);
+  line-height: 1;
+  color: var(--_trigger-icon-color);
+  flex-shrink: 0;
+}
+
+.md-time-picker__field:hover:not(.md-time-picker__field--disabled) .md-time-picker__field-icon {
+  /* Wires the documented `--md-time-picker-trigger-hover-color` token:
+     the leading icon shifts on-surface-variant -> on-surface on hover
+     (md-text-field owns the outline hover internally). */
+  color: var(--_trigger-hover-color);
+}
+
+/* ── Trigger "looks focused while the modal is open" ──
+   While the dialog is open the OS focus has moved into the dialog,
+   so the underlying md-text-field would normally fall back to its
+   resting (neutral) outline. Visually that severs the connection
+   between the trigger and the dialog — the user reads them as two
+   unrelated surfaces. To preserve the trigger-dialog relationship
+   we tell the underlying md-text-field to render in its focused
+   look for the duration the modal is open via the public
+   `appear-focused` prop (see render template), which activates the
+   field's own `.md-text-field--focused` rules. Going through the
+   field's own machinery (rather than painting an external ring) is
+   what makes the notched-outline cut for the floating label happen
+   correctly — an external `box-shadow inset` would draw a
+   continuous line that would strike through the label text, because
+   the fieldset's legend cutout only exists inside the field's own
+   shadow DOM and can't be respected from the outside.
+
+   We additionally pipe the picker's `--_trigger-focus-color` token
+   onto the field's focus/label/icon colour variables so author
+   overrides flow through. A single override
+   (`--md-time-picker-trigger-focus-color: #...`) re-tints the
+   trigger's focused outline, label, and leading icon together. */
+:host(.md-time-picker--open) .md-time-picker__field {
+  /* md-text-field uses `--md-text-field-active-indicator-color` for
+     both the focused outline AND the floating-label colour while
+     `.md-text-field--focused` is on. Mapping our `--_trigger-focus-color`
+     onto it re-tints both with a single override. */
+  --md-text-field-active-indicator-color: var(--_trigger-focus-color);
+  /* md-text-field doesn't toggle icon colour on focus, so pipe the
+     focus colour onto the icon variable for the duration the picker
+     is open. The selector is scoped to `--open` so this DOESN'T
+     change the resting-state icon colour. */
+  --md-text-field-icon-color: var(--_trigger-focus-color);
+}
+
+/* ── Scrim / modal overlay ── */
+.md-time-picker__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--md-sys-z-index-popup, 1000);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--_scrim-color);
+  padding: var(--md-sys-spacing-inset-xl, 24px);
+  animation: md-time-picker-scrim-in var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)) forwards;
+  box-sizing: border-box;
+}
+
+@keyframes md-time-picker-scrim-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Dialog ── */
+.md-time-picker__dialog {
+  background: var(--_dialog-color);
+  color: var(--_dialog-on-color);
+  border-radius: var(--_dialog-shape);
+  box-shadow: var(--_dialog-elevation);
+  /* MD3 spec: 24dp padding on every edge, both portrait and
+     landscape dialogs. Exposed as `--md-time-picker-dialog-padding`
+     for authors who need to compact the chrome on dense surfaces. */
+  padding: var(--_dialog-padding);
+  /* Default (vertical / portrait) dialog width — the canonical M3
+     reference shows 328dp. Override via
+     `--md-time-picker-dialog-min-width`. The horizontal modifier
+     below widens this to fit the dial in a right column. */
+  width: min(var(--_dialog-min-width), calc(100vw - 48px));
+  /* Never trap the OK/Cancel row off-screen: when the viewport is
+     shorter than the dialog (landscape phones showing the ~440dp
+     dial dialog), the dialog clamps to the viewport and scrolls
+     internally instead of overflowing past the scrim. */
+  /* stylelint-disable-next-line declaration-block-no-duplicate-properties -- intentional vh→dvh progressive-enhancement fallback */
+  max-block-size: calc(100vh - 48px);
+  max-block-size: calc(100dvh - 48px);
+  overflow-y: auto;
+  /* overflow-y:auto computes overflow-x to auto — pin it so a classic
+     (width-stealing) vertical scrollbar never spawns a nested
+     horizontal one against the fixed-width body. */
+  overflow-x: hidden;
+  box-sizing: border-box;
+  /* Dialog entrance: a deliberate "unfold + bloom" motion that
+     mirrors the inner mode-swap bloom (same easing, same anchor)
+     so the whole picker feels like one motion family. The 500ms
+     long2 duration is intentionally slow enough to read as
+     "expressive" — a faster open felt dismissive and clipped the
+     state-layer overshoot on emphasized-decelerate. The
+     transform-origin pivots the unfold from `center top`, so the
+     dialog visually drops down out of the headline / trigger
+     above it instead of zooming from its centre. Authors can shorten
+     the entry via `--md-time-picker-dialog-enter-duration` (e.g. set
+     to `200ms` for snappier desktop UX) or swap the easing via
+     `--md-time-picker-motion-easing`. */
+  animation: md-time-picker-dialog-in var(--_dialog-enter-duration) var(--_motion-easing) both;
+  transform-origin: center top;
+}
+
+.md-time-picker__dialog--input {
+  width: min(var(--_dialog-min-width), calc(100vw - 48px));
+}
+
+/* ── Horizontal (landscape) dial dialog ──
+   Two-column body: HH:MM + AM/PM in the left column, 256dp dial in
+   the right column. Width math (per MD3 spec sheet):
+     padding_l(24) + tile(96) + colon(24) + tile(96)
+     + gap(52) + dial(256) + padding_r(24) = 572dp (12h)
+     padding_l(24) + tile(114) + colon(24) + tile(114)
+     + gap(52) + dial(256) + padding_r(24) = 608dp (24h)
+   Both widths are public tokens
+   (`--md-time-picker-dialog-horizontal-width-12h` /
+    `--md-time-picker-dialog-horizontal-width-24h`) so authors can
+   widen the dialog when they need extra breathing room (e.g. when
+   the dial is enlarged via `--md-time-picker-dial-size`). */
+.md-time-picker__dialog--horizontal {
+  width: min(var(--_dialog-horizontal-width-12h), calc(100vw - 48px));
+}
+
+/* 24-hour mode in horizontal orientation needs an extra 36dp of
+   width because each HH/MM tile widens from 96dp → 114dp (the
+   "Width (24h vertical)" spec measurement which the horizontal
+   layout reuses since no AM/PM rides alongside). */
+:host(.md-time-picker--format-24h) .md-time-picker__dialog--horizontal {
+  width: min(var(--_dialog-horizontal-width-24h), calc(100vw - 48px));
+}
+
+@keyframes md-time-picker-dialog-in {
+  /* Unfold-from-the-top: scale up from 0.88 + translate down 12dp
+     while fading in. The scale alone read as "zoom" rather than
+     "unfold"; pairing it with the block-axis translate gives the
+     dialog a clear "dropping into place" direction of motion that
+     matches the mode-swap bloom inside. */
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Mode swap bloom ──
+   Plays on every mount of the dial wrap or the input area, which
+   covers BOTH the initial dialog open AND the subsequent mode
+   toggles (Stencil unmounts one branch and mounts the other when
+   `mode` flips, re-triggering the CSS animation). The bloom uses
+   M3 **emphasized-decelerate** easing (the canonical "settle"
+   curve, peaks early then eases into rest), with a subtle scale
+   range (0.96 → 1.0) so it doesn't compound visibly with the
+   dialog's outer 0.88 → 1.0 unfold.
+
+   A small block-axis translate (8dp → 0) sells the "new content
+   has just arrived" feel without making the digits feel weighty.
+
+   The transform-origin is anchored to `center top` so the dial /
+   input area expands DOWNWARD from the headline above it,
+   reinforcing the headline as the visual anchor of the dialog. */
+@keyframes md-time-picker-mode-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Headline ── */
+.md-time-picker__headline {
+  font-size: var(--_headline-font-size);
+  font-weight: var(--_headline-font-weight);
+  letter-spacing: var(--md-sys-typescale-label-medium-letter-spacing, 0.5px);
+  line-height: var(--md-sys-typescale-label-medium-line-height, 16px);
+  color: var(--_headline-color);
+  text-transform: none;
+  margin-block-end: var(--_headline-spacing);
+  /* Spec: headline is always left-aligned, both portrait and
+     landscape. The dialog box already starts the inline axis at the
+     24dp left padding, so we just keep the default text alignment. */
+  text-align: start;
+}
+
+/* ── Body wrapper ──
+   Holds the time-area (HH:MM + AM/PM) and the dial / inputs. In the
+   vertical (default) layout the body is a column flex that visually
+   matches the pre-refactor structure. In the horizontal layout it
+   becomes a row flex with a 52dp gap between the left column and
+   the dial — exactly the gap shown in the canonical MD3 landscape
+   spec sheet. */
+.md-time-picker__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.md-time-picker__body--horizontal {
+  flex-direction: row;
+  /* Anchor both columns to the top edge — the left column (HH:MM +
+     AM/PM = 134dp tall in 12h mode) is naturally shorter than the
+     256dp dial, so flex-start keeps everything aligned with the
+     headline above instead of letting the time-area drift to the
+     middle of the row. */
+  align-items: flex-start;
+  /* 52dp gap between MM tile (right edge of time-area) and the dial
+     wrap, per the M3 horizontal spec measurement. */
+  column-gap: 52px;
+}
+
+/* The time-area is the wrapper around the typeable HH/MM input row
+   (and, in the 12h horizontal landscape layout, the 216×38 horizontal
+   AM/PM pill that sits below it). In the dial vertical layout it's a
+   passthrough wrapper above the dial; in the input variant the
+   time-area is intentionally NOT rendered because the input-area is
+   the entire body. */
+.md-time-picker__time-area {
+  display: flex;
+  flex-direction: column;
+  /* No `flex: 1` so the column hugs the input-row width. The dial
+     flexes to fill the remaining inline space in the horizontal
+     dialog. Authors who want a wider gutter can override the body's
+     column-gap via a custom CSS var if needed. */
+  flex: 0 0 auto;
+}
+
+/* The dial wrap keeps its default 24dp block-end margin — that's
+   the gap between the dial's bottom and the footer row. In the
+   horizontal layout we also drop the implicit `flex: 1` so the dial
+   centers in its 256dp column instead of stretching to fill the
+   leftover inline space. */
+.md-time-picker__body--horizontal .md-time-picker__dial-wrap {
+  flex: 0 0 auto;
+}
+
+/* Inside the dial horizontal landscape layout the typeable input row
+   needs to give up its default 24dp block-end margin — the horizontal
+   AM/PM pill that follows owns the 16dp spec gap, and the column
+   already sits inside its own flex track next to the dial. */
+.md-time-picker__body--horizontal .md-time-picker__input-area {
+  margin-block-end: 0;
+}
+
+/* The horizontal AM/PM pill sits flush below the input row in the
+   left column. Override the default `margin-block-start: 12px` so
+   the 16dp spec gap above isn't doubled, and zero the bottom margin
+   so the column doesn't stretch taller than the dial unnecessarily. */
+.md-time-picker__body--horizontal .md-time-picker__period--horizontal {
+  margin-block-start: var(--md-sys-spacing-inset-lg, 16px);
+  margin-block-end: 0;
+  margin-inline: 0;
+}
+
+/* ── Period (AM/PM) toggle ──
+   MD3 supports two layouts (see `MdTimePickerPeriodLayout`):
+
+   - Vertical (default): 52dp × 80dp stack, sits 12dp to the end-side
+     of the minute tile. Each row is 50% tall so AM and PM split the
+     80dp envelope evenly. The 1px hairline divider lives between them.
+
+   - Horizontal: 216dp × 38dp inline pill that sits centered below the
+     HH:MM display. The divider becomes inline-end on the AM button.
+
+   The base ruleset below covers values shared across both layouts;
+   the `--vertical` / `--horizontal` modifier classes specialize the
+   axis-specific sizing and divider placement.
+
+   ⚠️ The container is intentionally NOT `overflow: hidden`. We
+   previously clipped here to mask the AM/PM corner backgrounds, but
+   that also clipped the canonical M3 external focus ring (3dp
+   secondary outline + 2dp offset) on each child button. The corner
+   masking is now done by the AM and PM buttons themselves via
+   matching border-radius — see the per-layout rules below — which
+   keeps the pill shape clean *and* lets each button paint its own
+   focus ring outside its bounds. */
+.md-time-picker__period {
+  display: inline-flex;
+  border: var(--_period-outline-width) solid var(--_period-outline-color);
+  box-sizing: border-box;
+}
+
+.md-time-picker__period--vertical {
+  flex-direction: column;
+  /* The container still owns the pill shape for its own border /
+     hover, but corner clipping of the AM/PM backgrounds is delegated
+     to the buttons (see the `--am` / `--pm` corner rules below). */
+  border-radius: var(--_period-shape);
+  margin-inline-start: var(--md-sys-spacing-inset-md, 12px);
+  inline-size: var(--_period-vertical-width);
+  block-size: var(--_period-vertical-height);
+}
+
+/* In the input variant the AM/PM toggle shrinks from 80dp → 72dp so
+   it aligns to the 72dp input field above. The 8dp delta is the
+   exact difference between the dial variant's HH/MM tile height
+   (80dp) and the input variant's HH/MM input height (72dp), and the
+   spec sheet reuses the 52dp width across both variants. We scope
+   the override to the input area rather than introducing a new
+   modifier class so callers don't have to thread state through the
+   toggle render. The input-variant height is independently
+   re-themeable via `--md-time-picker-period-vertical-height-input`
+   so authors who resize the inputs (`--md-time-picker-input-height`)
+   can keep the AM/PM column locked to the new input height. */
+.md-time-picker__input-area .md-time-picker__period--vertical {
+  block-size: var(--_period-vertical-height-input);
+}
+
+.md-time-picker__period--horizontal {
+  flex-direction: row;
+  /* 216dp × 38dp container with `shape-corner-small` rounding (8dp).
+     Intentionally NOT a full pill — the horizontal AM/PM toggle is
+     paired with the 8dp HH:MM tiles above it, so matching that
+     radius keeps the corner language of the entire time area
+     consistent (and matches the vertical 52×80 toggle). The pill
+     belongs to the canonical M3 *segmented button* surface; the
+     time picker's period selector is a dedicated control with its
+     own spec rhythm. */
+  border-radius: var(--_period-shape);
+  margin-block-start: var(--md-sys-spacing-inset-md, 12px);
+  margin-block-end: var(--md-sys-spacing-inset-xl, 24px);
+  margin-inline: auto;
+  inline-size: var(--_period-horizontal-width);
+  block-size: var(--_period-horizontal-height);
+  align-self: center;
+}
+
+.md-time-picker__period-btn {
+  flex: 1 1 0;
+  background: var(--_period-bg);
+  color: var(--_period-color);
+  border: none;
+  font: inherit;
+  font-size: var(--_period-font-size);
+  font-weight: var(--_period-font-weight);
+  letter-spacing: 0.1px;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  /* Each button clips its own ripple (the parent no longer does it
+     for the whole pill — see the comment on `.md-time-picker__period`). */
+  position: relative;
+  overflow: hidden;
+  transition: background-color 150ms var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    color 150ms var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+.md-time-picker__period-btn-label {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.md-time-picker__period--vertical .md-time-picker__period-btn {
+  block-size: 50%;
+}
+
+.md-time-picker__period--horizontal .md-time-picker__period-btn {
+  inline-size: 50%;
+  block-size: 100%;
+}
+
+.md-time-picker__period-btn:hover {
+  background: color-mix(in srgb, var(--_period-color) var(--_period-hover-opacity), transparent);
+}
+
+.md-time-picker__period-btn--active {
+  background: var(--_period-active-bg);
+  color: var(--_period-active-color);
+}
+
+.md-time-picker__period-btn--active:hover {
+  background: color-mix(in srgb, var(--_period-active-color) var(--_period-hover-opacity), var(--_period-active-bg));
+}
+
+/* Canonical M3 focus ring on each AM/PM tile — identical to the
+   md-button / md-icon-button pattern (3dp secondary outline at 2dp
+   offset). Because the parent no longer clips, the ring renders
+   in full *around* the focused button. The ring auto-follows each
+   tile's own corner radii (see the `--am` / `--pm` rules below), so
+   AM shows a top-rounded ring in vertical mode and a start-rounded
+   ring in horizontal mode — matching the canonical button look. */
+.md-time-picker__period-btn:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary, #625b71);
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+/* Hairline divider + per-button corner radii.
+
+   The corner radii used to live on the parent (`.md-time-picker__period`)
+   together with `overflow: hidden`, but that clipped the canonical
+   external focus ring. We now give each tile only the corners that
+   meet the pill's edge, leaving the corners that touch the divider
+   square. The result is the same visual pill, with each button able
+   to paint its own external focus ring uncliped.
+
+   `calc(<parent-radius> - 1px)` accounts for the parent's 1dp border
+   so the button's background lines up with the inside of the border
+   instead of leaving a 1dp halo at the corners. */
+
+.md-time-picker__period--vertical .md-time-picker__period-btn--am {
+  border-block-end: var(--_period-outline-width) solid var(--_period-outline-color);
+  border-start-start-radius: calc(var(--_period-shape) - var(--_period-outline-width));
+  border-start-end-radius: calc(var(--_period-shape) - var(--_period-outline-width));
+}
+.md-time-picker__period--vertical .md-time-picker__period-btn--pm {
+  border-end-start-radius: calc(var(--_period-shape) - var(--_period-outline-width));
+  border-end-end-radius: calc(var(--_period-shape) - var(--_period-outline-width));
+}
+
+.md-time-picker__period--horizontal .md-time-picker__period-btn--am {
+  border-inline-end: var(--_period-outline-width) solid var(--_period-outline-color);
+  /* Mirrors the vertical layout: parent shape minus its border so the
+     AM's active background stops cleanly at the outline instead of
+     bleeding past it. */
+  border-start-start-radius: calc(var(--_period-shape) - var(--_period-outline-width));
+  border-end-start-radius: calc(var(--_period-shape) - var(--_period-outline-width));
+}
+.md-time-picker__period--horizontal .md-time-picker__period-btn--pm {
+  border-start-end-radius: calc(var(--_period-shape) - var(--_period-outline-width));
+  border-end-end-radius: calc(var(--_period-shape) - var(--_period-outline-width));
+}
+
+/* ── Dial ── */
+.md-time-picker__dial-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-block-end: var(--md-sys-spacing-inset-xl, 24px);
+  /* Bloom in on mount (dialog open AND swap from input → dial) —
+     paired with `.md-time-picker__input-area` so both modes
+     animate symmetrically. The transform-origin pulls the bloom
+     toward the headline so the dial visually "grows" out of the
+     selected time digits. Duration is long1 (450ms), 50ms quicker
+     than the outer dialog unfold so the nested content settles
+     just BEFORE the dialog locks in — that staggered finish reads
+     as "the dialog opens, then its contents bloom into place"
+     rather than two motions racing each other. */
+  animation: md-time-picker-mode-in
+    var(--_mode-swap-duration)
+    var(--_motion-easing)
+    both;
+  transform-origin: center top;
+}
+
+.md-time-picker__dial {
+  position: relative;
+  width: var(--_dial-size);
+  height: var(--_dial-size);
+  background: var(--_dial-bg);
+  border-radius: 50%;
+  touch-action: none;
+  user-select: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+:host([disabled]) .md-time-picker__dial {
+  pointer-events: none;
+  opacity: 0.38;
+}
+
+.md-time-picker__dial-center {
+  position: absolute;
+  width: var(--_dial-center-size);
+  height: var(--_dial-center-size);
+  border-radius: 50%;
+  background: var(--_dial-hand-color);
+  /* PHYSICAL anchors — a clock dial is a geometric shape that does
+     not mirror in RTL (clocks have no RTL variant; the dot must stay
+     dead-centre regardless of inherited direction). `inset-inline-*`
+     would still resolve to centre at 50% in a symmetric box, but the
+     intent of the dial coordinate system is physical, so we make
+     that explicit. */
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+/* ── Selection hand ──
+   The hand math in md-time-picker.tsx (`renderDial` → `handAngle`,
+   `renderDialNumber`, and `dialPointFromEvent`) uses the canonical
+   clockwise-from-12 convention: angle 0deg = 12 o'clock, 60deg = 2,
+   90deg = 3, 180deg = 6, etc.
+
+   To keep the CSS rotation in phase with that convention, the hand
+   bar must start out pointing UP at rotate(0deg). We achieve that by
+   anchoring the bar's BOTTOM edge at the vertical center of the dial
+   (`bottom: 50%`) and giving it a `transform-origin: 50% 100%`
+   so the pivot sits at the dial center while the bar extends into the
+   upper half. Without this, the bar would extend downward and every
+   rotation would land the tip 180deg out of phase — so hour=2 with
+   handAngle=60deg visibly painted the tip at the "8" position.
+
+   `width: 0` keeps the rotation pivot dead-centre on the dial.
+   The visible parts (line, tip) are themselves centred via
+   translateX(-50%), so a zero-width anchor is all the parent needs to
+   provide. A 2px-wide parent would push the pivot 1px off, producing
+   a subtle gap between the centre dot and the line's foot. */
+.md-time-picker__dial-hand {
+  position: absolute;
+  /* PHYSICAL anchors — see `.md-time-picker__dial-center`. The hand
+     and its children deliberately live in physical coordinates so
+     that `transform: rotate(deg)` (which is also physical) lands the
+     tip on the active number in both LTR and RTL. Using
+     `inset-inline-*` here would resolve to centre at 50% / 0 width
+     today, but if the geometry ever shifts off-centre it would
+     silently flip in RTL and dislocate the hand. */
+  left: 50%;
+  top: auto;
+  bottom: 50%;
+  width: 0;
+  height: 50%;
+  background: transparent;
+  transform-origin: 50% 100%;
+  transform: rotate(0deg);
+  transition: transform 200ms var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
+  pointer-events: none;
+  z-index: 1;
+}
+
+.md-time-picker__dial-hand-line {
+  position: absolute;
+  left: 50%;
+  /* Line draws from the pivot (= bottom of the hand bar = dial centre)
+     outward toward the tip, scaling with `--md-time-picker-hand-length`
+     so the 24h-inner-ring hand naturally short-strokes to its number.
+     Stroke width is themable via `--md-time-picker-dial-hand-width`
+     for authors who want a beefier or thinner hand. */
+  top: auto;
+  bottom: 0;
+  width: var(--_dial-hand-width);
+  height: var(--md-time-picker-hand-length, var(--_hand-length-dynamic, 100%));
+  background: var(--_dial-hand-color);
+  transform: translateX(-50%);
+}
+
+.md-time-picker__dial-hand-tip {
+  position: absolute;
+  left: 50%;
+  /* Tip lives at the far end of the line: `--md-time-picker-hand-length`
+     units away from the pivot at the bottom. Translating to a top-edge
+     offset → `100% - hand-length`. For full-length (100%) the tip sits
+     at the bar's top (the outer ring); for the 24h inner ring (62%) it
+     lands inset by 38% of the bar, on the inner ring numbers. */
+  top: calc(100% - var(--md-time-picker-hand-length, var(--_hand-length-dynamic, 100%)));
+  bottom: auto;
+  width: var(--_dial-target-size);
+  height: var(--_dial-target-size);
+  background: var(--_dial-hand-color);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.md-time-picker__dial-hand-dot {
+  display: none;
+}
+
+/* ── Dial numbers ──
+   MD3 Body Large typography (16dp / 400 weight / 24 line-height /
+   0.5px tracking) is used for every number on the dial, regardless
+   of ring (outer 12h or inner 24h). Tracking is forced to 0 for the
+   numerals so the digits stay optically aligned with the 48dp touch
+   targets — a stock 0.5px tracking visibly pushes two-digit numbers
+   (10, 11, 12) off-centre compared to one-digit ones.
+
+   The active number bumps weight to 500 to read clearly inside the
+   primary-coloured handle (and is recoloured to on-primary via
+   `--_dial-number-active-color`). */
+.md-time-picker__dial-number {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Physical sizing + physical centring offsets — pairs with the
+     `left`/`top` set inline by `renderDialNumber`. A logical
+     `margin-inline-start` would flip in RTL and pull every number
+     1×target-size to the wrong side, leaving the dial face mirrored
+     while the hand (a physical `rotate`) stayed put. */
+  width: var(--_dial-target-size);
+  height: var(--_dial-target-size);
+  /* stylelint-disable-next-line property-disallowed-list -- dial numbers are rotated in place; logical margin would flip in RTL while the hand stays put */
+  margin-left: calc(-1 * var(--_dial-target-size) / 2);
+  margin-top: calc(-1 * var(--_dial-target-size) / 2);
+  border-radius: 50%;
+  font-family: var(--md-sys-typescale-body-large-font-family, var(--md-sys-typescale-body-large-font, inherit));
+  font-size: var(--_dial-number-font-size);
+  font-weight: var(--_dial-number-font-weight);
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--_dial-number-color);
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+  transition: color 150ms var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  font-variant-numeric: tabular-nums;
+}
+
+/* Inner-ring 24h numbers are styled identically to outer-ring numbers —
+   same size, same opacity, same colour — per the MD3 24h dial spec.
+   The class is preserved as a hook for authors who want to opt into
+   custom inner-ring styling without re-targeting via :nth-child. */
+.md-time-picker__dial-number--inner {
+  color: var(--_dial-number-color);
+  opacity: 1;
+}
+
+.md-time-picker__dial-number--active {
+  color: var(--_dial-number-active-color);
+  font-weight: var(--_dial-number-active-font-weight);
+  opacity: 1;
+}
+
+/* ── Input variant ── */
+.md-time-picker__input-area {
+  /* M3 input spec: 24dp from the bottom of the input row (including
+     the "Hour" / "Minute" hint labels stacked underneath each input)
+     to the top of the footer / actions row. Previously this was
+     36dp, which inflated the dialog beyond the canonical layout. */
+  margin-block-end: var(--md-sys-spacing-inset-xl, 24px);
+  /* Bloom in on mount (dialog open AND mode swap) — see the
+     `@keyframes md-time-picker-mode-in` comment for the geometry
+     rationale, and the .md-time-picker__dial-wrap rule for why
+     the duration is long1 (450ms) — 50ms quicker than the outer
+     dialog unfold so the nested content settles first. */
+  animation: md-time-picker-mode-in
+    var(--_mode-swap-duration)
+    var(--_motion-easing)
+    both;
+  transform-origin: center top;
+}
+
+.md-time-picker__input-time {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  /* No flex gap — the colon separator owns its own 24dp column
+     (M3 spec) and the AM/PM toggle uses `margin-inline-start: 12px`
+     to introduce the 12dp gutter shown in the M3 input spec sheet.
+     Mirroring this to the dial variant (which also lays out HH /
+     colon / MM with a fixed 24dp column and no flex gap) keeps the
+     two variants pixel-aligned. */
+  gap: 0;
+}
+
+.md-time-picker__input-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--_input-hint-gap);
+}
+
+.md-time-picker__input {
+  font-family: inherit;
+  /* Input mode uses M3 **display-medium** (45px / 52 line-height /
+     0 tracking) by default — intentionally one step smaller than
+     the dial variant's display-large (57px) tile glyphs. This
+     creates a deliberate size contrast when the user toggles
+     between modes: dial = "read this number" (big), input = "type
+     a number" (compact). The swap is animated by the bloom
+     keyframes at the bottom of this file. Override the size /
+     weight via `--md-time-picker-input-font-size` /
+     `--md-time-picker-input-font-weight`. */
+  font-size: var(--_input-font-size);
+  font-weight: var(--_input-font-weight);
+  line-height: 1;
+  letter-spacing: var(--md-sys-typescale-display-medium-letter-spacing, 0);
+  background: var(--_input-bg);
+  color: var(--_input-color);
+  border: var(--_input-border-width) solid var(--_input-outline-color);
+  border-radius: var(--_time-display-shape);
+  /* M3 input spec: 96dp × 72dp container. With the smaller
+     display-medium glyphs the box has extra breathing room above
+     and below the digits, so vertical alignment stays clean via
+     native <input> text centering. Both axes are themable
+     (`--md-time-picker-input-width` / `--md-time-picker-input-height`)
+     so dense layouts can squeeze them or accessibility-first
+     surfaces can bump them up. */
+  padding-block: 0;
+  padding-inline: 16px;
+  inline-size: var(--_input-width);
+  block-size: var(--_input-height);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  appearance: textfield;
+  box-sizing: border-box;
+}
+
+.md-time-picker__input::-webkit-outer-spin-button,
+.md-time-picker__input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.md-time-picker__input:hover {
+  background: color-mix(in srgb, var(--_input-color) var(--_input-hover-opacity), var(--_input-bg));
+}
+
+.md-time-picker__input:focus {
+  outline: none;
+  background: var(--_input-bg);
+  border-color: var(--_input-active-outline-color);
+}
+
+.md-time-picker__input--active {
+  background: var(--_input-active-bg);
+  color: var(--_input-active-color);
+  border-color: transparent;
+}
+
+/* Re-declare the active palette under `:focus` because the generic
+   `.md-time-picker__input:focus` rule above has higher specificity
+   than `.md-time-picker__input--active` (one class + one pseudo
+   beats one class) and would otherwise stomp the primary-container
+   background back to `surface-container-highest` the moment the
+   active input took focus. With both classes plus the pseudo we
+   land at (0, 2, 1) which decisively wins the cascade. The MD3
+   spec calls for the active input to KEEP its primary-container
+   fill in the focused state and gain a primary 2dp outline on top
+   — anything else looks like a flicker bug to the user. Authors
+   re-skinning the active state should set BOTH
+   `--md-time-picker-input-active-bg` and
+   `--md-time-picker-input-active-color` for legibility. */
+.md-time-picker__input--active:focus {
+  background: var(--_input-active-bg);
+  color: var(--_input-active-color);
+  border-color: var(--_input-active-outline-color);
+}
+
+/* Same cascade trap as above, but for the hover state — make sure
+   hovering the already-active input doesn't briefly drain its
+   primary-container fill back through the generic-hover color-mix. */
+.md-time-picker__input--active:hover {
+  background: color-mix(
+    in srgb,
+    var(--_input-active-color) var(--_input-hover-opacity),
+    var(--_input-active-bg)
+  );
+}
+
+.md-time-picker__input--error,
+.md-time-picker__input--error:focus {
+  border-color: var(--_input-error-color);
+  color: var(--_input-error-color);
+}
+
+.md-time-picker__input-separator {
+  /* Separator glyph matches the input-mode digits (same font-size
+     and weight) so the colon doesn't tower over the digits it
+     separates. Both colour and column width are themable:
+     `--md-time-picker-input-separator-color` and
+     `--md-time-picker-input-separator-width`. */
+  font-size: var(--_input-font-size);
+  font-weight: var(--_input-font-weight);
+  line-height: 1;
+  color: var(--_input-separator-color);
+  /* M3 spec: 24dp-wide column with the colon visually centered inside
+     the input row (NOT inside the full input+hint column — otherwise
+     the colon would drift down into the hint band). Pin block-size
+     to the input height so the colon sits flush with the input row
+     regardless of how tall the hint underneath grows. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_input-separator-width);
+  block-size: var(--_input-height);
+  align-self: flex-start;
+}
+
+.md-time-picker__input-hint {
+  font-size: var(--md-sys-typescale-body-small-font-size, 12px);
+  letter-spacing: var(--md-sys-typescale-body-small-letter-spacing, 0.4px);
+  color: var(--_input-hint-color);
+}
+
+.md-time-picker__input--error ~ .md-time-picker__input-hint {
+  color: var(--_input-error-color);
+}
+
+/* ── Footer ──
+   The footer composes md-icon-button (mode toggle) and md-button
+   (Cancel / OK), so we only handle layout here. Theming for each
+   button is forwarded via custom-property pipes so the existing
+   `--md-time-picker-toggle-icon-color`, `--md-time-picker-action-color`,
+   and `--md-time-picker-action-primary-color` tokens still work
+   without authors having to learn md-button / md-icon-button's
+   private property names. */
+.md-time-picker__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--_footer-gap);
+}
+
+/* Mode-toggle (clock ⇄ keyboard) — composes md-icon-button. We
+   forward the time-picker-scoped tokens onto md-icon-button's own
+   custom-property surface so authors can recolour / resize /
+   reshape the toggle without learning a second API. */
+.md-time-picker__toggle-mode {
+  --md-icon-button-color: var(--_toggle-icon-color);
+  --md-icon-button-icon-color: var(--_toggle-icon-color);
+  --md-icon-button-icon-size: var(--_toggle-icon-size);
+  --md-icon-button-container-color: var(--_toggle-bg);
+  --md-icon-button-container-shape: var(--_toggle-shape);
+}
+
+.md-time-picker__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--_actions-gap);
+}
+
+/* Cancel / OK — compose md-button (text variant). The
+   `--md-button-*` overrides below give authors a single-line
+   recipe for the three most-asked actions:
+     • recolour the label    → `--md-time-picker-action-color` (Cancel)
+                              `--md-time-picker-action-primary-color` (OK)
+     • give the OK button a tonal/filled background
+                              → `--md-time-picker-action-confirm-bg`
+     • restyle the corners   → `--md-time-picker-action-shape`. */
+.md-time-picker__action-btn {
+  --md-button-label-color: var(--_action-color);
+  --md-button-container-color: var(--_action-cancel-bg);
+  --md-button-container-shape: var(--_action-shape);
+}
+
+.md-time-picker__action-btn--primary {
+  --md-button-label-color: var(--_action-primary-color);
+  --md-button-container-color: var(--_action-confirm-bg);
+  --md-button-container-shape: var(--_action-shape);
+}
+
+/* ── RTL — keep numbers around the dial visually unmirrored ── */
+/* Layout uses logical properties throughout; the dial is geometrically
+   symmetrical, so we don't need to flip the dial itself. Only the
+   AM/PM segment ordering needs to follow logical flow. */
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .md-time-picker__scrim,
+  .md-time-picker__dialog,
+  .md-time-picker__dial-wrap,
+  .md-time-picker__input-area,
+  .md-time-picker__dial-hand,
+  .md-time-picker__period-btn,
+  .md-time-picker__dial-number,
+  .md-time-picker__input {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ── Forced colors (high contrast) ── */
+/* Visually-hidden polite live region (dialog phase announcements). */
+.md-time-picker__sr-status {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (forced-colors: active) {
+  .md-time-picker__dialog {
+    border: 1px solid CanvasText;
+  }
+  .md-time-picker__period,
+  .md-time-picker__input,
+  .md-time-picker__dial {
+    border: 1px solid CanvasText;
+  }
+  /* Mirror the author hover/focus rules (0,2,0) at equal-or-higher
+     specificity so their color-mix()/sys-token values can't leak into
+     forced-colors mode — the base FC rules below them are only (0,1,0)
+     and would lose the cascade (same bug class as md-text-field's FC
+     hover indicator). Non-active tiles stay Canvas on hover; focus is
+     signalled with a Highlight border, never a fill. */
+  .md-time-picker__input:hover,
+  .md-time-picker__period-btn:hover {
+    background: Canvas;
+    color: CanvasText;
+    forced-color-adjust: none;
+  }
+  .md-time-picker__input:focus {
+    background: Canvas;
+    color: CanvasText;
+    border-color: Highlight;
+    forced-color-adjust: none;
+  }
+  .md-time-picker__input--active,
+  .md-time-picker__input--active:hover,
+  .md-time-picker__input--active:focus,
+  .md-time-picker__period-btn--active,
+  .md-time-picker__period-btn--active:hover,
+  .md-time-picker__dial-hand-line,
+  .md-time-picker__dial-hand-tip,
+  .md-time-picker__dial-center {
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+  .md-time-picker__input--error,
+  .md-time-picker__input--error:focus,
+  .md-time-picker__input--error:hover {
+    /* Canvas fill so LinkText stays readable even on an active
+       (Highlight-filled) tile that enters the error state. The :hover
+       mirror is REQUIRED: the (0,2,0) hover mirrors above would
+       otherwise out-specify the bare --error rule and flip a hovered
+       erroring tile back to Highlight/Canvas. */
+    background: Canvas;
+    border-color: LinkText;
+    color: LinkText;
+    forced-color-adjust: none;
+  }
+  /* The active period button carries forced-color-adjust:none, which
+     also stops the UA from re-forcing its author-colored focus ring,
+     divider, and ripple — mirror them to system colors explicitly. */
+  .md-time-picker__period-btn:focus-visible {
+    outline-color: Highlight;
+  }
+  .md-time-picker__period--vertical .md-time-picker__period-btn--am {
+    border-block-end-color: CanvasText;
+  }
+  .md-time-picker__period--horizontal .md-time-picker__period-btn--am {
+    border-inline-end-color: CanvasText;
+  }
+  .md-time-picker__period-btn md-ripple {
+    display: none;
+  }
+}
+
+/* ── Dark theme (relies on system tokens; this is a finishing pass) ── */
+:host-context([data-theme='dark']) {
+  --_scrim-color: var(--md-time-picker-scrim-color, rgba(0, 0, 0, 0.6));
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

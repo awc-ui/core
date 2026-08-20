@@ -1,0 +1,414 @@
+/* ═══════════════════════════════════════════════════════════
+   md-sub-menu-item
+   Material Design 3 — Menus (Submenu Item)
+   https://m3.material.io/components/menus/specs
+
+   Parts: state-layer, leading-icon, content, headline, supporting-text, badge
+   Slots: leading-icon, submenu
+   ═══════════════════════════════════════════════════════════ */
+
+/* ==========================================================
+   1. HOST
+   ========================================================== */
+:host {
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: visible;
+  cursor: pointer;
+  user-select: none;
+  /* Global density: mirrors md-menu-item — each `data-density` rung (0…-4)
+     trims 4px off the row. density-scale is 0 by default, so the 48px default is
+     unchanged; padding/gap fall back to the same literals via the spacing tokens.
+     See packages/tokens/src/tokens.css §10-12. */
+  min-height: calc(48px + var(--md-sys-density-scale, 0) * 4px);
+  /* Icon lever, mirroring md-menu-item so a submenu row and its siblings taper
+     in lockstep — 1px per rung off 24dp, floored at 18px. */
+  --_icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+  padding: 0 var(--md-sys-spacing-inset-md, 12px);
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  color: var(--md-sys-color-on-surface, #1C1B1F);
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  /* M3 motion — match md-menu-item: quick tonal fades + expressive shape morph. */
+  transition:
+    background-color var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    color var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    border-radius var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   2. STATES
+   ========================================================== */
+.md-sub-menu-item__state-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--md-sys-color-on-surface, #1C1B1F);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+:host(:hover) .md-sub-menu-item__state-layer { opacity: 0.08; }
+:host(:active) .md-sub-menu-item__state-layer { opacity: 0.12; }
+:host(:focus-visible) .md-sub-menu-item__state-layer,
+:host([data-md-focused]) .md-sub-menu-item__state-layer { opacity: 0.12; }
+
+:host(:focus-visible),
+:host([data-md-focused]) {
+  outline: 3px solid var(--md-sys-color-secondary, #625B71);
+  outline-offset: -3px;
+}
+
+/* Active state when submenu is showing */
+:host(.md-sub-menu-item--open) .md-sub-menu-item__state-layer { opacity: 0.08; }
+
+/* ==========================================================
+   3. DISABLED STATE
+   ========================================================== */
+:host(.md-sub-menu-item--disabled) {
+  cursor: default;
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+/* ==========================================================
+   4. LEADING ICON
+   ========================================================== */
+.md-sub-menu-item__leading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--_icon-size);
+  height: var(--_icon-size);
+  color: var(--md-sys-color-on-surface-variant, #49454F);
+}
+
+.md-sub-menu-item__leading /* NOT badges. A custom property inside ::slotted() resolves in the SLOTTED
+   element's own scope, and md-badge defines its own `--_icon-size` (10px, for
+   its glyph). So `height: var(--_icon-size) !important` here picked up the
+   BADGE's 10px instead of this component's icon size and, being !important,
+   beat the badge's own 16px — squashing every badge slotted onto an icon
+   button / avatar / menu item into a 10px blob. A badge is not an icon; it
+   sizes itself. */
+::slotted(*:not(md-badge)) {
+  /* `!important` beats the document-tree `.material-symbols-outlined` rule —
+     see the long note in md-menu-item.css §5 for why specificity can't. */
+  font-size: var(--_icon-size) !important;
+  width: var(--_icon-size);
+  height: var(--_icon-size);
+  color: inherit;
+}
+
+/* ==========================================================
+   5. CONTENT
+   ========================================================== */
+.md-sub-menu-item__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.md-sub-menu-item__headline {
+  font-family: var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif);
+  font-size: var(--md-sys-typescale-body-large-size, 16px);
+  font-weight: var(--md-sys-typescale-body-large-weight, 400);
+  line-height: var(--md-sys-typescale-body-large-line-height, 24px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.md-sub-menu-item__supporting {
+  font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif);
+  font-size: var(--md-sys-typescale-body-medium-size, 14px);
+  line-height: var(--md-sys-typescale-body-medium-line-height, 20px);
+  color: var(--md-sys-color-on-surface-variant, #49454F);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================
+   6. BADGE
+   ========================================================== */
+.md-sub-menu-item__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  background-color: var(--md-sys-color-tertiary-container, #FFD8E4);
+  color: var(--md-sys-color-on-tertiary-container, #31111D);
+  font-family: var(--md-sys-typescale-label-small-font-family, Roboto, sans-serif);
+  font-size: var(--md-sys-typescale-label-small-size, 11px);
+  font-weight: var(--md-sys-typescale-label-small-weight, 500);
+  line-height: var(--md-sys-typescale-label-small-line-height, 16px);
+  letter-spacing: var(--md-sys-typescale-label-small-tracking, 0.5px);
+  white-space: nowrap;
+}
+
+/* ==========================================================
+   7. TRAILING ARROW
+   ========================================================== */
+.md-sub-menu-item__arrow {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-weight: normal;
+  font-style: normal;
+  font-size: var(--_icon-size);
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  flex-shrink: 0;
+  color: var(--md-sys-color-on-surface-variant, #49454F);
+  transition: transform var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* The glyph is `arrow_right`, which Material Symbols does NOT auto-mirror — in
+   RTL the flyout opens leftward, so the caret has to point that way too. */
+:host([dir="rtl"]) .md-sub-menu-item__arrow,
+:host-context([dir="rtl"]) .md-sub-menu-item__arrow {
+  --_arrow-flip: -1;
+}
+
+.md-sub-menu-item__arrow {
+  transform: scaleX(var(--_arrow-flip, 1));
+}
+
+:host(.md-sub-menu-item--open) .md-sub-menu-item__arrow {
+  transform: scaleX(var(--_arrow-flip, 1)) rotate(90deg);
+}
+
+/* ==========================================================
+   8. SUBMENU CONTAINER
+   ========================================================== */
+.md-sub-menu-item__submenu {
+  position: absolute;
+  /* LOGICAL, not `left: 100%`: a physical offset opened the flyout to the right
+     even under dir="rtl", where it must open toward the inline start (the left).
+     autoPositionSubmenu() flips these same logical properties on overflow. */
+  inset-inline-start: 100%;
+  inset-inline-end: auto;
+  top: 0;
+  z-index: 1001;
+  display: none;
+}
+
+:host(.md-sub-menu-item--open) .md-sub-menu-item__submenu {
+  display: block;
+}
+
+/* ==========================================================
+   9. DIVIDER
+   ========================================================== */
+:host(.md-sub-menu-item--divider) {
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+:host(.md-sub-menu-item--divider)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  inset-inline: 0;
+  height: 1px;
+  background-color: var(--md-sys-color-outline-variant, #CAC4D0);
+}
+
+/* ==========================================================
+   10. VERTICAL VARIANT OVERRIDES
+   ========================================================== */
+:host([data-variant="standard"]) {
+  /* Resting corners, named so the hover/press/selected rules below can blend
+     BACK to them. Freezing is per-corner because an item's resting shape
+     depends on its position: first/last child carry large outer corners while
+     the rest are small, so a single blanket rest value would round the wrong
+     corners when shape morph is switched off. See §13 in tokens.css. */
+  --_rest-ss: var(--md-sys-shape-corner-small, 8px);
+  --_rest-se: var(--md-sys-shape-corner-small, 8px);
+  --_rest-es: var(--md-sys-shape-corner-small, 8px);
+  --_rest-ee: var(--md-sys-shape-corner-small, 8px);
+  color: var(--md-sys-color-on-surface, #1C1B1F);
+  border-radius: var(--md-sys-shape-corner-small, 8px);
+}
+
+:host([data-variant="standard"]:first-child) {
+  --_rest-ss: var(--md-sys-shape-corner-large, 16px);
+  --_rest-se: var(--md-sys-shape-corner-large, 16px);
+  border-start-start-radius: var(--md-sys-shape-corner-large, 16px);
+  border-start-end-radius: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host([data-variant="standard"]:last-child) {
+  --_rest-es: var(--md-sys-shape-corner-large, 16px);
+  --_rest-ee: var(--md-sys-shape-corner-large, 16px);
+  border-end-start-radius: var(--md-sys-shape-corner-large, 16px);
+  border-end-end-radius: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host([data-variant="standard"]:hover) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ee)));
+}
+
+:host([data-variant="standard"]:active) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-ee)));
+}
+
+:host([data-variant="standard"]:first-child:hover) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ee)));
+}
+
+:host([data-variant="standard"]:last-child:hover) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)));
+}
+
+:host([data-variant="standard"][data-after-gap]:hover) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ee)));
+}
+
+:host([data-variant="standard"][gap]:hover) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)));
+}
+
+:host([data-variant="standard"][data-after-gap][gap]:hover) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)));
+}
+
+:host([data-variant="vibrant"]) {
+  /* Resting corners, named so the hover/press/selected rules below can blend
+     BACK to them. Freezing is per-corner because an item's resting shape
+     depends on its position: first/last child carry large outer corners while
+     the rest are small, so a single blanket rest value would round the wrong
+     corners when shape morph is switched off. See §13 in tokens.css. */
+  --_rest-ss: var(--md-sys-shape-corner-small, 8px);
+  --_rest-se: var(--md-sys-shape-corner-small, 8px);
+  --_rest-es: var(--md-sys-shape-corner-small, 8px);
+  --_rest-ee: var(--md-sys-shape-corner-small, 8px);
+  color: var(--md-sys-color-on-tertiary-container, #31111D);
+  border-radius: var(--md-sys-shape-corner-small, 8px);
+}
+
+:host([data-variant="vibrant"]:first-child) {
+  --_rest-ss: var(--md-sys-shape-corner-large, 16px);
+  --_rest-se: var(--md-sys-shape-corner-large, 16px);
+  border-start-start-radius: var(--md-sys-shape-corner-large, 16px);
+  border-start-end-radius: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host([data-variant="vibrant"]:last-child) {
+  --_rest-es: var(--md-sys-shape-corner-large, 16px);
+  --_rest-ee: var(--md-sys-shape-corner-large, 16px);
+  border-end-start-radius: var(--md-sys-shape-corner-large, 16px);
+  border-end-end-radius: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host([data-variant="vibrant"]:hover) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ee)));
+}
+
+:host([data-variant="vibrant"]:active) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-medium, 12px) - var(--_rest-ee)));
+}
+
+:host([data-variant="vibrant"]:first-child:hover) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ee)));
+}
+
+:host([data-variant="vibrant"]:last-child:hover) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)));
+}
+
+:host([data-variant="vibrant"][data-after-gap]:hover) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ee)));
+}
+
+:host([data-variant="vibrant"][gap]:hover) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)));
+}
+
+:host([data-variant="vibrant"][data-after-gap][gap]:hover) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)));
+}
+
+:host([data-variant="vibrant"]) .md-sub-menu-item__leading,
+:host([data-variant="vibrant"]) .md-sub-menu-item__supporting,
+:host([data-variant="vibrant"]) .md-sub-menu-item__arrow {
+  color: var(--md-sys-color-on-tertiary-container, #31111D);
+}
+
+:host([data-variant="vibrant"]) .md-sub-menu-item__state-layer {
+  background-color: var(--md-sys-color-on-tertiary-container, #31111D);
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

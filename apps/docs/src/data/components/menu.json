@@ -1,0 +1,244 @@
+{
+  "tag": "md-menu",
+  "title": "Menu",
+  "slug": "menu",
+  "category": "Navigation",
+  "subComponentOf": null,
+  "storyId": "navigation-menu--playground",
+  "props": [
+    {
+      "name": "open",
+      "attribute": "open",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "anchor",
+      "attribute": "anchor",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "placement",
+      "attribute": "placement",
+      "type": "'bottom-start' | 'bottom-end' | 'top-start' | 'top-end'",
+      "default": "'bottom-start'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "quick",
+      "attribute": "quick",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'baseline' | 'standard' | 'vibrant'",
+      "default": "'baseline'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "layout",
+      "attribute": "layout",
+      "type": "'standard' | 'grouped'",
+      "default": "'standard'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "useGap",
+      "attribute": "use-gap",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "emptyText",
+      "attribute": "empty-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "matchAnchorWidth",
+      "attribute": "match-anchor-width",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "responsive",
+      "attribute": "responsive",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "persistent",
+      "attribute": "persistent",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "autoFocus",
+      "attribute": "auto-focus",
+      "type": "boolean",
+      "default": "true",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "maxHeight",
+      "attribute": "max-height",
+      "type": "number | string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "listLabel",
+      "attribute": "list-label",
+      "type": "string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "listbox",
+      "attribute": "listbox",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    }
+  ],
+  "methods": [
+    {
+      "name": "setComboboxElement",
+      "params": "el: HTMLElement | null"
+    },
+    {
+      "name": "setVirtualProvider",
+      "params": "provider: VirtualMenuProvider | null"
+    },
+    {
+      "name": "getScrollViewport",
+      "params": ""
+    },
+    {
+      "name": "show",
+      "params": "opts?: { autoFocus?: boolean }"
+    },
+    {
+      "name": "reposition",
+      "params": ""
+    },
+    {
+      "name": "close",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "header",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "empty-text",
+      "description": ""
+    },
+    {
+      "name": "surface",
+      "description": ""
+    },
+    {
+      "name": "menu-viewport",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-menu-min-width",
+      "description": "Min container width (default 112px)"
+    },
+    {
+      "name": "--md-menu-max-width",
+      "description": "Max container width (default 280px)"
+    },
+    {
+      "name": "--md-menu-inline-surface-color",
+      "description": "Background for md-menu--inline-fill only (default transparent)"
+    },
+    {
+      "name": "--md-menu-inline-fill-radius-end",
+      "description": "Bottom corner radius for inline-fill embed (default 0)"
+    },
+    {
+      "name": "--md-menu-viewport-margin",
+      "description": ""
+    },
+    {
+      "name": "--md-menu-group-gap",
+      "description": ""
+    },
+    {
+      "name": "--md-menu-section-gap",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-menu-item"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    }
+  ]
+}

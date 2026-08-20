@@ -1,0 +1,340 @@
+/* ==========================================================
+   md-snackbar — Material Design 3 Snackbar
+   Spec: https://m3.material.io/components/snackbar/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-snackbar-container-color        Surface background
+     --md-snackbar-message-color          Supporting text color
+     --md-snackbar-action-color           Action button text color
+     --md-snackbar-close-color            Close icon color
+     --md-snackbar-container-shape        Border radius
+     --md-snackbar-min-width              Minimum inline size
+     --md-snackbar-max-width              Maximum inline size
+
+   CSS PARTS:
+     surface     Outer container
+     message     Supporting text wrapper
+     actions     Action button wrapper
+     close       Close button wrapper
+
+   SLOTS:
+     (default)   Supporting text
+     action      Custom action element
+     close       Custom close element
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST — positioning & visibility
+   ========================================================== */
+
+:host {
+  --_container-color: var(--md-snackbar-container-color, var(--md-sys-color-inverse-surface, #313033));
+  --_message-color: var(--md-snackbar-message-color, var(--md-sys-color-inverse-on-surface, #F4EFF4));
+  --_action-color: var(--md-snackbar-action-color, var(--md-sys-color-inverse-primary, #D0BCFF));
+  --_close-color: var(--md-snackbar-close-color, var(--md-sys-color-inverse-on-surface, #F4EFF4));
+  --_container-shape: var(--md-snackbar-container-shape, var(--md-sys-shape-corner-extra-small, 4px));
+  --_min-width: var(--md-snackbar-min-width, 288px);
+  --_max-width: var(--md-snackbar-max-width, 568px);
+  --_slide-from: translateY(100%);
+
+  display: flex;
+  position: fixed;
+  inset-block-start: 0;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  padding: var(--md-sys-spacing-inset-xl, 24px);
+  align-items: flex-end;
+  justify-content: center;
+  /* Every snackbar shares one z-index, so with two of them up the DOM order —
+     not the order they opened in — decides which paints on top, and a newly
+     shown snackbar can appear BEHIND one already on screen. `--_stack-order`
+     is stamped on open (see md-snackbar.tsx) and lifts the newest above its
+     peers. It counts open snackbars, not opens, so it stays a small number and
+     can't creep up past dialogs or other overlays above this token. */
+  z-index: calc(var(--md-sys-z-index-snackbar, 2000) + var(--_stack-order, 0));
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transform: var(--_slide-from);
+  transition:
+    opacity var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15)),
+    transform var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15)),
+    visibility 0ms linear var(--md-sys-motion-duration-short4, 200ms);
+}
+
+:host(.md-snackbar--open) {
+  visibility: visible;
+  opacity: 1;
+  transform: translate(0, 0);
+  transition:
+    opacity var(--md-sys-motion-duration-medium1, 250ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
+    transform var(--md-sys-motion-duration-medium1, 250ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
+    visibility 0ms linear 0ms;
+}
+
+:host(.md-snackbar--open) .md-snackbar__surface {
+  pointer-events: auto;
+}
+
+/* ─── Bottom positions (slide from bottom) ─────────────── */
+
+:host(.md-snackbar--bottom) {
+  align-items: flex-end;
+  justify-content: center;
+}
+
+:host(.md-snackbar--bottom-start) {
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+:host(.md-snackbar--bottom-end) {
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+/* ─── Top positions (slide from top) ───────────────────── */
+
+:host(.md-snackbar--top),
+:host(.md-snackbar--top-start),
+:host(.md-snackbar--top-end) {
+  --_slide-from: translateY(-100%);
+}
+
+:host(.md-snackbar--top) {
+  align-items: flex-start;
+  justify-content: center;
+}
+
+:host(.md-snackbar--top-start) {
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+:host(.md-snackbar--top-end) {
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+/* ─── Side & center positions (fade only) ──────────────── */
+
+:host(.md-snackbar--start),
+:host(.md-snackbar--end),
+:host(.md-snackbar--center) {
+  --_slide-from: translate(0, 0);
+}
+
+:host(.md-snackbar--start) {
+  align-items: center;
+  justify-content: flex-start;
+}
+
+:host(.md-snackbar--end) {
+  align-items: center;
+  justify-content: flex-end;
+}
+
+:host(.md-snackbar--center) {
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================================
+   2. SURFACE — container
+   ========================================================== */
+
+.md-snackbar__surface {
+  display: flex;
+  align-items: center;
+  min-inline-size: var(--_min-width);
+  max-inline-size: var(--_max-width);
+  min-block-size: max(36px, calc(48px + var(--md-sys-density-scale, 0) * 3px));
+  padding-inline-start: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px));
+  padding-inline-end: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px));
+  background-color: var(--_container-color);
+  color: var(--_message-color);
+  border-radius: var(--_container-shape);
+  box-shadow: var(--md-sys-elevation-3);
+  box-sizing: border-box;
+}
+
+:host(.md-snackbar--with-action:not(.md-snackbar--with-close)) .md-snackbar__surface {
+  padding-inline-end: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+:host(.md-snackbar--with-close) .md-snackbar__surface {
+  padding-inline-end: var(--md-sys-spacing-inset-md, 12px);
+}
+
+/* ─── Compact viewports (MD3) ───────────────────────────────
+   Below 600px the snackbar spans the full available width (minus a smaller edge
+   margin) instead of its fixed min/max width — so it never overflows or clips
+   off-screen on a phone (the 288px min-width would otherwise exceed a narrow
+   viewport). */
+@media (max-width: 599px) {
+  :host {
+    padding: var(--md-sys-spacing-inset-lg, 16px);
+  }
+  .md-snackbar__surface {
+    inline-size: 100%;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+  }
+}
+
+/* ==========================================================
+   3. MESSAGE — supporting text
+   ========================================================== */
+
+.md-snackbar__message {
+  flex: 1;
+  padding-block: max(6px, calc(14px + var(--md-sys-density-scale, 0) * 2px));
+  font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif);
+  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-medium-font-weight, 400);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-body-medium-letter-spacing, 0.25px);
+  color: inherit;
+}
+
+/* ==========================================================
+   4. ACTIONS — action button + close icon
+   ========================================================== */
+
+.md-snackbar__actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ─── Action button (md-button, text variant) ───────────── */
+
+/* The action is a real md-button (text variant). On the inverse (dark)
+   snackbar surface it takes the inverse-primary action color for its label,
+   icon, state layer and ripple — the button itself supplies the typescale,
+   shape, focus ring and ripple. */
+.md-snackbar__action-btn {
+  flex-shrink: 0;
+  --md-button-label-color: var(--_action-color);
+  --md-button-icon-color: var(--_action-color);
+  --md-ripple-color: var(--_action-color);
+}
+
+/* ─── Close wrapper & icon button ──────────────────────── */
+
+.md-snackbar__close {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.md-snackbar__close md-icon-button {
+  --md-icon-button-icon-color: var(--_close-color);
+  --md-icon-button-container-width: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
+  --md-icon-button-container-height: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
+  --md-icon-button-icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+}
+
+/* ==========================================================
+   5. STACKED LAYOUT — action below text, close at top-right
+   ========================================================== */
+
+:host(.md-snackbar--stacked) .md-snackbar__surface {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: start;
+  /* Breathing room so the close isn't jammed against the message, and the action
+     row isn't stacked tight under the close. */
+  column-gap: var(--md-sys-spacing-gap-md, 12px);
+  row-gap: 6px;
+  min-block-size: 68px;
+  padding-block-start: var(--md-sys-spacing-inset-sm, 8px);
+  padding-block-end: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+:host(.md-snackbar--stacked) .md-snackbar__message {
+  grid-column: 1;
+  grid-row: 1;
+  padding-block-end: var(--md-sys-spacing-inset-xs, 4px);
+}
+
+/* Centre the 24px close glyph on the message's first-line
+   centre. The message inherits `padding-block: 14px` from the
+   base rule (the stacked override only resets the end padding),
+   so its first line centre sits at row_top + 14 + 10 = row_top
+   + 24. The icon-button is 40×40 with 8px internal padding —
+   its glyph centre sits 20px below the button's top. We
+   therefore push the button DOWN by 4px so the glyph centre
+   lands at row_top + 24 = message line centre. Holds for
+   multi-line messages too — the glyph stays on the FIRST line. */
+:host(.md-snackbar--stacked) .md-snackbar__close {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  margin-inline-start: 0;
+  margin-block-start: var(--md-sys-spacing-inset-xs, 4px);
+  padding-block-start: 0;
+}
+
+:host(.md-snackbar--stacked) .md-snackbar__actions {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: end;
+}
+
+/* ==========================================================
+   6. SLOTTED CONTENT
+   ========================================================== */
+
+::slotted([slot="action"]) {
+  color: var(--_action-color);
+}
+
+::slotted([slot="close"]) {
+  color: var(--_close-color);
+}
+
+/* ==========================================================
+   7. REDUCED MOTION
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  :host,
+  :host(.md-snackbar--open) {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   8. FORCED COLORS (Windows High Contrast)
+   ========================================================== */
+
+@media (forced-colors: active) {
+  .md-snackbar__surface {
+    border: 1px solid CanvasText;
+  }
+
+  .md-snackbar__action-btn {
+    color: LinkText;
+  }
+
+  .md-snackbar__action-btn:focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

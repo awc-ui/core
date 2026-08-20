@@ -1,0 +1,1551 @@
+---
+title: Navigation Rail
+description: "Vertical top-level navigation for large screens — collapses to icons, expands to a labelled drawer, hosts a FAB and a logo"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/navigation-rail.json";
+import railTabApi from "../../../data/components/navigation-rail-tab.json";
+
+**Top-level destinations on a large screen.** A vertical rail of 3–7
+destinations that can expand into a labelled drawer, host a FAB and a logo, and
+optionally behave modally. It owns the active index, the expansion state and
+roving focus across its
+[`md-navigation-rail-tab`](/components/navigation-rail/#md-navigation-rail-tab) children.
+
+<ComponentDemo
+  html={`<div style="display: flex; block-size: 404px; inline-size: 100%; max-inline-size: 460px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail expandable label="Main navigation" active-index="0">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+  <main style="flex: 1; padding: 20px; background: var(--md-sys-color-surface-container-low); color: var(--md-sys-color-on-surface); font: 14px/1.6 system-ui;">
+    Click the menu button to expand the rail.
+  </main>
+</div>`}
+  label="Live preview"
+  storyId="navigation-navigation-rail--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-navigation-rail" example="" />
+
+## When to use
+
+- Top-level destinations on **desktop / large** layouts.
+- A persistent navigation surface that collapses to icons and expands to labels.
+- Navigation that hosts a primary action (a FAB) at the top.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Compact / mobile layouts, or bottom navigation | [`md-navigation-bar`](/components/navigation-bar/) — the rail's own [`orientation="horizontal"`](#horizontal-overflow-and-submenus) is a **top**-of-page bar for wide layouts, not a substitute |
+| Sibling views inside one screen | [`md-tabs`](/components/tabs/) |
+| A temporary set of actions | [`md-menu`](/components/menu/) |
+| Supplementary panel content | [`md-side-sheet`](/components/side-sheet/) |
+| A linear flow | [`md-stepper`](/components/stepper/) |
+
+:::caution[`active-index` defaults to `-1`]
+That means **nothing selected** — the rail will render with no current
+destination until you set it. This is the opposite of
+[`md-navigation-bar`](/components/navigation-bar/), whose `active-index`
+defaults to `0`.
+:::
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Icons only, labels underneath | `variant="standard"` (default) |
+| Icons beside labels, wider | `variant="expanded"` |
+| A user-driven toggle between them | `expandable` |
+| Overlay on a scrim (styling only — no focus trap) | `modal` |
+| Where destinations sit vertically | `alignment="top"` / `"middle"` / `"bottom"` |
+| Brand mark, primary action, account | `logo` / `fab` / `footer` slots |
+| Real links instead of buttons | `href` on the tab |
+
+## Variants
+
+`standard` is the spec's collapsed rail: 80dp wide, icon over label.
+`expanded` puts the icon and label inline in a 220–360dp drawer.
+
+<ComponentDemo
+  html={`<div style="display: flex; block-size: 364px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail variant="standard" label="Standard rail" active-index="0">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+</div>
+<div style="display: flex; block-size: 364px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail variant="expanded" label="Expanded rail" active-index="0">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+</div>`}
+  label="standard (default) and expanded"
+  storyId="navigation-navigation-rail--expanded-variant"
+/>
+
+## Expandable
+
+`expandable` renders a built-in leading menu button that toggles between the two
+variants; its glyph animates from `menu` to `menu_open`. Give it a localized
+`toggle-label`. If you would rather supply your own control, leave `expandable`
+off and put a button in the `header` slot wired to `expand()` / `collapse()` /
+`toggle()`.
+
+<ComponentDemo
+  html={`<div style="display: flex; block-size: 384px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail expandable toggle-label="Toggle navigation" label="Mail" active-index="0">
+    <md-navigation-rail-tab icon="inbox" label="Inbox" value="inbox" badge-value="3"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="send" label="Sent" value="sent"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="drafts" label="Drafts" value="drafts"></md-navigation-rail-tab>
+  </md-navigation-rail>
+</div>`}
+  label="Click the toggle to expand and collapse"
+  storyId="navigation-navigation-rail--expandable-toggle-and-modal-dismiss"
+/>
+
+## FAB, logo, header and footer
+
+The FAB goes in the `fab` slot at the **top** of the rail — M3 is explicit that
+it must not sit below the destinations. Two logo slots let you swap a mark
+(`logo`) for a wordmark (`logo-expanded`) across the transition. `header` holds
+a leading control, `footer` holds utilities or an account destination.
+
+<ComponentDemo
+  html={`<div style="display: flex; block-size: 584px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail expandable label="Acme" active-index="0">
+    <span slot="logo" class="material-symbols-outlined" style="font-size: 28px; color: var(--md-sys-color-primary);">hexagon</span>
+    <span slot="logo-expanded" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600;">
+      <span class="material-symbols-outlined" style="font-size: 28px; color: var(--md-sys-color-primary);">hexagon</span>
+      <span>Acme</span>
+    </span>
+    <md-fab slot="fab" icon="edit" label="Compose" aria-label="Compose"></md-fab>
+
+    <md-navigation-rail-tab icon="inbox" label="Inbox" value="inbox"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="send" label="Sent" value="sent"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="schedule" label="Scheduled" value="scheduled"></md-navigation-rail-tab>
+
+    <md-icon-button slot="footer" icon="help" aria-label="Help"></md-icon-button>
+  </md-navigation-rail>
+</div>`}
+  label="Logo, FAB and footer slots"
+  storyId="navigation-navigation-rail--with-header-and-footer"
+/>
+
+:::note[The rail morphs the slotted FAB]
+As the rail expands and collapses it drives the FAB's `extended` state. Don't
+pin `extended` yourself — you would fight the transition.
+:::
+
+## Alignment
+
+`alignment` pushes the destination group to the `top` (default), `middle` or
+`bottom` of the rail.
+
+<ComponentDemo
+  html={`<div style="display: flex; block-size: 364px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail alignment="top" label="Top aligned" active-index="0">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="search" label="Search" value="search"></md-navigation-rail-tab>
+  </md-navigation-rail>
+</div>
+<div style="display: flex; block-size: 364px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail alignment="middle" label="Middle aligned" active-index="0">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="search" label="Search" value="search"></md-navigation-rail-tab>
+  </md-navigation-rail>
+</div>
+<div style="display: flex; block-size: 364px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail alignment="bottom" label="Bottom aligned" active-index="0">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="search" label="Search" value="search"></md-navigation-rail-tab>
+  </md-navigation-rail>
+</div>`}
+  label="top · middle · bottom"
+  storyId="navigation-navigation-rail--alignments"
+/>
+
+## Label visibility
+
+`label-visibility` is `all` by default, which is what M3 recommends for 3–7
+destinations. `selected` paints only the active label; `none` is icon-only. In
+every mode the tab's `label` prop remains the accessible name, so never drop it.
+
+<ComponentDemo
+  html={`<div style="display: flex; block-size: 344px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail label-visibility="all" label="Labels all" active-index="0">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="search" label="Search" value="search"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+</div>
+<div style="display: flex; block-size: 344px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail label-visibility="selected" label="Labels selected" active-index="0">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="search" label="Search" value="search"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+</div>
+<div style="display: flex; block-size: 344px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail label-visibility="none" label="Icons only" active-index="0">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="search" label="Search" value="search"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+</div>`}
+  label="all (default) · selected · none"
+  storyId="navigation-navigation-rail--label-visibility"
+/>
+
+## Badges and states
+
+`badge` switches on the dot; `badge-value` renders the pill. `disabled` removes
+the destination from the tab order.
+
+<ComponentDemo
+  html={`<div style="display: flex; block-size: 384px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail label="Badges and states" active-index="0">
+    <md-navigation-rail-tab icon="inbox" label="Inbox" value="inbox" badge-value="12"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="notifications" label="Alerts" value="alerts" badge></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="archive" label="Archive" value="archive"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="delete" label="Trash" value="trash" disabled></md-navigation-rail-tab>
+  </md-navigation-rail>
+</div>`}
+  label="Count badge, dot badge and a disabled destination"
+  storyId="navigation-navigation-rail--badges"
+/>
+
+## Slotted glyphs
+
+`icon` is also a **slot**, for artwork the Material Symbols names cannot
+express. Slot an `<svg>` (or an `<img>`) with `slot="icon"` in place of the
+`icon` prop — the destination sizes and colours it exactly like a symbol.
+
+<ComponentDemo
+  html={`<div style="display: flex; block-size: 364px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail label="Slotted icons" active-index="0">
+    <md-navigation-rail-tab label="Home" value="home">
+      <svg slot="icon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 3l9 8h-3v10h-5v-6h-2v6H6V11H3z"/></svg>
+    </md-navigation-rail-tab>
+    <md-navigation-rail-tab label="Starred" value="star">
+      <svg slot="icon" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+    </md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+  <div style="flex:1;padding:16px;opacity:.6;font-size:.85rem;">content</div>
+</div>`}
+  label="Slotted SVG glyphs"
+  storyId="navigation-navigation-rail--slotted-icons"
+/>
+
+## Horizontal, overflow and submenus
+
+Three opt-in additions take the rail past a fixed vertical column. None of them
+change the default rail.
+
+### orientation="horizontal"
+
+The same parts laid out as a **top-of-page bar** — logo leading, destinations in
+a row, FAB and footer trailing — for wide layouts where a side rail would spend
+width the content wants.
+
+- **The bar sizes itself to its content**, so no wrapper height is needed —
+  unlike the vertical rail, which needs a bounded height or its destinations
+  scroll.
+- **`expandable` is ignored**: a bar has nowhere to expand into, so the toggle
+  is not rendered.
+- **`aria-orientation` reports `horizontal`**, and the arrow keys follow the
+  inline axis, mirrored under `dir="rtl"`.
+
+**Reports** in the bar below is a menu trigger — and its dropdown nests one
+level further via [`md-sub-menu-item`](/components/menu/#md-sub-menu-item):
+
+<ComponentDemo
+  html={`<md-navigation-rail orientation="horizontal" label="Main navigation" active-index="0">
+  <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="star" label="Starred" value="starred"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="groups" label="Team" value="team"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="bar_chart" label="Reports" value="reports">
+    <md-menu variant="vibrant" slot="submenu">
+      <md-menu-item headline="Usage"><span slot="leading-icon" class="material-symbols-outlined">insights</span></md-menu-item>
+      <md-menu-item headline="Revenue"><span slot="leading-icon" class="material-symbols-outlined">payments</span></md-menu-item>
+    </md-menu>
+  </md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="inbox" label="Inbox" value="inbox"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+</md-navigation-rail>`}
+  htmlCode={`<md-navigation-rail id="main-nav" orientation="horizontal" label="Main navigation" active-index="0">
+  <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="star" label="Starred" value="starred"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="groups" label="Team" value="team"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="bar_chart" label="Reports" value="reports">
+    <md-menu variant="vibrant" id="reports-menu" slot="submenu">
+      <md-menu-item headline="Usage"><span slot="leading-icon" class="material-symbols-outlined">insights</span></md-menu-item>
+      <md-menu-item headline="Revenue"><span slot="leading-icon" class="material-symbols-outlined">payments</span></md-menu-item>
+    </md-menu>
+  </md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="inbox" label="Inbox" value="inbox"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+</md-navigation-rail>
+
+<script type="module">
+  const nav = document.getElementById('main-nav');
+
+  // The rail owns the highlight — you only route. Fires for a plain
+  // destination *and* when a Reports row is chosen, which activates Reports.
+  nav.addEventListener('mdTabChange', (event) => {
+    const { index, value } = event.detail;
+    console.log('navigate to', value, '(index', index + ')');
+  });
+
+  // Which dropdown row was picked. md-menu-item's mdClick bubbles, so one
+  // listener on the menu covers every row.
+  document.getElementById('reports-menu').addEventListener('mdClick', (event) => {
+    const row = event.target.closest('md-menu-item');
+    console.log('open report:', row.getAttribute('headline'));
+  });
+</script>`}
+  react={`// Icons need the Material Symbols stylesheet in index.html — see Installation.
+import { useState } from 'react';
+import { MdMenu, MdMenuItem, MdNavigationRail, MdNavigationRailTab } from '@awc-ui/react';
+
+// Destination order drives activeIndex, so keep it in one place.
+const DESTINATIONS = ['home', 'files', 'starred', 'team', 'reports', 'inbox', 'settings'];
+
+export function TopBarNav() {
+  const [current, setCurrent] = useState('home');
+  const [report, setReport] = useState(null);
+
+  return (
+    <MdNavigationRail
+      orientation="horizontal"
+      label="Main navigation"
+      activeIndex={DESTINATIONS.indexOf(current)}
+      onMdTabChange={(event) => setCurrent(event.detail.value)}
+    >
+      <MdNavigationRailTab icon="home" label="Home" value="home"></MdNavigationRailTab>
+      <MdNavigationRailTab icon="folder" label="Files" value="files"></MdNavigationRailTab>
+      <MdNavigationRailTab icon="star" label="Starred" value="starred"></MdNavigationRailTab>
+      <MdNavigationRailTab icon="groups" label="Team" value="team"></MdNavigationRailTab>
+
+      {/* A destination with a submenu is a disclosure: clicking it opens the
+          dropdown. Choosing a row is what activates the destination. */}
+      <MdNavigationRailTab icon="bar_chart" label="Reports" value="reports">
+        <MdMenu variant="vibrant" slot="submenu">
+          <MdMenuItem headline="Usage" onMdClick={() => setReport('usage')}>
+            <span slot="leading-icon" className="material-symbols-outlined">insights</span>
+          </MdMenuItem>
+          <MdMenuItem headline="Revenue" onMdClick={() => setReport('revenue')}>
+            <span slot="leading-icon" className="material-symbols-outlined">payments</span>
+          </MdMenuItem>
+        </MdMenu>
+      </MdNavigationRailTab>
+
+      <MdNavigationRailTab icon="inbox" label="Inbox" value="inbox"></MdNavigationRailTab>
+      <MdNavigationRailTab icon="settings" label="Settings" value="settings"></MdNavigationRailTab>
+    </MdNavigationRail>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-top-nav',
+  template: \`
+    <md-navigation-rail
+      orientation="horizontal"
+      label="Main navigation"
+      [attr.active-index]="activeIndex"
+      (mdTabChange)="onTabChange($event)"
+    >
+      <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="star" label="Starred" value="starred"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="groups" label="Team" value="team"></md-navigation-rail-tab>
+
+      <!-- A destination with a submenu is a disclosure: clicking it opens the
+           dropdown. Choosing a row is what activates the destination. -->
+      <md-navigation-rail-tab icon="bar_chart" label="Reports" value="reports">
+        <md-menu variant="vibrant" slot="submenu">
+          <md-menu-item headline="Usage" (mdClick)="report = 'usage'"><span slot="leading-icon" class="material-symbols-outlined">insights</span></md-menu-item>
+          <md-menu-item headline="Revenue" (mdClick)="report = 'revenue'"><span slot="leading-icon" class="material-symbols-outlined">payments</span></md-menu-item>
+        </md-menu>
+      </md-navigation-rail-tab>
+
+      <md-navigation-rail-tab icon="inbox" label="Inbox" value="inbox"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+    </md-navigation-rail>
+  \`,
+})
+export class TopNavComponent {
+  readonly destinations = ['home', 'files', 'starred', 'team', 'reports', 'inbox', 'settings'];
+  current = 'home';
+  report: string | null = null;
+
+  get activeIndex(): number {
+    return this.destinations.indexOf(this.current);
+  }
+
+  onTabChange(e: Event): void {
+    this.current = (e as CustomEvent<{ index: number; value: string }>).detail.value;
+  }
+}`}
+  vue={`<script setup>
+// Icons need the Material Symbols stylesheet in index.html — see Installation.
+import { computed, ref } from 'vue';
+import '@awc-ui/core/define';
+
+const DESTINATIONS = ['home', 'files', 'starred', 'team', 'reports', 'inbox', 'settings'];
+
+const current = ref('home');
+const report = ref(null);
+const activeIndex = computed(() => DESTINATIONS.indexOf(current.value));
+</script>
+
+<template>
+  <md-navigation-rail
+    orientation="horizontal"
+    label="Main navigation"
+    :active-index="activeIndex"
+    @mdTabChange="current = $event.detail.value"
+  >
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="star" label="Starred" value="starred"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="groups" label="Team" value="team"></md-navigation-rail-tab>
+
+    <!-- A destination with a submenu is a disclosure: clicking it opens the
+         dropdown. Choosing a row is what activates the destination. -->
+    <md-navigation-rail-tab icon="bar_chart" label="Reports" value="reports">
+      <md-menu variant="vibrant" slot="submenu">
+        <md-menu-item headline="Usage" @mdClick="report = 'usage'"><span slot="leading-icon" class="material-symbols-outlined">insights</span></md-menu-item>
+        <md-menu-item headline="Revenue" @mdClick="report = 'revenue'"><span slot="leading-icon" class="material-symbols-outlined">payments</span></md-menu-item>
+      </md-menu>
+    </md-navigation-rail-tab>
+
+    <md-navigation-rail-tab icon="inbox" label="Inbox" value="inbox"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+</template>`}
+  svelte={`<script>
+  // Icons need the Material Symbols stylesheet in index.html — see Installation.
+  import '@awc-ui/core/define';
+
+  const DESTINATIONS = ['home', 'files', 'starred', 'team', 'reports', 'inbox', 'settings'];
+
+  let current = 'home';
+  let report = null;
+  $: activeIndex = DESTINATIONS.indexOf(current);
+</script>
+
+<md-navigation-rail
+  orientation="horizontal"
+  label="Main navigation"
+  active-index={activeIndex}
+  on:mdTabChange={(event) => (current = event.detail.value)}
+>
+  <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="star" label="Starred" value="starred"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="groups" label="Team" value="team"></md-navigation-rail-tab>
+
+  <!-- A destination with a submenu is a disclosure: clicking it opens the
+       dropdown. Choosing a row is what activates the destination. -->
+  <md-navigation-rail-tab icon="bar_chart" label="Reports" value="reports">
+    <md-menu variant="vibrant" slot="submenu">
+      <md-menu-item headline="Usage" on:mdClick={() => (report = 'usage')}><span slot="leading-icon" class="material-symbols-outlined">insights</span></md-menu-item>
+      <md-menu-item headline="Revenue" on:mdClick={() => (report = 'revenue')}><span slot="leading-icon" class="material-symbols-outlined">payments</span></md-menu-item>
+    </md-menu>
+  </md-navigation-rail-tab>
+
+  <md-navigation-rail-tab icon="inbox" label="Inbox" value="inbox"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+</md-navigation-rail>`}
+  label="A horizontal rail — a top-of-page bar"
+  storyId="navigation-navigation-rail--horizontal-overflow-and-submenus"
+/>
+
+A destination in the bar can own a dropdown too — and that dropdown can itself
+nest, using [`md-sub-menu-item`](/components/menu/#md-sub-menu-item) for a second
+level:
+
+<ComponentDemo
+  html={`<md-navigation-rail orientation="horizontal" label="Product navigation" active-index="0">
+  <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="category" label="Products" value="products">
+    <md-menu variant="vibrant" slot="submenu">
+      <md-menu-item headline="Overview"><span slot="leading-icon" class="material-symbols-outlined">dashboard</span></md-menu-item>
+      <md-menu-item headline="Pricing"><span slot="leading-icon" class="material-symbols-outlined">sell</span></md-menu-item>
+      <md-sub-menu-item headline="Integrations" supporting-text="Browse by type"><span slot="leading-icon" class="material-symbols-outlined">extension</span>
+        <md-menu variant="vibrant" slot="submenu">
+          <md-menu-item headline="Analytics"><span slot="leading-icon" class="material-symbols-outlined">analytics</span></md-menu-item>
+          <md-menu-item headline="Payments"><span slot="leading-icon" class="material-symbols-outlined">payments</span></md-menu-item>
+          <md-menu-item headline="Messaging"><span slot="leading-icon" class="material-symbols-outlined">chat</span></md-menu-item>
+        </md-menu>
+      </md-sub-menu-item>
+    </md-menu>
+  </md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="description" label="Docs" value="docs"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="support" label="Support" value="support"></md-navigation-rail-tab>
+</md-navigation-rail>`}
+  htmlCode={`<md-navigation-rail id="product-nav" orientation="horizontal" label="Product navigation" active-index="0">
+  <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="category" label="Products" value="products">
+    <md-menu variant="vibrant" id="products-menu" slot="submenu">
+      <md-menu-item headline="Overview"><span slot="leading-icon" class="material-symbols-outlined">dashboard</span></md-menu-item>
+      <md-menu-item headline="Pricing"><span slot="leading-icon" class="material-symbols-outlined">sell</span></md-menu-item>
+      <md-sub-menu-item headline="Integrations" supporting-text="Browse by type"><span slot="leading-icon" class="material-symbols-outlined">extension</span>
+        <md-menu variant="vibrant" slot="submenu">
+          <md-menu-item headline="Analytics"><span slot="leading-icon" class="material-symbols-outlined">analytics</span></md-menu-item>
+          <md-menu-item headline="Payments"><span slot="leading-icon" class="material-symbols-outlined">payments</span></md-menu-item>
+          <md-menu-item headline="Messaging"><span slot="leading-icon" class="material-symbols-outlined">chat</span></md-menu-item>
+        </md-menu>
+      </md-sub-menu-item>
+    </md-menu>
+  </md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="description" label="Docs" value="docs"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="support" label="Support" value="support"></md-navigation-rail-tab>
+</md-navigation-rail>
+
+<script type="module">
+  const nav = document.getElementById('product-nav');
+
+  // The rail owns the highlight and guarantees exactly one active destination:
+  // activating Docs clears whatever row the Products dropdown had chosen.
+  nav.addEventListener('mdTabChange', (event) => {
+    const { index, value } = event.detail;
+    console.log('navigate to', value, '(index', index + ')');
+  });
+
+  // mdClick bubbles out of md-menu-item, so this one listener also catches the
+  // rows nested inside the Integrations sub-menu.
+  document.getElementById('products-menu').addEventListener('mdClick', (event) => {
+    const row = event.target.closest('md-menu-item');
+    const parent = row.closest('md-sub-menu-item');
+    console.log('open', parent ? parent.getAttribute('headline') + ' / ' : '', row.getAttribute('headline'));
+  });
+</script>`}
+  react={`// Icons need the Material Symbols stylesheet in index.html — see Installation.
+import { useState } from 'react';
+import {
+  MdMenu,
+  MdMenuItem,
+  MdNavigationRail,
+  MdNavigationRailTab,
+  MdSubMenuItem,
+} from '@awc-ui/react';
+
+const DESTINATIONS = ['home', 'products', 'docs', 'support'];
+
+export function ProductNav() {
+  const [current, setCurrent] = useState('home');
+  const [section, setSection] = useState(null);
+
+  return (
+    <MdNavigationRail
+      orientation="horizontal"
+      label="Product navigation"
+      activeIndex={DESTINATIONS.indexOf(current)}
+      onMdTabChange={(event) => setCurrent(event.detail.value)}
+    >
+      <MdNavigationRailTab icon="home" label="Home" value="home"></MdNavigationRailTab>
+
+      {/* Clicking Products opens its dropdown; choosing a row is what
+          activates the destination and moves the rail highlight here. */}
+      <MdNavigationRailTab icon="category" label="Products" value="products">
+        <MdMenu variant="vibrant" slot="submenu">
+          <MdMenuItem headline="Overview" onMdClick={() => setSection('overview')}>
+            <span slot="leading-icon" className="material-symbols-outlined">dashboard</span>
+          </MdMenuItem>
+          <MdMenuItem headline="Pricing" onMdClick={() => setSection('pricing')}>
+            <span slot="leading-icon" className="material-symbols-outlined">sell</span>
+          </MdMenuItem>
+
+          {/* A branch row only discloses its own level — it never selects. */}
+          <MdSubMenuItem headline="Integrations" supportingText="Browse by type">
+            <span slot="leading-icon" className="material-symbols-outlined">extension</span>
+            <MdMenu variant="vibrant" slot="submenu">
+              <MdMenuItem headline="Analytics" onMdClick={() => setSection('integrations/analytics')}>
+                <span slot="leading-icon" className="material-symbols-outlined">analytics</span>
+              </MdMenuItem>
+              <MdMenuItem headline="Payments" onMdClick={() => setSection('integrations/payments')}>
+                <span slot="leading-icon" className="material-symbols-outlined">payments</span>
+              </MdMenuItem>
+              <MdMenuItem headline="Messaging" onMdClick={() => setSection('integrations/messaging')}>
+                <span slot="leading-icon" className="material-symbols-outlined">chat</span>
+              </MdMenuItem>
+            </MdMenu>
+          </MdSubMenuItem>
+        </MdMenu>
+      </MdNavigationRailTab>
+
+      <MdNavigationRailTab icon="description" label="Docs" value="docs"></MdNavigationRailTab>
+      <MdNavigationRailTab icon="support" label="Support" value="support"></MdNavigationRailTab>
+    </MdNavigationRail>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-product-nav',
+  template: \`
+    <md-navigation-rail
+      orientation="horizontal"
+      label="Product navigation"
+      [attr.active-index]="activeIndex"
+      (mdTabChange)="onTabChange($event)"
+    >
+      <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+
+      <!-- Clicking Products opens its dropdown; choosing a row is what activates
+           the destination and moves the rail highlight here. -->
+      <md-navigation-rail-tab icon="category" label="Products" value="products">
+        <md-menu variant="vibrant" slot="submenu">
+          <md-menu-item headline="Overview" (mdClick)="section = 'overview'"><span slot="leading-icon" class="material-symbols-outlined">dashboard</span></md-menu-item>
+          <md-menu-item headline="Pricing" (mdClick)="section = 'pricing'"><span slot="leading-icon" class="material-symbols-outlined">sell</span></md-menu-item>
+
+          <!-- A branch row only discloses its own level — it never selects. -->
+          <md-sub-menu-item headline="Integrations" supporting-text="Browse by type"><span slot="leading-icon" class="material-symbols-outlined">extension</span>
+            <md-menu variant="vibrant" slot="submenu">
+              <md-menu-item headline="Analytics" (mdClick)="section = 'integrations/analytics'"><span slot="leading-icon" class="material-symbols-outlined">analytics</span></md-menu-item>
+              <md-menu-item headline="Payments" (mdClick)="section = 'integrations/payments'"><span slot="leading-icon" class="material-symbols-outlined">payments</span></md-menu-item>
+              <md-menu-item headline="Messaging" (mdClick)="section = 'integrations/messaging'"><span slot="leading-icon" class="material-symbols-outlined">chat</span></md-menu-item>
+            </md-menu>
+          </md-sub-menu-item>
+        </md-menu>
+      </md-navigation-rail-tab>
+
+      <md-navigation-rail-tab icon="description" label="Docs" value="docs"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="support" label="Support" value="support"></md-navigation-rail-tab>
+    </md-navigation-rail>
+  \`,
+})
+export class ProductNavComponent {
+  readonly destinations = ['home', 'products', 'docs', 'support'];
+  current = 'home';
+  section: string | null = null;
+
+  get activeIndex(): number {
+    return this.destinations.indexOf(this.current);
+  }
+
+  onTabChange(e: Event): void {
+    this.current = (e as CustomEvent<{ index: number; value: string }>).detail.value;
+  }
+}`}
+  vue={`<script setup>
+// Icons need the Material Symbols stylesheet in index.html — see Installation.
+import { computed, ref } from 'vue';
+import '@awc-ui/core/define';
+
+const DESTINATIONS = ['home', 'products', 'docs', 'support'];
+
+const current = ref('home');
+const section = ref(null);
+const activeIndex = computed(() => DESTINATIONS.indexOf(current.value));
+</script>
+
+<template>
+  <md-navigation-rail
+    orientation="horizontal"
+    label="Product navigation"
+    :active-index="activeIndex"
+    @mdTabChange="current = $event.detail.value"
+  >
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+
+    <!-- Clicking Products opens its dropdown; choosing a row is what activates
+         the destination and moves the rail highlight here. -->
+    <md-navigation-rail-tab icon="category" label="Products" value="products">
+      <md-menu variant="vibrant" slot="submenu">
+        <md-menu-item headline="Overview" @mdClick="section = 'overview'"><span slot="leading-icon" class="material-symbols-outlined">dashboard</span></md-menu-item>
+        <md-menu-item headline="Pricing" @mdClick="section = 'pricing'"><span slot="leading-icon" class="material-symbols-outlined">sell</span></md-menu-item>
+
+        <!-- A branch row only discloses its own level — it never selects. -->
+        <md-sub-menu-item headline="Integrations" supporting-text="Browse by type"><span slot="leading-icon" class="material-symbols-outlined">extension</span>
+          <md-menu variant="vibrant" slot="submenu">
+            <md-menu-item headline="Analytics" @mdClick="section = 'integrations/analytics'"><span slot="leading-icon" class="material-symbols-outlined">analytics</span></md-menu-item>
+            <md-menu-item headline="Payments" @mdClick="section = 'integrations/payments'"><span slot="leading-icon" class="material-symbols-outlined">payments</span></md-menu-item>
+            <md-menu-item headline="Messaging" @mdClick="section = 'integrations/messaging'"><span slot="leading-icon" class="material-symbols-outlined">chat</span></md-menu-item>
+          </md-menu>
+        </md-sub-menu-item>
+      </md-menu>
+    </md-navigation-rail-tab>
+
+    <md-navigation-rail-tab icon="description" label="Docs" value="docs"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="support" label="Support" value="support"></md-navigation-rail-tab>
+  </md-navigation-rail>
+</template>`}
+  svelte={`<script>
+  // Icons need the Material Symbols stylesheet in index.html — see Installation.
+  import '@awc-ui/core/define';
+
+  const DESTINATIONS = ['home', 'products', 'docs', 'support'];
+
+  let current = 'home';
+  let section = null;
+  $: activeIndex = DESTINATIONS.indexOf(current);
+</script>
+
+<md-navigation-rail
+  orientation="horizontal"
+  label="Product navigation"
+  active-index={activeIndex}
+  on:mdTabChange={(event) => (current = event.detail.value)}
+>
+  <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+
+  <!-- Clicking Products opens its dropdown; choosing a row is what activates
+       the destination and moves the rail highlight here. -->
+  <md-navigation-rail-tab icon="category" label="Products" value="products">
+    <md-menu variant="vibrant" slot="submenu">
+      <md-menu-item headline="Overview" on:mdClick={() => (section = 'overview')}><span slot="leading-icon" class="material-symbols-outlined">dashboard</span></md-menu-item>
+      <md-menu-item headline="Pricing" on:mdClick={() => (section = 'pricing')}><span slot="leading-icon" class="material-symbols-outlined">sell</span></md-menu-item>
+
+      <!-- A branch row only discloses its own level — it never selects. -->
+      <md-sub-menu-item headline="Integrations" supporting-text="Browse by type"><span slot="leading-icon" class="material-symbols-outlined">extension</span>
+        <md-menu variant="vibrant" slot="submenu">
+          <md-menu-item headline="Analytics" on:mdClick={() => (section = 'integrations/analytics')}><span slot="leading-icon" class="material-symbols-outlined">analytics</span></md-menu-item>
+          <md-menu-item headline="Payments" on:mdClick={() => (section = 'integrations/payments')}><span slot="leading-icon" class="material-symbols-outlined">payments</span></md-menu-item>
+          <md-menu-item headline="Messaging" on:mdClick={() => (section = 'integrations/messaging')}><span slot="leading-icon" class="material-symbols-outlined">chat</span></md-menu-item>
+        </md-menu>
+      </md-sub-menu-item>
+    </md-menu>
+  </md-navigation-rail-tab>
+
+  <md-navigation-rail-tab icon="description" label="Docs" value="docs"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="support" label="Support" value="support"></md-navigation-rail-tab>
+</md-navigation-rail>`}
+  label="A bar destination with a nested dropdown"
+  storyId="navigation-navigation-rail--horizontal-overflow-and-submenus"
+/>
+
+### An application bar
+
+The bar's three slots give the classic web-app header in one component: the
+`logo` slot leads, the destinations take the space between, and the `footer`
+slot trails — put the signed-in user's avatar there and hang an
+[`md-menu`](/components/menu/) off it. The destinations region grows to fill
+whatever the brand and account leave behind, so the items stay centred as the
+bar widens.
+
+<ComponentDemo
+  html={`<md-navigation-rail orientation="horizontal" label="Main navigation" active-index="0">
+  <span slot="logo" style="display: inline-flex; align-items: center; gap: 8px; font-weight: 600;">
+    <span class="material-symbols-outlined" style="font-size: 28px; color: var(--md-sys-color-primary);">hexagon</span>
+    <span>Acme</span>
+  </span>
+
+  <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="dashboard" label="Dashboard" value="dashboard"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="folder" label="Projects" value="projects"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="bar_chart" label="Reports" value="reports"></md-navigation-rail-tab>
+
+  <div slot="footer">
+    <md-icon-button id="account-trigger" size="md" aria-haspopup="menu" aria-label="Account — Ada Lovelace"
+      onclick="document.getElementById('account-menu').show()">
+      <md-avatar name="Ada Lovelace" initials="AL" size="40px"></md-avatar>
+    </md-icon-button>
+    <md-menu variant="vibrant" id="account-menu" anchor="account-trigger" placement="bottom-end">
+      <md-menu-item headline="Ada Lovelace" supporting-text="ada@acme.example"><span slot="leading-icon" class="material-symbols-outlined">account_circle</span></md-menu-item>
+      <md-divider></md-divider>
+      <md-menu-item headline="Profile"><span slot="leading-icon" class="material-symbols-outlined">person</span></md-menu-item>
+      <md-menu-item headline="Settings"><span slot="leading-icon" class="material-symbols-outlined">settings</span></md-menu-item>
+      <md-divider></md-divider>
+      <md-menu-item headline="Sign out"><span slot="leading-icon" class="material-symbols-outlined">logout</span></md-menu-item>
+    </md-menu>
+  </div>
+</md-navigation-rail>`}
+  label="An application bar — brand, destinations, account menu"
+  storyId="navigation-navigation-rail--horizontal-app-bar"
+/>
+
+### Overflow menu
+
+`max-visible` keeps N destinations in the rail and collapses the rest into an
+overflow trigger. Choosing one activates that destination, so the collapsed
+items stay first-class.
+
+<ComponentDemo
+  html={`<div style="display: flex; block-size: 380px;">
+  <md-navigation-rail label="With overflow" active-index="0" max-visible="3">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="star" label="Starred" value="starred"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="drafts" label="Drafts" value="drafts"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+</div>`}
+  label="max-visible=3 — the rest collapse into a menu"
+  storyId="navigation-navigation-rail--horizontal-overflow-and-submenus"
+/>
+
+:::note[The trigger is a button, not another destination]
+The destinations region is a `tablist`, and a tablist may only contain tabs — so
+the overflow trigger renders **outside** it as a `button` with
+`aria-haspopup="menu"`. A collapsed destination is marked `data-overflowed`,
+which also takes it out of the arrow-key tour; otherwise the keyboard would land
+on a destination nobody can see.
+:::
+
+### A destination with its own dropdown
+
+Slot an `md-menu` into a destination's `submenu` slot and it becomes a
+**disclosure**: activating it opens the dropdown rather than navigating, and the
+destination reports `aria-haspopup="menu"` / `aria-expanded`. The menu is
+anchored to the destination automatically.
+
+<ComponentDemo
+  html={`<div style="display: flex; block-size: 320px;">
+  <md-navigation-rail label="With a dropdown" active-index="0">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="category" label="Products" value="products">
+      <md-menu variant="vibrant" slot="submenu">
+        <md-menu-item headline="Overview"><span slot="leading-icon" class="material-symbols-outlined">dashboard</span></md-menu-item>
+        <md-menu-item headline="Pricing"><span slot="leading-icon" class="material-symbols-outlined">sell</span></md-menu-item>
+        <md-menu-item headline="Changelog"><span slot="leading-icon" class="material-symbols-outlined">history</span></md-menu-item>
+      </md-menu>
+    </md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+</div>`}
+  label="Activating Products opens its menu instead of navigating"
+  storyId="navigation-navigation-rail--horizontal-overflow-and-submenus"
+/>
+
+## Modal and full height
+
+`modal` restyles the **expanded** rail as a floating overlay with a scrim — it
+has no effect while collapsed, and positioning is the host app's responsibility.
+It does **not** trap focus; the rail only collapses on `Escape` or a scrim
+click, returning focus to its toggle. `full-height` stretches the rail to
+`100dvh` instead of filling its parent; use it when the rail is the app's
+top-level side navigation.
+
+<ComponentDemo
+  html={`<div style="display: flex; block-size: 404px; inline-size: 100%; max-inline-size: 460px; border-radius: 16px; overflow: hidden; position: relative;">
+  <md-navigation-rail modal expandable label="Modal rail" toggle-label="Toggle navigation" active-index="0">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+  <main style="flex: 1; padding: 20px; background: var(--md-sys-color-surface-container-low); color: var(--md-sys-color-on-surface); font: 14px/1.6 system-ui;">
+    Expand the rail — it floats over this content behind a scrim instead of pushing it.
+  </main>
+</div>`}
+  label="Modal rail — collapsed on load, expand it to see the scrim"
+  storyId="navigation-navigation-rail--modal-expanded"
+/>
+
+:::danger[`modal` does not trap focus — you have to]
+`modal` is styling plus two dismissals: `Escape` and a scrim click both collapse
+the rail and return focus to its toggle. Nothing seals the page behind it, so
+`Tab` walks straight out of the rail and into the dimmed content. If you need a
+true modal, mark the rest of the page `inert` on `mdExpand` and un-mark it on
+`mdCollapse` — or use the default `standard` rail, which is
+honest about leaving the page interactive.
+:::
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdTabChange` | no | `{ index, value }` | The user selected a destination |
+| `mdExpand` | no | `void` | Collapsed → expanded |
+| `mdCollapse` | no | `void` | Expanded → collapsed |
+
+:::tip[Route on `detail.value`, not `detail.index`]
+`value` comes from the child's `value` prop and survives destinations being
+added, removed or reordered. Indices don't.
+:::
+
+All three events **bubble** and are **composed**, so one delegated listener
+above the rail catches every one of them. Pick a destination, then work the
+toggle — `mdTabChange` fires only when the active index actually moves, so
+re-picking the current destination logs nothing:
+
+<ComponentDemo
+  html={`<div style="display:flex; gap:16px; block-size:344px; align-items:stretch;">
+  <div style="display:flex; border-radius:16px; overflow:hidden;">
+    <md-navigation-rail expandable toggle-label="Toggle navigation" label="Main navigation" active-index="0">
+      <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+    </md-navigation-rail>
+  </div>
+  <output id="rail-ev-log" style="flex:1; align-self:center; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Pick a destination, then toggle the rail.</output>
+</div>`}
+  script={`
+    var log = root.querySelector('#rail-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 4);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    // One delegated listener above the rail — every event bubbles and is
+    // composed, so it escapes the shadow root.
+    root.addEventListener('mdTabChange', function (e) {
+      push('mdTabChange  value=' + e.detail.value + '  index=' + e.detail.index);
+    });
+
+    root.addEventListener('mdExpand', function () {
+      push('mdExpand     collapsed to expanded');
+    });
+
+    root.addEventListener('mdCollapse', function () {
+      push('mdCollapse   expanded to collapsed');
+    });
+  `}
+  label="All three events, caught by one delegated listener"
+  storyId="navigation-navigation-rail--controlled"
+  htmlCode={`<md-navigation-rail id="rail" expandable toggle-label="Toggle navigation" label="Main navigation" active-index="0">
+  <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+</md-navigation-rail>
+
+<script type="module">
+  const rail = document.getElementById('rail');
+
+  // Route on detail.value — it survives destinations being reordered.
+  rail.addEventListener('mdTabChange', (e) => {
+    console.log('navigate to', e.detail.value, 'at index', e.detail.index);
+  });
+
+  rail.addEventListener('mdExpand', () => console.log('expanded'));
+  rail.addEventListener('mdCollapse', () => console.log('collapsed'));
+</script>`}
+  react={`import { useState } from 'react';
+import { MdNavigationRail, MdNavigationRailTab } from '@awc-ui/react';
+
+const DESTINATIONS = ['home', 'files', 'settings'];
+
+export function SideNav() {
+  const [current, setCurrent] = useState('home');
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <MdNavigationRail
+      expandable
+      toggleLabel="Toggle navigation"
+      label="Main navigation"
+      activeIndex={DESTINATIONS.indexOf(current)}
+      onMdTabChange={(e) => setCurrent(e.detail.value)}
+      onMdExpand={() => setExpanded(true)}
+      onMdCollapse={() => setExpanded(false)}
+    >
+      <MdNavigationRailTab icon="home" label="Home" value="home" />
+      <MdNavigationRailTab icon="folder" label="Files" value="files" />
+      <MdNavigationRailTab icon="settings" label="Settings" value="settings" />
+    </MdNavigationRail>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-side-nav',
+  template: \`
+    <md-navigation-rail
+      expandable
+      toggle-label="Toggle navigation"
+      label="Main navigation"
+      [attr.active-index]="activeIndex"
+      (mdTabChange)="onTabChange($event)"
+      (mdExpand)="expanded = true"
+      (mdCollapse)="expanded = false"
+    >
+      <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+    </md-navigation-rail>
+  \`,
+})
+export class SideNavComponent {
+  readonly destinations = ['home', 'files', 'settings'];
+  current = 'home';
+  expanded = false;
+
+  get activeIndex(): number {
+    return this.destinations.indexOf(this.current);
+  }
+
+  onTabChange(e: Event): void {
+    this.current = (e as CustomEvent<{ index: number; value: string }>).detail.value;
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+
+const DESTINATIONS = ['home', 'files', 'settings'];
+
+const current = ref('home');
+const expanded = ref(false);
+const activeIndex = computed(() => DESTINATIONS.indexOf(current.value));
+</script>
+
+<template>
+  <md-navigation-rail
+    expandable
+    toggle-label="Toggle navigation"
+    label="Main navigation"
+    :active-index="activeIndex"
+    @mdTabChange="current = $event.detail.value"
+    @mdExpand="expanded = true"
+    @mdCollapse="expanded = false"
+  >
+    <md-navigation-rail-tab icon="home" label="Home" value="home" />
+    <md-navigation-rail-tab icon="folder" label="Files" value="files" />
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings" />
+  </md-navigation-rail>
+</template>`}
+  svelte={`<script lang="ts">
+  const DESTINATIONS = ['home', 'files', 'settings'];
+
+  let current = 'home';
+  let expanded = false;
+  $: activeIndex = DESTINATIONS.indexOf(current);
+</script>
+
+<md-navigation-rail
+  expandable
+  toggle-label="Toggle navigation"
+  label="Main navigation"
+  active-index={activeIndex}
+  on:mdTabChange={(e) => (current = e.detail.value)}
+  on:mdExpand={() => (expanded = true)}
+  on:mdCollapse={() => (expanded = false)}
+>
+  <md-navigation-rail-tab icon="home" label="Home" value="home" />
+  <md-navigation-rail-tab icon="folder" label="Files" value="files" />
+  <md-navigation-rail-tab icon="settings" label="Settings" value="settings" />
+</md-navigation-rail>`}
+/>
+
+One step further: hand `mdTabChange` to your router and persist the expansion
+state, so the rail comes back the way the user left it:
+
+<TechnologyTabs
+  html={`<md-navigation-rail id="rail" expandable full-height active-index="0" label="Main navigation">
+  <md-fab slot="fab" icon="add" label="Create"></md-fab>
+
+  <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+</md-navigation-rail>
+
+<script type="module">
+  const rail = document.getElementById('rail');
+
+  rail.addEventListener('mdTabChange', (e) => router.go(e.detail.value));
+  rail.addEventListener('mdExpand', () => localStorage.setItem('railExpanded', '1'));
+  rail.addEventListener('mdCollapse', () => localStorage.removeItem('railExpanded'));
+
+  if (localStorage.getItem('railExpanded')) rail.expand();
+</script>`}
+  react={`import { MdNavigationRail, MdNavigationRailTab } from '@awc-ui/react';
+import { useNavigate } from 'react-router-dom';
+
+export function SideNav({ index }: { index: number }) {
+  const navigate = useNavigate();
+
+  return (
+    <MdNavigationRail
+      expandable
+      fullHeight
+      label="Main navigation"
+      activeIndex={index}
+      onMdTabChange={(e) => navigate('/' + e.detail.value)}
+    >
+      <MdNavigationRailTab icon="home" label="Home" value="home" />
+      <MdNavigationRailTab icon="folder" label="Files" value="files" />
+      <MdNavigationRailTab icon="settings" label="Settings" value="settings" />
+    </MdNavigationRail>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+
+@Component({
+  selector: 'app-side-nav',
+  template: \`
+    <md-navigation-rail
+      expandable
+      full-height
+      label="Main navigation"
+      [attr.active-index]="index"
+      (mdTabChange)="onChange($event)"
+    >
+      <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+    </md-navigation-rail>
+  \`,
+})
+export class SideNavComponent {
+  index = 0;
+  constructor(private router: Router) {}
+
+  onChange(e: CustomEvent<{ index: number; value: string }>) {
+    this.index = e.detail.index;
+    this.router.navigateByUrl('/' + e.detail.value);
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const index = ref(0);
+const router = useRouter();
+
+function onChange(e: CustomEvent) {
+  index.value = e.detail.index;
+  router.push('/' + e.detail.value);
+}
+</script>
+
+<template>
+  <md-navigation-rail
+    expandable
+    full-height
+    label="Main navigation"
+    :active-index="index"
+    @mdTabChange="onChange"
+  >
+    <md-navigation-rail-tab icon="home" label="Home" value="home" />
+    <md-navigation-rail-tab icon="folder" label="Files" value="files" />
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings" />
+  </md-navigation-rail>
+</template>`}
+  svelte={`<script lang="ts">
+  import { goto } from '$app/navigation';
+
+  let index = 0;
+
+  function onChange(e: CustomEvent) {
+    index = e.detail.index;
+    goto('/' + e.detail.value);
+  }
+</script>
+
+<md-navigation-rail
+  expandable
+  full-height
+  label="Main navigation"
+  active-index={index}
+  on:mdTabChange={onChange}
+>
+  <md-navigation-rail-tab icon="home" label="Home" value="home" />
+  <md-navigation-rail-tab icon="folder" label="Files" value="files" />
+  <md-navigation-rail-tab icon="settings" label="Settings" value="settings" />
+</md-navigation-rail>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::caution[`disable-focus-management` is an expert escape hatch]
+It hands the roving tabindex and arrow keys back to you. Ship it only inside a
+composite that replaces that model — otherwise you have shipped a
+keyboard-inaccessible rail.
+:::
+
+## The sub-components
+
+The rail is composed from one sub-component, documented here rather than on its
+own page: it means nothing outside `md-navigation-rail`, which owns the active
+state, the expand transition and label visibility.
+
+### `md-navigation-rail-tab`
+
+**One destination in the rail** — an icon, a label, the MD3 active-indicator
+pill, an optional badge, and a stable `value` used for routing.
+
+- **`active`, `expanded` and `label-visibility` are rail-managed.** Setting them
+  by hand fights the parent — especially `expanded`, which the rail toggles
+  during its expand/collapse transition.
+- **`value` is the routing key.** The rail's `mdTabChange` reports it, and it is
+  stabler than an index when destinations are added, removed or reordered.
+- Unlike [`md-navigation-tab`](/components/navigation-bar/#md-navigation-tab)
+  there is **no `active-icon`** — the active state is conveyed by the indicator
+  pill and colour, not a glyph swap.
+- `badge` is the boolean switch for the dot; `badge-value` renders the large
+  badge.
+- With `href` the tab renders as an anchor (the `anchor` part) and uses
+  `aria-current="page"` while active — don't wrap it in an `<a>`.
+- `mdTabClick` `{ value }` is the **internal** signal the rail listens to.
+  Application code should listen for the rail's `mdTabChange`.
+
+<ApiTable {...railTabApi} />
+
+## Accessibility
+
+- `label` names the navigation landmark. Set something meaningful — "Main
+  navigation" — for screen-reader users (WAI-ARIA APG / WCAG 2.4.1).
+- The rail manages roving focus across destinations unless you set
+  `disable-focus-management`, in which case it is entirely your responsibility.
+- `modal` closes on `Escape` and on a scrim click, returning focus to the
+  toggle — but it does **not** trap focus. Contain focus yourself (`inert` on
+  the rest of the page between `mdExpand` and `mdCollapse`) if you need a true
+  modal.
+- Exactly one destination is current; the indicator pill reflects it. A tab with
+  `href` also gets `aria-current="page"` while active.
+- The expand/collapse toggle needs a localized `toggle-label`.
+- A decorative logo should have an empty `alt`; a meaningful one needs real text.
+
+### Keyboard
+
+| Key | Action |
+|---|---|
+| `Tab` | One stop for the destination group, plus the toggle, FAB and footer controls |
+| `↑` / `↓` | Move between destinations, wrapping at the ends |
+| `Home` / `End` | First / last destination |
+| `Enter` / `Space` | Activate the focused destination |
+| `Escape` | Closes a `modal` rail and returns focus to its trigger |
+
+Tab into the rail below: the whole destination group is **one** stop, and the
+arrows move within it. `Home` and `End` jump to the ends, and the toggle button
+is its own separate stop.
+
+<ComponentDemo
+  html={`<div style="display: flex; block-size: 384px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail label="Main navigation" expandable toggle-label="Toggle navigation" active-index="0">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="folder" label="Files" value="files" badge-value="3"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+  <div style="flex:1;padding:16px;opacity:.6;font-size:.85rem;">Tab in, then arrow between destinations.</div>
+</div>`}
+  label="Roving focus across destinations"
+  storyId="navigation-navigation-rail--accessibility"
+/>
+
+## RTL, density & i18n
+
+**RTL** — every box metric is logical, so the rail moves to the leading edge —
+the **right** — and its logo, indicator pill, labels and badges mirror with it
+under `dir="rtl"`. Nothing is re-authored; only `dir` changes. See
+[RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <md-navigation-rail label="التنقل" active-index="0">
+    <md-navigation-rail-tab icon="home" label="الرئيسية" value="home"></md-navigation-rail-tab>
+  </md-navigation-rail>
+</div>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;block-size:324px;border-radius:16px;overflow:hidden;">
+    <md-navigation-rail label="Main" active-index="0">
+      <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+    </md-navigation-rail>
+    <div style="flex:1;padding:12px;opacity:.6;font-size:.8rem;">content</div>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;block-size:324px;border-radius:16px;overflow:hidden;">
+    <md-navigation-rail label="التنقل" active-index="0">
+      <md-navigation-rail-tab icon="home" label="الرئيسية" value="home"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="folder" label="الملفات" value="files"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="settings" label="الإعدادات" value="settings"></md-navigation-rail-tab>
+    </md-navigation-rail>
+    <div style="flex:1;padding:12px;opacity:.6;font-size:.8rem;">المحتوى</div>
+  </div>
+</div>`}
+  label="The rail moves to the leading edge — right under dir=rtl"
+  storyId="navigation-navigation-rail--rtl"
+/>
+
+### Arrow keys follow the writing direction
+
+A vertical rail always reads on the block axis, so `↑` / `↓` are unaffected by
+`dir`. A **horizontal** rail reads on the *inline* axis, so the rail resolves
+the nearest explicit `dir` and mirrors the keys itself: under `dir="rtl"`,
+`ArrowRight` moves toward the **start** of the bar and `ArrowLeft` toward the
+end. `aria-orientation` reports `horizontal` in both directions.
+
+<ComponentDemo
+  html={`<div style="display:grid;gap:20px;">
+  <div dir="ltr">
+    <span style="display:block;margin-block-end:8px;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">dir=ltr</span>
+    <md-navigation-rail orientation="horizontal" label="Main navigation" active-index="0">
+      <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+    </md-navigation-rail>
+  </div>
+  <div dir="rtl">
+    <span style="display:block;margin-block-end:8px;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">dir=rtl</span>
+    <md-navigation-rail orientation="horizontal" label="التنقل" active-index="0">
+      <md-navigation-rail-tab icon="home" label="الرئيسية" value="home"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="folder" label="الملفات" value="files"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="settings" label="الإعدادات" value="settings"></md-navigation-rail-tab>
+    </md-navigation-rail>
+  </div>
+</div>`}
+  label="A horizontal rail — tab in, then arrow along each bar"
+  storyId="navigation-navigation-rail--horizontal-app-bar"
+/>
+
+### Every density rung
+
+`density="-1…-4"` is a local override of the inherited `data-density` rung. It
+tapers the rail's width (80px → 64px), its block padding, the gap between
+destinations and the glyph size, all in one signal. All five rungs, same rail:
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <span style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+    <div style="display:flex;block-size:344px;border-radius:16px;overflow:hidden;">
+      <md-navigation-rail density="0" label="Density 0" active-index="0">
+        <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+        <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+        <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+      </md-navigation-rail>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <span style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+    <div style="display:flex;block-size:344px;border-radius:16px;overflow:hidden;">
+      <md-navigation-rail density="-1" label="Density -1" active-index="0">
+        <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+        <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+        <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+      </md-navigation-rail>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <span style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+    <div style="display:flex;block-size:344px;border-radius:16px;overflow:hidden;">
+      <md-navigation-rail density="-2" label="Density -2" active-index="0">
+        <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+        <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+        <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+      </md-navigation-rail>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <span style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+    <div style="display:flex;block-size:344px;border-radius:16px;overflow:hidden;">
+      <md-navigation-rail density="-3" label="Density -3" active-index="0">
+        <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+        <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+        <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+      </md-navigation-rail>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <span style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+    <div style="display:flex;block-size:344px;border-radius:16px;overflow:hidden;">
+      <md-navigation-rail density="-4" label="Density -4" active-index="0">
+        <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+        <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+        <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+      </md-navigation-rail>
+    </div>
+  </div>
+</div>`}
+  label="Density 0 through -4 — width, gap and glyph all taper"
+/>
+
+:::note[The 48px floor holds — the width is what gives]
+A destination's height is clamped at `max(48px, calc(56px + scale * 4px))`, so
+even at `-4` it is 48px — still the touch target coarse pointers want. What does
+shrink hard is the rail's **width**, down to 64px, and the glyph, down to 20px.
+Below `-2`, check that your longest label still fits without truncating. See
+[Density](/behaviour/density/#accessibility).
+:::
+
+### Label length per locale
+
+Translation is where the expanded width actually gets tested — German compounds
+run far longer than their English source. M3 lets a long label wrap to two lines
+but forbids truncation, so check the widest locale you ship:
+
+<ComponentDemo
+  html={`<div style="display:flex;block-size:364px;border-radius:16px;overflow:hidden;">
+  <md-navigation-rail variant="expanded" label="Hauptnavigation" toggle-label="Navigation umschalten" active-index="0">
+    <md-navigation-rail-tab icon="home" label="Startseite" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="folder" label="Dateiverwaltung" value="files"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Einstellungen" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+  <div style="flex:1;padding:12px;opacity:.6;font-size:.8rem;">Inhalt</div>
+</div>`}
+  label="German labels in the expanded variant — where width bites"
+  storyId="navigation-navigation-rail--localization"
+/>
+
+:::caution[Keep `value` out of your translation files]
+`label` is what the user reads; `value` is what your router matches. Translating
+`value` silently breaks routing in every locale but the default.
+:::
+
+**Density** — `density="-1…-4"` locally overrides the inherited `data-density`
+rung, and composes with direction without any extra wiring: a `data-density`
+ancestor and a `dir="rtl"` ancestor both just inherit in. See
+[Density](/behaviour/density/).
+
+**i18n** — translate destination labels, `label` and `toggle-label`; `lang` and
+`dir` are inherited from any ancestor. Keep each tab's `value` untranslated —
+it's the routing key.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-navigation-rail-container-color` | Rail background | `surface` |
+| `--md-navigation-rail-container-width` | Collapsed width | `80px` (density-aware) |
+| `--md-navigation-rail-expanded-width` / `-expanded-max-width` | Expanded width | `220px` / `360px` |
+| `--md-navigation-rail-container-shape` / `-container-elevation` | Surface shape and shadow | `0px` / `none` |
+| `--md-navigation-rail-padding-block` / `-padding-inline` / `-gap` | Spacing | `44px` / `0px` / `12px` |
+| `--md-navigation-rail-destinations-gap` | Gap between destinations | `8px` (density-aware) |
+| `--md-navigation-rail-header-space` | Space under the header/FAB group | `40px` |
+| `--md-navigation-rail-content-color` | Default foreground | `on-surface-variant` |
+| `--md-navigation-rail-logo-icon-size` | Brand glyph footprint in the logo slots | `24px` |
+| `--md-navigation-rail-horizontal-padding-block` / `-horizontal-padding-inline` | Bar insets under `orientation="horizontal"` | `0px` / `12px` |
+
+Destination appearance is themed with the `--md-navigation-rail-tab-*`
+properties — see
+[`md-navigation-rail-tab`](/components/navigation-rail/#md-navigation-rail-tab).
+
+<ComponentDemo
+  html={`<div style="display: flex; block-size: 364px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail label="Themed rail" active-index="0" style="--md-navigation-rail-container-color: var(--md-sys-color-surface-container-highest); --md-navigation-rail-container-shape: 24px; --md-navigation-rail-destinations-gap: 16px;">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+</div>`}
+  label="Themed instance"
+  storyId="navigation-navigation-rail--custom-css"
+/>
+
+Every default resolves through an `md-sys-color` role, so a rail that sets no
+custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<div style="display: flex; block-size: 364px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail label="Untouched defaults" active-index="1">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="folder" label="Files" value="files" badge-value="3"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+  <div style="flex:1;padding:16px;opacity:.6;font-size:.85rem;">content</div>
+</div>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="navigation-navigation-rail--dark-theme"
+/>
+
+### Theming the destinations
+
+| Custom property | Purpose |
+|---|---|
+| `--md-navigation-rail-tab-icon-color` / `-active-icon-color` | Glyph colour |
+| `--md-navigation-rail-tab-label-color` / `-active-label-color` | Label colour |
+| `--md-navigation-rail-tab-indicator-color` | The pill behind the active glyph |
+| `--md-navigation-rail-tab-indicator-width` / `-height` / `-shape` | Indicator box |
+| `--md-navigation-rail-tab-icon-size` | Glyph size |
+| `--md-navigation-rail-tab-label-typography` | Label type |
+| `--md-navigation-rail-tab-min-height` | Destination height |
+| `--md-navigation-rail-tab-badge-color` / `-badge-content-color` | Badge fill / text |
+| `--md-navigation-rail-tab-state-layer-color` | Hover / focus / press overlay |
+| `--md-navigation-rail-tab-focus-ring-color` | Focus ring |
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:16px;block-size:384px;">
+  <div style="display:flex;block-size:364px;border-radius:16px;overflow:hidden;">
+    <md-navigation-rail label="Tonal" active-index="1" style="--md-navigation-rail-tab-indicator-color: var(--md-sys-color-tertiary-container); --md-navigation-rail-tab-active-icon-color: var(--md-sys-color-on-tertiary-container); --md-navigation-rail-tab-active-label-color: var(--md-sys-color-on-tertiary-container); --md-navigation-rail-tab-indicator-shape: 8px;">
+      <md-navigation-rail-tab icon="home" label="Home" value="h"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="folder" label="Files" value="f"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="settings" label="Settings" value="s"></md-navigation-rail-tab>
+    </md-navigation-rail>
+  </div>
+  <div style="display:flex;block-size:364px;border-radius:16px;overflow:hidden;">
+    <md-navigation-rail label="Branded" active-index="1" style="--md-navigation-rail-container-color: #f3e9ff; --md-navigation-rail-container-shape: 28px; --md-navigation-rail-tab-indicator-color: #7c4dff; --md-navigation-rail-tab-active-icon-color: #ffffff; --md-navigation-rail-tab-active-label-color: #311b92; --md-navigation-rail-tab-badge-color: #7c4dff;">
+      <md-navigation-rail-tab icon="home" label="Home" value="h"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="folder" label="Files" value="f" badge-value="5"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="settings" label="Settings" value="s"></md-navigation-rail-tab>
+    </md-navigation-rail>
+  </div>
+</div>`}
+  label="Tonal indicator and a branded rail"
+/>
+
+## CSS parts
+
+| Part | On | Element |
+|---|---|---|
+| `container` | `md-navigation-rail` | The rail surface |
+| `scrim` | `md-navigation-rail` | The `modal` backdrop |
+| `logo` / `logo-contracted` / `logo-expanded` | `md-navigation-rail` | Brand-mark wrappers per state |
+| `toggle` | `md-navigation-rail` | The expand / collapse control |
+| `header` / `fab` / `footer` | `md-navigation-rail` | Slot wrappers |
+| `destinations` | `md-navigation-rail` | The destination group |
+| `overflow` / `overflow-trigger` | `md-navigation-rail` | The `max-visible` trigger and its wrapper |
+| `anchor` | `md-navigation-rail-tab` | The `<a>` / button box |
+| `icon-wrapper` / `icon` | `md-navigation-rail-tab` | Glyph wrapper / glyph |
+| `indicator` | `md-navigation-rail-tab` | The active pill |
+| `label` | `md-navigation-rail-tab` | Label text |
+| `caret` | `md-navigation-rail-tab` | The disclosure chevron on a `submenu` destination |
+| `state-layer` | `md-navigation-rail-tab` | Hover / focus / press overlay |
+
+<ComponentDemo
+  html={`<style>
+  .parts-rail::part(container) { border-inline-end: 2px solid var(--md-sys-color-primary); }
+  .parts-rail::part(destinations) { gap: 18px; }
+  .parts-rail md-navigation-rail-tab::part(label) { text-transform: uppercase; letter-spacing: .08em; font-size: 10px; }
+  .parts-rail md-navigation-rail-tab::part(indicator) { border-radius: 6px; }
+</style>
+<div style="display: flex; block-size: 364px; border-radius: 16px; overflow: hidden;">
+  <md-navigation-rail class="parts-rail" label="Styled parts" active-index="1">
+    <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="folder" label="Files" value="files"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+  </md-navigation-rail>
+  <div style="flex:1;padding:16px;opacity:.6;font-size:.85rem;">content</div>
+</div>`}
+  label="container, destinations, label and indicator"
+/>
+
+```css
+md-navigation-rail::part(destinations) {
+  gap: 12px;
+}
+```
+
+
+## Related
+
+[`md-navigation-rail-tab`](/components/navigation-rail/#md-navigation-rail-tab) ·
+[`md-navigation-bar`](/components/navigation-bar/) ·
+[`md-tabs`](/components/tabs/) ·
+[`md-fab`](/components/fab/) ·
+[`md-side-sheet`](/components/side-sheet/) ·
+[`md-app-bar`](/components/app-bar/) ·
+[`md-icon-button`](/components/icon-button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-navigation-rail" />

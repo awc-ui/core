@@ -1,0 +1,69 @@
+name: Feature request
+description: A new prop, variant, event, slot or CSS hook on a component that already exists
+labels: ["enhancement", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is for extending a component that already exists. If a whole
+        component is missing, use **New component request** instead.
+
+        **Lead with the problem, not the solution.** "I have no way to do X"
+        tells us more than "add a prop that does Y" — it lets us find a shape
+        that also covers the adjacent cases, and sometimes the answer is an API
+        that already exists.
+
+  - type: input
+    id: component
+    attributes:
+      label: Component
+      placeholder: "md-select"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you building, and what can you not do? Describe it from the user's side of the screen.
+      placeholder: |
+        Our users pick from a list of countries. They expect to type "ger" and
+        land on Germany, but typeahead only matches from the start of the label,
+        so "ger" finds nothing.
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you tried
+      description: |
+        Existing props, slots, `::part()`, CSS custom properties. If there is a
+        workaround but it is bad, say why it is bad.
+    validations:
+      required: true
+
+  - type: textarea
+    id: sketch
+    attributes:
+      label: Rough API sketch
+      description: Optional, and you will not be held to it. Markup is fine.
+      render: html
+      placeholder: |
+        <md-select match="contains">…</md-select>
+
+  - type: input
+    id: spec
+    attributes:
+      label: MD3 spec link
+      description: |
+        If Material Design 3 specifies this, link the page — it makes the
+        decision much faster and is close to an automatic yes.
+      placeholder: "https://m3.material.io/components/menus/guidelines"
+
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Would you like to implement it?
+      options:
+        - label: I am willing to open a PR (we will agree the API with you first)

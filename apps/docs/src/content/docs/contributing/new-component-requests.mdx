@@ -1,0 +1,90 @@
+---
+title: Requesting a component
+description: What it takes to get a new component into AWC UI, and why the bar is higher than for a feature
+sidebar:
+  order: 4
+---
+
+Open a **New component request** at
+[github.com/awc-ui/core/issues/new/choose](https://github.com/awc-ui/core/issues/new/choose).
+
+## Why the bar is higher
+
+A feature is a prop. A component is a permanent commitment. Every one that ships
+carries:
+
+- an implementation, in shadow DOM, with density and RTL support
+- a `readme.md` — the docs and API tables are generated from it
+- unit tests **and** browser e2e tests
+- a Storybook story
+- an entry in the bundle budget
+- and all of the above maintained on every future change
+
+So the questions below are not gatekeeping — they are what we need in order to
+say yes.
+
+## Check it does not already exist
+
+There are **56 components**, and several hide under names you might not guess:
+
+| You might search for | It is called |
+|---|---|
+| Verification code input | `md-otp-field` |
+| Dual list / picklist | `md-transfer-list` |
+| Tree / hierarchy | `md-organization-chart` |
+| Toggle button group | `md-segmented-button` |
+| Button with a dropdown | `md-split-button` |
+| Presence indicator | `md-status-dot` |
+
+Browse the full [component list](/components/) before opening an issue.
+
+## What to include
+
+**Which MD3 component it is**, with a link to its spec page. AWC UI tracks
+Material Design 3 — a component with no spec entry needs a much stronger
+argument, because we would be designing it as well as building it.
+
+**What you would build with it**, concretely. What does the user see and do?
+
+**Why composition is not enough.** This is the question that decides most
+requests. A great many ideas are already reachable by slotting existing
+components together — a card with a list inside it, a menu with a text field in
+its header. If you tried that and it fell short, tell us exactly where it fell
+short.
+
+**Prior art.** How do [Material Web](https://github.com/material-components/material-web),
+[Vaadin](https://vaadin.com/docs/latest/components),
+[Spectrum](https://opensource.adobe.com/spectrum-web-components/) or
+[Shoelace](https://shoelace.style) handle it — and where does theirs fall down
+for your case? Naming what is wrong with the existing options is often the
+strongest part of a request.
+
+**A rough API sketch.** Props, events, slots. You will not be held to it.
+
+## Offering to build it
+
+This makes a real difference, and it changes how the issue is handled: we agree
+the API shape with you **before** you write anything, so review is about
+correctness rather than direction — which is the difference between a PR that
+merges and one that stalls.
+
+The [contributing guide](/contributing/) has the local setup, the five files
+every component ships, and the conventions that will come up in review.
+
+## What happens next
+
+Requests are triaged against the spec, how often the need comes up, and whether
+composition already covers it. Three outcomes:
+
+- **Accepted** — labelled and scheduled. If you offered to build it, we agree
+  the API on the issue first.
+- **Composition instead** — we show you how to assemble it from what exists. If
+  that assembly is awkward, that is often a *feature* request on one of the
+  components involved, which is a much faster path.
+- **Declined** — usually no MD3 spec, or too narrow to maintain for everyone.
+  You can still build it in your own app; the design tokens and `::part()` hooks
+  are public API precisely so that is possible.
+
+A declined component is not a dead end. Every token, every custom property and
+every part the library exposes is there so you can build on top of it without
+forking.

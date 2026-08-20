@@ -1,0 +1,158 @@
+---
+title: Quick Start
+description: Build your first page with AWC UI web components in under 5 minutes
+sidebar:
+  order: 2
+---
+
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+
+## Your First Component
+
+After [installing](/getting-started/installation/) the packages, here is how to render your first AWC UI button:
+
+<TechnologyTabs
+  html={`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap">
+</head>
+<body>
+  <script type="module">
+    import '@awc-ui/core/define';
+  </script>
+
+  <md-button variant="filled" icon="add">Add Item</md-button>
+</body>
+</html>`}
+  react={`// src/App.tsx
+import { MdButton } from '@awc-ui/react';
+
+export default function App() {
+  return (
+    <MdButton
+      variant="filled"
+      icon="add"
+      onMdClick={() => console.log('clicked!')}
+    >
+      Add Item
+    </MdButton>
+  );
+}`}
+  angular={`// app.component.ts
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: \`
+    <md-button variant="filled" icon="add"
+      (mdClick)="handleClick()">
+      Add Item
+    </md-button>
+  \`
+})
+export class AppComponent {
+  handleClick() {
+    console.log('clicked!');
+  }
+}`}
+  vue={`<script setup>
+function handleClick() {
+  console.log('clicked!');
+}
+</script>
+
+<template>
+  <md-button variant="filled" icon="add"
+    @md-click="handleClick">
+    Add Item
+  </md-button>
+</template>`}
+  svelte={`<script>
+  function handleClick() {
+    console.log('clicked!');
+  }
+</script>
+
+<md-button variant="filled" icon="add"
+  on:mdClick={handleClick}>
+  Add Item
+</md-button>`}
+/>
+
+## Building a Form
+
+Here is a complete form using several AWC UI components:
+
+```html
+<form style="display: flex; flex-direction: column; gap: 16px; max-width: 400px;">
+  <md-text-field name="name" variant="outlined" label="Full name" required></md-text-field>
+  <md-text-field name="email" variant="outlined" label="Email" type="email"
+    leading-icon="email"></md-text-field>
+
+  <md-select name="role" variant="outlined" label="Role">
+    <md-select-option value="admin">Admin</md-select-option>
+    <md-select-option value="editor">Editor</md-select-option>
+    <md-select-option value="viewer">Viewer</md-select-option>
+  </md-select>
+
+  <!-- md-checkbox has no label prop and no slot, so the text must come from a
+       wrapping <label>. That is also what makes the text clickable. -->
+  <label style="display: flex; align-items: center; gap: 12px;">
+    <md-checkbox name="terms" required></md-checkbox>
+    I agree to the terms
+  </label>
+
+  <md-button type="submit" variant="filled">Submit</md-button>
+</form>
+```
+
+## Building a Card Layout
+
+```html
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+  <md-card variant="elevated" clickable>
+    <div slot="header">Project Alpha</div>
+    <p>Status: Active</p>
+    <div slot="actions">
+      <md-button variant="text">Open</md-button>
+      <md-icon-button variant="standard" icon="more_vert"></md-icon-button>
+    </div>
+  </md-card>
+
+  <md-card variant="outlined">
+    <div slot="header">Project Beta</div>
+    <p>Status: Draft</p>
+    <div slot="actions">
+      <md-button variant="text">Open</md-button>
+    </div>
+  </md-card>
+</div>
+```
+
+## Dark Mode
+
+Toggle dark mode by setting the `data-theme` attribute:
+
+```html
+<html data-theme="dark">
+  <!-- All MD3 components automatically switch to dark colors -->
+</html>
+```
+
+```js
+// Toggle programmatically
+const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
+```
+
+## Next Steps
+
+- [Components](/components/) — explore all 56 components, grouped by category
+- [Theming](/theming/overview/) — customize colors and design tokens
+- [Accessibility](/guides/accessibility/) — built-in a11y features

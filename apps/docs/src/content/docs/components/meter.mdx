@@ -1,0 +1,670 @@
+---
+title: Meter
+description: "A read-only display of a numeric value within a known range — storage, quota, strength — with role=meter semantics, Intl formatting, and MD3 status colors"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/meter.json";
+
+**A read-only graphical display of a numeric value within a known range.**
+Storage used, quota consumed, password strength, battery level. The host
+carries full `role="meter"` ARIA semantics, the value is clamped into
+`[min, max]`, and the value text is real `Intl.NumberFormat` output — a
+locale-aware percentage by default, or units/currency/plain numbers via
+`formatOptions`.
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 20px; inline-size: 100%; max-inline-size: 360px;">
+  <md-meter value="65" label="Storage used" show-label show-value></md-meter>
+  <md-meter value="82" color="warning" label="Quota used" show-label show-value></md-meter>
+  <md-meter value="3" max="10" color="success" label="Seats taken" value-text="3 of 10 seats" show-label show-value></md-meter>
+</div>`}
+  label="Live preview"
+  storyId="communication-meter--playground"
+/>
+
+:::note[Read-only by design]
+A meter is a *reading*, not a control: no events, no methods, no slots, nothing
+focusable. If the user should change the value, you want
+[`md-slider`](/components/slider/); if you are visualising an *activity*, you
+want [`md-progress-indicator`](/components/progress-indicator/).
+:::
+
+:::note[Not a Material Design 3 component]
+M3 has no meter page. This is the WAI-ARIA `meter` pattern drawn on MD3
+progress-indicator geometry, so the visuals follow M3 while the semantics follow
+[the ARIA spec](https://www.w3.org/TR/wai-aria-1.2/#meter); the guidance below is
+**house rules**.
+:::
+
+## Install
+
+<ComponentSetup tag="md-meter" example="" />
+
+## When to use
+
+- A **current state** within a known range: disk/storage usage, quota, capacity.
+- A **strength or level reading**: password strength, signal, battery.
+- Anywhere native `<meter>` semantics fit but you want MD3 visuals, theming and
+  density.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| How far along an **activity** is (upload, install, load) | [`md-progress-indicator`](/components/progress-indicator/) |
+| An unknown-length wait | [`md-loading-indicator`](/components/loading-indicator/) |
+| The user should **change** the value | [`md-slider`](/components/slider/) |
+| A score the user assigns | [`md-rating`](/components/rating/) |
+| A tiny binary/status signal | [`md-status-dot`](/components/status-dot/) or [`md-badge`](/components/badge/) |
+
+:::tip[Meter vs progress indicator]
+The load-bearing distinction: a meter shows a **state** ("how full"), a
+progress indicator shows an **activity** ("how far along"). That is why
+`md-meter` deliberately has no indeterminate mode, no M3-Expressive 4dp gap, no
+stop dot and no completion animation — it is a plain track + fill that sits
+still.
+:::
+
+## Value & range
+
+`value` is **clamped** into `[min, max]` before ARIA, geometry and formatting —
+`value="150"` in a 0–100 range renders and announces 100%. An inverted range
+(`max < min`) collapses to an empty one instead of emitting invalid ARIA.
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 20px; inline-size: 100%; max-inline-size: 360px;">
+  <md-meter value="0" label="Empty" show-label show-value></md-meter>
+  <md-meter value="50" label="Half" show-label show-value></md-meter>
+  <md-meter value="100" label="Full" show-label show-value></md-meter>
+  <md-meter value="150" label="Clamped from 150" show-label show-value></md-meter>
+  <md-meter min="100" max="200" value="150" label="Range 100–200" show-label show-value></md-meter>
+</div>`}
+  label="Clamping and custom ranges"
+  storyId="communication-meter--playground"
+/>
+
+The last example shows the default value text is the value's **position in the
+range**, not the raw number: 150 in 100–200 reads "50%".
+
+## Label & value header
+
+`show-label` and `show-value` render an optional header row above the track —
+label start-aligned, formatted value end-aligned. The visible value span is
+`aria-hidden`; screen readers get the exact same string once, via
+`aria-valuetext` on the host.
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 20px; inline-size: 100%; max-inline-size: 360px;">
+  <md-meter value="40" label="Bare track (label is ARIA-only)"></md-meter>
+  <md-meter value="40" label="Label only" show-label></md-meter>
+  <md-meter value="40" label="Value only" show-value></md-meter>
+  <md-meter value="40" label="Label and value" show-label show-value></md-meter>
+</div>`}
+  label="Header combinations"
+  storyId="communication-meter--with-label-and-value"
+/>
+
+## Formatting
+
+Three tiers, most specific wins:
+
+| Tier | What is formatted | Example output |
+|---|---|---|
+| default | percentage of the range, `Intl` percent style | `24%`, `24 %`, `٢٤٪` |
+| `formatOptions` | the **clamped raw value**, any `Intl.NumberFormatOptions` | `256 GB`, `€750.00`, `7.4` |
+| `value-text` | nothing — your literal string wins | `3 of 10 seats` |
+
+`formatOptions` is a **JS-only object prop** — set it as a property, not an
+attribute. `locale` (BCP-47) picks the `Intl` locale; leave it empty to follow
+the runtime's default.
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 20px; inline-size: 100%; max-inline-size: 360px;">
+  <md-meter value="24" label="Default percent" show-label show-value></md-meter>
+  <md-meter id="meter-gb" value="256" max="512" label="Gigabytes" show-label show-value></md-meter>
+  <md-meter id="meter-eur" value="750" max="1000" locale="de-DE" label="Budget spent" show-label show-value></md-meter>
+  <md-meter value="3" max="10" value-text="3 of 10 seats" label="Custom text" show-label show-value></md-meter>
+</div>`}
+  script={`
+  var gb = root.querySelector('#meter-gb');
+  var eur = root.querySelector('#meter-eur');
+  gb.formatOptions = { style: 'unit', unit: 'gigabyte' };
+  eur.formatOptions = { style: 'currency', currency: 'EUR' };`}
+  htmlForCode={`<md-meter id="meter-gb" value="256" max="512" label="Gigabytes" show-label show-value></md-meter>
+<md-meter id="meter-eur" value="750" max="1000" locale="de-DE" label="Budget spent" show-label show-value></md-meter>
+
+\x3Cscript type="module">
+  const gb = document.getElementById('meter-gb');
+  const eur = document.getElementById('meter-eur');
+  gb.formatOptions = { style: 'unit', unit: 'gigabyte' };
+  eur.formatOptions = { style: 'currency', currency: 'EUR' };
+\x3C/script>`}
+  angular={`import { Component } from '@angular/core';
+
+// Bind the CAMELCASE name. [format-options]="…" would set a
+// "format-options" property that md-meter never reads, and the
+// meter would silently fall back to the default percent output.
+@Component({
+  selector: 'app-formatted-meters',
+  template: \`
+    <md-meter
+      [formatOptions]="gbFormat"
+      value="256"
+      max="512"
+      label="Gigabytes"
+      show-label
+      show-value
+    ></md-meter>
+
+    <md-meter
+      [formatOptions]="eurFormat"
+      locale="de-DE"
+      value="750"
+      max="1000"
+      label="Budget spent"
+      show-label
+      show-value
+    ></md-meter>
+  \`,
+})
+export class FormattedMetersComponent {
+  gbFormat: Intl.NumberFormatOptions = { style: 'unit', unit: 'gigabyte' };
+  eurFormat: Intl.NumberFormatOptions = { style: 'currency', currency: 'EUR' };
+}`}
+  vue={`<script setup lang="ts">
+import '@awc-ui/core/define';
+
+const gbFormat: Intl.NumberFormatOptions = { style: 'unit', unit: 'gigabyte' };
+const eurFormat: Intl.NumberFormatOptions = { style: 'currency', currency: 'EUR' };
+</script>
+
+<template>
+  <!-- :formatOptions, not :format-options — Vue only sets a binding as a DOM
+       property when the name exists on the element. -->
+  <md-meter
+    :formatOptions="gbFormat"
+    value="256"
+    max="512"
+    label="Gigabytes"
+    show-label
+    show-value
+  />
+
+  <md-meter
+    :formatOptions="eurFormat"
+    locale="de-DE"
+    value="750"
+    max="1000"
+    label="Budget spent"
+    show-label
+    show-value
+  />
+</template>`}
+  label="Percent, unit, currency and literal value text"
+  storyId="communication-meter--formatting"
+/>
+
+:::note[One string, two consumers]
+Whatever the formatter (or `value-text`) produces drives **both** the visible
+header value and `aria-valuetext`, so what is seen and what is announced can
+never disagree. Invalid `formatOptions` combinations degrade to the raw value
+instead of throwing.
+:::
+
+## Color
+
+`color` takes a theme **role name**, resolved at runtime to the
+`--md-sys-color-<role>` / `-<role>-container` pair — fill on container. Any
+role a theme defines works (`color="brand"`), not just the seven baseline ones.
+The default (`primary`) keeps the progress-indicator's neutral look: primary
+fill on a secondary-container track.
+
+| Reading | `color` |
+|---|---|
+| Neutral measurement | `primary` (default) |
+| Healthy / plenty left | `success` |
+| Approaching the limit | `warning` |
+| Critical / exceeded | `error` |
+| Informational level | `info` |
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 20px; inline-size: 100%; max-inline-size: 360px;">
+  <md-meter value="65" color="primary" label="primary" show-label show-value></md-meter>
+  <md-meter value="65" color="secondary" label="secondary" show-label show-value></md-meter>
+  <md-meter value="65" color="tertiary" label="tertiary" show-label show-value></md-meter>
+  <md-meter value="65" color="success" label="success" show-label show-value></md-meter>
+  <md-meter value="65" color="warning" label="warning" show-label show-value></md-meter>
+  <md-meter value="65" color="error" label="error" show-label show-value></md-meter>
+  <md-meter value="65" color="info" label="info" show-label show-value></md-meter>
+</div>`}
+  label="Color roles, including the semantic status roles"
+  storyId="communication-meter--colors"
+/>
+
+:::caution[Never colour alone]
+A status colour must be paired with the visible value, the label, or
+`value-text` — colour is invisible to many users and to screen readers.
+:::
+
+The canonical quota recipe switches the role as thresholds are crossed:
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 20px; inline-size: 100%; max-inline-size: 360px;">
+  <md-meter value="45" color="success" label="Storage used" value-text="45 GB of 100 GB" show-label show-value></md-meter>
+  <md-meter value="82" color="warning" label="Storage used" value-text="82 GB of 100 GB" show-label show-value></md-meter>
+  <md-meter value="96" color="error" label="Storage used" value-text="96 GB of 100 GB" show-label show-value></md-meter>
+</div>`}
+  label="Threshold-driven status colors"
+  storyId="communication-meter--storage-quota"
+/>
+
+## Thickness
+
+`thickness` is the track height in dp (default 4). It is density-scaled
+(0.5px per rung) and floored at 2px; `--md-meter-height` overrides it entirely.
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 20px; inline-size: 100%; max-inline-size: 360px;">
+  <md-meter value="65" thickness="2" label="2dp"></md-meter>
+  <md-meter value="65" label="4dp (default)"></md-meter>
+  <md-meter value="65" thickness="8" label="8dp"></md-meter>
+  <md-meter value="65" thickness="12" label="12dp"></md-meter>
+</div>`}
+  label="Track thickness"
+  storyId="communication-meter--thickness"
+/>
+
+## Circular
+
+`variant="circular"` draws the same reading as a ring. `show-value` puts the
+value in the middle of it and `show-label` captions it underneath — the bar's
+header row doesn't apply. `size` is the diameter in dp (default 48, clamped to
+24–240); everything else — `color`, `thickness`, `formatOptions`, the ARIA
+contract — behaves exactly as it does on the bar.
+
+<ComponentDemo
+  html={`<div style="display: flex; align-items: flex-start; gap: 32px; flex-wrap: wrap;">
+  <md-meter variant="circular" value="72" show-value></md-meter>
+  <md-meter variant="circular" value="72" size="72" thickness="6" show-value show-label label="Storage"></md-meter>
+  <md-meter variant="circular" value="41" size="96" thickness="8" color="tertiary" show-value show-label label="Quota used"></md-meter>
+  <md-meter variant="circular" value="92" size="96" thickness="8" color="error" show-value show-label label="Almost full"></md-meter>
+</div>`}
+  label="Ring sizes, thickness and colour roles"
+  storyId="communication-meter--circular"
+/>
+
+The ring fills clockwise from twelve o'clock in **every** locale — it is not
+mirrored under `dir="rtl"`, matching Material's circular progress indicator (and
+a clock face). Only the caption text direction flips; see
+[The ring does not mirror](#the-ring-does-not-mirror) below for the side-by-side.
+
+## Events
+
+`md-meter` emits **no events** — it is a pure read-only display, so there is
+nothing to listen to and nothing to cancel.
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| _none_ | — | — | A meter is a reading, not a control — drive it by setting `value` |
+
+Drive it from your state layer instead: set `value` (and `color`, `value-text`)
+and the fill animates to its new position over 300ms, zeroed under
+`prefers-reduced-motion`. Press a threshold below — only `value`, `value-text`
+and `color` change:
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 20px; inline-size: 100%; max-inline-size: 360px;">
+  <md-meter id="quota-demo" value="45" max="100" color="success" label="Storage used" value-text="45 GB of 100 GB" show-label show-value></md-meter>
+  <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+    <md-button variant="outlined" data-gb="45">45 GB</md-button>
+    <md-button variant="outlined" data-gb="82">82 GB</md-button>
+    <md-button variant="outlined" data-gb="96">96 GB</md-button>
+  </div>
+</div>`}
+  script={`
+  var meter = root.querySelector('#quota-demo');
+
+  // md-button's mdClick bubbles and is composed, so one delegated listener on
+  // the demo root catches all three thresholds.
+  root.addEventListener('mdClick', function (e) {
+    var gb = Number(e.target.getAttribute('data-gb'));
+    if (!gb) return;
+    meter.value = gb;
+    meter.valueText = gb + ' GB of 100 GB';
+    meter.color = gb >= 95 ? 'error' : gb >= 80 ? 'warning' : 'success';
+  });`}
+  label="Driving the reading from state — value, value-text and color"
+  storyId="communication-meter--storage-quota"
+  htmlCode={`<md-meter id="quota" max="100" label="Storage used" show-label show-value></md-meter>
+
+\x3Cscript type="module">
+  const quota = document.getElementById('quota');
+
+  function setUsage(usedGb, totalGb) {
+    const ratio = usedGb / totalGb;
+    quota.max = totalGb;
+    quota.value = usedGb;
+    quota.valueText = usedGb + ' GB of ' + totalGb + ' GB';
+    quota.color = ratio >= 0.95 ? 'error' : ratio >= 0.8 ? 'warning' : 'success';
+  }
+
+  setUsage(45, 100);
+\x3C/script>`}
+  react={`import { MdMeter } from '@awc-ui/react';
+
+export function QuotaMeter({ usedGb, totalGb }: { usedGb: number; totalGb: number }) {
+  const ratio = usedGb / totalGb;
+  const color = ratio >= 0.95 ? 'error' : ratio >= 0.8 ? 'warning' : 'success';
+  return (
+    <MdMeter
+      value={usedGb}
+      max={totalGb}
+      color={color}
+      label="Storage used"
+      valueText={\`\${usedGb} GB of \${totalGb} GB\`}
+      showLabel
+      showValue
+    />
+  );
+}`}
+  angular={`import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'app-quota-meter',
+  template: \`
+    <md-meter
+      [value]="usedGb"
+      [max]="totalGb"
+      [color]="color"
+      label="Storage used"
+      [valueText]="usedGb + ' GB of ' + totalGb + ' GB'"
+      show-label
+      show-value
+    ></md-meter>
+  \`,
+})
+export class QuotaMeterComponent {
+  @Input() usedGb = 0;
+  @Input() totalGb = 100;
+  get color() {
+    const ratio = this.usedGb / this.totalGb;
+    return ratio >= 0.95 ? 'error' : ratio >= 0.8 ? 'warning' : 'success';
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { computed } from 'vue';
+
+const props = defineProps<{ usedGb: number; totalGb: number }>();
+const color = computed(() => {
+  const ratio = props.usedGb / props.totalGb;
+  return ratio >= 0.95 ? 'error' : ratio >= 0.8 ? 'warning' : 'success';
+});
+</script>
+
+<template>
+  <md-meter
+    :value="usedGb"
+    :max="totalGb"
+    :color="color"
+    label="Storage used"
+    :value-text="usedGb + ' GB of ' + totalGb + ' GB'"
+    show-label
+    show-value
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  export let usedGb = 0;
+  export let totalGb = 100;
+  $: ratio = usedGb / totalGb;
+  $: color = ratio >= 0.95 ? 'error' : ratio >= 0.8 ? 'warning' : 'success';
+</script>
+
+<md-meter
+  value={usedGb}
+  max={totalGb}
+  {color}
+  label="Storage used"
+  value-text="{usedGb} GB of {totalGb} GB"
+  show-label
+  show-value
+/>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- The **host** is the single ARIA surface: `role="meter"`,
+  `aria-valuemin`/`aria-valuemax`/`aria-valuenow` (clamped and sanitized), and
+  `aria-valuetext` carrying the human-readable formatted reading.
+- `label` becomes `aria-label` — **always set it**; `role="meter"` needs an
+  accessible name.
+- All internal DOM is `aria-hidden`, so the visible header value is never
+  announced in addition to `aria-valuetext`.
+- Nothing is focusable and there are no pointer/keyboard behaviours — a meter
+  is a reading, not a control.
+- Don't rely on colour alone for meaning; pair status colours with visible
+  text.
+
+Inspect these three in the accessibility panel: the bar and the ring expose an
+identical host contract — `role="meter"`, the same `aria-valuenow` and the same
+`aria-valuetext` — because the shape is presentational and the semantics never
+move into the shadow root. Tab through them and nothing takes focus.
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 20px; inline-size: 100%; max-inline-size: 360px;">
+  <md-meter value="65" label="Storage used" show-label show-value></md-meter>
+  <md-meter value="3" max="10" label="Seats taken" value-text="3 of 10 seats" show-label show-value></md-meter>
+  <md-meter variant="circular" value="65" size="72" label="Storage used" show-value show-label></md-meter>
+</div>`}
+  label="The same ARIA contract on the bar and the ring"
+  storyId="communication-meter--accessibility"
+/>
+
+The [accessibility story](/storybook/?path=/story/communication-meter--accessibility)
+scripts these assertions against the live component.
+
+## RTL, density & i18n
+
+**RTL** — the bar's geometry is 100% CSS logical properties: the fill anchors to
+the inline start and grows toward the inline end, so under `dir="rtl"` the whole
+meter mirrors with no configuration. The header row swaps with it — label to the
+right, value to the left. See [RTL](/behaviour/rtl/) and the
+[RTL story](/storybook/?path=/story/communication-meter--rtl).
+
+```html
+<div dir="rtl">
+  <md-meter value="65" label="التخزين المستخدم" locale="ar" show-label show-value></md-meter>
+</div>
+```
+
+**The same meter in both directions.** Nothing is re-authored between the two
+rows — only `dir` (and the already-localized `label`/`locale`) changes:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="max-inline-size:360px;">
+    <md-meter value="65" label="Storage used" show-label show-value></md-meter>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="max-inline-size:360px;">
+    <md-meter value="65" label="التخزين المستخدم" locale="ar" show-label show-value></md-meter>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+/>
+
+### The ring does not mirror
+
+The bar flips because it is a box on the inline axis. The ring is a clock face:
+it fills clockwise from twelve o'clock in **every** locale, matching Material's
+circular progress indicator. Only the centred value and the caption follow the
+text direction — never add your own `scaleX(-1)`.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
+    <md-meter variant="circular" value="65" size="72" label="Storage" show-value show-label></md-meter>
+    <md-meter variant="circular" value="92" size="72" color="error" label="Almost full" show-value show-label></md-meter>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start;">
+    <md-meter variant="circular" value="65" size="72" label="التخزين" locale="ar" show-value show-label></md-meter>
+    <md-meter variant="circular" value="92" size="72" color="error" label="ممتلئ تقريبا" locale="ar" show-value show-label></md-meter>
+  </div>
+</div>`}
+  label="The arc starts at twelve o'clock in both directions — only the text flips"
+/>
+
+### Every density rung
+
+`density="-1…-4"` thins the track (4dp down to the 2px floor at `-4`) and
+tightens the header spacing and type. Those four rungs locally override an
+inherited global `data-density`; `density="0"` is the default and means
+"inherit whatever the ancestor says". All five rungs, both shapes, same meter:
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 24px; inline-size: 100%; max-inline-size: 360px;">
+  <md-meter value="65" density="0" label="Density 0 — default" show-label show-value></md-meter>
+  <md-meter value="65" density="-1" label="Density -1" show-label show-value></md-meter>
+  <md-meter value="65" density="-2" label="Density -2" show-label show-value></md-meter>
+  <md-meter value="65" density="-3" label="Density -3" show-label show-value></md-meter>
+  <md-meter value="65" density="-4" label="Density -4 — 2px floor" show-label show-value></md-meter>
+</div>
+<div style="display: flex; align-items: flex-start; gap: 28px; flex-wrap: wrap; margin-block-start: 32px;">
+  <md-meter variant="circular" value="65" size="72" thickness="6" density="0" label="0" show-value show-label></md-meter>
+  <md-meter variant="circular" value="65" size="72" thickness="6" density="-1" label="-1" show-value show-label></md-meter>
+  <md-meter variant="circular" value="65" size="72" thickness="6" density="-2" label="-2" show-value show-label></md-meter>
+  <md-meter variant="circular" value="65" size="72" thickness="6" density="-3" label="-3" show-value show-label></md-meter>
+  <md-meter variant="circular" value="65" size="72" thickness="6" density="-4" label="-4" show-value show-label></md-meter>
+</div>`}
+  label="Density 0 through -4 — the bar's track and the ring's diameter both taper"
+  storyId="communication-meter--density"
+/>
+
+:::caution[Below `-2`, check legibility rather than hit area]
+Nothing here is focusable, so density costs no touch target — it costs
+**readability**. The track bottoms out at 2px, the ring at 24px, and the centred
+value is sized off the diameter (~26% of it), so a tapered ring stops being able
+to hold its own number long before it stops being drawn. Drop `show-value` on the
+small rungs and let `label` carry the reading. See
+[Density](/behaviour/density/#accessibility).
+:::
+
+### Density and direction together
+
+The two are independent signals, so they compose without any extra wiring — and
+a local `density="-1…-4"` still wins over the inherited rung. Going the other
+way — back *out* of an inherited rung — needs the custom property rather than
+`density="0"`, so the last meter below sets `--md-sys-density-scale: 0` inline:
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:flex;flex-direction:column;gap:20px;max-inline-size:360px;">
+  <md-meter value="45" color="success" label="التخزين المستخدم" locale="ar" show-label show-value></md-meter>
+  <md-meter value="82" color="warning" label="الحصة المستخدمة" locale="ar" show-label show-value></md-meter>
+  <md-meter value="96" color="error" density="-4" label="كثافة -4 محليا" locale="ar" show-label show-value></md-meter>
+  <md-meter value="30" label="إعادة الضبط إلى الرقم صفر" locale="ar" style="--md-sys-density-scale: 0;" show-label show-value></md-meter>
+</div>`}
+  label="dir=rtl with data-density=-2: one meter pinned locally to -4, one reset to the default rung with --md-sys-density-scale"
+/>
+
+:::caution[`density="0"` means "inherit", not "reset"]
+There is deliberately **no** `[density="0"]` rule in the token layer or in
+`md-meter.css` — `density` is a reflected prop, so `density="0"` is written onto
+virtually every element, and a rule for it would pin rung 0 everywhere and break
+global inheritance outright. Only `-1…-4` declare
+`--md-sys-density-scale` on the host. A meter inside `data-density="-2"`
+therefore stays at `-2` even with `density="0"` on it — it renders pixel-identical
+to its neighbours. To opt back out, set the custom property the rungs feed,
+`style="--md-sys-density-scale: 0"`, which beats both the inherited value and the
+`:host([density=…])` rules; or drop the ancestor's `data-density` altogether.
+:::
+
+**Density** — `density="-1…-4"` locally overrides the inherited `data-density`
+rung (`0` inherits it); on the ring it shrinks the whole circle 2px per rung
+(floored at 24px) so radius and stroke stay in proportion. See the
+[Density story](/storybook/?path=/story/communication-meter--density) and
+[Density](/behaviour/density/).
+
+**i18n** — `label` and `value-text` are plain text props: resolve them in your
+i18n layer. `locale` + `formatOptions` cover the Intl side — digits,
+separators, percent signs, units and currencies all follow the locale. See the
+[Localization story](/storybook/?path=/story/communication-meter--localization).
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-meter-indicator-color` | Fill colour | The `color` role (primary) |
+| `--md-meter-track-color` | Track background | The role's container (secondary-container) |
+| `--md-meter-track-shape` | Track + fill corner radius | `--md-sys-shape-corner-full` |
+| `--md-meter-height` | Track thickness | `thickness` prop (4dp, density-scaled) |
+| `--md-meter-size` | Ring diameter (circular only) | `size` prop (48dp, density-scaled) |
+| `--md-meter-label-color` | Header label text | `--md-sys-color-on-surface` |
+| `--md-meter-value-color` | Header value text | `--md-sys-color-on-surface-variant` |
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 20px; inline-size: 100%; max-inline-size: 360px;">
+  <md-meter value="65" label="Brand colours" style="--md-meter-indicator-color: #6200ee; --md-meter-track-color: #e0d4f5;"></md-meter>
+  <md-meter value="65" label="Square corners" style="--md-meter-track-shape: 2px;"></md-meter>
+  <md-meter value="65" label="Tall track" style="--md-meter-height: 12px;"></md-meter>
+  <md-meter variant="circular" value="65" label="Bigger ring" show-value style="--md-meter-size: 96px;"></md-meter>
+</div>`}
+  label="Custom-property overrides"
+  storyId="communication-meter--custom-css"
+/>
+
+**CSS parts** — `track`, `indicator`, `label`, `value`, and `circular` (the
+ring's box). `track` and `indicator` name the bar's two divs on the linear
+variant and the two SVG circles on the circular one, so one `::part()` rule
+survives a variant swap. Use them for what a colour token cannot express —
+gradients, opacity, filters:
+
+<ComponentDemo
+  html={`<style>
+  .meter-gradient::part(indicator) { background: linear-gradient(to right, #1a237e, #7c4dff, #ce93d8); }
+  .meter-subtle::part(track)       { opacity: 0.35; }
+  .meter-strong::part(label)       { font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+  .meter-boxed::part(value) {
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+</style>
+<div style="display: flex; flex-direction: column; gap: 20px; inline-size: 100%; max-inline-size: 360px;">
+  <md-meter class="meter-gradient" value="65" label="Gradient indicator" show-label show-value></md-meter>
+  <md-meter class="meter-subtle" value="40" label="Faded track" show-label show-value></md-meter>
+  <md-meter class="meter-strong meter-boxed" value="65" label="Styled label and value" show-label show-value></md-meter>
+</div>`}
+  label="::part() reaching into the shadow root"
+  storyId="communication-meter--css-parts"
+/>
+
+Check any override in both themes — the
+[dark-theme story](/storybook/?path=/story/communication-meter--dark-theme)
+is the counterpart to the stories above.
+
+
+## Related
+
+[`md-progress-indicator`](/components/progress-indicator/) ·
+[`md-loading-indicator`](/components/loading-indicator/) ·
+[`md-slider`](/components/slider/) ·
+[`md-rating`](/components/rating/) ·
+[`md-status-dot`](/components/status-dot/) ·
+[`md-badge`](/components/badge/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-meter" />

@@ -1,0 +1,186 @@
+{
+  "tag": "md-list",
+  "title": "List",
+  "slug": "list",
+  "category": "Containment",
+  "subComponentOf": null,
+  "storyId": "containment-list--playground",
+  "props": [
+    {
+      "name": "listStyle",
+      "attribute": "list-style",
+      "type": "MdListStyle",
+      "default": "'standard'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "selectionMode",
+      "attribute": "selection-mode",
+      "type": "MdListSelectionMode",
+      "default": "'none'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "interactionMode",
+      "attribute": "interaction-mode",
+      "type": "MdListInteractionMode",
+      "default": "'single-action'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "reorderable",
+      "attribute": "reorderable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelledby",
+      "attribute": "labelledby",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "roleOverride",
+      "attribute": "role-override",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdSelect",
+      "detail": "MdListSelectDetail"
+    },
+    {
+      "name": "mdActivate",
+      "detail": "{ index: number; item: HTMLMdListItemElement }"
+    },
+    {
+      "name": "mdReorder",
+      "detail": "{ from: number; to: number; order: number[] }"
+    }
+  ],
+  "methods": [
+    {
+      "name": "activateNext",
+      "params": ""
+    },
+    {
+      "name": "activatePrevious",
+      "params": ""
+    },
+    {
+      "name": "selectItem",
+      "params": "index: number"
+    },
+    {
+      "name": "getSelectedIndices",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "drop-placeholder",
+      "description": "Ghost slot shown in the lifted row's vacated position"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-list-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-list-container-shape",
+      "description": "Border-radius override"
+    },
+    {
+      "name": "--md-list-padding-block",
+      "description": "Vertical padding inside the list"
+    },
+    {
+      "name": "--md-list-padding-inline",
+      "description": "Horizontal padding inside the list"
+    },
+    {
+      "name": "--md-list-segmented-gap",
+      "description": "Gap between rows in segmented mode (default 2px)"
+    },
+    {
+      "name": "--md-list-drop-placeholder-color",
+      "description": "Drop-target ghost fill (default primary-container @ ~45%, on-theme)"
+    },
+    {
+      "name": "--md-list-drop-placeholder-shape",
+      "description": "Drop-target ghost corner radius (default corner-large / 16dp)"
+    },
+    {
+      "name": "--md-list-drop-placeholder-opacity",
+      "description": "Drop-target ghost opacity (default 1)"
+    },
+    {
+      "name": "--md-list-drop-placeholder-outline-color",
+      "description": ""
+    },
+    {
+      "name": "--md-list-drop-placeholder-outline-width",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-divider"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [
+    {
+      "name": "MdListSelectDetail",
+      "kind": "type",
+      "body": "{ /** Top-level row index in the list (parent index for expanded-content children). */ index: number"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdSelect",
+      "detail": "MdListSelectDetail"
+    },
+    {
+      "name": "mdActivate",
+      "detail": "{ index: number; item: HTMLMdListItemElement }"
+    },
+    {
+      "name": "mdReorder",
+      "detail": "{ from: number; to: number; order: number[] }"
+    }
+  ]
+}

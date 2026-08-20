@@ -1,0 +1,276 @@
+/* ==========================================================
+   md-tooltip — Material Design 3 Tooltip
+   Spec: https://m3.material.io/components/tooltips/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-tooltip-plain-container-color    Plain tooltip background
+     --md-tooltip-plain-text-color         Plain tooltip text color
+     --md-tooltip-rich-container-color     Rich tooltip background
+     --md-tooltip-rich-subhead-color       Rich subhead text color
+     --md-tooltip-rich-text-color          Rich supporting text color
+     --md-tooltip-rich-action-color        Rich action button color
+     --md-tooltip-container-shape          Border-radius (plain)
+     --md-tooltip-plain-max-inline-size    Plain tooltip max width
+     --md-tooltip-rich-container-shape     Border-radius (rich)
+     --md-tooltip-rich-min-inline-size     Rich tooltip min width
+     --md-tooltip-rich-max-inline-size     Rich tooltip max width
+
+   CSS PARTS:
+     popup               Tooltip popup container
+     subhead             Rich tooltip subhead wrapper
+     supporting-text     Rich tooltip supporting text wrapper
+     actions             Rich tooltip action button wrapper
+     text                Plain tooltip text wrapper
+
+   SLOTS:
+     (default)           Trigger element
+     content             Rich tooltip supporting text
+     subhead             Rich tooltip subhead
+     actions             Rich tooltip action buttons
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST
+   ========================================================== */
+
+:host {
+  display: inline-block;
+  position: relative;
+}
+
+/* ==========================================================
+   2. POPUP — shared base
+   ========================================================== */
+
+.md-tooltip__popup {
+  /* Fixed + viewport coords (set in JS) so popups escape overflow:hidden ancestors. */
+  position: fixed;
+  z-index: var(--md-sys-z-index-tooltip, 1500);
+  pointer-events: none;
+  box-sizing: border-box;
+  /* CRITICAL: width must not depend on the popup's own offsets. With width:auto, a
+     fixed element shrink-to-fits into (containing block − left), so writing `left`
+     changes the width, which re-wraps the text, which the position watchdog sees as
+     drift and repositions — an animated wrap/slide feedback loop that crawls the
+     popup across the screen one frame at a time. max-content sizes from the CONTENT
+     only (the variant max-inline-size caps still bound it), decoupling measurement
+     from position: one measure, one placement, no loop. */
+  width: max-content;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.9);
+
+  transition:
+    opacity var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, ease),
+    transform var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, ease),
+    visibility 0ms linear var(--md-sys-motion-duration-short2, 100ms);
+}
+
+.md-tooltip__popup--visible {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  pointer-events: auto;
+  transition:
+    opacity var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, ease),
+    transform var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, ease),
+    visibility 0ms linear 0ms;
+}
+
+/* ==========================================================
+   3. PLAIN TOOLTIP
+   Spec: height 24px (via padding), padding 8px, body-small
+   ========================================================== */
+
+.md-tooltip__popup--plain {
+  --_container-color: var(--md-tooltip-plain-container-color, var(--md-sys-color-inverse-surface, #313033));
+  --_text-color: var(--md-tooltip-plain-text-color, var(--md-sys-color-inverse-on-surface, #F4EFF4));
+  --_shape: var(--md-tooltip-container-shape, var(--md-sys-shape-corner-extra-small, 4px));
+
+  background-color: var(--_container-color);
+  color: var(--_text-color);
+  border-radius: var(--_shape);
+
+  /* Global density: on-grid padding tracks --md-sys-spacing-* (4/8 = inset-xs/sm);
+     defaults resolve byte-for-byte at density 0. min-block-size stays the 24px
+     spec height floor. */
+  padding-block: var(--md-sys-spacing-inset-xs, 4px);
+  padding-inline: var(--md-sys-spacing-inset-sm, 8px);
+
+  min-block-size: max(20px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+  max-inline-size: min(var(--md-tooltip-plain-max-inline-size, 280px), calc(100vw - 16px));
+
+  font-family: var(--md-sys-typescale-body-small-font-family, Roboto, sans-serif);
+  font-size: max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-small-font-weight, 400);
+  line-height: max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  letter-spacing: var(--md-sys-typescale-body-small-letter-spacing, 0.4px);
+
+  /* Wrap long content over multiple lines instead of clipping it. The plain
+     tooltip is the overflow tooltip used by md-list-item, so it must reveal
+     the FULL text. `max-inline-size` caps the line length (280px default here,
+     overridable per-instance) and the content wraps below it rather than
+     truncating with an ellipsis. */
+  white-space: normal;
+  display: flex;
+  align-items: center;
+}
+
+.md-tooltip__text {
+  /* No ellipsis / overflow clipping — let the popup grow vertically and wrap.
+     `overflow-wrap: anywhere` keeps an unbroken long word (URLs, IDs) from
+     forcing the popup wider than its max-inline-size. */
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================================
+   4. RICH TOOLTIP
+   Spec: top padding 12px, bottom 8px, left/right 16px
+   ========================================================== */
+
+.md-tooltip__popup--rich {
+  --_container-color: var(--md-tooltip-rich-container-color, var(--md-sys-color-surface-container, #F3EDF7));
+  --_subhead-color: var(--md-tooltip-rich-subhead-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_text-color: var(--md-tooltip-rich-text-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_action-color: var(--md-tooltip-rich-action-color, var(--md-sys-color-primary, #6750A4));
+  --_shape: var(--md-tooltip-rich-container-shape, var(--md-sys-shape-corner-medium, 12px));
+
+  background-color: var(--_container-color);
+  color: var(--_text-color);
+  border-radius: var(--_shape);
+
+  /* Global density: on-grid rich padding tracks --md-sys-spacing-*
+     (12/8/16 = inset-md/sm/lg); defaults resolve byte-for-byte at density 0. */
+  padding-block-start: var(--md-sys-spacing-inset-md, 12px);
+  padding-block-end: var(--md-sys-spacing-inset-sm, 8px);
+  padding-inline: var(--md-sys-spacing-inset-lg, 16px);
+
+  min-inline-size: var(--md-tooltip-rich-min-inline-size, 120px);
+  max-inline-size: min(var(--md-tooltip-rich-max-inline-size, 320px), calc(100vw - 16px));
+
+  white-space: normal;
+  box-shadow: var(--md-sys-elevation-2, 0 1px 3px 1px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* Subhead */
+.md-tooltip__subhead {
+  font-family: var(--md-sys-typescale-title-small-font-family, Roboto, sans-serif);
+  font-size: max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-title-small-font-weight, 500);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-title-small-letter-spacing, 0.1px);
+  color: var(--_subhead-color);
+  margin-block-end: var(--md-sys-spacing-gap-xs, 4px);
+}
+
+/* Supporting text */
+.md-tooltip__supporting-text {
+  font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif);
+  font-size: max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-medium-font-weight, 400);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-body-medium-letter-spacing, 0.25px);
+  color: var(--_text-color);
+}
+
+/* Actions */
+.md-tooltip__actions {
+  display: flex;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  justify-content: flex-end;
+  margin-block-start: var(--md-sys-spacing-gap-md, 12px);
+  color: var(--_action-color);
+}
+
+.md-tooltip__actions--empty {
+  display: none;
+}
+
+/* Slotted action buttons */
+::slotted([slot="actions"]) {
+  color: var(--_action-color);
+}
+
+/* ==========================================================
+   5. PLACEMENT — transform-origin for enter animation
+   Position is set inline via JS; these handle animation origin.
+   ========================================================== */
+
+.md-tooltip__popup--top,
+.md-tooltip__popup--top-start,
+.md-tooltip__popup--top-end {
+  transform-origin: bottom center;
+}
+
+.md-tooltip__popup--bottom,
+.md-tooltip__popup--bottom-start,
+.md-tooltip__popup--bottom-end {
+  transform-origin: top center;
+}
+
+.md-tooltip__popup--left,
+.md-tooltip__popup--left-start,
+.md-tooltip__popup--left-end {
+  transform-origin: center right;
+}
+
+.md-tooltip__popup--right,
+.md-tooltip__popup--right-start,
+.md-tooltip__popup--right-end {
+  transform-origin: center left;
+}
+
+/* ==========================================================
+   6. RTL
+   NB: no transform-origin overrides here. The placement classes are already
+   PHYSICAL — JS (physicalPlacement) maps logical placements per direction
+   before resolving the class — so the base origins in section 5 always face
+   the trigger. The old :host-context([dir=rtl]) re-flip double-flipped them,
+   making the entrance scale grow from the edge facing AWAY from the trigger.
+   ========================================================== */
+
+:host-context([dir="rtl"]) .md-tooltip__actions {
+  justify-content: flex-start;
+}
+
+/* ==========================================================
+   7. FORCED COLORS (Windows High Contrast)
+   The popup is a background + elevation surface — both are dropped in
+   forced-colors mode, leaving the tooltip text floating with no boundary
+   over the page. Give it a system-color border so the region stays
+   perceivable (matches the md-toolbar hardened convention).
+   ========================================================== */
+
+@media (forced-colors: active) {
+  .md-tooltip__popup {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* ==========================================================
+   8. REDUCED MOTION
+   Honor a reduced-motion preference by dropping the scale/opacity
+   entrance so the tooltip appears/disappears instantly instead of
+   animating on every hover (md-list-item mounts a tooltip per row).
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-tooltip__popup,
+  .md-tooltip__popup--visible {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

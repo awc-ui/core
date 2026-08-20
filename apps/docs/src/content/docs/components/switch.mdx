@@ -1,0 +1,914 @@
+---
+title: Switch
+description: "An immediate on/off setting — track-and-handle toggle, form-associated, with a cancelable before-change event"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/switch.json";
+
+**An immediate on/off setting.** A track-and-handle toggle with optional state
+icons, form participation via `ElementInternals`, and a **cancelable
+before-change event** for controlled usage.
+
+<ComponentDemo
+  html={`<label style="display: flex; align-items: center; gap: 12px; color: var(--md-sys-color-on-surface); cursor: pointer;">
+  <md-switch selected></md-switch>
+  Dark mode
+</label>
+<label style="display: flex; align-items: center; gap: 12px; color: var(--md-sys-color-on-surface); cursor: pointer;">
+  <md-switch icons></md-switch>
+  Wi-Fi
+</label>
+<label style="display: flex; align-items: center; gap: 12px; color: var(--md-sys-color-on-surface); cursor: pointer;">
+  <md-switch selected icons></md-switch>
+  Bluetooth
+</label>`}
+  label="Live preview"
+  storyId="selection-switch--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-switch" example="" />
+
+## When to use
+
+- A **single setting that takes effect immediately** — dark mode, notifications,
+  Wi-Fi, auto-save.
+- The change is self-evidently applied; there is no Save button gating it.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Selecting one or more options from a list | [`md-checkbox`](/components/checkbox/) |
+| Selecting exactly one from a list | [`md-radio`](/components/radio/) |
+| Choosing between two **opposing** options (A vs B) | [`md-button-group`](/components/button-group/), connected |
+| The change requires an explicit save step | [`md-checkbox`](/components/checkbox/) |
+| Triggering an action | [`md-button`](/components/button/) |
+| Filtering | [`md-chip`](/components/chip/) |
+| A value in a range | [`md-slider`](/components/slider/) |
+
+## Labelling
+
+Put the label **outside** the control — M3 is explicit that text inside a switch
+would be inaccessibly small. Describe what **on** does, and keep it short.
+
+:::danger[There is no default slot]
+`<md-switch>Dark mode</md-switch>` renders **nothing** for the text — the only
+slots are `selected-icon` and `unselected-icon`. Wrap the switch in a `<label>`
+(which also gives you the hit target) or set `aria-label` / `aria-labelledby`. A
+bare switch has no accessible name.
+:::
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 16px;">
+  <label style="display: flex; align-items: center; gap: 12px; color: var(--md-sys-color-on-surface); cursor: pointer;">
+    <md-switch></md-switch>
+    Wi-Fi
+  </label>
+  <label style="display: flex; align-items: center; gap: 12px; color: var(--md-sys-color-on-surface); cursor: pointer;">
+    <md-switch selected icons></md-switch>
+    Bluetooth
+  </label>
+  <label style="display: flex; align-items: center; gap: 12px; color: var(--md-sys-color-on-surface); cursor: pointer;">
+    <md-switch disabled></md-switch>
+    Airplane mode
+  </label>
+</div>`}
+  label="Labelled settings rows"
+  storyId="selection-switch--with-labels"
+/>
+
+## Icon configurations
+
+`icons` puts a glyph on both states (defaults `check` / `close`).
+`show-only-selected-icon` shows one only when on. Without either prop the handle
+is a plain disc — and **slotted icons are ignored**.
+
+<ComponentDemo
+  html={`<div style="display: grid; grid-template-columns: auto auto auto; gap: 16px 20px; align-items: center; color: var(--md-sys-color-on-surface);">
+  <span>Without icons</span>
+  <md-switch aria-label="Without icons, off"></md-switch>
+  <md-switch selected aria-label="Without icons, on"></md-switch>
+  <span>Icon on selected</span>
+  <md-switch show-only-selected-icon aria-label="Icon on selected, off"></md-switch>
+  <md-switch selected show-only-selected-icon aria-label="Icon on selected, on"></md-switch>
+  <span>Icons on both</span>
+  <md-switch icons aria-label="Icons on both, off"></md-switch>
+  <md-switch selected icons aria-label="Icons on both, on"></md-switch>
+</div>`}
+  label="Three icon configurations, off and on"
+  storyId="selection-switch--configurations"
+/>
+
+## Custom glyphs
+
+`selected-icon` / `unselected-icon` take any Material Symbols name, and the
+matching **slots** take arbitrary markup. The selected glyph is gated by `icons`
+**or** `show-only-selected-icon`; the unselected glyph is gated by `icons`
+alone — a slotted glyph alone will not appear.
+
+<ComponentDemo
+  html={`<div style="display: grid; grid-template-columns: auto auto auto; gap: 16px 20px; align-items: center; color: var(--md-sys-color-on-surface);">
+  <span>Default (check / close)</span>
+  <md-switch icons aria-label="Default icons, off"></md-switch>
+  <md-switch selected icons aria-label="Default icons, on"></md-switch>
+  <span>bolt / power_off</span>
+  <md-switch icons selected-icon="bolt" unselected-icon="power_off" aria-label="Glyph overrides, off"></md-switch>
+  <md-switch selected icons selected-icon="bolt" unselected-icon="power_off" aria-label="Glyph overrides, on"></md-switch>
+  <span>dark_mode / light_mode</span>
+  <md-switch icons selected-icon="dark_mode" unselected-icon="light_mode" aria-label="Theme icons, off"></md-switch>
+  <md-switch selected icons selected-icon="dark_mode" unselected-icon="light_mode" aria-label="Theme icons, on"></md-switch>
+  <span>Slotted SVG</span>
+  <md-switch icons aria-label="Slotted SVG icons, off">
+    <svg slot="selected-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>
+    <svg slot="unselected-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z"/></svg>
+  </md-switch>
+  <md-switch selected icons aria-label="Slotted SVG icons, on">
+    <svg slot="selected-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>
+    <svg slot="unselected-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.4 17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z"/></svg>
+  </md-switch>
+</div>`}
+  label="Glyph overrides and slotted icons"
+  storyId="selection-switch--custom-icons"
+/>
+
+M3 warns against ambiguous, non-binary glyphs. A moon on the handle of a
+dark-mode switch reads as decoration; put the moon in the **label** and keep
+check / X on the handle.
+
+## States
+
+| State | Focusable | Use when |
+|---|---|---|
+| Enabled | Yes | Normal |
+| `disabled` | No (`tabindex="-1"`) | Unavailable and undiscoverable |
+| `soft-disabled` | **Yes** (`tabindex="0"`) | Contextually unavailable but worth discovering |
+
+<ComponentDemo
+  html={`<div style="display: grid; grid-template-columns: auto auto auto; gap: 16px 20px; align-items: center; color: var(--md-sys-color-on-surface);">
+  <span>Enabled</span>
+  <md-switch aria-label="Enabled, off"></md-switch>
+  <md-switch selected aria-label="Enabled, on"></md-switch>
+  <span>Disabled</span>
+  <md-switch disabled aria-label="Disabled, off"></md-switch>
+  <md-switch selected disabled aria-label="Disabled, on"></md-switch>
+  <span>Soft-disabled</span>
+  <md-switch soft-disabled aria-label="Soft-disabled, off"></md-switch>
+  <md-switch selected soft-disabled aria-label="Soft-disabled, on"></md-switch>
+</div>`}
+  label="States — try tabbing through them"
+  storyId="selection-switch--states"
+/>
+
+## Forms
+
+`md-switch` is form-associated: when **selected** it submits `value` (default
+`"on"`) under `name`, and a form reset restores its initial state. `required`
+genuinely blocks submission until the switch is on — customise the message with
+`value-missing-label`.
+
+<ComponentDemo
+  html={`<form style="display: flex; flex-direction: column; gap: 16px; align-items: flex-start;">
+  <label style="display: flex; align-items: center; gap: 12px; color: var(--md-sys-color-on-surface); cursor: pointer;">
+    <md-switch name="notifications" value="on" selected></md-switch>
+    Email notifications
+  </label>
+  <label style="display: flex; align-items: center; gap: 12px; color: var(--md-sys-color-on-surface); cursor: pointer;">
+    <md-switch name="terms" required value-missing-label="Please turn this on if you want to proceed."></md-switch>
+    Accept the terms (required)
+  </label>
+  <div style="display: flex; gap: 12px;">
+    <md-button variant="filled" type="submit">Save</md-button>
+    <md-button variant="text" type="reset">Reset</md-button>
+  </div>
+</form>`}
+  label="Form participation — Save is blocked until the required switch is on"
+  storyId="selection-switch--form-participation"
+/>
+
+Reading the submitted values is ordinary form work — the switch is in `FormData`
+under its `name`, with no wrapper API of its own:
+
+<TechnologyTabs
+  html={`<form id="settings">
+  <label>
+    <md-switch name="notifications" value="on" selected></md-switch>
+    Email notifications
+  </label>
+  <label>
+    <md-switch name="terms" required value-missing-label="Please turn this on if you want to proceed."></md-switch>
+    Accept the terms
+  </label>
+  <md-button variant="filled" type="submit">Save</md-button>
+</form>
+
+<script type="module">
+  document.getElementById('settings').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    // "on" when selected, null when not
+    console.log(data.get('notifications'), data.get('terms'));
+  });
+</script>`}
+  react={`import { MdSwitch, MdButton } from '@awc-ui/react';
+
+export function SettingsForm() {
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    // "on" when selected, null when not
+    console.log(data.get('notifications'), data.get('terms'));
+  }
+
+  return (
+    <form onSubmit={onSubmit}>
+      <label>
+        <MdSwitch name="notifications" value="on" selected />
+        Email notifications
+      </label>
+      <label>
+        <MdSwitch
+          name="terms"
+          required
+          valueMissingLabel="Please turn this on if you want to proceed."
+        />
+        Accept the terms
+      </label>
+      <MdButton variant="filled" type="submit">Save</MdButton>
+    </form>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-settings-form',
+  template: \`
+    <form (submit)="onSubmit($event)">
+      <label>
+        <md-switch name="notifications" value="on" selected></md-switch>
+        Email notifications
+      </label>
+      <label>
+        <md-switch
+          name="terms"
+          required
+          value-missing-label="Please turn this on if you want to proceed."
+        ></md-switch>
+        Accept the terms
+      </label>
+      <md-button variant="filled" type="submit">Save</md-button>
+    </form>
+  \`,
+})
+export class SettingsFormComponent {
+  onSubmit(e: Event) {
+    e.preventDefault();
+    const data = new FormData(e.target as HTMLFormElement);
+    // "on" when selected, null when not
+    console.log(data.get('notifications'), data.get('terms'));
+  }
+}`}
+  vue={`<script setup lang="ts">
+function onSubmit(e: Event) {
+  e.preventDefault();
+  const data = new FormData(e.target as HTMLFormElement);
+  // "on" when selected, null when not
+  console.log(data.get('notifications'), data.get('terms'));
+}
+</script>
+
+<template>
+  <form @submit="onSubmit">
+    <label>
+      <md-switch name="notifications" value="on" selected />
+      Email notifications
+    </label>
+    <label>
+      <md-switch
+        name="terms"
+        required
+        value-missing-label="Please turn this on if you want to proceed."
+      />
+      Accept the terms
+    </label>
+    <md-button variant="filled" type="submit">Save</md-button>
+  </form>
+</template>`}
+  svelte={`<script lang="ts">
+  function onSubmit(e: Event) {
+    e.preventDefault();
+    const data = new FormData(e.target as HTMLFormElement);
+    // "on" when selected, null when not
+    console.log(data.get('notifications'), data.get('terms'));
+  }
+</script>
+
+<form on:submit={onSubmit}>
+  <label>
+    <md-switch name="notifications" value="on" selected></md-switch>
+    Email notifications
+  </label>
+  <label>
+    <md-switch
+      name="terms"
+      required
+      value-missing-label="Please turn this on if you want to proceed."
+    ></md-switch>
+    Accept the terms
+  </label>
+  <md-button variant="filled" type="submit">Save</md-button>
+</form>`}
+/>
+
+## Controlled mode
+
+`mdInput` fires **before** the flip and is **cancelable**; `mdChange` fires
+**after** and cannot be vetoed. To let an external owner hold the state, cancel
+`mdInput` and set `selected` yourself once the write succeeds.
+
+The two switches below are identical markup. The second one has a listener that
+cancels `mdInput`, waits for a (simulated, 600 ms) save, and only then assigns
+`selected` — so the handle never moves on a write that has not landed:
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:16px;align-items:flex-start;">
+  <label style="display:flex;align-items:center;gap:12px;color:var(--md-sys-color-on-surface);cursor:pointer;">
+    <md-switch id="sw-uncontrolled" icons></md-switch>
+    Uncontrolled — flips the moment you click
+  </label>
+  <label style="display:flex;align-items:center;gap:12px;color:var(--md-sys-color-on-surface);cursor:pointer;">
+    <md-switch id="sw-controlled" icons></md-switch>
+    Controlled — mdInput is cancelled, the owner commits after the save
+  </label>
+</div>
+<output id="sw-ctrl-log" style="display:block;margin-block-start:16px;min-block-size:3.2em;white-space:pre-line;font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Toggle either switch. The second one only moves once its save resolves.</output>`}
+  script={`
+    var log = root.querySelector('#sw-ctrl-log');
+    var ctrl = root.querySelector('#sw-controlled');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 3);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    // mdInput / mdChange bubble and are composed, so one listener on the
+    // wrapper hears both switches.
+    root.addEventListener('mdInput', function (e) {
+      if (e.target !== ctrl) {
+        push('mdInput  →  selected(next)=' + e.detail.selected + '  (not cancelled)');
+        return;
+      }
+      e.preventDefault();
+      var wanted = e.detail.selected;
+      push('mdInput  →  preventDefault(); saving ' + wanted + ' …');
+      setTimeout(function () {
+        ctrl.selected = wanted;
+        push('            save resolved — owner set selected=' + wanted);
+      }, 600);
+    });
+
+    root.addEventListener('mdChange', function (e) {
+      push('mdChange →  selected=' + e.detail.selected);
+    });
+  `}
+  label="Uncontrolled vs controlled — the second switch waits for its save"
+  storyId="selection-switch--controlled-mode"
+  htmlCode={`<md-switch id="sync" aria-label="Cloud sync"></md-switch>
+
+<script type="module">
+  const sw = document.getElementById('sync');
+
+  sw.addEventListener('mdInput', async (e) => {
+    e.preventDefault();                    // block the internal toggle
+    const wanted = e.detail.selected;
+    if (await save(wanted)) sw.selected = wanted;
+  });
+</script>`}
+  react={`import { MdSwitch } from '@awc-ui/react';
+import { useState } from 'react';
+
+export function SyncSwitch() {
+  const [on, setOn] = useState(false);
+
+  return (
+    <MdSwitch
+      selected={on}
+      aria-label="Cloud sync"
+      onMdInput={async (e) => {
+        e.preventDefault();                // block the internal toggle
+        const wanted = e.detail.selected;
+        if (await save(wanted)) setOn(wanted);
+      }}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-sync-switch',
+  template: \`
+    <md-switch [selected]="on" aria-label="Cloud sync" (mdInput)="onInput($event)"></md-switch>
+  \`,
+})
+export class SyncSwitchComponent {
+  on = false;
+
+  async onInput(e: CustomEvent<{ selected: boolean }>) {
+    e.preventDefault();                    // block the internal toggle
+    const wanted = e.detail.selected;
+    if (await this.save(wanted)) this.on = wanted;
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const on = ref(false);
+
+async function onInput(e: CustomEvent<{ selected: boolean }>) {
+  e.preventDefault();                      // block the internal toggle
+  const wanted = e.detail.selected;
+  if (await save(wanted)) on.value = wanted;
+}
+</script>
+
+<template>
+  <md-switch :selected="on" aria-label="Cloud sync" @mdInput="onInput" />
+</template>`}
+  svelte={`<script lang="ts">
+  let on = false;
+
+  async function onInput(e: CustomEvent<{ selected: boolean }>) {
+    e.preventDefault();                    // block the internal toggle
+    const wanted = e.detail.selected;
+    if (await save(wanted)) on = wanted;
+  }
+</script>
+
+<md-switch selected={on} aria-label="Cloud sync" on:mdInput={onInput} />`}
+/>
+
+:::caution[A cancelled `mdInput` means no `mdChange`]
+`preventDefault()` returns before the internal assignment, so `mdChange` never
+fires for that interaction — and assigning `selected` yourself does not emit one
+either. In controlled mode, `mdInput` is your only event.
+:::
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdInput` | **yes** | `{ selected }` | **Before** the state changes — `preventDefault()` blocks the internal toggle |
+| `mdChange` | no | `{ selected }` | **After** the state has committed |
+| `mdValidityChange` | no | `{ valid, validationMessage, flags }` | Only on a validity change |
+
+:::caution[`mdValidityChange` is not composed]
+It does not cross the shadow boundary. Listen on the `md-switch` element itself
+or on a light-DOM ancestor — never from inside another component's shadow root.
+:::
+
+### Why two events and not one
+
+`mdInput` and `mdChange` carry the **identical** payload — `{ selected: boolean }`
+— so the difference is not the data, it is the **guarantee**.
+
+`mdInput.detail.selected` is a *prediction*: the state the switch will take **if
+nothing cancels it**. A listener registered after yours can still call
+`preventDefault()`, so a handler that commits on `mdInput` can commit a flip that
+never happened. `mdChange` fires after the assignment and cannot be vetoed, so it
+is the committed fact — calling `preventDefault()` on it does nothing.
+
+This is the same split the platform uses for `<input type="checkbox">` —
+`click` is cancelable and predictive, `change` is settled — including the part
+people forget: **neither fires on a programmatic change.** Setting
+`sw.selected = true` in code emits nothing, exactly as `input.checked = true`
+emits nothing. If your own code changes the state, your own code already knows.
+
+| You want to… | Listen to |
+|---|---|
+| Veto the flip (guard, confirm, permission check) | `mdInput` + `preventDefault()` |
+| Hold the state externally (controlled mode) | `mdInput` + `preventDefault()`, then assign `selected` |
+| React to a committed flip (save, analytics, sync) | `mdChange` |
+| Track whether a `required` switch satisfies its form | `mdValidityChange` |
+
+The detail payloads, for reference — these are inline shapes on the emitters,
+not exported type names. `@awc-ui/core` exports `MdSwitchCustomEvent<T>` as the
+event wrapper:
+
+```ts
+// mdInput  (cancelable) and mdChange (not cancelable)
+{ selected: boolean }
+
+// mdValidityChange
+{ valid: boolean; validationMessage: string; flags: Record<string, boolean> }
+```
+
+Toggle the first switch to watch `mdInput` land **before** `mdChange`. The
+second is `required`, so its validity flips with every toggle — that switch adds
+a third line, `mdValidityChange`, which the first switch never emits because its
+validity never moves:
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:16px;align-items:flex-start;">
+  <label style="display:flex;align-items:center;gap:12px;color:var(--md-sys-color-on-surface);cursor:pointer;">
+    <md-switch id="sw-ev-notify" icons></md-switch>
+    Notifications — mdInput, then mdChange
+  </label>
+  <label style="display:flex;align-items:center;gap:12px;color:var(--md-sys-color-on-surface);cursor:pointer;">
+    <md-switch id="sw-ev-terms" name="terms" required value-missing-label="Please turn this on if you want to proceed."></md-switch>
+    Accept the terms (required) — also emits mdValidityChange
+  </label>
+</div>
+<output id="sw-ev-log" style="display:block;margin-block-start:16px;min-block-size:4.2em;white-space:pre-line;font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Toggle either switch to see the events in order.</output>`}
+  script={`
+    var log = root.querySelector('#sw-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 4);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    root.addEventListener('mdInput', function (e) {
+      push('mdInput          →  selected(next)=' + e.detail.selected);
+    });
+
+    root.addEventListener('mdChange', function (e) {
+      push('mdChange         →  selected=' + e.detail.selected);
+    });
+
+    // mdValidityChange bubbles but is NOT composed — it reaches this light-DOM
+    // ancestor, and would not reach a listener inside another shadow root.
+    root.addEventListener('mdValidityChange', function (e) {
+      push('mdValidityChange →  valid=' + e.detail.valid + '  message="' + e.detail.validationMessage + '"');
+    });
+  `}
+  label="Event order — mdInput, mdChange, and mdValidityChange on the required switch"
+  htmlCode={`<md-switch id="notify" icons aria-label="Notifications"></md-switch>
+
+<script type="module">
+  const sw = document.getElementById('notify');
+
+  sw.addEventListener('mdInput', (e) => {
+    // before the flip — e.preventDefault() blocks the internal toggle
+    console.log('about to become', e.detail.selected);
+  });
+
+  sw.addEventListener('mdChange', (e) => {
+    console.log('committed', e.detail.selected);
+  });
+
+  sw.addEventListener('mdValidityChange', (e) => {
+    console.log(e.detail.valid, e.detail.validationMessage);
+  });
+</script>`}
+  react={`import { MdSwitch } from '@awc-ui/react';
+
+export function NotificationsSwitch() {
+  return (
+    <MdSwitch
+      icons
+      aria-label="Notifications"
+      onMdInput={(e) => console.log('about to become', e.detail.selected)}
+      onMdChange={(e) => console.log('committed', e.detail.selected)}
+      onMdValidityChange={(e) => console.log(e.detail.valid, e.detail.validationMessage)}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-notifications-switch',
+  template: \`
+    <md-switch
+      icons
+      aria-label="Notifications"
+      (mdInput)="onInput($event)"
+      (mdChange)="onChange($event)"
+      (mdValidityChange)="onValidity($event)"
+    ></md-switch>
+  \`,
+})
+export class NotificationsSwitchComponent {
+  onInput(e: CustomEvent<{ selected: boolean }>) {
+    console.log('about to become', e.detail.selected);
+  }
+  onChange(e: CustomEvent<{ selected: boolean }>) {
+    console.log('committed', e.detail.selected);
+  }
+  onValidity(e: CustomEvent<{ valid: boolean; validationMessage: string }>) {
+    console.log(e.detail.valid, e.detail.validationMessage);
+  }
+}`}
+  vue={`<script setup lang="ts">
+function onInput(e: CustomEvent<{ selected: boolean }>) {
+  console.log('about to become', e.detail.selected);
+}
+function onChange(e: CustomEvent<{ selected: boolean }>) {
+  console.log('committed', e.detail.selected);
+}
+function onValidity(e: CustomEvent<{ valid: boolean; validationMessage: string }>) {
+  console.log(e.detail.valid, e.detail.validationMessage);
+}
+</script>
+
+<template>
+  <md-switch
+    icons
+    aria-label="Notifications"
+    @mdInput="onInput"
+    @mdChange="onChange"
+    @mdValidityChange="onValidity"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  function onInput(e: CustomEvent<{ selected: boolean }>) {
+    console.log('about to become', e.detail.selected);
+  }
+  function onChange(e: CustomEvent<{ selected: boolean }>) {
+    console.log('committed', e.detail.selected);
+  }
+  function onValidity(e: CustomEvent<{ valid: boolean; validationMessage: string }>) {
+    console.log(e.detail.valid, e.detail.validationMessage);
+  }
+</script>
+
+<md-switch
+  icons
+  aria-label="Notifications"
+  on:mdInput={onInput}
+  on:mdChange={onChange}
+  on:mdValidityChange={onValidity}
+/>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- Wrap in a `<label>` (name plus hit target) or supply `aria-label` /
+  `aria-labelledby`. There is no default slot.
+- Exposed with the switch role and an on/off state. **`Space` toggles; `Enter`
+  does not** — per the WAI-ARIA switch pattern, `Enter` stays reserved for form
+  submission (matching `md-checkbox` / `md-radio`).
+- `disabled` leaves the tab order (`tabindex="-1"`); `soft-disabled` stays
+  focusable (`tabindex="0"`) so keyboard users can discover it. Both are inert to
+  clicks and keys.
+- With `icons`, state is conveyed by **shape** as well as colour and handle
+  position — helpful for colour-vision deficiency.
+- Keep the hit target ≥48px on touch at deep density rungs.
+
+Tab through these: the first three are named three different legitimate ways,
+the soft-disabled switch still takes focus, and the disabled one is skipped.
+`Space` toggles whichever one holds focus.
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:16px;align-items:flex-start;">
+  <label style="display:flex;align-items:center;gap:12px;color:var(--md-sys-color-on-surface);cursor:pointer;">
+    <md-switch icons></md-switch>
+    Wrapped in a label — the text both names it and toggles it
+  </label>
+  <div style="display:flex;align-items:center;gap:12px;color:var(--md-sys-color-on-surface);">
+    <span id="sw-a11y-bt">Bluetooth</span>
+    <md-switch selected icons aria-labelledby="sw-a11y-bt"></md-switch>
+  </div>
+  <md-switch aria-label="Airplane mode"></md-switch>
+  <label style="display:flex;align-items:center;gap:12px;color:var(--md-sys-color-on-surface);cursor:pointer;">
+    <md-switch soft-disabled></md-switch>
+    Soft-disabled — still focusable, inert to clicks and keys
+  </label>
+  <label style="display:flex;align-items:center;gap:12px;color:var(--md-sys-color-on-surface);cursor:pointer;">
+    <md-switch selected disabled></md-switch>
+    Disabled — skipped by Tab
+  </label>
+</div>`}
+  label="Keyboard and screen-reader behaviour"
+/>
+
+The bare third switch is the one to watch: it renders no text at all, so
+`aria-label` is the **only** thing giving it a name. Drop it and the switch is
+announced as an unlabelled control.
+
+## RTL, density & i18n
+
+**RTL** — the handle is positioned with `inset-inline-start`, so both the track
+and the handle's travel mirror automatically under `dir="rtl"`. Nothing on the
+switch needs re-authoring; only the label markup around it has to use logical
+spacing. See [RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <label style="display:flex;align-items:center;gap:12px;">
+    <md-switch selected icons></md-switch>
+    واي فاي
+  </label>
+</div>
+```
+
+**The same switches in both directions.** Nothing is re-authored between the two
+rows — only `dir` changes, and the handle travels the other way on its own:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;color:var(--md-sys-color-on-surface);">
+    <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><md-switch selected icons></md-switch>Wi-Fi</label>
+    <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><md-switch icons></md-switch>Bluetooth</label>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;color:var(--md-sys-color-on-surface);">
+    <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><md-switch selected icons></md-switch>واي فاي</label>
+    <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><md-switch icons></md-switch>بلوتوث</label>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+  storyId="selection-switch--rtl"
+/>
+
+### Space the label logically, not physically
+
+The switch mirrors itself; the row around it does not. Because there is no
+default slot, that row is yours to write — and a physical `margin-left` pins the
+gap to the left edge in both directions, jamming the label against the track
+under RTL. Use `gap` (or `margin-inline-start`) instead. Both rows below are
+`dir="rtl"`:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <div dir="rtl" style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;color:var(--md-sys-color-on-surface);">
+    <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><md-switch selected icons></md-switch>واي فاي</label>
+    <label style="display:flex;align-items:center;cursor:pointer;"><md-switch icons></md-switch><span style="margin-inline-start:12px;">بلوتوث</span></label>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <div dir="rtl" style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;color:var(--md-sys-color-on-surface);">
+    <label style="display:flex;align-items:center;cursor:pointer;"><md-switch selected icons></md-switch><span style="margin-left:12px;">واي فاي</span></label>
+    <label style="display:flex;align-items:center;cursor:pointer;"><md-switch icons></md-switch><span style="margin-left:12px;">بلوتوث</span></label>
+  </div>
+</div>`}
+  label="Logical vs physical label spacing under dir=rtl"
+/>
+
+### Every density rung
+
+`density="-1…-4"` is a local override of the inherited `data-density`, and it
+shrinks the track and handle together — the track loses 4px of height and 6px of
+width per rung, and the handle is derived from the track height. The **glyph does
+not taper**: it stays a fixed 16px Material Symbol at every rung, so at `-4` it
+fills the handle entirely. The host also keeps a `min-block-size` of 48px so the
+touch target survives the deeper rungs. Rung `0` is the default — you get it by
+setting no `density` at all — so the top row below carries no attribute. All five
+rungs, the same switch, so the taper is visible in one place:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;color:var(--md-sys-color-on-surface);"><md-switch aria-label="Off at the default rung"></md-switch><md-switch selected aria-label="On at the default rung"></md-switch><md-switch selected icons aria-label="On with icons at the default rung"></md-switch></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;color:var(--md-sys-color-on-surface);"><md-switch density="-1" aria-label="Off at density -1"></md-switch><md-switch selected density="-1" aria-label="On at density -1"></md-switch><md-switch selected icons density="-1" aria-label="On with icons at density -1"></md-switch></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;color:var(--md-sys-color-on-surface);"><md-switch density="-2" aria-label="Off at density -2"></md-switch><md-switch selected density="-2" aria-label="On at density -2"></md-switch><md-switch selected icons density="-2" aria-label="On with icons at density -2"></md-switch></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;color:var(--md-sys-color-on-surface);"><md-switch density="-3" aria-label="Off at density -3"></md-switch><md-switch selected density="-3" aria-label="On at density -3"></md-switch><md-switch selected icons density="-3" aria-label="On with icons at density -3"></md-switch></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;color:var(--md-sys-color-on-surface);"><md-switch density="-4" aria-label="Off at density -4"></md-switch><md-switch selected density="-4" aria-label="On at density -4"></md-switch><md-switch selected icons density="-4" aria-label="On with icons at density -4"></md-switch></div>
+</div>`}
+  label="Density 0 through -4 — track and handle taper, the 16px glyph does not"
+  storyId="selection-switch--density"
+/>
+
+:::caution[Below `-2`, check your touch targets]
+The host keeps `min-block-size: max(48px, track-height)`, so the **vertical**
+target survives every rung. The **horizontal** one does not: the track narrows
+from 52px at `0` to its 28px floor at `-4`, which is well under what
+pointer-coarse devices want. Give deep-density rows a wrapping `<label>` so the
+text extends the hit area, and see
+[Density](/behaviour/density/#accessibility) for the media query that raises
+the target back on touch.
+:::
+
+### Density and direction together
+
+The two are independent signals, so they compose without any extra wiring —
+here a `dir="rtl"` container at `data-density="-2"`, with one switch tightening
+further to `-4` and one resetting all the way back to the default rung with an
+inline `--md-sys-density-scale: 0`.
+
+:::caution[`density="0"` is not an opt-out]
+There is deliberately no `[density="0"]` rule — not in `md-switch`, which defines
+only `-1` through `-4`, and not in the token layer, because reflected props write
+`density="0"` onto virtually every element and such a rule would pin every
+component to rung 0 and break global inheritance outright. Absence of a rung
+means "inherit whatever the ancestor says", so a `density="0"` switch inside
+`data-density="-2"` still renders at `-2`. To escape an inherited rung, set the
+signal directly with `style="--md-sys-density-scale: 0"`.
+:::
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:flex;gap:24px;flex-wrap:wrap;align-items:center;color:var(--md-sys-color-on-surface);">
+  <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><md-switch selected icons></md-switch>واي فاي</label>
+  <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><md-switch icons></md-switch>بلوتوث</label>
+  <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><md-switch selected icons density="-4"></md-switch>مضغوط</label>
+  <label style="display:flex;align-items:center;gap:12px;cursor:pointer;"><md-switch selected icons style="--md-sys-density-scale: 0;"></md-switch>افتراضي</label>
+</div>`}
+  label="dir=rtl at data-density=-2: two switches inherit, one tightens to -4, one resets via --md-sys-density-scale: 0"
+/>
+
+**Density** — each rung trims 4px of track height (floored at 16px) and 6px of
+width (floored at 28px). See [Density](/behaviour/density/).
+
+**i18n** — the switch ships no text of its own, so a localized switch is simply
+a localized label. Translate that label and `value-missing-label`; the on/off
+state is announced from `aria-checked`, which assistive tech localizes for free.
+Keep labels short: M3 requires the text to sit outside the control.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-switch-track-width` / `--md-switch-track-height` | Track box | `52px` / `32px` |
+| `--md-switch-handle-size` | Handle diameter | 75% of the track height |
+| `--md-switch-track-color` | Unselected track fill | `surface-container-highest` |
+| `--md-switch-track-outline-color` | Unselected track border | `outline` |
+| `--md-switch-selected-track-color` | Selected track fill | `primary` |
+| `--md-switch-handle-color` | Unselected handle | `outline` |
+| `--md-switch-selected-handle-color` | Selected handle | `on-primary` |
+| `--md-switch-icon-color` / `--md-switch-selected-icon-color` | Handle glyph | `surface-container-highest` / `on-primary-container` |
+| `--md-switch-state-layer-color` | Hover / press overlay | `on-surface` |
+| `--md-switch-focus-ring-color` | Focus ring | `secondary` |
+
+<ComponentDemo
+  html={`<md-switch selected icons aria-label="Error toned" style="--md-switch-selected-track-color: var(--md-sys-color-error); --md-switch-selected-handle-color: var(--md-sys-color-on-error);"></md-switch>
+<md-switch selected aria-label="Large track" style="--md-switch-track-width: 72px; --md-switch-track-height: 40px;"></md-switch>
+<md-switch aria-label="Tertiary outline" style="--md-switch-track-outline-color: var(--md-sys-color-tertiary); --md-switch-handle-color: var(--md-sys-color-tertiary);"></md-switch>`}
+  label="Themed instances"
+  storyId="selection-switch--custom-css"
+/>
+
+Every default resolves through an `md-sys-color` role, so a switch that sets no
+custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;">
+  <md-switch aria-label="Off"></md-switch>
+  <md-switch selected aria-label="On"></md-switch>
+  <md-switch selected icons aria-label="On with icons"></md-switch>
+  <md-switch disabled aria-label="Disabled"></md-switch>
+</div>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="selection-switch--dark-theme"
+/>
+
+## CSS parts
+
+| Part | Element |
+|---|---|
+| `track` | The track |
+| `handle` | The moving handle |
+| `icon` | The glyph inside the handle |
+| `state-layer` | Hover / focus / press overlay |
+
+<ComponentDemo
+  html={`<style>
+  .parts-switch::part(track) { border-radius: 8px; }
+  .parts-switch::part(handle) { border-radius: 6px; }
+  .parts-switch::part(state-layer) { background: var(--md-sys-color-tertiary); }
+</style>
+<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;">
+  <md-switch class="parts-switch" aria-label="Squared off"></md-switch>
+  <md-switch class="parts-switch" selected icons aria-label="Squared on"></md-switch>
+</div>`}
+  label="track, handle and state-layer"
+  storyId="selection-switch--css-parts"
+/>
+
+```css
+md-switch::part(track) {
+  border-radius: 8px;
+}
+```
+
+
+## Related
+
+[`md-checkbox`](/components/checkbox/) ·
+[`md-radio`](/components/radio/) ·
+[`md-button-group`](/components/button-group/) ·
+[`md-chip`](/components/chip/) ·
+[`md-slider`](/components/slider/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-switch" />

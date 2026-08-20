@@ -1,0 +1,1033 @@
+---
+title: Breadcrumbs
+description: "Where the user is in a hierarchy and the way back up — a trail of crumbs with separators and a collapsing middle"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/breadcrumbs.json";
+import crumbApi from "../../../data/components/breadcrumb-item.json";
+
+**Where the user is in a hierarchy, and the way back up.** Renders a trail of
+[`md-breadcrumb-item`](/components/breadcrumbs/#md-breadcrumb-item) children as a labelled
+navigation region with separators, and collapses the middle of a long trail
+behind an overflow control.
+
+<ComponentDemo
+  html={`<md-breadcrumbs label="Breadcrumb">
+  <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+  <md-breadcrumb-item href="/library">Library</md-breadcrumb-item>
+  <md-breadcrumb-item href="/library/data">Data</md-breadcrumb-item>
+  <md-breadcrumb-item current>Tables</md-breadcrumb-item>
+</md-breadcrumbs>`}
+  label="Live preview"
+  storyId="navigation-breadcrumbs--playground"
+/>
+
+:::note[Not a Material Design 3 component]
+M3 has no breadcrumbs page. The guidance below is **house rules** plus general
+navigation practice — there is no M3 URL to cite.
+:::
+
+## Install
+
+<ComponentSetup tag="md-breadcrumbs" example="" />
+
+## When to use
+
+- A **hierarchical** structure the user navigates into and back out of: file
+  trees, category pages, nested settings.
+- The path itself carries meaning and users need to jump to an ancestor.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| A flat site with 2–3 destinations | [`md-navigation-bar`](/components/navigation-bar/) / [`md-tabs`](/components/tabs/) |
+| A linear process | [`md-stepper`](/components/stepper/) |
+| Sibling views within a screen | [`md-tabs`](/components/tabs/) |
+| Top-level navigation | [`md-navigation-rail`](/components/navigation-rail/) / [`md-navigation-bar`](/components/navigation-bar/) |
+| Undo/back only | A back [`md-icon-button`](/components/icon-button/) in [`md-app-bar`](/components/app-bar/) |
+| A single level deep | Nothing — the page header says it |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Mark the page you are on | `current` on the last crumb |
+| A different separator glyph | `separator="›"` |
+| Fold a long trail | `max-items` > 0 |
+| Keep more crumbs at the ends | `items-before-collapse` / `items-after-collapse` |
+| A leading glyph on a crumb | `icon` prop, or the `icon` slot |
+| Announce a level without linking it | `disabled` |
+| Tighter rows | `density="-1…-4"` |
+
+## Building the trail
+
+You render the crumbs. The component does **not** read your router, your URL,
+or your route table — it lays out the children you give it, in DOM order, and
+that order is the hierarchy the user sees and hears.
+
+<ComponentDemo
+  html={`<md-breadcrumbs label="Breadcrumb">
+  <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+  <md-breadcrumb-item href="/library">Library</md-breadcrumb-item>
+  <md-breadcrumb-item current>Tables</md-breadcrumb-item>
+</md-breadcrumbs>`}
+  label="Three crumbs in DOM order — the last one is the page you are on"
+/>
+
+Two rules that are easy to get wrong:
+
+- **The last crumb should be `current`.** It is the page you are on, so it
+  renders as static text, not a link. The component auto-promotes the last
+  child to `current` unless you have explicitly marked a different one, but
+  marking it yourself is clearer — and never give a `current` crumb an `href`.
+- **Breadcrumbs are hierarchy, not history.** Order them by structure, never by
+  what the user visited most recently. A trail built from browsing history is a
+  different feature wearing the wrong clothes.
+
+Breadcrumbs also **supplement** navigation. They tell the user where they are
+and let them jump up a level; they are not a substitute for a nav bar or rail.
+If the only way out of a page is the trail, the navigation is broken.
+
+## Icons
+
+A crumb takes a leading glyph from the `icon` prop, or from its `icon` **slot**
+when you need custom artwork. The slot wins over the prop. An icon is decoration
+on top of the label — never the crumb's only content, or the level loses its
+accessible name.
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:20px;inline-size:100%;">
+  <md-breadcrumbs label="Icon prop">
+    <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+    <md-breadcrumb-item href="/library" icon="folder">Library</md-breadcrumb-item>
+    <md-breadcrumb-item href="/library/data" icon="database">Data</md-breadcrumb-item>
+    <md-breadcrumb-item current icon="table">Tables</md-breadcrumb-item>
+  </md-breadcrumbs>
+
+  <md-breadcrumbs label="Slotted icon">
+    <md-breadcrumb-item href="/">
+      <svg slot="icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 3l9 8h-3v10h-5v-6h-2v6H6V11H3z"/></svg>
+      Home
+    </md-breadcrumb-item>
+    <md-breadcrumb-item href="/library">Library</md-breadcrumb-item>
+    <md-breadcrumb-item current>Tables</md-breadcrumb-item>
+  </md-breadcrumbs>
+</div>`}
+  label="Icon prop, and a slotted SVG"
+  storyId="navigation-breadcrumbs--with-icons"
+/>
+
+The current crumb's icon swaps to the filled (`FILL=1`) face, so "you are here"
+reads at a glance rather than only from the missing link styling.
+
+## Disabled crumbs
+
+`disabled` renders the level **without an anchor and out of the tab order**. The
+crumb is still announced, so the hierarchy stays intact — it simply cannot be
+navigated to. Use it for a level that exists structurally but has no page of its
+own, not to signal "loading".
+
+<ComponentDemo
+  html={`<md-breadcrumbs label="Breadcrumb">
+  <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+  <md-breadcrumb-item disabled>Archive</md-breadcrumb-item>
+  <md-breadcrumb-item href="/archive/2026">2026</md-breadcrumb-item>
+  <md-breadcrumb-item current>Q3</md-breadcrumb-item>
+</md-breadcrumbs>`}
+  label="A disabled level — announced, not navigable, skipped by Tab"
+  storyId="navigation-breadcrumbs--disabled"
+/>
+
+:::note[Disabled still meets contrast]
+The disabled tint is 61% of `on-surface`, not M3's usual 38% — the lighter tint
+fails WCAG 1.4.3 for text, and axe flags it. A crumb you can read but not click
+is the point; a crumb you cannot read is a bug.
+:::
+
+## Collapsing a long trail
+
+When the trail exceeds `max-items`, the middle crumbs hide behind a "…"
+overflow button.
+
+| Prop | Default | Meaning |
+|---|---|---|
+| `max-items` | `0` | Collapse only when the crumb count **exceeds** this. `0` disables collapsing |
+| `items-before-collapse` | `1` | Crumbs always kept at the start |
+| `items-after-collapse` | `2` | Crumbs always kept at the end |
+
+<ComponentDemo
+  html={`<md-breadcrumbs max-items="4" items-before-collapse="1" items-after-collapse="2">
+  <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a">Projects</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a/b">Q3 Migration</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a/b/c">Services</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a/b/c/d">Billing</md-breadcrumb-item>
+  <md-breadcrumb-item current>Invoices</md-breadcrumb-item>
+</md-breadcrumbs>`}
+  label="Collapsed trail — click the … to expand"
+  storyId="navigation-breadcrumbs--collapsed"
+/>
+
+:::danger[`max-items="0"` means no collapsing, not "show none"]
+`0` is the **default** and it disables collapsing entirely — the full trail is
+always visible. If you set `max-items="0"` expecting an empty or minimal trail,
+you get the opposite. Collapsing only ever happens when
+`max-items > 0` **and** the crumb count exceeds it.
+:::
+
+:::caution[`before + after` is measured against the crumb count, not `max-items`]
+Two different numbers decide two different things. The trail **collapses** when
+the crumb count exceeds `max-items`; the crumbs it actually **hides** are the
+ones outside the first `items-before-collapse` and the last
+`items-after-collapse`. So `before + after` only has to stay below the *crumb
+count* — with `max-items="3" items-before-collapse="1" items-after-collapse="2"`
+a four-crumb trail still folds its second crumb and still shows the "…".
+
+The edge case worth knowing: when `before + after` covers every crumb, nothing
+is hidden — but the toggle is still rendered, because it keys off the count
+against `max-items` alone. `items-before-collapse="2" items-after-collapse="2"`
+on a four-crumb trail with `max-items="3"` gives you a "…" that reveals
+nothing. Keep `before + after` below the shortest trail you expect to render.
+:::
+
+`expand()` and `collapse()` drive the same state programmatically. Both emit
+`mdExpand` whenever the boolean actually changes — including when collapsing is
+disabled, where only the *visual* result is a no-op. With `max-items="0"`,
+`expand()` still fires `mdExpand{ expanded: true }` even though the trail was
+already fully visible, so guard on `max-items` in your own listener rather than
+assuming the event implies a layout change.
+
+### The same trail at three collapse budgets
+
+Collapsing is what makes a trail survive a narrow column. The same five crumbs,
+with progressively tighter `max-items`:
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:20px;inline-size:100%;">
+  <md-breadcrumbs label="No collapsing">
+    <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+    <md-breadcrumb-item href="/a">Projects</md-breadcrumb-item>
+    <md-breadcrumb-item href="/a/b">Q3 Migration</md-breadcrumb-item>
+    <md-breadcrumb-item href="/a/b/c">Services</md-breadcrumb-item>
+    <md-breadcrumb-item current>Billing</md-breadcrumb-item>
+  </md-breadcrumbs>
+
+  <md-breadcrumbs label="max-items 4" max-items="4">
+    <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+    <md-breadcrumb-item href="/a">Projects</md-breadcrumb-item>
+    <md-breadcrumb-item href="/a/b">Q3 Migration</md-breadcrumb-item>
+    <md-breadcrumb-item href="/a/b/c">Services</md-breadcrumb-item>
+    <md-breadcrumb-item current>Billing</md-breadcrumb-item>
+  </md-breadcrumbs>
+
+  <md-breadcrumbs label="max-items 3" max-items="3" items-before-collapse="1" items-after-collapse="1">
+    <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+    <md-breadcrumb-item href="/a">Projects</md-breadcrumb-item>
+    <md-breadcrumb-item href="/a/b">Q3 Migration</md-breadcrumb-item>
+    <md-breadcrumb-item href="/a/b/c">Services</md-breadcrumb-item>
+    <md-breadcrumb-item current>Billing</md-breadcrumb-item>
+  </md-breadcrumbs>
+</div>`}
+  label="Uncollapsed, then max-items 4 and 3"
+  storyId="navigation-breadcrumbs--responsiveness"
+/>
+
+## Separators
+
+`separator` takes a short string — `/` (default), `›`, `→`, `»`. The parent
+owns it: every crumb reads the glyph from the parent and renders its own
+leading separator, so the trail stays visually uniform.
+
+<ComponentDemo
+  html={`<md-breadcrumbs separator="›">
+  <md-breadcrumb-item href="/">Home</md-breadcrumb-item>
+  <md-breadcrumb-item href="/library">Library</md-breadcrumb-item>
+  <md-breadcrumb-item current>Tables</md-breadcrumb-item>
+</md-breadcrumbs>`}
+  label="Chevron separator"
+  storyId="navigation-breadcrumbs--separators"
+/>
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:20px;inline-size:100%;">
+  <md-breadcrumbs separator="/"><md-breadcrumb-item href="/">Home</md-breadcrumb-item><md-breadcrumb-item href="/library">Library</md-breadcrumb-item><md-breadcrumb-item current>Tables</md-breadcrumb-item></md-breadcrumbs>
+  <md-breadcrumbs separator="›"><md-breadcrumb-item href="/">Home</md-breadcrumb-item><md-breadcrumb-item href="/library">Library</md-breadcrumb-item><md-breadcrumb-item current>Tables</md-breadcrumb-item></md-breadcrumbs>
+  <md-breadcrumbs separator="→"><md-breadcrumb-item href="/">Home</md-breadcrumb-item><md-breadcrumb-item href="/library">Library</md-breadcrumb-item><md-breadcrumb-item current>Tables</md-breadcrumb-item></md-breadcrumbs>
+  <md-breadcrumbs separator="»"><md-breadcrumb-item href="/">Home</md-breadcrumb-item><md-breadcrumb-item href="/library">Library</md-breadcrumb-item><md-breadcrumb-item current>Tables</md-breadcrumb-item></md-breadcrumbs>
+  <md-breadcrumbs separator="•"><md-breadcrumb-item href="/">Home</md-breadcrumb-item><md-breadcrumb-item href="/library">Library</md-breadcrumb-item><md-breadcrumb-item current>Tables</md-breadcrumb-item></md-breadcrumbs>
+</div>`}
+  label="/ › → » •"
+/>
+
+:::caution[There is deliberately no `separator` slot]
+A single named slot renders in exactly one place, and a trail needs the same
+glyph between *every* pair of crumbs — so the component never exposes one. The
+`separator` prop is the supported path for a glyph; for artwork, style
+`md-breadcrumb-item::part(separator)` from the light DOM — plus
+`md-breadcrumbs::part(separator)`, which is the copy drawn in front of the "…"
+toggle on a collapsed trail.
+:::
+
+### A custom separator with `::part`
+
+<ComponentDemo
+  html={`<style>
+  /* md-breadcrumbs exposes a separator part too (the one before the …
+     toggle), so a full restyle needs both selectors. */
+  .svg-sep::part(separator),
+  .svg-sep md-breadcrumb-item::part(separator) {
+    color: transparent;
+    inline-size: 16px;
+    background: center / 12px no-repeat
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23888'><path d='M9 6l6 6-6 6z'/></svg>");
+  }
+</style>
+<md-breadcrumbs class="svg-sep" label="Breadcrumb">
+  <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+  <md-breadcrumb-item href="/library">Library</md-breadcrumb-item>
+  <md-breadcrumb-item href="/library/data">Data</md-breadcrumb-item>
+  <md-breadcrumb-item current>Tables</md-breadcrumb-item>
+</md-breadcrumbs>`}
+  label="Separator replaced with an inline SVG via ::part"
+  storyId="navigation-breadcrumbs--custom-separator"
+/>
+
+Separators are decorative and are marked `aria-hidden` — they are never
+announced, so replacing the glyph never changes what a screen reader says.
+
+## Events
+
+| Event | On | Cancelable | Detail | Fires |
+|---|---|---|---|---|
+| `mdSelect` | `md-breadcrumb-item` | **yes** | `MdBreadcrumbSelectDetail` | A linked crumb is activated — click, or `Enter` on the focused anchor |
+| `mdExpand` | `md-breadcrumbs` | no | `MdBreadcrumbsExpandDetail` | The overflow toggle is activated, or `expand()` / `collapse()` changes the state |
+
+`mdSelect` is emitted by the **child**, but it bubbles and is composed — attach
+one delegated listener on the `md-breadcrumbs` element. Only the anchor emits
+it, so `current` and `disabled` crumbs stay silent. Being cancelable is the
+hook for SPA routing: keep real `href`s so right-click, middle-click and "copy
+link" still work, then intercept.
+
+| You want to… | Listen to |
+|---|---|
+| Route in an SPA instead of a full page load | `mdSelect` + `preventDefault()` |
+| Log which ancestor the user jumped to | `mdSelect` — `detail.href` |
+| Know the trail folded or unfolded | `mdExpand` — `detail.expanded` |
+| Re-measure layout after the trail changes width | `mdExpand` — `detail.itemCount` |
+
+```ts
+interface MdBreadcrumbsExpandDetail {
+  expanded: boolean;    // the state the trail has JUST taken
+  itemCount: number;
+}
+
+interface MdBreadcrumbSelectDetail {
+  href: string;
+  label: string;
+  current: boolean;
+  itemIndex: number;    // 0-indexed position in the trail
+  itemTotal: number;
+  originalEvent: MouseEvent | KeyboardEvent;
+}
+```
+
+:::caution[Let modified clicks through]
+`preventDefault()` on a ⌘/Ctrl-click or a middle-click steals "open in new tab"
+— the one thing a real anchor buys you. Check `detail.originalEvent` for the
+modifier keys before you intercept, as every snippet below does.
+:::
+
+Activate the "…" toggle to see `mdExpand`, then click a crumb to see `mdSelect`.
+Navigation is vetoed in this demo so the page stays put — ⌘/Ctrl-click still
+opens a new tab, because the listener bails out before `preventDefault()`.
+
+<ComponentDemo
+  html={`<md-breadcrumbs id="bc-ev" label="Breadcrumb" max-items="4">
+  <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a">Projects</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a/b">Q3 Migration</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a/b/c">Services</md-breadcrumb-item>
+  <md-breadcrumb-item current>Invoices</md-breadcrumb-item>
+</md-breadcrumbs>
+<output id="bc-ev-log" style="display:block; margin-block-start:16px; min-block-size:3.2em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Activate the … toggle, then click a crumb.</output>`}
+  script={`
+    var log = root.querySelector('#bc-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 3);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    // One delegated listener on the trail catches every crumb — mdSelect is
+    // emitted by the child, but it bubbles and is composed.
+    root.addEventListener('mdSelect', function (e) {
+      var d = e.detail;
+      var oe = d.originalEvent;
+      if (oe && (oe.metaKey || oe.ctrlKey || oe.shiftKey)) return;
+      e.preventDefault();
+      push('mdSelect  ->  label=' + d.label + '  href=' + d.href + '  ' + (d.itemIndex + 1) + ' of ' + d.itemTotal);
+    });
+
+    root.addEventListener('mdExpand', function (e) {
+      push('mdExpand  ->  expanded=' + e.detail.expanded + '  itemCount=' + e.detail.itemCount);
+    });
+  `}
+  label="One delegated listener catches every crumb, plus the overflow toggle"
+  htmlCode={`<!-- 5 crumbs against max-items="4" — the trail folds, so the … toggle
+     (and therefore mdExpand) is actually reachable. -->
+<md-breadcrumbs id="trail" label="Breadcrumb" max-items="4">
+  <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a">Projects</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a/b">Q3 Migration</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a/b/c">Services</md-breadcrumb-item>
+  <md-breadcrumb-item current>Invoices</md-breadcrumb-item>
+</md-breadcrumbs>
+
+<script type="module">
+  const trail = document.getElementById('trail');
+
+  // mdSelect is emitted by the crumb but bubbles, so one listener on the
+  // trail covers all of them.
+  trail.addEventListener('mdSelect', (e) => {
+    const { href, label, itemIndex, itemTotal } = e.detail;
+    console.log(label, href, itemIndex + 1, 'of', itemTotal);
+  });
+
+  trail.addEventListener('mdExpand', (e) => {
+    console.log(e.detail.expanded, e.detail.itemCount);
+  });
+</script>`}
+  react={`import { MdBreadcrumbs, MdBreadcrumbItem } from '@awc-ui/react';
+
+export function Trail() {
+  // mdSelect is declared on the ITEM wrapper, mdExpand on the trail wrapper.
+  const onSelect = (e: CustomEvent) => {
+    const { href, label, itemIndex, itemTotal } = e.detail;
+    console.log(label, href, itemIndex + 1, 'of', itemTotal);
+  };
+
+  return (
+    // 5 crumbs against maxItems={4} — the trail folds, so onMdExpand fires.
+    <MdBreadcrumbs
+      label="Breadcrumb"
+      maxItems={4}
+      onMdExpand={(e) => console.log(e.detail.expanded, e.detail.itemCount)}
+    >
+      <MdBreadcrumbItem href="/" icon="home" onMdSelect={onSelect}>Home</MdBreadcrumbItem>
+      <MdBreadcrumbItem href="/a" onMdSelect={onSelect}>Projects</MdBreadcrumbItem>
+      <MdBreadcrumbItem href="/a/b" onMdSelect={onSelect}>Q3 Migration</MdBreadcrumbItem>
+      <MdBreadcrumbItem href="/a/b/c" onMdSelect={onSelect}>Services</MdBreadcrumbItem>
+      <MdBreadcrumbItem current>Invoices</MdBreadcrumbItem>
+    </MdBreadcrumbs>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-trail',
+  // 5 crumbs against max-items="4" — the trail folds, so mdExpand fires.
+  template: \`
+    <md-breadcrumbs
+      label="Breadcrumb"
+      max-items="4"
+      (mdSelect)="onSelect($any($event))"
+      (mdExpand)="onExpand($any($event))"
+    >
+      <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+      <md-breadcrumb-item href="/a">Projects</md-breadcrumb-item>
+      <md-breadcrumb-item href="/a/b">Q3 Migration</md-breadcrumb-item>
+      <md-breadcrumb-item href="/a/b/c">Services</md-breadcrumb-item>
+      <md-breadcrumb-item current>Invoices</md-breadcrumb-item>
+    </md-breadcrumbs>
+  \`,
+})
+export class TrailComponent {
+  onSelect(e: CustomEvent) {
+    const { href, label, itemIndex, itemTotal } = e.detail;
+    console.log(label, href, itemIndex + 1, 'of', itemTotal);
+  }
+  onExpand(e: CustomEvent) {
+    console.log(e.detail.expanded, e.detail.itemCount);
+  }
+}`}
+  vue={`<script setup lang="ts">
+function onSelect(e: CustomEvent) {
+  const { href, label, itemIndex, itemTotal } = e.detail;
+  console.log(label, href, itemIndex + 1, 'of', itemTotal);
+}
+function onExpand(e: CustomEvent) {
+  console.log(e.detail.expanded, e.detail.itemCount);
+}
+</script>
+
+<template>
+  <!-- 5 crumbs against max-items="4" — the trail folds, so mdExpand fires. -->
+  <md-breadcrumbs
+    label="Breadcrumb"
+    max-items="4"
+    @mdSelect="onSelect"
+    @mdExpand="onExpand"
+  >
+    <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+    <md-breadcrumb-item href="/a">Projects</md-breadcrumb-item>
+    <md-breadcrumb-item href="/a/b">Q3 Migration</md-breadcrumb-item>
+    <md-breadcrumb-item href="/a/b/c">Services</md-breadcrumb-item>
+    <md-breadcrumb-item current>Invoices</md-breadcrumb-item>
+  </md-breadcrumbs>
+</template>`}
+  svelte={`<script lang="ts">
+  function onSelect(e: CustomEvent) {
+    const { href, label, itemIndex, itemTotal } = e.detail;
+    console.log(label, href, itemIndex + 1, 'of', itemTotal);
+  }
+  function onExpand(e: CustomEvent) {
+    console.log(e.detail.expanded, e.detail.itemCount);
+  }
+</script>
+
+<!-- 5 crumbs against max-items="4" — the trail folds, so mdExpand fires. -->
+<md-breadcrumbs
+  label="Breadcrumb"
+  max-items="4"
+  on:mdSelect={onSelect}
+  on:mdExpand={onExpand}
+>
+  <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a">Projects</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a/b">Q3 Migration</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a/b/c">Services</md-breadcrumb-item>
+  <md-breadcrumb-item current>Invoices</md-breadcrumb-item>
+</md-breadcrumbs>`}
+/>
+
+### SPA routing
+
+Reading the event is one thing; taking over navigation is another. Keep the real
+`href` so the browser affordances survive, then cancel `mdSelect` and hand the
+URL to your router:
+
+<TechnologyTabs
+  html={`<md-breadcrumbs id="trail" label="Breadcrumb">
+  <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+  <md-breadcrumb-item href="/library">Library</md-breadcrumb-item>
+  <md-breadcrumb-item current>Tables</md-breadcrumb-item>
+</md-breadcrumbs>
+
+<script type="module">
+  const trail = document.getElementById('trail');
+
+  trail.addEventListener('mdSelect', (e) => {
+    const { href, originalEvent } = e.detail;
+    if (originalEvent.metaKey || originalEvent.ctrlKey) return;  // let new-tab work
+    e.preventDefault();
+    router.push(href);
+  });
+</script>`}
+  react={`import { MdBreadcrumbs, MdBreadcrumbItem } from '@awc-ui/react';
+import { useNavigate } from 'react-router-dom';
+
+export function Trail() {
+  const navigate = useNavigate();
+
+  // The React wrapper declares onMdSelect on MdBreadcrumbItem (the emitter),
+  // and onMdExpand on MdBreadcrumbs — bind each on its own element.
+  const onSelect = (e: CustomEvent) => {
+    const { href, originalEvent } = e.detail;
+    if (originalEvent.metaKey || originalEvent.ctrlKey) return;
+    e.preventDefault();
+    navigate(href);
+  };
+
+  return (
+    <MdBreadcrumbs label="Breadcrumb">
+      <MdBreadcrumbItem href="/" icon="home" onMdSelect={onSelect}>Home</MdBreadcrumbItem>
+      <MdBreadcrumbItem href="/library" onMdSelect={onSelect}>Library</MdBreadcrumbItem>
+      <MdBreadcrumbItem current>Tables</MdBreadcrumbItem>
+    </MdBreadcrumbs>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+
+@Component({
+  selector: 'app-trail',
+  template: \`
+    <md-breadcrumbs label="Breadcrumb" (mdSelect)="onSelect($event)">
+      <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+      <md-breadcrumb-item href="/library">Library</md-breadcrumb-item>
+      <md-breadcrumb-item current>Tables</md-breadcrumb-item>
+    </md-breadcrumbs>
+  \`,
+})
+export class TrailComponent {
+  constructor(private router: Router) {}
+
+  onSelect(e: CustomEvent) {
+    const { href, originalEvent } = e.detail;
+    if (originalEvent.metaKey || originalEvent.ctrlKey) return;
+    e.preventDefault();
+    this.router.navigateByUrl(href);
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
+function onSelect(e: CustomEvent) {
+  const { href, originalEvent } = e.detail;
+  if (originalEvent.metaKey || originalEvent.ctrlKey) return;
+  e.preventDefault();
+  router.push(href);
+}
+</script>
+
+<template>
+  <md-breadcrumbs label="Breadcrumb" @mdSelect="onSelect">
+    <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+    <md-breadcrumb-item href="/library">Library</md-breadcrumb-item>
+    <md-breadcrumb-item current>Tables</md-breadcrumb-item>
+  </md-breadcrumbs>
+</template>`}
+  svelte={`<script lang="ts">
+  import { goto } from '$app/navigation';
+
+  function onSelect(e: CustomEvent) {
+    const { href, originalEvent } = e.detail;
+    if (originalEvent.metaKey || originalEvent.ctrlKey) return;
+    e.preventDefault();
+    goto(href);
+  }
+</script>
+
+<md-breadcrumbs label="Breadcrumb" on:mdSelect={onSelect}>
+  <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+  <md-breadcrumb-item href="/library">Library</md-breadcrumb-item>
+  <md-breadcrumb-item current>Tables</md-breadcrumb-item>
+</md-breadcrumbs>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[Parent-managed child props]
+`collapsed`, `item-index` and `item-total` on
+[`md-breadcrumb-item`](/components/breadcrumbs/#md-breadcrumb-item) are written by this
+component on every render. Setting them yourself breaks the collapse logic.
+:::
+
+## The sub-components
+
+A trail is built from one sub-component. It is documented here rather than
+on its own page: it means nothing outside `md-breadcrumbs`, and the parent
+writes several of its attributes for you.
+
+### `md-breadcrumb-item`
+
+**One crumb in the trail** — a link to an ancestor, or the non-interactive
+current page.
+
+- **`collapsed`, `item-index` and `item-total` are parent-managed.**
+  `md-breadcrumbs` writes them on every render to drive the collapse window and
+  each crumb's leading separator. Setting them yourself breaks the collapse
+  logic.
+- **`current` and `href` don't go together.** `current` renders the crumb as
+  static text (the `static` part) instead of an anchor — the correct treatment
+  for the page you are on, which should not link to itself. The parent
+  auto-promotes the last child to `current` unless you explicitly marked
+  another one.
+- **The separator is drawn per-crumb but owned by the parent.** Each item reads
+  the glyph from the parent's `separator` prop and renders it before itself when
+  `item-index > 0`. The item's `separator` part exists for styling reach, not
+  for you to supply a separator.
+- With an `href` the crumb is a real anchor, so middle-click, right-click and
+  "copy link address" work. `mdSelect` fires on activation — including `Enter`
+  on the focused anchor, which the browser synthesises as a click.
+- `disabled` renders the crumb without an anchor and out of the tab order: the
+  level stays announced but is not navigable.
+
+<ApiTable {...crumbApi} />
+
+## Accessibility
+
+- The host is the navigation region: `role="navigation"` named by `label`
+  (default `"Breadcrumb"`). Translate it.
+- The overflow toggle's accessible name is `expand-label` (default
+  `"Show full breadcrumb trail"`), and it carries `aria-expanded`. Translate it
+  too — the English defaults are placeholders, not a design decision.
+- The current page should be marked `current`, which exposes "you are here"
+  instead of yet another link.
+- Separators are decorative and `aria-hidden`; they are never part of the
+  accessible name.
+- Keep DOM order identical to visual order — the trail is read in DOM order.
+
+### Keyboard
+
+| Key | Action |
+|---|---|
+| `Tab` | Each **visible** linked crumb, then the overflow toggle. `current`, `disabled` and collapsed crumbs are skipped |
+| `Enter` | Activates the focused crumb — the browser synthesises a click, so `mdSelect` fires |
+| `Enter` / `Space` | On the overflow toggle, expands the trail and fires `mdExpand` |
+
+Tab through the trail below. It is collapsed (`max-items="4"` against six
+crumbs, with `items-after-collapse="3"` keeping the tail visible), so `Docs` and
+`Components` are `display:none` until you expand — a **collapsed crumb is not in
+the tab order at all**, because it is not rendered. Of what remains, focus lands
+on `Home`, then `Breadcrumbs`, then the "…" toggle (the toggle is last in the
+DOM even though CSS `order` paints it in the middle), and never on `Navigation`
+(disabled) or `Accessibility` (current). Those two are still announced; they
+simply are not link targets. Activate the "…" first if you want to Tab the whole
+path.
+
+<ComponentDemo
+  html={`<md-breadcrumbs label="Documentation breadcrumb" expand-label="Show full breadcrumb trail" max-items="4" items-after-collapse="3">
+  <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+  <md-breadcrumb-item href="/docs">Docs</md-breadcrumb-item>
+  <md-breadcrumb-item href="/docs/components">Components</md-breadcrumb-item>
+  <md-breadcrumb-item disabled>Navigation</md-breadcrumb-item>
+  <md-breadcrumb-item href="/docs/components/breadcrumbs">Breadcrumbs</md-breadcrumb-item>
+  <md-breadcrumb-item current>Accessibility</md-breadcrumb-item>
+</md-breadcrumbs>`}
+  label="Tab through it — collapsed crumbs are unreachable; the disabled and current crumbs are skipped"
+  storyId="navigation-breadcrumbs--accessibility"
+/>
+
+## RTL, density & i18n
+
+**RTL** — the trail direction mirrors under `dir="rtl"`; every box metric is a
+logical property. See [RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:20px 16px;align-items:center;">
+  <span style="inline-size:2.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr">
+    <md-breadcrumbs label="Breadcrumb">
+      <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+      <md-breadcrumb-item href="/library">Library</md-breadcrumb-item>
+      <md-breadcrumb-item current>Tables</md-breadcrumb-item>
+    </md-breadcrumbs>
+  </div>
+  <span style="inline-size:2.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl">
+    <md-breadcrumbs label="مسار التنقل">
+      <md-breadcrumb-item href="/" icon="home">الرئيسية</md-breadcrumb-item>
+      <md-breadcrumb-item href="/library">المكتبة</md-breadcrumb-item>
+      <md-breadcrumb-item current>الجداول</md-breadcrumb-item>
+    </md-breadcrumbs>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+  storyId="navigation-breadcrumbs--rtl"
+/>
+
+### `separator` is a glyph, not a direction
+
+`/` and `•` point nowhere, so RTL needs nothing from you. `›`, `→` and `»` all
+point **right** — under `dir="rtl"` they aim back the way the trail came. Swap
+the prop with the direction (`›` → `‹`, `→` → `←`), or pick a neutral glyph.
+Both rows below are `dir="rtl"`; only the second one had its glyph swapped.
+
+<ComponentDemo
+  html={`<div dir="rtl" style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;direction:ltr;">wrong</span>
+  <md-breadcrumbs label="مسار التنقل" separator="›">
+    <md-breadcrumb-item href="/" icon="home">الرئيسية</md-breadcrumb-item>
+    <md-breadcrumb-item href="/library">المكتبة</md-breadcrumb-item>
+    <md-breadcrumb-item current>الجداول</md-breadcrumb-item>
+  </md-breadcrumbs>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;direction:ltr;">right</span>
+  <md-breadcrumbs label="مسار التنقل" separator="‹">
+    <md-breadcrumb-item href="/" icon="home">الرئيسية</md-breadcrumb-item>
+    <md-breadcrumb-item href="/library">المكتبة</md-breadcrumb-item>
+    <md-breadcrumb-item current>الجداول</md-breadcrumb-item>
+  </md-breadcrumbs>
+</div>`}
+  label="Both rows are dir=rtl — only the second swapped › for ‹"
+/>
+
+### Every density rung
+
+`density="-1…-4"` is a local override of the inherited `data-density`. Set it on
+the trail and it cascades to every crumb, tightening the inter-crumb gap, the
+icon-to-label gap and the crumb padding together. There is no `0` rung to
+write — omitting the prop *is* the default, and writing `density="0"` maps
+nothing at all.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">none</span>
+  <md-breadcrumbs label="Default density"><md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item><md-breadcrumb-item href="/library">Library</md-breadcrumb-item><md-breadcrumb-item current>Tables</md-breadcrumb-item></md-breadcrumbs>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <md-breadcrumbs density="-1" label="Density -1"><md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item><md-breadcrumb-item href="/library">Library</md-breadcrumb-item><md-breadcrumb-item current>Tables</md-breadcrumb-item></md-breadcrumbs>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <md-breadcrumbs density="-2" label="Density -2"><md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item><md-breadcrumb-item href="/library">Library</md-breadcrumb-item><md-breadcrumb-item current>Tables</md-breadcrumb-item></md-breadcrumbs>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <md-breadcrumbs density="-3" label="Density -3"><md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item><md-breadcrumb-item href="/library">Library</md-breadcrumb-item><md-breadcrumb-item current>Tables</md-breadcrumb-item></md-breadcrumbs>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <md-breadcrumbs density="-4" label="Density -4"><md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item><md-breadcrumb-item href="/library">Library</md-breadcrumb-item><md-breadcrumb-item current>Tables</md-breadcrumb-item></md-breadcrumbs>
+</div>`}
+  label="No density prop, then -1 through -4 — gaps and crumb padding taper"
+/>
+
+:::caution[Crumbs are already small targets]
+A crumb's hit area is its label plus padding, and the padding is the first thing
+density takes. Below `-2` the pill can fall well under the 48dp pointer-coarse
+devices want. See [Density](/behaviour/density/#accessibility).
+:::
+
+### Density and direction together
+
+The two are independent signals: `dir` comes from the document tree, density
+from the nearest `data-density` ancestor — and a local `density="-1…-4"` on a
+trail overrides the inherited rung without touching direction. All three trails
+below sit in one `dir="rtl" data-density="-2"` wrapper: the first takes the
+inherited `-2`, the second drops to `-4` with the prop, and the third resets to
+the default rung the only way that works — setting `--md-sys-density-scale: 0`
+on the element itself. A `density="0"` prop would have changed nothing.
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:5.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;direction:ltr;">-2 inherited</span>
+  <md-breadcrumbs label="مسار التنقل" separator="‹">
+    <md-breadcrumb-item href="/" icon="home">الرئيسية</md-breadcrumb-item>
+    <md-breadcrumb-item href="/library">المكتبة</md-breadcrumb-item>
+    <md-breadcrumb-item current>الجداول</md-breadcrumb-item>
+  </md-breadcrumbs>
+  <span style="inline-size:5.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;direction:ltr;">-4 local</span>
+  <md-breadcrumbs label="مسار التنقل" separator="‹" density="-4">
+    <md-breadcrumb-item href="/" icon="home">الرئيسية</md-breadcrumb-item>
+    <md-breadcrumb-item href="/library">المكتبة</md-breadcrumb-item>
+    <md-breadcrumb-item current>الجداول</md-breadcrumb-item>
+  </md-breadcrumbs>
+  <span style="inline-size:5.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;direction:ltr;">0 via var</span>
+  <md-breadcrumbs label="مسار التنقل" separator="‹" style="--md-sys-density-scale:0;">
+    <md-breadcrumb-item href="/" icon="home">الرئيسية</md-breadcrumb-item>
+    <md-breadcrumb-item href="/library">المكتبة</md-breadcrumb-item>
+    <md-breadcrumb-item current>الجداول</md-breadcrumb-item>
+  </md-breadcrumbs>
+</div>`}
+  label="dir=rtl with data-density=-2: inherited -2, a prop override to -4, and a reset to 0 via --md-sys-density-scale"
+/>
+
+:::caution[`density="0"` cannot opt back out of an inherited rung]
+The prop is mapped by `:host([density='-1'])` … `:host([density='-4'])` only —
+there is no `[density="0"]` rule, and the token layer leaves it out on purpose
+so that absence of a rung means "inherit whatever the ancestor says". Inside a
+`data-density="-2"` ancestor a trail written `density="0"` still renders at
+`-2`, pixel-identical to its neighbours. To reset a trail — or any subtree —
+back to the default, set the custom property directly: it beats both the
+inherited value and the `:host([density=…])` rules.
+
+```html
+<md-breadcrumbs style="--md-sys-density-scale: 0"> … </md-breadcrumbs>
+```
+
+Rendering the trail outside the dense subtree works too.
+:::
+
+**Density** — `density="-1…-4"` on the trail cascades to every crumb; the
+inter-crumb gap, the icon-to-label gap and the crumb padding all taper together.
+See [Density](/behaviour/density/).
+
+**i18n** — translate `label`, `expand-label` and every crumb's text; the English
+defaults (`"Breadcrumb"`, `"Show full breadcrumb trail"`) are placeholders, not
+a design decision. Long translated crumbs are exactly when `max-items` earns its
+keep.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:20px 16px;align-items:center;">
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">de</span>
+  <md-breadcrumbs label="Navigationspfad" expand-label="Vollständigen Navigationspfad anzeigen" max-items="3">
+    <md-breadcrumb-item href="/" icon="home">Startseite</md-breadcrumb-item>
+    <md-breadcrumb-item href="/a">Verwaltungsübersicht</md-breadcrumb-item>
+    <md-breadcrumb-item href="/a/b">Rechnungsstellung</md-breadcrumb-item>
+    <md-breadcrumb-item current>Belege</md-breadcrumb-item>
+  </md-breadcrumbs>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ar</span>
+  <div dir="rtl">
+    <md-breadcrumbs label="مسار التنقل" expand-label="عرض مسار التنقل الكامل" separator="‹" max-items="3">
+      <md-breadcrumb-item href="/" icon="home">الرئيسية</md-breadcrumb-item>
+      <md-breadcrumb-item href="/a">لوحة الإدارة</md-breadcrumb-item>
+      <md-breadcrumb-item href="/a/b">الفوترة</md-breadcrumb-item>
+      <md-breadcrumb-item current>الإيصالات</md-breadcrumb-item>
+    </md-breadcrumbs>
+  </div>
+</div>`}
+  label="Localised region name, overflow label and crumbs"
+  storyId="navigation-breadcrumbs--localization"
+/>
+
+## Theming
+
+Two layers: the trail owns spacing and the separator, each crumb owns its own
+colours. Set the crumb properties on the parent and they cascade.
+
+### On `md-breadcrumbs`
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-breadcrumbs-gap` | Space between crumbs and separators | 8px, density-derived |
+| `--md-breadcrumbs-separator-color` | Separator glyph colour | `on-surface-variant` |
+| `--md-breadcrumbs-text-color` | Trail text colour at rest | `on-surface-variant` |
+| `--md-breadcrumbs-stagger` | Per-crumb delay of the expand animation | `40ms` |
+
+### On `md-breadcrumb-item`
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-breadcrumb-item-link-color` | Link text | `on-surface-variant` |
+| `--md-breadcrumb-item-hover-color` | Hover text | `primary` |
+| `--md-breadcrumb-item-current-color` | Current-page text | `on-secondary-container` |
+| `--md-breadcrumb-item-current-bg` | Current-page pill | `secondary-container` |
+| `--md-breadcrumb-item-disabled-color` | Disabled text | 61% `on-surface` |
+| `--md-breadcrumb-item-state-layer-color` | Hover / focus / press overlay | `on-surface` |
+| `--md-breadcrumb-item-gap` | Icon-to-label gap | 6px, density-derived |
+| `--md-breadcrumb-item-padding` | Crumb padding | Density-derived |
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:20px;inline-size:100%;">
+  <md-breadcrumbs label="Branded" separator="›"
+    style="--md-breadcrumbs-gap: 14px; --md-breadcrumbs-separator-color: #7c4dff; --md-breadcrumb-item-link-color: #7c4dff; --md-breadcrumb-item-hover-color: #4527a0; --md-breadcrumb-item-current-bg: #ede7f6; --md-breadcrumb-item-current-color: #311b92;">
+    <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+    <md-breadcrumb-item href="/library">Library</md-breadcrumb-item>
+    <md-breadcrumb-item current>Tables</md-breadcrumb-item>
+  </md-breadcrumbs>
+
+  <md-breadcrumbs label="Tonal roles"
+    style="--md-breadcrumb-item-link-color: var(--md-sys-color-tertiary); --md-breadcrumb-item-hover-color: var(--md-sys-color-on-tertiary-container); --md-breadcrumb-item-current-bg: var(--md-sys-color-tertiary-container); --md-breadcrumb-item-current-color: var(--md-sys-color-on-tertiary-container); --md-breadcrumbs-separator-color: var(--md-sys-color-outline);">
+    <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+    <md-breadcrumb-item href="/library">Library</md-breadcrumb-item>
+    <md-breadcrumb-item current>Tables</md-breadcrumb-item>
+  </md-breadcrumbs>
+
+  <md-breadcrumbs label="Roomy" separator="→"
+    style="--md-breadcrumbs-gap: 20px; --md-breadcrumb-item-padding: 10px 18px; --md-breadcrumb-item-gap: 12px;">
+    <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+    <md-breadcrumb-item href="/library" icon="folder">Library</md-breadcrumb-item>
+    <md-breadcrumb-item current icon="table">Tables</md-breadcrumb-item>
+  </md-breadcrumbs>
+</div>`}
+  label="Branded, tonal, and roomy — all set on the parent"
+  storyId="navigation-breadcrumbs--custom-css"
+/>
+
+Every default resolves through an `md-sys-color` role, so a trail that sets no
+custom properties follows the theme on its own. Switch this page between light
+and dark — the trail below is untouched markup:
+
+<ComponentDemo
+  html={`<md-breadcrumbs label="Breadcrumb" max-items="4">
+  <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a">Projects</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a/b">Q3 Migration</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a/b/c">Services</md-breadcrumb-item>
+  <md-breadcrumb-item current>Billing</md-breadcrumb-item>
+</md-breadcrumbs>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="navigation-breadcrumbs--dark-theme"
+/>
+
+## CSS parts
+
+Custom properties cover colour and spacing. **Parts** reach into the shadow root
+for everything else — and the two components expose separate sets.
+
+| Part | On | Element |
+|---|---|---|
+| `list` | `md-breadcrumbs` | The `<ol>` |
+| `overflow` | `md-breadcrumbs` | The "…" list item |
+| `overflow-button` | `md-breadcrumbs` | The button inside it |
+| `separator` | `md-breadcrumbs` | The glyph the **trail** draws before the "…" toggle (also tagged `separator--2`) |
+| `separator` | `md-breadcrumb-item` | The glyph before this crumb (absent on the first) |
+| `link` | `md-breadcrumb-item` | The anchor — only with an `href` and not `current` |
+| `static` | `md-breadcrumb-item` | The span — when `current`, `disabled`, or no `href` |
+| `state-layer` | `md-breadcrumb-item` | Hover / focus / press overlay |
+| `icon` | `md-breadcrumb-item` | Leading icon container |
+| `label` | `md-breadcrumb-item` | Label text wrapper |
+
+:::caution[`separator` lives on **both** elements]
+Each crumb draws its own leading separator, but the trail draws one more of its
+own — the glyph in front of the "…" toggle. A rule written only against
+`md-breadcrumb-item::part(separator)` leaves that one untouched, so a collapsed
+trail shows a mismatched glyph. Style both selectors, as the recipes below do.
+:::
+
+<ComponentDemo
+  html={`<style>
+  .parts-trail::part(list) { padding-block: 6px; }
+  .parts-trail::part(overflow-button) {
+    border-radius: 4px;
+    outline: 1px solid var(--md-sys-color-primary);
+  }
+  .parts-trail md-breadcrumb-item::part(label) { text-transform: uppercase; letter-spacing: .08em; font-size: 12px; }
+  /* Both selectors: the crumbs draw their own separators, the trail draws the
+     one in front of the … toggle. */
+  .parts-trail::part(separator),
+  .parts-trail md-breadcrumb-item::part(separator) { opacity: .45; }
+</style>
+<md-breadcrumbs class="parts-trail" label="Breadcrumb" max-items="4">
+  <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a">Projects</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a/b">Q3 Migration</md-breadcrumb-item>
+  <md-breadcrumb-item href="/a/b/c">Services</md-breadcrumb-item>
+  <md-breadcrumb-item current>Billing</md-breadcrumb-item>
+</md-breadcrumbs>`}
+  label="list, overflow-button, label and separator"
+/>
+
+<ComponentDemo
+  html={`<style>
+  .parts-current md-breadcrumb-item::part(static) {
+    border: 1px dashed var(--md-sys-color-outline);
+    border-radius: 999px;
+  }
+  /* Underline the LABEL, not the link: ::part(link) is a flex container, so the
+     browser draws the decoration once per flex item — the 18px glyph box and the
+     20px text box each get their own, at their own baseline, which reads as two
+     underlines at different heights. */
+  .parts-current md-breadcrumb-item:not([current])::part(label) { text-decoration: underline; text-underline-offset: 3px; }
+  .parts-current md-breadcrumb-item::part(icon) { color: var(--md-sys-color-primary); }
+</style>
+<md-breadcrumbs class="parts-current" label="Breadcrumb">
+  <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+  <md-breadcrumb-item href="/library" icon="folder">Library</md-breadcrumb-item>
+  <md-breadcrumb-item current icon="table">Tables</md-breadcrumb-item>
+</md-breadcrumbs>`}
+  label="link vs static — the current crumb is not an anchor"
+/>
+
+:::caution[`link` and `static` are mutually exclusive]
+A crumb renders **one** of them: `link` when it has an `href` and is not
+`current`, `static` otherwise. A rule written against the wrong one fails
+silently — which is why `::part(static)` is the one that styles the page you are
+on.
+:::
+
+```css
+md-breadcrumbs::part(overflow-button) {
+  border-radius: 4px;
+}
+```
+
+
+## Related
+
+[`md-breadcrumb-item`](/components/breadcrumbs/#md-breadcrumb-item) ·
+[`md-app-bar`](/components/app-bar/) ·
+[`md-tabs`](/components/tabs/) ·
+[`md-navigation-rail`](/components/navigation-rail/) ·
+[`md-menu`](/components/menu/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-breadcrumbs" />

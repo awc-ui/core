@@ -1,0 +1,256 @@
+{
+  "tag": "md-accordion",
+  "title": "Accordion",
+  "slug": "accordion",
+  "category": "Containment",
+  "subComponentOf": null,
+  "storyId": "containment-accordion--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'filled' | 'outlined'",
+      "default": "'filled'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "elevation",
+      "attribute": "elevation",
+      "type": "0 | 1 | 2 | 3 | 4 | 5",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "reorderable",
+      "attribute": "reorderable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "floating",
+      "attribute": "floating",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "initialX",
+      "attribute": "initial-x",
+      "type": "number",
+      "default": "24",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "initialY",
+      "attribute": "initial-y",
+      "type": "number",
+      "default": "24",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "bringToFront",
+      "attribute": "bring-to-front",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "exclusive",
+      "attribute": "exclusive",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "keepOneExpanded",
+      "attribute": "keep-one-expanded",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "headingLevel",
+      "attribute": "heading-level",
+      "type": "1 | 2 | 3 | 4 | 5 | 6",
+      "default": "3",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "region",
+      "attribute": "region",
+      "type": "'auto' | 'always' | 'never'",
+      "default": "'auto'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "regionThreshold",
+      "attribute": "region-threshold",
+      "type": "number",
+      "default": "6",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "transition",
+      "attribute": "transition",
+      "type": "'expressive' | 'standard' | 'fade' | 'collapse' | 'none'",
+      "default": "'expressive'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "defaultExpanded",
+      "attribute": "default-expanded",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdToggle",
+      "detail": "{ index: number; expanded: boolean; expandedIndices: number[]; }"
+    },
+    {
+      "name": "mdReorder",
+      "detail": "{ from: number; to: number; order: number[]; }"
+    },
+    {
+      "name": "mdDragStart",
+      "detail": "MdAccordionDragDetail"
+    },
+    {
+      "name": "mdDragMove",
+      "detail": "MdAccordionDragDetail"
+    },
+    {
+      "name": "mdDragEnd",
+      "detail": "MdAccordionDragDetail"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "drop-placeholder",
+      "description": "Ghost slot shown in the lifted item's vacated position"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-accordion-gap",
+      "description": "Gap between items in filled variant"
+    },
+    {
+      "name": "--md-accordion-outline-color",
+      "description": "Outlined variant border colour"
+    },
+    {
+      "name": "--md-accordion-container-shape",
+      "description": "Border-radius of the outer chassis"
+    },
+    {
+      "name": "--md-accordion-elevation",
+      "description": "Explicit elevation shadow override."
+    },
+    {
+      "name": "--md-accordion-floating-width",
+      "description": "Width of the floating panel"
+    },
+    {
+      "name": "--md-accordion-floating-bg",
+      "description": "Surface tint of the floating panel"
+    },
+    {
+      "name": "--md-accordion-floating-elevation",
+      "description": "Resting shadow for floating panel"
+    },
+    {
+      "name": "--md-accordion-floating-radius",
+      "description": "Corner radius of the floating chassis"
+    },
+    {
+      "name": "--md-accordion-drop-placeholder-color",
+      "description": ""
+    },
+    {
+      "name": "--md-accordion-drop-placeholder-outline-color",
+      "description": ""
+    },
+    {
+      "name": "--md-accordion-drop-placeholder-outline-width",
+      "description": ""
+    },
+    {
+      "name": "--md-accordion-drop-placeholder-shape",
+      "description": ""
+    },
+    {
+      "name": "--md-accordion-drop-placeholder-opacity",
+      "description": ""
+    },
+    {
+      "name": "--md-accordion-floating-elevation-active",
+      "description": ""
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [
+    {
+      "name": "MdAccordionDragDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Pointer X in viewport coordinates */\n  clientX: number;\n  /** Pointer Y in viewport coordinates */\n  clientY: number;\n  /** Accordion's current X translation (px) */\n  x: number;\n  /** Accordion's current Y translation (px) */\n  y: number;\n  /** Distance dragged since drag start, X */\n  dx: number;\n  /** Distance dragged since drag start, Y */\n  dy: number;"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdToggle",
+      "detail": "{ index: number; expanded: boolean; expandedIndices: number[]; }"
+    },
+    {
+      "name": "mdReorder",
+      "detail": "{ from: number; to: number; order: number[]; }"
+    },
+    {
+      "name": "mdDragStart",
+      "detail": "MdAccordionDragDetail"
+    },
+    {
+      "name": "mdDragMove",
+      "detail": "MdAccordionDragDetail"
+    },
+    {
+      "name": "mdDragEnd",
+      "detail": "MdAccordionDragDetail"
+    }
+  ]
+}

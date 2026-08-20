@@ -1,0 +1,974 @@
+---
+title: Snackbar
+description: "Material Design 3 snackbar — nine positions, an optional action, pausing auto-hide, and a live region"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/snackbar.json";
+
+**Brief, low-priority feedback about something that just happened.** It appears
+over the content, auto-hides after 4 seconds, and can carry a single action —
+canonically "Undo".
+
+<ComponentDemo
+  html={`<md-button variant="filled" onclick="document.getElementById('snack-preview').show()">Show snackbar</md-button>
+<md-snackbar id="snack-preview" message="Message archived" action="Undo" closeable></md-snackbar>`}
+  label="Live preview"
+  storyId="communication-snackbar--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-snackbar" example="" />
+
+## When to use
+
+- Confirming an action completed: "Message archived", "Draft saved".
+- Offering a **single, reversing action** — "Undo".
+- Low-priority information the user can safely miss.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| A decision that must block the flow | [`md-dialog`](/components/dialog/) |
+| Critical errors the user must acknowledge | [`md-dialog`](/components/dialog/) |
+| Explaining a control | [`md-tooltip`](/components/tooltip/) |
+| Persistent status | Inline text, [`md-chip`](/components/chip/), [`md-badge`](/components/badge/) |
+| A message needing an icon | [`md-dialog`](/components/dialog/) — M3 says avoid icons in snackbars |
+| A message needing a link | Add a button instead, or a different component |
+| Several messages at once | Queue them — never stack or place them side by side |
+| Form validation | Inline field errors |
+
+## Message and action
+
+`message` is the label. `action` renders a **text** button — M3 forbids filled
+or elevated buttons here, so don't slot one in. Keep the label to one line where
+possible (two on mobile).
+
+<ComponentDemo
+  html={`<md-button variant="filled" onclick="document.getElementById('snack-single').show()">Single line</md-button>
+<md-button variant="filled" onclick="document.getElementById('snack-action').show()">Single line + action</md-button>
+<md-button variant="filled" onclick="document.getElementById('snack-two').show()">Two lines</md-button>
+<md-button variant="filled" onclick="document.getElementById('snack-two-action').show()">Two lines + action</md-button>
+<md-snackbar id="snack-single" message="File saved successfully"></md-snackbar>
+<md-snackbar id="snack-action" message="Item deleted" action="Undo"></md-snackbar>
+<md-snackbar id="snack-two" message="Your export finished and is ready to download from the reports page"></md-snackbar>
+<md-snackbar id="snack-two-action" message="Your export finished and is ready to download from the reports page" action="Undo"></md-snackbar>`}
+  label="One line, two lines, with and without an action"
+  storyId="communication-snackbar--single-line-with-action"
+/>
+
+Each of the four is its own story:
+[single line](/storybook/?path=/story/communication-snackbar--single-line),
+[single line + action](/storybook/?path=/story/communication-snackbar--single-line-with-action),
+[two lines](/storybook/?path=/story/communication-snackbar--two-lines),
+[two lines + action](/storybook/?path=/story/communication-snackbar--two-lines-with-action).
+
+## Stacked
+
+`stacked` moves the action onto its own line. Use it when a long message and a
+long action would otherwise crowd each other.
+
+<ComponentDemo
+  html={`<md-button variant="filled" onclick="document.getElementById('snack-stacked').show()">Stacked</md-button>
+<md-snackbar id="snack-stacked" message="Item moved to trash and removed from all shared boards" action="Undo this move" closeable stacked></md-snackbar>`}
+  label="Stacked action"
+  storyId="communication-snackbar--stacked"
+/>
+
+## Close affordance and auto-hide
+
+Auto-hide is **on by default at 4000ms**. `closeable` adds an X icon button.
+
+:::note[Never render it `open` on mount]
+A snackbar that opens on load floats over whatever the reader is doing. Render
+it closed and drive it from `show()`, exactly as the demos on this page do.
+:::
+
+:::danger[`auto-hide="false"` without `closeable` is undismissable]
+Turning auto-hide off removes the only automatic exit. Always pair it with
+`closeable` (or an action that closes it from your own code).
+:::
+
+:::caution[`auto-hide="false"` is not permanent — the action restarts the timer]
+Clicking the action **always** starts a fresh `auto-hide-duration` countdown,
+whether or not `auto-hide` was on. So pressing **Retry** on the persistent
+snackbar below starts 4000ms and it closes itself with
+`mdClose.detail.reason === 'auto'`. If a snackbar genuinely must not
+self-dismiss, either give it no `action`, or close it yourself from `mdAction`
+(the [Events](#events) demo does exactly that).
+:::
+
+<ComponentDemo
+  html={`<md-button variant="filled" onclick="document.getElementById('snack-close').show()">Closeable</md-button>
+<md-button variant="filled" onclick="document.getElementById('snack-action-close').show()">Action + close</md-button>
+<md-button variant="filled" onclick="document.getElementById('snack-slow').show()">Longer duration (10s)</md-button>
+<md-button variant="filled" onclick="document.getElementById('snack-persist').show()">Persistent</md-button>
+<md-snackbar id="snack-close" message="Connection restored" closeable></md-snackbar>
+<md-snackbar id="snack-action-close" message="Message archived" action="View" closeable></md-snackbar>
+<md-snackbar id="snack-slow" message="Take your time reading this one" action="Undo" auto-hide-duration="10000" closeable></md-snackbar>
+<md-snackbar id="snack-persist" message="No connection" action="Retry" auto-hide="false" closeable politeness="assertive" dismiss-label="Dismiss"></md-snackbar>`}
+  label="Closeable, longer duration, and persistent"
+  storyId="communication-snackbar--with-action-and-close"
+/>
+
+In Storybook: [close icon only](/storybook/?path=/story/communication-snackbar--with-close-icon),
+[action + close](/storybook/?path=/story/communication-snackbar--with-action-and-close), and the
+[non-dismissive](/storybook/?path=/story/communication-snackbar--non-dismissive) case the callout
+above warns about.
+
+## Position
+
+`position` takes nine values. `start` and `end` are **logical** and mirror under
+RTL. M3: don't place a snackbar flush to one edge of the layout, in front of
+navigation, or in front of / behind a FAB.
+
+<ComponentDemo
+  html={`<md-button variant="outlined" onclick="document.getElementById('snack-ts').show()">top-start</md-button>
+<md-button variant="outlined" onclick="document.getElementById('snack-t').show()">top</md-button>
+<md-button variant="outlined" onclick="document.getElementById('snack-te').show()">top-end</md-button>
+<md-button variant="outlined" onclick="document.getElementById('snack-s').show()">start</md-button>
+<md-button variant="outlined" onclick="document.getElementById('snack-c').show()">center</md-button>
+<md-button variant="outlined" onclick="document.getElementById('snack-e').show()">end</md-button>
+<md-button variant="outlined" onclick="document.getElementById('snack-bs').show()">bottom-start</md-button>
+<md-button variant="filled" onclick="document.getElementById('snack-b').show()">bottom</md-button>
+<md-button variant="outlined" onclick="document.getElementById('snack-be').show()">bottom-end</md-button>
+<md-snackbar id="snack-ts" position="top-start" message="Top-start snackbar" closeable></md-snackbar>
+<md-snackbar id="snack-t" position="top" message="Top snackbar" closeable></md-snackbar>
+<md-snackbar id="snack-te" position="top-end" message="Top-end snackbar" closeable></md-snackbar>
+<md-snackbar id="snack-s" position="start" message="Start snackbar" closeable></md-snackbar>
+<md-snackbar id="snack-c" position="center" message="Center snackbar" closeable></md-snackbar>
+<md-snackbar id="snack-e" position="end" message="End snackbar" closeable></md-snackbar>
+<md-snackbar id="snack-bs" position="bottom-start" message="Bottom-start snackbar" closeable></md-snackbar>
+<md-snackbar id="snack-b" position="bottom" message="Bottom snackbar (default)" closeable></md-snackbar>
+<md-snackbar id="snack-be" position="bottom-end" message="Bottom-end snackbar" closeable></md-snackbar>`}
+  label="All nine positions"
+  storyId="communication-snackbar--positions"
+/>
+
+## Slotted content
+
+The default slot replaces `message` when you need light inline markup. Keep it
+plain text-ish — M3 forbids icons and inline links in a snackbar.
+
+<ComponentDemo
+  html={`<md-button variant="filled" onclick="document.getElementById('snack-slotted').show()">Slotted message</md-button>
+<md-snackbar id="snack-slotted" closeable>
+  File <strong style="color: var(--md-sys-color-inverse-primary, #D0BCFF)">report.pdf</strong> uploaded
+</md-snackbar>`}
+  label="Slotted message content"
+  storyId="communication-snackbar--slotted-content"
+/>
+
+The `action` and `close` slots let you supply your own controls when the
+built-in text button and icon button aren't enough — but keep the action a
+**text** button.
+
+## There is no queue
+
+One element shows one message. Showing two at once violates M3, so serialise
+them yourself: reuse a **single** `md-snackbar`, set `message` before each
+`show()`, and wait for `mdClose` before moving on.
+
+:::caution[Drive it with `show()`, not with a bound `open`]
+`open` is mutable and **the element writes it back to `false`** when the timer
+fires or the X is pressed. A declarative `[open]="queue.length > 0"` therefore
+goes stale: the framework's last-written value is still `true`, so going from
+three queued messages to two produces no new write, and messages 2 and 3 never
+appear. Every framework tab below keeps a ref and calls `show()`.
+:::
+
+<ComponentDemo
+  html={`<md-button variant="filled" id="snack-q-go">Fire three toasts</md-button>
+<output id="snack-q-log" style="display:block; margin-block-start:16px; min-block-size:2.4em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">One element, three messages — they show one after another.</output>
+<md-snackbar id="snack-q-bar" closeable></md-snackbar>`}
+  script={`
+    var bar = root.querySelector('#snack-q-bar');
+    var log = root.querySelector('#snack-q-log');
+    var queue = [];
+
+    function toast(message) {
+      queue.push(message);
+      if (queue.length > 1) return;
+      next();
+    }
+
+    function next() {
+      if (!queue.length) {
+        log.textContent = 'Queue drained.';
+        return;
+      }
+      bar.message = queue[0];
+      bar.show();
+      log.textContent =
+        'Showing: ' + queue[0] + '  (' + (queue.length - 1) + ' waiting)';
+    }
+
+    bar.addEventListener('mdClose', function () {
+      queue.shift();
+      // Let the exit transition finish before the next one slides in.
+      setTimeout(next, 250);
+    });
+
+    root.querySelector('#snack-q-go').addEventListener('click', function () {
+      toast('Message archived');
+      toast('Draft saved');
+      toast('Export finished');
+    });
+  `}
+  label="One element, three queued messages"
+  htmlCode={`<md-snackbar id="bar" closeable></md-snackbar>
+
+<script type="module">
+  import '@awc-ui/core/define';
+
+  const bar = document.getElementById('bar');
+  const queue = [];
+
+  window.toast = async function toast(message) {
+    queue.push(message);
+    if (queue.length > 1) return;
+    while (queue.length) {
+      bar.message = queue[0];
+      bar.show();
+      await new Promise((r) => bar.addEventListener('mdClose', r, { once: true }));
+      queue.shift();
+    }
+  };
+</script>`}
+  react={`import { MdSnackbar } from '@awc-ui/react';
+import { useCallback, useRef, useState } from 'react';
+
+export function Toaster() {
+  const bar = useRef<HTMLMdSnackbarElement>(null);
+  const queue = useRef<string[]>([]);
+  const [message, setMessage] = useState('');
+
+  // The element sets \`open\` back to false itself, so \`open={queue.length > 0}\`
+  // would go stale. Render the message, then call show() on the ref.
+  const next = useCallback(() => {
+    if (!queue.current.length) return;
+    setMessage(queue.current[0]);
+    requestAnimationFrame(() => bar.current?.show());
+  }, []);
+
+  const toast = useCallback(
+    (msg: string) => {
+      queue.current.push(msg);
+      if (queue.current.length === 1) next();
+    },
+    [next],
+  );
+
+  return (
+    <MdSnackbar
+      ref={bar}
+      message={message}
+      closeable
+      onMdClose={() => {
+        queue.current.shift();
+        // Let the exit transition finish before the next one slides in.
+        setTimeout(next, 250);
+      }}
+    />
+  );
+}`}
+  angular={`import { Component, ElementRef, ViewChild } from '@angular/core';
+
+@Component({
+  selector: 'app-toaster',
+  template: \`
+    <md-snackbar #bar [message]="message" closeable
+                 (mdClose)="onClose()"></md-snackbar>
+  \`,
+})
+export class ToasterComponent {
+  @ViewChild('bar') bar!: ElementRef<HTMLMdSnackbarElement>;
+  message = '';
+  private queue: string[] = [];
+
+  // No [open] binding: the element writes open back to false, so Angular's
+  // Object.is check would skip the next write and nothing would reopen.
+  toast(message: string) {
+    this.queue.push(message);
+    if (this.queue.length === 1) this.next();
+  }
+
+  private next() {
+    if (!this.queue.length) return;
+    this.message = this.queue[0];
+    setTimeout(() => this.bar.nativeElement.show());
+  }
+
+  onClose() {
+    this.queue.shift();
+    setTimeout(() => this.next(), 250);
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { nextTick, ref } from 'vue';
+import '@awc-ui/core/define';
+
+const bar = ref<HTMLMdSnackbarElement | null>(null);
+const message = ref('');
+const queue: string[] = [];
+
+// No :open binding: the element writes open back to false, so Vue's
+// next !== prev patch check would skip the next write.
+function toast(msg: string) {
+  queue.push(msg);
+  if (queue.length === 1) next();
+}
+
+async function next() {
+  if (!queue.length) return;
+  message.value = queue[0];
+  await nextTick();
+  bar.value?.show();
+}
+
+function onClose() {
+  queue.shift();
+  setTimeout(next, 250);
+}
+</script>
+
+<template>
+  <md-snackbar ref="bar" :message="message" closeable @mdClose="onClose" />
+</template>`}
+  svelte={`<script lang="ts">
+  import { tick } from 'svelte';
+  import '@awc-ui/core/define';
+
+  let bar: HTMLMdSnackbarElement;
+  let message = '';
+  const queue: string[] = [];
+
+  // No open={...} binding: the element writes open back to false, so Svelte's
+  // x !== (x = ...) guard would skip the next write.
+  export function toast(msg: string) {
+    queue.push(msg);
+    if (queue.length === 1) next();
+  }
+
+  async function next() {
+    if (!queue.length) return;
+    message = queue[0];
+    await tick();
+    bar.show();
+  }
+
+  function onClose() {
+    queue.shift();
+    setTimeout(next, 250);
+  }
+</script>
+
+<md-snackbar bind:this={bar} {message} closeable on:mdClose={onClose} />`}
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdOpen` | no | `void` | Shown |
+| `mdAction` | no | `void` | The action button was used |
+| `mdClose` | no | `{ reason: 'auto' \| 'action' \| 'close' }` | Hidden — **branch on the reason** |
+
+### Why the action does not close it
+
+The action is not a dismiss button. Clicking it emits `mdAction`, leaves the
+snackbar **open**, and restarts the auto-hide timer. That is deliberate — an
+Undo that vanished the instant you pressed it would give you no confirmation
+that anything happened — but it means `mdClose.detail.reason === 'action'` is
+only reachable if you call `hide('action')` yourself.
+
+So the two events are not interchangeable. `mdAction` says *the button was
+pressed*; `mdClose` says *the snackbar is gone, and here is which of the three
+exits took it* — `'action'` from your own `hide('action')`, `'auto'` from the
+timer, `'close'` from the X icon or `Escape`. Only `mdClose` can tell those
+apart, which is why the commit belongs there.
+
+| You want to… | Listen to |
+|---|---|
+| Reverse the operation (Undo was pressed) | `mdClose`, `detail.reason === 'action'` |
+| Commit the operation (it timed out or was dismissed) | `mdClose`, `reason` is `'auto'` or `'close'` |
+| React to the action button itself (analytics, a spinner) | `mdAction` |
+| Actually dismiss on the action | call `hide('action')` from `mdAction` |
+| Know it appeared | `mdOpen` |
+
+:::danger[Commit in `mdClose`, not in both]
+Handling the commit in `mdAction` **and** in `mdClose` runs it twice. Branch on
+`mdClose.detail.reason`: an Undo flow commits the original operation only when
+the reason is *not* `action`.
+:::
+
+All three events **bubble** and are **composed**, so one delegated listener on an
+ancestor catches every snackbar on the page.
+
+<ComponentDemo
+  html={`<md-button variant="filled" id="snack-ev-show">Archive message</md-button>
+<output id="snack-ev-log" style="display:block; margin-block-start:16px; min-block-size:4.4em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Press Archive message, then press Undo, close it, or let it time out.</output>
+<md-snackbar id="snack-ev-bar" message="Message archived" action="Undo" closeable></md-snackbar>`}
+  script={`
+    var bar = root.querySelector('#snack-ev-bar');
+    var log = root.querySelector('#snack-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 4);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    root.querySelector('#snack-ev-show').addEventListener('click', function () {
+      bar.show();
+    });
+
+    // One delegated listener on the demo root catches all three — they bubble
+    // and are composed.
+    root.addEventListener('mdOpen', function () {
+      push('mdOpen');
+    });
+
+    root.addEventListener('mdAction', function () {
+      push('mdAction   the snackbar is STILL open — hide it yourself');
+      bar.hide('action');
+    });
+
+    root.addEventListener('mdClose', function (e) {
+      push('mdClose    reason = ' + e.detail.reason);
+    });
+  `}
+  label="Event log — press Undo, close it, or let it time out"
+  htmlCode={`<md-button variant="filled" id="show">Archive message</md-button>
+<md-snackbar id="bar" message="Message archived" action="Undo" closeable></md-snackbar>
+
+<script type="module">
+  import '@awc-ui/core/define';
+
+  const bar = document.getElementById('bar');
+
+  document.getElementById('show').addEventListener('click', () => bar.show());
+
+  bar.addEventListener('mdOpen', () => console.log('shown'));
+
+  // The action does not dismiss — close it with the matching reason.
+  bar.addEventListener('mdAction', () => bar.hide('action'));
+
+  bar.addEventListener('mdClose', (e) => {
+    if (e.detail.reason === 'action') undoArchive();
+    else commitArchive();
+  });
+</script>`}
+  react={`import { MdButton, MdSnackbar } from '@awc-ui/react';
+import { useRef } from 'react';
+
+export function ArchiveToast() {
+  const bar = useRef<HTMLMdSnackbarElement>(null);
+
+  return (
+    <>
+      <MdButton variant="filled" onClick={() => bar.current?.show()}>
+        Archive message
+      </MdButton>
+
+      <MdSnackbar
+        ref={bar}
+        message="Message archived"
+        action="Undo"
+        closeable
+        onMdOpen={() => console.log('shown')}
+        onMdAction={() => bar.current?.hide('action')}
+        onMdClose={(e) => {
+          if (e.detail.reason === 'action') undoArchive();
+          else commitArchive();
+        }}
+      />
+    </>
+  );
+}`}
+  angular={`import { Component, ElementRef, ViewChild } from '@angular/core';
+
+@Component({
+  selector: 'app-archive-toast',
+  template: \`
+    <md-button variant="filled" (click)="bar.show()">Archive message</md-button>
+
+    <md-snackbar
+      #bar
+      message="Message archived"
+      action="Undo"
+      closeable
+      (mdOpen)="onOpen()"
+      (mdAction)="bar.hide('action')"
+      (mdClose)="onClose($event)"
+    ></md-snackbar>
+  \`,
+})
+export class ArchiveToastComponent {
+  @ViewChild('bar') barRef!: ElementRef<HTMLMdSnackbarElement>;
+
+  onOpen() {
+    console.log('shown');
+  }
+
+  onClose(e: CustomEvent<{ reason: 'auto' | 'action' | 'close' }>) {
+    if (e.detail.reason === 'action') this.undoArchive();
+    else this.commitArchive();
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+import '@awc-ui/core/define';
+
+const bar = ref<HTMLMdSnackbarElement | null>(null);
+
+function onClose(e: CustomEvent<{ reason: 'auto' | 'action' | 'close' }>) {
+  if (e.detail.reason === 'action') undoArchive();
+  else commitArchive();
+}
+</script>
+
+<template>
+  <md-button variant="filled" @click="bar?.show()">Archive message</md-button>
+
+  <md-snackbar
+    ref="bar"
+    message="Message archived"
+    action="Undo"
+    closeable
+    @mdOpen="console.log('shown')"
+    @mdAction="bar?.hide('action')"
+    @mdClose="onClose"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  import '@awc-ui/core/define';
+
+  let bar: HTMLMdSnackbarElement;
+
+  function onClose(e: CustomEvent<{ reason: 'auto' | 'action' | 'close' }>) {
+    if (e.detail.reason === 'action') undoArchive();
+    else commitArchive();
+  }
+</script>
+
+<md-button variant="filled" on:click={() => bar.show()}>Archive message</md-button>
+
+<md-snackbar
+  bind:this={bar}
+  message="Message archived"
+  action="Undo"
+  closeable
+  on:mdOpen={() => console.log('shown')}
+  on:mdAction={() => bar.hide('action')}
+  on:mdClose={onClose}
+/>`}
+/>
+
+Wired against a real list — hold the pending row, and reverse it only when the
+close reason is `action`:
+
+<TechnologyTabs
+  html={`<md-snackbar id="bar" action="Undo" position="bottom-start"></md-snackbar>
+
+<script type="module">
+  const bar = document.getElementById('bar');
+  let pending;
+
+  function archive(item) {
+    hideRow(item);
+    pending = item;
+    bar.message = 'Message archived';
+    bar.show();
+  }
+
+  // The action never self-dismisses — close it with the matching reason.
+  bar.addEventListener('mdAction', () => bar.hide('action'));
+
+  bar.addEventListener('mdClose', (e) => {
+    if (e.detail.reason === 'action') restoreRow(pending);  // Undo pressed
+    else commitArchive(pending);                            // auto / close
+    pending = null;
+  });
+</script>`}
+  react={`import { MdSnackbar } from '@awc-ui/react';
+import { useRef, useState } from 'react';
+
+export function ArchiveToast() {
+  const bar = useRef<HTMLMdSnackbarElement>(null);
+  const [pending, setPending] = useState<Item | null>(null);
+
+  function archive(item: Item) {
+    hideRow(item);
+    setPending(item);
+    bar.current?.show();
+  }
+
+  return (
+    <MdSnackbar
+      ref={bar}
+      message="Message archived"
+      action="Undo"
+      position="bottom-start"
+      onMdAction={() => bar.current?.hide('action')}
+      onMdClose={(e) => {
+        if (e.detail.reason === 'action') restoreRow(pending!);
+        else commitArchive(pending!);
+        setPending(null);
+      }}
+    />
+  );
+}`}
+  angular={`import { Component, ElementRef, ViewChild } from '@angular/core';
+
+@Component({
+  selector: 'app-archive-toast',
+  template: \`
+    <md-snackbar #bar message="Message archived" action="Undo"
+                 position="bottom-start" (mdAction)="onAction()"
+                 (mdClose)="onClose($event)"></md-snackbar>
+  \`,
+})
+export class ArchiveToastComponent {
+  @ViewChild('bar') bar!: ElementRef<
+    HTMLElement & { show(): void; hide(reason?: string): void }
+  >;
+  private pending: Item | null = null;
+
+  archive(item: Item) {
+    this.hideRow(item);
+    this.pending = item;
+    this.bar.nativeElement.show();
+  }
+
+  onAction() {
+    this.bar.nativeElement.hide('action');
+  }
+
+  onClose(e: CustomEvent<{ reason: 'auto' | 'action' | 'close' }>) {
+    if (e.detail.reason === 'action') this.restoreRow(this.pending!);
+    else this.commitArchive(this.pending!);
+    this.pending = null;
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const bar = ref<(HTMLElement & { show(): void; hide(r?: string): void }) | null>(null);
+const pending = ref<Item | null>(null);
+
+function archive(item: Item) {
+  hideRow(item);
+  pending.value = item;
+  bar.value?.show();
+}
+
+function onClose(e: CustomEvent<{ reason: 'auto' | 'action' | 'close' }>) {
+  if (e.detail.reason === 'action') restoreRow(pending.value!);
+  else commitArchive(pending.value!);
+  pending.value = null;
+}
+</script>
+
+<template>
+  <md-snackbar
+    ref="bar"
+    message="Message archived"
+    action="Undo"
+    position="bottom-start"
+    @mdAction="bar?.hide('action')"
+    @mdClose="onClose"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  let bar: HTMLElement & { show(): void; hide(reason?: string): void };
+  let pending: Item | null = null;
+
+  function archive(item: Item) {
+    hideRow(item);
+    pending = item;
+    bar.show();
+  }
+
+  function onClose(e: CustomEvent<{ reason: 'auto' | 'action' | 'close' }>) {
+    if (e.detail.reason === 'action') restoreRow(pending!);
+    else commitArchive(pending!);
+    pending = null;
+  }
+</script>
+
+<md-snackbar
+  bind:this={bar}
+  message="Message archived"
+  action="Undo"
+  position="bottom-start"
+  on:mdAction={() => bar.hide('action')}
+  on:mdClose={onClose}
+/>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- The snackbar publishes to a live region; `politeness` controls interruption.
+  Reserve `assertive` for genuinely urgent messages — it interrupts screen-reader
+  users mid-sentence.
+- Auto-hide is a hazard for people who read slowly or use a screen reader. For
+  anything with an action, consider a longer `auto-hide-duration`, and make sure
+  the same action is reachable elsewhere in the UI.
+- Focus is **not** moved to the snackbar (correctly — it would be disruptive), so
+  keyboard users may never reach the action. Never make a snackbar action the
+  only route to an outcome.
+- `politeness="polite"` (the default) renders `role="status"` /
+  `aria-live="polite"`; `politeness="assertive"` renders `role="alert"` /
+  `aria-live="assertive"`. Either way `aria-atomic="true"` makes the whole
+  message re-announce rather than just the changed words.
+- Auto-hide **pauses while you hover or keyboard-focus the surface** and resumes
+  when you leave — that is WCAG 2.2.1 (Timing Adjustable) being satisfied for
+  you, so you rarely need to turn auto-hide off.
+- `Escape` closes it, but only when `closeable` is set — an X-less snackbar has
+  no dismiss affordance to trigger.
+- Give the close affordance a localized `dismiss-label` (default `"Dismiss"`).
+- Don't let it obscure the element the user is working on.
+
+Show the **polite** one below, then hover its surface and watch the four seconds
+stop counting. `Tab` into it — the timer stays paused, the close button announces
+its `dismiss-label`, and `Escape` dismisses it. The **assertive** one has no
+timer to pause (it sets `auto-hide="false"`), so use it to hear `role="alert"`
+interrupt instead.
+
+<ComponentDemo
+  html={`<md-button variant="filled" onclick="document.getElementById('snack-a11y-polite').show()">polite (role=status)</md-button>
+<md-button variant="outlined" onclick="document.getElementById('snack-a11y-assertive').show()">assertive (role=alert)</md-button>
+<md-snackbar id="snack-a11y-polite" message="Draft saved" action="Undo" closeable dismiss-label="Dismiss"></md-snackbar>
+<md-snackbar id="snack-a11y-assertive" message="No connection" action="Retry" closeable politeness="assertive" auto-hide="false" dismiss-label="Dismiss notification"></md-snackbar>`}
+  label="Keyboard and screen-reader behaviour — hover to pause, Escape to close"
+/>
+
+The assertive one sets `auto-hide="false"` and pairs it with `closeable`, exactly
+as the callout above insists — but "no auto-hide" only holds until its action is
+used. Press **Retry** and the component starts a 4000ms timer anyway, closing
+itself with `reason === 'auto'`. Handle `mdAction` yourself if a message must
+survive its own action.
+
+## RTL, density & i18n
+
+**RTL** — the host is a full-viewport flex overlay, so `position` resolves
+against the writing direction the element inherits. Set `dir` on an ancestor and
+nothing else in the markup changes:
+
+```html
+<div dir="rtl">
+  <md-snackbar position="bottom-start" message="…" closeable></md-snackbar>
+</div>
+```
+
+Press both and watch the corners swap — `bottom-start` is bottom-left under
+`ltr` and bottom-right under `rtl`. See the
+[RTL story](/storybook/?path=/story/communication-snackbar--rtl) and
+[RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;flex-wrap:wrap;gap:12px;">
+    <md-button variant="filled" onclick="document.getElementById('snack-rtl-a').show()">bottom-start</md-button>
+    <md-snackbar id="snack-rtl-a" position="bottom-start" message="dir=ltr — this lands bottom-left" closeable></md-snackbar>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;flex-wrap:wrap;gap:12px;">
+    <md-button variant="filled" onclick="document.getElementById('snack-rtl-b').show()">bottom-start</md-button>
+    <md-snackbar id="snack-rtl-b" position="bottom-start" message="dir=rtl — this lands bottom-right" closeable></md-snackbar>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+/>
+
+### Only the `start` / `end` positions mirror
+
+Of the nine values, six carry a direction — `start`, `end`, `top-start`,
+`top-end`, `bottom-start`, `bottom-end` — and all six flip. The other three —
+`top`, `bottom` (the default) and `center` — are centred on the inline axis and
+look identical in both directions. Both rows below are inside `dir="rtl"`.
+
+<ComponentDemo
+  html={`<div dir="rtl" style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">mirrors</span>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;">
+    <md-button variant="filled" onclick="document.getElementById('snack-rtl-start').show()">start</md-button>
+    <md-button variant="filled" onclick="document.getElementById('snack-rtl-end').show()">end</md-button>
+    <md-snackbar id="snack-rtl-start" position="start" message="position=start — inline start, so the right edge here" closeable></md-snackbar>
+    <md-snackbar id="snack-rtl-end" position="end" message="position=end — inline end, so the left edge here" closeable></md-snackbar>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">neutral</span>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;">
+    <md-button variant="outlined" onclick="document.getElementById('snack-rtl-bottom').show()">bottom</md-button>
+    <md-button variant="outlined" onclick="document.getElementById('snack-rtl-center').show()">center</md-button>
+    <md-snackbar id="snack-rtl-bottom" position="bottom" message="position=bottom — centred, identical in both directions" closeable></md-snackbar>
+    <md-snackbar id="snack-rtl-center" position="center" message="position=center — centred, identical in both directions" closeable></md-snackbar>
+  </div>
+</div>`}
+  label="Logical positions mirror, centred ones do not"
+/>
+
+### Every density rung
+
+Each rung compacts padding and text, taking the surface
+**48 → 45 → 42 → 39 → 36px** tall. Width follows only until it meets
+`--md-snackbar-min-width`: in the demo below it goes 322 → 309 → 288px and then
+stops, because 288px is the floor.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;">
+    <md-button variant="filled" onclick="document.getElementById('snack-d0').show()">show</md-button>
+    <md-snackbar id="snack-d0" density="0" message="Message archived at density 0" action="Undo" closeable></md-snackbar>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;">
+    <md-button variant="outlined" onclick="document.getElementById('snack-d1').show()">show</md-button>
+    <md-snackbar id="snack-d1" density="-1" message="Message archived at density -1" action="Undo" closeable></md-snackbar>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;">
+    <md-button variant="outlined" onclick="document.getElementById('snack-d2').show()">show</md-button>
+    <md-snackbar id="snack-d2" density="-2" message="Message archived at density -2" action="Undo" closeable></md-snackbar>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;">
+    <md-button variant="outlined" onclick="document.getElementById('snack-d3').show()">show</md-button>
+    <md-snackbar id="snack-d3" density="-3" message="Message archived at density -3" action="Undo" closeable></md-snackbar>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;">
+    <md-button variant="outlined" onclick="document.getElementById('snack-d4').show()">show</md-button>
+    <md-snackbar id="snack-d4" density="-4" message="Message archived at density -4" action="Undo" closeable></md-snackbar>
+  </div>
+</div>`}
+  label="Density 0 through -4 — one at a time, surface and text both taper"
+/>
+
+:::caution[The close target stops shrinking at `-2`]
+`closeable` puts an `md-icon-button` in the surface, and it tapers to a floor:
+**40 → 36 → 32px** across `0`, `-1`, `-2`, and `-3` / `-4` are pixel-identical to
+`-2`. So the smallest touch target is already reached at `-2` — measure it there,
+not at `-4`. 32px is under the 48×48px guidance in
+[Density](/behaviour/density/#accessibility), so check it before shipping — and
+remember the close is never the only route to dismissing anyway.
+:::
+
+### Density and direction together
+
+A global `data-density` ancestor and `dir` are independent signals, and a local
+`density` prop on one snackbar overrides the inherited rung without touching the
+direction. Below, `dir="rtl" data-density="-1"` wraps both; the second snackbar
+names `-4` for itself and shrinks past its ancestor while still mirroring.
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-1" style="display:flex;flex-wrap:wrap;gap:12px;">
+  <md-button variant="filled" onclick="document.getElementById('snack-dd-a').show()">inherits -1</md-button>
+  <md-button variant="outlined" onclick="document.getElementById('snack-dd-b').show()">local -4</md-button>
+  <md-snackbar id="snack-dd-a" position="bottom-start" message="dir=rtl, inherited density -1" action="Undo" closeable></md-snackbar>
+  <md-snackbar id="snack-dd-b" position="top-start" density="-4" message="dir=rtl, local density -4" action="Undo" closeable></md-snackbar>
+</div>`}
+  label="dir=rtl with data-density=-1, and one snackbar overriding to -4"
+/>
+
+:::note[`density="0"` is not an escape hatch]
+There is deliberately **no `[density="0"]` rule** in the token layer — the prop
+reflects `density="0"` onto virtually every element, so such a rule would pin the
+default rung everywhere and break global inheritance. `0` therefore means
+*inherit whatever the ancestor says*: a `density="0"` snackbar inside
+`data-density="-2"` still renders at `-2`. To differ from the ancestor, name the
+rung you actually want.
+:::
+
+**Density** — `density="-1…-4"` locally overrides the inherited `data-density`
+rung, taking the surface 48 → 36px tall. See [Density](/behaviour/density/).
+
+**i18n** — translate `message`, `action` and `dismiss-label`. Translations run
+longer, so re-check M3's one-line rule and consider `stacked`. The
+[localization story](/storybook/?path=/story/communication-snackbar--localization)
+switches all three at once.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-snackbar-container-color` | Surface | `inverse-surface` |
+| `--md-snackbar-container-shape` | Corner radius | `corner-extra-small` (4px) |
+| `--md-snackbar-message-color` | Label | `inverse-on-surface` |
+| `--md-snackbar-action-color` | Action button label | `inverse-primary` |
+| `--md-snackbar-close-color` | Close affordance | `inverse-on-surface` |
+| `--md-snackbar-min-width` / `--md-snackbar-max-width` | Width bounds | `288px` / `568px` |
+
+<ComponentDemo
+  html={`<md-button variant="filled" onclick="document.getElementById('snack-themed').show()">Themed snackbar</md-button>
+<md-snackbar id="snack-themed" message="Wider, squared, error-toned" action="Undo" closeable style="--md-snackbar-container-color: var(--md-sys-color-error); --md-snackbar-message-color: var(--md-sys-color-on-error); --md-snackbar-action-color: var(--md-sys-color-on-error); --md-snackbar-close-color: var(--md-sys-color-on-error); --md-snackbar-container-shape: 2px; --md-snackbar-max-width: 560px;"></md-snackbar>`}
+  label="Themed instance"
+  storyId="communication-snackbar--custom-css"
+/>
+
+Check the result against the page behind it: the container is `inverse-surface`
+precisely so it reads as *not* part of the page, and a themed one has to keep
+that separation — the [dark-theme
+story](/storybook/?path=/story/communication-snackbar--dark-theme) is the other
+half of that check.
+
+**CSS parts** — `surface`, `message`, `actions`, `close`, plus `close-icon`,
+which the built-in close button re-exports (`exportparts="icon:close-icon"`) so
+you can reach the glyph itself.
+
+Use a part for what the custom properties cannot reach — border and radius on
+the surface, type style on the message, spacing between the controls:
+
+<ComponentDemo
+  html={`<style>
+  #snack-parts::part(surface) {
+    border-radius: 16px;
+    border: 2px solid var(--md-sys-color-outline-variant);
+  }
+  #snack-parts::part(message) { font-style: italic; }
+  #snack-parts::part(actions) { gap: 16px; }
+</style>
+<md-button variant="filled" onclick="document.getElementById('snack-parts').show()">Styled parts</md-button>
+<md-snackbar id="snack-parts" message="Styled with ::part()" action="Nice" closeable></md-snackbar>`}
+  label="::part() overrides"
+  storyId="communication-snackbar--css-parts"
+/>
+
+```css
+md-snackbar::part(message) {
+  letter-spacing: 0.25px;
+}
+```
+
+Keep the stock shape. Slight container transparency is fine if the text stays
+legible, but M3 warns against significantly altering the container shape.
+
+
+## Related
+
+[`md-dialog`](/components/dialog/) ·
+[`md-tooltip`](/components/tooltip/) ·
+[`md-button`](/components/button/) ·
+[`md-icon-button`](/components/icon-button/) ·
+[`md-bottom-sheet`](/components/bottom-sheet/) ·
+[`md-progress-indicator`](/components/progress-indicator/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-snackbar" />

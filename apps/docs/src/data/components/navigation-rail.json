@@ -1,0 +1,322 @@
+{
+  "tag": "md-navigation-rail",
+  "title": "Navigation Rail",
+  "slug": "navigation-rail",
+  "category": "Navigation",
+  "subComponentOf": null,
+  "storyId": "navigation-navigation-rail--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'standard' | 'expanded'",
+      "default": "'standard'",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "modal",
+      "attribute": "modal",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "fullHeight",
+      "attribute": "full-height",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "alignment",
+      "attribute": "alignment",
+      "type": "'top' | 'middle' | 'bottom'",
+      "default": "'top'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "expandable",
+      "attribute": "expandable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "toggleLabel",
+      "attribute": "toggle-label",
+      "type": "string",
+      "default": "'Toggle navigation'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "labelVisibility",
+      "attribute": "label-visibility",
+      "type": "'all' | 'selected' | 'none'",
+      "default": "'all'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "activeIndex",
+      "attribute": "active-index",
+      "type": "number",
+      "default": "-1",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "'Navigation'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disableFocusManagement",
+      "attribute": "disable-focus-management",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "orientation",
+      "attribute": "orientation",
+      "type": "'vertical' | 'horizontal'",
+      "default": "'vertical'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "maxVisible",
+      "attribute": "max-visible",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "overflowLabel",
+      "attribute": "overflow-label",
+      "type": "string",
+      "default": "'More'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "overflowIcon",
+      "attribute": "overflow-icon",
+      "type": "string",
+      "default": "'more_horiz'",
+      "reflect": false,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdTabChange",
+      "detail": "{ index: number; value: string }"
+    },
+    {
+      "name": "mdExpand",
+      "detail": "void"
+    },
+    {
+      "name": "mdCollapse",
+      "detail": "void"
+    }
+  ],
+  "methods": [
+    {
+      "name": "expand",
+      "params": ""
+    },
+    {
+      "name": "collapse",
+      "params": ""
+    },
+    {
+      "name": "toggle",
+      "params": ""
+    },
+    {
+      "name": "focusTab",
+      "params": "index: number"
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "logo",
+      "description": "Optional brand/logo at the very top"
+    },
+    {
+      "name": "logo-expanded",
+      "description": ""
+    },
+    {
+      "name": "header",
+      "description": "Optional top group (menu button, etc.)"
+    },
+    {
+      "name": "fab",
+      "description": "Optional FAB above the destinations"
+    },
+    {
+      "name": "footer",
+      "description": "Optional bottom group — settings, account / user menu, etc."
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "scrim",
+      "description": ""
+    },
+    {
+      "name": "container",
+      "description": "The flex column wrapping every section"
+    },
+    {
+      "name": "logo",
+      "description": "Logo/brand slot wrapper (topmost)"
+    },
+    {
+      "name": "logo-contracted",
+      "description": ""
+    },
+    {
+      "name": "logo-expanded",
+      "description": ""
+    },
+    {
+      "name": "toggle",
+      "description": ""
+    },
+    {
+      "name": "header",
+      "description": "Header slot wrapper (top group)"
+    },
+    {
+      "name": "fab",
+      "description": "FAB slot wrapper"
+    },
+    {
+      "name": "destinations",
+      "description": "The role=tablist that holds destinations"
+    },
+    {
+      "name": "overflow",
+      "description": ""
+    },
+    {
+      "name": "overflow-trigger",
+      "description": ""
+    },
+    {
+      "name": "footer",
+      "description": "Footer slot wrapper (bottom group)"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-navigation-rail-container-color",
+      "description": "Rail background"
+    },
+    {
+      "name": "--md-navigation-rail-container-width",
+      "description": "Width when collapsed (default 80px,"
+    },
+    {
+      "name": "--md-navigation-rail-expanded-width",
+      "description": "Width when expanded (default 220px,"
+    },
+    {
+      "name": "--md-navigation-rail-expanded-max-width",
+      "description": "Expanded width cap (default 360px)"
+    },
+    {
+      "name": "--md-navigation-rail-container-shape",
+      "description": "Border-radius"
+    },
+    {
+      "name": "--md-navigation-rail-container-elevation",
+      "description": "Box-shadow when free-floating"
+    },
+    {
+      "name": "--md-navigation-rail-padding-block",
+      "description": "Top/bottom padding (default 44px top space)"
+    },
+    {
+      "name": "--md-navigation-rail-padding-inline",
+      "description": "Start/end padding"
+    },
+    {
+      "name": "--md-navigation-rail-gap",
+      "description": "Gap between rail sections"
+    },
+    {
+      "name": "--md-navigation-rail-header-space",
+      "description": "Min space between header/FAB group and"
+    },
+    {
+      "name": "--md-navigation-rail-destinations-gap",
+      "description": "Gap between destinations (default 4px)"
+    },
+    {
+      "name": "--md-navigation-rail-content-color",
+      "description": "Default foreground color"
+    },
+    {
+      "name": "--md-navigation-rail-logo-icon-size",
+      "description": "Brand glyph footprint in the logo"
+    },
+    {
+      "name": "--md-navigation-rail-horizontal-padding-block",
+      "description": ""
+    },
+    {
+      "name": "--md-navigation-rail-horizontal-padding-inline",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-icon-button",
+    "md-menu",
+    "md-menu-item"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdTabChange",
+      "detail": "{ index: number; value: string }"
+    },
+    {
+      "name": "mdExpand",
+      "detail": "void"
+    },
+    {
+      "name": "mdCollapse",
+      "detail": "void"
+    }
+  ]
+}

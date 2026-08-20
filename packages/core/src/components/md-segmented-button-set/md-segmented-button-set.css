@@ -1,0 +1,24 @@
+/* ==========================================================
+   md-segmented-button-set — Container for segmented buttons
+   Spec: https://m3.material.io/components/segmented-buttons/specs
+   ========================================================== */
+
+:host {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  :host {
+    forced-color-adjust: none;
+  }
+}

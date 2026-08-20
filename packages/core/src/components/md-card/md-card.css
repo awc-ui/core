@@ -1,0 +1,387 @@
+/* ==========================================================
+   md-card — Material Design 3 Card
+   Spec: https://m3.material.io/components/cards/specs
+
+   Three variants:
+     elevated  — surface-container-low + elevation 1
+     filled    — surface-container-highest + no elevation
+     outlined  — surface + outline-variant border + no elevation
+
+   Measurements (MD3 spec):
+     Shape:               12px corner radius (shape-corner-medium)
+     Left/right padding:  16px (applied to default slot via consumer)
+     Padding between:     8px max (layout concern of consumer)
+     Label text:          start-aligned
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-card-container-color       Container background
+     --md-card-container-shape       Border-radius override
+     --md-card-container-elevation   Box-shadow override
+     --md-card-outline-color         Outline color (outlined variant)
+     --md-card-outline-width         Outline width (outlined variant)
+     --md-card-state-layer-color     State layer color override
+     --md-card-width                 Explicit inline-size (default: auto)
+     --md-card-min-width             Minimum inline-size
+     --md-card-max-width             Maximum inline-size
+     --md-card-height                Explicit block-size (default: auto)
+     --md-card-min-height            Minimum block-size
+     --md-card-max-height            Maximum block-size
+
+   ATTRIBUTES:
+     full-width    Stretch the card to 100% of its container's inline-size
+     full-height   Stretch the card to 100% of its container's block-size
+
+   CSS PARTS:
+     state-layer   Hover/press overlay (interactive only)
+     outline       Border element (outlined variant only)
+
+   SLOTS:
+     (default)     Card content (images, text, actions, other components)
+   ========================================================== */
+
+:host {
+  --_container-color: var(--md-card-container-color, var(--md-sys-color-surface-container-low));
+  --_container-shape: var(--md-card-container-shape, var(--md-sys-shape-corner-medium, max(8px, calc(12px + var(--md-sys-density-scale, 0) * 1px))));
+  --_container-elevation: var(--md-card-container-elevation, var(--md-sys-elevation-1));
+  --_outline-color: var(--md-card-outline-color, var(--md-sys-color-outline-variant));
+  --_outline-width: var(--md-card-outline-width, 1px);
+  --_state-layer-color: var(--md-card-state-layer-color, var(--md-sys-color-on-surface));
+
+  --_width: var(--md-card-width, auto);
+  --_min-width: var(--md-card-min-width, auto);
+  --_max-width: var(--md-card-max-width, none);
+  --_height: var(--md-card-height, auto);
+  --_min-height: var(--md-card-min-height, auto);
+  --_max-height: var(--md-card-max-height, none);
+
+  --_padding: var(--md-card-padding, max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px)));
+  --_gap: var(--md-card-gap, max(4px, calc(8px + var(--md-sys-density-scale, 0) * 1px)));
+
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: var(--_padding);
+  gap: var(--_gap);
+
+  inline-size: var(--_width);
+  min-inline-size: var(--_min-width);
+  max-inline-size: var(--_max-width);
+  block-size: var(--_height);
+  min-block-size: var(--_min-height);
+  max-block-size: var(--_max-height);
+
+  background-color: var(--_container-color);
+  border-radius: var(--_container-shape);
+  box-shadow: var(--_container-elevation);
+  color: var(--md-sys-color-on-surface);
+
+  /* MD3 body-medium typescale — set on :host so it inherits through to
+     slotted content (which lives in light DOM and only inherits from the
+     host element, not from shadow-DOM rules). Without this, slotted
+     headings / paragraphs fall back to the user-agent font (typically
+     Times) instead of the Roboto-based MD3 typescale.
+     NOTE: never use `--md-sys-typescale-*-font` for `font-family` — that
+     token is the `font` shorthand (e.g. `400 14px/20px Roboto, sans-serif`)
+     and is invalid for `font-family`, which silently kills the rule. */
+  font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif);
+  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-medium-font-weight, 400);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-body-medium-letter-spacing, 0.25px);
+
+  transition:
+    box-shadow var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    background-color var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* ==========================================================
+   FULL-WIDTH / FULL-HEIGHT attributes
+   `100%` only resolves when the parent has a definite size on
+   that axis, so consumers must place the card inside a flex /
+   grid item or a sized block container. Combined with the
+   `--md-card-max-{width,height}` tokens this gives a fluid
+   "fill but cap" pattern useful in dashboards and grids.
+   ========================================================== */
+
+:host(.md-card--full-width) {
+  --_width: 100%;
+}
+
+:host(.md-card--full-height) {
+  --_height: 100%;
+}
+
+/* ==========================================================
+   1. VARIANTS
+   ========================================================== */
+
+/* Elevated (default) */
+:host(.md-card--elevated) {
+  --_container-color: var(--md-card-container-color, var(--md-sys-color-surface-container-low));
+  --_container-elevation: var(--md-card-container-elevation, var(--md-sys-elevation-1));
+}
+
+/* Filled */
+:host(.md-card--filled) {
+  --_container-color: var(--md-card-container-color, var(--md-sys-color-surface-container-highest));
+  --_container-elevation: var(--md-card-container-elevation, var(--md-sys-elevation-0, none));
+}
+
+/* Outlined */
+:host(.md-card--outlined) {
+  --_container-color: var(--md-card-container-color, var(--md-sys-color-surface));
+  --_container-elevation: var(--md-card-container-elevation, var(--md-sys-elevation-0, none));
+}
+
+/* ==========================================================
+   2. OUTLINE (outlined variant only)
+   ========================================================== */
+
+.md-card__outline {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: var(--_outline-width) solid var(--_outline-color);
+  pointer-events: none;
+}
+
+/* ==========================================================
+   3. INTERACTIVE & DRAGGABLE STATES
+   Interactive cards behave like buttons with state layers.
+   Draggable cards support native HTML drag-and-drop with
+   the dragged state layer and elevation changes.
+   ========================================================== */
+
+:host(.md-card--interactive) {
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:host(.md-card--draggable) {
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+:host(.md-card--interactive.md-card--draggable) {
+  cursor: grab;
+}
+
+:host(.md-card--dragged) {
+  cursor: grabbing;
+}
+
+/* --- State layer --- */
+
+.md-card__state-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--_state-layer-color);
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short1, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  pointer-events: none;
+  z-index: 1;
+}
+
+:host(.md-card--interactive:hover) .md-card__state-layer,
+:host(.md-card--draggable:hover) .md-card__state-layer {
+  opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+}
+
+:host(.md-card--interactive:focus-visible) .md-card__state-layer,
+:host(.md-card--draggable:focus-visible) .md-card__state-layer {
+  opacity: var(--md-sys-state-focus-state-layer-opacity, 0.12);
+}
+
+:host(.md-card--interactive:active) .md-card__state-layer,
+:host(.md-card--draggable:active) .md-card__state-layer {
+  opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+}
+
+:host(.md-card--dragged) .md-card__state-layer {
+  opacity: var(--md-sys-state-dragged-state-layer-opacity, 0.16);
+}
+
+/* --- Elevation changes for elevated cards (interactive / draggable) --- */
+
+:host(.md-card--elevated.md-card--interactive:hover),
+:host(.md-card--elevated.md-card--draggable:hover) {
+  --_container-elevation: var(--md-sys-elevation-2);
+}
+
+:host(.md-card--elevated.md-card--interactive:focus-visible),
+:host(.md-card--elevated.md-card--draggable:focus-visible) {
+  --_container-elevation: var(--md-sys-elevation-1);
+}
+
+:host(.md-card--elevated.md-card--interactive:active),
+:host(.md-card--elevated.md-card--draggable:active) {
+  --_container-elevation: var(--md-sys-elevation-1);
+}
+
+:host(.md-card--elevated.md-card--dragged) {
+  --_container-elevation: var(--md-sys-elevation-4);
+}
+
+/* --- Elevation changes for filled cards (interactive / draggable) --- */
+
+:host(.md-card--filled.md-card--interactive:hover),
+:host(.md-card--filled.md-card--draggable:hover) {
+  --_container-elevation: var(--md-sys-elevation-1);
+}
+
+:host(.md-card--filled.md-card--interactive:focus-visible),
+:host(.md-card--filled.md-card--draggable:focus-visible) {
+  --_container-elevation: var(--md-sys-elevation-0, none);
+}
+
+:host(.md-card--filled.md-card--interactive:active),
+:host(.md-card--filled.md-card--draggable:active) {
+  --_container-elevation: var(--md-sys-elevation-0, none);
+}
+
+:host(.md-card--filled.md-card--dragged) {
+  --_container-elevation: var(--md-sys-elevation-3);
+}
+
+/* --- Elevation changes for outlined cards (interactive / draggable) --- */
+
+:host(.md-card--outlined.md-card--interactive:hover),
+:host(.md-card--outlined.md-card--draggable:hover) {
+  --_container-elevation: var(--md-sys-elevation-1);
+}
+
+:host(.md-card--outlined.md-card--interactive:focus-visible),
+:host(.md-card--outlined.md-card--draggable:focus-visible) {
+  --_container-elevation: var(--md-sys-elevation-0, none);
+}
+
+:host(.md-card--outlined.md-card--interactive:active),
+:host(.md-card--outlined.md-card--draggable:active) {
+  --_container-elevation: var(--md-sys-elevation-0, none);
+}
+
+:host(.md-card--outlined.md-card--dragged) {
+  --_container-elevation: var(--md-sys-elevation-3);
+}
+
+/* --- Outline state for outlined cards (interactive / draggable) --- */
+
+:host(.md-card--outlined.md-card--interactive:focus-visible) .md-card__outline,
+:host(.md-card--outlined.md-card--draggable:focus-visible) .md-card__outline {
+  border-color: var(--md-sys-color-on-surface);
+}
+
+:host(.md-card--outlined.md-card--dragged) .md-card__outline {
+  border-color: var(--md-sys-color-outline-variant);
+}
+
+/* ==========================================================
+   4. FOCUS RING (interactive only)
+   ========================================================== */
+
+:host(.md-card--interactive:focus-visible) {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: 2px;
+}
+
+/* ==========================================================
+   5. DISABLED (interactive only)
+   ========================================================== */
+
+:host(.md-card--disabled) {
+  cursor: default;
+  pointer-events: none;
+  --_container-elevation: var(--md-sys-elevation-0, none) !important;
+  --_container-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+}
+
+:host(.md-card--disabled.md-card--outlined) .md-card__outline {
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
+}
+
+:host(.md-card--disabled:hover) .md-card__state-layer,
+:host(.md-card--disabled:active) .md-card__state-layer,
+:host(.md-card--disabled:focus-visible) .md-card__state-layer {
+  opacity: 0;
+}
+
+/* Soft-disabled: disabled visuals but remains focusable */
+:host([soft-disabled]) {
+  cursor: default;
+  pointer-events: auto;
+  --_container-elevation: var(--md-sys-elevation-0, none) !important;
+  --_container-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+}
+
+:host([soft-disabled]) .md-card__state-layer {
+  display: none;
+}
+
+/* ==========================================================
+   6. REDUCED MOTION
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+
+  .md-card__state-layer {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   7. FORCED COLORS — Windows High Contrast
+   ========================================================== */
+
+@media (forced-colors: active) {
+  :host {
+    border: 1px solid ButtonText;
+    background-color: ButtonFace;
+    color: ButtonText;
+    forced-color-adjust: none;
+  }
+
+  .md-card__outline {
+    border-color: ButtonText;
+  }
+
+  :host(.md-card--interactive:focus-visible) {
+    outline-color: Highlight;
+  }
+
+  :host(.md-card--disabled) {
+    border-color: GrayText;
+    color: GrayText;
+    opacity: 1;
+  }
+
+  :host(.md-card--disabled) .md-card__outline {
+    border-color: GrayText;
+  }
+
+  .md-card__state-layer {
+    display: none;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

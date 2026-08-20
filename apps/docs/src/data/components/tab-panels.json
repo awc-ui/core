@@ -1,0 +1,41 @@
+{
+  "tag": "md-tab-panels",
+  "title": "Tab Panels",
+  "slug": "tab-panels",
+  "category": "Navigation",
+  "subComponentOf": "md-tabs",
+  "storyId": null,
+  "props": [
+    {
+      "name": "for",
+      "attribute": "for",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "sizing",
+      "attribute": "sizing",
+      "type": "'stable' | 'active'",
+      "default": "'stable'",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [],
+  "cssCustomProps": [],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": []
+}

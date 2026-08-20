@@ -1,0 +1,695 @@
+{
+  "tag": "md-search",
+  "title": "Search",
+  "slug": "search",
+  "category": "Text Inputs",
+  "subComponentOf": null,
+  "storyId": "text-inputs-search--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'contained' | 'divided'",
+      "default": "'contained'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "layout",
+      "attribute": "layout",
+      "type": "'full-screen' | 'docked'",
+      "default": "'full-screen'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "trigger",
+      "attribute": "trigger",
+      "type": "'bar' | 'icon'",
+      "default": "",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "triggerIcon",
+      "attribute": "trigger-icon",
+      "type": "string",
+      "default": "'search'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "triggerFor",
+      "attribute": "trigger-for",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "triggerElement",
+      "attribute": "",
+      "type": "HTMLElement",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "fullWidth",
+      "attribute": "full-width",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "placeholder",
+      "attribute": "placeholder",
+      "type": "string",
+      "default": "'Search'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "open",
+      "attribute": "open",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "elevation",
+      "attribute": "elevation",
+      "type": "0 | 1 | 2 | 3 | 4 | 5",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "leadingIcon",
+      "attribute": "leading-icon",
+      "type": "string",
+      "default": "'search'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "openLeadingIcon",
+      "attribute": "open-leading-icon",
+      "type": "string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "showClearButton",
+      "attribute": "show-clear-button",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "voiceSearch",
+      "attribute": "voice-search",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "escapeCloses",
+      "attribute": "escape-closes",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "dismissOnOutsideClick",
+      "attribute": "dismiss-on-outside-click",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "scrollShadow",
+      "attribute": "scroll-shadow",
+      "type": "boolean",
+      "default": "true",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "maxBlockSize",
+      "attribute": "max-block-size",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "inputAriaLabel",
+      "attribute": "input-aria-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "initialFocus",
+      "attribute": "initial-focus",
+      "type": "'auto' | 'input' | 'leading'",
+      "default": "'auto'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "announceResults",
+      "attribute": "announce-results",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "resultsLabel",
+      "attribute": "results-label",
+      "type": "string",
+      "default": "'{count} results available'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "noResultsLabel",
+      "attribute": "no-results-label",
+      "type": "string",
+      "default": "'No results available'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "loading",
+      "attribute": "loading",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "debounce",
+      "attribute": "debounce",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "throttle",
+      "attribute": "throttle",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "loadingLabel",
+      "attribute": "loading-label",
+      "type": "string",
+      "default": "'Searching'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdInput",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdSearch",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdSubmit",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdChange",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdClear",
+      "detail": "void"
+    },
+    {
+      "name": "mdVoice",
+      "detail": "{ value: string; final: boolean }"
+    },
+    {
+      "name": "mdLeadingIconClick",
+      "detail": "MdSearchLeadingIconClickDetail"
+    },
+    {
+      "name": "mdTrailingIconClick",
+      "detail": "MdSearchTrailingIconClickDetail"
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "params": ""
+    },
+    {
+      "name": "close",
+      "params": ""
+    },
+    {
+      "name": "toggle",
+      "params": ""
+    },
+    {
+      "name": "focusInput",
+      "params": ""
+    },
+    {
+      "name": "startVoice",
+      "params": ""
+    },
+    {
+      "name": "stopVoice",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "trigger",
+      "description": "Replace the built-in search icon trigger (full-screen)"
+    },
+    {
+      "name": "leading",
+      "description": "Replace the leading icon"
+    },
+    {
+      "name": "loader",
+      "description": "Replace the in-bar loading indicator shown while `loading`"
+    },
+    {
+      "name": "trailing",
+      "description": "Trailing icon buttons + avatar (any combination)"
+    },
+    {
+      "name": "results",
+      "description": "Suggestions / results list"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "trailing",
+      "description": "Trailing slot container (icon buttons / avatar)"
+    },
+    {
+      "name": "trigger",
+      "description": "Icon-button entry point (full-screen closed state)"
+    },
+    {
+      "name": "trigger-button",
+      "description": "Built-in search icon button (when trigger slot empty)"
+    },
+    {
+      "name": "leading",
+      "description": "Leading icon container"
+    },
+    {
+      "name": "leading-state-layer",
+      "description": ""
+    },
+    {
+      "name": "clear-button",
+      "description": "Built-in clear (×) button"
+    },
+    {
+      "name": "voice-button",
+      "description": "Built-in voice-search mic button (when `voice-search`"
+    },
+    {
+      "name": "loading",
+      "description": "In-bar loading indicator (shown while `loading`)"
+    },
+    {
+      "name": "status",
+      "description": "Visually-hidden polite live region (result announcements)"
+    },
+    {
+      "name": "bar",
+      "description": "Search bar container"
+    },
+    {
+      "name": "state-layer",
+      "description": "Hover / focus / press overlay on the bar"
+    },
+    {
+      "name": "input",
+      "description": "Native <input>"
+    },
+    {
+      "name": "panel",
+      "description": "Results panel — full-viewport surface (full-screen) /"
+    },
+    {
+      "name": "divider",
+      "description": "Hairline between bar and panel (visible in `divided`)"
+    },
+    {
+      "name": "panel-body",
+      "description": "Flex region that sizes the scroll viewport"
+    },
+    {
+      "name": "empty",
+      "description": "Visible no-results message (open + query + zero rows)"
+    },
+    {
+      "name": "results-host",
+      "description": ""
+    },
+    {
+      "name": "results-viewport",
+      "description": "Inner scroll viewport (md-scroll-shadow)"
+    },
+    {
+      "name": "loading-shape",
+      "description": "Morphing shape inside the loading indicator"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-search-container-color",
+      "description": "Bar background (#ECE6F0 / surface-container-high)"
+    },
+    {
+      "name": "--md-search-container-elevation",
+      "description": "Custom bar shadow — overrides the"
+    },
+    {
+      "name": "--md-search-leading-icon-color",
+      "description": "Leading / open-back icon (#1D1B20 / on-surface)"
+    },
+    {
+      "name": "--md-search-trailing-icon-color",
+      "description": "Trailing + clear icons (#49454F / on-surface-variant)"
+    },
+    {
+      "name": "--md-search-icon-color",
+      "description": "Alias for trailing icon colour (legacy)"
+    },
+    {
+      "name": "--md-search-loading-color",
+      "description": "In-bar loading indicator shape colour"
+    },
+    {
+      "name": "--md-search-container-shape",
+      "description": "Bar border-radius"
+    },
+    {
+      "name": "--md-search-container-height",
+      "description": "Bar block-size — docked / contained (56dp)"
+    },
+    {
+      "name": "--md-search-icon-button-size",
+      "description": "Leading / trailing icon tap target (48dp)"
+    },
+    {
+      "name": "--md-search-leading-icon-label-gap",
+      "description": "Tap target → label gap (4dp)"
+    },
+    {
+      "name": "--md-search-trailing-icon-label-gap",
+      "description": "Label → tap target gap (4dp)"
+    },
+    {
+      "name": "--md-search-container-padding-inline",
+      "description": "Extra inline padding on the bar  (0dp)"
+    },
+    {
+      "name": "--md-search-container-padding-inline-focused",
+      "description": "Inline padding on the bar when focused / open"
+    },
+    {
+      "name": "--md-search-leading-padding-inline",
+      "description": "Space from the bar's leading edge"
+    },
+    {
+      "name": "--md-search-trailing-padding-inline",
+      "description": "Space from the bar's trailing edge"
+    },
+    {
+      "name": "--md-search-input-color",
+      "description": "Input text colour"
+    },
+    {
+      "name": "--md-search-input-font-family",
+      "description": "Input typescale font (body-large)"
+    },
+    {
+      "name": "--md-search-input-font-size",
+      "description": "Input typescale size (16dp)"
+    },
+    {
+      "name": "--md-search-input-line-height",
+      "description": "Input typescale line height (24dp)"
+    },
+    {
+      "name": "--md-search-input-font-weight",
+      "description": "Input typescale weight (400)"
+    },
+    {
+      "name": "--md-search-input-letter-spacing",
+      "description": "Input typescale tracking (0.5dp)"
+    },
+    {
+      "name": "--md-search-placeholder-color",
+      "description": "Placeholder / supporting text colour"
+    },
+    {
+      "name": "--md-search-state-layer-color",
+      "description": "Hover/press wash (#1D1B20 / on-surface)"
+    },
+    {
+      "name": "--md-search-focus-indicator-color",
+      "description": "Focus ring colour (#625B71 / secondary)"
+    },
+    {
+      "name": "--md-search-focus-indicator-offset",
+      "description": "Focus ring offset (2dp)"
+    },
+    {
+      "name": "--md-search-avatar-size",
+      "description": "Avatar diameter when slotted   (40dp)"
+    },
+    {
+      "name": "--md-search-panel-min-block-size",
+      "description": "Docked panel floor — 0 = shrink to"
+    },
+    {
+      "name": "--md-search-panel-max-block-size",
+      "description": "Docked panel maximum height —"
+    },
+    {
+      "name": "--md-search-max-block-size",
+      "description": "Open surface max height — full-screen"
+    },
+    {
+      "name": "--md-search-docked-panel-shape",
+      "description": "Contained docked results card radius"
+    },
+    {
+      "name": "--md-search-panel-offset",
+      "description": "Docked panel gap fallback (divided / generic 4dp)"
+    },
+    {
+      "name": "--md-search-bar-fullscreen-color",
+      "description": "Bar background in full-screen open"
+    },
+    {
+      "name": "--md-search-fullscreen-results-color",
+      "description": "Opaque results surface in full-screen"
+    },
+    {
+      "name": "--md-search-divider-color",
+      "description": "Hairline colour (divided variant)"
+    },
+    {
+      "name": "--md-search-divider-thickness",
+      "description": "Hairline thickness            (1px)"
+    },
+    {
+      "name": "--md-search-fullscreen-bar-panel-gap",
+      "description": "Contained full-screen: gap between"
+    },
+    {
+      "name": "--md-search-empty-color",
+      "description": "No-results message colour"
+    },
+    {
+      "name": "--md-search-empty-padding-block",
+      "description": "No-results vertical padding"
+    },
+    {
+      "name": "--md-search-empty-padding-inline",
+      "description": "No-results horizontal padding"
+    },
+    {
+      "name": "--md-search-expand-inset",
+      "description": "Docked/inline bar RESTING side"
+    },
+    {
+      "name": "--md-search-expand-focused-inset",
+      "description": "Docked/inline bar FOCUSED side"
+    },
+    {
+      "name": "--md-search-expand-duration",
+      "description": "Springy expand duration      (medium4 / 400ms)"
+    },
+    {
+      "name": "--md-search-expand-easing",
+      "description": "Springy expand easing — back-out"
+    },
+    {
+      "name": "--md-search-panel-motion-duration",
+      "description": "Docked panel + bar transition"
+    },
+    {
+      "name": "--md-search-fullscreen-expand-duration",
+      "description": "Full-screen modal enter duration"
+    },
+    {
+      "name": "--md-search-fullscreen-expand-easing",
+      "description": "Full-screen enter easing"
+    },
+    {
+      "name": "--md-search-fullscreen-collapse-easing",
+      "description": "Full-screen exit easing"
+    },
+    {
+      "name": "--md-search-divided-fullscreen-bar-height",
+      "description": ""
+    },
+    {
+      "name": "--md-search-container-min-inline-size",
+      "description": ""
+    },
+    {
+      "name": "--md-search-container-max-inline-size",
+      "description": ""
+    },
+    {
+      "name": "--md-search-icon-size",
+      "description": ""
+    },
+    {
+      "name": "--md-search-focus-indicator-thickness",
+      "description": ""
+    },
+    {
+      "name": "--md-search-panel-padding-block-start",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-icon-button",
+    "md-loading-indicator",
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [
+    {
+      "name": "MdSearchLeadingIconClickDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** The bar's current input value at click time. */\n  value: string;\n  /** Whether the bar / panel is open at click time. */\n  open: boolean;"
+    },
+    {
+      "name": "MdSearchTrailingIconClickDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** The bar's current input value at click time. */\n  value: string;\n  /** Whether the bar / panel is open at click time. */\n  open: boolean;"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdInput",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdSearch",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdSubmit",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdChange",
+      "detail": "{ value: string }"
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdClear",
+      "detail": "void"
+    },
+    {
+      "name": "mdVoice",
+      "detail": "{ value: string; final: boolean }"
+    },
+    {
+      "name": "mdLeadingIconClick",
+      "detail": "MdSearchLeadingIconClickDetail"
+    },
+    {
+      "name": "mdTrailingIconClick",
+      "detail": "MdSearchTrailingIconClickDetail"
+    }
+  ]
+}

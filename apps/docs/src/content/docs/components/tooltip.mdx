@@ -1,0 +1,1101 @@
+---
+title: Tooltip
+description: "A short explanation of a UI element — plain tooltips label icon-only controls, rich tooltips add a subhead, body and actions"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/tooltip.json";
+
+**A short explanation of a UI element.** Plain tooltips label icon-only
+controls; rich tooltips add a subhead, body text and actions. You **wrap the
+trigger** in the default slot, and the popup auto-positions around it.
+
+<ComponentDemo
+  html={`<md-tooltip text="Save" position="top">
+  <md-icon-button icon="save" aria-label="Save"></md-icon-button>
+</md-tooltip>
+<md-tooltip text="Delete" position="bottom">
+  <md-icon-button icon="delete" aria-label="Delete"></md-icon-button>
+</md-tooltip>
+<md-tooltip variant="rich" subhead="Smart filters" text="Save a filter set and reuse it across boards." position="bottom">
+  <md-button variant="outlined">Filters</md-button>
+  <div slot="actions">
+    <md-button variant="text">Learn more</md-button>
+  </div>
+</md-tooltip>`}
+  label="Live preview"
+  storyId="communication-tooltip--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-tooltip" example="" />
+
+## When to use
+
+- **Plain**: naming an icon-only control — the primary use.
+- **Rich**: extra context about a feature, optionally with a link or action.
+- Explaining a constraint or a disabled state.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| The element already has visible label text | Nothing — M3: a plain tooltip is unnecessary |
+| Critical information the user must not miss | [`md-dialog`](/components/dialog/) |
+| Validation or helper text for a field | [`md-text-field`](/components/text-field/)'s `supporting-text` / `error-text` |
+| A menu of actions | [`md-menu`](/components/menu/) |
+| Transient feedback after an action | [`md-snackbar`](/components/snackbar/) |
+| Long-form content | [`md-dialog`](/components/dialog/) or [`md-side-sheet`](/components/side-sheet/) |
+| A persistent rich tooltip on an icon button | Nothing — M3 forbids this combination |
+
+## Composition — wrap the trigger
+
+The tooltip is a wrapper, not a pointer. The control you are explaining goes in
+the **default slot**; there is no `for` / `anchor` attribute.
+
+```html
+<md-tooltip text="Download">
+  <md-icon-button icon="download" aria-label="Download"></md-icon-button>
+</md-tooltip>
+```
+
+:::danger[A tooltip is not an accessible name]
+The label lives in a separate shadow tree, so an icon-only trigger **still needs
+its own `aria-label`**. Set both: `aria-label` for assistive tech, the tooltip
+for sighted users.
+:::
+
+Any focusable element works as a trigger — `md-icon-button`, `md-button`, or a
+plain native `<button>`.
+
+<ComponentDemo
+  html={`<md-tooltip text="Wrapped md-icon-button">
+  <md-icon-button icon="download" aria-label="Download"></md-icon-button>
+</md-tooltip>
+<md-tooltip text="Wrapped md-button">
+  <md-button variant="outlined">Export</md-button>
+</md-tooltip>
+<md-tooltip text="Wrapped native button">
+  <button type="button" style="font: inherit; padding: 8px 16px; border-radius: 20px; border: 1px solid var(--md-sys-color-outline); background: transparent; color: var(--md-sys-color-on-surface); cursor: pointer;">Native button</button>
+</md-tooltip>`}
+  label="Any focusable trigger — hover each one"
+  storyId="communication-tooltip--native-button-trigger"
+/>
+
+## Plain tooltips
+
+`variant="plain"` is the default. `text` is the whole body; keep it to a few
+words — M3 asks you to avoid wrapping past one line.
+
+<ComponentDemo
+  html={`<md-tooltip text="Save" position="top">
+  <md-icon-button icon="save" aria-label="Save"></md-icon-button>
+</md-tooltip>
+<md-tooltip text="Delete" position="bottom">
+  <md-icon-button icon="delete" aria-label="Delete"></md-icon-button>
+</md-tooltip>
+<md-tooltip text="Edit" position="left">
+  <md-icon-button icon="edit" aria-label="Edit"></md-icon-button>
+</md-tooltip>
+<md-tooltip text="Share" position="right">
+  <md-icon-button icon="share" aria-label="Share"></md-icon-button>
+</md-tooltip>
+<md-tooltip text="Favorite this item" position="top">
+  <md-icon-button icon="favorite" aria-label="Favorite"></md-icon-button>
+</md-tooltip>`}
+  label="Plain tooltips on icon buttons"
+  storyId="communication-tooltip--plain-tooltips"
+/>
+
+:::tip[Try it with the keyboard]
+Tooltips reveal on **focus** as well as hover — `Tab` onto a trigger above.
+`Escape` dismisses.
+:::
+
+## Rich tooltips
+
+`variant="rich"` renders on a surface container with an optional `subhead`, the
+supporting `text`, and an `actions` slot. Keep actions to a **single row** —
+M3 cautions against stacking them.
+
+<ComponentDemo
+  html={`<md-tooltip variant="rich" subhead="Auto-save" text="Changes are saved to the cloud as you type." position="bottom" show-delay="200">
+  <md-button variant="outlined">The canonical rich tooltip</md-button>
+  <div slot="actions">
+    <md-button variant="text">Got it</md-button>
+  </div>
+</md-tooltip>`}
+  label="Rich tooltip"
+  storyId="communication-tooltip--rich-tooltip"
+/>
+
+The five shapes M3 allows — with and without a subhead, with one action, two, or
+none:
+
+<ComponentDemo
+  html={`<md-tooltip variant="rich" subhead="Auto-save" text="Changes are saved to the cloud as you type." position="bottom">
+  <md-button variant="outlined">Subhead + text + 2 buttons</md-button>
+  <div slot="actions">
+    <md-button variant="text">Learn more</md-button>
+    <md-button variant="text">Got it</md-button>
+  </div>
+</md-tooltip>
+<md-tooltip variant="rich" subhead="New feature" text="Boards can now be shared with a read-only link." position="bottom">
+  <md-button variant="outlined">Subhead + text + 1 button</md-button>
+  <div slot="actions">
+    <md-button variant="text">Got it</md-button>
+  </div>
+</md-tooltip>
+<md-tooltip variant="rich" subhead="Keyboard shortcut" text="Press Ctrl+S to save without leaving the editor." position="bottom">
+  <md-button variant="outlined">Subhead + text</md-button>
+</md-tooltip>
+<md-tooltip variant="rich" text="This action cannot be undone once the export starts." position="bottom">
+  <md-button variant="outlined">Text + 1 button</md-button>
+  <div slot="actions">
+    <md-button variant="text">Dismiss</md-button>
+  </div>
+</md-tooltip>
+<md-tooltip variant="rich" text="Get notified when someone comments on your board." position="bottom">
+  <md-button variant="outlined">Text + 2 buttons</md-button>
+  <div slot="actions">
+    <md-button variant="text">Not now</md-button>
+    <md-button variant="text">Enable</md-button>
+  </div>
+</md-tooltip>`}
+  label="The five rich configurations"
+  storyId="communication-tooltip--rich-configurations"
+/>
+
+### Slotted body content
+
+`subhead`, `content` and `actions` are all slots, so the body can carry markup
+rather than a plain string — an icon beside the subhead, emphasis inside the
+text. The props are the shorthand; the slots win when both are set.
+
+<ComponentDemo
+  html={`<md-tooltip variant="rich" position="bottom" show-delay="200">
+  <md-icon-button icon="help_outline" aria-label="Help"></md-icon-button>
+  <span slot="subhead" style="display: inline-flex; align-items: center; gap: 6px;">
+    <span class="material-symbols-outlined" style="font-size: 18px;" aria-hidden="true">info</span>
+    Slotted subhead
+  </span>
+  <span slot="content">This body uses <strong>slots</strong> instead of props, so it can carry <em>formatting</em>.</span>
+  <div slot="actions">
+    <md-button variant="text">Learn more</md-button>
+    <md-button variant="text">Got it</md-button>
+  </div>
+</md-tooltip>`}
+  label="Markup in the subhead and body"
+  storyId="communication-tooltip--slotted-content"
+/>
+
+### Focus retention
+
+Rich tooltips stay open while focus is inside them, so the action buttons are
+reachable by keyboard: focus leaving the trigger **into** the tooltip does not
+arm the hide, while focus leaving to anything else does. Don't shorten
+`hide-delay` enough to dismiss the popup before a user can travel into it.
+
+<ComponentDemo
+  html={`<md-tooltip variant="rich" subhead="Heads up" text="Tab from the trigger into this tooltip — it stays open. Tab past it and it closes." position="bottom" show-delay="0" hide-delay="150">
+  <md-button variant="outlined">Tab into me</md-button>
+  <div slot="actions">
+    <md-button variant="text">Got it</md-button>
+  </div>
+</md-tooltip>
+<md-button variant="text">Somewhere else</md-button>`}
+  label="Focus moving into the tooltip keeps it open"
+  storyId="communication-tooltip--rich-focus-retention"
+/>
+
+## Placement
+
+`position` accepts twelve placements. It is a **hint**: `auto-position`
+(default **on**) flips the popup to whichever side keeps it on screen.
+
+| Group | Values |
+|---|---|
+| Top | `top`, `top-start`, `top-end` |
+| Bottom | `bottom`, `bottom-start`, `bottom-end` |
+| Left | `left`, `left-start`, `left-end` |
+| Right | `right`, `right-start`, `right-end` |
+
+<ComponentDemo
+  html={`<md-tooltip text="Position: top" position="top" show-delay="200"><md-button variant="outlined">top</md-button></md-tooltip>
+<md-tooltip text="Position: top-start" position="top-start" show-delay="200"><md-button variant="outlined">top-start</md-button></md-tooltip>
+<md-tooltip text="Position: top-end" position="top-end" show-delay="200"><md-button variant="outlined">top-end</md-button></md-tooltip>
+<md-tooltip text="Position: bottom" position="bottom" show-delay="200"><md-button variant="outlined">bottom</md-button></md-tooltip>
+<md-tooltip text="Position: bottom-start" position="bottom-start" show-delay="200"><md-button variant="outlined">bottom-start</md-button></md-tooltip>
+<md-tooltip text="Position: bottom-end" position="bottom-end" show-delay="200"><md-button variant="outlined">bottom-end</md-button></md-tooltip>
+<md-tooltip text="Position: left" position="left" show-delay="200"><md-button variant="outlined">left</md-button></md-tooltip>
+<md-tooltip text="Position: left-start" position="left-start" show-delay="200"><md-button variant="outlined">left-start</md-button></md-tooltip>
+<md-tooltip text="Position: left-end" position="left-end" show-delay="200"><md-button variant="outlined">left-end</md-button></md-tooltip>
+<md-tooltip text="Position: right" position="right" show-delay="200"><md-button variant="outlined">right</md-button></md-tooltip>
+<md-tooltip text="Position: right-start" position="right-start" show-delay="200"><md-button variant="outlined">right-start</md-button></md-tooltip>
+<md-tooltip text="Position: right-end" position="right-end" show-delay="200"><md-button variant="outlined">right-end</md-button></md-tooltip>`}
+  label="All twelve placements — hover each button"
+  storyId="communication-tooltip--all-placements"
+/>
+
+Both tooltips below ask for the **same** side and sit at the same distance from
+the window edge, so they face identical room. The first flips to stay visible;
+the second is pinned with `auto-position="false"` and stays where it was told,
+running off the edge. (As above, on a very wide monitor there is room for both —
+narrow the window to see them diverge.) Pin a side only when you know the popup
+will fit there:
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 20px; align-items: flex-start;">
+  <md-tooltip text="Auto-position is on, so when the inline-start side turns out to be too small I move over to the other side" position="left" show-delay="0" style="--md-tooltip-plain-max-inline-size: min(60vw, 560px);">
+    <md-button variant="tonal">auto-position (default)</md-button>
+  </md-tooltip>
+  <md-tooltip text="Auto-position is off, so I stay on the inline-start side even when that means running off the edge of the screen" position="left" auto-position="false" show-delay="0" style="--md-tooltip-plain-max-inline-size: min(60vw, 560px);">
+    <md-button variant="tonal">auto-position=false</md-button>
+  </md-tooltip>
+</div>`}
+  label="Same request, with and without auto-position"
+  storyId="communication-tooltip--auto-positioning"
+/>
+
+### At the viewport edge
+
+When the preferred side has no room, the popup flips to the **opposite** side
+rather than being clipped — a `top` tooltip on a trigger pinned to the top of
+the viewport resolves to `bottom`. That is what `auto-position` buys you, and
+it is why the pinned demo above is the exception rather than the rule. The
+[edge auto-flip story](/storybook/?path=/story/communication-tooltip--edge-auto-flip)
+pins a trigger 2px from the top edge, where nothing can make it fit, and asserts
+the flip.
+
+Wherever it ends up, the popup sits **`offset` px clear of the trigger's edge**
+along the placement axis — `8` by default. How it lines up across that edge is
+the suffix's job: the four un-suffixed placements **centre** the popup on the
+trigger, while `-start` / `-end` align it flush to the corresponding trigger
+edge. `cross-offset` nudges it from there. The only thing auto-positioning
+changes is *which* edge.
+
+The rule is simply *does the popup fit* — room measured against the **viewport**,
+not against this column. Measured on the demo below, where the popups are 435px
+and 429px wide:
+
+| Window | `position="left"` | `position="right"` |
+|---|---|---|
+| 1920px | 577px of room → stays | 705px → stays |
+| 1600px | 417px → **flips** | 545px → stays |
+| 1280px | 385px → **flips** | 385px → **flips** |
+| 1024px | 369px → **flips** | 108px → **flips** |
+
+So on a wide monitor you may see nothing move: the gutter beside a centred
+content column is bigger than the popup, so it fits where you asked. **Narrow
+the window and hover again** and both swap sides. A tooltip that stays put is
+the rule working — it only moves when staying would clip it.
+
+<ComponentDemo
+  html={`<div style="display: flex; justify-content: space-between; align-items: center; inline-size: 100%; gap: 16px;">
+  <md-tooltip text="There is not enough room on my inline-start side, so I flip to the other one" position="left" show-delay="0" style="--md-tooltip-plain-max-inline-size: min(60vw, 560px);">
+    <md-button variant="filled">position=left</md-button>
+  </md-tooltip>
+  <md-tooltip text="There is not enough room on my inline-end side, so I flip to the other one" position="right" show-delay="0" style="--md-tooltip-plain-max-inline-size: min(60vw, 560px);">
+    <md-button variant="filled">position=right</md-button>
+  </md-tooltip>
+</div>`}
+  label="Flips when the requested side is too small"
+  storyId="communication-tooltip--edge-auto-flip"
+/>
+
+### Inside a transformed ancestor
+
+An ancestor with `transform`, `filter` or `contain` becomes the containing block
+for anything `position: fixed` inside it — which is what the popup is. Tooltips
+handle that themselves: the position is resolved against the containing block
+rather than the viewport, so a tooltip keeps landing on its trigger even inside
+a transformed wrapper.
+
+<ComponentDemo
+  html={`<div style="transform: translateZ(0); padding: 24px; border: 1px dashed var(--md-sys-color-outline); border-radius: 12px; display: inline-flex; gap: 16px;">
+  <md-tooltip text="Positioned against the transformed block" position="bottom" show-delay="200">
+    <md-button variant="filled">Transformed ancestor</md-button>
+  </md-tooltip>
+  <md-tooltip text="Same, with a filter" position="bottom" show-delay="200">
+    <md-button variant="outlined">Filtered ancestor</md-button>
+  </md-tooltip>
+</div>`}
+  label="Trigger inside a transformed wrapper"
+  storyId="communication-tooltip--inside-transformed-container"
+/>
+
+You get this for free, but it is worth knowing the mechanism exists, because the
+same CSS traps overlays that position themselves naively. The difference is
+visible in the popup's own inline style: inside the transformed wrapper it is
+written in **containing-block** coordinates (`top: 73px`), while an ordinary
+tooltip on the same page carries viewport coordinates (`top: 441.7px`). Both
+land on their trigger.
+
+### Moving the trigger in the DOM
+
+A tooltip that is detached and re-attached (a virtualised list, a drag-and-drop
+reorder, a portal) re-establishes its listeners and repositions against the
+moved trigger on reconnect, and an `open` set while it was detached is honoured
+once it lands. Move it between the two boxes and hover it again — it still works
+in its new home:
+
+<ComponentDemo
+  html={`<div data-reparent style="display: flex; flex-direction: column; gap: 16px;">
+  <div style="display: flex; gap: 24px; align-items: stretch;">
+    <div data-slot-a style="flex: 1; min-block-size: 64px; display: flex; align-items: center; justify-content: center; padding: 12px; border: 1px dashed var(--md-sys-color-outline); border-radius: 12px;">
+      <md-tooltip text="I keep working after the move" position="top" show-delay="0">
+        <md-button variant="filled">Hover me</md-button>
+      </md-tooltip>
+    </div>
+    <div data-slot-b style="flex: 1; min-block-size: 64px; display: flex; align-items: center; justify-content: center; padding: 12px; border: 1px dashed var(--md-sys-color-outline); border-radius: 12px; color: var(--md-sys-color-on-surface-variant); font: 400 13px system-ui, sans-serif;">empty</div>
+  </div>
+  <md-button variant="outlined" onclick="var b=this.closest('[data-reparent]');var a=b.querySelector('[data-slot-a]');var c=b.querySelector('[data-slot-b]');var t=b.querySelector('md-tooltip');var to=t.parentElement===a?c:a;var from=to===a?c:a;to.textContent='';from.textContent='empty';to.appendChild(t)">Move the tooltip</md-button>
+</div>`}
+  label="Move the tooltip, then hover it again"
+  storyId="communication-tooltip--reparented-trigger"
+/>
+
+## Offsets
+
+`offset` is the gap along the main axis (default `8`); `cross-offset` nudges the
+popup along the perpendicular axis (default `0`). Both are in px.
+
+The two behave differently under RTL. `offset` is applied to the **resolved**
+placement, so it follows the side once that has mirrored. `cross-offset` is
+applied to the **physical** axis and is never mirrored: a positive value always
+moves the popup toward physical right on `top` / `bottom` placements, and
+physical down on `left` / `right` ones, in both directions.
+
+<ComponentDemo
+  html={`<md-tooltip text="Default offset (8px)" position="top" show-delay="200">
+  <md-button variant="outlined">offset=8 (default)</md-button>
+</md-tooltip>
+<md-tooltip text="Large offset (24px)" position="top" offset="24" show-delay="200">
+  <md-button variant="outlined">offset=24</md-button>
+</md-tooltip>
+<md-tooltip text="Zero offset" position="top" offset="0" show-delay="200">
+  <md-button variant="outlined">offset=0</md-button>
+</md-tooltip>
+<md-tooltip text="Cross offset (20px)" position="top" cross-offset="20" show-delay="200">
+  <md-button variant="outlined">cross-offset=20</md-button>
+</md-tooltip>`}
+  label="Offset and cross-offset"
+  storyId="communication-tooltip--offsets"
+/>
+
+## Delays and disabling
+
+`show-delay` defaults to **500ms** and `hide-delay` to **200ms**. Keep the
+default on dense toolbars — a very short show-delay makes a tooltip fire on
+every pointer pass. `disabled` suppresses the tooltip entirely while leaving the
+trigger interactive.
+
+<ComponentDemo
+  html={`<md-tooltip text="Instant reveal" show-delay="0" hide-delay="0">
+  <md-button variant="outlined">show-delay=0</md-button>
+</md-tooltip>
+<md-tooltip text="Default 500ms reveal">
+  <md-button variant="outlined">show-delay=500 (default)</md-button>
+</md-tooltip>
+<md-tooltip text="You will never see this" disabled>
+  <md-button variant="outlined">disabled</md-button>
+</md-tooltip>`}
+  label="Delays and the disabled tooltip"
+/>
+
+## Programmatic control
+
+Hover and focus are the normal way in, but the tooltip can also be driven from
+code — a one-time coach mark pointing at a new feature is the usual reason.
+
+| You want to… | Reach for |
+|---|---|
+| Open or close it imperatively | `show()` / `hide()` (both `async`) |
+| Bind it to your own state | the `open` prop (reflects as an attribute) |
+| Suppress it entirely, trigger still live | `disabled` |
+
+:::caution[`show()` is a no-op while `disabled`]
+It deliberately refuses to flip `open` true rather than leaving the reflected
+attribute claiming an open popup that never rendered. Clear `disabled` first.
+:::
+
+Click **show()** below — the tooltip opens with no hover at all, then dismisses
+itself four seconds later:
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+  <md-tooltip id="tip-prog" variant="rich" subhead="Scheduled exports" text="Pick a cadence and we will mail this report to your team." position="bottom">
+    <md-button variant="outlined">Export</md-button>
+    <div slot="actions">
+      <md-button variant="text">Got it</md-button>
+    </div>
+  </md-tooltip>
+  <md-button id="tip-prog-show" variant="filled">show()</md-button>
+  <md-button id="tip-prog-hide" variant="text">hide()</md-button>
+</div>
+<output id="tip-prog-log" style="display:block; margin-block-start:16px; min-block-size:1.6em; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Closed. Click show() to open it without hovering.</output>`}
+  script={`
+    var tip = root.querySelector('#tip-prog');
+    var log = root.querySelector('#tip-prog-log');
+    var timer;
+
+    root.querySelector('#tip-prog-show').addEventListener('click', function () {
+      clearTimeout(timer);
+      tip.show();
+      log.textContent = 'show() called — the open attribute is now reflected. Dismissing in 4s.';
+      timer = setTimeout(function () {
+        tip.hide();
+        log.textContent = 'Auto-dismissed by hide() on the timer.';
+      }, 4000);
+    });
+
+    root.querySelector('#tip-prog-hide').addEventListener('click', function () {
+      clearTimeout(timer);
+      tip.hide();
+      log.textContent = 'hide() called.';
+    });
+  `}
+  label="show() and hide() — no hover required"
+  htmlCode={`<md-tooltip id="tip" variant="rich" subhead="Scheduled exports" text="Pick a cadence and we will mail this report to your team.">
+  <md-button variant="outlined">Export</md-button>
+</md-tooltip>
+
+<script type="module">
+  const tip = document.getElementById('tip');
+
+  // Same lever the framework tabs bind: the reflected \`open\` prop.
+  tip.open = true;
+  setTimeout(() => { tip.open = false; }, 4000);
+</script>`}
+  react={`import { MdTooltip, MdButton } from '@awc-ui/react';
+
+export function ExportButton({ open }: { open: boolean }) {
+  return (
+    <MdTooltip
+      variant="rich"
+      subhead="Scheduled exports"
+      text="Pick a cadence and we will mail this report to your team."
+      open={open}
+    >
+      <MdButton variant="outlined">Export</MdButton>
+    </MdTooltip>
+  );
+}`}
+  angular={`import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'app-export-button',
+  template: \`
+    <md-tooltip
+      variant="rich"
+      subhead="Scheduled exports"
+      text="Pick a cadence and we will mail this report to your team."
+      [open]="open"
+    >
+      <md-button variant="outlined">Export</md-button>
+    </md-tooltip>
+  \`,
+})
+export class ExportButtonComponent {
+  @Input() open = false;
+}`}
+  vue={`<script setup lang="ts">
+defineProps<{ open: boolean }>();
+</script>
+
+<template>
+  <md-tooltip
+    variant="rich"
+    subhead="Scheduled exports"
+    text="Pick a cadence and we will mail this report to your team."
+    :open="open"
+  >
+    <md-button variant="outlined">Export</md-button>
+  </md-tooltip>
+</template>`}
+  svelte={`<script lang="ts">
+  export let open = false;
+</script>
+
+<md-tooltip
+  variant="rich"
+  subhead="Scheduled exports"
+  text="Pick a cadence and we will mail this report to your team."
+  {open}
+>
+  <md-button variant="outlined">Export</md-button>
+</md-tooltip>`}
+/>
+
+The snippets above bind the declarative `open` prop, which is what you want when
+your framework already owns the state. The coach-mark pattern — open it once,
+close it on a timer, never show it again — is the imperative case, and reads
+the same way in every stack:
+
+<TechnologyTabs
+  html={`<md-tooltip id="tip" variant="rich" subhead="Scheduled exports" text="Pick a cadence and we will mail this report to your team.">
+  <md-button variant="outlined">Export</md-button>
+</md-tooltip>
+
+<script type="module">
+  const tip = document.getElementById('tip');
+
+  if (!localStorage.getItem('seen-export-tip')) {
+    localStorage.setItem('seen-export-tip', '1');
+    tip.show();
+    setTimeout(() => tip.hide(), 4000);
+  }
+</script>`}
+  react={`import { MdTooltip, MdButton } from '@awc-ui/react';
+import { useState, useEffect } from 'react';
+
+export function ExportButton() {
+  const [open, setOpen] = useState(() => !localStorage.getItem('seen-export-tip'));
+
+  useEffect(() => {
+    if (!open) return;
+    localStorage.setItem('seen-export-tip', '1');
+    const id = setTimeout(() => setOpen(false), 4000);
+    return () => clearTimeout(id);
+  }, []);
+
+  return (
+    <MdTooltip
+      variant="rich"
+      subhead="Scheduled exports"
+      text="Pick a cadence and we will mail this report to your team."
+      open={open}
+    >
+      <MdButton variant="outlined">Export</MdButton>
+    </MdTooltip>
+  );
+}`}
+  angular={`import { Component, OnInit } from '@angular/core';
+
+@Component({
+  selector: 'app-export-button',
+  template: \`
+    <md-tooltip
+      variant="rich"
+      subhead="Scheduled exports"
+      text="Pick a cadence and we will mail this report to your team."
+      [open]="open"
+    >
+      <md-button variant="outlined">Export</md-button>
+    </md-tooltip>
+  \`,
+})
+export class ExportButtonComponent implements OnInit {
+  open = false;
+
+  ngOnInit() {
+    if (localStorage.getItem('seen-export-tip')) return;
+    localStorage.setItem('seen-export-tip', '1');
+    this.open = true;
+    setTimeout(() => (this.open = false), 4000);
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+
+const open = ref(false);
+
+onMounted(() => {
+  if (localStorage.getItem('seen-export-tip')) return;
+  localStorage.setItem('seen-export-tip', '1');
+  open.value = true;
+  setTimeout(() => (open.value = false), 4000);
+});
+</script>
+
+<template>
+  <md-tooltip
+    variant="rich"
+    subhead="Scheduled exports"
+    text="Pick a cadence and we will mail this report to your team."
+    :open="open"
+  >
+    <md-button variant="outlined">Export</md-button>
+  </md-tooltip>
+</template>`}
+  svelte={`<script lang="ts">
+  import { onMount } from 'svelte';
+
+  let open = false;
+
+  onMount(() => {
+    if (localStorage.getItem('seen-export-tip')) return;
+    localStorage.setItem('seen-export-tip', '1');
+    open = true;
+    const id = setTimeout(() => (open = false), 4000);
+    return () => clearTimeout(id);
+  });
+</script>
+
+<md-tooltip
+  variant="rich"
+  subhead="Scheduled exports"
+  text="Pick a cadence and we will mail this report to your team."
+  {open}
+>
+  <md-button variant="outlined">Export</md-button>
+</md-tooltip>`}
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdOpen` | yes, but inert | `void` | The popup becomes visible |
+| `mdClose` | yes, but inert | `void` | The popup is dismissed |
+
+Both events carry no detail, and — unusually — **neither bubbles nor crosses the
+shadow boundary**. Listen on the `md-tooltip` element itself; a delegated
+listener on an ancestor will never fire.
+
+They are dispatched `cancelable` (Stencil's default; only `bubbles` and
+`composed` are overridden), but **nothing reads `defaultPrevented`** — calling
+`preventDefault()` will not stop the popup showing or hiding. Treat them as
+reports, not as a veto hook. They stay balanced: a `show()` swallowed by
+`disabled` emits nothing, and a `hide()` on an already-closed tooltip emits
+nothing either.
+
+Hover or Tab onto either trigger. Both tooltips are wired individually; the
+delegated listener on the wrapper is wired too, and never fires:
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+  <md-tooltip id="tip-ev-plain" text="Download report" position="bottom" show-delay="200">
+    <md-icon-button icon="download" aria-label="Download report"></md-icon-button>
+  </md-tooltip>
+  <md-tooltip id="tip-ev-rich" variant="rich" subhead="Share" text="Anyone with the link can view this board." position="bottom" show-delay="200">
+    <md-button variant="outlined">Share</md-button>
+    <div slot="actions">
+      <md-button variant="text">Copy link</md-button>
+    </div>
+  </md-tooltip>
+</div>
+<output id="tip-ev-log" style="display:block; margin-block-start:16px; min-block-size:3.2em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">No events yet.</output>`}
+  script={`
+    var log = root.querySelector('#tip-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 3);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    // This one is on the WRAPPER. mdOpen/mdClose are bubbles:false +
+    // composed:false, so it can never fire — that is the point.
+    root.addEventListener('mdOpen', function () {
+      push('the delegated listener fired — it should not have');
+    });
+
+    var tips = root.querySelectorAll('md-tooltip');
+    Array.prototype.forEach.call(tips, function (tip) {
+      var name = tip.getAttribute('variant') === 'rich' ? 'rich ' : 'plain';
+      tip.addEventListener('mdOpen', function () {
+        push('mdOpen   →  ' + name + '  (listener on the md-tooltip)');
+      });
+      tip.addEventListener('mdClose', function () {
+        push('mdClose  →  ' + name);
+      });
+    });
+  `}
+  label="mdOpen and mdClose — listeners must sit on the tooltip itself"
+  htmlCode={`<md-tooltip id="tip" text="Download report">
+  <md-icon-button icon="download" aria-label="Download report"></md-icon-button>
+</md-tooltip>
+
+<script type="module">
+  const tip = document.getElementById('tip');
+
+  // On the md-tooltip element — a listener on an ancestor never fires.
+  tip.addEventListener('mdOpen', () => analytics.track('tooltip_shown'));
+  tip.addEventListener('mdClose', () => analytics.track('tooltip_hidden'));
+</script>`}
+  react={`import { MdTooltip, MdIconButton } from '@awc-ui/react';
+
+export function DownloadButton() {
+  return (
+    <MdTooltip
+      text="Download report"
+      onMdOpen={() => analytics.track('tooltip_shown')}
+      onMdClose={() => analytics.track('tooltip_hidden')}
+    >
+      <MdIconButton icon="download" aria-label="Download report" />
+    </MdTooltip>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-download-button',
+  template: \`
+    <md-tooltip
+      text="Download report"
+      (mdOpen)="onOpen()"
+      (mdClose)="onClose()"
+    >
+      <md-icon-button icon="download" aria-label="Download report"></md-icon-button>
+    </md-tooltip>
+  \`,
+})
+export class DownloadButtonComponent {
+  onOpen() { analytics.track('tooltip_shown'); }
+  onClose() { analytics.track('tooltip_hidden'); }
+}`}
+  vue={`<script setup lang="ts">
+function onOpen() { analytics.track('tooltip_shown'); }
+function onClose() { analytics.track('tooltip_hidden'); }
+</script>
+
+<template>
+  <md-tooltip
+    text="Download report"
+    @mdOpen="onOpen"
+    @mdClose="onClose"
+  >
+    <md-icon-button icon="download" aria-label="Download report" />
+  </md-tooltip>
+</template>`}
+  svelte={`<script lang="ts">
+  function onOpen() { analytics.track('tooltip_shown'); }
+  function onClose() { analytics.track('tooltip_hidden'); }
+</script>
+
+<md-tooltip
+  text="Download report"
+  on:mdOpen={onOpen}
+  on:mdClose={onClose}
+>
+  <md-icon-button icon="download" aria-label="Download report" />
+</md-tooltip>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- The popup carries `role="tooltip"` and toggles `aria-hidden` as it shows and
+  hides, so it is not announced while closed.
+- The trigger gets an **`aria-description`** — not `aria-describedby`. An IDREF
+  cannot cross the shadow boundary into the popup, so the text is copied onto
+  the trigger as a string instead.
+- The most important rule: **the tooltip does not name the trigger.** Give
+  icon-only triggers their own `aria-label`; the tooltip is the sighted-user
+  affordance.
+- Tooltips appear on **keyboard focus**, not just hover — that is built in, so
+  don't suppress it. `Escape` dismisses without moving focus, unless focus was
+  already inside the tooltip, in which case it returns to the trigger.
+- The popup is **hoverable** (WCAG 1.4.13): `hide-delay` keeps it alive while
+  the pointer travels from the trigger onto it. Rich tooltips with actions must
+  be reachable by keyboard, so don't set a short `hide-delay` that closes the
+  popup before a user can move into it.
+- Nothing critical should live only here: touch users get no hover, and the
+  content is transient.
+- Only **one** tooltip should be visible at a time (M3). The component doesn't
+  coordinate across instances, so avoid programmatically opening several.
+- Respect `prefers-reduced-motion` for the reveal transition.
+
+Tab onto each trigger below: the tooltip reveals on focus, `Escape` dismisses
+it, and a screen reader reads the icon button's own `aria-label` as the name
+with the tooltip text as its description.
+
+<ComponentDemo
+  html={`<md-tooltip text="Download the report" position="bottom" show-delay="200">
+  <md-icon-button icon="download" aria-label="Download the report"></md-icon-button>
+</md-tooltip>
+<md-tooltip text="Extra detail the label does not repeat" position="bottom" show-delay="200">
+  <md-button variant="outlined">Labelled button</md-button>
+</md-tooltip>`}
+  label="An icon trigger keeps its own aria-label"
+  storyId="communication-tooltip--accessibility"
+/>
+
+The first trigger is icon-only, so `aria-label` and the tooltip say the same
+thing — the label is what assistive tech announces. The second already has
+visible text, so its tooltip adds detail the label does not repeat.
+
+## RTL, density & i18n
+
+**RTL** — `position` is resolved logically: `left` means inline-start, so it
+lands on the right-hand side under `dir="rtl"`, and `offset` follows the side it
+resolved to. `auto-position` still flips to fit the viewport. There is no
+per-direction override to write for placement — the same markup picks the right
+side in both. `cross-offset` is the exception: it is applied on the physical
+axis and does **not** mirror. See [RTL](/behaviour/rtl/).
+
+```html
+<md-tooltip text="Inline-start side" position="left">
+  <md-button variant="tonal">left</md-button>
+</md-tooltip>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-tooltip text="Inline-start side" position="left" show-delay="200"><md-button variant="tonal">left</md-button></md-tooltip>
+    <md-tooltip text="Inline-end side" position="right" show-delay="200"><md-button variant="tonal">right</md-button></md-tooltip>
+    <md-tooltip text="cross-offset is physical: I move right in both rows" position="bottom" cross-offset="16" show-delay="200"><md-button variant="tonal">cross-offset=16</md-button></md-tooltip>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-tooltip text="Inline-start side" position="left" show-delay="200"><md-button variant="tonal">left</md-button></md-tooltip>
+    <md-tooltip text="Inline-end side" position="right" show-delay="200"><md-button variant="tonal">right</md-button></md-tooltip>
+    <md-tooltip text="cross-offset is physical: I move right in both rows" position="bottom" cross-offset="16" show-delay="200"><md-button variant="tonal">cross-offset=16</md-button></md-tooltip>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl — the side mirrors, cross-offset does not"
+  storyId="communication-tooltip--rtl-placement"
+/>
+
+Compare the first two triggers in each row: `left` and `right` swap sides
+between them, because the side is inline-relative. The third does not — both
+`cross-offset="16"` popups shift toward physical right, so in an RTL layout a
+positive `cross-offset` moves the popup toward the inline **start**. Flip its
+sign yourself when the direction is RTL and you meant "inline-end".
+
+### `left` / `right` mirror, but `-start` / `-end` only on the vertical sides
+
+The placement **side** always mirrors: `position="left"` means inline-start, so
+it resolves to the right-hand side under `dir="rtl"`. The `-start` / `-end`
+**suffix** is inline-axis alignment only for `top` and `bottom` — there
+`top-start` mirrors too. On `left` and `right` the suffix aligns on the block
+(vertical) axis, which does not mirror, so `left-start` stays top-aligned in
+both directions. `cross-offset` follows the resolved axis rather than the
+direction: on a `right` placement that mirrored to physical left it still shifts
+the popup **down**.
+
+<ComponentDemo
+  html={`<div dir="rtl" style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+  <md-tooltip text="تلميح بالعربية" position="bottom" show-delay="200">
+    <md-button variant="outlined">bottom</md-button>
+  </md-tooltip>
+  <md-tooltip text="يتبع اتجاه القراءة" position="left" show-delay="200">
+    <md-button variant="outlined">position=left</md-button>
+  </md-tooltip>
+  <md-tooltip text="إزاحة عرضية ١٢ بكسل إلى الأسفل" position="right" cross-offset="12" show-delay="200">
+    <md-button variant="outlined">right + cross-offset (down 12px)</md-button>
+  </md-tooltip>
+  <md-tooltip text="محاذاة علوية في الاتجاهين" position="left-start" show-delay="200">
+    <md-button variant="outlined">left-start</md-button>
+  </md-tooltip>
+</div>`}
+  label="position and cross-offset under dir=rtl"
+  storyId="communication-tooltip--rtl"
+/>
+
+### Translated copy
+
+`text` and `subhead` are plain strings, so they come straight from your i18n
+layer; `lang` and `dir` are inherited from any ancestor. Nothing about the popup
+is language-specific:
+
+<ComponentDemo
+  html={`<md-tooltip text="Änderungen werden während der Eingabe automatisch in der Cloud gespeichert" position="bottom" show-delay="200">
+  <md-button variant="outlined">Deutsch</md-button>
+</md-tooltip>
+<md-tooltip text="変更は入力中に自動的にクラウドへ保存されます" position="bottom" show-delay="200">
+  <md-button variant="outlined">日本語</md-button>
+</md-tooltip>
+<md-tooltip text="يتم حفظ التغييرات تلقائيًا أثناء الكتابة" position="bottom" show-delay="200">
+  <md-button variant="outlined">العربية</md-button>
+</md-tooltip>`}
+  label="Translated copy, including a verbose language"
+  storyId="communication-tooltip--localization"
+/>
+
+Long copy **wraps** below `--md-tooltip-plain-max-inline-size` rather than being
+truncated, which is what keeps verbose languages readable:
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; max-inline-size: 260px; padding: 12px; border: 1px dashed var(--md-sys-color-outline); border-radius: 12px;">
+  <md-tooltip text="A deliberately long label that has to wrap inside the width cap instead of forcing the page to scroll sideways" position="bottom" show-delay="200">
+    <md-button variant="filled">In a narrow column</md-button>
+  </md-tooltip>
+</div>`}
+  label="Long text wraps within the width cap"
+  storyId="communication-tooltip--responsiveness"
+/>
+
+### Every density rung
+
+`density="-1…-4"` compacts the popup's padding and text size; `0` is the
+inherit-the-ancestor default, and `-1` through `-4` each set a rung. Hover along
+the row to compare them — `show-delay="0"` here so they appear instantly.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-tooltip text="Compact padding at rung 0" density="0" position="bottom" show-delay="0"><md-button variant="outlined">density=0</md-button></md-tooltip>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-tooltip text="Compact padding at rung -1" density="-1" position="bottom" show-delay="0"><md-button variant="outlined">density=-1</md-button></md-tooltip>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-tooltip text="Compact padding at rung -2" density="-2" position="bottom" show-delay="0"><md-button variant="outlined">density=-2</md-button></md-tooltip>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-tooltip text="Compact padding at rung -3" density="-3" position="bottom" show-delay="0"><md-button variant="outlined">density=-3</md-button></md-tooltip>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-tooltip text="Compact padding at rung -4" density="-4" position="bottom" show-delay="0"><md-button variant="outlined">density=-4</md-button></md-tooltip>
+  </div>
+</div>`}
+  label="Density 0 through -4 — padding and label size taper"
+/>
+
+The popup goes **24 → 23.5 → 23 → 22.5 → 22px** tall as the label scales
+12 → 10px, and the horizontal padding drops from 8px to 4px at −3.
+
+:::caution[Below `-2`, check your trigger's touch target]
+Density tapers the popup, not the control you wrapped — but the trigger usually
+inherits the same rung. At `-3` and `-4` re-check that the thing being labelled
+still clears 48×48dp. See [Density](/behaviour/density/#accessibility).
+:::
+
+:::note[Don't line tooltips up by holding them `open`]
+The popup is `position: fixed`, so one whose trigger has scrolled out of view
+clamps to the viewport and floats over unrelated content. Compare rungs by
+hovering, as above.
+:::
+
+### Density and direction together
+
+A global `data-density` ancestor and `dir="rtl"` compose: the wrapper below sets
+both, and the third tooltip overrides the inherited rung with a local
+`density="-4"`.
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:16px;border:1px dashed var(--md-sys-color-outline);border-radius:12px;">
+  <md-tooltip text="يرث الكثافة -2 من الغلاف" position="bottom" show-delay="0">
+    <md-button variant="outlined">inherits -2</md-button>
+  </md-tooltip>
+  <md-tooltip text="نفس الغلاف، لكن على الجانب المبدئي" position="left" show-delay="0">
+    <md-button variant="outlined">left → mirrors</md-button>
+  </md-tooltip>
+  <md-tooltip text="This one overrides the wrapper with a local rung -4" density="-4" position="bottom" show-delay="0">
+    <md-button variant="tonal">density=-4</md-button>
+  </md-tooltip>
+</div>`}
+  label="dir=rtl with data-density=-2, and one tooltip overriding to -4"
+/>
+
+:::caution[`density="0"` does not opt back out]
+There is deliberately **no `[density="0"]` rule** — a reflected prop writes
+`density="0"` onto nearly every component, and matching it would pin rung 0
+everywhere and kill global inheritance outright. So an explicit `density="0"`
+inside a `data-density="-2"` ancestor still renders at **-2**: absence of a rung
+means "inherit whatever the ancestor says". To escape an inherited rung, move
+the element out of that subtree.
+:::
+
+**Density** — `density="-1…-4"` compacts the popup's padding and text size, and a
+local rung overrides an inherited `data-density` because both drive the same
+`--md-sys-density-scale` signal. See [Density](/behaviour/density/).
+
+**i18n** — translate `text`, `subhead`, and any slotted content. Translations run
+longer than English, so re-check M3's one-line rule per locale; consider a rich
+tooltip where a plain one would wrap.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-tooltip-plain-container-color` | Plain popup background | `inverse-surface` |
+| `--md-tooltip-plain-text-color` | Plain popup label | `inverse-on-surface` |
+| `--md-tooltip-plain-max-inline-size` | Plain width cap | `280px` |
+| `--md-tooltip-rich-container-color` | Rich popup background | `surface-container` |
+| `--md-tooltip-rich-subhead-color` | Rich subhead | `on-surface-variant` |
+| `--md-tooltip-rich-text-color` | Rich supporting text | `on-surface-variant` |
+| `--md-tooltip-rich-action-color` | Rich action labels | `primary` |
+| `--md-tooltip-rich-min-inline-size` / `-max-inline-size` | Rich width bounds | `120px` / `320px` |
+| `--md-tooltip-container-shape` | Plain corner radius | `corner-extra-small` (4px) |
+| `--md-tooltip-rich-container-shape` | Rich corner radius | `corner-medium` (12px) |
+
+<ComponentDemo
+  html={`<md-tooltip text="Error-toned tooltip" show-delay="200" style="--md-tooltip-plain-container-color: var(--md-sys-color-error); --md-tooltip-plain-text-color: var(--md-sys-color-on-error);">
+  <md-icon-button icon="delete" aria-label="Delete"></md-icon-button>
+</md-tooltip>
+<md-tooltip text="Squared off" show-delay="200" style="--md-tooltip-container-shape: 0px;">
+  <md-icon-button icon="crop_square" aria-label="Square"></md-icon-button>
+</md-tooltip>`}
+  label="Themed tooltips"
+  storyId="communication-tooltip--custom-css"
+/>
+
+Check any override in both themes. This block pins `data-theme="dark"` on its
+own wrapper, so it stays dark whichever theme you are reading the page in:
+
+<ComponentDemo
+  html={`<div data-theme="dark" style="padding: 20px; border-radius: 12px; background: var(--md-sys-color-surface); display: flex; gap: 16px; align-items: center;">
+  <md-tooltip text="Plain, on a dark surface" position="bottom" show-delay="200">
+    <md-button variant="filled">Plain</md-button>
+  </md-tooltip>
+  <md-tooltip variant="rich" subhead="Rich" text="Rich tooltips sit on surface-container, so they need the check more than plain ones." position="bottom" show-delay="200">
+    <md-button variant="outlined">Rich</md-button>
+  </md-tooltip>
+</div>`}
+  label="Pinned to the dark theme"
+  storyId="communication-tooltip--dark-theme"
+/>
+
+**CSS parts** — `popup`, `text`, `subhead`, `supporting-text`, `actions`. Reach
+for a part when a custom property cannot express it: elevation on the popup,
+type style on the text, spacing in the action row.
+
+<ComponentDemo
+  html={`<style>
+  .tt-parts::part(popup) {
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
+    border: 1px solid var(--md-sys-color-outline-variant);
+  }
+  .tt-parts::part(subhead) { letter-spacing: .06em; text-transform: uppercase; }
+  .tt-parts::part(actions) { gap: 16px; }
+</style>
+<md-tooltip class="tt-parts" variant="rich" subhead="Styled parts" text="Elevation, an uppercase subhead, and a wider action row." position="bottom" show-delay="0">
+  <md-button variant="outlined">::part() styled</md-button>
+  <div slot="actions">
+    <md-button variant="text">Got it</md-button>
+  </div>
+</md-tooltip>`}
+  label="::part() overrides — hover the trigger"
+  storyId="communication-tooltip--css-parts"
+/>
+
+```css
+md-tooltip::part(popup) {
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.2);
+}
+```
+
+
+## Related
+
+[`md-icon-button`](/components/icon-button/) ·
+[`md-dialog`](/components/dialog/) ·
+[`md-snackbar`](/components/snackbar/) ·
+[`md-menu`](/components/menu/) ·
+[`md-text-field`](/components/text-field/) ·
+[`md-list-item`](/components/list/#the-row--md-list-item)
+
+## AI / LLM Context
+
+<LLMContext tag="md-tooltip" />

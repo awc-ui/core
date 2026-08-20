@@ -1,0 +1,247 @@
+{
+  "tag": "md-chip",
+  "title": "Chip",
+  "slug": "chip",
+  "category": "Selection",
+  "subComponentOf": null,
+  "storyId": "selection-chip--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'assist' | 'filter' | 'input' | 'suggestion'",
+      "default": "'assist'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "trailingIcon",
+      "attribute": "trailing-icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "selected",
+      "attribute": "selected",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "selectable",
+      "attribute": "selectable",
+      "type": "boolean",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "appearance",
+      "attribute": "appearance",
+      "type": "'outlined' | 'filled' | 'elevated'",
+      "default": "'outlined'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "color",
+      "attribute": "color",
+      "type": "| 'primary' | 'secondary' | 'tertiary' | 'error' | 'success' | 'warning' | 'info' | (string & {})",
+      "default": "",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "elevated",
+      "attribute": "elevated",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "removable",
+      "attribute": "removable",
+      "type": "boolean",
+      "default": "",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdClick",
+      "detail": "void"
+    },
+    {
+      "name": "mdSelect",
+      "detail": "{ selected: boolean }"
+    },
+    {
+      "name": "mdRemove",
+      "detail": "void"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "leading-icon",
+      "description": "Custom leading icon"
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Custom trailing icon"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": "Hover/press overlay"
+    },
+    {
+      "name": "outline",
+      "description": "Border element"
+    },
+    {
+      "name": "primary",
+      "description": ""
+    },
+    {
+      "name": "checkmark",
+      "description": "Filter chip checkmark"
+    },
+    {
+      "name": "icon",
+      "description": "Leading icon"
+    },
+    {
+      "name": "label",
+      "description": "Label text wrapper"
+    },
+    {
+      "name": "remove",
+      "description": "Input chip remove button"
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Trailing icon"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-chip-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-chip-container-color-selected",
+      "description": "Selected container background"
+    },
+    {
+      "name": "--md-chip-label-color",
+      "description": "Label text color"
+    },
+    {
+      "name": "--md-chip-label-color-selected",
+      "description": "Selected label text color"
+    },
+    {
+      "name": "--md-chip-icon-color",
+      "description": "Leading/trailing icon color"
+    },
+    {
+      "name": "--md-chip-icon-size",
+      "description": "Icon dimensions"
+    },
+    {
+      "name": "--md-chip-container-shape",
+      "description": "Border-radius override"
+    },
+    {
+      "name": "--md-chip-container-height",
+      "description": "Height override"
+    },
+    {
+      "name": "--md-chip-outline-color",
+      "description": "Outline color"
+    },
+    {
+      "name": "--md-chip-outline-width",
+      "description": "Outline width"
+    },
+    {
+      "name": "--md-chip-state-layer-color",
+      "description": "State layer color override"
+    },
+    {
+      "name": "--md-chip-elevation",
+      "description": "Box-shadow override"
+    }
+  ],
+  "dependencies": [
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdClick",
+      "detail": "void"
+    },
+    {
+      "name": "mdSelect",
+      "detail": "{ selected: boolean }"
+    },
+    {
+      "name": "mdRemove",
+      "detail": "void"
+    }
+  ]
+}

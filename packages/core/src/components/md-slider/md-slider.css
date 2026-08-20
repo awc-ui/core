@@ -1,0 +1,755 @@
+/* ==========================================================
+   md-slider — Material Design 3 Expressive Slider
+   Spec: https://m3.material.io/components/sliders/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+   --md-slider-track-length           Vertical track length (block axis)
+   --md-slider-active-color           Active track fill
+   --md-slider-inactive-color         Inactive track fill
+   --md-slider-track-shape            Track border-radius
+   --md-slider-track-height           Track cross-axis thickness
+   --md-slider-tick-active-color      Stop dot under thumb (hidden)
+   --md-slider-tick-filled-color      Stop dots on filled (active) track
+   --md-slider-tick-inactive-color    Stop dots on empty (inactive) track
+   --md-slider-thumb-color            Thumb knob fill
+   --md-slider-thumb-width            Thumb inline size
+   --md-slider-thumb-height           Thumb block size
+   --md-slider-value-bg               Value indicator background
+   --md-slider-value-color            Value indicator text
+   --md-slider-value-shape            Value indicator border-radius
+   --md-slider-value-font-family      Value indicator font family
+   --md-slider-value-font-size        Value indicator font size
+   --md-slider-value-font-weight      Value indicator font weight
+   --md-slider-value-line-height      Value indicator line height
+   --md-slider-value-padding-inline   Value indicator horizontal padding
+   --md-slider-value-padding-block    Value indicator vertical padding
+   --md-slider-inset-icon-color       Inset icon color (defaults to tick-inactive-color)
+   --md-slider-inset-icon-active-color  Inset icon color when over the active track segment
+
+   CSS PARTS:
+   surface          Outer container
+   track            Track container (clips corners)
+   track-inactive   Inactive track segment
+   track-active     Active (filled) track segment
+   thumb-knob       Thumb knob element
+   state-layer      State layer overlay
+   value-indicator  Value label bubble
+   inset            Inset icon area
+
+   SLOTS:
+   inset-icon — Custom icon (standard slider only; use with inset-icon)
+   ========================================================== */
+
+:host {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  box-sizing: border-box;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  inline-size: 100%;
+  min-block-size: var(--_surface-min-block);
+  overflow: visible;
+
+  --md-slider-track-length: 200px;
+  --md-slider-active-color: var(--md-sys-color-primary);
+  --md-slider-inactive-color: var(--md-sys-color-secondary-container);
+  --md-slider-tick-active-color: var(--md-sys-color-primary);
+  --md-slider-tick-filled-color: var(--md-sys-color-on-primary);
+  --md-slider-tick-inactive-color: var(--md-sys-color-on-secondary-container);
+  --md-slider-thumb-color: var(--md-sys-color-primary);
+  --md-slider-value-bg: var(--md-sys-color-inverse-surface);
+  --md-slider-value-color: var(--md-sys-color-inverse-on-surface);
+  --md-slider-inset-icon-color: var(--md-slider-tick-inactive-color);
+  --md-slider-inset-icon-active-color: var(--md-slider-tick-filled-color);
+
+  --_value-pct: 50%;
+  --_center-pct: 50%;
+  --_active-start-pct: 0%;
+  --_active-width-pct: 50%;
+  --_start-pct: 0%;
+  --_end-pct: 100%;
+
+  --_center-gap: 4px;
+
+  --_active-track: var(--md-slider-active-color);
+  --_inactive-track: var(--md-slider-inactive-color);
+  --_thumb-fill: var(--md-slider-thumb-color);
+  --_tick-active: var(--md-slider-tick-active-color);
+  --_tick-filled: var(--md-slider-tick-filled-color);
+  --_tick-inactive: var(--md-slider-tick-inactive-color);
+}
+
+:host(.md-slider--vertical) {
+  flex-direction: column;
+  align-items: stretch;
+  inline-size: auto;
+  min-inline-size: var(--_vertical-min-inline);
+  min-block-size: var(--md-slider-track-length);
+}
+
+/* Responsive height: a vertical slider fills its parent's block size and, unlike
+   the fixed-length default, SHRINKS to fit a small container instead of
+   overflowing (which previously clipped the thumb at the bottom). A small floor
+   keeps it usable / prevents collapse in an unsized parent. */
+:host([full-height].md-slider--vertical) {
+  block-size: 100%;
+  min-block-size: var(--md-slider-min-track-length, 88px);
+}
+
+/* ----- Size tokens (track thickness, thumb, shape, gap) ----- */
+:host(.md-slider--size-xs) {
+  --_track-thickness-default: 16px;
+  --_thumb-block-default: max(24px, calc(44px + var(--md-sys-density-scale, 0) * 4px));
+  --_thumb-inline-default: 4px;
+  --_track-radius-default: 8px;
+  --_track-thumb-gap: 6px;
+  --_track-inside-corner: 2px;
+  --_inset-icon-size: 0px;
+}
+
+:host(.md-slider--size-sm) {
+  --_track-thickness-default: 24px;
+  --_thumb-block-default: max(24px, calc(44px + var(--md-sys-density-scale, 0) * 4px));
+  --_thumb-inline-default: 4px;
+  --_track-radius-default: 8px;
+  --_track-thumb-gap: 6px;
+  --_track-inside-corner: 2px;
+  --_inset-icon-size: 0px;
+}
+
+:host(.md-slider--size-md) {
+  --_track-thickness-default: 40px;
+  --_thumb-block-default: max(24px, calc(52px + var(--md-sys-density-scale, 0) * 4px));
+  --_thumb-inline-default: 4px;
+  --_track-radius-default: 12px;
+  --_track-thumb-gap: 6px;
+  --_track-inside-corner: 2px;
+  --_inset-icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+}
+
+:host(.md-slider--size-lg) {
+  --_track-thickness-default: 56px;
+  --_thumb-block-default: max(24px, calc(68px + var(--md-sys-density-scale, 0) * 4px));
+  --_thumb-inline-default: 4px;
+  --_track-radius-default: 16px;
+  --_track-thumb-gap: 6px;
+  --_track-inside-corner: 2px;
+  --_inset-icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+}
+
+:host(.md-slider--size-xl) {
+  --_track-thickness-default: 96px;
+  --_thumb-block-default: max(24px, calc(108px + var(--md-sys-density-scale, 0) * 4px));
+  --_thumb-inline-default: 4px;
+  --_track-radius-default: 28px;
+  --_track-thumb-gap: 6px;
+  --_track-inside-corner: 2px;
+  --_inset-icon-size: 32px;
+}
+
+/* Public overrides → resolved internal vars */
+:host {
+  --_track-thickness: var(--md-slider-track-height, max(8px, calc(var(--_track-thickness-default) + var(--md-sys-density-scale, 0) * 4px)));
+  --_track-radius: var(--md-slider-track-shape, var(--_track-radius-default));
+  --_thumb-block: var(--md-slider-thumb-height, var(--_thumb-block-default));
+  --_thumb-inline: var(--md-slider-thumb-width, var(--_thumb-inline-default));
+  --_tick-size: max(4px, calc(var(--_track-thickness) * 0.12));
+  --_tick-pad: calc(4px + var(--_tick-size) / 2);
+}
+
+:host(.md-slider--horizontal) {
+  --_surface-min-block: var(--_thumb-block);
+}
+
+:host(.md-slider--vertical) {
+  --_surface-min-block: var(--md-slider-track-length);
+  --_vertical-min-inline: max(var(--_track-thickness), var(--_thumb-block));
+}
+
+/* ----- Inset icon (inside track, standard only; md/lg 24px, xl 32px) ----- */
+.md-slider__inset {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: var(--md-slider-inset-icon-color);
+  inline-size: var(--_inset-icon-size, 24px);
+  block-size: var(--_inset-icon-size, 24px);
+}
+
+:host(.md-slider--horizontal) .md-slider__inset {
+  inset-inline-start: 8px;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+}
+
+:host(.md-slider--vertical) .md-slider__inset {
+  inset-block-end: 8px;
+  inset-inline-start: 50%;
+  margin-inline-start: calc(-0.5 * var(--_inset-icon-size, 24px));
+}
+
+.md-slider__inset--on-active {
+  color: var(--md-slider-inset-icon-active-color);
+}
+
+.md-slider__inset-font {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons'), sans-serif;
+  font-size: var(--_inset-icon-size, 24px);
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  pointer-events: none;
+}
+
+::slotted([slot='inset-icon']) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_inset-icon-size, 24px);
+  block-size: var(--_inset-icon-size, 24px);
+  font-size: var(--_inset-icon-size, 24px);
+  color: inherit;
+  fill: currentColor;
+  pointer-events: none;
+}
+
+/* ----- Surface & rail ----- */
+.md-slider__surface {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  align-items: center;
+  min-inline-size: 0;
+  min-block-size: var(--_surface-min-block);
+  overflow: visible;
+}
+
+:host(.md-slider--vertical) .md-slider__surface {
+  flex-direction: column;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--md-slider-track-length);
+}
+
+.md-slider__rail {
+  position: relative;
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: var(--_surface-min-block);
+  overflow: visible;
+}
+
+/* Range & vertical: native input can't track correctly; rail handles pointer instead. */
+:host(.md-slider--range) .md-slider__rail,
+:host(.md-slider--vertical) .md-slider__rail {
+  touch-action: none;
+  cursor: pointer;
+}
+
+:host(.md-slider--range) .md-slider__input,
+:host(.md-slider--vertical) .md-slider__input {
+  pointer-events: none;
+}
+
+:host(.md-slider--vertical) .md-slider__rail {
+  inline-size: max(var(--_track-thickness), var(--_thumb-block));
+  block-size: var(--md-slider-track-length);
+  flex: none;
+}
+
+/* Responsive vertical: the surface + rail drop the fixed track-length floor so
+   they shrink with the container (no overflow/clipping); the rail flexes to fill
+   the surface, so the visible track grows and shrinks with the box. */
+:host([full-height].md-slider--vertical) .md-slider__surface {
+  min-block-size: 0;
+}
+:host([full-height].md-slider--vertical) .md-slider__rail {
+  block-size: auto;
+  flex: 1 1 auto;
+  min-block-size: 0;
+}
+
+/* The vertical native input is fixed at the (200px) track length and rotated,
+   which — even though it's invisible (opacity:0) and pointer-events:none here —
+   keeps a 200px box that drives scroll overflow and clips the thumb in a smaller
+   responsive container. Let it fill the rail instead (the rail owns pointer +
+   visuals in vertical, so dropping the rotation is purely a box-size change). */
+:host([full-height].md-slider--vertical) .md-slider__input {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  transform: none;
+}
+
+/* ----- Track (container clips outer corners; segments handle gap + inside corners) ----- */
+.md-slider__track {
+  position: absolute;
+  pointer-events: none;
+  border-radius: var(--_track-radius);
+  overflow: hidden;
+}
+
+:host(.md-slider--horizontal) .md-slider__track {
+  inset-inline: 0;
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  block-size: var(--_track-thickness);
+  inline-size: 100%;
+}
+
+:host(.md-slider--vertical) .md-slider__track {
+  inset-block: 0;
+  inset-inline-start: 50%;
+  margin-inline-start: calc(-0.5 * var(--_track-thickness));
+  inline-size: var(--_track-thickness);
+  block-size: 100%;
+}
+
+.md-slider__track-inactive {
+  position: absolute;
+  background-color: var(--_inactive-track);
+}
+
+.md-slider__track-active {
+  position: absolute;
+  background-color: var(--_active-track);
+}
+
+/* ===== STANDARD HORIZONTAL ===== */
+:host(.md-slider--horizontal:not(.md-slider--centered):not(.md-slider--range)) .md-slider__track-active {
+  inset-inline-start: 0;
+  inset-block: 0;
+  inline-size: max(0px, calc(var(--_value-pct) - var(--_track-thumb-gap)));
+  block-size: 100%;
+  border-start-end-radius: var(--_track-inside-corner);
+  border-end-end-radius: var(--_track-inside-corner);
+}
+
+:host(.md-slider--horizontal:not(.md-slider--centered):not(.md-slider--range)) .md-slider__track-inactive {
+  inset-block: 0;
+  inset-inline-start: calc(var(--_value-pct) + var(--_track-thumb-gap));
+  inset-inline-end: 0;
+  border-start-start-radius: var(--_track-inside-corner);
+  border-end-start-radius: var(--_track-inside-corner);
+}
+
+/* ===== STANDARD VERTICAL ===== */
+:host(.md-slider--vertical:not(.md-slider--centered):not(.md-slider--range)) .md-slider__track-active {
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: max(0px, calc(var(--_value-pct) - var(--_track-thumb-gap)));
+  inline-size: 100%;
+  border-start-start-radius: var(--_track-inside-corner);
+  border-start-end-radius: var(--_track-inside-corner);
+}
+
+:host(.md-slider--vertical:not(.md-slider--centered):not(.md-slider--range)) .md-slider__track-inactive {
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: max(0px, calc(100% - var(--_value-pct) - var(--_track-thumb-gap)));
+  border-end-start-radius: var(--_track-inside-corner);
+  border-end-end-radius: var(--_track-inside-corner);
+}
+
+/* ===== CENTERED HORIZONTAL ===== */
+/* Left inactive */
+:host(.md-slider--horizontal.md-slider--centered) .md-slider__track-inactive {
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: max(0px, calc(var(--_active-start-pct) - var(--_centered-start-gap)));
+  border-start-end-radius: var(--_track-inside-corner);
+  border-end-end-radius: var(--_track-inside-corner);
+}
+
+/* Right inactive (pseudo) */
+:host(.md-slider--horizontal.md-slider--centered) .md-slider__track::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(var(--_active-start-pct) + var(--_active-width-pct) + var(--_centered-end-gap));
+  inset-inline-end: 0;
+  background-color: var(--_inactive-track);
+  border-start-start-radius: var(--_track-inside-corner);
+  border-end-start-radius: var(--_track-inside-corner);
+}
+
+/* Active */
+:host(.md-slider--horizontal.md-slider--centered) .md-slider__track-active {
+  inset-inline-start: calc(var(--_active-start-pct) + var(--_centered-start-gap));
+  inset-block: 0;
+  inline-size: max(0px, calc(var(--_active-width-pct) - var(--_centered-start-gap) - var(--_centered-end-gap)));
+  block-size: 100%;
+  border-radius: var(--_track-inside-corner);
+}
+
+/* ===== CENTERED VERTICAL ===== */
+/* Bottom inactive */
+:host(.md-slider--vertical.md-slider--centered) .md-slider__track-inactive {
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: max(0px, calc(var(--_active-start-pct) - var(--_centered-start-gap)));
+  border-start-start-radius: var(--_track-inside-corner);
+  border-start-end-radius: var(--_track-inside-corner);
+}
+
+/* Top inactive (pseudo) */
+:host(.md-slider--vertical.md-slider--centered) .md-slider__track::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: max(0px, calc(100% - var(--_active-start-pct) - var(--_active-width-pct) - var(--_centered-end-gap)));
+  background-color: var(--_inactive-track);
+  border-end-start-radius: var(--_track-inside-corner);
+  border-end-end-radius: var(--_track-inside-corner);
+}
+
+/* Active */
+:host(.md-slider--vertical.md-slider--centered) .md-slider__track-active {
+  inset-inline: 0;
+  inset-block-end: calc(var(--_active-start-pct) + var(--_centered-start-gap));
+  block-size: max(0px, calc(var(--_active-width-pct) - var(--_centered-start-gap) - var(--_centered-end-gap)));
+  inline-size: 100%;
+  border-radius: var(--_track-inside-corner);
+}
+
+/* ===== RANGE HORIZONTAL ===== */
+/* Left inactive */
+:host(.md-slider--horizontal.md-slider--range) .md-slider__track-inactive {
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: max(0px, calc(var(--_start-pct) - var(--_track-thumb-gap)));
+  border-start-end-radius: var(--_track-inside-corner);
+  border-end-end-radius: var(--_track-inside-corner);
+}
+
+/* Right inactive (pseudo) */
+:host(.md-slider--horizontal.md-slider--range) .md-slider__track::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(var(--_end-pct) + var(--_track-thumb-gap));
+  inset-inline-end: 0;
+  background-color: var(--_inactive-track);
+  border-start-start-radius: var(--_track-inside-corner);
+  border-end-start-radius: var(--_track-inside-corner);
+}
+
+/* Active */
+:host(.md-slider--horizontal.md-slider--range) .md-slider__track-active {
+  inset-inline-start: calc(var(--_start-pct) + var(--_track-thumb-gap));
+  inset-block: 0;
+  inline-size: max(0px, calc(var(--_end-pct) - var(--_start-pct) - 2 * var(--_track-thumb-gap)));
+  block-size: 100%;
+  border-radius: var(--_track-inside-corner);
+}
+
+/* ===== RANGE VERTICAL ===== */
+/* Bottom inactive */
+:host(.md-slider--vertical.md-slider--range) .md-slider__track-inactive {
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: max(0px, calc(var(--_start-pct) - var(--_track-thumb-gap)));
+  border-start-start-radius: var(--_track-inside-corner);
+  border-start-end-radius: var(--_track-inside-corner);
+}
+
+/* Top inactive (pseudo) */
+:host(.md-slider--vertical.md-slider--range) .md-slider__track::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: max(0px, calc(100% - var(--_end-pct) - var(--_track-thumb-gap)));
+  background-color: var(--_inactive-track);
+  border-end-start-radius: var(--_track-inside-corner);
+  border-end-end-radius: var(--_track-inside-corner);
+}
+
+/* Active */
+:host(.md-slider--vertical.md-slider--range) .md-slider__track-active {
+  inset-inline: 0;
+  inset-block-end: calc(var(--_start-pct) + var(--_track-thumb-gap));
+  block-size: max(0px, calc(var(--_end-pct) - var(--_start-pct) - 2 * var(--_track-thumb-gap)));
+  inline-size: 100%;
+  border-radius: var(--_track-inside-corner);
+}
+
+/* ----- Ticks ----- */
+.md-slider__ticks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+:host(.md-slider--horizontal) .md-slider__tick {
+  position: absolute;
+  inset-block-start: 50%;
+  margin-inline-start: calc(-0.5 * var(--_tick-size));
+  margin-block-start: calc(-0.5 * var(--_tick-size));
+  inset-inline-start: 0;
+}
+
+:host(.md-slider--vertical) .md-slider__tick {
+  position: absolute;
+  inset-inline-start: 50%;
+  margin-inline-start: calc(-0.5 * var(--_tick-size));
+  margin-block-end: calc(-0.5 * var(--_tick-size));
+}
+
+.md-slider__tick {
+  inline-size: var(--_tick-size);
+  block-size: var(--_tick-size);
+  border-radius: 50%;
+}
+
+.md-slider__tick--on-active {
+  background-color: var(--_tick-active);
+  opacity: 0;
+}
+
+.md-slider__tick--on-filled {
+  background-color: var(--_tick-filled);
+}
+
+.md-slider__tick--on-inactive {
+  background-color: var(--_tick-inactive);
+}
+
+/* ----- Thumb ----- */
+.md-slider__thumb {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+  inline-size: var(--_thumb-inline);
+  block-size: var(--_thumb-block);
+  overflow: visible;
+}
+
+:host(.md-slider--horizontal) .md-slider__thumb {
+  inset-block-start: 50%;
+  transform: translateY(-50%);
+  margin-inline-start: calc(-0.5 * var(--_thumb-inline));
+  inset-inline-start: var(--_value-pct);
+}
+
+:host(.md-slider--horizontal) .md-slider__thumb--start {
+  inset-inline-start: var(--_start-pct);
+}
+
+:host(.md-slider--horizontal) .md-slider__thumb--end {
+  inset-inline-start: var(--_end-pct);
+}
+
+:host(.md-slider--vertical) .md-slider__thumb {
+  inline-size: var(--_thumb-block);
+  block-size: var(--_thumb-inline);
+  inset-inline-start: 50%;
+  inset-block-end: calc(var(--_value-pct) - var(--_thumb-inline) / 2);
+  inset-block-start: auto;
+  margin-inline-start: calc(-0.5 * var(--_thumb-block));
+}
+
+:host(.md-slider--vertical) .md-slider__thumb--start {
+  inset-block-end: calc(var(--_start-pct) - var(--_thumb-inline) / 2);
+}
+
+:host(.md-slider--vertical) .md-slider__thumb--end {
+  inset-block-end: calc(var(--_end-pct) - var(--_thumb-inline) / 2);
+}
+
+.md-slider__thumb-knob {
+  display: block;
+  inline-size: var(--_thumb-inline);
+  block-size: var(--_thumb-block);
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  background-color: var(--_thumb-fill);
+  box-shadow: none;
+  flex-shrink: 0;
+  transition:
+    inline-size var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard),
+    block-size var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+:host(.md-slider--vertical) .md-slider__thumb-knob {
+  inline-size: var(--_thumb-block);
+  block-size: var(--_thumb-inline);
+}
+
+:host(:not(.md-slider--disabled)) .md-slider__thumb--pressing > .md-slider__thumb-knob {
+  inline-size: 2px;
+  block-size: calc(var(--_thumb-block) * 1.05);
+}
+
+:host(.md-slider--vertical:not(.md-slider--disabled)) .md-slider__thumb--pressing > .md-slider__thumb-knob {
+  inline-size: calc(var(--_thumb-block) * 1.05);
+  block-size: 2px;
+}
+
+.md-slider__state-layer {
+  display: none;
+}
+
+.md-slider__thumb--focus-visible > .md-slider__thumb-knob {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: 2px;
+}
+
+/* ----- Value indicator ----- */
+.md-slider__value-indicator {
+  position: absolute;
+  z-index: 3;
+  /* The value bubble shrinks with density (48x44 at 0 -> 32x28 at -4). */
+  min-inline-size: max(28px, calc(48px + var(--md-sys-density-scale, 0) * 4px));
+  min-block-size: max(24px, calc(44px + var(--md-sys-density-scale, 0) * 4px));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--md-slider-value-padding-block, var(--md-sys-spacing-inset-md, 12px));
+  padding-inline: var(--md-slider-value-padding-inline, var(--md-sys-spacing-inset-lg, 16px));
+  box-sizing: border-box;
+  background-color: var(--md-slider-value-bg);
+  color: var(--md-slider-value-color);
+  border-radius: var(--md-slider-value-shape, var(--md-sys-shape-corner-full, 9999px));
+  font-family: var(--md-slider-value-font-family, var(--md-sys-typescale-label-medium-font-family, Roboto, sans-serif));
+  font-size: var(--md-slider-value-font-size, var(--md-sys-typescale-label-medium-size, 12px));
+  font-weight: var(--md-slider-value-font-weight, var(--md-sys-typescale-label-medium-weight, 500));
+  line-height: var(--md-slider-value-line-height, var(--md-sys-typescale-label-medium-line-height, 16px));
+  letter-spacing: var(--md-sys-typescale-label-medium-letter-spacing, 0.5px);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+:host(.md-slider--horizontal) .md-slider__value-indicator {
+  inset-block-end: calc(100% + 4px);
+  /* Physical left + translateX intentional: centering within the thumb box
+     is direction-independent (the thumb is already positioned logically). */
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+:host(.md-slider--vertical) .md-slider__value-indicator {
+  inset-inline-start: calc(100% + 4px);
+  inset-block-end: 50%;
+  transform: translateY(50%);
+}
+
+/* ----- Native inputs ----- */
+.md-slider__input-shell {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.md-slider__input {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+
+:host(.md-slider--vertical) .md-slider__input-shell {
+  align-items: center;
+  justify-content: center;
+}
+
+:host(.md-slider--vertical) .md-slider__input {
+  position: relative;
+  inset: auto;
+  inline-size: var(--md-slider-track-length);
+  block-size: max(44px, var(--_state-layer-size));
+  transform: rotate(-90deg);
+  transform-origin: center center;
+}
+
+.md-slider__input--start,
+.md-slider__input--end {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+:host(.md-slider--disabled) {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: var(--md-sys-state-disabled-content-opacity);
+}
+
+:host(.md-slider--disabled) .md-slider__track-inactive {
+  background-color: color-mix(
+    in srgb,
+    var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%),
+    var(--md-sys-color-surface)
+  );
+}
+
+:host(.md-slider--disabled) .md-slider__track-active,
+:host(.md-slider--disabled) .md-slider__thumb-knob {
+  background-color: color-mix(
+    in srgb,
+    var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%),
+    transparent
+  );
+  box-shadow: none;
+}
+
+:host(:focus-visible) {
+  outline: none;
+}
+
+/* ----- Expressive spring animation on the active track fill -----
+   Only for stepped (`stops`) sliders, where the value snaps between ticks and
+   the spring makes the snap feel intentional. A continuous slider must track the
+   thumb 1:1 — the thumb position isn't transitioned, so animating the fill would
+   make it lag behind the thumb while dragging. */
+:host(.md-slider--stops) .md-slider__track-active {
+  transition:
+    inline-size var(--md-sys-motion-spring-spatial-fast-duration, 350ms) var(--md-sys-motion-spring-spatial-fast-easing, cubic-bezier(0.42, 1.67, 0.21, 0.90)),
+    block-size var(--md-sys-motion-spring-spatial-fast-duration, 350ms) var(--md-sys-motion-spring-spatial-fast-easing, cubic-bezier(0.42, 1.67, 0.21, 0.90)),
+    inset-inline-start var(--md-sys-motion-spring-spatial-fast-duration, 350ms) var(--md-sys-motion-spring-spatial-fast-easing, cubic-bezier(0.42, 1.67, 0.21, 0.90)),
+    inset-block-end var(--md-sys-motion-spring-spatial-fast-duration, 350ms) var(--md-sys-motion-spring-spatial-fast-easing, cubic-bezier(0.42, 1.67, 0.21, 0.90));
+}
+
+:host(.md-slider--stops) .md-slider__tick {
+  transition:
+    opacity var(--md-sys-motion-spring-effects-default-duration, 200ms) var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.80, 0.34, 1.00)),
+    background-color var(--md-sys-motion-spring-effects-default-duration, 200ms) var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.80, 0.34, 1.00));
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

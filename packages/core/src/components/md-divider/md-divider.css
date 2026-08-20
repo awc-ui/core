@@ -1,0 +1,112 @@
+/* ==========================================================
+   md-divider — Material Design 3 Divider
+   Spec: https://m3.material.io/components/divider/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-divider-color          Divider line color
+     --md-divider-thickness      Line thickness (default 1px)
+     --md-divider-inset-start    Start-side inset margin
+     --md-divider-inset-end      End-side inset margin
+
+   CSS PARTS:
+     divider   The divider element itself (host)
+
+   SLOTS:
+     (none)
+   ========================================================== */
+
+:host {
+  --_color: var(--md-divider-color, var(--md-sys-color-outline-variant, #CAC4D0));
+  --_thickness: var(--md-divider-thickness, 1px);
+  --_inset-start: var(--md-divider-inset-start, 16px);
+  --_inset-end: var(--md-divider-inset-end, 16px);
+
+  display: block;
+  block-size: var(--_thickness);
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+/* The painted rule. Insets live here, not on the host — see md-divider.tsx. */
+.md-divider__line {
+  block-size: 100%;
+  inline-size: auto;
+  background-color: var(--_color);
+  box-sizing: border-box;
+}
+
+/* ==========================================================
+   INSET VARIANTS
+   Full-width (default): 100%, no margins
+   Inset-start: 16px leading, 0px trailing
+   Inset-end: 0px leading, 16px trailing
+   Middle-inset (inset): 16px both sides
+   ========================================================== */
+
+:host(.md-divider--inset) .md-divider__line {
+  margin-inline-start: var(--_inset-start);
+  margin-inline-end: var(--_inset-end);
+}
+
+:host(.md-divider--inset-start) .md-divider__line {
+  margin-inline-start: var(--_inset-start);
+  margin-inline-end: 0;
+}
+
+:host(.md-divider--inset-end) .md-divider__line {
+  margin-inline-start: 0;
+  margin-inline-end: var(--_inset-end);
+}
+
+/* ==========================================================
+   VERTICAL ORIENTATION
+   ========================================================== */
+
+:host(.md-divider--vertical) {
+  /* flex, so the rule inside can `stretch` to the host's height MINUS its own
+     inset margins. With a plain block host the rule needed `block-size: 100%`,
+     which ignores margins and pushed an inset divider past its container by
+     exactly the inset. */
+  display: inline-flex;
+  inline-size: var(--_thickness);
+  block-size: auto;
+  min-block-size: 1em;
+  align-self: stretch;
+}
+
+:host(.md-divider--vertical) .md-divider__line {
+  block-size: auto;
+  inline-size: 100%;
+  align-self: stretch;
+}
+
+:host(.md-divider--vertical.md-divider--inset) .md-divider__line {
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+  margin-block-start: var(--_inset-start);
+  margin-block-end: var(--_inset-end);
+}
+
+:host(.md-divider--vertical.md-divider--inset-start) .md-divider__line {
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+  margin-block-start: var(--_inset-start);
+  margin-block-end: 0;
+}
+
+:host(.md-divider--vertical.md-divider--inset-end) .md-divider__line {
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+  margin-block-start: 0;
+  margin-block-end: var(--_inset-end);
+}
+
+/* ==========================================================
+   FORCED COLORS (High Contrast)
+   ========================================================== */
+
+@media (forced-colors: active) {
+  .md-divider__line {
+    background-color: CanvasText;
+  }
+}

@@ -1,0 +1,798 @@
+---
+title: FAB Menu
+description: "A FAB that fans out into 2–6 related actions, with anchor wiring, icon morphing and roving focus handled for you"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/fab-menu.json";
+import itemApiData from "../../../data/components/fab-menu-item.json";
+
+**A FAB that fans out into 2–6 related actions.** Anchors to an existing
+[`md-fab`](/components/fab/) by `id`, morphs that FAB's icon to `close` while
+open, and manages the popup's ARIA wiring, roving focus and dismissal.
+
+{/* The FAB is deliberately part of the demo html: md-fab-menu renders no
+    trigger of its own, so a preview without the anchor shows nothing at all.
+    Left closed on purpose — an open-on-mount popup floats over the page.
+    The centring div is docs-only scaffolding, hence htmlForCode: the menu
+    anchors by id and does NOT need to be a layout sibling. Keeping it out of
+    the centring box is what actually centres the FAB — as a grid child it took
+    part in the centring and pushed the FAB off-centre. */}
+<ComponentDemo
+  html={`<div style="inline-size:100%;min-block-size:220px;display:grid;place-items:end center;padding-block-end:16px;">
+  <md-fab id="docs-fab-create" icon="add" aria-label="Create"></md-fab>
+</div>
+<md-fab-menu anchor="docs-fab-create" placement="up" variant="primary" menu-label="Create">
+  <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+  <md-fab-menu-item icon="table_chart" label="Spreadsheet"></md-fab-menu-item>
+  <md-fab-menu-item icon="slideshow" label="Presentation"></md-fab-menu-item>
+</md-fab-menu>`}
+  htmlForCode={`<md-fab id="create-fab" icon="add" aria-label="Create"></md-fab>
+
+<md-fab-menu anchor="create-fab" placement="up" variant="primary" menu-label="Create">
+  <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+  <md-fab-menu-item icon="table_chart" label="Spreadsheet"></md-fab-menu-item>
+  <md-fab-menu-item icon="slideshow" label="Presentation"></md-fab-menu-item>
+</md-fab-menu>`}
+  label="Live preview"
+  storyId="actions-fab-menu--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-fab-menu" example="" />
+
+## When to use
+
+- One prominent creation point that branches into **2–6** related actions —
+  new doc / sheet / slide, or photo / video / file.
+- All the branches are **positive, creation-flavoured** actions of comparable
+  weight.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Exactly one primary action | [`md-fab`](/components/fab/) alone |
+| More than ~6 actions | [`md-menu`](/components/menu/), or a dedicated screen |
+| Overflow / secondary / destructive actions | [`md-menu`](/components/menu/) from an icon button |
+| A screen that already has a toolbar or navigation rail | [`md-menu`](/components/menu/) — M3 says don't pair them |
+| Options that select a value rather than trigger an action | [`md-select`](/components/select/) |
+
+## Structure
+
+The FAB is **your** element, referenced by `id`. The menu renders no trigger of
+its own.
+
+```html
+<md-fab id="create-fab" icon="add" aria-label="Create"></md-fab>
+
+<md-fab-menu anchor="create-fab" placement="up" variant="primary">
+  <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+  <md-fab-menu-item icon="table_chart" label="Spreadsheet"></md-fab-menu-item>
+  <md-fab-menu-item icon="slideshow"   label="Presentation"></md-fab-menu-item>
+</md-fab-menu>
+```
+
+That is the whole contract: two elements joined by one `id`. The menu can sit
+anywhere in the document — it positions itself against the anchor's rect, not
+against its own parent:
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;min-block-size:200px;display:grid;place-items:end center;padding-block-end:16px;">
+  <md-fab id="fm-struct" icon="add" aria-label="Create"></md-fab>
+</div>
+<md-fab-menu anchor="fm-struct" placement="up" variant="primary" menu-label="Create">
+  <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+  <md-fab-menu-item icon="table_chart" label="Spreadsheet"></md-fab-menu-item>
+  <md-fab-menu-item icon="slideshow" label="Presentation"></md-fab-menu-item>
+</md-fab-menu>`}
+  label="The two elements above, wired by id — press the FAB"
+/>
+
+:::danger[`anchor` is a global DOM `id`]
+Resolved with `document.getElementById`. The anchor must be in the light DOM
+with a document-unique id — an id inside another shadow root will not be found.
+:::
+
+## Placement & colour
+
+| Prop | Values | Notes |
+|---|---|---|
+| `placement` | `up` (default) · `down` · `auto` | `auto` picks from available viewport space |
+| `variant` | `primary` (default) · `secondary` · `tertiary` | Open-state FAB colour and item container tone |
+| `quick` | boolean | Skip the **close** animation — `close()` drops straight to `open=false` instead of holding a 180ms closing state. The opening transition always runs |
+| `menu-label` | string | Accessible name of the popup — **localize it** |
+| `density` | `0…-4` | Forwarded to the items |
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;">placement="up"</div>
+    <div style="inline-size:100%;min-block-size:200px;display:grid;place-items:end center;padding-block-end:16px;">
+      <md-fab id="fm-up" icon="add" aria-label="Create"></md-fab>
+    </div>
+    <md-fab-menu anchor="fm-up" variant="primary" menu-label="Create">
+      <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+      <md-fab-menu-item icon="table_chart" label="Spreadsheet"></md-fab-menu-item>
+      <md-fab-menu-item icon="slideshow" label="Presentation"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;">placement="down"</div>
+    <div style="inline-size:100%;min-block-size:200px;display:grid;place-items:start center;padding-block-start:16px;">
+      <md-fab id="fm-down" icon="add" aria-label="Create"></md-fab>
+    </div>
+    <md-fab-menu anchor="fm-down" placement="down" menu-label="Create">
+      <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+      <md-fab-menu-item icon="table_chart" label="Spreadsheet"></md-fab-menu-item>
+      <md-fab-menu-item icon="slideshow" label="Presentation"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+</div>`}
+  label="placement — up and down"
+/>
+
+`variant` tints the open-state FAB and the item containers together, so the
+cluster reads as one object rather than a FAB with unrelated chips:
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;">primary</div>
+    <div style="min-block-size:180px;display:grid;place-items:end center;"><md-fab id="fm-v1" icon="add" aria-label="Primary"></md-fab></div>
+    <md-fab-menu anchor="fm-v1" variant="primary" menu-label="Create">
+      <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+      <md-fab-menu-item icon="image" label="Image"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;">secondary</div>
+    <div style="min-block-size:180px;display:grid;place-items:end center;"><md-fab id="fm-v2" variant="secondary-container" icon="add" aria-label="Secondary"></md-fab></div>
+    <md-fab-menu anchor="fm-v2" variant="secondary" menu-label="Create">
+      <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+      <md-fab-menu-item icon="image" label="Image"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;">tertiary</div>
+    <div style="min-block-size:180px;display:grid;place-items:end center;"><md-fab id="fm-v3" variant="tertiary-container" icon="add" aria-label="Tertiary"></md-fab></div>
+    <md-fab-menu anchor="fm-v3" variant="tertiary" menu-label="Create">
+      <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+      <md-fab-menu-item icon="image" label="Image"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+</div>`}
+  label="variant — primary, secondary, tertiary"
+/>
+
+## What it does to your anchor
+
+While open, the component **writes to your FAB**:
+
+- `aria-expanded`, `aria-haspopup="menu"` and `aria-controls`
+- swaps `anchorEl.icon` to `close`, restoring the original on close
+- sets `data-shape="circle"`, which applies `border-radius: 50%` — a squared
+  icon-only FAB goes round. That is the whole rule: on an `extended` FAB it
+  rounds the pill into an ellipse, it does not collapse the label or the width
+- sets `--md-fab-container-color` / `--md-fab-icon-color` from the menu's
+  `variant`, and removes them again on close
+
+Don't set those yourself, and don't change the anchor's `icon` while the menu
+is open — the component saves and restores it around the morph.
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;">variant="primary"</div>
+    <div style="min-block-size:190px;display:grid;place-items:end center;"><md-fab id="fm-morph-a" variant="surface" icon="edit" aria-label="Compose"></md-fab></div>
+    <md-fab-menu anchor="fm-morph-a" variant="primary" menu-label="Compose">
+      <md-fab-menu-item icon="mail" label="Email"></md-fab-menu-item>
+      <md-fab-menu-item icon="chat" label="Message"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;">variant="tertiary"</div>
+    <div style="min-block-size:190px;display:grid;place-items:end center;"><md-fab id="fm-morph-b" variant="surface" icon="edit" aria-label="Compose"></md-fab></div>
+    <md-fab-menu anchor="fm-morph-b" variant="tertiary" menu-label="Compose">
+      <md-fab-menu-item icon="mail" label="Email"></md-fab-menu-item>
+      <md-fab-menu-item icon="chat" label="Message"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+</div>`}
+  label="Open either — the surface FAB takes the menu's colour and its edit icon becomes close"
+/>
+
+## How many items
+
+M3 puts the ceiling at **six**. Past that the fan becomes a list that happens to
+animate, and a [`md-menu`](/components/menu/) or a dedicated screen serves the
+user better:
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;">2 items — comfortable</div>
+    <div style="min-block-size:220px;display:grid;place-items:end center;"><md-fab id="fm-two" icon="add" aria-label="Two"></md-fab></div>
+    <md-fab-menu anchor="fm-two" menu-label="Create">
+      <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+      <md-fab-menu-item icon="image" label="Image"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;">6 items — the ceiling</div>
+    <div style="min-block-size:220px;display:grid;place-items:end center;"><md-fab id="fm-six" icon="add" aria-label="Six"></md-fab></div>
+    <md-fab-menu anchor="fm-six" menu-label="Create">
+      <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+      <md-fab-menu-item icon="table_chart" label="Spreadsheet"></md-fab-menu-item>
+      <md-fab-menu-item icon="slideshow" label="Presentation"></md-fab-menu-item>
+      <md-fab-menu-item icon="image" label="Image"></md-fab-menu-item>
+      <md-fab-menu-item icon="folder" label="Folder"></md-fab-menu-item>
+      <md-fab-menu-item icon="link" label="Link"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+</div>`}
+  label="Two items against the six-item ceiling"
+/>
+
+## Events & methods
+
+| Event | Cancelable | Detail | Fires | From |
+|---|---|---|---|---|
+| `mdOpen` | no | `void` | Menu opened | `md-fab-menu` |
+| `mdClose` | no | `void` | Menu closed | `md-fab-menu` |
+| `mdClick` | no | `void` | An item was pressed | [`md-fab-menu-item`](#the-item--md-fab-menu-item) |
+
+**Methods** — `show()`, `close()`.
+
+`mdClick` comes from the item, not the menu, but it bubbles and is composed, so
+one listener on `md-fab-menu` hears every item. Its `detail` is `null` — there
+is no `e.detail.value` to read. **Identify the pressed item from `e.target`**,
+which is the `md-fab-menu-item` even though you attached the listener to the
+menu; `e.currentTarget` is the menu, the element you attached to. Attach per
+item instead — as the framework snippets below do — and the handler already
+knows which action it is, which is handier when each is a different function.
+
+:::note[The menu closes itself on an item press]
+`md-fab-menu-item` only emits `mdClick`. The **menu** listens for it and calls
+`close()` plus restores focus to the anchor — so you do not close it yourself,
+and calling `close()` in your handler is a redundant no-op.
+:::
+
+:::caution[Listen on the menu, not on a shared ancestor]
+`md-fab` emits its **own** bubbling, composed `mdClick` (`detail` is the
+`MouseEvent`) when the anchor is pressed. A listener on a wrapper around both
+elements therefore hears the FAB's press as well as the items'. Bind to the
+`md-fab-menu` itself and only the items' `mdClick` reaches you.
+:::
+
+All three events reach a listener on the menu. Press the FAB and then an item to
+watch the full open → click → close sequence, including the `null` detail:
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;min-block-size:210px;display:grid;place-items:end center;padding-block-end:16px;">
+  <md-fab id="fm-ev" icon="add" aria-label="Create"></md-fab>
+</div>
+<md-fab-menu id="fm-ev-menu" anchor="fm-ev" placement="up" menu-label="Create">
+  <md-fab-menu-item icon="edit" label="New note"></md-fab-menu-item>
+  <md-fab-menu-item icon="photo" label="Upload photo"></md-fab-menu-item>
+</md-fab-menu>
+<output id="fm-ev-log" style="display:block; margin-block-start:16px; min-block-size:4.4em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Press the FAB, then pick an action.</output>`}
+  script={`
+    var log = root.querySelector('#fm-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 4);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    // All three listeners go on the MENU, not on the wrapper: the anchor
+    // md-fab emits its own bubbling mdClick, so a wrapper listener would log
+    // the FAB press too. mdClick from the items bubbles up to the menu.
+    var menu = root.querySelector('#fm-ev-menu');
+
+    menu.addEventListener('mdOpen', function () { push('mdOpen'); });
+    menu.addEventListener('mdClose', function () { push('mdClose'); });
+    menu.addEventListener('mdClick', function (e) {
+      push('mdClick   e.target.label = ' + e.target.label + '   e.detail = ' + e.detail);
+    });
+  `}
+  label="Open, click an item, and read the event log"
+  htmlCode={`<md-fab id="fab" icon="add" aria-label="Create"></md-fab>
+
+<md-fab-menu id="menu" anchor="fab" placement="up" menu-label="Create">
+  <md-fab-menu-item icon="edit" label="New note"></md-fab-menu-item>
+  <md-fab-menu-item icon="photo" label="Upload photo"></md-fab-menu-item>
+</md-fab-menu>
+
+<script type="module">
+  const menu = document.getElementById('menu');
+
+  menu.addEventListener('mdOpen', () => console.log('opened'));
+  menu.addEventListener('mdClose', () => console.log('closed'));
+
+  // mdClick comes from the ITEM and bubbles up to the menu.
+  // The menu closes itself in response — do not call menu.close() here.
+  menu.addEventListener('mdClick', (e) => {
+    create(e.target.label);
+  });
+</script>`}
+  react={`import { MdFab, MdFabMenu, MdFabMenuItem } from '@awc-ui/react';
+
+export function CreateMenu() {
+  // The menu closes itself after an item press — no ref, no close() call.
+  return (
+    <>
+      <MdFab id="fab" icon="add" aria-label="Create" />
+      <MdFabMenu
+        anchor="fab"
+        placement="up"
+        menuLabel="Create"
+        onMdOpen={() => console.log('opened')}
+        onMdClose={() => console.log('closed')}
+      >
+        <MdFabMenuItem icon="edit" label="New note" onMdClick={() => create('New note')} />
+        <MdFabMenuItem icon="photo" label="Upload photo" onMdClick={() => create('Upload photo')} />
+      </MdFabMenu>
+    </>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-create-menu',
+  template: \`
+    <md-fab id="fab" icon="add" aria-label="Create"></md-fab>
+
+    <md-fab-menu
+      anchor="fab"
+      placement="up"
+      menu-label="Create"
+      (mdOpen)="onOpen()"
+      (mdClose)="onClose()"
+    >
+      <md-fab-menu-item icon="edit" label="New note" (mdClick)="create('New note')"></md-fab-menu-item>
+      <md-fab-menu-item icon="photo" label="Upload photo" (mdClick)="create('Upload photo')"></md-fab-menu-item>
+    </md-fab-menu>
+  \`,
+})
+export class CreateMenuComponent {
+  onOpen() { console.log('opened'); }
+  onClose() { console.log('closed'); }
+
+  // The menu closes itself after an item press — this only runs the action.
+  create(what: string) { /* ... */ }
+}`}
+  vue={`<script setup lang="ts">
+function onOpen() { console.log('opened'); }
+function onClose() { console.log('closed'); }
+
+// The menu closes itself after an item press — this only runs the action.
+function create(what: string) { /* ... */ }
+</script>
+
+<template>
+  <md-fab id="fab" icon="add" aria-label="Create" />
+
+  <md-fab-menu
+    anchor="fab"
+    placement="up"
+    menu-label="Create"
+    @mdOpen="onOpen"
+    @mdClose="onClose"
+  >
+    <md-fab-menu-item icon="edit" label="New note" @mdClick="create('New note')" />
+    <md-fab-menu-item icon="photo" label="Upload photo" @mdClick="create('Upload photo')" />
+  </md-fab-menu>
+</template>`}
+  svelte={`<script lang="ts">
+  function onOpen() { console.log('opened'); }
+  function onClose() { console.log('closed'); }
+
+  // The menu closes itself after an item press — this only runs the action.
+  function create(what: string) { /* ... */ }
+</script>
+
+<md-fab id="fab" icon="add" aria-label="Create" />
+
+<md-fab-menu
+  anchor="fab"
+  placement="up"
+  menu-label="Create"
+  on:mdOpen={onOpen}
+  on:mdClose={onClose}
+>
+  <md-fab-menu-item icon="edit" label="New note" on:mdClick={() => create('New note')} />
+  <md-fab-menu-item icon="photo" label="Upload photo" on:mdClick={() => create('Upload photo')} />
+</md-fab-menu>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[`mdClick` is the item's event, not the menu's]
+`md-fab-menu` declares only `mdOpen` and `mdClose`. `mdClick` belongs to
+[`md-fab-menu-item`](#the-item--md-fab-menu-item) and reaches the menu only
+because it bubbles and is composed — which is also how the menu knows to close
+itself.
+:::
+
+## Accessibility
+
+- The popup is `role="menu"` with `aria-orientation="vertical"`. `Escape`
+  closes; `ArrowUp`/`ArrowDown` move a roving focus across items.
+- Closing **always** returns focus to the anchor FAB, however the menu was
+  opened. What is activation-aware is the *opening*: from the keyboard, or from
+  a click on an already-focused FAB, focus moves onto the first item; a pointer
+  click on an unfocused FAB leaves focus on the anchor and only primes the
+  roving tabindex.
+- The anchor must be a real, focusable control — the component wires
+  `aria-expanded`/`aria-haspopup`/`aria-controls` onto it.
+- M3 requires the open menu not to fully obscure another actionable element
+  **or its focus indicator**. Verify at your smallest viewport.
+- The closed menu is `aria-hidden`, so its items are not announced.
+
+:::caution[Localize `menu-label`]
+The popup's own accessible name comes from `menu-label`, which defaults to the
+English **`"Actions"`**. A translated app must set it — nothing else names the
+`role="menu"` container.
+
+```html
+<md-fab-menu anchor="fab" menu-label="Actions de création"></md-fab-menu>
+```
+:::
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;min-block-size:220px;display:grid;place-items:end center;padding-block-end:16px;">
+  <md-fab id="fm-kbd" icon="add" aria-label="Create"></md-fab>
+</div>
+<md-fab-menu anchor="fm-kbd" menu-label="Create something">
+  <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+  <md-fab-menu-item icon="table_chart" label="Spreadsheet"></md-fab-menu-item>
+  <md-fab-menu-item icon="slideshow" label="Presentation"></md-fab-menu-item>
+</md-fab-menu>`}
+  label="Open it, then drive it from the keyboard"
+/>
+
+Open the menu above and use the keyboard: `ArrowUp` / `ArrowDown` move through
+the items, `Home` / `End` jump to the ends, typing a letter jumps to the next
+item whose label starts with it, and `Escape` closes and returns focus to the
+FAB. `Tab` walks forward through the items and dismisses the menu once it
+passes the last one; `Shift`+`Tab` from the first item hands focus back to the
+FAB — so Tab never strands you in a popup that is still open behind you.
+
+## RTL, density & i18n
+
+The stack is vertical, so `placement` never mirrors — `up` stays `up`. What does
+mirror is the edge the cluster hangs from: the menu reads the computed
+`direction` and pins itself to the anchor's **trailing** edge, so nothing needs
+re-authoring between directions. See [RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <md-fab id="fab" icon="add" aria-label="إنشاء"></md-fab>
+  <md-fab-menu anchor="fab" menu-label="إنشاء"></md-fab-menu>
+</div>
+```
+
+**The same menu in both directions.** Only `dir` and the strings change; the
+markup and props are identical:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="min-block-size:170px;display:grid;align-items:end;justify-items:end;padding:0 16px 16px;">
+    <md-fab id="fm-ltr" icon="add" aria-label="Create"></md-fab>
+    <md-fab-menu anchor="fm-ltr" menu-label="Create">
+      <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+      <md-fab-menu-item icon="table_chart" label="Spreadsheet"></md-fab-menu-item>
+      <md-fab-menu-item icon="image" label="Image"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="min-block-size:170px;display:grid;align-items:end;justify-items:end;padding:0 16px 16px;">
+    <md-fab id="fm-rtl" icon="add" aria-label="إنشاء"></md-fab>
+    <md-fab-menu anchor="fm-rtl" menu-label="إنشاء">
+      <md-fab-menu-item icon="description" label="مستند"></md-fab-menu-item>
+      <md-fab-menu-item icon="table_chart" label="جدول"></md-fab-menu-item>
+      <md-fab-menu-item icon="image" label="صورة"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+/>
+
+### Place the anchor logically, not with `right`
+
+The menu follows the FAB wherever the FAB lands, so the one thing that can go
+wrong is **your** layout. Pin the anchor with a logical value (`justify-items:
+end`, `inset-inline-end`) and the whole cluster moves corner-to-corner under
+RTL. Pin it with a physical `right` and the FAB — and therefore the menu —
+stays welded to the right edge of an RTL screen:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <div dir="rtl" style="min-block-size:170px;display:grid;align-items:end;justify-items:end;padding:0 16px 16px;border-radius:12px;background:color-mix(in srgb, currentColor 4%, transparent);">
+    <md-fab id="fm-ok" icon="add" aria-label="إنشاء"></md-fab>
+    <md-fab-menu anchor="fm-ok" menu-label="إنشاء">
+      <md-fab-menu-item icon="description" label="مستند"></md-fab-menu-item>
+      <md-fab-menu-item icon="image" label="صورة"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <div dir="rtl" style="min-block-size:170px;display:grid;align-items:end;justify-items:right;padding:0 16px 16px;border-radius:12px;background:color-mix(in srgb, currentColor 4%, transparent);">
+    <md-fab id="fm-bad" icon="add" aria-label="إنشاء"></md-fab>
+    <md-fab-menu anchor="fm-bad" menu-label="إنشاء">
+      <md-fab-menu-item icon="description" label="مستند"></md-fab-menu-item>
+      <md-fab-menu-item icon="image" label="صورة"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+</div>`}
+  label="justify-items: end follows dir; justify-items: right does not"
+/>
+
+### Every density rung
+
+`density` on the menu cascades to its items — set it there, not on each item.
+**It does not reach the anchor FAB**: the anchor is resolved by `id`, is not a
+descendant of the menu, and the component writes only shape, icon and colour to
+it. Set `density` on your `md-fab` as well when you want the whole cluster on
+one rung — which is exactly what each pair below does. Open any of these to
+compare the item heights:
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;display:grid;grid-template-columns:repeat(5,1fr);gap:12px;">
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;text-align:center;">0</div>
+    <div style="min-block-size:170px;display:grid;place-items:end center;">
+      <md-fab id="fm-d0" density="0" icon="add" aria-label="Create at density 0"></md-fab>
+    </div>
+    <md-fab-menu anchor="fm-d0" density="0" menu-label="Create">
+      <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+      <md-fab-menu-item icon="table_chart" label="Spreadsheet"></md-fab-menu-item>
+      <md-fab-menu-item icon="image" label="Image"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;text-align:center;">-1</div>
+    <div style="min-block-size:170px;display:grid;place-items:end center;">
+      <md-fab id="fm-d1" density="-1" icon="add" aria-label="Create at density -1"></md-fab>
+    </div>
+    <md-fab-menu anchor="fm-d1" density="-1" menu-label="Create">
+      <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+      <md-fab-menu-item icon="table_chart" label="Spreadsheet"></md-fab-menu-item>
+      <md-fab-menu-item icon="image" label="Image"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;text-align:center;">-2</div>
+    <div style="min-block-size:170px;display:grid;place-items:end center;">
+      <md-fab id="fm-d2" density="-2" icon="add" aria-label="Create at density -2"></md-fab>
+    </div>
+    <md-fab-menu anchor="fm-d2" density="-2" menu-label="Create">
+      <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+      <md-fab-menu-item icon="table_chart" label="Spreadsheet"></md-fab-menu-item>
+      <md-fab-menu-item icon="image" label="Image"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;text-align:center;">-3</div>
+    <div style="min-block-size:170px;display:grid;place-items:end center;">
+      <md-fab id="fm-d3" density="-3" icon="add" aria-label="Create at density -3"></md-fab>
+    </div>
+    <md-fab-menu anchor="fm-d3" density="-3" menu-label="Create">
+      <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+      <md-fab-menu-item icon="table_chart" label="Spreadsheet"></md-fab-menu-item>
+      <md-fab-menu-item icon="image" label="Image"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;text-align:center;">-4</div>
+    <div style="min-block-size:170px;display:grid;place-items:end center;">
+      <md-fab id="fm-d4" density="-4" icon="add" aria-label="Create at density -4"></md-fab>
+    </div>
+    <md-fab-menu anchor="fm-d4" density="-4" menu-label="Create">
+      <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+      <md-fab-menu-item icon="table_chart" label="Spreadsheet"></md-fab-menu-item>
+      <md-fab-menu-item icon="image" label="Image"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+</div>`}
+  label="Density 0 through -4 — open one to see the items taper"
+/>
+
+:::caution[Below `-2`, check your touch targets]
+The rungs shrink the item row and its icon together. That works on a mouse and
+gets tight on a coarse pointer — and a FAB menu is a touch-first pattern. See
+[Density](/behaviour/density/#accessibility) for the media query that raises the
+target back on touch.
+:::
+
+### Density and direction together
+
+The two are independent signals, so they compose without any extra wiring — an
+inherited `data-density` ancestor and `dir="rtl"` on the same element:
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-3" style="min-block-size:190px;display:grid;align-items:end;justify-items:end;padding:0 16px 16px;">
+  <md-fab id="fm-dd" icon="add" aria-label="إنشاء"></md-fab>
+  <md-fab-menu anchor="fm-dd" menu-label="إنشاء">
+    <md-fab-menu-item icon="description" label="مستند"></md-fab-menu-item>
+    <md-fab-menu-item icon="table_chart" label="جدول"></md-fab-menu-item>
+    <md-fab-menu-item icon="image" label="صورة"></md-fab-menu-item>
+  </md-fab-menu>
+</div>`}
+  label="dir=rtl with an inherited data-density=-3"
+/>
+
+**Density** — `density="-1…-4"` on the menu locally overrides the inherited
+`data-density` rung and cascades to every item. See
+[Density](/behaviour/density/).
+
+**i18n** — translate the item `label`s **and** `menu-label`, the popup's
+accessible name, which is English (`"Actions"`) by default. `lang` and `dir`
+are inherited from any ancestor.
+
+## Theming
+
+All three are set once on `md-fab-menu`. The first two inherit down into every
+item; the third is the menu's own flex `gap` and never reaches an item:
+
+| Custom property | Purpose | Read by | Default |
+|---|---|---|---|
+| `--md-fab-menu-item-container-color` | Item container background | each item | `*-container` per `variant` |
+| `--md-fab-menu-item-label-color` | Item label + icon colour | each item | `on-*-container` per `variant` |
+| `--md-fab-menu-item-gap` | Gap between stacked items | the menu itself | `--md-sys-spacing-gap-xs` (4px) |
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;">custom colours</div>
+    <div style="min-block-size:190px;display:grid;place-items:end center;"><md-fab id="fm-theme1" variant="surface" icon="add" aria-label="Themed"></md-fab></div>
+    <md-fab-menu anchor="fm-theme1" menu-label="Create" style="--md-fab-menu-item-container-color: var(--md-sys-color-error); --md-fab-menu-item-label-color: var(--md-sys-color-on-error);">
+      <md-fab-menu-item icon="delete" label="Delete"></md-fab-menu-item>
+      <md-fab-menu-item icon="report" label="Report"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;">wider gap</div>
+    <div style="min-block-size:190px;display:grid;place-items:end center;"><md-fab id="fm-theme2" icon="add" aria-label="Spaced"></md-fab></div>
+    <md-fab-menu anchor="fm-theme2" menu-label="Create" style="--md-fab-menu-item-gap: 16px;">
+      <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+      <md-fab-menu-item icon="image" label="Image"></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+</div>`}
+  label="Themed instances"
+/>
+
+**CSS parts** reach inside the item's shadow root for things custom properties
+do not cover. `md-fab-menu` itself exposes none — the parts live on
+`md-fab-menu-item`: `state-layer`, `icon` and `label`.
+
+<ComponentDemo
+  html={`<style>
+  .fm-shout md-fab-menu-item::part(label) { text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+  .fm-shout md-fab-menu-item::part(icon)  { transform: scale(1.25); }
+</style>
+<div style="inline-size:100%;min-block-size:200px;display:grid;place-items:end center;padding-block-end:16px;">
+  <md-fab id="fm-part" variant="tertiary-container" icon="add" aria-label="Create"></md-fab>
+</div>
+<md-fab-menu class="fm-shout" anchor="fm-part" variant="tertiary" menu-label="Create">
+  <md-fab-menu-item icon="description" label="Document"></md-fab-menu-item>
+  <md-fab-menu-item icon="image" label="Image"></md-fab-menu-item>
+</md-fab-menu>`}
+  label="::part(label) and ::part(icon) on the items"
+/>
+
+```css
+md-fab-menu-item::part(label) {
+  letter-spacing: 0.4px;
+}
+```
+
+
+## The item — `md-fab-menu-item`
+
+`md-fab-menu-item` has no page of its own: it is only ever valid as a direct
+child of `md-fab-menu`, which owns opening, roving focus and dismissal.
+Standalone it renders a row that nothing manages — no keyboard model, no ARIA
+menu context, no dismissal.
+
+- **The menu closes itself.** The item emits `mdClick`; `md-fab-menu` listens
+  for it, calls `close()` and restores focus to the anchor. Your handler runs
+  the action, not the dismissal.
+- **`mdClick` has no `detail`** (it is `null`). Read the pressed item off
+  `e.target`, which is the `md-fab-menu-item` even when the listener sits on the
+  menu — `e.currentTarget` is whatever you attached to.
+- `rovingFocusVisible` is set **by the parent** during arrow-key navigation so
+  the focus ring appears on the roved item even when DOM focus hasn't moved.
+  Don't set it yourself.
+- Both `disabled` and `soft-disabled` block activation and grey the row.
+  `disabled` additionally sets `pointer-events: none`, so it cannot be clicked
+  or hovered. **Neither removes the item from the menu's keyboard model**: the
+  menu's roving tabindex and its arrow / `Home` / `End` / typeahead navigation
+  walk *every* item, so a disabled branch is still reachable and announced
+  (`aria-disabled="true"`). Prefer omitting an action you never want reached.
+- The `label` prop and the default slot are alternatives: `label` wins, and the
+  slot is the fallback when it is empty.
+
+### Item states and custom glyphs
+
+An item takes a slotted glyph in the `icon` slot in place of the `icon` prop
+when you need an SVG or emoji:
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;">states</div>
+    <div style="min-block-size:200px;display:grid;place-items:end center;"><md-fab id="fm-states" icon="add" aria-label="States"></md-fab></div>
+    <md-fab-menu anchor="fm-states" menu-label="Create">
+      <md-fab-menu-item icon="edit" label="Edit"></md-fab-menu-item>
+      <md-fab-menu-item icon="share" label="Share (disabled)" disabled></md-fab-menu-item>
+      <md-fab-menu-item icon="delete" label="Delete (soft-disabled)" soft-disabled></md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+  <div>
+    <div style="opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;margin-block-end:8px;">slotted glyphs</div>
+    <div style="min-block-size:200px;display:grid;place-items:end center;"><md-fab id="fm-slot" variant="tertiary-container" icon="add" aria-label="Slotted"></md-fab></div>
+    <md-fab-menu anchor="fm-slot" variant="tertiary" menu-label="Create">
+      <md-fab-menu-item label="Star">
+        <svg slot="icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </md-fab-menu-item>
+      <md-fab-menu-item label="Rocket">
+        <span slot="icon" aria-hidden="true">🚀</span>
+      </md-fab-menu-item>
+    </md-fab-menu>
+  </div>
+</div>`}
+  label="Disabled, soft-disabled, and slotted icons"
+/>
+
+### Item API Reference
+
+<ApiTable {...itemApiData} />
+
+### Item theming
+
+The colour properties above are set on the menu and inherited. These three are
+the item's own, for when one branch needs to differ from the rest:
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-fab-menu-item-icon-color` | Icon colour, independent of the label | Inherits the label colour |
+| `--md-fab-menu-item-icon-size` | Icon box | `max(16px, 20px + density)` |
+| `--md-fab-menu-item-container-shape` | Item border radius | `--md-sys-shape-corner-full` |
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;min-block-size:200px;display:grid;place-items:end center;padding-block-end:16px;">
+  <md-fab id="fm-item-theme" icon="add" aria-label="Create"></md-fab>
+</div>
+<md-fab-menu anchor="fm-item-theme" menu-label="Create">
+  <md-fab-menu-item icon="description" label="Default"></md-fab-menu-item>
+  <md-fab-menu-item icon="warning" label="Squared off" style="--md-fab-menu-item-container-shape: 8px;"></md-fab-menu-item>
+  <md-fab-menu-item icon="bolt" label="Bigger, tinted icon" style="--md-fab-menu-item-icon-size: 28px; --md-fab-menu-item-icon-color: var(--md-sys-color-error);"></md-fab-menu-item>
+</md-fab-menu>`}
+  label="Per-item shape, icon size and icon colour"
+/>
+
+## Related
+
+[`md-fab`](/components/fab/) ·
+[`md-menu`](/components/menu/) ·
+[`md-button`](/components/button/) ·
+[`md-icon-button`](/components/icon-button/) ·
+[`md-select`](/components/select/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-fab-menu" />

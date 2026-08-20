@@ -1,0 +1,1027 @@
+---
+title: Accordion
+description: "Progressive disclosure for a set of sections — coordinated expansion, ARIA-aware landmarks, reordering and a floating panel mode"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/accordion.json";
+import itemApiData from "../../../data/components/accordion-item.json";
+
+**Progressive disclosure for a set of sections.** Groups
+[`md-accordion-item`](#the-item--md-accordion-item) children, coordinates which
+are expanded, sets the heading level and the panel landmark policy, and adds
+optional drag-reordering and a floating "chassis" mode.
+
+<ComponentDemo
+  html={`<md-accordion exclusive heading-level="2" default-expanded="0" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);">
+  <md-accordion-item headline="Shipping" supporting-text="Arrives in 3-5 days" icon="local_shipping">
+    <p>Standard delivery is free on orders over 50.</p>
+  </md-accordion-item>
+  <md-accordion-item headline="Returns" icon="undo">
+    <p>Unused items can be returned within 30 days.</p>
+  </md-accordion-item>
+  <md-accordion-item headline="Payment" icon="credit_card">
+    <p>Cards, bank transfer and store credit.</p>
+  </md-accordion-item>
+</md-accordion>`}
+  label="Live preview"
+  storyId="containment-accordion--playground"
+/>
+
+:::note[Not a Material Design 3 component]
+M3 has no accordion page. This component is derived from M3's
+[list](https://m3.material.io/components/lists/guidelines) and
+[card](https://m3.material.io/components/cards/guidelines) rules plus the
+WAI-ARIA APG accordion pattern. The Do & Don't below are **house rules**, not
+M3 guidance.
+:::
+
+## Install
+
+<ComponentSetup tag="md-accordion" example="" />
+
+## When to use
+
+- Several **independent sections** where the user only needs one or two at a
+  time: FAQs, settings groups, filter categories.
+- Long content that would overwhelm the page fully expanded.
+- Sections the user may want to reorder (`reorderable`).
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Switching between sibling views | [`md-tabs`](/components/tabs/) |
+| A linear, ordered process | [`md-stepper`](/components/stepper/) |
+| A list of records | [`md-list`](/components/list/) |
+| Content users need to compare side by side | Show it all, or [`md-tabs`](/components/tabs/) |
+| A single collapsible region | One [`md-accordion-item`](#the-item--md-accordion-item), or a plain `details` element |
+| Navigation | [`md-navigation-rail`](/components/navigation-rail/) / [`md-navigation-bar`](/components/navigation-bar/) |
+| Hiding critical information | Nothing — keep it visible |
+
+## Variants
+
+Both variants share the same expand/collapse mechanics; only the surface
+differs.
+
+| Variant | Surface |
+|---|---|
+| `filled` | **Default.** Each item is its own tonal tile, separated by `--md-accordion-gap` |
+| `outlined` | Items share one rounded chassis with an outline and internal dividers |
+
+<ComponentDemo
+  html={`<md-accordion variant="filled" default-expanded="0" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);">
+  <md-accordion-item headline="Filled — one">Tonal tiles.</md-accordion-item>
+  <md-accordion-item headline="Filled — two">Each with its own surface.</md-accordion-item>
+</md-accordion>
+
+<md-accordion variant="outlined" default-expanded="0">
+  <md-accordion-item headline="Outlined — one">A shared chassis.</md-accordion-item>
+  <md-accordion-item headline="Outlined — two">Divided, not separated.</md-accordion-item>
+</md-accordion>`}
+  label="filled and outlined"
+/>
+
+`elevation="0…5"` raises the surface — in `filled` each item gets its own
+shadow, in `outlined` the shadow is drawn on the shared chassis. Expanded items
+lift one level above the resting value.
+
+Each item takes an `icon`, and `disabled` locks one closed — it also drops out
+of keyboard reordering.
+
+<ComponentDemo
+  html={`<md-accordion style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);">
+  <md-accordion-item headline="Flights" supporting-text="Outbound and return" icon="flight">Two seats, 09:40 departure.</md-accordion-item>
+  <md-accordion-item headline="Hotel" supporting-text="Three nights" icon="hotel">Hotel Meridian, sea view.</md-accordion-item>
+  <md-accordion-item headline="Insurance" supporting-text="Not yet available" icon="shield" disabled>Add a policy once travel is confirmed.</md-accordion-item>
+</md-accordion>`}
+  label="Leading icons, and a disabled section"
+/>
+
+`disabled` locks a section closed without removing it from the page. The header
+is a **natively disabled `<button>`**, so it drops out of the tab order and
+cannot be focused — a keyboard user arrows straight past it. The label is still
+rendered and still readable in browse mode, so the section is visible as
+"present but unavailable", but do not rely on it being reachable by `Tab`.
+
+Use it for "not available yet". It is not a privacy control: the panel content
+stays in the DOM (see [The panel is not
+lazy](#behaviour-worth-knowing)) — leave anything the user must not see out of
+the markup entirely.
+
+:::note[`disabled` and `aria-disabled` are different locks]
+The unfocusable native `disabled` is reserved for this prop. The *focusable*
+lock — `aria-disabled="true"` on a still-tabbable header — is what
+`keep-one-expanded` and `collapsible="false"` use, so a screen-reader user can
+land on the open panel's header and hear that it will not close.
+:::
+
+<ComponentDemo
+  html={`<md-accordion style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);">
+  <md-accordion-item headline="Available now">Click to expand.</md-accordion-item>
+  <md-accordion-item headline="Coming soon" supporting-text="Available in v2" icon="lock" disabled>This section unlocks in v2.</md-accordion-item>
+  <md-accordion-item headline="Also available">Click to expand.</md-accordion-item>
+</md-accordion>`}
+  label="A disabled section between two enabled ones — Tab skips it"
+/>
+
+## Expansion model
+
+Three props decide what is open, and they interact.
+
+| Prop | Effect |
+|---|---|
+| `default-expanded` | Which items start open — **a comma-separated string of indices** |
+| `exclusive` | Opening one item collapses any other open item |
+| `keep-one-expanded` | The last open item refuses to close (its button gets `aria-disabled="true"`) |
+
+:::caution[`default-expanded` is a string of indices, not an array]
+`default-expanded="0,2"` is correct. It is not a JSON array, and it is not a
+list of ids. Blank entries are ignored, so `default-expanded=""` opens nothing
+(an empty string would otherwise coerce to index `0`). An item that carries its
+own `expanded` attribute counts as well, and under `exclusive` the **lowest
+index wins** when more than one would be open.
+:::
+
+`exclusive` and `keep-one-expanded` together give the classic **"always exactly
+one open"** behaviour:
+
+<ComponentDemo
+  html={`<md-accordion exclusive keep-one-expanded variant="outlined" default-expanded="0">
+  <md-accordion-item headline="Appearance">Theme, density, motion.</md-accordion-item>
+  <md-accordion-item headline="Notifications">Email and push.</md-accordion-item>
+  <md-accordion-item headline="Privacy">Data sharing and export.</md-accordion-item>
+</md-accordion>`}
+  label="exclusive + keep-one-expanded — try closing the open section"
+/>
+
+Let the group own the state. Setting `expanded` on individual children to drive
+the group creates two sources of truth; use `default-expanded` for the initial
+state and `mdToggle` to observe changes.
+
+In Storybook: [controlled and uncontrolled](/storybook/?path=/story/containment-accordion--controlled-and-uncontrolled)
+covers driving `expanded` yourself versus letting the component own it,
+[keep-one-expanded](/storybook/?path=/story/containment-accordion--keep-one-expanded)
+isolates the "last panel can't close" rule,
+[prop reactions](/storybook/?path=/story/containment-accordion--prop-reactions)
+pins what happens when `exclusive` or `keep-one-expanded` is flipped at runtime,
+and [initial-state edge cases](/storybook/?path=/story/containment-accordion--initial-state-edge-cases)
+covers `default-expanded` conflicting with per-item `expanded`.
+
+## Heading level
+
+`heading-level` renders a real `<h1>`–`<h6>` around each item's header button
+and is pushed down onto every child, overriding anything the item sets itself.
+
+```html
+<md-accordion heading-level="2" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);">…</md-accordion>
+```
+
+The two accordions below are pixel-identical and structurally different: the
+first wraps each header in a real `<h2>`, the second in an `<h4>`. Inspect a
+header, or run a screen reader's heading list, and the difference is obvious —
+a visual review will never catch it.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">h2</span>
+  <md-accordion heading-level="2" variant="outlined">
+    <md-accordion-item headline="Billing" supporting-text="Rendered inside an h2">Invoices and payment method.</md-accordion-item>
+  </md-accordion>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">h4</span>
+  <md-accordion heading-level="4" variant="outlined">
+    <md-accordion-item headline="Billing" supporting-text="Rendered inside an h4">Invoices and payment method.</md-accordion-item>
+  </md-accordion>
+</div>`}
+  label="heading-level 2 vs 4 — identical on screen, different in the accessibility tree"
+/>
+
+The [heading-level story](/storybook/?path=/story/containment-accordion--heading-level)
+shows the rendered outline for each value.
+
+:::caution[This is an accessibility control, not styling]
+The default is `3`. It must match the surrounding document outline — `2` inside
+a top-level page section, `4` deep inside a card. A wrong level breaks heading
+navigation for screen-reader users, and it is invisible in a visual review.
+:::
+
+## Landmark regions (`region`)
+
+`region` controls **ARIA, not rendering**. Nothing appears or disappears; only
+the role on each panel changes.
+
+| Value | Panel role |
+|---|---|
+| `auto` | **Default.** `region` while the item count is at or below `region-threshold`, otherwise `group` |
+| `always` | Every panel is a `region` landmark |
+| `never` | Every panel is a `group` — still labelled by its header, never a landmark |
+
+`region-threshold` defaults to `6`, following the APG's advice: a landmark per
+panel is helpful for a handful of sections and pure noise for dozens, because
+every one of them shows up in the screen reader's landmark list.
+
+```html
+<md-accordion region="never" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);">…30 sections…</md-accordion>
+```
+
+Nothing below looks different, and that is the whole point: the only thing
+`region` changes is the `role` on each panel. The middle row has three items and
+a `region-threshold` of `2`, so `auto` has already downgraded its panels to
+`group`.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">auto</span>
+  <md-accordion region="auto" variant="outlined">
+    <md-accordion-item headline="Two sections, under the threshold">Panels are landmark regions.</md-accordion-item>
+    <md-accordion-item headline="Second section">Panels are landmark regions.</md-accordion-item>
+  </md-accordion>
+  <span style="inline-size:5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">auto (2)</span>
+  <md-accordion region="auto" region-threshold="2" variant="outlined">
+    <md-accordion-item headline="Three sections, over the threshold">Panels downgrade to group.</md-accordion-item>
+    <md-accordion-item headline="Second section">Panels downgrade to group.</md-accordion-item>
+    <md-accordion-item headline="Third section">Panels downgrade to group.</md-accordion-item>
+  </md-accordion>
+  <span style="inline-size:5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">never</span>
+  <md-accordion region="never" variant="outlined">
+    <md-accordion-item headline="Never a landmark">Still labelled by its header.</md-accordion-item>
+    <md-accordion-item headline="Second section">Still labelled by its header.</md-accordion-item>
+  </md-accordion>
+</div>`}
+  label="Three region policies — visually identical, three different panel roles"
+/>
+
+The [region-role policy story](/storybook/?path=/story/containment-accordion--region-role-policy)
+walks every combination of `region`, `region-threshold` and item count.
+
+:::note[It looks like a rendering flag — it isn't]
+`region="never"` does not stop panels rendering, and it does not remove their
+accessible name. Trust `auto` unless you have measured a reason not to.
+:::
+
+## Motion
+
+`transition` picks the expand/collapse choreography. It is reflected to the
+host so item CSS can pick it up.
+
+| Preset | Motion |
+|---|---|
+| `expressive` | **Default.** Asymmetric easing, spring chevron, container shape and elevation morph |
+| `standard` | Symmetric MD3 emphasized easing, no overshoot — the neutral choice for dense UI |
+| `fade` | Content cross-fades with the height change; unobtrusive for long copy and forms |
+| `collapse` | Plain height collapse with `ease-in-out` — the classic disclosure look |
+| `none` | Instant snap; no transition at all |
+
+<ComponentDemo
+  html={`<div style="display: grid; gap: 20px; max-inline-size: 520px;">
+  <md-accordion transition="expressive" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="expressive" supporting-text="Default — spring chevron, morphing container">Asymmetric easing with a shape and elevation morph.</md-accordion-item></md-accordion>
+  <md-accordion transition="standard" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="standard" supporting-text="Symmetric emphasized easing">No overshoot — the neutral choice for dense UI.</md-accordion-item></md-accordion>
+  <md-accordion transition="fade" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="fade" supporting-text="Cross-fade with the height change">Unobtrusive for long copy and forms.</md-accordion-item></md-accordion>
+  <md-accordion transition="collapse" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="collapse" supporting-text="Plain height, ease-in-out">The classic disclosure look.</md-accordion-item></md-accordion>
+  <md-accordion transition="none" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="none" supporting-text="No transition at all">Instant snap.</md-accordion-item></md-accordion>
+</div>`}
+  label="All five presets"
+/>
+
+### Custom durations
+
+Each preset ships its own pair of durations, and
+`--md-accordion-item-expand-duration` / `--md-accordion-item-collapse-duration`
+override whichever preset is active — so you keep the preset's easing curve and
+change only the timing.
+
+| `transition` | Expand | Collapse |
+|---|---|---|
+| `expressive` (default) | 350ms | 200ms |
+| `standard` | 300ms | 300ms |
+| `fade` | 300ms | 200ms |
+| `collapse` | 300ms | 300ms |
+| `none` | — | — |
+
+Most presets collapse at least as fast as they expand: the reader has already
+seen the content, so the closing move does not need to be admired.
+
+<ComponentDemo
+  html={`<style>
+  .acc-slow { --md-accordion-item-expand-duration: 800ms; --md-accordion-item-collapse-duration: 600ms; }
+  .acc-fast { --md-accordion-item-expand-duration: 120ms; --md-accordion-item-collapse-duration: 100ms; }
+</style>
+<div style="display: grid; gap: 20px; max-inline-size: 520px;">
+  <md-accordion transition="standard" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="Preset timing" supporting-text="300ms open / 300ms close — no override" icon="schedule">Open and close me.</md-accordion-item></md-accordion>
+  <md-accordion transition="standard" class="acc-slow" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="Slow" supporting-text="800ms open / 600ms close" icon="timer">Watch the easing stretch.</md-accordion-item></md-accordion>
+  <md-accordion transition="standard" class="acc-fast" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="Fast" supporting-text="120ms open / 100ms close" icon="bolt">Almost instant — but still eased.</md-accordion-item></md-accordion>
+</div>`}
+  label="Same easing, three speeds"
+/>
+
+All three above use `transition="standard"`, so all three share its symmetric
+`emphasized` curve; only the durations differ. The first is the preset's own
+300ms/300ms, the other two override it. Set the tokens on the accordion and they
+cascade to its items, or scope them to a class as here.
+
+Use `transition="none"` to honour `prefers-reduced-motion`, and in screenshot
+or automated-test harnesses where animation causes flake.
+
+## Reordering
+
+`reorderable` adds a leading drag handle to each item. Items can also be moved
+with **`Alt` + `ArrowUp` / `ArrowDown`** while a header is focused. Disabled
+items can't be moved.
+
+```html
+<md-accordion reorderable style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);">…</md-accordion>
+<script type="module">
+  accordion.addEventListener('mdReorder', (e) => saveOrder(e.detail.order));
+</script>
+```
+
+:::caution[`mdReorder` reports; it does not persist]
+The DOM order changes for the session and the event tells you the new
+sequence — `order` is the new index sequence relative to the original, so
+moving index `0` to index `2` yields `[1, 2, 0]`. Nothing is written anywhere.
+Persist `e.detail.order` yourself or the order resets on reload.
+:::
+
+While an item is dragged the accordion opens a **drop-target ghost** in the slot
+it will land in — the same affordance [`md-list`](/components/list/) uses, so the
+two reorder surfaces read as one pattern. It is a `drop-placeholder` part, tinted
+from `--md-accordion-drop-placeholder-*`.
+
+<ComponentDemo
+  html={`<md-accordion reorderable style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);">
+  <md-accordion-item headline="Trip basics" supporting-text="Dates and travellers">Two adults, 4–11 May.</md-accordion-item>
+  <md-accordion-item headline="Accommodation" supporting-text="Where you are staying">Hotel Meridian, sea view.</md-accordion-item>
+  <md-accordion-item headline="Payment" supporting-text="How you are paying">Card ending 4242.</md-accordion-item>
+</md-accordion>`}
+  label="Drag a handle, or focus a header and press Alt+ArrowDown"
+  storyId="containment-accordion--reorderable"
+/>
+
+Drag-reordering is pointer-driven; the `Alt`+arrow shortcut is the keyboard
+equivalent. Surface it somewhere if reordering matters to your users. The handle
+itself is replaceable — see [custom drag
+handles](/storybook/?path=/story/containment-accordion--custom-drag-handles).
+
+## Floating panel
+
+`floating` is a **specialised mode**, not the default layout: the accordion
+becomes a `position: fixed` panel with a drag bar, translated by CSS transform
+and draggable anywhere in the viewport.
+
+```html
+<md-accordion floating initial-x="24" initial-y="24" bring-to-front style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);">
+  <md-accordion-item headline="Layers">…</md-accordion-item>
+</md-accordion>
+```
+
+- `initial-x` / `initial-y` are **physical viewport pixels** from the top-left
+  corner — positive `initial-x` always moves right, in LTR and RTL alike.
+- `bring-to-front` (default `true`) bumps `z-index` on drag start. Turn it off
+  if you manage stacking yourself.
+- `mdDragStart` / `mdDragMove` / `mdDragEnd` fire only in this mode.
+- Width, surface and radius come from the `--md-accordion-floating-*`
+  properties.
+
+A floating accordion is `position: fixed`, so in a real app it is positioned
+against the viewport. The preview below pins it to the demo box instead by
+giving the wrapper a `transform` — an ancestor with a transform becomes the
+containing block for its `position: fixed` descendants — so `initial-x` /
+`initial-y` are measured from the box's top-left corner and the panel is clipped
+by it. **Grab the grip above the first headline and drag it around.**
+
+<ComponentDemo
+  html={`<div style="position:relative;inline-size:100%;block-size:260px;overflow:hidden;transform:translateZ(0);contain:layout paint;border:1px dashed var(--md-sys-color-outline);border-radius:12px;background:var(--md-sys-color-surface-container-lowest);">
+  <md-accordion floating initial-x="24" initial-y="24" default-expanded="0" style="--md-accordion-floating-width: 280px;">
+    <md-accordion-item headline="Layers" supporting-text="Drag me by the grip" icon="layers">Background, artwork, annotations.</md-accordion-item>
+    <md-accordion-item headline="Filters" icon="tune">Blur, contrast, grain.</md-accordion-item>
+  </md-accordion>
+</div>`}
+  htmlForCode={`<md-accordion floating initial-x="24" initial-y="24" bring-to-front default-expanded="0">
+  <md-accordion-item headline="Layers" supporting-text="Drag me by the grip" icon="layers">Background, artwork, annotations.</md-accordion-item>
+  <md-accordion-item headline="Filters" icon="tune">Blur, contrast, grain.</md-accordion-item>
+</md-accordion>`}
+  label="A floating panel, contained to the demo box — drag it by the grip"
+/>
+
+In Storybook, where it can own the whole viewport:
+[floating](/storybook/?path=/story/containment-accordion--floating),
+[floating + reorderable](/storybook/?path=/story/containment-accordion--floating-reorderable),
+and [floating under RTL](/storybook/?path=/story/containment-accordion--rtl-floating).
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdToggle` | no | `{ index, expanded, expandedIndices }` | Any item expands or collapses |
+| `mdReorder` | no | `{ from, to, order }` | An item is moved by drag or `Alt`+arrow |
+| `mdDragStart` | no | `MdAccordionDragDetail` | A floating panel starts being dragged |
+| `mdDragMove` | no | `MdAccordionDragDetail` | Continuously while dragging |
+| `mdDragEnd` | no | `MdAccordionDragDetail` | The floating panel is released |
+
+```ts
+interface MdAccordionDragDetail {
+  clientX: number;   // pointer, viewport coordinates
+  clientY: number;
+  x: number;         // panel translation (px)
+  y: number;
+  dx: number;        // distance since drag start
+  dy: number;
+}
+```
+
+Listen on the **accordion**, not on the items — `mdToggle` already carries the
+index and the full set of expanded indices, and the items' own
+`mdItemRequestFocus` / `mdItemRequestReorder` events are internal plumbing.
+
+Expand a section, or drag a handle, and watch the log fill in. One listener on
+the accordion covers every item.
+
+<ComponentDemo
+  html={`<div style="display: grid; gap: 12px; max-inline-size: 560px;">
+  <md-accordion id="faq" exclusive reorderable style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);">
+    <md-accordion-item headline="How do refunds work?" icon="receipt_long">Refunds land back on the original card within five working days.</md-accordion-item>
+    <md-accordion-item headline="Can I change my plan?" icon="tune">Switch at any time — the change applies on the next billing date.</md-accordion-item>
+    <md-accordion-item headline="Where do you ship?" icon="public">Thirty-two countries, tracked as standard.</md-accordion-item>
+  </md-accordion>
+  <pre data-log style="margin:0;min-block-size:5.5rem;padding:12px;border-radius:8px;background:var(--md-sys-color-surface-container-high);color:var(--md-sys-color-on-surface);font:12px/1.6 ui-monospace,monospace;white-space:pre-wrap;">Expand a section, or drag a handle…</pre>
+</div>`}
+  script={`var acc = root.querySelector('md-accordion');
+var log = root.querySelector('[data-log]');
+if (!acc || !log) return;
+var lines = [];
+var push = function (line) {
+  lines.unshift(line);
+  if (lines.length > 5) lines.pop();
+  log.textContent = lines.join(String.fromCharCode(10));
+};
+acc.addEventListener('mdToggle', function (e) {
+  push('mdToggle   index=' + e.detail.index + '  expanded=' + e.detail.expanded + '  expandedIndices=[' + e.detail.expandedIndices.join(',') + ']');
+});
+acc.addEventListener('mdReorder', function (e) {
+  push('mdReorder  from=' + e.detail.from + '  to=' + e.detail.to + '  order=[' + e.detail.order.join(',') + ']');
+});`}
+  label="mdToggle and mdReorder — one listener on the accordion"
+  htmlCode={`<md-accordion id="faq" exclusive reorderable>
+  <md-accordion-item headline="How do refunds work?" icon="receipt_long">Refunds land back on the original card within five working days.</md-accordion-item>
+  <md-accordion-item headline="Can I change my plan?" icon="tune">Switch at any time — the change applies on the next billing date.</md-accordion-item>
+  <md-accordion-item headline="Where do you ship?" icon="public">Thirty-two countries, tracked as standard.</md-accordion-item>
+</md-accordion>
+
+<script type="module">
+  const faq = document.getElementById('faq');
+
+  faq.addEventListener('mdToggle', (e) => {
+    const { index, expanded, expandedIndices } = e.detail;
+    console.log('mdToggle', index, expanded, expandedIndices);
+  });
+
+  faq.addEventListener('mdReorder', (e) => {
+    const { from, to, order } = e.detail;
+    console.log('mdReorder', from, to, order);
+  });
+</script>`}
+  react={`import { useState } from 'react';
+import { MdAccordion, MdAccordionItem } from '@awc-ui/react';
+
+export function Faq() {
+  const [log, setLog] = useState<string[]>([]);
+  const push = (line: string) => setLog((prev) => [line, ...prev].slice(0, 5));
+
+  return (
+    <>
+      <MdAccordion
+        exclusive
+        reorderable
+        onMdToggle={(e) =>
+          push('mdToggle ' + e.detail.index + ' ' + e.detail.expanded + ' [' + e.detail.expandedIndices.join(',') + ']')
+        }
+        onMdReorder={(e) =>
+          push('mdReorder ' + e.detail.from + ' -> ' + e.detail.to + ' [' + e.detail.order.join(',') + ']')
+        }
+      >
+        <MdAccordionItem headline="How do refunds work?" icon="receipt_long">
+          Refunds land back on the original card within five working days.
+        </MdAccordionItem>
+        <MdAccordionItem headline="Can I change my plan?" icon="tune">
+          Switch at any time — the change applies on the next billing date.
+        </MdAccordionItem>
+        <MdAccordionItem headline="Where do you ship?" icon="public">
+          Thirty-two countries, tracked as standard.
+        </MdAccordionItem>
+      </MdAccordion>
+
+      <pre>
+        {log.map((line) => (
+          <div key={line}>{line}</div>
+        ))}
+      </pre>
+    </>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-faq',
+  template: \`
+    <md-accordion exclusive reorderable (mdToggle)="onToggle($event)" (mdReorder)="onReorder($event)">
+      <md-accordion-item headline="How do refunds work?" icon="receipt_long">Refunds land back on the original card within five working days.</md-accordion-item>
+      <md-accordion-item headline="Can I change my plan?" icon="tune">Switch at any time — the change applies on the next billing date.</md-accordion-item>
+      <md-accordion-item headline="Where do you ship?" icon="public">Thirty-two countries, tracked as standard.</md-accordion-item>
+    </md-accordion>
+
+    <pre>@for (line of log; track line) {<span>{{ line }}</span>}</pre>
+  \`,
+})
+export class FaqComponent {
+  log: string[] = [];
+
+  private push(line: string) {
+    this.log = [line, ...this.log].slice(0, 5);
+  }
+
+  onToggle(e: CustomEvent) {
+    this.push('mdToggle ' + e.detail.index + ' ' + e.detail.expanded);
+  }
+
+  onReorder(e: CustomEvent) {
+    this.push('mdReorder ' + e.detail.from + ' -> ' + e.detail.to);
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+
+const log = ref<string[]>([]);
+const push = (line: string) => {
+  log.value = [line, ...log.value].slice(0, 5);
+};
+
+function onToggle(e: CustomEvent) {
+  push('mdToggle ' + e.detail.index + ' ' + e.detail.expanded);
+}
+
+function onReorder(e: CustomEvent) {
+  push('mdReorder ' + e.detail.from + ' -> ' + e.detail.to);
+}
+</script>
+
+<template>
+  <md-accordion exclusive reorderable @mdToggle="onToggle" @mdReorder="onReorder">
+    <md-accordion-item headline="How do refunds work?" icon="receipt_long">Refunds land back on the original card within five working days.</md-accordion-item>
+    <md-accordion-item headline="Can I change my plan?" icon="tune">Switch at any time — the change applies on the next billing date.</md-accordion-item>
+    <md-accordion-item headline="Where do you ship?" icon="public">Thirty-two countries, tracked as standard.</md-accordion-item>
+  </md-accordion>
+
+  <pre><span v-for="line in log" :key="line">{{ line }}</span></pre>
+</template>`}
+  svelte={`<script lang="ts">
+  let log: string[] = [];
+
+  const push = (line: string) => {
+    log = [line, ...log].slice(0, 5);
+  };
+
+  function onToggle(e: CustomEvent) {
+    push('mdToggle ' + e.detail.index + ' ' + e.detail.expanded);
+  }
+
+  function onReorder(e: CustomEvent) {
+    push('mdReorder ' + e.detail.from + ' -> ' + e.detail.to);
+  }
+</script>
+
+<md-accordion exclusive reorderable on:mdToggle={onToggle} on:mdReorder={onReorder}>
+  <md-accordion-item headline="How do refunds work?" icon="receipt_long">Refunds land back on the original card within five working days.</md-accordion-item>
+  <md-accordion-item headline="Can I change my plan?" icon="tune">Switch at any time — the change applies on the next billing date.</md-accordion-item>
+  <md-accordion-item headline="Where do you ship?" icon="public">Thirty-two countries, tracked as standard.</md-accordion-item>
+</md-accordion>
+
+<pre>{#each log as line}<span>{line}</span>{/each}</pre>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+The [accessibility story](/storybook/?path=/story/containment-accordion--accessibility)
+walks the roles, keyboard model and announced output.
+
+- Each item's header is a button that toggles its panel and exposes its
+  expanded state; the accordion wires the heading level and the panel role.
+- **`heading-level` is a real accessibility control, not styling.** A wrong
+  level breaks document navigation. The default `3` is a guess about your page,
+  not a fact about it.
+- `region`/`region-threshold` exist to stop landmark proliferation. A landmark
+  per panel is noise past a handful of sections — trust `auto`.
+- `keep-one-expanded` advertises the locked-open header with
+  `aria-disabled="true"` rather than silently swallowing the click.
+- Arrow keys move between headers, `Home` / `End` jump to the first and last.
+- Honour `prefers-reduced-motion` with `transition="none"`.
+- Drag-reordering is pointer-only; `Alt` + `ArrowUp` / `ArrowDown` is the
+  keyboard path — document it if reordering matters.
+
+Tab into the accordion below and drive it from the keyboard: `ArrowDown` /
+`ArrowUp` wrap between headers, `Home` / `End` jump to the first and last,
+`Enter` or `Space` toggles, and `Alt` + `ArrowUp` / `ArrowDown` moves a section.
+Because `keep-one-expanded` is on, the one open header reports
+`aria-disabled="true"` instead of silently ignoring you.
+
+<ComponentDemo
+  html={`<md-accordion keep-one-expanded reorderable heading-level="3" default-expanded="0" variant="outlined">
+  <md-accordion-item headline="Appearance" supporting-text="Theme, density, motion" icon="palette">Locked open while it is the only expanded section.</md-accordion-item>
+  <md-accordion-item headline="Notifications" supporting-text="Email and push" icon="notifications">Arrow down to reach me, Enter to open.</md-accordion-item>
+  <md-accordion-item headline="Privacy" supporting-text="Data sharing and export" icon="lock">End jumps straight here.</md-accordion-item>
+</md-accordion>`}
+  label="Keyboard model — tab in, then use the arrows, Home, End and Alt+arrows"
+/>
+
+## RTL, density & i18n
+
+Set `dir` on any ancestor and the accordion mirrors: header padding, the leading
+icon, the drag handle and the chevron all swap sides. Nothing on the component
+needs changing.
+
+```html
+<div dir="rtl">
+  <md-accordion reorderable>…</md-accordion>
+</div>
+```
+
+The two rows below are the *same* markup — only the `dir` on the wrapper
+differs. See the [RTL story](/storybook/?path=/story/containment-accordion--rtl)
+and [RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr">
+    <md-accordion reorderable variant="outlined">
+      <md-accordion-item headline="تفاصيل الرحلة" supporting-text="التواريخ والمسافرون" icon="flight">بالغان، ٤–١١ مايو.</md-accordion-item>
+      <md-accordion-item headline="الإقامة" supporting-text="مكان إقامتك" icon="hotel">فندق ميريديان، إطلالة على البحر.</md-accordion-item>
+    </md-accordion>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl">
+    <md-accordion reorderable variant="outlined">
+      <md-accordion-item headline="تفاصيل الرحلة" supporting-text="التواريخ والمسافرون" icon="flight">بالغان، ٤–١١ مايو.</md-accordion-item>
+      <md-accordion-item headline="الإقامة" supporting-text="مكان إقامتك" icon="hotel">فندق ميريديان، إطلالة على البحر.</md-accordion-item>
+    </md-accordion>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+/>
+
+### `initial-x` is physical, not logical
+
+One thing on this component deliberately does **not** mirror: the floating
+panel's `initial-x` / `initial-y`. They are viewport pixels from the **top-left**
+corner, so a positive `initial-x` moves the panel right in LTR and in RTL alike —
+the drag deltas come from `clientX`, which is also physical, so the two stay in
+lockstep. The panel is anchored at physical `left: 0`, so negating `initial-x`
+"to mirror" walks it off the **left** edge of the screen — which under RTL is
+the *trailing* edge, the opposite of what the mirroring was meant to achieve.
+
+<ComponentDemo
+  html={`<div style="display:grid;inline-size:100%;grid-template-columns:auto minmax(0,1fr);gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <div dir="rtl" style="position:relative;block-size:150px;overflow:hidden;transform:translateZ(0);contain:layout paint;border:1px dashed var(--md-sys-color-outline);border-radius:12px;">
+    <md-accordion floating initial-x="24" initial-y="24" style="--md-accordion-floating-width: 240px;">
+      <md-accordion-item headline="الطبقات" icon="layers">initial-x="24"</md-accordion-item>
+    </md-accordion>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <div dir="rtl" style="position:relative;block-size:150px;overflow:hidden;transform:translateZ(0);contain:layout paint;border:1px dashed var(--md-sys-color-error);border-radius:12px;">
+    <md-accordion floating initial-x="-24" initial-y="24" style="--md-accordion-floating-width: 240px;">
+      <md-accordion-item headline="الطبقات" icon="layers">initial-x="-24"</md-accordion-item>
+    </md-accordion>
+  </div>
+</div>`}
+  label="Both under dir=rtl — a negated initial-x slides off the edge"
+/>
+
+### Every density rung
+
+`density="-1…-4"` is set once on the accordion and cascades to every item.
+Measured on the ladder below, where each header carries a headline *and*
+supporting text: **74 → 69 → 63 → 58 → 52px**. A single-line header (headline
+only) starts at 64px instead, so budget by the header you actually ship rather
+than by the rung alone.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <md-accordion density="0" variant="outlined"><md-accordion-item headline="Rung 0" supporting-text="Same content at every rung">Panel body.</md-accordion-item></md-accordion>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <md-accordion density="-1" variant="outlined"><md-accordion-item headline="Rung -1" supporting-text="Same content at every rung">Panel body.</md-accordion-item></md-accordion>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <md-accordion density="-2" variant="outlined"><md-accordion-item headline="Rung -2" supporting-text="Same content at every rung">Panel body.</md-accordion-item></md-accordion>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <md-accordion density="-3" variant="outlined"><md-accordion-item headline="Rung -3" supporting-text="Same content at every rung">Panel body.</md-accordion-item></md-accordion>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <md-accordion density="-4" variant="outlined"><md-accordion-item headline="Rung -4" supporting-text="Same content at every rung">Panel body.</md-accordion-item></md-accordion>
+</div>`}
+  label="Density 0 through -4 — header, icon and hit area all taper"
+/>
+
+:::caution[-4 sits exactly on the 48px touch target]
+A floor keeps the header from ever going under it:
+`--md-accordion-item-header-min-height` resolves to
+`max(40px, 64px + density × 4px)`, i.e. **64 / 60 / 56 / 52 / 48px** for rungs
+0 … -4. A single-line header's own content is shorter than that at every rung,
+so it renders at the floor — 52px at `-3`, exactly 48px at `-4`. Two-line
+headers stay above it (52px at `-4`).
+
+So nothing here breaks the 48px minimum, but `-4` leaves no margin at all: one
+`--md-accordion-item-header-padding` or `-header-min-height` override and you are
+under it. Reserve the tightest rungs for pointer-first, information-dense
+screens. See [Density](/behaviour/density/#accessibility).
+:::
+
+### Density and direction together
+
+The two are independent: `dir` decides which side everything sits on, `density`
+decides how tall it is. They compose without either one leaking into the other.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr / 0</span>
+  <div dir="ltr">
+    <md-accordion density="0" reorderable variant="outlined"><md-accordion-item headline="Trip basics" supporting-text="Dates and travellers" icon="flight">Two adults, 4–11 May.</md-accordion-item></md-accordion>
+  </div>
+  <span style="inline-size:5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl / 0</span>
+  <div dir="rtl">
+    <md-accordion density="0" reorderable variant="outlined"><md-accordion-item headline="تفاصيل الرحلة" supporting-text="التواريخ والمسافرون" icon="flight">بالغان، ٤–١١ مايو.</md-accordion-item></md-accordion>
+  </div>
+  <span style="inline-size:5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl / -3</span>
+  <div dir="rtl">
+    <md-accordion density="-3" reorderable variant="outlined"><md-accordion-item headline="تفاصيل الرحلة" supporting-text="التواريخ والمسافرون" icon="flight">بالغان، ٤–١١ مايو.</md-accordion-item></md-accordion>
+  </div>
+</div>`}
+  label="dir=rtl combined with density=-3"
+/>
+
+**Density** — one prop on the accordion, applied to every section; the item's
+`density` exists for standalone use. See [Density](/behaviour/density/).
+
+**i18n** — headlines and panel content are yours to translate (the
+[localization story](/storybook/?path=/story/containment-accordion--localization)
+switches a full set). Longer headlines wrap, so check header height per locale
+rather than assuming one-line headers — the
+[responsiveness story](/storybook/?path=/story/containment-accordion--responsiveness)
+covers narrow viewports.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-accordion-gap` | Space between items in the `filled` variant | `--md-sys-spacing-gap-sm` (8px) |
+| `--md-accordion-outline-color` | `outlined` border and internal dividers | `--md-sys-color-outline-variant` |
+| `--md-accordion-container-shape` | Radius of the outer chassis | `max(8px, 12px + density)` |
+| `--md-accordion-elevation` | Explicit shadow override for the surface | the `elevation` prop's level |
+| `--md-accordion-floating-width` | Floating panel width | `360px` |
+| `--md-accordion-floating-bg` | Floating panel surface | `--md-sys-color-surface-container-low` |
+| `--md-accordion-floating-radius` | Floating panel corner radius | `--md-sys-shape-corner-large` (16px) |
+| `--md-accordion-floating-elevation` / `-elevation-active` | Floating panel shadow, at rest and while dragging | `--md-sys-elevation-3` / `-5` |
+| `--md-accordion-drop-placeholder-color` / `-outline-color` | Reorder ghost fill and dashed border | tinted `primary-container` / `primary` |
+| `--md-accordion-drop-placeholder-outline-width` / `-shape` / `-opacity` | Reorder ghost border width, radius and opacity | `2px` / chassis shape / `1` |
+
+Item-level colours, padding and shape live on the
+`--md-accordion-item-*` properties documented on
+[`md-accordion-item`](#the-item--md-accordion-item) — set them on the accordion
+and they cascade to every item.
+
+<ComponentDemo
+  html={`<md-accordion variant="outlined" style="--md-accordion-outline-color: var(--md-sys-color-primary); --md-accordion-container-shape: 4px;">
+  <md-accordion-item headline="Themed chassis">Squared corners, primary outline.</md-accordion-item>
+  <md-accordion-item headline="Second section">Same chassis.</md-accordion-item>
+</md-accordion>`}
+  label="Themed instance"
+/>
+
+### Elevation
+
+`elevation` (0–5) raises the whole chassis. It is a prop rather than a custom
+property because the floating mode swaps between two levels while dragging.
+
+<ComponentDemo
+  html={`<div style="display: grid; gap: 24px;">
+  <md-accordion elevation="0" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="elevation 0">Flat — the default.</md-accordion-item></md-accordion>
+  <md-accordion elevation="2" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="elevation 2">Lifted off the surface.</md-accordion-item></md-accordion>
+  <md-accordion elevation="4" style="--md-accordion-gap: var(--md-sys-spacing-gap-lg, 16px);"><md-accordion-item headline="elevation 4">Card-like.</md-accordion-item></md-accordion>
+</div>`}
+  label="elevation 0, 2 and 4"
+/>
+
+### Size and colour
+
+Width follows the container, so constrain the parent rather than the accordion;
+height is driven by content, with `content-max-height` on an item capping a long
+panel and scrolling inside it. The capped body becomes a real scroll container
+and takes `tabindex="0"`, so it can be scrolled by keyboard — without that, a
+scrollable region with no focusable child is an axe violation.
+
+<ComponentDemo
+  html={`<div style="display: grid; gap: 24px;">
+  <div style="max-inline-size: 320px;">
+    <md-accordion variant="outlined"><md-accordion-item headline="In a 320px column">The accordion fills whatever box you put it in.</md-accordion-item></md-accordion>
+  </div>
+  <md-accordion variant="outlined">
+    <md-accordion-item headline="Capped panel" content-max-height="90px" expanded>
+      This panel is capped with content-max-height, so a long body scrolls inside the panel instead of pushing the rest of the page down. Keep adding copy and the panel stays the same height. The scrollbar belongs to the panel, not the page, which is what you want inside a dense settings screen where several sections may be open at once.
+    </md-accordion-item>
+  </md-accordion>
+</div>`}
+  label="Constrained width, and a capped panel"
+/>
+
+For a fixed-height shell — a sidebar, a dashboard tile — cap a **wrapper** and
+let it scroll, rather than capping the accordion itself:
+
+<ComponentDemo
+  html={`<div style="block-size: 220px; overflow: auto; padding: 8px; border: 1px dashed var(--md-sys-color-outline); border-radius: 12px; max-inline-size: 420px;">
+  <md-accordion variant="outlined">
+    <md-accordion-item headline="Shipping" supporting-text="Arrives in 3–5 days">Standard delivery is free over 50.</md-accordion-item>
+    <md-accordion-item headline="Returns" supporting-text="30 days">Unused items in original packaging.</md-accordion-item>
+    <md-accordion-item headline="Warranty" supporting-text="Two years">Covers manufacturing defects.</md-accordion-item>
+    <md-accordion-item headline="Support" supporting-text="24/7">Chat and email.</md-accordion-item>
+  </md-accordion>
+</div>`}
+  label="A capped, scrolling wrapper"
+/>
+
+### Responsiveness
+
+The accordion is fluid: it fills its parent's inline size, headlines wrap rather
+than truncate, and the header keeps its 48px minimum touch target however narrow
+the column gets.
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;">
+  <div style="inline-size: 260px;">
+    <p style="margin: 0 0 8px; font: 500 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">260px</p>
+    <md-accordion variant="outlined">
+      <md-accordion-item headline="A headline long enough to wrap in a narrow column" supporting-text="Supporting text also wraps">Panel body.</md-accordion-item>
+    </md-accordion>
+  </div>
+  <div style="flex: 1; min-inline-size: 320px;">
+    <p style="margin: 0 0 8px; font: 500 12px system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant);">fluid</p>
+    <md-accordion variant="outlined">
+      <md-accordion-item headline="A headline long enough to wrap in a narrow column" supporting-text="Supporting text also wraps">Panel body.</md-accordion-item>
+    </md-accordion>
+  </div>
+</div>`}
+  label="The same item at two widths"
+/>
+
+### Colours, sizes and the caret
+
+Item-level colour and spacing are all custom properties, and the chevron can be
+recoloured, restyled through `::part(trailing-icon)`, or replaced outright by
+slotting your own into `trailing-icon`.
+
+<ComponentDemo
+  html={`<div style="display: grid; gap: 24px;">
+  <md-accordion variant="outlined" style="--md-accordion-item-header-color-expanded: var(--md-sys-color-tertiary-container); --md-accordion-item-headline-color-expanded: var(--md-sys-color-on-tertiary-container); --md-accordion-item-icon-color-expanded: var(--md-sys-color-on-tertiary-container);">
+    <md-accordion-item headline="Recoloured expanded state" icon="palette" expanded>The expanded header uses the tertiary role.</md-accordion-item>
+  </md-accordion>
+  <md-accordion variant="outlined" style="--md-accordion-item-header-padding: 24px; --md-accordion-item-header-min-height: 72px;">
+    <md-accordion-item headline="Roomier header" supporting-text="24px padding, 72px minimum">Sizing is token-driven.</md-accordion-item>
+  </md-accordion>
+  <md-accordion variant="outlined">
+    <md-accordion-item headline="Replaced caret">
+      <svg slot="trailing-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      A slotted chevron rotates with the same transform as the built-in one.
+    </md-accordion-item>
+  </md-accordion>
+</div>`}
+  label="Custom colours, sizes and caret"
+/>
+
+In Storybook: [custom sizes](/storybook/?path=/story/containment-accordion--custom-sizes),
+[custom caret](/storybook/?path=/story/containment-accordion--custom-caret),
+[custom drag handles](/storybook/?path=/story/containment-accordion--custom-drag-handles),
+[width](/storybook/?path=/story/containment-accordion--width) and
+[dark theme](/storybook/?path=/story/containment-accordion--dark-theme).
+
+### CSS parts
+
+The accordion exposes exactly one part of its own — `drop-placeholder`, the
+ghost slot that opens where a dragged item will land. Everything else you would
+want to restyle belongs to the item, whose parts are listed under
+[Item theming](#item-theming).
+
+Drag a handle below and the ghost is tertiary-tinted with a solid border instead
+of the default dashed primary tint.
+
+<ComponentDemo
+  html={`<style>
+  .acc-ghost::part(drop-placeholder) {
+    background-color: color-mix(in srgb, var(--md-sys-color-tertiary-container) 70%, transparent);
+    border-style: solid;
+    border-color: var(--md-sys-color-tertiary);
+  }
+</style>
+<md-accordion class="acc-ghost" reorderable variant="outlined">
+  <md-accordion-item headline="Trip basics" supporting-text="Dates and travellers">Two adults, 4–11 May.</md-accordion-item>
+  <md-accordion-item headline="Accommodation" supporting-text="Where you are staying">Hotel Meridian, sea view.</md-accordion-item>
+  <md-accordion-item headline="Payment" supporting-text="How you are paying">Card ending 4242.</md-accordion-item>
+</md-accordion>`}
+  label="A restyled drop ghost — drag a handle to see it"
+/>
+
+```css
+md-accordion::part(drop-placeholder) {
+  border-style: solid;
+  border-color: var(--md-sys-color-tertiary);
+}
+```
+
+
+## The item — `md-accordion-item`
+
+Each section is an `md-accordion-item`. It has its own props, parts and tokens,
+documented here rather than on a separate page: outside an accordion it is only
+half a component, and inside one the parent overrides several of its settings.
+
+It **does** work standalone as a single collapsible region, and that is a
+legitimate use. What does not exist outside an accordion is *group* behaviour:
+`exclusive`, `keep-one-expanded`, arrow-key movement between headers,
+drag / `Alt`+arrow reordering, and the coordinated heading level and panel role.
+
+<ComponentDemo
+  html={`<md-accordion-item headline="Advanced options" supporting-text="Rarely needed" heading-level="2">
+  <p style="margin: 0;">Proxy, retries and request timeout.</p>
+</md-accordion-item>`}
+  label="A standalone item, outside any accordion"
+/>
+
+Custom glyphs go in the `leading-icon` / `trailing-icon` slots and rich header
+text in the `headline` slot; a slot replaces the corresponding prop.
+
+### Behaviour worth knowing
+
+- **Inside an accordion the parent overrides `heading-level` and `region-role`.**
+  It pushes its own `heading-level` and its `region` / `region-threshold`
+  decision onto every child, so setting either on the item only means something
+  standalone.
+- **`mdItemRequestFocus` and `mdItemRequestReorder` are internal plumbing.** The
+  parent listens for them to drive roving focus and `Alt`+arrow reordering.
+  Listen to the accordion's `mdToggle` / `mdReorder` instead.
+- `collapsible="false"` makes an open item permanent — the header advertises
+  `aria-disabled="true"` and `Enter` / `Space` / click stop toggling. Combined
+  with the parent's `keep-one-expanded` you can build a section that can never
+  close; pick one constraint, not both.
+- **The panel is not lazy.** Collapsed content is in the DOM, just hidden. For
+  expensive content, render it yourself on first expand.
+- `expanded` is two-way bindable, but driving group state by setting it on each
+  child fights the parent — use the accordion's `default-expanded`.
+
+### Item API Reference
+
+<ApiTable {...itemApiData} />
+
+### Item theming
+
+Set these on the parent accordion so every section stays uniform — they cascade.
+
+| Custom property | Purpose |
+|---|---|
+| `--md-accordion-item-container-color` / `-container-color-expanded` | Item surface by state |
+| `--md-accordion-item-container-shape` / `-container-shape-expanded` | Corner radius by state |
+| `--md-accordion-item-header-color` / `-header-color-expanded` | Header background by state |
+| `--md-accordion-item-headline-color` / `-headline-color-expanded` | Headline text |
+| `--md-accordion-item-supporting-color` | Supporting text |
+| `--md-accordion-item-icon-color` / `-icon-color-expanded` | Icons |
+| `--md-accordion-item-state-layer-color` / `-state-layer-color-expanded` | Hover and press overlay |
+| `--md-accordion-item-header-padding` / `-header-min-height` | Header metrics |
+| `--md-accordion-item-content-padding` | Panel padding |
+| `--md-accordion-item-elevation` / `-elevation-expanded` | Item shadow by state |
+| `--md-accordion-item-expand-duration` / `-collapse-duration` | Motion timing |
+
+**Item CSS parts** — `heading`, `header`, `headline`, `supporting-text`,
+`leading-icon`, `trailing-icon`, `state-layer`, `panel`, `content`,
+`content-inner`, `drag-handle`, `chassis-handle`, `chassis-handle-bar`.
+
+```css
+md-accordion-item::part(headline) {
+  letter-spacing: 0.1px;
+}
+```
+
+## Related
+
+[`md-tabs`](/components/tabs/) ·
+[`md-tab-panel`](/components/tabs/#md-tab-panel) ·
+[`md-list`](/components/list/) ·
+[`md-card`](/components/card/) ·
+[`md-divider`](/components/divider/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-accordion" />

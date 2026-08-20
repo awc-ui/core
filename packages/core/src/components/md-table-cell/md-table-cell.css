@@ -1,0 +1,189 @@
+/* ==========================================================
+   md-table-cell — single grid cell (dumb surface)
+
+   Context arrives as inherited custom properties:
+     from md-table:      --_row-h, --_cell-pad-inline
+     cast by md-table-row (::slotted):
+       --_cell-min-h     min height (header rows cast 56px)
+       --_cell-color     text color (header / selected / disabled casts)
+       --_cell-weight    font weight (header casts 500)
+       --_cell-letter-spacing
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-table-cell-color                Foreground (text) color
+     --md-table-cell-background           Background color
+     --md-table-cell-padding-inline      Horizontal padding
+     --md-table-cell-min-height           Minimum cell height
+     --md-table-cell-sticky-bg            Opaque bg for sticky columns
+
+   PARTS: content
+   ========================================================== */
+
+:host {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-inline-size: 0;
+  min-block-size: var(--md-table-cell-min-height, var(--_cell-min-h, var(--_row-h, 52px)));
+  padding-block: var(--md-table-cell-padding-block, var(--_cell-pad-block, 8px));
+  padding-inline: var(--md-table-cell-padding-inline, var(--_cell-pad-inline, 16px));
+  background-color: var(--md-table-cell-background, transparent);
+  color: var(--md-table-cell-color, var(--_cell-color, inherit));
+  font-weight: var(--_cell-weight, inherit);
+  letter-spacing: var(--_cell-letter-spacing, inherit);
+}
+
+/* ── Alignment ────────────────────────────────────────────── */
+:host(.md-table-cell--align-center) {
+  justify-content: center;
+  text-align: center;
+}
+:host(.md-table-cell--align-end) {
+  justify-content: flex-end;
+  text-align: end;
+}
+:host(.md-table-cell--align-justify) {
+  text-align: justify;
+}
+:host([numeric]) {
+  justify-content: flex-end;
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Padding modes (MUI parity) ───────────────────────────── */
+:host(.md-table-cell--padding-none) {
+  padding: 0;
+}
+:host(.md-table-cell--padding-checkbox) {
+  padding-block: 0;
+  padding-inline: var(--md-sys-spacing-inset-xs, 4px) 0;
+  justify-content: center;
+}
+
+/* ── Variants ─────────────────────────────────────────────── */
+:host(.md-table-cell--variant-meta) {
+  font-size: var(--md-sys-typescale-body-small-font-size, 12px);
+  line-height: var(--md-sys-typescale-body-small-line-height, 16px);
+  color: var(--md-table-cell-color, var(--_cell-color, var(--md-sys-color-on-surface-variant, #49454F)));
+}
+
+/* ── Ellipsis ─────────────────────────────────────────────── */
+:host([ellipsis]) .md-table-cell__content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.md-table-cell__content {
+  min-inline-size: 0;
+  display: block;
+}
+
+/* Header labels stay on one line (with any adornment, e.g. a pin icon) — the
+   table scrolls horizontally rather than wrapping the header when cramped. */
+:host(.md-table-cell--head) .md-table-cell__content {
+  white-space: nowrap;
+}
+
+/* ── Pin indicator (auto-shown on sticky/frozen column headers) ──────
+   A frozen column always advertises that it's pinned with a small pin at the
+   header's inline-start. It's a non-shrinking flex sibling of the label, so the
+   column grows to fit pin + label rather than clipping either. */
+.md-table-cell__pin {
+  flex: 0 0 auto;
+  display: var(--md-table-cell-pin-display, inline-flex);
+  align-items: center;
+  justify-content: center;
+  margin-inline-end: 4px;
+  color: var(--md-table-cell-pin-color, var(--md-sys-color-primary, #6750A4));
+}
+.md-table-cell__pin svg {
+  inline-size: var(--md-table-cell-pin-size, 16px);
+  block-size: var(--md-table-cell-pin-size, 16px);
+  fill: currentColor;
+  /* Tacked-in look, matching the interactive pin affordance used elsewhere. */
+  transform: rotate(45deg);
+}
+/* When a numeric / end-aligned header is pinned, keep the pin + label together
+   at the cell's inline-start so the pin never detaches to the far edge. */
+:host(.md-table-cell--pinned.md-table-cell--align-end),
+:host(.md-table-cell--pinned[numeric]) {
+  justify-content: flex-start;
+}
+
+/* ── Sticky columns — need an OPAQUE surface so scrolled content
+   doesn't ghost underneath. ─────────────────────────────────── */
+:host([sticky='start']) {
+  position: sticky;
+  /* pin-mode="static": md-table stamps cumulative offsets so multiple pinned
+     columns sit side-by-side; default 0 = the stacking behavior. */
+  inset-inline-start: var(--_sticky-offset, 0);
+  z-index: 1;
+  background-color: var(
+    --md-table-cell-sticky-bg,
+    var(--md-table-cell-background, var(--md-sys-color-surface, #FEF7FF))
+  );
+  /* Match the row hover overlay's timing so the sticky column's opaque tint
+     fades in lockstep with the (transparent) cells' ::before overlay — otherwise
+     the sticky bg snaps instantly and the hover/selection flickers column-first.
+     Header/footer rows set --md-table-cell-sticky-transition:0s (their bg is
+     static, so the transition must not replay on re-render → white flash). */
+  transition: background-color
+    var(--md-table-cell-sticky-transition, var(--_fx-fast, 150ms cubic-bezier(0.31, 0.94, 0.34, 1)));
+}
+:host([sticky='end']) {
+  position: sticky;
+  inset-inline-end: var(--_sticky-offset, 0);
+  z-index: 1;
+  background-color: var(
+    --md-table-cell-sticky-bg,
+    var(--md-table-cell-background, var(--md-sys-color-surface, #FEF7FF))
+  );
+  transition: background-color
+    var(--md-table-cell-sticky-transition, var(--_fx-fast, 150ms cubic-bezier(0.31, 0.94, 0.34, 1)));
+}
+
+/* Custom ligature pin (pin-icon) matches the SVG footprint; same tint/size
+   vars apply. */
+.md-table-cell__pin-glyph {
+  font-size: var(--md-table-cell-pin-size, 14px);
+  line-height: 1;
+  color: inherit;
+}
+
+/* Column hidden via md-table.setColumnVisibility — cell stays in the DOM
+   (selection/expansion state survives), its track leaves the template. */
+:host([data-md-col-hidden]) {
+  display: none;
+}
+
+/* Material Symbols ligature font must be declared INSIDE the shadow root —
+   the document-level class can't cross the boundary (glyph names rendered
+   as plain text otherwise). */
+.material-symbols-outlined {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

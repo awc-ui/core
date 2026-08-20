@@ -1,0 +1,270 @@
+/* ==========================================================
+   md-area-chart — Material Design 3 area / streamgraph chart
+
+   PUBLIC CSS CUSTOM PROPERTIES:
+     --md-area-chart-block-size          Explicit chart height, overriding the aspect ratio (default: auto)
+     --md-area-chart-min-block-size      Floor the chart height never drops below (density-aware)
+     --md-area-chart-aspect-ratio        Width:height ratio used when no block-size is set (default: 16 / 9)
+     --md-area-chart-background          Chart surface fill (default: surface-container-low)
+     --md-area-chart-padding             Inset between the host edge and the plot canvas (density-aware)
+     --md-area-chart-shape               Corner radius of the chart surface (density-aware)
+     --md-area-chart-zoom-size           Height reserved for the zoom slider (default: 28px)
+     --md-area-chart-zoom-track-color    Zoom slider track colour (md-slider inactive track)
+     --md-area-chart-zoom-window-color   Zoom slider selected-window colour (md-slider active track)
+     --md-area-chart-zoom-handle-color   Zoom slider thumb + drag-band edge colour
+     --md-area-chart-zoom-band-color     Drag-to-zoom selection fill
+     --md-area-chart-empty-color         Empty-state text colour (default: on-surface-variant)
+     --md-area-chart-empty-background    Empty-state overlay fill (defaults to the chart background)
+     --md-area-chart-empty-font          Empty-state font family (default: body-medium)
+     --md-area-chart-empty-font-size     Empty-state font size (default: body-medium, 14px)
+     --md-area-chart-empty-icon-size     Size of an icon slotted into the empty state (default: 40px)
+
+   CSS PARTS:
+     header          Header row above the plot (hosts the `header` slot)
+     canvas          The plot surface the chart draws into
+     empty           Empty-state overlay, shown when there is no data
+     loading         Loading overlay, shown while `loading` is set
+     footer          Footer row below the plot (hosts the `footer` slot)
+     zoom            Wrapper around the zoom slider
+     zoom-slider     The zoom range slider itself
+     zoom-track      Zoom slider's inactive track (forwarded from md-slider)
+     zoom-window     Zoom slider's selected window (forwarded from md-slider)
+     zoom-handle     Zoom slider's thumbs (forwarded from md-slider)
+     zoom-pan        Grip that drags the whole zoom window along the track
+     zoom-band       Live selection band drawn while dragging across the plot
+     tooltip         The hover card, including one built by `tooltipRenderer`
+
+   SLOTS:
+     header          Content for the header row, replacing the default title block
+     empty           Replaces the empty-state message when there is no data
+     loading         Replaces the built-in spinner while `loading` is set
+     footer          Content for the footer row below the plot
+   ========================================================== */
+
+:host {
+  --_block-size: var(--md-area-chart-block-size, auto);
+  --_min-block-size: var(--md-area-chart-min-block-size, max(120px, calc(160px + var(--md-sys-density-scale, 0) * 8px)));
+  --_aspect-ratio: var(--md-area-chart-aspect-ratio, 16 / 9);
+  --_background: var(--md-area-chart-background, var(--md-sys-color-surface-container-low, #F7F2FA));
+  --_padding: var(--md-area-chart-padding, max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px)));
+  --_zoom-size: var(--md-area-chart-zoom-size, 28px);
+  --_zoom-track-color: var(--md-area-chart-zoom-track-color, var(--md-sys-color-surface-container-highest, #E6E0E9));
+  --_zoom-window-color: var(--md-area-chart-zoom-window-color, var(--md-sys-color-secondary-container, #E8DEF8));
+  --_zoom-handle-color: var(--md-area-chart-zoom-handle-color, var(--md-sys-color-primary, #6750A4));
+  --_zoom-band-color: var(--md-area-chart-zoom-band-color, color-mix(in srgb, var(--md-sys-color-primary, #6750A4) 16%, transparent));
+  /* Clearance kept at each end of the pan grip so the thumbs stay grabbable. */
+  --_zoom-pan-inset: 10px;
+  --_shape: var(--md-area-chart-shape, max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px)));
+  --_empty-color: var(--md-area-chart-empty-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_empty-background: var(--md-area-chart-empty-background, var(--_background));
+  --_empty-font: var(--md-area-chart-empty-font, var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif));
+  --_empty-font-size: var(--md-area-chart-empty-font-size, var(--md-sys-typescale-body-medium-font-size, 14px));
+  --_empty-icon-size: var(--md-area-chart-empty-icon-size, 40px);
+
+  display: block;
+  position: relative;
+  inline-size: 100%;
+  block-size: var(--_block-size);
+  min-block-size: var(--_min-block-size);
+  background: var(--_background);
+  padding: var(--_padding);
+  border-radius: var(--_shape);
+  box-sizing: border-box;
+  aspect-ratio: var(--_aspect-ratio);
+}
+
+.md-area-chart__header,
+.md-area-chart__footer { display: contents; }
+
+.md-area-chart__header > slot[name='header']::slotted(*),
+.md-area-chart__footer > slot[name='footer']::slotted(*) {
+  display: block;
+  margin-block: 8px;
+}
+
+.md-area-chart__canvas {
+  position: absolute;
+  inset: var(--_padding);
+  min-block-size: 0;
+  min-inline-size: 0;
+}
+
+.md-area-chart__empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-sizing: border-box;
+  padding: 24px;
+  /* Mirrors the chart's own container — same surface and corner radius. The
+     engine still draws a phantom 0-1 axis for an empty series, so an OPAQUE
+     surface here masks that ghost grid instead of letting it show through
+     behind the message. Column layout stacks a slotted icon above the text. */
+  background: var(--_empty-background);
+  border-radius: var(--_shape);
+  color: var(--_empty-color);
+  font-family: var(--_empty-font);
+  font-size: var(--_empty-font-size);
+  line-height: var(--md-sys-typescale-body-medium-line-height, 20px);
+  pointer-events: none;
+  text-align: center;
+}
+
+/* A slotted icon (e.g. a Material Symbols span) gets a sensible size and the
+   muted empty-state colour without the consumer restyling it. */
+.md-area-chart__empty ::slotted(.material-symbols-outlined),
+.md-area-chart__empty ::slotted(.material-symbols-rounded),
+.md-area-chart__empty ::slotted(.material-symbols-sharp),
+.md-area-chart__empty ::slotted(.material-icons) {
+  /* Document-level .material-symbols rules outrank ::slotted() in the cascade,
+     so the size needs !important to win (same reason md-icon-button does it). */
+  font-size: var(--_empty-icon-size) !important;
+  line-height: 1;
+  opacity: 0.55;
+}
+
+.md-area-chart__a11y-table {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (forced-colors: active) { :host { forced-color-adjust: auto; } }
+
+.md-area-chart__live {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus ring for keyboard navigation — neutral outline, inset so the canvas
+   box doesn't clip it. */
+/* The legend chips are engine-created buttons styled inline, and inline styles
+   can't express :focus-visible — so their focus ring comes from here. Same
+   neutral outline as the plot's, rather than the browser's blue default. */
+[part='legend'] button:focus-visible {
+  /* Same ring md-button uses, so focus looks the same wherever it lands. */
+  outline: 3px solid var(--md-sys-color-secondary, #625B71);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.md-area-chart__canvas:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary, #625B71);
+  outline-offset: -3px;
+  border-radius: 4px;
+}
+
+/* Loading state — the same opaque overlay as the empty state (it has to mask
+   the phantom 0-1 axis the engine draws while there is no data), with the
+   default indicator + label stacked in the middle. Slot `loading` replaces the
+   content; the box keeps its size either way. */
+.md-area-chart__loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-sizing: border-box;
+  padding: 24px;
+  background: var(--_empty-background);
+  border-radius: var(--_shape);
+  color: var(--_empty-color);
+  font-family: var(--_empty-font);
+  font-size: var(--_empty-font-size);
+  text-align: center;
+}
+
+.md-area-chart__spinner {
+  /* Sized against the empty-state icon so a loading chart and an empty one read
+     as the same family. */
+  inline-size: var(--_empty-icon-size);
+  block-size: var(--_empty-icon-size);
+}
+
+/* ── Zoom ──────────────────────────────────────────────────
+   The slider sits inside the host's padding at the bottom, and the plot gives
+   up exactly that much height (the canvas is inset by --_padding, so its bottom
+   is pushed up by the slider's height). */
+:host(.md-area-chart--zoom-slider) .md-area-chart__canvas {
+  bottom: calc(var(--_padding) + var(--_zoom-size));
+}
+
+:host(.md-area-chart--zoom-drag) .md-area-chart__canvas {
+  /* Signals the plot is draggable; the band itself is pointer-transparent. */
+  cursor: ew-resize;
+}
+
+.md-area-chart__zoom {
+  position: absolute;
+  inset-inline: var(--_padding);
+  bottom: var(--_padding);
+  block-size: var(--_zoom-size);
+  display: flex;
+  align-items: center;
+}
+
+/* The house slider draws the track and thumbs; the chart only maps its own
+   public zoom tokens onto the slider's and sizes it to the reserved band. */
+.md-area-chart__zoom-slider {
+  --md-slider-active-color: var(--_zoom-window-color);
+  --md-slider-inactive-color: var(--_zoom-track-color);
+  --md-slider-thumb-color: var(--_zoom-handle-color);
+  /* Full-height thumbs in a band shorter than the MD3 default (44px), so the
+     slider never overflows into the plot. */
+  --md-slider-thumb-height: var(--_zoom-size);
+  --md-slider-track-height: 12px;
+}
+
+/* Pan grip over the selected window: drag it to move the window without
+   resizing. Inset at both ends (see renderZoomSlider) so a press near a thumb
+   still reaches the slider's rail and resizes. */
+.md-area-chart__zoom-pan {
+  position: absolute;
+  inset-block: 0;
+  z-index: 1;
+  cursor: grab;
+  touch-action: none;
+}
+
+.md-area-chart__zoom-pan:active {
+  cursor: grabbing;
+}
+
+/* Live drag selection over the plot. */
+.md-area-chart__zoom-band {
+  position: absolute;
+  background: var(--_zoom-band-color);
+  border-inline: 1px solid var(--_zoom-handle-color);
+  pointer-events: none;
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

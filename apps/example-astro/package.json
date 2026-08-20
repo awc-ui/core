@@ -1,0 +1,16 @@
+{
+  "name": "@awc-ui/example-astro",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Astro SSG reference app for AWC UI (server DSD via middleware)",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@awc-ui/core": "workspace:*",
+    "astro": "^5.6.1"
+  }
+}

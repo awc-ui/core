@@ -1,0 +1,571 @@
+/* ==========================================================
+   md-multi-select — Material Design 3 multi-value dropdown
+   Composes md-text-field (trigger) + md-menu (option surface)
+   so it inherits every layout / focus / state-layer / motion
+   rule those primitives already own.
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     Trigger:   --md-multi-select-width, -min-width, -trigger-width, -frame-gap
+     Chips:     --md-multi-select-chip-gap, -chip-radius
+     Caret:     --md-multi-select-caret-color, -caret-size (glyph), -caret-box-size
+     Clear:     --md-multi-select-clear-color, -clear-bg, -clear-hover-bg,
+                -clear-size, -clear-radius, -clear-icon-size,
+                -clear-focus-ring-color/-width/-offset
+     Options:   --md-multi-select-option-icon-size, -option-icon-color
+     Search:    --md-multi-select-search-bg, -search-color,
+                -search-placeholder-color, -search-padding,
+                -search-border-color/-width, -search-spinner-size
+     Empty:     --md-multi-select-empty-color, -empty-padding, -empty-font
+     Loading:   --md-multi-select-spinner-size (glyph), -loader-size (box),
+                -loading-padding
+     Select-all:--md-multi-select-select-all-divider-color/-width
+     (Menu max-height is the `max-height` PROP, not a custom property.)
+
+   CSS PARTS:
+     field, field-container/-input/-label, button, button-desc, caret, chips,
+     chip, chip-remove/-label, clear, menu, menu-surface, menu-header, listbox,
+     option, select-all, select-all-item, search, search-wrap, search-spinner,
+     loading-spinner/-bar/-progress, empty, live-region, frame
+
+   SLOTS:
+     loader, menu-loader, no-options, no-results, dropdown-icon, menu-header,
+     trigger-leading, trigger-trailing
+   ========================================================== */
+
+:host {
+  /* The text inset already includes the caret's 7px optical bearing (see
+     md-text-field --_text-inset). Pull the TRAILING side back to the plain
+     box inset so the caret's BOX sits 7px shallower and its INK lands on the
+     same column as the text. */
+  --md-text-field-padding-inline-end: var(--md-sys-spacing-inset-lg, 16px);
+    --_min-width: var(--md-multi-select-min-width, 200px);
+  --_chip-gap: var(--md-multi-select-chip-gap, var(--md-sys-spacing-gap-xs, 4px));
+  --_chip-radius: var(--md-multi-select-chip-radius, 8px);
+  --_caret-color: var(--md-multi-select-caret-color, var(--md-sys-color-on-surface-variant));
+  --_clear-color: var(--md-multi-select-clear-color, var(--md-sys-color-on-surface-variant));
+  --_option-icon-size: var(--md-multi-select-option-icon-size, 20px);
+
+  /* Establish the base font so shadow content that inherits it (the header search
+     input uses `font: inherit`) renders in Roboto — not the browser default serif.
+     Matches md-select's :host. */
+  font-family: var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif);
+
+  display: inline-block;
+  /* Fill the container width (like md-select) so the trigger is a STABLE size that
+     does not track the selected content. Without this, the shrink-to-fit
+     inline-block grows with the below-field chips row as items are selected — the
+     trigger would balloon from ~234px to the container width. Override with
+     --md-multi-select-width (e.g. max-content) for a content-sized field. */
+  inline-size: var(--md-multi-select-width, 100%);
+  min-inline-size: var(--_min-width);
+  box-sizing: border-box;
+  vertical-align: bottom;
+  position: relative;
+}
+
+.md-multi-select__field {
+  display: block;
+  inline-size: 100%;
+  cursor: pointer;
+  --md-text-field-cursor: pointer;
+}
+
+.md-multi-select__field::part(input) {
+  cursor: pointer;
+}
+
+/* Text mode: the comma-joined value can overflow the single-line trigger — clip
+   it with an ellipsis rather than a hard cut. (text-overflow works on a
+   single-line <input> while it is not focused, which is the trigger's usual state.) */
+:host(.md-multi-select--display-text) .md-multi-select__field::part(input) {
+  text-overflow: ellipsis;
+}
+
+:host(.md-multi-select--disabled) .md-multi-select__field,
+:host(.md-multi-select--soft-disabled) .md-multi-select__field {
+  cursor: not-allowed;
+  --md-text-field-cursor: not-allowed;
+}
+
+:host(.md-multi-select--disabled) .md-multi-select__field::part(input),
+:host(.md-multi-select--soft-disabled) .md-multi-select__field::part(input) {
+  cursor: not-allowed;
+}
+
+/* ── Selection chips (below the trigger) ──────────────────────
+   Rendered in the host shadow, not the field's aria-hidden icon slot, so the
+   chips and their remove buttons are exposed to assistive tech. */
+
+/* ── Trigger + chips positioning frame ────────────────────────
+   The trigger and its below/around chip row live in this flex frame so
+   `chip-position` is a flex-direction choice. `gap` provides the spacing
+   between the trigger and the chips in every position. */
+.md-multi-select__frame {
+  display: flex;
+  flex-direction: column; /* chip-position: bottom (default) */
+  /* Tapers with density: gap-sm is NOT one of the tokens the density layer
+     steps (only gap-md and gap-lg are), so this gap sat at a flat 8px while
+     the trigger and chips around it condensed. 0.5px/rung lands exactly on
+     6px at ultra density (-4) and leaves density 0 unchanged at 8px. */
+  gap: var(--md-multi-select-frame-gap, max(6px, calc(8px + var(--md-sys-density-scale, 0) * 0.5px)));
+}
+
+:host(.md-multi-select--chips-top) .md-multi-select__frame {
+  flex-direction: column-reverse;
+  /* With the chips ABOVE, the field's floated label sits in this gap: an
+     outlined label rises a constant 8px above the field's top border (measured
+     at every density rung — the notch tracks the border, not the tapering font).
+     A plain gap-sm therefore left only a hairline between the chips and the
+     label. Clear those 8px first, then apply the normal gap on top. Chips below
+     keep the plain gap — there is no label on that edge. */
+  /* 16px at default down to 6px at ultra (-4), i.e. 2.5px/rung. Both ends are
+     deliberate: at default the field's floated label rises a constant 8px into
+     this gap, so 16px is what leaves a visible band between the chips and the
+     label; at ultra the gap is asked to close to 6px total. Steeper than the
+     chips-below taper (0.5px/rung) precisely because it starts higher and has
+     to reach the same floor.
+     NOTE: the label's 8px overhang does NOT taper (it tracks the border, not
+     the font), so below about -3 the label begins to encroach on the chip row.
+     That is the cost of a 6px total at ultra density. */
+  gap: var(--md-multi-select-frame-gap, max(6px, calc(16px + var(--md-sys-density-scale, 0) * 2.5px)));
+}
+
+/* Chips beside the trigger: a wrapping row. The trigger sizes to its content so
+   the chips sit next to it (rather than below); the chips take the remaining
+   inline space and wrap. Natural pairing for trigger="button". */
+:host(.md-multi-select--chips-left) .md-multi-select__frame,
+:host(.md-multi-select--chips-right) .md-multi-select__frame {
+  /* nowrap: keep the trigger and the chip cluster on ONE row so the chips sit
+     BESIDE the trigger. The cluster shrinks to the remaining space and its chips
+     wrap internally (see below) — rather than the whole block dropping under the
+     trigger the moment it doesn't fit at full width. */
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: flex-start;
+}
+/* Chips render after the trigger in the DOM; `order` (not row-reverse, which
+   mis-wraps) puts them BEFORE it for chip-position="left". */
+:host(.md-multi-select--chips-left) .md-multi-select__chips {
+  order: -1;
+}
+:host(.md-multi-select--chips-left) .md-multi-select__field,
+:host(.md-multi-select--chips-right) .md-multi-select__field {
+  inline-size: var(--md-multi-select-trigger-width, max-content);
+  flex: 0 0 auto;
+}
+/* A slotted trigger is a light-DOM element assigned into the frame, so it is a
+   flex item of the frame like the built-in one — it just has to be reached
+   through ::slotted() to get the same "size to content, sit beside the chips"
+   treatment. */
+:host(.md-multi-select--chips-left) ::slotted([slot='trigger']),
+:host(.md-multi-select--chips-right) ::slotted([slot='trigger']) {
+  inline-size: var(--md-multi-select-trigger-width, max-content);
+  flex: 0 0 auto;
+}
+
+:host(.md-multi-select--chips-left) .md-multi-select__chips,
+:host(.md-multi-select--chips-right) .md-multi-select__chips {
+  /* Sit directly beside the trigger (don't grow → the trigger stays adjacent to
+     the cluster rather than being pushed to the far edge), but shrink and wrap
+     internally when the chips exceed the remaining space. min-inline-size:0 lets
+     it shrink below its content so it never forces the trigger off the row. */
+  flex: 0 1 auto;
+  min-inline-size: 0;
+}
+
+.md-multi-select__chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--_chip-gap);
+  max-inline-size: 100%;
+}
+
+/* Top/bottom only: keep the full-width chip row from driving the trigger's width.
+   Contain the inline-size so the row NEVER contributes to the host's intrinsic
+   (max-content) width — otherwise, in a shrink-to-fit parent, the host grows with
+   each chip and the trigger width tracks the selection. Only inline-size is
+   contained, so the row still wraps and grows in height. NOT applied to
+   left/right, where the chip cluster must size to its content to sit beside the
+   trigger (containing it would collapse the chips). */
+:host(.md-multi-select--chips-bottom) .md-multi-select__chips,
+:host(.md-multi-select--chips-top) .md-multi-select__chips {
+  contain: inline-size;
+}
+
+.md-multi-select__chips md-chip {
+  --md-chip-container-shape: var(--_chip-radius);
+}
+
+/* ── Button trigger (trigger="button") ────────────────────────
+   The compact opener uses the library md-button (variant="outlined"); it brings
+   its own MD3 styling. It's content-width so, in a left/right row frame, the
+   chips take the remaining space beside it and wrap. */
+.md-multi-select__button {
+  flex: 0 0 auto;
+}
+
+/* Error / supporting text for the button trigger (the field trigger delegates
+   these to md-text-field). */
+.md-multi-select__button-desc {
+  padding-block-start: 4px;
+  padding-inline: 16px;
+  font: var(--md-sys-typescale-body-small, 400 12px/16px Roboto, sans-serif);
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+}
+
+.md-multi-select__button-desc--error {
+  color: var(--md-sys-color-error, #b3261e);
+}
+
+/* Visually-hidden polite live region. */
+.md-multi-select__sr-live {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Selection chips (inside the trigger, display-mode="chips-inline") ─────────
+   Slotted into md-text-field's `chips` slot. The chips are DIRECT children of
+   this wrapper, so the gap must live here (the field's slot span only spaces its
+   single assigned element). */
+
+.md-multi-select__inline-chips {
+  display: flex;
+  /* Chips sit on a SINGLE line so a selection never changes the trigger's height
+     (see md-text-field --with-chips). Chips that don't fit collapse into the
+     trailing "+N" counter (chip-overflow="count", the default). */
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--_chip-gap);
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  flex: 1 1 auto;      /* fill the field row so "+N" has room + width is measurable */
+  position: relative;  /* anchor the out-of-flow measurement row */
+  overflow: hidden;    /* safety clip; the +N math keeps every shown chip whole */
+}
+
+/* chip-overflow="wrap": chips flow onto new rows and the field grows
+   (md-text-field[chips-wrap] lets the input row wrap). */
+.md-multi-select__inline-chips--wrap {
+  flex-wrap: wrap;
+  overflow: visible;
+  /* Breathing room at the top of the wrapped stack. On the single-line row the
+     field's own block padding centres one chip, but once chips wrap the stack
+     starts at the container's content edge and the first row sits hard against
+     the top border — right under the notched label. Row gap matches, so the
+     wrapped rows stay evenly spaced rather than only the first one moving. */
+  padding-block-start: var(--md-multi-select-inline-chips-block-start, var(--md-sys-spacing-gap-xs, 4px));
+  row-gap: var(--_chip-gap);
+}
+
+.md-multi-select__inline-chips md-chip,
+.md-multi-select__inline-measure md-chip {
+  --md-chip-container-shape: var(--_chip-radius);
+  /* Hold natural width on the single-line row: overflowing chips collapse into
+     the "+N" counter rather than squishing down to just their ✕. */
+  flex-shrink: 0;
+}
+
+/* Zero-size, overflow-clipped host for the measurement row so its natural-width
+   content can never create a page scrollbar. */
+.md-multi-select__measure-clip {
+  position: absolute;
+  inline-size: 0;
+  block-size: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Out-of-flow measurement row: ALL chips + a worst-case counter at natural width.
+   visibility:hidden keeps its remove buttons out of the tab order while still
+   laying out (so recomputeInlineOverflow() can read intrinsic widths). */
+.md-multi-select__inline-measure {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--_chip-gap);
+  inline-size: max-content;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* "+N" counter — styled like an input chip; opens the menu on click. */
+.md-multi-select__overflow-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  block-size: var(--md-multi-select-chip-height, 32px);
+  padding-inline: 12px;
+  border: 1px solid var(--md-multi-select-chip-outline, var(--md-sys-color-outline-variant, #CAC4D0));
+  border-radius: var(--_chip-radius);
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant, #49454F);
+  font: 500 var(--md-sys-typescale-label-large-size, 14px) / var(--md-sys-typescale-label-large-line-height, 20px)
+    var(--md-sys-typescale-label-large-font, Roboto, sans-serif);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.md-multi-select__overflow-chip:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 8%, transparent);
+}
+
+.md-multi-select__overflow-chip:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary, #6750A4);
+  outline-offset: 2px;
+}
+
+/* ── Clear button ─────────────────────────────────────────── */
+
+.md-multi-select__clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--md-multi-select-clear-size, 28px);
+  block-size: var(--md-multi-select-clear-size, 28px);
+  padding: 0;
+  background: var(--md-multi-select-clear-bg, transparent);
+  border: 0;
+  border-radius: var(--md-multi-select-clear-radius, 50%);
+  color: var(--_clear-color);
+  cursor: pointer;
+  font-size: var(--md-multi-select-clear-icon-size, 18px);
+  transition: background var(--md-sys-motion-duration-short2, 100ms) ease;
+}
+
+.md-multi-select__clear:hover {
+  background: var(--md-multi-select-clear-hover-bg,
+    color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent));
+}
+
+.md-multi-select__clear:focus-visible {
+  outline-width: var(--md-multi-select-clear-focus-ring-width, 2px);
+  outline-style: solid;
+  outline-color: var(--md-multi-select-clear-focus-ring-color, var(--md-sys-color-primary));
+  outline-offset: var(--md-multi-select-clear-focus-ring-offset, 1px);
+}
+
+.md-multi-select__clear .material-symbols-outlined {
+  font-size: var(--md-multi-select-clear-icon-size, 18px);
+}
+
+/* ── Trailing caret ───────────────────────────────────────── */
+
+/* The caret's wrapper is what md-text-field actually slots, so it absorbs the
+   `width/height: var(--_icon-size)` that would otherwise squash the glyph. The
+   `.md-multi-select__field` prefix raises this above md-text-field's
+   `::slotted(*)` rule across the shadow boundary (same technique as
+   `.md-select__field .md-select__trailing`). */
+.md-multi-select__field .md-multi-select__caret-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+}
+
+.md-multi-select__caret {
+  color: var(--_caret-color);
+  /* Match single-select: 24px glyph, 200ms/standard rotation (see md-select.css). */
+  font-size: var(--md-multi-select-caret-size, 24px);
+  line-height: 1;
+  transition: transform var(--md-sys-motion-duration-short4, 200ms)
+    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--md-multi-select-caret-box-size, 24px);
+  block-size: var(--md-multi-select-caret-box-size, 24px);
+}
+
+:host(.md-multi-select--open) .md-multi-select__caret {
+  transform: rotate(180deg);
+}
+
+/* ── Busy state (loading) ─────────────────────────────────────
+   Trigger spinner replaces the clear/caret cluster; a wavy linear progress bar
+   replaces the option list in the menu. Mirrors md-select. */
+.md-multi-select__loader {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--md-multi-select-loader-size, 24px);
+  block-size: var(--md-multi-select-loader-size, 24px);
+  --md-loading-indicator-size: var(--md-multi-select-spinner-size, 22px);
+  --md-loading-indicator-shape-size: var(--md-multi-select-spinner-size, 22px);
+}
+
+.md-multi-select__loading {
+  display: flex;
+  align-items: center;
+  padding-block: var(--md-multi-select-loading-padding, var(--md-sys-spacing-inset-lg, 16px));
+  padding-inline: var(--md-multi-select-loading-padding, var(--md-sys-spacing-inset-lg, 16px));
+}
+
+.md-multi-select__loading md-progress-indicator {
+  inline-size: 100%;
+}
+
+/* Empty state (no options / no results). Carries the no-options/no-results slot;
+   the default is plain text matching md-menu's empty-text. */
+.md-multi-select__empty {
+  display: flex;
+  justify-content: center; /* centre the message (and any slotted illustration/CTA) */
+  padding: var(--md-multi-select-empty-padding, var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px));
+  color: var(--md-multi-select-empty-color, var(--md-sys-color-on-surface-variant, #49454f));
+  text-align: center;
+  font: var(--md-multi-select-empty-font, var(--md-sys-typescale-body-medium, 400 14px/20px Roboto, sans-serif));
+}
+
+/* ── Menu surface tweaks ──────────────────────────────────── */
+
+/* Pinned bulk-action row. The md-menu-item inside supplies its own padding,
+   hover/focus state layer and typography — identical to the options — so the
+   group only draws a subtle divider that separates the pinned action from the
+   scrolling list. */
+.md-multi-select__select-all {
+  display: block;
+  border-block-end: var(--md-multi-select-select-all-divider-width, 1px) solid
+    var(--md-multi-select-select-all-divider-color, var(--md-sys-color-outline-variant, #cac4d0));
+}
+
+md-menu::part(empty-text) {
+  display: block;
+  padding: var(--md-multi-select-empty-padding, var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px));
+  color: var(--md-multi-select-empty-color, var(--md-sys-color-on-surface-variant));
+  text-align: center;
+}
+
+.md-multi-select__option-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--md-multi-select-option-icon-color, var(--md-sys-color-on-surface-variant, #49454f));
+  font-size: var(--_option-icon-size);
+  inline-size: var(--_option-icon-size);
+  block-size: var(--_option-icon-size);
+  line-height: 1;
+}
+
+/* ── RTL ──────────────────────────────────────────────────────
+   Chips use a plain flex row, so they follow `direction: rtl` on their own —
+   the old `flex-direction: row-reverse` override double-reversed them (and
+   relied on :host-context, which Firefox does not support). */
+
+/* ── Reduced motion ───────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-multi-select__caret,
+  .md-multi-select__clear {
+    transition: none;
+  }
+}
+
+/* ── Forced colors (Windows High Contrast) ────────────────────
+   The caret is a background-colored glyph and the chips region has no border of
+   its own; give the caret a system color and keep the chips group perceivable so
+   the control's affordances survive when author colors are dropped. */
+
+@media (forced-colors: active) {
+  .md-multi-select__caret {
+    color: CanvasText;
+  }
+  /* System colors survive when author colors are dropped, so focus rings stay
+     visible in Windows High Contrast. */
+  .md-multi-select__clear:focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+/* ── Material Symbols font (shadow-root scope) ────────────── */
+
+/* The icon spans we render live in this shadow root (even when
+   slotted into nested md-text-field / md-menu-item), so we need
+   to declare the font-family for `.material-symbols-outlined`
+   ourselves — shadow boundaries block page-level rules. */
+.material-symbols-outlined {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Virtualized list ──────────────────────────────────── */
+
+.md-multi-select__vspacer {
+  display: block;
+  flex: none;
+  pointer-events: none;
+}
+
+.md-multi-select__search-wrap {
+  position: relative;
+  display: block;
+}
+
+.md-multi-select__search {
+  box-sizing: border-box;
+  width: 100%;
+  border: none;
+  outline: none;
+  /* Right padding reserves room for the search loading indicator. */
+  padding: var(--md-multi-select-search-padding, 12px 44px 12px 16px);
+  font: inherit;
+  color: var(--md-multi-select-search-color, var(--md-sys-color-on-surface, #1d1b20));
+  background: var(--md-multi-select-search-bg, var(--md-sys-color-surface-container, #f3edf7));
+  border-bottom: var(--md-multi-select-search-border-width, 1px) solid
+    var(--md-multi-select-search-border-color, var(--md-sys-color-outline-variant, #cac4d0));
+}
+
+.md-multi-select__search::placeholder {
+  color: var(--md-multi-select-search-placeholder-color, var(--md-sys-color-on-surface-variant, #49454f));
+}
+
+/* No focus ring on the search — matching md-select 1:1. It auto-focuses when the
+   menu opens and the blinking text caret is the focus indicator, so the field
+   stays flush inside the drawer (just the resting bottom divider, no outline). */
+
+/* M3 shape-morph loading indicator shown while a debounced search is in flight.
+   Motion + reduced-motion handling live inside md-loading-indicator. */
+.md-multi-select__search-spinner {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 12px;
+  margin-block-start: -12px;
+  --md-loading-indicator-size: var(--md-multi-select-search-spinner-size, 24px);
+  --md-loading-indicator-shape-size: 18px;
+  pointer-events: none;
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   This component FORWARDS `density` to the md-text-field it embeds, which
+   handles the field box — but that forward says nothing about this host, so its
+   OWN chrome (dropdown surface, chips, frame gaps) stayed at density-0 whenever
+   density came from the local prop rather than a global ancestor. Mapping the
+   prop onto the shared signal here fixes that asymmetry; the spacing-token half
+   of the rung arrives from the [density="-N"] selector in tokens.css.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

@@ -1,0 +1,28 @@
+{
+  "name": "@awc-ui/docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm sync-runtime && astro dev",
+    "generate-data": "node ../../scripts/generate-docs.mjs",
+    "build": "pnpm sync-runtime && astro build",
+    "preview": "astro preview",
+    "sync-runtime": "node ../../scripts/sync-docs-runtime.mjs",
+    "preview:prod": "node ../../scripts/serve-docs-prod.mjs"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.34.0",
+    "@awc-ui/core": "workspace:*",
+    "@awc-ui/theme": "workspace:*",
+    "@awc-ui/tokens": "workspace:*",
+    "@material/material-color-utilities": "^0.4.0",
+    "@shikijs/themes": "^3.21.0",
+    "astro": "^5.7.0",
+    "marked": "^18.0.3",
+    "shiki": "^3.21.0"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.0"
+  }
+}

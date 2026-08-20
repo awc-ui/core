@@ -1,0 +1,677 @@
+---
+title: Segmented Button
+description: "A choice between 2–5 exclusive options, all visible at once — a set element plus its fused segments"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import setApi from "../../../data/components/segmented-button-set.json";
+import segmentApi from "../../../data/components/segmented-button.json";
+
+**A choice between 2–5 exclusive options, all visible at once.** Two elements
+work as one control: `<md-segmented-button-set>` owns the selection and stamps
+each child with its position, and `<md-segmented-button>` renders one segment —
+value, optional icon, label, and the selected checkmark.
+
+<ComponentDemo
+  html={`<md-segmented-button-set aria-label="Calendar view">
+  <md-segmented-button value="day" label="Day" selected></md-segmented-button>
+  <md-segmented-button value="week" label="Week"></md-segmented-button>
+  <md-segmented-button value="month" label="Month"></md-segmented-button>
+</md-segmented-button-set>`}
+  label="Live preview"
+  storyId="actions-segmented-button--single-select"
+/>
+
+## Install
+
+<ComponentSetup tag="md-segmented-button-set" example="" />
+
+:::note[One component, two tags]
+The two tags register separately, so the single-component import above only
+covers the set. With per-component imports you need both:
+
+```js
+import '@awc-ui/core/components/md-segmented-button-set';
+import '@awc-ui/core/components/md-segmented-button';
+```
+
+A lone `md-segmented-button` outside a set still renders — it keeps the default
+`segmentIndex = 0` / `segmentTotal = 1`, so it is both first and last and draws
+as a correctly rounded pill. What it does **not** get is behaviour: nothing
+listens for its `mdSegmentClick`, so clicking it changes nothing. Always author
+the pair; that is why both tags are documented on this one page.
+:::
+
+## When to use
+
+- **2–5** mutually exclusive options the user should see side by side:
+  Day / Week / Month, List / Grid, All / Unread.
+- Switching a **view or mode**, where the current state should stay visible.
+- Multi-select over a small, closed set of filters (`multiselect`).
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| More than five choices | [`md-chip`](/components/chip/) set, [`md-select`](/components/select/), or [`md-menu`](/components/menu/) |
+| Navigating between destinations or panels | [`md-tabs`](/components/tabs/) / [`md-navigation-bar`](/components/navigation-bar/) |
+| Running actions rather than choosing a state | [`md-button-group`](/components/button-group/) |
+| A form field that must submit | [`md-radio`](/components/radio/) / [`md-checkbox`](/components/checkbox/) |
+| One default action plus variants | [`md-split-button`](/components/split-button/) |
+| Choosing from a long or dynamic list | [`md-select`](/components/select/) |
+| Free-form multi-select of many tags | [`md-multi-select`](/components/multi-select/), [`md-chip`](/components/chip/) |
+
+## Composition
+
+The set is an `inline-grid` with `grid-auto-flow: column` and
+`grid-auto-columns: 1fr`, so segments must be **direct, real children**: they are
+the grid items, and that is what gives every segment the same width no matter how
+long its label is. A `<div>` wrapper for layout still gets discovered — the set
+stamps its children with `querySelectorAll('md-segmented-button')`, a descendant
+query — but the wrapper becomes the single grid item and the equal columns are
+lost.
+
+| Need | Where it goes |
+|---|---|
+| The initial selection | `selected` on a **child**. The set has no `value` prop |
+| Single vs multi | `multiselect` on the **set** |
+| Density | `density` on the set (cascades) or on a child (overrides) |
+| The accessible group name | `aria-label` on the **set** |
+| Per-segment identity | `value` on each child |
+
+Same three labels, same set, one wrapped in a `<div>`. The top row's columns are
+equal; the bottom row's collapse to each label's intrinsic width:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <md-segmented-button-set aria-label="Direct children">
+    <md-segmented-button value="d" label="Day" selected></md-segmented-button>
+    <md-segmented-button value="w" label="Week"></md-segmented-button>
+    <md-segmented-button value="y" label="Last 12 months"></md-segmented-button>
+  </md-segmented-button-set>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <md-segmented-button-set aria-label="Wrapped children">
+    <div style="display:flex;">
+      <md-segmented-button value="d" label="Day" selected></md-segmented-button>
+      <md-segmented-button value="w" label="Week"></md-segmented-button>
+      <md-segmented-button value="y" label="Last 12 months"></md-segmented-button>
+    </div>
+  </md-segmented-button-set>
+</div>`}
+  label="Direct children vs a div wrapper — the wrapper loses the equal columns"
+/>
+
+:::danger[Never set the stamped props]
+The set writes `segmentIndex`, `segmentTotal`, `segmentDensity` and
+`segmentMultiselect` onto each child so they can render the correct end caps and
+checkmark behaviour. Setting those by hand produces a broken container.
+:::
+
+## Single-select
+
+Default mode. `role="radiogroup"`, one selection at a time.
+
+<ComponentDemo
+  html={`<md-segmented-button-set aria-label="Time range">
+  <md-segmented-button value="d" label="Day" selected></md-segmented-button>
+  <md-segmented-button value="w" label="Week"></md-segmented-button>
+  <md-segmented-button value="m" label="Month"></md-segmented-button>
+</md-segmented-button-set>
+
+<md-segmented-button-set aria-label="Answer">
+  <md-segmented-button value="yes" label="Yes" selected></md-segmented-button>
+  <md-segmented-button value="no" label="No"></md-segmented-button>
+</md-segmented-button-set>
+
+<md-segmented-button-set aria-label="Rating filter">
+  <md-segmented-button value="1" label="All" selected></md-segmented-button>
+  <md-segmented-button value="2" label="Recent"></md-segmented-button>
+  <md-segmented-button value="3" label="Top"></md-segmented-button>
+  <md-segmented-button value="4" label="Mine"></md-segmented-button>
+  <md-segmented-button value="5" label="Draft"></md-segmented-button>
+</md-segmented-button-set>`}
+  label="Two, three and five segments — M3's full range"
+/>
+
+:::note[Single-select is sticky]
+A click always selects: the segment emits `selected: true` and the set then sets
+`selected = (seg === clicked)` across the row. So re-clicking the chosen segment
+does **not** clear it, and in single-select `mdChange` never emits an empty
+array once something is selected. Only `multiselect` can reach an empty
+selection — read `detail[0]` defensively there.
+:::
+
+## Multi-select
+
+`multiselect` on the set switches `role` to `group` and allows several
+selections at once.
+
+<ComponentDemo
+  html={`<md-segmented-button-set multiselect aria-label="Filters">
+  <md-segmented-button value="unread" label="Unread" icon="mark_email_unread" selected></md-segmented-button>
+  <md-segmented-button value="starred" label="Starred" icon="star"></md-segmented-button>
+  <md-segmented-button value="mine" label="Mine" icon="person" selected></md-segmented-button>
+</md-segmented-button-set>`}
+  label="Multi-select filters"
+/>
+
+## Icons & label types
+
+Use **one label type across the whole set** — M3 explicitly warns against mixing
+an icon-only segment with text segments. An icon-only segment carries no
+accessible name of its own, so give it an `aria-label`.
+
+<ComponentDemo
+  html={`<md-segmented-button-set aria-label="Layout">
+  <md-segmented-button value="list" icon="view_list" label="List" selected></md-segmented-button>
+  <md-segmented-button value="grid" icon="grid_view" label="Grid"></md-segmented-button>
+</md-segmented-button-set>
+
+<md-segmented-button-set aria-label="Alignment">
+  <md-segmented-button value="l" icon="format_align_left" aria-label="Align left" selected></md-segmented-button>
+  <md-segmented-button value="c" icon="format_align_center" aria-label="Align center"></md-segmented-button>
+  <md-segmented-button value="r" icon="format_align_right" aria-label="Align right"></md-segmented-button>
+</md-segmented-button-set>
+
+<md-segmented-button-set aria-label="Favourites">
+  <md-segmented-button value="all" label="All" selected></md-segmented-button>
+  <md-segmented-button value="star" label="Starred">
+    <svg slot="icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+  </md-segmented-button>
+</md-segmented-button-set>`}
+  label="Icon + label, icon-only, and a custom glyph via the icon slot"
+/>
+
+The `icon` **prop** and the checkmark share one element — selecting an
+icon+label segment swaps the glyph for the check. The `icon` **slot** does not:
+it renders alongside, so a selected slotted segment shows the checkmark *and*
+your glyph. Add `no-checkmark` to that segment if you want the glyph to stand
+alone — and read [The checkmark](#the-checkmark) first, because that trade is an
+accessibility one.
+
+## The checkmark
+
+The selected segment shows a checkmark by default. That is what conveys
+selection **non-visually** — `no-checkmark` removes the cue and leaves colour
+alone, which is a real accessibility regression in multiselect.
+
+<ComponentDemo
+  html={`<md-segmented-button-set aria-label="With checkmark">
+  <md-segmented-button value="a" label="Selected" selected></md-segmented-button>
+  <md-segmented-button value="b" label="Unselected"></md-segmented-button>
+</md-segmented-button-set>
+
+<md-segmented-button-set aria-label="Without checkmark">
+  <md-segmented-button value="a" label="Selected" selected no-checkmark></md-segmented-button>
+  <md-segmented-button value="b" label="Unselected" no-checkmark></md-segmented-button>
+</md-segmented-button-set>`}
+  label="Checkmark vs no-checkmark"
+/>
+
+## States
+
+`disabled` leaves the tab order; `soft-disabled` stays focusable so an
+unavailable choice is still discoverable.
+
+<ComponentDemo
+  html={`<md-segmented-button-set aria-label="States">
+  <md-segmented-button value="a" label="Enabled" selected></md-segmented-button>
+  <md-segmented-button value="b" label="Disabled" disabled></md-segmented-button>
+  <md-segmented-button value="c" label="Soft-disabled" soft-disabled></md-segmented-button>
+</md-segmented-button-set>`}
+  label="States — try tabbing through them"
+/>
+
+## Events
+
+Listen on the **set**, never on the children.
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdChange` (set) | no | `string[]` — values of **all** selected segments | Every activation of a segment (pointer, `Enter`, `Space`, arrow keys in single-select) |
+| `mdSegmentClick` (segment) | no | `{ value, selected }` | **Internal plumbing** — the set listens for it and re-emits `mdChange` |
+
+`mdChange` is an *activation* signal, not a diff. It fires on every click, even
+one that changes nothing — re-clicking the already-selected segment in
+single-select still emits, with the same array as before. And like the platform's
+own `change`, **it does not fire on a programmatic change**: setting
+`seg.selected = true` in code emits nothing, because the set only ever emits from
+its `mdSegmentClick` listener. If your own code changes the selection, your own
+code already knows. De-duplicate in your handler if you need change-only
+semantics.
+
+:::caution[`mdChange` reports, it does not ask]
+By the time your handler runs, the set has already written `selected` onto the
+segments — all of them in single-select, and just the clicked one in
+`multiselect`. The event object *is* cancelable (Stencil's default), but nothing
+consumes `preventDefault()`: the set never reads `defaultPrevented`, and it
+mutates before it emits. So a controlled parent that *rejects* a change must
+write `selected` back onto the segments itself.
+:::
+
+Both sets below share one delegated `mdChange` listener. Watch the multi-select
+row emit a growing array — and shrink to an empty one when you deselect its last
+segment, which single-select can never do:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">single</span>
+  <md-segmented-button-set id="sb-ev-single" aria-label="Calendar view">
+    <md-segmented-button value="day" label="Day" selected></md-segmented-button>
+    <md-segmented-button value="week" label="Week"></md-segmented-button>
+    <md-segmented-button value="month" label="Month"></md-segmented-button>
+  </md-segmented-button-set>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">multi</span>
+  <md-segmented-button-set id="sb-ev-multi" multiselect aria-label="Filters">
+    <md-segmented-button value="unread" label="Unread" icon="mark_email_unread" selected></md-segmented-button>
+    <md-segmented-button value="starred" label="Starred" icon="star"></md-segmented-button>
+    <md-segmented-button value="mine" label="Mine" icon="person"></md-segmented-button>
+  </md-segmented-button-set>
+</div>
+<output id="sb-ev-log" style="display:block; margin-block-start:16px; min-block-size:3.2em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Pick a segment. Deselect every filter in the multi row to see an empty array.</output>`}
+  script={`
+    var log = root.querySelector('#sb-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 3);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    // One delegated listener catches both sets — mdChange bubbles and is
+    // composed. Never listen on the children; the set swallows mdSegmentClick.
+    root.addEventListener('mdChange', function (e) {
+      var which = e.target.id === 'sb-ev-multi' ? 'multi ' : 'single';
+      var values = e.detail;
+      push(which + '  mdChange  ->  [' + values.join(', ') + ']' +
+        (values.length === 0 ? '   (empty — nothing selected)' : ''));
+    });
+  `}
+  label="One delegated listener on two sets — watch the detail array"
+  htmlCode={`<md-segmented-button-set id="view" aria-label="Calendar view">
+  <md-segmented-button value="day" label="Day" selected></md-segmented-button>
+  <md-segmented-button value="week" label="Week"></md-segmented-button>
+  <md-segmented-button value="month" label="Month"></md-segmented-button>
+</md-segmented-button-set>
+
+<script type="module">
+  document.getElementById('view').addEventListener('mdChange', (e) => {
+    const [view] = e.detail;      // string[] of every selected value
+    if (!view) return;            // defensive: multiselect can be empty
+    setCalendarView(view);
+  });
+</script>`}
+  react={`import { MdSegmentedButtonSet, MdSegmentedButton } from '@awc-ui/react';
+import { useState } from 'react';
+
+export function CalendarView() {
+  const [view, setView] = useState('day');
+
+  return (
+    <MdSegmentedButtonSet
+      aria-label="Calendar view"
+      onMdChange={(e) => {
+        const [next] = e.detail;
+        if (next) setView(next);
+      }}
+    >
+      <MdSegmentedButton value="day" label="Day" selected={view === 'day'} />
+      <MdSegmentedButton value="week" label="Week" selected={view === 'week'} />
+      <MdSegmentedButton value="month" label="Month" selected={view === 'month'} />
+    </MdSegmentedButtonSet>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-calendar-view',
+  template: \`
+    <md-segmented-button-set aria-label="Calendar view" (mdChange)="onChange($event)">
+      <md-segmented-button value="day" label="Day" selected></md-segmented-button>
+      <md-segmented-button value="week" label="Week"></md-segmented-button>
+      <md-segmented-button value="month" label="Month"></md-segmented-button>
+    </md-segmented-button-set>
+  \`,
+})
+export class CalendarViewComponent {
+  view = 'day';
+
+  onChange(e: CustomEvent<string[]>) {
+    const [next] = e.detail;
+    if (next) this.view = next;
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+const view = ref('day');
+
+function onChange(e: CustomEvent) {
+  const [next] = e.detail;
+  if (next) view.value = next;
+}
+</script>
+
+<template>
+  <md-segmented-button-set aria-label="Calendar view" @mdChange="onChange">
+    <md-segmented-button value="day" label="Day" selected />
+    <md-segmented-button value="week" label="Week" />
+    <md-segmented-button value="month" label="Month" />
+  </md-segmented-button-set>
+</template>`}
+  svelte={`<script lang="ts">
+  let view = 'day';
+
+  function onChange(e: CustomEvent) {
+    const [next] = e.detail;
+    if (next) view = next;
+  }
+</script>
+
+<md-segmented-button-set aria-label="Calendar view" on:mdChange={onChange}>
+  <md-segmented-button value="day" label="Day" selected></md-segmented-button>
+  <md-segmented-button value="week" label="Week"></md-segmented-button>
+  <md-segmented-button value="month" label="Month"></md-segmented-button>
+</md-segmented-button-set>`}
+/>
+
+## API Reference
+
+The set element — `<md-segmented-button-set>`.
+
+<ApiTable {...setApi} />
+
+## Accessibility
+
+- The set is `role="radiogroup"` in single-select and `role="group"` in
+  `multiselect`. Give **the set** an `aria-label` naming what it controls — the
+  children name themselves via their `label`.
+- Icon-only segments have no accessible name; add `aria-label` to each.
+- The checkmark is the non-colour selection cue. Think hard before
+  `no-checkmark`, especially in multiselect.
+- `disabled` leaves the tab order; `soft-disabled` stays focusable.
+- Arrow keys move focus within the set and wrap around, skipping `disabled`
+  segments. In single-select, arrowing also **selects** — the WAI-ARIA
+  radiogroup pattern. <kbd>Enter</kbd> and <kbd>Space</kbd> activate.
+
+<ComponentDemo
+  html={`<md-segmented-button-set aria-label="Transport">
+  <md-segmented-button value="car" icon="directions_car" label="Car" selected></md-segmented-button>
+  <md-segmented-button value="bus" icon="directions_bus" label="Bus"></md-segmented-button>
+  <md-segmented-button value="rail" icon="train" label="Rail" disabled></md-segmented-button>
+  <md-segmented-button value="bike" icon="pedal_bike" label="Bike"></md-segmented-button>
+</md-segmented-button-set>`}
+  label="Tab in, then arrow — focus wraps and skips the disabled segment"
+/>
+
+## RTL, density & i18n
+
+**RTL** — the set lays its segments out with `grid-auto-flow: column`, and the
+end caps use logical corner properties (`border-start-start-radius` and
+friends), so segment order and the rounding both flip under `dir="rtl"` with
+nothing re-authored. There is no `mirror-icon` prop here: a **directional**
+glyph has to be swapped by you. See [RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <md-segmented-button-set aria-label="العرض">
+    <md-segmented-button value="day" label="يوم" selected></md-segmented-button>
+    <md-segmented-button value="week" label="أسبوع"></md-segmented-button>
+  </md-segmented-button-set>
+</div>
+```
+
+**The same set in both directions.** Only `dir` changes between these two rows —
+the selected end cap moves to the other end on its own:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr">
+    <md-segmented-button-set aria-label="View">
+      <md-segmented-button value="day" icon="today" label="Day" selected></md-segmented-button>
+      <md-segmented-button value="week" icon="date_range" label="Week"></md-segmented-button>
+      <md-segmented-button value="month" icon="calendar_month" label="Month"></md-segmented-button>
+    </md-segmented-button-set>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl">
+    <md-segmented-button-set aria-label="العرض">
+      <md-segmented-button value="day" icon="today" label="يوم" selected></md-segmented-button>
+      <md-segmented-button value="week" icon="date_range" label="أسبوع"></md-segmented-button>
+      <md-segmented-button value="month" icon="calendar_month" label="شهر"></md-segmented-button>
+    </md-segmented-button-set>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+/>
+
+### Directional glyphs are yours to swap
+
+Layout mirrors itself; a glyph does not. A chevron or an arrow still points the
+LTR way under `dir="rtl"`, so pick the mirrored Material Symbol yourself
+(`chevron_left` for "next", `arrow_back` for "forward"). Non-directional glyphs
+— `today`, `star`, `person` — need nothing:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <div dir="rtl">
+    <md-segmented-button-set aria-label="التنقل الصحيح">
+      <md-segmented-button value="prev" icon="chevron_right" label="السابق" selected></md-segmented-button>
+      <md-segmented-button value="next" icon="chevron_left" label="التالي"></md-segmented-button>
+      <md-segmented-button value="star" icon="star" label="مميز"></md-segmented-button>
+    </md-segmented-button-set>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <div dir="rtl">
+    <md-segmented-button-set aria-label="التنقل الخاطئ">
+      <md-segmented-button value="prev" icon="chevron_left" label="السابق" selected></md-segmented-button>
+      <md-segmented-button value="next" icon="chevron_right" label="التالي"></md-segmented-button>
+      <md-segmented-button value="star" icon="star" label="مميز"></md-segmented-button>
+    </md-segmented-button-set>
+  </div>
+</div>`}
+  label="Directional glyphs under RTL — swapped vs left as-authored"
+/>
+
+### Every density rung
+
+`density` on the **set** cascades to every segment, so the row stays uniform.
+The rungs map to concrete heights:
+
+| Rung | Height |
+|---|---|
+| `0` | 40px |
+| `-1` | 36px |
+| `-2` | 32px |
+| `-3` | 28px |
+| `-4` | 24px |
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;display:grid;grid-template-columns:auto 1fr;gap:12px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <md-segmented-button-set density="0" aria-label="Density 0">
+    <md-segmented-button value="l" icon="view_list" label="List" selected></md-segmented-button>
+    <md-segmented-button value="g" icon="grid_view" label="Grid"></md-segmented-button>
+  </md-segmented-button-set>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <md-segmented-button-set density="-1" aria-label="Density -1">
+    <md-segmented-button value="l" icon="view_list" label="List" selected></md-segmented-button>
+    <md-segmented-button value="g" icon="grid_view" label="Grid"></md-segmented-button>
+  </md-segmented-button-set>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <md-segmented-button-set density="-2" aria-label="Density -2">
+    <md-segmented-button value="l" icon="view_list" label="List" selected></md-segmented-button>
+    <md-segmented-button value="g" icon="grid_view" label="Grid"></md-segmented-button>
+  </md-segmented-button-set>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <md-segmented-button-set density="-3" aria-label="Density -3">
+    <md-segmented-button value="l" icon="view_list" label="List" selected></md-segmented-button>
+    <md-segmented-button value="g" icon="grid_view" label="Grid"></md-segmented-button>
+  </md-segmented-button-set>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <md-segmented-button-set density="-4" aria-label="Density -4">
+    <md-segmented-button value="l" icon="view_list" label="List" selected></md-segmented-button>
+    <md-segmented-button value="g" icon="grid_view" label="Grid"></md-segmented-button>
+  </md-segmented-button-set>
+</div>`}
+  label="Density 0 through -4 — height, gap, label and glyph all taper"
+/>
+
+:::caution[Below `-2`, check your touch targets]
+The rungs shrink the hit area with the row: 40px at `0` down to 24px at `-4`.
+That is well under what pointer-coarse devices want, and the segments have no
+padding to spare. See [Density](/behaviour/density/#accessibility) for the media
+query that raises the target back on touch.
+:::
+
+### Density and direction together
+
+They are independent signals and compose without extra wiring — a global
+`data-density` ancestor drives the same `--md-sys-density-scale` the `density`
+prop does:
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2">
+  <md-segmented-button-set aria-label="المرشحات" multiselect>
+    <md-segmented-button value="unread" icon="mark_email_unread" label="غير مقروء" selected></md-segmented-button>
+    <md-segmented-button value="starred" icon="star" label="مميز"></md-segmented-button>
+    <md-segmented-button value="mine" icon="person" label="لي" selected></md-segmented-button>
+  </md-segmented-button-set>
+</div>`}
+  label="dir=rtl with data-density=-2 on the ancestor"
+/>
+
+**Density** — set `density` on the **set** so every segment matches; the same
+rung on a child overrides the cascaded one. See [Density](/behaviour/density/).
+
+**i18n** — translate the child `label`s; they come straight from your i18n
+layer, and `lang`/`dir` are inherited from any ancestor. Localize each icon-only
+segment's `aria-label` and the set's `aria-label` too. Translated labels vary in
+length and M3 asks for similar-length, non-wrapping labels, so re-check the set
+per locale.
+
+## Theming
+
+The set exposes no custom properties of its own — theme the **children**. Apply
+the properties on `md-segmented-button`, or on `md-segmented-button-set` to
+cascade to every segment.
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-segmented-button-container-color` | Unselected background | `transparent` |
+| `--md-segmented-button-selected-container-color` | Selected background | `secondary-container` |
+| `--md-segmented-button-label-color` | Unselected label/icon color | `on-surface` |
+| `--md-segmented-button-selected-label-color` | Selected label/icon color | `on-secondary-container` |
+| `--md-segmented-button-outline-color` | Divider / outline | `outline` |
+| `--md-segmented-button-container-shape` | End-cap radius | `shape-corner-full` |
+| `--md-segmented-button-icon-size` | Glyph size | 18px, tapering with density |
+
+<ComponentDemo
+  html={`<md-segmented-button-set aria-label="Themed" style="--md-segmented-button-selected-container-color: var(--md-sys-color-tertiary-container); --md-segmented-button-selected-label-color: var(--md-sys-color-on-tertiary-container); --md-segmented-button-outline-color: var(--md-sys-color-tertiary);">
+  <md-segmented-button value="a" label="Tertiary" selected></md-segmented-button>
+  <md-segmented-button value="b" label="Tinted"></md-segmented-button>
+</md-segmented-button-set>
+
+<md-segmented-button-set aria-label="Squared" style="--md-segmented-button-container-shape: 6px;">
+  <md-segmented-button value="a" label="Squared" selected></md-segmented-button>
+  <md-segmented-button value="b" label="Off"></md-segmented-button>
+</md-segmented-button-set>`}
+  label="Themed sets"
+/>
+
+**CSS parts** reach inside the segment's shadow root for what custom properties
+do not cover. Every part lives on `md-segmented-button`, never on the set:
+
+<ComponentDemo
+  html={`<style>
+  .caps-seg::part(label) { text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+  .brand-set {
+    --md-segmented-button-selected-container-color: #1B5E20;
+    --md-segmented-button-selected-label-color: #FFFFFF;
+    --md-segmented-button-outline-color: #1B5E20;
+    --md-segmented-button-container-shape: 8px;
+  }
+</style>
+<md-segmented-button-set aria-label="Uppercase labels">
+  <md-segmented-button class="caps-seg" value="l" label="List" selected></md-segmented-button>
+  <md-segmented-button class="caps-seg" value="g" label="Grid"></md-segmented-button>
+</md-segmented-button-set>
+
+<md-segmented-button-set class="brand-set" aria-label="Brand colours">
+  <md-segmented-button value="a" icon="check_circle" label="Live" selected></md-segmented-button>
+  <md-segmented-button value="b" icon="pending" label="Draft"></md-segmented-button>
+</md-segmented-button-set>`}
+  label="::part(label) overrides and a custom-property brand set"
+/>
+
+| Part | What it is |
+|---|---|
+| `state-layer` | The hover / press overlay |
+| `label` | The label text |
+| `icon` | The leading glyph, while the segment is **un**selected |
+| `checkmark` | The same slot in the layout once the segment is selected |
+
+`icon` and `checkmark` are the same element under two names: one span swaps
+between your glyph and the check, and its `part` swaps with it. That is why a
+rule on `::part(icon)` stops applying the moment the segment is selected — style
+both if you want the treatment to survive selection.
+
+```css
+md-segmented-button::part(label) {
+  letter-spacing: 0.4px;
+}
+
+md-segmented-button::part(icon),
+md-segmented-button::part(checkmark) {
+  font-size: 20px;
+}
+```
+
+:::note[Not in the generated API table]
+`icon` and `checkmark` are missing from the parts list in the API Reference
+below. Stencil's docs generator only sees literal `part="…"` strings, and these
+two come from an expression. They are documented in the component's own CSS
+header and are as public as the other two.
+:::
+
+
+## The segment — `md-segmented-button`
+
+Each segment is an `md-segmented-button`. It has its own props and parts,
+documented here rather than on a separate page: outside a set it is only half a
+component, and inside one the parent writes four of its props itself.
+
+### Segment API Reference
+
+<ApiTable {...segmentApi} />
+
+:::note[Parent-managed props]
+`segmentIndex`, `segmentTotal`, `segmentDensity` and `segmentMultiselect` appear
+in the table above because they are real props, but they are **owned by the
+set** — it writes them on load and whenever `multiselect` or `density` changes.
+Never set them yourself.
+:::
+
+## Related
+
+[`md-button-group`](/components/button-group/) ·
+[`md-tabs`](/components/tabs/) ·
+[`md-chip`](/components/chip/) ·
+[`md-radio`](/components/radio/) ·
+[`md-select`](/components/select/) ·
+[`md-split-button`](/components/split-button/) ·
+[`md-ripple`](/components/ripple/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-segmented-button-set" />
+
+<LLMContext tag="md-segmented-button" />

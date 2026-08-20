@@ -1,0 +1,372 @@
+---
+// SnackbarDemo.astro
+//
+// Multi-section live demo for `md-snackbar`. Same pattern as
+// DialogDemo / SideSheetDemo: each section ships its `html`
+// markup straight into a `<ComponentDemo>` (via `set:html`,
+// which hydrates custom-elements but does NOT run inline
+// script tags), and a single module-level script at
+// the bottom of THIS file does the cross-section wiring +
+// portal-to-body so the demos work regardless of where they
+// land on the page.
+//
+// Snackbars are `position: fixed` viewport overlays. If any
+// ancestor of the snackbar applies transform/filter/contain/
+// will-change (Starlight applies these during page-in
+// animations and on the article column for scroll-reveal),
+// the fixed positioning becomes "fixed to that ancestor"
+// instead of the viewport, and the snackbar ends up trapped
+// inside the article column. Portaling each instance to
+// <body> on first run guarantees the snackbar reaches the
+// viewport edges every time.
+
+import ComponentDemo from "./ComponentDemo.astro";
+
+interface Section {
+  id: string;
+  label: string;
+  /** Markup the live preview renders. Includes the demo-specific
+   *  `data-snackbar-open` / `data-snackbar-instance` hooks the
+   *  global wiring script binds to. */
+  html: string;
+  /** Idiomatic markup shown in the per-technology code tabs. Drops
+   *  the `data-snackbar-*` hooks in favour of the `id` + `snack.show()`
+   *  pattern a real app would use. */
+  codeHtml: string;
+}
+
+// ── Section 1: Common shapes ───────────────────────────────────────
+//
+//   1. Single-line message (auto-hides after 4s)
+//   2. Single-line + action (Undo)
+//   3. Long message that wraps to two lines
+//   4. With close icon
+//   5. Action + close together
+const commonCodeHtml = `<md-button id="snack-saved" variant="filled">Saved</md-button>
+<md-snackbar id="snack-saved-msg" message="File saved"></md-snackbar>
+
+<md-button id="snack-undo" variant="filled">Undo</md-button>
+<md-snackbar id="snack-undo-msg" message="Item moved to trash" action="Undo"></md-snackbar>
+
+<md-button id="snack-wrap" variant="outlined">Long message</md-button>
+<md-snackbar id="snack-wrap-msg" message="The message is long enough that it wraps onto a second line in the snackbar container"></md-snackbar>
+
+<md-button id="snack-close" variant="outlined">Closeable</md-button>
+<md-snackbar id="snack-close-msg" message="Connection restored" closeable></md-snackbar>
+
+<md-button id="snack-both" variant="tonal">Action + close</md-button>
+<md-snackbar id="snack-both-msg" message="Message archived" action="View" closeable></md-snackbar>
+
+<script>
+  for (const [trigger, snack] of [
+    ['snack-saved', 'snack-saved-msg'],
+    ['snack-undo', 'snack-undo-msg'],
+    ['snack-wrap', 'snack-wrap-msg'],
+    ['snack-close', 'snack-close-msg'],
+    ['snack-both', 'snack-both-msg'],
+  ]) {
+    document.getElementById(trigger).addEventListener('click', () => {
+      document.getElementById(snack).show();
+    });
+  }
+</script>`;
+
+const commonHtml = `<div style="display: flex; flex-wrap: wrap; gap: 12px;">
+  <md-button data-snackbar-open="demo-snack-saved" variant="filled">Saved</md-button>
+  <md-button data-snackbar-open="demo-snack-undo" variant="filled">Undo</md-button>
+  <md-button data-snackbar-open="demo-snack-wrap" variant="outlined">Long message</md-button>
+  <md-button data-snackbar-open="demo-snack-close" variant="outlined">Closeable</md-button>
+  <md-button data-snackbar-open="demo-snack-both" variant="tonal">Action + close</md-button>
+</div>
+
+<md-snackbar id="demo-snack-saved" message="File saved" data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-snack-undo" message="Item moved to trash" action="Undo" data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-snack-wrap" message="The message is long enough that it wraps onto a second line in the snackbar container" data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-snack-close" message="Connection restored" closeable data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-snack-both" message="Message archived" action="View" closeable data-snackbar-instance></md-snackbar>`;
+
+// ── Section 2: Behavior — auto-dismiss vs persistent ──────────────
+//
+// Three of the most common runtime behaviors:
+//   1. Auto-dismiss (the default)
+//   2. Persistent (auto-hide=false) — sticks until user dismisses
+//   3. Stacked — long action label wraps action below the message
+const behaviorCodeHtml = `<md-button id="snack-auto" variant="filled">Auto-dismiss (4s)</md-button>
+<md-snackbar id="snack-auto-msg" message="Auto-hides in 4 seconds"></md-snackbar>
+
+<md-button id="snack-persist" variant="filled">Persistent</md-button>
+<md-snackbar id="snack-persist-msg" message="No internet connection" action="Retry" auto-hide="false" closeable></md-snackbar>
+
+<md-button id="snack-stacked" variant="filled">Stacked</md-button>
+<md-snackbar id="snack-stacked-msg" message="This item has been moved to trash" action="Undo this action" stacked closeable></md-snackbar>
+
+<script>
+  for (const [trigger, snack] of [
+    ['snack-auto', 'snack-auto-msg'],
+    ['snack-persist', 'snack-persist-msg'],
+    ['snack-stacked', 'snack-stacked-msg'],
+  ]) {
+    document.getElementById(trigger).addEventListener('click', () => {
+      document.getElementById(snack).show();
+    });
+  }
+</script>`;
+
+const behaviorHtml = `<div style="display: flex; flex-wrap: wrap; gap: 12px;">
+  <md-button data-snackbar-open="demo-snack-auto" variant="filled">Auto-dismiss (4s)</md-button>
+  <md-button data-snackbar-open="demo-snack-persist" variant="filled">Persistent</md-button>
+  <md-button data-snackbar-open="demo-snack-stacked" variant="filled">Stacked</md-button>
+</div>
+
+<md-snackbar id="demo-snack-auto" message="Auto-hides in 4 seconds" data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-snack-persist" message="No internet connection" action="Retry" auto-hide="false" closeable data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-snack-stacked" message="This item has been moved to trash" action="Undo this action" stacked closeable data-snackbar-instance></md-snackbar>`;
+
+// ── Section 3: Positions — all 9 ───────────────────────────────────
+//
+// Demonstrates every value of the `position` prop. The buttons are
+// laid out in a 3×3 grid that mirrors the screen positions, so the
+// click target maps directly to where the snackbar will appear.
+const positionsCodeHtml = `<md-button id="pos-tl" variant="outlined">Top-start</md-button>
+<md-snackbar id="pos-tl-msg" position="top-start" message="Top-start" closeable></md-snackbar>
+
+<md-button id="pos-tc" variant="outlined">Top</md-button>
+<md-snackbar id="pos-tc-msg" position="top" message="Top" closeable></md-snackbar>
+
+<md-button id="pos-tr" variant="outlined">Top-end</md-button>
+<md-snackbar id="pos-tr-msg" position="top-end" message="Top-end" closeable></md-snackbar>
+
+<md-button id="pos-ml" variant="outlined">Start</md-button>
+<md-snackbar id="pos-ml-msg" position="start" message="Start" closeable></md-snackbar>
+
+<md-button id="pos-mc" variant="outlined">Center</md-button>
+<md-snackbar id="pos-mc-msg" position="center" message="Center" closeable></md-snackbar>
+
+<md-button id="pos-mr" variant="outlined">End</md-button>
+<md-snackbar id="pos-mr-msg" position="end" message="End" closeable></md-snackbar>
+
+<md-button id="pos-bl" variant="outlined">Bottom-start</md-button>
+<md-snackbar id="pos-bl-msg" position="bottom-start" message="Bottom-start" closeable></md-snackbar>
+
+<md-button id="pos-bc" variant="filled">Bottom (default)</md-button>
+<md-snackbar id="pos-bc-msg" position="bottom" message="Bottom" closeable></md-snackbar>
+
+<md-button id="pos-br" variant="outlined">Bottom-end</md-button>
+<md-snackbar id="pos-br-msg" position="bottom-end" message="Bottom-end" closeable></md-snackbar>`;
+
+const positionsHtml = `<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; max-inline-size: 480px;">
+  <md-button data-snackbar-open="demo-pos-tl" variant="outlined">Top-start</md-button>
+  <md-button data-snackbar-open="demo-pos-tc" variant="outlined">Top</md-button>
+  <md-button data-snackbar-open="demo-pos-tr" variant="outlined">Top-end</md-button>
+  <md-button data-snackbar-open="demo-pos-ml" variant="outlined">Start</md-button>
+  <md-button data-snackbar-open="demo-pos-mc" variant="outlined">Center</md-button>
+  <md-button data-snackbar-open="demo-pos-mr" variant="outlined">End</md-button>
+  <md-button data-snackbar-open="demo-pos-bl" variant="outlined">Bottom-start</md-button>
+  <md-button data-snackbar-open="demo-pos-bc" variant="filled">Bottom (default)</md-button>
+  <md-button data-snackbar-open="demo-pos-br" variant="outlined">Bottom-end</md-button>
+</div>
+
+<md-snackbar id="demo-pos-tl" position="top-start" message="Top-start snackbar" closeable data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-pos-tc" position="top" message="Top snackbar" closeable data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-pos-tr" position="top-end" message="Top-end snackbar" closeable data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-pos-ml" position="start" message="Start snackbar" closeable data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-pos-mc" position="center" message="Center snackbar" closeable data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-pos-mr" position="end" message="End snackbar" closeable data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-pos-bl" position="bottom-start" message="Bottom-start snackbar" closeable data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-pos-bc" position="bottom" message="Bottom snackbar" closeable data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-pos-br" position="bottom-end" message="Bottom-end snackbar" closeable data-snackbar-instance></md-snackbar>`;
+
+// ── Section 4: Customization — colorways & parts ───────────────────
+const customizationCodeHtml = `<style>
+  md-snackbar.error {
+    --md-snackbar-container-color: var(--md-sys-color-error-container);
+    --md-snackbar-message-color: var(--md-sys-color-on-error-container);
+    --md-snackbar-action-color: var(--md-sys-color-error);
+    --md-snackbar-close-color: var(--md-sys-color-on-error-container);
+  }
+  md-snackbar.success {
+    --md-snackbar-container-color: #1e3a2a;
+    --md-snackbar-message-color: #d6f5dd;
+    --md-snackbar-action-color: #74e29c;
+    --md-snackbar-container-shape: 12px;
+  }
+  md-snackbar.parts::part(surface) {
+    border-radius: 16px;
+    border: 2px solid var(--md-sys-color-outline-variant);
+  }
+  md-snackbar.parts::part(message) {
+    font-style: italic;
+  }
+</style>
+
+<md-button id="snack-error" variant="filled">Error style</md-button>
+<md-snackbar id="snack-error-msg" class="error" message="Failed to upload file" action="Retry" closeable></md-snackbar>
+
+<md-button id="snack-success" variant="filled">Success style</md-button>
+<md-snackbar id="snack-success-msg" class="success" message="Welcome to AWC UI" action="Explore"></md-snackbar>
+
+<md-button id="snack-parts" variant="outlined">Styled parts</md-button>
+<md-snackbar id="snack-parts-msg" class="parts" message="Parts API: rounded, outlined, italic message" closeable></md-snackbar>`;
+
+const customizationHtml = `<style>
+  md-snackbar.demo-error {
+    --md-snackbar-container-color: var(--md-sys-color-error-container);
+    --md-snackbar-message-color: var(--md-sys-color-on-error-container);
+    --md-snackbar-action-color: var(--md-sys-color-error);
+    --md-snackbar-close-color: var(--md-sys-color-on-error-container);
+  }
+  md-snackbar.demo-success {
+    --md-snackbar-container-color: #1e3a2a;
+    --md-snackbar-message-color: #d6f5dd;
+    --md-snackbar-action-color: #74e29c;
+    --md-snackbar-container-shape: 12px;
+  }
+  md-snackbar.demo-parts::part(surface) {
+    border-radius: 16px;
+    border: 2px solid var(--md-sys-color-outline-variant);
+  }
+  md-snackbar.demo-parts::part(message) {
+    font-style: italic;
+  }
+</style>
+<div style="display: flex; flex-wrap: wrap; gap: 12px;">
+  <md-button data-snackbar-open="demo-snack-error" variant="filled">Error style</md-button>
+  <md-button data-snackbar-open="demo-snack-success" variant="filled">Success style</md-button>
+  <md-button data-snackbar-open="demo-snack-parts" variant="outlined">Styled parts</md-button>
+</div>
+
+<md-snackbar id="demo-snack-error" class="demo-error" message="Failed to upload file" action="Retry" closeable data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-snack-success" class="demo-success" message="Welcome to AWC UI" action="Explore" data-snackbar-instance></md-snackbar>
+<md-snackbar id="demo-snack-parts" class="demo-parts" message="Parts API: rounded, outlined, italic message" closeable data-snackbar-instance></md-snackbar>`;
+
+// ── Section 5: RTL ────────────────────────────────────────────────
+const rtlCodeHtml = `<div dir="rtl">
+  <md-button id="snack-rtl" variant="filled">عرض الإشعار</md-button>
+  <md-snackbar id="snack-rtl-msg" message="تم حفظ الملف بنجاح" action="تراجع" closeable></md-snackbar>
+</div>`;
+
+const rtlHtml = `<div dir="rtl">
+  <md-button data-snackbar-open="demo-snack-rtl" variant="filled">عرض الإشعار</md-button>
+</div>
+<md-snackbar id="demo-snack-rtl" message="تم حفظ الملف بنجاح" action="تراجع" closeable position="bottom-start" data-snackbar-instance dir="rtl"></md-snackbar>`;
+
+interface Props {
+  /** Subset of sections to render. Defaults to all of them, in
+   *  declaration order. */
+  sections?: ReadonlyArray<"common" | "behavior" | "positions" | "customization" | "rtl">;
+}
+
+const all: Section[] = [
+  { id: "common", label: "Common shapes", html: commonHtml, codeHtml: commonCodeHtml },
+  { id: "behavior", label: "Auto-dismiss vs persistent vs stacked", html: behaviorHtml, codeHtml: behaviorCodeHtml },
+  { id: "positions", label: "All nine positions", html: positionsHtml, codeHtml: positionsCodeHtml },
+  { id: "customization", label: "Theming + parts", html: customizationHtml, codeHtml: customizationCodeHtml },
+  { id: "rtl", label: "RTL", html: rtlHtml, codeHtml: rtlCodeHtml },
+];
+
+const requested = (Astro.props.sections ?? all.map((s) => s.id)) as string[];
+const sections = all.filter((s) => requested.includes(s.id));
+---
+
+<div class="snackbar-demo-host">
+  {
+    sections.map((section) => (
+      <ComponentDemo
+        label={section.label}
+        html={section.html}
+        htmlForCode={section.codeHtml}
+        storyId="components-snackbar--playground"
+      />
+    ))
+  }
+</div>
+
+<script>
+  // Each docs page that imports <SnackbarDemo /> gets this single
+  // global wiring + portal script. It deliberately queries the
+  // document (not a scoped container) so a future page that mixes
+  // <SnackbarDemo /> with hand-rolled <md-snackbar> instances gets
+  // the same behaviour.
+
+  type SnackEl = HTMLElement & {
+    open: boolean;
+    show: () => Promise<void>;
+    hide: (reason?: "auto" | "action" | "close") => Promise<void>;
+  };
+
+  // Portal each snackbar to <body> on first run. Snackbars are
+  // `position: fixed` overlays; if any ancestor in the article
+  // column applies transform/filter/contain/will-change (page-in
+  // animations, scroll-reveal staggers, backdrop blurs) the fixed
+  // positioning becomes "fixed to that ancestor" instead of the
+  // viewport, and the snackbar ends up trapped inside the article
+  // column. Moving the node to <body> removes those ancestors.
+  function portalSnackbars(): void {
+    document
+      .querySelectorAll<HTMLElement>("md-snackbar[data-snackbar-instance]")
+      .forEach((snack) => {
+        if (snack.dataset.snackbarPortaled === "true") return;
+        if (snack.parentElement === document.body) {
+          snack.dataset.snackbarPortaled = "true";
+          return;
+        }
+        document.body.appendChild(snack);
+        snack.dataset.snackbarPortaled = "true";
+      });
+  }
+
+  function teardownPortaledSnackbars(): void {
+    document
+      .querySelectorAll<HTMLElement>("md-snackbar[data-snackbar-portaled]")
+      .forEach((snack) => {
+        snack.remove();
+      });
+  }
+
+  // Resolve `data-snackbar-open="foo"` to the actual <md-snackbar id="foo">
+  // by tag-scoping the lookup. We can't use `getElementById` because
+  // Starlight emits headings whose slugs may collide with demo ids
+  // after portaling moves the snackbar to the end of <body>.
+  function findSnackbar(id: string): SnackEl | null {
+    return document.querySelector<HTMLElement>(
+      `md-snackbar#${CSS.escape(id)}`,
+    ) as SnackEl | null;
+  }
+
+  function wireSnackbarTriggers(): void {
+    document
+      .querySelectorAll<HTMLElement>("[data-snackbar-open]")
+      .forEach((trigger) => {
+        if (trigger.dataset.snackbarWired === "true") return;
+        trigger.dataset.snackbarWired = "true";
+        trigger.addEventListener("click", () => {
+          const id = trigger.dataset.snackbarOpen;
+          if (!id) return;
+          const snack = findSnackbar(id);
+          if (!snack) return;
+          // Prefer the public method so the auto-hide timer runs
+          // and the mdOpen event fires; fall back to the property
+          // in case the component is still hydrating on the very
+          // first click.
+          if (typeof snack.show === "function") {
+            void snack.show();
+          } else {
+            snack.open = true;
+          }
+        });
+      });
+  }
+
+  function bootstrap(): void {
+    portalSnackbars();
+    wireSnackbarTriggers();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootstrap, { once: true });
+  } else {
+    bootstrap();
+  }
+  document.addEventListener("astro:page-load", bootstrap);
+  document.addEventListener("astro:before-preparation", teardownPortaledSnackbars);
+</script>

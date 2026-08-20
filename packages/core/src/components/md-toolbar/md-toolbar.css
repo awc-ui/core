@@ -1,0 +1,357 @@
+/* ==========================================================
+   md-toolbar — Material Design 3 Toolbar (Expressive)
+   Spec: https://m3.material.io/components/toolbars/specs
+
+   Replaces the legacy bottom app bar with two expressive
+   variants: docked toolbar (bottom-anchored) and floating
+   toolbar (free-placed, horizontal or vertical).
+
+   DOCKED:
+     Height 64px, margin-inline 16px, gap 32px.
+     Left/right alignment via space-between; center uses 8px gap.
+     Sticky bottom — stays available while content scrolls.
+
+   FLOATING:
+     Height 64px, padding 8px, pill-shaped (corner-full), gap 4px.
+     Margins 16px min. FAB (56px) sits separately with 8px gap.
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-toolbar-container-color       Container background
+     --md-toolbar-icon-color            Slotted control tint (defaults: on-surface-variant / on-surface)
+     --md-toolbar-container-shape       Border-radius
+     --md-toolbar-container-height      Container height
+     --md-toolbar-padding              Padding
+     --md-toolbar-gap                   Gap between items
+     --md-toolbar-fab-gap               Gap between toolbar and FAB
+     --md-toolbar-scrollbar-width       Scrollbar width for opt-in scrolling (set to
+                                        `auto` to restore ::-webkit-scrollbar styling —
+                                        Chrome 121+ ignores it when scrollbar-width is set)
+
+   CSS PARTS:
+     container       Inner container holding slotted content
+     fab-container   FAB wrapper
+
+   SLOTS:
+     (default)       Action items (icon buttons, buttons, text fields)
+     leading         Leading (start) section
+     trailing        Trailing (end) section
+     fab             Paired FAB element
+
+   TOOLBAR-ONLY (not global md-icon-button defaults):
+     Standard / vibrant color prop drives bar chrome + slotted md-icon-button
+     token map (standard, filled, tonal toggle) per MD3 expressive toolbar spec.
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST — shared base
+   ========================================================== */
+
+:host {
+  --_container-color: var(--md-toolbar-container-color, var(--md-sys-color-surface-container, #F3EDF7));
+  --_icon-color: var(--md-toolbar-icon-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_shape: var(--md-toolbar-container-shape, 0px);
+  --_height: var(--md-toolbar-container-height, max(48px, calc(64px + var(--md-sys-density-scale, 0) * 4px)));
+  --_padding: var(--md-toolbar-padding, var(--md-sys-spacing-inset-lg, 16px));
+  --_gap: var(--md-toolbar-gap, max(4px, calc(32px + var(--md-sys-density-scale, 0) * 2px)));
+  --_fab-gap: var(--md-toolbar-fab-gap, var(--md-sys-spacing-gap-lg, 16px));
+
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  color: var(--_icon-color);
+  font-family: var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif);
+}
+
+/* ==========================================================
+   2. DOCKED VARIANT — anchored to bottom edge
+   Height 64px, margin-inline 16px, gap 32px
+   ========================================================== */
+
+:host(.md-toolbar--docked) {
+  --_gap: var(--md-toolbar-gap, max(4px, calc(32px + var(--md-sys-density-scale, 0) * 2px)));
+  --_padding: var(--md-toolbar-padding, var(--md-sys-spacing-inset-lg, 16px));
+
+  inline-size: 100%;
+  /* min (not fixed) so the safe-area inset EXTENDS the bar on notched devices
+     instead of eating into the 64dp content area. */
+  min-block-size: var(--_height);
+  padding-inline: var(--_padding);
+  padding-block-end: env(safe-area-inset-bottom, 0px);
+  background-color: var(--_container-color);
+  border-radius: var(--_shape);
+  box-shadow: var(--md-sys-elevation-2, 0 1px 3px 1px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.3));
+  position: sticky;
+  inset-block-end: 0;
+  z-index: var(--md-sys-z-index-app-bar, 100);
+  /* No host gap: the only host children are the content container and the FAB
+     wrapper. Item spacing lives on the inner container (--_gap); the space to the
+     FAB is the fab-container's own --_fab-gap margin. A host gap here would
+     double-count against that margin (32 + 16 = 48dp instead of the documented 16). */
+  gap: 0;
+}
+
+/* Center-aligned docked: 8px gap between items */
+:host(.md-toolbar--docked.md-toolbar--align-center) {
+  --_gap: var(--md-toolbar-gap, var(--md-sys-spacing-gap-sm, 8px));
+}
+
+/* Space-between docked: items spread with flexible fill space */
+:host(.md-toolbar--docked.md-toolbar--align-space-between) {
+  --_gap: 0px;
+}
+
+/* ==========================================================
+   3. FLOATING VARIANT — pill-shaped, free-placed
+   Height 64px, padding 8px, fully rounded (pill), gap 4px inside pill.
+   Margins 16px minimum. FAB is a separate surface: host gap 8px between
+   pill (.md-toolbar__container) and FAB — not inside the same rounded rect.
+   ========================================================== */
+
+:host(.md-toolbar--floating) {
+  --_shape: var(--md-toolbar-container-shape, var(--md-sys-shape-corner-full, 100px));
+  --_gap: var(--md-toolbar-gap, var(--md-sys-spacing-gap-xs, 4px));
+  --_padding: var(--md-toolbar-padding, var(--md-sys-spacing-inset-sm, 8px));
+  --_fab-gap: var(--md-toolbar-fab-gap, var(--md-sys-spacing-gap-sm, 8px));
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--_fab-gap);
+  margin-inline: var(--md-sys-spacing-inset-lg, 16px);
+  padding: 0;
+  background-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Pill chrome lives on the inner container so the FAB sits outside it */
+:host(.md-toolbar--floating) .md-toolbar__container {
+  background-color: var(--_container-color);
+  border-radius: var(--_shape);
+  box-shadow: var(--md-sys-elevation-2, 0 1px 3px 1px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.3));
+  padding: var(--_padding);
+  box-sizing: border-box;
+  flex: 0 1 auto;
+}
+
+:host(.md-toolbar--floating:not(.md-toolbar--vertical)) {
+  min-block-size: var(--_height);
+}
+
+:host(.md-toolbar--floating:not(.md-toolbar--vertical)) .md-toolbar__container {
+  block-size: var(--_height);
+}
+
+:host(.md-toolbar--floating.md-toolbar--vertical) .md-toolbar__container {
+  block-size: auto;
+  inline-size: 100%;
+}
+
+/* Floating vertical */
+:host(.md-toolbar--vertical) {
+  flex-direction: column;
+  block-size: auto;
+  inline-size: var(--_height);
+}
+
+:host(.md-toolbar--vertical) .md-toolbar__container {
+  flex-direction: column;
+}
+
+/* ==========================================================
+   4. COLOR — standard vs vibrant (toolbar chrome + inherited text color)
+   Standard: surface-container bar; neutral on-surface-variant for host text.
+   Vibrant: primary-container bar; on-surface for host text (neutral on tinted bar).
+   Slotted md-icon-button variants: see section 7.
+   ========================================================== */
+
+:host(.md-toolbar--standard) {
+  --_container-color: var(--md-toolbar-container-color, var(--md-sys-color-surface-container, #F3EDF7));
+  --_icon-color: var(--md-toolbar-icon-color, var(--md-sys-color-on-surface-variant, #49454F));
+}
+
+:host(.md-toolbar--vibrant) {
+  --_container-color: var(--md-toolbar-container-color, var(--md-sys-color-primary-container, #EADDFF));
+  --_icon-color: var(--md-toolbar-icon-color, var(--md-sys-color-on-surface, #1C1B1F));
+}
+
+/* ==========================================================
+   5. CONTAINER — inner flex layout
+   ========================================================== */
+
+.md-toolbar__container {
+  display: flex;
+  align-items: center;
+  gap: var(--_gap);
+  flex: 1;
+  min-inline-size: 0;
+  /* Overflow: OFF by default (`visible`) so focus rings are never clipped —
+     a scroll container (`overflow: auto`) clips the ring on the non-scrolling
+     axis. Authors whose toolbars can overflow opt into scrolling via
+     `--md-toolbar-overflow-x: auto` (or wrapping via `--md-toolbar-flex-wrap:
+     wrap`); when they do, `scroll-padding` keeps a focused control clear of the
+     edge. MD3 guidance is to cap the action count or use an overflow menu
+     rather than scroll, so the default does not clip or reserve space. */
+  flex-wrap: var(--md-toolbar-flex-wrap, nowrap);
+  overflow-x: var(--md-toolbar-overflow-x, visible);
+  /* Overridable: `scrollbar-width: thin` makes Chrome 121+ ignore any author
+     ::-webkit-scrollbar styling — authors who need it set this token to `auto`. */
+  scrollbar-width: var(--md-toolbar-scrollbar-width, thin);
+  scroll-padding-inline: var(--_padding);
+}
+
+/* Vertical floating toolbar scrolls on the block axis instead (opt-in). */
+:host(.md-toolbar--vertical) .md-toolbar__container {
+  overflow-x: visible;
+  overflow-y: var(--md-toolbar-overflow-y, visible);
+  scroll-padding-block: var(--_padding);
+}
+
+/* Alignment */
+:host(.md-toolbar--align-start) .md-toolbar__container {
+  justify-content: flex-start;
+}
+
+:host(.md-toolbar--align-center) .md-toolbar__container {
+  justify-content: center;
+}
+
+:host(.md-toolbar--align-end) .md-toolbar__container {
+  justify-content: flex-end;
+}
+
+:host(.md-toolbar--align-space-between) .md-toolbar__container {
+  justify-content: space-between;
+}
+
+/* ==========================================================
+   6. FAB CONTAINER
+   FAB is 56px and sits separately with a gap
+   ========================================================== */
+
+.md-toolbar__fab-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  /* Docked: the FAB is pushed to the inline-end and separated from the bar
+     content by the public `--md-toolbar-fab-gap` token (previously the gap
+     was dead on docked — only floating consumed it). */
+  margin-inline-start: var(--_fab-gap);
+}
+
+.md-toolbar__fab-container--hidden {
+  display: none;
+}
+
+/* Floating: spacing between pill and FAB comes from host gap (--_fab-gap), not margin */
+.md-toolbar__fab-container--floating {
+  margin-inline-start: 0;
+  margin-block-start: 0;
+}
+
+/* ==========================================================
+   7. SLOTTED ITEMS — sizing and color
+   Toolbar-only schemes for slotted md-icon-button (see readme):
+     Standard: bar = surface-container. Standard/outlined → On surface variant.
+       Filled → Primary / On primary (defaults). Tonal toggle (on) →
+       Secondary container / On secondary container (defaults).
+     Vibrant: bar = primary-container. Standard/outlined → On surface.
+       Filled → Primary / On primary (defaults). Tonal toggle →
+       Surface container / On surface.
+   Do NOT set `color` on all slotted nodes: it beats child :host
+   (e.g. md-button). Tint standard/outlined icon buttons via variables;
+   do not blanket-override filled or tonal (except vibrant tonal toggles).
+   ========================================================== */
+
+::slotted(*) {
+  flex-shrink: 0;
+}
+
+/* Standard scheme — standard + outlined: neutral icon ink on surface container.
+   Scoped to NON-selected so a selected toggle keeps its own selected ink
+   (previously the blanket tint erased the selected affordance). */
+:host(.md-toolbar--standard) ::slotted(md-icon-button.md-icon-button--standard:not(.md-icon-button--selected)),
+:host(.md-toolbar--standard) ::slotted(md-icon-button.md-icon-button--outlined:not(.md-icon-button--selected)) {
+  --md-icon-button-icon-color: var(--md-toolbar-icon-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --md-icon-button-state-layer-color: var(--md-toolbar-icon-color, var(--md-sys-color-on-surface-variant, #49454F));
+}
+
+/* Vibrant scheme — standard + outlined (non-selected): on-surface on primary-container bar */
+:host(.md-toolbar--vibrant) ::slotted(md-icon-button.md-icon-button--standard:not(.md-icon-button--selected)),
+:host(.md-toolbar--vibrant) ::slotted(md-icon-button.md-icon-button--outlined:not(.md-icon-button--selected)) {
+  --md-icon-button-icon-color: var(--md-toolbar-icon-color, var(--md-sys-color-on-surface, #1C1B1F));
+  --md-icon-button-state-layer-color: var(--md-toolbar-icon-color, var(--md-sys-color-on-surface, #1C1B1F));
+}
+
+/* Vibrant scheme — tonal toggle, UNSELECTED: neutral surface-container so it
+   recedes into the tinted bar. */
+:host(.md-toolbar--vibrant) ::slotted(md-icon-button.md-icon-button--tonal.md-icon-button--toggle:not(.md-icon-button--selected)) {
+  --md-icon-button-container-color: var(--md-sys-color-surface-container, #F3EDF7);
+  --md-icon-button-icon-color: var(--md-sys-color-on-surface, #1C1B1F);
+  --md-icon-button-state-layer-color: var(--md-sys-color-on-surface, #1C1B1F);
+}
+
+/* Vibrant scheme — tonal toggle, SELECTED: distinct secondary-container fill so the
+   "on" state is legible against the neutral unselected toggles (fixes the flattened
+   selected state — selected must never look identical to unselected). */
+:host(.md-toolbar--vibrant) ::slotted(md-icon-button.md-icon-button--tonal.md-icon-button--toggle.md-icon-button--selected) {
+  --md-icon-button-container-color: var(--md-sys-color-secondary-container, #E8DEF8);
+  --md-icon-button-icon-color: var(--md-sys-color-on-secondary-container, #1E192B);
+  --md-icon-button-state-layer-color: var(--md-sys-color-on-secondary-container, #1E192B);
+}
+
+::slotted([slot="leading"]) {
+  margin-inline-end: auto;
+}
+
+::slotted([slot="trailing"]) {
+  margin-inline-start: auto;
+}
+
+/* Docked: FAB sits on the same bar — flatten to match the toolbar surface.
+   Floating: no override — paired FAB keeps md-fab elevation beside the pill. */
+:host(.md-toolbar--docked) ::slotted([slot="fab"]) {
+  box-shadow: none !important;
+}
+
+/* ==========================================================
+   8. FORCED COLORS (Windows High Contrast)
+   The bar/pill chrome is a background + elevation — both are dropped in
+   forced-colors mode, leaving the toolbar with NO visible boundary. Give
+   the surface a system-color border so the region stays perceivable, and
+   make the scroll affordance visible. Slotted controls paint their own
+   forced-colors treatment.
+   ========================================================== */
+
+@media (forced-colors: active) {
+  :host(.md-toolbar--docked) {
+    border-block-start: 1px solid CanvasText;
+  }
+  :host(.md-toolbar--floating) .md-toolbar__container {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* ==========================================================
+   9. REDUCED MOTION
+   The container scrolls on overflow; honor a reduced-motion preference by
+   disabling smooth scrolling so focus jumps are instant.
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-toolbar__container {
+    scroll-behavior: auto;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

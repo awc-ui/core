@@ -1,0 +1,227 @@
+---
+title: Density
+description: Compress every component at once with a single data-density attribute, or override one component locally
+sidebar:
+  order: 1
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+Density controls how much vertical space controls take. Set it **once on
+`<html>`** and every component in the library tightens together — no
+per-component wiring.
+
+## Set it globally
+
+```html
+<html data-density="-2">
+```
+
+That is the whole API. **52 of the 56 components** read the signal.
+
+<ComponentDemo
+  html={`<div data-density="0" style="display:flex;gap:12px;align-items:center;margin-block-end:16px;">
+  <span style="width:5rem;opacity:.7;font-size:.8rem;">default</span>
+  <md-button variant="filled">Save</md-button>
+  <md-text-field label="Name" variant="outlined"></md-text-field>
+</div>
+<div data-density="-1" style="display:flex;gap:12px;align-items:center;margin-block-end:16px;">
+  <span style="width:5rem;opacity:.7;font-size:.8rem;">-1</span>
+  <md-button variant="filled">Save</md-button>
+  <md-text-field label="Name" variant="outlined"></md-text-field>
+</div>
+<div data-density="-2" style="display:flex;gap:12px;align-items:center;margin-block-end:16px;">
+  <span style="width:5rem;opacity:.7;font-size:.8rem;">-2</span>
+  <md-button variant="filled">Save</md-button>
+  <md-text-field label="Name" variant="outlined"></md-text-field>
+</div>
+<div data-density="-3" style="display:flex;gap:12px;align-items:center;margin-block-end:16px;">
+  <span style="width:5rem;opacity:.7;font-size:.8rem;">-3</span>
+  <md-button variant="filled">Save</md-button>
+  <md-text-field label="Name" variant="outlined"></md-text-field>
+</div>
+<div data-density="-4" style="display:flex;gap:12px;align-items:center;">
+  <span style="width:5rem;opacity:.7;font-size:.8rem;">-4</span>
+  <md-button variant="filled">Save</md-button>
+  <md-text-field label="Name" variant="outlined"></md-text-field>
+</div>`}
+  label="Every rung, 0 to −4"
+/>
+
+## The rungs
+
+`0` is the default. `-4` is the floor — there is no `-5`.
+
+| Rung | Control row height | Typical use |
+|---|---|---|
+| `0` | 56px | **Default.** Touch-friendly, consumer apps |
+| `-1` | 52px | Slightly tightened |
+| `-2` | 48px | Admin consoles, internal tools |
+| `-3` | 44px | Dense dashboards |
+| `-4` | 40px | Data-heavy ops screens, trading UIs |
+
+Each rung also trims the inset and gap spacing tokens, so padding shrinks
+with the row height rather than leaving controls looking hollow.
+
+## How it works
+
+One inherited custom property, `--md-sys-density-scale`, plus a set of
+spacing tokens per rung:
+
+```css
+[data-density="-2"] {
+  --md-sys-density-scale: -2;
+  --md-sys-spacing-row-height: 48px;
+  /* inset + gap tokens tighten too */
+}
+```
+
+Because it is an inherited CSS custom property, it crosses shadow boundaries
+into every component with no JavaScript, no observers, and no re-render.
+
+## Local override
+
+Every density-aware component also takes a `density` prop. A value applied
+**directly** to a host always beats one **inherited** from an ancestor — at
+any specificity — so a local rung wins automatically:
+
+```html
+<html data-density="-2">
+  <!-- everything here is -2 -->
+
+  <md-table density="-4"></md-table>  <!-- this one is -4 -->
+  <md-button density="0">Comfortable</md-button> <!-- back to default -->
+</html>
+```
+
+You can also scope a rung to a region without touching components:
+
+```html
+<section data-density="-3">
+  <!-- just this panel is dense -->
+</section>
+```
+
+## Switching at runtime
+
+It is a plain attribute, so a toggle is one line:
+
+```js
+document.documentElement.dataset.density = '-2';   // apply
+delete document.documentElement.dataset.density;   // back to default
+```
+
+```js
+// Persist the user's choice
+const saved = localStorage.getItem('density');
+if (saved) document.documentElement.dataset.density = saved;
+
+function setDensity(rung) {
+  if (rung === '0') delete document.documentElement.dataset.density;
+  else document.documentElement.dataset.density = rung;
+  localStorage.setItem('density', rung);
+}
+```
+
+No re-render happens — the browser recalculates the custom properties and
+the layout reflows. It is instant.
+
+## Choosing a rung
+
+Two questions decide this, and they pull in opposite directions:
+
+1. **What is the user pointing with?** A finger needs ~48px. A mouse does not.
+2. **How much do they need on screen at once?** Every rung buys back 4px per
+   row — across 20 rows that is 80px, roughly one and a half extra rows per
+   step.
+
+Density is the dial between those two. Find the closest match below, then verify
+against the checklist underneath — the right rung is the tightest one that
+still passes.
+
+- **Consumer product, mobile-first — start at `0`.**
+  56px rows. Touch-first, used infrequently, by people who never learn the
+  layout. Comfortable beats compact.
+
+- **Internal tool / admin console — start at `-1` or `-2`.**
+  52–48px. Mouse and keyboard, used daily by people who know it well. `-2` is
+  the usual landing spot for CRUD screens.
+
+- **Dashboard with dense tables — start at `-2` or `-3`.**
+  48–44px. Scanning and comparing beats tapping. Go to `-3` only if the screen
+  is genuinely table-dominated.
+
+- **Trading, ops, monitoring — start at `-3` or `-4`.**
+  44–40px. Rows-on-screen *is* the product. Users are expert, seated, and
+  pointing with a mouse all day.
+
+- **Marketing site / docs — stay at `0`.**
+  Long-form reading. Density tightens controls, not prose, so there is nothing
+  to gain.
+
+- **Embedded widget in someone else's page — match the host.**
+  You are a guest. Pick the rung that sits closest to the surrounding UI.
+
+### Validate before you commit to it
+
+At your chosen rung, walk one real screen and check:
+
+- **Touch targets.** Anything below `-2` on a touch surface needs the media
+  query in [Accessibility](#accessibility) below.
+- **Labels in `md-text-field`, `md-select`, `md-chip`.** The floating label has
+  the least room to give; it clips first.
+- **Icon-only buttons.** They shrink with the row, and there is no label to
+  compensate.
+- **Your longest row of real data**, not lorem — truncation shows up at the
+  tight rungs first.
+
+If two rungs both pass, take the looser one. The tighter rung's whole value is
+the extra rows, and you can always drop a level later.
+
+### Do not pick one rung for the whole app
+
+The global attribute is a **baseline**, not a verdict. The common shape is a
+comfortable app with one dense region:
+
+```html
+<html data-density="-1">
+  <!-- app chrome stays comfortable -->
+
+  <section data-density="-3">
+    <!-- just the data table is dense -->
+    <md-table></md-table>
+  </section>
+</html>
+```
+
+A value applied directly to a host always beats an inherited one, so a single
+component can opt out without touching the rest — see
+[Local override](#local-override) above. Reach for that rather than compromising
+on a middle rung that suits neither the chrome nor the table.
+
+## Accessibility
+
+:::caution[Touch targets shrink with density]
+At `-3` and `-4` the row height drops to 44px and 40px, below the 48px
+target that pointer-coarse devices want. Reserve the deep rungs for
+mouse-and-keyboard surfaces, or raise the rung on touch:
+
+```css
+@media (pointer: coarse) {
+  :root { --md-sys-spacing-row-height: 56px; }
+}
+```
+:::
+
+Density never changes font sizes below legible limits, but do check at your
+target rung that:
+
+- labels are not clipped in `md-text-field`, `md-select` and `md-chip`
+- icon-only buttons keep a usable hit area
+- table rows remain scannable
+
+## Related
+
+- [Design Tokens](/theming/tokens/) — the spacing tokens density drives
+- [RTL](/behaviour/rtl/) — the other global, attribute-driven switch
+- [Ripple](/behaviour/ripple/) and [Shape Morph](/behaviour/shape-morph/) — the expressive toggles

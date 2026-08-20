@@ -1,0 +1,305 @@
+{
+  "tag": "md-accordion-item",
+  "title": "Accordion Item",
+  "slug": "accordion-item",
+  "category": "Containment",
+  "subComponentOf": "md-accordion",
+  "storyId": null,
+  "props": [
+    {
+      "name": "headline",
+      "attribute": "headline",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "supportingText",
+      "attribute": "supporting-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "expanded",
+      "attribute": "expanded",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "headingLevel",
+      "attribute": "heading-level",
+      "type": "1 | 2 | 3 | 4 | 5 | 6",
+      "default": "3",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "collapsible",
+      "attribute": "collapsible",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "regionRole",
+      "attribute": "region-role",
+      "type": "| 'region' | 'group' | 'none'",
+      "default": "'region'",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "contentMaxHeight",
+      "attribute": "content-max-height",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdItemToggle",
+      "detail": "{ expanded: boolean; index: number }"
+    },
+    {
+      "name": "mdItemRequestFocus",
+      "detail": "{ direction: 'next' | 'prev' | 'first' | 'last'; from: number; }"
+    },
+    {
+      "name": "mdItemRequestReorder",
+      "detail": "{ direction: 'up' | 'down'; from: number; }"
+    }
+  ],
+  "methods": [
+    {
+      "name": "toggle",
+      "params": ""
+    },
+    {
+      "name": "focusHeader",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "leading-icon",
+      "description": "Custom leading icon."
+    },
+    {
+      "name": "headline",
+      "description": "Replace the headline text with custom markup."
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Custom trailing icon (chevron)."
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "chassis-handle",
+      "description": "Hit area for the chassis-drag affordance on the"
+    },
+    {
+      "name": "chassis-handle-bar",
+      "description": ""
+    },
+    {
+      "name": "heading",
+      "description": "The h3 that wraps the header button."
+    },
+    {
+      "name": "header",
+      "description": "The clickable header button."
+    },
+    {
+      "name": "state-layer",
+      "description": "Hover/focus/press overlay."
+    },
+    {
+      "name": "drag-handle",
+      "description": "Drag grip shown only when the parent"
+    },
+    {
+      "name": "leading-icon",
+      "description": "Leading icon container."
+    },
+    {
+      "name": "headline",
+      "description": "Headline text."
+    },
+    {
+      "name": "supporting-text",
+      "description": "Supporting caption."
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Trailing chevron container."
+    },
+    {
+      "name": "panel",
+      "description": "The region containing the content."
+    },
+    {
+      "name": "content",
+      "description": "Inner content wrapper (padding lives here)."
+    },
+    {
+      "name": "content-inner",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-accordion-item-container-color",
+      "description": "Item background"
+    },
+    {
+      "name": "--md-accordion-item-container-shape",
+      "description": "Border-radius (filled variant)"
+    },
+    {
+      "name": "--md-accordion-item-header-color",
+      "description": "Header bg in resting state"
+    },
+    {
+      "name": "--md-accordion-item-header-color-expanded",
+      "description": "Header bg when expanded."
+    },
+    {
+      "name": "--md-accordion-item-headline-color",
+      "description": "Headline text colour"
+    },
+    {
+      "name": "--md-accordion-item-headline-color-expanded",
+      "description": "Color when expanded"
+    },
+    {
+      "name": "--md-accordion-item-supporting-color",
+      "description": "Supporting-text colour"
+    },
+    {
+      "name": "--md-accordion-item-icon-color",
+      "description": "Leading & trailing icon colour"
+    },
+    {
+      "name": "--md-accordion-item-icon-color-expanded",
+      "description": "Icon color when expanded"
+    },
+    {
+      "name": "--md-accordion-item-state-layer-color",
+      "description": "Hover/focus/press overlay"
+    },
+    {
+      "name": "--md-accordion-item-header-padding",
+      "description": "Inline padding for header"
+    },
+    {
+      "name": "--md-accordion-item-content-padding",
+      "description": "Inline padding for content area"
+    },
+    {
+      "name": "--md-accordion-item-header-min-height",
+      "description": "Minimum block-size of header"
+    },
+    {
+      "name": "--md-accordion-item-expand-duration",
+      "description": "Open animation duration"
+    },
+    {
+      "name": "--md-accordion-item-collapse-duration",
+      "description": "Close animation duration"
+    },
+    {
+      "name": "--md-accordion-item-elevation",
+      "description": "Box-shadow override."
+    },
+    {
+      "name": "--md-accordion-item-elevation-expanded",
+      "description": "Shadow when the item is"
+    },
+    {
+      "name": "--md-accordion-item-chassis-handle-color",
+      "description": "Glyph colour of the small"
+    },
+    {
+      "name": "--md-accordion-item-chassis-handle-bg-hover",
+      "description": "Tint shown behind the grip"
+    },
+    {
+      "name": "--md-accordion-item-container-color-dragging",
+      "description": "Opaque fill applied to a"
+    },
+    {
+      "name": "--md-accordion-item-container-shape-dragging",
+      "description": "Border-radius applied to a"
+    },
+    {
+      "name": "--md-accordion-item-container-shape-expanded",
+      "description": ""
+    },
+    {
+      "name": "--md-accordion-item-state-layer-color-expanded",
+      "description": ""
+    },
+    {
+      "name": "--md-accordion-item-container-color-expanded",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-accordion",
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdItemToggle",
+      "detail": "{ expanded: boolean; index: number }"
+    },
+    {
+      "name": "mdItemRequestFocus",
+      "detail": "{ direction: 'next' | 'prev' | 'first' | 'last'; from: number; }"
+    },
+    {
+      "name": "mdItemRequestReorder",
+      "detail": "{ direction: 'up' | 'down'; from: number; }"
+    }
+  ]
+}

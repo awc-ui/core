@@ -1,0 +1,219 @@
+/* ==========================================================
+   md-breadcrumbs — AWC UI breadcrumb trail
+   MD3 Expressive Navigation: token-driven, RTL-ready, with a
+   staggered fade-and-slide entrance and a tonal overflow button
+   that gets the standard MD3 icon-button treatment.
+
+   PUBLIC CSS CUSTOM PROPERTIES:
+     --md-breadcrumbs-gap              Gap between items / separators
+     --md-breadcrumbs-separator-color  Separator glyph colour
+     --md-breadcrumbs-text-color       Item label colour (resting)
+     --md-breadcrumbs-stagger          Per-item entrance delay
+
+   CSS PARTS:
+     list             The <ol> element.
+     separator        Every separator glyph slot.
+     overflow         The "…" collapse list item.
+     overflow-button  The button inside the overflow item.
+
+   SLOTS:
+     (default)        md-breadcrumb-item children
+
+   For a custom-glyph separator, set the `separator` prop to any
+   string (›, →, »…) or override `::part(separator)` from the
+   light DOM to render a background-image / pseudo-element SVG.
+   ========================================================== */
+
+:host {
+  --_gap: var(--md-breadcrumbs-gap, calc(8px + var(--md-sys-density-scale, 0) * 2px));
+  --_separator-color: var(--md-breadcrumbs-separator-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_text-color: var(--md-breadcrumbs-text-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_stagger: var(--md-breadcrumbs-stagger, 40ms);
+
+  /* MD3 motion tokens. */
+  --_in-duration: var(--md-sys-motion-spring-spatial-default-duration, 500ms);
+  --_in-easing: var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1.00));
+  --_state-duration: var(--md-sys-motion-spring-effects-default-duration, 200ms);
+  --_state-easing: var(--md-sys-motion-spring-effects-default-easing, cubic-bezier(0.34, 0.80, 0.34, 1.00));
+
+  display: block;
+  inline-size: 100%;
+  box-sizing: border-box;
+  font-family: var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif);
+  color: var(--_text-color);
+}
+
+.md-breadcrumbs__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--_gap);
+}
+
+/* ==========================================================
+   1. STAGGERED ENTRANCE
+   Each visible item enters with a soft fade + horizontal slide.
+   We pre-bake delays for up to 12 items so the stagger reads
+   without any JS measurement. The animation is "one-shot": it
+   doesn't replay on re-render because Stencil reuses the slot
+   nodes.
+   ========================================================== */
+
+@keyframes md-breadcrumb-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+::slotted(md-breadcrumb-item) {
+  animation: md-breadcrumb-enter var(--_in-duration) var(--_in-easing) both;
+}
+
+/* Stagger first 12 items via nth-of-type. After that the
+   delay caps so the trail never feels slow. */
+::slotted(md-breadcrumb-item:nth-of-type(1))  { animation-delay: calc(var(--_stagger) * 0); }
+::slotted(md-breadcrumb-item:nth-of-type(2))  { animation-delay: calc(var(--_stagger) * 1); }
+::slotted(md-breadcrumb-item:nth-of-type(3))  { animation-delay: calc(var(--_stagger) * 2); }
+::slotted(md-breadcrumb-item:nth-of-type(4))  { animation-delay: calc(var(--_stagger) * 3); }
+::slotted(md-breadcrumb-item:nth-of-type(5))  { animation-delay: calc(var(--_stagger) * 4); }
+::slotted(md-breadcrumb-item:nth-of-type(6))  { animation-delay: calc(var(--_stagger) * 5); }
+::slotted(md-breadcrumb-item:nth-of-type(7))  { animation-delay: calc(var(--_stagger) * 6); }
+::slotted(md-breadcrumb-item:nth-of-type(8))  { animation-delay: calc(var(--_stagger) * 7); }
+::slotted(md-breadcrumb-item:nth-of-type(9))  { animation-delay: calc(var(--_stagger) * 8); }
+::slotted(md-breadcrumb-item:nth-of-type(10)) { animation-delay: calc(var(--_stagger) * 9); }
+::slotted(md-breadcrumb-item:nth-of-type(11)) { animation-delay: calc(var(--_stagger) * 10); }
+::slotted(md-breadcrumb-item:nth-of-type(12)) { animation-delay: calc(var(--_stagger) * 11); }
+
+/* RTL: slide in from the opposite side. */
+:host([dir="rtl"]) {
+  /* re-define the keyframe via a class so we don't override
+     the global definition for LTR consumers. */
+}
+:host([dir="rtl"]) ::slotted(md-breadcrumb-item),
+:host-context([dir="rtl"]) ::slotted(md-breadcrumb-item) {
+  animation-name: md-breadcrumb-enter-rtl;
+}
+
+@keyframes md-breadcrumb-enter-rtl {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ==========================================================
+   2. OVERFLOW BUTTON
+   Standard MD3 icon-button. Spring scale on press.
+   ========================================================== */
+
+.md-breadcrumbs__overflow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  /* Sit between the "before" group (order:0, default) and the
+     "after" group (order:2, set inline by the parent's
+     `applyVisibility`). The flex container's `gap` handles spacing
+     on either side, and the leading separator inside this <li>
+     plus the next "after" item's own leading separator complete
+     the visual "Home / … / 3-Person" pattern. */
+  order: 1;
+}
+
+.md-breadcrumbs__overflow-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  background-color: transparent;
+  color: var(--md-sys-color-on-surface-variant, #49454F);
+  cursor: pointer;
+  transition:
+    background-color var(--_state-duration) var(--_state-easing),
+    transform var(--_state-duration) var(--_state-easing);
+}
+
+.md-breadcrumbs__overflow-btn:hover {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface-variant, #49454F) 8%, transparent);
+}
+
+.md-breadcrumbs__overflow-btn:focus-visible {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface-variant, #49454F) 12%, transparent);
+  outline: 3px solid var(--md-sys-color-secondary, #625B71);
+  outline-offset: 2px;
+}
+
+.md-breadcrumbs__overflow-btn:active {
+  transform: scale(0.94);
+}
+
+/* ==========================================================
+   3. SEPARATOR
+   ========================================================== */
+
+.md-breadcrumbs__separator {
+  display: inline-flex;
+  align-items: center;
+  color: var(--_separator-color);
+  /* Matches md-breadcrumb-item's separator so the two never disagree. */
+  font-size: max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  user-select: none;
+  pointer-events: none;
+}
+
+/* ── RTL: bidi-safe glyph handling ── */
+:host([dir="rtl"]) .md-breadcrumbs__separator,
+:host-context([dir="rtl"]) .md-breadcrumbs__separator {
+  unicode-bidi: plaintext;
+}
+
+/* ==========================================================
+   4. REDUCED MOTION
+   ========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  ::slotted(md-breadcrumb-item) {
+    animation: none !important;
+  }
+  .md-breadcrumbs__overflow-btn {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   5. FORCED COLORS
+   ========================================================== */
+@media (forced-colors: active) {
+  .md-breadcrumbs__separator {
+    color: GrayText;
+  }
+  .md-breadcrumbs__overflow-btn {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

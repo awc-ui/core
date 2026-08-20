@@ -1,0 +1,463 @@
+/* ==========================================================
+   md-tab — Material Design 3 Tab
+   Spec: https://m3.material.io/components/tabs/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-tab-container-color             Container background
+     --md-tab-active-label-color          Active label color (primary)
+     --md-tab-inactive-label-color        Inactive label color
+     --md-tab-active-icon-color           Active icon color (primary)
+     --md-tab-inactive-icon-color         Inactive icon color
+     --md-tab-active-indicator-color      Indicator bar color
+     --md-tab-active-indicator-height     Indicator bar thickness
+     --md-tab-divider-color               Bottom divider color
+
+   CSS PARTS:
+     content       Inner content wrapper (icon + label)
+     icon          Icon element
+     label         Label text element
+     indicator     Active indicator bar
+     divider       Bottom divider line
+     state-layer   Hover / focus / press overlay
+
+   SLOTS:
+     icon          Custom leading icon
+     badge         Badge overlay on the icon
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST — layout & base
+   ========================================================== */
+
+:host {
+  /* Public → internal mapping */
+  --_container-color: var(--md-tab-container-color, transparent);
+  --_active-label-color: var(--md-tab-active-label-color, var(--md-sys-color-primary, #6750A4));
+  --_inactive-label-color: var(--md-tab-inactive-label-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_active-icon-color: var(--md-tab-active-icon-color, var(--md-sys-color-primary, #6750A4));
+  --_inactive-icon-color: var(--md-tab-inactive-icon-color, var(--md-sys-color-on-surface-variant, #49454F));
+  --_indicator-color: var(--md-tab-active-indicator-color, var(--md-sys-color-primary, #6750A4));
+  --_indicator-height: var(--md-tab-active-indicator-height, 3px);
+  --_divider-color: var(--md-tab-divider-color, var(--md-tabs-divider-color, var(--md-sys-color-outline-variant, #CAC4D0)));
+
+  /* One owner for the icon box. The built-in glyph span carries BOTH
+     `.md-tab__icon` and `.material-symbols-outlined` — equal single-class
+     specificity, so without a shared value the later rule silently wins the
+     `font-size` and the built-in icon stops tapering while a slotted one
+     keeps working. See the density guard in md-tab.e2e.ts. */
+  --_icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: visible;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  flex: 1;
+  min-inline-size: max(48px, calc(90px + var(--md-sys-density-scale, 0) * 8px));
+  block-size: calc(48px + var(--md-sys-density-scale, 0) * 4px);
+  padding-inline: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px));
+  box-sizing: border-box;
+
+  color: var(--_inactive-label-color);
+  background-color: var(--_container-color);
+
+  transition: color var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, ease);
+}
+
+/* ==========================================================
+   2. VARIANT HEIGHT — primary with icon+label = 64px
+   ========================================================== */
+
+:host(.md-tab--stacked.md-tab--primary) {
+  block-size: calc(64px + var(--md-sys-density-scale, 0) * 4px);
+}
+
+/* ==========================================================
+   3. ACTIVE STATE — colors
+   ========================================================== */
+
+:host(.md-tab--active) {
+  color: var(--_active-label-color);
+}
+
+:host(.md-tab--active) .md-tab__icon {
+  color: var(--_active-icon-color);
+}
+
+/* Secondary variant: active = on-surface, not primary; inner fills tab width */
+:host(.md-tab--secondary) {
+  align-items: stretch;
+  --_active-label-color: var(--md-tab-active-label-color, var(--md-sys-color-on-surface, #1C1B1F));
+  --_indicator-color: var(--md-tab-active-indicator-color, var(--md-sys-color-primary, #6750A4));
+  --_indicator-height: var(--md-tab-active-indicator-height, 2px);
+}
+
+/* ==========================================================
+   4. DISABLED STATE
+   ========================================================== */
+
+:host(.md-tab--disabled) {
+  cursor: default;
+  pointer-events: none;
+  color: color-mix(
+    in srgb,
+    var(--md-sys-color-on-surface, #1C1B1F) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%),
+    transparent
+  );
+}
+
+/* ==========================================================
+   5. STATE LAYER
+   ========================================================== */
+
+.md-tab__state-layer {
+  position: absolute;
+  inset: 0;
+  background-color: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short1, 50ms) var(--md-sys-motion-easing-standard, ease);
+}
+
+:host(:hover) .md-tab__state-layer {
+  opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+}
+
+:host(:focus-visible) .md-tab__state-layer {
+  opacity: var(--md-sys-state-focus-state-layer-opacity, 0.12);
+}
+
+:host(:active) .md-tab__state-layer {
+  opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+}
+
+/* ==========================================================
+   6. FOCUS RING
+   ========================================================== */
+
+:host(:focus-visible) {
+  outline: 3px solid var(--md-sys-color-secondary, #625B71);
+  outline-offset: -3px;
+}
+
+/* ==========================================================
+   7. INNER + CONTENT LAYOUT
+   Primary: inner is max-content wide; indicator sits under label/icon cluster.
+   Secondary: indicator is a host child (not inside inner) so it spans full tab width.
+   ========================================================== */
+
+:host(.md-tab--primary) .md-tab__inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-end;
+  inline-size: max-content;
+  max-inline-size: 100%;
+  min-block-size: 0;
+  position: relative;
+  z-index: 1;
+}
+
+:host(.md-tab--secondary) .md-tab__inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  inline-size: 100%;
+  min-block-size: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.md-tab__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  position: relative;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+
+:host(.md-tab--primary) .md-tab__content {
+  flex: 1 1 auto;
+  justify-content: center;
+  min-block-size: 0;
+}
+
+.md-tab__content--inline {
+  flex-direction: row;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+/* ==========================================================
+   8. ICON
+   ========================================================== */
+
+.md-tab__icon-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.md-tab__icon {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-size: var(--_icon-size);
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  line-height: 1;
+  font-weight: normal;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  color: var(--_inactive-icon-color);
+  transition: color var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, ease);
+}
+
+::slotted([slot="icon"]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  font-size: var(--_icon-size);
+  color: inherit;
+  fill: currentColor;
+  pointer-events: none;
+}
+
+/* ==========================================================
+   9. LABEL
+   ========================================================== */
+
+.md-tab__label {
+  font-family: var(--md-sys-typescale-title-small-font-family, Roboto, sans-serif);
+  font-size: max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-title-small-font-weight, 500);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-title-small-letter-spacing, 0.1px);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+
+/* Fixed tab-width mode: labels wider than the track ellipsize instead of
+   forcing the tab open. */
+.md-tab__label-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-inline-size: 0;
+}
+
+/* ==========================================================
+   10. BADGE
+   ========================================================== */
+
+.md-tab__badge {
+  position: absolute;
+  inset-block-start: -4px;
+  inset-inline-end: -8px;
+  min-inline-size: 6px;
+  min-block-size: 6px;
+  padding-inline: 3px;
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  background-color: var(--md-sys-color-error, #B3261E);
+  color: var(--md-sys-color-on-error, #FFFFFF);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 14px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.md-tab__badge:empty {
+  padding: 0;
+  inline-size: 6px;
+  block-size: 6px;
+}
+
+.md-tab__badge--inline {
+  position: relative;
+  inset-block-start: auto;
+  inset-inline-end: auto;
+}
+
+/* Stacked icon badge overlap: 6px */
+:host(.md-tab--stacked) .md-tab__badge {
+  inset-block-start: -2px;
+  inset-inline-end: -6px;
+}
+
+/* ==========================================================
+   11. ACTIVE INDICATOR
+   Primary: width matches content (stretch within max-content inner); expressive
+   emphasized-decelerate + horizontal scale. Secondary: full tab width (unchanged).
+   ========================================================== */
+
+.md-tab__indicator {
+  flex-shrink: 0;
+  background-color: var(--_indicator-color);
+  /* Always reserve the indicator's vertical box so toggling between
+     inactive ↔ active does NOT change layout. Only opacity + transform
+     animate the entry — block-size stays constant. Without this, an
+     in-flow primary indicator collapsing from var(--_indicator-height)
+     to 0 makes the centred icon/label cluster jump ~1.5px on selection. */
+  block-size: var(--_indicator-height);
+  opacity: 0;
+}
+
+/* Primary — under icon/label, content-wide, M3 expressive motion */
+:host(.md-tab--primary) .md-tab__indicator {
+  position: relative;
+  align-self: stretch;
+  min-inline-size: 24px;
+  margin-block-start: 2px;
+  border-radius: var(--md-sys-shape-corner-full, 9999px) var(--md-sys-shape-corner-full, 9999px) 0 0;
+  transform: scaleX(0.88);
+  transform-origin: center;
+  transition:
+    transform var(--md-tab-glide-duration, var(--md-sys-motion-duration-medium4, 400ms)) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
+    opacity var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* MD3 glide: md-tabs FLIPs the incoming indicator from the outgoing tab's
+   position/width via inherited vars (center-to-center delta + width ratio),
+   then releases them so the transition carries it home. */
+:host(.md-tab--primary) .md-tab__indicator--active {
+  opacity: 1;
+  transform: translateX(var(--md-tab-glide-x, 0px)) scaleX(var(--md-tab-glide-scale, 1));
+}
+
+/* Secondary — full-width strip along host bottom (sibling of inner, not width of content).
+   Already absolutely positioned, so no flow impact either way; we still drop the
+   block-size transition since the height is now constant. */
+:host(.md-tab--secondary) > .md-tab__indicator {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  inline-size: 100%;
+  max-inline-size: none;
+  border-radius: 2px 2px 0 0;
+  transform: none;
+  transform-origin: center;
+  margin-block-start: 0;
+  z-index: 1;
+  transition:
+    transform var(--md-tab-glide-duration, var(--md-sys-motion-duration-medium4, 400ms)) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
+    opacity var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+:host(.md-tab--secondary) > .md-tab__indicator.md-tab__indicator--active {
+  opacity: 1;
+  transform: translateX(var(--md-tab-glide-x, 0px)) scaleX(var(--md-tab-glide-scale, 1));
+}
+
+/* ==========================================================
+   12. DIVIDER — 1px bottom line, inside the container
+   ========================================================== */
+
+.md-tab__divider {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  block-size: 1px;
+  background-color: var(--_divider-color);
+  z-index: 0;
+}
+
+/* ==========================================================
+   13. MATERIAL SYMBOLS (shadow DOM)
+   ========================================================== */
+
+.material-symbols-outlined {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-weight: normal;
+  font-style: normal;
+  font-size: var(--_icon-size);
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================
+   13. SLOTTED BADGE — same overlay geometry as the built-in badge
+   ========================================================== */
+
+.md-tab__icon-wrapper ::slotted([slot='badge']) {
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-end: -8px;
+  z-index: 1;
+}
+
+/* Label-only tabs: slotted badge flows inline beside the text. */
+.md-tab__label ::slotted([slot='badge']) {
+  position: static;
+  margin-inline-start: var(--md-sys-spacing-inset-xs, 4px);
+}
+
+/* ==========================================================
+   14. REDUCED MOTION + FORCED COLORS (house pattern)
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .md-tab__indicator,
+  .md-tab__state-layer {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .md-tab__indicator {
+    background-color: SelectedItem;
+  }
+  :host(.md-tab--active) .md-tab__label {
+    text-decoration: underline;
+    color: SelectedItem;
+  }
+  .md-tab__divider {
+    background-color: CanvasText;
+  }
+  :host(.md-tab--disabled) {
+    color: GrayText;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

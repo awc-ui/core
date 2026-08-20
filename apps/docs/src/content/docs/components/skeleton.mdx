@@ -1,0 +1,440 @@
+---
+title: Skeleton
+description: "Content-shaped loading placeholder — text lines, rectangles, rounded blocks and circles with pulse or wave animation"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/skeleton.json";
+
+**A content-shaped loading placeholder.** Text lines, rectangles, rounded blocks
+or circles, with pulse or wave animation — used to reserve the layout while data
+loads so nothing jumps when it arrives.
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 16px; align-items: flex-start; width: 100%;">
+  <md-skeleton variant="circular" width="40px" height="40px" announce="false"></md-skeleton>
+  <md-skeleton variant="text" lines="3" full-width announce="false"></md-skeleton>
+</div>`}
+  label="Live preview"
+  storyId="communication-skeleton--playground"
+/>
+
+:::note[Not a Material Design 3 component]
+M3 covers loading indicators, not skeletons — this surface mirrors MUI Skeleton
+and the guidance is derived from
+[M3 · Loading indicator](https://m3.material.io/components/loading-indicator/guidelines).
+The Do & Don't below are **house rules**, not an M3 spec.
+:::
+
+:::danger[`announce` defaults to **on** — a group of skeletons is a chorus]
+Every skeleton with `announce` renders as `role="status"` +
+`aria-live="polite"` + `aria-label="Loading"`. Twenty skeletons in a list means
+twenty live regions all announcing "Loading". Wrap the region in **one**
+`role="status"` and set `announce="false"` on the individual skeletons — see
+[Announcing once](#announcing-once).
+:::
+
+## Install
+
+<ComponentSetup tag="md-skeleton" example="" />
+
+## When to use
+
+- Loading content whose **shape you know in advance** — a list of rows, a card,
+  a profile header.
+- Avoiding layout shift while data arrives.
+- Loads long enough to notice (roughly >300ms) but not indefinite.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Unknown or unstructured content shape | [`md-loading-indicator`](/components/loading-indicator/) |
+| A determinate operation with known progress | [`md-progress-indicator`](/components/progress-indicator/) |
+| A very short load (under 300ms) | Nothing — a flashing skeleton is worse than the wait |
+| A button working after a click | [`md-button`](/components/button/) with `loading` |
+| Data that failed to load | An error state — never a permanent skeleton |
+| A background task not blocking the view | [`md-progress-indicator`](/components/progress-indicator/) (linear) |
+
+:::caution[Only when the shape is known]
+A skeleton is a promise about what is about to appear. If you cannot predict the
+layout, that promise is false — use
+[`md-loading-indicator`](/components/loading-indicator/) instead.
+:::
+
+## Variants
+
+| Variant | Shape | Default box |
+|---|---|---|
+| `text` | **Default.** A body-line rectangle; with `lines > 1` the last line is tapered to ~60% width | height `1em` |
+| `rectangular` | Sharp-cornered block for images and media | height `120px` |
+| `rounded` | Same, with the M3 medium corner radius — cards, thumbnails | height `120px` |
+| `circular` | 1:1 circle for avatars and icons | `40px` |
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 16px; align-items: center; width: 100%;">
+  <md-skeleton variant="text" width="180px" announce="false"></md-skeleton>
+  <md-skeleton variant="rectangular" width="120px" height="72px" announce="false"></md-skeleton>
+  <md-skeleton variant="rounded" width="120px" height="72px" announce="false"></md-skeleton>
+  <md-skeleton variant="circular" width="48px" height="48px" announce="false"></md-skeleton>
+</div>`}
+  label="All four variants"
+  storyId="communication-skeleton--all-variants"
+/>
+
+## Lines
+
+`lines` renders multiple text rows and tapers the last one so it reads as the
+end of a paragraph.
+
+:::caution[`lines` applies to `variant="text"` only]
+The other three variants always render a single shape; `lines` on
+`rectangular`, `rounded` or `circular` is silently ignored.
+:::
+
+<ComponentDemo
+  html={`<md-skeleton variant="text" lines="4" full-width announce="false"></md-skeleton>`}
+  label="Four text lines, last one tapered"
+/>
+
+## Sizing
+
+`width` and `height` take any CSS length. `full-width` and `full-height` are the
+container-filling shortcuts — `full-width` wins over a fixed `width` and over
+`--md-skeleton-width`, which makes it the right tool inside responsive grids.
+`full-height` needs a parent with a definite block size (a flex or grid cell).
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+  <md-skeleton variant="rounded" full-width height="140px" announce="false"></md-skeleton>
+  <md-skeleton variant="text" width="60ch" announce="false"></md-skeleton>
+  <md-skeleton variant="text" width="40%" announce="false"></md-skeleton>
+</div>`}
+  label="full-width, a ch width, and a percentage"
+/>
+
+Both shortcuts track the container live, which is the point — drag the corner of
+either box below and the shapes reflow rather than staying at their mount size:
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 24px; max-inline-size: 640px;">
+  <div style="resize: both; overflow: auto; inline-size: 320px; block-size: 200px; min-inline-size: 160px; min-block-size: 96px; padding: 12px; border: 1px dashed var(--md-sys-color-outline); border-radius: 12px;">
+    <md-skeleton variant="rounded" animation="wave" full-width full-height announce="false"></md-skeleton>
+  </div>
+  <div style="resize: both; overflow: auto; inline-size: 480px; block-size: 140px; min-inline-size: 240px; min-block-size: 72px; padding: 12px; border: 1px dashed var(--md-sys-color-outline); border-radius: 12px;">
+    <div style="display: flex; gap: 12px; block-size: 100%;">
+      <md-skeleton variant="circular" full-height announce="false"></md-skeleton>
+      <md-skeleton variant="rounded" full-width full-height style="flex: 1;" announce="false"></md-skeleton>
+      <md-skeleton variant="rounded" full-height width="80px" announce="false"></md-skeleton>
+    </div>
+  </div>
+</div>`}
+  label="Drag either corner to resize"
+  storyId="communication-skeleton--responsive-full-width-height"
+/>
+
+Note the circle in the second box: `circular` with `full-height` stays 1:1, so
+it grows as a circle rather than stretching into an ellipse.
+
+## Animation
+
+| `animation` | Effect |
+|---|---|
+| `pulse` | **Default.** Gentle opacity fade in and out |
+| `wave` | A shimmer gradient sweeping along the inline axis |
+| `none` | Static block — the explicit reduced-motion / decorative opt-out |
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+  <md-skeleton variant="rounded" full-width height="48px" animation="pulse" announce="false"></md-skeleton>
+  <md-skeleton variant="rounded" full-width height="48px" animation="wave" announce="false"></md-skeleton>
+  <md-skeleton variant="rounded" full-width height="48px" animation="none" announce="false"></md-skeleton>
+</div>`}
+  label="pulse, wave, none"
+  storyId="communication-skeleton--animations"
+/>
+
+### Reduced motion
+
+The component already suppresses its animations under
+`prefers-reduced-motion: reduce` — `animation-name` resolves to `none` and the
+opacity settles at 1, which is exactly what `animation="none"` renders. There is
+nothing to wire up. The
+[reduced-motion story](/storybook/?path=/story/communication-skeleton--reduced-motion)
+stubs the media query and asserts that downgrade.
+
+The preview below reads **your** setting: if your system asks for reduced
+motion, the first two shapes are already static and the note under them says so.
+
+<ComponentDemo
+  html={`<style>
+  .rm-state { font: 500 13px/1.4 system-ui, sans-serif; color: var(--md-sys-color-on-surface-variant); }
+  .rm-state .rm-reduced { display: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .rm-state .rm-reduced { display: inline; }
+    .rm-state .rm-full { display: none; }
+  }
+</style>
+<div style="display: flex; flex-direction: column; gap: 12px; inline-size: 100%;">
+  <md-skeleton variant="rounded" full-width height="40px" animation="pulse" announce="false"></md-skeleton>
+  <md-skeleton variant="rounded" full-width height="40px" animation="wave" announce="false"></md-skeleton>
+  <md-skeleton variant="rounded" full-width height="40px" animation="none" announce="false"></md-skeleton>
+  <p class="rm-state">
+    <span class="rm-full">Your system allows motion — pulse and wave are animating; only the third is static.</span>
+    <span class="rm-reduced">Your system requests reduced motion — all three are static, including pulse and wave.</span>
+  </p>
+</div>`}
+  label="pulse, wave, none — under your motion setting"
+  storyId="communication-skeleton--reduced-motion"
+/>
+
+Use `animation="none"` when you want the static block **unconditionally** — a
+decorative placeholder, or an app that exposes its own motion setting. ## Announcing once
+
+This is the defect to watch for. `announce` is `true` by default, so **each**
+skeleton is its own polite live region. In a list of rows, screen-reader users
+hear "Loading" once per placeholder.
+
+The fix: one live region for the whole loading area, `announce="false"` on every
+skeleton inside it.
+
+<TechnologyTabs
+  html={`<div role="status" aria-label="Loading contacts">
+  <div class="row">
+    <md-skeleton variant="circular" width="40px" height="40px" announce="false"></md-skeleton>
+    <md-skeleton variant="text" full-width announce="false"></md-skeleton>
+  </div>
+  <div class="row">
+    <md-skeleton variant="circular" width="40px" height="40px" announce="false"></md-skeleton>
+    <md-skeleton variant="text" full-width announce="false"></md-skeleton>
+  </div>
+</div>`}
+  react={`import { MdSkeleton } from '@awc-ui/react';
+
+export function ContactsLoading({ rows = 3 }: { rows?: number }) {
+  return (
+    <div role="status" aria-label="Loading contacts">
+      {Array.from({ length: rows }, (_, i) => (
+        <div className="row" key={i}>
+          <MdSkeleton variant="circular" width="40px" height="40px" announce={false} />
+          <MdSkeleton variant="text" fullWidth announce={false} />
+        </div>
+      ))}
+    </div>
+  );
+}`}
+  angular={`@Component({
+  selector: 'app-contacts-loading',
+  template: \`
+    <div role="status" aria-label="Loading contacts">
+      <div class="row" *ngFor="let row of rows">
+        <md-skeleton variant="circular" width="40px" height="40px" announce="false"></md-skeleton>
+        <md-skeleton variant="text" full-width announce="false"></md-skeleton>
+      </div>
+    </div>
+  \`,
+})
+export class ContactsLoadingComponent {
+  rows = [0, 1, 2];
+}`}
+  vue={`<template>
+  <div role="status" aria-label="Loading contacts">
+    <div class="row" v-for="i in 3" :key="i">
+      <md-skeleton variant="circular" width="40px" height="40px" announce="false" />
+      <md-skeleton variant="text" full-width announce="false" />
+    </div>
+  </div>
+</template>`}
+  svelte={`<div role="status" aria-label="Loading contacts">
+  {#each Array(3) as _, i}
+    <div class="row">
+      <md-skeleton variant="circular" width="40px" height="40px" announce="false" />
+      <md-skeleton variant="text" full-width announce="false" />
+    </div>
+  {/each}
+</div>`}
+/>
+
+<ComponentDemo
+  html={`<div role="status" aria-label="Loading contacts" style="display: grid; gap: 16px; inline-size: 100%; max-inline-size: 420px;">
+  <div style="display: flex; gap: 12px; align-items: flex-start; padding: 16px; background: var(--md-sys-color-surface-container-low); border-radius: 16px;">
+    <md-skeleton variant="circular" width="40px" height="40px" announce="false"></md-skeleton>
+    <div style="flex: 1;">
+      <md-skeleton width="50%" style="margin-block-end: 8px;" announce="false"></md-skeleton>
+      <md-skeleton lines="2" announce="false"></md-skeleton>
+    </div>
+  </div>
+  <div style="display: flex; gap: 12px; align-items: flex-start; padding: 16px; background: var(--md-sys-color-surface-container-low); border-radius: 16px;">
+    <md-skeleton variant="circular" width="40px" height="40px" announce="false"></md-skeleton>
+    <div style="flex: 1;">
+      <md-skeleton width="50%" style="margin-block-end: 8px;" announce="false"></md-skeleton>
+      <md-skeleton lines="2" announce="false"></md-skeleton>
+    </div>
+  </div>
+</div>`}
+  label="One announcement for the whole list"
+  storyId="communication-skeleton--loading-list-item"
+/>
+
+With `announce="false"` the skeleton is `aria-hidden="true"` and drops out of
+the accessibility tree entirely — which is exactly right when the region above
+it already says "Loading contacts". The
+[decorative story](/storybook/?path=/story/communication-skeleton--decorative)
+pins that swap in both directions: turning `announce` off strips `role`,
+`aria-busy`, `aria-live` and `aria-label` and stamps `aria-hidden`; turning it
+back on restores the status role.
+
+## Always resolve the skeleton
+
+There is **no timeout and no error state**. The skeleton renders until *you*
+replace it, so a skeleton that never goes away is a bug in the caller, not in
+the component. Resolve it on the failure path too.
+
+```js
+try {
+  const data = await load();
+  view.replaceChildren(renderRows(data));
+} catch {
+  view.replaceChildren(renderError());   // an error state — not a permanent skeleton
+}
+```
+
+The same rule applies to empty results: "no data" is not "loading". Render a
+real empty state.
+
+## Card placeholder
+
+A worked example — one announcement, matched shapes, no layout jump when the
+real card arrives.
+
+<ComponentDemo
+  html={`<div role="status" aria-label="Loading article" style="inline-size: 100%; max-inline-size: 320px; display: flex; flex-direction: column; gap: 12px;">
+  <md-skeleton variant="rounded" full-width height="160px" announce="false"></md-skeleton>
+  <md-skeleton variant="text" width="70%" announce="false"></md-skeleton>
+  <md-skeleton variant="text" lines="3" full-width announce="false"></md-skeleton>
+</div>`}
+  label="Card skeleton"
+  storyId="communication-skeleton--loading-card"
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+The component has **no events, methods or slots** — one CSS part, `shape`.
+
+## Accessibility
+
+- `announce` (default **on**) sets `role="status"`, `aria-live="polite"`,
+  `aria-busy="true"` and `aria-label` on the host. Exactly **one** per loading
+  region. A chorus of "Loading" announcements is the most common defect here.
+- `announce="false"` sets `aria-hidden="true"` — the placeholder becomes purely
+  visual, which is what you want for every skeleton inside a labelled region.
+- Localize `aria-label`; the default is the English string `"Loading"`. Prefer a
+  specific label ("Loading article") over the generic default.
+- Animations are already gated behind `prefers-reduced-motion: reduce`;
+  `animation="none"` (or overriding the duration custom properties) is the
+  explicit opt-out.
+- Keep the placeholder colour visible against the surface without reading as
+  real content.
+- Do not leave a skeleton in place on error — a permanent "loading" state is an
+  accessibility failure as well as a UX one.
+
+## RTL, density & i18n
+
+**RTL** — the shapes are symmetric; the `wave` animation sweeps along the inline
+axis, so it follows direction automatically. See the
+[RTL story](/storybook/?path=/story/communication-skeleton--rtl) and
+[RTL](/behaviour/rtl/).
+
+**Density** — `density="-1…-4"` tightens line height and the gap between rows
+together: a three-line block goes **64 → 59.6 → 55.2 → 50.8 → 46.4px**. Match it
+to the density of the content the skeleton stands in for, or the layout will
+still jump when the real rows arrive — which is the one thing a skeleton exists
+to prevent. See [Density](/behaviour/density/).
+
+<ComponentDemo
+  html={`<p style="margin: 0 0 8px; font: 500 12px/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);">Text (3 lines)</p>
+<div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-block-end: 24px;">
+<div style="display: flex; gap: 20px; align-items: flex-start; inline-size: 100%; flex-wrap: wrap;">
+  <div style="flex: 1 1 140px; min-inline-size: 130px;"><md-skeleton variant="text" lines="3" density="0" full-width announce="false"></md-skeleton></div>
+  <div style="flex: 1 1 140px; min-inline-size: 130px;"><md-skeleton variant="text" lines="3" density="-1" full-width announce="false"></md-skeleton></div>
+  <div style="flex: 1 1 140px; min-inline-size: 130px;"><md-skeleton variant="text" lines="3" density="-2" full-width announce="false"></md-skeleton></div>
+  <div style="flex: 1 1 140px; min-inline-size: 130px;"><md-skeleton variant="text" lines="3" density="-3" full-width announce="false"></md-skeleton></div>
+  <div style="flex: 1 1 140px; min-inline-size: 130px;"><md-skeleton variant="text" lines="3" density="-4" full-width announce="false"></md-skeleton></div>
+</div>
+</div>
+<p style="margin: 0 0 8px; font: 500 12px/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);">Rounded</p>
+<div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-block-end: 24px;">
+  <md-skeleton variant="rounded" width="88px" height="56px" density="0" announce="false"></md-skeleton>
+  <md-skeleton variant="rounded" width="88px" height="56px" density="-1" announce="false"></md-skeleton>
+  <md-skeleton variant="rounded" width="88px" height="56px" density="-2" announce="false"></md-skeleton>
+  <md-skeleton variant="rounded" width="88px" height="56px" density="-3" announce="false"></md-skeleton>
+  <md-skeleton variant="rounded" width="88px" height="56px" density="-4" announce="false"></md-skeleton>
+</div>
+<p style="margin: 0 0 8px; font: 500 12px/1.2 system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);">Circular</p>
+<div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap; margin-block-end: 24px;">
+  <md-skeleton variant="circular" density="0" announce="false"></md-skeleton>
+  <md-skeleton variant="circular" density="-1" announce="false"></md-skeleton>
+  <md-skeleton variant="circular" density="-2" announce="false"></md-skeleton>
+  <md-skeleton variant="circular" density="-3" announce="false"></md-skeleton>
+  <md-skeleton variant="circular" density="-4" announce="false"></md-skeleton>
+</div>`}
+  label="Density rungs, by variant"
+/>
+
+**i18n** — the only text is `aria-label`; translate it, and translate the label
+on the wrapping live region too.
+
+## Theming
+
+| Custom property | Purpose |
+|---|---|
+| `--md-skeleton-color` | Base placeholder fill |
+| `--md-skeleton-highlight` | Wave shimmer highlight |
+| `--md-skeleton-radius` | Radius for `rectangular` |
+| `--md-skeleton-rounded-radius` | Radius for `rounded` |
+| `--md-skeleton-width` / `--md-skeleton-height` | Default box for text and rectangles |
+| `--md-skeleton-size` | Default size for `circular` |
+| `--md-skeleton-line-gap` | Gap between text rows when `lines > 1` |
+| `--md-skeleton-pulse-duration` / `--md-skeleton-wave-duration` | Animation timing |
+| `--md-skeleton-bloom-duration` | Initial mount bloom |
+
+**CSS part** — `shape`.
+
+<ComponentDemo
+  html={`<md-skeleton
+  variant="rounded"
+  full-width
+  height="64px"
+  animation="wave"
+  announce="false"
+  style="--md-skeleton-color: var(--md-sys-color-secondary-container); --md-skeleton-wave-duration: 2.4s;"
+></md-skeleton>`}
+  label="Themed skeleton"
+  storyId="communication-skeleton--custom-css"
+/>
+
+The placeholder colour is the one to get right: it has to read as *absent
+content* against the surface behind it. Check it in both themes — the
+[dark-theme story](/storybook/?path=/story/communication-skeleton--dark-theme)
+is the counterpart to this one.
+
+
+## Related
+
+[`md-loading-indicator`](/components/loading-indicator/) ·
+[`md-progress-indicator`](/components/progress-indicator/) ·
+[`md-card`](/components/card/) ·
+[`md-list`](/components/list/) ·
+[`md-avatar`](/components/avatar/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-skeleton" />

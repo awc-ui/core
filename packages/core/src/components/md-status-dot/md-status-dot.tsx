@@ -1,0 +1,140 @@
+import { Component, Host, h, Prop, Element } from '@stencil/core';
+
+/**
+ * Presence states understood by `<md-status-dot>`.
+ *
+ * - `online`     — green, "available"
+ * - `away`       — amber, "back soon"
+ * - `busy`       — red, "do not disturb"
+ * - `offline`    — neutral grey, "signed out"
+ * - `invisible`  — hollow ring on a surface fill, "appear offline"
+ * - `neutral`    — surface-tone default, no semantic meaning
+ *                  (use this when the host already encodes the state
+ *                  elsewhere and the dot is a pure decoration)
+ */
+export type MdStatusDotState =
+  | 'online'
+  | 'away'
+  | 'busy'
+  | 'offline'
+  | 'invisible'
+  | 'neutral';
+
+/** Diameter preset for the dot. */
+export type MdStatusDotSize = 'small' | 'medium' | 'large';
+
+/**
+ * `md-status-dot` — a small absolutely-positioned indicator that pairs
+ * with an avatar (or any other tile) to surface presence / state.
+ *
+ * Designed to drop straight into a `position: relative` parent:
+ *
+ * ```html
+ * <span style="position: relative; display: inline-flex;">
+ *   <md-avatar name="Ada Lovelace" label="Ada Lovelace, online"></md-avatar>
+ *   <md-status-dot state="online"></md-status-dot>
+ * </span>
+ * ```
+ *
+ * Anchors at the bottom-inline-end corner via logical-property insets, so
+ * the pip auto-flips in RTL with no extra CSS. A 2 px outline in the
+ * surface color keeps the dot visually detached from the avatar tile
+ * regardless of the avatar's palette.
+ *
+ * **Accessibility.** The dot is **decorative by default** — when used to
+ * decorate an avatar, the avatar's own `label` should already encode the
+ * status (`label="Ada Lovelace, online"`). Setting an explicit `label`
+ * exposes the dot to assistive tech:
+ * - **static** (`live` off) → `role="img"` + `aria-label` — a labelled image
+ *   conveying the current state, announced when focused/encountered.
+ * - **live** (`live` on) → `role="status"` (an `aria-live="polite"` region) so
+ *   presence *changes* (online → busy) are announced as they happen.
+ *
+ * **WCAG 1.4.1 (use of colour).** State is conveyed by colour alone, and in
+ * Windows High-Contrast every state collapses to a single system colour. Never
+ * rely on the dot's colour as the *only* signal of state — pair it with a
+ * `label` (or text on the parent) so the status is also available as words.
+ *
+ * **Live indicator.** When `live` is `true`, the dot pulses outward in its
+ * own colour (online pulses green, busy pulses red, etc.). The animation
+ * is gated behind `prefers-reduced-motion: no-preference`, so users who
+ * have reduced-motion enabled at the OS level see a static dot.
+ */
+@Component({
+  tag: 'md-status-dot',
+  styleUrl: 'md-status-dot.css',
+  shadow: true,
+})
+export class MdStatusDot {
+  @Element() el!: HTMLElement;
+
+  /**
+   * Presence state. Drives the dot's fill color and its corresponding
+   * pulse-halo color (when `live` is `true`).
+   */
+  @Prop({ reflect: true }) state: MdStatusDotState = 'neutral';
+
+  /**
+   * Diameter preset:
+   * - `small`  — 8 px (pairs with `md-avatar size="small"`)
+   * - `medium` — 12 px (pairs with `md-avatar size="medium"` — default)
+   * - `large`  — 16 px (pairs with `md-avatar size="large"`)
+   *
+   * Custom diameters are exposed via the `--md-status-dot-size` CSS
+   * custom property on the host.
+   */
+  @Prop({ reflect: true }) size: MdStatusDotSize = 'medium';
+
+  /**
+   * Pulse the dot outward in its own colour. Useful for "live now",
+   * "in a call", "recording" affordances. Respects
+   * `prefers-reduced-motion: reduce` automatically.
+   */
+  @Prop({ reflect: true }) live: boolean = false;
+
+  /**
+   * Optional accessible label.
+   *
+   * - When **empty** (default), the dot is exposed to AT as decorative
+   *   (`role="presentation"` + `aria-hidden="true"`) so the parent
+   *   element (typically an `md-avatar` or a list-item) can carry the
+   *   spoken status without doubling.
+   * - When **set** and `live` is **off**, the dot becomes `role="img"` with
+   *   the value as its `aria-label` — a static, labelled status image.
+   * - When **set** and `live` is **on**, the dot becomes a `role="status"`
+   *   live region so presence *changes* are announced as they occur. Use this
+   *   for standalone dots that aren't paired with another labelled element.
+   */
+  @Prop() label: string = '';
+
+  /**
+   * Local density rung. Drives the same `--md-sys-density-scale` signal that a
+   * global `data-density` ancestor sets, so a local value simply overrides the
+   * inherited one. 0 = default, -4 = ultra-compact.
+   */
+  @Prop({ reflect: true }) density: 0 | -1 | -2 | -3 | -4 = 0;
+
+  render() {
+    const labelled = !!this.label.trim();
+    // Decorative → presentation; labelled+static → img; labelled+live → status
+    // (a live region that announces presence changes). role="status" implies
+    // aria-live="polite", so static labels deliberately avoid it to prevent
+    // spurious announcements when the dot merely renders.
+    const role = labelled ? (this.live ? 'status' : 'img') : 'presentation';
+
+    return (
+      <Host
+        class={{
+          'md-status-dot': true,
+          [`md-status-dot--${this.state}`]: true,
+          [`md-status-dot--${this.size}`]: true,
+          'md-status-dot--live': this.live,
+          'md-status-dot--labelled': labelled,
+        }}
+        role={role}
+        aria-label={labelled ? this.label : null}
+        aria-hidden={labelled ? null : 'true'}
+      />
+    );
+  }
+}

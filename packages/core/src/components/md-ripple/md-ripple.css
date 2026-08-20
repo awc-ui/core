@@ -1,0 +1,101 @@
+/* ==========================================================
+   md-ripple — Material Design 3 ripple effect
+   Spec: https://m3.material.io/foundations/interaction/states
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-ripple-color           Ripple tint color (default: currentColor)
+     --md-ripple-opacity         Ripple peak opacity (default: 0.12)
+     --md-ripple-extend-inline   Extra pixels to add on each inline edge
+                                 of the host's rect when computing the
+                                 wave's farthest-corner radius. Use on
+                                 surfaces that GROW horizontally during
+                                 the ripple's lifetime (e.g. md-search
+                                 springing out on focus) so the wave is
+                                 sized for the settled rect instead of
+                                 the resting one. Wave position is
+                                 unaffected — the wave still originates
+                                 at the click point. Must be a CONCRETE
+                                 PIXEL VALUE (e.g. `120px`). Computed
+                                 expressions involving %, calc() or
+                                 clamp() are NOT resolved by this hook —
+                                 read the literal token via
+                                 getComputedStyle and parseFloat returns
+                                 NaN on those forms. Consumers needing
+                                 such expressions should compute the
+                                 value in JS and write it back as fixed
+                                 pixels via inline style. (default: 0)
+     --md-ripple-extend-block    Same as --md-ripple-extend-inline but
+                                 for the block axis. (default: 0)
+     --md-ripple-grow-duration   Override the wave's scale 0 → 1 grow
+                                 duration. Use on surfaces that animate
+                                 their own size during the ripple's
+                                 lifetime (e.g. md-search) so the wave
+                                 reaches full size at the same instant
+                                 the surface settles — otherwise the
+                                 wave is still ramping up while the
+                                 surface is already at its final width.
+                                 var() references and any value that
+                                 resolves to a CSS time work (e.g.
+                                 `250ms`). (default: 450ms)
+     --md-ripple-grow-easing     Companion to --md-ripple-grow-duration
+                                 — usually set to the surface's own
+                                 easing so the wave feels like part of
+                                 the same motion.
+                                 (default: cubic-bezier(0.2, 0, 0, 1))
+
+   CSS PARTS:
+     (none)
+
+   SLOTS:
+     (none)
+   ========================================================== */
+
+:host {
+  display: contents;
+
+  /* `.md-ripple` clips the wave with `border-radius: inherit`, which inherits
+     from THIS host — not from the component embedding us. Left at the initial
+     0, that clip is a square, and the wave only looked round because the
+     embedding host happened to clip it with its own `overflow: hidden`. Any
+     host that must let something escape (an icon button with a badge) then got
+     a square ripple. Inheriting the radius here makes the clip follow the
+     container's shape on its own. */
+  border-radius: inherit;
+
+  --_color: var(--md-ripple-color, currentColor);
+}
+
+.md-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.md-ripple__wave {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: var(--_color);
+  opacity: 0;
+  transform: scale(0);
+  will-change: transform, opacity;
+}
+
+/* ==========================================================
+   SUPPRESSION (global data-ripple="off" / per-component ripple="off")
+   The real gate is in TS — onPointerDown and trigger() bail before a wave is
+   ever created, so nothing is allocated or animated. This rule is the safety
+   net for the one case TS cannot cover: a wave already mid-flight when the
+   toggle flips. Without it that wave would finish its 450ms grow after ripples
+   were switched off.
+
+   The signal is 0/1, which is already a valid opacity, so it drops straight in
+   — no keyword mapping, and the default of 1 makes this a no-op when the
+   feature is on. opacity (not display) so nothing about layout or the
+   containing block changes.
+   ========================================================== */
+.md-ripple {
+  opacity: var(--md-sys-ripple-enabled, 1);
+}

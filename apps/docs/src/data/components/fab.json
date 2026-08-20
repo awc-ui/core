@@ -1,0 +1,152 @@
+{
+  "tag": "md-fab",
+  "title": "FAB",
+  "slug": "fab",
+  "category": "Actions",
+  "subComponentOf": null,
+  "storyId": "actions-fab--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'surface' | 'primary-container' | 'secondary-container' | 'tertiary-container' | 'primary' | 'secondary' | 'tertiary'",
+      "default": "'primary-container'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "size",
+      "attribute": "size",
+      "type": "'standard' | 'medium' | 'large'",
+      "default": "'standard'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "lowered",
+      "attribute": "lowered",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "ripple",
+      "attribute": "ripple",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "extended",
+      "attribute": "extended",
+      "type": "boolean",
+      "default": "",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdClick",
+      "detail": "MouseEvent"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "icon",
+      "description": "Custom icon (replaces icon prop)"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": "Hover/press overlay"
+    },
+    {
+      "name": "icon",
+      "description": "Icon element"
+    },
+    {
+      "name": "label",
+      "description": "Label text (extended only)"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-fab-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-fab-icon-color",
+      "description": "Icon color"
+    },
+    {
+      "name": "--md-fab-icon-size",
+      "description": "Icon dimensions"
+    },
+    {
+      "name": "--md-fab-container-shape",
+      "description": "Border-radius override"
+    },
+    {
+      "name": "--md-fab-label-color",
+      "description": "Label text color (extended)"
+    }
+  ],
+  "dependencies": [
+    "md-navigation-rail",
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdClick",
+      "detail": "MouseEvent"
+    }
+  ]
+}

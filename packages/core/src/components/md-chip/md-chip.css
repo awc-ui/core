@@ -1,0 +1,559 @@
+/* ==========================================================
+   md-chip — Material Design 3 Chip
+   Spec: https://m3.material.io/components/chips/specs
+
+   Four variants:
+     assist      — surface-container-low, on-surface, outline
+     filter      — surface-container-low, on-surface-variant, outline (selectable)
+     input       — surface-container-low, on-surface-variant, outline-variant (selectable + removable)
+     suggestion  — surface-container-low, on-surface-variant, outline
+
+   Measurements (MD3 spec):
+     Height:                 32px
+     Shape:                  8px corner radius (shape-corner-small)
+     Icon size:              18px
+     Left/right padding:     16px (no icon), 8px (with icon)
+     Padding between:        8px
+     Label text:             label-large
+
+   APPEARANCE x COLOUR:
+     `appearance` picks the surface style (outlined | filled | elevated) and is
+     independent of `variant`, which picks the M3 chip TYPE. `color` picks a
+     role — primary / secondary / tertiary / error (baseline M3) or
+     success / warning / info (semantic status roles, defined in
+     packages/tokens/src/tokens.css on the same tonal recipe).
+
+     outlined + color  -> tints outline, label and icon; container transparent
+     filled/elevated   -> tonal container (<color>-container) with
+                          on-<color>-container label; outline dropped
+     no color          -> neutral: outlined is unchanged from before, and
+                          filled/elevated take a surface tone rather than the
+                          secondary container, so an unselected filled chip is
+                          never mistaken for a selected one
+
+     Every per-instance property below still wins over all of it.
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-chip-container-color           Container background
+     --md-chip-container-color-selected  Selected container background
+     --md-chip-label-color               Label text color
+     --md-chip-label-color-selected      Selected label text color
+     --md-chip-icon-color                Leading/trailing icon color
+     --md-chip-icon-size                 Icon dimensions
+     --md-chip-container-shape           Border-radius override
+     --md-chip-container-height          Height override
+     --md-chip-outline-color             Outline color
+     --md-chip-outline-width             Outline width
+     --md-chip-state-layer-color         State layer color override
+     --md-chip-elevation                 Box-shadow override
+
+   CSS PARTS:
+     state-layer   Hover/press overlay
+     outline       Border element
+     label         Label text wrapper
+     icon          Leading icon
+     trailing-icon Trailing icon
+     checkmark     Filter chip checkmark
+     remove        Input chip remove button
+
+   SLOTS:
+     (default)       Label text
+     leading-icon    Custom leading icon
+     trailing-icon   Custom trailing icon
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST — BASE
+   ========================================================== */
+
+:host {
+  --_container-color: var(--md-chip-container-color, transparent);
+  --_container-color-selected: var(--md-chip-container-color-selected, var(--md-sys-color-secondary-container));
+  --_label-color: var(--md-chip-label-color, var(--md-sys-color-on-surface-variant));
+  --_label-color-selected: var(--md-chip-label-color-selected, var(--md-sys-color-on-secondary-container));
+  --_icon-color: var(--md-chip-icon-color, var(--md-sys-color-primary));
+  --_icon-size: var(--md-chip-icon-size, max(14px, calc(18px + var(--md-sys-density-scale, 0) * 1px)));
+  --_container-shape: var(--md-chip-container-shape, var(--md-sys-shape-corner-small, 8px));
+  --_container-height: var(--md-chip-container-height, 32px);
+  --_outline-color: var(--md-chip-outline-color, var(--md-sys-color-outline));
+  --_outline-width: var(--md-chip-outline-width, 1px);
+  --_state-layer-color: var(--md-chip-state-layer-color, var(--md-sys-color-on-surface));
+  --_elevation: var(--md-chip-elevation, var(--md-sys-elevation-0, none));
+  /* Colour-role slots. These four are the ONLY thing the `color` prop swaps;
+     every appearance below is written against them, so adding a role is a
+     4-line block and never touches the appearance rules.
+     The neutral defaults reproduce the pre-existing look exactly: an uncoloured
+     chip's selected state has always been secondary-container. */
+  --_c-main: var(--md-sys-color-primary);
+  --_c-on-main: var(--md-sys-color-on-primary);
+  --_c-container: var(--md-sys-color-secondary-container);
+  --_c-on-container: var(--md-sys-color-on-secondary-container);
+  --_padding-inline: var(--md-sys-spacing-inset-lg, 16px);
+  --_gap: var(--md-sys-spacing-gap-sm, 8px);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-sizing: border-box;
+  /* Global density: each `data-density` rung (0…-4) trims 4px off the chip
+     height, floored at 24px (label-large line-height is 20px). Applied at the
+     consumption point so every size/variant is covered by one edit. Unchanged
+     at density 0. */
+  block-size: max(24px, calc(var(--_container-height) + var(--md-sys-density-scale, 0) * 4px));
+  padding-inline: var(--_padding-inline);
+  gap: var(--_gap);
+
+  background-color: var(--_container-color);
+  border-radius: var(--_container-shape);
+  box-shadow: var(--_elevation);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+
+  font-family: var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif);
+  font-size: max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-label-large-font-weight, 500);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-label-large-letter-spacing, 0.1px);
+  color: var(--_label-color);
+
+  transition:
+    background-color var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    box-shadow var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    color var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+/* Shrink padding when leading/trailing icon present */
+:host(.md-chip--with-leading-icon) {
+  padding-inline-start: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+:host(.md-chip--with-trailing-icon) {
+  padding-inline-end: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+/* ==========================================================
+   2. VARIANT-SPECIFIC COLORS
+   ========================================================== */
+
+/* Assist — primary icon color */
+:host(.md-chip--assist) {
+  --_icon-color: var(--md-chip-icon-color, var(--md-sys-color-primary));
+  --_label-color: var(--md-chip-label-color, var(--md-sys-color-on-surface));
+}
+
+/* Filter */
+:host(.md-chip--filter) {
+  --_icon-color: var(--md-chip-icon-color, var(--md-sys-color-on-surface-variant));
+  --_label-color: var(--md-chip-label-color, var(--md-sys-color-on-surface-variant));
+}
+
+/* Input */
+:host(.md-chip--input) {
+  --_outline-color: var(--md-chip-outline-color, var(--md-sys-color-outline-variant));
+  --_icon-color: var(--md-chip-icon-color, var(--md-sys-color-on-surface-variant));
+  --_label-color: var(--md-chip-label-color, var(--md-sys-color-on-surface-variant));
+}
+
+/* Suggestion */
+:host(.md-chip--suggestion) {
+  --_icon-color: var(--md-chip-icon-color, var(--md-sys-color-on-surface-variant));
+  --_label-color: var(--md-chip-label-color, var(--md-sys-color-on-surface-variant));
+}
+
+/* ==========================================================
+   3. SELECTED STATE
+   ========================================================== */
+
+:host(.md-chip--selected) {
+  --_container-color: var(--_container-color-selected);
+  color: var(--_label-color-selected);
+  --_icon-color: var(--md-chip-icon-color, var(--md-sys-color-on-secondary-container));
+  --_state-layer-color: var(--md-sys-color-on-secondary-container);
+}
+
+:host(.md-chip--selected) .md-chip__outline {
+  border-color: transparent;
+}
+
+/* ==========================================================
+   4. ELEVATED
+   ========================================================== */
+
+:host(.md-chip--elevated) {
+  --_elevation: var(--md-chip-elevation, var(--md-sys-elevation-1));
+}
+
+:host(.md-chip--elevated) .md-chip__outline {
+  border-color: transparent;
+}
+
+:host(.md-chip--elevated.md-chip--selected) {
+  --_elevation: var(--md-chip-elevation, var(--md-sys-elevation-1));
+}
+
+/* ==========================================================
+   4b. COLOUR ROLES
+   Resolved in the component, not here: md-chip.tsx maps `color` onto the four
+   --_c-* slots below as inline custom properties. That way ANY role the theme
+   defines works — `color="brand"` picks up --md-sys-color-brand the moment a
+   theme ships it — instead of only the names we happened to enumerate in CSS.
+   Each slot falls back to the neutral default, so an unknown role renders as an
+   uncoloured chip rather than losing its container colour entirely.
+   ========================================================== */
+
+/* ==========================================================
+   4c. APPEARANCE  (outlined | filled | elevated)
+   ========================================================== */
+
+/* `outlined` is the default and is deliberately a no-op when no `color` is set,
+   so untouched chips render exactly as before. With a colour, the role tints
+   the outline, label and icon while the container stays transparent. */
+:host(.md-chip--appearance-outlined[color]) {
+  --_outline-color: var(--md-chip-outline-color, var(--_c-main));
+  --_label-color: var(--md-chip-label-color, var(--_c-main));
+  --_icon-color: var(--md-chip-icon-color, var(--_c-main));
+  --_state-layer-color: var(--md-chip-state-layer-color, var(--_c-main));
+}
+
+/* `filled` and `elevated` share one tonal container — they differ only in
+   elevation, which section 4 already owns. Without a colour they take a neutral
+   surface rather than the secondary container, so an unselected filled chip is
+   never mistaken for a selected one. */
+:host(.md-chip--appearance-filled),
+:host(.md-chip--appearance-elevated) {
+  --_container-color: var(--md-chip-container-color, var(--md-sys-color-surface-container-high));
+  --_label-color: var(--md-chip-label-color, var(--md-sys-color-on-surface-variant));
+  --_icon-color: var(--md-chip-icon-color, var(--md-sys-color-on-surface-variant));
+}
+
+:host(.md-chip--appearance-filled[color]),
+:host(.md-chip--appearance-elevated[color]) {
+  --_container-color: var(--md-chip-container-color, var(--_c-container));
+  --_label-color: var(--md-chip-label-color, var(--_c-on-container));
+  --_icon-color: var(--md-chip-icon-color, var(--_c-on-container));
+  --_state-layer-color: var(--md-chip-state-layer-color, var(--_c-on-container));
+}
+
+/* Both drop the outline: the container itself is now the shape. */
+:host(.md-chip--appearance-filled) .md-chip__outline,
+:host(.md-chip--appearance-elevated) .md-chip__outline {
+  border-color: transparent;
+}
+
+/* Selection tints with the chosen role instead of the fixed secondary
+   container, for every appearance. Section 3 still supplies the neutral case. */
+:host(.md-chip--selected[color]) {
+  --_container-color: var(--_c-container);
+  color: var(--_c-on-container);
+  --_label-color-selected: var(--_c-on-container);
+  --_icon-color: var(--md-chip-icon-color, var(--_c-on-container));
+  --_state-layer-color: var(--_c-on-container);
+}
+
+/* ==========================================================
+   5. OUTLINE
+   ========================================================== */
+
+.md-chip__outline {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: var(--_outline-width) solid var(--_outline-color);
+  pointer-events: none;
+}
+
+/* ==========================================================
+   6. STATE LAYER
+   ========================================================== */
+
+.md-chip__state-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--_state-layer-color);
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short1, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  pointer-events: none;
+  z-index: 1;
+}
+
+:host(:hover) .md-chip__state-layer {
+  opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
+}
+
+:host(:focus-visible) .md-chip__state-layer {
+  opacity: var(--md-sys-state-focus-state-layer-opacity, 0.12);
+}
+
+:host(:active) .md-chip__state-layer {
+  opacity: var(--md-sys-state-pressed-state-layer-opacity, 0.12);
+}
+
+/* ==========================================================
+   7. FOCUS RING
+   ========================================================== */
+
+:host(:focus-visible) {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: 2px;
+}
+
+/* ==========================================================
+   7b. PRIMARY ACTION (removable chips)
+   When a chip is both interactive AND removable, its body action is a
+   SEPARATE focusable control that is a sibling of the remove ✕ button
+   (so the two interactive controls don't nest — see md-chip.tsx). It is a
+   transparent layer over the chip; the label/icons paint above it (higher in
+   DOM at the same z-index) and pointer/keyboard activation bubbles to the
+   host handlers. The focus ring uses a NEGATIVE outline-offset so it renders
+   INSIDE the chip edge and is not clipped by the host's `overflow: hidden`.
+   ========================================================== */
+
+.md-chip__primary {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: inherit;
+  cursor: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.md-chip__primary:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: -3px;
+}
+
+/* ==========================================================
+   8. LABEL
+   ========================================================== */
+
+.md-chip__label {
+  position: relative;
+  z-index: 2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: start;
+}
+
+/* ==========================================================
+   9. ICONS
+   ========================================================== */
+
+.md-chip__icon,
+.md-chip__trailing-icon {
+  position: relative;
+  z-index: 2;
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-size: var(--_icon-size);
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  color: var(--_icon-color);
+  line-height: 1;
+  font-weight: normal;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+slot[name="leading-icon"],
+slot[name="trailing-icon"] {
+  display: contents;
+}
+
+::slotted([slot="leading-icon"]),
+::slotted([slot="trailing-icon"]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  font-size: var(--_icon-size);
+  color: var(--_icon-color);
+  fill: currentColor;
+  pointer-events: none;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* ==========================================================
+   10. CHECKMARK (filter chip selected)
+   ========================================================== */
+
+.md-chip__checkmark {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  color: var(--_icon-color);
+  flex-shrink: 0;
+}
+
+.md-chip__checkmark svg {
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+}
+
+/* ==========================================================
+   11. REMOVE BUTTON (input chip)
+   ========================================================== */
+
+.md-chip__remove {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 18px;
+  min-block-size: 18px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--_icon-color);
+  cursor: pointer;
+  border-radius: 50%;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.md-chip__remove:focus-visible {
+  outline: 2px solid var(--md-sys-color-secondary);
+  outline-offset: 1px;
+}
+
+.md-chip__remove svg {
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  pointer-events: none;
+}
+
+.md-chip__remove:disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ==========================================================
+   12. DISABLED
+   ========================================================== */
+
+:host(.md-chip--disabled) {
+  cursor: default;
+  pointer-events: none;
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  --_icon-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  --_elevation: var(--md-sys-elevation-0, none) !important;
+}
+
+:host(.md-chip--disabled:not(.md-chip--selected):not(.md-chip--elevated)) .md-chip__outline {
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
+}
+
+:host(.md-chip--disabled.md-chip--selected) {
+  --_container-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
+}
+
+:host(.md-chip--disabled.md-chip--elevated:not(.md-chip--selected)) {
+  --_container-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
+}
+
+:host(.md-chip--disabled:hover) .md-chip__state-layer,
+:host(.md-chip--disabled:active) .md-chip__state-layer,
+:host(.md-chip--disabled:focus-visible) .md-chip__state-layer {
+  opacity: 0;
+}
+
+/* Soft-disabled: disabled visuals but remains focusable */
+:host([soft-disabled]) {
+  cursor: default;
+  pointer-events: auto;
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  --_icon-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  --_elevation: var(--md-sys-elevation-0, none) !important;
+}
+
+:host([soft-disabled]) .md-chip__state-layer {
+  display: none;
+}
+
+/* ==========================================================
+   13. REDUCED MOTION
+   ========================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+
+  .md-chip__state-layer {
+    transition: none;
+  }
+}
+
+/* ==========================================================
+   14. FORCED COLORS — Windows High Contrast
+   ========================================================== */
+
+@media (forced-colors: active) {
+  :host {
+    border: 1px solid ButtonText;
+    background-color: ButtonFace;
+    color: ButtonText;
+    forced-color-adjust: none;
+  }
+
+  .md-chip__outline {
+    border-color: ButtonText;
+  }
+
+  :host(:focus-visible) {
+    outline-color: Highlight;
+  }
+
+  .md-chip__primary:focus-visible {
+    outline-color: Highlight;
+  }
+
+  :host(.md-chip--selected) {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+
+  :host(.md-chip--disabled) {
+    border-color: GrayText;
+    color: GrayText;
+    opacity: 1;
+  }
+
+  .md-chip__state-layer {
+    display: none;
+  }
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

@@ -1,0 +1,801 @@
+{
+  "tag": "md-time-picker",
+  "title": "Time Picker",
+  "slug": "time-picker",
+  "category": "Selection",
+  "subComponentOf": null,
+  "storyId": "selection-time-picker--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "MdTimePickerMode",
+      "default": "'input'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "format",
+      "attribute": "format",
+      "type": "MdTimePickerFormat",
+      "default": "'12h'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "name",
+      "attribute": "name",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "min",
+      "attribute": "min",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "max",
+      "attribute": "max",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "required",
+      "attribute": "required",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "'Select time'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "headline",
+      "attribute": "headline",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "headlineInputLabel",
+      "attribute": "headline-input-label",
+      "type": "string",
+      "default": "'Enter time'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "headlineDialLabel",
+      "attribute": "headline-dial-label",
+      "type": "string",
+      "default": "'Select time'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "valueMissingLabel",
+      "attribute": "value-missing-label",
+      "type": "string",
+      "default": "'Please select a time.'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "rangeUnderflowLabel",
+      "attribute": "range-underflow-label",
+      "type": "string",
+      "default": "'Please select a time at or after {min}.'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "rangeOverflowLabel",
+      "attribute": "range-overflow-label",
+      "type": "string",
+      "default": "'Please select a time at or before {max}.'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "rangeOutsideLabel",
+      "attribute": "range-outside-label",
+      "type": "string",
+      "default": "'Please select a time at or after {min} or at or before {max}.'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "open",
+      "attribute": "open",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "minuteStep",
+      "attribute": "minute-step",
+      "type": "number",
+      "default": "1",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "cancelLabel",
+      "attribute": "cancel-label",
+      "type": "string",
+      "default": "'Cancel'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "okLabel",
+      "attribute": "ok-label",
+      "type": "string",
+      "default": "'OK'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "hideTrigger",
+      "attribute": "hide-trigger",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "amLabel",
+      "attribute": "am-label",
+      "type": "string",
+      "default": "'AM'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "pmLabel",
+      "attribute": "pm-label",
+      "type": "string",
+      "default": "'PM'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "hourLabel",
+      "attribute": "hour-label",
+      "type": "string",
+      "default": "'Hour'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "minuteLabel",
+      "attribute": "minute-label",
+      "type": "string",
+      "default": "'Minute'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "toggleDialLabel",
+      "attribute": "toggle-dial-label",
+      "type": "string",
+      "default": "'Toggle dial picker'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "toggleInputLabel",
+      "attribute": "toggle-input-label",
+      "type": "string",
+      "default": "'Toggle keyboard input'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "periodLabel",
+      "attribute": "period-label",
+      "type": "string",
+      "default": "'Period'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "periodLayout",
+      "attribute": "period-layout",
+      "type": "MdTimePickerPeriodLayout",
+      "default": "'vertical'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "orientation",
+      "attribute": "orientation",
+      "type": "MdTimePickerOrientation",
+      "default": "'vertical'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "responsive",
+      "attribute": "responsive",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "MdTimePickerChangeDetail"
+    },
+    {
+      "name": "mdInput",
+      "detail": "MdTimePickerChangeDetail"
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdCancel",
+      "detail": "void"
+    },
+    {
+      "name": "mdModeChange",
+      "detail": "MdTimePickerModeChangeDetail"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "params": ""
+    },
+    {
+      "name": "hide",
+      "params": ""
+    },
+    {
+      "name": "checkValidity",
+      "params": ""
+    },
+    {
+      "name": "reportValidity",
+      "params": ""
+    },
+    {
+      "name": "getValidity",
+      "params": ""
+    }
+  ],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "period-am",
+      "description": "AM button"
+    },
+    {
+      "name": "period-pm",
+      "description": "PM button"
+    },
+    {
+      "name": "trigger",
+      "description": "Composed md-text-field that opens the dialog"
+    },
+    {
+      "name": "trigger-icon",
+      "description": "Schedule icon slotted into trigger's leading slot"
+    },
+    {
+      "name": "period-toggle",
+      "description": "AM/PM toggle group"
+    },
+    {
+      "name": "period-am-ripple",
+      "description": ""
+    },
+    {
+      "name": "period-pm-ripple",
+      "description": ""
+    },
+    {
+      "name": "dial-wrap",
+      "description": "Wrapper around the dial (dial variant only)"
+    },
+    {
+      "name": "dial",
+      "description": "Dial surface (drag target; dial variant only)"
+    },
+    {
+      "name": "dial-hand",
+      "description": "Selection hand (dial variant only)"
+    },
+    {
+      "name": "input-area",
+      "description": "Container for the typeable HH/MM input row"
+    },
+    {
+      "name": "input-hour",
+      "description": "HH text input tile"
+    },
+    {
+      "name": "input-minute",
+      "description": "MM text input tile"
+    },
+    {
+      "name": "time-area",
+      "description": "Dial-variant wrapper around input-area + the"
+    },
+    {
+      "name": "scrim",
+      "description": "Modal scrim"
+    },
+    {
+      "name": "dialog",
+      "description": "Dialog surface"
+    },
+    {
+      "name": "headline",
+      "description": "Headline label (\"Enter time\" / \"Select time\")"
+    },
+    {
+      "name": "body",
+      "description": ""
+    },
+    {
+      "name": "footer",
+      "description": "Footer with mode toggle + actions"
+    },
+    {
+      "name": "toggle-mode",
+      "description": "Icon button switching dial<->input"
+    },
+    {
+      "name": "actions",
+      "description": "Action button row (Cancel / OK)"
+    },
+    {
+      "name": "cancel-button",
+      "description": "Cancel button"
+    },
+    {
+      "name": "confirm-button",
+      "description": "OK (confirm) button"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-time-picker-trigger-color",
+      "description": "Trigger label/value color"
+    },
+    {
+      "name": "--md-time-picker-trigger-outline-color",
+      "description": "Trigger outline color"
+    },
+    {
+      "name": "--md-time-picker-trigger-hover-color",
+      "description": "Trigger leading-icon color on hover"
+    },
+    {
+      "name": "--md-time-picker-trigger-focus-color",
+      "description": "Trigger focus indicator color"
+    },
+    {
+      "name": "--md-time-picker-trigger-icon-color",
+      "description": "Trigger leading icon color"
+    },
+    {
+      "name": "--md-time-picker-dialog-color",
+      "description": "Dialog surface color"
+    },
+    {
+      "name": "--md-time-picker-dialog-on-color",
+      "description": "Dialog text color"
+    },
+    {
+      "name": "--md-time-picker-scrim-color",
+      "description": "Modal scrim color (rgba)"
+    },
+    {
+      "name": "--md-time-picker-headline-color",
+      "description": "Headline label color"
+    },
+    {
+      "name": "--md-time-picker-period-bg",
+      "description": "Period (AM/PM) container bg"
+    },
+    {
+      "name": "--md-time-picker-period-color",
+      "description": "Period (AM/PM) text color"
+    },
+    {
+      "name": "--md-time-picker-period-active-bg",
+      "description": "Period selected bg"
+    },
+    {
+      "name": "--md-time-picker-period-active-color",
+      "description": "Period selected color"
+    },
+    {
+      "name": "--md-time-picker-period-outline-color",
+      "description": "Period outline color"
+    },
+    {
+      "name": "--md-time-picker-period-hover-opacity",
+      "description": "Period state-layer opacity on hover (e.g. 8% / 12%)"
+    },
+    {
+      "name": "--md-time-picker-dial-bg",
+      "description": "Dial surface color"
+    },
+    {
+      "name": "--md-time-picker-dial-number-color",
+      "description": "Dial number text color"
+    },
+    {
+      "name": "--md-time-picker-dial-number-active-color",
+      "description": "Selected number color"
+    },
+    {
+      "name": "--md-time-picker-dial-hand-color",
+      "description": "Hand / centre-dot color"
+    },
+    {
+      "name": "--md-time-picker-input-bg",
+      "description": "HH/MM tile bg (inactive)"
+    },
+    {
+      "name": "--md-time-picker-input-color",
+      "description": "HH/MM tile text color (inactive)"
+    },
+    {
+      "name": "--md-time-picker-input-active-bg",
+      "description": "HH/MM tile bg when focused (default = primary-container)"
+    },
+    {
+      "name": "--md-time-picker-input-active-color",
+      "description": "HH/MM tile text when focused (default = on-primary-container)"
+    },
+    {
+      "name": "--md-time-picker-input-outline-color",
+      "description": "HH/MM tile resting outline color (default transparent)"
+    },
+    {
+      "name": "--md-time-picker-input-error-color",
+      "description": "Error outline / hint color"
+    },
+    {
+      "name": "--md-time-picker-input-hint-color",
+      "description": "\"Hour\" / \"Minute\" helper-label color"
+    },
+    {
+      "name": "--md-time-picker-input-separator-color",
+      "description": "Colon glyph between HH and MM"
+    },
+    {
+      "name": "--md-time-picker-input-hover-opacity",
+      "description": "HH/MM state-layer opacity (e.g. 8%)"
+    },
+    {
+      "name": "--md-time-picker-action-color",
+      "description": "Cancel label color"
+    },
+    {
+      "name": "--md-time-picker-action-primary-color",
+      "description": "OK label color"
+    },
+    {
+      "name": "--md-time-picker-action-cancel-bg",
+      "description": "Cancel button container color (default transparent — set to apply a tonal/filled style)"
+    },
+    {
+      "name": "--md-time-picker-action-confirm-bg",
+      "description": "OK button container color (default transparent — set to apply a tonal/filled style)"
+    },
+    {
+      "name": "--md-time-picker-toggle-icon-color",
+      "description": "Mode-toggle icon color"
+    },
+    {
+      "name": "--md-time-picker-toggle-bg",
+      "description": "Mode-toggle container color (default transparent)"
+    },
+    {
+      "name": "--md-time-picker-trigger-shape",
+      "description": "Trigger corner-radius (piped onto md-text-field)"
+    },
+    {
+      "name": "--md-time-picker-dialog-shape",
+      "description": "Dialog corner-radius"
+    },
+    {
+      "name": "--md-time-picker-input-shape",
+      "description": "HH/MM tile corner-radius (canonical name; --md-time-picker-time-display-shape kept as back-compat alias)"
+    },
+    {
+      "name": "--md-time-picker-period-shape",
+      "description": "AM/PM container corner-radius"
+    },
+    {
+      "name": "--md-time-picker-action-shape",
+      "description": "Cancel / OK button corner-radius (piped onto md-button)"
+    },
+    {
+      "name": "--md-time-picker-toggle-shape",
+      "description": "Mode-toggle corner-radius (piped onto md-icon-button)"
+    },
+    {
+      "name": "--md-time-picker-trigger-min-width",
+      "description": "Trigger min-inline-size (default 240px)"
+    },
+    {
+      "name": "--md-time-picker-trigger-icon-size",
+      "description": "Trigger leading icon font-size (default 24px, tapers with density)"
+    },
+    {
+      "name": "--md-time-picker-dialog-padding",
+      "description": "Dialog internal padding (default 24px)"
+    },
+    {
+      "name": "--md-time-picker-dialog-min-width",
+      "description": "Dialog width in portrait / input variants (default 328px)"
+    },
+    {
+      "name": "--md-time-picker-dialog-horizontal-width-12h",
+      "description": "Horizontal dial dialog width in 12h mode (default 572px)"
+    },
+    {
+      "name": "--md-time-picker-dialog-horizontal-width-24h",
+      "description": "Horizontal dial dialog width in 24h mode (default 608px)"
+    },
+    {
+      "name": "--md-time-picker-input-width",
+      "description": "HH/MM tile inline-size (default 96px = 4/3 of the height; derived from the font unless set)"
+    },
+    {
+      "name": "--md-time-picker-input-height",
+      "description": "HH/MM tile block-size (default 72px = 1.6 x the font; derived from the font unless set)"
+    },
+    {
+      "name": "--md-time-picker-input-border-width",
+      "description": "HH/MM tile border width (default 2px)"
+    },
+    {
+      "name": "--md-time-picker-input-separator-width",
+      "description": "Colon column width (default 24px)"
+    },
+    {
+      "name": "--md-time-picker-input-hint-gap",
+      "description": "Gap between tile and \"Hour\" / \"Minute\" hint (default 4px)"
+    },
+    {
+      "name": "--md-time-picker-period-outline-width",
+      "description": "AM/PM container border width (default 1px)"
+    },
+    {
+      "name": "--md-time-picker-period-vertical-width",
+      "description": "AM/PM vertical-stack width (default 52px)"
+    },
+    {
+      "name": "--md-time-picker-period-vertical-height",
+      "description": "AM/PM vertical-stack height in dial variant (default 80px)"
+    },
+    {
+      "name": "--md-time-picker-period-vertical-height-input",
+      "description": "AM/PM vertical-stack height in input variant (default 72px)"
+    },
+    {
+      "name": "--md-time-picker-period-horizontal-width",
+      "description": "AM/PM horizontal-pill width (default 216px)"
+    },
+    {
+      "name": "--md-time-picker-period-horizontal-height",
+      "description": "AM/PM horizontal-pill height (default 38px)"
+    },
+    {
+      "name": "--md-time-picker-dial-size",
+      "description": "Dial face diameter (default 256px)"
+    },
+    {
+      "name": "--md-time-picker-dial-target-size",
+      "description": "Per-number touch-target diameter (default 48px)"
+    },
+    {
+      "name": "--md-time-picker-dial-center-size",
+      "description": "Centre-dot diameter (default 8px)"
+    },
+    {
+      "name": "--md-time-picker-dial-hand-width",
+      "description": "Hand-line stroke width (default 2px)"
+    },
+    {
+      "name": "--md-time-picker-hand-length",
+      "description": "Hand-line length override (default: computed — 100%, ~62% on the 24h inner ring)"
+    },
+    {
+      "name": "--md-time-picker-footer-gap",
+      "description": "Gap between mode-toggle and actions (default 8px)"
+    },
+    {
+      "name": "--md-time-picker-actions-gap",
+      "description": "Gap between Cancel and OK (default 8px)"
+    },
+    {
+      "name": "--md-time-picker-toggle-icon-size",
+      "description": "Mode-toggle icon font-size (default 24px, tapers with density)"
+    },
+    {
+      "name": "--md-time-picker-headline-spacing",
+      "description": "Margin below headline (default 20px)"
+    },
+    {
+      "name": "--md-time-picker-headline-font-size",
+      "description": "Headline font-size (default label-medium = 12px)"
+    },
+    {
+      "name": "--md-time-picker-headline-font-weight",
+      "description": "Headline font-weight (default 500)"
+    },
+    {
+      "name": "--md-time-picker-input-font-size",
+      "description": "HH/MM tile font-size (default display-medium = 45px)"
+    },
+    {
+      "name": "--md-time-picker-input-font-weight",
+      "description": "HH/MM tile font-weight (default 400)"
+    },
+    {
+      "name": "--md-time-picker-period-font-size",
+      "description": "AM/PM label font-size (default 14px)"
+    },
+    {
+      "name": "--md-time-picker-period-font-weight",
+      "description": "AM/PM label font-weight (default 500)"
+    },
+    {
+      "name": "--md-time-picker-dial-number-font-size",
+      "description": "Dial number font-size (default body-large = 16px)"
+    },
+    {
+      "name": "--md-time-picker-dial-number-font-weight",
+      "description": "Dial number resting font-weight (default 400)"
+    },
+    {
+      "name": "--md-time-picker-dial-number-active-font-weight",
+      "description": "Dial number active font-weight (default 500)"
+    },
+    {
+      "name": "--md-time-picker-dialog-enter-duration",
+      "description": "Dialog open animation duration (default 500ms)"
+    },
+    {
+      "name": "--md-time-picker-mode-swap-duration",
+      "description": "Dial⇄input swap animation duration (default 450ms)"
+    },
+    {
+      "name": "--md-time-picker-motion-easing",
+      "description": "Easing curve shared by both entry animations (default emphasized-decelerate)"
+    },
+    {
+      "name": "--md-time-picker-dialog-elevation",
+      "description": "Dialog box-shadow"
+    },
+    {
+      "name": "--md-time-picker-time-display-shape",
+      "description": ""
+    },
+    {
+      "name": "--md-time-picker-input-active-outline-color",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-text-field",
+    "md-ripple",
+    "md-icon-button",
+    "md-button"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [
+    {
+      "name": "MdTimePickerChangeDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /**\n   * Canonical value as a 24-hour `HH:MM` string (e.g. `\"14:30\"`).\n   * Always zero-padded. Matches the `value` prop format so the\n   * detail can be round-tripped back into another picker without\n   * any transformation.\n   */\n  value: string;\n  /**\n   * ISO 8601 extended local-time string (`HH:MM:SS`), e.g.\n   * `\"14:30:00\"`. Seconds are always `\"00\"` because the picker\n   * tops out at minute precision.\n   *\n   * This is the format used by:\n   *   • HTML `<input type=\"time\" step=\"1\">` (when step ≤ 60 the\n   *     browser exposes the value with the seconds component);\n   *   • the W3C HTML Living Standard's \"time\" microsyntax;\n   *   • REST API \"time-only\" column types (Postgres `time`,\n   *     MySQL `TIME`, OpenAPI `format: \"time\"`).\n   */\n  iso: string;\n  /**\n   * Full ISO 8601 / RFC 3339 datetime string anchored to *today's*\n   * calendar date in UTC, e.g. `\"2026-05-21T14:30:00.000Z\"`.\n   * Equivalent to `date.toISOString()`.\n   *\n   * Use this when posting to an API that expects a JSON\n   * datetime (the vast majority of REST / GraphQL backends).\n   * The selected hours/minutes are interpreted in the user's\n   * **local** timezone and then serialized to UTC, so a user\n   * picking `15:00` in CET sees `\"…T14:00:00.000Z\"`.\n   */\n  isoDateTime: string;\n  /**\n   * JavaScript `Date` object — today's calendar date with the\n   * picked hours and minutes; seconds and milliseconds are\n   * zeroed. The local timezone offset is preserved by the\n   * `Date` itself; serialize with `.toISOString()` for UTC or\n   * `.toLocaleTimeString()` for the user's locale.\n   */\n  date: Date;\n  /** Hours in 24-hour clock (0–23). */\n  hours: number;\n  /** Minutes (0–59). */\n  minutes: number;\n  /** Day period derived from `hours` (always defined). */\n  period: MdTimePickerPeriod;"
+    },
+    {
+      "name": "MdTimePickerPeriod",
+      "kind": "type",
+      "body": "'AM' | 'PM'"
+    },
+    {
+      "name": "MdTimePickerModeChangeDetail",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Active mode after the toggle. */\n  mode: MdTimePickerMode;\n  /** Mode the picker was in before the toggle. */\n  previousMode: MdTimePickerMode;"
+    },
+    {
+      "name": "MdTimePickerMode",
+      "kind": "type",
+      "body": "'dial' | 'input'"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdChange",
+      "detail": "MdTimePickerChangeDetail"
+    },
+    {
+      "name": "mdInput",
+      "detail": "MdTimePickerChangeDetail"
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdCancel",
+      "detail": "void"
+    },
+    {
+      "name": "mdModeChange",
+      "detail": "MdTimePickerModeChangeDetail"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ]
+}

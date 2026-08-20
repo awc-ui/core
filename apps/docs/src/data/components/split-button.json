@@ -1,0 +1,211 @@
+{
+  "tag": "md-split-button",
+  "title": "Split Button",
+  "slug": "split-button",
+  "category": "Actions",
+  "subComponentOf": null,
+  "storyId": "actions-split-button--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'elevated' | 'filled' | 'tonal' | 'outlined'",
+      "default": "'filled'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "size",
+      "attribute": "size",
+      "type": "'xs' | 'sm' | 'md' | 'lg' | 'xl'",
+      "default": "'sm'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "icon",
+      "attribute": "icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "trailingIcon",
+      "attribute": "trailing-icon",
+      "type": "string",
+      "default": "'keyboard_arrow_down'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "trailingChecked",
+      "attribute": "trailing-checked",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "menuLabel",
+      "attribute": "menu-label",
+      "type": "string",
+      "default": "'Toggle menu'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "haspopup",
+      "attribute": "haspopup",
+      "type": "| 'menu' | 'listbox' | 'dialog' | 'grid' | 'tree' | 'true' | 'false'",
+      "default": "'menu'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "controls",
+      "attribute": "controls",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "fullWidth",
+      "attribute": "full-width",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "ripple",
+      "attribute": "ripple",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdLeadingClick",
+      "detail": "void"
+    },
+    {
+      "name": "mdTrailingClick",
+      "detail": "{ checked: boolean }"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "leading",
+      "description": "Leading button"
+    },
+    {
+      "name": "leading-state-layer",
+      "description": "Leading state overlay"
+    },
+    {
+      "name": "icon",
+      "description": "Leading icon"
+    },
+    {
+      "name": "label",
+      "description": "Label text"
+    },
+    {
+      "name": "trailing",
+      "description": "Trailing button"
+    },
+    {
+      "name": "trailing-state-layer",
+      "description": "Trailing state overlay"
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Trailing menu icon"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-split-button-container-color",
+      "description": "Container background"
+    },
+    {
+      "name": "--md-split-button-label-color",
+      "description": "Label + icon color"
+    },
+    {
+      "name": "--md-split-button-icon-color",
+      "description": "Icon override"
+    },
+    {
+      "name": "--md-split-button-outline-color",
+      "description": "Outlined border"
+    },
+    {
+      "name": "--md-split-button-container-shape",
+      "description": "Outer corner override"
+    },
+    {
+      "name": "--md-split-button-icon-size",
+      "description": "Icon dimensions"
+    }
+  ],
+  "dependencies": [
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdLeadingClick",
+      "detail": "void"
+    },
+    {
+      "name": "mdTrailingClick",
+      "detail": "{ checked: boolean }"
+    }
+  ]
+}

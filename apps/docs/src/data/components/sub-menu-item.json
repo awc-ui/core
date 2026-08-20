@@ -1,0 +1,127 @@
+{
+  "tag": "md-sub-menu-item",
+  "title": "Sub Menu Item",
+  "slug": "sub-menu-item",
+  "category": "Navigation",
+  "subComponentOf": "md-menu",
+  "storyId": null,
+  "props": [
+    {
+      "name": "headline",
+      "attribute": "headline",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "supportingText",
+      "attribute": "supporting-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "divider",
+      "attribute": "divider",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "gap",
+      "attribute": "gap",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "badge",
+      "attribute": "badge",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdClick",
+      "detail": "void"
+    }
+  ],
+  "methods": [
+    {
+      "name": "collapse",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "leading-icon",
+      "description": ""
+    },
+    {
+      "name": "submenu",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "state-layer",
+      "description": ""
+    },
+    {
+      "name": "leading-icon",
+      "description": ""
+    },
+    {
+      "name": "content",
+      "description": ""
+    },
+    {
+      "name": "headline",
+      "description": ""
+    },
+    {
+      "name": "supporting-text",
+      "description": ""
+    },
+    {
+      "name": "badge",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [],
+  "dependencies": [
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdClick",
+      "detail": "void"
+    }
+  ]
+}

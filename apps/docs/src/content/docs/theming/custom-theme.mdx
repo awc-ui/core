@@ -1,0 +1,195 @@
+---
+title: Custom Theme
+description: Generate a complete MD3 theme from your brand colors with the Theme Generator, then import it into your app
+sidebar:
+  order: 4
+---
+
+Material Design 3 derives an entire colour system from a small number of
+**seed colours**. You do not pick 60 values by hand — you pick a brand colour
+and the algorithm produces the tonal palettes and role mappings.
+
+The [**Theme Generator**](/theme-generator/) does this in the browser and
+hands you a ready-to-use CSS file.
+
+## Step 1 — Generate
+
+Open the [Theme Generator](/theme-generator/) and:
+
+1. **Enter your brand colour** as the primary seed (hex, e.g. `#6750A4`).
+2. Optionally set **secondary**, **tertiary** and **neutral** seeds. Leave
+   them blank and MD3 derives them from the primary.
+3. **Preview live** — the panel renders real AWC UI components in both light
+   and dark mode, so you see buttons, fields and surfaces, not swatches.
+4. **Check contrast.** The generator validates role pairings against WCAG AA
+   and flags any that fail.
+5. Click **Download theme.css**.
+
+## Step 2 — Import
+
+Drop the file in your project and import it **after** the base tokens:
+
+```ts
+import '@awc-ui/core/define';      // components
+import '@awc-ui/tokens';           // base MD3 tokens
+import './theme.css';              // ← your generated theme, last
+```
+
+:::danger[Order matters]
+`theme.css` must come **after** `@awc-ui/tokens`. It redefines the same custom
+properties, so if it loads first the base tokens overwrite your brand.
+:::
+
+With a plain `<link>`:
+
+```html
+<link rel="stylesheet" href="/node_modules/@awc-ui/tokens/tokens.css">
+<link rel="stylesheet" href="/theme.css">
+```
+
+That is the whole integration. Every component picks the theme up
+immediately — the tokens are inherited custom properties, so there is nothing
+to configure per component.
+
+### Framework specifics
+
+```ts
+// Next.js — app/layout.tsx
+import '@awc-ui/tokens';
+import '@/styles/theme.css';
+
+// Nuxt — nuxt.config.ts
+export default defineNuxtConfig({
+  css: ['@awc-ui/tokens/tokens.css', '~/assets/theme.css'],
+});
+
+// Angular — angular.json "styles" (order is the array order)
+"styles": [
+  "node_modules/@awc-ui/tokens/tokens.css",
+  "src/theme.css"
+]
+
+// Vite / SvelteKit — in your root entry
+import '@awc-ui/tokens';
+import './theme.css';
+```
+
+## What the file contains
+
+A generated theme is plain CSS custom properties — no build step, no runtime:
+
+```css
+:root {
+  --md-sys-color-primary: #6750A4;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #EADDFF;
+  --md-sys-color-on-primary-container: #21005D;
+  /* …secondary, tertiary, error, surface, outline… */
+}
+
+[data-theme="dark"] {
+  --md-sys-color-primary: #D0BCFF;
+  --md-sys-color-on-primary: #381E72;
+  /* …the dark counterpart of every role… */
+}
+```
+
+Both themes ship in one file, so [dark mode](/theming/dark-mode/) works the
+moment you set `data-theme="dark"`.
+
+Because it is only custom properties you can commit it, diff it, and hand-edit
+a role if you need to.
+
+## Generating in code
+
+For build-time or server-side generation, use `@awc-ui/theme` directly — the
+same engine the generator page runs:
+
+```ts
+import { computeTheme, generateCss } from '@awc-ui/theme';
+
+// secondaryHex / tertiaryHex are optional — omit them and M3 derives both
+// from the primary, which is what the generator page does by default.
+const theme = computeTheme({ primaryHex: '#6750A4' });
+const css = generateCss(theme);          // the same CSS the download produces
+```
+
+`generateCss` returns a **string of plain CSS custom properties** — no
+JavaScript, no imports. Write it to a file and ship the file.
+
+Useful for multi-tenant apps where each customer has a brand colour:
+
+```ts
+// Per-tenant stylesheet at build time
+for (const tenant of tenants) {
+  await writeFile(
+    `dist/themes/${tenant.id}.css`,
+    generateCss(computeTheme({ primaryHex: tenant.brandColor })),
+  );
+}
+```
+
+:::tip[Keep the colour engine out of your bundle]
+`@awc-ui/theme` depends on Google's `@material/material-color-utilities`
+(Apache-2.0). Run the code above in a **build step** and keep the package in
+`devDependencies` — the output is static CSS, so nothing from the engine
+reaches your users.
+
+Measured on this library: the generated theme is **3.4 KB (854 bytes gzipped)**.
+Calling `computeTheme` in the browser instead pulls the engine into your bundle
+at **116 KB (22 KB gzipped)** — about 26× more, for colours that never change
+at runtime.
+
+`@awc-ui/core` itself has **zero** dependencies, so simply using the components
+pulls none of this.
+:::
+
+`@awc-ui/theme` also exposes `applyTheme` for switching at runtime and a
+worker entry point for off-main-thread computation on large palettes. Reach for
+those only when the user picks colours *in* your app — a fixed brand theme
+should be generated once at build time.
+
+## Hand-editing after generation
+
+Change a role and everything using it follows — that is the point of the
+role layer:
+
+```css
+/* theme.css — after the generated block */
+:root {
+  --md-sys-color-primary: #005AC1;
+}
+```
+
+:::caution[Check contrast after hand-editing]
+The generator validates AA for you; a manual edit does not. Every
+`--md-sys-color-X` has an `--md-sys-color-on-X` partner, and the pair must
+stay readable. If you change one, check the other.
+:::
+
+## Fonts
+
+Colour is only part of a theme. The typeface is a separate token:
+
+```css
+:root {
+  --md-sys-typescale-font-family: 'Inter', system-ui, sans-serif;
+}
+```
+
+And the icon font is swappable independently:
+
+```css
+:root {
+  --md-sys-icon-font-family: 'Material Symbols Rounded';
+}
+```
+
+Remember to actually load the font — the library does not inject it.
+
+## Related
+
+- [Theming Overview](/theming/overview/) — how the token layers fit together
+- [Design Tokens](/theming/tokens/) — the full role reference
+- [Dark Mode](/theming/dark-mode/) — switching between the two blocks
+- [Customization](/theming/customization/) — per-component overrides

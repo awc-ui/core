@@ -1,0 +1,46 @@
+{
+  "name": "@awc-ui/theme",
+  "version": "0.1.0",
+  "description": "MD3 theme generation and application utilities for AWC UI",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    },
+    "./worker": "./src/worker.ts"
+  },
+  "files": [
+    "src",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "echo 'theme: nothing to build'",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@material/material-color-utilities": "^0.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "keywords": [
+    "material-design",
+    "md3",
+    "theme",
+    "color"
+  ],
+  "license": "MIT",
+  "author": "AWC UI",
+  "homepage": "https://awcui.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awc-ui/core.git",
+    "directory": "packages/theme"
+  },
+  "bugs": {
+    "url": "https://github.com/awc-ui/core/issues"
+  }
+}

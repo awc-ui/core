@@ -1,0 +1,471 @@
+{
+  "tag": "md-table",
+  "title": "Table",
+  "slug": "table",
+  "category": "Data Display",
+  "subComponentOf": null,
+  "storyId": "data-display-table--playground",
+  "props": [
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "| 'compact' | 'standard' | 'comfortable' | 0 | -1 | -2 | -3 | -4",
+      "default": "'standard'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "columnTemplate",
+      "attribute": "column-template",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "columns",
+      "attribute": "columns",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "minWidth",
+      "attribute": "min-width",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "stickyHeader",
+      "attribute": "sticky-header",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "frozenHeader",
+      "attribute": "frozen-header",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "keepHeight",
+      "attribute": "keep-height",
+      "type": "boolean",
+      "default": "true",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "scrollbar",
+      "attribute": "scrollbar",
+      "type": "'overlay' | 'gutter'",
+      "default": "'overlay'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "pinMode",
+      "attribute": "pin-mode",
+      "type": "'stack' | 'static'",
+      "default": "'stack'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "pinIcon",
+      "attribute": "pin-icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "stickyFooter",
+      "attribute": "sticky-footer",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "striped",
+      "attribute": "striped",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "noDividers",
+      "attribute": "no-dividers",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "hoverable",
+      "attribute": "hoverable",
+      "type": "boolean",
+      "default": "true",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "motion",
+      "attribute": "motion",
+      "type": "'expressive' | 'none'",
+      "default": "'expressive'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "selection",
+      "attribute": "selection",
+      "type": "'none' | 'single' | 'multiple'",
+      "default": "'none'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "sortBy",
+      "attribute": "sort-by",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "sortOrder",
+      "attribute": "sort-order",
+      "type": "MdTableSortOrder",
+      "default": "'asc'",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "loading",
+      "attribute": "loading",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "loadingMode",
+      "attribute": "loading-mode",
+      "type": "'overlay' | 'skeleton'",
+      "default": "'overlay'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "loadingRows",
+      "attribute": "loading-rows",
+      "type": "number",
+      "default": "4",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "empty",
+      "attribute": "empty",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "caption",
+      "attribute": "caption",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "summary",
+      "attribute": "summary",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "rowOffset",
+      "attribute": "row-offset",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "rowCount",
+      "attribute": "row-count",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdSortChange",
+      "detail": "MdTableSortState"
+    },
+    {
+      "name": "mdSelectionChange",
+      "detail": "MdTableSelectionState"
+    },
+    {
+      "name": "mdPinChange",
+      "detail": "{ column: number; side: 'start' | 'end' | null }"
+    },
+    {
+      "name": "mdColumnVisibilityChange",
+      "detail": "{ column: number; visible: boolean; hidden: number[] }"
+    },
+    {
+      "name": "mdScroll",
+      "detail": "{ scrollLeft: number; scrollTop: number }"
+    }
+  ],
+  "methods": [
+    {
+      "name": "getSelection",
+      "params": ""
+    },
+    {
+      "name": "selectAll",
+      "params": ""
+    },
+    {
+      "name": "deselectAll",
+      "params": ""
+    },
+    {
+      "name": "toggleSelectAll",
+      "params": ""
+    },
+    {
+      "name": "setSort",
+      "params": "column: string, order: MdTableSortOrder"
+    },
+    {
+      "name": "pinColumn",
+      "params": "column: number, side: 'start' | 'end' | 'none'"
+    },
+    {
+      "name": "setColumnVisibility",
+      "params": "column: number, visible: boolean"
+    },
+    {
+      "name": "animateNextChange",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "empty",
+      "description": ""
+    },
+    {
+      "name": "head",
+      "description": ""
+    },
+    {
+      "name": "loader",
+      "description": ""
+    },
+    {
+      "name": "loading",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "skeleton-row",
+      "description": ""
+    },
+    {
+      "name": "empty",
+      "description": "The empty-state region (when `empty`)"
+    },
+    {
+      "name": "caption",
+      "description": "The optional caption above the head"
+    },
+    {
+      "name": "header-grid",
+      "description": ""
+    },
+    {
+      "name": "grid",
+      "description": "The grid container holding all rows"
+    },
+    {
+      "name": "hscrollbar",
+      "description": ""
+    },
+    {
+      "name": "hscrollbar-thumb",
+      "description": ""
+    },
+    {
+      "name": "vscrollbar",
+      "description": ""
+    },
+    {
+      "name": "vscrollbar-thumb",
+      "description": ""
+    },
+    {
+      "name": "loading",
+      "description": "The loading overlay (when `loading`)"
+    },
+    {
+      "name": "progress",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-table-row-height-compact",
+      "description": "36px (dense)"
+    },
+    {
+      "name": "--md-table-row-height-standard",
+      "description": "52px"
+    },
+    {
+      "name": "--md-table-row-height-comfortable",
+      "description": "60px"
+    },
+    {
+      "name": "--md-table-header-height",
+      "description": "56px"
+    },
+    {
+      "name": "--md-table-cell-padding-inline",
+      "description": "per-density default"
+    },
+    {
+      "name": "--md-table-divider-color",
+      "description": "between rows"
+    },
+    {
+      "name": "--md-table-stripe-color",
+      "description": "every-other-row overlay color"
+    },
+    {
+      "name": "--md-table-head-bg",
+      "description": "background for thead rows"
+    },
+    {
+      "name": "--md-table-head-color",
+      "description": "text color for thead"
+    },
+    {
+      "name": "--md-table-foot-bg",
+      "description": "background for tfoot rows"
+    },
+    {
+      "name": "--md-table-row-hover-color",
+      "description": "row hover state-layer color"
+    },
+    {
+      "name": "--md-table-row-selected-bg",
+      "description": "selected row background"
+    },
+    {
+      "name": "--md-table-row-selected-color",
+      "description": "selected row text"
+    },
+    {
+      "name": "--md-table-columns-template",
+      "description": "grid-template-columns override"
+    },
+    {
+      "name": "--md-table-cell-padding-block",
+      "description": ""
+    },
+    {
+      "name": "--md-table-min-width",
+      "description": ""
+    },
+    {
+      "name": "--md-table-body-max-h",
+      "description": ""
+    },
+    {
+      "name": "--md-table-empty-min-height",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-table-sort-label",
+    "md-progress-indicator"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [
+    {
+      "name": "MdTableSortState",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Column id of the active sort, or empty for \"no sort\". */\n  column: string;\n  /** Sort direction. */\n  order: MdTableSortOrder;"
+    },
+    {
+      "name": "MdTableSortOrder",
+      "kind": "type",
+      "body": "'asc' | 'desc' | 'none'"
+    },
+    {
+      "name": "MdTableSelectionState",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Number of selected rows. */\n  count: number;\n  /** Total number of selectable rows (rendered). */\n  total: number;\n  /** Selected row \"value\" or id (or row index) for each selected row. */\n  values: string[];\n  /** Whether all visible rows are selected. */\n  all: boolean;\n  /** Whether some (but not all) rows are selected. */\n  indeterminate: boolean;"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdSortChange",
+      "detail": "MdTableSortState"
+    },
+    {
+      "name": "mdSelectionChange",
+      "detail": "MdTableSelectionState"
+    },
+    {
+      "name": "mdPinChange",
+      "detail": "{ column: number; side: 'start' | 'end' | null }"
+    },
+    {
+      "name": "mdColumnVisibilityChange",
+      "detail": "{ column: number; visible: boolean; hidden: number[] }"
+    },
+    {
+      "name": "mdScroll",
+      "detail": "{ scrollLeft: number; scrollTop: number }"
+    }
+  ]
+}

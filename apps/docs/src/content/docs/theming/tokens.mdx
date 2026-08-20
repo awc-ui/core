@@ -1,0 +1,131 @@
+---
+title: Design Tokens
+description: Complete reference for MD3 design tokens — colors, shape, elevation, typography, and motion
+sidebar:
+  order: 2
+---
+
+import TokensTable from "../../../components/TokensTable.astro";
+
+## Color Tokens
+
+Color tokens define the color roles used by all components. Override these at `:root` to change your app's palette.
+
+### Primary
+
+<TokensTable tokens={[
+  { name: '--md-sys-color-primary', value: '#6750A4', preview: 'color' },
+  { name: '--md-sys-color-on-primary', value: '#FFFFFF', preview: 'color' },
+  { name: '--md-sys-color-primary-container', value: '#EADDFF', preview: 'color' },
+  { name: '--md-sys-color-on-primary-container', value: '#21005D', preview: 'color' },
+]} />
+
+### Secondary
+
+<TokensTable tokens={[
+  { name: '--md-sys-color-secondary', value: '#625B71', preview: 'color' },
+  { name: '--md-sys-color-on-secondary', value: '#FFFFFF', preview: 'color' },
+  { name: '--md-sys-color-secondary-container', value: '#E8DEF8', preview: 'color' },
+  { name: '--md-sys-color-on-secondary-container', value: '#1E192B', preview: 'color' },
+]} />
+
+### Tertiary
+
+<TokensTable tokens={[
+  { name: '--md-sys-color-tertiary', value: '#7D5260', preview: 'color' },
+  { name: '--md-sys-color-on-tertiary', value: '#FFFFFF', preview: 'color' },
+  { name: '--md-sys-color-tertiary-container', value: '#FFD8E4', preview: 'color' },
+  { name: '--md-sys-color-on-tertiary-container', value: '#370B1E', preview: 'color' },
+]} />
+
+### Error
+
+<TokensTable tokens={[
+  { name: '--md-sys-color-error', value: '#B3261E', preview: 'color' },
+  { name: '--md-sys-color-on-error', value: '#FFFFFF', preview: 'color' },
+  { name: '--md-sys-color-error-container', value: '#F9DEDC', preview: 'color' },
+  { name: '--md-sys-color-on-error-container', value: '#370606', preview: 'color' },
+]} />
+
+### Surface
+
+<TokensTable tokens={[
+  { name: '--md-sys-color-surface', value: '#FFFBFE', preview: 'color' },
+  { name: '--md-sys-color-on-surface', value: '#1C1B1F', preview: 'color' },
+  { name: '--md-sys-color-surface-variant', value: '#E7E0EC', preview: 'color' },
+  { name: '--md-sys-color-on-surface-variant', value: '#49454F', preview: 'color' },
+  { name: '--md-sys-color-surface-container-lowest', value: '#FFFFFF', preview: 'color' },
+  { name: '--md-sys-color-surface-container-low', value: '#F7F2FA', preview: 'color' },
+  { name: '--md-sys-color-surface-container', value: '#F3EDF7', preview: 'color' },
+  { name: '--md-sys-color-surface-container-high', value: '#ECE6F0', preview: 'color' },
+  { name: '--md-sys-color-surface-container-highest', value: '#E6E0E9', preview: 'color' },
+]} />
+
+### Outline
+
+<TokensTable tokens={[
+  { name: '--md-sys-color-outline', value: '#79747E', preview: 'color' },
+  { name: '--md-sys-color-outline-variant', value: '#CAC4D0', preview: 'color' },
+]} />
+
+## Shape Tokens
+
+<TokensTable tokens={[
+  { name: '--md-sys-shape-corner-none', value: '0px', preview: 'radius' },
+  { name: '--md-sys-shape-corner-extra-small', value: '4px', preview: 'radius' },
+  { name: '--md-sys-shape-corner-small', value: '8px', preview: 'radius' },
+  { name: '--md-sys-shape-corner-medium', value: '12px', preview: 'radius' },
+  { name: '--md-sys-shape-corner-large', value: '16px', preview: 'radius' },
+  { name: '--md-sys-shape-corner-extra-large', value: '28px', preview: 'radius' },
+  { name: '--md-sys-shape-corner-full', value: '9999px', preview: 'radius' },
+]} />
+
+## Elevation Tokens
+
+<TokensTable tokens={[
+  { name: '--md-sys-elevation-0', value: 'none', preview: 'shadow' },
+  { name: '--md-sys-elevation-1', value: '0 1px 2px rgba(0,0,0,.3), 0 1px 3px 1px rgba(0,0,0,.15)', preview: 'shadow' },
+  { name: '--md-sys-elevation-2', value: '0 1px 2px rgba(0,0,0,.3), 0 2px 6px 2px rgba(0,0,0,.15)', preview: 'shadow' },
+  { name: '--md-sys-elevation-3', value: '0 4px 8px 3px rgba(0,0,0,.15), 0 1px 3px rgba(0,0,0,.3)', preview: 'shadow' },
+  { name: '--md-sys-elevation-4', value: '0 6px 10px 4px rgba(0,0,0,.15), 0 2px 3px rgba(0,0,0,.3)', preview: 'shadow' },
+  { name: '--md-sys-elevation-5', value: '0 8px 12px 6px rgba(0,0,0,.15), 0 4px 4px rgba(0,0,0,.3)', preview: 'shadow' },
+]} />
+
+## State Layer Tokens
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--md-sys-state-hover-state-layer-opacity` | `0.08` | Hover overlay |
+| `--md-sys-state-focus-state-layer-opacity` | `0.12` | Focus overlay |
+| `--md-sys-state-pressed-state-layer-opacity` | `0.12` | Press overlay |
+| `--md-sys-state-dragged-state-layer-opacity` | `0.16` | Drag overlay |
+| `--md-sys-state-disabled-container-opacity` | `0.12` | Disabled container |
+| `--md-sys-state-disabled-content-opacity` | `0.38` | Disabled content |
+
+## Motion Tokens
+
+### Duration
+
+| Token | Value |
+|-------|-------|
+| `--md-sys-motion-duration-short1` | `50ms` |
+| `--md-sys-motion-duration-short2` | `100ms` |
+| `--md-sys-motion-duration-short3` | `150ms` |
+| `--md-sys-motion-duration-short4` | `200ms` |
+| `--md-sys-motion-duration-medium1` | `250ms` |
+| `--md-sys-motion-duration-medium2` | `300ms` |
+| `--md-sys-motion-duration-medium3` | `350ms` |
+| `--md-sys-motion-duration-medium4` | `400ms` |
+| `--md-sys-motion-duration-long1` | `450ms` |
+| `--md-sys-motion-duration-long2` | `500ms` |
+
+### Easing
+
+| Token | Value |
+|-------|-------|
+| `--md-sys-motion-easing-standard` | `cubic-bezier(0.2, 0, 0, 1)` |
+| `--md-sys-motion-easing-standard-decelerate` | `cubic-bezier(0, 0, 0, 1)` |
+| `--md-sys-motion-easing-standard-accelerate` | `cubic-bezier(0.3, 0, 1, 1)` |
+| `--md-sys-motion-easing-emphasized` | `cubic-bezier(0.2, 0, 0, 1)` |
+| `--md-sys-motion-easing-emphasized-decelerate` | `cubic-bezier(0.05, 0.7, 0.1, 1)` |
+| `--md-sys-motion-easing-emphasized-accelerate` | `cubic-bezier(0.3, 0, 0.8, 0.15)` |

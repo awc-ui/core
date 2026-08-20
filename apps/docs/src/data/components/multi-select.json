@@ -1,0 +1,804 @@
+{
+  "tag": "md-multi-select",
+  "title": "Multi Select",
+  "slug": "multi-select",
+  "category": "Selection",
+  "subComponentOf": null,
+  "storyId": "selection-multi-select--playground",
+  "props": [
+    {
+      "name": "valueMissingLabel",
+      "attribute": "value-missing-label",
+      "type": "string",
+      "default": "'Please select at least one option'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "reserveSupportingSpace",
+      "attribute": "reserve-supporting-space",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'filled' | 'outlined'",
+      "default": "'outlined'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "placeholder",
+      "attribute": "placeholder",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "supportingText",
+      "attribute": "supporting-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "error",
+      "attribute": "error",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "errorText",
+      "attribute": "error-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "required",
+      "attribute": "required",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "options",
+      "attribute": "options",
+      "type": "SelectOptionInit[] | string",
+      "default": "[]",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "virtualize",
+      "attribute": "virtualize",
+      "type": "'auto' | 'always' | 'never'",
+      "default": "'auto'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "filterable",
+      "attribute": "filterable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "filterMode",
+      "attribute": "filter-mode",
+      "type": "FilterMode",
+      "default": "'substring'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "rowHeight",
+      "attribute": "row-height",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "",
+      "type": "string[]",
+      "default": "[]",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "maxSelected",
+      "attribute": "max-selected",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "showSelectAll",
+      "attribute": "show-select-all",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "selectAllLabel",
+      "attribute": "select-all-label",
+      "type": "string",
+      "default": "'Select all'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "placement",
+      "attribute": "placement",
+      "type": "'bottom-start' | 'bottom-end' | 'top-start' | 'top-end'",
+      "default": "'bottom-start'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "maxHeight",
+      "attribute": "max-height",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "matchTriggerWidth",
+      "attribute": "match-trigger-width",
+      "type": "boolean",
+      "default": "true",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "displayMode",
+      "attribute": "display-mode",
+      "type": "'chips' | 'chips-inline' | 'count' | 'text'",
+      "default": "'chips'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "chipOverflow",
+      "attribute": "chip-overflow",
+      "type": "'count' | 'wrap'",
+      "default": "'count'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "chipPosition",
+      "attribute": "chip-position",
+      "type": "'bottom' | 'top' | 'left' | 'right'",
+      "default": "'bottom'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "trigger",
+      "attribute": "trigger",
+      "type": "'field' | 'button'",
+      "default": "'field'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "triggerIcon",
+      "attribute": "trigger-icon",
+      "type": "string",
+      "default": "'add'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "triggerLabel",
+      "attribute": "trigger-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "countFormatter",
+      "attribute": "",
+      "type": "(count: number) => string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "searchPlaceholder",
+      "attribute": "search-placeholder",
+      "type": "string",
+      "default": "'Search…'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "filterLabel",
+      "attribute": "filter-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "noResultsText",
+      "attribute": "no-results-text",
+      "type": "string",
+      "default": "'No results'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "noOptionsText",
+      "attribute": "no-options-text",
+      "type": "string",
+      "default": "'No options'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "searchingLabel",
+      "attribute": "searching-label",
+      "type": "string",
+      "default": "'Searching'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "loadingText",
+      "attribute": "loading-text",
+      "type": "string",
+      "default": "'Loading…'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "loading",
+      "attribute": "loading",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "clearable",
+      "attribute": "clearable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "clearIcon",
+      "attribute": "clear-icon",
+      "type": "string",
+      "default": "'close'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "clearLabel",
+      "attribute": "clear-label",
+      "type": "string",
+      "default": "'Clear selection'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "dropdownIcon",
+      "attribute": "dropdown-icon",
+      "type": "string",
+      "default": "'arrow_drop_down'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "name",
+      "attribute": "name",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "open",
+      "attribute": "open",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "string[]"
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdRemove",
+      "detail": "string"
+    },
+    {
+      "name": "mdClear",
+      "detail": "void"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "params": ""
+    },
+    {
+      "name": "close",
+      "params": ""
+    },
+    {
+      "name": "focusTrigger",
+      "params": ""
+    },
+    {
+      "name": "reset",
+      "params": ""
+    },
+    {
+      "name": "loadOptions",
+      "params": "source: SelectOptionInit[] | OptionRowSource"
+    },
+    {
+      "name": "setQuery",
+      "params": "query: string"
+    },
+    {
+      "name": "getLabels",
+      "params": "values: string[]"
+    },
+    {
+      "name": "getValidity",
+      "params": ""
+    },
+    {
+      "name": "checkValidity",
+      "params": ""
+    },
+    {
+      "name": "reportValidity",
+      "params": ""
+    },
+    {
+      "name": "setCustomValidity",
+      "params": "message: string"
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "trigger",
+      "description": ""
+    },
+    {
+      "name": "trigger-leading",
+      "description": ""
+    },
+    {
+      "name": "trigger-trailing",
+      "description": ""
+    },
+    {
+      "name": "loader",
+      "description": ""
+    },
+    {
+      "name": "dropdown-icon",
+      "description": ""
+    },
+    {
+      "name": "menu-header",
+      "description": ""
+    },
+    {
+      "name": "menu-loader",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "remove",
+      "description": ""
+    },
+    {
+      "name": "field",
+      "description": ""
+    },
+    {
+      "name": "loading-spinner",
+      "description": ""
+    },
+    {
+      "name": "clear",
+      "description": ""
+    },
+    {
+      "name": "caret-box",
+      "description": ""
+    },
+    {
+      "name": "caret",
+      "description": ""
+    },
+    {
+      "name": "field button",
+      "description": ""
+    },
+    {
+      "name": "button-desc",
+      "description": ""
+    },
+    {
+      "name": "chip",
+      "description": ""
+    },
+    {
+      "name": "chips",
+      "description": ""
+    },
+    {
+      "name": "overflow-chip",
+      "description": ""
+    },
+    {
+      "name": "listbox",
+      "description": ""
+    },
+    {
+      "name": "option-icon",
+      "description": ""
+    },
+    {
+      "name": "empty",
+      "description": ""
+    },
+    {
+      "name": "menu",
+      "description": ""
+    },
+    {
+      "name": "menu-header",
+      "description": ""
+    },
+    {
+      "name": "search-wrap",
+      "description": ""
+    },
+    {
+      "name": "search",
+      "description": ""
+    },
+    {
+      "name": "search-spinner",
+      "description": ""
+    },
+    {
+      "name": "select-all",
+      "description": ""
+    },
+    {
+      "name": "select-all-item",
+      "description": ""
+    },
+    {
+      "name": "loading-bar",
+      "description": ""
+    },
+    {
+      "name": "loading-progress",
+      "description": ""
+    },
+    {
+      "name": "frame",
+      "description": ""
+    },
+    {
+      "name": "live-region",
+      "description": ""
+    },
+    {
+      "name": "field-container",
+      "description": ""
+    },
+    {
+      "name": "field-input",
+      "description": ""
+    },
+    {
+      "name": "field-label",
+      "description": ""
+    },
+    {
+      "name": "chip-remove",
+      "description": ""
+    },
+    {
+      "name": "chip-label",
+      "description": ""
+    },
+    {
+      "name": "menu-surface",
+      "description": ""
+    },
+    {
+      "name": "empty-text",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-multi-select-min-width",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-chip-gap",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-chip-radius",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-caret-color",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-clear-color",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-option-icon-size",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-width",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-frame-gap",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-trigger-width",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-inline-chips-block-start",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-chip-height",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-chip-outline",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-clear-size",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-clear-bg",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-clear-radius",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-clear-icon-size",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-clear-hover-bg",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-clear-focus-ring-width",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-clear-focus-ring-color",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-clear-focus-ring-offset",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-caret-size",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-caret-box-size",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-loader-size",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-spinner-size",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-loading-padding",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-empty-padding",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-empty-color",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-empty-font",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-select-all-divider-width",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-select-all-divider-color",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-option-icon-color",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-search-padding",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-search-color",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-search-bg",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-search-border-width",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-search-border-color",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-search-placeholder-color",
+      "description": ""
+    },
+    {
+      "name": "--md-multi-select-search-spinner-size",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-select-option",
+    "md-text-field",
+    "md-loading-indicator",
+    "md-button",
+    "md-chip",
+    "md-menu-item",
+    "md-menu",
+    "md-progress-indicator"
+  ],
+  "dataTypes": [
+    {
+      "name": "SelectOptionInit",
+      "kind": "interface",
+      "extends": "",
+      "body": "  value: string;\n  label?: string;\n  disabled?: boolean;\n  icon?: string;\n  iconColor?: string;\n  supportingText?: string;\n  selected?: boolean;"
+    }
+  ],
+  "callableProps": [
+    {
+      "name": "countFormatter",
+      "kind": "callable",
+      "body": "(count: number) => string"
+    }
+  ],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdChange",
+      "detail": "string[]"
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdRemove",
+      "detail": "string"
+    },
+    {
+      "name": "mdClear",
+      "detail": "void"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ]
+}

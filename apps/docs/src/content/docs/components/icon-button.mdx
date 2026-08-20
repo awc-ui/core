@@ -1,0 +1,476 @@
+---
+title: Icon Button
+description: "Material Design 3 icon button — a common action expressed as an icon alone, with four emphasis styles and an optional toggle mode"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/icon-button.json";
+
+A **common, recognisable action expressed as an icon alone** — close, delete,
+share, more. Four emphasis styles, five sizes, three container widths, and an
+optional toggle mode with a distinct selected glyph.
+
+<ComponentDemo
+  html={`<md-icon-button variant="filled" icon="download" aria-label="Download"></md-icon-button>
+<md-icon-button variant="tonal" icon="share" aria-label="Share"></md-icon-button>
+<md-icon-button variant="outlined" icon="edit" aria-label="Edit"></md-icon-button>
+<md-icon-button variant="standard" icon="more_vert" aria-label="More options"></md-icon-button>`}
+  label="Live preview"
+  storyId="actions-icon-button--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-icon-button" example="" />
+
+## When to use
+
+- A **common action where the icon carries the meaning**: close, delete,
+  share, edit, more.
+- A control that **opens something else** — a menu, a search field, a sheet.
+- A **binary toggle with no label**: favorite, bookmark, mute, pin.
+- Dense containers — app bars, toolbars, cards, list rows, table cells — where
+  a labelled button would not fit.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| The action needs a text label to be understood | [`md-button`](/components/button/) |
+| The single most prominent action on the screen | [`md-fab`](/components/fab/) |
+| An action with **no** selected state, given `toggle` | Plain icon button — M3 warns against this |
+| Filtering, attributes, removable entries | [`md-chip`](/components/chip/) |
+| Choosing between 2–5 exclusive options | [`md-segmented-button`](/components/segmented-button/) |
+| Navigating between destinations | [`md-navigation-bar`](/components/navigation-bar/) |
+
+:::danger[`aria-label` is mandatory]
+There is no visible text, so without `aria-label` the button has **no
+accessible name**. This is by far the most common defect with this component.
+:::
+
+## Variants
+
+Emphasis, highest first. M3: use `filled`, `tonal` or `outlined` when the
+button needs **visual separation from its background**; `standard` has no
+container until you interact with it.
+
+| Variant | Emphasis | Use for |
+|---|---|---|
+| `filled` | Highest | Key actions — download, delete. Use sparingly |
+| `tonal` | High-ish | A secondary action beside a high-emphasis one |
+| `outlined` | Medium | Not the focus of the interaction |
+| `standard` | Lowest | **Default.** Low emphasis, or on a colourful surface |
+
+<ComponentDemo
+  html={`<md-icon-button variant="filled" icon="download" aria-label="Download"></md-icon-button>
+<md-icon-button variant="tonal" icon="download" aria-label="Download"></md-icon-button>
+<md-icon-button variant="outlined" icon="download" aria-label="Download"></md-icon-button>
+<md-icon-button variant="standard" icon="download" aria-label="Download"></md-icon-button>`}
+  label="All four variants"
+/>
+
+## Sizes & width
+
+The default is **`sm`**, not `md`.
+
+| Size | Height | Typical use |
+|---|---|---|
+| `xs` | 32px | Table rows, dense toolbars |
+| `sm` | 40px | **Default.** App bars, cards, list rows |
+| `md` | 56px | Touch-first surfaces |
+| `lg` | 96px | Prominent standalone control |
+| `xl` | 136px | Hero / media control |
+
+`button-width` — `narrow`, `default`, `wide` — widens the container without
+changing the glyph or the height.
+
+<ComponentDemo
+  html={`<md-icon-button size="xs" variant="tonal" icon="star" aria-label="Star"></md-icon-button>
+<md-icon-button size="sm" variant="tonal" icon="star" aria-label="Star"></md-icon-button>
+<md-icon-button size="md" variant="tonal" icon="star" aria-label="Star"></md-icon-button>
+<md-icon-button size="lg" variant="tonal" icon="star" aria-label="Star"></md-icon-button>
+<md-icon-button variant="outlined" button-width="wide" icon="star" aria-label="Star"></md-icon-button>`}
+  label="Sizes, and a wide container"
+/>
+
+## Shape
+
+`round` (default) or `square`, with shape morphing on press and on toggle.
+
+<ComponentDemo
+  html={`<md-icon-button variant="filled" shape="round" icon="add" aria-label="Add"></md-icon-button>
+<md-icon-button variant="filled" shape="square" icon="add" aria-label="Add"></md-icon-button>
+<md-icon-button variant="tonal" shape-morph="false" icon="add" aria-label="Add"></md-icon-button>`}
+  label="Shapes — press and hold to see the morph"
+/>
+
+## Toggle
+
+`toggle` adds a selected state and emits `aria-pressed` automatically. Provide
+`selected-icon` so the glyph changes too — M3 wants an **outlined** icon when
+unselected and a **filled** one when selected.
+
+<ComponentDemo
+  html={`<md-icon-button toggle icon="favorite_border" selected-icon="favorite" aria-label="Add to favorites"></md-icon-button>
+<md-icon-button toggle icon="bookmark_border" selected-icon="bookmark" variant="tonal" aria-label="Bookmark"></md-icon-button>
+<md-icon-button toggle selected icon="star_border" selected-icon="star" variant="filled" aria-label="Star"></md-icon-button>`}
+  label="Toggle buttons"
+/>
+
+:::caution[Without `selected-icon` only the container colour changes]
+The same glyph then shows in both states. Provide the filled counterpart, or
+the `selected` slot for a custom glyph.
+:::
+
+## States
+
+<ComponentDemo
+  html={`<md-icon-button variant="filled" icon="delete" aria-label="Delete"></md-icon-button>
+<md-icon-button variant="filled" icon="delete" disabled aria-label="Delete"></md-icon-button>
+<md-icon-button variant="filled" icon="delete" soft-disabled aria-label="Delete"></md-icon-button>`}
+  label="Enabled, disabled, soft-disabled"
+/>
+
+`disabled` leaves the tab order (`tabindex="-1"`); `soft-disabled` stays
+focusable so the action remains discoverable. There is **no `loading` prop** —
+that is [`md-button`](/components/button/) only.
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdClick` | **no** | `{ selected: boolean }` | Every activation. In toggle mode `selected` is the **already-flipped** state |
+
+:::caution[Not cancelable — unlike `md-button`]
+The toggle has already flipped when `mdClick` fires. To reject a change, set
+`selected` back in your handler.
+:::
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:16px;align-items:center;">
+  <md-icon-button id="ib-ev" icon="favorite" aria-label="Like"></md-icon-button>
+  <md-icon-button id="ib-ev2" toggle icon="star_border" selected-icon="star" aria-label="Star"></md-icon-button>
+  <code id="ib-ev-out" style="opacity:.75;font-size:.85rem;">press either button</code>
+</div>
+<script type="module">
+  const out = document.getElementById('ib-ev-out');
+  for (const id of ['ib-ev','ib-ev2']) {
+    document.getElementById(id).addEventListener('mdClick', (e) => {
+      out.textContent = id + ' → detail.selected = ' + e.detail.selected;
+    });
+  }
+</script>`}
+  label="mdClick — detail.selected on a plain and a toggle button"
+/>
+
+`detail.selected` is present on **every** `mdClick`, not just toggles — on a
+plain icon button it is always `false`, so a shared handler can read it without
+checking whether `toggle` is set.
+
+<TechnologyTabs
+  html={`<md-icon-button id="fav" toggle icon="favorite_border" selected-icon="favorite"
+                aria-label="Add to favorites"></md-icon-button>
+
+<script type="module">
+  const btn = document.getElementById('fav');
+  btn.addEventListener('mdClick', async (e) => {
+    const wanted = e.detail.selected;
+    if (!(await persist(wanted))) btn.selected = !wanted;   // revert on failure
+  });
+</script>`}
+  react={`import { MdIconButton } from '@awc-ui/react';
+import { useRef } from 'react';
+
+export function FavoriteButton() {
+  const ref = useRef<HTMLElement & { selected: boolean }>(null);
+
+  return (
+    <MdIconButton
+      ref={ref}
+      toggle
+      icon="favorite_border"
+      selectedIcon="favorite"
+      aria-label="Add to favorites"
+      onMdClick={async (e) => {
+        const wanted = e.detail.selected;
+        if (!(await persist(wanted)) && ref.current) ref.current.selected = !wanted;
+      }}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-favorite-button',
+  template: \`
+    <md-icon-button
+      #btn
+      toggle
+      icon="favorite_border"
+      selected-icon="favorite"
+      aria-label="Add to favorites"
+      (mdClick)="onClick($event, btn)"
+    ></md-icon-button>
+  \`,
+})
+export class FavoriteButtonComponent {
+  async onClick(e: CustomEvent, btn: HTMLElement & { selected: boolean }) {
+    const wanted = e.detail.selected;
+    if (!(await persist(wanted))) btn.selected = !wanted;
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+const btn = ref<HTMLElement & { selected: boolean }>();
+
+async function onClick(e: CustomEvent) {
+  const wanted = e.detail.selected;
+  if (!(await persist(wanted)) && btn.value) btn.value.selected = !wanted;
+}
+</script>
+
+<template>
+  <md-icon-button
+    ref="btn"
+    toggle
+    icon="favorite_border"
+    selected-icon="favorite"
+    aria-label="Add to favorites"
+    @mdClick="onClick"
+  />
+</template>`}
+  svelte={`<script lang="ts">
+  let btn: HTMLElement & { selected: boolean };
+
+  async function onClick(e: CustomEvent) {
+    const wanted = e.detail.selected;
+    if (!(await persist(wanted))) btn.selected = !wanted;
+  }
+</script>
+
+<md-icon-button
+  bind:this={btn}
+  toggle
+  icon="favorite_border"
+  selected-icon="favorite"
+  aria-label="Add to favorites"
+  on:mdClick={onClick}
+/>`}
+/>
+
+## Custom glyphs
+
+`(default)` slot replaces the unselected icon; the `selected` slot replaces
+the selected one.
+
+<ComponentDemo
+  html={`<md-icon-button variant="tonal" aria-label="Starred">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+</md-icon-button>
+<md-icon-button variant="outlined" aria-label="Launch">🚀</md-icon-button>`}
+  label="SVG and emoji glyphs"
+/>
+
+## Links
+
+```html
+<md-icon-button icon="open_in_new" href="https://example.com" target="_blank"
+                aria-label="Open documentation"></md-icon-button>
+```
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+  <md-icon-button href="https://m3.material.io" target="_blank" icon="open_in_new" aria-label="M3 guidelines, opens in a new tab"></md-icon-button>
+  <md-icon-button variant="filled" href="https://github.com" target="_blank" icon="code" aria-label="GitHub, opens in a new tab"></md-icon-button>
+  <md-icon-button variant="tonal" href="/components/" icon="apps" aria-label="Browse components"></md-icon-button>
+</div>`}
+  label="Link icon buttons — these navigate"
+/>
+
+:::caution[Say where a new tab goes]
+`target="_blank"` opens elsewhere with no visible label to warn anyone. Put it
+in the accessible name — "opens in a new tab" — as the first two above do.
+:::
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[Internal props]
+`connectedLeft`, `connectedRight`, `value` and `groupTabindex` are owned by
+[`md-button-group`](/components/button-group/) — don't set them by hand.
+:::
+
+## Accessibility
+
+- **`aria-label` is required.** Localize it.
+- `aria-pressed` is emitted automatically in toggle mode — don't set it yourself.
+- If the button opens a popup, add `aria-haspopup` (and `aria-expanded` where
+  you own the open state).
+- Pair with [`md-tooltip`](/components/tooltip/) so the meaning is discoverable
+  to sighted users — the tooltip is **not** the accessible name.
+- Keep the touch target ≥48px: `size="xs"` plus a deep density rung can drop
+  below it.
+
+An icon button is **always** icon-only, so it always needs a name from you.
+There is no visible label to fall back on:
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">named</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-icon-button icon="delete" aria-label="Delete invoice 4021"></md-icon-button>
+    <md-icon-button icon="edit" aria-label="Edit invoice 4021"></md-icon-button>
+  </div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">toggle</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-icon-button toggle icon="star_border" selected-icon="star" aria-label="Star this invoice"></md-icon-button>
+    <md-icon-button toggle selected icon="bookmark_border" selected-icon="bookmark" aria-label="Bookmark this invoice"></md-icon-button>
+  </div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">states</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-icon-button icon="share" aria-label="Share — enabled"></md-icon-button>
+    <md-icon-button soft-disabled icon="share" aria-label="Share — soft-disabled, still focusable"></md-icon-button>
+    <md-icon-button disabled icon="share" aria-label="Share — disabled, skipped"></md-icon-button>
+  </div>
+</div>`}
+  label="Tab through these — the soft-disabled one still takes focus"
+/>
+
+A `toggle` button exposes `aria-pressed`, so the name should describe the
+**action**, not the current state: "Star this invoice", not "Starred". The
+state is announced separately, and a name that flips with it gets read twice.
+
+## RTL, density & i18n
+
+**RTL** — the container is symmetric, so nothing flips automatically. If the
+glyph is **directional** (`arrow_back`, `chevron_right`, `send`), swap the icon
+name yourself. See [RTL](/behaviour/rtl/).
+
+**Density** — `density="-1…-4"` shrinks the container; verify the hit target.
+See [Density](/behaviour/density/).
+
+**i18n** — `aria-label` and any tooltip text come from your dictionary; the
+component renders no text of its own.
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-icon-button icon="arrow_forward" aria-label="Next"></md-icon-button>
+    <md-icon-button icon="chevron_right" aria-label="More"></md-icon-button>
+    <md-icon-button icon="search" aria-label="Search"></md-icon-button>
+    <md-icon-button icon="favorite" aria-label="Like"></md-icon-button>
+  </div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-icon-button icon="arrow_forward" aria-label="التالي"></md-icon-button>
+    <md-icon-button icon="chevron_right" aria-label="المزيد"></md-icon-button>
+    <md-icon-button icon="search" aria-label="بحث"></md-icon-button>
+    <md-icon-button icon="favorite" aria-label="إعجاب"></md-icon-button>
+  </div>
+</div>`}
+  label="Placement flips with dir; the glyphs themselves do not"
+/>
+
+:::caution[There is no `mirror-icon` here]
+Unlike [`md-button`](/components/button/#mirror-icon-is-per-glyph-not-per-button),
+`md-icon-button` has **no `mirror-icon` prop**. The box metrics are logical, so
+placement flips on its own, but a *directional glyph* will not.
+
+Flip one yourself through `::part(icon)`, scoped to RTL so it only applies where
+it should:
+
+```css
+[dir="rtl"] md-icon-button.is-directional::part(icon) {
+  transform: scaleX(-1);
+}
+```
+
+Only do it for glyphs that point — `arrow_forward`, `chevron_right`, `send`.
+A magnifier or a heart points nowhere and mirroring it just looks wrong.
+:::
+
+### Every density rung
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;"><md-icon-button density="0" icon="edit" aria-label="Edit at 0"></md-icon-button><md-icon-button density="0" variant="filled" icon="add" aria-label="Add at 0"></md-icon-button><md-icon-button density="0" variant="outlined" icon="share" aria-label="Share at 0"></md-icon-button><md-icon-button density="0" variant="tonal" icon="delete" aria-label="Delete at 0"></md-icon-button></div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;"><md-icon-button density="-1" icon="edit" aria-label="Edit at -1"></md-icon-button><md-icon-button density="-1" variant="filled" icon="add" aria-label="Add at -1"></md-icon-button><md-icon-button density="-1" variant="outlined" icon="share" aria-label="Share at -1"></md-icon-button><md-icon-button density="-1" variant="tonal" icon="delete" aria-label="Delete at -1"></md-icon-button></div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;"><md-icon-button density="-2" icon="edit" aria-label="Edit at -2"></md-icon-button><md-icon-button density="-2" variant="filled" icon="add" aria-label="Add at -2"></md-icon-button><md-icon-button density="-2" variant="outlined" icon="share" aria-label="Share at -2"></md-icon-button><md-icon-button density="-2" variant="tonal" icon="delete" aria-label="Delete at -2"></md-icon-button></div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;"><md-icon-button density="-3" icon="edit" aria-label="Edit at -3"></md-icon-button><md-icon-button density="-3" variant="filled" icon="add" aria-label="Add at -3"></md-icon-button><md-icon-button density="-3" variant="outlined" icon="share" aria-label="Share at -3"></md-icon-button><md-icon-button density="-3" variant="tonal" icon="delete" aria-label="Delete at -3"></md-icon-button></div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;"><md-icon-button density="-4" icon="edit" aria-label="Edit at -4"></md-icon-button><md-icon-button density="-4" variant="filled" icon="add" aria-label="Add at -4"></md-icon-button><md-icon-button density="-4" variant="outlined" icon="share" aria-label="Share at -4"></md-icon-button><md-icon-button density="-4" variant="tonal" icon="delete" aria-label="Delete at -4"></md-icon-button></div>
+</div>`}
+  label="density 0 through -4, across all four variants"
+/>
+
+:::caution[It floors at 32px, and 32px is still small]
+The container is `max(32px, 40px + scale × 4px)`, so the rungs measure
+**40 / 36 / 32 / 32 / 32px** — `-3` and `-4` are identical to `-2` because the
+floor has already been hit. That floor is deliberate, but 32px is well under the
+48px a pointer-coarse device wants, and an icon button has no label padding to
+soften it. Raise the target back on touch — see
+[Density](/behaviour/density/#accessibility).
+:::
+
+## Theming
+
+| Custom property | Purpose |
+|---|---|
+| `--md-icon-button-container-color` | Container background |
+| `--md-icon-button-icon-color` | Glyph colour |
+| `--md-icon-button-state-layer-color` | Hover/press overlay |
+| `--md-icon-button-icon-size` | Glyph size |
+| `--md-icon-button-container-shape` | Corner radius |
+| `--md-icon-button-outline-color` / `-width` | `outlined` border |
+| `--md-icon-button-container-width` / `-height` | Explicit container box |
+
+**CSS parts** — `state-layer`, `icon`, `selected-icon`.
+
+<ComponentDemo
+  html={`<style>
+  .ib-brand {
+    --md-icon-button-container-color: #1B5E20;
+    --md-icon-button-icon-color: #FFFFFF;
+  }
+  .ib-square { --md-icon-button-container-shape: 10px; }
+  .ib-big::part(icon) { transform: scale(1.35); }
+  .ib-gold::part(selected-icon) { color: #F9A825; }
+</style>
+<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+  <md-icon-button class="ib-brand" variant="filled" icon="add" aria-label="Brand colour"></md-icon-button>
+  <md-icon-button class="ib-square" variant="filled" icon="edit" aria-label="Square shape"></md-icon-button>
+  <md-icon-button class="ib-big" variant="tonal" icon="share" aria-label="Larger glyph via ::part(icon)"></md-icon-button>
+  <md-icon-button class="ib-gold" toggle selected icon="star_border" selected-icon="star" aria-label="Gold when selected"></md-icon-button>
+</div>`}
+  label="Custom properties, plus ::part(icon) and ::part(selected-icon)"
+/>
+
+The three parts are `state-layer`, `icon` and `selected-icon`. The last one is
+what makes a toggle's two states themeable independently — the gold star above
+styles only the selected glyph.
+
+
+## Related
+
+[`md-button`](/components/button/) ·
+[`md-fab`](/components/fab/) ·
+[`md-button-group`](/components/button-group/) ·
+[`md-chip`](/components/chip/) ·
+[`md-tooltip`](/components/tooltip/) ·
+[`md-menu`](/components/menu/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-icon-button" />

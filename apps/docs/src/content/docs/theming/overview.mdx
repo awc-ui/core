@@ -1,0 +1,73 @@
+---
+title: Theming Overview
+description: How theming works in AWC UI — design tokens, dark mode, and customization
+sidebar:
+  order: 1
+---
+
+## How Theming Works
+
+AWC UI uses a layered theming system based on CSS custom properties (design tokens). Every component reads its colors, shapes, typography, elevation, and motion from these tokens.
+
+```
+┌─────────────────────────────────────────┐
+│  Global Tokens (--md-sys-*)             │  ← packages/tokens
+│  Colors, shape, elevation, typography   │
+├─────────────────────────────────────────┤
+│  Component Tokens (--md-button-*)       │  ← per-component CSS
+│  Override specific aspects per instance │
+├─────────────────────────────────────────┤
+│  CSS Parts (::part())                   │  ← shadow DOM styling
+│  Direct access to internal elements     │
+└─────────────────────────────────────────┘
+```
+
+## Token Categories
+
+| Category | Prefix | Examples |
+|----------|--------|---------|
+| Color | `--md-sys-color-*` | `primary`, `on-primary`, `surface`, `error` |
+| Shape | `--md-sys-shape-corner-*` | `none`, `small`, `medium`, `large`, `full` |
+| Elevation | `--md-sys-elevation-*` | `0` through `5` |
+| Typography | `--md-sys-typescale-*` | `display-large`, `body-medium`, `label-small` |
+| Motion | `--md-sys-motion-*` | `duration-short1`, `easing-standard` |
+| State | `--md-sys-state-*` | `hover-state-layer-opacity`, `disabled-*` |
+
+## Quick Example
+
+Override the primary color across your entire app:
+
+```css
+:root {
+  --md-sys-color-primary: #006B5A;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #7CF8D8;
+  --md-sys-color-on-primary-container: #00201A;
+}
+```
+
+Override a specific component instance:
+
+```html
+<md-button
+  variant="filled"
+  style="--md-button-container-color: coral; --md-button-label-color: white;"
+>
+  Custom Button
+</md-button>
+```
+
+Style internal elements via CSS parts:
+
+```css
+md-button::part(label) {
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+```
+
+## Learn More
+
+- [Design Tokens](/theming/tokens/) — complete token reference with previews
+- [Dark Mode](/theming/dark-mode/) — enabling and customizing dark theme
+- [Customization](/theming/customization/) — per-component theming techniques

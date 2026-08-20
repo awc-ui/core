@@ -1,0 +1,1524 @@
+---
+title: Area Chart
+description: "A trend with cumulative volume — a line chart with the region under the curve filled, stacked by default"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ChartDemo from "../../../components/ChartDemo.astro";
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/area-chart.json";
+
+**A trend with cumulative volume.** A line chart with the region under the
+curve filled — **stacked by default**, so composition over time is the natural
+reading. Same family surface as [`md-line-chart`](/components/line-chart/); the
+one meaningful difference is that `stack` defaults to `normal` here.
+
+:::note[Not a Material Design 3 component]
+M3 ships no charts. The rendering engine is **in-house Canvas2D with a DOM
+overlay** (`utils/charts/engine`) — not a third-party charting library, whatever
+the dependency tree suggests. The guidance below is house rules.
+:::
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Live preview"
+  storyId="charts-area-chart--playground"
+  attrs={{ label: 'Traffic sources', stack: 'normal' }}
+  fixture={{
+    series: [
+      { label: 'Direct', data: [10, 22, 28, 35, 41, 38, 52, 48, 56, 62, 70, 80] },
+      { label: 'Organic', data: [18, 24, 32, 40, 48, 45, 60, 65, 72, 78, 84, 92] },
+      { label: 'Paid', data: [8, 12, 14, 22, 30, 28, 36, 42, 48, 52, 58, 64] },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
+  }}
+/>
+
+## Install
+
+<ComponentSetup tag="md-area-chart" example="" />
+
+## When to use
+
+- A trend where **total volume** matters as much as the shape.
+- **Composition over time** — how a total splits between series
+  (`stack="normal"`, the default) or how shares move (`stack="percentage"`).
+- A single cumulative measure: storage used, traffic, spend to date.
+- A 2–3 series comparison as overlapping translucent areas (`stack="none"`, used
+  sparingly), or a shape-of-the-data streamgraph (`stack="silhouette"` /
+  `stack="wiggle"`).
+- Dense or in-flight data: `zoom="inside | slider | both"` to focus a range,
+  `connect-nulls` to bridge gaps, `show-marks` to expose the points, `curve` to
+  pick the interpolation, and `loading` while the data is still arriving.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Comparing the shape of several independent series | [`md-line-chart`](/components/line-chart/) |
+| Discrete categories | [`md-bar-chart`](/components/bar-chart/) |
+| Parts of a single, non-time whole | [`md-pie-chart`](/components/pie-chart/) |
+| An inline micro-trend | [`md-sparkline`](/components/sparkline/) |
+| Exact values users must read | [`md-table`](/components/table/) |
+| Series that cross each other frequently | [`md-line-chart`](/components/line-chart/) — fills would obscure |
+| A share-of-total series that can go negative | [`md-line-chart`](/components/line-chart/) — `stack="percentage"` pins the y axis to 0–100 |
+
+## Stack modes
+
+:::caution[The default is `normal`, not `none`]
+This is the one prop where the area chart deliberately differs from
+[`md-line-chart`](/components/line-chart/). Setting `stack="none"` gives
+overlapping translucent fills, which get muddy fast.
+:::
+
+| `stack` | Visual | Best for |
+|---|---|---|
+| `none` | Translucent overlapping areas | 2–3 series comparison |
+| `normal` | Additive stack (**default**) | Composition plus total |
+| `percentage` | Each x-tick sums to 100% | Share-of-total story |
+| `silhouette` | Centred streamgraph | Shape-of-the-data exploration |
+| `wiggle` | Minimum-slope streamgraph | Many series of similar magnitude |
+
+Mixed signs are **split, not flattened**. Stacking keeps a separate cursor per
+sign, so positives accumulate upward from zero and negatives downward from zero;
+magnitudes are never summed into one misleading total. The exception is
+`stack="percentage"`, which pins the y axis to a hard `0…100` — see
+[Negative values](#negative-values).
+
+### Overlapping (un-stacked)
+
+<ChartDemo
+  tag="md-area-chart"
+  label="stack=none with a lower fill opacity"
+  attrs={{ stack: 'none', 'fill-opacity': 0.35 }}
+  fixture={{
+    series: [
+      { label: 'Direct', data: [10, 22, 28, 35, 41, 38, 52] },
+      { label: 'Organic', data: [18, 24, 32, 40, 48, 45, 60] },
+    ],
+    xAxis: { data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
+  }}
+/>
+
+### Percentage
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Share-of-total"
+  attrs={{ stack: 'percentage' }}
+  fixture={{
+    series: [
+      { label: 'Mobile', data: [40, 45, 48, 55, 62, 64] },
+      { label: 'Desktop', data: [45, 40, 35, 30, 25, 20] },
+      { label: 'Tablet', data: [15, 15, 17, 15, 13, 16] },
+    ],
+    xAxis: { data: ['2020', '2021', '2022', '2023', '2024', '2025'] },
+  }}
+/>
+
+### Streamgraph (silhouette)
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Streamgraph"
+  attrs={{ stack: 'silhouette', curve: 'smooth', legend: 'none' }}
+  fixture={{
+    series: [
+      { label: 'A', data: [10, 22, 28, 35, 41, 38, 52, 48, 56, 62, 70, 80], color: 'primary' },
+      { label: 'B', data: [18, 24, 32, 40, 48, 45, 60, 65, 72, 78, 84, 92], color: 'tertiary' },
+      { label: 'C', data: [8, 12, 14, 22, 30, 28, 36, 42, 48, 52, 58, 64], color: 'secondary' },
+      { label: 'D', data: [4, 7, 8, 13, 19, 18, 24, 28, 32, 35, 38, 42], color: 'error' },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], hideTicks: true },
+    yAxis: { hidden: true },
+  }}
+/>
+
+The `silhouette` and `wiggle` modes default `stroke` to off per series — a band
+on a floating baseline has no meaningful top edge to trace.
+
+## Curve
+
+`curve` decides how the band's top edge is drawn between points. `smooth` reads
+as a trend; `linear` is honest about where the measurements actually are.
+
+<ChartDemo
+  tag="md-area-chart"
+  label="curve=smooth vs curve=linear"
+  storyId="charts-area-chart--area-spline"
+  attrs={{ label: 'Smooth', stack: 'none', curve: 'smooth' }}
+  fixture={{
+    series: [{ label: 'Sessions', data: [12, 34, 22, 48, 30, 56, 41, 64] }],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'] },
+  }}
+/>
+
+<ChartDemo
+  tag="md-area-chart"
+  label="The same data with curve=linear"
+  attrs={{ label: 'Linear', stack: 'none', curve: 'linear' }}
+  fixture={{
+    series: [{ label: 'Sessions', data: [12, 34, 22, 48, 30, 56, 41, 64] }],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'] },
+  }}
+/>
+
+:::caution[`smooth` invents points you did not measure]
+A spline overshoots between samples, so a smoothed band can imply a peak that
+never happened. Use it for dense series where the shape is the story; use
+`linear` when individual readings matter.
+:::
+
+## Labels on the plot
+
+`show-labels` prints each point's value; `series-labels` puts the series name at
+its last point, so the name follows the end of the band instead of sitting in a
+legend the reader has to look back at.
+
+<ChartDemo
+  tag="md-area-chart"
+  label="show-labels — values on the plot"
+  storyId="charts-area-chart--data-labels"
+  attrs={{ label: 'Rainfall (mm)', stack: 'none', curve: 'smooth', 'show-labels': true }}
+  fixture={{
+    series: [
+      { label: 'Bergen', color: 'primary', data: [190, 152, 170, 114, 106, 132] },
+      { label: 'Tromsø', color: 'tertiary', data: [95, 87, 72, 64, 48, 59] },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+  }}
+/>
+
+<ChartDemo
+  tag="md-area-chart"
+  label="series-labels — the name follows the band"
+  storyId="charts-area-chart--area-race"
+  attrs={{ label: 'Market share', stack: 'normal', curve: 'linear', 'series-labels': true }}
+  fixture={{
+    series: [
+      { label: 'Alpha', data: [30, 34, 38, 45, 52, 61] },
+      { label: 'Beta', data: [26, 28, 30, 31, 33, 36] },
+      { label: 'Gamma', data: [14, 16, 17, 19, 20, 22] },
+    ],
+    xAxis: { data: ['2019', '2020', '2021', '2022', '2023', '2024'] },
+  }}
+/>
+
+## Series colour
+
+`color` on a series takes an **MD3 role name** or any CSS colour. Prefer the
+role: it follows the theme and stays legible in dark mode, where a hardcoded
+hex will not.
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Role names — primary, secondary, tertiary"
+  attrs={{ label: 'Themed roles', stack: 'none' }}
+  fixture={{
+    series: [
+      { label: 'primary', color: 'primary', data: [10, 22, 28, 35, 41, 38] },
+      { label: 'secondary', color: 'secondary', data: [18, 24, 32, 40, 48, 45] },
+      { label: 'tertiary', color: 'tertiary', data: [8, 12, 14, 22, 30, 28] },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+  }}
+/>
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Explicit CSS colours — rgb, rgba and named"
+  storyId="charts-area-chart--color-formats"
+  attrs={{ label: 'Explicit colours', stack: 'none' }}
+  fixture={{
+    series: [
+      { label: 'rgb', color: 'rgb(255, 87, 34)', data: [10, 22, 28, 35, 41, 38] },
+      { label: 'rgba', color: 'rgba(0, 150, 136, 0.9)', data: [18, 24, 32, 40, 48, 45] },
+      { label: 'named', color: 'goldenrod', data: [8, 12, 14, 22, 30, 28] },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+  }}
+/>
+
+## Axis breaks
+
+When one series dwarfs the rest, `breaks: 'auto'` on the axis cuts the empty
+stretch so the small values stay readable instead of flattening against the
+baseline.
+
+<ChartDemo
+  tag="md-area-chart"
+  label="yAxis.breaks = 'auto'"
+  storyId="charts-area-chart--axis-breaks"
+  attrs={{ label: 'Monthly active users', stack: 'none', curve: 'smooth' }}
+  fixture={{
+    series: [{ label: 'MAU (k)', color: 'primary', data: [8, 12, 18, 25, 1150, 1320, 1280, 1400] }],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'] },
+    yAxis: { label: 'MAU (k)', breaks: 'auto' },
+  }}
+/>
+
+:::note[A break is a visible cut, not a lie]
+The axis draws the cut so the reader can see the scale is interrupted. Never
+achieve the same effect by truncating the axis silently.
+:::
+
+## Range series
+
+A series can carry a `range` of `[low, high]` pairs instead of `data`, filling
+the band between them rather than down to the baseline. It answers a different
+question than a line does: not how high a value was, but how *wide* it was.
+
+`range` is its own field, not a shape `data` accepts, because `[low, high]` and
+the existing `[x, y]` point tuple are indistinguishable at runtime — a series
+says which it means by which field it fills in. Either form works per row:
+
+```ts
+const series = [
+  { label: 'Daily spread', range: [[-4.8, 1], [0, 6], null] },        // tuples
+  { label: 'Daily spread', range: [{ low: -4.8, high: 1 }] },         // objects
+];
+```
+
+A range never joins the stack (a band has no single value to add to a column),
+takes the axis domain from **both** edges, and draws no stroke. Its tooltip
+reads *low – high* and the screen-reader table gives both edges in one cell. A
+`null` row — or a null edge — is a gap that breaks the band.
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Daily minimum to maximum"
+  attrs={{ curve: 'linear', legend: 'none' }}
+  fixture={{
+    series: [{ label: 'Temperature', color: 'secondary', range: [[-4, 2], [-2, 5], [1, 9], [3, 12], [2, 10], [-1, 6], [-3, 3]] }],
+    xAxis: { data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
+  }}
+/>
+
+### A line over a band
+
+Layer a plain series on top and give it `fill: false`. Without that an area
+chart fills **every** series down to the axis, and the line's own fill buries
+the band it is meant to sit inside. `stroke: false` is the mirror image — fill
+only, no line.
+
+```ts
+const series = [
+  { label: 'Range', color: 'secondary', range: spread },
+  { label: 'Mean', color: 'primary', data: means, fill: false, showMarks: true },
+];
+```
+
+Give the two different colour roles. Sharing one leaves the legend showing two
+identical swatches, and the line has to fight the band for contrast.
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Daily spread with the mean drawn over it"
+  storyId="charts-area-chart--range-with-line"
+  attrs={{ curve: 'linear', legend: 'bottom', 'fill-opacity': 0.45 }}
+  fixture={{
+    series: [
+      {
+        label: 'Daily range',
+        color: 'secondary',
+        range: [
+          [-6.1, 1.2], [-4.8, 3.4], [-1.2, 8.9], [2.4, 14.6], [6.8, 19.2], [10.4, 23.8],
+          [12.9, 26.1], [11.8, 24.7], [7.2, 19.4], [2.6, 13.1], [-1.9, 6.3], [-5.2, 2.1],
+        ],
+      },
+      {
+        label: 'Daily mean',
+        color: 'primary',
+        data: [-2.4, -0.7, 3.8, 8.5, 13.0, 17.1, 19.5, 18.2, 13.3, 7.8, 2.2, -1.6],
+        fill: false,
+        showMarks: true,
+      },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] },
+    yAxis: { label: '°C' },
+  }}
+/>
+
+## Fan chart
+
+A fan chart is the range series used three times over: nested bands at 1σ, 2σ
+and 3σ around a forecast, so the uncertainty is drawn as width. Everything left
+of the split is measured and the bands are `null` there; from the last actual
+onward they open outward.
+
+Three details make it read correctly:
+
+- **The bands share an anchor.** Each starts with a zero-width `[m, m]` pair at
+  the last actual, so the fan opens *from the present* rather than appearing
+  with a step.
+- **σ grows with the square root of the horizon**, the way a random walk's
+  uncertainty does. Linear growth would draw a cone, which claims a precision
+  the model doesn't have.
+- **Each band gets its own tint**, drawn opaque. Nested bands in one colour are
+  told apart only by where they overlap — which a legend swatch and a tooltip
+  row cannot show, so every swatch would come out identical.
+
+An `xAxis` band shades the forecast half, labelling where measurement stops and
+projection starts.
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Forecast with 1σ / 2σ / 3σ confidence bands"
+  storyId="charts-area-chart--fan-chart"
+  attrs={{ label: 'Predicted net income', curve: 'linear', legend: 'none', grid: 'horizontal', 'fill-opacity': 1, 'title-align': 'center' }}
+  fixture={{
+    xAxis: {
+      data: [
+        'Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024', 'Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025',
+        'Q1 2026', 'Q2 2026', 'Q3 2026', 'Q4 2026', 'Q1 2027', 'Q2 2027', 'Q3 2027', 'Q4 2027',
+      ],
+      bands: [{ from: 7, to: 15, color: 'color-mix(in srgb, var(--md-sys-color-error) 6%, transparent)', label: 'Forecast' }],
+    },
+    yAxis: { min: 0 },
+  }}
+  boot={`
+    const ACTUAL = [18.7, 19.1, 20.4, 21.6, 19.8, 19.4, 19.9, 21.7];
+    const MEAN   = [21.6, 24.9, 23.4, 24.2, 24.5, 26.1, 27.2, 27.6];
+    // Random-walk uncertainty: sigma grows with the SQUARE ROOT of the horizon.
+    const SIGMA  = MEAN.map((_, i) => 0.9 * Math.sqrt(i + 1));
+    const anchor = ACTUAL[ACTUAL.length - 1];
+
+    const band = (k) => [
+      ...ACTUAL.slice(0, -1).map(() => null),          // measured half: no band
+      [anchor, anchor],                                 // zero width at the split
+      ...MEAN.map((m, i) => [m - k * SIGMA[i], m + k * SIGMA[i]]),
+    ];
+
+    // Normalise the theme's error role to #rrggbb via a throwaway 2D context,
+    // then tint by alpha — nested bands need distinguishable swatches.
+    const probe = document.createElement('canvas').getContext('2d');
+    probe.fillStyle = getComputedStyle(document.documentElement)
+      .getPropertyValue('--md-sys-color-error').trim() || '#B3261E';
+    const hex = probe.fillStyle;
+    const n = parseInt(hex.slice(1), 16);
+    const tint = (a) => 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+
+    el.valueFormatter = (v) => (v == null ? '—' : v.toFixed(1) + 'M');
+    el.series = [
+      { label: '3σ confidence', color: tint(0.18), range: band(3) },   // widest first
+      { label: '2σ confidence', color: tint(0.3), range: band(2) },
+      { label: '1σ confidence', color: tint(0.45), range: band(1) },
+      { label: 'Net income', color: 'primary', data: [...ACTUAL, ...MEAN], fill: false },
+    ];
+  `}
+/>
+
+## Inverted axes
+
+`inverted` transposes the plot: the category / time axis runs down the side and
+values run across the bottom. Reach for it when the independent variable is
+naturally read as depth — altitude, a drill core, ocean depth — or when its
+labels are long enough that a horizontal axis would rotate them.
+
+Stacking still applies along the value axis, so a percentage-stacked inverted
+chart reads as a composition profile: at any height, what is this made of?
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Composition by height"
+  attrs={{ inverted: true, stack: 'percentage', curve: 'smooth', legend: 'bottom' }}
+  fixture={{
+    series: [
+      { label: 'N₂', data: [78, 69, 43, 12, 2, 0] },
+      { label: 'O₂', data: [21, 10, 4, 1, 0, 0] },
+      { label: 'O', data: [0, 20, 53, 84, 88, 60] },
+      { label: 'He', data: [0, 1, 0.3, 3, 8, 32] },
+      { label: 'H', data: [0, 0, 0, 0.3, 2, 8] },
+    ],
+    xAxis: { data: [0, 150, 200, 300, 400, 600], scale: 'value', label: 'Height (km)' },
+  }}
+/>
+
+## Gaps and negative values
+
+A `null` is a gap, not a zero: the fill and the line both break at it, so a hole
+in the record reads as a hole. Set `connect-nulls` to bridge it instead — right
+for a dropped sensor reading, wrong for a period a series genuinely did not
+exist, where bridging invents data.
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Gaps left open vs bridged"
+  attrs={{ stack: 'none', 'show-marks': true, 'fill-opacity': 0.3 }}
+  fixture={{
+    series: [
+      { label: 'Bridged', data: [10, 18, null, null, 22, 28, null, 36], connectNulls: true },
+      { label: 'Left open', data: [6, 12, null, null, 15, 19, null, 24], connectNulls: false },
+    ],
+    xAxis: { data: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] },
+  }}
+/>
+
+### Negative values
+
+A series that crosses zero fills **to the zero line**, not to the bottom of the
+plot — so the band above the axis and the band below it read as opposite signs
+rather than as one continuous shape. The domain stretches to hold both, and the
+zero line stays where the data puts it.
+
+Stacking splits by sign: positives stack upward from zero and negatives stack
+downward, each side accumulating separately. That's the only way a stacked
+column with mixed signs can stay readable — summing them into one band would
+cancel contributions that the reader needs to see.
+
+:::caution[`stack="percentage"` cannot draw the negative half]
+The stacking maths does normalise each sign against its own total (positives
+toward +100%, negatives toward −100%), but the component then pins the y axis to
+a hard `0…100`: under `stack="percentage"` it overrides `yAxis.min` / `yAxis.max`
+outright, and an explicit bound is a domain, not a hint. Nothing below zero lands
+inside the plotted range. Use `stack="normal"` when a composition series can go
+negative.
+:::
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Net flow crossing zero"
+  storyId="charts-area-chart--negative-values"
+  attrs={{ label: 'Net cash flow', stack: 'none', curve: 'linear', 'show-marks': true, 'fill-opacity': 0.35, legend: 'bottom' }}
+  fixture={{
+    series: [
+      { label: 'Operating', color: 'primary', data: [12, 18, -6, -14, 4, 16, 22, 9] },
+      { label: 'Investing', color: 'tertiary', data: [-8, -4, -12, 6, 14, -3, -9, 11] },
+    ],
+    xAxis: { data: ['Q1', 'Q2', 'Q3', 'Q4', 'Q1', 'Q2', 'Q3', 'Q4'] },
+    yAxis: { label: '€M' },
+  }}
+/>
+
+:::caution[A streamgraph has no zero line to cross]
+`stack="silhouette"` centres each column on its own baseline, so "above the
+axis" stops meaning "positive". Use `normal` stacking or none when the sign of
+a value is part of the story.
+:::
+
+## Animating a race
+
+A "race" sweeps the plot from the first sample to the last, revealing the bands
+as it goes. There is no `race` prop — you reassign `series` and `xAxis` on every
+frame, and the chart redraws. Press play:
+
+<ComponentDemo
+  html={`<div style="inline-size:100%;display:flex;flex-direction:column;gap:12px;">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <md-icon-button id="race-play" variant="filled" icon="play_arrow" aria-label="Play or pause"></md-icon-button>
+    <md-slider id="race-slider" min="2000" max="2024" step="0.1" value="2024" style="flex:1;" aria-label="Progress"></md-slider>
+  </div>
+  <md-area-chart id="race-chart" label="Energy mix" stack="normal" curve="linear" style="inline-size:100%;block-size:280px;"></md-area-chart>
+</div>
+<script type="module">
+  const YEARS  = [2000, 2004, 2008, 2012, 2016, 2020, 2024];
+  const SOURCE = [
+    { label: 'Coal',  color: 'tertiary',  data: [58, 54, 47, 40, 31, 22, 15] },
+    { label: 'Gas',   color: 'secondary', data: [22, 26, 30, 33, 34, 32, 28] },
+    { label: 'Solar', color: 'primary',   data: [1, 3, 7, 14, 24, 38, 55] },
+  ];
+  const FIRST = YEARS[0], LAST = YEARS[YEARS.length - 1];
+  const chart  = document.getElementById('race-chart');
+  const slider = document.getElementById('race-slider');
+  const play   = document.getElementById('race-play');
+
+  // Start COMPLETE, not empty: a docs page that greets you with a blank plot
+  // reads as broken. Play resets to FIRST and sweeps (see the handler below).
+  let progress = LAST, raf = 0, last = 0, dragging = false;
+  const SPEED = (LAST - FIRST) / 8000;          // full sweep ≈ 8s
+
+  function apply() {
+    const xs = [];
+    const rows = SOURCE.map(() => []);
+    for (let i = 0; YEARS.length > i; i++) {
+      const year = YEARS[i];
+      xs.push(year);
+      // Points past the leading edge are null, not dropped — the axis keeps its
+      // full range so it does not rescale on every frame.
+      SOURCE.forEach((s, k) => rows[k].push(progress >= year ? s.data[i] : null));
+      // An interpolated sample exactly at the edge, so the sweep glides between
+      // samples instead of stepping one whole year at a time.
+      if (YEARS.length - 1 > i && progress >= year && YEARS[i + 1] > progress) {
+        const span = YEARS[i + 1] - year;
+        const f = span > 0 ? (progress - year) / span : 0;
+        if (f > 1e-4) {
+          xs.push(progress);
+          SOURCE.forEach((s, k) => rows[k].push(s.data[i] + (s.data[i + 1] - s.data[i]) * f));
+        }
+      }
+    }
+    chart.xAxis = { data: xs, scale: 'value', valueFormatter: (v) => String(Math.round(v)) };
+    chart.series = SOURCE.map((s, k) => ({ label: s.label, color: s.color, data: rows[k] }));
+    if (!dragging) slider.value = progress;
+  }
+
+  function stop() { cancelAnimationFrame(raf); raf = 0; last = 0; play.icon = 'play_arrow'; }
+  function frame(now) {
+    if (!chart.isConnected) return stop();     // never leak a rAF into a dead node
+    if (!last) last = now;
+    progress = Math.min(LAST, progress + (now - last) * SPEED);
+    last = now;
+    apply();
+    if (progress >= LAST) return stop();
+    raf = requestAnimationFrame(frame);
+  }
+  play.addEventListener('mdClick', () => {
+    if (raf) return stop();
+    if (progress >= LAST) progress = FIRST;
+    play.icon = 'pause'; last = 0; raf = requestAnimationFrame(frame);
+  });
+  slider.addEventListener('mdInput', (e) => {
+    dragging = true; stop(); progress = e.detail.value ?? slider.value; apply();
+  });
+  slider.addEventListener('mdChange', () => { dragging = false; });
+
+  apply();
+</script>`}
+  label="Press play, or drag the slider"
+  storyId="charts-area-chart--area-race"
+/>
+
+Four things make the difference between a smooth race and a jerky one:
+
+| Do | Why |
+|---|---|
+| Drive progress in **axis value space** (the year), not the array index | Real series are rarely evenly sampled. Stepping by index sweeps ten years per tick where the data is decadal and one per tick where it is annual — the edge races, then crawls, and a slider bound to the index disagrees with what you see |
+| Mask the future with **`null`**, do not slice the array | The axis keeps its full range, so it does not rescale on every frame |
+| Insert an **interpolated point at the edge** | Without it the band steps one whole sample at a time instead of gliding |
+| Stop on `!chart.isConnected` | Otherwise the rAF loop outlives the element and keeps running after navigation |
+
+:::caution[A race is a presentation, not a chart type]
+It shows one series set over time — the same thing a static chart shows, more
+slowly. Use it when the *order of events* is the point. When the reader needs
+to compare values, give them the finished chart.
+:::
+
+## Zoom
+
+`zoom` turns on two independent gestures:
+
+| Value | Gesture |
+|---|---|
+| `none` | Off (default) |
+| `inside` | Drag across the plot to select a range; double-click to reset |
+| `slider` | A range slider under the plot; drag its middle to pan the window |
+| `both` | Both |
+
+Zoom is a **view**. The window slices what the engine draws and leaves your
+`series` array untouched, so nothing downstream has to know a window is applied
+— every event still reports **absolute** indices into the data you supplied.
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Drag the plot, or use the slider"
+  attrs={{ zoom: 'both', stack: 'normal', label: 'Sessions' }}
+  fixture={{
+    series: [
+      { label: 'Sessions', data: Array.from({ length: 60 }, (_, i) => Math.round(Math.sin(i / 6) * 18 + 60 + (i % 4) * 3)) },
+      { label: 'Signups', data: Array.from({ length: 60 }, (_, i) => Math.round(Math.cos(i / 7) * 10 + 30 + (i % 3) * 2)) },
+    ],
+    xAxis: { data: Array.from({ length: 60 }, (_, i) => 'T' + (i + 1)), hideTicks: true },
+  }}
+/>
+
+```ts
+await chart.setZoom(10, 40);   // absolute indices
+await chart.resetZoom();
+```
+
+Label the slider's thumbs with `label-zoom-start` / `label-zoom-end`.
+
+## Loading and empty states
+
+`loading` shows an opaque overlay with a progress indicator over the plot — it
+has to be opaque, because the engine still draws a placeholder axis when there
+is no data. An empty `series` shows `label-empty` instead. The two never stack:
+"no data" is the wrong answer to "where is my data?" mid-load. Both accept
+slotted content (`slot="loader"`, `slot="empty"`) when text is not enough.
+
+<ChartDemo
+  tag="md-area-chart"
+  label="loading — the overlay, held on so you can see it"
+  attrs={{ label: 'Traffic sources', loading: true, 'loading-label': 'Loading traffic…' }}
+  fixture={{
+    series: [{ label: 'Direct', data: [10, 22, 28, 35, 41, 38] }],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+  }}
+/>
+
+`loading-label` names the state for screen readers *and* prints under the
+spinner. The demo above keeps `loading` on permanently; in practice you clear it
+when the fetch resolves:
+
+```ts
+const chart = document.querySelector('md-area-chart');
+
+chart.loading = true;
+const rows = await fetch('/api/traffic').then((r) => r.json());
+chart.series = rows;
+chart.loading = false;      // data first, then drop the overlay
+```
+
+Set `series` **before** clearing `loading`, not after: the overlay is what hides
+the placeholder axis the engine draws for absent data, so clearing it first
+flashes an empty grid between the spinner and the bands.
+
+### Replacing the loader
+
+The default is a **circular** indicator plus the `loading-label` text. When that
+is not the right shape — a wide dashboard tile, a skeleton mirroring the chart's
+own layout — slot your own into `loader`; it replaces the default entirely.
+(`loading` is kept as the older alias for the same slot, and `loader` wins if
+both are given.)
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Slotted linear loader"
+  attrs={{ label: 'Traffic sources', loading: true }}
+  fixture={{ series: [], xAxis: { data: [] }, yAxis: { label: 'Sessions' } }}
+  innerHtml={`<div slot="loader" style="inline-size: min(320px, 70%); display: grid; gap: 12px; justify-items: center;">
+  <md-progress-indicator variant="linear" indeterminate label="Loading traffic" style="inline-size: 100%;"></md-progress-indicator>
+  <span>Loading traffic…</span>
+</div>`}
+/>
+
+Pick by tile shape, not by taste: circular reads as "this panel is busy" and
+survives a narrow column, while a linear bar spans a wide tile and implies the
+work moves left to right. Both are indeterminate here — use a determinate
+`value` only when you genuinely know the progress.
+
+<ChartDemo
+  tag="md-area-chart"
+  label="A circular md-progress-indicator slotted over the default loader"
+  attrs={{ label: 'Traffic', loading: true, 'loading-label': 'Fetching traffic…' }}
+  fixture={{ series: [], xAxis: { data: [] } }}
+  innerHtml={`<md-progress-indicator slot="loader" variant="circular" indeterminate size="40" label="Loading"></md-progress-indicator>`}
+/>
+
+:::caution[Use the indicator components, not your own spinner]
+`md-progress-indicator` (linear or circular) and `md-loading-indicator` already
+carry the MD3 motion tokens, the reduced-motion fallback and the right ARIA. A
+hand-rolled spinner in a `loader` slot gets none of that.
+:::
+
+### Empty state
+
+An empty `series` array shows `label-empty` in the middle of the plot. Slot
+`empty` when a sentence is not enough — an icon, a "create your first report"
+action.
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Empty state"
+  attrs={{ 'label-empty': 'No traffic recorded yet' }}
+  fixture={{ series: [] }}
+/>
+
+## Tooltips
+
+`tooltip` selects the trigger: `axis` (default) lists every series at the
+hovered x, `item` reports only the series under the pointer, `none` disables
+pointer hover — keyboard navigation and the live region keep working either way.
+
+On a filled chart `item` is often the better default: a thick band means the
+pointer really is *on* one series, and an every-series list buries it.
+
+### Custom tooltip
+
+`tooltipRenderer` replaces the card's **content** — the chart keeps owning the
+card itself: its surface, elevation, and placement. It's a property, not an
+attribute, so it's set in JS (or bound with `.prop` / `:prop` / `[prop]` in a
+framework), never in markup.
+
+```ts
+const tooltipRenderer = (ctx) => `${ctx.axisLabel}: ${ctx.series.length} series`;
+```
+
+Hover the chart below. Nothing in this card is the default card with extra
+columns — it's a different object: a spelled-out day overline, the day's total
+as the headline with a **day-over-day delta chip**, a **100% stacked share bar**
+that gives the composition at a glance, and per-series rows that **dim away from
+the series you're nearest**.
+
+Each piece leans on something the context hands you. The share bar and the
+percentages need *every* series at the hovered x — which is precisely what
+`ctx.series` is. The dimming reads `focused` (equivalently
+`ctx.focusedSeriesIndex`), so the card emphasises the same series the plot does.
+The swatches and bar segments reuse each series' resolved `color`, so they track
+the theme with nothing hard-coded. The delta is the one thing the chart *can't*
+tell you — yesterday's total isn't at today's x — so the renderer closes over
+its own data, which is the normal way to pull in context the chart doesn't have.
+
+<ChartDemo
+  tag="md-area-chart"
+  label="tooltipRenderer — totals and per-series share"
+  storyId="charts-area-chart--stacked-inverted"
+  attrs={{ label: 'Traffic sources', stack: 'normal', tooltip: 'axis', legend: 'bottom' }}
+  fixture={{
+    series: [
+      { label: 'Direct', data: [10, 22, 28, 35, 41, 38, 52] },
+      { label: 'Organic', data: [18, 24, 32, 40, 48, 45, 60] },
+      { label: 'Paid', data: [8, 12, 14, 22, 30, 28, 36] },
+    ],
+    xAxis: { data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
+  }}
+  fnFixture={{
+    tooltipRenderer: `(ctx) => {
+      // Closed over, not passed in: the renderer is handed the hovered x only,
+      // so anything comparative (yesterday's total) has to come from your data.
+      const DATA = [
+        [10, 22, 28, 35, 41, 38, 52],
+        [18, 24, 32, 40, 48, 45, 60],
+        [8, 12, 14, 22, 30, 28, 36],
+      ];
+      const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      const totalAt = (i) => (i < 0 ? null : DATA.reduce((sum, a) => sum + a[i], 0));
+
+      const el = (tag, css, text) => {
+        const n = document.createElement(tag);
+        if (css) n.style.cssText = css;
+        if (text != null) n.textContent = text;
+        return n;
+      };
+
+      const rows = ctx.series;
+      const total = rows.reduce((sum, r) => sum + (r.value ?? 0), 0);
+      const prev = totalAt(ctx.dataIndex - 1);
+      const delta = prev ? Math.round(((total - prev) / prev) * 100) : null;
+      const lit = (r) => ctx.focusedSeriesIndex < 0 || r.focused;
+
+      const card = el('div', 'min-width:212px;font-variant-numeric:tabular-nums');
+
+      card.append(el('div',
+        'font-size:0.68em;letter-spacing:0.1em;text-transform:uppercase;opacity:0.55',
+        DAYS[ctx.dataIndex] ?? ctx.axisLabel));
+
+      const head = el('div', 'display:flex;align-items:baseline;gap:5px;margin:1px 0 9px');
+      head.append(el('span', 'font-size:1.5em;font-weight:700;line-height:1.05', total.toLocaleString()));
+      head.append(el('span', 'font-size:0.76em;opacity:0.55', 'visits'));
+      if (delta !== null) {
+        const up = delta >= 0;
+        head.append(el('span',
+          'margin-inline-start:auto;font-size:0.72em;font-weight:700;padding:1px 7px;border-radius:999px;' +
+          'background:' + (up ? 'rgba(64,186,128,0.18)' : 'rgba(224,106,106,0.18)') + ';' +
+          'color:' + (up ? '#40ba80' : '#e06a6a'),
+          (up ? '▲ ' : '▼ ') + Math.abs(delta) + '%'));
+      }
+      card.append(head);
+
+      // Composition at a glance — the one view a row list can never give you.
+      const bar = el('div', 'display:flex;gap:2px;height:6px;margin-bottom:9px');
+      rows.forEach((r) => {
+        const seg = el('div',
+          'flex:' + ((r.value ?? 0) || 0.001) + ';border-radius:999px;background:' + r.color +
+          ';opacity:' + (lit(r) ? '1' : '0.35'));
+        bar.append(seg);
+      });
+      card.append(bar);
+
+      rows.forEach((r) => {
+        const row = el('div',
+          'display:grid;grid-template-columns:9px 1fr auto 38px;gap:9px;align-items:center;' +
+          'padding:2.5px 0;opacity:' + (lit(r) ? '1' : '0.45'));
+        row.append(el('span', 'width:9px;height:9px;border-radius:3px;background:' + r.color));
+        row.append(el('span', lit(r) && ctx.focusedSeriesIndex >= 0 ? 'font-weight:600' : null, r.label));
+        row.append(el('span', 'font-weight:700', r.formattedValue));
+        row.append(el('span', 'opacity:0.55;text-align:end',
+          total ? Math.round(((r.value ?? 0) / total) * 100) + '%' : ''));
+        card.append(row);
+      });
+
+      return card;
+    }`,
+  }}
+/>
+
+The context describes the hovered x position:
+
+<div class="md-table-scroll">
+
+| Field | Type | Meaning |
+|---|---|---|
+| `dataIndex` | `number` | Index of the hovered x slot |
+| `axisValue` | `string \| number \| Date \| undefined` | Raw x value there |
+| `axisLabel` | `string` | `axisValue` through the x-axis formatter — the default card's header |
+| `series` | `MdChartTooltipSeries[]` | Visible series that **have** a value here, in series order |
+| `missing` | `MdChartTooltipSeries[]` | Visible series with **no** value here — usually empty, populated for partial or irregular data |
+| `focusedSeriesIndex` | `number` | The emphasised series, or `-1` when none is (a single-series chart never emphasises) |
+
+</div>
+
+Each entry in `series` / `missing` carries `seriesIndex`, `label`, `color` (an
+already-resolved CSS colour, so it can go straight into a style), `value`,
+`formattedValue`, `focused`, and `missing`.
+
+`value` distinguishes two kinds of absence, which is the whole reason `missing`
+is a separate list: `null` means the series *has* a datum here and it is null —
+measured, no value — while `undefined` means there is no datum at all, because
+the series starts later, ends earlier, or was never sampled at this x.
+
+What you return decides what's drawn:
+
+<div class="md-table-scroll">
+
+| Return | Result |
+|---|---|
+| `Node` | Inserted as-is — the safest option, and what framework renderers produce |
+| `string` | Set as **text**. Markup is shown, not parsed |
+| `{ unsafeHtml }` | Assigned to `innerHTML` with **no sanitising** — only for markup you fully control |
+| `undefined` | Fall back to the built-in tooltip for this x |
+| `null` | Render no tooltip at all for this x |
+
+</div>
+
+Returning `undefined` for the ordinary case and a `Node` only where you need
+something special lets you override one column without reimplementing the card.
+
+:::caution[It runs on every hover frame]
+Build the node, don't recompute a dataset. And don't set `position` / `left` /
+`top` on the outermost node — the engine positions whatever you return, so
+those fight it.
+:::
+
+The card's own surface stays the chart's: restyle it with `::part(tooltip)`,
+which wraps whatever the renderer returns. (The engine creates that part at
+runtime, so it isn't in the parts table below — the table lists only parts
+declared in the component's own markup.)
+
+```css
+md-area-chart::part(tooltip) {
+  background: none;
+  box-shadow: none;
+}
+```
+
+The demo's own code panel carries that whole card, in all five technologies. The
+part that actually differs between them is how you **bind** a function prop:
+
+| Technology | Binding | The thing to watch |
+|---|---|---|
+| HTML | `chart.tooltipRenderer = fn` | A property assignment — there is no attribute form |
+| React | `tooltipRenderer={fn}` | Declare `fn` outside the component (or wrap it in `useCallback`) so its identity is stable between renders |
+| Angular | `[tooltipRenderer]="fn"` | Make it an **arrow property**, so `this` stays bound when the chart calls it |
+| Vue | `:tooltipRenderer="fn"` | A plain function, not a `ref` — Vue would try to unwrap a ref on access |
+| Svelte | `{tooltipRenderer}` | Assigned as a property on the upgraded element |
+
+For a text-only card, returning a string is enough — and it's safe by
+construction, since it is set as text:
+
+```ts
+const tooltipRenderer = (ctx) => {
+  const total = ctx.series.reduce((sum, r) => sum + (r.value ?? 0), 0);
+  return `${ctx.axisLabel} — ${total.toLocaleString()} total`;
+};
+```
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdMarkerClick` | no | `MdChartClickDetail<MdChartSeries>` | A data-point marker is clicked |
+| `mdLineClick` | no | `MdChartClickDetail<MdChartSeries>` | A series line is clicked *between* its points |
+| `mdAreaClick` | no | `MdChartClickDetail<MdChartSeries>` | A filled band is clicked (its own band when stacked) |
+| `mdAxisClick` | no | `MdChartAxisClickDetail` | The plot background — nearest x plus every visible series' value |
+| `mdLegendClick` | no | `{ seriesIndex, seriesId?, selected }` | A legend chip toggles a series |
+| `mdHover` | no | `MdChartHoverDetail` | The hovered data index changes (rAF-throttled) |
+| `mdZoom` | no | `{ startIndex, endIndex, reset }` | The zoom window changes (drag, slider, `setZoom`, `resetZoom`) |
+| `mdReady` | no | `void` | The engine has mounted and drawn |
+
+:::tip[Gate exports on `mdReady`]
+`toDataURL()` before `mdReady` returns an image of nothing — the chart may not
+have drawn yet.
+:::
+
+### Event payloads
+
+The three click events share one payload, so a single handler can serve markers,
+lines and bands. Every field is present without re-mapping to chart-internal
+coordinates, which is what makes drill-down and selection straightforward.
+
+```ts
+type MdChartAxisValue = string | number | Date;
+type MdChartDataPoint = number | null;
+
+// mdMarkerClick, mdLineClick, mdAreaClick
+interface MdChartClickDetail<T = unknown> {
+  seriesIndex: number;                 // 0-based index within the `series` array
+  seriesId?: string;                   // the series' id, when one was given
+  dataIndex: number;                   // index of the point within that series
+  value: MdChartDataPoint;             // raw value — null for an empty slot
+  axisValue?: MdChartAxisValue;        // original x-axis value at that column
+  series: T;                           // the series object you passed in
+  nativeEvent: PointerEvent | MouseEvent | KeyboardEvent;
+}
+```
+
+The area chart emits it as `MdChartClickDetail<MdChartSeries>`, so
+`detail.series` comes back typed as the object you handed to the `series` prop.
+
+A click on the plot background instead reports the nearest x plus *every visible
+series'* value there — one click gives you the whole column, the way the axis
+tooltip shows it. Series hidden by a legend toggle are left out.
+
+```ts
+// one row per visible series at the clicked x
+interface MdChartAxisSeriesValue {
+  seriesIndex: number;
+  seriesId?: string;
+  label: string;                       // as shown in the legend and tooltip
+  dataIndex: number;                   // -1 when that series has no point there
+  value: MdChartDataPoint;
+}
+
+// mdAxisClick
+interface MdChartAxisClickDetail {
+  dataIndex: number;                   // index of the nearest x position
+  axisValue?: MdChartAxisValue;
+  seriesValues: MdChartAxisSeriesValue[];
+  nativeEvent: PointerEvent | MouseEvent | KeyboardEvent;
+}
+
+// mdHover — rAF-throttled
+interface MdChartHoverDetail {
+  dataIndex: number;                   // the highlighted x position
+  axisValue?: MdChartAxisValue;
+  // one entry under tooltip="item", every series at that x under tooltip="axis"
+  seriesIndices: number[];
+}
+```
+
+:::note[`nativeEvent` is not always a pointer event]
+The chart is keyboard-operable, so a click handler that assumes `PointerEvent`
+(reading `clientX`, say) breaks when the same event arrives from <kbd>Enter</kbd>.
+Narrow on `instanceof` before reading pointer-only fields.
+:::
+
+This is the chart the code below wires up. Click a band to fire `mdAreaClick`,
+click the plot background for `mdAxisClick`, toggle a legend chip for
+`mdLegendClick`, and drag the slider under the plot for `mdZoom` — open your
+console to watch the payloads described above arrive.
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Click a band, the plot background or a legend chip — every payload is logged"
+  storyId="charts-area-chart--playground"
+  attrs={{ label: 'Storage by type', stack: 'normal', zoom: 'slider', legend: 'bottom' }}
+  fixture={{
+    series: [
+      { label: 'Documents', data: [12, 19, 24, 31] },
+      { label: 'Media', data: [30, 34, 41, 52] },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr'] },
+  }}
+  fnFixture={{
+    valueFormatter: `(v) => new Intl.NumberFormat('en-US').format(v ?? 0) + ' GB'`,
+  }}
+  boot={`
+    // One AbortController drops the whole set at once — and makes the wiring
+    // idempotent, which this demo needs because it is re-run when it scrolls
+    // back into view.
+    el.logAbort?.abort();
+    el.logAbort = new AbortController();
+    const signal = el.logAbort.signal;
+
+    el.addEventListener('mdAreaClick', (e) => console.log('mdAreaClick', e.detail), { signal });
+    el.addEventListener('mdAxisClick', (e) => console.log('mdAxisClick', e.detail), { signal });
+    el.addEventListener('mdLegendClick', (e) => console.log('mdLegendClick', e.detail), { signal });
+    el.addEventListener('mdZoom', (e) => console.log('mdZoom', e.detail.startIndex, e.detail.endIndex, e.detail.reset), { signal });
+  `}
+  react={`import { MdAreaChart } from '@awc-ui/react';
+
+// Hoisted out of the component: a new array identity on every render would
+// re-run the chart's series watcher and restart its entrance animation.
+const series = [
+  { label: 'Documents', data: [12, 19, 24, 31] },
+  { label: 'Media', data: [30, 34, 41, 52] },
+];
+const xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr'] };
+const valueFormatter = (v: number | null | undefined) =>
+  new Intl.NumberFormat('en-US').format(v ?? 0) + ' GB';
+
+export function StorageChart() {
+  // Data goes in as PROPS — the React wrapper sets object values as element
+  // properties for you, so no ref and no useEffect.
+  return (
+    <MdAreaChart
+      label="Storage by type"
+      stack="normal"
+      zoom="slider"
+      legend="bottom"
+      series={series}
+      xAxis={xAxis}
+      valueFormatter={valueFormatter}
+      onMdAreaClick={(e) => console.log(e.detail)}
+      onMdAxisClick={(e) => console.log(e.detail)}
+      onMdLegendClick={(e) => console.log(e.detail)}
+      onMdZoom={(e) => console.log(e.detail.startIndex, e.detail.endIndex)}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-storage-chart',
+  // [prop] on a custom element is a PROPERTY binding, so the arrays arrive as
+  // objects rather than stringified attributes — no ViewChild needed.
+  template: \`
+    <md-area-chart
+      label="Storage by type"
+      stack="normal"
+      zoom="slider"
+      legend="bottom"
+      [series]="series"
+      [xAxis]="xAxis"
+      [valueFormatter]="valueFormatter"
+      (mdAreaClick)="onArea($event)"
+      (mdAxisClick)="onAxis($event)"
+      (mdLegendClick)="onLegend($event)"
+      (mdZoom)="onZoom($event)"
+    ></md-area-chart>
+  \`,
+})
+export class StorageChartComponent {
+  series = [
+    { label: 'Documents', data: [12, 19, 24, 31] },
+    { label: 'Media', data: [30, 34, 41, 52] },
+  ];
+  xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr'] };
+
+  // An arrow property, so \`this\` stays bound when the chart calls it.
+  valueFormatter = (v: number | null | undefined) =>
+    new Intl.NumberFormat('en-US').format(v ?? 0) + ' GB';
+
+  onArea(e: CustomEvent) { console.log(e.detail); }
+  onAxis(e: CustomEvent) { console.log(e.detail); }
+  onLegend(e: CustomEvent) { console.log(e.detail); }
+  onZoom(e: CustomEvent) { console.log(e.detail.startIndex, e.detail.endIndex); }
+}`}
+  vue={`\x3Cscript setup lang="ts">
+const series = [
+  { label: 'Documents', data: [12, 19, 24, 31] },
+  { label: 'Media', data: [30, 34, 41, 52] },
+];
+const xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr'] };
+
+// Not a ref: it is a plain function, and ref() would make Vue unwrap it.
+const valueFormatter = (v: number | null | undefined) =>
+  new Intl.NumberFormat('en-US').format(v ?? 0) + ' GB';
+
+function onZoom(e: CustomEvent) {
+  console.log(e.detail.startIndex, e.detail.endIndex);
+}
+\x3C/script>
+
+<template>
+  <!-- :prop on a custom element is a property binding, so no ref is needed. -->
+  <md-area-chart
+    label="Storage by type"
+    stack="normal"
+    zoom="slider"
+    legend="bottom"
+    :series="series"
+    :xAxis="xAxis"
+    :valueFormatter="valueFormatter"
+    @mdAreaClick="(e) => console.log(e.detail)"
+    @mdZoom="onZoom"
+  />
+</template>`}
+  svelte={`\x3Cscript lang="ts">
+  const series = [
+    { label: 'Documents', data: [12, 19, 24, 31] },
+    { label: 'Media', data: [30, 34, 41, 52] },
+  ];
+  const xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr'] };
+  const valueFormatter = (v: number | null | undefined) =>
+    new Intl.NumberFormat('en-US').format(v ?? 0) + ' GB';
+
+  function onZoom(e: CustomEvent) {
+    console.log(e.detail.startIndex, e.detail.endIndex);
+  }
+\x3C/script>
+
+<!-- Svelte assigns object values as properties on an upgraded custom element. -->
+<md-area-chart
+  label="Storage by type"
+  stack="normal"
+  zoom="slider"
+  legend="bottom"
+  {series}
+  {xAxis}
+  {valueFormatter}
+  on:mdAreaClick={(e) => console.log(e.detail)}
+  on:mdZoom={onZoom}
+/>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[Methods]
+`resize()` · `replay()` · `toDataURL()` · `getInstance()` · `setZoom()` ·
+`resetZoom()`. Call `resize()` after a container size change your layout doesn't
+propagate — a revealed tab panel renders at zero size otherwise. `getInstance()`
+is an escape hatch onto the engine; anything you do through it is outside the
+component's contract.
+:::
+
+## Accessibility
+
+- The canvas is **opaque to assistive tech**. `label`, `summary`, `label-plot`
+  and `label-point` are the accessible description — they are the chart's
+  accessibility, not decoration.
+- A screen-reader-only data table mirrors every series. **Provide the same data
+  as a visible table** for anything users must read precisely; the chart is a
+  summary view.
+- The plot is a focus stop: arrow keys walk the data, `Home` / `End` jump to the
+  ends, and each move is announced through a polite live region.
+- Stacked bands are distinguished by colour and order — provide the legend and
+  don't rely on hue alone. With `stack="percentage"`, state that values are
+  shares.
+- Honour `prefers-reduced-motion` with `no-animation` (or `animation="none"`).
+- Zoom controls are [`md-slider`](/components/slider/)s and need
+  `label-zoom-start` / `label-zoom-end` translated.
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Tab to the plot, then walk it with the arrow keys — Home and End jump to the ends"
+  attrs={{
+    label: 'Weekly sessions',
+    summary: 'Weekly sessions by channel, Monday to Sunday. Direct rises from 10 to 52, organic from 18 to 60.',
+    stack: 'normal',
+    'show-marks': true,
+    legend: 'bottom',
+  }}
+  fixture={{
+    series: [
+      { label: 'Direct', data: [10, 22, 28, 35, 41, 38, 52] },
+      { label: 'Organic', data: [18, 24, 32, 40, 48, 45, 60] },
+    ],
+    xAxis: { data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
+  }}
+/>
+
+## RTL, density & i18n
+
+**RTL** — inside a `dir="rtl"` parent the whole plot mirrors: the value axis and
+its labels move to the right, the category axis runs right-to-left, and the
+legend and zoom slider follow. Arrow keys follow the reading direction, so
+<kbd>←</kbd> advances. `dataIndex`, `axisValue` and every event payload are
+identical in both directions — only pixels move. See [RTL](/behaviour/rtl/).
+
+```html
+<md-area-chart dir="rtl" label="مصادر الزيارات"></md-area-chart>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;inline-size:100%;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <md-area-chart id="ac-dir-ltr" dir="ltr" label="Traffic sources" stack="normal" legend="bottom" height="200px"></md-area-chart>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <md-area-chart id="ac-dir-rtl" dir="rtl" label="Traffic sources" stack="normal" legend="bottom" height="200px"></md-area-chart>
+</div>
+<script type="module">
+  const xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+  const series = [
+    { label: 'Direct', data: [10, 22, 28, 35, 41, 38] },
+    { label: 'Organic', data: [18, 24, 32, 40, 48, 45] },
+  ];
+  for (const id of ['ac-dir-ltr', 'ac-dir-rtl']) {
+    Object.assign(document.getElementById(id), { xAxis, series });
+  }
+</script>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+  htmlForCode={`<md-area-chart id="traffic" dir="rtl" label="Traffic sources" stack="normal" legend="bottom"></md-area-chart>
+
+<script type="module">
+  const chart = document.getElementById('traffic');
+
+  chart.xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+  chart.series = [
+    { label: 'Direct', data: [10, 22, 28, 35, 41, 38] },
+    { label: 'Organic', data: [18, 24, 32, 40, 48, 45] },
+  ];
+</script>`}
+/>
+
+### Mirror the plot, not the arrays
+
+Direction is the engine's job. `series` and `xAxis` stay in **reading order** —
+oldest first — in both directions, and the chart decides which edge index `0`
+is drawn at. Reversing the arrays yourself to "fix" RTL mirrors twice: the
+earliest sample lands back on the left while the axis still runs right-to-left,
+so time now reads backwards.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;inline-size:100%;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <md-area-chart id="ac-mirror-ok" dir="rtl" label="Traffic sources" stack="normal" legend="none" height="200px"></md-area-chart>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <md-area-chart id="ac-mirror-bad" dir="rtl" label="Traffic sources" stack="normal" legend="none" height="200px"></md-area-chart>
+</div>
+<script type="module">
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+  const direct = [10, 22, 28, 35, 41, 38];
+
+  // Correct: reading order, exactly as it would be under dir="ltr".
+  Object.assign(document.getElementById('ac-mirror-ok'), {
+    xAxis: { data: months },
+    series: [{ label: 'Direct', data: direct }],
+  });
+
+  // Wrong: hand-reversed, so the mirroring happens twice.
+  Object.assign(document.getElementById('ac-mirror-bad'), {
+    xAxis: { data: [...months].reverse() },
+    series: [{ label: 'Direct', data: [...direct].reverse() }],
+  });
+</script>`}
+  label="Reading-order data vs hand-reversed data, both under dir=rtl"
+  htmlForCode={`<md-area-chart id="traffic-rtl" dir="rtl" label="Traffic sources" stack="normal"></md-area-chart>
+
+<script type="module">
+  const chart = document.getElementById('traffic-rtl');
+
+  // Reading order — oldest first — exactly as it would be under dir="ltr".
+  // The engine mirrors the plot; reversing the arrays yourself mirrors twice.
+  chart.xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+  chart.series = [{ label: 'Direct', data: [10, 22, 28, 35, 41, 38] }];
+</script>`}
+/>
+
+### Every density rung
+
+`density="-1…-4"` tightens the surface padding, the corner radius, the height
+floor and the axis / title type sizes. A global `data-density` on an ancestor
+sets the same signal for every chart beneath it; a local `density` wins over it.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;inline-size:100%;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <md-area-chart id="ac-den-0" density="0" label="Sessions" stack="normal" legend="none" height="170px"></md-area-chart>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <md-area-chart id="ac-den-1" density="-1" label="Sessions" stack="normal" legend="none" height="170px"></md-area-chart>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <md-area-chart id="ac-den-2" density="-2" label="Sessions" stack="normal" legend="none" height="170px"></md-area-chart>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <md-area-chart id="ac-den-3" density="-3" label="Sessions" stack="normal" legend="none" height="170px"></md-area-chart>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <md-area-chart id="ac-den-4" density="-4" label="Sessions" stack="normal" legend="none" height="170px"></md-area-chart>
+</div>
+<script type="module">
+  const xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+  const series = [
+    { label: 'Direct', data: [10, 22, 28, 35, 41, 38] },
+    { label: 'Organic', data: [18, 24, 32, 40, 48, 45] },
+  ];
+  for (const id of ['ac-den-0', 'ac-den-1', 'ac-den-2', 'ac-den-3', 'ac-den-4']) {
+    Object.assign(document.getElementById(id), { xAxis, series });
+  }
+</script>`}
+  label="Density 0 through -4 — padding, corner radius and axis type all taper"
+  htmlForCode={`<md-area-chart id="sessions" density="-2" label="Sessions" stack="normal"></md-area-chart>
+
+<script type="module">
+  const chart = document.getElementById('sessions');
+
+  chart.xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+  chart.series = [
+    { label: 'Direct', data: [10, 22, 28, 35, 41, 38] },
+    { label: 'Organic', data: [18, 24, 32, 40, 48, 45] },
+  ];
+</script>`}
+/>
+
+:::caution[Density reaches the zoom slider too]
+`--md-sys-density-scale` inherits, so a chart at `-4` also tightens the
+[`md-slider`](/components/slider/) under its plot — its thumb hit area bottoms
+out at its own floor rather than staying at the full target. Don't reach for a
+lower rung just to fit a chart into a box: set `--md-area-chart-aspect-ratio` or
+the `height` attribute instead. See
+[Density](/behaviour/density/#accessibility).
+:::
+
+### Density and direction together
+
+The two are independent signals: direction decides which edge index `0` sits
+at, density decides how much room the surface takes around the plot.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;inline-size:100%;">
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl · 0</span>
+  <md-area-chart id="ac-rd-0" dir="rtl" density="0" label="Sessions" stack="normal" legend="none" height="180px"></md-area-chart>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl · -3</span>
+  <md-area-chart id="ac-rd-3" dir="rtl" density="-3" label="Sessions" stack="normal" legend="none" height="180px"></md-area-chart>
+</div>
+<script type="module">
+  const xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+  const series = [
+    { label: 'Direct', data: [10, 22, 28, 35, 41, 38] },
+    { label: 'Organic', data: [18, 24, 32, 40, 48, 45] },
+  ];
+  for (const id of ['ac-rd-0', 'ac-rd-3']) {
+    Object.assign(document.getElementById(id), { xAxis, series });
+  }
+</script>`}
+  label="dir=rtl at density 0 and -3"
+  htmlForCode={`<md-area-chart id="sessions-rtl" dir="rtl" density="-3" label="Sessions" stack="normal"></md-area-chart>
+
+<script type="module">
+  const chart = document.getElementById('sessions-rtl');
+
+  chart.xAxis = { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] };
+  chart.series = [
+    { label: 'Direct', data: [10, 22, 28, 35, 41, 38] },
+    { label: 'Organic', data: [18, 24, 32, 40, 48, 45] },
+  ];
+</script>`}
+/>
+
+**Density** — `density="-1…-4"` tightens padding and label sizes. See
+[Density](/behaviour/density/).
+
+**i18n** — set `locale` for default number and date formatting (an explicit
+`valueFormatter` always wins over it), and translate every string the component
+renders itself:
+
+| Prop | Covers |
+|---|---|
+| `summary` | Replaces the generated `aria-label` outright |
+| `tableLabels` | The SR data table's column chrome (a **property** — it takes an object) |
+| `label-plot`, `label-point` | Keyboard instructions and the live region |
+| `label-empty`, `loading-label` | The empty and loading overlays |
+| `label-zoom-start`, `label-zoom-end` | The zoom slider's thumbs |
+
+`label-point` uses the **`%x%` / `%values%`** percent tokens — keep them when
+translating; they interpolate the values.
+
+## Theming
+
+<div class="md-table-scroll">
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-area-chart-block-size` | Explicit chart height, overriding the aspect ratio | `auto` |
+| `--md-area-chart-min-block-size` | Floor the height never drops below (density-aware) | `max(120px, 160px + density × 8px)` |
+| `--md-area-chart-aspect-ratio` | Width : height used when no block size is set | `16 / 9` |
+| `--md-area-chart-background` | Chart surface fill | `surface-container-low` |
+| `--md-area-chart-padding` | Inset between the host edge and the plot (density-aware) | `max(8px, 16px + density × 2px)` |
+| `--md-area-chart-shape` | Corner radius of the surface (density-aware) | `max(8px, 16px + density × 2px)` |
+| `--md-area-chart-zoom-size` | Height reserved for the zoom slider | `28px` |
+| `--md-area-chart-zoom-track-color` | Zoom slider track | `surface-container-highest` |
+| `--md-area-chart-zoom-window-color` | Zoom slider selected window | `secondary-container` |
+| `--md-area-chart-zoom-handle-color` | Zoom thumbs and the drag-band edge | `primary` |
+| `--md-area-chart-zoom-band-color` | Drag-to-zoom selection fill | 16% `primary` |
+| `--md-area-chart-empty-color` | Empty-state text | `on-surface-variant` |
+| `--md-area-chart-empty-background` | Empty-state overlay fill | the chart background |
+| `--md-area-chart-empty-font` / `-empty-font-size` | Empty-state type | `body-medium`, `14px` |
+| `--md-area-chart-empty-icon-size` | Icon slotted into the empty state | `40px` |
+
+</div>
+
+```css
+md-area-chart.dashboard {
+  --md-area-chart-background: var(--md-sys-color-surface-container);
+  --md-area-chart-padding: 16px;
+  --md-area-chart-shape: 16px;
+}
+```
+
+Two more are **not** namespaced to this component. The axis line and the
+gridlines are drawn by the shared chart engine, so they read family-wide
+properties every chart type honours — set them on any ancestor and a whole
+dashboard retints at once.
+
+| Custom property | Draws | Default |
+|---|---|---|
+| `--md-chart-axis-color` | The axis line and its ticks | `--md-sys-color-outline-variant` |
+| `--md-chart-grid-color` | The gridlines across the plot | `--md-sys-color-outline-variant` at 50% (an override is used verbatim) |
+
+<ChartDemo
+  tag="md-area-chart"
+  label="Themed instance — surface, radius and a tinted axis and grid"
+  wrapperStyle="--md-chart-axis-color: #7c6fd6; --md-chart-grid-color: rgba(124, 111, 214, 0.22);"
+  style="--md-area-chart-background: var(--md-sys-color-surface-container); --md-area-chart-padding: 20px; --md-area-chart-shape: 20px;"
+  attrs={{ label: 'Traffic sources', stack: 'normal', grid: 'both', legend: 'bottom' }}
+  fixture={{
+    series: [
+      { label: 'Direct', color: '#7c6fd6', data: [10, 22, 28, 35, 41, 38] },
+      { label: 'Organic', color: 'tertiary', data: [18, 24, 32, 40, 48, 45] },
+    ],
+    xAxis: { data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+  }}
+/>
+
+:::caution[Axis and grid colours are read at draw time, not watched]
+The engine samples them when it renders. Changing them on a chart that has
+already drawn leaves the old colours on the canvas — reassign `series` to force
+a repaint, the same as for a theme switch.
+:::
+
+Adjust gradient saturation per chart with the `fill-opacity` attribute (0–1). A
+*band* fill — a stacked layer or a range — keeps an even tint, while a fill that
+runs to the baseline fades toward the axis so it stops competing with it.
+
+**CSS parts** — `header`, `canvas`, `footer`, `empty`, `loading`, `zoom`,
+`zoom-slider`, `zoom-pan`, `zoom-band`, and three forwarded from the zoom
+slider: `zoom-track`, `zoom-window`, `zoom-handle`.
+
+<ComponentDemo
+  html={`<style>
+  .ac-parted::part(canvas)      { outline: 1px dashed rgba(124, 111, 214, .55); outline-offset: 4px; }
+  .ac-parted::part(zoom-window) { background: #7c6fd6; }
+  .ac-parted::part(zoom-handle) { background: #4b3fa8; }
+  .ac-parted::part(zoom-pan)    { background: rgba(75, 63, 168, .18); border-radius: 999px; }
+</style>
+<md-area-chart id="ac-parts" class="ac-parted" label="Sessions" stack="normal" zoom="slider" height="260px"></md-area-chart>
+<script type="module">
+  Object.assign(document.getElementById('ac-parts'), {
+    xAxis: { data: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'] },
+    series: [
+      { label: 'Direct', data: [10, 22, 28, 35, 41, 38, 52, 48, 56, 62, 70, 80] },
+      { label: 'Organic', data: [18, 24, 32, 40, 48, 45, 60, 65, 72, 78, 84, 92] },
+    ],
+  });
+</script>`}
+  label="::part() overrides — drag the zoom slider to see all four parts"
+  htmlForCode={`<md-area-chart id="sessions-parts" class="parted" label="Sessions" stack="normal" zoom="slider"></md-area-chart>
+
+<script type="module">
+  const chart = document.getElementById('sessions-parts');
+
+  chart.xAxis = { data: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6'] };
+  chart.series = [
+    { label: 'Direct', data: [10, 22, 28, 35, 41, 38] },
+    { label: 'Organic', data: [18, 24, 32, 40, 48, 45] },
+  ];
+</script>`}
+/>
+
+The stylesheet that markup pairs with — `::part()` reaches into the shadow root
+from ordinary CSS, so it works identically in every framework above:
+
+```css
+md-area-chart.parted::part(canvas)      { outline: 1px dashed rgba(124, 111, 214, 0.55); outline-offset: 4px; }
+md-area-chart.parted::part(zoom-window) { background: #7c6fd6; }
+md-area-chart.parted::part(zoom-handle) { background: #4b3fa8; }
+md-area-chart.parted::part(zoom-pan)    { background: rgba(75, 63, 168, 0.18); border-radius: 999px; }
+```
+
+
+## Related
+
+[`md-line-chart`](/components/line-chart/) ·
+[`md-bar-chart`](/components/bar-chart/) ·
+[`md-pie-chart`](/components/pie-chart/) ·
+[`md-sparkline`](/components/sparkline/) ·
+[`md-slider`](/components/slider/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-area-chart" />

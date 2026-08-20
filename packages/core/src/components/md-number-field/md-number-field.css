@@ -1,0 +1,149 @@
+/* ==========================================================
+   md-number-field — Material Design 3 number input.
+   Composes md-text-field + md-icon-button steppers.
+   The visible control is a plain text input with pointer-only steppers —
+   no spinbutton role, no type="number" — so the Intl-formatted value stays
+   ordinary, editable text.
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-number-field-width               Host inline-size (default 100% of container)
+     --md-number-field-min-width           Minimum host inline-size
+     --md-number-field-stepper-icon-size   Stepper glyph size (density-tapered 20px)
+     --md-number-field-stepper-color       Stepper icon ink
+     --md-number-field-split-stepper-size  Split-layout stepper circle (density-tapered 40px)
+
+   All md-text-field public hooks (--md-text-field-*) pass straight through
+   to the embedded field — e.g. --md-text-field-container-color.
+
+   CSS PARTS:
+     field      Inner md-text-field
+     increment  Increment stepper (md-icon-button)
+     decrement  Decrement stepper (md-icon-button)
+
+   SLOTS:
+     (none — the steppers are internal)
+
+   RTL:
+     Logical properties only; the split row follows the inline direction,
+     so DOM order (decrement, field, increment) mirrors for free. Stepping
+     itself is vertical-arrow / wheel driven — nothing to mirror.
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST
+   ========================================================== */
+:host {
+  --_stepper-icon-size: var(--md-number-field-stepper-icon-size, max(14px, calc(20px + var(--md-sys-density-scale, 0) * 1px)));
+  --_stepper-color: var(--md-number-field-stepper-color, var(--md-sys-color-on-surface-variant, #49454f));
+
+  /* Inline stepper hit circle: 28px at density 0, tapering with the field. */
+  --_inline-stepper-size: max(20px, calc(28px + var(--md-sys-density-scale, 0) * 2px));
+
+  /* Split stepper circle + the field box it centres on — both derive from
+     the ONE density signal so they stay aligned at every rung. */
+  --_split-stepper-size: var(--md-number-field-split-stepper-size, max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px)));
+  --_field-box-height: max(40px, calc(56px + var(--md-sys-density-scale, 0) * 4px));
+
+  /* Fill the container (like md-select/md-autocomplete) — the trigger width
+     must come from layout, never from the typed text. */
+  display: inline-flex;
+  flex-direction: column;
+  inline-size: var(--md-number-field-width, 100%);
+  min-inline-size: var(--md-number-field-min-width, 200px);
+  box-sizing: border-box;
+  vertical-align: bottom;
+  position: relative;
+}
+
+/* ==========================================================
+   2. FIELD
+   ========================================================== */
+.md-number-field__field {
+  display: block;
+  inline-size: 100%;
+}
+
+/* Inline steppers live in the field's trailing cluster: pull the trailing
+   text inset back to the plain box inset (the default includes a caret's
+   7px optical bearing that buttons do not have — see md-text-field
+   --_text-inset). */
+:host(.md-number-field--inline) {
+  --md-text-field-padding-inline-end: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+/* ==========================================================
+   3. STEPPERS — shared
+   Cross-component handoff trap: write only md-icon-button's PUBLIC hooks
+   (--md-icon-button-*), never its private --_x locals.
+   ========================================================== */
+.md-number-field__stepper {
+  --md-icon-button-icon-size: var(--_stepper-icon-size);
+  --md-icon-button-icon-color: var(--_stepper-color);
+
+  flex: none;
+}
+
+/* ==========================================================
+   3b. INLINE LAYOUT — both buttons inside the trailing slot
+   ========================================================== */
+.md-number-field__stepper--inline {
+  --md-icon-button-container-width: var(--_inline-stepper-size);
+  --md-icon-button-container-height: var(--_inline-stepper-size);
+}
+
+.md-number-field__stepper--inline + .md-number-field__stepper--inline {
+  margin-inline-start: var(--md-sys-spacing-gap-xs, 4px);
+}
+
+/* ==========================================================
+   3c. SPLIT LAYOUT — tonal circles flanking the field
+   ========================================================== */
+:host(.md-number-field--split) {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+:host(.md-number-field--split) .md-number-field__field {
+  flex: 1 1 auto;
+  inline-size: auto;
+  min-inline-size: 0;
+}
+
+.md-number-field__stepper--split {
+  --md-icon-button-container-width: var(--_split-stepper-size);
+  --md-icon-button-container-height: var(--_split-stepper-size);
+
+  /* Centre each circle on the field BOX (the supporting-text row below the
+     box must not skew it — hence flex-start + an explicit derived offset). */
+  margin-block-start: calc((var(--_field-box-height) - var(--_split-stepper-size)) / 2);
+}
+
+/* ==========================================================
+   4. DISABLED
+   ========================================================== */
+:host(.md-number-field--disabled) {
+  pointer-events: none;
+}
+
+/* ==========================================================
+   5. FORCED COLORS (Windows High Contrast)
+   ========================================================== */
+@media (forced-colors: active) {
+  .md-number-field__stepper {
+    --md-icon-button-icon-color: ButtonText;
+  }
+}
+
+/* ==========================================================
+   6. DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal
+   a global `data-density` ancestor sets. The prop is FORWARDED to the inner
+   md-text-field for the field box; this block covers the host's own chrome
+   (stepper circles, gaps). Every density-sensitive value in this file
+   derives from that single signal by calc — never add a per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

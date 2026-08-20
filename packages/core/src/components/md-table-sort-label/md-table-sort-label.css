@@ -1,0 +1,165 @@
+/* ==========================================================
+   md-table-sort-label — sortable column label
+
+   PUBLIC CSS CUSTOM PROPERTIES:
+     --md-table-sort-label-color           Inactive color
+     --md-table-sort-label-active-color    Active color
+     --md-table-sort-label-icon-size       Icon size (default 18px)
+     --md-table-sort-label-gap             Gap between text and icon
+
+   CSS PARTS:
+     icon    The arrow indicator
+     label   The text label
+   ========================================================== */
+:host {
+  --_color: var(--md-table-sort-label-color, var(--md-sys-color-on-surface, #1C1B1F));
+  --_active-color: var(--md-table-sort-label-active-color, var(--md-sys-color-primary, #6750A4));
+  --_icon-size: var(--md-table-sort-label-icon-size, 18px);
+  --_gap: var(--md-table-sort-label-gap, var(--md-sys-spacing-gap-xs, 4px));
+
+  /* House pairing: spatial spring for the arrow's rotate, effects spring for
+     colour/opacity. */
+  --_spring-spatial: var(--md-sys-motion-spring-spatial-fast-duration, 350ms)
+    var(--md-sys-motion-spring-spatial-fast-easing, cubic-bezier(0.42, 1.67, 0.21, 0.9));
+  --_spring-effects: var(--md-sys-motion-spring-effects-fast-duration, 150ms)
+    var(--md-sys-motion-spring-effects-fast-easing, cubic-bezier(0.31, 0.94, 0.34, 1));
+  /* Opacity of the arrow when previewed on hover/focus of an unsorted column. */
+  --_hover-opacity: 0.6;
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--_gap);
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  color: var(--_color);
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 4px;
+  padding-block: 2px;
+  padding-inline: 4px;
+  margin-inline: -4px;
+  transition: color var(--_spring-effects);
+}
+
+:host(:hover:not(.md-table-sort-label--disabled)) {
+  color: var(--_active-color);
+}
+
+:host(:focus-visible) {
+  outline: 3px solid var(--md-sys-color-secondary, #625B71);
+  outline-offset: 2px;
+}
+
+:host(.md-table-sort-label--active) {
+  color: var(--_active-color);
+}
+
+:host(.md-table-sort-label--disabled) {
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* The sort arrow — hidden at rest, revealed on hover/focus of a sortable
+   column, and kept visible + highlighted once the column is the active sort.
+   Descending rotates the arrow 180° to point down (animated on the spatial
+   spring); colour/opacity run on the effects spring. */
+.md-table-sort-label__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_icon-size);
+  block-size: var(--_icon-size);
+  opacity: 0;
+  transform: rotate(0deg);
+  transition:
+    transform var(--_spring-spatial),
+    opacity var(--_spring-effects);
+  flex: 0 0 auto;
+}
+
+/* Descending rotates the arrow to point down (kept animated). */
+.md-table-sort-label__icon--desc {
+  transform: rotate(180deg);
+}
+
+/* Reveal the arrow on hover / keyboard focus of an unsorted column (MUI parity). */
+:host(:hover:not(.md-table-sort-label--disabled)) .md-table-sort-label__icon,
+:host(:focus-visible) .md-table-sort-label__icon {
+  opacity: var(--_hover-opacity);
+}
+
+/* Active column: kept visible + highlighted (inherits --_active-color via
+   currentColor), regardless of hover. */
+:host(.md-table-sort-label--active) .md-table-sort-label__icon,
+.md-table-sort-label__icon--active {
+  opacity: 1;
+}
+
+.md-table-sort-label__text {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* Visually-hidden live region announcing the sort direction (MUI parity). */
+.md-table-sort-label__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host,
+  .md-table-sort-label__icon {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  :host(.md-table-sort-label--active) {
+    color: Highlight;
+  }
+}
+
+/* Custom ligature icon (icon prop) matches the built-in SVG footprint. */
+.md-table-sort-label__icon-glyph {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* Material Symbols ligature font must be declared INSIDE the shadow root —
+   the document-level class can't cross the boundary (glyph names rendered
+   as plain text otherwise). */
+.material-symbols-outlined {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

@@ -1,0 +1,431 @@
+---
+title: Chip
+description: "A compact, contextual option that always appears in a set — four semantic variants, three appearances, optional selection and removal"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/chip.json";
+
+**A compact, contextual option — always part of a set.** Four semantic variants
+(assist / filter / input / suggestion), three appearances, semantic colour
+roles, optional selection and optional removal. M3 is explicit that a lone chip
+is a design error: if there is only one, you wanted a button.
+
+<ComponentDemo
+  html={`<md-chip variant="assist" icon="event">Assist</md-chip>
+<md-chip variant="filter">Filter</md-chip>
+<md-chip variant="filter" selected>Selected filter</md-chip>
+<md-chip variant="input">Input</md-chip>
+<md-chip variant="suggestion">Suggestion</md-chip>`}
+  label="Live preview"
+  storyId="selection-chip--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-chip" example="Chip" />
+
+## When to use
+
+- **Filters** over a result set (`variant="filter"`).
+- **Entered values** the user can remove — recipients, tags
+  (`variant="input"`).
+- **Suggestions** the user can accept (`variant="suggestion"`).
+- **Contextual, supplemental actions** related to nearby content
+  (`variant="assist"`).
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| The primary or final action in a task | [`md-button`](/components/button/) |
+| Moving to the next or previous step | [`md-button`](/components/button/) |
+| A single standalone option | Nothing — M3: chips must appear in a set |
+| Exclusive choice among 2–5 visible options | [`md-segmented-button`](/components/segmented-button/) |
+| A long list of selectable values | [`md-multi-select`](/components/multi-select/) |
+| A status label that isn't interactive | [`md-badge`](/components/badge/) / [`md-status-dot`](/components/status-dot/) |
+| Navigation | [`md-tabs`](/components/tabs/) / [`md-navigation-bar`](/components/navigation-bar/) |
+| A filter with only one possible value | Nothing — M3: filter chips need more than one option |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Contextual action next to content | `variant="assist"` |
+| Toggle a filter on or off | `variant="filter"` |
+| A user-entered token you can delete | `variant="input"` |
+| A dynamically offered option | `variant="suggestion"` |
+| Raised off a busy background | `appearance="elevated"` |
+| Status meaning (success, warning…) | `color` |
+| Unavailable but still discoverable | `soft-disabled` |
+| Shorter chips | `density="-1…-4"` |
+
+## Variants
+
+`variant` selects the M3 chip **type**. It also decides the default behaviour of
+`selectable` and `removable` — see below.
+
+| Variant | Purpose | Typically |
+|---|---|---|
+| `assist` | **Default.** A contextual action tied to nearby content | Leading icon, not selectable |
+| `filter` | Toggle a filter on or off | Selectable, shows a checkmark |
+| `input` | A value the user entered | Removable |
+| `suggestion` | A recommendation to accept | Not selectable |
+
+<ComponentDemo
+  html={`<md-chip variant="assist" icon="directions">Directions</md-chip>
+<md-chip variant="filter">Unread</md-chip>
+<md-chip variant="input">alice@example.com</md-chip>
+<md-chip variant="suggestion">Add a caption</md-chip>`}
+  label="The four variants"
+  storyId="selection-chip--all-variants"
+/>
+
+## `selectable` and `removable` are tri-state
+
+Both props are `boolean | undefined` and default to **`undefined`**, not
+`false`. Left unset they are derived from `variant` — filter chips select,
+input chips remove. Set them explicitly only to override that default, for
+instance `selectable="false"` on an input chip that is purely a token, so
+clicking the body doesn't flash a misleading "active" state.
+
+<ComponentDemo
+  html={`<md-chip variant="filter">Selectable by default</md-chip>
+<md-chip variant="input">Removable by default</md-chip>
+<md-chip variant="input" selectable="false">Token — remove only</md-chip>
+<md-chip variant="input" removable="false">Opted out of removal</md-chip>
+<md-chip variant="assist" selectable>Explicitly selectable</md-chip>
+<md-chip variant="suggestion" removable>Explicitly removable</md-chip>`}
+  label="Derived versus explicit selectable / removable"
+  storyId="selection-chip--non-selectable-token"
+/>
+
+## Appearance and colour
+
+`appearance` is the surface style and is **independent of `variant`** — any
+chip type can be outlined, filled or elevated. `color` tints it.
+
+| Need | Setting |
+|---|---|
+| Standard look on a normal background | `appearance="outlined"` (default) |
+| More weight | `appearance="filled"` |
+| Sitting on an image | `appearance="elevated"` |
+| Semantic tone | `color="primary\|secondary\|tertiary\|error\|success\|warning\|info"` |
+
+<ComponentDemo
+  html={`<md-chip appearance="outlined" icon="event">Outlined</md-chip>
+<md-chip appearance="filled" icon="event">Filled</md-chip>
+<md-chip appearance="elevated" icon="event">Elevated</md-chip>`}
+  label="Three appearances"
+  storyId="selection-chip--appearance-and-color"
+/>
+
+`color` resolves `<name>` to the `--md-sys-color-<name>` token family at
+runtime, so it accepts **any role your theme defines**, not just the listed
+union — `color="brand"` works as soon as the theme ships those tokens, and an
+undefined name degrades to the neutral treatment rather than rendering broken.
+Only the named roles above are contrast-verified.
+
+<ComponentDemo
+  html={`<md-chip appearance="filled" color="primary">Primary</md-chip>
+<md-chip appearance="filled" color="secondary">Secondary</md-chip>
+<md-chip appearance="filled" color="tertiary">Tertiary</md-chip>
+<md-chip appearance="filled" color="error">Overdue</md-chip>
+<md-chip appearance="filled" color="success">Paid</md-chip>
+<md-chip appearance="filled" color="warning">Expiring</md-chip>
+<md-chip appearance="filled" color="info">Beta</md-chip>
+<md-chip appearance="outlined" color="error">Outlined error</md-chip>`}
+  label="Semantic colour roles"
+  storyId="selection-chip--elevated"
+/>
+
+:::caution[`elevated` and `appearance="elevated"` overlap]
+The standalone `elevated` boolean is deprecated. It still works — and wins over
+`appearance` when set, since setting it is an explicit act — but prefer
+`appearance="elevated"`. Either way, M3 reserves elevation for chips sitting
+**on an image**; on a plain page an outline is correct, and elevation must
+never stand in for the pressed state (the ripple does that).
+:::
+
+## Icons
+
+A leading icon comes from the `icon` prop or the `leading-icon` slot; the slot
+wins, and takes any glyph — SVG, an icon font, an emoji. `trailing-icon` and
+its matching slot cover the trailing side.
+
+<ComponentDemo
+  html={`<md-chip icon="search">Search</md-chip>
+<md-chip variant="filter" icon="check_circle" selected>Verified</md-chip>
+<md-chip variant="input" icon="person">Contact</md-chip>
+<md-chip>
+  <svg slot="leading-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+  Slotted SVG
+</md-chip>
+<md-chip>
+  <span slot="leading-icon">🚀</span>
+  Slotted emoji
+</md-chip>`}
+  label="Prop icons and slotted icons"
+  storyId="selection-chip--slotted-icons"
+/>
+
+## States
+
+<ComponentDemo
+  html={`<md-chip variant="filter">Enabled</md-chip>
+<md-chip variant="filter" selected>Selected</md-chip>
+<md-chip variant="filter" disabled>Disabled</md-chip>
+<md-chip variant="filter" disabled selected>Disabled selected</md-chip>
+<md-chip variant="filter" soft-disabled>Soft-disabled</md-chip>`}
+  label="States — try tabbing through them"
+  storyId="selection-chip--states"
+/>
+
+`disabled` leaves the tab order. `soft-disabled` keeps the same visuals but
+stays focusable, so an unavailable filter is still discoverable.
+
+## Filter sets
+
+A set needs a container with `role="group"` and an `aria-label` describing what
+it filters. Selection is conveyed by a checkmark as well as by colour, so it
+survives a colour-blind reader. The chip does **not** manage the set — wrapping,
+scrolling and overflow are yours.
+
+<ComponentDemo
+  html={`<div role="group" aria-label="Message filters" style="display: flex; gap: 8px; flex-wrap: wrap;">
+  <md-chip variant="filter">Unread</md-chip>
+  <md-chip variant="filter" selected>Starred</md-chip>
+  <md-chip variant="filter">Has attachment</md-chip>
+  <md-chip variant="filter">Muted</md-chip>
+</div>`}
+  label="A filter set — click to toggle"
+  storyId="selection-chip--filter-chips"
+/>
+
+For a set that outgrows its row, M3 prefers horizontal scrolling over wrapping
+into a wall of chips:
+
+<ComponentDemo
+  html={`<div role="group" aria-label="Cuisine filters" style="display: flex; gap: 8px; overflow-x: auto; inline-size: 100%; padding-block-end: 8px;">
+  <md-chip variant="filter" style="flex: none;">Italian</md-chip>
+  <md-chip variant="filter" style="flex: none;">Japanese</md-chip>
+  <md-chip variant="filter" style="flex: none;">Mexican</md-chip>
+  <md-chip variant="filter" style="flex: none;">Thai</md-chip>
+  <md-chip variant="filter" style="flex: none;">Ethiopian</md-chip>
+  <md-chip variant="filter" style="flex: none;">Vietnamese</md-chip>
+  <md-chip variant="filter" style="flex: none;">Lebanese</md-chip>
+  <md-chip variant="filter" style="flex: none;">Peruvian</md-chip>
+</div>`}
+  label="A horizontally scrolling set"
+  storyId="selection-chip--responsiveness"
+/>
+
+## Removal — the chip does not remove itself
+
+`mdRemove` is a **request**, not the removal. The chip stays in the DOM until
+you take it out. The event is cancelable, so `preventDefault()` lets you insert
+a confirmation step.
+
+<ComponentDemo
+  html={`<div role="group" aria-label="Recipients" style="display: flex; gap: 8px; flex-wrap: wrap;">
+  <md-chip variant="input" icon="person">alice@example.com</md-chip>
+  <md-chip variant="input" icon="person">bob@example.com</md-chip>
+  <md-chip variant="input" icon="person">carol@example.com</md-chip>
+</div>`}
+  label="Input chips with a remove affordance"
+  storyId="selection-chip--removal-interactions"
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdClick` | no | `void` | The chip body was activated |
+| `mdSelect` | no | `{ selected }` | Selection toggled — `selectable` chips only |
+| `mdRemove` | **yes** | `void` | The remove affordance was used, or `Delete`/`Backspace` pressed on the chip |
+
+Only `mdRemove` is cancelable. To veto a selection you set `selected` back on
+the element; `preventDefault()` on `mdSelect` does nothing.
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- Wrap a set in a container with `role="group"` and an `aria-label` describing
+  what the set filters or holds.
+- Selection state is conveyed by a **checkmark** as well as by colour.
+- A removable chip's remove affordance needs a clear accessible name that
+  includes the chip's label — "Remove" alone is ambiguous in a list of ten
+  chips.
+- `disabled` leaves the tab order; `soft-disabled` stays focusable.
+- Keep the **whole chip** as the hit target on touch. M3's compact-window rule
+  is explicit: don't shrink the target to just the trailing icon.
+- `Delete` and `Backspace` trigger removal from the chip itself, so a keyboard
+  user never has to reach the "×".
+
+### Keyboard
+
+| Key | Action |
+|---|---|
+| `Tab` | Focus the chip (`disabled` is skipped, `soft-disabled` is not), then its remove affordance |
+| `Enter` / `Space` | Activate — toggles a `filter` chip's selection |
+| `Delete` / `Backspace` | Fire `mdRemove` from the chip itself |
+
+<ComponentDemo
+  html={`<div role="group" aria-label="Applied filters" style="display:flex;gap:8px;flex-wrap:wrap;">
+  <md-chip variant="filter" selected>Unread</md-chip>
+  <md-chip variant="filter">Starred</md-chip>
+  <md-chip variant="input" removable>ada@example.com</md-chip>
+  <md-chip variant="input" removable>grace@example.com</md-chip>
+  <md-chip variant="assist" soft-disabled icon="event">Add to calendar</md-chip>
+</div>`}
+  label="A named group — Tab across it, Delete to remove"
+  storyId="selection-chip--input-chips"
+/>
+
+## RTL, density & i18n
+
+**RTL** — leading and trailing icon sides mirror automatically. Directional
+glyphs still need swapping for their meaning to survive. See
+[RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;">
+  <span style="inline-size:2.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;gap:8px;flex-wrap:wrap;">
+    <md-chip variant="filter" selected icon="check">Unread</md-chip>
+    <md-chip variant="input" removable icon="person">Ada Lovelace</md-chip>
+    <md-chip variant="assist" icon="event">Add to calendar</md-chip>
+  </div>
+  <span style="inline-size:2.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;gap:8px;flex-wrap:wrap;">
+    <md-chip variant="filter" selected icon="check">غير مقروء</md-chip>
+    <md-chip variant="input" removable icon="person">إيمي إلسنر</md-chip>
+    <md-chip variant="assist" icon="event">إضافة إلى التقويم</md-chip>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl — icon and remove sides swap"
+  storyId="selection-chip--rtl"
+/>
+
+**Density** — `density="-1…-4"` reduces height and padding. See
+[Density](/behaviour/density/).
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:12px 16px;align-items:center;">
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;"><md-chip density="0" variant="filter" selected>Unread</md-chip><md-chip density="0" variant="assist" icon="event">Calendar</md-chip><md-chip density="0" variant="input" removable>Token</md-chip></div>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;"><md-chip density="-1" variant="filter" selected>Unread</md-chip><md-chip density="-1" variant="assist" icon="event">Calendar</md-chip><md-chip density="-1" variant="input" removable>Token</md-chip></div>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;"><md-chip density="-2" variant="filter" selected>Unread</md-chip><md-chip density="-2" variant="assist" icon="event">Calendar</md-chip><md-chip density="-2" variant="input" removable>Token</md-chip></div>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;"><md-chip density="-3" variant="filter" selected>Unread</md-chip><md-chip density="-3" variant="assist" icon="event">Calendar</md-chip><md-chip density="-3" variant="input" removable>Token</md-chip></div>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;"><md-chip density="-4" variant="filter" selected>Unread</md-chip><md-chip density="-4" variant="assist" icon="event">Calendar</md-chip><md-chip density="-4" variant="input" removable>Token</md-chip></div>
+</div>`}
+  label="Density 0 through -4"
+/>
+
+:::caution[Keep the whole chip tappable]
+M3's compact-window rule is explicit: the hit target is the chip, not just its
+trailing icon. A `-4` chip is already near the floor — shrinking the target
+further is what makes removal a game of precision.
+:::
+
+**i18n** — translate `label` (or the slotted label content) and the remove
+affordance's accessible name. Translated labels routinely run past M3's
+~20-character guidance, so plan for scrolling or truncation before the
+translations arrive.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-chip-container-color` / `--md-chip-container-color-selected` | Background by state | Per appearance |
+| `--md-chip-label-color` / `--md-chip-label-color-selected` | Label by state | Per appearance |
+| `--md-chip-icon-color` / `--md-chip-icon-size` | Icons | Inherits label / 18px |
+| `--md-chip-container-shape` / `--md-chip-container-height` | Geometry | 8px / 32px |
+| `--md-chip-outline-color` / `--md-chip-outline-width` | Outline | `outline` / 1px |
+| `--md-chip-state-layer-color` | Hover/press overlay | `on-surface` |
+| `--md-chip-elevation` | Box-shadow override | `elevation-0` (the `elevated` appearance sets its own) |
+
+<ComponentDemo
+  html={`<md-chip appearance="filled" style="--md-chip-container-shape: 4px;">Squared off</md-chip>
+<md-chip style="--md-chip-container-height: 40px; --md-chip-icon-size: 22px;" icon="event">Taller</md-chip>
+<md-chip style="--md-chip-outline-color: var(--md-sys-color-primary); --md-chip-outline-width: 2px;">Heavy outline</md-chip>`}
+  label="Themed instances"
+  storyId="selection-chip--custom-css"
+/>
+
+Every default resolves through an `md-sys-color` role, so a chip that sets no
+custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:8px;flex-wrap:wrap;">
+  <md-chip variant="assist" icon="event">Assist</md-chip>
+  <md-chip variant="filter" selected>Filter, selected</md-chip>
+  <md-chip variant="input" removable icon="person">Input</md-chip>
+  <md-chip variant="suggestion">Suggestion</md-chip>
+  <md-chip appearance="elevated">Elevated</md-chip>
+</div>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="selection-chip--dark-theme"
+/>
+
+## CSS parts
+
+| Part | Element |
+|---|---|
+| `primary` | The chip's main interactive box |
+| `outline` | The border ring |
+| `state-layer` | Hover / focus / press overlay |
+| `checkmark` | The selected tick on a filter chip |
+| `icon` | Leading icon |
+| `label` | Label text |
+| `trailing-icon` | Trailing icon |
+| `remove` | The remove affordance on a removable chip |
+
+<ComponentDemo
+  html={`<style>
+  .parts-chip::part(label) { text-transform: uppercase; letter-spacing: .08em; font-size: 11px; }
+  .parts-chip::part(outline) { border-width: 2px; border-color: var(--md-sys-color-primary); }
+  .parts-chip::part(checkmark) { color: var(--md-sys-color-tertiary); }
+  .parts-chip::part(remove) { color: var(--md-sys-color-error); }
+</style>
+<div style="display:flex;gap:8px;flex-wrap:wrap;">
+  <md-chip class="parts-chip" variant="filter" selected>Selected</md-chip>
+  <md-chip class="parts-chip" variant="filter">Unselected</md-chip>
+  <md-chip class="parts-chip" variant="input" removable icon="person">Removable</md-chip>
+</div>`}
+  label="label, outline, checkmark and remove"
+  storyId="selection-chip--css-parts"
+/>
+
+```css
+md-chip::part(label) {
+  letter-spacing: 0.3px;
+}
+```
+
+
+## Related
+
+[`md-button`](/components/button/) ·
+[`md-segmented-button`](/components/segmented-button/) ·
+[`md-multi-select`](/components/multi-select/) ·
+[`md-badge`](/components/badge/) ·
+[`md-status-dot`](/components/status-dot/) ·
+[`md-menu`](/components/menu/) ·
+[`md-ripple`](/components/ripple/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-chip" />

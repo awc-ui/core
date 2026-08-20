@@ -1,0 +1,971 @@
+---
+title: Button
+description: "Material Design 3 button — five emphasis levels, five sizes, toggle mode, and native form participation"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/button.json";
+
+A **discrete, committed action** — Save, Confirm, Next. Five emphasis levels,
+five sizes, round or square with M3-Expressive shape morphing, optional toggle
+mode, and native form participation via `ElementInternals`.
+
+<ComponentDemo
+  html={`<md-button variant="filled">Filled</md-button>
+<md-button variant="tonal">Tonal</md-button>
+<md-button variant="elevated">Elevated</md-button>
+<md-button variant="outlined">Outlined</md-button>
+<md-button variant="text">Text</md-button>`}
+  label="Live preview"
+  storyId="actions-button--all-variants"
+/>
+
+## Install
+
+<ComponentSetup tag="md-button" example="Save" />
+
+## When to use
+
+- A **discrete action** the user commits to: `Save`, `Confirm`, `Join now`.
+- Actions inside dialogs, forms, cards, toolbars and bottom sheets.
+- A **binary toggle with a visible label** — Save / Favorite / Follow.
+- A submit or reset control inside a `<form>`.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Icon-only affordance, no label | [`md-icon-button`](/components/icon-button/) |
+| Navigating between app destinations | [`md-navigation-bar`](/components/navigation-bar/), [`md-navigation-rail`](/components/navigation-rail/), or a text link |
+| The single most prominent action (mobile) | [`md-fab`](/components/fab/) |
+| 3+ related actions acting as one unit | [`md-button-group`](/components/button-group/) |
+| One primary action plus variations of it | [`md-split-button`](/components/split-button/) |
+| Filtering, attributes, removable entries | [`md-chip`](/components/chip/) |
+| Low-priority actions crowding the UI | Overflow [`md-menu`](/components/menu/) |
+
+## Variants
+
+Pick by emphasis, highest first. M3: use the strongest style **sparingly** —
+ideally one `filled` button per screen.
+
+| Variant | Emphasis | Use for |
+|---|---|---|
+| `filled` | Highest | The one flow-completing action |
+| `tonal` | High-ish | Lower priority, more weight than an outline |
+| `elevated` | Medium | Needs separation from a busy background |
+| `outlined` | Medium | Important, but not primary |
+| `text` | Lowest | Several options side by side; dialogs, cards |
+
+<ComponentDemo
+  html={`<md-button variant="filled">Filled</md-button>
+<md-button variant="tonal">Tonal</md-button>
+<md-button variant="elevated">Elevated</md-button>
+<md-button variant="outlined">Outlined</md-button>
+<md-button variant="text">Text</md-button>`}
+  label="All five variants"
+/>
+
+## Sizes
+
+:::caution[The default is `sm`, not `md`]
+A common source of surprise. Set `size` explicitly when it matters.
+:::
+
+| Size | Height | Typical use |
+|---|---|---|
+| `xs` | 32px | Dense tables, toolbars, inline row actions |
+| `sm` | 40px | **Default.** Standard UI density |
+| `md` | 48px | Comfortable / touch-first forms |
+| `lg` | 56px | Primary CTA on a landing surface |
+| `xl` | 96px | Hero / marketing CTA |
+
+<ComponentDemo
+  html={`<md-button size="xs">Extra small</md-button>
+<md-button size="sm">Small</md-button>
+<md-button size="md">Medium</md-button>
+<md-button size="lg">Large</md-button>`}
+  label="Sizes"
+/>
+
+Every variant is available at every size. The full matrix, so you can see how
+weight and scale interact:
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:12px;align-items:center;margin-block-end:12px;">
+  <span style="inline-size:4.5rem;opacity:.7;font-size:.8rem;">filled</span>
+  <md-button variant="filled" size="xs">XS</md-button>
+  <md-button variant="filled" size="sm">SM</md-button>
+  <md-button variant="filled" size="md">MD</md-button>
+  <md-button variant="filled" size="lg">LG</md-button>
+  <md-button variant="filled" size="xl">XL</md-button>
+</div>
+<div style="display:flex;gap:12px;align-items:center;margin-block-end:12px;">
+  <span style="inline-size:4.5rem;opacity:.7;font-size:.8rem;">tonal</span>
+  <md-button variant="tonal" size="xs">XS</md-button>
+  <md-button variant="tonal" size="sm">SM</md-button>
+  <md-button variant="tonal" size="md">MD</md-button>
+  <md-button variant="tonal" size="lg">LG</md-button>
+  <md-button variant="tonal" size="xl">XL</md-button>
+</div>
+<div style="display:flex;gap:12px;align-items:center;margin-block-end:12px;">
+  <span style="inline-size:4.5rem;opacity:.7;font-size:.8rem;">elevated</span>
+  <md-button variant="elevated" size="xs">XS</md-button>
+  <md-button variant="elevated" size="sm">SM</md-button>
+  <md-button variant="elevated" size="md">MD</md-button>
+  <md-button variant="elevated" size="lg">LG</md-button>
+  <md-button variant="elevated" size="xl">XL</md-button>
+</div>
+<div style="display:flex;gap:12px;align-items:center;margin-block-end:12px;">
+  <span style="inline-size:4.5rem;opacity:.7;font-size:.8rem;">outlined</span>
+  <md-button variant="outlined" size="xs">XS</md-button>
+  <md-button variant="outlined" size="sm">SM</md-button>
+  <md-button variant="outlined" size="md">MD</md-button>
+  <md-button variant="outlined" size="lg">LG</md-button>
+  <md-button variant="outlined" size="xl">XL</md-button>
+</div>
+<div style="display:flex;gap:12px;align-items:center;margin-block-end:12px;">
+  <span style="inline-size:4.5rem;opacity:.7;font-size:.8rem;">text</span>
+  <md-button variant="text" size="xs">XS</md-button>
+  <md-button variant="text" size="sm">SM</md-button>
+  <md-button variant="text" size="md">MD</md-button>
+  <md-button variant="text" size="lg">LG</md-button>
+  <md-button variant="text" size="xl">XL</md-button>
+</div>`}
+  label="Every variant at every size"
+/>
+
+## Shape & shape morph
+
+`shape` sets the **resting** geometry. `shape-morph` (default `true`) animates
+the radius on press and on toggle — pressed buttons square off by one step;
+`round` toggles morph to square when selected, and `square` toggles morph to
+round.
+
+<ComponentDemo
+  html={`<md-button variant="filled" shape="round">Round</md-button>
+<md-button variant="filled" shape="square">Square</md-button>
+<md-button variant="tonal" shape="round" shape-morph="false">Morph disabled</md-button>`}
+  label="Shapes — press and hold each to see the morph"
+/>
+
+Disable morphing app-wide with `data-shape-morph="off"` on `<html>`. See
+[Shape Morph](/behaviour/shape-morph/).
+
+## Icons
+
+A leading icon is the M3 default. Icons come from the `icon` /
+`trailing-icon` props, or the matching **named slots** for custom glyphs
+(SVG, icon font, emoji) — a slot replaces the corresponding prop.
+
+<ComponentDemo
+  html={`<md-button variant="filled" icon="add">Add item</md-button>
+<md-button variant="outlined" trailing-icon="arrow_forward">Next</md-button>
+<md-button variant="tonal">
+  <svg slot="leading-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+  Starred
+</md-button>`}
+  label="Leading, trailing and custom icons"
+/>
+
+:::note[Two icons: the M3 tension]
+M3 says a standard button carries at most **one** icon, yet both `icon` and
+`trailing-icon` exist. The trailing slot is for *disclosure* affordances — a
+chevron on a dropdown trigger — not a second meaning-bearing icon.
+:::
+
+## States
+
+`disabled`, `soft-disabled` **and `loading`** all make the button inert —
+`loading` is not merely cosmetic.
+
+| State | Focusable | Use when |
+|---|---|---|
+| `disabled` | No (`tabindex="-1"`) | The action is unavailable and undiscoverable |
+| `soft-disabled` | **Yes** | Contextually unavailable but worth discovering — M3's preference |
+| `loading` | No | An async operation is in flight |
+
+<ComponentDemo
+  html={`<md-button variant="filled">Enabled</md-button>
+<md-button variant="filled" disabled>Disabled</md-button>
+<md-button variant="filled" soft-disabled>Soft-disabled</md-button>
+<md-button variant="filled" loading>Saving…</md-button>`}
+  label="States — try tabbing through them"
+/>
+
+`loading` swaps the leading icon for a spinner — an
+[`md-loading-indicator`](/components/loading-indicator/), not a bespoke ring —
+and it inherits the label colour, so it reads correctly on every variant:
+
+<ComponentDemo
+  html={`<md-button variant="filled" loading>filled</md-button>
+<md-button variant="outlined" loading>outlined</md-button>
+<md-button variant="text" loading>text</md-button>
+<md-button variant="elevated" loading>elevated</md-button>
+<md-button variant="tonal" loading>tonal</md-button>`}
+  label="Loading — every variant"
+/>
+
+Slot your own into `loader` when the default isn't the right affordance — a
+circular [`md-progress-indicator`](/components/progress-indicator/), a branded
+mark, anything. The slot replaces the whole spinner; everything else about the
+loading state (inert, `aria-busy`, the label staying put) is unchanged.
+
+<ComponentDemo
+  html={`<md-button variant="filled" loading>Default</md-button>
+
+<md-button variant="filled" loading>
+  Swapped
+  <md-progress-indicator slot="loader" variant="circular" indeterminate size="18" label="Saving"></md-progress-indicator>
+</md-button>`}
+  label="The built-in md-loading-indicator, and an md-progress-indicator slotted over it"
+/>
+
+:::note[Sizing a slotted loader is yours]
+The button sizes its **own** spinner from the icon box (see below). A slotted
+element keeps its own sizing — `md-progress-indicator` takes a `size` in dp, and
+its circular variant floors at 24dp unless you set one, which is exactly why the
+button's default is `md-loading-indicator`.
+:::
+
+The spinner tracks the size tier and the density rung, because it is derived
+from the icon box rather than a fixed pixel value:
+
+<ComponentDemo
+  html={`<md-button variant="filled" size="xs" loading>XS</md-button>
+<md-button variant="filled" size="sm" loading>SM</md-button>
+<md-button variant="filled" size="md" loading>MD</md-button>
+<md-button variant="filled" size="lg" loading>LG</md-button>
+<md-button variant="filled" size="xl" loading>XL</md-button>`}
+  label="Loading — every size"
+/>
+
+### Bringing your own spinner
+
+`loading` is the built-in path. When you need the progress API instead —
+determinate values, a wavy indicator, four-colour — slot an
+[`md-progress-indicator`](/components/progress-indicator/) into `leading-icon`
+or `trailing-icon`. Leading reads as the spinner being the *subject* of the
+action, trailing as its *outcome*:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">leading</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-button variant="filled" size="md" soft-disabled>
+      <md-progress-indicator slot="leading-icon" variant="circular" indeterminate label="Saving"></md-progress-indicator>
+      Saving
+    </md-button>
+    <md-button variant="outlined" size="md" soft-disabled>
+      <md-progress-indicator slot="leading-icon" variant="circular" indeterminate label="Syncing"></md-progress-indicator>
+      Syncing
+    </md-button>
+    <md-button variant="tonal" size="md" soft-disabled>
+      <md-progress-indicator slot="leading-icon" variant="circular" value="65" label="65 percent"></md-progress-indicator>
+      65% done
+    </md-button>
+  </div>
+  <span style="inline-size:4.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">trailing</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-button variant="filled" size="md" soft-disabled>
+      Continue
+      <md-progress-indicator slot="trailing-icon" variant="circular" indeterminate label="Working"></md-progress-indicator>
+    </md-button>
+    <md-button variant="outlined" size="md" soft-disabled>
+      Uploading
+      <md-progress-indicator slot="trailing-icon" variant="circular" indeterminate label="Uploading"></md-progress-indicator>
+    </md-button>
+    <md-button variant="tonal" size="md" soft-disabled>
+      Exporting
+      <md-progress-indicator slot="trailing-icon" variant="circular" indeterminate wave four-color label="Exporting"></md-progress-indicator>
+    </md-button>
+  </div>
+</div>`}
+  label="Slotted md-progress-indicator — leading and trailing"
+  storyId="actions-button--loading"
+/>
+
+:::caution[It will not match the built-in spinner's size]
+`md-progress-indicator` clamps its circular variant to M3's **24dp minimum**, so
+it renders larger than the `loading` spinner (14px at `sm`) and suits size `md`
+and up. That clamp is exactly why `loading` uses
+[`md-loading-indicator`](/components/loading-indicator/) internally — it has no
+floor, so it can track the icon box down to 10px.
+
+Keep `soft-disabled` on the button so the busy state still swallows activation;
+the `loading` prop does that for you, a slotted spinner does not.
+:::
+
+## Toggle
+
+`toggle` turns the button into a two-state control and emits `aria-pressed`
+automatically.
+
+<ComponentDemo
+  html={`<md-button variant="tonal" toggle icon="favorite" value="fav">Follow</md-button>
+<md-button variant="filled" toggle selected value="sub">Subscribed</md-button>`}
+  label="Toggle buttons"
+/>
+
+Keep the label length stable between states — M3 warns that a label swinging
+from "Follow" to "You are now following" disrupts the layout.
+
+## Width
+
+Content-sized by default. `full-width` stretches to the container; cap it so
+it never becomes a long flat bar.
+
+<ComponentDemo
+  html={`<md-button variant="filled" full-width icon="check">Confirm and continue</md-button>
+<md-button variant="outlined" full-width style="--md-button-max-width: 360px;">Capped at 360px</md-button>`}
+  label="Full width"
+/>
+
+For arbitrary sizing use `--md-button-width`, `--md-button-min-width`,
+`--md-button-max-width`, `--md-button-height`, `--md-button-min-height`.
+
+<ComponentDemo
+  html={`<md-button variant="filled" style="--md-button-width: 260px;">Fixed 260px</md-button>
+<md-button variant="outlined" style="--md-button-min-width: 200px;">Min 200px</md-button>
+<md-button variant="tonal" style="--md-button-height: 64px;">Tall 64px</md-button>
+<md-button variant="filled" style="--md-button-width: 180px; --md-button-height: 56px;">180 x 56</md-button>`}
+  label="Explicit width and height"
+/>
+
+## Links
+
+Set `href` and the button navigates instead of acting.
+
+```html
+<md-button variant="text" href="/settings">Settings</md-button>
+<md-button variant="text" href="https://example.com" target="_blank">External</md-button>
+```
+
+<ComponentDemo
+  html={`<md-button variant="filled" href="https://m3.material.io" target="_blank" trailing-icon="open_in_new">M3 guidelines</md-button>
+<md-button variant="outlined" href="https://github.com" target="_blank" trailing-icon="open_in_new">GitHub</md-button>
+<md-button variant="text" href="/components/" icon="link">Browse components</md-button>`}
+  label="Link buttons — these navigate"
+/>
+
+:::danger[`href` wins over `type`]
+If `href` is set the button navigates and **never** submits or resets a form.
+Navigation goes through `window.open(sanitizeHref(href), target)`; unsafe
+schemes such as `javascript:` are refused, and the form is *not* submitted as
+a fallback.
+:::
+
+For SPA routing, cancel `mdClick` and route yourself:
+
+<TechnologyTabs
+  html={`<md-button variant="text" href="/settings" id="nav">Settings</md-button>
+
+<script type="module">
+  document.getElementById('nav').addEventListener('mdClick', (e) => {
+    const { href } = e.detail;
+    if (href?.startsWith('/')) {
+      e.preventDefault();      // cancels navigation AND the toggle flip
+      router.push(href);
+    }
+  });
+</script>`}
+  react={`import { MdButton } from '@awc-ui/react';
+import { useNavigate } from 'react-router-dom';
+
+export function NavButton() {
+  const navigate = useNavigate();
+
+  return (
+    <MdButton
+      variant="text"
+      href="/settings"
+      onMdClick={(e) => {
+        const { href } = e.detail;
+        if (href?.startsWith('/')) {
+          e.preventDefault();
+          navigate(href);
+        }
+      }}
+    >
+      Settings
+    </MdButton>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+
+@Component({
+  selector: 'app-nav-button',
+  template: \`
+    <md-button variant="text" href="/settings" (mdClick)="onClick($event)">
+      Settings
+    </md-button>
+  \`,
+})
+export class NavButtonComponent {
+  constructor(private router: Router) {}
+
+  onClick(e: CustomEvent) {
+    const { href } = e.detail;
+    if (href?.startsWith('/')) {
+      e.preventDefault();
+      this.router.navigateByUrl(href);
+    }
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
+function onClick(e: CustomEvent) {
+  const { href } = e.detail;
+  if (href?.startsWith('/')) {
+    e.preventDefault();
+    router.push(href);
+  }
+}
+</script>
+
+<template>
+  <md-button variant="text" href="/settings" @mdClick="onClick">
+    Settings
+  </md-button>
+</template>`}
+  svelte={`<script lang="ts">
+  import { goto } from '$app/navigation';
+
+  function onClick(e: CustomEvent) {
+    const { href } = e.detail;
+    if (href?.startsWith('/')) {
+      e.preventDefault();
+      goto(href);
+    }
+  }
+</script>
+
+<md-button variant="text" href="/settings" on:mdClick={onClick}>
+  Settings
+</md-button>`}
+/>
+
+## Forms
+
+`md-button` is **form-associated** via `ElementInternals`, so `type="submit"`
+and `type="reset"` work across the shadow boundary — no hidden `<input>`
+needed. Submit calls `form.requestSubmit()`, so the form's `submit` event
+fires and native constraint validation runs.
+
+<ComponentDemo
+  html={`<form style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;"
+        onsubmit="event.preventDefault(); this.querySelector('[data-out]').textContent = 'Submitted: ' + (new FormData(this).get('email') || '(empty)');">
+  <md-text-field label="Email" type="email" name="email" required></md-text-field>
+  <md-button variant="filled" type="submit">Save</md-button>
+  <md-button variant="text" type="reset">Reset</md-button>
+  <span data-out style="opacity:.75;font-size:.85rem;"></span>
+</form>`}
+  htmlForCode={`<form id="profile">
+  <md-text-field label="Email" type="email" name="email" required></md-text-field>
+
+  <md-button variant="filled" type="submit">Save</md-button>
+  <md-button variant="text" type="reset">Reset</md-button>
+</form>`}
+  label="Form association — submit runs native validation"
+/>
+
+<TechnologyTabs
+  html={`<form id="profile">
+  <md-text-field label="Email" type="email" name="email" required></md-text-field>
+
+  <md-button variant="filled" type="submit">Save</md-button>
+  <md-button variant="text" type="reset">Reset</md-button>
+</form>
+
+<script type="module">
+  document.getElementById('profile').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const data = new FormData(e.target);
+    console.log(Object.fromEntries(data));   // { email: '…' }
+  });
+</script>`}
+  react={`import { MdButton, MdTextField } from '@awc-ui/react';
+
+export function ProfileForm() {
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const data = new FormData(e.currentTarget);
+    console.log(Object.fromEntries(data));
+  }
+
+  return (
+    <form onSubmit={onSubmit}>
+      <MdTextField label="Email" type="email" name="email" required />
+
+      <MdButton variant="filled" type="submit">Save</MdButton>
+      <MdButton variant="text" type="reset">Reset</MdButton>
+    </form>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-profile-form',
+  template: \`
+    <form (submit)="onSubmit($event)">
+      <md-text-field label="Email" type="email" name="email" required></md-text-field>
+
+      <md-button variant="filled" type="submit">Save</md-button>
+      <md-button variant="text" type="reset">Reset</md-button>
+    </form>
+  \`,
+})
+export class ProfileFormComponent {
+  onSubmit(e: Event) {
+    e.preventDefault();
+    const data = new FormData(e.target as HTMLFormElement);
+    console.log(Object.fromEntries(data));
+  }
+}`}
+  vue={`<script setup lang="ts">
+function onSubmit(e: Event) {
+  e.preventDefault();
+  const data = new FormData(e.target as HTMLFormElement);
+  console.log(Object.fromEntries(data));
+}
+</script>
+
+<template>
+  <form @submit="onSubmit">
+    <md-text-field label="Email" type="email" name="email" required />
+
+    <md-button variant="filled" type="submit">Save</md-button>
+    <md-button variant="text" type="reset">Reset</md-button>
+  </form>
+</template>`}
+  svelte={`<script lang="ts">
+  function onSubmit(e: Event) {
+    e.preventDefault();
+    const data = new FormData(e.target as HTMLFormElement);
+    console.log(Object.fromEntries(data));
+  }
+</script>
+
+<form on:submit={onSubmit}>
+  <md-text-field label="Email" type="email" name="email" required />
+
+  <md-button variant="filled" type="submit">Save</md-button>
+  <md-button variant="text" type="reset">Reset</md-button>
+</form>`}
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdClick` | **yes** | `MdButtonClickDetail` | Every activation (pointer, `Enter`, `Space`) |
+| `mdChange` | no | `{ selected, value }` | Only when `toggle` mode flips `selected` |
+
+### Why two events and not one
+
+`mdChange`'s payload is a strict subset of `mdClick`'s, so the difference is not
+the data — it is the **guarantee**.
+
+`mdClick.detail.selected` is a *prediction*: the state the button will take **if
+nothing cancels the click**. A listener registered after yours can still call
+`preventDefault()`, so a handler that commits on `mdClick` can commit a change
+that never happened. `mdChange` fires after the flip and cannot be vetoed, so it
+is the committed fact.
+
+This is the same split the platform uses for `<input type="checkbox">` —
+`click` is cancelable and predictive, `change` is settled — including the part
+people forget: **neither fires on a programmatic change.** Setting
+`btn.selected = true` in code emits nothing, exactly as `input.checked = true`
+emits nothing. If your own code changes the state, your own code already knows.
+
+| You want to… | Listen to |
+|---|---|
+| Veto the activation (guard, confirm, permission check) | `mdClick` + `preventDefault()` |
+| React to a committed toggle | `mdChange` |
+| Handle a plain, non-toggle button press | `mdClick` |
+| Know the *previous* state | `mdClick` — `detail.selected` is the incoming one |
+
+```ts
+interface MdButtonClickDetail {
+  value: string;
+  toggle: boolean;
+  selected: boolean;   // the state the button WILL take — a before-change hook
+  href: string;
+  target: string;
+  originalEvent: MouseEvent | KeyboardEvent;
+}
+```
+
+:::tip[`detail.selected` is the post-click state]
+It describes what the button *will* become if the click is not cancelled, which
+makes `mdClick` a clean "before-change" hook. `preventDefault()` vetoes the
+toggle flip **and** the `href` navigation — the underlying DOM `click` still
+bubbles.
+:::
+
+Both events **bubble** and are **composed**, so one delegated listener on an
+ancestor catches every button.
+
+<ComponentDemo
+  html={`<div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+  <md-button id="btn-fav" variant="filled" toggle value="fav">Favorite</md-button>
+  <md-button id="btn-veto" variant="outlined" toggle value="veto">Vetoed on click</md-button>
+</div>
+<output id="btn-ev-log" style="display:block; margin-block-start:16px; min-block-size:3.2em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Toggle either button. The second one cancels its own click.</output>`}
+  script={`
+    var log = root.querySelector('#btn-ev-log');
+    var lines = [];
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 3);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    // One delegated listener on the wrapper catches both buttons — the events
+    // bubble and are composed.
+    root.addEventListener('mdClick', function (e) {
+      var d = e.detail;
+      push('mdClick   →  value=' + d.value + '  selected(next)=' + d.selected);
+      if (e.target.id === 'btn-veto') {
+        e.preventDefault();
+        push('           preventDefault() — the toggle never flips');
+      }
+    });
+
+    root.addEventListener('mdChange', function (e) {
+      push('mdChange  →  value=' + e.detail.value + '  selected=' + e.detail.selected);
+    });
+  `}
+  label="One delegated listener catches both buttons"
+  htmlCode={`<md-button id="save" variant="filled" toggle value="fav">Favorite</md-button>
+
+<script type="module">
+  const btn = document.getElementById('save');
+
+  btn.addEventListener('mdClick', (e) => {
+    if (!confirm('Continue?')) e.preventDefault();   // veto
+  });
+
+  btn.addEventListener('mdChange', (e) => {
+    console.log(e.detail.value, e.detail.selected);
+  });
+</script>`}
+  react={`import { MdButton } from '@awc-ui/react';
+
+export function FavoriteButton() {
+  return (
+    <MdButton
+      variant="filled"
+      toggle
+      value="fav"
+      onMdClick={(e) => {
+        if (!window.confirm('Continue?')) e.preventDefault();
+      }}
+      onMdChange={(e) => console.log(e.detail.value, e.detail.selected)}
+    >
+      Favorite
+    </MdButton>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-favorite-button',
+  template: \`
+    <md-button
+      variant="filled"
+      toggle
+      value="fav"
+      (mdClick)="onClick($event)"
+      (mdChange)="onChange($event)"
+    >Favorite</md-button>
+  \`,
+})
+export class FavoriteButtonComponent {
+  onClick(e: CustomEvent) {
+    if (!confirm('Continue?')) e.preventDefault();
+  }
+  onChange(e: CustomEvent) {
+    console.log(e.detail.value, e.detail.selected);
+  }
+}`}
+  vue={`<script setup lang="ts">
+function onClick(e: CustomEvent) {
+  if (!confirm('Continue?')) e.preventDefault();
+}
+function onChange(e: CustomEvent) {
+  console.log(e.detail.value, e.detail.selected);
+}
+</script>
+
+<template>
+  <md-button
+    variant="filled"
+    toggle
+    value="fav"
+    @mdClick="onClick"
+    @mdChange="onChange"
+  >Favorite</md-button>
+</template>`}
+  svelte={`<script lang="ts">
+  function onClick(e: CustomEvent) {
+    if (!confirm('Continue?')) e.preventDefault();
+  }
+  function onChange(e: CustomEvent) {
+    console.log(e.detail.value, e.detail.selected);
+  }
+</script>
+
+<md-button
+  variant="filled"
+  toggle
+  value="fav"
+  on:mdClick={onClick}
+  on:mdChange={onChange}
+>Favorite</md-button>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[Internal props]
+`connectedLeft`, `connectedRight`, `groupTabindex` and `value` are owned by
+[`md-button-group`](/components/button-group/). Setting them by hand breaks the
+group's roving tabindex and border trimming.
+:::
+
+## Accessibility
+
+- The host **is** the button: `role="button"`, `Enter`/`Space` activation, and
+  a 3px focus ring at 2px offset on every variant.
+- `aria-disabled` is set whenever `disabled`, `soft-disabled` **or** `loading`
+  is active.
+- `aria-pressed` is emitted **only** in `toggle` mode.
+- Add `aria-label` whenever the visible label is insufficient. Verified against
+  axe-core with zero WCAG 2.1 AA violations.
+- Prefer `soft-disabled` over `disabled` for contextually-unavailable actions —
+  it stays focusable, so keyboard users can still discover it.
+- `role-override` exists for composite widgets (e.g. `gridcell` in
+  [`md-date-picker`](/components/date-picker/)). Leave it empty otherwise.
+
+Tab through these: the soft-disabled button still takes focus, the disabled one
+is skipped, and the toggle announces its pressed state.
+
+<ComponentDemo
+  html={`<md-button variant="filled">Focusable</md-button>
+<md-button variant="filled" soft-disabled>Soft-disabled — still focusable</md-button>
+<md-button variant="filled" disabled>Disabled — skipped</md-button>
+<md-button variant="tonal" toggle selected value="bookmark" icon="bookmark">Saved</md-button>
+<md-button variant="text" icon="delete" aria-label="Delete invoice 4021">Delete</md-button>
+<md-icon-button icon="delete" aria-label="Delete invoice 4021"></md-icon-button>`}
+  label="Keyboard and screen-reader behaviour"
+/>
+
+The last two show the two legitimate uses of `aria-label`. On the `md-button`
+the visible word "Delete" is the label; `aria-label` **overrides** it with
+something more specific for screen-reader users, who hear "Delete invoice 4021"
+without the row context a sighted user gets for free. For a genuinely icon-only
+control, reach for [`md-icon-button`](/components/icon-button/) — an
+`md-button` with an icon and no text has no accessible name and the wrong
+metrics, which is why it appears in [Anti-patterns](#anti-patterns) below.
+
+## RTL, density & i18n
+
+**RTL** — all box metrics use logical properties, so leading/trailing icons
+swap automatically under `dir="rtl"`. Add `mirror-icon` for **directional**
+glyphs only (`arrow_forward`, `chevron_right`, `send`); never for `add`,
+`search` or `favorite`. See [RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <md-button variant="filled" trailing-icon="arrow_forward" mirror-icon>التالي</md-button>
+</div>
+```
+
+**The same buttons in both directions.** Nothing is re-authored between them —
+only `dir` changes. Box metrics are logical, so the icon moves to the trailing
+edge on its own:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-button variant="filled" icon="add">Add item</md-button>
+    <md-button variant="outlined" trailing-icon="arrow_forward" mirror-icon>Next</md-button>
+    <md-button variant="tonal" icon="search">Search</md-button>
+    <md-button variant="text" icon="delete" trailing-icon="chevron_right" mirror-icon>Remove</md-button>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-button variant="filled" icon="add">إضافة عنصر</md-button>
+    <md-button variant="outlined" trailing-icon="arrow_forward" mirror-icon>التالي</md-button>
+    <md-button variant="tonal" icon="search">بحث</md-button>
+    <md-button variant="text" icon="delete" trailing-icon="chevron_right" mirror-icon>إزالة</md-button>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+/>
+
+### `mirror-icon` is per-glyph, not per-button
+
+Only **directional** glyphs flip. A magnifier, a plus or a heart points nowhere,
+so mirroring them just makes them look wrong. Compare the two rows under RTL:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <div dir="rtl" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-button variant="outlined" trailing-icon="arrow_forward" mirror-icon>التالي</md-button>
+    <md-button variant="outlined" trailing-icon="chevron_right" mirror-icon>المزيد</md-button>
+    <md-button variant="outlined" icon="send" mirror-icon>إرسال</md-button>
+    <md-button variant="tonal" icon="add">إضافة</md-button>
+    <md-button variant="tonal" icon="search">بحث</md-button>
+    <md-button variant="tonal" icon="favorite">إعجاب</md-button>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <div dir="rtl" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-button variant="outlined" trailing-icon="arrow_forward">التالي</md-button>
+    <md-button variant="outlined" trailing-icon="chevron_right">المزيد</md-button>
+    <md-button variant="outlined" icon="send">إرسال</md-button>
+    <md-button variant="tonal" icon="add" mirror-icon>إضافة</md-button>
+    <md-button variant="tonal" icon="search" mirror-icon>بحث</md-button>
+    <md-button variant="tonal" icon="favorite" mirror-icon>إعجاب</md-button>
+  </div>
+</div>`}
+  label="mirror-icon — directional glyphs only"
+/>
+
+### Every density rung
+
+`density` sets a local rung — `-1` through `-4` — that wins over whatever
+`data-density` an ancestor set. The top row carries no `density` at all: it is
+the default the rungs taper away from.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">default</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;"><md-button variant="filled" icon="save">Save</md-button><md-button variant="outlined">Cancel</md-button><md-button variant="text" icon="delete">Delete</md-button></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;"><md-button variant="filled" density="-1" icon="save">Save</md-button><md-button variant="outlined" density="-1">Cancel</md-button><md-button variant="text" density="-1" icon="delete">Delete</md-button></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;"><md-button variant="filled" density="-2" icon="save">Save</md-button><md-button variant="outlined" density="-2">Cancel</md-button><md-button variant="text" density="-2" icon="delete">Delete</md-button></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;"><md-button variant="filled" density="-3" icon="save">Save</md-button><md-button variant="outlined" density="-3">Cancel</md-button><md-button variant="text" density="-3" icon="delete">Delete</md-button></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;"><md-button variant="filled" density="-4" icon="save">Save</md-button><md-button variant="outlined" density="-4">Cancel</md-button><md-button variant="text" density="-4" icon="delete">Delete</md-button></div>
+</div>`}
+  label="Default through -4 — label, icon and hit area all taper"
+/>
+
+:::caution[Below `-2`, check your touch targets]
+The rungs shrink the hit area along with the row: 40px at `0` down to 24px at
+`-4` for these buttons. That is well under the 48px pointer-coarse devices
+want, and an icon-only button — with no label padding to help — is the first to
+become hard to hit. See [Density](/behaviour/density/#accessibility) for the
+media query that raises the target back on touch.
+:::
+
+### Density and direction together
+
+The two are independent signals, so they compose without any extra wiring — here
+a `dir="rtl"` container at `data-density="-2"`. The first three buttons inherit
+that rung; the fourth tightens further with `density="-4"`; the last escapes the
+inherited rung entirely by setting the signal itself.
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+  <md-button variant="filled" icon="save">حفظ</md-button>
+  <md-button variant="outlined" trailing-icon="arrow_forward" mirror-icon>التالي</md-button>
+  <md-button variant="tonal" icon="search">بحث</md-button>
+  <md-button variant="tonal" density="-4" icon="search">أضيق</md-button>
+  <md-button variant="text" style="--md-sys-density-scale: 0;" icon="add">افتراضي</md-button>
+</div>`}
+  label="dir=rtl at data-density=-2, one button at -4, one escaping back to rung 0"
+/>
+
+:::caution[`density="0"` is not an opt-out]
+No component defines a `[density="0"]` rule — the token layer leaves it out on
+purpose, because reflected props write `density="0"` onto virtually every
+element and such a rule would pin the whole library to rung 0 and break global
+inheritance outright. Absence of a rung means "inherit whatever the ancestor
+says", so `density="0"` inside a `data-density="-2"` subtree still renders at
+`-2`. To reset a subtree, set `--md-sys-density-scale: 0` directly.
+:::
+
+**Density** — `density="-1…-4"` locally overrides the inherited `data-density`
+rung. See [Density](/behaviour/density/).
+
+**i18n** — the label is your slotted text, so it comes straight from your i18n
+layer; `lang` and `dir` are inherited from any ancestor. Localize `aria-label`
+too, and watch M3's length-stability rule on toggle labels.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-button-container-color` | Container background | Per variant |
+| `--md-button-label-color` | Label + icon color | Per variant |
+| `--md-button-icon-color` | Icon-only color override | Inherits label |
+| `--md-button-icon-size` | Icon box | 16–36px per size |
+| `--md-button-container-shape` | Border radius | Per shape/size |
+| `--md-button-outline-color` / `-width` | `outlined` border | `outline` / `1px` |
+| `--md-button-width` / `-min-width` / `-max-width` | Inline-size bounds | `auto` / touch target / `none` |
+| `--md-button-height` / `-min-height` | Block-size bounds | `auto` / touch target |
+
+<ComponentDemo
+  html={`<md-button variant="filled" style="--md-button-container-color: var(--md-sys-color-error); --md-button-label-color: var(--md-sys-color-on-error);">Delete</md-button>
+<md-button variant="filled" style="--md-button-container-shape: 4px;">Squared off</md-button>`}
+  label="Themed instances"
+/>
+
+**CSS Parts** reach inside the shadow root for things custom properties do not
+cover — `part="label"`, `part="icon"`, `part="trailing-icon"`:
+
+<ComponentDemo
+  html={`<style>
+  .upper-btn::part(label) { text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+  .big-icon::part(icon)   { transform: scale(1.35); }
+  .danger-btn {
+    --md-button-container-color: #B3261E;
+    --md-button-label-color: #FFFFFF;
+    --md-button-container-shape: 8px;
+  }
+</style>
+<md-button variant="filled" class="upper-btn">Uppercase label</md-button>
+<md-button variant="tonal" class="big-icon" icon="favorite">Bigger icon</md-button>
+<md-button variant="filled" class="danger-btn" icon="delete">Custom danger</md-button>`}
+  label="CSS parts and custom-property overrides"
+/>
+
+**CSS parts** — `state-layer`, `icon`, `trailing-icon`, `label`, `loading`.
+
+```css
+md-button::part(label) {
+  letter-spacing: 0.5px;
+}
+```
+
+
+## Related
+
+[`md-icon-button`](/components/icon-button/) ·
+[`md-fab`](/components/fab/) ·
+[`md-split-button`](/components/split-button/) ·
+[`md-button-group`](/components/button-group/) ·
+[`md-segmented-button`](/components/segmented-button/) ·
+[`md-chip`](/components/chip/) ·
+[`md-ripple`](/components/ripple/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-button" />

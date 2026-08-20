@@ -1,0 +1,543 @@
+---
+title: Color Picker
+description: "Saturation/value plate with hue and alpha sliders, numeric hex/RGB/HSL fields and preset swatches — inline or in a popover"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/color-picker.json";
+
+**Pick an arbitrary colour.** A saturation/value plate with a hue slider,
+optional alpha slider, numeric fields in hex / RGB / HSL, and an optional row of
+preset swatches. Renders inline (default) or as a popover behind **your own**
+trigger.
+
+<ComponentDemo
+  html={`<md-color-picker
+  value="#6750A4"
+  presets="#6750A4,#B3261E,#146C2E,#1B5E9F"
+  aria-label="Accent colour"
+></md-color-picker>`}
+  label="Live preview"
+  storyId="selection-color-picker--playground"
+/>
+
+:::note[Not a Material Design 3 component]
+M3 has no colour-picker page. The Do & Don't below are **house rules** derived
+from this component's behaviour and general form-control practice, not from
+`m3.material.io`.
+:::
+
+:::danger[Not form-associated — you must submit the value yourself]
+`md-color-picker` does **not** participate in `FormData`. A `name` attribute
+does nothing. Listen for `mdChange` and mirror the value into a hidden input (or
+your own state) — see [Forms](#forms).
+:::
+
+## Install
+
+<ComponentSetup tag="md-color-picker" example="" />
+
+## When to use
+
+- The user genuinely needs **arbitrary colour** selection: theming, drawing,
+  labels, calendars, design tools.
+- A brand or accent colour in a settings screen.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| A small fixed palette (e.g. 8 label colours) | [`md-chip`](/components/chip/) or [`md-segmented-button`](/components/segmented-button/) swatches, or `presets` only |
+| Choosing a semantic status | [`md-select`](/components/select/) with named options |
+| A value that must submit with a form | Mirror it into a hidden field yourself |
+| A greyscale / intensity amount | [`md-slider`](/components/slider/) |
+| Only a hex string typed by hand | [`md-text-field`](/components/text-field/) with a pattern |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Always-visible panel | `variant="inline"` |
+| A trigger of your own that opens a dialog | `variant="popover"` + a slotted `trigger` |
+| Transparency | An alpha-carrying `format`, plus the alpha track |
+| A fixed palette to pick from | `presets` |
+| Hide the numeric fields | `show-inputs="false"` — think first |
+| Hide just the hex field | `show-hex="false"` |
+| Compact panel | `density="-1…-4"` |
+
+## Variants
+
+| Variant | Behaviour |
+|---|---|
+| `inline` | **Default.** The panel is always visible — embed it in a settings panel or sidebar |
+| `popover` | Opens the panel in a floating dialog behind a trigger **you** slot |
+
+:::danger[`variant="popover"` has no trigger of its own]
+There is deliberately **no built-in trigger** — a default would impose a
+variant, a size and a label on every consumer. Slot your own into `trigger` and
+the component wires activation plus `aria-haspopup="dialog"` and
+`aria-expanded` onto it.
+
+Any element works: an [`md-button`](/components/button/) of whatever variant and
+size, an [`md-icon-button`](/components/icon-button/), or your own swatch. Omit
+it and the popover has nothing to open it — the component warns in dev.
+:::
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+  <md-color-picker variant="popover" dismiss-on-outside-click value="#B3261E" aria-label="Brand colour">
+    <md-button slot="trigger" variant="outlined" icon="palette">Brand colour</md-button>
+  </md-color-picker>
+
+  <md-color-picker variant="popover" dismiss-on-outside-click value="#146C2E" aria-label="Accent colour">
+    <md-icon-button slot="trigger" icon="format_color_fill" aria-label="Accent colour"></md-icon-button>
+  </md-color-picker>
+
+  <md-color-picker variant="popover" dismiss-on-outside-click value="#1B5E9F" aria-label="Label colour">
+    <md-chip slot="trigger" appearance="assist" icon="label">Label colour</md-chip>
+  </md-color-picker>
+</div>`}
+  htmlForCode={`<md-color-picker variant="popover" value="#B3261E" aria-label="Brand colour">
+  <md-button slot="trigger" variant="outlined" icon="palette">Brand colour</md-button>
+</md-color-picker>
+
+<md-color-picker variant="popover" value="#146C2E" aria-label="Accent colour">
+  <md-icon-button slot="trigger" icon="format_color_fill" aria-label="Accent colour"></md-icon-button>
+</md-color-picker>
+
+<md-color-picker variant="popover" value="#1B5E9F" aria-label="Label colour">
+  <md-chip slot="trigger" appearance="assist" icon="label">Label colour</md-chip>
+</md-color-picker>`}
+  label="A button, an icon button and a chip — all valid triggers"
+  storyId="selection-color-picker--popover"
+/>
+
+For `variant="popover"`, `open` reflects the panel state and `show()` /
+`close()` control it programmatically. `mdOpenChange` reports every transition.
+
+:::caution[`dismiss-on-outside-click` is **off** by default]
+This is the opposite of [`md-search`](/components/search/). Out of the box a
+popover **stays open** until the trigger is clicked again, `close()` is called,
+or `open` is set to `false` — clicking elsewhere on the page will not dismiss
+it. Opt in explicitly, or provide your own close affordance.
+:::
+
+## Value & format
+
+`value` is a **string in the current `format`**, and it is two-way bindable
+(mutable + reflected).
+
+| `format` | Emitted shape | With `alpha` |
+|---|---|---|
+| `hex` | **Default.** `#6750A4` | 8-digit hex, `#6750A4CC` |
+| `rgb` | `rgb(103, 80, 164)` | `rgba(103, 80, 164, 0.8)` |
+| `hsl` | `hsl(258, 34%, 48%)` | `hsla(258, 34%, 48%, 0.8)` |
+
+On input, `value` accepts any 3/4/6/8-digit hex, `rgb()` or `rgba()` — but what
+comes **out** always follows `format`.
+
+:::danger[Changing `format` changes the shape of the string]
+Pick one `format` and keep it stable. A consumer that parses `value` as hex will
+break the moment `format` flips to `rgb` or `hsl` — the property, the attribute
+and the `mdChange` detail all switch shape together.
+:::
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 24px; flex-wrap: wrap;">
+  <md-color-picker format="hex" value="#6750A4" show-inputs="false" aria-label="Hex output"></md-color-picker>
+  <md-color-picker format="rgb" alpha value="rgba(103,80,164,0.8)" aria-label="RGBA output"></md-color-picker>
+</div>`}
+  label="Hex output, and RGB with alpha"
+  storyId="selection-color-picker--formats"
+/>
+
+`alpha` only has meaning in formats that carry it — with `format="hex"` expect
+the 8-digit form.
+
+## Presets
+
+`presets` accepts **either form** — the comma-separated attribute in markup, or
+an array assigned as a property from JS. Whitespace and empty entries are
+ignored either way, so it behaves like every other list-valued prop in the
+library.
+
+Presets render as a `role="listbox"` of focusable swatches below the sliders,
+and clicking one commits immediately (it fires `mdInput` **and** `mdChange`).
+
+<ComponentDemo
+  html={`<md-color-picker
+  id="preset-cp"
+  value="#146C2E"
+  aria-label="Brand colour"
+></md-color-picker>`}
+  script={`
+  var el = root.querySelector('#preset-cp');
+  el.presets = ['#6750A4', '#B3261E', '#146C2E', '#1B5E9F', '#000000', '#FFFFFF'];`}
+  htmlForCode={`<!-- Attribute: comma-separated -->
+<md-color-picker
+  value="#146C2E"
+  presets="#6750A4,#B3261E,#146C2E,#1B5E9F,#000000,#FFFFFF"
+  aria-label="Brand colour"
+></md-color-picker>
+
+<!-- Property: an array -->
+<md-color-picker id="brand" value="#146C2E" aria-label="Brand colour"></md-color-picker>
+
+<script type="module">
+  const el = document.getElementById('brand');
+  el.presets = ['#6750A4', '#B3261E', '#146C2E', '#1B5E9F', '#000000', '#FFFFFF'];
+</script>`}
+  label="Preset swatch row — this one is driven by an array property"
+  storyId="selection-color-picker--with-presets"
+/>
+
+## Fields
+
+| Prop | Default | Effect |
+|---|---|---|
+| `show-hex` | `true` | The hex field below the sliders |
+| `show-inputs` | `true` | The RGB / HSL numeric channel fields |
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 24px; flex-wrap: wrap;">
+  <md-color-picker show-inputs="false" aria-label="Plate only"></md-color-picker>
+  <md-color-picker show-hex="false" aria-label="No hex field"></md-color-picker>
+  <md-color-picker disabled value="#79747E" aria-label="Disabled picker"></md-color-picker>
+</div>`}
+  label="show-inputs=false, show-hex=false, and disabled"
+  storyId="selection-color-picker--compact"
+/>
+
+:::caution[`show-inputs="false"` removes the exact-entry path]
+The numeric fields are how a keyboard user enters a precise colour. Think hard
+before switching them off — and never switch off both `show-hex` and
+`show-inputs` unless the exact value is genuinely irrelevant.
+:::
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdInput` | no | `{ value: string }` | **Continuously** while dragging the plate, hue or alpha, and on every keystroke in a field |
+| `mdChange` | no | `{ value: string }` | On commit — pointer release, field blur, `Enter`, or a preset click |
+| `mdOpenChange` | no | `{ open: boolean }` | The popover opened or closed |
+
+:::tip[Preview on `mdInput`, persist on `mdChange`]
+`mdInput` fires once per pointer move — a single drag across the plate emits
+dozens of events. Use it for live preview only; save, POST or push to history
+on `mdChange`.
+:::
+
+## Forms
+
+There is **no** `ElementInternals` form participation here — unlike
+[`md-button`](/components/button/) or
+[`md-text-field`](/components/text-field/), this component contributes nothing
+to `FormData`. Mirror the value into a hidden input on `mdChange`:
+
+<ComponentDemo
+  html={`<form data-cp-form style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;inline-size:100%;">
+  <md-color-picker id="cp-accent" value="#6750A4" aria-label="Accent colour" style="inline-size: 260px;"></md-color-picker>
+
+  <input type="hidden" name="accent" value="#6750A4" />
+
+  <md-button variant="filled" type="submit">Save theme</md-button>
+  <div data-cp-out style="font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;opacity:.85;min-block-size:3em;white-space:pre-wrap;"></div>
+</form>`}
+  script={`
+  var form = root.querySelector('[data-cp-form]');
+  var picker = root.querySelector('#cp-accent');
+  var hidden = form.querySelector('input[name="accent"]');
+  var out = root.querySelector('[data-cp-out]');
+
+  // The picker contributes NOTHING to FormData — this mirror is what carries it.
+  picker.addEventListener('mdChange', function (e) {
+    hidden.value = e.detail.value;
+    out.textContent = 'mdChange -> mirrored into the hidden input: ' + e.detail.value;
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var data = {};
+    new FormData(form).forEach(function (v, k) { data[k] = v; });
+    out.textContent = 'FormData on submit: ' + JSON.stringify(data);
+  });
+
+  out.textContent = 'Pick a colour, then press Save theme.';`}
+  label="Not form-associated — the hidden input is what reaches FormData"
+  storyId="selection-color-picker--playground"
+  htmlForCode={`<form id="theme">
+  <md-color-picker id="picker" value="#6750A4" aria-label="Accent colour"></md-color-picker>
+  <input type="hidden" name="accent" id="accent" value="#6750A4">
+
+  <md-button variant="filled" type="submit">Save theme</md-button>
+</form>
+
+<script type="module">
+  const picker = document.getElementById('picker');
+  const hidden = document.getElementById('accent');
+
+  picker.addEventListener('mdChange', (e) => { hidden.value = e.detail.value; });
+
+  document.getElementById('theme').addEventListener('submit', (e) => {
+    e.preventDefault();
+    console.log(Object.fromEntries(new FormData(e.target)));   // { accent: '#6750A4' }
+  });
+</script>`}
+  react={`import { MdButton, MdColorPicker } from '@awc-ui/react';
+import { useState } from 'react';
+
+export function ThemeForm() {
+  const [accent, setAccent] = useState('#6750A4');
+
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    console.log(Object.fromEntries(new FormData(e.currentTarget)));
+  }
+
+  return (
+    <form onSubmit={onSubmit}>
+      <MdColorPicker
+        value={accent}
+        aria-label="Accent colour"
+        onMdChange={(e) => setAccent(e.detail.value)}
+      />
+      {/* the picker is not form-associated — this input carries the value */}
+      <input type="hidden" name="accent" value={accent} />
+
+      <MdButton variant="filled" type="submit">Save theme</MdButton>
+    </form>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-theme-form',
+  template: \`
+    <form (submit)="onSubmit($event)">
+      <md-color-picker
+        [attr.value]="accent"
+        aria-label="Accent colour"
+        (mdChange)="accent = $event.detail.value"
+      ></md-color-picker>
+
+      <input type="hidden" name="accent" [value]="accent" />
+
+      <md-button variant="filled" type="submit">Save theme</md-button>
+    </form>
+  \`,
+})
+export class ThemeFormComponent {
+  accent = '#6750A4';
+
+  onSubmit(e: Event) {
+    e.preventDefault();
+    console.log(Object.fromEntries(new FormData(e.target as HTMLFormElement)));
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+const accent = ref('#6750A4');
+
+function onSubmit(e: Event) {
+  e.preventDefault();
+  console.log(Object.fromEntries(new FormData(e.target as HTMLFormElement)));
+}
+</script>
+
+<template>
+  <form @submit="onSubmit">
+    <md-color-picker
+      :value="accent"
+      aria-label="Accent colour"
+      @mdChange="accent = $event.detail.value"
+    />
+
+    <input type="hidden" name="accent" :value="accent" />
+
+    <md-button variant="filled" type="submit">Save theme</md-button>
+  </form>
+</template>`}
+  svelte={`<script lang="ts">
+  let accent = '#6750A4';
+
+  function onSubmit(e: Event) {
+    e.preventDefault();
+    console.log(Object.fromEntries(new FormData(e.target as HTMLFormElement)));
+  }
+</script>
+
+<form on:submit={onSubmit}>
+  <md-color-picker
+    value={accent}
+    aria-label="Accent colour"
+    on:mdChange={(e) => (accent = e.detail.value)}
+  />
+
+  <input type="hidden" name="accent" value={accent} />
+
+  <md-button variant="filled" type="submit">Save theme</md-button>
+</form>`}
+/>
+
+## Testing
+
+The plate, the hue slider and the alpha slider are **three separate drag
+surfaces**. Each needs a real pointer drag — `pointerdown` → `pointermove` →
+`pointerup` on that surface. A synthetic `click` will not move any of them, and
+a drag on the plate says nothing about hue or alpha, so cover all three.
+
+Setting `value` directly is the fast path for everything that is not
+specifically about dragging.
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- Set `aria-label` — the default is the English string `"Color picker"`.
+- **Always surface the value as text, not just a swatch.** The hex / RGB fields
+  do this for you; a swatch alone conveys nothing to a colour-blind or
+  screen-reader user. This is the single most common accessibility defect here.
+- The numeric fields are the keyboard-accessible route to an exact colour —
+  `show-inputs="false"` removes it, so think hard before setting it.
+- The plate is `role="application"` with arrow-key handling; the hue and alpha
+  tracks are `role="slider"` with `aria-valuenow`. All three are in the tab
+  order unless `disabled`.
+- Presets are focusable swatches inside a `role="listbox"`; give them meaningful
+  surrounding text where you can.
+- If the picked colour becomes UI foreground or background, **validate contrast
+  yourself** — the component does not.
+- The popover panel is a `role="dialog"` labelled by `aria-label`. The component
+  puts `aria-haspopup="dialog"` and a live `aria-expanded` on **your** slotted
+  trigger — but its accessible **name** is yours to write, since the element is
+  yours (an icon-only trigger needs an `aria-label`).
+
+### Keyboard
+
+| Key | Action |
+|---|---|
+| `Tab` | Plate → hue track → alpha track → numeric fields → presets |
+| `←` `→` `↑` `↓` | Move the plate thumb, or step the focused hue / alpha track |
+| `Home` / `End` | Jump a track to its ends |
+| `Enter` / `Space` | Pick a focused preset; open the popover from its trigger |
+| `Escape` | Close the popover, returning focus to the trigger |
+
+<ComponentDemo
+  html={`<md-color-picker variant="inline" value="#6750A4" aria-label="Brand colour" style="inline-size: 280px;"></md-color-picker>`}
+  htmlForCode={`<md-color-picker variant="inline" value="#6750A4" aria-label="Brand colour"></md-color-picker>`}
+  label="Tab through plate, tracks and fields — the hex field is the exact route"
+  storyId="selection-color-picker--inline"
+/>
+
+## RTL, density & i18n
+
+**RTL** — the panel layout mirrors under `dir="rtl"`. The hue and alpha
+gradients keep their colour order; that ordering is not directional. See
+[RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:24px;flex-wrap:wrap;">
+  <div dir="ltr"><md-color-picker variant="inline" value="#6750A4" aria-label="Brand colour" style="inline-size: 260px;"></md-color-picker></div>
+  <div dir="rtl"><md-color-picker variant="inline" value="#6750A4" aria-label="لون العلامة" style="inline-size: 260px;"></md-color-picker></div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl — the gradients keep their order"
+  storyId="selection-color-picker--rtl"
+/>
+
+**Density** — `density="-1…-4"` compacts the panel and forwards the rung to the
+embedded text fields. See [Density](/behaviour/density/).
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+  <md-color-picker density="0" value="#6750A4" aria-label="Density 0"></md-color-picker>
+  <md-color-picker density="-1" value="#6750A4" aria-label="Density -1"></md-color-picker>
+  <md-color-picker density="-2" value="#6750A4" aria-label="Density -2"></md-color-picker>
+  <md-color-picker density="-3" value="#6750A4" aria-label="Density -3"></md-color-picker>
+  <md-color-picker density="-4" value="#6750A4" aria-label="Density -4"></md-color-picker>
+</div>`}
+  label="Density 0 through -4 — the rung reaches the embedded fields"
+  storyId="selection-color-picker--responsiveness"
+/>
+
+**i18n** — translate `aria-label` and any surrounding labels. Channel
+abbreviations (R/G/B, H/S/L) are conventional and normally stay untranslated.
+
+## Theming
+
+| Custom property | Purpose |
+|---|---|
+| `--md-color-picker-width` | Panel inline size |
+| `--md-color-picker-plate-height` | Saturation/value plate height |
+| `--md-color-picker-radius` | Outer container radius |
+| `--md-color-picker-surface-color` / `--md-color-picker-on-surface` | Panel background and text |
+| `--md-color-picker-outline-color` / `--md-color-picker-outline-strong` | Field outlines and stronger borders |
+| `--md-color-picker-thumb-size` / `--md-color-picker-thumb-border` | Plate/slider thumb |
+| `--md-color-picker-preset-size` | Preset swatch size |
+| `--md-color-picker-popover-elevation` | Popover shadow |
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;">
+  <md-color-picker variant="inline" value="#6750A4" aria-label="Default" style="inline-size: 240px;"></md-color-picker>
+  <md-color-picker variant="inline" value="#00897B" aria-label="Squared, tall plate" style="inline-size: 240px; --md-color-picker-radius: 4px; --md-color-picker-plate-height: 200px; --md-color-picker-thumb-size: 22px;"></md-color-picker>
+  <md-color-picker variant="inline" value="#E65100" aria-label="Branded surface" style="inline-size: 240px; --md-color-picker-surface-color: var(--md-sys-color-secondary-container); --md-color-picker-on-surface: var(--md-sys-color-on-secondary-container); --md-color-picker-outline-color: var(--md-sys-color-primary);"></md-color-picker>
+</div>`}
+  label="Radius, plate height, thumb size and a branded surface"
+  storyId="selection-color-picker--custom-css"
+/>
+
+Every default resolves through an `md-sys-color` role, so a picker that sets no
+custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<md-color-picker variant="inline" value="#6750A4" aria-label="Untouched defaults" style="inline-size: 280px;"></md-color-picker>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="selection-color-picker--dark-theme"
+/>
+
+## CSS parts
+
+| Part | Element |
+|---|---|
+| `panel` | The whole panel surface |
+| `plate` / `thumb` | Saturation–value plate and its thumb |
+| `hue` / `alpha` / `sliders` | The two tracks and their row |
+| `preview` | The current-colour swatch |
+| `inputs` / `label` | Numeric field row and its labels |
+| `field-hex` | The hex field |
+| `field-r` / `-g` / `-b` | RGB fields |
+| `field-h` / `-s` / `-l` | HSL fields |
+| `field-a` | Alpha field |
+| `presets` / `preset` | Preset listbox and each swatch |
+| `popover` | The floating panel surface (`variant="popover"`) |
+
+<ComponentDemo
+  html={`<style>
+  .parts-cp::part(plate) { border-radius: 12px; }
+  .parts-cp::part(thumb) { border-width: 3px; }
+  .parts-cp::part(preview) { border-radius: 4px; outline: 2px solid var(--md-sys-color-primary); }
+  .parts-cp::part(label) { text-transform: uppercase; letter-spacing: .08em; font-size: 10px; }
+</style>
+<md-color-picker class="parts-cp" variant="inline" value="#6750A4" aria-label="Styled parts" style="inline-size: 280px;"></md-color-picker>`}
+  label="plate, thumb, preview and label"
+/>
+
+
+## Related
+
+[`md-slider`](/components/slider/) ·
+[`md-text-field`](/components/text-field/) ·
+[`md-select`](/components/select/) ·
+[`md-chip`](/components/chip/) ·
+[`md-button`](/components/button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-color-picker" />

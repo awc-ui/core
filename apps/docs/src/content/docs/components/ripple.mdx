@@ -1,0 +1,244 @@
+---
+title: Ripple
+description: "The touch-feedback primitive — paints the MD3 press ripple inside its positioned parent"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/ripple.json";
+
+**The touch-feedback primitive.** Paints the MD3 press ripple inside its
+positioned parent. Used internally by 24 components — you only reach for it
+directly when building a **custom** interactive surface.
+
+:::note[Infrastructure component]
+If you're using a library component, it already has a ripple (usually behind a
+`ripple` prop). `md-button`, `md-card`, `md-checkbox`, `md-chip`, `md-fab`,
+`md-icon-button`, `md-list-item`, `md-menu-item`, `md-radio`,
+`md-segmented-button`, `md-tab` and others embed one already. Add `md-ripple`
+yourself only for controls you build.
+:::
+
+<ComponentDemo
+  html={`<div style="position: relative; overflow: hidden; padding: 32px 48px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; cursor: pointer;">
+  <md-ripple></md-ripple>
+  <span style="position: relative;">Press anywhere on this surface</span>
+</div>`}
+  label="Live preview — press and hold"
+/>
+
+## Install
+
+<ComponentSetup tag="md-ripple" example="" />
+
+:::danger[The parent must be positioned]
+The ripple positions itself absolutely inside its parent, so that parent needs
+`position: relative`. In a default `position: static` parent the ripple escapes
+to the nearest positioned ancestor and paints somewhere unrelated.
+:::
+
+The parent does **not** need `overflow: hidden`. The ripple clips itself: it
+inherits the container's `border-radius`, so the wave stays inside a pill, a
+rounded tile or a circle on its own. That matters for hosts that must let
+something escape their box — an icon button with a badge straddling the corner
+cannot hide its overflow, and before the ripple clipped itself, such a host
+painted a **square** wave.
+
+Add `overflow: hidden` if the parent has its own reason to clip; it is no longer
+load-bearing for the ripple.
+
+In Storybook the ripple is exercised through its hosts rather than on its own —
+see [button](/storybook/?path=/story/actions-button--ripple) and
+[FAB](/storybook/?path=/story/actions-fab--ripple), both of which toggle the
+`ripple` prop those components expose.
+
+## When to use
+
+- A **custom interactive surface** — a bespoke card, tile, or row — that should
+  match the library's press feedback.
+- Extending a library component's clickable area with your own wrapper.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Any library component | It already ripples — use its `ripple` prop |
+| A non-interactive surface | Nothing — a ripple implies interactivity |
+| Hover / focus styling | The component's state layer, or your own CSS |
+| Loading feedback | [`md-progress-indicator`](/components/progress-indicator/) / [`md-loading-indicator`](/components/loading-indicator/) |
+| Turning ripples off globally | `data-ripple="off"` on an ancestor |
+
+## Usage
+
+The ripple listens for pointer activity on its **parent**; it does not need to
+wrap the content. Drop it in as the first child and leave the rest of the markup
+alone.
+
+<ComponentDemo
+  html={`<div style="position: relative; overflow: hidden; display: flex; gap: 12px; align-items: center; padding: 16px 20px; min-inline-size: 260px; border-radius: 16px; background: var(--md-sys-color-surface-container-highest); cursor: pointer;" role="button" tabindex="0">
+  <md-ripple></md-ripple>
+  <span class="material-symbols-outlined" aria-hidden="true">insert_chart</span>
+  <span style="position: relative;">
+    <strong>Reports</strong><br />
+    <small>Last updated 2 minutes ago</small>
+  </span>
+</div>`}
+  label="A custom tile"
+/>
+
+## Keyboard activation
+
+:::caution[Keyboard activation does not ripple automatically]
+Only pointer input is automatic. Call `trigger()` from your `Enter` / `Space`
+handler — which is exactly what the library components do — or keyboard users
+get no press feedback at all.
+:::
+
+```html
+<div class="tile" tabindex="0" role="button"
+     style="position: relative; overflow: hidden;">
+  <md-ripple></md-ripple>
+  <h3>Reports</h3>
+</div>
+
+<script type="module">
+  const tile = document.querySelector('.tile');
+  const ripple = tile.querySelector('md-ripple');
+
+  tile.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      ripple.trigger();          // pointer ripples are automatic; keys aren't
+      tile.click();
+    }
+  });
+</script>
+```
+
+## Disabling
+
+`disabled` suppresses the ripple locally — useful while a row is busy or inert.
+
+<ComponentDemo
+  html={`<div style="position: relative; overflow: hidden; padding: 24px 32px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; cursor: pointer;">
+  <md-ripple></md-ripple>
+  <span style="position: relative;">Enabled</span>
+</div>
+<div style="position: relative; overflow: hidden; padding: 24px 32px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; opacity: 0.5;">
+  <md-ripple disabled></md-ripple>
+  <span style="position: relative;">Disabled — no ripple</span>
+</div>`}
+  label="disabled"
+/>
+
+Globally, `data-ripple="off"` on any ancestor (usually `<html>`) suppresses
+ripples library-wide. A per-component `ripple="off"` — or this component's
+`disabled` — beats it locally. See [Ripple](/behaviour/ripple/).
+
+```html
+<html data-ripple="off">
+```
+
+## Tint and opacity
+
+<ComponentDemo
+  html={`<div style="position: relative; overflow: hidden; padding: 24px 32px; border-radius: 12px; background: var(--md-sys-color-surface-container-highest); cursor: pointer; --md-ripple-color: var(--md-sys-color-primary);">
+  <md-ripple></md-ripple>
+  <span style="position: relative;">Primary tint</span>
+</div>
+<div style="position: relative; overflow: hidden; padding: 24px 32px; border-radius: 12px; background: var(--md-sys-color-surface-container-highest); cursor: pointer; --md-ripple-color: var(--md-sys-color-error); --md-ripple-opacity: 0.24;">
+  <md-ripple></md-ripple>
+  <span style="position: relative;">Error tint, double opacity</span>
+</div>
+<div style="position: relative; overflow: hidden; padding: 24px 32px; border-radius: 12px; background: var(--md-sys-color-surface-container-highest); cursor: pointer; --md-ripple-opacity: 0.04;">
+  <md-ripple></md-ripple>
+  <span style="position: relative;">Barely there</span>
+</div>`}
+  label="Themed ripples"
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::tip[`whenSettled()` exists for tests]
+Ripple animations are async, so asserting immediately after a click is flaky by
+construction. `await ripple.whenSettled()` resolves when the current animation
+finishes.
+:::
+
+```js
+await ripple.whenSettled();
+expect(/* … */);
+```
+
+This component emits no events and exposes no slots or CSS parts.
+
+## Accessibility
+
+- The ripple is **purely decorative** — `aria-hidden="true"`, no role, not
+  focusable, invisible to assistive tech.
+- Accessibility comes from the surface you attach it to: give **that** a role, an
+  accessible name, and keyboard handling.
+- Feedback must not be motion-only. Pair the ripple with a visible focus ring
+  and a state-layer colour change, so users who can't perceive the animation
+  still see the press.
+- Honour `prefers-reduced-motion`. The animation durations are custom
+  properties (`--md-ripple-grow-duration`, `--md-ripple-grow-easing`), so you can
+  shorten or neutralise them.
+
+## RTL, density & i18n
+
+Nothing direction-, density- or language-specific: the ripple originates at the
+pointer contact point and grows outward, which reads identically in every
+direction. There is no `density` prop and no text of its own to translate.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-ripple-color` | Ripple tint | `currentColor` |
+| `--md-ripple-opacity` | Peak opacity | `0.12` |
+| `--md-ripple-extend-inline` | Extra pixels added to each inline edge when sizing the wave | `0` |
+| `--md-ripple-extend-block` | Same, on the block edges | `0` |
+| `--md-ripple-grow-duration` | Override the wave's scale 0 → 1 grow | `450ms` |
+| `--md-ripple-grow-easing` | Companion to `--md-ripple-grow-duration` | `cubic-bezier(0.2, 0, 0, 1)` |
+
+```css
+md-ripple.brand {
+  --md-ripple-color: var(--md-sys-color-primary);
+}
+
+md-ripple.subtle {
+  --md-ripple-opacity: 0.06;
+}
+```
+
+:::note[The `extend-*` properties need concrete pixels]
+`getComputedStyle().getPropertyValue()` returns the **literal token** for a
+custom property, so a `calc()`, `clamp()` or `%` expression arrives unparsed and
+`parseFloat` gives `NaN`. Compute the value yourself and write it back as fixed
+pixels — `el.style.setProperty('--md-ripple-extend-inline', '120px')`. This is
+for surfaces that grow *during* the ripple's lifetime (e.g.
+[`md-search`](/components/search/) springing out on focus), so the wave is sized
+for the settled rect.
+:::
+
+
+## Related
+
+[`md-button`](/components/button/) ·
+[`md-icon-button`](/components/icon-button/) ·
+[`md-card`](/components/card/) ·
+[`md-list-item`](/components/list/#the-row--md-list-item) ·
+[`md-menu-item`](/components/menu/#md-menu-item) ·
+[`md-chip`](/components/chip/) ·
+[`md-tab`](/components/tabs/#md-tab)
+
+## AI / LLM Context
+
+<LLMContext tag="md-ripple" />

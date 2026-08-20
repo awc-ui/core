@@ -1,0 +1,550 @@
+---
+title: Toolbar
+description: "A container for controls that stay visible — docked at the bottom or floating free, with a paired FAB and a single roving tab stop"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/toolbar.json";
+
+**A container for controls that stay visible.** Icon buttons, buttons, text
+fields — optionally paired with a FAB — in two variants: `docked`
+(bottom-anchored, replacing the legacy bottom app bar) and `floating`
+(free-placed, pill-shaped). It implements the WAI-ARIA **toolbar** pattern, so
+the whole cluster of buttons is a single Tab stop.
+
+<ComponentDemo
+  html={`<md-toolbar variant="floating" aria-label="Text formatting" style="width: 100%; max-width: 600px;">
+  <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+  <md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button>
+  <md-icon-button icon="format_underlined" aria-label="Underline"></md-icon-button>
+  <md-divider></md-divider>
+  <md-icon-button icon="format_align_left" aria-label="Align left"></md-icon-button>
+  <md-icon-button icon="format_align_center" aria-label="Align center"></md-icon-button>
+  <md-icon-button icon="format_align_right" aria-label="Align right"></md-icon-button>
+</md-toolbar>`}
+  label="Live preview"
+  storyId="navigation-toolbar--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-toolbar" example="" />
+
+:::caution[The toolbar has no actions of its own]
+The host is a container. Hover, press and `Space` / `Enter` all come from the
+slotted controls, each following its own component's rules. What the toolbar
+adds is the **grouping**: one role, one accessible name, one Tab stop.
+:::
+
+## When to use
+
+- A set of controls that should stay **visible and available**, not hidden
+  behind a trigger.
+- The primary actions for a screen, anchored at the bottom (`docked`).
+- A contextual cluster near what it acts on — a formatting bar, a drawing
+  palette (`floating`).
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Actions that can hide behind a trigger | [`md-menu`](/components/menu/) |
+| The screen's header and title | [`md-app-bar`](/components/app-bar/) |
+| Top-level destinations | [`md-navigation-bar`](/components/navigation-bar/) / [`md-navigation-rail`](/components/navigation-rail/) |
+| 3+ related actions acting as one unit | [`md-button-group`](/components/button-group/) |
+| One primary action alone | [`md-fab`](/components/fab/) |
+| Sibling views inside a screen | [`md-tabs`](/components/tabs/) |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Bottom bar for a screen's main actions | `variant="docked"` (default) |
+| A contextual pill near the content | `variant="floating"` |
+| A column of controls | `variant="floating"` + `layout="vertical"` |
+| A tinted, high-emphasis bar | `color="vibrant"` |
+| Where controls sit along the bar | `alignment="start"` / `"center"` / `"end"` / `"space-between"` |
+| A paired primary action | The `fab` slot |
+| No toolbar semantics at all | `container-semantics="generic"` |
+
+## Variants
+
+| Variant | Shape | Use for |
+|---|---|---|
+| `docked` | Full-width, `position: sticky` | **Default.** A screen's primary actions |
+| `floating` | Inline, pill-shaped, hugs its content | Contextual and formatting bars |
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:24px;inline-size:100%;">
+  <md-toolbar variant="docked" aria-label="Docked actions">
+    <md-icon-button icon="arrow_back" aria-label="Back"></md-icon-button>
+    <md-icon-button icon="star" aria-label="Star"></md-icon-button>
+    <md-icon-button icon="share" aria-label="Share"></md-icon-button>
+    <md-icon-button icon="delete" aria-label="Delete"></md-icon-button>
+  </md-toolbar>
+
+  <md-toolbar variant="floating" aria-label="Floating actions">
+    <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+    <md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button>
+    <md-icon-button icon="link" aria-label="Insert link"></md-icon-button>
+  </md-toolbar>
+</div>`}
+  label="Docked and floating"
+  storyId="navigation-toolbar--docked-configurations"
+/>
+
+:::caution[`docked` is `position: sticky`, not `fixed`]
+Sticky positions against the nearest **scroll container**, so the toolbar must
+sit inside that container — typically as its last child — for bottom-bar
+behaviour. If you want the bar pinned to the viewport regardless of document
+structure, wrap it in your own `position: fixed` element.
+:::
+
+## Colour schemes
+
+`color="standard"` is the default; `vibrant` tints the container and is high
+emphasis, so use it sparingly.
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:24px;inline-size:100%;">
+  <md-toolbar variant="floating" color="standard" aria-label="Standard">
+    <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+    <md-icon-button variant="filled" icon="add" aria-label="Add"></md-icon-button>
+    <md-icon-button variant="tonal" toggle icon="star" aria-label="Star"></md-icon-button>
+  </md-toolbar>
+
+  <md-toolbar variant="floating" color="vibrant" aria-label="Vibrant">
+    <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+    <md-icon-button variant="filled" icon="add" aria-label="Add"></md-icon-button>
+    <md-icon-button variant="tonal" toggle icon="star" aria-label="Star"></md-icon-button>
+  </md-toolbar>
+
+  <md-toolbar variant="docked" color="vibrant" aria-label="Docked vibrant">
+    <md-icon-button icon="arrow_back" aria-label="Back"></md-icon-button>
+    <md-icon-button icon="star" aria-label="Star"></md-icon-button>
+    <md-icon-button icon="share" aria-label="Share"></md-icon-button>
+  </md-toolbar>
+</div>`}
+  label="standard and vibrant, floating and docked"
+  storyId="navigation-toolbar--color-schemes"
+/>
+
+:::note[The scheme only reaches **direct** slotted icon buttons]
+The toolbar retints `md-icon-button` children so a row of them reads as one
+unit. Two limits worth knowing:
+
+- The same `md-icon-button` **outside** a toolbar keeps its normal colours —
+  this library never changes icon-button defaults globally.
+- An icon button nested inside a wrapper element still joins the roving group,
+  but keeps its own palette. Slot them directly if you want the tint.
+
+Only `standard` and `outlined` ink is tinted. `filled` and tonal-toggle buttons
+keep their own container fill, so a selected toggle never flattens into looking
+unselected.
+:::
+
+<ComponentDemo
+  html={`<md-toolbar variant="floating" color="standard" aria-label="Icon button types">
+  <md-icon-button variant="standard" icon="format_bold" aria-label="Standard"></md-icon-button>
+  <md-icon-button variant="outlined" icon="format_italic" aria-label="Outlined"></md-icon-button>
+  <md-icon-button variant="filled" icon="add" aria-label="Filled"></md-icon-button>
+  <md-icon-button variant="tonal" toggle icon="star" aria-label="Tonal toggle"></md-icon-button>
+  <md-icon-button variant="tonal" toggle selected icon="favorite" aria-label="Tonal toggle, selected"></md-icon-button>
+</md-toolbar>`}
+  label="All four icon-button variants inside one toolbar"
+  storyId="navigation-toolbar--icon-button-types"
+/>
+
+## Layout and alignment
+
+`layout="vertical"` is a **floating-only** option — a docked bar is a row by
+definition. `alignment` distributes the controls along the main axis.
+
+<ComponentDemo
+  html={`<div style="display:flex;gap:24px;align-items:flex-start;">
+  <md-toolbar variant="floating" layout="horizontal" aria-label="Horizontal">
+    <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+    <md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button>
+    <md-icon-button icon="format_underlined" aria-label="Underline"></md-icon-button>
+  </md-toolbar>
+
+  <md-toolbar variant="floating" layout="vertical" aria-label="Vertical">
+    <md-icon-button icon="brush" aria-label="Brush"></md-icon-button>
+    <md-icon-button icon="colorize" aria-label="Picker"></md-icon-button>
+    <md-icon-button icon="ink_eraser" aria-label="Eraser"></md-icon-button>
+  </md-toolbar>
+</div>`}
+  label="Horizontal and vertical floating toolbars"
+  storyId="navigation-toolbar--floating-vertical"
+/>
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:20px;inline-size:100%;">
+  <md-toolbar variant="docked" alignment="start" aria-label="start"><md-icon-button icon="arrow_back" aria-label="Back"></md-icon-button><md-icon-button icon="star" aria-label="Star"></md-icon-button><md-icon-button icon="share" aria-label="Share"></md-icon-button></md-toolbar>
+  <md-toolbar variant="docked" alignment="center" aria-label="center"><md-icon-button icon="arrow_back" aria-label="Back"></md-icon-button><md-icon-button icon="star" aria-label="Star"></md-icon-button><md-icon-button icon="share" aria-label="Share"></md-icon-button></md-toolbar>
+  <md-toolbar variant="docked" alignment="end" aria-label="end"><md-icon-button icon="arrow_back" aria-label="Back"></md-icon-button><md-icon-button icon="star" aria-label="Star"></md-icon-button><md-icon-button icon="share" aria-label="Share"></md-icon-button></md-toolbar>
+  <md-toolbar variant="docked" alignment="space-between" aria-label="space-between"><md-icon-button icon="arrow_back" aria-label="Back"></md-icon-button><md-icon-button icon="star" aria-label="Star"></md-icon-button><md-icon-button icon="share" aria-label="Share"></md-icon-button></md-toolbar>
+</div>`}
+  label="start · center · end · space-between"
+  storyId="navigation-toolbar--floating-configurations"
+/>
+
+## Pairing a FAB
+
+The `fab` slot places a FAB beside the bar — or below it under
+`layout="vertical"`. On a **floating** toolbar the FAB is a separate control
+with its own elevation, sitting next to the pill. On a **docked** toolbar it is
+flattened so it reads as part of the same bottom bar.
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:28px;inline-size:100%;">
+  <md-toolbar variant="floating" aria-label="Floating with FAB">
+    <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+    <md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button>
+    <md-icon-button icon="link" aria-label="Link"></md-icon-button>
+    <md-fab slot="fab" icon="add" aria-label="Create"></md-fab>
+  </md-toolbar>
+
+  <md-toolbar variant="docked" aria-label="Docked with FAB">
+    <md-icon-button icon="arrow_back" aria-label="Back"></md-icon-button>
+    <md-icon-button icon="star" aria-label="Star"></md-icon-button>
+    <md-icon-button icon="share" aria-label="Share"></md-icon-button>
+    <md-fab slot="fab" icon="add" aria-label="Create"></md-fab>
+  </md-toolbar>
+</div>`}
+  label="A paired FAB, floating and docked"
+  storyId="navigation-toolbar--floating-with-fab"
+/>
+
+:::note[The FAB is its own Tab stop]
+It is deliberately **not** part of the roving group — a distinct role deserves a
+distinct stop. Tab reaches the button cluster, Tab again reaches the FAB.
+:::
+
+## Mixed content
+
+A toolbar is not limited to icon buttons. Text fields, selects, switches and
+chips can all live in one — and each keeps its own keyboard behaviour, as
+[Accessibility](#accessibility) explains.
+
+<ComponentDemo
+  html={`<md-toolbar variant="floating" aria-label="Mixed content" style="inline-size:100%;">
+  <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+  <md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button>
+  <md-divider></md-divider>
+  <md-text-field label="Find" style="inline-size: 160px;"></md-text-field>
+  <md-switch aria-label="Match case"></md-switch>
+  <md-icon-button icon="more_vert" aria-label="More"></md-icon-button>
+</md-toolbar>`}
+  label="Icon buttons, a divider, a text field and a switch"
+  storyId="navigation-toolbar--mixed-content"
+/>
+
+## Overflow
+
+The toolbar **does not clip or scroll by default** — focus rings stay visible,
+which is the point. M3's guidance is to cap the action count or move the excess
+into an overflow [`md-menu`](/components/menu/). When you must, opt in:
+
+| Custom property | Effect |
+|---|---|
+| `--md-toolbar-overflow-x: auto` | Scroll horizontally |
+| `--md-toolbar-overflow-y: auto` | Scroll a vertical floating toolbar |
+| `--md-toolbar-flex-wrap: wrap` | Wrap onto more rows instead of scrolling |
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:24px;inline-size:100%;max-inline-size:360px;">
+  <md-toolbar variant="floating" aria-label="Scrolling" style="--md-toolbar-overflow-x: auto;">
+    <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+    <md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button>
+    <md-icon-button icon="format_underlined" aria-label="Underline"></md-icon-button>
+    <md-icon-button icon="format_align_left" aria-label="Align left"></md-icon-button>
+    <md-icon-button icon="format_align_center" aria-label="Align center"></md-icon-button>
+    <md-icon-button icon="format_align_right" aria-label="Align right"></md-icon-button>
+    <md-icon-button icon="link" aria-label="Link"></md-icon-button>
+  </md-toolbar>
+
+  <md-toolbar variant="floating" aria-label="Wrapping" style="--md-toolbar-flex-wrap: wrap;">
+    <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+    <md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button>
+    <md-icon-button icon="format_underlined" aria-label="Underline"></md-icon-button>
+    <md-icon-button icon="format_align_left" aria-label="Align left"></md-icon-button>
+    <md-icon-button icon="format_align_center" aria-label="Align center"></md-icon-button>
+    <md-icon-button icon="format_align_right" aria-label="Align right"></md-icon-button>
+    <md-icon-button icon="link" aria-label="Link"></md-icon-button>
+  </md-toolbar>
+</div>`}
+  label="Opting into scrolling, then into wrapping"
+/>
+
+:::caution[Styling the scrollbar needs `--md-toolbar-scrollbar-width: auto`]
+The scroll container sets `scrollbar-width: thin`, and Chrome 121+ **ignores**
+`::-webkit-scrollbar` rules on any element with `scrollbar-width` set. Reset it
+to `auto` before writing webkit scrollbar CSS.
+:::
+
+## Events
+
+`md-toolbar` emits **no events**. It is a container: listen to the controls you
+slotted into it. `setFocus()` is the one method, for moving focus into the
+toolbar's current roving stop programmatically.
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+The toolbar implements the
+[WAI-ARIA toolbar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/):
+`role="toolbar"` on the host, one accessible name, and a roving tabindex that
+turns the whole button cluster into a **single** Tab stop.
+
+- **Name it.** There is no default `aria-label` — set one (`"Text formatting"`),
+  or `aria-labelledby` when a visible label exists. An unnamed toolbar logs a
+  dev-mode warning.
+- `aria-orientation` follows `layout`.
+- A **soft-disabled** (`aria-disabled`) control stays in the roving group and
+  arrow-reachable, per APG — disabled toolbar items stay discoverable. The
+  initial Tab stop prefers an enabled control.
+- An author `tabindex="-1"` on a native control opts it out of the group.
+- The paired FAB keeps its own Tab stop.
+
+### Keyboard
+
+| Key | Action |
+|---|---|
+| `Tab` | Into the button cluster's current stop; `Tab` again moves **out** — the cluster is one stop |
+| `←` / `→` | Move within a horizontal group, wrapping (follows reading direction under RTL) |
+| `↑` / `↓` | Move within a vertical floating group |
+| `Home` / `End` | First / last control |
+| `Space` / `Enter` | Activate the focused control, per its own pattern |
+
+Off-axis arrows are ignored, and modifier chords (`Shift`/`Ctrl`/`Meta`/`Alt` +
+arrow) pass straight through.
+
+### What stays out of the roving group
+
+This is the part that surprises people. Only **activator** controls rove —
+`md-icon-button`, `md-button`, native `<button>` / `<a href>`, and
+`role="button"` / `menuitem` / `link`. Everything else keeps its own Tab stop
+and its own native behaviour:
+
+| Kind | Examples |
+|---|---|
+| Text and value entry | `<input>`, `<textarea>`, `contenteditable`, `md-text-field`, `md-select`, `<select>`, `type="range"` |
+| Self-managing composites | `md-button-group`, `md-menu`, `role="radiogroup"` |
+| **All** toggles | `md-switch`, `md-checkbox`, `md-chip`, `<input type="checkbox">` / `radio`, `role="checkbox"` / `radio` |
+
+That is what keeps caret movement, text selection, value adjustment and each
+composite's own arrow handling working — and it means native and `md-*` toggles
+behave identically when mixed in one bar.
+
+<ComponentDemo
+  html={`<md-toolbar variant="floating" aria-label="Document actions" style="inline-size:100%;">
+  <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+  <md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button>
+  <md-icon-button icon="format_underlined" aria-label="Underline" soft-disabled></md-icon-button>
+  <md-divider></md-divider>
+  <md-text-field label="Find" style="inline-size: 150px;"></md-text-field>
+  <md-switch aria-label="Match case"></md-switch>
+  <md-fab slot="fab" icon="add" aria-label="Create"></md-fab>
+</md-toolbar>`}
+  label="Tab reaches the buttons as one stop, then the field, switch and FAB separately"
+/>
+
+### The generic container
+
+`container-semantics="generic"` drops `role="toolbar"`, every toolbar `aria-*`,
+and **all roving / arrow navigation**. Slotted controls keep their own roles,
+labels and natural tab order — for a mobile or non-semantic shell.
+
+:::caution[A generic container cannot be named]
+ARIA prohibits naming `role="generic"` elements, so assistive tech ignores
+`aria-label` / `aria-labelledby` here. The component leaves the attribute in
+place — it is yours, and it survives a runtime switch back to
+`container-semantics="toolbar"` — but logs a dev-mode warning so the ignored
+name is not a silent surprise. If the group deserves a name, it deserves
+`container-semantics="toolbar"`.
+:::
+
+## RTL, density & i18n
+
+**RTL** — every box metric is a logical property, so layout, alignment and the
+horizontal arrow keys all follow the reading direction. See
+[RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:20px 16px;align-items:center;">
+  <span style="inline-size:2.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr">
+    <md-toolbar variant="floating" alignment="space-between" aria-label="Actions" style="inline-size:100%;">
+      <md-icon-button icon="arrow_back" aria-label="Back"></md-icon-button>
+      <md-icon-button icon="star" aria-label="Star"></md-icon-button>
+      <md-icon-button icon="delete" aria-label="Delete"></md-icon-button>
+    </md-toolbar>
+  </div>
+  <span style="inline-size:2.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl">
+    <md-toolbar variant="floating" alignment="space-between" aria-label="الإجراءات" style="inline-size:100%;">
+      <md-icon-button icon="arrow_back" aria-label="رجوع" mirror-icon></md-icon-button>
+      <md-icon-button icon="star" aria-label="تمييز"></md-icon-button>
+      <md-icon-button icon="delete" aria-label="حذف"></md-icon-button>
+    </md-toolbar>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+  storyId="navigation-toolbar--rtl"
+/>
+
+**Density** — `density="-1…-4"` locally overrides the inherited `data-density`
+rung, shortening the bar and its controls. See [Density](/behaviour/density/).
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;inline-size:100%;">
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <md-toolbar density="0" variant="floating" aria-label="d0"><md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button><md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button><md-icon-button icon="link" aria-label="Link"></md-icon-button></md-toolbar>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <md-toolbar density="-1" variant="floating" aria-label="d1"><md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button><md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button><md-icon-button icon="link" aria-label="Link"></md-icon-button></md-toolbar>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <md-toolbar density="-2" variant="floating" aria-label="d2"><md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button><md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button><md-icon-button icon="link" aria-label="Link"></md-icon-button></md-toolbar>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <md-toolbar density="-3" variant="floating" aria-label="d3"><md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button><md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button><md-icon-button icon="link" aria-label="Link"></md-icon-button></md-toolbar>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <md-toolbar density="-4" variant="floating" aria-label="d4"><md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button><md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button><md-icon-button icon="link" aria-label="Link"></md-icon-button></md-toolbar>
+</div>`}
+  label="Density 0 through -4"
+/>
+
+**i18n** — everything user-facing is either an `aria-label` you set on the
+toolbar or one on each slotted control. Translate all of them; there is no
+default string to inherit. Longer localized `md-button` labels widen the bar, so
+re-check [overflow](#overflow) per locale.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-toolbar-container-color` | Container background | Per colour scheme |
+| `--md-toolbar-icon-color` | Slotted **standard / outlined** icon ink, and inherited host text | `standard`: `on-surface-variant` · `vibrant`: `on-surface` |
+| `--md-toolbar-container-shape` | Border radius | `0` (docked) / pill (floating) |
+| `--md-toolbar-container-height` | Height — and the **width** of a vertical floating toolbar | `64px` |
+| `--md-toolbar-padding` | Padding | `16px` (docked) / `8px` (floating) |
+| `--md-toolbar-gap` | Gap between items | `32px` (docked) / `4px` (floating) |
+| `--md-toolbar-fab-gap` | Gap to the paired FAB | `16px` (docked) / `8px` (floating) |
+| `--md-toolbar-overflow-x` / `-overflow-y` | Opt into scrolling | `visible` |
+| `--md-toolbar-flex-wrap` | Set `wrap` to wrap instead of scroll | `nowrap` |
+| `--md-toolbar-scrollbar-width` | `scrollbar-width` of the scroll container | `thin` |
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:24px;inline-size:100%;">
+  <md-toolbar variant="floating" aria-label="Compact" style="--md-toolbar-container-height: 48px; --md-toolbar-gap: 2px; --md-toolbar-padding: 4px;">
+    <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+    <md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button>
+    <md-icon-button icon="link" aria-label="Link"></md-icon-button>
+  </md-toolbar>
+
+  <md-toolbar variant="floating" aria-label="Branded" style="--md-toolbar-container-color: #4527a0; --md-toolbar-icon-color: #ffffff; --md-toolbar-container-shape: 12px;">
+    <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+    <md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button>
+    <md-icon-button icon="link" aria-label="Link"></md-icon-button>
+  </md-toolbar>
+
+  <md-toolbar variant="docked" aria-label="Roomy docked" style="--md-toolbar-gap: 48px; --md-toolbar-container-height: 80px; --md-toolbar-container-color: var(--md-sys-color-tertiary-container); --md-toolbar-icon-color: var(--md-sys-color-on-tertiary-container);">
+    <md-icon-button icon="arrow_back" aria-label="Back"></md-icon-button>
+    <md-icon-button icon="star" aria-label="Star"></md-icon-button>
+    <md-icon-button icon="share" aria-label="Share"></md-icon-button>
+  </md-toolbar>
+</div>`}
+  label="Compact, branded, and a roomy docked bar"
+  storyId="navigation-toolbar--custom-css"
+/>
+
+Every default resolves through an `md-sys-color` role, so a toolbar that sets no
+custom properties follows the theme on its own:
+
+<ComponentDemo
+  html={`<md-toolbar variant="floating" aria-label="Untouched defaults">
+  <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+  <md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button>
+  <md-icon-button variant="filled" icon="add" aria-label="Add"></md-icon-button>
+  <md-icon-button variant="tonal" toggle selected icon="star" aria-label="Star"></md-icon-button>
+</md-toolbar>`}
+  label="Untouched defaults — follows the page theme"
+  storyId="navigation-toolbar--dark-theme"
+/>
+
+## CSS parts
+
+| Part | Element |
+|---|---|
+| `container` | The inner flex container holding slotted content |
+| `fab-container` | The FAB wrapper |
+
+<ComponentDemo
+  html={`<style>
+  .parts-toolbar::part(container) { gap: 20px; padding-inline: 20px; }
+  .parts-toolbar::part(fab-container) { transform: translateY(-4px); }
+</style>
+<md-toolbar class="parts-toolbar" variant="floating" aria-label="Styled parts">
+  <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+  <md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button>
+  <md-icon-button icon="link" aria-label="Link"></md-icon-button>
+  <md-fab slot="fab" icon="add" aria-label="Create"></md-fab>
+</md-toolbar>`}
+  label="container and fab-container"
+  storyId="navigation-toolbar--css-parts"
+/>
+
+### A full-width floating toolbar
+
+A floating pill hugs its content by design. To embed one edge to edge — a
+text-editor formatting bar, say — size the host and let the container part fill
+it:
+
+<ComponentDemo
+  html={`<style>
+  .editor-bar {
+    inline-size: 100%;
+    margin: 0;
+    --md-toolbar-container-shape: 0;
+  }
+  .editor-bar::part(container) { flex: 1; }
+</style>
+<md-toolbar class="editor-bar" variant="floating" aria-label="Editor formatting">
+  <md-icon-button icon="undo" aria-label="Undo"></md-icon-button>
+  <md-icon-button icon="redo" aria-label="Redo"></md-icon-button>
+  <md-divider></md-divider>
+  <md-icon-button icon="format_bold" aria-label="Bold"></md-icon-button>
+  <md-icon-button icon="format_italic" aria-label="Italic"></md-icon-button>
+  <md-icon-button icon="format_list_bulleted" aria-label="Bulleted list"></md-icon-button>
+</md-toolbar>`}
+  label="Edge-to-edge formatting bar"
+  storyId="navigation-toolbar--text-editor"
+/>
+
+```css
+md-toolbar::part(container) {
+  gap: 12px;
+}
+```
+
+
+## Related
+
+[`md-app-bar`](/components/app-bar/) ·
+[`md-fab`](/components/fab/) ·
+[`md-icon-button`](/components/icon-button/) ·
+[`md-button-group`](/components/button-group/) ·
+[`md-menu`](/components/menu/) ·
+[`md-navigation-bar`](/components/navigation-bar/) ·
+[`md-divider`](/components/divider/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-toolbar" />

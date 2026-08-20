@@ -1,0 +1,485 @@
+{
+  "tag": "md-select",
+  "title": "Select",
+  "slug": "select",
+  "category": "Selection",
+  "subComponentOf": null,
+  "storyId": "selection-select--playground",
+  "props": [
+    {
+      "name": "valueMissingLabel",
+      "attribute": "value-missing-label",
+      "type": "string",
+      "default": "'Please select an item in the list.'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "reserveSupportingSpace",
+      "attribute": "reserve-supporting-space",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'filled' | 'outlined'",
+      "default": "'outlined'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "placeholder",
+      "attribute": "placeholder",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "required",
+      "attribute": "required",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "error",
+      "attribute": "error",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "errorText",
+      "attribute": "error-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "supportingText",
+      "attribute": "supporting-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "clearable",
+      "attribute": "clearable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "matchTriggerWidth",
+      "attribute": "match-trigger-width",
+      "type": "boolean",
+      "default": "true",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "placement",
+      "attribute": "placement",
+      "type": "'bottom-start' | 'bottom-end' | 'top-start' | 'top-end'",
+      "default": "'bottom-start'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "maxHeight",
+      "attribute": "max-height",
+      "type": "number | string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "options",
+      "attribute": "options",
+      "type": "SelectOptionInit[] | string",
+      "default": "[]",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "virtualize",
+      "attribute": "virtualize",
+      "type": "'auto' | 'always' | 'never'",
+      "default": "'auto'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "filterable",
+      "attribute": "filterable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "filterMode",
+      "attribute": "filter-mode",
+      "type": "FilterMode",
+      "default": "'substring'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "rowHeight",
+      "attribute": "row-height",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "name",
+      "attribute": "name",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "searchPlaceholder",
+      "attribute": "search-placeholder",
+      "type": "string",
+      "default": "'Search…'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "filterLabel",
+      "attribute": "filter-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "noResultsText",
+      "attribute": "no-results-text",
+      "type": "string",
+      "default": "'No results'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "noOptionsText",
+      "attribute": "no-options-text",
+      "type": "string",
+      "default": "'No options'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "clearLabel",
+      "attribute": "clear-label",
+      "type": "string",
+      "default": "'Clear selection'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "searchingLabel",
+      "attribute": "searching-label",
+      "type": "string",
+      "default": "'Searching'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "loadingText",
+      "attribute": "loading-text",
+      "type": "string",
+      "default": "'Loading…'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "clearIcon",
+      "attribute": "clear-icon",
+      "type": "string",
+      "default": "'close'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "dropdownIcon",
+      "attribute": "dropdown-icon",
+      "type": "string",
+      "default": "'arrow_drop_down'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "loading",
+      "attribute": "loading",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "fullWidth",
+      "attribute": "full-width",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "open",
+      "attribute": "open",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "string"
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ],
+  "methods": [
+    {
+      "name": "show",
+      "params": ""
+    },
+    {
+      "name": "close",
+      "params": ""
+    },
+    {
+      "name": "focusTrigger",
+      "params": ""
+    },
+    {
+      "name": "reset",
+      "params": ""
+    },
+    {
+      "name": "loadOptions",
+      "params": "source: SelectOptionInit[] | OptionRowSource"
+    },
+    {
+      "name": "setQuery",
+      "params": "query: string"
+    },
+    {
+      "name": "getLabels",
+      "params": "values: string[]"
+    },
+    {
+      "name": "getValidity",
+      "params": ""
+    },
+    {
+      "name": "checkValidity",
+      "params": ""
+    },
+    {
+      "name": "reportValidity",
+      "params": ""
+    },
+    {
+      "name": "setCustomValidity",
+      "params": "message: string"
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "loader",
+      "description": ""
+    },
+    {
+      "name": "dropdown-icon",
+      "description": ""
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "field",
+      "description": ""
+    },
+    {
+      "name": "trailing",
+      "description": ""
+    },
+    {
+      "name": "loading-spinner",
+      "description": ""
+    },
+    {
+      "name": "clear",
+      "description": ""
+    },
+    {
+      "name": "caret",
+      "description": ""
+    },
+    {
+      "name": "option-icon",
+      "description": ""
+    },
+    {
+      "name": "menu",
+      "description": ""
+    },
+    {
+      "name": "search-wrap",
+      "description": ""
+    },
+    {
+      "name": "search",
+      "description": ""
+    },
+    {
+      "name": "search-spinner",
+      "description": ""
+    },
+    {
+      "name": "loading-bar",
+      "description": ""
+    },
+    {
+      "name": "loading-progress",
+      "description": ""
+    },
+    {
+      "name": "field-container",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-select-width",
+      "description": "Host inline size            (default 100%)"
+    },
+    {
+      "name": "--md-select-min-width",
+      "description": "Host minimum inline size    (default 0)"
+    },
+    {
+      "name": "--md-select-caret-color",
+      "description": "Dropdown caret colour"
+    },
+    {
+      "name": "--md-select-caret-size",
+      "description": "Dropdown caret glyph size   (default 24px)"
+    },
+    {
+      "name": "--md-select-clear-color",
+      "description": "Clear (✕) icon colour       (default: caret colour)"
+    },
+    {
+      "name": "--md-select-trailing-gap",
+      "description": "Gap between clear + caret   (default 2px)"
+    },
+    {
+      "name": "--md-select-option-icon-color",
+      "description": "Leading icon colour in option rows"
+    },
+    {
+      "name": "--md-select-spinner-size",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-select-option",
+    "md-text-field",
+    "md-loading-indicator",
+    "md-icon-button",
+    "md-menu-item",
+    "md-menu",
+    "md-progress-indicator"
+  ],
+  "dataTypes": [
+    {
+      "name": "SelectOptionInit",
+      "kind": "interface",
+      "extends": "",
+      "body": "  value: string;\n  label?: string;\n  disabled?: boolean;\n  icon?: string;\n  iconColor?: string;\n  supportingText?: string;\n  selected?: boolean;"
+    }
+  ],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdChange",
+      "detail": "string"
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ]
+}

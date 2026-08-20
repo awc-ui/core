@@ -1,0 +1,33 @@
+{
+  "name": "@awc-ui/test-react",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test:e2e": "playwright test",
+    "test:ct": "pnpm --filter @awc-ui/core build && playwright test -c playwright-ct.config.ts",
+    "test:ct:coverage": "pnpm --filter @awc-ui/core build && rm -rf coverage .cache playwright/.cache && playwright test -c playwright-ct.config.ts"
+  },
+  "dependencies": {
+    "@awc-ui/core": "workspace:*",
+    "@awc-ui/tokens": "workspace:*",
+    "material-icons": "^1.13.14",
+    "material-symbols": "^0.40.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
+    "@playwright/experimental-ct-react": "^1.58.2",
+    "@playwright/test": "^1.58.2",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "monocart-reporter": "^2.10.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.0.0"
+  }
+}

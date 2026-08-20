@@ -1,0 +1,20 @@
+{
+  "name": "@awc-ui/example-nuxt",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Nuxt 3 SSR reference app for AWC UI (server DSD via @awc-ui/core/hydrate)",
+  "scripts": {
+    "dev": "nuxi dev",
+    "build": "nuxi build",
+    "generate": "nuxi generate",
+    "preview": "nuxi preview"
+  },
+  "dependencies": {
+    "@awc-ui/core": "workspace:*"
+  },
+  "devDependencies": {
+    "nuxt": "^3.14.1592",
+    "vue": "^3.5.0",
+    "typescript": "^5.4.0"
+  }
+}

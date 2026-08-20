@@ -1,0 +1,977 @@
+---
+title: Button Group
+description: "A set of related buttons that behave as one control — roving tabindex, arrow-key navigation and shared selection"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/button-group.json";
+
+**A set of related buttons that behave as one control.** It wraps
+[`md-button`](/components/button/) / [`md-icon-button`](/components/icon-button/)
+children, forces them into toggle mode, and owns selection, roving tabindex,
+arrow-key navigation and — in `connected` mode — the fused container shape.
+
+<ComponentDemo
+  html={`<md-button-group variant="connected" selection-mode="single-select" required aria-label="Text alignment">
+  <md-icon-button value="left" icon="format_align_left" aria-label="Align left" selected></md-icon-button>
+  <md-icon-button value="center" icon="format_align_center" aria-label="Align center"></md-icon-button>
+  <md-icon-button value="right" icon="format_align_right" aria-label="Align right"></md-icon-button>
+  <md-icon-button value="justify" icon="format_align_justify" aria-label="Justify"></md-icon-button>
+</md-button-group>`}
+  label="Live preview"
+  storyId="actions-button-group--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-button-group" example="" />
+
+## When to use
+
+- 2–5 **related** actions or states that read as one unit: text alignment,
+  zoom in/out/reset, view mode.
+- You want **arrow-key navigation** and a single tab stop for the cluster.
+- The buttons should visually respond to one another (`connected`).
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Choosing between 2–5 exclusive **view/mode** options with labels | [`md-segmented-button`](/components/segmented-button/) |
+| A default action plus variations of it | [`md-split-button`](/components/split-button/) |
+| Unrelated actions that happen to sit near each other | Separate [`md-button`](/components/button/)s |
+| Form field selection bound to a `<form>` | [`md-radio`](/components/radio/) / [`md-checkbox`](/components/checkbox/) |
+| Many options, or options that need a menu | [`md-menu`](/components/menu/), [`md-select`](/components/select/) |
+| Navigating between destinations | [`md-tabs`](/components/tabs/), [`md-navigation-bar`](/components/navigation-bar/) |
+| A single action | [`md-button`](/components/button/) |
+
+## The group takes over its children
+
+This is the part that surprises people.
+
+- It sets `toggle = true` on every child — you never set it yourself.
+- It owns `connectedLeft`, `connectedRight`, `groupTabindex` and `value`
+  positioning. Setting those by hand breaks the roving tabindex and the border
+  trimming.
+- **Every child needs a `value`.** It is the identity carried in `values`,
+  `added` and `removed`.
+- Children **self-toggle on click first**, then the group reconciles. In
+  `single-select` it deselects the others; with `required` it re-selects the
+  clicked button if the click would have emptied the selection.
+- Only `md-button` and `md-icon-button` children are discovered. Anything else
+  is ignored.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">loose</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <md-button variant="tonal" value="a">Day</md-button>
+    <md-button variant="tonal" value="b">Week</md-button>
+    <md-button variant="tonal" value="c">Month</md-button>
+  </div>
+  <span style="inline-size:4rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">grouped</span>
+  <md-button-group selection-mode="single-select" aria-label="Range">
+    <md-button variant="tonal" value="a">Day</md-button>
+    <md-button variant="tonal" value="b" selected>Week</md-button>
+    <md-button variant="tonal" value="c">Month</md-button>
+  </md-button-group>
+</div>`}
+  label="Identical children — the row above is loose, the row below is grouped"
+/>
+
+The markup for the children is the same in both rows. Grouping is what makes
+them toggle, share one tab stop, and coordinate their selection. Tab into each
+row to feel the difference: the loose row has three tab stops, the grouped row
+has one.
+
+## Variants
+
+`standard` spaces the children with a gap. `connected` fuses them into one
+container and drives the inner corner radii.
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 20px;">
+  <md-button-group variant="standard" aria-label="Standard view mode">
+    <md-button value="day">Day</md-button>
+    <md-button value="week" selected>Week</md-button>
+    <md-button value="month">Month</md-button>
+  </md-button-group>
+
+  <md-button-group variant="connected" aria-label="Connected view mode">
+    <md-button value="day">Day</md-button>
+    <md-button value="week" selected>Week</md-button>
+    <md-button value="month">Month</md-button>
+  </md-button-group>
+</div>`}
+  label="Standard and connected"
+/>
+
+:::caution[One colour style per connected group]
+M3 forbids mixing `filled` and `outlined` children inside a **connected**
+group. Vary width or emphasis instead.
+:::
+
+## Selection modes
+
+`single-select` (the default) behaves like a radio group — role `radiogroup`,
+one selection at a time. `multi-select` allows several at once and uses role
+`group`.
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 20px;">
+  <md-button-group selection-mode="single-select" variant="connected" required aria-label="Text alignment">
+    <md-icon-button value="left" icon="format_align_left" aria-label="Align left" selected></md-icon-button>
+    <md-icon-button value="center" icon="format_align_center" aria-label="Align center"></md-icon-button>
+    <md-icon-button value="right" icon="format_align_right" aria-label="Align right"></md-icon-button>
+  </md-button-group>
+
+  <md-button-group selection-mode="multi-select" variant="connected" aria-label="Text style">
+    <md-icon-button value="bold" icon="format_bold" aria-label="Bold" selected></md-icon-button>
+    <md-icon-button value="italic" icon="format_italic" aria-label="Italic"></md-icon-button>
+    <md-icon-button value="underline" icon="format_underlined" aria-label="Underline" selected></md-icon-button>
+  </md-button-group>
+</div>`}
+  label="Single-select alignment (required), multi-select text styles"
+/>
+
+`required` prevents the selection from ever emptying — the right choice for a
+mode switch where "nothing selected" is meaningless.
+
+:::note[There is no initial event]
+`mdSelectionChange` fires **only on user activation**. Set the starting state
+with `selected` on the children, as above.
+:::
+
+## Sizes
+
+Set `size` on the **group**. It assigns that size to every child on load and on
+every change — the same five rungs as [`md-button`](/components/button/), and
+the same trap: **the default is `sm`, not `md`**. A per-child `size` does not
+survive; see [Group-owned child props](#api-reference).
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 16px; align-items: flex-start;">
+  <md-button-group size="xs" variant="connected" aria-label="Extra small">
+    <md-button value="a" selected>Day</md-button>
+    <md-button value="b">Week</md-button>
+    <md-button value="c">Month</md-button>
+  </md-button-group>
+
+  <md-button-group size="sm" variant="connected" aria-label="Small">
+    <md-button value="a" selected>Day</md-button>
+    <md-button value="b">Week</md-button>
+    <md-button value="c">Month</md-button>
+  </md-button-group>
+
+  <md-button-group size="md" variant="connected" aria-label="Medium">
+    <md-button value="a" selected>Day</md-button>
+    <md-button value="b">Week</md-button>
+    <md-button value="c">Month</md-button>
+  </md-button-group>
+
+  <md-button-group size="lg" variant="connected" aria-label="Large">
+    <md-button value="a" selected>Day</md-button>
+    <md-button value="b">Week</md-button>
+    <md-button value="c">Month</md-button>
+  </md-button-group>
+</div>`}
+  label="xs, sm (default), md, lg"
+/>
+
+## Shapes
+
+`shape` is set on the **group** and assigned to every child, exactly like
+`size` — so a group is always one shape throughout. That matches M3, which
+reserves shape variation for genuinely key interactions, not decoration.
+
+<ComponentDemo
+  html={`<div style="display: flex; flex-direction: column; gap: 20px;">
+  <md-button-group shape="round" variant="standard" aria-label="Round standard">
+    <md-button value="a" selected>Round</md-button>
+    <md-button value="b">Round</md-button>
+    <md-button value="c">Round</md-button>
+  </md-button-group>
+
+  <md-button-group shape="square" variant="standard" aria-label="Square standard">
+    <md-button value="a" selected>Square</md-button>
+    <md-button value="b">Square</md-button>
+    <md-button value="c">Square</md-button>
+  </md-button-group>
+
+  <md-button-group shape="square" variant="connected" aria-label="Square connected">
+    <md-button value="a" selected>Square</md-button>
+    <md-button value="b">Square</md-button>
+    <md-button value="c">Square</md-button>
+  </md-button-group>
+</div>`}
+  label="Round and square, standard and connected"
+/>
+
+## Full width
+
+`full-width` stretches the group to its container and splits the space equally
+between the children (`flex: 1 1 0`). It keeps a connected group tidy when
+translated labels change width.
+
+<ComponentDemo
+  html={`<div style="inline-size: 100%; display: flex; flex-direction: column; gap: 20px;">
+  <md-button-group full-width variant="connected" aria-label="Full width range">
+    <md-button value="day">Day</md-button>
+    <md-button value="week" selected>Week</md-button>
+    <md-button value="month">Month</md-button>
+    <md-button value="year">Year</md-button>
+  </md-button-group>
+
+  <md-button-group variant="connected" aria-label="Capped width range" style="--md-button-group-max-width: 320px;">
+    <md-button value="day">Day</md-button>
+    <md-button value="week" selected>Week</md-button>
+    <md-button value="month">Month</md-button>
+  </md-button-group>
+</div>`}
+  label="Full width, and a max-width cap"
+/>
+
+## Mixed children
+
+`md-button` and `md-icon-button` can sit in the same group. Every icon-only
+child needs its own `aria-label`.
+
+<ComponentDemo
+  html={`<md-button-group variant="connected" selection-mode="multi-select" aria-label="Editor tools">
+  <md-button value="preview" icon="visibility">Preview</md-button>
+  <md-icon-button value="grid" icon="grid_on" aria-label="Show grid"></md-icon-button>
+  <md-icon-button value="ruler" icon="straighten" aria-label="Show rulers"></md-icon-button>
+</md-button-group>`}
+  label="A labelled button alongside icon-only children"
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdSelectionChange` | no | `MdButtonGroupChangeDetail` | Every user activation that lands on a discovered child |
+
+The group does **not** compare the new selection with the old one before
+emitting. Re-pressing the already-selected child of a `required`
+`single-select` group still fires, with `added: []` and `removed: []` — guard
+on the diff, not on the event, if a no-op should be ignored.
+
+```ts
+interface MdButtonGroupChangeDetail {
+  values: string[];        // full selection snapshot AFTER the change
+  added: string[];         // newly selected (usually 0–1)
+  removed: string[];       // newly deselected (usually 0–1)
+  originalEvent: MouseEvent;
+}
+```
+
+:::tip[`values` is the snapshot, not the diff]
+The most common mix-up on this component. `values` is the whole selection after
+the change; the diff is `added` / `removed`.
+:::
+
+The event **bubbles** and is **composed**. Listen on the group — not on each
+child's `mdClick`, which fires before the group reconciles.
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;">
+  <md-button-group id="bg-ev" selection-mode="multi-select" aria-label="Text style">
+    <md-button variant="tonal" value="bold" icon="format_bold">Bold</md-button>
+    <md-button variant="tonal" value="italic" icon="format_italic" selected>Italic</md-button>
+    <md-button variant="tonal" value="underline" icon="format_underlined">Underline</md-button>
+  </md-button-group>
+  <code id="bg-ev-out" style="opacity:.75;font-size:.8rem;">press a button to see the detail</code>
+</div>`}
+  script={`
+    var group = root.querySelector('#bg-ev');
+    var out = root.querySelector('#bg-ev-out');
+
+    // addEventListener, not an on* attribute: the parser lowercases attribute
+    // handler names, so onmdselectionchange would listen for
+    // "mdselectionchange" and never hear this camelCase event.
+    group.addEventListener('mdSelectionChange', function (e) {
+      var d = e.detail;
+      out.textContent =
+        'values: [' + d.values.join(', ') + ']  ·  added: [' + d.added.join(', ') +
+        ']  ·  removed: [' + d.removed.join(', ') + ']';
+    });
+  `}
+  label="mdSelectionChange — press a button to see values, added and removed"
+  htmlCode={`<md-button-group id="style" selection-mode="multi-select" aria-label="Text style">
+  <md-button variant="tonal" value="bold" icon="format_bold">Bold</md-button>
+  <md-button variant="tonal" value="italic" icon="format_italic" selected>Italic</md-button>
+  <md-button variant="tonal" value="underline" icon="format_underlined">Underline</md-button>
+</md-button-group>
+
+<script type="module">
+  document.getElementById('style').addEventListener('mdSelectionChange', (e) => {
+    const { values, added, removed } = e.detail;
+    applyStyles(values);          // full snapshot after the change
+  });
+</script>`}
+  react={`import { MdButtonGroup, MdButton } from '@awc-ui/react';
+
+export function TextStyleGroup({ onStyles }) {
+  return (
+    <MdButtonGroup
+      selectionMode="multi-select"
+      aria-label="Text style"
+      onMdSelectionChange={(e) => onStyles(e.detail.values)}
+    >
+      <MdButton variant="tonal" value="bold" icon="format_bold">Bold</MdButton>
+      <MdButton variant="tonal" value="italic" icon="format_italic" selected>Italic</MdButton>
+      <MdButton variant="tonal" value="underline" icon="format_underlined">Underline</MdButton>
+    </MdButtonGroup>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-text-style-group',
+  template: \`
+    <md-button-group
+      selection-mode="multi-select"
+      aria-label="Text style"
+      (mdSelectionChange)="onStyles($event)"
+    >
+      <md-button variant="tonal" value="bold" icon="format_bold">Bold</md-button>
+      <md-button variant="tonal" value="italic" icon="format_italic" selected>Italic</md-button>
+      <md-button variant="tonal" value="underline" icon="format_underlined">Underline</md-button>
+    </md-button-group>
+  \`,
+})
+export class TextStyleGroupComponent {
+  onStyles(e: CustomEvent) {
+    const { values, added, removed } = e.detail;
+    this.applyStyles(values);     // full snapshot after the change
+  }
+}`}
+  vue={`<script setup lang="ts">
+function onStyles(e: CustomEvent) {
+  const { values, added, removed } = e.detail;
+  applyStyles(values);            // full snapshot after the change
+}
+</script>
+
+<template>
+  <md-button-group
+    selection-mode="multi-select"
+    aria-label="Text style"
+    @mdSelectionChange="onStyles"
+  >
+    <md-button variant="tonal" value="bold" icon="format_bold">Bold</md-button>
+    <md-button variant="tonal" value="italic" icon="format_italic" selected>Italic</md-button>
+    <md-button variant="tonal" value="underline" icon="format_underlined">Underline</md-button>
+  </md-button-group>
+</template>`}
+  svelte={`<script lang="ts">
+  function onStyles(e: CustomEvent) {
+    const { values, added, removed } = e.detail;
+    applyStyles(values);          // full snapshot after the change
+  }
+</script>
+
+<md-button-group
+  selection-mode="multi-select"
+  aria-label="Text style"
+  on:mdSelectionChange={onStyles}
+>
+  <md-button variant="tonal" value="bold" icon="format_bold">Bold</md-button>
+  <md-button variant="tonal" value="italic" icon="format_italic" selected>Italic</md-button>
+  <md-button variant="tonal" value="underline" icon="format_underlined">Underline</md-button>
+</md-button-group>`}
+/>
+
+`values` is the **full snapshot after** the change, not a delta — apply it
+wholesale rather than reconciling `added`/`removed` yourself. Those two are
+there for the cases where the transition matters, such as animating the button
+that just turned off.
+
+### One click, three events
+
+The group puts its children in toggle mode, so a single press produces a
+cascade. All three `bubble` and are `composed`, so a listener on the **group**
+receives every one of them — which is what you see in Storybook's Actions panel:
+
+| Order | Event | Target | Detail |
+|---|---|---|---|
+| 1 | `mdClick` | the child | `{ value, toggle, selected, href, target, originalEvent }` |
+| 2 | `mdChange` | the child | `{ selected, value }` |
+| 3 | `mdSelectionChange` | **the group** | `{ values, added, removed, originalEvent }` |
+
+:::note[`md-icon-button` children are quieter]
+The table above describes `md-button` children. An `md-icon-button` child emits
+`mdClick` with a `{ selected }` detail only, **no `mdChange` at all**, and its
+`mdClick` is **not cancelable** — it toggles itself and emits without ever
+checking `defaultPrevented`, so there is nothing to veto. A group of icon
+buttons therefore produces two events per press, not three, and neither of them
+is a before-change hook. The group's `mdSelectionChange` is identical whatever
+the children are, which is one more reason to listen there.
+:::
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start;">
+  <md-button-group id="range" variant="connected" selection-mode="single-select" required aria-label="Range">
+    <md-button variant="tonal" value="day">Day</md-button>
+    <md-button variant="tonal" value="week" selected>Week</md-button>
+    <md-button variant="tonal" value="month">Month</md-button>
+  </md-button-group>
+  <output id="range-log" style="display:block;min-block-size:4.4em;white-space:pre-line;font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Press a button you have not selected — one press, three events.</output>
+</div>`}
+  script={`
+    var group = root.querySelector('#range');
+    var log = root.querySelector('#range-log');
+    var lines = [];
+
+    function push(line) {
+      lines.push(line);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    // One listener per event, all three on the GROUP: the child events bubble
+    // and are composed, so they reach it too.
+    group.addEventListener('mdClick', function (e) {
+      lines = [];
+      push('1  mdClick  (child)  value=' + e.detail.value + '  selected(next)=' + e.detail.selected);
+    });
+
+    group.addEventListener('mdChange', function (e) {
+      push('2  mdChange  (child)  value=' + e.detail.value + '  selected=' + e.detail.selected);
+    });
+
+    group.addEventListener('mdSelectionChange', function (e) {
+      var d = e.detail;
+      push('3  mdSelectionChange  (group)  values=[' + d.values.join(', ') +
+        ']  added=[' + d.added.join(', ') + ']  removed=[' + d.removed.join(', ') + ']');
+    });
+  `}
+  label="One press, three events — switch rows and watch the deselected value appear only on line 3"
+  htmlForCode={`<md-button-group id="range" variant="connected" selection-mode="single-select" required aria-label="Range">
+  <md-button variant="tonal" value="day">Day</md-button>
+  <md-button variant="tonal" value="week" selected>Week</md-button>
+  <md-button variant="tonal" value="month">Month</md-button>
+</md-button-group>
+<output id="range-log">Press a button you have not selected — one press, three events.</output>`}
+/>
+
+:::danger[Child events miss deselections]
+Switching from `a` to `b` in `single-select` fires **three** events, not four.
+`mdChange` fires only for the button you *pressed* (`b`, `selected: true`). The
+button that was turned off emits **nothing** — the group clears it
+programmatically, and `md-button` has no watcher on `selected`, so there is no
+event to emit.
+
+Only `mdSelectionChange` reports the full picture:
+`values: ['b'], added: ['b'], removed: ['a']`.
+
+So **listen on the group, not the children.** Wiring `mdChange` per child looks
+like it works — every press fires one — while silently dropping every
+deselection.
+:::
+
+Listen to the child events only when you genuinely care about the press itself.
+On an **`md-button`** child `mdClick` is cancelable, so that is where you veto
+an activation before the group reconciles. On an **`md-icon-button`** child it
+is not — the group below is icon-only, so nothing here can be vetoed; it just
+reads the group's own selection.
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:12px;align-items:stretch;inline-size:100%;">
+  <md-button-group id="align" variant="connected" required aria-label="Text alignment">
+    <md-icon-button value="left" icon="format_align_left" aria-label="Align left" selected></md-icon-button>
+    <md-icon-button value="center" icon="format_align_center" aria-label="Align center"></md-icon-button>
+    <md-icon-button value="right" icon="format_align_right" aria-label="Align right"></md-icon-button>
+  </md-button-group>
+  <p id="align-sample" style="margin:0;text-align:left;max-inline-size:44ch;font: var(--md-sys-typescale-body-medium);">A button group is one control, so it reports one selection. Press an alignment and this paragraph follows it.</p>
+</div>`}
+  script={`
+    var group = root.querySelector('#align');
+    var sample = root.querySelector('#align-sample');
+
+    group.addEventListener('mdSelectionChange', function (e) {
+      // values is the snapshot; single-select means it holds at most one entry.
+      sample.style.textAlign = e.detail.values[0] || 'left';
+    });
+  `}
+  label="The wiring below, running — press an alignment and the paragraph follows"
+  htmlForCode={`<md-button-group id="align" variant="connected" required aria-label="Text alignment">
+  <md-icon-button value="left" icon="format_align_left" aria-label="Align left" selected></md-icon-button>
+  <md-icon-button value="center" icon="format_align_center" aria-label="Align center"></md-icon-button>
+  <md-icon-button value="right" icon="format_align_right" aria-label="Align right"></md-icon-button>
+</md-button-group>
+<p id="align-sample">A button group is one control, so it reports one selection.</p>`}
+/>
+
+<TechnologyTabs
+  html={`<md-button-group id="align" variant="connected" required aria-label="Text alignment">
+  <md-icon-button value="left" icon="format_align_left" aria-label="Align left" selected></md-icon-button>
+  <md-icon-button value="center" icon="format_align_center" aria-label="Align center"></md-icon-button>
+  <md-icon-button value="right" icon="format_align_right" aria-label="Align right"></md-icon-button>
+</md-button-group>
+
+<script type="module">
+  document.getElementById('align').addEventListener('mdSelectionChange', (e) => {
+    const { values, added, removed } = e.detail;
+    applyAlignment(values[0]);
+  });
+</script>`}
+  react={`import { MdButtonGroup, MdIconButton } from '@awc-ui/react';
+
+export function AlignmentGroup({ onChange }) {
+  return (
+    <MdButtonGroup
+      variant="connected"
+      required
+      aria-label="Text alignment"
+      onMdSelectionChange={(e) => onChange(e.detail.values[0])}
+    >
+      <MdIconButton value="left" icon="format_align_left" aria-label="Align left" selected />
+      <MdIconButton value="center" icon="format_align_center" aria-label="Align center" />
+      <MdIconButton value="right" icon="format_align_right" aria-label="Align right" />
+    </MdButtonGroup>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-alignment-group',
+  template: \`
+    <md-button-group
+      variant="connected"
+      required
+      aria-label="Text alignment"
+      (mdSelectionChange)="onChange($event)"
+    >
+      <md-icon-button value="left" icon="format_align_left" aria-label="Align left" selected></md-icon-button>
+      <md-icon-button value="center" icon="format_align_center" aria-label="Align center"></md-icon-button>
+      <md-icon-button value="right" icon="format_align_right" aria-label="Align right"></md-icon-button>
+    </md-button-group>
+  \`,
+})
+export class AlignmentGroupComponent {
+  onChange(e: CustomEvent) {
+    const { values, added, removed } = e.detail;
+    this.applyAlignment(values[0]);
+  }
+}`}
+  vue={`<script setup lang="ts">
+function onChange(e: CustomEvent) {
+  const { values, added, removed } = e.detail;
+  applyAlignment(values[0]);
+}
+</script>
+
+<template>
+  <md-button-group
+    variant="connected"
+    required
+    aria-label="Text alignment"
+    @mdSelectionChange="onChange"
+  >
+    <md-icon-button value="left" icon="format_align_left" aria-label="Align left" selected />
+    <md-icon-button value="center" icon="format_align_center" aria-label="Align center" />
+    <md-icon-button value="right" icon="format_align_right" aria-label="Align right" />
+  </md-button-group>
+</template>`}
+  svelte={`<script lang="ts">
+  function onChange(e: CustomEvent) {
+    const { values, added, removed } = e.detail;
+    applyAlignment(values[0]);
+  }
+</script>
+
+<md-button-group
+  variant="connected"
+  required
+  aria-label="Text alignment"
+  on:mdSelectionChange={onChange}
+>
+  <md-icon-button value="left" icon="format_align_left" aria-label="Align left" selected />
+  <md-icon-button value="center" icon="format_align_center" aria-label="Align center" />
+  <md-icon-button value="right" icon="format_align_right" aria-label="Align right" />
+</md-button-group>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[Inherited child events]
+`mdSelectionChange` is the only event this component **declares**, but a
+listener on the group also receives the children's own
+[`mdClick`](/components/button/#events) and
+[`mdChange`](/components/button/#events), because both bubble and are composed.
+Which of those you get depends on the child: `md-button` emits both, and its
+`mdClick` is cancelable — that is the one place to veto an activation before the
+group reconciles. `md-icon-button` emits only `mdClick`, **not cancelable**, so
+an icon-only group has no veto hook at all. `mdChange` misses deselections
+inside a group either way; see
+[One click, three events](#one-click-three-events).
+:::
+
+:::caution[Group-owned child props]
+The group sets `toggle`, `shape`, `size`, `connectedLeft` and `connectedRight`
+on every child, and owns their `groupTabindex`. Setting those by hand breaks the
+roving tabindex and the connected border trimming.
+:::
+
+## Accessibility
+
+- Role is `radiogroup` in `single-select` and `group` in `multi-select`.
+  Children expose `aria-pressed` through their own toggle mode.
+- **One tab stop** for the whole cluster (roving tabindex). In `single-select`
+  the selected child is the tab stop.
+- `ArrowLeft` / `ArrowRight` move focus, `Home` / `End` jump to the ends.
+- Give the group itself an `aria-label` describing what it controls
+  ("Text alignment"), and every icon-only child its own `aria-label`.
+- `required` prevents an empty selection, which keeps the `radiogroup`
+  semantics honest.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">radiogroup</span>
+  <md-button-group selection-mode="single-select" aria-label="Text alignment">
+    <md-icon-button value="left" icon="format_align_left" aria-label="Align left" selected></md-icon-button>
+    <md-icon-button value="center" icon="format_align_center" aria-label="Align centre"></md-icon-button>
+    <md-icon-button value="right" icon="format_align_right" aria-label="Align right"></md-icon-button>
+  </md-button-group>
+  <span style="inline-size:4rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">group</span>
+  <md-button-group selection-mode="multi-select" aria-label="Text style">
+    <md-icon-button value="bold" icon="format_bold" aria-label="Bold"></md-icon-button>
+    <md-icon-button value="italic" icon="format_italic" aria-label="Italic" selected></md-icon-button>
+    <md-icon-button value="underline" icon="format_underlined" aria-label="Underline"></md-icon-button>
+  </md-button-group>
+</div>`}
+  label="Tab once to enter, then arrow between children"
+/>
+
+Both rows above are **one tab stop each**. Tab moves you into the group and
+straight out again; `ArrowLeft` / `ArrowRight` move within it and `Home` / `End`
+jump to the ends — the composite-widget pattern, not three separate stops.
+
+The role changes with the mode: `single-select` is a `radiogroup`, `multi-select`
+is a plain `group`. Every child here is icon-only, so each carries its own
+`aria-label`, and the group carries one describing what it controls.
+
+:::caution[Two names, both required]
+The group's `aria-label` names the *cluster* ("Text alignment"); each child's
+names the *option* ("Align left"). Omit the group's and a screen-reader user
+hears three unrelated toggles; omit a child's and they hear an unnamed button.
+:::
+
+## RTL, density & i18n
+
+**RTL** — **arrow direction follows reading order, not screen order.** Under
+`dir="rtl"`, `ArrowRight` moves toward the start of the group. Connected corner
+rounding flips with the layout. Directional child icons still need their own
+`mirror-icon` handling. See [RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <md-button-group variant="connected" required aria-label="محاذاة النص">…</md-button-group>
+</div>
+```
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr">
+    <md-button-group variant="connected" selection-mode="single-select" aria-label="Range">
+      <md-button variant="tonal" value="day">Day</md-button>
+      <md-button variant="tonal" value="week" selected>Week</md-button>
+      <md-button variant="tonal" value="month">Month</md-button>
+    </md-button-group>
+  </div>
+  <span style="inline-size:4rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl">
+    <md-button-group variant="connected" selection-mode="single-select" aria-label="Range">
+      <md-button variant="tonal" value="day">يوم</md-button>
+      <md-button variant="tonal" value="week" selected>أسبوع</md-button>
+      <md-button variant="tonal" value="month">شهر</md-button>
+    </md-button-group>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+/>
+
+The connected corner rounding flips too: the first child keeps the leading
+corners rounded in both directions, so the group never looks inside-out.
+
+<ComponentDemo
+  html={`<div dir="rtl" style="inline-size: 100%;">
+  <md-button-group variant="connected" required aria-label="محاذاة النص">
+    <md-icon-button value="left" icon="format_align_left" aria-label="محاذاة لليسار" selected></md-icon-button>
+    <md-icon-button value="center" icon="format_align_center" aria-label="توسيط"></md-icon-button>
+    <md-icon-button value="right" icon="format_align_right" aria-label="محاذاة لليمين"></md-icon-button>
+  </md-button-group>
+</div>`}
+  label="An Arabic connected icon group — tab in, then arrow through it"
+/>
+
+### Do not hand-reverse the children for RTL
+
+**Arrow keys follow reading order, not screen order.** In RTL, `ArrowLeft` moves
+to the *next* button because next is to the left. The component already handles
+that, so writing the children in reverse order for RTL flips them twice: the
+group reads Month → Day, and `Home` lands on Month.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <div dir="rtl">
+    <md-button-group variant="connected" selection-mode="single-select" aria-label="Range, logical order">
+      <md-button variant="tonal" value="day">Day</md-button>
+      <md-button variant="tonal" value="week" selected>Week</md-button>
+      <md-button variant="tonal" value="month">Month</md-button>
+    </md-button-group>
+  </div>
+  <span style="inline-size:4rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <div dir="rtl">
+    <md-button-group variant="connected" selection-mode="single-select" aria-label="Range, hand-reversed">
+      <md-button variant="tonal" value="month">Month</md-button>
+      <md-button variant="tonal" value="week" selected>Week</md-button>
+      <md-button variant="tonal" value="day">Day</md-button>
+    </md-button-group>
+  </div>
+</div>`}
+  label="Correct: children in logical order — wrong: children hand-reversed under dir=rtl"
+/>
+
+### Every density rung
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:4rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+    <md-button-group variant="connected" selection-mode="single-select" density="0" aria-label="Range">
+      <md-button variant="tonal" value="day">Day</md-button>
+      <md-button variant="tonal" value="week" selected>Week</md-button>
+      <md-button variant="tonal" value="month">Month</md-button>
+    </md-button-group>
+  <span style="inline-size:4rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+    <md-button-group variant="connected" selection-mode="single-select" density="-1" aria-label="Range">
+      <md-button variant="tonal" value="day">Day</md-button>
+      <md-button variant="tonal" value="week" selected>Week</md-button>
+      <md-button variant="tonal" value="month">Month</md-button>
+    </md-button-group>
+  <span style="inline-size:4rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+    <md-button-group variant="connected" selection-mode="single-select" density="-2" aria-label="Range">
+      <md-button variant="tonal" value="day">Day</md-button>
+      <md-button variant="tonal" value="week" selected>Week</md-button>
+      <md-button variant="tonal" value="month">Month</md-button>
+    </md-button-group>
+  <span style="inline-size:4rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+    <md-button-group variant="connected" selection-mode="single-select" density="-3" aria-label="Range">
+      <md-button variant="tonal" value="day">Day</md-button>
+      <md-button variant="tonal" value="week" selected>Week</md-button>
+      <md-button variant="tonal" value="month">Month</md-button>
+    </md-button-group>
+  <span style="inline-size:4rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+    <md-button-group variant="connected" selection-mode="single-select" density="-4" aria-label="Range">
+      <md-button variant="tonal" value="day">Day</md-button>
+      <md-button variant="tonal" value="week" selected>Week</md-button>
+      <md-button variant="tonal" value="month">Month</md-button>
+    </md-button-group>
+</div>`}
+  label="density on the group cascades to every child"
+/>
+
+Set `density` on the **group**, not on each child — it cascades, and mixing the
+two is how you get a connected group whose segments no longer line up.
+
+:::caution[Keep the hit area honest]
+Density is not what puts these groups under the 48×48 comfortable touch
+target — the default `size` already does. Every demo above uses `sm` children,
+which are **40px** tall at rung `0`; each rung then trims another 4px, so `-1`
+is 36px, `-2` is 32px, `-3` is 28px and `-4` hits the 24px floor. (`xs`
+children start at 32px and get smaller still.)
+
+If the group has to be touch-friendly, raise `size` — `md` children are 56px —
+rather than assuming rung `0` is safe. Reserve the low rungs for pointer-first,
+information-dense screens. See [Density](/behaviour/density/#accessibility).
+:::
+
+### Density and direction together
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:5.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr · 0</span>
+  <div dir="ltr">
+    <md-button-group variant="connected" selection-mode="single-select" density="0" aria-label="Range">
+      <md-button variant="tonal" value="day">Day</md-button>
+      <md-button variant="tonal" value="week" selected>Week</md-button>
+      <md-button variant="tonal" value="month">Month</md-button>
+    </md-button-group>
+  </div>
+  <span style="inline-size:5.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl · 0</span>
+  <div dir="rtl">
+    <md-button-group variant="connected" selection-mode="single-select" density="0" aria-label="النطاق">
+      <md-button variant="tonal" value="day">يوم</md-button>
+      <md-button variant="tonal" value="week" selected>أسبوع</md-button>
+      <md-button variant="tonal" value="month">شهر</md-button>
+    </md-button-group>
+  </div>
+  <span style="inline-size:5.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr · -3</span>
+  <div dir="ltr">
+    <md-button-group variant="connected" selection-mode="single-select" density="-3" aria-label="Range">
+      <md-button variant="tonal" value="day">Day</md-button>
+      <md-button variant="tonal" value="week" selected>Week</md-button>
+      <md-button variant="tonal" value="month">Month</md-button>
+    </md-button-group>
+  </div>
+  <span style="inline-size:5.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl · -3</span>
+  <div dir="rtl">
+    <md-button-group variant="connected" selection-mode="single-select" density="-3" aria-label="النطاق">
+      <md-button variant="tonal" value="day">يوم</md-button>
+      <md-button variant="tonal" value="week" selected>أسبوع</md-button>
+      <md-button variant="tonal" value="month">شهر</md-button>
+    </md-button-group>
+  </div>
+</div>`}
+  label="dir and density are independent — the corners flip, the rungs taper"
+/>
+
+### Translated labels change width
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start;">
+  <md-button-group variant="connected" selection-mode="single-select" aria-label="Range">
+    <md-button variant="tonal" value="day">Day</md-button>
+    <md-button variant="tonal" value="week" selected>Week</md-button>
+    <md-button variant="tonal" value="month">Month</md-button>
+  </md-button-group>
+  <md-button-group variant="connected" selection-mode="single-select" aria-label="Zeitraum">
+    <md-button variant="tonal" value="day">Tag</md-button>
+    <md-button variant="tonal" value="week" selected>Woche</md-button>
+    <md-button variant="tonal" value="month">Monat</md-button>
+  </md-button-group>
+  <md-button-group variant="connected" selection-mode="single-select" full-width aria-label="Zeitraum, full width">
+    <md-button variant="tonal" value="day">Tag</md-button>
+    <md-button variant="tonal" value="week" selected>Woche</md-button>
+    <md-button variant="tonal" value="month">Monat</md-button>
+  </md-button-group>
+</div>`}
+  label="English, German, and German at full-width"
+/>
+
+The third row shows the fix when translation makes a connected group ragged:
+`full-width` divides the container evenly, so segment widths stop depending on
+label length.
+
+**Density** — `density="-1…-4"` on the group cascades to every child, tapering
+the gap in `standard` and the child height in both variants. See
+[Density](/behaviour/density/).
+
+**i18n** — child labels and `aria-label`s come from your dictionary; the group
+needs its own `aria-label` too. Translated labels change width, so reach for
+`full-width` when a connected group has to stay even.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-button-group-gap` | Spacing between children | `standard`, per size: 18px (`xs`), 12px (`sm` — the default), 8px (`md`/`lg`/`xl`), each tapering to roughly half across the density range. `connected`: a fixed 2px seam that does **not** taper |
+| `--md-button-group-width` / `-min-width` / `-max-width` | Inline-size bounds | `auto` / `auto` / `none` |
+| `--md-button-group-height` / `-min-height` / `-max-height` | Block-size bounds | `auto` / `auto` / `none` |
+
+Per-button appearance is themed with the children's own `--md-button-*` /
+`--md-icon-button-*` properties — the group exposes no CSS parts.
+
+<ComponentDemo
+  html={`<md-button-group variant="standard" aria-label="Wide gap" style="--md-button-group-gap: 20px;">
+  <md-button value="a" selected>Day</md-button>
+  <md-button value="b">Week</md-button>
+  <md-button value="c">Month</md-button>
+</md-button-group>`}
+  label="A widened gap"
+/>
+
+The group owns **layout**; colour still comes from the children, so a themed
+group is a themed set of `md-button`s inside a sized container:
+
+<ComponentDemo
+  html={`<style>
+  .bg-brand md-button:not(.md-button--selected) {
+    --md-button-container-color: #1B5E20;
+    --md-button-label-color: #FFFFFF;
+  }
+  .bg-brand md-button.md-button--selected {
+    --md-button-container-color: #A5D6A7;
+    --md-button-label-color: #0B3D0F;
+  }
+</style>
+<div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start;">
+  <md-button-group class="bg-brand" variant="connected" selection-mode="single-select" aria-label="Brand-themed">
+    <md-button variant="filled" value="a">Day</md-button>
+    <md-button variant="filled" value="b" selected>Week</md-button>
+    <md-button variant="filled" value="c">Month</md-button>
+  </md-button-group>
+  <md-button-group variant="standard" selection-mode="single-select" style="--md-button-group-gap: 2px;" aria-label="Tight gap">
+    <md-button variant="tonal" value="a">Tight</md-button>
+    <md-button variant="tonal" value="b" selected>2px</md-button>
+    <md-button variant="tonal" value="c">gap</md-button>
+  </md-button-group>
+  <md-button-group variant="connected" selection-mode="single-select" style="--md-button-group-width: 420px;" aria-label="Fixed width">
+    <md-button variant="tonal" value="a">Fixed</md-button>
+    <md-button variant="tonal" value="b" selected>420px</md-button>
+    <md-button variant="tonal" value="c">wide</md-button>
+  </md-button-group>
+</div>`}
+  label="Child colours, group gap, and an explicit group width"
+/>
+
+:::tip[Theme the children, size the group]
+There is no `--md-button-group-container-color`. The group's own custom
+properties are all **geometry** — `gap`, `width` / `min-width` / `max-width`,
+`height` / `min-height` / `max-height`. Colour a group by targeting its
+`md-button` children, as above.
+:::
+
+:::danger[`md-button[selected]` does not track the selection]
+Two traps, and the demo above sidesteps both.
+
+**Match the class, not the attribute.** `selected` on `md-button` is a plain
+mutable prop with **no `reflect`**, so the `selected` *attribute* stays on
+whichever child you authored it on and never moves. Selection is exposed on the
+host as the class `.md-button--selected`, which does move — target that.
+
+**Colour both branches, or neither.** `md-button` reads
+`var(--md-button-container-color, …)` in *every* toggle branch, so a value set
+on the bare child wins in the selected and unselected state alike and erases
+the component's own differentiation. Either scope each colour to a branch
+(`:not(.md-button--selected)` / `.md-button--selected`, as above), or set only
+the selected branch and let the component keep its default for the rest.
+:::
+
+```css
+/* Geometry on the group, colour on the children. */
+.toolbar-range {
+  --md-button-group-gap: 2px;
+  --md-button-group-max-width: 420px;
+}
+
+/* The host class tracks the selection; the `selected` attribute does not. */
+.toolbar-range md-button.md-button--selected {
+  --md-button-container-color: var(--md-sys-color-secondary-container);
+  --md-button-label-color: var(--md-sys-color-on-secondary-container);
+}
+```
+
+
+## Related
+
+[`md-button`](/components/button/) ·
+[`md-icon-button`](/components/icon-button/) ·
+[`md-segmented-button`](/components/segmented-button/) ·
+[`md-split-button`](/components/split-button/) ·
+[`md-toolbar`](/components/toolbar/) ·
+[`md-tabs`](/components/tabs/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-button-group" />

@@ -1,0 +1,550 @@
+{
+  "tag": "md-autocomplete",
+  "title": "Autocomplete",
+  "slug": "autocomplete",
+  "category": "Text Inputs",
+  "subComponentOf": null,
+  "storyId": "text-inputs-autocomplete--playground",
+  "props": [
+    {
+      "name": "valueMissingLabel",
+      "attribute": "value-missing-label",
+      "type": "string",
+      "default": "'Please make a selection'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "reserveSupportingSpace",
+      "attribute": "reserve-supporting-space",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'filled' | 'outlined'",
+      "default": "'filled'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "placeholder",
+      "attribute": "placeholder",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "supportingText",
+      "attribute": "supporting-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "error",
+      "attribute": "error",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "errorText",
+      "attribute": "error-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "required",
+      "attribute": "required",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "options",
+      "attribute": "options",
+      "type": "MdAutocompleteOption[] | string",
+      "default": "[]",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "multiple",
+      "attribute": "multiple",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "chipPosition",
+      "attribute": "chip-position",
+      "type": "| 'below' | 'top' | 'left' | 'right' | 'inline'",
+      "default": "'below'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "value",
+      "attribute": "value",
+      "type": "string | string[]",
+      "default": "''",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "inputValue",
+      "attribute": "input-value",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "freeSolo",
+      "attribute": "free-solo",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "maxSelected",
+      "attribute": "max-selected",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "loading",
+      "attribute": "loading",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "noOptionsText",
+      "attribute": "no-options-text",
+      "type": "string",
+      "default": "'No options'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "noResultsText",
+      "attribute": "no-results-text",
+      "type": "string",
+      "default": "'No results'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "loadingText",
+      "attribute": "loading-text",
+      "type": "string",
+      "default": "'Loading…'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "statusTemplate",
+      "attribute": "status-template",
+      "type": "string",
+      "default": "'{count} suggestions available'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disableCloseOnSelect",
+      "attribute": "disable-close-on-select",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "clearOnBlur",
+      "attribute": "clear-on-blur",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "clearable",
+      "attribute": "clearable",
+      "type": "boolean",
+      "default": "true",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "clearIcon",
+      "attribute": "clear-icon",
+      "type": "string",
+      "default": "'close'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "dropdownIcon",
+      "attribute": "dropdown-icon",
+      "type": "string",
+      "default": "'arrow_drop_down'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "limitResults",
+      "attribute": "limit-results",
+      "type": "number",
+      "default": "0",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "open",
+      "attribute": "open",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "filterer",
+      "attribute": "",
+      "type": "( options: SelectOptionData[], state: { inputValue: string",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "virtualize",
+      "attribute": "virtualize",
+      "type": "'auto' | 'always' | 'never'",
+      "default": "'auto'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "filterMode",
+      "attribute": "filter-mode",
+      "type": "FilterMode",
+      "default": "'substring'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "rowHeight",
+      "attribute": "row-height",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "placement",
+      "attribute": "placement",
+      "type": "'bottom-start' | 'bottom-end' | 'top-start' | 'top-end'",
+      "default": "'bottom-start'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "matchTriggerWidth",
+      "attribute": "match-trigger-width",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "maxHeight",
+      "attribute": "max-height",
+      "type": "number",
+      "default": "",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "name",
+      "attribute": "name",
+      "type": "string",
+      "default": "''",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "string | string[]"
+    },
+    {
+      "name": "mdInput",
+      "detail": "string"
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdClear",
+      "detail": "void"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ],
+  "methods": [
+    {
+      "name": "focusInput",
+      "params": ""
+    },
+    {
+      "name": "showMenu",
+      "params": ""
+    },
+    {
+      "name": "closeMenu",
+      "params": ""
+    },
+    {
+      "name": "loadOptions",
+      "params": "source: SelectOptionInit[] | OptionRowSource"
+    },
+    {
+      "name": "getLabels",
+      "params": "values: string[]"
+    },
+    {
+      "name": "getValidity",
+      "params": ""
+    },
+    {
+      "name": "checkValidity",
+      "params": ""
+    },
+    {
+      "name": "reportValidity",
+      "params": ""
+    },
+    {
+      "name": "setCustomValidity",
+      "params": "message: string"
+    }
+  ],
+  "slots": [
+    {
+      "name": "loader",
+      "description": "Replaces the default trigger busy spinner"
+    },
+    {
+      "name": "dropdown-icon",
+      "description": "Replaces the caret glyph"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "chip",
+      "description": ""
+    },
+    {
+      "name": "chips",
+      "description": "Selected chips container"
+    },
+    {
+      "name": "clear",
+      "description": "Trailing clear button"
+    },
+    {
+      "name": "field",
+      "description": "Inner md-text-field"
+    },
+    {
+      "name": "loading-spinner",
+      "description": "Trigger busy spinner (replaces clear/caret)"
+    },
+    {
+      "name": "caret",
+      "description": "Trailing dropdown caret"
+    },
+    {
+      "name": "option-icon",
+      "description": ""
+    },
+    {
+      "name": "menu",
+      "description": "Popup md-menu"
+    },
+    {
+      "name": "loading",
+      "description": "Loading row inside the menu"
+    },
+    {
+      "name": "loading-progress",
+      "description": ""
+    },
+    {
+      "name": "chip-remove",
+      "description": ""
+    },
+    {
+      "name": "chip-label",
+      "description": ""
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-autocomplete-width",
+      "description": "Trigger width (default 100% of container)"
+    },
+    {
+      "name": "--md-autocomplete-min-width",
+      "description": "Minimum trigger width"
+    },
+    {
+      "name": "--md-autocomplete-chip-gap",
+      "description": "Gap between selected chips"
+    },
+    {
+      "name": "--md-autocomplete-chip-radius",
+      "description": "Chip corner radius"
+    },
+    {
+      "name": "--md-autocomplete-caret-color",
+      "description": "Trailing caret color"
+    },
+    {
+      "name": "--md-autocomplete-caret-size",
+      "description": "Caret glyph size (default 24px)"
+    },
+    {
+      "name": "--md-autocomplete-clear-color",
+      "description": "Clear button color"
+    },
+    {
+      "name": "--md-autocomplete-option-icon-size",
+      "description": "Leading-icon size in items"
+    },
+    {
+      "name": "--md-autocomplete-loading-color",
+      "description": "Color of the loading row"
+    },
+    {
+      "name": "--md-autocomplete-spinner-size",
+      "description": "Trigger busy-spinner size (default 22px)"
+    },
+    {
+      "name": "--md-autocomplete-option-icon-color",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-select-option",
+    "md-chip",
+    "md-icon-button",
+    "md-text-field",
+    "md-loading-indicator",
+    "md-menu-item",
+    "md-menu",
+    "md-progress-indicator"
+  ],
+  "dataTypes": [
+    {
+      "name": "MdAutocompleteOption",
+      "kind": "interface",
+      "extends": "SelectOptionInit",
+      "body": "  /** @deprecated Use `supportingText`. */\n  description?: string;"
+    },
+    {
+      "name": "SelectOptionInit",
+      "kind": "interface",
+      "extends": "",
+      "body": "  value: string;\n  label?: string;\n  disabled?: boolean;\n  icon?: string;\n  iconColor?: string;\n  supportingText?: string;\n  selected?: boolean;"
+    },
+    {
+      "name": "SelectOptionData",
+      "kind": "interface",
+      "extends": "",
+      "body": "  /** Stable identifier — emitted in the picker `value` and used for matching. */\n  value: string;\n  /** Visible label rendered in the menu, chips, and the trigger text. */\n  label: string;\n  /** Disabled options stay visible but cannot be selected. */\n  disabled: boolean;\n  /** Optional Material Symbols leading-icon glyph. */\n  icon?: string;\n  /** Optional CSS colour applied to the leading icon (e.g. a status/swatch hue).\n   *  Any CSS `<color>` — hex, `rgb()`, or a theme token like\n   *  `var(--md-sys-color-primary)`. Ignored when the option has no `icon`, and\n   *  not carried on the virtualized (WASM) path — huge datasets fall back to the\n   *  `--md-{multi-}select-option-icon-color` token. */\n  iconColor?: string;\n  /** Optional secondary text rendered under the label in the menu. */\n  supportingText?: string;\n  /** Initial-selected hint carried by the option element / array entry. */\n  selected?: boolean;"
+    }
+  ],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdChange",
+      "detail": "string | string[]"
+    },
+    {
+      "name": "mdInput",
+      "detail": "string"
+    },
+    {
+      "name": "mdOpen",
+      "detail": "void"
+    },
+    {
+      "name": "mdClose",
+      "detail": "void"
+    },
+    {
+      "name": "mdClear",
+      "detail": "void"
+    },
+    {
+      "name": "mdValidityChange",
+      "detail": "{ valid: boolean; validationMessage: string; flags: Record<string, boolean"
+    }
+  ]
+}

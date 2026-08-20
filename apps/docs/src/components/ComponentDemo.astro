@@ -1,0 +1,440 @@
+---
+// ComponentDemo.astro
+//
+// Renders the actual AWC UI custom element inline on a docs page.
+// Story 2.3 AC: live preview, lazy-hydrates, respects prefers-reduced-motion,
+// shadow DOM provides style isolation from Starlight chrome.
+//
+// Components render as plain unstyled HTML until the loader registers them;
+// the IntersectionObserver below keeps initial paint cheap by deferring
+// the loader import until the first demo scrolls into view.
+//
+// Additionally, when a `storyId` is supplied, the header surfaces an
+// "Open in Storybook" link. This replaces the previous standalone
+// <StorybookEmbed> iframe section — the inline live preview is the
+// canonical demo, with Storybook as a one-click escape hatch for users
+// who want a richer playground (controls, viewport, dark mode toggles).
+//
+// Each demo also surfaces a collapsible per-technology code section
+// underneath the preview. The HTML the author already passes in is
+// auto-translated to React / Angular / Vue / Svelte equivalents via
+// the lib/htmlToTechnology helper — so a single source-of-truth snippet
+// keeps the live preview AND the "how do I build this?" tabs in sync.
+
+import { codeToHtml, type BundledLanguage } from "shiki";
+import { deriveTechnologySnippets } from "../lib/htmlToTechnology";
+import '../styles/component-demo.css';
+
+interface Props {
+  /** Raw HTML (string) to render inside the preview surface. Optional —
+   *  components that can't be statically previewed (dialog, snackbar,
+   *  tooltip, ...) omit this and rely on the Storybook link instead. */
+  html?: string;
+  /** Optional label shown above the demo. Defaults to "Live Preview". */
+  label?: string;
+  /** Optional Storybook story ID (e.g. "components-button--playground").
+   *  When set, an "Open in Storybook" link is rendered in the header. */
+  storyId?: string;
+  /** When true, no technology code-tabs section is rendered (e.g. for
+   *  the "empty" demos that point at Storybook for interaction only). */
+  hideCode?: boolean;
+  /** Optional alternative HTML used as the source for technology
+   *  code-tab derivation. Use this when the live preview needs demo-
+   *  specific wiring attributes (e.g. `data-dialog-open`, `data-tab`)
+   *  that would be noise in the documented snippet. When omitted we
+   *  fall back to `html`, so the simple case stays a one-prop call. */
+  htmlForCode?: string;
+  /** Optional JS that wires this demo up.
+   *
+   *  A script tag written inside `html` can never run: `set:html` injects raw
+   *  markup, and injected scripts are inert. (Don't write the literal opening
+   *  tag in this file even in a comment — Vite's dependency scanner finds it
+   *  and parses the prose after it as JavaScript.) Demos that need real behaviour
+   *  (sorting a table, paging it, reacting to a row click) pass their code
+   *  here instead. It is emitted as a genuine inline script and invoked with
+   *  `root` — this demo's preview element — once the custom elements inside it
+   *  have hydrated, so queries are scoped to the demo and never collide with
+   *  another one on the page. It is excluded from the code tabs; use
+   *  `htmlForCode` if the documented snippet should show the wiring. */
+  script?: string;
+  /** Optional per-technology overrides. When provided they replace the
+   *  auto-derived snippet for that technology. Reach for these when the demo
+   *  needs event wiring the markup alone can't express — the derived snippet
+   *  renders the component, but a reader copying it gets no behaviour. */
+  htmlCode?: string;
+  react?: string;
+  angular?: string;
+  vue?: string;
+  svelte?: string;
+}
+
+const { html, label, storyId, hideCode, htmlForCode, script, htmlCode, react, angular, vue, svelte } =
+  Astro.props;
+
+// Stable-enough unique id so a demo's wiring script can scope every query to
+// its own preview. Two demos on a page can then both use `md-table` selectors
+// without reaching into each other.
+const demoUid = `awc-demo-${Math.random().toString(36).slice(2, 10)}`;
+
+// Mirror StorybookEmbed's fallback so the link target stays in sync with
+// however the docs site is deployed (env var in prod, /storybook in dev).
+const sbBase = import.meta.env.PUBLIC_STORYBOOK_URL || "/storybook";
+const sbUrl = storyId ? `${sbBase}/?path=/story/${storyId}` : null;
+
+// Build technology snippets. By default we derive from the same HTML
+// the preview renders, but `htmlForCode` lets a caller decouple the
+// two (e.g. dialogs whose live demo needs `data-dialog-open` wiring
+// the docs reader shouldn't have to copy). Each explicit per-tech
+// override (if passed) still wins over the auto-derived version.
+const codeSourceHtml = htmlForCode ?? html;
+const showCode =
+  !hideCode &&
+  typeof codeSourceHtml === "string" &&
+  codeSourceHtml.trim().length > 0;
+
+const TECHNOLOGY_META: Record<
+  string,
+  { label: string; lang: BundledLanguage; iconSvg: string }
+> = {
+  html: {
+    label: "HTML",
+    lang: "html",
+    iconSvg: `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#E34F26" d="M1.5 0h21l-1.91 21.563L11.977 24l-8.565-2.438L1.5 0zm17.09 4.413L5.41 4.41l.213 2.622 10.125.002-.255 2.716h-6.64l.24 2.573h6.182l-.366 3.523-2.91.804-2.956-.81-.188-2.11h-2.61l.29 3.855L12 19.288l5.373-1.53L18.59 4.414z"/></svg>`,
+  },
+  react: {
+    label: "React",
+    lang: "tsx",
+    iconSvg: `<svg viewBox="-11.5 -10.232 23 20.463" width="20" height="20" aria-hidden="true"><circle r="2.05" fill="#61DAFB"/><g stroke="#61DAFB" stroke-width="1" fill="none"><ellipse rx="11" ry="4.2"/><ellipse rx="11" ry="4.2" transform="rotate(60)"/><ellipse rx="11" ry="4.2" transform="rotate(120)"/></g></svg>`,
+  },
+  angular: {
+    label: "Angular",
+    lang: "typescript",
+    iconSvg: `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#DD0031" d="M9.93 12.645h4.134L11.996 7.74zM11.996.009L.686 3.988l1.725 14.76 9.585 5.243 9.588-5.238L23.308 3.99 11.996.009zm7.058 18.297h-2.636l-1.42-3.501H8.995l-1.42 3.501H4.937L11.996 2.397l7.058 15.909z"/></svg>`,
+  },
+  vue: {
+    label: "Vue",
+    lang: "vue",
+    iconSvg: `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#41B883" d="M24 1.61H14.06L12 5.16 9.94 1.61H0L12 22.39 24 1.61z"/><path class="component-demo__vue-inner" fill="#35495E" d="M14.06 1.61L12 5.16 9.94 1.61H6.04L12 11.93l5.96-10.32h-3.9z"/></svg>`,
+  },
+  svelte: {
+    label: "Svelte",
+    lang: "svelte",
+    iconSvg: `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="#FF3E00" d="M10.354 21.125a4.44 4.44 0 0 1-4.765-1.767 4.109 4.109 0 0 1-.703-3.107 3.898 3.898 0 0 1 .134-.522l.105-.321.286.21a7.21 7.21 0 0 0 2.184 1.092l.208.063-.02.208a1.253 1.253 0 0 0 .226.83 1.337 1.337 0 0 0 1.435.533 1.231 1.231 0 0 0 .343-.15l5.59-3.562a1.164 1.164 0 0 0 .524-.778 1.242 1.242 0 0 0-.211-.937 1.338 1.338 0 0 0-1.435-.533 1.23 1.23 0 0 0-.343.15l-2.133 1.36a4.078 4.078 0 0 1-1.135.499 4.44 4.44 0 0 1-4.765-1.766 4.108 4.108 0 0 1-.702-3.108 3.855 3.855 0 0 1 1.742-2.582l5.589-3.563a4.072 4.072 0 0 1 1.135-.499 4.44 4.44 0 0 1 4.765 1.767 4.109 4.109 0 0 1 .703 3.107 3.943 3.943 0 0 1-.134.522l-.105.321-.286-.21a7.204 7.204 0 0 0-2.184-1.092l-.208-.063.02-.208a1.253 1.253 0 0 0-.226-.83 1.337 1.337 0 0 0-1.435-.533 1.231 1.231 0 0 0-.343.15L8.62 9.368a1.162 1.162 0 0 0-.524.778 1.24 1.24 0 0 0 .211.937 1.338 1.338 0 0 0 1.435.533 1.235 1.235 0 0 0 .344-.15l2.132-1.36a4.067 4.067 0 0 1 1.135-.498 4.44 4.44 0 0 1 4.765 1.766 4.108 4.108 0 0 1 .702 3.108 3.857 3.857 0 0 1-1.742 2.583l-5.589 3.562a4.072 4.072 0 0 1-1.135.499"/></svg>`,
+  },
+};
+
+type CodeTab = {
+  id: string;
+  label: string;
+  lang: BundledLanguage;
+  iconSvg: string;
+  code: string;
+  highlighted: string;
+};
+
+let codeTabs: CodeTab[] = [];
+
+if (showCode) {
+  // Pass the demo's wiring script too: the property injections inside it are
+  // the only place arrays/objects can come from, so every technology tab needs
+  // them to be copy-runnable.
+  const derived = deriveTechnologySnippets(codeSourceHtml!, script ?? '');
+  const sources: Array<{ id: keyof typeof TECHNOLOGY_META; code: string }> = [
+    { id: "html", code: htmlCode ?? derived.html },
+    { id: "react", code: react ?? derived.react },
+    { id: "angular", code: angular ?? derived.angular },
+    { id: "vue", code: vue ?? derived.vue },
+    { id: "svelte", code: svelte ?? derived.svelte },
+  ];
+
+  codeTabs = await Promise.all(
+    sources.map(async ({ id, code }) => {
+      const meta = TECHNOLOGY_META[id];
+      const highlighted = await codeToHtml(code, {
+        lang: meta.lang,
+        themes: { light: "github-light", dark: "github-dark" },
+        defaultColor: false,
+      });
+      return {
+        id,
+        label: meta.label,
+        lang: meta.lang,
+        iconSvg: meta.iconSvg,
+        code,
+        highlighted,
+      };
+    }),
+  );
+}
+---
+
+<div class="component-demo" data-component-demo>
+  <div class="component-demo__header">
+    <span class="component-demo__indicator" aria-hidden="true"></span>
+    <span class="component-demo__label">{label ?? "Live Preview"}</span>
+    {
+      sbUrl && (
+        <a
+          class="component-demo__storybook-link"
+          href={sbUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open this component in Storybook (opens in a new tab)"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+          <span>Open in Storybook</span>
+        </a>
+      )
+    }
+  </div>
+  {
+    html ? (
+      <div class="component-demo__preview" id={demoUid} set:html={html} />
+    ) : (
+      <div class="component-demo__preview component-demo__preview--empty">
+        <p class="component-demo__empty-text">
+          This component is best previewed interactively.
+          {sbUrl && (
+            <>
+              {" "}
+              <a href={sbUrl} target="_blank" rel="noopener noreferrer">
+                Open in Storybook
+              </a>{" "}
+              to interact with it.
+            </>
+          )}
+        </p>
+      </div>
+    )
+  }
+
+  {
+    showCode && codeTabs.length > 0 && (
+      <details class="component-demo__code" data-component-demo-code>
+        <summary class="component-demo__code-toggle">
+          <svg
+            class="component-demo__code-icon"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <polyline points="16 18 22 12 16 6" />
+            <polyline points="8 6 2 12 8 18" />
+          </svg>
+          <span class="component-demo__code-toggle-label">
+            Show code for each technology
+          </span>
+        </summary>
+
+        <div
+          class="component-demo__code-tabs"
+          data-technology-tabs
+          data-demo-tabs
+        >
+          <div
+            class="technology-tabs__nav"
+            role="tablist"
+            aria-label="Technology code examples"
+          >
+            {codeTabs.map((tab, i) => (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={i === 0 ? "true" : "false"}
+                class:list={[
+                  "technology-tabs__tab",
+                  { "technology-tabs__tab--active": i === 0 },
+                ]}
+                data-tab={tab.id}
+                tabindex={i === 0 ? 0 : -1}
+              >
+                <span
+                  class="technology-tabs__tab-icon"
+                  aria-hidden="true"
+                  set:html={tab.iconSvg}
+                />
+                <span class="technology-tabs__tab-label">{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {codeTabs.map((tab, i) => (
+            <div
+              role="tabpanel"
+              class:list={[
+                "technology-tabs__panel",
+                { "technology-tabs__panel--active": i === 0 },
+              ]}
+              data-panel={tab.id}
+              tabindex="0"
+              hidden={i !== 0}
+            >
+              <div class="technology-tabs__code-wrapper">
+                <button
+                  type="button"
+                  class="technology-tabs__copy"
+                  data-copy={tab.code}
+                  aria-label={`Copy ${tab.label} code`}
+                  title="Copy to clipboard"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  <span class="technology-tabs__copy-label">Copy</span>
+                </button>
+                <div class="technology-tabs__code" set:html={tab.highlighted} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </details>
+    )
+  }
+</div>
+{
+  script && (
+    <script
+      is:inline
+      data-astro-rerun
+      set:html={`(function () {
+  var root = document.getElementById(${JSON.stringify(demoUid)});
+  if (!root) return;
+  var run = function (root) {
+${script}
+};
+  // The element loader is lazy (IntersectionObserver), so the custom elements
+  // inside this demo are still inert markup for a while. Wiring them before
+  // they upgrade would bind to plain HTMLElements: props wouldn't stick and
+  // @Method calls wouldn't exist. Wait for the first hydrated descendant.
+  var t0 = Date.now();
+  (function wait() {
+    if (root.querySelector('.hydrated')) {
+      try { run(root); } catch (err) { console.warn('[AWC UI docs] demo script failed:', err); }
+      return;
+    }
+    if (Date.now() - t0 > 20000) return;
+    setTimeout(wait, 60);
+  })();
+})();`}
+    />
+  )
+}
+
+<script>
+  import { setupDemoTechnologyTabs } from '../scripts/technology-tabs';
+  // Load the AWC UI custom-element loader lazily, ONCE per page.
+  // Multiple <ComponentDemo> blocks share a single load via the global flag.
+  // We use the loader (not the eager `define` entry) so paint isn't blocked
+  // by registering 45 custom elements upfront.
+  type WithLoaderFlag = typeof window & { __awcUiLoaded?: boolean };
+
+  const loadElements = async () => {
+    const w = window as WithLoaderFlag;
+    if (w.__awcUiLoaded) return;
+    w.__awcUiLoaded = true;
+    try {
+      // Dev and build need DIFFERENT loader paths (the recurring trap):
+      // - dev: Vite's transform middleware refuses module-imports of /public
+      //   files, so import the workspace package — Vite serves it fine.
+      // - build: the npm specifier would bundle the loader into /_astro/,
+      //   where Stencil's lazy entry chunks 404 — import the COPIED runtime.
+      //   The URL sits in a variable because Rollup resolves literal dynamic
+      //   imports even behind @vite-ignore and fails the build.
+      let mod: { defineCustomElements: (win?: Window) => Promise<unknown> };
+      if (import.meta.env.DEV) {
+        mod = await import("@awc-ui/core/loader");
+      } else {
+        const runtimeUrl = "/awc-runtime/md3/md3.esm.js";
+        await import(/* @vite-ignore */ runtimeUrl);
+        await customElements.whenDefined("md-button");
+        return;
+      }
+      await mod.defineCustomElements(window);
+    } catch (err) {
+      console.warn("[AWC UI] Component loader failed:", err);
+    }
+  };
+
+  const demos = document.querySelectorAll<HTMLElement>("[data-component-demo]");
+  if (demos.length === 0) {
+    // No demos on this page — nothing to do.
+  } else if ("IntersectionObserver" in window) {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          obs.disconnect();
+          loadElements();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    demos.forEach((d) => obs.observe(d));
+  } else {
+    // No IO support — load on idle to avoid blocking initial paint.
+    type WithIdleCb = typeof window & {
+      requestIdleCallback?: (cb: () => void) => void;
+    };
+    const idleWindow = window as WithIdleCb;
+    if (idleWindow.requestIdleCallback) {
+      idleWindow.requestIdleCallback(loadElements);
+    } else {
+      setTimeout(loadElements, 800);
+    }
+  }
+
+  // ── Technology tab wiring ────────────────────────────────────────
+  //
+  // Each <ComponentDemo> renders a <TechnologyTabs>-shaped DOM block
+  // inside a <details data-component-demo-code>. Pages that *also*
+  // include the canonical <TechnologyTabs> get its inline script too
+  // (and the `__technologyTabsBound` flag below prevents double-binding
+  // each container), but pages with only ComponentDemos still need
+  // their tabs to work — so we ship the same wiring here. Sharing the
+  // `awc-ui-docs-technology` localStorage key keeps every tab strip
+  // on the page (TechnologyTabs + every ComponentDemo) in sync when the
+  // user picks a different technology.
+
+  // Moved to ../scripts/technology-tabs.ts so ChartDemo can use it too.
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupDemoTechnologyTabs, {
+      once: true,
+    });
+  } else {
+    setupDemoTechnologyTabs();
+  }
+  document.addEventListener("astro:page-load", setupDemoTechnologyTabs);
+</script>
+
+

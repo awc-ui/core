@@ -1,0 +1,70 @@
+{
+  "tag": "md-loading-indicator",
+  "title": "Loading Indicator",
+  "slug": "loading-indicator",
+  "category": "Communication",
+  "subComponentOf": null,
+  "storyId": "communication-loading-indicator--playground",
+  "props": [
+    {
+      "name": "variant",
+      "attribute": "variant",
+      "type": "'uncontained' | 'contained'",
+      "default": "'uncontained'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "label",
+      "attribute": "label",
+      "type": "string",
+      "default": "'Loading'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [],
+  "methods": [],
+  "slots": [],
+  "cssParts": [
+    {
+      "name": "shape",
+      "description": "The morphing indicator shape"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-loading-indicator-color",
+      "description": "Indicator shape color"
+    },
+    {
+      "name": "--md-loading-indicator-size",
+      "description": "Overall component size (default 48px)"
+    },
+    {
+      "name": "--md-loading-indicator-shape-size",
+      "description": "Morphing shape size (default 38px)"
+    },
+    {
+      "name": "--md-loading-indicator-container-color",
+      "description": "Container background (contained variant)"
+    },
+    {
+      "name": "--md-loading-indicator-container-shape",
+      "description": "Container border radius"
+    }
+  ],
+  "dependencies": [],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": []
+}

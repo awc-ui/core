@@ -1,0 +1,999 @@
+---
+title: Card
+description: "A container for related content and actions about a single subject — three elevations, optional interactive and drag modes"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/card.json";
+
+**A container for related content and actions about a single subject.** Three
+elevations, an optional interactive (clickable) mode with ripple, and optional
+drag reporting. The host is a `display: flex; flex-direction: column` box with
+its own padding and gap — you compose the inside freely.
+
+<ComponentDemo
+  html={`<md-card variant="elevated" style="inline-size: 220px;">
+  <h3 style="margin: 0; font-size: 16px;">Elevated</h3>
+  <p style="margin: 0; font-size: 14px;">The default. A shadow separates it from the background.</p>
+</md-card>
+<md-card variant="filled" style="inline-size: 220px;">
+  <h3 style="margin: 0; font-size: 16px;">Filled</h3>
+  <p style="margin: 0; font-size: 14px;">A flat tonal surface, no shadow.</p>
+</md-card>
+<md-card variant="outlined" style="inline-size: 220px;">
+  <h3 style="margin: 0; font-size: 16px;">Outlined</h3>
+  <p style="margin: 0; font-size: 14px;">A defined edge, no shadow.</p>
+</md-card>`}
+  label="Live preview"
+  storyId="containment-card--playground"
+/>
+
+## Install
+
+<ComponentSetup tag="md-card" example="Card content" />
+
+## When to use
+
+- Grouping **content and actions about one subject** — a product, an article, a
+  contact — especially when several appear together as a collection.
+- An entry point into a detail view (`interactive`).
+- Reorderable tiles (`drag-enabled`).
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| A vertical list of records | [`md-list`](/components/list/) + [`md-list-item`](/components/list/#the-row--md-list-item) |
+| Tabular, comparable data | [`md-table`](/components/table/) |
+| A blocking decision | [`md-dialog`](/components/dialog/) |
+| A transient message | [`md-snackbar`](/components/snackbar/) |
+| Content that spacing or a heading would organise better | Nothing — M3 warns against forcing content into cards |
+| Collapsible sections | [`md-accordion`](/components/accordion/) |
+| A single action | [`md-button`](/components/button/) |
+
+## Variants
+
+| Variant | Emphasis | Use for |
+|---|---|---|
+| `elevated` | Shadow | **Default.** Separation from a plain background |
+| `filled` | Tonal fill | A flat, grouped surface with no shadow |
+| `outlined` | Border | A defined edge where shadows would be noisy |
+
+<ComponentDemo
+  html={`<md-card variant="elevated" style="inline-size: 200px;">
+  <h3 style="margin: 0; font-size: 16px;">Weekly report</h3>
+  <p style="margin: 0; font-size: 14px;">Generated 2 hours ago.</p>
+</md-card>
+<md-card variant="filled" style="inline-size: 200px;">
+  <h3 style="margin: 0; font-size: 16px;">Weekly report</h3>
+  <p style="margin: 0; font-size: 14px;">Generated 2 hours ago.</p>
+</md-card>
+<md-card variant="outlined" style="inline-size: 200px;">
+  <h3 style="margin: 0; font-size: 16px;">Weekly report</h3>
+  <p style="margin: 0; font-size: 14px;">Generated 2 hours ago.</p>
+</md-card>`}
+  label="All three variants"
+  storyId="containment-card--all-variants"
+/>
+
+## There are no named slots
+
+Everything is default-slotted content. There is no `headline`, `media` or
+`actions` slot — the card is a container, not a template, and the structure is
+yours. The host lays its children out in a column flexbox and reads
+`--md-card-padding` and `--md-card-gap` for the spacing — it does not define
+them, so they compute to nothing until you set one; the built-in fallbacks are
+16px and 8px at density 0 (and taper from there, see
+[Density](#every-density-rung)). Plain children stack correctly without a
+wrapper.
+
+<ComponentDemo
+  html={`<md-card variant="outlined" style="inline-size: 280px;">
+  <span style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--md-sys-color-on-surface-variant);">Reports</span>
+  <h3 style="margin: 0; font-size: 16px;">Weekly report</h3>
+  <p style="margin: 0; font-size: 14px;">Generated 2 hours ago from 1,204 events.</p>
+  <md-divider></md-divider>
+  <div style="display: flex; gap: 8px;">
+    <md-button variant="text">Open</md-button>
+    <md-button variant="text">Share</md-button>
+  </div>
+</md-card>`}
+  label="Composed content — heading, body, divider, actions"
+/>
+
+Because the structure is yours, the same container scales up to a fully composed
+card — media bleeding to the edges, an avatar row, body copy and an action row.
+Note the negative margins on the image: they cancel the card's own padding so
+the media reaches the corners, which is the one piece of plumbing a slot-based
+card would have done for you.
+
+<ComponentDemo
+  html={`<md-card variant="elevated" style="max-inline-size: 400px;">
+  <img src="https://picsum.photos/seed/complex/400/180" alt="" style="inline-size: calc(100% + 32px); max-inline-size: none; block-size: 180px; object-fit: cover; display: block; margin: -16px -16px 0;">
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <div style="inline-size: 40px; block-size: 40px; border-radius: 50%; background: var(--md-sys-color-primary-container); display: flex; align-items: center; justify-content: center;">
+      <span class="material-symbols-outlined" aria-hidden="true" style="font-size: 20px; color: var(--md-sys-color-on-primary-container);">person</span>
+    </div>
+    <div>
+      <div style="font-weight: 500; font-size: 16px;">Ada Lovelace</div>
+      <div style="font-size: 12px; color: var(--md-sys-color-on-surface-variant);">Posted 2 hours ago</div>
+    </div>
+  </div>
+  <p style="margin: 0; font-size: 14px; line-height: 1.5; color: var(--md-sys-color-on-surface-variant);">
+    A card is a container, not a template — media, a header row, body copy and actions are all just slotted children stacked by the card's own column flexbox.
+  </p>
+  <div style="display: flex; gap: 8px; justify-content: flex-end;">
+    <md-button variant="outlined">Cancel</md-button>
+    <md-button variant="filled">Share</md-button>
+  </div>
+</md-card>`}
+  label="A fully composed card"
+  storyId="containment-card--complex-content"
+/>
+
+## Interactive cards
+
+`interactive` makes the whole card the control: the host takes
+`role="button"`, `tabindex="0"`, `Enter`/`Space` activation, a state layer and
+a ripple, and emits `mdClick`.
+
+<ComponentDemo
+  html={`<md-card variant="elevated" interactive aria-label="Open weekly report" style="inline-size: 220px;">
+  <h3 style="margin: 0; font-size: 16px;">Weekly report</h3>
+  <p style="margin: 0; font-size: 14px;">The whole card is the control.</p>
+</md-card>
+<md-card variant="filled" interactive aria-label="Open monthly report" style="inline-size: 220px;">
+  <h3 style="margin: 0; font-size: 16px;">Monthly report</h3>
+  <p style="margin: 0; font-size: 14px;">Tab to it, then press Enter.</p>
+</md-card>
+<md-card variant="outlined" interactive aria-label="Open annual report" style="inline-size: 220px;">
+  <h3 style="margin: 0; font-size: 16px;">Annual report</h3>
+  <p style="margin: 0; font-size: 14px;">Ripple and state layer included.</p>
+</md-card>`}
+  label="Interactive cards — click, or tab and press Enter"
+  storyId="containment-card--interactive-cards"
+/>
+
+:::danger[An interactive card with its own buttons is the classic mistake]
+A `button` may not contain focusable content (WAI-ARIA *children
+presentational*), so the card defends itself: when the default slot contains
+its own focusable controls — native controls, elements with an interactive ARIA
+role, or the library's own interactive `md-*` components — the host **silently
+drops `role="button"` and `tabindex`** and keeps a plain container role. It
+stays mouse-clickable and still ripples, but the keyboard affordance you think
+you added is gone.
+
+Decide once: either the card **is** the control, or it **holds** controls.
+:::
+
+An `interactive` card also needs a real accessible name. Its inner text is not
+automatically a good one — give it `aria-label`.
+
+The ripple is on by default. `ripple="false"` drops the ripple animation and
+keeps everything else — the hover, focus and press state layers stay, because
+they are a separate element.
+
+## Media
+
+The host sets `overflow: hidden`, so an image or video clips to the corner
+radius without extra work. Cancel the card's own padding on a full-bleed image
+with negative margins, and remember M3's contrast rule: text over a busy image
+needs a scrim or a bounding shape.
+
+<ComponentDemo
+  html={`<md-card variant="elevated" style="inline-size: 300px;">
+  <img src="https://picsum.photos/seed/md3card/400/200" alt="" style="inline-size: calc(100% + 32px); max-inline-size: none; block-size: 160px; object-fit: cover; display: block; margin: -16px -16px 0;">
+  <h3 style="margin: 0; font-size: 16px;">Mountain pass</h3>
+  <p style="margin: 0; font-size: 14px; color: var(--md-sys-color-on-surface-variant);">Text sits below the image, not on it.</p>
+</md-card>
+<md-card variant="outlined" style="inline-size: 300px;">
+  <video muted loop autoplay playsinline preload="auto" aria-label="Sample clip" style="inline-size: calc(100% + 32px); max-inline-size: none; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: #000; margin: -16px -16px 0;" src="https://www.w3schools.com/html/mov_bbb.mp4"></video>
+  <h3 style="margin: 0; font-size: 16px;">Clip preview</h3>
+  <p style="margin: 0; font-size: 14px; color: var(--md-sys-color-on-surface-variant);">A video behaves exactly like an image.</p>
+</md-card>`}
+  label="Image and video media"
+  storyId="containment-card--with-image"
+/>
+
+The second card above is a `<video>` on exactly the same terms as the image —
+negative margins to reach the padding edge, and the card clipping it to the
+container shape.
+
+## States
+
+| State | Focusable | Effect |
+|---|---|---|
+| `disabled` | No | Inert and out of the tab order; `aria-disabled` when the card acts as a button |
+| `soft-disabled` | **Yes** | Same visuals, still focusable so the card stays discoverable |
+
+Both only mean anything on an `interactive` (or `drag-enabled`) card — a plain
+container has nothing to disable.
+
+<ComponentDemo
+  html={`<md-card variant="filled" interactive aria-label="Available report" style="inline-size: 200px;">
+  <h3 style="margin: 0; font-size: 16px;">Enabled</h3>
+  <p style="margin: 0; font-size: 14px;">Clickable and focusable.</p>
+</md-card>
+<md-card variant="filled" interactive disabled aria-label="Unavailable report" style="inline-size: 200px;">
+  <h3 style="margin: 0; font-size: 16px;">Disabled</h3>
+  <p style="margin: 0; font-size: 14px;">Out of the tab order.</p>
+</md-card>
+<md-card variant="filled" interactive soft-disabled aria-label="Locked report" style="inline-size: 200px;">
+  <h3 style="margin: 0; font-size: 16px;">Soft-disabled</h3>
+  <p style="margin: 0; font-size: 14px;">Still reachable by keyboard.</p>
+</md-card>`}
+  label="States — try tabbing through them"
+  storyId="containment-card--states"
+/>
+
+## Sizing and grids
+
+`full-width` and `full-height` make the card fill its container, which is what
+you want inside a CSS grid so cards in a row stay even when translated text
+changes their length. For anything more specific there are
+`--md-card-width` / `-min-width` / `-max-width` and the matching
+`--md-card-height` properties.
+
+<ComponentDemo
+  html={`<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; inline-size: 100%;">
+  <md-card variant="outlined" full-width full-height>
+    <h3 style="margin: 0; font-size: 16px;">Short</h3>
+    <p style="margin: 0; font-size: 14px;">One line.</p>
+  </md-card>
+  <md-card variant="outlined" full-width full-height>
+    <h3 style="margin: 0; font-size: 16px;">Longer</h3>
+    <p style="margin: 0; font-size: 14px;">Several more words of supporting text that wrap onto extra lines.</p>
+  </md-card>
+  <md-card variant="outlined" full-width full-height>
+    <h3 style="margin: 0; font-size: 16px;">Medium</h3>
+    <p style="margin: 0; font-size: 14px;">A middling amount of text.</p>
+  </md-card>
+</div>`}
+  label="A grid of equal-height cards"
+  storyId="containment-card--card-grid"
+/>
+
+For a card that should not follow its container, set the size properties
+directly:
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap;">
+  <md-card variant="outlined" style="--md-card-width: 220px;">
+    <h3 style="margin: 0; font-size: 16px;">Fixed width</h3>
+    <p style="margin: 0; font-size: 14px;">220px regardless of the container.</p>
+  </md-card>
+  <md-card variant="outlined" style="--md-card-width: 220px; --md-card-height: 160px;">
+    <h3 style="margin: 0; font-size: 16px;">Fixed box</h3>
+    <p style="margin: 0; font-size: 14px;">220 × 160, content clipped to fit.</p>
+  </md-card>
+  <md-card variant="outlined" style="--md-card-max-width: 260px;">
+    <h3 style="margin: 0; font-size: 16px;">Capped</h3>
+    <p style="margin: 0; font-size: 14px;">Grows with its content up to 260px, then wraps instead of stretching.</p>
+  </md-card>
+</div>`}
+  label="Fixed width, fixed box, and a cap"
+  storyId="containment-card--width-and-height"
+/>
+
+:::caution[`full-height` needs a parent that has a height]
+It resolves to `block-size: 100%`, and `100%` of an auto-height parent is
+nothing at all. It works in the grid above because grid rows give each cell a
+definite block-size; in a plain `div` it is a no-op. The same applies to
+`full-width` on a shrink-to-fit parent.
+:::
+
+Cards are fluid by default, so a card in a responsive grid needs no breakpoint
+markup — see the
+[responsiveness story](/storybook/?path=/story/containment-card--responsiveness).
+
+## Dragging
+
+`drag-enabled` reports the gesture. It emits `mdDragStart`, `mdDragMove` and
+`mdDragEnd`, mirrors the state in `aria-grabbed`, and — once the gesture
+actually starts, not merely on pointer-down — applies the dragged state layer
+and pins a raised elevation for its duration. It does
+translate the card under the pointer and lift it above its siblings for the
+duration — but **that transform is undone the instant you release, and nothing
+is reordered.** The card tells you what the pointer did; the list is yours.
+
+The gesture only begins once the pointer has travelled 5px or more from where it
+went down, so an ordinary click on a `drag-enabled` card is still a click — it
+never picks up the dragged visuals — and a real drag suppresses the click that
+would otherwise follow it.
+
+<ComponentDemo
+  html={`<md-card variant="elevated" drag-enabled style="inline-size: 180px;">
+  <h3 style="margin: 0; font-size: 16px;">Tile A</h3>
+  <p style="margin: 0; font-size: 14px;">Press and drag.</p>
+</md-card>
+<md-card variant="elevated" drag-enabled style="inline-size: 180px;">
+  <h3 style="margin: 0; font-size: 16px;">Tile B</h3>
+  <p style="margin: 0; font-size: 14px;">Let go — it snaps back.</p>
+</md-card>`}
+  label="Drag-enabled tiles — the card follows the pointer, then returns"
+  storyId="containment-card--draggable"
+/>
+
+:::note[The dragged elevation is not yours to set]
+While a card is being dragged the component pins its own elevation — 4 for
+`elevated`, 3 for `filled` and `outlined` — so an inline
+`--md-card-container-elevation` is ignored for the duration of the gesture and
+applies again the moment you let go. M3 asks for the raise; you get it without
+wiring it.
+:::
+
+### Reordering is your code
+
+The component deliberately stops at reporting, so a working reorder is these
+events plus a few lines of yours. This demo does exactly that: on `mdDragEnd`
+it looks at where the pointer landed and moves the tile in the DOM.
+
+<ComponentDemo
+  html={`<div id="card-reorder-strip" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start;">
+  <md-card variant="elevated" drag-enabled data-label="A" style="inline-size: 150px;">
+    <h3 style="margin: 0; font-size: 16px;">Tile A</h3>
+    <p style="margin: 0; font-size: 14px;">Drag me sideways.</p>
+  </md-card>
+  <md-card variant="elevated" drag-enabled data-label="B" style="inline-size: 150px;">
+    <h3 style="margin: 0; font-size: 16px;">Tile B</h3>
+    <p style="margin: 0; font-size: 14px;">Drop me on a neighbour.</p>
+  </md-card>
+  <md-card variant="elevated" drag-enabled data-label="C" style="inline-size: 150px;">
+    <h3 style="margin: 0; font-size: 16px;">Tile C</h3>
+    <p style="margin: 0; font-size: 14px;">The order is real DOM order.</p>
+  </md-card>
+</div>
+<output id="card-reorder-log" style="display:block; margin-block-start:16px; min-block-size:2.4em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Drag a tile onto one of its neighbours and let go.</output>`}
+  htmlForCode={`<div id="strip" style="display: flex; gap: 12px;">
+  <md-card variant="elevated" drag-enabled>Tile A</md-card>
+  <md-card variant="elevated" drag-enabled>Tile B</md-card>
+  <md-card variant="elevated" drag-enabled>Tile C</md-card>
+</div>`}
+  script={`
+    var strip = root.querySelector('#card-reorder-strip');
+    var log = root.querySelector('#card-reorder-log');
+
+    root.addEventListener('mdDragEnd', function (e) {
+      var tile = e.target;
+      var tiles = Array.prototype.slice.call(strip.children);
+      var from = tiles.indexOf(tile);
+      var to = from;
+
+      for (var i = 0; i < tiles.length; i++) {
+        if (tiles[i] === tile) continue;
+        var r = tiles[i].getBoundingClientRect();
+        if (e.detail.clientX >= r.left && e.detail.clientX <= r.right) to = i;
+      }
+
+      if (to === from) {
+        log.textContent = 'Dropped clear of the other tiles — order unchanged.';
+        return;
+      }
+
+      strip.insertBefore(tile, to > from ? tiles[to].nextSibling : tiles[to]);
+      log.textContent = 'Tile ' + tile.dataset.label + ' moved from slot ' + (from + 1) + ' to slot ' + (to + 1) + '.';
+    });
+  `}
+  label="A working reorder — the component supplies the gesture, you supply the order"
+  storyId="containment-card--drag-and-drop"
+/>
+
+The same reorder in each stack. In the framework versions the order is state and
+the cards are rendered from it, so the drop handler only has to move an array
+entry — `detail.offsetX` divided by the tile pitch is how many slots the pointer
+travelled:
+
+<TechnologyTabs
+  html={`<div id="strip" style="display: flex; gap: 12px;">
+  <md-card variant="elevated" drag-enabled>Tile A</md-card>
+  <md-card variant="elevated" drag-enabled>Tile B</md-card>
+  <md-card variant="elevated" drag-enabled>Tile C</md-card>
+</div>
+
+<script type="module">
+  const strip = document.getElementById('strip');
+
+  strip.addEventListener('mdDragEnd', (e) => {
+    const tiles = [...strip.children];
+    const from = tiles.indexOf(e.target);
+    const to = tiles.findIndex((t) => {
+      if (t === e.target) return false;
+      const r = t.getBoundingClientRect();
+      return e.detail.clientX >= r.left && e.detail.clientX <= r.right;
+    });
+
+    if (to === -1 || to === from) return;
+    strip.insertBefore(e.target, to > from ? tiles[to].nextSibling : tiles[to]);
+  });
+</script>`}
+  react={`import { MdCard } from '@awc-ui/react';
+import type { MdCardDragDetail } from '@awc-ui/core';
+import { useState } from 'react';
+
+const TILE_PITCH = 162; // tile inline-size + gap
+
+export function ReorderableTiles() {
+  const [tiles, setTiles] = useState(['Tile A', 'Tile B', 'Tile C']);
+
+  const move = (from: number) => (e: CustomEvent<MdCardDragDetail>) => {
+    const slots = Math.round(e.detail.offsetX / TILE_PITCH);
+    const to = Math.min(tiles.length - 1, Math.max(0, from + slots));
+    if (to === from) return;
+
+    setTiles((prev) => {
+      const next = [...prev];
+      next.splice(to, 0, next.splice(from, 1)[0]);
+      return next;
+    });
+  };
+
+  return (
+    <div style={{ display: 'flex', gap: 12 }}>
+      {tiles.map((label, i) => (
+        <MdCard key={label} variant="elevated" dragEnabled onMdDragEnd={move(i)}>
+          {label}
+        </MdCard>
+      ))}
+    </div>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+import type { MdCardDragDetail } from '@awc-ui/core';
+
+const TILE_PITCH = 162; // tile inline-size + gap
+
+@Component({
+  selector: 'app-reorderable-tiles',
+  template: \`
+    <div style="display: flex; gap: 12px;">
+      <md-card
+        *ngFor="let label of tiles; let i = index"
+        variant="elevated"
+        drag-enabled
+        (mdDragEnd)="move(i, $event)"
+      >{{ label }}</md-card>
+    </div>
+  \`,
+})
+export class ReorderableTilesComponent {
+  tiles = ['Tile A', 'Tile B', 'Tile C'];
+
+  move(from: number, e: CustomEvent<MdCardDragDetail>) {
+    const slots = Math.round(e.detail.offsetX / TILE_PITCH);
+    const to = Math.min(this.tiles.length - 1, Math.max(0, from + slots));
+    if (to === from) return;
+
+    this.tiles.splice(to, 0, this.tiles.splice(from, 1)[0]);
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+import type { MdCardDragDetail } from '@awc-ui/core';
+
+const TILE_PITCH = 162; // tile inline-size + gap
+const tiles = ref(['Tile A', 'Tile B', 'Tile C']);
+
+function move(from: number, e: CustomEvent<MdCardDragDetail>) {
+  const slots = Math.round(e.detail.offsetX / TILE_PITCH);
+  const to = Math.min(tiles.value.length - 1, Math.max(0, from + slots));
+  if (to === from) return;
+
+  tiles.value.splice(to, 0, tiles.value.splice(from, 1)[0]);
+}
+</script>
+
+<template>
+  <div style="display: flex; gap: 12px;">
+    <md-card
+      v-for="(label, i) in tiles"
+      :key="label"
+      variant="elevated"
+      drag-enabled
+      @mdDragEnd="move(i, $event)"
+    >{{ label }}</md-card>
+  </div>
+</template>`}
+  svelte={`<script lang="ts">
+  import type { MdCardDragDetail } from '@awc-ui/core';
+
+  const TILE_PITCH = 162; // tile inline-size + gap
+  let tiles = ['Tile A', 'Tile B', 'Tile C'];
+
+  function move(from: number, e: CustomEvent<MdCardDragDetail>) {
+    const slots = Math.round(e.detail.offsetX / TILE_PITCH);
+    const to = Math.min(tiles.length - 1, Math.max(0, from + slots));
+    if (to === from) return;
+
+    const next = [...tiles];
+    next.splice(to, 0, next.splice(from, 1)[0]);
+    tiles = next;
+  }
+</script>
+
+<div style="display: flex; gap: 12px;">
+  {#each tiles as label, i (label)}
+    <md-card variant="elevated" drag-enabled on:mdDragEnd={(e) => move(i, e)}>
+      {label}
+    </md-card>
+  {/each}
+</div>`}
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdClick` | no | `MouseEvent` | Card activated (pointer, `Enter`, `Space`) — `interactive` only |
+| `mdDragStart` | no | `MdCardDragDetail` | Pointer moved past the 5px drag threshold |
+| `mdDragMove` | no | `MdCardDragDetail` | Every pointer move during the drag |
+| `mdDragEnd` | no | `MdCardDragDetail` | Pointer released |
+
+```ts
+interface MdCardDragDetail {
+  clientX: number;   // pointer position, viewport coordinates
+  clientY: number;
+  offsetX: number;   // distance from the drag start point
+  offsetY: number;
+  startX: number;    // where the gesture began
+  startY: number;
+}
+```
+
+`mdClick` carries the underlying `MouseEvent` as its detail, so
+`e.detail.type === 'click'` even when the activation came from the keyboard
+path.
+
+Both the drag trio and `mdClick` **bubble** and are **composed**, so one
+delegated listener on a wrapper catches every card in a collection. Drag the
+right-hand tile and click the left-hand card:
+
+<ComponentDemo
+  html={`<div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start;">
+  <md-card id="card-ev-click" variant="elevated" interactive aria-label="Open weekly report" style="inline-size: 200px;">
+    <h3 style="margin: 0; font-size: 16px;">Click me</h3>
+    <p style="margin: 0; font-size: 14px;">Or tab here and press Enter.</p>
+  </md-card>
+  <md-card id="card-ev-tile" variant="elevated" drag-enabled style="inline-size: 200px;">
+    <h3 style="margin: 0; font-size: 16px;">Drag me</h3>
+    <p style="margin: 0; font-size: 14px;">Past 5px, then the trio fires.</p>
+  </md-card>
+</div>
+<output id="card-ev-log" style="display:block; margin-block-start:16px; min-block-size:4.2em; white-space:pre-line; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">One listener on the wrapper is logging both cards.</output>`}
+  script={`
+    var log = root.querySelector('#card-ev-log');
+    var lines = [];
+    var moves = 0;
+
+    function push(line) {
+      lines.unshift(line);
+      lines = lines.slice(0, 4);
+      log.textContent = lines.join(String.fromCharCode(10));
+    }
+
+    root.addEventListener('mdClick', function (e) {
+      push('mdClick      detail is the MouseEvent, type=' + e.detail.type);
+    });
+
+    root.addEventListener('mdDragStart', function () {
+      moves = 0;
+      push('mdDragStart  threshold crossed');
+    });
+
+    root.addEventListener('mdDragMove', function (e) {
+      moves = moves + 1;
+      if (moves % 8 !== 0) return;
+      push('mdDragMove   offset ' + Math.round(e.detail.offsetX) + ', ' + Math.round(e.detail.offsetY) + '  (move ' + moves + ')');
+    });
+
+    root.addEventListener('mdDragEnd', function (e) {
+      push('mdDragEnd    offset ' + Math.round(e.detail.offsetX) + ', ' + Math.round(e.detail.offsetY) + ' from ' + Math.round(e.detail.startX) + ', ' + Math.round(e.detail.startY));
+    });
+  `}
+  label="One delegated listener catches both cards"
+  htmlCode={`<md-card id="report" variant="elevated" interactive aria-label="Open weekly report">
+  <h3>Weekly report</h3>
+  <p>Generated 2 hours ago.</p>
+</md-card>
+
+<script type="module">
+  const card = document.getElementById('report');
+
+  card.addEventListener('mdClick', (e) => {
+    console.log(e.detail.type);          // 'click' — the underlying MouseEvent
+    location.assign('/reports/weekly');
+  });
+</script>`}
+  react={`import { MdCard } from '@awc-ui/react';
+
+export function ReportCard({ onOpen }: { onOpen: () => void }) {
+  return (
+    <MdCard
+      variant="elevated"
+      interactive
+      aria-label="Open weekly report"
+      onMdClick={(e) => {
+        console.log(e.detail.type);      // 'click' — the underlying MouseEvent
+        onOpen();
+      }}
+    >
+      <h3>Weekly report</h3>
+      <p>Generated 2 hours ago.</p>
+    </MdCard>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+
+@Component({
+  selector: 'app-report-card',
+  template: \`
+    <md-card
+      variant="elevated"
+      interactive
+      aria-label="Open weekly report"
+      (mdClick)="open($event)"
+    >
+      <h3>Weekly report</h3>
+      <p>Generated 2 hours ago.</p>
+    </md-card>
+  \`,
+})
+export class ReportCardComponent {
+  constructor(private router: Router) {}
+
+  open(e: CustomEvent<MouseEvent>) {
+    console.log(e.detail.type);          // 'click' — the underlying MouseEvent
+    this.router.navigateByUrl('/reports/weekly');
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { useRouter } from 'vue-router';
+const router = useRouter();
+
+function open(e: CustomEvent<MouseEvent>) {
+  console.log(e.detail.type);            // 'click' — the underlying MouseEvent
+  router.push('/reports/weekly');
+}
+</script>
+
+<template>
+  <md-card
+    variant="elevated"
+    interactive
+    aria-label="Open weekly report"
+    @mdClick="open"
+  >
+    <h3>Weekly report</h3>
+    <p>Generated 2 hours ago.</p>
+  </md-card>
+</template>`}
+  svelte={`<script lang="ts">
+  import { goto } from '$app/navigation';
+
+  function open(e: CustomEvent<MouseEvent>) {
+    console.log(e.detail.type);          // 'click' — the underlying MouseEvent
+    goto('/reports/weekly');
+  }
+</script>
+
+<md-card
+  variant="elevated"
+  interactive
+  aria-label="Open weekly report"
+  on:mdClick={open}
+>
+  <h3>Weekly report</h3>
+  <p>Generated 2 hours ago.</p>
+</md-card>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- **Decide the interaction model once.** Either the card is a control
+  (`interactive`, with an `aria-label` and keyboard activation) or it is a
+  container holding its own controls. Both at once is the classic
+  nested-interactive failure — and the component resolves it by dropping the
+  button semantics, not by warning you.
+- An `interactive` card needs a real accessible name via `aria-label`. Its
+  inner text isn't automatically a good one.
+- Headings inside the card should fit the page's heading hierarchy — a card is
+  not a reason to restart at `h1`.
+- Text over images needs verified contrast; use a bounding shape or a scrim.
+- `disabled` leaves the tab order; `soft-disabled` stays focusable, so an
+  unavailable-but-worth-discovering card is still reachable.
+- Drag is pointer-only. If reordering matters, provide a keyboard path of your
+  own.
+
+Tab through these four. The first is a single tab stop that announces as a
+button. The second is marked `interactive` too, but its own buttons are the tab
+stops — the card detected them and quietly kept a plain container role rather
+than nesting focusables inside a `button`. The third is skipped entirely; the
+fourth still takes focus and announces its disabled visuals.
+
+<ComponentDemo
+  html={`<md-card variant="outlined" interactive aria-label="Open the weekly report" style="inline-size: 220px;">
+  <h3 style="margin: 0; font-size: 16px;">Card is the control</h3>
+  <p style="margin: 0; font-size: 14px;">role=button, one tab stop, Enter activates.</p>
+</md-card>
+<md-card variant="outlined" interactive style="inline-size: 220px;">
+  <h3 style="margin: 0; font-size: 16px;">Card holds controls</h3>
+  <p style="margin: 0; font-size: 14px;">The buttons are the tab stops.</p>
+  <div style="display: flex; gap: 8px;">
+    <md-button variant="text">Open</md-button>
+    <md-button variant="text">Share</md-button>
+  </div>
+</md-card>
+<md-card variant="outlined" interactive disabled aria-label="Report unavailable" style="inline-size: 220px;">
+  <h3 style="margin: 0; font-size: 16px;">disabled</h3>
+  <p style="margin: 0; font-size: 14px;">Out of the tab order entirely.</p>
+</md-card>
+<md-card variant="outlined" interactive soft-disabled aria-label="Report locked" style="inline-size: 220px;">
+  <h3 style="margin: 0; font-size: 16px;">soft-disabled</h3>
+  <p style="margin: 0; font-size: 14px;">Still focusable, so still discoverable.</p>
+</md-card>`}
+  label="Keyboard and screen-reader behaviour"
+  storyId="containment-card--accessibility"
+/>
+
+The second card is the one worth dwelling on: nothing warns you. `interactive`
+is still set, the card still ripples and still emits `mdClick` on a pointer
+press — only the keyboard affordance you thought you added is absent, because
+`role="button"` and `tabindex` were never applied. If the whole card must be
+keyboard-activatable, take the inner controls out. The
+[accessibility story](/storybook/?path=/story/containment-card--accessibility)
+walks the same roles and keyboard model side by side.
+
+## RTL, density & i18n
+
+**RTL** — the card's own metrics are logical. Padding, gap, the column flow and
+the inline-size bounds all mirror under `dir="rtl"` with nothing re-authored.
+What does *not* mirror for free is the layout CSS you write for your slotted
+content — the card has no named slots, so there is no template doing it for you.
+See [RTL](/behaviour/rtl/).
+
+```html
+<div dir="rtl">
+  <md-card variant="outlined">…</md-card>
+</div>
+```
+
+The same composed card in both directions. Only `dir` changes between the rows:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:start;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;gap:16px;flex-wrap:wrap;">
+    <md-card variant="outlined" style="inline-size: 260px;">
+      <h3 style="margin: 0; font-size: 16px;">Weekly report</h3>
+      <p style="margin: 0; font-size: 14px;">Padding, gap and flow are logical, so the card mirrors on its own.</p>
+      <md-divider></md-divider>
+      <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <md-button variant="text">Cancel</md-button>
+        <md-button variant="filled">Save</md-button>
+      </div>
+    </md-card>
+    <md-card variant="elevated" interactive aria-label="Open weekly report" style="inline-size: 200px;">
+      <h3 style="margin: 0; font-size: 16px;">Clickable</h3>
+      <p style="margin: 0; font-size: 14px;">Same behaviour in either direction.</p>
+    </md-card>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;gap:16px;flex-wrap:wrap;">
+    <md-card variant="outlined" style="inline-size: 260px;">
+      <h3 style="margin: 0; font-size: 16px;">التقرير الأسبوعي</h3>
+      <p style="margin: 0; font-size: 14px;">الحشو والتدفق منطقيان، لذا تنعكس البطاقة تلقائيًا.</p>
+      <md-divider></md-divider>
+      <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <md-button variant="text">إلغاء</md-button>
+        <md-button variant="filled">حفظ</md-button>
+      </div>
+    </md-card>
+    <md-card variant="elevated" interactive aria-label="فتح التقرير الأسبوعي" style="inline-size: 200px;">
+      <h3 style="margin: 0; font-size: 16px;">قابلة للنقر</h3>
+      <p style="margin: 0; font-size: 14px;">نفس السلوك في الاتجاهين.</p>
+    </md-card>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl"
+  storyId="containment-card--rtl"
+/>
+
+### Physical offsets in your content don't mirror — logical ones do
+
+The full-bleed media trick from [Media](#media) is symmetric
+(`margin: -16px -16px 0`), so it is direction-agnostic and needs no attention.
+Alignment does: `justify-content: right` pins an action row to the physical
+right, which under RTL is the **leading** edge — the wrong side. `flex-end`
+follows the direction instead. Both rows below are `dir="rtl"`, and only the
+action row's CSS differs:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:start;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <div dir="rtl" style="display:flex;gap:16px;flex-wrap:wrap;">
+    <md-card variant="outlined" style="inline-size: 280px;">
+      <h3 style="margin: 0; font-size: 16px;">حفظ التغييرات</h3>
+      <p style="margin: 0; font-size: 14px;">justify-content: flex-end — الأزرار على الحافة اللاحقة.</p>
+      <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <md-button variant="text">إلغاء</md-button>
+        <md-button variant="filled">حفظ</md-button>
+      </div>
+    </md-card>
+  </div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <div dir="rtl" style="display:flex;gap:16px;flex-wrap:wrap;">
+    <md-card variant="outlined" style="inline-size: 280px;">
+      <h3 style="margin: 0; font-size: 16px;">حفظ التغييرات</h3>
+      <p style="margin: 0; font-size: 14px;">justify-content: right — الأزرار على الحافة الأمامية.</p>
+      <div style="display: flex; gap: 8px; justify-content: right;">
+        <md-button variant="text">إلغاء</md-button>
+        <md-button variant="filled">حفظ</md-button>
+      </div>
+    </md-card>
+  </div>
+</div>`}
+  label="Action-row alignment — flex-end vs right, both under dir=rtl"
+/>
+
+### Every density rung
+
+`density` is a local override of the inherited `data-density`, and the spacing
+values all derive from that one signal, so the box tapers together: padding
+**16 → 14 → 12 → 10 → 8px**, gap **8 → 7 → 6 → 5 → 4px**, and the body
+typescale with them. Padding and gap floor at 8px and 4px rather than
+collapsing. The corner radius does **not** taper — it resolves to
+`--md-sys-shape-corner-medium`, a flat 12px from the token layer; the
+density-scaled value in the CSS is only the fallback for pages that load the
+component without those tokens. The card's height does not step evenly either —
+tighter padding leaves more room for text, so a card can lose a wrapped line and
+jump:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;"><md-card variant="outlined" style="inline-size: 200px;"><h3 style="margin: 0; font-size: 15px;">Weekly report</h3><p style="margin: 0;">Generated 2 hours ago.</p></md-card><md-card variant="filled" style="inline-size: 200px;"><h3 style="margin: 0; font-size: 15px;">Weekly report</h3><p style="margin: 0;">Generated 2 hours ago.</p></md-card></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;"><md-card variant="outlined" density="-1" style="inline-size: 200px;"><h3 style="margin: 0; font-size: 15px;">Weekly report</h3><p style="margin: 0;">Generated 2 hours ago.</p></md-card><md-card variant="filled" density="-1" style="inline-size: 200px;"><h3 style="margin: 0; font-size: 15px;">Weekly report</h3><p style="margin: 0;">Generated 2 hours ago.</p></md-card></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;"><md-card variant="outlined" density="-2" style="inline-size: 200px;"><h3 style="margin: 0; font-size: 15px;">Weekly report</h3><p style="margin: 0;">Generated 2 hours ago.</p></md-card><md-card variant="filled" density="-2" style="inline-size: 200px;"><h3 style="margin: 0; font-size: 15px;">Weekly report</h3><p style="margin: 0;">Generated 2 hours ago.</p></md-card></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;"><md-card variant="outlined" density="-3" style="inline-size: 200px;"><h3 style="margin: 0; font-size: 15px;">Weekly report</h3><p style="margin: 0;">Generated 2 hours ago.</p></md-card><md-card variant="filled" density="-3" style="inline-size: 200px;"><h3 style="margin: 0; font-size: 15px;">Weekly report</h3><p style="margin: 0;">Generated 2 hours ago.</p></md-card></div>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;"><md-card variant="outlined" density="-4" style="inline-size: 200px;"><h3 style="margin: 0; font-size: 15px;">Weekly report</h3><p style="margin: 0;">Generated 2 hours ago.</p></md-card><md-card variant="filled" density="-4" style="inline-size: 200px;"><h3 style="margin: 0; font-size: 15px;">Weekly report</h3><p style="margin: 0;">Generated 2 hours ago.</p></md-card></div>
+</div>`}
+  label="Density 0 through -4 — padding, gap and type taper; the 12px radius holds"
+/>
+
+:::caution[Below `-2`, check what the card contains, not the card]
+The card itself stays a large target at every rung — but a global `data-density`
+reaches the buttons, chips and fields you slotted into it, and those do lose hit
+area. Measure *them* against the 48px pointer-coarse target. See
+[Density](/behaviour/density/#accessibility).
+:::
+
+### Density and direction together
+
+They are independent signals, so they compose with no extra wiring — and a card
+can set its own `density`, which wins over the rung it inherited:
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;">
+  <md-card variant="outlined" style="inline-size: 220px;">
+    <h3 style="margin: 0; font-size: 16px;">كثافة موروثة</h3>
+    <p style="margin: 0;">حشو أضيق من الحاوية.</p>
+    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+      <md-button variant="text">إلغاء</md-button>
+      <md-button variant="filled">حفظ</md-button>
+    </div>
+  </md-card>
+  <md-card variant="elevated" interactive aria-label="بطاقة قابلة للنقر" style="inline-size: 220px;">
+    <h3 style="margin: 0; font-size: 16px;">قابلة للنقر</h3>
+    <p style="margin: 0;">نفس الرونغ، مع طبقة الحالة.</p>
+  </md-card>
+  <md-card variant="outlined" density="-4" style="inline-size: 220px;">
+    <h3 style="margin: 0; font-size: 16px;">رونغ محلي ‎-4</h3>
+    <p style="margin: 0;">الرونغ المحلي يتجاوز الموروث.</p>
+  </md-card>
+</div>`}
+  label="dir=rtl with data-density=-2, and one card overriding to -4"
+/>
+
+:::caution[There is no `density="0"` reset]
+Only rungs `-1` through `-4` exist as rules; the absence of a rung means
+"inherit whatever the ancestor says". So `density="0"` on a card inside a
+`data-density="-2"` container does **nothing** — it still renders at `-2`. Any
+of `-1`…`-4` wins over the inherited rung, tighter or looser; only the default
+rung can't be asked for. To get it back, put the card outside the dense subtree.
+:::
+
+**Density** — `density="-1…-4"` locally overrides the inherited `data-density`
+rung (`0` is the default, not an override). See
+[Density](/behaviour/density/).
+
+**i18n** — all text is your slotted content, so translation is entirely yours
+(the [localization story](/storybook/?path=/story/containment-card--localization)
+shows a translated set). Translated text changes card height; in a grid, prefer
+`full-height` so cards in a row stay even.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-card-container-color` | Surface fill | Per variant |
+| `--md-card-container-shape` | Corner radius | 12px |
+| `--md-card-container-elevation` | Box-shadow override — a full `box-shadow` value, not a level; ignored while dragging | Per variant |
+| `--md-card-outline-color` / `-width` | `outlined` border | `outline-variant` / `1px` |
+| `--md-card-state-layer-color` | Hover/press overlay (`interactive`) | `on-surface` |
+| `--md-card-width` / `-min-width` / `-max-width` | Inline-size bounds | `auto` / `auto` / `none` |
+| `--md-card-height` / `-min-height` / `-max-height` | Block-size bounds | `auto` / `auto` / `none` |
+| `--md-card-padding` / `--md-card-gap` | Internal spacing | 16px / 8px |
+
+<ComponentDemo
+  html={`<md-card variant="filled" style="inline-size: 220px; --md-card-container-shape: 4px; --md-card-padding: 24px;">
+  <h3 style="margin: 0; font-size: 16px;">Squared off</h3>
+  <p style="margin: 0; font-size: 14px;">4px radius, 24px padding.</p>
+</md-card>
+<md-card variant="outlined" style="inline-size: 220px; --md-card-outline-color: var(--md-sys-color-primary); --md-card-outline-width: 2px;">
+  <h3 style="margin: 0; font-size: 16px;">Primary outline</h3>
+  <p style="margin: 0; font-size: 14px;">2px primary border.</p>
+</md-card>`}
+  label="Themed instances"
+  storyId="containment-card--custom-css"
+/>
+
+Check any override in both themes — the elevated variant leans on shadow, which
+reads very differently on a dark surface. See the
+[dark-theme story](/storybook/?path=/story/containment-card--dark-theme).
+
+**CSS parts** — `state-layer`, `outline`. Use them for what the colour tokens
+cannot express: a gradient state layer, a dashed or thicker outline.
+
+<ComponentDemo
+  html={`<style>
+  .card-parts-a::part(outline) { border-style: dashed; border-width: 2px; border-color: var(--md-sys-color-primary); }
+  .card-parts-b::part(state-layer) { background: linear-gradient(135deg, var(--md-sys-color-primary), var(--md-sys-color-tertiary)); opacity: .18; }
+</style>
+<div style="display: flex; gap: 16px; flex-wrap: wrap;">
+  <md-card variant="outlined" class="card-parts-a" style="inline-size: 220px;">
+    <h3 style="margin: 0; font-size: 16px;">Dashed outline</h3>
+    <p style="margin: 0; font-size: 14px;">::part(outline) restyled.</p>
+  </md-card>
+  <md-card variant="filled" interactive class="card-parts-b" style="inline-size: 220px;">
+    <h3 style="margin: 0; font-size: 16px;">Gradient state layer</h3>
+    <p style="margin: 0; font-size: 14px;">Hover me — ::part(state-layer).</p>
+  </md-card>
+</div>`}
+  label="::part() overrides"
+  storyId="containment-card--css-parts"
+/>
+
+```css
+md-card::part(outline) {
+  border-style: dashed;
+}
+```
+
+
+## Related
+
+[`md-list`](/components/list/) ·
+[`md-list-item`](/components/list/#the-row--md-list-item) ·
+[`md-dialog`](/components/dialog/) ·
+[`md-accordion`](/components/accordion/) ·
+[`md-divider`](/components/divider/) ·
+[`md-button`](/components/button/) ·
+[`md-ripple`](/components/ripple/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-card" />

@@ -1,0 +1,869 @@
+---
+title: Pie Chart
+description: "Material Design 3 pie / donut / semi-circle chart with centre KPI slot."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import ChartDemo from "../../../components/ChartDemo.astro";
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import apiData from "../../../data/components/pie-chart.json";
+
+**Parts of a single whole.** Full pies, donuts, half-pie gauges and nested
+rings, with padding angles, exploded slices and a centre slot for donut KPIs.
+Slice colours resolve to MD3 colour roles, so dark theme and brand-token
+overrides re-tint automatically.
+
+:::note[Not a Material Design 3 component]
+M3 ships no charts. The rendering engine is **in-house Canvas2D with a DOM
+overlay** (`utils/charts/engine`) — not a third-party charting library, whatever
+the dependency tree suggests. The guidance below is house rules.
+:::
+
+## Preview
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="Live Preview"
+  storyId="charts-pie-chart--playground"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 340px;"
+  attrs={{ label: 'Traffic', legend: 'right' }}
+  fixture={{
+    data: [
+      { label: 'Direct', value: 320 },
+      { label: 'Organic search', value: 240 },
+      { label: 'Paid social', value: 180 },
+      { label: 'Referral', value: 120 },
+      { label: 'Email', value: 80 },
+    ],
+  }}
+/>
+
+## Install
+
+<ComponentSetup tag="md-pie-chart" />
+
+## When to use
+
+- **Parts of one whole**, where the shares add to 100%: traffic sources, budget
+  split, storage by type.
+- **Few categories** — about six at most. Past that the small slices become
+  indistinguishable wedges.
+- A single **progress or utilisation** figure, as a semi-circle gauge.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Comparing magnitudes across categories | [`md-bar-chart`](/components/bar-chart/) |
+| Change over time | [`md-line-chart`](/components/line-chart/) |
+| Composition **over time** | [`md-area-chart`](/components/area-chart/) with `stack="percentage"` |
+| Values that don't sum to a meaningful whole | [`md-bar-chart`](/components/bar-chart/) |
+| More than ~6 categories | [`md-bar-chart`](/components/bar-chart/), sorted |
+| Precise comparison between similar slices | [`md-bar-chart`](/components/bar-chart/) — angles are hard to compare |
+| Exact values users must read | [`md-table`](/components/table/) |
+
+:::caution[Angle is the hardest encoding to compare]
+People read length far more accurately than angle or area. Two slices within a
+few percent of each other look identical. If the reader's job is to rank the
+categories, a sorted bar chart does it better — reach for a pie when the story
+is "this one is most of it".
+:::
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Donut | `inner-radius="60%"` |
+| Centre KPI | the `center` slot (donut only) |
+| Half-pie gauge | `start-angle="180" end-angle="0"` |
+| Separate the slices | `padding-angle` |
+| Pull one slice out | `selected: true` on the datum |
+| One-colour ramp | `monochrome` |
+| Depth on the slices | `gradient` |
+| Values on the slices | `show-labels` (plus `label-mode`) |
+| Concentric rings | `ring-widths` |
+| Click-through | `mdSliceClick` (plus `drill()`) |
+| Async data | `loading` (plus `loading-label`) |
+| Reduced motion | `no-animation`, or `animation="none"` |
+
+## Variants
+
+### Pie
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="Pie"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 300px;"
+  storyId="charts-pie-chart--pie"
+  attrs={{ legend: 'bottom' }}
+  fixture={{
+    data: [
+      { label: 'A', value: 320 },
+      { label: 'B', value: 240 },
+      { label: 'C', value: 180 },
+      { label: 'D', value: 120 },
+    ],
+  }}
+/>
+
+### Donut
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="Donut with centre KPI"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 320px;"
+  storyId="charts-pie-chart--donut"
+  attrs={{ 'inner-radius': '60%', legend: 'bottom' }}
+  fixture={{
+    data: [
+      { label: 'Direct', value: 320 },
+      { label: 'Organic search', value: 240 },
+      { label: 'Paid social', value: 180 },
+      { label: 'Referral', value: 120 },
+    ],
+  }}
+  innerHtml={`<div slot="center">
+    <div style="font-size: 28px; font-weight: 600; line-height: 1;">860</div>
+    <div style="font-size: 12px; opacity: 0.7;">visitors</div>
+  </div>`}
+/>
+
+### Semi-circle (gauge)
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="Storage gauge"
+  attrs={{
+    'inner-radius': '60%',
+    'outer-radius': '95%',
+    'start-angle': 180,
+    'end-angle': 0,
+    legend: 'none',
+    'show-labels': false,
+    style: '--md-pie-chart-aspect-ratio: 2 / 1;',
+  }}
+  fixture={{
+    data: [
+      { label: 'Used', value: 68, color: 'primary' },
+      { label: 'Free', value: 32, color: 'surface-variant' },
+    ],
+  }}
+  innerHtml={`<div slot="center" style="margin-block-start: -32px;">
+    <div style="font-size: 32px; font-weight: 600; line-height: 1;">68%</div>
+    <div style="font-size: 12px; opacity: 0.7;">storage used</div>
+  </div>`}
+/>
+
+### Exploded slice
+
+Set `selected: true` on a datum to pull it outward — useful for "this slice matters
+most" stories.
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="Exploded slice"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 300px;"
+  storyId="charts-pie-chart--exploded"
+  attrs={{ 'padding-angle': 2 }}
+  fixture={{
+    data: [
+      { label: 'Direct', value: 320, selected: true },
+      { label: 'Organic search', value: 240 },
+      { label: 'Paid social', value: 180 },
+      { label: 'Referral', value: 120 },
+    ],
+  }}
+/>
+
+## Geometry
+
+Four numbers shape every variant. They're independent, so a half-pie donut with
+separated slices is just all four set at once.
+
+<div class="md-table-scroll">
+
+| Prop | Effect |
+|---|---|
+| `inner-radius` | Size of the hole. `0` is a pie, `60%` a donut |
+| `outer-radius` | Where the slices end, as a fraction of the available radius |
+| `start-angle` / `end-angle` | The arc the chart sweeps. `180` → `0` is a half-pie |
+| `padding-angle` | Degrees of gap between slices |
+| `corner-radius` | Rounds the slice ends |
+
+</div>
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="padding-angle separates the slices"
+  storyId="charts-pie-chart--padding-angles"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 300px;"
+  attrs={{ 'padding-angle': 4, 'corner-radius': 6, 'inner-radius': '45%', legend: 'right' }}
+  fixture={{
+    data: [
+      { label: 'Direct', value: 320 },
+      { label: 'Organic search', value: 240 },
+      { label: 'Paid social', value: 180 },
+      { label: 'Referral', value: 120 },
+    ],
+  }}
+/>
+
+:::caution[Padding steals angle from the data]
+Every gap comes out of the slices themselves, so a large `padding-angle` across
+many slices measurably distorts the shares. Keep it to a couple of degrees, and
+drop it entirely when the smallest slice is already thin.
+:::
+
+### Semi-circle donut
+
+A half-pie reads as a gauge: the arc is a track, the filled part a reading. Set
+the aspect ratio to `2 / 1` so the box matches the shape and the chart doesn't
+reserve empty space below.
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="A gauge built from a half donut"
+  storyId="charts-pie-chart--semi-circle-donut"
+  style="--md-pie-chart-aspect-ratio: 2 / 1;"
+  attrs={{ 'start-angle': 180, 'end-angle': 0, 'inner-radius': '62%', 'outer-radius': '95%', legend: 'bottom', 'show-labels': false }}
+  fixture={{
+    data: [
+      { label: 'Complete', value: 72, color: 'primary' },
+      { label: 'Remaining', value: 28, color: 'surface-variant' },
+    ],
+  }}
+/>
+
+### Variable radius
+
+A datum can carry its own `radius` (0–1), so the slice's **angle** and its
+**length** encode two different measures — area by angle, density by reach. It
+is a rose / Nightingale chart, and it earns its keep only when the second
+measure genuinely matters; otherwise it just looks busy.
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="Angle = area, radius = density"
+  storyId="charts-pie-chart--variable-radius"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 460px;"
+  attrs={{ 'inner-radius': '12%', 'outer-radius': '95%', legend: 'bottom', 'show-labels': false }}
+  fixture={{
+    data: [
+      { label: 'Netherlands', value: 41, radius: 1 },
+      { label: 'Belgium', value: 30, radius: 0.73 },
+      { label: 'Germany', value: 357, radius: 0.53 },
+      { label: 'France', value: 551, radius: 0.29 },
+      { label: 'Spain', value: 505, radius: 0.22 },
+      { label: 'Sweden', value: 450, radius: 0.06 },
+    ],
+  }}
+/>
+
+### Nested rings
+
+A slice can carry **`children`**, drawn as a second ring outside it that
+subdivides exactly its own arc — so the inner ring answers *which browser* and
+the outer one *which version of it*, and the two can never disagree. Nesting the
+data **is** the API; there is no "enable rings" prop.
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="Families inside, versions outside"
+  storyId="charts-pie-chart--nested-rings"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 520px;"
+  attrs={{
+    label: 'Browser market share, January 2022',
+    subtitle: 'Families inside, versions outside · StatCounter',
+    'title-align': 'center',
+    'inner-radius': '28%',
+    'outer-radius': '72%',
+    legend: 'none',
+  }}
+  fixture={{
+    data: [
+      {
+        label: 'Chrome',
+        value: 62.74,
+        children: [
+          { label: 'v97.0', value: 36.89 },
+          { label: 'v96.0', value: 18.16 },
+          { label: 'v95.0', value: 0.54 },
+          { label: 'Other', value: 7.15 },
+        ],
+      },
+      {
+        label: 'Safari',
+        value: 9.86,
+        children: [
+          { label: 'v15.2', value: 2.01 },
+          { label: 'v15.1', value: 2.29 },
+          { label: 'v14.1', value: 2.48 },
+          { label: 'v13.1', value: 1.17 },
+          { label: 'Other', value: 1.91 },
+        ],
+      },
+      {
+        label: 'Edge',
+        value: 9.17,
+        children: [
+          { label: 'v97', value: 6.62 },
+          { label: 'v96', value: 2.55 },
+        ],
+      },
+      {
+        label: 'Firefox',
+        value: 7.5,
+        children: [
+          { label: 'v96.0', value: 4.17 },
+          { label: 'v95.0', value: 3.33 },
+        ],
+      },
+      { label: 'Other', value: 10.73 },
+    ],
+  }}
+  fnFixture={{
+    valueFormatter: "(v) => v.toFixed(2) + '%'",
+  }}
+/>
+
+A child with no `color` of its own takes a **lighter shade of its parent's**, so
+a family reads as one block with its versions as gradations. Hovering a version
+keeps its family lit too — they are the same answer, and dimming one would imply
+they were unrelated.
+
+A parent's `value` is only the label; the ring geometry comes from the children,
+so a child slice's share is measured **against its own level**, not the whole
+tree — which holds every ring at once and would count each parent twice.
+
+Internally the tree is flattened into a plain indexed list carrying `level` and
+`parent`, because every consumer-facing address is an index: tooltips, legend
+toggles, `mdChartClick` and the screen-reader table all say *slice N*. Keyboard
+walking follows the tree, so <kbd>→</kbd> from a family steps **into** its first
+version rather than across to the next family.
+
+`ring-widths` then tunes how the radius is divided between levels — one number
+per ring, read as ratios. It is a property, not an attribute:
+
+```html
+<md-pie-chart id="rings" inner-radius="28%" outer-radius="72%"></md-pie-chart>
+
+<script type="module">
+  const chart = document.querySelector('#rings');
+  chart.ringWidths = [3, 1]; // inner band three times the outer one
+  chart.data = [
+    { label: 'Chrome', value: 62.74, children: [{ label: 'v97.0', value: 36.89 }] },
+  ];
+</script>
+```
+
+The default is deliberately **not** an even split: every ring but the outermost
+puts its labels *inside* its own band, so it must be wide enough to hold a word,
+while the outermost labels sit on leader lines and need no more than their arc.
+
+## Labels
+
+`show-labels` prints on the slices; `label-mode` picks what: `value` (default),
+`name`, or `both`. A slice too small to hold its label doesn't get one rather
+than spilling over its neighbours.
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="label-mode='both'"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 320px;"
+  attrs={{ 'show-labels': true, 'label-mode': 'both', legend: 'none', 'inner-radius': '35%' }}
+  fixture={{
+    data: [
+      { label: 'Direct', value: 320 },
+      { label: 'Organic', value: 240 },
+      { label: 'Paid', value: 180 },
+    ],
+  }}
+/>
+
+## Slice colour
+
+Each datum's `color` takes an **MD3 role name** or any CSS colour. Without one,
+slices cycle the theme palette in order.
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="Explicit roles per slice"
+  storyId="charts-pie-chart--custom-colors"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 320px;"
+  attrs={{ 'inner-radius': '55%', legend: 'right' }}
+  fixture={{
+    data: [
+      { label: 'Primary', value: 320, color: 'primary' },
+      { label: 'Tertiary', value: 240, color: 'tertiary' },
+      { label: 'Secondary', value: 180, color: 'secondary' },
+      { label: 'Explicit hex', value: 120, color: '#e0b400' },
+    ],
+  }}
+/>
+
+### Monochrome
+
+`monochrome` ramps one hue from dark to light across the slices, in data order.
+Because the ramp follows the order, it reads as a **sequence** — sorted shares,
+stages of a funnel — and stops being arbitrary decoration.
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="One hue, ramped by order"
+  storyId="charts-pie-chart--monochrome"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 320px;"
+  attrs={{ monochrome: true, legend: 'bottom', 'inner-radius': '45%' }}
+  fixture={{
+    data: [
+      { label: 'Chrome', value: 63 },
+      { label: 'Safari', value: 20 },
+      { label: 'Edge', value: 9 },
+      { label: 'Firefox', value: 5 },
+      { label: 'Other', value: 3 },
+    ],
+  }}
+/>
+
+### Gradient
+
+`gradient` shades each slice from its own colour, giving the ring depth without
+changing what the colours mean.
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="gradient"
+  storyId="charts-pie-chart--gradient-fill"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 320px;"
+  attrs={{ gradient: true, 'inner-radius': '40%', legend: 'right' }}
+  fixture={{
+    data: [
+      { label: 'Direct', value: 320 },
+      { label: 'Organic search', value: 240 },
+      { label: 'Paid social', value: 180 },
+      { label: 'Referral', value: 120 },
+    ],
+  }}
+/>
+
+## Legend placement
+
+`legend` takes an anchor — `top`, `bottom`, `right`, `left`, `top-end` and so on
+— or `none`. A side legend suits a pie, because the chart is square and the
+gutter beside it would otherwise be empty.
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="legend='left'"
+  storyId="charts-pie-chart--legend-positions"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 300px;"
+  attrs={{ legend: 'left', 'inner-radius': '50%' }}
+  fixture={{
+    data: [
+      { label: 'Direct', value: 320 },
+      { label: 'Organic search', value: 240 },
+      { label: 'Paid social', value: 180 },
+    ],
+  }}
+/>
+
+## Animating a race
+
+A donut race replays a *reshuffle* rather than a climb: the ring is one year's
+total and the arcs are each country's share of it. Where a line race shows values
+rising, this shows the composition changing — the UK holds three quarters of the
+total in 1965, France climbs through the 1980s, Germany's arc closes to nothing.
+
+The cursor is a **year**, not a frame index, so the slider reads as the axis it
+controls. Values are interpolated between yearly samples, which is what makes the
+arcs glide instead of stepping once a second.
+
+<ComponentDemo
+  hideCode
+  html={`<div style="inline-size:100%; min-inline-size:0; display:grid; gap:12px;">
+  <div style="display:flex; align-items:center; gap:16px; min-inline-size:0;">
+    <md-icon-button id="donut-play" variant="filled" shape="round" icon="play_arrow"
+                    aria-label="Play or pause"></md-icon-button>
+    <md-slider id="donut-slider" min="1965" max="2024" step="0.01" value="1965"
+               style="flex:1; min-inline-size:0;" aria-label="Year"></md-slider>
+  </div>
+  <md-pie-chart id="donut-race" label="Nuclear generation by country" inner-radius="40%"
+                legend="right" no-animation padding-angle="1"
+                style="inline-size:100%; min-inline-size:0; --md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 340px;">
+    <div slot="center">
+      <div id="donut-year" style="font-size:28px; font-weight:600; line-height:1;">1965</div>
+      <div id="donut-total" style="font-size:12px; opacity:0.7;">—</div>
+    </div>
+  </md-pie-chart>
+</div>
+<script type="module">
+  const FIRST = 1965, LAST = 2024;
+  const SPEED = (LAST - FIRST) / 14000;      // full run about 14s
+  const SERIES = [
+    { label: 'United States', data: [3.85,5.81,8.06,13.19,14.66,22.95,40.11,56.94,87.87,119.97,181.58,201.16,264.09,290.95,268.58,264.33,287.02,297.66,309.13,344.88,403.88,435.83,479.23,554.71,557.22,607.22,644.81,651.34,642.41,674.15,708.84,710.24,661.73,709.16,766.58,753.89,768.83,780.06,763.73,788.53,781.99,787.22,806.42,806.21,798.85,806.97,790.2,769.33,789.02,797.17,797.18,805.69,804.95,807.08,809.41,789.88,779.65,771.54,774.87,781.86] },
+    { label: 'United Kingdom', data: [15.13,20.22,23.28,26.19,29.12,26.01,27.55,29.38,28.0,33.62,30.34,36.16,40.02,37.22,38.31,37.02,37.97,43.97,49.93,53.98,61.09,59.08,55.24,63.46,71.73,65.75,70.54,76.81,89.35,88.28,88.96,94.67,98.15,99.49,95.13,85.06,90.09,87.85,88.69,80.0,81.62,75.45,63.03,52.49,69.1,62.14,68.98,70.41,70.61,63.75,70.34,71.73,70.34,65.06,56.18,50.24,46.1,47.4,40.6,40.59] },
+    { label: 'France', data: [0.9,1.4,2.08,3.08,3.6,5.71,9.33,14.59,14.75,14.71,18.25,15.78,17.94,30.45,39.96,61.25,105.33,108.92,144.26,191.23,224.1,254.16,265.52,275.52,303.93,314.08,331.34,338.45,368.19,359.98,377.23,397.34,395.48,387.99,394.24,415.16,421.08,436.76,441.07,448.24,451.53,450.19,439.73,439.45,409.74,428.52,442.39,425.41,423.68,436.48,437.43,403.2,398.36,412.94,399.01,353.83,379.36,294.73,338.2,380.45] },
+    { label: 'Germany', data: [0.12,0.27,1.23,1.77,4.94,6.49,6.22,9.52,12.11,14.46,24.14,29.53,41.26,43.87,52.06,55.59,65.53,74.43,78.06,104.32,138.64,130.49,141.72,156.82,161.67,152.47,147.23,158.8,153.28,150.7,153.09,160.02,170.33,161.64,170.0,169.61,171.3,164.84,165.06,167.07,163.05,167.27,140.53,148.49,134.93,140.56,107.97,99.46,97.29,97.13,91.79,84.63,76.32,76.0,75.07,64.38,69.13,34.71,7.22,0.0] },
+    { label: 'Japan', data: [0.03,0.58,0.63,1.04,1.08,4.58,8.01,9.48,9.71,19.7,25.12,34.08,31.66,59.31,70.39,82.59,87.82,102.43,114.29,134.26,159.58,165.37,188.6,173.9,185.81,194.57,208.69,217.04,247.7,258.25,286.89,296.5,321.16,325.97,317.23,319.12,320.54,314.26,230.08,285.87,293.04,304.29,279.01,251.74,274.65,292.36,162.93,17.99,14.6,0.0,4.52,17.68,29.07,49.11,65.64,43.0,61.22,51.77,77.46,84.91] },
+  ];
+  const LASTI = SERIES[0].data.length - 1;
+
+  const chart  = document.getElementById('donut-race');
+  const slider = document.getElementById('donut-slider');
+  const play   = document.getElementById('donut-play');
+  const yearEl = document.getElementById('donut-year');
+  const totEl  = document.getElementById('donut-total');
+
+  let progress = FIRST, raf = 0, last = 0, dragging = false;
+
+  // Interpolating between yearly samples yields long floats (776.431). On a
+  // slice that reads as false precision and overflows the band, so round.
+  chart.valueFormatter = (v) => Math.round(v ?? 0).toLocaleString();
+
+  // A FIXED one decimal, not "up to one": dropping the decimal at a whole
+  // number shortens the string and the centred line jumps under it.
+  const fmt = (v) => v.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+  function apply() {
+    const i = Math.min(LASTI, Math.max(0, Math.floor(progress - FIRST)));
+    const f = Math.min(1, Math.max(0, progress - FIRST - i));
+    const at = (arr) => (i >= LASTI ? arr[LASTI] : arr[i] + (arr[i + 1] - arr[i]) * f);
+    const values = SERIES.map((sr) => ({ label: sr.label, value: Math.max(0, at(sr.data)) }));
+    chart.data = values;
+    yearEl.textContent = String(Math.round(progress));
+    totEl.textContent = fmt(values.reduce((a, v) => a + v.value, 0)) + ' TWh';
+    if (!dragging) slider.value = progress;
+  }
+
+  function stop() { cancelAnimationFrame(raf); raf = 0; last = 0; play.icon = 'play_arrow'; }
+
+  function frame(now) {
+    if (!chart.isConnected) return stop();
+    if (!last) last = now;
+    progress = Math.min(LAST, progress + (now - last) * SPEED);
+    last = now;
+    apply();
+    if (progress >= LAST) return stop();
+    raf = requestAnimationFrame(frame);
+  }
+
+  play.addEventListener('click', () => {
+    if (raf) return stop();
+    if (progress >= LAST) progress = FIRST;
+    play.icon = 'pause';
+    last = 0;
+    raf = requestAnimationFrame(frame);
+  });
+
+  slider.addEventListener('mdDragStart', () => { dragging = true; stop(); });
+  slider.addEventListener('mdDragEnd', () => { dragging = false; });
+  slider.addEventListener('mdInput', (e) => { stop(); progress = e.detail.value; apply(); });
+
+  apply();
+\x3C/script>`}
+  label="Press play, or drag the year"
+  storyId="charts-pie-chart--donut-race"
+/>
+
+## Drill-down
+
+`drill(index)` plays the transition **between two levels of your own data**. The
+chart has no idea your slices form a hierarchy: you keep the tree, decide what
+the next level is, and assign `data` — `drill()` only makes the swap read as a
+descent rather than a jump cut.
+
+<ComponentDemo
+  hideCode
+  html={`<div style="inline-size:100%; min-inline-size:0; display:grid; gap:16px;">
+  <div style="display:flex; align-items:center; gap:12px; min-inline-size:0;">
+    <md-button id="pie-up" variant="outlined" disabled>Back</md-button>
+    <md-breadcrumbs id="pie-trail" separator="›" aria-label="Drill-down trail" style="min-block-size:32px;"></md-breadcrumbs>
+  </div>
+  <md-pie-chart id="pie-drill" legend="right" inner-radius="45%"
+                style="inline-size:100%; min-inline-size:0; --md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 320px;"></md-pie-chart>
+</div>
+<script type="module">
+  const TREE = [
+    { label: 'Direct', value: 320, children: [
+      { label: 'Bookmarks', value: 180 }, { label: 'Typed URL', value: 140 } ] },
+    { label: 'Organic search', value: 240, children: [
+      { label: 'Google', value: 190 }, { label: 'Bing', value: 32 }, { label: 'Other', value: 18 } ] },
+    { label: 'Paid social', value: 180, children: [
+      { label: 'Instagram', value: 96 }, { label: 'LinkedIn', value: 54 }, { label: 'X', value: 30 } ] },
+    { label: 'Referral', value: 120 },
+  ];
+
+  const chart = document.getElementById('pie-drill');
+  const back  = document.getElementById('pie-up');
+  const trail = document.getElementById('pie-trail');
+
+  let level = TREE;
+  let parentIndex = -1;
+
+  function show(items, path) {
+    chart.data = items.map((d) => ({ label: d.label, value: d.value }));
+    back.disabled = parentIndex < 0;
+    trail.innerHTML = path
+      .map((label, k) => '<md-breadcrumb-item href="#"' + (k === path.length - 1 ? ' current' : '') +
+                         '>' + label + '</md-breadcrumb-item>')
+      .join('');
+  }
+
+  chart.addEventListener('mdSliceClick', async (e) => {
+    const i = e.detail.dataIndex;
+    const node = level[i];
+    if (!node?.children?.length) return;      // a leaf — nothing below
+    await chart.drill(i);                      // animate, then hand over the level
+    parentIndex = i;
+    level = node.children;
+    show(level, ['All traffic', node.label]);
+  });
+
+  back.addEventListener('click', async () => {
+    if (parentIndex < 0) return;
+    await chart.drill(parentIndex, 'up');
+    parentIndex = -1;
+    level = TREE;
+    show(level, ['All traffic']);
+  });
+
+  trail.addEventListener('click', (e) => {
+    const crumb = e.target.closest?.('md-breadcrumb-item');
+    if (!crumb || crumb.hasAttribute('current')) return;
+    e.preventDefault();
+    back.click();
+  });
+
+  show(level, ['All traffic']);
+\x3C/script>`}
+  label="Click a slice to descend"
+  storyId="charts-pie-chart--drilldown"
+/>
+
+Only three of the four slices lead anywhere; clicking *Referral* does nothing,
+because a slice with no children is a leaf and the handler returns early.
+
+## Loading and empty states
+
+`loading` shows an opaque overlay over the plot — opaque because the engine
+still draws a placeholder ring when there is no data. An empty `data` array
+shows `label-empty` instead. The two never stack.
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="loading"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 260px;"
+  attrs={{ label: 'Traffic', loading: true, 'loading-label': 'Fetching traffic…' }}
+  fixture={{ data: [] }}
+/>
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="Slotted — an indeterminate linear indicator"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 260px;"
+  attrs={{ label: 'Traffic', loading: true }}
+  fixture={{ data: [] }}
+  innerHtml={`<div slot="loading" style="inline-size: min(320px, 70%); display: grid; gap: 12px; justify-items: center;">
+  <md-progress-indicator variant="linear" indeterminate label="Fetching traffic" style="inline-size: 100%;"></md-progress-indicator>
+  <span>Fetching traffic…</span>
+</div>`}
+/>
+
+:::caution[Use the indicator components, not your own spinner]
+`md-progress-indicator` (linear or circular) and `md-loading-indicator` already
+carry the MD3 motion tokens, the reduced-motion fallback and the right ARIA. A
+hand-rolled spinner in a `loading` slot gets none of that.
+:::
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="Empty state"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 260px;"
+  attrs={{ label: 'Traffic', 'label-empty': 'No traffic recorded yet' }}
+  fixture={{ data: [] }}
+/>
+
+
+Slot your own into `loader` (the older name `loading` still works) when the
+default spinner isn't the right affordance — a circular
+[`md-progress-indicator`](/components/progress-indicator/), a branded mark, a
+skeleton.
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="A circular md-progress-indicator slotted over the default loader"
+  attrs={{ label: 'Share', loading: true, 'loading-label': 'Fetching share…' }}
+  fixture={{ data: [] }}
+  innerHtml={`<md-progress-indicator slot="loader" variant="circular" indeterminate size="40" label="Loading"></md-progress-indicator>`}
+/>
+
+## Tooltips
+
+`tooltip` selects the trigger: `item` reports the slice under the pointer,
+`none` disables pointer hover — keyboard navigation and the live region keep
+working either way. A pie has no category axis, so there is no `axis` reading to
+give: every hover is about one slice.
+
+### Custom tooltip
+
+`tooltipRenderer` replaces the card's **content**; the chart keeps owning the
+card. Return a `Node`, a `string` (set as text), `{ unsafeHtml }`, `undefined`
+to fall back to the built-in card, or `null` to draw none. See
+[the area chart's custom tooltip](/components/area-chart/#custom-tooltip) for the
+field-by-field reference — the contract is identical across charts.
+
+<ChartDemo
+  tag="md-pie-chart"
+  label="tooltipRenderer — share of the whole"
+  style="--md-pie-chart-aspect-ratio: auto; --md-pie-chart-block-size: 320px;"
+  attrs={{ label: 'Traffic', 'inner-radius': '45%', legend: 'right' }}
+  fixture={{
+    data: [
+      { label: 'Direct', value: 320 },
+      { label: 'Organic search', value: 240 },
+      { label: 'Paid social', value: 180 },
+      { label: 'Referral', value: 120 },
+    ],
+  }}
+  fnFixture={{
+    tooltipRenderer: `(ctx) => {
+      const el = (tag, css, text) => {
+        const n = document.createElement(tag);
+        if (css) n.style.cssText = css;
+        if (text != null) n.textContent = text;
+        return n;
+      };
+
+      const row = ctx.series[0];
+      if (!row) return undefined;                 // fall back to the built-in card
+
+      const card = el('div', 'min-width:170px;font-variant-numeric:tabular-nums');
+      card.append(el('div',
+        'font-size:0.68em;letter-spacing:0.1em;text-transform:uppercase;opacity:0.55',
+        row.label));
+
+      const head = el('div', 'display:flex;align-items:baseline;gap:5px;margin:1px 0 6px');
+      head.append(el('span', 'font-size:1.5em;font-weight:700;line-height:1.05', row.formattedValue));
+      head.append(el('span', 'font-size:0.76em;opacity:0.55', 'visits'));
+      card.append(head);
+
+      const swatch = el('div', 'display:grid;grid-template-columns:9px 1fr;gap:9px;align-items:center');
+      swatch.append(
+        el('span', 'width:9px;height:9px;border-radius:3px;background:' + row.color),
+        el('span', 'opacity:0.7', 'share of all traffic'),
+      );
+      card.append(swatch);
+      return card;
+    }`,
+  }}
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdSliceClick` | no | `MdChartClickDetail<MdPieDatum>` | A slice is clicked |
+| `mdLegendClick` | no | `{ dataIndex, selected }` | A legend chip toggles a slice |
+| `mdReady` | no | `void` | The engine has mounted and drawn |
+
+### Event payloads
+
+**`MdChartClickDetail<MdPieDatum>`** — `mdSliceClick`
+
+<div class="md-table-scroll">
+
+| Field | Type | Meaning |
+|---|---|---|
+| `dataIndex` | `number` | Index of the slice — the value you pass to `drill()` |
+| `value` | `number \| null` | Raw value of the slice |
+| `series` | `MdPieDatum` | The original datum you passed in |
+| `nativeEvent` | `PointerEvent \| MouseEvent \| KeyboardEvent` | A `KeyboardEvent` when the slice was activated from the keyboard |
+
+</div>
+
+:::tip[Gate exports on `mdReady`]
+`toDataURL()` immediately after setting data returns an image of nothing — the
+chart may not have drawn yet.
+:::
+
+## Slots
+
+| Slot     | Description                                       |
+| -------- | ------------------------------------------------- |
+| `header` | Renders above the plot (toolbar, filter chips)    |
+| `center` | Centred in donut variants — perfect for KPI numbers |
+| `empty`  | Empty-state content                                |
+| `footer` | Renders below the plot                            |
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- `role="figure"` with an accessible name that includes the slice count.
+- A **screen-reader-only data table** mirrors every slice — label, value and
+  share — so the numbers are readable without seeing the shape.
+- The plot is focusable: arrow keys walk the slices, Home and End jump to the
+  first and last, Escape leaves. `label-plot` announces that on focus and
+  `label-point` templates each move.
+- Colour is never the only channel: the legend and the a11y table both name the
+  slices, so a colour-blind reader is not asked to match hues.
+
+## RTL, density & i18n
+
+- **RTL** — the legend, the header and the tooltip mirror; the slices sweep from
+  the same start angle either way, because a clock does not reverse in Arabic.
+- **Density** — `density` (0 to −4) tightens padding, the legend and the label
+  type. It also inherits from a global `data-density` ancestor.
+- **i18n** — set `locale` and use `Intl` inside `valueFormatter`. Translate
+  `label`, `subtitle`, `label-empty`, `label-plot` and `label-point`;
+  `label-point` uses `%x%` / `%values%` tokens that must survive translation
+  verbatim, since they are replaced by a literal string match.
+
+In Storybook: [dark theme](/storybook/?path=/story/charts-pie-chart--dark-theme) and
+[custom CSS](/storybook/?path=/story/charts-pie-chart--custom-css).
+
+## Theming
+
+| Custom property | Purpose |
+|---|---|
+| `--md-pie-chart-block-size` / `-min-block-size` / `-aspect-ratio` | Chart box |
+| `--md-pie-chart-background` / `-padding` / `-shape` | Surface |
+| `--md-pie-chart-center-color` | Donut centre text |
+| `--md-pie-chart-empty-color` / `-empty-background` / `-empty-font` / `-empty-font-size` / `-empty-icon-size` | Empty state |
+
+```css
+md-pie-chart.dashboard {
+  --md-pie-chart-background: var(--md-sys-color-surface-container);
+  --md-pie-chart-padding: 16px;
+  --md-pie-chart-shape: 16px;
+  --md-pie-chart-center-color: var(--md-sys-color-primary);
+}
+```
+
+The axis-free chart still honours the family-wide
+`--md-chart-axis-color` / `--md-chart-grid-color` where it draws chrome, and it
+reads MD3 colour roles for the slices — so a theme switch re-tints without any
+per-chart configuration.
+
+:::caution[Charts don't repaint on theme change by themselves]
+Switching theme after the chart has drawn leaves the old colours on the canvas —
+`resize()` early-returns. Reassign `data` to force a repaint.
+:::
+
+**CSS parts** — `header`, `canvas`, `center`, `empty`, `loading`, `footer`, plus
+`tooltip` (built at runtime by the engine).
+
+
+## Related
+
+- [`md-bar-chart`](/components/bar-chart/) — ranking categories
+- [`md-area-chart`](/components/area-chart/) — composition over time
+- [`md-progress-indicator`](/components/progress-indicator/) — a single value, without a chart
+
+<LLMContext tag="md-pie-chart" />

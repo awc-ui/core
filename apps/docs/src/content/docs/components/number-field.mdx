@@ -1,0 +1,524 @@
+---
+title: Number Field
+description: "Material Design 3 number input — locale-aware Intl formatting, arrow/stepper/wheel stepping, and native form participation with the raw number"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/number-field.json";
+
+**A number, typed or stepped.** An [`md-text-field`](/components/text-field/)
+with locale-aware `Intl.NumberFormat` display (currency, percent, units,
+grouping), arrow-key / stepper-button / wheel stepping, and native form
+participation with the **raw numeric value**.
+
+<ComponentDemo
+  html={`<md-number-field label="Quantity" min="0" max="99" value="5" style="inline-size: 260px;"></md-number-field>`}
+  label="Live preview — type, use the steppers, or press ↑/↓"
+  storyId="text-inputs-number-field--playground"
+/>
+
+:::note[Not a Material Design 3 component]
+M3 has no number-field page, so there is no spec to point at. This is a plain
+text input plus pointer-only steppers on M3 text-field visuals; the numeric
+behavior — Intl formatting, stepping, clamping — is this library's own
+contract.
+:::
+
+## Install
+
+<ComponentSetup tag="md-number-field" example="" />
+
+## When to use
+
+- A numeric quantity the user types **or** nudges: counts, amounts, prices,
+  percentages, measurements.
+- Values that benefit from locale formatting on blur (`1.234,5`, `12,50 €`,
+  `50%`) while the app always receives the raw number.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| Picking from a small numeric range visually | [`md-slider`](/components/slider/) |
+| A 1–5 style score | [`md-rating`](/components/rating/) |
+| Free text that merely *contains* digits (phone, ZIP) | [`md-text-field`](/components/text-field/) with `restrict` |
+| Dates / times | [`md-date-picker`](/components/date-picker/) / [`md-time-picker`](/components/time-picker/) |
+| A read-only numeric readout | [`md-meter`](/components/meter/) or plain text |
+
+## Variants
+
+<ComponentDemo
+  html={`<md-number-field variant="filled" label="Filled" value="12" style="inline-size: 220px;"></md-number-field>
+<md-number-field variant="outlined" label="Outlined" value="12" style="inline-size: 220px;"></md-number-field>`}
+  label="Filled and outlined"
+/>
+
+## Steppers
+
+`steppers` places the +/− buttons: `inline` (in the trailing slot, default),
+`split` (tonal circles flanking the field), or `none` (keyboard/wheel only).
+Press-and-hold auto-repeats (400ms delay, then 60ms ticks), the buttons
+auto-disable at `min`/`max`, and they are **pointer-only** (`tabindex="-1"`)
+— the input itself is the keyboard surface.
+
+<ComponentDemo
+  html={`<md-number-field steppers="inline" label="Inline (default)" value="3" style="inline-size: 260px;"></md-number-field>
+<md-number-field steppers="split" label="Split" value="3" style="inline-size: 280px;"></md-number-field>
+<md-number-field steppers="none" label="None (keyboard only)" value="3" style="inline-size: 260px;"></md-number-field>`}
+  label="Stepper placements"
+/>
+
+## Formatting & locale
+
+`format-options` takes `Intl.NumberFormatOptions` **either way**: as a property
+(`el.formatOptions = { style: 'currency', currency: 'EUR' }`) or as a JSON
+attribute (`format-options='{"style":"currency","currency":"EUR"}'`), so a
+plain-HTML page needs no script. Malformed JSON warns once and falls back to
+plain number formatting. Invalid **Intl** options (`style: 'currency'` without a
+`currency`) are survivable too, but fall back **silently** — check them against
+`Intl.NumberFormat` if a number comes out unformatted. `locale` picks the formatting locale (empty = the
+runtime locale). Parsing accepts the locale's group/decimal separators, signs,
+symbols, and native numerals (e.g. Arabic-Indic digits under `ar-SA`).
+
+<ComponentDemo
+  html={`<md-number-field label="Preis (EUR)" locale="de-DE" step="0.5" value="1234.5"
+  format-options='{"style":"currency","currency":"EUR"}'
+  style="inline-size: 260px;"></md-number-field>
+<md-number-field id="nf-pct" label="Discount" step="0.01" min="0" max="1" value="0.5" style="inline-size: 260px;"></md-number-field>
+\x3Cscript type="module">
+  // The same options as a property — both forms are supported.
+  document.getElementById('nf-pct').formatOptions = { style: 'percent' };
+\x3C/script>`}
+  label="Currency via the JSON attribute, percent via the property"
+/>
+
+:::caution[Percent keeps Intl semantics]
+A displayed `50%` **is the value `0.5`**, and `step` applies to the raw value —
+use `step="0.01"` for one-percent-point steps.
+:::
+
+## Stepping
+
+| Interaction | Amount | Notes |
+|---|---|---|
+| `ArrowUp` / `ArrowDown` | `step` (default 1) | Steps from the parsed visible text |
+| `Alt` + arrows | `small-step` (default 0.1) | Fine adjustment |
+| `Shift` + arrows | `large-step` (default 10) | Coarse adjustment |
+| `Home` / `End` | jump to `min` / `max` | Only when the bound is defined |
+| Stepper press-and-hold | modifier-aware per tick | 400ms delay, 60ms interval |
+| Wheel (`allow-wheel-scrub`) | modifier-aware | Only while the input has focus |
+
+Stepping an **empty** field seeds from 0, then clamps into range. Interactive
+stepping **always clamps** — `allow-out-of-range` exempts only typed text from
+the blur clamp. `snap-on-step` aligns stepped results to multiples of the step
+(base = `min` when defined), snapping *before* clamping so non-aligned bounds
+stay reachable.
+
+**Typed and stepped values take deliberately different paths:**
+
+| | Typed text | Stepping (arrows, steppers, wheel, `stepUp()`) |
+|---|---|---|
+| While in progress | Kept verbatim, parsed leniently | n/a — the value is generated |
+| Commits | On blur or `Enter` | Immediately |
+| Clamping | At commit, unless `allow-out-of-range` | **Always**, whatever that prop says |
+| Snapping | Never | With `snap-on-step`, before clamping |
+| Float cleanup | Never — your digits survive | `toPrecision(15)`, so `0.1 + 0.2` commits as `0.3` |
+
+`Home` / `End` are a third path: they **jump** to `min` / `max` rather than
+stepping — clamped and float-cleaned, never snapped, and only when that bound is
+defined.
+
+`stepUp(times?)` and `stepDown(times?)` do the same work programmatically and
+report `reason: 'none'`.
+
+<ComponentDemo
+  html={`<md-number-field label="0–10" min="0" max="10" value="10" supporting-text="Increment disables at max" style="inline-size: 260px;"></md-number-field>
+<md-number-field label="Snap to 25s" step="25" snap-on-step value="30" supporting-text="ArrowUp from 30 lands on 50" style="inline-size: 260px;"></md-number-field>`}
+  label="Bounds and snapping"
+/>
+
+:::note[Scrub area]
+A drag-to-scrub surface — dragging anywhere on the field under pointer lock —
+is deliberately **not implemented**: a niche affordance whose gesture depends on
+pointer lock, whose behaviour is unreliable in Safari. Wheel stepping via
+`allow-wheel-scrub` covers the "nudge without typing" case.
+:::
+
+## States
+
+<ComponentDemo
+  html={`<md-number-field label="Enabled" value="5" style="inline-size: 220px;"></md-number-field>
+<md-number-field label="Disabled" disabled value="5" style="inline-size: 220px;"></md-number-field>
+<md-number-field label="Read-only" readonly value="5" style="inline-size: 220px;"></md-number-field>
+<md-number-field label="Error" required error error-text="Please enter a quantity" style="inline-size: 220px;"></md-number-field>
+<md-number-field label="Supported" supporting-text="Between 0 and 10" reserve-supporting-space min="0" max="10" style="inline-size: 220px;"></md-number-field>`}
+  label="Enabled, disabled, read-only, error and supporting text"
+/>
+
+`reserve-supporting-space` holds the line height so the layout doesn't jump
+when an error appears. Show supporting text **or** error text — never both.
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdInput` | no | `{ value, formattedValue, reason }` | Every value change (typing included) |
+| `mdChange` | no | `{ value, formattedValue, reason }` | Commit points — **only when the value differs from the last committed one**, so a blur that changed nothing is silent |
+| `mdValidityChange` | no | `{ valid, validationMessage, flags }` | Validity changes — **not composed**, and silent on mount |
+
+`reason` says which path produced the change:
+
+| `reason` | Comes from |
+|---|---|
+| `'input-change'` | Typed text that parsed |
+| `'input-clear'` | The field was emptied |
+| `'input-blur'` | Blur **and** Enter — the same commit |
+| `'keyboard'` | Arrows, `Home`, `End` |
+| `'increment-press'` / `'decrement-press'` | A stepper press, and every hold tick |
+| `'wheel'` | Wheel stepping |
+| `'none'` | The programmatic `stepUp()` / `stepDown()` |
+
+`formattedValue` is the **verbatim** text in the box for `'input-change'` and
+`'input-clear'` — the user is mid-edit, so it is not reformatted. Every other
+reason carries the reformatted display string.
+
+:::note[`mdValidityChange` does not cross shadow boundaries]
+It is emitted with `composed: false`, so a listener on an ancestor **inside a
+different shadow root** will never see it. `mdInput` / `mdChange` are composed.
+:::
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
+  <md-number-field data-ev-nf label="Quantity" name="qty" min="0" max="99" required
+                   value="5" style="inline-size: 260px;"></md-number-field>
+  <div style="font:500 12px/1.6 Roboto,system-ui,sans-serif; color:var(--md-sys-color-on-surface-variant);">
+    Event log — oldest first, so each interaction reads top-down: <code>mdInput</code> as the value moves, then <code>mdChange</code> once it settles.
+  </div>
+  <div data-ev-log style="font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace; white-space:pre-wrap; opacity:.85; min-block-size:7em;"></div>
+</div>`}
+  script={`
+  var nf = root.querySelector('[data-ev-nf]');
+  var log = root.querySelector('[data-ev-log]');
+  var lines = [];
+  var n = 0;
+  // Chronological, not newest-first: mdInput causes mdChange, and reversing the
+  // pair made the effect appear above its cause.
+  var push = function (text) {
+    lines.push(String(++n).padStart(2, ' ') + '  ' + text);
+    lines = lines.slice(-7);
+    log.textContent = lines.join(String.fromCharCode(10));
+  };
+  var show = function (v) { return v === null || v === undefined ? 'null' : String(v); };
+
+  nf.addEventListener('mdInput', function (e) {
+    push('mdInput          ' + show(e.detail.value) + '   reason=' + e.detail.reason);
+  });
+  nf.addEventListener('mdChange', function (e) {
+    push('mdChange         ' + show(e.detail.value) + '   reason=' + e.detail.reason +
+      '   formatted=' + JSON.stringify(e.detail.formattedValue));
+  });
+  // Not composed — a listener on the element itself is the only one that sees it.
+  nf.addEventListener('mdValidityChange', function (e) {
+    push('mdValidityChange valid=' + e.detail.valid);
+  });
+  log.textContent = 'Type, step with the buttons, or clear the field.';`}
+  label="Every event, live — watch reason change between typing, stepping and blur"
+  storyId="text-inputs-number-field--playground"
+  htmlForCode={`<md-number-field id="qty" name="qty" label="Quantity" min="0" max="99" required></md-number-field>
+
+\x3Cscript type="module">
+  const el = document.getElementById('qty');
+  el.addEventListener('mdInput', (e) => preview(e.detail.value));   // live number | null
+  el.addEventListener('mdChange', (e) => save(e.detail.value));     // committed number | null
+\x3C/script>`}
+  react={`import { MdNumberField } from '@awc-ui/react';
+
+export function QuantityField() {
+  return (
+    <MdNumberField
+      label="Quantity"
+      name="qty"
+      min={0}
+      max={99}
+      required
+      onMdInput={(e) => preview(e.detail.value)}
+      onMdChange={(e) => save(e.detail.value)}
+    />
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-quantity-field',
+  template: \`
+    <md-number-field
+      label="Quantity"
+      name="qty"
+      [min]="0"
+      [max]="99"
+      required
+      (mdChange)="onChange($event)"
+    ></md-number-field>
+  \`,
+})
+export class QuantityFieldComponent {
+  onChange(e: CustomEvent<{ value: number | null }>) { save(e.detail.value); }
+}`}
+  vue={`<template>
+  <md-number-field
+    label="Quantity"
+    name="qty"
+    :min="0"
+    :max="99"
+    required
+    @mdChange="(e) => save(e.detail.value)"
+  />
+</template>`}
+  svelte={`<md-number-field
+  label="Quantity"
+  name="qty"
+  min="0"
+  max="99"
+  required
+  on:mdChange={(e) => save(e.detail.value)}
+/>`}
+/>
+
+## Forms
+
+The component is **form-associated** via `ElementInternals`: the raw value
+submits as `String(value)` under `name`, and an empty field submits **no
+entry**. `required` blocks submission when empty (`value-missing-label` is the
+bubble message; `error-text` wins when set). `getValidity()`,
+`checkValidity()`, `reportValidity()` and `setCustomValidity()` are available
+as methods, and `Enter` commits like blur, then requests form submission.
+
+`Enter` calls `form.requestSubmit()` with the form's default submit button as
+the **submitter**, so that button's `name`/`value` joins the entry list and
+`event.submitter` is set — matching native implicit submission. It does **not**
+click that button: `requestSubmit()` runs the submit steps directly, so put the
+logic in the form's `submit` listener rather than on the button's `click`.
+
+A form reset restores the `value` captured at load, clears any
+`setCustomValidity()` message and resets the commit baseline. An ancestor
+`<fieldset disabled>` (or a disabled form) disables the field without the
+`disabled` prop.
+
+<ComponentDemo
+  html={`<form data-nf-form style="display:flex; flex-direction:column; gap:16px; align-items:flex-start;">
+  <md-number-field data-nf-qty name="qty" label="Quantity" required min="1" max="99"
+                   value-missing-label="Enter a quantity"
+                   supporting-text="1–99, required" style="inline-size: 260px;"></md-number-field>
+  <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+    <md-button variant="filled" type="submit">Order</md-button>
+    <md-button variant="text" type="reset">Reset</md-button>
+    <md-button data-nf-check variant="outlined">getValidity()</md-button>
+  </div>
+  <output data-nf-out style="font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; opacity:.85; min-block-size:2.6em; white-space:pre-wrap;"></output>
+</form>`}
+  script={`
+  var form = root.querySelector('[data-nf-form]');
+  var nf = root.querySelector('[data-nf-qty]');
+  var out = root.querySelector('[data-nf-out]');
+  out.textContent = 'Submit while empty — required blocks it.';
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    out.textContent =
+      'FormData → ' + JSON.stringify(Object.fromEntries(new FormData(form))) +
+      String.fromCharCode(10) + 'value (raw number) → ' + JSON.stringify(nf.value);
+  });
+  form.addEventListener('reset', function () {
+    setTimeout(function () { out.textContent = 'reset → value = ' + JSON.stringify(nf.value); }, 0);
+  });
+  root.querySelector('[data-nf-check]').addEventListener('click', function () {
+    nf.getValidity().then(function (v) {
+      out.textContent =
+        'getValidity() → valid=' + v.valid + String.fromCharCode(10) +
+        'validationMessage → ' + JSON.stringify(v.validationMessage);
+    });
+  });`}
+  htmlForCode={`<form id="order">
+  <md-number-field
+    id="qty"
+    name="qty"
+    label="Quantity"
+    required
+    min="1"
+    max="99"
+    value-missing-label="Enter a quantity"
+  ></md-number-field>
+
+  <md-button variant="filled" type="submit">Order</md-button>
+  <md-button variant="text" type="reset">Reset</md-button>
+</form>
+
+<script type="module">
+  const form = document.getElementById('order');
+  const qty = document.getElementById('qty');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    // The RAW number submits under name — String(value), no formatting.
+    console.log(Object.fromEntries(new FormData(form)));   // { qty: '5' }
+    console.log(qty.value);                                // 5  (a number)
+  });
+
+  const { valid, validationMessage } = await qty.getValidity();
+</script>`}
+  label="Submit empty and required blocks it; enter 5 and FormData carries the raw number, not the formatted text"
+  storyId="text-inputs-number-field--playground"
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+## Accessibility
+
+- `label` names the field; the input is a **plain textbox** with a numeric
+  software keyboard (`inputmode="numeric|decimal"`) — deliberately not
+  `role="spinbutton"` and not `type="number"`, so the formatted value is
+  ordinary readable, editable text.
+- Keyboard: ↑/↓ step (`Alt` fine, `Shift` coarse), `Home`/`End` jump to
+  defined bounds, `Enter` commits and submits.
+- The steppers carry localizable names (`increment-label` /
+  `decrement-label`) and `tabindex="-1"` — pointer-only by design, because the
+  input already offers a superior keyboard affordance.
+- Typing is character-filtered, never silently rewritten; unparseable pastes
+  are rejected without moving the caret through reformats.
+- There is deliberately **no `aria-valuenow` / `valuemin` / `valuemax`**: those
+  belong to `role="spinbutton"`, which would have assistive tech announce a bare
+  number fighting the locale-formatted text on screen. State the bounds in
+  `supporting-text` instead.
+- A `disabled` host gets `pointer-events: none`, so a tooltip or popover
+  targeting the field receives no pointer events either — wrap it in a container
+  when a disabled field needs a hover explanation.
+
+## RTL, density & i18n
+
+**RTL** — logical properties throughout; the split-stepper row follows the
+inline direction (decrement renders on the right in RTL). Stepping is
+vertical-arrow / wheel driven, so there is nothing to mirror there. Locales with
+native numerals (e.g. `ar-SA`) format **and** parse them, and bidi control
+characters are stripped rather than rejected. See [RTL](/behaviour/rtl/).
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:20px;">
+  <md-number-field steppers="split" label="LTR" value="12" style="inline-size: 280px;"></md-number-field>
+  <div dir="rtl">
+    <md-number-field steppers="split" label="RTL" value="12" style="inline-size: 280px;"></md-number-field>
+  </div>
+</div>`}
+  htmlForCode={`<md-number-field steppers="split" label="Quantity" value="12"></md-number-field>
+
+<div dir="rtl">
+  <md-number-field steppers="split" label="الكمية" value="12"></md-number-field>
+</div>`}
+  label="The split steppers follow the inline direction — decrement moves to the right under dir=rtl"
+  storyId="text-inputs-number-field--rtl"
+/>
+
+**Density** — `density="-1…-4"` compacts the field and both stepper layouts.
+See [Density](/behaviour/density/).
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:20px; max-inline-size: 320px;">
+  <md-number-field label="Density 0 (default)" value="12"></md-number-field>
+  <md-number-field density="-1" label="Density -1" value="12"></md-number-field>
+  <md-number-field density="-2" label="Density -2" value="12"></md-number-field>
+  <md-number-field density="-3" label="Density -3" value="12"></md-number-field>
+  <md-number-field density="-4" label="Density -4" value="12"></md-number-field>
+</div>`}
+  htmlForCode={`<md-number-field label="Quantity" value="12"></md-number-field>
+<md-number-field density="-1" label="Quantity" value="12"></md-number-field>
+<md-number-field density="-2" label="Quantity" value="12"></md-number-field>
+<md-number-field density="-3" label="Quantity" value="12"></md-number-field>
+<md-number-field density="-4" label="Quantity" value="12"></md-number-field>`}
+  label="Every rung, 0 through -4 — the field and its steppers taper together"
+  storyId="text-inputs-number-field--density"
+/>
+
+**i18n** — translate `label`, `placeholder`, `supporting-text`, `error-text`,
+`increment-label`, `decrement-label`, `value-missing-label`. `locale` and
+`format-options` are **Intl configuration**, not translation — locales with
+native numerals (e.g. `ar-SA`) format *and parse* them.
+
+<ComponentDemo
+  html={`<div style="display:flex; flex-direction:column; gap:20px; max-inline-size: 320px;">
+  <md-number-field label="en-US" locale="en-US" value="1234.5"
+    format-options='{"style":"currency","currency":"USD"}'></md-number-field>
+  <md-number-field label="de-DE" locale="de-DE" value="1234.5"
+    format-options='{"style":"currency","currency":"EUR"}'></md-number-field>
+  <md-number-field label="ar-SA (native numerals)" locale="ar-SA" value="1234.5"
+    increment-label="زيادة" decrement-label="إنقاص"></md-number-field>
+</div>`}
+  htmlForCode={`<!-- locale + format-options are Intl configuration… -->
+<md-number-field
+  label="Preis"
+  locale="de-DE"
+  value="1234.5"
+  format-options='{"style":"currency","currency":"EUR"}'
+></md-number-field>
+
+<!-- …the label props are the part you actually translate -->
+<md-number-field
+  label="الكمية"
+  locale="ar-SA"
+  value="1234.5"
+  increment-label="زيادة"
+  decrement-label="إنقاص"
+  value-missing-label="الرجاء إدخال قيمة"
+></md-number-field>`}
+  label="One value, three locales — and the labels a translator owns"
+  storyId="text-inputs-number-field--localization"
+/>
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-number-field-width` / `--md-number-field-min-width` | Host inline-size | `100%` / `200px` |
+| `--md-number-field-stepper-icon-size` | Stepper glyph size | 20px, density-tapered |
+| `--md-number-field-stepper-color` | Stepper icon ink | `on-surface-variant` |
+| `--md-number-field-split-stepper-size` | Split stepper circle | 40px, density-tapered |
+| `--md-text-field-*` | All inner-field hooks pass through | — |
+
+<ComponentDemo
+  html={`<md-number-field
+  label="Themed"
+  variant="outlined"
+  value="7"
+  style="inline-size: 260px; --md-number-field-stepper-color: var(--md-sys-color-primary); --md-number-field-stepper-icon-size: 24px;"></md-number-field>`}
+  label="Themed instance"
+/>
+
+**CSS parts** — `field` (the inner `md-text-field`), `increment`, `decrement`.
+
+<ComponentDemo
+  html={`<style>
+  .parts-nf::part(increment) { --md-icon-button-icon-color: var(--md-sys-color-primary); }
+  .parts-nf::part(decrement) { --md-icon-button-icon-color: var(--md-sys-color-error); }
+</style>
+<md-number-field class="parts-nf" steppers="split" label="Styled steppers" value="7" style="inline-size: 280px;"></md-number-field>`}
+  label="increment and decrement, tinted through the inner icon button's own hook"
+/>
+
+
+## Related
+
+[`md-text-field`](/components/text-field/) ·
+[`md-slider`](/components/slider/) ·
+[`md-rating`](/components/rating/) ·
+[`md-select`](/components/select/) ·
+[`md-meter`](/components/meter/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-number-field" />

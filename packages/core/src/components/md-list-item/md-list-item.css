@@ -1,0 +1,1592 @@
+/* ==========================================================
+   md-list-item — Material Design 3 List Item
+   Spec: https://m3.material.io/components/lists/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+    --md-list-item-container-color              Container background (M3 default: surface = #FEF7FF light)
+    --md-list-item-container-shape              Border-radius shorthand (all four corners)
+    --md-list-item-container-shape-start-start  Top-start corner (used by md-list grouped style)
+    --md-list-item-container-shape-start-end    Top-end corner   (used by md-list grouped style)
+    --md-list-item-container-shape-end-start    Bottom-start corner
+   --md-list-item-container-shape-end-end      Bottom-end corner
+   --md-list-item-active-container-shape       Meta-override applied to every active state
+                                               (hover / focus / pressed / selected / dragged)
+   --md-list-item-hover-container-shape        Border-radius on hover    (default 0 — no morph; opt-in)
+   --md-list-item-focus-container-shape        Border-radius on focus    (default 16dp / corner-large)
+   --md-list-item-pressed-container-shape      Border-radius on press    (default 16dp / corner-large)
+   --md-list-item-selected-container-shape     Border-radius on selected (default 16dp / corner-large)
+   --md-list-item-active-container-shape       Shared default for all four states above
+   --md-list-item-dragged-container-shape      Border-radius on dragged  (default 16dp / corner-large)
+   --md-list-item-hover-state-layer-opacity    State-layer opacity on hover    (M3: 0.08)
+   --md-list-item-focus-state-layer-opacity    State-layer opacity on focus    (M3: 0.10)
+   --md-list-item-pressed-state-layer-opacity  State-layer opacity on press    (M3: 0.10)
+   --md-list-item-dragged-state-layer-opacity  State-layer opacity when dragged (M3: 0.16)
+   --md-list-item-disabled-state-layer-opacity State-layer opacity when disabled (default 0)
+   --md-list-item-label-text-color             Headline text color
+    --md-list-item-label-text-font              Headline font family
+    --md-list-item-supporting-text-color        Supporting text color
+    --md-list-item-supporting-text-font         Supporting text font family
+    --md-list-item-overline-color               Overline text color
+    --md-list-item-trailing-supporting-text-color  Trailing supporting text color
+    --md-list-item-trailing-supporting-text-font   Trailing supporting text font family
+    --md-list-item-leading-icon-color           Leading icon color
+    --md-list-item-leading-icon-size            Leading icon size, default (M3: 24dp)
+    --md-list-item-leading-icon-expressive-size Leading icon size, Expressive list-style (M3: 20dp).
+                                                Auto-applied when the row sits inside an
+                                                md-list[list-style="standard"|"segmented"].
+    --md-list-item-trailing-icon-color          Trailing icon color
+    --md-list-item-unselected-trailing-icon-color  Trailing icon color when row is in selection
+                                                   mode but NOT selected (M3: on-surface)
+    --md-list-item-trailing-icon-size           Trailing icon size, default (M3: 24dp)
+    --md-list-item-trailing-icon-expressive-size  Trailing icon size, Expressive list-style (M3: 20dp)
+    --md-list-item-leading-space                Inline-start padding (M3: 16dp)
+    --md-list-item-trailing-space               Inline-end  padding (M3: 16dp)
+    --md-list-item-top-space                    Block-start padding (M3: 8dp)
+    --md-list-item-bottom-space                 Block-end   padding (M3: 10dp)
+    --md-list-item-between-space                Gap between leading / content / trailing (M3: 12dp)
+    --md-list-item-three-line-top-space         Block-start padding when 3-line / 88dp+ (M3: 12dp)
+    --md-list-item-three-line-bottom-space      Block-end padding when 3-line / 88dp+ (M3: 12dp)
+    --md-list-item-dragged-container-elevation  Box-shadow applied when host carries
+                                                .md-list-item--dragged (M3: level 4 lift)
+    --md-list-item-leading-video-width          Width of <video slot="leading"> thumbnail (M3: 100dp)
+    --md-list-item-leading-video-height         Height of <video slot="leading"> thumbnail (M3: 56dp)
+    --md-list-item-leading-video-shape          Border-radius of <video slot="leading"> (M3: corner-small)
+    --md-list-item-leading-video-top-space      Block-start padding bumped when the row carries
+                                                a <video slot="leading"> (M3: 12dp). Bottom padding
+                                                is unaffected — the asymmetry visually anchors the
+                                                wider 100×56dp video thumbnail.
+    --md-list-item-leading-avatar-color         Avatar circle color (label avatar)
+    --md-list-item-leading-avatar-label-color   Avatar label text color
+    --md-list-item-leading-avatar-size          Avatar dimensions (default 40px)
+    --md-list-item-leading-avatar-shape         Avatar border-radius (default full)
+    --md-list-item-leading-image-width          Image thumbnail width (default 56px)
+    --md-list-item-leading-image-height         Image thumbnail height (default 56px)
+    --md-list-item-leading-image-shape          Image thumbnail radius, default (M3: 0)
+    --md-list-item-leading-image-expressive-shape  Image thumbnail radius, Expressive list-style
+                                                  (M3: corner-small / 8dp). Auto-applied on
+                                                  md-list[list-style="standard"|"segmented"].
+    --md-list-item-leading-image-selection-scrim-color   Full-thumbnail scrim when selected (M3: scrim @ 32%)
+    --md-list-item-leading-image-selection-circle-color  Checkmark circle fill when selected (M3: on-surface @ 60%)
+    --md-list-item-leading-image-selection-icon-color    Checkmark glyph color (M3: surface / white)
+    --md-list-item-leading-image-selection-icon-size     Checkmark circle diameter (M3: 24dp)
+   --md-list-item-selected-container-color     Selected container background (M3: secondary-container)
+   --md-list-item-selected-label-text-color    Selected headline color (M3: on-secondary-container)
+   --md-list-item-selected-active-icon-color   Leading/trailing icon color when row is BOTH
+                                               selected AND in an active state (hover / focus /
+                                               pressed / dragged). M3: on-surface (#1D1B20).
+   --md-list-item-selected-disabled-container-color  Container fill when row is BOTH selected AND
+                                                     disabled (M3: on-surface @ 12%)
+   --md-list-item-expand-chevron-color         Caret icon color when collapsed (forwarded to the
+                                               trailing md-icon-button's icon color). Expanded pill
+                                               uses `--md-sys-color-primary` /
+                                               `--md-sys-color-on-primary`.
+    --md-list-item-expand-duration              Expanded-panel open duration   (M3: medium3 / 350ms)
+    --md-list-item-collapse-duration            Expanded-panel close duration  (M3: short4 / 200ms)
+    --md-list-item-expanded-panel-padding-block         Expanded panel vertical padding
+    --md-list-item-expanded-panel-padding-inline        Expanded panel horizontal padding (both sides)
+    --md-list-item-expanded-panel-padding-inline-start  Expanded panel start padding —
+                                                         takes precedence over the symmetric value
+                                                         above. Default 0 — child rows align with the
+                                                         parent row in a flat connected expansion list.
+    --md-list-item-expanded-panel-background    Expanded panel background
+
+   CSS PARTS:
+     row                       Row chassis (leading + content + trailing)
+     state-layer               State-layer overlay (interactive rows only)
+     leading                   Leading slot container
+     content                   Content slot container (overline + headline + supporting)
+     headline                  Headline text element
+     headline-tooltip-popup    Popup of the headline overflow tooltip (forwarded)
+     overline                  Overline text element
+     supporting-text           Supporting text element
+     supporting-tooltip-popup  Popup of the supporting-text overflow tooltip (forwarded)
+     trailing                  Trailing slot container
+     trailing-supporting-text  Trailing supporting text element
+     leading-icon              Leading Material Symbols icon
+     trailing-icon             Trailing Material Symbols icon
+    avatar                    Leading avatar (image or label)
+    image                     Leading image thumbnail
+    image-wrap                Wrapper around prop-based leading image + selection overlay
+    image-selection-indicator Selected-state scrim overlay on image thumbnail
+    image-selection-circle    Checkmark circle fill centered on thumbnail
+    image-selection-check     Material Symbols check glyph inside the circle
+    expand-button             Trailing caret md-icon-button on expandable rows
+     expand-button-state-layer State-layer of the caret button (forwarded)
+     expand-button-icon        Icon glyph wrapper of the caret button (forwarded;
+                               rotates 180° when expanded)
+     drag-handle               Trailing drag grip on reorderable rows
+     expanded-panel            Wrapper revealed when `expanded` is true
+     expanded-panel-inner      Inner wrapper that holds the slot
+
+   SLOTS:
+     (default)                  Headline content (fallback for `headline` prop)
+     headline                   Rich headline (overrides `headline` prop)
+     overline                   Rich overline (overrides `overline` prop)
+     supporting-text            Rich supporting text
+     trailing-supporting-text   Rich trailing supporting text
+     leading                    Custom leading content (icon / avatar / image)
+     trailing                   Custom trailing content (icon button, switch, etc.)
+     expanded-content           Content revealed when an expandable row is expanded
+   ========================================================== */
+
+/* ==========================================================
+   1. HOST — token mapping + base block layout
+   The host is the "container" — it owns the rounded chassis,
+   background, divider position, and (when expandable) stacks
+   a row above an expanded panel via display: block. The actual
+   row chrome lives on .md-list-item__row.
+   ========================================================== */
+:host {
+  /* PUBLIC → INTERNAL */
+  /* Per the M3 Lists token spec the resting container color is `surface`
+     (#FEF7FF on the light tonal palette). md-list wrappers stay
+     transparent so the items provide the visible fill. */
+  --_container-color: var(--md-list-item-container-color, var(--md-sys-color-surface, #fef7ff));
+  --_container-shape: var(--md-list-item-container-shape, 0px);
+
+  /* Per-corner shapes — fall through to the shorthand by default but
+     md-list[list-style="grouped"] overrides start-start/start-end on
+     the first row and end-start/end-end on the last to give a shared
+     rounded chassis. Threading them as custom properties means the
+     parent list can paint shape via `::slotted()` without crossing the
+     shadow boundary directly. */
+  --_container-shape-start-start: var(--md-list-item-container-shape-start-start, var(--_container-shape));
+  --_container-shape-start-end: var(--md-list-item-container-shape-start-end, var(--_container-shape));
+  --_container-shape-end-start: var(--md-list-item-container-shape-end-start, var(--_container-shape));
+  --_container-shape-end-end: var(--md-list-item-container-shape-end-end, var(--_container-shape));
+
+  /* Per-state container shape morph per the M3 Lists spec:
+       Hover            → no default morph (state layer only)
+       Focus            → 16dp (corner-large)
+       Pressed          → 16dp (corner-large)
+       Selected         → 16dp (corner-large)
+       Dragged          → 16dp (corner-large)
+     `--md-list-item-active-container-shape` acts as a meta-override —
+     set it once to apply the same shape across focus / pressed / selected /
+     dragged. Hover is excluded unless `--md-list-item-hover-container-shape`
+     is set explicitly. */
+  /* Active-state corner radii — focus / pressed / selected / dragged default
+     to corner-large (16dp). Hover defaults to 0 so flat middle rows keep
+     sharp corners during pointer-over; only the state layer signals hover. */
+  /* Hover defaults to 0 so flat / middle rows keep their resting corners.
+     Hover feedback is the state layer only — rounding on hover made
+     hover-out snap from rounded → sharp even without a radius transition.
+     Authors can still opt in via --md-list-item-hover-container-shape or
+     the shared --md-list-item-active-container-shape meta-override. */
+  --_hover-container-shape:    var(--md-list-item-hover-container-shape,    var(--md-list-item-active-container-shape, 0px));
+  /* These three are the MORPHED corner radii for focus / press / selection.
+     They are consumed as `max(<resting corner>, <this>)`, so multiplying by
+     --md-sys-shape-morph-enabled collapses them to 0 when shape morphing is
+     switched off — and max(rest, 0) is exactly the resting corner. That freezes
+     all 50+ per-corner morph rules below from three declarations, with no
+     change at all while the flag is its default 1.
+
+     Global `data-shape-morph="off"` or per-component `shape-morph="off"`; see
+     §13 in tokens.css. */
+  --_focus-container-shape:    calc(var(--md-list-item-focus-container-shape,    var(--md-list-item-active-container-shape, var(--md-sys-shape-corner-large, 16px))) * var(--md-sys-shape-morph-enabled, 1));
+  --_pressed-container-shape:  calc(var(--md-list-item-pressed-container-shape,  var(--md-list-item-active-container-shape, var(--md-sys-shape-corner-large, 16px))) * var(--md-sys-shape-morph-enabled, 1));
+  --_selected-container-shape: calc(var(--md-list-item-selected-container-shape, var(--md-list-item-active-container-shape, var(--md-sys-shape-corner-large, 16px))) * var(--md-sys-shape-morph-enabled, 1));
+  --_dragged-container-shape: var(--md-list-item-dragged-container-shape, var(--md-list-item-active-container-shape, var(--md-sys-shape-corner-large, 16px)));
+
+  --_label-text-color: var(--md-list-item-label-text-color, var(--md-sys-color-on-surface, #1c1b1f));
+  --_label-text-font: var(--md-list-item-label-text-font, var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif));
+
+  --_supporting-text-color: var(--md-list-item-supporting-text-color, var(--md-sys-color-on-surface-variant, #49454f));
+  --_supporting-text-font: var(--md-list-item-supporting-text-font, var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif));
+
+  --_overline-color: var(--md-list-item-overline-color, var(--md-sys-color-on-surface-variant, #49454f));
+
+  --_trailing-supporting-text-color: var(--md-list-item-trailing-supporting-text-color, var(--md-sys-color-on-surface-variant, #49454f));
+  --_trailing-supporting-text-font: var(--md-list-item-trailing-supporting-text-font, var(--md-sys-typescale-label-small-font-family, Roboto, sans-serif));
+
+  --_leading-icon-color: var(--md-list-item-leading-icon-color, var(--md-sys-color-on-surface-variant, #49454f));
+  /* M3 token spec: list-item leading icon = 24dp (default).
+     The Expressive list-styles (`standard`, `segmented`) tighten this to
+     20dp via the `--_leading-icon-expressive-size` override below. */
+  --_leading-icon-size: var(--md-list-item-leading-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
+  --_leading-icon-expressive-size: var(--md-list-item-leading-icon-expressive-size, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)));
+  --_trailing-icon-color: var(--md-list-item-trailing-icon-color, var(--md-sys-color-on-surface-variant, #49454f));
+  /* When the row is in selection mode but NOT selected, the M3 token spec
+     calls for the trailing icon (typically a checkmark or radio glyph) to
+     use on-surface instead of on-surface-variant — slightly higher contrast
+     so the affordance reads as "tap to select" rather than ambient meta. */
+  --_unselected-trailing-icon-color: var(--md-list-item-unselected-trailing-icon-color, var(--md-sys-color-on-surface, #1d1b20));
+  --_trailing-icon-size: var(--md-list-item-trailing-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
+  --_trailing-icon-expressive-size: var(--md-list-item-trailing-icon-expressive-size, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)));
+
+  --_leading-avatar-color: var(--md-list-item-leading-avatar-color, var(--md-sys-color-primary-container, #eaddff));
+  --_leading-avatar-label-color: var(--md-list-item-leading-avatar-label-color, var(--md-sys-color-on-primary-container, #21005d));
+  --_leading-avatar-size: var(--md-list-item-leading-avatar-size, 40px);
+  --_leading-avatar-shape: var(--md-list-item-leading-avatar-shape, var(--md-sys-shape-corner-full, 9999px));
+
+  --_leading-image-width: var(--md-list-item-leading-image-width, 56px);
+  --_leading-image-height: var(--md-list-item-leading-image-height, 56px);
+  /* M3: default image is square (corner-none); Expressive image rounds
+     to corner-small (8dp). The expressive value is applied by the
+     `:host-context(.md-list--standard|.md-list--segmented)` rule
+     down in Section 3. */
+  --_leading-image-shape: var(--md-list-item-leading-image-shape, var(--md-sys-shape-corner-none, 0px));
+  --_leading-image-expressive-shape: var(--md-list-item-leading-image-expressive-shape, var(--md-sys-shape-corner-small, 8px));
+  --_leading-image-selection-scrim-color: var(
+    --md-list-item-leading-image-selection-scrim-color,
+    color-mix(in srgb, var(--md-sys-color-scrim, #000000) 32%, transparent)
+  );
+  --_leading-image-selection-circle-color: var(
+    --md-list-item-leading-image-selection-circle-color,
+    color-mix(in srgb, var(--md-sys-color-on-surface, #1d1b20) 60%, transparent)
+  );
+  --_leading-image-selection-icon-color: var(
+    --md-list-item-leading-image-selection-icon-color,
+    var(--md-sys-color-surface, #fef7ff)
+  );
+  --_leading-image-selection-icon-size: var(--md-list-item-leading-image-selection-icon-size, 24px);
+
+  /* Per the M3 spec the leading slot may also hold a <video> thumbnail.
+     Default size is 100×56dp (small video token). Authors slot a
+     `<video slot="leading">` and these props size it automatically. */
+  --_leading-video-width: var(--md-list-item-leading-video-width, 100px);
+  --_leading-video-height: var(--md-list-item-leading-video-height, 56px);
+  --_leading-video-shape: var(--md-list-item-leading-video-shape, var(--md-sys-shape-corner-small, 8px));
+
+  /* Per the M3 Lists token spec the selected palette uses
+     secondary-container (#E8DEF8) and on-secondary-container (#4A4458),
+     NOT primary-container. */
+  --_selected-container-color: var(--md-list-item-selected-container-color, var(--md-sys-color-secondary-container, #e8def8));
+  --_selected-label-text-color: var(--md-list-item-selected-label-text-color, var(--md-sys-color-on-secondary-container, #4a4458));
+  /* Selected + interactive states: per the M3 spec, when a selected
+     row is hovered / focused / pressed / dragged its leading + trailing
+     icons jump from on-secondary-container (#4A4458) to on-surface
+     (#1D1B20) for the duration of the interaction. */
+  --_selected-active-icon-color: var(--md-list-item-selected-active-icon-color, var(--md-sys-color-on-surface, #1d1b20));
+  /* Selected + disabled: container fades to on-surface @ 12% per spec. */
+  --_selected-disabled-container-color: var(
+    --md-list-item-selected-disabled-container-color,
+    color-mix(in srgb, var(--md-sys-color-on-surface, #1d1b20) 12%, transparent)
+  );
+
+  --_state-layer-color: var(--md-sys-color-on-surface, #1c1b1f);
+
+  /* Per-state state-layer opacities from the M3 Lists spec — these
+     override the generic system tokens (which default to 0.12 for
+     focus/press and don't define a dragged opacity). */
+  --_hover-state-layer-opacity: var(--md-list-item-hover-state-layer-opacity, var(--md-sys-state-hover-state-layer-opacity, 0.08));
+  --_focus-state-layer-opacity: var(--md-list-item-focus-state-layer-opacity, 0.1);
+  --_pressed-state-layer-opacity: var(--md-list-item-pressed-state-layer-opacity, 0.1);
+  --_dragged-state-layer-opacity: var(--md-list-item-dragged-state-layer-opacity, 0.16);
+  --_disabled-state-layer-opacity: var(--md-list-item-disabled-state-layer-opacity, 0);
+
+  /* Row spacing tokens — defaults track the M3 Lists token spec
+     (leading 16dp, trailing 16dp, top 8dp, bottom 10dp, between 12dp).
+     When the row sits inside a 88dp+ chassis (lines=3) the top/bottom
+     flips to 12dp per the spec. When the leading slot hosts a <video>
+     thumbnail, the top padding is bumped to 12dp (see the `:has()`
+     override below) so the 100×56dp tile reads as anchored rather than
+     hugged-tight against the chassis edge. */
+  --_leading-space: var(--md-list-item-leading-space, var(--md-sys-spacing-inset-lg, 16px));
+  --_trailing-space: var(--md-list-item-trailing-space, var(--md-sys-spacing-inset-lg, 16px));
+  /* Vertical padding rides inset-sm (8px at density 0, so the M3 8dp/10dp
+     defaults are unchanged) so multi-line rows keep tightening past the point
+     where min-block-size alone floors on the text height. */
+  /* Vertical padding tightens with global density down to 2px (8/10px at
+     density 0), so multi-line rows reach a genuinely compact height at -3/-4. */
+  --_top-space: var(--md-list-item-top-space, max(2px, calc(8px + var(--md-sys-density-scale, 0) * 1.5px)));
+  --_bottom-space: var(--md-list-item-bottom-space, max(2px, calc(8px + var(--md-sys-density-scale, 0) * 1.5px)));
+  --_between-space: var(--md-list-item-between-space, max(8px, var(--md-sys-spacing-gap-md, 12px)));
+  --_three-line-top-space: var(--md-list-item-three-line-top-space, max(2px, calc(12px + var(--md-sys-density-scale, 0) * 2.5px)));
+  --_three-line-bottom-space: var(--md-list-item-three-line-bottom-space, max(2px, calc(12px + var(--md-sys-density-scale, 0) * 2.5px)));
+
+  /* Global density lever: each rung of `data-density` (0…-4) trims the row
+     height. density-scale is 0 by default, so the default heights below are
+     unchanged. Single-line uses 4px/rung; multi-line uses 6px/rung so 2/3-line
+     rows tighten toward their content instead of flooring ~16px above it.
+     See packages/tokens/src/tokens.css §10-12. */
+  --_density-delta: calc(var(--md-sys-density-scale, 0) * 4px);
+  --_density-delta-multi: calc(var(--md-sys-density-scale, 0) * 6px);
+
+  /* Per the M3 Lists spec a dragged tile lifts to level 4 elevation so
+     it visually detaches from its neighbours. */
+  --_dragged-container-elevation: var(--md-list-item-dragged-container-elevation, var(--md-sys-elevation-4, 0px 6px 10px 4px rgba(0,0,0,0.15), 0px 2px 3px rgba(0,0,0,0.3)));
+
+  --_expand-chevron-color: var(--md-list-item-expand-chevron-color, var(--md-sys-color-on-surface-variant, #49454f));
+
+  /* MD3 expressive disclosure motion — the panel "arches" open with
+     emphasized-decelerate (content settles into place on the way down) and
+     "retracts" on close with emphasized-accelerate (content gets out of the
+     way quickly). Asymmetric duration + easing is the M3 Expressive
+     open/close vocabulary, mirroring md-accordion-item. */
+  --_expand-duration: var(--md-list-item-expand-duration, var(--md-sys-motion-duration-medium3, 350ms));
+  --_collapse-duration: var(--md-list-item-collapse-duration, var(--md-sys-motion-duration-short4, 200ms));
+  --_expand-easing: var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
+  --_collapse-easing: var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15));
+
+  --_expanded-panel-padding-block: var(--md-list-item-expanded-panel-padding-block, 0px);
+  --_expanded-panel-padding-inline: var(--md-list-item-expanded-panel-padding-inline, 0px);
+  /* Flat expansion list — child rows sit at the same inline alignment as the
+     parent row (no nested sub-box indent). Authors can opt into nesting via
+     `--md-list-item-expanded-panel-padding-inline-start`. */
+  --_expanded-panel-padding-inline-start: var(
+    --md-list-item-expanded-panel-padding-inline-start,
+    var(--md-list-item-expanded-panel-padding-inline, 0px)
+  );
+  --_expanded-panel-background: var(--md-list-item-expanded-panel-background, transparent);
+
+  display: block;
+  position: relative;
+  background-color: var(--_container-color);
+  color: var(--_label-text-color);
+  /* The longhand corner radii are set so md-list[list-style="grouped"]
+     can override individual corners. The shorthand stays as a fallback
+     for the standard / segmented paths. */
+  border-start-start-radius: var(--_container-shape-start-start);
+  border-start-end-radius: var(--_container-shape-start-end);
+  border-end-start-radius: var(--_container-shape-end-start);
+  border-end-end-radius: var(--_container-shape-end-end);
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  /* The chassis owns rounding so a non-zero border-radius clips both
+     the row's state layer AND the expanded panel without bleeding past
+     the corners. `clip` (not `hidden`) avoids creating a stacking
+     context that would clip outward popups. */
+  overflow: clip;
+  /* Animate chassis shape + elevation only — not color/background. Transitions
+     on color during continuous resize reflow read as text flicker even when
+     the token value is unchanged. Selection / disabled tints snap via custom
+     properties on child text nodes instead. */
+  transition:
+    box-shadow var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    border-start-start-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
+    border-start-end-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
+    border-end-start-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
+    border-end-end-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
+}
+
+/* ==========================================================
+   1b. ROW — flex chrome (leading | content | trailing)
+   All spacing flows through public custom properties so apps can
+   re-tune individual edges without rewriting padding shorthands. The
+   defaults track the M3 Lists token spec:
+     - Leading space    16dp  (--md-list-item-leading-space)
+     - Trailing space   16dp  (--md-list-item-trailing-space)
+     - Top space        10dp  (--md-list-item-top-space)
+     - Bottom space     10dp  (--md-list-item-bottom-space)
+     - Between space    12dp  (--md-list-item-between-space)   — gap
+     - 3-line top/bottom 12dp (--md-list-item-three-line-{top,bottom}-space)
+     - Minimum touch    48dp  → min-block-size 56px (≥48dp)
+   To revert to the older 24dp trailing / 16dp between (M3 baseline
+   pre-Expressive), set:
+     md-list-item {
+       --md-list-item-trailing-space: 24px;
+       --md-list-item-between-space:  16px;
+     }
+   ========================================================== */
+.md-list-item__row {
+  display: flex;
+  align-items: center;
+  position: relative;
+  min-block-size: calc(56px + var(--_density-delta));
+  padding-block-start: var(--_top-space);
+  padding-block-end: var(--_bottom-space);
+  padding-inline-start: var(--_leading-space);
+  padding-inline-end: var(--_trailing-space);
+  gap: var(--_between-space);
+  box-sizing: border-box;
+  /* Keep ripple + state-layer inside the row when the host has 0px radius. */
+  overflow: hidden;
+  transition:
+    border-start-start-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
+    border-start-end-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
+    border-end-start-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)),
+    border-end-end-radius var(--md-sys-motion-duration-medium4, 400ms) var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1));
+}
+
+/* Interactive rows show pointer cursor */
+:host(.md-list-item--interactive) .md-list-item__row {
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Non-interactive plain rows (default `type="text"`) */
+:host(.md-list-item--type-text:not(.md-list-item--selection-mode):not(.md-list-item--expandable)) .md-list-item__row {
+  cursor: default;
+}
+
+/* ==========================================================
+   1c. PRIMARY ACTION (non-selection interactive rows)
+   For `type="button"` / `type="link"` rows the interactive widget is an inner
+   element (`role="button"` / `menuitem` span, or a real `<a href>`), NOT the
+   host — so the host stays a structural role (`listitem`, or `none` in a menu)
+   and any trailing controls remain its focusable SIBLINGS (never nested → no
+   axe `nested-interactive`). It wraps only the leading + content clusters and
+   takes the primary flex bay of the row; the ripple, state layer and focus ring
+   stay row/host-level so their visuals are byte-for-byte unchanged. The leading↔
+   content gap lives here; the content↔trailing gap stays on the row.
+   ========================================================== */
+.md-list-item__primary {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  gap: var(--_between-space);
+  /* Neutralize the intrinsic chrome of <button> / <a> so layout + typography
+     are identical to when leading/content sat directly in the row. */
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  text-decoration: none;
+  cursor: inherit;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 3-line rows top-align the leading cluster; mirror that inside the primary
+   wrapper, which is now the flex parent of leading + content. */
+:host(.md-list-item--3-line) .md-list-item__primary {
+  align-items: flex-start;
+  /* Stretch to the row's full content box. Without this the primary is only as
+     tall as its text (60px in a 64px box) and sits at the top, so anything
+     centred INSIDE it — the avatar below — centres on the text rather than on
+     the row, landing 2px high. The trailing cluster already stretches for the
+     same reason. `align-items: flex-start` above is untouched, so the text
+     itself stays top-aligned and the trailing timestamp keeps lining up with
+     the overline. */
+  align-self: stretch;
+}
+
+/* ==========================================================
+   2. LINE HEIGHT VARIANTS
+   1-line: 56dp  |  2-line: 72dp  |  3-line: 88dp+
+   At 88dp+ the spec says elements top-align; we apply that
+   to both leading and trailing so an avatar/icon sits at
+   the top of a multi-line row like the M3 reference image.
+   ========================================================== */
+/* 1 / 2-line rows: keep the host's --_top-space / --_bottom-space
+   defaults (8dp / 10dp). Only the row height changes per the M3 spec. */
+:host(.md-list-item--1-line) .md-list-item__row {
+  min-block-size: calc(56px + var(--_density-delta));
+}
+
+:host(.md-list-item--2-line) .md-list-item__row {
+  min-block-size: calc(72px + var(--_density-delta-multi));
+}
+
+/* 3-line rows (88dp+): the M3 spec bumps top / bottom padding to 12dp
+   and top-aligns the leading + trailing wrappers so the leading icon
+   sits flush to the spec's 12dp leading-icon-top-padding mark. */
+:host(.md-list-item--3-line) .md-list-item__row {
+  min-block-size: calc(88px + var(--_density-delta-multi));
+  padding-block-start: var(--_three-line-top-space);
+  padding-block-end: var(--_three-line-bottom-space);
+  align-items: flex-start;
+}
+
+/* When the leading slot hosts a <video> thumbnail (100×56dp), the M3
+   spec asks for a 12dp top inset instead of the 8dp default so the
+   wider thumbnail reads as anchored to the row, not crammed against
+   the chassis edge. We override --_top-space at the host level so the
+   `.md-list-item__row` rule above keeps the single source of truth.
+   The 3-line override above still wins by source order for 3-line +
+   video (both ask for 12dp anyway).
+
+   Detection is done via the `md-list-item--with-video` host class set
+   from TSX (see `detectSlottedFromLightDom` in md-list-item.tsx). We
+   can't use `:host(:has(> video[slot="leading"]))` here because
+   Chromium doesn't let `:host()`'s relational pseudo-class arguments
+   cross the shadow boundary into the host's light-DOM descendants. */
+:host(.md-list-item--with-video) {
+  --_top-space: var(--md-list-item-leading-video-top-space, max(4px, calc(12px + var(--md-sys-density-scale, 0) * 2px)));
+  --_bottom-space: max(4px, calc(12px + var(--md-sys-density-scale, 0) * 2px));
+}
+
+:host(.md-list-item--3-line) .md-list-item__leading {
+  align-self: flex-start;
+  /* Leading icon top padding = 12dp on ≥88dp rows per the M3 spec.
+     The row already provides padding-block: 12px when 3-line, so the
+     leading wrapper doesn't add anything on top — it just pins to
+     flex-start so the row's padding is the only offset. */
+}
+
+/* …but an AVATAR centres instead. The flex-start above is the spec rule for a
+   24dp leading ICON, which reads as aligned to the first text line. A 40dp
+   avatar is a much heavier object and pinning it to the top of an 88dp row
+   leaves it visibly high — measured 12px above the row's centre. Icons keep the
+   spec behaviour; only avatars change.
+
+   Keyed off the existing `--with-avatar` host class rather than `:has()`, which
+   the host already sets for the `leading-avatar*` props. */
+:host(.md-list-item--3-line.md-list-item--with-avatar) .md-list-item__leading {
+  align-self: center;
+}
+
+/* Same, for an avatar the consumer SLOTS rather than passing as a prop — that
+   one lives in the light tree, so it has to be tested on the host. Kept as its
+   own rule on purpose: `:has()` inside `:host()` is not universally parsed, and
+   in a shared selector list one unparsable selector invalidates the whole rule,
+   which would silently take the prop-driven case above down with it. */
+:host(.md-list-item--3-line:has(md-avatar[slot='leading'])) .md-list-item__leading {
+  align-self: center;
+}
+
+/* 3-line rows: stack the trailing cluster vertically, full row height,
+   pinned to the inline-end edge (fully right). The trailing supporting
+   text (e.g. a timestamp) sits at the top while the trailing icon/action
+   (e.g. a star) is vertically centred in the remaining space via auto
+   block margins — so the star reads as middle-right of the row. */
+:host(.md-list-item--3-line) .md-list-item__trailing {
+  align-self: stretch;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 0;
+}
+
+:host(.md-list-item--3-line) .md-list-item__trailing-icon {
+  margin-block: auto;
+}
+
+/* ==========================================================
+   3. EXPRESSIVE LIST-STYLES — inherited from
+   md-list[list-style="standard"] and md-list[list-style="segmented"].
+
+   Both Expressive variants tighten the leading + trailing icons from
+   24dp (baseline token) to 20dp (Expressive token) and round the
+   leading image thumbnail from sharp corners to corner-small (8dp).
+   The `--md-list-item-*-expressive-*` props are the user-overrideable
+   inputs; the rule simply re-binds the internal slots so the rest of
+   the CSS keeps referring to the canonical
+   `--_leading-icon-size` / `--_trailing-icon-size` / `--_leading-image-shape`
+   without per-style branching.
+   ========================================================== */
+:host-context(.md-list--standard),
+:host-context(.md-list--segmented) {
+  --_leading-icon-size: var(--md-list-item-leading-icon-size, var(--_leading-icon-expressive-size));
+  --_trailing-icon-size: var(--md-list-item-trailing-icon-size, var(--_trailing-icon-expressive-size));
+  --_leading-image-shape: var(--md-list-item-leading-image-shape, var(--_leading-image-expressive-shape));
+}
+
+/* Standard connected list — first / last row corner rounding at rest.
+   md-list also threads per-corner custom properties via ::slotted(); we
+   mirror the same radii here with :host(:first-of-type|:last-of-type)
+   so resting corners paint reliably from inside the shadow boundary.
+   Uses .md-list--standard (always on the host class map) rather than
+   the list-style attribute, which is not reflected. Middle rows keep
+   0px on internal edges via the --_container-shape default. */
+:host-context(.md-list--standard):host(:first-of-type) {
+  --md-list-item-container-shape-start-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-start-end: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host-context(.md-list--standard):host(:last-of-type) {
+  --md-list-item-container-shape-end-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-end-end: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host-context(.md-list--standard):host(:only-of-type) {
+  --md-list-item-container-shape-start-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-start-end: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-end-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-end-end: var(--md-sys-shape-corner-large, 16px);
+}
+
+/* Expandable rows that are open hand their bottom corners to the last child
+   row in the panel so the connected chassis continues as one flat stack. */
+:host(.md-list-item--expandable.md-list-item--expanded) {
+  --md-list-item-container-shape-end-start: 0px;
+  --md-list-item-container-shape-end-end: 0px;
+}
+
+/* Segmented adds the rounded-tile container shape on top of the
+   shared Expressive icon/image overrides above. The container colour
+   already falls through to the `:host` default (surface = the M3
+   `list-item-segmented-container-color` token), so re-declaring it
+   here would lift the cascade specificity of `:host-context()` above
+   `:host(.md-list-item--selected)` and stop the selected-state tint
+   from painting. Authors can still re-tint the bay via
+   `--md-list-item-container-color` on the row or list. */
+:host-context(.md-list--segmented) {
+  --_container-shape: var(--md-list-item-container-shape, var(--md-sys-shape-corner-extra-small, 4px));
+}
+
+/* Segmented connected stack — first / last row corner emphasis at rest.
+   Tiles keep corner-extra-small (4dp) on internal edges; the first row
+   lifts its top corners and the last row lifts its bottom corners to
+   corner-large (16dp) so the separated stack reads as one grouped chassis
+   (mirrors standard list first/last treatment). Middle rows stay 4dp
+   on all four corners. */
+:host-context(.md-list--segmented):host(:first-of-type) {
+  --md-list-item-container-shape-start-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-start-end: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host-context(.md-list--segmented):host(:last-of-type) {
+  --md-list-item-container-shape-end-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-end-end: var(--md-sys-shape-corner-large, 16px);
+}
+
+:host-context(.md-list--segmented):host(:only-of-type) {
+  --md-list-item-container-shape-start-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-start-end: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-end-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-end-end: var(--md-sys-shape-corner-large, 16px);
+}
+
+/* ==========================================================
+   4. STATE LAYER (interactive rows only)
+   ========================================================== */
+.md-list-item__state-layer {
+  position: absolute;
+  inset: 0;
+  /* Match the row's (possibly morphed) corner radius so the overlay clips to
+     the rounded chassis even if a consumer lifts the row out of flow during a
+     drag and an ancestor's overflow no longer does the clipping for us. */
+  border-radius: inherit;
+  background-color: var(--_state-layer-color);
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  pointer-events: none;
+}
+
+:host(.md-list-item--interactive) .md-list-item__row:hover .md-list-item__state-layer {
+  opacity: var(--_hover-state-layer-opacity);
+}
+
+:host(.md-list-item--interactive:focus-visible) .md-list-item__state-layer,
+:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) .md-list-item__state-layer {
+  opacity: var(--_focus-state-layer-opacity);
+}
+
+/* Inner-primary keyboard focus. The row uses no delegatesFocus (that broke
+   focusable option-row hosts), so keyboard focus lands on the inner primary and
+   the host does NOT match :focus-visible — :has() drives the chassis focus
+   feedback for button / link / menuitem rows instead. */
+:host(.md-list-item--interactive:has(.md-list-item__primary:focus-visible)) .md-list-item__state-layer {
+  opacity: var(--_focus-state-layer-opacity);
+}
+
+:host(.md-list-item--interactive) .md-list-item__row:active .md-list-item__state-layer,
+:host(.md-list-item--pressed) .md-list-item__state-layer {
+  opacity: var(--_pressed-state-layer-opacity);
+}
+
+/* Dragged is an app-driven state — toggle `.md-list-item--dragged` on the
+   host (e.g. from a reorderable drag wrapper) to get the spec's 16% state
+   layer, corner-large morph, and a level-4 elevation lift so the tile
+   visually detaches from its neighbours. z-index keeps the shadow above
+   sibling rows that haven't scrolled past. */
+:host(.md-list-item--dragged) .md-list-item__state-layer {
+  opacity: var(--_dragged-state-layer-opacity);
+}
+
+/* While dragged, the M3 affordance is the steady 16 % state layer (above) plus
+   the elevation lift — NOT an active press ripple. Suppress the ripple wave so
+   it can't sit as an oversized circle near the press point (e.g. the trailing
+   drag handle the user grabbed) for the whole drag, which previously read as a
+   large blob overlapping the handle. */
+:host(.md-list-item--dragged) md-ripple {
+  display: none;
+}
+
+:host(.md-list-item--dragged) {
+  box-shadow: var(--_dragged-container-elevation);
+  z-index: 1;
+}
+
+/* ==========================================================
+   5. FOCUS RING
+   Inset box-shadow on :host — paints inside the border-box so
+   parent overflow (md-list overflow:clip, story wrappers with
+   overflow:hidden, stacked connected rows) cannot clip the ring.
+   Outward host outlines + outline-offset extended past the chassis
+   and lost pixels at the top edge of first rows. Row-level inset
+   rings were still clipped by :host { overflow: clip } and
+   .md-list-item__row { overflow: hidden }. z-index keeps dragged
+   elevation shadows above neighbours when both apply.
+   ========================================================== */
+:host(.md-list-item--interactive:focus-visible),
+:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) {
+  box-shadow: inset 0 0 0 3px var(--md-sys-color-secondary, #625b71);
+  outline: none;
+  z-index: 1;
+}
+
+/* Chassis focus ring when the inner primary holds keyboard focus (the host
+   itself isn't focused for button / link / menuitem rows — see the state-layer
+   note above). Kept on the host so the ring hugs the chassis edge, not the
+   padding-inset primary. */
+:host(.md-list-item--interactive:has(.md-list-item__primary:focus-visible)) {
+  box-shadow: inset 0 0 0 3px var(--md-sys-color-secondary, #625b71);
+  outline: none;
+  z-index: 1;
+}
+
+:host(.md-list-item--dragged:focus-visible) {
+  box-shadow:
+    var(--_dragged-container-elevation),
+    inset 0 0 0 3px var(--md-sys-color-secondary, #625b71);
+}
+
+/* ==========================================================
+   5b. ACTIVE-STATE SHAPE MORPH (M3 Lists spec)
+   Per https://m3.material.io/components/lists/specs, the list-item
+   morphs from its resting shape into a state-specific corner radius:
+
+     Hover    → no default morph (state layer only)
+     Focus    → 16dp (corner-large)
+     Pressed  → 16dp (corner-large)
+     Selected → 16dp (corner-large)
+     Dragged  → 16dp (corner-large)
+
+   Applied on focus / selected / pressed / dragged — NOT hover. Hover
+   uses the state layer only; morphing corners on hover made flat middle
+   rows round to 16dp then snap back to sharp on mouse-out. Even with
+   border-radius transitions removed, the fading state layer made that
+   snap read as an animated corner morph.
+
+   Coverage:
+     - focus / selected / pressed / dragged on standard rows
+     - standard first / last edge corners — focus would otherwise SHRINK
+       below resting 16dp; clamped via max()
+     - segmented tiles (resting 4dp) — focus morphs up to corner-large;
+       clamped via max()
+     - grouped first / middle / last rows — morph that lifts out of the
+       shared chassis
+
+   Each corner is computed as `max(resting, active)` so an interaction
+   can only ever round a corner further — never sharpen one.
+
+   Border-radius animates on shape-morph states only (focus / selected /
+   pressed / dragged) via the logical-corner transitions on :host and
+   .md-list-item__row. Hover does not change border-radius, so pointer-
+   over stays state-layer-only with no corner morph on hover-out. The
+   focus ring (Section 5 inset box-shadow) follows the morphed host
+   border-radius on :host.
+
+   Asymmetric M3 Expressive timing (mirrors md-button / md-icon-button):
+     Enter / settle : medium4 (400ms) + emphasized-decelerate  — base :host
+     Exit / release   : short4  (200ms) + standard             — active states
+
+   Rule order matters: when multiple states are simultaneously true
+   (e.g. selected + focused, pressed + selected), the LATER rule in
+   source order wins on equal specificity. Priority climbs
+   focus → selected → pressed/dragged.
+
+   Authors can override per-state (--md-list-item-{state}-container-shape)
+   or globally (--md-list-item-active-container-shape). To restore hover
+   rounding, set --md-list-item-hover-container-shape and add a :hover
+   rule in app CSS.
+   ========================================================== */
+/* Shape morph exit timing — applied on active states so release snaps
+   back with short4 + standard while press-in uses the base medium4 +
+   emphasized-decelerate curve (CSS uses the pre-change transition). */
+:host(.md-list-item--interactive:focus-visible),
+:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),
+:host(.md-list-item--selected),
+:host(.md-list-item--interactive:active),
+:host(.md-list-item--pressed),
+:host(.md-list-item--dragged) {
+  transition:
+    box-shadow var(--md-sys-motion-duration-short2, 100ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    border-start-start-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    border-start-end-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    border-end-start-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    border-end-end-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+:host(.md-list-item--interactive:focus-visible) .md-list-item__row,
+:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) .md-list-item__row,
+:host(.md-list-item--selected) .md-list-item__row,
+:host(.md-list-item--interactive:active) .md-list-item__row,
+:host(.md-list-item--pressed) .md-list-item__row,
+:host(.md-list-item--dragged) .md-list-item__row {
+  transition:
+    border-start-start-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    border-start-end-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    border-end-start-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    border-end-end-radius var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+:host(.md-list-item--interactive:focus-visible),
+:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),
+:host(.md-list-item--interactive:focus-visible) .md-list-item__row,
+:host(.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)) .md-list-item__row {
+  border-start-start-radius: max(var(--_container-shape-start-start), var(--_focus-container-shape));
+  border-start-end-radius:   max(var(--_container-shape-start-end),   var(--_focus-container-shape));
+  border-end-start-radius:   max(var(--_container-shape-end-start),   var(--_focus-container-shape));
+  border-end-end-radius:     max(var(--_container-shape-end-end),     var(--_focus-container-shape));
+}
+
+:host(.md-list-item--selected),
+:host(.md-list-item--selected) .md-list-item__row {
+  border-start-start-radius: max(var(--_container-shape-start-start), var(--_selected-container-shape));
+  border-start-end-radius:   max(var(--_container-shape-start-end),   var(--_selected-container-shape));
+  border-end-start-radius:   max(var(--_container-shape-end-start),   var(--_selected-container-shape));
+  border-end-end-radius:     max(var(--_container-shape-end-end),     var(--_selected-container-shape));
+}
+
+:host(.md-list-item--interactive:active),
+:host(.md-list-item--pressed),
+:host(.md-list-item--dragged),
+:host(.md-list-item--interactive:active) .md-list-item__row,
+:host(.md-list-item--pressed) .md-list-item__row,
+:host(.md-list-item--dragged) .md-list-item__row {
+  border-start-start-radius: max(var(--_container-shape-start-start), var(--_pressed-container-shape));
+  border-start-end-radius:   max(var(--_container-shape-start-end),   var(--_pressed-container-shape));
+  border-end-start-radius:   max(var(--_container-shape-end-start),   var(--_pressed-container-shape));
+  border-end-end-radius:     max(var(--_container-shape-end-end),     var(--_pressed-container-shape));
+}
+
+/* Dragged supersedes its own pressed default but inherits visually. */
+:host(.md-list-item--dragged),
+:host(.md-list-item--dragged) .md-list-item__row {
+  border-start-start-radius: max(var(--_container-shape-start-start), var(--_dragged-container-shape));
+  border-start-end-radius:   max(var(--_container-shape-start-end),   var(--_dragged-container-shape));
+  border-end-start-radius:   max(var(--_container-shape-end-start),   var(--_dragged-container-shape));
+  border-end-end-radius:     max(var(--_container-shape-end-end),     var(--_dragged-container-shape));
+}
+
+/* ==========================================================
+   6. SELECTED STATE
+   When a row is selected we tint the container and remap the
+   text/icon colors onto the selection palette (secondary-container /
+   on-secondary-container per the M3 Lists token spec).
+   ========================================================== */
+:host(.md-list-item--selected) {
+  --_container-color: var(--_selected-container-color);
+  --_label-text-color: var(--_selected-label-text-color);
+  --_supporting-text-color: var(--_selected-label-text-color);
+  --_overline-color: var(--_selected-label-text-color);
+  --_leading-icon-color: var(--_selected-label-text-color);
+  --_trailing-icon-color: var(--_selected-label-text-color);
+  --_trailing-supporting-text-color: var(--_selected-label-text-color);
+  --_state-layer-color: var(--_selected-label-text-color);
+  --_expand-chevron-color: var(--_selected-label-text-color);
+}
+
+/* ==========================================================
+   6b. SELECTION-MODE UNSELECTED TRAILING ICON
+   Per the M3 token spec a row in a `selection-mode` list that is NOT
+   selected swaps its trailing icon to on-surface (#1D1B20) so the
+   tap-to-select affordance (checkbox/radio glyph) reads at full
+   contrast. The leading icon stays on-surface-variant.
+   ========================================================== */
+:host(.md-list-item--selection-mode:not(.md-list-item--selected)) {
+  --_trailing-icon-color: var(--_unselected-trailing-icon-color);
+}
+
+/* ==========================================================
+   6c. SELECTED + ACTIVE-STATE ICON SHIFT
+   Per the M3 Lists spec, a selected row in an active interaction
+   (hover / focus / pressed / dragged) shifts its leading + trailing
+   icons from on-secondary-container (#4A4458) up to on-surface
+   (#1D1B20) for the duration of the interaction so the affordance
+   reads slightly louder under the cursor. The selected resting label
+   colour stays on-secondary-container.
+   ========================================================== */
+:host(.md-list-item--selected.md-list-item--interactive:hover),
+:host(.md-list-item--selected.md-list-item--interactive:focus-visible),
+:host(.md-list-item--selected.md-list-item--interactive.md-list-item--roving-focus-visible:not(:focus)),
+:host(.md-list-item--selected.md-list-item--interactive:active),
+:host(.md-list-item--selected.md-list-item--pressed),
+:host(.md-list-item--selected.md-list-item--dragged) {
+  --_leading-icon-color: var(--_selected-active-icon-color);
+  --_trailing-icon-color: var(--_selected-active-icon-color);
+}
+
+/* 6d. EXPANDABLE DISCLOSURE TRIGGERS — never list-selection targets.
+   Only flat child rows in `expanded-content` may carry selection tint.
+   Wins over §6 / §6c when a stale handler sets `selected` on the parent. */
+:host(.md-list-item--expandable),
+:host(.md-list-item--expandable[selected]),
+:host(.md-list-item--expandable.md-list-item--selected),
+:host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive:hover),
+:host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive:focus-visible),
+:host(.md-list-item--expandable.md-list-item--selected.md-list-item--interactive:active),
+:host(.md-list-item--expandable.md-list-item--selected.md-list-item--pressed),
+:host(.md-list-item--expandable.md-list-item--selected.md-list-item--dragged) {
+  --_container-color: var(--md-list-item-container-color, var(--md-sys-color-surface, #fef7ff));
+  --_label-text-color: var(--md-list-item-label-text-color, var(--md-sys-color-on-surface, #1c1b1f));
+  --_supporting-text-color: var(--md-list-item-supporting-text-color, var(--md-sys-color-on-surface-variant, #49454f));
+  --_overline-color: var(--md-list-item-overline-color, var(--md-sys-color-on-surface-variant, #49454f));
+  --_leading-icon-color: var(--md-list-item-leading-icon-color, var(--md-sys-color-on-surface-variant, #49454f));
+  --_trailing-icon-color: var(--md-list-item-trailing-icon-color, var(--md-sys-color-on-surface-variant, #49454f));
+  --_trailing-supporting-text-color: var(
+    --md-list-item-trailing-supporting-text-color,
+    var(--md-sys-color-on-surface-variant, #49454f)
+  );
+  --_state-layer-color: var(--md-sys-color-on-surface, #1c1b1f);
+  --_expand-chevron-color: var(--md-list-item-expand-chevron-color, var(--md-sys-color-on-surface-variant, #49454f));
+}
+
+:host(.md-list-item--expandable.md-list-item--selected),
+:host(.md-list-item--expandable.md-list-item--selected) .md-list-item__row {
+  border-start-start-radius: var(--_container-shape-start-start);
+  border-start-end-radius: var(--_container-shape-start-end);
+  border-end-start-radius: var(--_container-shape-end-start);
+  border-end-end-radius: var(--_container-shape-end-end);
+}
+
+/* ==========================================================
+   7. DISABLED STATE
+   ========================================================== */
+:host(.md-list-item--disabled) {
+  cursor: default;
+  pointer-events: none;
+  --_label-text-color: color-mix(in srgb, var(--md-sys-color-on-surface, #1c1b1f) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  --_supporting-text-color: color-mix(in srgb, var(--md-sys-color-on-surface, #1c1b1f) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  --_overline-color: color-mix(in srgb, var(--md-sys-color-on-surface, #1c1b1f) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  --_leading-icon-color: color-mix(in srgb, var(--md-sys-color-on-surface, #1c1b1f) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  --_trailing-icon-color: color-mix(in srgb, var(--md-sys-color-on-surface, #1c1b1f) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  --_trailing-supporting-text-color: color-mix(in srgb, var(--md-sys-color-on-surface, #1c1b1f) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  --_expand-chevron-color: color-mix(in srgb, var(--md-sys-color-on-surface, #1c1b1f) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+}
+
+:host(.md-list-item--disabled) .md-list-item__state-layer {
+  opacity: var(--_disabled-state-layer-opacity);
+}
+
+/* When a row is BOTH selected AND disabled, the M3 spec collapses the
+   secondary-container fill to a faint on-surface @ 12% wash and lets the
+   disabled content opacity (0.38) carry the "frozen" cue. Authors can
+   override via --md-list-item-selected-disabled-container-color. */
+:host(.md-list-item--selected.md-list-item--disabled) {
+  --_container-color: var(--_selected-disabled-container-color);
+}
+
+/* Soft-disabled: same disabled visuals but remains focusable.
+   Overrides the hard-disabled pointer-events:none so keyboard users
+   can still discover the row and hear aria-disabled="true". */
+:host([soft-disabled]) {
+  pointer-events: auto;
+}
+
+:host([soft-disabled]) .md-list-item__row {
+  cursor: default;
+}
+
+:host([soft-disabled]) .md-list-item__state-layer {
+  display: none;
+}
+
+/* ==========================================================
+   8. LEADING SLOT — icon (18dp), avatar (40dp), image (56dp)
+   ========================================================== */
+.md-list-item__leading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-inline-size: 24px;
+  color: var(--_leading-icon-color);
+}
+
+/* Hide empty wrappers for slots that ARE always rendered (so the
+ * slot elements stay queryable + slotchange listeners always wire).
+ * `.md-list-item__trailing` is intentionally NOT in this list — the
+ * trailing wrapper is omitted from the DOM entirely when empty (see
+ * `renderTrailing` + `detectSlottedFromLightDom` in md-list-item.tsx). */
+.md-list-item__leading--empty,
+.md-list-item__overline--empty,
+.md-list-item__supporting-text--empty,
+.md-list-item__trailing-text--empty {
+  display: none;
+}
+
+/* Material Symbols leading icon — per the M3 expansion list spec the parent
+   row's leading icon fills (FILL axis → 1) while expanded. Child rows in
+   `expanded-content` are separate hosts and keep their own resting icon. */
+.md-list-item__icon {
+  font-size: var(--_leading-icon-size);
+  inline-size: var(--_leading-icon-size);
+  block-size: var(--_leading-icon-size);
+  line-height: 1;
+  color: var(--_leading-icon-color);
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  transition: font-variation-settings var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+:host(.md-list-item--expanded) .md-list-item__icon {
+  font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+
+/* The leading avatar is now an internal `md-avatar` component. We forward
+   the list-item's avatar tokens (`--_leading-avatar-*`) to the avatar's
+   public API via CSS custom-property inheritance so authors can keep
+   theming the avatar through the list-item without knowing the avatar
+   component exists. */
+md-avatar.md-list-item__avatar {
+  --md-avatar-size: var(--_leading-avatar-size);
+  --md-avatar-container-shape: var(--_leading-avatar-shape);
+  /* When the list-item caller did NOT explicitly request name-derived
+     palette colors, fall back to the legacy primary-container tone so
+     existing pages keep their visuals. */
+  --md-avatar-container-color: var(--_leading-avatar-color);
+  --md-avatar-label-color: var(--_leading-avatar-label-color);
+}
+
+/* Image thumbnail — prop-based `leading-image` wraps the <img> so a
+   selected-state scrim + checkmark circle can overlay the tile per M3. */
+.md-list-item__image-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  inline-size: var(--_leading-image-width);
+  block-size: var(--_leading-image-height);
+  border-radius: var(--_leading-image-shape);
+  overflow: hidden;
+}
+
+.md-list-item__image {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* Selected thumbnail overlay — scrim fades in; circle scales in with M3
+   emphasized-decelerate (mirrors md-step check-in). Always `display:flex`
+   so opacity/scale can animate; visibility is driven by opacity, not
+   display:none toggling. */
+.md-list-item__image-selection-indicator {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--_leading-image-selection-scrim-color);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+:host(.md-list-item--selected) .md-list-item__image-selection-indicator {
+  opacity: 1;
+}
+
+.md-list-item__image-selection-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: var(--_leading-image-selection-icon-size);
+  block-size: var(--_leading-image-selection-icon-size);
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+  background-color: var(--_leading-image-selection-circle-color);
+  transform: scale(0);
+  opacity: 0;
+}
+
+:host(.md-list-item--selected) .md-list-item__image-selection-circle {
+  animation: md-list-item-image-selection-in var(--md-sys-motion-duration-medium2, 250ms)
+    var(--md-sys-motion-easing-emphasized-decelerate, cubic-bezier(0.05, 0.7, 0.1, 1)) both;
+}
+
+@keyframes md-list-item-image-selection-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Outscore the generic `.material-symbols-outlined { display: inline-block }`
+   rule in Section 11 so the glyph centers inside the 24dp circle. */
+.md-list-item__image-selection-check.material-symbols-outlined {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: calc(var(--_leading-image-selection-icon-size) * 0.667);
+  block-size: calc(var(--_leading-image-selection-icon-size) * 0.667);
+  font-size: calc(var(--_leading-image-selection-icon-size) * 0.667);
+  line-height: 1;
+  color: var(--_leading-image-selection-icon-color);
+  font-weight: normal;
+  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Slotted leading content inherits color */
+::slotted([slot="leading"]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--_leading-icon-color);
+  fill: currentColor;
+}
+
+/* Direct <video slot="leading"> thumbnail — sized per the M3 leading
+   video tokens (100×56 dp default). For a custom-sized video, override
+   --md-list-item-leading-video-{width,height,shape} on the host or
+   set width/height inline on the video element. */
+::slotted(video[slot="leading"]) {
+  inline-size: var(--_leading-video-width);
+  block-size: var(--_leading-video-height);
+  border-radius: var(--_leading-video-shape);
+  object-fit: cover;
+}
+
+/* ==========================================================
+   9. CONTENT (CENTER) — overline, headline, supporting
+   ========================================================== */
+.md-list-item__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  overflow: hidden;
+  gap: 0;
+}
+
+/* Overline */
+.md-list-item__overline {
+  font-family: var(--md-sys-typescale-label-small-font-family, Roboto, sans-serif);
+  font-size: var(--md-sys-typescale-label-small-font-size, 11px);
+  font-weight: var(--md-sys-typescale-label-small-font-weight, 500);
+  line-height: var(--md-sys-typescale-label-small-line-height, 16px);
+  letter-spacing: var(--md-sys-typescale-label-small-letter-spacing, 0.5px);
+  color: var(--_overline-color);
+  contain: inline-size;
+  min-inline-size: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  text-transform: uppercase;
+  transition: none;
+}
+
+/* Headline.
+   `display: block` makes the span clip with `text-overflow: ellipsis` even
+   though it is now nested inside the layout-transparent md-tooltip wrapper
+   (when unwrapped it was blockified as a flex child; inside the wrapper it
+   needs an explicit block box). The wrapper stretches to the content-column
+   width and constrains this span — see section 9b. */
+.md-list-item__headline {
+  font-family: var(--_label-text-font);
+  font-size: max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-large-font-weight, 400);
+  line-height: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-body-large-letter-spacing, 0.5px);
+  color: var(--_label-text-color);
+  display: block;
+  contain: inline-size;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: none;
+}
+
+/* Supporting */
+.md-list-item__supporting-text {
+  font-family: var(--_supporting-text-font);
+  font-size: max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-medium-font-weight, 400);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-body-medium-letter-spacing, 0.25px);
+  color: var(--_supporting-text-color);
+  display: block;
+  contain: inline-size;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: none;
+}
+
+/* 3-line: supporting text wraps up to 2 lines */
+:host(.md-list-item--3-line) .md-list-item__supporting-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  white-space: normal;
+}
+
+/* ==========================================================
+   9b. TEXT TOOLTIP WRAPPERS
+   The headline + supporting-text spans are ALWAYS wrapped in a stable
+   md-tooltip (rendered unconditionally — never mounted/unmounted on
+   resize, so there is no DOM-swap flicker). The full text is shown on
+   hover ONLY while the span is actually clipped; the tooltip's
+   `disabled` prop is toggled imperatively from a single debounced
+   ResizeObserver (see applyTooltipToggle in md-list-item.tsx) so there
+   is no Stencil re-render on resize either.
+
+   The wrapper must be layout-transparent so the inner span's ellipsis
+   math is byte-for-byte what it was unwrapped. We give the tooltip host
+   `display:block; min-inline-size:0; overflow:hidden`: as a column-flex
+   child of `.md-list-item__content` it stretches to the content-column
+   width (align-items:stretch) and then constrains the inner block span,
+   which keeps `text-overflow: ellipsis` working exactly as before. The
+   `md-tooltip` + class selector outscores md-tooltip's own
+   `:host { display: inline-block }` so the block override is
+   deterministic across the shadow boundary. The popup itself is
+   position:fixed and escapes the wrapper's overflow:hidden.
+   ========================================================== */
+md-tooltip.md-list-item__headline-tooltip,
+md-tooltip.md-list-item__supporting-tooltip {
+  display: block;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  overflow: hidden;
+  /* A touch wider than the 280px plain-tooltip default so long row text
+     is more fully revealed when the tooltip does show. */
+  --md-tooltip-plain-max-inline-size: 320px;
+}
+
+/* Empty supporting text → collapse the whole wrapper, mirroring the
+   legacy `--empty` span behavior (nothing to measure or reveal). */
+md-tooltip.md-list-item__supporting-tooltip--empty {
+  display: none;
+}
+
+/* ==========================================================
+   10. TRAILING SLOT
+   ========================================================== */
+.md-list-item__trailing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  color: var(--_trailing-icon-color);
+}
+
+/* Trailing supporting text */
+.md-list-item__trailing-text {
+  font-family: var(--_trailing-supporting-text-font);
+  font-size: var(--md-sys-typescale-label-small-font-size, 11px);
+  font-weight: var(--md-sys-typescale-label-small-font-weight, 500);
+  line-height: var(--md-sys-typescale-label-small-line-height, 16px);
+  color: var(--_trailing-supporting-text-color);
+  white-space: nowrap;
+}
+
+/* Trailing icon */
+.md-list-item__trailing-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--_trailing-icon-size);
+  inline-size: var(--_trailing-icon-size);
+  block-size: var(--_trailing-icon-size);
+  line-height: 1;
+  color: var(--_trailing-icon-color);
+}
+
+/* Slotted trailing content — secondary actions keep their own hit targets
+   in multi-action lists (icon buttons, switches, etc.).
+   md-badge is excluded: it owns container/label colors via --md-badge-* tokens
+   and must not inherit the row's trailing-icon color (on-surface-variant). */
+::slotted([slot="trailing"]:not(md-badge)) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--_trailing-icon-color);
+  fill: currentColor;
+  pointer-events: auto;
+}
+
+/* md-badge is authored as an overlay (position:absolute on the host) for
+   icon-button anchors. When slotted directly as trailing list content it
+   must participate in the row flex flow so it vertically centres with the
+   headline instead of painting against the row bottom / divider edge.
+   Color is intentionally omitted — badge owns label/container tokens. */
+::slotted(md-badge[slot="trailing"]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  position: static;
+  inset-block-start: auto;
+  inset-inline-end: auto;
+  transform: none;
+  flex-shrink: 0;
+}
+
+/* 3-line rows stack trailing content in a column — centre standalone badges
+   the same way trailing icons get margin-block:auto. */
+:host(.md-list-item--3-line) ::slotted(md-badge[slot="trailing"]) {
+  margin-block: auto;
+}
+
+/* ==========================================================
+   10a2. DRAG HANDLE (reorderable rows)
+   Rendered as the LAST trailing affordance when the parent
+   md-list is `reorderable`. Grabbing it starts a pointer drag
+   that the parent list turns into a reorder. `touch-action:none`
+   lets the drag work on touch without the page scrolling, and
+   `pointer-events:auto` keeps the handle grabbable even inside a
+   row whose body is the primary click target.
+
+   The selector intentionally doubles up the `.material-symbols-outlined`
+   class (which the handle also carries for its glyph font) so this rule
+   outscores the generic `.material-symbols-outlined { pointer-events: none }`
+   in Section 11. With equal single-class specificity that later rule would
+   otherwise win on source order and make the handle non-hittable — the
+   pointer would fall through to the row, `pointerdown`'s composedPath would
+   never include the handle, and the drag would never start. */
+.md-list-item__drag-handle.material-symbols-outlined {
+  /* Visual parity with md-accordion-item's drag handle: a 24dp box holding a
+     22px `drag_indicator` glyph that rests at on-surface-variant / 0.55 opacity
+     and lifts to full opacity + a subtle scale on hover. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 24px;
+  block-size: 24px;
+  flex-shrink: 0;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--_trailing-icon-color);
+  opacity: 0.55;
+  cursor: grab;
+  touch-action: none;
+  pointer-events: auto;
+  transition:
+    opacity var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
+    transform var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1)),
+    color var(--md-sys-motion-duration-short3, 150ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+}
+
+.md-list-item__drag-handle.material-symbols-outlined:hover {
+  opacity: 1;
+  color: var(--md-sys-color-on-surface, #1c1b1f);
+  transform: scale(1.08);
+}
+
+.md-list-item__drag-handle.material-symbols-outlined:active {
+  cursor: grabbing;
+}
+
+:host(.md-list-item--dragged) .md-list-item__drag-handle {
+  opacity: 1;
+  color: var(--md-sys-color-on-surface, #1c1b1f);
+  cursor: grabbing;
+}
+
+/* Siblings of the dragged row glide into their new slot. The dragged row
+   itself is NOT given this class, so its pointer-follow transform stays
+   instant (no lag). */
+:host(.md-list-item--shifting) {
+  transition: transform var(--md-sys-motion-duration-short4, 200ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+  will-change: transform;
+}
+
+/* ==========================================================
+   10b. EXPAND CARET (md-icon-button)
+   The disclosure control is now an md-icon-button rendered as
+   the LAST child of the trailing slot when the row is
+   `expandable`. It carries aria-expanded / aria-controls, gets
+   the icon-button's pill/squircle shape morph when selected
+   (expanded), and its `expand_more` glyph rotates 180° (points
+   up) when expanded — animated through the ::part(icon) it
+   forwards.
+   ========================================================== */
+.md-list-item__expand-button {
+  flex-shrink: 0;
+  /* xs (32dp) fits the 56dp row chassis — sm (40dp) + 8/10 padding overshoots
+     min-block-size and makes the trigger look taller than child rows. */
+  --md-icon-button-container-width: var(--md-list-item-expand-button-size, 32px);
+  --md-icon-button-container-height: var(--md-list-item-expand-button-size, 32px);
+  --md-icon-button-icon-size: var(--md-list-item-expand-chevron-size, 24px);
+  --md-icon-button-icon-color: var(--_expand-chevron-color);
+  --md-icon-button-state-layer-color: var(--_expand-chevron-color);
+  margin-inline-end: -4px;
+}
+
+/* Expanded: MD3 expansion-list active pill — narrow vertical squircle, primary
+   container fill, on-primary chevron (points up via rotation). */
+.md-list-item__expand-button--expanded {
+  --md-icon-button-container-color: var(--md-sys-color-primary, #6750a4);
+  --md-icon-button-icon-color: var(--md-sys-color-on-primary, #ffffff);
+  --md-icon-button-state-layer-color: var(--md-sys-color-on-primary, #ffffff);
+  --md-icon-button-outline-color: transparent;
+}
+
+/* Rotate the caret glyph. We reach into the icon-button's forwarded
+   `icon` part — ::part pierces exactly one shadow level, which is the
+   md-icon-button living in this row's shadow tree. */
+.md-list-item__expand-button::part(icon) {
+  transition: transform var(--md-sys-motion-duration-medium2, 250ms) var(--md-sys-motion-easing-emphasized, cubic-bezier(0.2, 0, 0, 1));
+  transform-origin: center;
+}
+
+.md-list-item__expand-button--expanded::part(icon) {
+  transform: rotate(180deg);
+}
+
+/* ==========================================================
+   10c. EXPANDED PANEL — MD3 expressive open / retract
+   Single-level reveal: the panel animates height via the modern
+   `grid-template-rows: 0fr ↔ 1fr` trick PLUS an opacity fade and
+   a small inner translateY so the content "arches" down into
+   place on open and retracts on close. Open uses
+   emphasized-decelerate (settle), close uses emphasized-accelerate
+   (clear out) — asymmetric M3 Expressive motion. The inner
+   wrapper carries the padding so the grid can collapse cleanly.
+   ========================================================== */
+.md-list-item__expanded-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  background-color: var(--_expanded-panel-background);
+  transition:
+    grid-template-rows var(--_collapse-duration) var(--_collapse-easing),
+    opacity var(--_collapse-duration) var(--_collapse-easing);
+}
+
+:host(.md-list-item--expanded) .md-list-item__expanded-panel {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transition:
+    grid-template-rows var(--_expand-duration) var(--_expand-easing),
+    opacity var(--_expand-duration) var(--_expand-easing);
+}
+
+.md-list-item__expanded-panel-inner {
+  min-block-size: 0;
+  overflow: hidden;
+  /* Child motion coordinated with the parent height/opacity — the content
+     starts lifted and arcs down into its resting position on open. */
+  transform: translateY(-8px);
+  transition: transform var(--_collapse-duration) var(--_collapse-easing);
+  padding-block: var(--_expanded-panel-padding-block);
+  padding-inline-start: var(--_expanded-panel-padding-inline-start);
+  padding-inline-end: var(--_expanded-panel-padding-inline);
+}
+
+:host(.md-list-item--expanded) .md-list-item__expanded-panel-inner {
+  transform: translateY(0);
+  transition: transform var(--_expand-duration) var(--_expand-easing);
+}
+
+/* Flat expansion list — child rows are full-width sibling list items, not a
+   nested sub-box. Sharp corners on every child; the last child inherits the
+   expandable group's bottom rounding when this row is the list's last item. */
+:host(.md-list-item--expandable) ::slotted(md-list-item[slot="expanded-content"]) {
+  --md-list-item-container-shape: 0px;
+  --md-list-item-container-shape-start-start: 0px;
+  --md-list-item-container-shape-start-end: 0px;
+  --md-list-item-container-shape-end-start: 0px;
+  --md-list-item-container-shape-end-end: 0px;
+  display: block;
+  inline-size: 100%;
+  box-sizing: border-box;
+}
+
+:host-context(.md-list--standard):host(:last-of-type.md-list-item--expanded) ::slotted(md-list-item[slot="expanded-content"]:last-of-type),
+:host-context(.md-list--segmented):host(:last-of-type.md-list-item--expanded) ::slotted(md-list-item[slot="expanded-content"]:last-of-type) {
+  --md-list-item-container-shape-end-start: var(--md-sys-shape-corner-large, 16px);
+  --md-list-item-container-shape-end-end: var(--md-sys-shape-corner-large, 16px);
+}
+
+/* Dividers between child rows slot inline with the connected chassis. */
+::slotted(md-divider[slot="expanded-content"]) {
+  display: block;
+}
+
+::slotted([slot="expanded-content"]) {
+  display: block;
+}
+
+/* When the panel is hidden via [hidden], grid still animates from 0fr
+   so don't collapse the box ourselves. */
+.md-list-item__expanded-panel[hidden] {
+  display: grid;
+}
+
+/* Reduced motion: snap, don't animate */
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition-property: box-shadow;
+  }
+
+  .md-list-item__row,
+  .md-list-item__expanded-panel,
+  .md-list-item__expanded-panel-inner,
+  .md-list-item__drag-handle {
+    transition: none;
+  }
+
+  .md-list-item__drag-handle.material-symbols-outlined:hover {
+    transform: none;
+  }
+
+  .md-list-item__expand-button::part(icon) {
+    transition: none;
+  }
+
+  .md-list-item__image-selection-indicator {
+    transition: none;
+  }
+
+  :host(.md-list-item--selected) .md-list-item__image-selection-circle {
+    animation: none;
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ==========================================================
+   11. MATERIAL SYMBOLS (icon font inside shadow DOM)
+   ========================================================== */
+.material-symbols-outlined {
+  font-family: var(--md-sys-icon-font-family, 'Material Symbols Outlined', 'Material Icons');
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  pointer-events: none;
+}
+
+/* ==========================================================
+   12. RTL — directional icon mirroring hook
+   Trailing icons that imply direction (chevrons, arrows) can
+   be mirrored at the application level via a class. We do not
+   mirror by default since most trailing icons are non-directional.
+   ========================================================== */
+:host([dir="rtl"]) .md-list-item__trailing-icon[data-rtl-mirror],
+:host-context([dir="rtl"]) .md-list-item__trailing-icon[data-rtl-mirror] {
+  transform: scaleX(-1);
+}
+
+/* ==========================================================
+   14. IMAGE / AVATAR padding adjustments
+   When a row uses an image thumbnail, the leading slot fills
+   the full 16+56+16 column so the start padding of the host
+   moves onto the image itself.
+   ========================================================== */
+:host(.md-list-item--with-image) .md-list-item__row {
+  padding-inline-start: 16px;
+}
+
+/* ==========================================================
+   DENSITY (local override)
+   Maps the local `density` prop onto the same --md-sys-density-scale signal a
+   global `data-density` ancestor sets. Declared on :host, so a local rung wins
+   over the inherited global one. Every density-sensitive value in this file
+   derives from that single signal by calc — never add a fixed per-rung ladder.
+   ========================================================== */
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }

@@ -1,0 +1,617 @@
+/**
+ * Material Design 3 Design Tokens
+ * CSS Custom Properties for the AWC UI component library
+ *
+ * Spec: https://m3.material.io/styles
+ *
+ * Sections:
+ *   1. Color Roles (light)
+ *   2. Elevation
+ *   3. Shape
+ *   4. Typography Scale
+ *   5. Motion – Duration
+ *   6. Motion – Easing (legacy cubic-bezier)
+ *   7. Motion – Spring Physics (MD3 Expressive)
+ *   8. Z-Index (stacking order)
+ *   9. State Layer Opacity
+ *   10. Dark Theme overrides
+ */
+
+/* ============================================================
+   LIGHT THEME (default)
+   ============================================================ */
+:root {
+
+  /* ==========================================================
+     1. COLOR ROLES
+     Spec: https://m3.material.io/styles/color/the-color-system/tokens
+     ========================================================== */
+  --md-sys-color-primary: #6750A4;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #EADDFF;
+  --md-sys-color-on-primary-container: #21005D;
+
+  --md-sys-color-secondary: #625B71;
+  --md-sys-color-on-secondary: #FFFFFF;
+  --md-sys-color-secondary-container: #E8DEF8;
+  --md-sys-color-on-secondary-container: #1E192B;
+
+  --md-sys-color-tertiary: #7D5260;
+  --md-sys-color-on-tertiary: #FFFFFF;
+  --md-sys-color-tertiary-container: #FFD8E4;
+  --md-sys-color-on-tertiary-container: #370B1E;
+
+  --md-sys-color-error: #B3261E;
+  --md-sys-color-on-error: #FFFFFF;
+  --md-sys-color-error-container: #F9DEDC;
+  --md-sys-color-on-error-container: #370606;
+
+  /* Semantic status roles. Not part of the baseline M3 palette — added for
+     status-bearing components (chips, badges, banners). Built on the same tonal
+     recipe as `error` above so they theme and contrast like a first-class role:
+     light = tone 40 main / 90 container / 10 on-container. */
+  --md-sys-color-success: #2E6B4F;
+  --md-sys-color-on-success: #FFFFFF;
+  --md-sys-color-success-container: #B8F0CE;
+  --md-sys-color-on-success-container: #002110;
+
+  --md-sys-color-warning: #7A5900;
+  --md-sys-color-on-warning: #FFFFFF;
+  --md-sys-color-warning-container: #FFDF9B;
+  --md-sys-color-on-warning-container: #261A00;
+
+  --md-sys-color-info: #38608F;
+  --md-sys-color-on-info: #FFFFFF;
+  --md-sys-color-info-container: #D3E4FF;
+  --md-sys-color-on-info-container: #001D34;
+
+  --md-sys-color-background: #FFFBFE;
+  --md-sys-color-on-background: #1C1B1F;
+
+  --md-sys-color-surface: #FFFBFE;
+  --md-sys-color-on-surface: #1C1B1F;
+  --md-sys-color-surface-variant: #E7E0EC;
+  --md-sys-color-on-surface-variant: #49454F;
+
+  --md-sys-color-surface-container-lowest: #FFFFFF;
+  --md-sys-color-surface-container-low: #F7F2FA;
+  --md-sys-color-surface-container: #F3EDF7;
+  --md-sys-color-surface-container-high: #ECE6F0;
+  --md-sys-color-surface-container-highest: #E6E0E9;
+
+  --md-sys-color-surface-dim: #DED8E1;
+  --md-sys-color-surface-bright: #FFFBFE;
+
+  --md-sys-color-outline: #79747E;
+  --md-sys-color-outline-variant: #CAC4D0;
+
+  --md-sys-color-inverse-surface: #313033;
+  --md-sys-color-inverse-on-surface: #F4EFF4;
+  --md-sys-color-inverse-primary: #D0BCFF;
+
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-surface-tint: #6750A4;
+
+  /* ==========================================================
+     2. ELEVATION (box-shadow)
+     Spec: https://m3.material.io/styles/elevation/tokens
+     ========================================================== */
+  --md-sys-elevation-0: none;
+  --md-sys-elevation-1: 0px 1px 2px rgba(0,0,0,0.3), 0px 1px 3px 1px rgba(0,0,0,0.15);
+  --md-sys-elevation-2: 0px 1px 2px rgba(0,0,0,0.3), 0px 2px 6px 2px rgba(0,0,0,0.15);
+  --md-sys-elevation-3: 0px 4px 8px 3px rgba(0,0,0,0.15), 0px 1px 3px rgba(0,0,0,0.3);
+  --md-sys-elevation-4: 0px 6px 10px 4px rgba(0,0,0,0.15), 0px 2px 3px rgba(0,0,0,0.3);
+  --md-sys-elevation-5: 0px 8px 12px 6px rgba(0,0,0,0.15), 0px 4px 4px rgba(0,0,0,0.3);
+
+  /* ==========================================================
+     3. SHAPE (border-radius)
+     Spec: https://m3.material.io/styles/shape/overview
+     ========================================================== */
+  --md-sys-shape-corner-none: 0px;
+  --md-sys-shape-corner-extra-small: 4px;
+  --md-sys-shape-corner-extra-small-top: 4px 4px 0px 0px;
+  --md-sys-shape-corner-small: 8px;
+  --md-sys-shape-corner-medium: 12px;
+  --md-sys-shape-corner-large: 16px;
+  --md-sys-shape-corner-large-end: 0px 16px 16px 0px;
+  --md-sys-shape-corner-large-top: 16px 16px 0px 0px;
+  --md-sys-shape-corner-extra-large: 28px;
+  --md-sys-shape-corner-extra-large-top: 28px 28px 0px 0px;
+  --md-sys-shape-corner-full: 9999px;
+
+  /* ==========================================================
+     4. TYPOGRAPHY SCALE
+     Spec: https://m3.material.io/styles/typography/type-scale-tokens
+     ========================================================== */
+
+  /* --- Display --- */
+  --md-sys-typescale-display-large-font-family: Roboto, sans-serif;
+  --md-sys-typescale-display-large-font-size: 57px;
+  --md-sys-typescale-display-large-line-height: 64px;
+  --md-sys-typescale-display-large-font-weight: 400;
+  --md-sys-typescale-display-large-letter-spacing: -0.25px;
+  --md-sys-typescale-display-large-font: 400 57px/64px Roboto, sans-serif;
+
+  --md-sys-typescale-display-medium-font-family: Roboto, sans-serif;
+  --md-sys-typescale-display-medium-font-size: 45px;
+  --md-sys-typescale-display-medium-line-height: 52px;
+  --md-sys-typescale-display-medium-font-weight: 400;
+  --md-sys-typescale-display-medium-letter-spacing: 0px;
+  --md-sys-typescale-display-medium-font: 400 45px/52px Roboto, sans-serif;
+
+  --md-sys-typescale-display-small-font-family: Roboto, sans-serif;
+  --md-sys-typescale-display-small-font-size: 36px;
+  --md-sys-typescale-display-small-line-height: 44px;
+  --md-sys-typescale-display-small-font-weight: 400;
+  --md-sys-typescale-display-small-letter-spacing: 0px;
+  --md-sys-typescale-display-small-font: 400 36px/44px Roboto, sans-serif;
+
+  /* --- Headline --- */
+  --md-sys-typescale-headline-large-font-family: Roboto, sans-serif;
+  --md-sys-typescale-headline-large-font-size: 32px;
+  --md-sys-typescale-headline-large-line-height: 40px;
+  --md-sys-typescale-headline-large-font-weight: 400;
+  --md-sys-typescale-headline-large-letter-spacing: 0px;
+  --md-sys-typescale-headline-large-font: 400 32px/40px Roboto, sans-serif;
+
+  --md-sys-typescale-headline-medium-font-family: Roboto, sans-serif;
+  --md-sys-typescale-headline-medium-font-size: 28px;
+  --md-sys-typescale-headline-medium-line-height: 36px;
+  --md-sys-typescale-headline-medium-font-weight: 400;
+  --md-sys-typescale-headline-medium-letter-spacing: 0px;
+  --md-sys-typescale-headline-medium-font: 400 28px/36px Roboto, sans-serif;
+
+  --md-sys-typescale-headline-small-font-family: Roboto, sans-serif;
+  --md-sys-typescale-headline-small-font-size: 24px;
+  --md-sys-typescale-headline-small-line-height: 32px;
+  --md-sys-typescale-headline-small-font-weight: 400;
+  --md-sys-typescale-headline-small-letter-spacing: 0px;
+  --md-sys-typescale-headline-small-font: 400 24px/32px Roboto, sans-serif;
+
+  /* --- Title --- */
+  --md-sys-typescale-title-large-font-family: Roboto, sans-serif;
+  --md-sys-typescale-title-large-font-size: 22px;
+  --md-sys-typescale-title-large-line-height: 28px;
+  --md-sys-typescale-title-large-font-weight: 400;
+  --md-sys-typescale-title-large-letter-spacing: 0px;
+  --md-sys-typescale-title-large-font: 400 22px/28px Roboto, sans-serif;
+
+  --md-sys-typescale-title-medium-font-family: Roboto, sans-serif;
+  --md-sys-typescale-title-medium-font-size: 16px;
+  --md-sys-typescale-title-medium-line-height: 24px;
+  --md-sys-typescale-title-medium-font-weight: 500;
+  --md-sys-typescale-title-medium-letter-spacing: 0.15px;
+  --md-sys-typescale-title-medium-font: 500 16px/24px Roboto, sans-serif;
+
+  --md-sys-typescale-title-small-font-family: Roboto, sans-serif;
+  --md-sys-typescale-title-small-font-size: 14px;
+  --md-sys-typescale-title-small-line-height: 20px;
+  --md-sys-typescale-title-small-font-weight: 500;
+  --md-sys-typescale-title-small-letter-spacing: 0.1px;
+  --md-sys-typescale-title-small-font: 500 14px/20px Roboto, sans-serif;
+
+  /* --- Label --- */
+  --md-sys-typescale-label-large-font-family: Roboto, sans-serif;
+  --md-sys-typescale-label-large-font-size: 14px;
+  --md-sys-typescale-label-large-line-height: 20px;
+  --md-sys-typescale-label-large-font-weight: 500;
+  --md-sys-typescale-label-large-letter-spacing: 0.1px;
+  --md-sys-typescale-label-large-font: 500 14px/20px Roboto, sans-serif;
+
+  --md-sys-typescale-label-medium-font-family: Roboto, sans-serif;
+  --md-sys-typescale-label-medium-font-size: 12px;
+  --md-sys-typescale-label-medium-line-height: 16px;
+  --md-sys-typescale-label-medium-font-weight: 500;
+  --md-sys-typescale-label-medium-letter-spacing: 0.5px;
+  --md-sys-typescale-label-medium-font: 500 12px/16px Roboto, sans-serif;
+
+  --md-sys-typescale-label-small-font-family: Roboto, sans-serif;
+  --md-sys-typescale-label-small-font-size: 11px;
+  --md-sys-typescale-label-small-line-height: 16px;
+  --md-sys-typescale-label-small-font-weight: 500;
+  --md-sys-typescale-label-small-letter-spacing: 0.5px;
+  --md-sys-typescale-label-small-font: 500 11px/16px Roboto, sans-serif;
+
+  /* --- Body --- */
+  --md-sys-typescale-body-large-font-family: Roboto, sans-serif;
+  --md-sys-typescale-body-large-font-size: 16px;
+  --md-sys-typescale-body-large-line-height: 24px;
+  --md-sys-typescale-body-large-font-weight: 400;
+  --md-sys-typescale-body-large-letter-spacing: 0.5px;
+  --md-sys-typescale-body-large-font: 400 16px/24px Roboto, sans-serif;
+
+  --md-sys-typescale-body-medium-font-family: Roboto, sans-serif;
+  --md-sys-typescale-body-medium-font-size: 14px;
+  --md-sys-typescale-body-medium-line-height: 20px;
+  --md-sys-typescale-body-medium-font-weight: 400;
+  --md-sys-typescale-body-medium-letter-spacing: 0.25px;
+  --md-sys-typescale-body-medium-font: 400 14px/20px Roboto, sans-serif;
+
+  --md-sys-typescale-body-small-font-family: Roboto, sans-serif;
+  --md-sys-typescale-body-small-font-size: 12px;
+  --md-sys-typescale-body-small-line-height: 16px;
+  --md-sys-typescale-body-small-font-weight: 400;
+  --md-sys-typescale-body-small-letter-spacing: 0.4px;
+  --md-sys-typescale-body-small-font: 400 12px/16px Roboto, sans-serif;
+
+  /* ==========================================================
+     5. MOTION – DURATION
+     Spec: https://m3.material.io/styles/motion/easing-and-duration/tokens-specs
+     ========================================================== */
+
+  /* Short — small utility-focused transitions */
+  --md-sys-motion-duration-short1: 50ms;
+  --md-sys-motion-duration-short2: 100ms;
+  --md-sys-motion-duration-short3: 150ms;
+  --md-sys-motion-duration-short4: 200ms;
+
+  /* Medium — mid-distance transitions */
+  --md-sys-motion-duration-medium1: 250ms;
+  --md-sys-motion-duration-medium2: 300ms;
+  --md-sys-motion-duration-medium3: 350ms;
+  --md-sys-motion-duration-medium4: 400ms;
+
+  /* Long — large expressive transitions (often paired with emphasized easing) */
+  --md-sys-motion-duration-long1: 450ms;
+  --md-sys-motion-duration-long2: 500ms;
+  --md-sys-motion-duration-long3: 550ms;
+  --md-sys-motion-duration-long4: 600ms;
+
+  /* Extra-long — ambient or non-interactive transitions */
+  --md-sys-motion-duration-extra-long1: 700ms;
+  --md-sys-motion-duration-extra-long2: 800ms;
+  --md-sys-motion-duration-extra-long3: 900ms;
+  --md-sys-motion-duration-extra-long4: 1000ms;
+
+  /* ==========================================================
+     6. MOTION – EASING (legacy cubic-bezier)
+     These are the classic M3 easing curves. Still valid for
+     components that haven't migrated to the spring system.
+     Spec: https://m3.material.io/styles/motion/easing-and-duration/tokens-specs
+     ========================================================== */
+
+  /* Standard — simple, small, utility transitions */
+  --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --md-sys-motion-easing-standard-decelerate: cubic-bezier(0, 0, 0, 1);
+
+  /* Emphasized — expressive, attention-drawing transitions.
+     The full emphasized curve is a two-phase path on Android/Flutter.
+     CSS cannot represent path interpolators, so the standard curve
+     is used as the recommended fallback for the combined curve.
+     The accelerate and decelerate halves ARE expressible. */
+  --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+
+  --md-sys-motion-easing-linear: linear;
+
+  /* ==========================================================
+     7. MOTION – SPRING PHYSICS (MD3 Expressive)
+     The newer motion system uses spring-based curves.
+     Each spec pairs an easing curve with its natural duration.
+
+     Two categories:
+       • Spatial  — position, size, shape changes
+       • Effects  — color, opacity, non-spatial changes
+
+     Three speeds:
+       • Fast    — micro-interactions (checkboxes, toggles)
+       • Default — most component transitions
+       • Slow    — large or ambient transitions
+
+     Spec: https://m3.material.io/styles/motion/overview/specs
+     ========================================================== */
+
+  /* --- Expressive Spatial (position / size / shape) --- */
+  --md-sys-motion-spring-spatial-fast-easing: cubic-bezier(0.42, 1.67, 0.21, 0.90);
+  --md-sys-motion-spring-spatial-fast-duration: 350ms;
+
+  --md-sys-motion-spring-spatial-default-easing: cubic-bezier(0.38, 1.21, 0.22, 1.00);
+  --md-sys-motion-spring-spatial-default-duration: 500ms;
+
+  --md-sys-motion-spring-spatial-slow-easing: cubic-bezier(0.39, 1.29, 0.35, 0.98);
+  --md-sys-motion-spring-spatial-slow-duration: 650ms;
+
+  /* --- Expressive Effects (color / opacity / elevation) --- */
+  --md-sys-motion-spring-effects-fast-easing: cubic-bezier(0.31, 0.94, 0.34, 1.00);
+  --md-sys-motion-spring-effects-fast-duration: 150ms;
+
+  --md-sys-motion-spring-effects-default-easing: cubic-bezier(0.34, 0.80, 0.34, 1.00);
+  --md-sys-motion-spring-effects-default-duration: 200ms;
+
+  --md-sys-motion-spring-effects-slow-easing: cubic-bezier(0.34, 0.88, 0.34, 1.00);
+  --md-sys-motion-spring-effects-slow-duration: 300ms;
+
+  /* ==========================================================
+     8. Z-INDEX (stacking order)
+     Global layering tokens for overlay components.
+     ========================================================== */
+  --md-sys-z-index-app-bar: 100;
+  --md-sys-z-index-navigation: 200;
+  --md-sys-z-index-bottom-sheet: 300;
+  --md-sys-z-index-popup: 1000;
+  --md-sys-z-index-dialog-scrim: 1001;
+  --md-sys-z-index-tooltip: 1500;
+  --md-sys-z-index-snackbar: 2000;
+
+  /* ==========================================================
+     9. STATE LAYER OPACITY
+     Spec: https://m3.material.io/foundations/interaction/states
+     ========================================================== */
+  --md-sys-state-hover-state-layer-opacity: 0.08;
+  --md-sys-state-focus-state-layer-opacity: 0.12;
+  --md-sys-state-pressed-state-layer-opacity: 0.12;
+  --md-sys-state-dragged-state-layer-opacity: 0.16;
+  --md-sys-state-disabled-container-opacity: 0.12;
+  --md-sys-state-disabled-content-opacity: 0.38;
+
+  /* ==========================================================
+     10. SPACING & DENSITY
+     A stepped 4dp spacing scale that components consume via
+     var(--md-sys-spacing-*). These default (comfortable) values
+     live on :root; each `data-density` rung (section 12 below)
+     re-declares the subset that should tighten.
+
+     Density is a GLOBAL signal, mirroring `data-theme="dark"`:
+     set `data-density="-2"` (…down to -4 = ultra-compact, for
+     BI / data-grid UIs) on <html> or any ancestor. Because these
+     are inherited custom properties, the swap crosses shadow
+     boundaries into every component with no per-component wiring.
+     Range: 0 (default) … -4 (densest). Components keep their own
+     `density` prop for LOCAL override.
+     ========================================================== */
+  --md-sys-density-scale: 0;
+
+  /* ==========================================================
+     ICON FONT
+
+     The glyph font used by every component's BUILT-IN icon —
+     the span rendered for `icon="home"`-style props. Components
+     must declare this inside their own shadow root, because the
+     document-level `.material-symbols-outlined` class rule that
+     Google's stylesheet ships cannot cross a shadow boundary
+     (the `@font-face` itself does — font registration is
+     per-document — so only the class rule needs repeating).
+
+     Swap the whole library to another Material Symbols cut with
+     one line, and load the matching @font-face:
+       :root { --md-sys-icon-font-family:
+                 'Material Symbols Sharp', 'Material Icons'; }
+
+     Slotted icons are unaffected: they live in the light DOM, so
+     the consumer's own stylesheet already styles them.
+     ========================================================== */
+  --md-sys-icon-font-family: 'Material Symbols Outlined', 'Material Icons';
+
+  /* Insets — internal padding within a component */
+  --md-sys-spacing-inset-xs: 4px;
+  --md-sys-spacing-inset-sm: 8px;
+  --md-sys-spacing-inset-md: 12px;
+  --md-sys-spacing-inset-lg: 16px;
+  --md-sys-spacing-inset-xl: 24px;
+
+  /* Gaps — space between sibling elements */
+  --md-sys-spacing-gap-xs: 4px;
+  --md-sys-spacing-gap-sm: 8px;
+  --md-sys-spacing-gap-md: 12px;
+  --md-sys-spacing-gap-lg: 16px;
+
+  /* Control row height — fields, list rows, menu items */
+  --md-sys-spacing-row-height: 56px;
+}
+
+/* ============================================================
+   11. DARK THEME
+   ============================================================ */
+[data-theme="dark"] {
+  --md-sys-color-primary: #D0BCFF;
+  --md-sys-color-on-primary: #381E72;
+  --md-sys-color-primary-container: #4F378B;
+  --md-sys-color-on-primary-container: #EADDFF;
+
+  --md-sys-color-secondary: #CCC2DC;
+  --md-sys-color-on-secondary: #332D41;
+  --md-sys-color-secondary-container: #4A4458;
+  --md-sys-color-on-secondary-container: #E8DEF8;
+
+  --md-sys-color-tertiary: #EFB8C8;
+  --md-sys-color-on-tertiary: #492532;
+  --md-sys-color-tertiary-container: #633B48;
+  --md-sys-color-on-tertiary-container: #FFD8E4;
+
+  --md-sys-color-error: #F2B8B5;
+  --md-sys-color-on-error: #601410;
+  --md-sys-color-error-container: #8C1D18;
+  --md-sys-color-on-error-container: #F9DEDC;
+
+  /* Semantic status roles — dark. Mirrors the `error` inversion above:
+     tone 80 main / 20 on-main / 30 container / 90 on-container. */
+  --md-sys-color-success: #9DD5B0;
+  --md-sys-color-on-success: #003920;
+  --md-sys-color-success-container: #14512F;
+  --md-sys-color-on-success-container: #B8F0CE;
+
+  --md-sys-color-warning: #EFC148;
+  --md-sys-color-on-warning: #402D00;
+  --md-sys-color-warning-container: #5C4200;
+  --md-sys-color-on-warning-container: #FFDF9B;
+
+  --md-sys-color-info: #A2C9FE;
+  --md-sys-color-on-info: #00325A;
+  --md-sys-color-info-container: #1E4975;
+  --md-sys-color-on-info-container: #D3E4FF;
+
+  --md-sys-color-background: #1C1B1F;
+  --md-sys-color-on-background: #E6E1E5;
+
+  --md-sys-color-surface: #1C1B1F;
+  --md-sys-color-on-surface: #E6E1E5;
+  --md-sys-color-surface-variant: #49454F;
+  --md-sys-color-on-surface-variant: #CAC4D0;
+
+  --md-sys-color-surface-container-lowest: #0F0D13;
+  --md-sys-color-surface-container-low: #1D1B20;
+  --md-sys-color-surface-container: #211F26;
+  --md-sys-color-surface-container-high: #2B2930;
+  --md-sys-color-surface-container-highest: #36343B;
+
+  --md-sys-color-surface-dim: #141218;
+  --md-sys-color-surface-bright: #3B383E;
+
+  --md-sys-color-outline: #938F99;
+  --md-sys-color-outline-variant: #49454F;
+
+  --md-sys-color-inverse-surface: #E6E1E5;
+  --md-sys-color-inverse-on-surface: #313033;
+  --md-sys-color-inverse-primary: #6750A4;
+
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-surface-tint: #D0BCFF;
+
+  --md-sys-elevation-1: 0px 1px 2px rgba(0,0,0,0.5), 0px 1px 3px 1px rgba(0,0,0,0.25);
+  --md-sys-elevation-2: 0px 1px 2px rgba(0,0,0,0.5), 0px 2px 6px 2px rgba(0,0,0,0.25);
+  --md-sys-elevation-3: 0px 4px 8px 3px rgba(0,0,0,0.25), 0px 1px 3px rgba(0,0,0,0.5);
+  --md-sys-elevation-4: 0px 6px 10px 4px rgba(0,0,0,0.25), 0px 2px 3px rgba(0,0,0,0.5);
+  --md-sys-elevation-5: 0px 8px 12px 6px rgba(0,0,0,0.25), 0px 4px 4px rgba(0,0,0,0.5);
+}
+
+/* ============================================================
+   12. DENSITY RUNGS
+   Global density steps. Set `data-density="-1"` … "-4" on <html>
+   or any ancestor; the tokens inherit through shadow boundaries.
+   Each rung inherits the density-0 base from :root and only
+   re-declares the tokens that change at that rung (stepped 4dp).
+
+   Each rung ALSO matches the bare `[density="-N"]` attribute, which is what a
+   component's local `density` prop reflects. Component hosts are ordinary
+   light-DOM elements, so this document-level sheet reaches them, and the tokens
+   inherit into their shadow roots exactly as the ancestor case does.
+
+   That is what makes the two paths agree. A rung carries TWO kinds of payload:
+   `--md-sys-density-scale` (a number, consumed by calc) and the
+   `--md-sys-spacing-*` tokens (re-declared, not computed). A component's own
+   `:host([density='-N'])` block can set the scale, but it cannot reproduce the
+   spacing payload without copying this table into every component — so before
+   this selector existed, a local prop condensed calc-driven geometry while
+   leaving every token-driven padding and gap at its density-0 value.
+
+   Local beats global for free: these declarations land DIRECTLY on the host,
+   and a directly-applied custom property always wins over one inherited from an
+   ancestor — no specificity tuning needed.
+
+   Note there is deliberately NO `[density="0"]` rule. Reflected props write
+   `density="0"` on virtually every component, so such a rule would pin the
+   density-0 values onto every element and break global inheritance outright.
+   Absence of a rung means "inherit whatever the ancestor says", which is
+   precisely what density-0 should mean.
+   ============================================================ */
+[data-density="-1"],
+[density="-1"] {
+  --md-sys-density-scale: -1;
+  --md-sys-spacing-row-height: 52px;
+}
+
+[data-density="-2"],
+[density="-2"] {
+  --md-sys-density-scale: -2;
+  --md-sys-spacing-row-height: 48px;
+  --md-sys-spacing-inset-md: 8px;
+  --md-sys-spacing-inset-lg: 12px;
+  --md-sys-spacing-inset-xl: 20px;
+  --md-sys-spacing-gap-md: 8px;
+  --md-sys-spacing-gap-lg: 12px;
+}
+
+[data-density="-3"],
+[density="-3"] {
+  --md-sys-density-scale: -3;
+  --md-sys-spacing-row-height: 44px;
+  --md-sys-spacing-inset-sm: 4px;
+  --md-sys-spacing-inset-md: 8px;
+  --md-sys-spacing-inset-lg: 12px;
+  --md-sys-spacing-inset-xl: 16px;
+  --md-sys-spacing-gap-sm: 4px;
+  --md-sys-spacing-gap-md: 8px;
+  --md-sys-spacing-gap-lg: 12px;
+}
+
+[data-density="-4"],
+[density="-4"] {
+  --md-sys-density-scale: -4;
+  --md-sys-spacing-row-height: 40px;
+  --md-sys-spacing-inset-sm: 4px;
+  --md-sys-spacing-inset-md: 8px;
+  --md-sys-spacing-inset-lg: 8px;
+  --md-sys-spacing-inset-xl: 16px;
+  --md-sys-spacing-gap-xs: 2px;
+  --md-sys-spacing-gap-sm: 4px;
+  --md-sys-spacing-gap-md: 4px;
+  --md-sys-spacing-gap-lg: 8px;
+}
+
+/* ============================================================
+   13. EXPRESSIVE FEATURE TOGGLES (ripple · shape morph)
+   Two independent switches, each modelled exactly like the density rungs
+   above: ONE signal, set either globally on an ancestor or locally on a
+   single component, with local winning automatically.
+
+     --md-sys-ripple-enabled       1 = ripples spawn, 0 = suppressed
+     --md-sys-shape-morph-enabled  1 = shapes morph, 0 = frozen at rest
+
+   GLOBAL:    data-ripple="off"       / data-shape-morph="off"   (any ancestor)
+   PER-COMPONENT: ripple="off"        / shape-morph="off"        (on the host)
+
+   Both spellings resolve to the same custom property, so a component never
+   needs to know which one was used. Component hosts are ordinary light-DOM
+   elements, so this document-level sheet reaches them directly and the value
+   inherits into their shadow roots — the same mechanism the density rungs use.
+
+   WHY LOCAL BEATS GLOBAL WITHOUT SPECIFICITY TRICKS: the local rule applies
+   the property DIRECTLY to the host, while the global one arrives by
+   inheritance from an ancestor. A directly-applied custom property always wins
+   over an inherited one, at any specificity.
+
+   The explicit "on" rules matter — they are what lets a subtree (or a single
+   component) opt BACK IN inside a globally disabled region. Without them the
+   switch would only travel one way.
+
+   Values are 0/1 rather than keywords so CSS can consume them as ARITHMETIC.
+   Shape morph is frozen by blending each morphed radius back toward its
+   resting value:
+
+     border-radius: calc(REST + var(--md-sys-shape-morph-enabled, 1) * (MORPHED - REST))
+
+   At 1 that is exactly MORPHED; at 0 it collapses to REST. This keeps the
+   toggle in pure CSS, so flipping it applies instantly with no re-render, and
+   it avoids :host-context() — which Firefox does not implement and which
+   therefore cannot be used to read an ancestor's state from inside a shadow
+   root (an accordion ladder in this library was silently inert there for
+   exactly that reason).
+   ============================================================ */
+:root {
+  --md-sys-ripple-enabled: 1;
+  --md-sys-shape-morph-enabled: 1;
+}
+
+[data-ripple="off"],
+[ripple="off"] {
+  --md-sys-ripple-enabled: 0;
+}
+
+[data-ripple="on"],
+[ripple="on"] {
+  --md-sys-ripple-enabled: 1;
+}
+
+[data-shape-morph="off"],
+[shape-morph="off"] {
+  --md-sys-shape-morph-enabled: 0;
+}
+
+[data-shape-morph="on"],
+[shape-morph="on"] {
+  --md-sys-shape-morph-enabled: 1;
+}

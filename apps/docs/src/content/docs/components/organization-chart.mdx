@@ -1,0 +1,950 @@
+---
+title: Organization Chart
+description: "A tree of nodes with connectors — reporting lines, categories and taxonomies, with collapsible branches and optional selection"
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ChartDemo from "../../../components/ChartDemo.astro";
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+import ComponentSetup from "../../../components/ComponentSetup.astro";
+import ApiTable from "../../../components/ApiTable.astro";
+import LLMContext from "../../../components/LLMContext.astro";
+import apiData from "../../../data/components/organization-chart.json";
+
+**A tree of nodes with connectors.** Renders a hierarchy — reporting lines,
+categories, taxonomies — as avatar cards joined by connector lines, with
+collapsible branches, optional single or multiple selection, and the full
+WAI-ARIA **tree** keyboard model.
+
+:::note[Not a Material Design 3 component]
+M3 has no org-chart page. The guidance below is house rules.
+:::
+
+<ChartDemo
+  tag="md-organization-chart"
+  label="Live preview"
+  storyId="data-display-organization-chart--playground"
+  attrs={{ label: 'Reporting structure', 'selection-mode': 'single' }}
+  fixture={{
+    nodes: [
+      {
+        id: 'ceo', name: 'Ada Lovelace', title: 'Founder & CEO',
+        children: [
+          {
+            id: 'prod', name: 'Grace Hopper', title: 'Product Lead',
+            children: [
+              { id: 'ux', name: 'Anna Fali', title: 'UX Designer' },
+              { id: 'pm', name: 'Bernardo Dominic', title: 'Product Manager' },
+            ],
+          },
+          {
+            id: 'eng', name: 'Alan Turing', title: 'Engineering Lead',
+            children: [
+              { id: 'fe', name: 'Elwin Sharvill', title: 'Frontend Engineer' },
+              { id: 'be', name: 'Stephen Shaw', title: 'Backend Engineer' },
+            ],
+          },
+        ],
+      },
+    ],
+  }}
+/>
+
+## Install
+
+<ComponentSetup tag="md-organization-chart" example="" />
+
+## When to use
+
+- Visualising a **hierarchy** where the parent/child relationships are the
+  point: org charts, category trees, dependency trees.
+- The user needs to expand and collapse branches to manage size.
+
+### When not to use
+
+| Situation | Use instead |
+|---|---|
+| A flat list | [`md-list`](/components/list/) |
+| Tabular data | [`md-table`](/components/table/) |
+| A file-tree navigation sidebar | [`md-list`](/components/list/) with indentation, or a tree control |
+| Where-am-I in a path | [`md-breadcrumbs`](/components/breadcrumbs/) |
+| Progressive disclosure of sections | [`md-accordion`](/components/accordion/) |
+| Quantities or trends | The chart components |
+| A very large graph (thousands of nodes) | A dedicated graph library |
+
+### Decision cues
+
+| Need | Setting |
+|---|---|
+| Top-down chart | `orientation="vertical"` (default) |
+| Left-to-right chart | `orientation="horizontal"` |
+| Fold togglers on the cards | `collapsible` (default **on**) — pointer affordance only |
+| Pick one node | `selection-mode="single"` |
+| Pick several | `selection-mode="multiple"` |
+| Preselect | `selectedIds` (array **property**) |
+| Tighter rows | `density="-1…-4"` |
+
+## The data model
+
+The whole chart is one prop. `nodes` is the tree; everything else on the
+element is presentation.
+
+:::danger[`selectedIds` is a JS property — `nodes` takes either form]
+`nodes` accepts **both**: an `OrgChartNode[]` assigned as a property, or a
+**JSON string** through the `nodes` attribute, which the component parses (a
+single object is wrapped into a one-node tree). Malformed JSON parses to nothing
+and the chart falls back to its [empty state](#empty-state) rather than throwing.
+
+`selectedIds` has no string form. It is an array **property** only — an
+attribute would arrive as a string and be read one character at a time.
+
+You do **not** need to wait for the element to upgrade. Set the property whenever
+you like: Stencil reads own properties off the element when it upgrades, so a
+`customElements.whenDefined()` gate buys you nothing here.
+:::
+
+```js
+const el = document.querySelector('md-organization-chart');
+el.nodes = [{ id: 'ceo', name: 'Ada Lovelace', title: 'CEO', avatar: '/u/ada.jpg',
+              children: [{ id: 'cto', name: 'Grace Hopper', title: 'CTO' }] }];
+el.selectedIds = ['cto'];
+```
+
+The attribute form is what makes the chart usable from plain markup — a CMS
+field, or a server-rendered template with no script to run:
+
+```html
+<md-organization-chart
+  nodes='[{"id":"ceo","name":"Ada Lovelace","title":"CEO",
+           "children":[{"id":"cto","name":"Grace Hopper","title":"CTO"}]}]'
+></md-organization-chart>
+```
+
+That markup is the demo below — nothing feeds it, the attribute is the data:
+
+<ComponentDemo
+  html={`<md-organization-chart label="Reporting structure" nodes='[{"id":"ceo","name":"Ada Lovelace","title":"CEO","children":[{"id":"cto","name":"Grace Hopper","title":"CTO"},{"id":"cfo","name":"Katherine Johnson","title":"CFO"}]}]'></md-organization-chart>`}
+  label="Rendered from the nodes attribute alone"
+/>
+
+Node identity is `id`. `selectedIds` and every event payload key off it, so ids
+must be **unique across the whole tree**, not just within a branch.
+
+### The node shape
+
+| Field | Type | Purpose |
+|---|---|---|
+| `id` | `string` | **Required.** Stable identity for selection, expansion and events |
+| `name` | `string` | **Required.** Primary label, in the emphasis weight |
+| `title` | `string` | Secondary label, muted, under the name |
+| `avatar` | `string` | Avatar image URL |
+| `avatarInitials` | `string` | Explicit initials, overriding the name-derived ones |
+| `accent` | `string` | Reserved per-node accent colour — accepted, but **currently has no visual effect** |
+| `expanded` | `boolean` | Initial branch state — `false` starts collapsed |
+| `selectable` | `boolean` | `false` opts the node out of selection |
+| `children` | `OrgChartNode[]` | The branch below this node |
+
+Everything except `id` and `name` is optional, so the terse form — an id, a name
+and a `children` array — is a complete tree:
+
+<ComponentDemo
+  html={`<md-organization-chart label="Category tree" nodes='[{"id":"all","name":"Catalogue","children":[{"id":"hw","name":"Hardware"},{"id":"sw","name":"Software"}]}]'></md-organization-chart>`}
+  label="The minimum viable node — id, name, children"
+/>
+
+## Orientation
+
+Two layouts, one ARIA model. `orientation` changes the visual flow **only** —
+the tree semantics and the keyboard model are identical either way, so the
+arrows still expand and collapse regardless of which direction the connectors
+run.
+
+| Value | Flow | Suits |
+|---|---|---|
+| `vertical` | Top-down | **Default.** Wide, shallow trees — the classic org chart |
+| `horizontal` | Along the reading direction | Deep, narrow trees; long names |
+
+`horizontal` flows from the reading start. Don't force `vertical` when doing so
+forces horizontal scrolling.
+
+<ChartDemo
+  tag="md-organization-chart"
+  label="Horizontal"
+  attrs={{ orientation: 'horizontal', label: 'Reporting structure', 'selection-mode': 'single' }}
+  fixture={{
+    nodes: [
+      {
+        id: 'root', name: 'Ada Lovelace', title: 'CEO',
+        children: [
+          { id: 'a', name: 'Grace Hopper', title: 'CTO', children: [{ id: 'a1', name: 'Alan Turing', title: 'Engineer' }] },
+          { id: 'b', name: 'Katherine Johnson', title: 'CFO' },
+        ],
+      },
+    ],
+    selectedIds: ['a'],
+  }}
+/>
+
+## Multiple roots
+
+`nodes` is an array, not a single root. Pass several and they render side by
+side as independent trees inside one `role="tree"` — for a company with parallel
+divisions, or a taxonomy with no single top term.
+
+<ChartDemo
+  tag="md-organization-chart"
+  label="Two roots, side by side"
+  attrs={{ label: 'Regional structure' }}
+  fixture={{
+    nodes: [
+      { id: 'r1', name: 'Sales', title: 'Region West', children: [{ id: 'r1a', name: 'Team A', title: '6 people' }] },
+      { id: 'r2', name: 'Sales', title: 'Region East', children: [{ id: 'r2b', name: 'Team B', title: '4 people' }] },
+    ],
+  }}
+/>
+
+:::caution[Extra roots don't create extra id namespaces]
+`r1a` and `r2b` above are distinct because they are spelled differently. Reusing
+`a` under both roots would make `selectedIds` and every event payload ambiguous.
+:::
+
+## Selection
+
+`selection-mode` is `none` by default — nodes rove focus but expose no
+`aria-selected`. Keep it honest: only turn selection on when nodes really are
+selectable.
+
+| Mode | `aria-selected` | Behaviour |
+|---|---|---|
+| `none` | Not exposed | **Default.** Nodes take focus; `Enter` toggles the branch instead |
+| `single` | On selectable nodes | One at a time; re-activating the sole selection clears it |
+| `multiple` | On selectable nodes | Accumulates; the tree gains `aria-multiselectable` |
+
+<ChartDemo
+  tag="md-organization-chart"
+  label="Single selection — picking another swaps it, picking the same one clears it"
+  attrs={{ 'selection-mode': 'single', label: 'Reporting structure' }}
+  fixture={{
+    nodes: [
+      {
+        id: 'ceo', name: 'Ada Lovelace', title: 'Founder & CEO',
+        children: [
+          { id: 'prod', name: 'Grace Hopper', title: 'Product Lead', children: [{ id: 'ux', name: 'Anna Fali', title: 'UX Designer' }] },
+          { id: 'eng', name: 'Alan Turing', title: 'Engineering Lead', children: [{ id: 'fe', name: 'Elwin Sharvill', title: 'Frontend Engineer' }] },
+        ],
+      },
+    ],
+    selectedIds: ['prod'],
+  }}
+/>
+
+<ChartDemo
+  tag="md-organization-chart"
+  label="Multiple selection — clicking an already-selected node removes it"
+  attrs={{ 'selection-mode': 'multiple', label: 'Team picker' }}
+  fixture={{
+    nodes: [
+      {
+        id: 'lead', name: 'Ada Lovelace', title: 'Team lead',
+        children: [
+          { id: 'm1', name: 'Grace Hopper', title: 'Engineer' },
+          { id: 'm2', name: 'Alan Turing', title: 'Engineer' },
+          { id: 'm3', name: 'Katherine Johnson', title: 'Analyst' },
+        ],
+      },
+    ],
+    selectedIds: ['m1', 'm3'],
+  }}
+/>
+
+### Opting a node out
+
+A node with `selectable: false` stays focusable and still takes the roving
+tabindex — it simply never advertises or accepts a selection. Use it for group
+headers and structural rows that exist to hold a branch, not to be picked.
+
+<ChartDemo
+  tag="md-organization-chart"
+  label="Two nodes opted out — they take focus but never select"
+  attrs={{ 'selection-mode': 'single', label: 'Team picker' }}
+  fixture={{
+    nodes: [
+      {
+        id: 'lead', name: 'Team Lead', title: 'Group', selectable: false,
+        children: [
+          { id: 'locked', name: 'Locked Node', title: 'Read-only', selectable: false },
+          { id: 'open', name: 'Open Node', title: 'Selectable' },
+        ],
+      },
+    ],
+  }}
+/>
+
+:::note[Not the same as disabled]
+`selectable: false` removes the selection affordance, not the node. It keeps its
+place in the keyboard order so the tree stays navigable — a node you cannot
+reach is a hole in the structure, which is worse than one you cannot pick.
+:::
+
+## Avatars and initials
+
+`avatar` takes an image URL. Without one the node falls back to
+`avatarInitials`, and without that to initials derived from `name` — so a node
+never renders an empty or broken avatar.
+
+| Node fields | What renders |
+|---|---|
+| `avatar: '/u/ada.jpg'` | The image |
+| `avatarInitials: 'AC'` | `AC` |
+| Neither, `name: 'Ada Lovelace'` | `AL` |
+
+<ChartDemo
+  tag="md-organization-chart"
+  label="Initials fallback — no avatar URLs anywhere in this tree"
+  attrs={{ label: 'Departments' }}
+  fixture={{
+    nodes: [
+      {
+        id: 'org', name: 'Acme Corp', title: 'Group', avatarInitials: 'AC',
+        children: [
+          { id: 'd1', name: 'Ada Lovelace', title: 'Research' },
+          { id: 'd2', name: 'Grace Hopper', title: 'Engineering' },
+        ],
+      },
+    ],
+  }}
+/>
+
+:::note[The avatar is decorative]
+Screen readers announce the node's text, not its picture — the avatar carries no
+alternative text of its own. Never let the image be the only thing that
+distinguishes two nodes.
+:::
+
+## Collapsing
+
+`collapsible` is on by default; each node's initial state comes from its own
+`expanded` field. **Collapse deep branches by default** — the component does not
+virtualize, so a fully-expanded 500-node tree is slow and unreadable, and deep
+trees are hard to navigate by keyboard.
+
+<ChartDemo
+  tag="md-organization-chart"
+  label="Collapsed branches — click a toggle to open one"
+  attrs={{ label: 'Taxonomy' }}
+  fixture={{
+    nodes: [
+      {
+        id: 'root', name: 'Catalogue', title: 'All products',
+        children: [
+          { id: 'c1', name: 'Hardware', title: '12 items', expanded: false, children: [{ id: 'c1a', name: 'Laptops', title: '5 items' }, { id: 'c1b', name: 'Phones', title: '7 items' }] },
+          { id: 'c2', name: 'Software', title: '8 items', expanded: false, children: [{ id: 'c2a', name: 'Licences', title: '8 items' }] },
+        ],
+      },
+    ],
+  }}
+/>
+
+`collapsible="false"` removes the **pointer affordance**, not the folding. The
+keyboard model is untouched — `←` still collapses an expanded parent, `→` still
+expands a collapsed one, and `Enter` / `Space` still toggles when nothing is
+selectable — and a node authored `expanded: false` still starts collapsed. So a
+branch folded that way has no visible toggler to reopen it: only the arrow keys
+will. Use `collapsible="false"` for a tree small enough that no branch ships
+folded, and leave every `expanded` field alone when you do.
+
+:::caution[`expanded` is an initial value, not a binding]
+It seeds the fold state on the first render and on every reassignment of
+`nodes`. Mutating `node.expanded` in place afterwards changes nothing — reassign
+`nodes` to a new array to drive the fold state from your own model.
+:::
+
+## Empty state
+
+Slot your own copy into `empty` rather than rendering a blank area. The
+container carries `role="status"`, so the message is announced when a tree
+resolves to nothing.
+
+<ChartDemo
+  tag="md-organization-chart"
+  label="Empty state"
+  attrs={{ label: 'Reporting structure' }}
+  fixture={{ nodes: [] }}
+  innerHtml={`<div slot="empty">No people yet. Invite someone to get started.</div>`}
+/>
+
+This is also where a malformed `nodes` string lands: invalid JSON parses to
+nothing rather than throwing, so a bad feed degrades into your empty copy
+instead of a blank rectangle.
+
+## Lazy branches
+
+The chart **doesn't fetch or lazy-load** anything — it renders exactly what you
+give it. `mdNodeToggle` tells you a branch opened, which is where you load the
+children and reassign `nodes`.
+
+A branch with no `children` renders no toggler at all, so a lazy branch needs a
+placeholder child to be openable. Open either branch below: the placeholder is
+swapped for the fetched rows about half a second later.
+
+<ChartDemo
+  tag="md-organization-chart"
+  label="Lazy branches — open one and watch the placeholder be replaced"
+  attrs={{ label: 'Reporting structure' }}
+  fixture={{
+    nodes: [
+      {
+        id: 'ceo', name: 'Ada Lovelace', title: 'Founder & CEO',
+        children: [
+          { id: 'prod', name: 'Grace Hopper', title: 'Product Lead', expanded: false, children: [{ id: 'prod-pending', name: 'Loading…' }] },
+          { id: 'eng', name: 'Alan Turing', title: 'Engineering Lead', expanded: false, children: [{ id: 'eng-pending', name: 'Loading…' }] },
+        ],
+      },
+    ],
+  }}
+  boot={`
+    // Stands in for the network. Your version awaits a fetch.
+    const fetchReports = (id) => new Promise((resolve) => setTimeout(() => resolve({
+      prod: [
+        { id: 'ux', name: 'Anna Fali', title: 'UX Designer' },
+        { id: 'pm', name: 'Bernardo Dominic', title: 'Product Manager' },
+      ],
+      eng: [
+        { id: 'fe', name: 'Elwin Sharvill', title: 'Frontend Engineer' },
+        { id: 'be', name: 'Stephen Shaw', title: 'Backend Engineer' },
+      ],
+    }[id] || []), 500));
+
+    const loaded = new Set();
+
+    // Rebuild the branch rather than mutating it — a reassignment of 'nodes' is
+    // what re-renders. 'expanded' is re-read from the data every time, so every
+    // branch the user has already opened has to keep saying expanded: true.
+    const insertChildren = (list, id, children) => list.map((n) => {
+      const next = Object.assign({}, n, loaded.has(n.id) ? { expanded: true } : null);
+      if (n.id === id) next.children = children;
+      else if (n.children) next.children = insertChildren(n.children, id, children);
+      return next;
+    });
+
+    const onToggle = async (e) => {
+      const node = e.detail.node;
+      if (!e.detail.expanded || loaded.has(node.id)) return;
+      loaded.add(node.id);
+      el.nodes = insertChildren(el.nodes, node.id, await fetchReports(node.id));
+    };
+
+    el.addEventListener('mdNodeToggle', onToggle);
+    return () => el.removeEventListener('mdNodeToggle', onToggle);
+  `}
+/>
+
+## Events
+
+| Event | Cancelable | Detail | Fires |
+|---|---|---|---|
+| `mdSelectionChange` | no | `OrgChartSelectionChangeDetail` — `{ node, selectedIds }` | A node's selected state changes |
+| `mdNodeToggle` | no | `OrgChartToggleDetail` — `{ node, expanded }` | A branch is expanded or collapsed |
+
+```ts
+interface OrgChartSelectionChangeDetail {
+  node: OrgChartNode;      // the node the user acted on
+  selectedIds: string[];   // the WHOLE selection after the change
+}
+
+interface OrgChartToggleDetail {
+  node: OrgChartNode;
+  expanded: boolean;       // the state the branch has just taken
+}
+```
+
+### Which event to listen to
+
+| You want to… | Listen to |
+|---|---|
+| Show a detail panel for the node just picked | `mdSelectionChange` — `detail.node` |
+| Persist the current selection | `mdSelectionChange` — `detail.selectedIds` |
+| Fetch a branch's children on first open | `mdNodeToggle` — guard on `detail.expanded` |
+| Remember which branches the user folded | `mdNodeToggle` |
+
+:::note[Neither event can be vetoed, and neither fires programmatically]
+Selection and expansion are committed facts by the time they are announced, so
+`preventDefault()` on either is ignored — there is no before-change hook, unlike
+[`md-button`](/components/button/#events)'s `mdClick`. To reject a selection,
+handle it and reassign `selectedIds`.
+
+Setting `chart.selectedIds = ['cto']` in code emits nothing, the same way
+`input.checked = true` emits nothing. If your own code changes the state, your
+own code already knows.
+:::
+
+Both events, live. Pick a node, pick it again to clear it, and fold a branch —
+every payload lands in the log:
+
+<ComponentDemo
+  html={`<div style="display:flex;flex-direction:column;gap:12px;align-items:stretch;">
+  <md-organization-chart data-events selection-mode="single" label="Reporting structure" nodes='[{"id":"ceo","name":"Ada Lovelace","title":"CEO","children":[{"id":"cto","name":"Grace Hopper","title":"CTO","children":[{"id":"eng1","name":"Alan Turing","title":"Engineer"}]},{"id":"cfo","name":"Katherine Johnson","title":"CFO"}]}]'>
+    <div slot="empty">No people yet.</div>
+  </md-organization-chart>
+  <output data-events-log style="font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;opacity:.85;white-space:pre-line;">Pick a node, or fold a branch — both events land here.</output>
+</div>`}
+  script={`
+  var el = root.querySelector('[data-events]');
+  var out = root.querySelector('[data-events-log]');
+  var lines = [];
+  function log(line) {
+    lines.unshift(line);
+    out.textContent = lines.slice(0, 5).join(String.fromCharCode(10));
+  }
+  el.addEventListener('mdSelectionChange', function (e) {
+    log('mdSelectionChange → node ' + e.detail.node.id + ' · selectedIds [' + e.detail.selectedIds.join(', ') + ']');
+  });
+  el.addEventListener('mdNodeToggle', function (e) {
+    log('mdNodeToggle → node ' + e.detail.node.id + ' · expanded ' + e.detail.expanded);
+  });`}
+  label="Both events, logged live — select a node, then fold a branch"
+  htmlCode={`<md-organization-chart id="org" selection-mode="single" label="Reporting structure">
+  <div slot="empty">No people yet.</div>
+</md-organization-chart>
+
+<script type="module">
+  const org = document.getElementById('org');
+
+  org.nodes = [{
+    id: 'ceo', name: 'Ada Lovelace', title: 'CEO',
+    children: [
+      { id: 'cto', name: 'Grace Hopper', title: 'CTO',
+        children: [{ id: 'eng1', name: 'Alan Turing', title: 'Engineer' }] },
+      { id: 'cfo', name: 'Katherine Johnson', title: 'CFO' },
+    ],
+  }];
+
+  org.addEventListener('mdSelectionChange', (e) => {
+    console.log(e.detail.node.id, e.detail.selectedIds);
+  });
+  org.addEventListener('mdNodeToggle', (e) => {
+    console.log(e.detail.node.id, e.detail.expanded);
+  });
+</script>`}
+  react={`import { MdOrganizationChart } from '@awc-ui/react';
+
+const PEOPLE = [{
+  id: 'ceo', name: 'Ada Lovelace', title: 'CEO',
+  children: [
+    { id: 'cto', name: 'Grace Hopper', title: 'CTO',
+      children: [{ id: 'eng1', name: 'Alan Turing', title: 'Engineer' }] },
+    { id: 'cfo', name: 'Katherine Johnson', title: 'CFO' },
+  ],
+}];
+
+export function OrgChart() {
+  // nodes is forwarded as a PROPERTY by the wrapper — pass the array as a prop
+  // and it re-forwards whenever it changes. No ref, no effect.
+  return (
+    <MdOrganizationChart
+      nodes={PEOPLE}
+      selectionMode="single"
+      label="Reporting structure"
+      onMdSelectionChange={(e) => console.log(e.detail.node.id, e.detail.selectedIds)}
+      onMdNodeToggle={(e) => console.log(e.detail.node.id, e.detail.expanded)}
+    >
+      <div slot="empty">No people yet.</div>
+    </MdOrganizationChart>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-org-chart',
+  // [nodes] is a property binding on the custom element, so the array lands
+  // as a property — no ViewChild, no ngAfterViewInit.
+  template: \`
+    <md-organization-chart
+      [nodes]="people"
+      selection-mode="single"
+      label="Reporting structure"
+      (mdSelectionChange)="onSelect($event)"
+      (mdNodeToggle)="onToggle($event)"
+    >
+      <div slot="empty">No people yet.</div>
+    </md-organization-chart>
+  \`,
+})
+export class OrgChartComponent {
+  people = [{
+    id: 'ceo', name: 'Ada Lovelace', title: 'CEO',
+    children: [
+      { id: 'cto', name: 'Grace Hopper', title: 'CTO',
+        children: [{ id: 'eng1', name: 'Alan Turing', title: 'Engineer' }] },
+      { id: 'cfo', name: 'Katherine Johnson', title: 'CFO' },
+    ],
+  }];
+
+  onSelect(e: CustomEvent) { console.log(e.detail.node.id, e.detail.selectedIds); }
+  onToggle(e: CustomEvent) { console.log(e.detail.node.id, e.detail.expanded); }
+}`}
+  vue={`<script setup lang="ts">
+const people = [{
+  id: 'ceo', name: 'Ada Lovelace', title: 'CEO',
+  children: [
+    { id: 'cto', name: 'Grace Hopper', title: 'CTO',
+      children: [{ id: 'eng1', name: 'Alan Turing', title: 'Engineer' }] },
+    { id: 'cfo', name: 'Katherine Johnson', title: 'CFO' },
+  ],
+}];
+
+function onSelect(e: CustomEvent) { console.log(e.detail.node.id, e.detail.selectedIds); }
+function onToggle(e: CustomEvent) { console.log(e.detail.node.id, e.detail.expanded); }
+</script>
+
+<template>
+  <md-organization-chart
+    :nodes="people"
+    selection-mode="single"
+    label="Reporting structure"
+    @mdSelectionChange="onSelect"
+    @mdNodeToggle="onToggle"
+  >
+    <div slot="empty">No people yet.</div>
+  </md-organization-chart>
+</template>`}
+  svelte={`<script lang="ts">
+  const people = [{
+    id: 'ceo', name: 'Ada Lovelace', title: 'CEO',
+    children: [
+      { id: 'cto', name: 'Grace Hopper', title: 'CTO',
+        children: [{ id: 'eng1', name: 'Alan Turing', title: 'Engineer' }] },
+      { id: 'cfo', name: 'Katherine Johnson', title: 'CFO' },
+    ],
+  }];
+
+  function onSelect(e: CustomEvent) { console.log(e.detail.node.id, e.detail.selectedIds); }
+  function onToggle(e: CustomEvent) { console.log(e.detail.node.id, e.detail.expanded); }
+</script>
+
+<md-organization-chart
+  nodes={people}
+  selection-mode="single"
+  label="Reporting structure"
+  on:mdSelectionChange={onSelect}
+  on:mdNodeToggle={onToggle}
+>
+  <div slot="empty">No people yet.</div>
+</md-organization-chart>`}
+/>
+
+## API Reference
+
+<ApiTable {...apiData} />
+
+:::note[What it deliberately does not do]
+No lazy loading, no virtualization, **no drag-to-pan and no zoom**. Scroll
+panning *is* built in: the `viewport` part is an `overflow: auto` container, so
+a tree wider than its box scrolls rather than clipping. It lives inside the
+shadow root — style it with `::part(viewport)`, and put any zoom or drag chrome
+around the `<md-organization-chart>` element itself. Node chrome is rendered from
+the node data using [`md-avatar`](/components/avatar/) and
+[`md-tooltip`](/components/tooltip/) internally, so don't compose your own
+avatar inside a node.
+:::
+
+## Accessibility
+
+- The tree implements the WAI-ARIA **tree** pattern: `role="tree"` on the root
+  list, `role="treeitem"` nodes, a roving tabindex, Arrow / `Home` / `End`
+  navigation and `Enter` / `Space` to select (or to toggle when nothing is
+  selectable).
+- `label` names the chart region. `expand-label` / `collapse-label` name the
+  branch toggles — translate all three.
+- Every node exposes `aria-level`, `aria-setsize` and `aria-posinset`; parents
+  expose `aria-expanded`; selectable nodes expose `aria-selected`, and the tree
+  gains `aria-multiselectable` in `multiple` mode.
+- Selection state is exposed per node. Keep `selection-mode` honest — use
+  `none` when nodes are not selectable.
+- Deep trees are hard to navigate by keyboard, so collapsing by default helps
+  everyone.
+
+### Keyboard
+
+| Key | Action |
+|---|---|
+| `Tab` | A **single** stop for the whole chart (roving tabindex); `Tab` again leaves it |
+| `↓` / `↑` | Next / previous **visible** node, depth-first |
+| `→` | Collapsed parent → expand it; expanded parent → move to its first child |
+| `←` | Expanded parent → collapse it; otherwise move to the parent node |
+| `Home` / `End` | First / last visible node |
+| `Enter` / `Space` | Select the focused node — or toggle it when nothing is selectable |
+
+:::caution[`←` and `→` invert under `dir="rtl"`]
+The horizontal arrows follow the reading direction, not the screen. In RTL, `←`
+is forward (expand / descend) and `→` is backward (collapse / ascend). `↑` and
+`↓` are unaffected.
+:::
+
+Tab into this chart and drive it entirely from the keyboard — one Tab stop, then
+the arrows walk the tree:
+
+<ChartDemo
+  tag="md-organization-chart"
+  label="Keyboard and screen-reader behaviour"
+  storyId="data-display-organization-chart--accessibility"
+  attrs={{ label: 'Company org chart', 'selection-mode': 'single' }}
+  fixture={{
+    nodes: [
+      {
+        id: 'ceo', name: 'Ada Lovelace', title: 'Founder & CEO',
+        children: [
+          {
+            id: 'prod', name: 'Grace Hopper', title: 'Product Lead',
+            children: [
+              { id: 'ux', name: 'Anna Fali', title: 'UX Designer' },
+              { id: 'pm', name: 'Bernardo Dominic', title: 'Product Manager' },
+            ],
+          },
+          { id: 'eng', name: 'Alan Turing', title: 'Engineering Lead', children: [{ id: 'fe', name: 'Elwin Sharvill', title: 'Frontend Engineer' }] },
+        ],
+      },
+    ],
+    selectedIds: ['prod'],
+  }}
+/>
+
+:::caution[The connectors are a picture of the structure]
+A connector-drawn tree is a **visual** representation. Screen readers get the
+node text and the expand state, but the spatial relationships are much weaker
+than in a real tree or list — offering an equivalent list or table view is the
+accessible thing to do for anything important.
+:::
+
+## RTL, density & i18n
+
+**RTL** — **both orientations mirror.** Connectors and elbows are authored with
+logical properties throughout, and the tree's rows are flex containers, so the
+inherited direction decides sibling order: a root with children `[CTO, CFO]`
+paints CTO on the left in LTR and on the right in RTL. `horizontal` mirrors more
+obviously, because its *levels* also advance along the reading direction — but a
+vertical chart is not symmetric, it re-orders. See [RTL](/behaviour/rtl/).
+
+**The same charts in both directions.** Nothing is re-authored between them —
+only `dir` changes. Watch the CTO / CFO order flip in the vertical chart, and
+the whole flow flip in the horizontal one:
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:20px 16px;align-items:center;">
+  <span style="inline-size:2.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ltr</span>
+  <div dir="ltr" style="display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start;">
+    <md-organization-chart label="Reporting structure" nodes='[{"id":"ceo","name":"Ada Lovelace","title":"CEO","children":[{"id":"cto","name":"Grace Hopper","title":"CTO"},{"id":"cfo","name":"Katherine Johnson","title":"CFO"}]}]'></md-organization-chart>
+    <md-organization-chart orientation="horizontal" label="Reporting structure" nodes='[{"id":"ceo","name":"Ada Lovelace","title":"CEO","children":[{"id":"cto","name":"Grace Hopper","title":"CTO"},{"id":"cfo","name":"Katherine Johnson","title":"CFO"}]}]'></md-organization-chart>
+  </div>
+  <span style="inline-size:2.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">rtl</span>
+  <div dir="rtl" style="display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start;">
+    <md-organization-chart label="Reporting structure" nodes='[{"id":"ceo","name":"Ada Lovelace","title":"CEO","children":[{"id":"cto","name":"Grace Hopper","title":"CTO"},{"id":"cfo","name":"Katherine Johnson","title":"CFO"}]}]'></md-organization-chart>
+    <md-organization-chart orientation="horizontal" label="Reporting structure" nodes='[{"id":"ceo","name":"Ada Lovelace","title":"CEO","children":[{"id":"cto","name":"Grace Hopper","title":"CTO"},{"id":"cfo","name":"Katherine Johnson","title":"CFO"}]}]'></md-organization-chart>
+  </div>
+</div>`}
+  label="Same markup, dir=ltr vs dir=rtl — vertical and horizontal"
+/>
+
+### Let the chart inherit `dir` — never pin it
+
+There is no `mirror` prop, because there is nothing per-node to mirror: the flow
+follows the inherited direction. Pinning `dir="ltr"` on a horizontal chart
+inside an RTL page is the one way to get it wrong — the tree then grows away
+from the reading direction, and `←` / `→` swap meaning relative to everything
+around it. Both rows below sit inside the same `dir="rtl"` block:
+
+<ComponentDemo
+  html={`<div dir="rtl" style="display:grid;grid-template-columns:auto 1fr;gap:20px 16px;align-items:center;">
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">correct</span>
+  <md-organization-chart orientation="horizontal" label="الهيكل التنظيمي" expand-label="توسيع" collapse-label="طي" nodes='[{"id":"c","name":"إيمي إلسنر","title":"الرئيس التنفيذي","children":[{"id":"p","name":"آسيا جافايانت","title":"قائدة المنتج"},{"id":"e","name":"أونياما ليمبا","title":"قائد الهندسة"}]}]'></md-organization-chart>
+  <span style="inline-size:3.5rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">wrong</span>
+  <div dir="ltr">
+    <md-organization-chart orientation="horizontal" label="الهيكل التنظيمي" expand-label="توسيع" collapse-label="طي" nodes='[{"id":"c","name":"إيمي إلسنر","title":"الرئيس التنفيذي","children":[{"id":"p","name":"آسيا جافايانت","title":"قائدة المنتج"},{"id":"e","name":"أونياما ليمبا","title":"قائد الهندسة"}]}]'></md-organization-chart>
+  </div>
+</div>`}
+  label="Inherited dir vs a pinned dir=ltr, both inside an RTL block"
+/>
+
+### Every density rung
+
+`density` is a local override of the inherited `data-density`. It tapers node
+padding, the avatar, the name and title type scale, the toggler, and both the
+level and sibling gaps — the whole tree contracts, not just the cards.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:24px 16px;align-items:center;">
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">0</span>
+  <md-organization-chart density="0" label="Density 0" nodes='[{"id":"r","name":"Ada Lovelace","title":"CEO","children":[{"id":"a","name":"Grace Hopper","title":"CTO"},{"id":"b","name":"Katherine Johnson","title":"CFO"}]}]'></md-organization-chart>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-1</span>
+  <md-organization-chart density="-1" label="Density -1" nodes='[{"id":"r","name":"Ada Lovelace","title":"CEO","children":[{"id":"a","name":"Grace Hopper","title":"CTO"},{"id":"b","name":"Katherine Johnson","title":"CFO"}]}]'></md-organization-chart>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-2</span>
+  <md-organization-chart density="-2" label="Density -2" nodes='[{"id":"r","name":"Ada Lovelace","title":"CEO","children":[{"id":"a","name":"Grace Hopper","title":"CTO"},{"id":"b","name":"Katherine Johnson","title":"CFO"}]}]'></md-organization-chart>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-3</span>
+  <md-organization-chart density="-3" label="Density -3" nodes='[{"id":"r","name":"Ada Lovelace","title":"CEO","children":[{"id":"a","name":"Grace Hopper","title":"CTO"},{"id":"b","name":"Katherine Johnson","title":"CFO"}]}]'></md-organization-chart>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">-4</span>
+  <md-organization-chart density="-4" label="Density -4" nodes='[{"id":"r","name":"Ada Lovelace","title":"CEO","children":[{"id":"a","name":"Grace Hopper","title":"CTO"},{"id":"b","name":"Katherine Johnson","title":"CFO"}]}]'></md-organization-chart>
+</div>`}
+  label="Density 0 through -4 — cards, type and gaps all taper"
+/>
+
+:::caution[Below `-2`, check the toggler's touch target]
+The expand/collapse affordance shrinks with the rung — from 24px at `0` down to
+its 20px floor — and the node card tightens with it. That is well under the 48px
+pointer-coarse devices want. See
+[Density](/behaviour/density/#accessibility) for the media query that raises the
+target back on touch.
+:::
+
+### Density and direction together
+
+The two are independent signals, so they compose without any extra wiring — a
+right-to-left horizontal tree at rung `-2`, with one node's branch folded:
+
+<ComponentDemo
+  html={`<div dir="rtl" data-density="-2">
+  <md-organization-chart orientation="horizontal" label="الهيكل التنظيمي" expand-label="توسيع" collapse-label="طي" nodes='[{"id":"c","name":"إيمي إلسنر","title":"الرئيس التنفيذي","children":[{"id":"p","name":"آسيا جافايانت","title":"قائدة المنتج","expanded":false,"children":[{"id":"u","name":"آنا فالي","title":"مصممة تجربة"}]},{"id":"e","name":"أونياما ليمبا","title":"قائد الهندسة"}]}]'></md-organization-chart>
+</div>`}
+  label="dir=rtl with data-density=-2 — flow and taper compose"
+/>
+
+**Density** — `density="-1…-4"` locally overrides the inherited `data-density`
+rung, tapering node padding, the avatar, both type sizes, the toggler and both
+gaps at once. See [Density](/behaviour/density/).
+
+**i18n** — node `name` and `title` come from your data; `label`, `expand-label`
+and `collapse-label` are the only strings the component authors, and shipping
+their English defaults is a bug in a localized app. `dir` and `lang` are
+inherited from any ancestor, so a localized subtree needs no chart-specific
+wiring. See [RTL](/behaviour/rtl/).
+
+| Prop | Default | Names |
+|---|---|---|
+| `label` | `Organization chart` | The `role="tree"` region |
+| `expand-label` | `Expand` | The toggler on a collapsed branch |
+| `collapse-label` | `Collapse` | The toggler on an expanded branch |
+
+Plus the `empty` slot content, which is entirely yours.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:24px 16px;align-items:center;">
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">de</span>
+  <md-organization-chart label="Organigramm" expand-label="Erweitern" collapse-label="Reduzieren" nodes='[{"id":"c","name":"Amy Elsner","title":"Gründerin und CEO","children":[{"id":"p","name":"Asiya Javayant","title":"Produktleitung"},{"id":"e","name":"Onyama Limba","title":"Technische Leitung"}]}]'></md-organization-chart>
+  <span style="inline-size:2rem;opacity:.65;font-size:.75rem;font-family:ui-monospace,monospace;">ar</span>
+  <div dir="rtl">
+    <md-organization-chart label="الهيكل التنظيمي" expand-label="توسيع" collapse-label="طي" nodes='[{"id":"c","name":"إيمي إلسنر","title":"المؤسِّسة والرئيس التنفيذي","children":[{"id":"p","name":"آسيا جافايانت","title":"قائدة المنتج"},{"id":"e","name":"أونياما ليمبا","title":"قائد الهندسة"}]}]'></md-organization-chart>
+  </div>
+</div>`}
+  label="Localised affordance labels — German and Arabic"
+/>
+
+Longer names widen nodes; `--md-org-chart-node-max-width` caps them, and the
+name and title truncate with an ellipsis rather than reflowing the tree.
+
+## Theming
+
+| Custom property | Purpose | Default |
+|---|---|---|
+| `--md-org-chart-connector-color` / `-connector-width` | Connector lines | `outline-variant` / `1.5px` |
+| `--md-org-chart-node-color` | Node surface | `surface-container-low` |
+| `--md-org-chart-node-outline-color` / `-outline-width` | Node border | `outline-variant` / `1px` |
+| `--md-org-chart-node-shape` | Node corner radius | `shape-corner-medium` |
+| `--md-org-chart-node-min-width` / `-max-width` | Node width bounds | `176px` / `260px` |
+| `--md-org-chart-selected-color` | Selected node accent | `primary` |
+| `--md-org-chart-state-layer-color` | Hover / press overlay | `on-surface` |
+| `--md-org-chart-focus-ring-color` | Focus ring | `secondary` |
+| `--md-org-chart-level-gap` / `-sibling-gap` | Spacing between generations and siblings | Density-derived |
+| `--md-org-chart-toggle-size` | Expand / collapse affordance | Density-derived |
+| `--md-org-chart-duration` | Expand / collapse timing | `motion-duration-medium2` (300ms) |
+
+<ChartDemo
+  tag="md-organization-chart"
+  label="Branded instance — connectors, outline, radius and selection recoloured"
+  attrs={{ 'selection-mode': 'single', label: 'Reporting structure' }}
+  style="--md-org-chart-connector-color: #7c4dff; --md-org-chart-node-outline-color: #7c4dff; --md-org-chart-node-shape: 20px; --md-org-chart-selected-color: #7c4dff; --md-org-chart-sibling-gap: 24px;"
+  fixture={{
+    nodes: [
+      {
+        id: 'ceo', name: 'Ada Lovelace', title: 'Founder & CEO',
+        children: [
+          { id: 'prod', name: 'Grace Hopper', title: 'Product Lead' },
+          { id: 'eng', name: 'Alan Turing', title: 'Engineering Lead' },
+        ],
+      },
+    ],
+    selectedIds: ['prod'],
+  }}
+/>
+
+Every default resolves through an `md-sys-color` role, so a chart that sets no
+custom properties follows the theme on its own. Switch this page between light
+and dark — the chart below is untouched markup:
+
+<ChartDemo
+  tag="md-organization-chart"
+  label="Untouched defaults — follows the page theme"
+  attrs={{ 'selection-mode': 'single', label: 'Reporting structure' }}
+  fixture={{
+    nodes: [
+      {
+        id: 'ceo', name: 'Ada Lovelace', title: 'Founder & CEO',
+        children: [
+          { id: 'prod', name: 'Grace Hopper', title: 'Product Lead' },
+          { id: 'eng', name: 'Alan Turing', title: 'Engineering Lead' },
+        ],
+      },
+    ],
+    selectedIds: ['eng'],
+  }}
+/>
+
+**CSS Parts** reach inside the shadow root for what custom properties do not
+cover — the type treatment of a label, or a selected node's ring:
+
+<ComponentDemo
+  html={`<style>
+  .parts-org::part(name)  { text-transform: uppercase; letter-spacing: .06em; }
+  .parts-org::part(title) { font-style: italic; opacity: .8; }
+  .parts-org::part(node-selected) { box-shadow: 0 0 0 3px var(--md-sys-color-tertiary); }
+</style>
+<md-organization-chart class="parts-org" selection-mode="single" label="Reporting structure" nodes='[{"id":"ceo","name":"Ada Lovelace","title":"Founder and CEO","children":[{"id":"prod","name":"Grace Hopper","title":"Product Lead"},{"id":"eng","name":"Alan Turing","title":"Engineering Lead"}]}]'></md-organization-chart>`}
+  htmlForCode={`<style>
+  .parts-org::part(name)          { text-transform: uppercase; letter-spacing: .06em; }
+  .parts-org::part(title)         { font-style: italic; opacity: .8; }
+  .parts-org::part(node-selected) { box-shadow: 0 0 0 3px var(--md-sys-color-tertiary); }
+</style>
+
+<md-organization-chart class="parts-org" selection-mode="single"></md-organization-chart>`}
+  label="CSS parts — click a node to see the selected ring"
+/>
+
+**CSS parts** — `viewport`, `tree`, `group`, `node`, `node-selected`,
+`state-layer`, `avatar`, `avatar-image`, `name`, `title`, `toggle`, `empty`.
+**Slot** — `empty`.
+
+```css
+md-organization-chart.compact {
+  --md-org-chart-node-max-width: 180px;
+  --md-org-chart-level-gap: 24px;
+  --md-org-chart-connector-color: var(--md-sys-color-outline-variant);
+}
+```
+
+:::note[`node-selected` is an extra part, not a replacement]
+A selected card carries **both** `node` and `node-selected`, so `::part(node)`
+still matches it. Order your rules accordingly.
+:::
+
+
+## Related
+
+[`md-list`](/components/list/) ·
+[`md-accordion`](/components/accordion/) ·
+[`md-breadcrumbs`](/components/breadcrumbs/) ·
+[`md-avatar`](/components/avatar/) ·
+[`md-tooltip`](/components/tooltip/) ·
+[`md-icon-button`](/components/icon-button/)
+
+## AI / LLM Context
+
+<LLMContext tag="md-organization-chart" />

@@ -1,0 +1,753 @@
+{
+  "tag": "md-list-item",
+  "title": "List Item",
+  "slug": "list-item",
+  "category": "Containment",
+  "subComponentOf": "md-list",
+  "storyId": null,
+  "props": [
+    {
+      "name": "type",
+      "attribute": "type",
+      "type": "MdListItemType",
+      "default": "'text'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "headline",
+      "attribute": "headline",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "overline",
+      "attribute": "overline",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "supportingText",
+      "attribute": "supporting-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "trailingSupportingText",
+      "attribute": "trailing-supporting-text",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "leadingIcon",
+      "attribute": "leading-icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "trailingIcon",
+      "attribute": "trailing-icon",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "leadingAvatar",
+      "attribute": "leading-avatar",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "leadingAvatarAlt",
+      "attribute": "leading-avatar-alt",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "leadingAvatarName",
+      "attribute": "leading-avatar-name",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "leadingAvatarLabel",
+      "attribute": "leading-avatar-label",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "leadingImage",
+      "attribute": "leading-image",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "leadingImageAlt",
+      "attribute": "leading-image-alt",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "lines",
+      "attribute": "lines",
+      "type": "1 | 2 | 3",
+      "default": "1",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "href",
+      "attribute": "href",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "target",
+      "attribute": "target",
+      "type": "string",
+      "default": "'_self'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "disabled",
+      "attribute": "disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "softDisabled",
+      "attribute": "soft-disabled",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "selected",
+      "attribute": "selected",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "expandable",
+      "attribute": "expandable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "expanded",
+      "attribute": "expanded",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": true
+    },
+    {
+      "name": "tabbable",
+      "attribute": "tabbable",
+      "type": "boolean",
+      "default": "true",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "rovingFocusVisible",
+      "attribute": "roving-focus-visible",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "selectionMode",
+      "attribute": "selection-mode",
+      "type": "'none' | 'single-select' | 'multi-select'",
+      "default": "'none'",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "interactionMode",
+      "attribute": "interaction-mode",
+      "type": "'single-action' | 'multi-action'",
+      "default": "'single-action'",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "containerRole",
+      "attribute": "container-role",
+      "type": "string",
+      "default": "''",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "reorderable",
+      "attribute": "reorderable",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": true
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdClick",
+      "detail": "{ item: HTMLElement }"
+    },
+    {
+      "name": "mdItemClick",
+      "detail": "{ index: number; selected: boolean }"
+    },
+    {
+      "name": "mdItemSelect",
+      "detail": "{ index: number; value: string; selected: boolean; item: HTMLMdListItemElement; }"
+    },
+    {
+      "name": "mdRequestActivation",
+      "detail": "void"
+    },
+    {
+      "name": "mdItemRequestReorder",
+      "detail": "{ direction: 'up' | 'down'; from: number; }"
+    },
+    {
+      "name": "mdExpand",
+      "detail": "MdListItemExpandDetail"
+    }
+  ],
+  "methods": [
+    {
+      "name": "setFocus",
+      "params": "options?: FocusOptions"
+    },
+    {
+      "name": "focusItem",
+      "params": ""
+    },
+    {
+      "name": "toggle",
+      "params": ""
+    },
+    {
+      "name": "expand",
+      "params": ""
+    },
+    {
+      "name": "collapse",
+      "params": ""
+    }
+  ],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    },
+    {
+      "name": "leading",
+      "description": "Custom leading content (icon / avatar / image)"
+    },
+    {
+      "name": "overline",
+      "description": "Rich overline (overrides `overline` prop)"
+    },
+    {
+      "name": "headline",
+      "description": "Rich headline (overrides `headline` prop)"
+    },
+    {
+      "name": "supporting-text",
+      "description": "Rich supporting text"
+    },
+    {
+      "name": "trailing",
+      "description": "Custom trailing content (icon button, switch, etc.)"
+    },
+    {
+      "name": "trailing-supporting-text",
+      "description": "Rich trailing supporting text"
+    },
+    {
+      "name": "expanded-content",
+      "description": "Content revealed when an expandable row is expanded"
+    }
+  ],
+  "cssParts": [
+    {
+      "name": "leading",
+      "description": "Leading slot container"
+    },
+    {
+      "name": "avatar",
+      "description": "Leading avatar (image or label)"
+    },
+    {
+      "name": "image-wrap",
+      "description": "Wrapper around prop-based leading image + selection overlay"
+    },
+    {
+      "name": "image",
+      "description": "Leading image thumbnail"
+    },
+    {
+      "name": "image-selection-indicator",
+      "description": "Selected-state scrim overlay on image thumbnail"
+    },
+    {
+      "name": "image-selection-circle",
+      "description": "Checkmark circle fill centered on thumbnail"
+    },
+    {
+      "name": "image-selection-check",
+      "description": "Material Symbols check glyph inside the circle"
+    },
+    {
+      "name": "leading-icon",
+      "description": "Leading Material Symbols icon"
+    },
+    {
+      "name": "content",
+      "description": "Content slot container (overline + headline + supporting)"
+    },
+    {
+      "name": "overline",
+      "description": "Overline text element"
+    },
+    {
+      "name": "headline",
+      "description": "Headline text element"
+    },
+    {
+      "name": "supporting-text",
+      "description": "Supporting text element"
+    },
+    {
+      "name": "trailing",
+      "description": "Trailing slot container"
+    },
+    {
+      "name": "trailing-supporting-text",
+      "description": "Trailing supporting text element"
+    },
+    {
+      "name": "trailing-icon",
+      "description": "Trailing Material Symbols icon"
+    },
+    {
+      "name": "expand-button",
+      "description": "Trailing caret md-icon-button on expandable rows"
+    },
+    {
+      "name": "drag-handle",
+      "description": "Trailing drag grip on reorderable rows"
+    },
+    {
+      "name": "primary",
+      "description": ""
+    },
+    {
+      "name": "row",
+      "description": "Row chassis (leading + content + trailing)"
+    },
+    {
+      "name": "state-layer",
+      "description": "State-layer overlay (interactive rows only)"
+    },
+    {
+      "name": "expanded-panel",
+      "description": "Wrapper revealed when `expanded` is true"
+    },
+    {
+      "name": "expanded-panel-inner",
+      "description": "Inner wrapper that holds the slot"
+    },
+    {
+      "name": "avatar-image",
+      "description": ""
+    },
+    {
+      "name": "avatar-initials",
+      "description": ""
+    },
+    {
+      "name": "avatar-icon",
+      "description": ""
+    },
+    {
+      "name": "headline-tooltip-popup",
+      "description": "Popup of the headline overflow tooltip (forwarded)"
+    },
+    {
+      "name": "supporting-tooltip-popup",
+      "description": "Popup of the supporting-text overflow tooltip (forwarded)"
+    },
+    {
+      "name": "expand-button-state-layer",
+      "description": "State-layer of the caret button (forwarded)"
+    },
+    {
+      "name": "expand-button-icon",
+      "description": "Icon glyph wrapper of the caret button (forwarded;"
+    }
+  ],
+  "cssCustomProps": [
+    {
+      "name": "--md-list-item-container-color",
+      "description": "Container background (M3 default: surface = #FEF7FF light)"
+    },
+    {
+      "name": "--md-list-item-container-shape",
+      "description": "Border-radius shorthand (all four corners)"
+    },
+    {
+      "name": "--md-list-item-container-shape-start-start",
+      "description": "Top-start corner (used by md-list grouped style)"
+    },
+    {
+      "name": "--md-list-item-container-shape-start-end",
+      "description": "Top-end corner   (used by md-list grouped style)"
+    },
+    {
+      "name": "--md-list-item-container-shape-end-start",
+      "description": "Bottom-start corner"
+    },
+    {
+      "name": "--md-list-item-container-shape-end-end",
+      "description": "Bottom-end corner"
+    },
+    {
+      "name": "--md-list-item-active-container-shape",
+      "description": "Meta-override applied to every active state"
+    },
+    {
+      "name": "--md-list-item-hover-container-shape",
+      "description": "Border-radius on hover    (default 0 — no morph; opt-in)"
+    },
+    {
+      "name": "--md-list-item-focus-container-shape",
+      "description": "Border-radius on focus    (default 16dp / corner-large)"
+    },
+    {
+      "name": "--md-list-item-pressed-container-shape",
+      "description": "Border-radius on press    (default 16dp / corner-large)"
+    },
+    {
+      "name": "--md-list-item-selected-container-shape",
+      "description": "Border-radius on selected (default 16dp / corner-large)"
+    },
+    {
+      "name": "--md-list-item-active-container-shape",
+      "description": "Shared default for all four states above"
+    },
+    {
+      "name": "--md-list-item-dragged-container-shape",
+      "description": "Border-radius on dragged  (default 16dp / corner-large)"
+    },
+    {
+      "name": "--md-list-item-hover-state-layer-opacity",
+      "description": "State-layer opacity on hover    (M3: 0.08)"
+    },
+    {
+      "name": "--md-list-item-focus-state-layer-opacity",
+      "description": "State-layer opacity on focus    (M3: 0.10)"
+    },
+    {
+      "name": "--md-list-item-pressed-state-layer-opacity",
+      "description": "State-layer opacity on press    (M3: 0.10)"
+    },
+    {
+      "name": "--md-list-item-dragged-state-layer-opacity",
+      "description": "State-layer opacity when dragged (M3: 0.16)"
+    },
+    {
+      "name": "--md-list-item-label-text-color",
+      "description": "Headline text color"
+    },
+    {
+      "name": "--md-list-item-label-text-font",
+      "description": "Headline font family"
+    },
+    {
+      "name": "--md-list-item-supporting-text-color",
+      "description": "Supporting text color"
+    },
+    {
+      "name": "--md-list-item-supporting-text-font",
+      "description": "Supporting text font family"
+    },
+    {
+      "name": "--md-list-item-overline-color",
+      "description": "Overline text color"
+    },
+    {
+      "name": "--md-list-item-trailing-supporting-text-color",
+      "description": "Trailing supporting text color"
+    },
+    {
+      "name": "--md-list-item-trailing-supporting-text-font",
+      "description": "Trailing supporting text font family"
+    },
+    {
+      "name": "--md-list-item-leading-icon-color",
+      "description": "Leading icon color"
+    },
+    {
+      "name": "--md-list-item-leading-icon-size",
+      "description": "Leading icon size, default (M3: 24dp)"
+    },
+    {
+      "name": "--md-list-item-trailing-icon-color",
+      "description": "Trailing icon color"
+    },
+    {
+      "name": "--md-list-item-unselected-trailing-icon-color",
+      "description": "Trailing icon color when row is in selection"
+    },
+    {
+      "name": "--md-list-item-trailing-icon-size",
+      "description": "Trailing icon size, default (M3: 24dp)"
+    },
+    {
+      "name": "--md-list-item-trailing-icon-expressive-size",
+      "description": "Trailing icon size, Expressive list-style (M3: 20dp)"
+    },
+    {
+      "name": "--md-list-item-leading-space",
+      "description": "Inline-start padding (M3: 16dp)"
+    },
+    {
+      "name": "--md-list-item-trailing-space",
+      "description": "Inline-end  padding (M3: 16dp)"
+    },
+    {
+      "name": "--md-list-item-top-space",
+      "description": "Block-start padding (M3: 8dp)"
+    },
+    {
+      "name": "--md-list-item-bottom-space",
+      "description": "Block-end   padding (M3: 10dp)"
+    },
+    {
+      "name": "--md-list-item-between-space",
+      "description": "Gap between leading / content / trailing (M3: 12dp)"
+    },
+    {
+      "name": "--md-list-item-three-line-top-space",
+      "description": "Block-start padding when 3-line / 88dp+ (M3: 12dp)"
+    },
+    {
+      "name": "--md-list-item-three-line-bottom-space",
+      "description": "Block-end padding when 3-line / 88dp+ (M3: 12dp)"
+    },
+    {
+      "name": "--md-list-item-dragged-container-elevation",
+      "description": "Box-shadow applied when host carries"
+    },
+    {
+      "name": "--md-list-item-leading-video-width",
+      "description": "Width of <video slot=\"leading\"> thumbnail (M3: 100dp)"
+    },
+    {
+      "name": "--md-list-item-leading-video-height",
+      "description": "Height of <video slot=\"leading\"> thumbnail (M3: 56dp)"
+    },
+    {
+      "name": "--md-list-item-leading-video-shape",
+      "description": "Border-radius of <video slot=\"leading\"> (M3: corner-small)"
+    },
+    {
+      "name": "--md-list-item-leading-video-top-space",
+      "description": "Block-start padding bumped when the row carries"
+    },
+    {
+      "name": "--md-list-item-leading-avatar-color",
+      "description": "Avatar circle color (label avatar)"
+    },
+    {
+      "name": "--md-list-item-leading-avatar-label-color",
+      "description": "Avatar label text color"
+    },
+    {
+      "name": "--md-list-item-leading-avatar-size",
+      "description": "Avatar dimensions (default 40px)"
+    },
+    {
+      "name": "--md-list-item-leading-avatar-shape",
+      "description": "Avatar border-radius (default full)"
+    },
+    {
+      "name": "--md-list-item-leading-image-width",
+      "description": "Image thumbnail width (default 56px)"
+    },
+    {
+      "name": "--md-list-item-leading-image-height",
+      "description": "Image thumbnail height (default 56px)"
+    },
+    {
+      "name": "--md-list-item-leading-image-shape",
+      "description": "Image thumbnail radius, default (M3: 0)"
+    },
+    {
+      "name": "--md-list-item-leading-image-expressive-shape",
+      "description": "Image thumbnail radius, Expressive list-style"
+    },
+    {
+      "name": "--md-list-item-leading-image-selection-scrim-color",
+      "description": "Full-thumbnail scrim when selected (M3: scrim @ 32%)"
+    },
+    {
+      "name": "--md-list-item-leading-image-selection-circle-color",
+      "description": "Checkmark circle fill when selected (M3: on-surface @ 60%)"
+    },
+    {
+      "name": "--md-list-item-leading-image-selection-icon-color",
+      "description": "Checkmark glyph color (M3: surface / white)"
+    },
+    {
+      "name": "--md-list-item-leading-image-selection-icon-size",
+      "description": "Checkmark circle diameter (M3: 24dp)"
+    },
+    {
+      "name": "--md-list-item-selected-container-color",
+      "description": "Selected container background (M3: secondary-container)"
+    },
+    {
+      "name": "--md-list-item-selected-label-text-color",
+      "description": "Selected headline color (M3: on-secondary-container)"
+    },
+    {
+      "name": "--md-list-item-selected-active-icon-color",
+      "description": "Leading/trailing icon color when row is BOTH"
+    },
+    {
+      "name": "--md-list-item-selected-disabled-container-color",
+      "description": "Container fill when row is BOTH selected AND"
+    },
+    {
+      "name": "--md-list-item-expand-chevron-color",
+      "description": "Caret icon color when collapsed (forwarded to the"
+    },
+    {
+      "name": "--md-list-item-expand-duration",
+      "description": "Expanded-panel open duration   (M3: medium3 / 350ms)"
+    },
+    {
+      "name": "--md-list-item-collapse-duration",
+      "description": "Expanded-panel close duration  (M3: short4 / 200ms)"
+    },
+    {
+      "name": "--md-list-item-expanded-panel-padding-block",
+      "description": "Expanded panel vertical padding"
+    },
+    {
+      "name": "--md-list-item-expanded-panel-padding-inline",
+      "description": "Expanded panel horizontal padding (both sides)"
+    },
+    {
+      "name": "--md-list-item-expanded-panel-padding-inline-start",
+      "description": "Expanded panel start padding —"
+    },
+    {
+      "name": "--md-list-item-expanded-panel-background",
+      "description": "Expanded panel background"
+    },
+    {
+      "name": "--md-list-item-leading-icon-expressive-size",
+      "description": ""
+    },
+    {
+      "name": "--md-list-item-disabled-state-layer-opacity",
+      "description": ""
+    },
+    {
+      "name": "--md-list-item-expand-button-size",
+      "description": ""
+    },
+    {
+      "name": "--md-list-item-expand-chevron-size",
+      "description": ""
+    }
+  ],
+  "dependencies": [
+    "md-avatar",
+    "md-tooltip",
+    "md-icon-button",
+    "md-ripple"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [
+    {
+      "name": "MdListItemExpandDetail",
+      "kind": "type",
+      "body": "{ expanded: boolean"
+    }
+  ],
+  "eventPayloads": [
+    {
+      "name": "mdClick",
+      "detail": "{ item: HTMLElement }"
+    },
+    {
+      "name": "mdItemClick",
+      "detail": "{ index: number; selected: boolean }"
+    },
+    {
+      "name": "mdItemSelect",
+      "detail": "{ index: number; value: string; selected: boolean; item: HTMLMdListItemElement; }"
+    },
+    {
+      "name": "mdRequestActivation",
+      "detail": "void"
+    },
+    {
+      "name": "mdItemRequestReorder",
+      "detail": "{ direction: 'up' | 'down'; from: number; }"
+    },
+    {
+      "name": "mdExpand",
+      "detail": "MdListItemExpandDetail"
+    }
+  ]
+}

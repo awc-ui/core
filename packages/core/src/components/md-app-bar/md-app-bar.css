@@ -1,0 +1,729 @@
+/* ==========================================================
+   md-app-bar — Material Design 3 App Bar
+   Spec: https://m3.material.io/components/app-bars/specs
+
+   PUBLIC CSS CUSTOM PROPERTIES (override per-instance):
+     --md-app-bar-container-color              Top bar background (flat → surface)
+     --md-app-bar-container-color-scrolled     Top bar background when scrolled (surface-container)
+     --md-app-bar-container-shape              Top bar container corner radius (none)
+     --md-app-bar-headline-color               Headline / title colour (on-surface)
+     --md-app-bar-subtitle-color               Subtitle colour (on-surface-variant)
+     --md-app-bar-leading-icon-color           Leading icon colour (on-surface)
+     --md-app-bar-trailing-icon-color          Trailing icon colour (on-surface-variant)
+     --md-app-bar-container-elevation          Container shadow (elevation-0 default)
+     --md-app-bar-row-height                   Action row height (64dp)
+     --md-app-bar-padding-inline-start         Action row inline-start padding (4dp)
+     --md-app-bar-padding-inline-end           Action row inline-end padding (4dp)
+     --md-app-bar-row-padding-inline           Deprecated alias for both paddings (4dp)
+     --md-app-bar-row-padding-block-start      Action row block-start padding (20dp large expanded)
+     --md-app-bar-trailing-gap                 Gap between trailing action icons (2dp)
+     --md-app-bar-trailing-icon-touch-size     Trailing icon touch target (48dp; matches leading)
+     --md-app-bar-icon-gap                     Gap between icons and row content (0)
+     --md-app-bar-icon-size                    Icon glyph size in action row (24dp,
+                                               tapers with density; set to opt out)
+     --md-app-bar-avatar-size                  Avatar size in trailing slots (32dp)
+     --md-app-bar-expanded-padding-inline      Inline padding of expanded title block
+     --md-app-bar-expanded-padding-block-end   Block-end padding of expanded title block
+     --md-app-bar-medium-height                Medium expanded height, no subtitle (112dp)
+     --md-app-bar-medium-height-with-subtitle  Medium expanded height, with subtitle (136dp)
+     --md-app-bar-large-height                 Large expanded height, no subtitle (120dp)
+     --md-app-bar-large-height-with-subtitle   Large expanded height, with subtitle (152dp)
+     --md-app-bar-icon-button-size             Leading icon touch target (48dp)
+     --md-app-bar-search-container-color       Search pill resting fill (surface-container-highest)
+     --md-app-bar-search-container-color-scrolled
+                                               Search pill fill when scrolled (surface-container)
+     --md-app-bar-search-container-shape       Search field border-radius
+     --md-app-bar-search-container-height      Search field block-size (56dp)
+     --md-app-bar-search-padding-inline-start  Search hint inline-start padding (24dp default)
+     --md-app-bar-search-padding-inline-end    Search pill inline-end padding after in-pill icons (8dp)
+     --md-app-bar-search-row-gap               Gap between leading, pill bay, and trailing (8dp)
+     --md-app-bar-search-trailing-gap          Gap between in-pill trailing icons — mic ↔ sparkle (4dp)
+     --md-app-bar-search-field-trailing-gap    Gap between hint field and in-pill trailing cluster (6dp; fits focus ring)
+     --md-app-bar-trailing-touch-size          Outside trailing touch target — avatar area (48dp)
+     --md-app-bar-search-placeholder-color     Hint / placeholder colour (on-surface-variant)
+     --md-app-bar-search-input-color           Typed search text colour (on-surface)
+     --md-app-bar-search-trailing-icon-color   Icons inside the search field (on-surface-variant)
+
+   CSS PARTS:
+     row                 Top action row (leading | title | trailing)
+     leading             Leading slot wrapper
+     leading-icon        Prop-based leading md-icon-button
+     icon                Leading icon glyph (exported from leading-icon)
+     state-layer         Leading icon state layer (exported from leading-icon)
+     title               Inline title (small variant)
+     trailing            Trailing slot wrapper (outside search field)
+     search-host         Flex region between leading/trailing (search variant)
+     search              Search pill container (search variant)
+     search-state-layer  Hover / focus / press overlay on search field
+     search-field        Text/input flex region inside pill (hint padding)
+     search-input        Inline search `<input>` (search variant)
+     search-content      Wrapper around slotted `search` content
+     search-trailing     Trailing slot inside the search field
+     expanded            Expanded title block wrapper (medium / large)
+     expanded-headline   Expanded headline text (headline-medium)
+     subtitle            Subtitle text (inline on small, expanded on medium/large)
+
+   SLOTS:
+     leading             Leading navigation icon(s) — slot takes priority over leading-icon prop
+     headline            Custom headline content (overrides headline prop)
+     subtitle            Custom subtitle content (overrides subtitle prop)
+     trailing            Trailing action icons outside search field (max 3; excess hidden + warn)
+     search              Replace built-in search input (search configuration)
+     search-trailing     In-pill trailing icons (e.g. mic); data-compact-keep opts out of compact hide
+     Slotted directional icons may use data-directional for RTL mirroring.
+
+   RESPONSIVE (search variant, container + viewport):
+     < 600dp  — hint inset 16dp, hide 2nd+ search-trailing (data-compact-keep opts out)
+     < 400dp  — hint inset 12dp
+   ========================================================== */
+
+:host {
+  /* ── Color roles (M3 app bar common colors) ─────────────── */
+  --_container-color: var(--md-app-bar-container-color, var(--md-sys-color-surface));
+  --_container-color-scrolled: var(
+    --md-app-bar-container-color-scrolled,
+    var(--md-sys-color-surface-container)
+  );
+  --_container-shape: var(--md-app-bar-container-shape, var(--md-sys-shape-corner-none));
+  --_headline-color: var(--md-app-bar-headline-color, var(--md-sys-color-on-surface));
+  --_subtitle-color: var(--md-app-bar-subtitle-color, var(--md-sys-color-on-surface-variant));
+  --_leading-icon-color: var(--md-app-bar-leading-icon-color, var(--md-sys-color-on-surface));
+  --_trailing-icon-color: var(--md-app-bar-trailing-icon-color, var(--md-sys-color-on-surface-variant));
+  --_container-elevation: var(--md-app-bar-container-elevation, var(--md-sys-elevation-0));
+
+  /* ── Spacing (M3 app bar spacing) ───────────────────────── */
+  --_padding-inline-start: var(
+    --md-app-bar-padding-inline-start,
+    var(--md-app-bar-row-padding-inline, var(--md-sys-spacing-inset-xs, 4px))
+  );
+  --_padding-inline-end: var(
+    --md-app-bar-padding-inline-end,
+    var(--md-app-bar-row-padding-inline, var(--md-sys-spacing-inset-xs, 4px))
+  );
+  --_icon-gap: var(--md-app-bar-icon-gap, 0px);
+
+  /* ── Size (M3 app bar size) — density-aware via --md-sys-density-scale ── */
+  --_row-height: var(--md-app-bar-row-height, max(48px, calc(64px + var(--md-sys-density-scale, 0) * 4px)));
+  --_icon-button-size: var(--md-app-bar-icon-button-size, max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px)));
+  --_trailing-icon-touch-size: var(--md-app-bar-trailing-icon-touch-size, var(--_icon-button-size));
+  --_trailing-gap: var(--md-app-bar-trailing-gap, 2px);
+  --_row-padding-block-start: var(--md-app-bar-row-padding-block-start, 0px);
+  /* 1px per rung off 24dp (18px floor) — the library-wide icon taper. Feeds
+     --md-icon-button-icon-size for the leading/trailing buttons further down,
+     so the glyphs shrink with the row instead of sitting oversized in it. */
+  --_icon-size: var(--md-app-bar-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
+  /* Hand-off alias — DO NOT inline `--_icon-size` into the md-icon-button rules
+     below. md-icon-button ALSO defines a private `--_icon-size`, as
+     `var(--md-icon-button-icon-size, …)`. A `--md-icon-button-icon-size:
+     var(--_icon-size)` declaration is resolved against the BUTTON's custom
+     properties, so it would read the button's own `--_icon-size` — the two
+     reference each other, the cycle is invalid at computed-value time, and BOTH
+     collapse to guaranteed-invalid (the glyph silently falls back to 24px at
+     every density rung). This alias is resolved here, in the app bar's own
+     context, so what crosses the boundary is a plain length. `--_icon-button-size`
+     needs no alias: md-icon-button doesn't define that name. */
+  --_icon-size-handoff: var(--_icon-size);
+  --_avatar-size: var(--md-app-bar-avatar-size, max(24px, calc(32px + var(--md-sys-density-scale, 0) * 2px)));
+
+  --_expanded-padding-inline: var(--md-app-bar-expanded-padding-inline, var(--md-sys-spacing-inset-lg, 16px));
+  --_expanded-padding-block-end: var(--md-app-bar-expanded-padding-block-end, var(--md-sys-spacing-inset-xl, 24px));
+
+  /* ── Search pill colors + spacing ───────────────────────── */
+  --_search-container-color: var(
+    --md-app-bar-search-container-color,
+    var(--md-sys-color-surface-container-highest)
+  );
+  --_search-container-color-scrolled: var(
+    --md-app-bar-search-container-color-scrolled,
+    var(--md-sys-color-surface-container)
+  );
+  --_search-container-shape: var(
+    --md-app-bar-search-container-shape,
+    var(--md-sys-shape-corner-full)
+  );
+  --_search-container-height: var(--md-app-bar-search-container-height, max(40px, calc(56px + var(--md-sys-density-scale, 0) * 4px)));
+  --_search-padding-inline-start: var(--md-app-bar-search-padding-inline-start, var(--md-sys-spacing-inset-xl, 24px));
+  --_search-padding-inline-end: var(--md-app-bar-search-padding-inline-end, var(--md-sys-spacing-inset-sm, 8px));
+  --_search-row-gap: var(--md-app-bar-search-row-gap, var(--md-sys-spacing-gap-sm, 8px));
+  --_search-trailing-gap: var(--md-app-bar-search-trailing-gap, var(--md-sys-spacing-gap-xs, 4px));
+  --_search-field-trailing-gap: var(--md-app-bar-search-field-trailing-gap, 6px);
+  --_trailing-touch-size: var(--md-app-bar-trailing-touch-size, max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px)));
+  --_search-placeholder-color: var(
+    --md-app-bar-search-placeholder-color,
+    var(--md-sys-color-on-surface-variant)
+  );
+  --_search-input-color: var(
+    --md-app-bar-search-input-color,
+    var(--md-sys-color-on-surface)
+  );
+  --_search-trailing-icon-color: var(
+    --md-app-bar-search-trailing-icon-color,
+    var(--md-sys-color-on-surface-variant)
+  );
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  box-sizing: border-box;
+  border-radius: var(--_container-shape);
+  background-color: var(--_container-color);
+  color: var(--_headline-color);
+  box-shadow: var(--_container-elevation);
+  z-index: var(--md-sys-z-index-app-bar, 100);
+  position: sticky;
+  inset-block-start: 0;
+  transition:
+    background-color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+/* ── Density ───────────────────────────────────────────── */
+
+:host([density='-1']) { --md-sys-density-scale: -1; }
+:host([density='-2']) { --md-sys-density-scale: -2; }
+:host([density='-3']) { --md-sys-density-scale: -3; }
+:host([density='-4']) { --md-sys-density-scale: -4; }
+
+
+/* Scrolled surface — M3 app bar common-colors (surface → surface-container). */
+:host(.md-app-bar--scrolled) {
+  background-color: var(--_container-color-scrolled);
+}
+
+:host(.md-app-bar--scrolled) .md-app-bar__search {
+  background-color: var(--_search-container-color-scrolled);
+}
+
+/* ── Medium / large expanded layouts ────────────────────── */
+
+:host(.md-app-bar--flexible) {
+  display: flex;
+  flex-direction: column;
+  min-block-size: var(--_flex-expanded-height);
+}
+
+:host(.md-app-bar--medium) {
+  --_flex-expanded-height: var(--md-app-bar-medium-height, calc(112px + var(--md-sys-density-scale, 0) * 4px));
+  --_expanded-padding-block-end: var(--md-sys-spacing-inset-xl, 24px);
+}
+
+:host(.md-app-bar--medium.md-app-bar--with-subtitle) {
+  --_flex-expanded-height: var(--md-app-bar-medium-height-with-subtitle, calc(136px + var(--md-sys-density-scale, 0) * 4px));
+}
+
+:host(.md-app-bar--large) {
+  --_flex-expanded-height: var(--md-app-bar-large-height, calc(120px + var(--md-sys-density-scale, 0) * 4px));
+  --_expanded-padding-block-end: 28px;
+}
+
+:host(.md-app-bar--large:not(.md-app-bar--search)) {
+  --_row-padding-block-start: var(--md-app-bar-row-padding-block-start, 20px);
+}
+
+:host(.md-app-bar--large.md-app-bar--with-subtitle) {
+  --_flex-expanded-height: var(--md-app-bar-large-height-with-subtitle, calc(152px + var(--md-sys-density-scale, 0) * 4px));
+}
+
+.md-app-bar__row {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  block-size: var(--_row-height);
+  min-block-size: var(--_row-height);
+  padding-inline-start: var(--_padding-inline-start);
+  padding-inline-end: var(--_padding-inline-end);
+  padding-block-start: var(--_row-padding-block-start);
+  gap: var(--_icon-gap);
+}
+
+:host(.md-app-bar--large:not(.md-app-bar--search)) .md-app-bar__row {
+  align-items: flex-start;
+}
+
+/* Centered-title configuration (replaces the old center-aligned variant).
+   Scoped to non-search bars; search bars use start-aligned input text with an
+   optional centred placeholder when empty (see search section). */
+:host(.md-app-bar--center:not(.md-app-bar--search)) .md-app-bar__row {
+  display: grid;
+  grid-template-columns: minmax(var(--_icon-button-size), 1fr) minmax(0, auto) minmax(
+      var(--_icon-button-size),
+      1fr
+    );
+  align-items: center;
+  column-gap: var(--_icon-gap);
+}
+
+.md-app-bar__leading,
+.md-app-bar__trailing {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 0;
+  color: var(--_leading-icon-color);
+}
+
+:host(.md-app-bar--center:not(.md-app-bar--search)) .md-app-bar__leading {
+  justify-self: start;
+}
+
+.md-app-bar__trailing {
+  color: var(--_trailing-icon-color);
+  margin-inline-start: auto;
+  gap: var(--_trailing-gap);
+}
+
+:host(.md-app-bar--center:not(.md-app-bar--search)) .md-app-bar__trailing {
+  justify-self: end;
+  margin-inline-start: 0;
+}
+
+/* Inline headline block — title (+ optional subtitle) within the row. */
+.md-app-bar__headline-inline {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  min-inline-size: 0;
+  padding-inline: var(--md-sys-spacing-inset-md, 12px);
+}
+
+:host(.md-app-bar--center) .md-app-bar__headline-inline {
+  flex: unset;
+  justify-self: center;
+  align-items: center;
+  text-align: center;
+  padding-inline: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+:host(.md-app-bar--flexible) .md-app-bar__headline-inline {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.md-app-bar__title {
+  min-inline-size: 0;
+  font-family: var(--md-sys-typescale-title-large-font-family);
+  /* Density taper on title-large (22/28). Same rates md-dialog uses for this
+     typescale, so an app bar headline and a dialog headline stay in step. */
+  font-size: max(16px, calc(22px + var(--md-sys-density-scale, 0) * 1px));
+  font-weight: var(--md-sys-typescale-title-large-font-weight);
+  line-height: max(22px, calc(28px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-title-large-letter-spacing);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--_headline-color);
+}
+
+.md-app-bar__expanded {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-inline: var(--_expanded-padding-inline);
+  padding-block-end: var(--_expanded-padding-block-end);
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+:host(.md-app-bar--center) .md-app-bar__expanded {
+  align-items: center;
+  text-align: center;
+}
+
+/* Medium and large share the headline-medium (28/36) expanded headline — one
+   rule instead of two identical ones, so the density taper can't drift apart.
+   Rates follow the library's large-typescale pattern: 1px/rung on the size,
+   2px/rung on the line-height (the same shape md-dialog uses for 24/32). */
+:host(.md-app-bar--medium) .md-app-bar__expanded-headline,
+:host(.md-app-bar--large) .md-app-bar__expanded-headline {
+  font-family: var(--md-sys-typescale-headline-medium-font-family);
+  font-size: max(22px, calc(28px + var(--md-sys-density-scale, 0) * 1px));
+  font-weight: var(--md-sys-typescale-headline-medium-font-weight);
+  line-height: max(28px, calc(36px + var(--md-sys-density-scale, 0) * 2px));
+  letter-spacing: var(--md-sys-typescale-headline-medium-letter-spacing);
+  color: var(--_headline-color);
+}
+
+/* Subtitle: label-large by default (small + medium). */
+.md-app-bar__subtitle {
+  margin-block-start: 2px;
+  font-family: var(--md-sys-typescale-label-large-font-family);
+  /* label-large (14/20): 0.5px/rung — the library's rate for sub-22px type. */
+  font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-label-large-font-weight);
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-label-large-letter-spacing);
+  color: var(--_subtitle-color);
+}
+
+:host(.md-app-bar--large) .md-app-bar__expanded .md-app-bar__subtitle {
+  font-family: var(--md-sys-typescale-title-medium-font-family);
+  /* title-medium (16/24) — same rates as the body-large text below. */
+  font-size: max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-title-medium-font-weight);
+  line-height: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-title-medium-letter-spacing);
+}
+
+/* ── Search app bar (64dp row, 56dp search field) ───────── */
+
+/* Container queries: compact when the bar is narrower than ~600dp (M3 compact). */
+:host(.md-app-bar--search) {
+  container-type: inline-size;
+}
+
+.md-app-bar__row--search {
+  flex-shrink: 0;
+  gap: var(--_search-row-gap);
+}
+
+/* Search row: leading (48dp) | 8dp | pill bay | 8dp | trailing avatar (48dp). */
+:host(.md-app-bar--search) .md-app-bar__leading {
+  min-inline-size: var(--_icon-button-size);
+}
+
+:host(.md-app-bar--search) .md-app-bar__trailing {
+  margin-inline-start: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-inline-size: var(--_trailing-touch-size);
+  min-block-size: var(--_trailing-touch-size);
+}
+
+/* Search hint — caret and typed text always start-aligned. Start variant keeps a
+   constant inline-start inset; center variant centres only the ::placeholder. */
+:host(.md-app-bar--search) .md-app-bar__search-input,
+:host(.md-app-bar--search) .md-app-bar__search-content {
+  text-align: start;
+}
+
+/* Start-aligned hint — constant inset on field wrapper and input (not outside menu icon). */
+:host(.md-app-bar--search:not(.md-app-bar--center)) .md-app-bar__search-field {
+  padding-inline-start: max(12px, var(--_search-padding-inline-start));
+  padding-inline-end: 0;
+}
+
+:host(.md-app-bar--search:not(.md-app-bar--center)) .md-app-bar__search-input {
+  padding-inline-start: max(12px, var(--_search-padding-inline-start));
+  padding-inline-end: 0;
+}
+
+/* Native input carries text-side inset; avoid doubling wrapper + input padding. */
+:host(.md-app-bar--search:not(.md-app-bar--center))
+  .md-app-bar__search-field:has(.md-app-bar__search-input) {
+  padding-inline-start: 0;
+}
+
+/* Centered search hint (title-alignment="center") — placeholder centred via
+   ::placeholder while the input (and caret) stay start-aligned.
+
+   The hint inset is applied UNCONDITIONALLY and SYMMETRICALLY. It used to be
+   added only on :focus-within / --focused / :not(:placeholder-shown), which
+   made the centred placeholder visibly slide: `text-align: center` centres
+   within the CONTENT box, so growing padding-inline-start from 0 to 24px on
+   focus moved the hint 12px (half the added padding) toward the end edge while
+   the user was looking straight at it.
+
+   Equal start and end padding keeps the content box concentric with the input,
+   so the centred placeholder lands in exactly the same place it did with no
+   padding at all — the resting render is unchanged — while the caret and typed
+   text keep the 24px inset they always had. Nothing moves on focus, and
+   nothing moves on the first keystroke either. */
+:host(.md-app-bar--search.md-app-bar--center) .md-app-bar__search-field {
+  padding-inline-start: 0;
+  padding-inline-end: 0;
+}
+
+:host(.md-app-bar--search.md-app-bar--center) .md-app-bar__search-input::placeholder {
+  text-align: center;
+}
+
+:host(.md-app-bar--search.md-app-bar--center) .md-app-bar__search-input {
+  padding-inline-start: max(12px, var(--_search-padding-inline-start));
+  padding-inline-end: max(12px, var(--_search-padding-inline-start));
+}
+
+/* Flex bay between outside leading/trailing icons — pill always fills the bay. */
+.md-app-bar__search-host {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  justify-content: center;
+  overflow: visible;
+}
+
+.md-app-bar__search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  inline-size: 100%;
+  min-inline-size: 0;
+  margin-inline: 0;
+  align-self: center;
+  block-size: var(--_search-container-height);
+  /* Inline-start padding lives on the input (start-aligned hint). */
+  padding-inline-start: 0;
+  padding-inline-end: 0;
+  gap: var(--_icon-gap);
+  border-radius: var(--_search-container-shape);
+  background-color: var(--_search-container-color);
+  color: var(--_search-input-color);
+  cursor: text;
+  overflow: hidden;
+  transition:
+    background-color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+/* Let md-icon-button focus rings (3px + 2px offset) paint outside touch targets. */
+.md-app-bar__search:focus-within {
+  overflow: visible;
+}
+
+.md-app-bar__search > md-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  --md-ripple-grow-duration: var(--md-sys-motion-duration-short2);
+  --md-ripple-grow-easing: var(--md-sys-motion-easing-standard);
+  --md-ripple-extend-inline: 0px;
+}
+
+.md-app-bar__search-state-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-color: var(--_search-input-color);
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short1) var(--md-sys-motion-easing-standard);
+}
+
+.md-app-bar__search:hover .md-app-bar__search-state-layer {
+  opacity: var(--md-sys-state-hover-state-layer-opacity);
+}
+
+.md-app-bar__search:active .md-app-bar__search-state-layer {
+  opacity: var(--md-sys-state-pressed-state-layer-opacity);
+}
+
+.md-app-bar__search--focus-ring {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: 2px;
+}
+
+.md-app-bar__search-field {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+  padding-inline: 0;
+}
+
+.md-app-bar__search-input {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: start;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--_search-input-color);
+  font-family: var(--md-sys-typescale-body-large-font-family);
+  /* body-large (16/24) — matches md-search's own input taper, so an app-bar
+     search field and a standalone md-search read the same at every rung. */
+  font-size: max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  font-weight: var(--md-sys-typescale-body-large-font-weight);
+  line-height: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+  letter-spacing: var(--md-sys-typescale-body-large-letter-spacing);
+  padding-block: 0;
+  padding-inline-end: 0;
+  padding-inline-start: 0;
+  margin: 0;
+  text-indent: 0;
+  box-sizing: border-box;
+  appearance: none;
+}
+
+.md-app-bar__search-input::placeholder {
+  color: var(--_search-placeholder-color);
+  opacity: 1;
+}
+
+.md-app-bar__search-input:disabled {
+  cursor: not-allowed;
+}
+
+.md-app-bar__search-content {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-sizing: border-box;
+  padding-inline: 0;
+  margin: 0;
+}
+
+::slotted([slot='search']) {
+  inline-size: 100%;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-sizing: border-box;
+  padding-inline: 0;
+  margin: 0;
+}
+
+.md-app-bar__search-trailing {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  /* mic ↔ sparkle: 4dp; row gap (8dp) separates pill edge from outside avatar. */
+  gap: var(--_search-trailing-gap);
+  color: var(--_search-trailing-icon-color);
+  position: relative;
+  /* Above search-field so md-icon-button focus rings are not covered. */
+  z-index: 2;
+  padding-inline: 0;
+  margin-inline: 0;
+}
+
+/* After in-pill icons (mic): breathing room before pill edge. */
+:host(.md-app-bar--with-search-trailing) .md-app-bar__search {
+  padding-inline-end: var(--_search-padding-inline-end);
+}
+
+/* Hint field ↔ mic: 6dp fits icon-button focus ring (3px outline + 2px offset). */
+:host(.md-app-bar--with-search-trailing) .md-app-bar__search-trailing {
+  margin-inline-start: var(--_search-field-trailing-gap);
+}
+
+::slotted([slot='search-trailing']) {
+  color: var(--_search-trailing-icon-color);
+}
+
+:host(.md-app-bar--search) ::slotted([slot='trailing']) {
+  color: var(--_trailing-icon-color);
+}
+
+:host(.md-app-bar--search-disabled) .md-app-bar__search,
+:host(.md-app-bar--search) .md-app-bar__search:has(.md-app-bar__search-input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+:host(.md-app-bar--search-disabled) .md-app-bar__search-state-layer,
+:host(.md-app-bar--search) .md-app-bar__search:has(.md-app-bar__search-input:disabled) .md-app-bar__search-state-layer {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-app-bar__search {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Compact search row (< 600dp): tighter hint insets; hide secondary in-pill icons
+   unless marked with data-compact-keep. Row gaps (8dp) and 48dp touch targets
+   are unchanged. Custom --md-app-bar-search-padding-inline-start (e.g. 0) is preserved. */
+@container (max-width: 599px) {
+  :host(.md-app-bar--search:not(.md-app-bar--center)) {
+    --_search-padding-inline-start: min(16px, var(--_search-padding-inline-start));
+  }
+
+  :host(.md-app-bar--search)
+    ::slotted([slot='search-trailing']:not(:first-of-type):not([data-compact-keep])) {
+    display: none;
+  }
+}
+
+@container (max-width: 399px) {
+  :host(.md-app-bar--search:not(.md-app-bar--center)) {
+    --_search-padding-inline-start: min(12px, var(--_search-padding-inline-start));
+  }
+}
+
+@media (max-width: 599px) {
+  :host(.md-app-bar--search:not(.md-app-bar--center)) {
+    --_search-padding-inline-start: min(16px, var(--_search-padding-inline-start));
+  }
+
+  :host(.md-app-bar--search)
+    ::slotted([slot='search-trailing']:not(:first-of-type):not([data-compact-keep])) {
+    display: none;
+  }
+}
+
+@media (max-width: 399px) {
+  :host(.md-app-bar--search:not(.md-app-bar--center)) {
+    --_search-padding-inline-start: min(12px, var(--_search-padding-inline-start));
+  }
+}
+
+/* ── Prop-based leading icon button (md-icon-button) ────── */
+
+.md-app-bar__leading-button {
+  flex-shrink: 0;
+  --md-icon-button-icon-size: var(--_icon-size-handoff);
+  --md-icon-button-container-width: var(--_icon-button-size);
+  --md-icon-button-container-height: var(--_icon-button-size);
+  --md-icon-button-icon-color: var(--_leading-icon-color);
+  --md-icon-button-state-layer-color: var(--_leading-icon-color);
+}
+
+/* ── Slotted icon buttons / custom icons ────────────────── */
+
+::slotted([slot='leading']),
+::slotted([slot='trailing']),
+::slotted([slot='search-trailing']) {
+  flex-shrink: 0;
+  --md-icon-button-icon-size: var(--_icon-size-handoff);
+  --md-icon-button-container-width: var(--_icon-button-size);
+  --md-icon-button-container-height: var(--_icon-button-size);
+}
+
+::slotted([slot='leading']) {
+  --md-icon-button-icon-color: var(--_leading-icon-color);
+  --md-icon-button-state-layer-color: var(--_leading-icon-color);
+}
+
+::slotted([slot='trailing']) {
+  --md-icon-button-icon-color: var(--_trailing-icon-color);
+  --md-icon-button-state-layer-color: var(--_trailing-icon-color);
+  --md-avatar-size: var(--_avatar-size);
+}
+
+/* Enforced in TSX when >3 trailing children are assigned; belt-and-suspenders hide. */
+::slotted([slot='trailing'][hidden]) {
+  display: none !important;
+}
+
+::slotted([slot='search-trailing']) {
+  --md-icon-button-icon-color: var(--_search-trailing-icon-color);
+  --md-icon-button-state-layer-color: var(--_search-trailing-icon-color);
+}
+
+/* Directional icons mirror in RTL */
+:host-context([dir='rtl']) ::slotted([slot='leading'][data-directional]),
+:host([dir='rtl']) ::slotted([slot='leading'][data-directional]),
+:host-context([dir='rtl']) .md-app-bar__leading-button[data-directional],
+:host([dir='rtl']) .md-app-bar__leading-button[data-directional] {
+  transform: scaleX(-1);
+}

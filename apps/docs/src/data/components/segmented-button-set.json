@@ -1,0 +1,53 @@
+{
+  "tag": "md-segmented-button-set",
+  "title": "Segmented Button Set",
+  "slug": "segmented-button-set",
+  "category": "Actions",
+  "subComponentOf": null,
+  "storyId": null,
+  "props": [
+    {
+      "name": "multiselect",
+      "attribute": "multiselect",
+      "type": "boolean",
+      "default": "false",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "density",
+      "attribute": "density",
+      "type": "0 | -1 | -2 | -3 | -4",
+      "default": "0",
+      "reflect": true,
+      "mutable": false
+    }
+  ],
+  "events": [
+    {
+      "name": "mdChange",
+      "detail": "string[]"
+    }
+  ],
+  "methods": [],
+  "slots": [
+    {
+      "name": "(default)",
+      "description": ""
+    }
+  ],
+  "cssParts": [],
+  "cssCustomProps": [],
+  "dependencies": [
+    "md-segmented-button"
+  ],
+  "dataTypes": [],
+  "callableProps": [],
+  "eventTypes": [],
+  "eventPayloads": [
+    {
+      "name": "mdChange",
+      "detail": "string[]"
+    }
+  ]
+}
