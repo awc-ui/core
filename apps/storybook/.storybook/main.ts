@@ -1,7 +1,43 @@
 import { existsSync } from 'node:fs';
+import { readdir, copyFile, mkdir } from 'node:fs/promises';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { StorybookConfig } from '@storybook/web-components-vite';
 import { stencilLoaderStabilityPlugin, stencilDistRestartPlugin } from './stencil-loader-stability.ts';
+
+/**
+ * Stencil's lazy loader fetches per-component entry chunks at runtime via
+ * URLs constructed from import.meta.url — invisible to Rollup, so a static
+ * build bundles the loader but emits NONE of the chunks it will request:
+ * every component 404s (md-button_7.entry.js …) in a deployed Storybook,
+ * while the dev server keeps working because it serves node_modules
+ * directly. Copying the chunks next to the BUNDLED loader is not enough
+ * either: the copied entries import the copied runtime chunk while
+ * registration lives in the bundled one — two live runtimes, and every
+ * shadow root renders empty (see the watch-ignore note below for the same
+ * failure mode in dev).
+ *
+ * So for builds the runtime is not bundled at all: define-shim.ts (aliased
+ * over @awc-ui/core/define in viteFinal) loads the COPIED lazy output at
+ * runtime — one runtime, whose entry fetches resolve inside its own
+ * directory. This plugin ships that directory: dist/esm plus the md3 token
+ * sheet, under assets/awc-esm/.
+ */
+function copyStencilLazyRuntime() {
+  return {
+    name: 'awc-copy-stencil-lazy-runtime',
+    apply: 'build' as const,
+    async writeBundle(options: { dir?: string }) {
+      const coreDist = fileURLToPath(new URL('../../../packages/core/dist', import.meta.url));
+      const outDir = join(options.dir ?? '', 'assets', 'awc-esm');
+      if (!existsSync(join(coreDist, 'esm')) || !existsSync(join(options.dir ?? '', 'assets'))) return;
+      await mkdir(outDir, { recursive: true });
+      const files = (await readdir(join(coreDist, 'esm'))).filter((f) => f.endsWith('.js'));
+      await Promise.all(files.map((f) => copyFile(join(coreDist, 'esm', f), join(outDir, f))));
+      await copyFile(join(coreDist, 'md3', 'md3.css'), join(outDir, 'md3.css'));
+    },
+  };
+}
 
 // ../coverage-stories only exists after `pnpm test:coverage` has run, and
 // Storybook hard-fails on a missing staticDirs entry — so a fresh checkout
@@ -60,10 +96,23 @@ const config: StorybookConfig = {
      */
     { from: './static', to: '/' },
   ],
-  viteFinal(config) {
+  viteFinal(config, { configType }) {
     config.plugins ??= [];
     config.plugins.push(stencilLoaderStabilityPlugin());
     config.plugins.push(stencilDistRestartPlugin());
+
+    if (configType === 'PRODUCTION') {
+      config.plugins.push(copyStencilLazyRuntime());
+      // Swap the lazy-loader entry for the runtime-loading shim — see the
+      // comments on copyStencilLazyRuntime()/define-shim.ts.
+      config.resolve ??= {};
+      const alias = config.resolve.alias;
+      const shim = {
+        find: '@awc-ui/core/define',
+        replacement: fileURLToPath(new URL('./define-shim.ts', import.meta.url)),
+      };
+      config.resolve.alias = Array.isArray(alias) ? [...alias, shim] : { ...(alias ?? {}), [shim.find]: shim.replacement };
+    }
 
     config.optimizeDeps ??= {};
     config.optimizeDeps.exclude ??= [];
