@@ -144,9 +144,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add packages/*/package.json
-          git commit -m "chore(release): v$VERSION"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          # main may already carry this exact version (a local prep commit),
+          # leaving nothing staged — a bare `git commit` would exit 1 here,
+          # killing the step AFTER npm publish succeeded and skipping tag+release.
+          if git diff --cached --quiet; then
+            echo "versions already at v$VERSION on main; skipping bump commit"
+          else
+            git commit -m "chore(release): v$VERSION"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
           git tag "v$VERSION"
           git push origin "v$VERSION"
           PRERELEASE=""
