@@ -2,8 +2,15 @@
 
 ![Material Design 3](https://img.shields.io/badge/Material%20Design-3-6750A4?style=flat-square&logo=material-design&logoColor=white)
 ![StencilJS](https://img.shields.io/badge/StencilJS-4-16161D?style=flat-square&logo=stencil&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
 ![Beta](https://img.shields.io/badge/status-beta-F2B8B5?style=flat-square)
+
+![Web Components](https://img.shields.io/badge/Web%20Components-native-29ABE2?style=flat-square&logo=webcomponents.org&logoColor=white)
+![React](https://img.shields.io/badge/React-%E2%89%A518-20232A?style=flat-square&logo=react&logoColor=61DAFB)
+![Angular](https://img.shields.io/badge/Angular-%E2%89%A517-DD0031?style=flat-square&logo=angular&logoColor=white)
+![Vue](https://img.shields.io/badge/Vue-3-35495E?style=flat-square&logo=vuedotjs&logoColor=4FC08D)
+![Svelte](https://img.shields.io/badge/Svelte-%E2%89%A54-FF3E00?style=flat-square&logo=svelte&logoColor=white)
 
 **56 Material Design 3 components**, built with [Stencil](https://stenciljs.com/)
 and shipped as standard custom elements — so they work in React, Angular, Vue,
