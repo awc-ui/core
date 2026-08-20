@@ -316,6 +316,11 @@ jobs:
           name: core-dist
           path: packages/core/
 
+      - name: Build theme package
+        # The Storybook preview imports @awc-ui/theme, which resolves from
+        # dist/ since it became publishable.
+        run: pnpm --filter @awc-ui/theme build
+
       - run: pnpm --filter @awc-ui/storybook exec playwright install --with-deps chromium
 
       - name: Run axe-core a11y audit on Storybook stories

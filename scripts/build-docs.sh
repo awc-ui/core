@@ -21,6 +21,13 @@ echo "==> Building core library..."
 pnpm --filter @awc-ui/core build
 
 echo ""
+echo "==> Building theme package..."
+# @awc-ui/theme resolves from dist/ since it became publishable — a fresh
+# checkout has no dist, and both Storybook's preview and the theme
+# generator import the package.
+pnpm --filter @awc-ui/theme build
+
+echo ""
 echo "==> Building Storybook static site..."
 pnpm --filter @awc-ui/storybook exec storybook build -o "$ROOT/apps/docs/public/storybook" --quiet
 

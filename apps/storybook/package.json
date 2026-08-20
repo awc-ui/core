@@ -6,7 +6,7 @@
   "scripts": {
     "storybook": "pnpm --filter @awc-ui/core build:dev && concurrently -n CORE,SB -c blue,magenta \"pnpm --filter @awc-ui/core build:watch:dev\" \"storybook dev -p 6006\"",
     "build": "pnpm --filter @awc-ui/core build && storybook build",
-    "build-storybook": "pnpm --filter @awc-ui/core build && storybook build",
+    "build-storybook": "pnpm --filter @awc-ui/core build && pnpm --filter @awc-ui/theme build && storybook build",
     "test:a11y": "vitest run --project storybook",
     "test:visual": "echo \"Visual snapshots are not yet ported to Vitest (jest-image-snapshot was test-runner-only). See docs/testing.\" && exit 1",
     "test:coverage": "pnpm --filter @awc-ui/core build:coverage-sb && node scripts/story-coverage.mjs",
