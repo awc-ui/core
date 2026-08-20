@@ -1,8 +1,11 @@
 name: Release
 
+# Changesets flow is disabled for now — the repo has no .changeset directory,
+# so the version-PR step failed on every push to main, and releases go through
+# the manual Publish workflow instead. Re-enable by restoring the push trigger
+# and committing a `changeset init` config.
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: release-${{ github.ref }}
