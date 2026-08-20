@@ -19,13 +19,13 @@
     "build": "rm -rf dist && tsc -p tsconfig.json --emitDeclarationOnly && esbuild src/index.ts --bundle --format=esm --target=es2020 --sourcemap --outfile=dist/index.mjs --external:svelte --external:@awc-ui/core --external:@awc-ui/core/*"
   },
   "peerDependencies": {
-    "svelte": ">=4",
-    "@awc-ui/core": "workspace:*"
+    "@awc-ui/core": "workspace:*",
+    "svelte": ">=4"
   },
   "devDependencies": {
     "@awc-ui/core": "workspace:*",
-    "typescript": "^5.4.0",
-    "esbuild": "^0.25.12"
+    "esbuild": "^0.25.12",
+    "typescript": "^5.4.0"
   },
   "license": "MIT",
   "author": "AWC UI",
