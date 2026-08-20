@@ -24,8 +24,8 @@
     "build": "rm -rf dist && tsc -p tsconfig.json && esbuild lib/index.ts --bundle --format=esm --target=es2020 --sourcemap --outfile=dist/index.mjs --external:vue --external:@awc-ui/core --external:@awc-ui/core/*"
   },
   "peerDependencies": {
-    "vue": ">=3",
-    "@awc-ui/core": "workspace:*"
+    "@awc-ui/core": "workspace:*",
+    "vue": ">=3"
   },
   "devDependencies": {
     "@awc-ui/core": "workspace:*",
