@@ -18,7 +18,13 @@
   --sl-color-accent: var(--md-sys-color-primary);
   --sl-color-accent-high: var(--md-sys-color-on-primary-container);
 
-  --sl-color-white: var(--md-sys-color-surface);
+  /* Starlight palette semantics: --sl-color-white is the STRONGEST
+     FOREGROUND (headings; near-black in light mode, white in dark) and
+     --sl-color-black is the PAGE BACKGROUND. Mapping them the other way
+     round paints the mobile menu pane — the one surface stock Starlight
+     fills with raw --sl-color-black — with a text color: dark-on-dark in
+     light mode, light-on-light in dark. */
+  --sl-color-white: var(--md-sys-color-on-surface);
   --sl-color-gray-1: var(--md-sys-color-on-surface);
   --sl-color-gray-2: var(--md-sys-color-on-surface-variant);
   --sl-color-gray-3: var(--md-sys-color-outline);
@@ -26,7 +32,7 @@
   --sl-color-gray-5: var(--md-sys-color-outline-variant);
   --sl-color-gray-6: var(--md-sys-color-surface-container);
   --sl-color-gray-7: var(--md-sys-color-surface-container-low);
-  --sl-color-black: var(--md-sys-color-on-surface);
+  --sl-color-black: var(--md-sys-color-surface);
 
   --sl-color-bg: var(--md-sys-color-surface);
   --sl-color-bg-sidebar: var(--md-sys-color-surface-container-low);
