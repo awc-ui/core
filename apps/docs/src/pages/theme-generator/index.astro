@@ -1683,16 +1683,19 @@ const CONTRAST_PAIRS = [
           //   where Stencil's lazy entry chunks 404 — import the COPIED runtime.
           //   The URL sits in a variable because Rollup resolves literal dynamic
           //   imports even behind @vite-ignore and fails the build.
-          let mod: { defineCustomElements: (win?: Window) => Promise<unknown> };
           if (import.meta.env.DEV) {
-            mod = await import("@awc-ui/core/loader");
+            const mod: { defineCustomElements: (win?: Window) => Promise<unknown> } =
+              await import("@awc-ui/core/loader");
+            await mod.defineCustomElements(window);
           } else {
             const runtimeUrl = "/awc-runtime/md3/md3.esm.js";
+            // The copied runtime self-registers its elements on import; wait
+            // for an upgrade to land before seeding data.
             await import(/* @vite-ignore */ runtimeUrl);
-        await customElements.whenDefined("md-button");
-        return;
+            await customElements.whenDefined("md-button");
           }
-          await mod.defineCustomElements(window);
+          // BOTH paths must wire the demo data — an early return in the prod
+          // branch once shipped a preview where every chart said "No data".
           wirePreviewData();
         } catch (err) {
           console.warn("[AWC UI] Component loader failed:", err);
