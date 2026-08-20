@@ -683,11 +683,10 @@ importers:
         version: 5.4.5
 
   packages/theme:
-    dependencies:
+    devDependencies:
       '@material/material-color-utilities':
         specifier: ^0.4.0
         version: 0.4.0
-    devDependencies:
       esbuild:
         specifier: ^0.25.12
         version: 0.25.12
