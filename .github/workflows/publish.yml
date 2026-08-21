@@ -38,6 +38,11 @@ on:
         description: 'Version for beta/prod (e.g. 1.0.0-beta.1 or 1.0.0). Ignored for snapshot.'
         required: false
         type: string
+      promote_latest:
+        description: 'Also move the `latest` dist-tag to this version (beta/prod only)'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: publish
@@ -138,6 +143,29 @@ jobs:
       - name: E2E tests
         run: pnpm --filter @awc-ui/core exec stencil test --e2e --ci --max-workers=2
 
+      # `stencil test --e2e` runs its own DEV build and re-emits every output
+      # target into dist/ — unminified, unhashed, lazy runtime, global
+      # stylesheet baked into the custom-elements bundle. Entry filenames
+      # collide with the prod build's, so the dev output silently wins and
+      # that is what v1.0.0-beta.1 shipped. Rebuild after all test gates so
+      # npm gets the prod artifacts (the core build script now cleans dist/
+      # first, so no stale files survive either).
+      - name: Rebuild dist for publish (e2e overwrites it with a dev build)
+        run: pnpm --filter @awc-ui/core build
+
+      - name: Assert custom-elements output is clean
+        run: |
+          cd packages/core/dist/components
+          if grep -l "entry\.js" ./*.js; then
+            echo "::error::custom-elements output references the lazy loader — a dev build leaked into dist/"
+            exit 1
+          fi
+          if grep -l "Design Tokens" ./*.js; then
+            echo "::error::custom-elements output has the global stylesheet baked in — a dev build leaked into dist/"
+            exit 1
+          fi
+          echo "custom-elements output is clean"
+
       - name: Publish-readiness gate (publint + attw)
         run: |
           pnpm ci:publint
@@ -170,6 +198,20 @@ jobs:
               echo "@awc-ui/$p: latest=$latest -> $VERSION"
               npm dist-tag add "@awc-ui/$p@$VERSION" latest
             fi
+          done
+
+      - name: Promote latest dist-tag
+        # Opt-in via the promote_latest input: point `latest` at this release
+        # so a plain `npm i @awc-ui/<pkg>` installs it. Useful while the
+        # project's public builds are prereleases and `latest` would otherwise
+        # sit on an old beta forever.
+        if: inputs.channel != 'snapshot' && inputs.promote_latest
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          VERSION: ${{ steps.rv.outputs.version }}
+        run: |
+          for p in core tokens react vue angular svelte theme; do
+            npm dist-tag add "@awc-ui/$p@$VERSION" latest
           done
 
       - name: Commit bump, tag, and GitHub release (beta/prod)
