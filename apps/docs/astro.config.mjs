@@ -378,6 +378,49 @@ export default defineConfig({
           label: 'Global Behaviour',
           autogenerate: { directory: 'behaviour' },
         },
+        // Complete, runnable screens — the docs-site face of main-llm.md §8.
+        // Ordered by how often evaluators ask for them (data-heavy first),
+        // not alphabetically; autogenerate would lose that ranking.
+        {
+          label: 'Recipes',
+          collapsed: true,
+          items: [
+            { label: 'App shell (SSR-ready)', link: '/recipes/app-shell/' },
+            { label: 'KPI overview', link: '/recipes/kpi-overview/' },
+            { label: 'Data grid console', link: '/recipes/data-grid-console/' },
+            { label: 'Charts gallery', link: '/recipes/charts-gallery/' },
+            { label: 'Server fleet status', link: '/recipes/server-fleet-status/' },
+            { label: 'Release health drilldown', link: '/recipes/release-health-drilldown/' },
+            { label: 'CSV import wizard', link: '/recipes/csv-import-wizard/' },
+            { label: 'Role & permission assignment', link: '/recipes/role-permission-assignment/' },
+            { label: 'Org chart explorer', link: '/recipes/org-chart-explorer/' },
+            { label: 'Moderation queue', link: '/recipes/moderation-queue/' },
+            { label: 'Checkout wizard', link: '/recipes/checkout-wizard/' },
+            { label: 'Two-factor verification', link: '/recipes/two-factor-verification/' },
+            { label: 'Appointment booking', link: '/recipes/appointment-booking/' },
+            { label: 'Survey with NPS', link: '/recipes/survey-nps/' },
+            { label: 'Notification preferences', link: '/recipes/notification-preferences/' },
+            { label: 'Inbox with reading pane', link: '/recipes/inbox-shell/' },
+            { label: 'Mobile filter sheet', link: '/recipes/mobile-filter-sheet/' },
+            { label: 'Product reviews', link: '/recipes/product-reviews/' },
+            { label: 'Order tracking', link: '/recipes/order-tracking/' },
+            { label: 'Portfolio & markets', link: '/recipes/portfolio-markets/' },
+            { label: 'Pricing page', link: '/recipes/pricing-page/' },
+            { label: 'Async feedback patterns', link: '/recipes/async-feedback-patterns/' },
+          ],
+        },
+        // Full fictional apps (apps/showcase-* in the repo) and the proof
+        // pages that demonstrate library-level claims (SSR, a11y).
+        {
+          label: 'Showcase',
+          collapsed: true,
+          autogenerate: { directory: 'showcase' },
+        },
+        {
+          label: 'Compare',
+          collapsed: true,
+          autogenerate: { directory: 'compare' },
+        },
         {
           label: 'Components',
           items: [
