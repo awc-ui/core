@@ -19,6 +19,13 @@
   "publishConfig": {
     "access": "public"
   },
+  "sideEffects": [
+    "**/*.css",
+    "./define.mjs",
+    "./loader/**",
+    "./dist/components/index.js",
+    "./dist/md3/**"
+  ],
   "main": "dist/index.cjs.js",
   "module": "dist/index.js",
   "types": "dist/types/index.d.ts",
@@ -65,7 +72,7 @@
     "src/components/*/readme.md"
   ],
   "scripts": {
-    "build": "node ../../scripts/build-package-docs.mjs && stencil build && node ../../scripts/fix-module-types.mjs",
+    "build": "node ../../scripts/build-package-docs.mjs && stencil build && node ../../scripts/fix-module-types.mjs && node ../../scripts/split-react-components.mjs",
     "build:watch": "stencil build --watch",
     "build:dev": "stencil build --config stencil.config.dev.ts",
     "build:watch:dev": "stencil build --config stencil.config.dev.ts --watch",

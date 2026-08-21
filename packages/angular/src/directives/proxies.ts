@@ -4,10 +4,91 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Even
 
 import { ProxyCmp, proxyOutputs } from './angular-component-lib/utils';
 
-import { Components } from '@awc-ui/core';
+import type { Components } from '@awc-ui/core/dist/components';
 
-
+import { defineCustomElement as defineMdAccordion } from '@awc-ui/core/dist/components/md-accordion.js';
+import { defineCustomElement as defineMdAccordionItem } from '@awc-ui/core/dist/components/md-accordion-item.js';
+import { defineCustomElement as defineMdAppBar } from '@awc-ui/core/dist/components/md-app-bar.js';
+import { defineCustomElement as defineMdAreaChart } from '@awc-ui/core/dist/components/md-area-chart.js';
+import { defineCustomElement as defineMdAutocomplete } from '@awc-ui/core/dist/components/md-autocomplete.js';
+import { defineCustomElement as defineMdAvatar } from '@awc-ui/core/dist/components/md-avatar.js';
+import { defineCustomElement as defineMdBadge } from '@awc-ui/core/dist/components/md-badge.js';
+import { defineCustomElement as defineMdBarChart } from '@awc-ui/core/dist/components/md-bar-chart.js';
+import { defineCustomElement as defineMdBottomSheet } from '@awc-ui/core/dist/components/md-bottom-sheet.js';
+import { defineCustomElement as defineMdBreadcrumbItem } from '@awc-ui/core/dist/components/md-breadcrumb-item.js';
+import { defineCustomElement as defineMdBreadcrumbs } from '@awc-ui/core/dist/components/md-breadcrumbs.js';
+import { defineCustomElement as defineMdButton } from '@awc-ui/core/dist/components/md-button.js';
+import { defineCustomElement as defineMdButtonGroup } from '@awc-ui/core/dist/components/md-button-group.js';
+import { defineCustomElement as defineMdCard } from '@awc-ui/core/dist/components/md-card.js';
+import { defineCustomElement as defineMdCheckbox } from '@awc-ui/core/dist/components/md-checkbox.js';
+import { defineCustomElement as defineMdChip } from '@awc-ui/core/dist/components/md-chip.js';
+import { defineCustomElement as defineMdColorPicker } from '@awc-ui/core/dist/components/md-color-picker.js';
+import { defineCustomElement as defineMdDatePicker } from '@awc-ui/core/dist/components/md-date-picker.js';
+import { defineCustomElement as defineMdDialog } from '@awc-ui/core/dist/components/md-dialog.js';
+import { defineCustomElement as defineMdDivider } from '@awc-ui/core/dist/components/md-divider.js';
+import { defineCustomElement as defineMdFab } from '@awc-ui/core/dist/components/md-fab.js';
+import { defineCustomElement as defineMdFabMenu } from '@awc-ui/core/dist/components/md-fab-menu.js';
+import { defineCustomElement as defineMdFabMenuItem } from '@awc-ui/core/dist/components/md-fab-menu-item.js';
+import { defineCustomElement as defineMdIconButton } from '@awc-ui/core/dist/components/md-icon-button.js';
+import { defineCustomElement as defineMdLineChart } from '@awc-ui/core/dist/components/md-line-chart.js';
+import { defineCustomElement as defineMdList } from '@awc-ui/core/dist/components/md-list.js';
+import { defineCustomElement as defineMdListItem } from '@awc-ui/core/dist/components/md-list-item.js';
+import { defineCustomElement as defineMdLoadingIndicator } from '@awc-ui/core/dist/components/md-loading-indicator.js';
+import { defineCustomElement as defineMdMenu } from '@awc-ui/core/dist/components/md-menu.js';
+import { defineCustomElement as defineMdMenuItem } from '@awc-ui/core/dist/components/md-menu-item.js';
+import { defineCustomElement as defineMdMenuItemGroup } from '@awc-ui/core/dist/components/md-menu-item-group.js';
+import { defineCustomElement as defineMdMeter } from '@awc-ui/core/dist/components/md-meter.js';
+import { defineCustomElement as defineMdMultiSelect } from '@awc-ui/core/dist/components/md-multi-select.js';
+import { defineCustomElement as defineMdNavigationBar } from '@awc-ui/core/dist/components/md-navigation-bar.js';
+import { defineCustomElement as defineMdNavigationRail } from '@awc-ui/core/dist/components/md-navigation-rail.js';
+import { defineCustomElement as defineMdNavigationRailTab } from '@awc-ui/core/dist/components/md-navigation-rail-tab.js';
+import { defineCustomElement as defineMdNavigationTab } from '@awc-ui/core/dist/components/md-navigation-tab.js';
+import { defineCustomElement as defineMdNumberField } from '@awc-ui/core/dist/components/md-number-field.js';
+import { defineCustomElement as defineMdOrganizationChart } from '@awc-ui/core/dist/components/md-organization-chart.js';
+import { defineCustomElement as defineMdOtpField } from '@awc-ui/core/dist/components/md-otp-field.js';
+import { defineCustomElement as defineMdPieChart } from '@awc-ui/core/dist/components/md-pie-chart.js';
+import { defineCustomElement as defineMdProgressIndicator } from '@awc-ui/core/dist/components/md-progress-indicator.js';
+import { defineCustomElement as defineMdRadio } from '@awc-ui/core/dist/components/md-radio.js';
+import { defineCustomElement as defineMdRating } from '@awc-ui/core/dist/components/md-rating.js';
+import { defineCustomElement as defineMdRipple } from '@awc-ui/core/dist/components/md-ripple.js';
+import { defineCustomElement as defineMdSearch } from '@awc-ui/core/dist/components/md-search.js';
+import { defineCustomElement as defineMdSegmentedButton } from '@awc-ui/core/dist/components/md-segmented-button.js';
+import { defineCustomElement as defineMdSegmentedButtonSet } from '@awc-ui/core/dist/components/md-segmented-button-set.js';
+import { defineCustomElement as defineMdSelect } from '@awc-ui/core/dist/components/md-select.js';
+import { defineCustomElement as defineMdSelectOption } from '@awc-ui/core/dist/components/md-select-option.js';
+import { defineCustomElement as defineMdSideSheet } from '@awc-ui/core/dist/components/md-side-sheet.js';
+import { defineCustomElement as defineMdSkeleton } from '@awc-ui/core/dist/components/md-skeleton.js';
+import { defineCustomElement as defineMdSlider } from '@awc-ui/core/dist/components/md-slider.js';
+import { defineCustomElement as defineMdSnackbar } from '@awc-ui/core/dist/components/md-snackbar.js';
+import { defineCustomElement as defineMdSparkline } from '@awc-ui/core/dist/components/md-sparkline.js';
+import { defineCustomElement as defineMdSplitButton } from '@awc-ui/core/dist/components/md-split-button.js';
+import { defineCustomElement as defineMdStatusDot } from '@awc-ui/core/dist/components/md-status-dot.js';
+import { defineCustomElement as defineMdStep } from '@awc-ui/core/dist/components/md-step.js';
+import { defineCustomElement as defineMdStepper } from '@awc-ui/core/dist/components/md-stepper.js';
+import { defineCustomElement as defineMdSubMenuItem } from '@awc-ui/core/dist/components/md-sub-menu-item.js';
+import { defineCustomElement as defineMdSwitch } from '@awc-ui/core/dist/components/md-switch.js';
+import { defineCustomElement as defineMdTab } from '@awc-ui/core/dist/components/md-tab.js';
+import { defineCustomElement as defineMdTabPanel } from '@awc-ui/core/dist/components/md-tab-panel.js';
+import { defineCustomElement as defineMdTabPanels } from '@awc-ui/core/dist/components/md-tab-panels.js';
+import { defineCustomElement as defineMdTable } from '@awc-ui/core/dist/components/md-table.js';
+import { defineCustomElement as defineMdTableBody } from '@awc-ui/core/dist/components/md-table-body.js';
+import { defineCustomElement as defineMdTableCell } from '@awc-ui/core/dist/components/md-table-cell.js';
+import { defineCustomElement as defineMdTableContainer } from '@awc-ui/core/dist/components/md-table-container.js';
+import { defineCustomElement as defineMdTableExpandToggle } from '@awc-ui/core/dist/components/md-table-expand-toggle.js';
+import { defineCustomElement as defineMdTableFoot } from '@awc-ui/core/dist/components/md-table-foot.js';
+import { defineCustomElement as defineMdTableHead } from '@awc-ui/core/dist/components/md-table-head.js';
+import { defineCustomElement as defineMdTablePagination } from '@awc-ui/core/dist/components/md-table-pagination.js';
+import { defineCustomElement as defineMdTableRow } from '@awc-ui/core/dist/components/md-table-row.js';
+import { defineCustomElement as defineMdTableSortLabel } from '@awc-ui/core/dist/components/md-table-sort-label.js';
+import { defineCustomElement as defineMdTableToolbar } from '@awc-ui/core/dist/components/md-table-toolbar.js';
+import { defineCustomElement as defineMdTabs } from '@awc-ui/core/dist/components/md-tabs.js';
+import { defineCustomElement as defineMdTextField } from '@awc-ui/core/dist/components/md-text-field.js';
+import { defineCustomElement as defineMdTimePicker } from '@awc-ui/core/dist/components/md-time-picker.js';
+import { defineCustomElement as defineMdToolbar } from '@awc-ui/core/dist/components/md-toolbar.js';
+import { defineCustomElement as defineMdTooltip } from '@awc-ui/core/dist/components/md-tooltip.js';
+import { defineCustomElement as defineMdTransferList } from '@awc-ui/core/dist/components/md-transfer-list.js';
 @ProxyCmp({
+  defineCustomElementFn: defineMdAccordion,
   inputs: ['bringToFront', 'defaultExpanded', 'density', 'elevation', 'exclusive', 'floating', 'headingLevel', 'initialX', 'initialY', 'keepOneExpanded', 'region', 'regionThreshold', 'reorderable', 'transition', 'variant']
 })
 @Component({
@@ -16,6 +97,7 @@ import { Components } from '@awc-ui/core';
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['bringToFront', 'defaultExpanded', 'density', 'elevation', 'exclusive', 'floating', 'headingLevel', 'initialX', 'initialY', 'keepOneExpanded', 'region', 'regionThreshold', 'reorderable', 'transition', 'variant'],
+  standalone: true
 })
 export class MdAccordion {
   protected el: HTMLElement;
@@ -27,7 +109,7 @@ export class MdAccordion {
 }
 
 
-import type { MdAccordionDragDetail as IMdAccordionMdAccordionDragDetail } from '@awc-ui/core';
+import type { MdAccordionDragDetail as IMdAccordionMdAccordionDragDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdAccordion extends Components.MdAccordion {
   /**
@@ -58,6 +140,7 @@ index 0 to index 2 yields `order: [1, 2, 0]`.
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdAccordionItem,
   inputs: ['collapsible', 'contentMaxHeight', 'density', 'disabled', 'expanded', 'headingLevel', 'headline', 'icon', 'regionRole', 'supportingText'],
   methods: ['toggle', 'focusHeader']
 })
@@ -67,6 +150,7 @@ index 0 to index 2 yields `order: [1, 2, 0]`.
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['collapsible', 'contentMaxHeight', 'density', 'disabled', 'expanded', 'headingLevel', 'headline', 'icon', 'regionRole', 'supportingText'],
+  standalone: true
 })
 export class MdAccordionItem {
   protected el: HTMLElement;
@@ -99,6 +183,7 @@ through the shadow.
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdAppBar,
   inputs: ['density', 'headline', 'leadingIcon', 'leadingIconLabel', 'scrolled', 'searchAriaLabel', 'searchDisabled', 'searchPlaceholder', 'searchValue', 'subtitle', 'titleAlignment', 'variant']
 })
 @Component({
@@ -107,6 +192,7 @@ through the shadow.
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['density', 'headline', 'leadingIcon', 'leadingIconLabel', 'scrolled', 'searchAriaLabel', 'searchDisabled', 'searchPlaceholder', 'searchValue', 'subtitle', 'titleAlignment', 'variant'],
+  standalone: true
 })
 export class MdAppBar {
   protected el: HTMLElement;
@@ -137,6 +223,7 @@ the full-screen search view per the MD3 spec.
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdAreaChart,
   inputs: ['animation', 'animationDuration', 'axisTicks', 'connectNulls', 'curve', 'density', 'fillOpacity', 'grid', 'heightProp', 'inverted', 'label', 'labelEmpty', 'labelPlot', 'labelPoint', 'labelZoomEnd', 'labelZoomStart', 'legend', 'lineWidth', 'loading', 'loadingLabel', 'locale', 'markSize', 'noAnimation', 'series', 'seriesLabels', 'showLabels', 'showLine', 'showMarks', 'stack', 'subtitle', 'summary', 'tableLabels', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter', 'xAxis', 'yAxis', 'zoom'],
   methods: ['resize', 'replay', 'toDataURL', 'getInstance', 'setZoom', 'resetZoom']
 })
@@ -146,6 +233,7 @@ the full-screen search view per the MD3 spec.
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['animation', 'animationDuration', 'axisTicks', 'connectNulls', 'curve', 'density', 'fillOpacity', 'grid', 'heightProp', 'inverted', 'label', 'labelEmpty', 'labelPlot', 'labelPoint', 'labelZoomEnd', 'labelZoomStart', 'legend', 'lineWidth', 'loading', 'loadingLabel', 'locale', 'markSize', 'noAnimation', 'series', 'seriesLabels', 'showLabels', 'showLine', 'showMarks', 'stack', 'subtitle', 'summary', 'tableLabels', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter', 'xAxis', 'yAxis', 'zoom'],
+  standalone: true
 })
 export class MdAreaChart {
   protected el: HTMLElement;
@@ -157,10 +245,10 @@ export class MdAreaChart {
 }
 
 
-import type { MdChartClickDetail as IMdAreaChartMdChartClickDetail } from '@awc-ui/core';
-import type { MdChartSeries as IMdAreaChartMdChartSeries } from '@awc-ui/core';
-import type { MdChartAxisClickDetail as IMdAreaChartMdChartAxisClickDetail } from '@awc-ui/core';
-import type { MdChartHoverDetail as IMdAreaChartMdChartHoverDetail } from '@awc-ui/core';
+import type { MdChartClickDetail as IMdAreaChartMdChartClickDetail } from '@awc-ui/core/dist/components';
+import type { MdChartSeries as IMdAreaChartMdChartSeries } from '@awc-ui/core/dist/components';
+import type { MdChartAxisClickDetail as IMdAreaChartMdChartAxisClickDetail } from '@awc-ui/core/dist/components';
+import type { MdChartHoverDetail as IMdAreaChartMdChartHoverDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdAreaChart extends Components.MdAreaChart {
 
@@ -194,6 +282,7 @@ mark, line or area): the nearest x plus every visible series' value there.
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdAutocomplete,
   inputs: ['chipPosition', 'clearIcon', 'clearOnBlur', 'clearable', 'density', 'disableCloseOnSelect', 'disabled', 'dropdownIcon', 'error', 'errorText', 'filterMode', 'filterer', 'freeSolo', 'inputValue', 'label', 'limitResults', 'loading', 'loadingText', 'matchTriggerWidth', 'maxHeight', 'maxSelected', 'multiple', 'name', 'noOptionsText', 'noResultsText', 'open', 'options', 'placeholder', 'placement', 'required', 'reserveSupportingSpace', 'rowHeight', 'softDisabled', 'statusTemplate', 'supportingText', 'value', 'valueMissingLabel', 'variant', 'virtualize'],
   methods: ['focusInput', 'showMenu', 'closeMenu', 'loadOptions', 'getLabels', 'getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity']
 })
@@ -203,6 +292,7 @@ mark, line or area): the nearest x plus every visible series' value there.
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['chipPosition', 'clearIcon', 'clearOnBlur', 'clearable', 'density', 'disableCloseOnSelect', 'disabled', 'dropdownIcon', 'error', 'errorText', 'filterMode', 'filterer', 'freeSolo', 'inputValue', 'label', 'limitResults', 'loading', 'loadingText', 'matchTriggerWidth', 'maxHeight', 'maxSelected', 'multiple', 'name', 'noOptionsText', 'noResultsText', 'open', 'options', 'placeholder', 'placement', 'required', 'reserveSupportingSpace', 'rowHeight', 'softDisabled', 'statusTemplate', 'supportingText', 'value', 'valueMissingLabel', 'variant', 'virtualize'],
+  standalone: true
 })
 export class MdAutocomplete {
   protected el: HTMLElement;
@@ -251,6 +341,7 @@ it uncomposed means each component reports only for itself, while
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdAvatar,
   inputs: ['alt', 'colorFromName', 'crossorigin', 'density', 'initials', 'label', 'loading', 'name', 'shape', 'size', 'src']
 })
 @Component({
@@ -259,6 +350,7 @@ it uncomposed means each component reports only for itself, while
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['alt', 'colorFromName', 'crossorigin', 'density', 'initials', 'label', 'loading', 'name', 'shape', 'size', 'src'],
+  standalone: true
 })
 export class MdAvatar {
   protected el: HTMLElement;
@@ -283,6 +375,7 @@ export declare interface MdAvatar extends Components.MdAvatar {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdBadge,
   inputs: ['density', 'icon', 'max', 'value', 'variant']
 })
 @Component({
@@ -291,6 +384,7 @@ export declare interface MdAvatar extends Components.MdAvatar {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['density', 'icon', 'max', 'value', 'variant'],
+  standalone: true
 })
 export class MdBadge {
   protected el: HTMLElement;
@@ -305,6 +399,7 @@ export declare interface MdBadge extends Components.MdBadge {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdBarChart,
   inputs: ['animation', 'animationDuration', 'axisTicks', 'barGap', 'barWidth', 'categoryGap', 'chevron', 'clickable', 'cornerRadius', 'density', 'heightProp', 'label', 'labelPlot', 'labelPoint', 'labelZoomEnd', 'labelZoomStart', 'layout', 'legend', 'loading', 'loadingLabel', 'locale', 'noAnimation', 'polar', 'polarHole', 'polarSweep', 'series', 'showLabels', 'showTotals', 'stack', 'subtitle', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter', 'xAxis', 'yAxis', 'yAxis2', 'zoom'],
   methods: ['resize', 'replay', 'drill', 'toDataURL', 'getInstance', 'setZoom', 'resetZoom']
 })
@@ -314,6 +409,7 @@ export declare interface MdBadge extends Components.MdBadge {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['animation', 'animationDuration', 'axisTicks', 'barGap', 'barWidth', 'categoryGap', 'chevron', 'clickable', 'cornerRadius', 'density', 'heightProp', 'label', 'labelPlot', 'labelPoint', 'labelZoomEnd', 'labelZoomStart', 'layout', 'legend', 'loading', 'loadingLabel', 'locale', 'noAnimation', 'polar', 'polarHole', 'polarSweep', 'series', 'showLabels', 'showTotals', 'stack', 'subtitle', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter', 'xAxis', 'yAxis', 'yAxis2', 'zoom'],
+  standalone: true
 })
 export class MdBarChart {
   protected el: HTMLElement;
@@ -325,9 +421,9 @@ export class MdBarChart {
 }
 
 
-import type { MdChartClickDetail as IMdBarChartMdChartClickDetail } from '@awc-ui/core';
-import type { MdChartSeries as IMdBarChartMdChartSeries } from '@awc-ui/core';
-import type { MdChartHoverDetail as IMdBarChartMdChartHoverDetail } from '@awc-ui/core';
+import type { MdChartClickDetail as IMdBarChartMdChartClickDetail } from '@awc-ui/core/dist/components';
+import type { MdChartSeries as IMdBarChartMdChartSeries } from '@awc-ui/core/dist/components';
+import type { MdChartHoverDetail as IMdBarChartMdChartHoverDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdBarChart extends Components.MdBarChart {
 
@@ -346,6 +442,7 @@ export declare interface MdBarChart extends Components.MdBarChart {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdBottomSheet,
   inputs: ['bottomDivider', 'closeable', 'contentAlign', 'density', 'headline', 'headlineAlign', 'open', 'scrimDismissible', 'scrollShadow', 'sheetAriaLabel', 'showDragHandle', 'topDivider', 'variant'],
   methods: ['show', 'close']
 })
@@ -355,6 +452,7 @@ export declare interface MdBarChart extends Components.MdBarChart {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['bottomDivider', 'closeable', 'contentAlign', 'density', 'headline', 'headlineAlign', 'open', 'scrimDismissible', 'scrollShadow', 'sheetAriaLabel', 'showDragHandle', 'topDivider', 'variant'],
+  standalone: true
 })
 export class MdBottomSheet {
   protected el: HTMLElement;
@@ -383,6 +481,7 @@ export declare interface MdBottomSheet extends Components.MdBottomSheet {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdBreadcrumbItem,
   inputs: ['collapsed', 'current', 'density', 'disabled', 'href', 'icon', 'itemIndex', 'itemTotal', 'rel', 'target']
 })
 @Component({
@@ -391,6 +490,7 @@ export declare interface MdBottomSheet extends Components.MdBottomSheet {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['collapsed', 'current', 'density', 'disabled', 'href', 'icon', 'itemIndex', 'itemTotal', 'rel', 'target'],
+  standalone: true
 })
 export class MdBreadcrumbItem {
   protected el: HTMLElement;
@@ -402,7 +502,7 @@ export class MdBreadcrumbItem {
 }
 
 
-import type { MdBreadcrumbSelectDetail as IMdBreadcrumbItemMdBreadcrumbSelectDetail } from '@awc-ui/core';
+import type { MdBreadcrumbSelectDetail as IMdBreadcrumbItemMdBreadcrumbSelectDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdBreadcrumbItem extends Components.MdBreadcrumbItem {
   /**
@@ -433,6 +533,7 @@ document.querySelector('md-breadcrumbs')!
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdBreadcrumbs,
   inputs: ['density', 'expandLabel', 'itemsAfterCollapse', 'itemsBeforeCollapse', 'label', 'maxItems', 'separator'],
   methods: ['expand', 'collapse']
 })
@@ -442,6 +543,7 @@ document.querySelector('md-breadcrumbs')!
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['density', 'expandLabel', 'itemsAfterCollapse', 'itemsBeforeCollapse', 'label', 'maxItems', 'separator'],
+  standalone: true
 })
 export class MdBreadcrumbs {
   protected el: HTMLElement;
@@ -453,7 +555,7 @@ export class MdBreadcrumbs {
 }
 
 
-import type { MdBreadcrumbsExpandDetail as IMdBreadcrumbsMdBreadcrumbsExpandDetail } from '@awc-ui/core';
+import type { MdBreadcrumbsExpandDetail as IMdBreadcrumbsMdBreadcrumbsExpandDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdBreadcrumbs extends Components.MdBreadcrumbs {
   /**
@@ -471,6 +573,7 @@ case) receive it.
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdButton,
   inputs: ['density', 'disabled', 'fullWidth', 'href', 'icon', 'loading', 'mirrorIcon', 'ripple', 'roleOverride', 'selected', 'shape', 'shapeMorph', 'size', 'softDisabled', 'suppressExpandIconFlip', 'target', 'toggle', 'trailingIcon', 'type', 'variant']
 })
 @Component({
@@ -479,6 +582,7 @@ case) receive it.
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['density', 'disabled', 'fullWidth', 'href', 'icon', 'loading', 'mirrorIcon', 'ripple', 'roleOverride', 'selected', 'shape', 'shapeMorph', 'size', 'softDisabled', 'suppressExpandIconFlip', 'target', 'toggle', 'trailingIcon', 'type', 'variant'],
+  standalone: true
 })
 export class MdButton {
   protected el: HTMLElement;
@@ -490,8 +594,8 @@ export class MdButton {
 }
 
 
-import type { MdButtonClickDetail as IMdButtonMdButtonClickDetail } from '@awc-ui/core';
-import type { MdButtonChangeDetail as IMdButtonMdButtonChangeDetail } from '@awc-ui/core';
+import type { MdButtonClickDetail as IMdButtonMdButtonClickDetail } from '@awc-ui/core/dist/components';
+import type { MdButtonChangeDetail as IMdButtonMdButtonChangeDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdButton extends Components.MdButton {
   /**
@@ -528,6 +632,7 @@ Bubbles and is composed.
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdButtonGroup,
   inputs: ['density', 'fullWidth', 'required', 'selectionMode', 'shape', 'size', 'variant']
 })
 @Component({
@@ -536,6 +641,7 @@ Bubbles and is composed.
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['density', 'fullWidth', 'required', 'selectionMode', 'shape', 'size', 'variant'],
+  standalone: true
 })
 export class MdButtonGroup {
   protected el: HTMLElement;
@@ -547,7 +653,7 @@ export class MdButtonGroup {
 }
 
 
-import type { MdButtonGroupChangeDetail as IMdButtonGroupMdButtonGroupChangeDetail } from '@awc-ui/core';
+import type { MdButtonGroupChangeDetail as IMdButtonGroupMdButtonGroupChangeDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdButtonGroup extends Components.MdButtonGroup {
   /**
@@ -574,6 +680,7 @@ group.addEventListener('mdSelectionChange', (e: CustomEvent<MdButtonGroupChangeD
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdCard,
   inputs: ['density', 'disabled', 'dragEnabled', 'fullHeight', 'fullWidth', 'interactive', 'ripple', 'softDisabled', 'variant']
 })
 @Component({
@@ -582,6 +689,7 @@ group.addEventListener('mdSelectionChange', (e: CustomEvent<MdButtonGroupChangeD
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['density', 'disabled', 'dragEnabled', 'fullHeight', 'fullWidth', 'interactive', 'ripple', 'softDisabled', 'variant'],
+  standalone: true
 })
 export class MdCard {
   protected el: HTMLElement;
@@ -593,7 +701,7 @@ export class MdCard {
 }
 
 
-import type { MdCardDragDetail as IMdCardMdCardDragDetail } from '@awc-ui/core';
+import type { MdCardDragDetail as IMdCardMdCardDragDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdCard extends Components.MdCard {
   /**
@@ -616,6 +724,7 @@ export declare interface MdCard extends Components.MdCard {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdCheckbox,
   inputs: ['checked', 'density', 'disabled', 'error', 'errorText', 'indeterminate', 'name', 'required', 'softDisabled', 'supportingText', 'value', 'valueMissingLabel'],
   methods: ['getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity']
 })
@@ -625,6 +734,7 @@ export declare interface MdCard extends Components.MdCard {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['checked', 'density', 'disabled', 'error', 'errorText', 'indeterminate', 'name', 'required', 'softDisabled', 'supportingText', 'value', 'valueMissingLabel'],
+  standalone: true
 })
 export class MdCheckbox {
   protected el: HTMLElement;
@@ -657,6 +767,7 @@ it uncomposed means each component reports only for itself, while
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdChip,
   inputs: ['appearance', 'color', 'density', 'disabled', 'elevated', 'icon', 'label', 'removable', 'selectable', 'selected', 'softDisabled', 'trailingIcon', 'variant']
 })
 @Component({
@@ -665,6 +776,7 @@ it uncomposed means each component reports only for itself, while
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['appearance', 'color', 'density', 'disabled', 'elevated', 'icon', 'label', 'removable', 'selectable', 'selected', 'softDisabled', 'trailingIcon', 'variant'],
+  standalone: true
 })
 export class MdChip {
   protected el: HTMLElement;
@@ -699,6 +811,7 @@ list and will re-render with the chip gone).
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdColorPicker,
   inputs: ['alpha', 'ariaLabelProp', 'density', 'disabled', 'dismissOnOutsideClick', 'format', 'open', 'presets', 'showHex', 'showInputs', 'value', 'variant'],
   methods: ['show', 'close']
 })
@@ -708,6 +821,7 @@ list and will re-render with the chip gone).
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['alpha', 'ariaLabelProp', 'density', 'disabled', 'dismissOnOutsideClick', 'format', 'open', 'presets', 'showHex', 'showInputs', 'value', 'variant'],
+  standalone: true
 })
 export class MdColorPicker {
   protected el: HTMLElement;
@@ -737,6 +851,7 @@ Enter, or click a preset).
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdDatePicker,
   inputs: ['calendarIcon', 'cancelLabel', 'chooseMonthAndYearLabel', 'chooseMonthLabel', 'chooseMonthYearLabel', 'chooseYearLabel', 'clearLabel', 'clearable', 'closeCalendarLabel', 'commitOnSelect', 'dateSeparator', 'density', 'disabled', 'enterDatesLabel', 'error', 'errorText', 'fieldVariant', 'firstDayOfWeek', 'headline', 'invalidDateLabel', 'isDateDisabled', 'label', 'locale', 'max', 'min', 'name', 'nextMonthLabel', 'nextYearLabel', 'okLabel', 'open', 'openCalendarLabel', 'outsideClickDismissible', 'placeholder', 'previousMonthLabel', 'previousYearLabel', 'required', 'reserveSupportingSpace', 'scrimDismissible', 'selectDateLabel', 'supportingText', 'toggleCalendarLabel', 'toggleTextLabel', 'value', 'valueMissingLabel', 'variant', 'yearGridLabel'],
   methods: ['show', 'close', 'clear', 'focusInput', 'getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity']
 })
@@ -746,6 +861,7 @@ Enter, or click a preset).
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['calendarIcon', 'cancelLabel', 'chooseMonthAndYearLabel', 'chooseMonthLabel', 'chooseMonthYearLabel', 'chooseYearLabel', 'clearLabel', 'clearable', 'closeCalendarLabel', 'commitOnSelect', 'dateSeparator', 'density', 'disabled', 'enterDatesLabel', 'error', 'errorText', 'fieldVariant', 'firstDayOfWeek', 'headline', 'invalidDateLabel', 'isDateDisabled', 'label', 'locale', 'max', 'min', 'name', 'nextMonthLabel', 'nextYearLabel', 'okLabel', 'open', 'openCalendarLabel', 'outsideClickDismissible', 'placeholder', 'previousMonthLabel', 'previousYearLabel', 'required', 'reserveSupportingSpace', 'scrimDismissible', 'selectDateLabel', 'supportingText', 'toggleCalendarLabel', 'toggleTextLabel', 'value', 'valueMissingLabel', 'variant', 'yearGridLabel'],
+  standalone: true
 })
 export class MdDatePicker {
   protected el: HTMLElement;
@@ -757,12 +873,12 @@ export class MdDatePicker {
 }
 
 
-import type { MdDatePickerChangeDetail as IMdDatePickerMdDatePickerChangeDetail } from '@awc-ui/core';
-import type { MdDatePickerSelectedDetail as IMdDatePickerMdDatePickerSelectedDetail } from '@awc-ui/core';
-import type { MdDatePickerViewChangeDetail as IMdDatePickerMdDatePickerViewChangeDetail } from '@awc-ui/core';
-import type { MdDatePickerMenuOpenDetail as IMdDatePickerMdDatePickerMenuOpenDetail } from '@awc-ui/core';
-import type { MdDatePickerMenuSelectDetail as IMdDatePickerMdDatePickerMenuSelectDetail } from '@awc-ui/core';
-import type { MdDatePickerModeChangeDetail as IMdDatePickerMdDatePickerModeChangeDetail } from '@awc-ui/core';
+import type { MdDatePickerChangeDetail as IMdDatePickerMdDatePickerChangeDetail } from '@awc-ui/core/dist/components';
+import type { MdDatePickerSelectedDetail as IMdDatePickerMdDatePickerSelectedDetail } from '@awc-ui/core/dist/components';
+import type { MdDatePickerViewChangeDetail as IMdDatePickerMdDatePickerViewChangeDetail } from '@awc-ui/core/dist/components';
+import type { MdDatePickerMenuOpenDetail as IMdDatePickerMdDatePickerMenuOpenDetail } from '@awc-ui/core/dist/components';
+import type { MdDatePickerMenuSelectDetail as IMdDatePickerMdDatePickerMenuSelectDetail } from '@awc-ui/core/dist/components';
+import type { MdDatePickerModeChangeDetail as IMdDatePickerMdDatePickerModeChangeDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdDatePicker extends Components.MdDatePicker {
   /**
@@ -821,6 +937,7 @@ it uncomposed means each component reports only for itself, while
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdDialog,
   inputs: ['cancelLabel', 'closeLabel', 'density', 'divider', 'fullscreen', 'headerDivider', 'headline', 'icon', 'locale', 'okLabel', 'open', 'scrimDismissible'],
   methods: ['show', 'close']
 })
@@ -830,6 +947,7 @@ it uncomposed means each component reports only for itself, while
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['cancelLabel', 'closeLabel', 'density', 'divider', 'fullscreen', 'headerDivider', 'headline', 'icon', 'locale', 'okLabel', 'open', 'scrimDismissible'],
+  standalone: true
 })
 export class MdDialog {
   protected el: HTMLElement;
@@ -858,6 +976,7 @@ export declare interface MdDialog extends Components.MdDialog {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdDivider,
   inputs: ['inset', 'insetEnd', 'insetStart', 'vertical']
 })
 @Component({
@@ -866,6 +985,7 @@ export declare interface MdDialog extends Components.MdDialog {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['inset', 'insetEnd', 'insetStart', 'vertical'],
+  standalone: true
 })
 export class MdDivider {
   protected el: HTMLElement;
@@ -880,6 +1000,7 @@ export declare interface MdDivider extends Components.MdDivider {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdFab,
   inputs: ['density', 'disabled', 'extended', 'icon', 'label', 'lowered', 'ripple', 'size', 'softDisabled', 'variant']
 })
 @Component({
@@ -888,6 +1009,7 @@ export declare interface MdDivider extends Components.MdDivider {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['density', 'disabled', 'extended', 'icon', 'label', 'lowered', 'ripple', 'size', 'softDisabled', 'variant'],
+  standalone: true
 })
 export class MdFab {
   protected el: HTMLElement;
@@ -918,6 +1040,7 @@ document.querySelector('md-fab')!.addEventListener('mdClick', (e) => {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdFabMenu,
   inputs: ['anchor', 'density', 'menuLabel', 'open', 'placement', 'quick', 'variant'],
   methods: ['show', 'close']
 })
@@ -927,6 +1050,7 @@ document.querySelector('md-fab')!.addEventListener('mdClick', (e) => {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['anchor', 'density', 'menuLabel', 'open', 'placement', 'quick', 'variant'],
+  standalone: true
 })
 export class MdFabMenu {
   protected el: HTMLElement;
@@ -951,6 +1075,7 @@ export declare interface MdFabMenu extends Components.MdFabMenu {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdFabMenuItem,
   inputs: ['density', 'disabled', 'icon', 'label', 'rovingFocusVisible', 'softDisabled']
 })
 @Component({
@@ -959,6 +1084,7 @@ export declare interface MdFabMenu extends Components.MdFabMenu {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['density', 'disabled', 'icon', 'label', 'rovingFocusVisible', 'softDisabled'],
+  standalone: true
 })
 export class MdFabMenuItem {
   protected el: HTMLElement;
@@ -979,6 +1105,7 @@ export declare interface MdFabMenuItem extends Components.MdFabMenuItem {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdIconButton,
   inputs: ['buttonWidth', 'density', 'disabled', 'href', 'icon', 'ripple', 'selected', 'selectedIcon', 'shape', 'shapeMorph', 'size', 'softDisabled', 'target', 'toggle', 'variant']
 })
 @Component({
@@ -987,6 +1114,7 @@ export declare interface MdFabMenuItem extends Components.MdFabMenuItem {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['buttonWidth', 'density', 'disabled', 'href', 'icon', 'ripple', 'selected', 'selectedIcon', 'shape', 'shapeMorph', 'size', 'softDisabled', 'target', 'toggle', 'variant'],
+  standalone: true
 })
 export class MdIconButton {
   protected el: HTMLElement;
@@ -1007,6 +1135,7 @@ export declare interface MdIconButton extends Components.MdIconButton {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdLineChart,
   inputs: ['animation', 'animationDuration', 'area', 'axisTicks', 'connectNulls', 'curve', 'density', 'grid', 'heightProp', 'inverted', 'label', 'labelEmpty', 'labelPlot', 'labelPoint', 'labelZoomEnd', 'labelZoomStart', 'legend', 'lineWidth', 'loading', 'loadingLabel', 'locale', 'markLines', 'markSize', 'noAnimation', 'series', 'seriesLabels', 'showLabels', 'showLine', 'showMarks', 'stack', 'subtitle', 'summary', 'tableLabels', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter', 'xAxis', 'yAxes', 'yAxis', 'zoom'],
   methods: ['resize', 'replay', 'toDataURL', 'getInstance', 'setZoom', 'resetZoom']
 })
@@ -1016,6 +1145,7 @@ export declare interface MdIconButton extends Components.MdIconButton {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['animation', 'animationDuration', 'area', 'axisTicks', 'connectNulls', 'curve', 'density', 'grid', 'heightProp', 'inverted', 'label', 'labelEmpty', 'labelPlot', 'labelPoint', 'labelZoomEnd', 'labelZoomStart', 'legend', 'lineWidth', 'loading', 'loadingLabel', 'locale', 'markLines', 'markSize', 'noAnimation', 'series', 'seriesLabels', 'showLabels', 'showLine', 'showMarks', 'stack', 'subtitle', 'summary', 'tableLabels', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter', 'xAxis', 'yAxes', 'yAxis', 'zoom'],
+  standalone: true
 })
 export class MdLineChart {
   protected el: HTMLElement;
@@ -1027,10 +1157,10 @@ export class MdLineChart {
 }
 
 
-import type { MdChartClickDetail as IMdLineChartMdChartClickDetail } from '@awc-ui/core';
-import type { MdChartXYSeries as IMdLineChartMdChartXYSeries } from '@awc-ui/core';
-import type { MdChartAxisClickDetail as IMdLineChartMdChartAxisClickDetail } from '@awc-ui/core';
-import type { MdChartHoverDetail as IMdLineChartMdChartHoverDetail } from '@awc-ui/core';
+import type { MdChartClickDetail as IMdLineChartMdChartClickDetail } from '@awc-ui/core/dist/components';
+import type { MdChartXYSeries as IMdLineChartMdChartXYSeries } from '@awc-ui/core/dist/components';
+import type { MdChartAxisClickDetail as IMdLineChartMdChartAxisClickDetail } from '@awc-ui/core/dist/components';
+import type { MdChartHoverDetail as IMdLineChartMdChartHoverDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdLineChart extends Components.MdLineChart {
   /**
@@ -1076,6 +1206,7 @@ value there.
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdList,
   inputs: ['density', 'interactionMode', 'label', 'labelledby', 'listStyle', 'reorderable', 'roleOverride', 'selectionMode'],
   methods: ['activateNext', 'activatePrevious', 'selectItem', 'getSelectedIndices']
 })
@@ -1085,6 +1216,7 @@ value there.
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['density', 'interactionMode', 'label', 'labelledby', 'listStyle', 'reorderable', 'roleOverride', 'selectionMode'],
+  standalone: true
 })
 export class MdList {
   protected el: HTMLElement;
@@ -1096,7 +1228,7 @@ export class MdList {
 }
 
 
-import type { MdListSelectDetail as IMdListMdListSelectDetail } from '@awc-ui/core';
+import type { MdListSelectDetail as IMdListMdListSelectDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdList extends Components.MdList {
   /**
@@ -1121,6 +1253,7 @@ export declare interface MdList extends Components.MdList {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdListItem,
   inputs: ['containerRole', 'density', 'disabled', 'expandable', 'expanded', 'headline', 'href', 'interactionMode', 'leadingAvatar', 'leadingAvatarAlt', 'leadingAvatarLabel', 'leadingAvatarName', 'leadingIcon', 'leadingImage', 'leadingImageAlt', 'lines', 'overline', 'reorderable', 'rovingFocusVisible', 'selected', 'selectionMode', 'softDisabled', 'supportingText', 'tabbable', 'target', 'trailingIcon', 'trailingSupportingText', 'type'],
   methods: ['setFocus', 'focusItem', 'toggle', 'expand', 'collapse']
 })
@@ -1130,6 +1263,7 @@ export declare interface MdList extends Components.MdList {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['containerRole', 'density', 'disabled', 'expandable', 'expanded', 'headline', 'href', 'interactionMode', 'leadingAvatar', 'leadingAvatarAlt', 'leadingAvatarLabel', 'leadingAvatarName', 'leadingIcon', 'leadingImage', 'leadingImageAlt', 'lines', 'overline', 'reorderable', 'rovingFocusVisible', 'selected', 'selectionMode', 'softDisabled', 'supportingText', 'tabbable', 'target', 'trailingIcon', 'trailingSupportingText', 'type'],
+  standalone: true
 })
 export class MdListItem {
   protected el: HTMLElement;
@@ -1141,7 +1275,7 @@ export class MdListItem {
 }
 
 
-import type { MdListItemExpandDetail as IMdListItemMdListItemExpandDetail } from '@awc-ui/core';
+import type { MdListItemExpandDetail as IMdListItemMdListItemExpandDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdListItem extends Components.MdListItem {
   /**
@@ -1176,6 +1310,7 @@ shadow boundary up to the list.
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdLoadingIndicator,
   inputs: ['density', 'label', 'variant']
 })
 @Component({
@@ -1184,6 +1319,7 @@ shadow boundary up to the list.
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['density', 'label', 'variant'],
+  standalone: true
 })
 export class MdLoadingIndicator {
   protected el: HTMLElement;
@@ -1198,6 +1334,7 @@ export declare interface MdLoadingIndicator extends Components.MdLoadingIndicato
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdMenu,
   inputs: ['anchor', 'autoFocus', 'density', 'emptyText', 'layout', 'listLabel', 'listbox', 'matchAnchorWidth', 'maxHeight', 'open', 'persistent', 'placement', 'quick', 'responsive', 'useGap', 'variant'],
   methods: ['setComboboxElement', 'setVirtualProvider', 'getScrollViewport', 'show', 'reposition', 'close']
 })
@@ -1207,6 +1344,7 @@ export declare interface MdLoadingIndicator extends Components.MdLoadingIndicato
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['anchor', 'autoFocus', 'density', 'emptyText', 'layout', 'listLabel', 'listbox', 'matchAnchorWidth', 'maxHeight', 'open', 'persistent', 'placement', 'quick', 'responsive', 'useGap', 'variant'],
+  standalone: true
 })
 export class MdMenu {
   protected el: HTMLElement;
@@ -1239,6 +1377,7 @@ element itself, which still fires regardless.
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdMenuItem,
   inputs: ['badge', 'checkPosition', 'density', 'disabled', 'divider', 'gap', 'headline', 'indeterminate', 'keepOpen', 'presentation', 'roleOverride', 'selected', 'supportingText', 'trailingText', 'type']
 })
 @Component({
@@ -1247,6 +1386,7 @@ element itself, which still fires regardless.
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['badge', 'checkPosition', 'density', 'disabled', 'divider', 'gap', 'headline', 'indeterminate', 'keepOpen', 'presentation', 'roleOverride', 'selected', 'supportingText', 'trailingText', 'type'],
+  standalone: true
 })
 export class MdMenuItem {
   protected el: HTMLElement;
@@ -1267,6 +1407,7 @@ export declare interface MdMenuItem extends Components.MdMenuItem {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdMenuItemGroup,
   inputs: ['density', 'label']
 })
 @Component({
@@ -1275,6 +1416,7 @@ export declare interface MdMenuItem extends Components.MdMenuItem {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['density', 'label'],
+  standalone: true
 })
 export class MdMenuItemGroup {
   protected el: HTMLElement;
@@ -1289,6 +1431,7 @@ export declare interface MdMenuItemGroup extends Components.MdMenuItemGroup {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdMeter,
   inputs: ['color', 'density', 'formatOptions', 'label', 'locale', 'max', 'min', 'showLabel', 'showValue', 'size', 'thickness', 'value', 'valueText', 'variant']
 })
 @Component({
@@ -1297,6 +1440,7 @@ export declare interface MdMenuItemGroup extends Components.MdMenuItemGroup {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['color', 'density', 'formatOptions', 'label', 'locale', 'max', 'min', 'showLabel', 'showValue', 'size', 'thickness', 'value', 'valueText', 'variant'],
+  standalone: true
 })
 export class MdMeter {
   protected el: HTMLElement;
@@ -1311,6 +1455,7 @@ export declare interface MdMeter extends Components.MdMeter {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdMultiSelect,
   inputs: ['chipOverflow', 'chipPosition', 'clearIcon', 'clearLabel', 'clearable', 'countFormatter', 'density', 'disabled', 'displayMode', 'dropdownIcon', 'error', 'errorText', 'filterLabel', 'filterMode', 'filterable', 'label', 'loading', 'loadingText', 'matchTriggerWidth', 'maxHeight', 'maxSelected', 'name', 'noOptionsText', 'noResultsText', 'open', 'options', 'placeholder', 'placement', 'required', 'reserveSupportingSpace', 'rowHeight', 'searchPlaceholder', 'searchingLabel', 'selectAllLabel', 'showSelectAll', 'softDisabled', 'supportingText', 'trigger', 'triggerIcon', 'triggerLabel', 'value', 'valueMissingLabel', 'variant', 'virtualize'],
   methods: ['show', 'close', 'focusTrigger', 'reset', 'loadOptions', 'setQuery', 'getLabels', 'getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity']
 })
@@ -1320,6 +1465,7 @@ export declare interface MdMeter extends Components.MdMeter {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['chipOverflow', 'chipPosition', 'clearIcon', 'clearLabel', 'clearable', 'countFormatter', 'density', 'disabled', 'displayMode', 'dropdownIcon', 'error', 'errorText', 'filterLabel', 'filterMode', 'filterable', 'label', 'loading', 'loadingText', 'matchTriggerWidth', 'maxHeight', 'maxSelected', 'name', 'noOptionsText', 'noResultsText', 'open', 'options', 'placeholder', 'placement', 'required', 'reserveSupportingSpace', 'rowHeight', 'searchPlaceholder', 'searchingLabel', 'selectAllLabel', 'showSelectAll', 'softDisabled', 'supportingText', 'trigger', 'triggerIcon', 'triggerLabel', 'value', 'valueMissingLabel', 'variant', 'virtualize'],
+  standalone: true
 })
 export class MdMultiSelect {
   protected el: HTMLElement;
@@ -1368,6 +1514,7 @@ it uncomposed means each component reports only for itself, while
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdNavigationBar,
   inputs: ['activeIndex', 'density', 'labelBehavior', 'manualActivation'],
   methods: ['select', 'focusTab']
 })
@@ -1377,6 +1524,7 @@ it uncomposed means each component reports only for itself, while
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['activeIndex', 'density', 'labelBehavior', 'manualActivation'],
+  standalone: true
 })
 export class MdNavigationBar {
   protected el: HTMLElement;
@@ -1400,6 +1548,7 @@ can short-circuit no-op reselects.
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdNavigationRail,
   inputs: ['activeIndex', 'alignment', 'density', 'disableFocusManagement', 'expandable', 'fullHeight', 'label', 'labelVisibility', 'maxVisible', 'modal', 'orientation', 'overflowIcon', 'overflowLabel', 'toggleLabel', 'variant'],
   methods: ['expand', 'collapse', 'toggle', 'focusTab']
 })
@@ -1409,6 +1558,7 @@ can short-circuit no-op reselects.
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['activeIndex', 'alignment', 'density', 'disableFocusManagement', 'expandable', 'fullHeight', 'label', 'labelVisibility', 'maxVisible', 'modal', 'orientation', 'overflowIcon', 'overflowLabel', 'toggleLabel', 'variant'],
+  standalone: true
 })
 export class MdNavigationRail {
   protected el: HTMLElement;
@@ -1437,6 +1587,7 @@ export declare interface MdNavigationRail extends Components.MdNavigationRail {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdNavigationRailTab,
   inputs: ['active', 'badge', 'badgeValue', 'density', 'disabled', 'expanded', 'href', 'icon', 'label', 'labelVisibility', 'target', 'value'],
   methods: ['clearSubmenuSelection']
 })
@@ -1446,6 +1597,7 @@ export declare interface MdNavigationRail extends Components.MdNavigationRail {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['active', 'badge', 'badgeValue', 'density', 'disabled', 'expanded', 'href', 'icon', 'label', 'labelVisibility', 'target', 'value'],
+  standalone: true
 })
 export class MdNavigationRailTab {
   protected el: HTMLElement;
@@ -1473,6 +1625,7 @@ lifts its stacking context so the fixed-position menu is not trapped).
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdNavigationTab,
   inputs: ['active', 'activeIcon', 'badge', 'badgeMax', 'badgeValue', 'density', 'disabled', 'href', 'icon', 'label', 'labelBehavior', 'softDisabled', 'target'],
   methods: ['focusEl']
 })
@@ -1482,6 +1635,7 @@ lifts its stacking context so the fixed-position menu is not trapped).
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['active', 'activeIcon', 'badge', 'badgeMax', 'badgeValue', 'density', 'disabled', 'href', 'icon', 'label', 'labelBehavior', 'softDisabled', 'target'],
+  standalone: true
 })
 export class MdNavigationTab {
   protected el: HTMLElement;
@@ -1506,6 +1660,7 @@ selection; external code may also listen to detect per-tab activation
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdNumberField,
   inputs: ['allowOutOfRange', 'allowWheelScrub', 'decrementLabel', 'density', 'disabled', 'error', 'errorText', 'formatOptions', 'incrementLabel', 'label', 'largeStep', 'locale', 'max', 'min', 'name', 'placeholder', 'readOnly', 'required', 'reserveSupportingSpace', 'smallStep', 'snapOnStep', 'step', 'steppers', 'supportingText', 'value', 'valueMissingLabel', 'variant'],
   methods: ['setFocus', 'select', 'stepUp', 'stepDown', 'getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity']
 })
@@ -1515,6 +1670,7 @@ selection; external code may also listen to detect per-tab activation
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['allowOutOfRange', 'allowWheelScrub', 'decrementLabel', 'density', 'disabled', 'error', 'errorText', 'formatOptions', 'incrementLabel', 'label', 'largeStep', 'locale', 'max', 'min', 'name', 'placeholder', 'readOnly', 'required', 'reserveSupportingSpace', 'smallStep', 'snapOnStep', 'step', 'steppers', 'supportingText', 'value', 'valueMissingLabel', 'variant'],
+  standalone: true
 })
 export class MdNumberField {
   protected el: HTMLElement;
@@ -1526,7 +1682,7 @@ export class MdNumberField {
 }
 
 
-import type { MdNumberFieldChangeDetail as IMdNumberFieldMdNumberFieldChangeDetail } from '@awc-ui/core';
+import type { MdNumberFieldChangeDetail as IMdNumberFieldMdNumberFieldChangeDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdNumberField extends Components.MdNumberField {
   /**
@@ -1550,6 +1706,7 @@ lets a `<form>` or app root hear every control.
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdOrganizationChart,
   inputs: ['collapseLabel', 'collapsible', 'density', 'expandLabel', 'label', 'nodes', 'orientation', 'selectedIds', 'selectionMode']
 })
 @Component({
@@ -1558,6 +1715,7 @@ lets a `<form>` or app root hear every control.
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['collapseLabel', 'collapsible', 'density', 'expandLabel', 'label', 'nodes', 'orientation', 'selectedIds', 'selectionMode'],
+  standalone: true
 })
 export class MdOrganizationChart {
   protected el: HTMLElement;
@@ -1569,8 +1727,8 @@ export class MdOrganizationChart {
 }
 
 
-import type { OrgChartSelectionChangeDetail as IMdOrganizationChartOrgChartSelectionChangeDetail } from '@awc-ui/core';
-import type { OrgChartToggleDetail as IMdOrganizationChartOrgChartToggleDetail } from '@awc-ui/core';
+import type { OrgChartSelectionChangeDetail as IMdOrganizationChartOrgChartSelectionChangeDetail } from '@awc-ui/core/dist/components';
+import type { OrgChartToggleDetail as IMdOrganizationChartOrgChartToggleDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdOrganizationChart extends Components.MdOrganizationChart {
   /**
@@ -1585,6 +1743,7 @@ export declare interface MdOrganizationChart extends Components.MdOrganizationCh
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdOtpField,
   inputs: ['autoSubmit', 'cellLabelTemplate', 'density', 'disabled', 'error', 'errorText', 'groupSize', 'incompleteLabel', 'inputMode', 'label', 'length', 'mask', 'name', 'readOnly', 'required', 'reserveSupportingSpace', 'supportingText', 'transform', 'validationType', 'value', 'valueMissingLabel'],
   methods: ['setFocus', 'clear', 'getValidity', 'setCustomValidity', 'checkValidity', 'reportValidity']
 })
@@ -1594,6 +1753,7 @@ export declare interface MdOrganizationChart extends Components.MdOrganizationCh
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['autoSubmit', 'cellLabelTemplate', 'density', 'disabled', 'error', 'errorText', 'groupSize', 'incompleteLabel', 'inputMode', 'label', 'length', 'mask', 'name', 'readOnly', 'required', 'reserveSupportingSpace', 'supportingText', 'transform', 'validationType', 'value', 'valueMissingLabel'],
+  standalone: true
 })
 export class MdOtpField {
   protected el: HTMLElement;
@@ -1605,9 +1765,9 @@ export class MdOtpField {
 }
 
 
-import type { MdOtpFieldCompleteDetail as IMdOtpFieldMdOtpFieldCompleteDetail } from '@awc-ui/core';
-import type { MdOtpFieldInvalidDetail as IMdOtpFieldMdOtpFieldInvalidDetail } from '@awc-ui/core';
-import type { MdOtpFieldValidityDetail as IMdOtpFieldMdOtpFieldValidityDetail } from '@awc-ui/core';
+import type { MdOtpFieldCompleteDetail as IMdOtpFieldMdOtpFieldCompleteDetail } from '@awc-ui/core/dist/components';
+import type { MdOtpFieldInvalidDetail as IMdOtpFieldMdOtpFieldInvalidDetail } from '@awc-ui/core/dist/components';
+import type { MdOtpFieldValidityDetail as IMdOtpFieldMdOtpFieldValidityDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdOtpField extends Components.MdOtpField {
   /**
@@ -1637,6 +1797,7 @@ reaches `<form>`-level listeners in the same DOM tree.
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdPieChart,
   inputs: ['animation', 'animationDuration', 'cornerRadius', 'data', 'density', 'endAngle', 'gradient', 'heightProp', 'highlight', 'innerRadius', 'label', 'labelEmpty', 'labelMode', 'labelPlot', 'labelPoint', 'legend', 'loading', 'loadingLabel', 'locale', 'monochrome', 'noAnimation', 'outerRadius', 'paddingAngle', 'ringWidths', 'showLabels', 'startAngle', 'subtitle', 'summary', 'tableLabels', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter'],
   methods: ['resize', 'replay', 'drill', 'toDataURL', 'getInstance']
 })
@@ -1646,6 +1807,7 @@ reaches `<form>`-level listeners in the same DOM tree.
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['animation', 'animationDuration', 'cornerRadius', 'data', 'density', 'endAngle', 'gradient', 'heightProp', 'highlight', 'innerRadius', 'label', 'labelEmpty', 'labelMode', 'labelPlot', 'labelPoint', 'legend', 'loading', 'loadingLabel', 'locale', 'monochrome', 'noAnimation', 'outerRadius', 'paddingAngle', 'ringWidths', 'showLabels', 'startAngle', 'subtitle', 'summary', 'tableLabels', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter'],
+  standalone: true
 })
 export class MdPieChart {
   protected el: HTMLElement;
@@ -1657,8 +1819,8 @@ export class MdPieChart {
 }
 
 
-import type { MdChartClickDetail as IMdPieChartMdChartClickDetail } from '@awc-ui/core';
-import type { MdPieDatum as IMdPieChartMdPieDatum } from '@awc-ui/core';
+import type { MdChartClickDetail as IMdPieChartMdChartClickDetail } from '@awc-ui/core/dist/components';
+import type { MdPieDatum as IMdPieChartMdPieDatum } from '@awc-ui/core/dist/components';
 
 export declare interface MdPieChart extends Components.MdPieChart {
 
@@ -1671,6 +1833,7 @@ export declare interface MdPieChart extends Components.MdPieChart {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdProgressIndicator,
   inputs: ['complete', 'density', 'fourColor', 'indeterminate', 'label', 'max', 'size', 'thickness', 'value', 'variant', 'wave', 'waveAmplitude', 'waveLength', 'waveSpeed']
 })
 @Component({
@@ -1679,6 +1842,7 @@ export declare interface MdPieChart extends Components.MdPieChart {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['complete', 'density', 'fourColor', 'indeterminate', 'label', 'max', 'size', 'thickness', 'value', 'variant', 'wave', 'waveAmplitude', 'waveLength', 'waveSpeed'],
+  standalone: true
 })
 export class MdProgressIndicator {
   protected el: HTMLElement;
@@ -1700,6 +1864,7 @@ itself, or — for flat circular — settled on its empty track ring).
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdRadio,
   inputs: ['checked', 'density', 'disabled', 'name', 'required', 'softDisabled', 'value', 'valueMissingLabel'],
   methods: ['syncValidityFromGroup', 'getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity', 'setFocus', 'setBlur', 'select']
 })
@@ -1709,6 +1874,7 @@ itself, or — for flat circular — settled on its empty track ring).
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['checked', 'density', 'disabled', 'name', 'required', 'softDisabled', 'value', 'valueMissingLabel'],
+  standalone: true
 })
 export class MdRadio {
   protected el: HTMLElement;
@@ -1749,6 +1915,7 @@ it uncomposed means each component reports only for itself, while
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdRating,
   inputs: ['defaultValue', 'density', 'disabled', 'emptyIcon', 'getLabel', 'hover', 'icon', 'max', 'name', 'outlineEmpty', 'precision', 'ratingLabel', 'readonly', 'showValueLabel', 'size', 'softDisabled', 'value'],
   methods: ['focusRating']
 })
@@ -1758,6 +1925,7 @@ it uncomposed means each component reports only for itself, while
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['defaultValue', 'density', 'disabled', 'emptyIcon', 'getLabel', 'hover', 'icon', 'max', 'name', 'outlineEmpty', 'precision', 'ratingLabel', 'readonly', 'showValueLabel', 'size', 'softDisabled', 'value'],
+  standalone: true
 })
 export class MdRating {
   protected el: HTMLElement;
@@ -1782,6 +1950,7 @@ export declare interface MdRating extends Components.MdRating {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdRipple,
   inputs: ['disabled'],
   methods: ['whenSettled', 'trigger']
 })
@@ -1791,6 +1960,7 @@ export declare interface MdRating extends Components.MdRating {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['disabled'],
+  standalone: true
 })
 export class MdRipple {
   protected el: HTMLElement;
@@ -1805,6 +1975,7 @@ export declare interface MdRipple extends Components.MdRipple {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdSearch,
   inputs: ['announceResults', 'debounce', 'density', 'disabled', 'dismissOnOutsideClick', 'elevation', 'escapeCloses', 'fullWidth', 'initialFocus', 'inputAriaLabel', 'layout', 'leadingIcon', 'loading', 'loadingLabel', 'maxBlockSize', 'noResultsLabel', 'open', 'openLeadingIcon', 'placeholder', 'resultsLabel', 'scrollShadow', 'showClearButton', 'throttle', 'trigger', 'triggerElement', 'triggerFor', 'triggerIcon', 'value', 'variant', 'voiceSearch'],
   methods: ['show', 'close', 'toggle', 'focusInput', 'startVoice', 'stopVoice']
 })
@@ -1814,6 +1985,7 @@ export declare interface MdRipple extends Components.MdRipple {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['announceResults', 'debounce', 'density', 'disabled', 'dismissOnOutsideClick', 'elevation', 'escapeCloses', 'fullWidth', 'initialFocus', 'inputAriaLabel', 'layout', 'leadingIcon', 'loading', 'loadingLabel', 'maxBlockSize', 'noResultsLabel', 'open', 'openLeadingIcon', 'placeholder', 'resultsLabel', 'scrollShadow', 'showClearButton', 'throttle', 'trigger', 'triggerElement', 'triggerFor', 'triggerIcon', 'value', 'variant', 'voiceSearch'],
+  standalone: true
 })
 export class MdSearch {
   protected el: HTMLElement;
@@ -1825,8 +1997,8 @@ export class MdSearch {
 }
 
 
-import type { MdSearchLeadingIconClickDetail as IMdSearchMdSearchLeadingIconClickDetail } from '@awc-ui/core';
-import type { MdSearchTrailingIconClickDetail as IMdSearchMdSearchTrailingIconClickDetail } from '@awc-ui/core';
+import type { MdSearchLeadingIconClickDetail as IMdSearchMdSearchLeadingIconClickDetail } from '@awc-ui/core/dist/components';
+import type { MdSearchTrailingIconClickDetail as IMdSearchMdSearchTrailingIconClickDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdSearch extends Components.MdSearch {
   /**
@@ -1888,6 +2060,7 @@ is actually present and was the click target.
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdSegmentedButton,
   inputs: ['density', 'disabled', 'icon', 'label', 'noCheckmark', 'ripple', 'segmentDensity', 'segmentIndex', 'segmentMultiselect', 'segmentTotal', 'selected', 'softDisabled', 'value']
 })
 @Component({
@@ -1896,6 +2069,7 @@ is actually present and was the click target.
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['density', 'disabled', 'icon', 'label', 'noCheckmark', 'ripple', 'segmentDensity', 'segmentIndex', 'segmentMultiselect', 'segmentTotal', 'selected', 'softDisabled', 'value'],
+  standalone: true
 })
 export class MdSegmentedButton {
   protected el: HTMLElement;
@@ -1916,6 +2090,7 @@ export declare interface MdSegmentedButton extends Components.MdSegmentedButton 
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdSegmentedButtonSet,
   inputs: ['density', 'multiselect']
 })
 @Component({
@@ -1924,6 +2099,7 @@ export declare interface MdSegmentedButton extends Components.MdSegmentedButton 
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['density', 'multiselect'],
+  standalone: true
 })
 export class MdSegmentedButtonSet {
   protected el: HTMLElement;
@@ -1944,6 +2120,7 @@ export declare interface MdSegmentedButtonSet extends Components.MdSegmentedButt
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdSelect,
   inputs: ['clearIcon', 'clearLabel', 'clearable', 'density', 'disabled', 'dropdownIcon', 'error', 'errorText', 'filterLabel', 'filterMode', 'filterable', 'fullWidth', 'label', 'loading', 'loadingText', 'matchTriggerWidth', 'maxHeight', 'name', 'noOptionsText', 'noResultsText', 'open', 'options', 'placeholder', 'placement', 'required', 'reserveSupportingSpace', 'rowHeight', 'searchPlaceholder', 'searchingLabel', 'supportingText', 'value', 'valueMissingLabel', 'variant', 'virtualize'],
   methods: ['show', 'close', 'focusTrigger', 'reset', 'loadOptions', 'setQuery', 'getLabels', 'getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity']
 })
@@ -1953,6 +2130,7 @@ export declare interface MdSegmentedButtonSet extends Components.MdSegmentedButt
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['clearIcon', 'clearLabel', 'clearable', 'density', 'disabled', 'dropdownIcon', 'error', 'errorText', 'filterLabel', 'filterMode', 'filterable', 'fullWidth', 'label', 'loading', 'loadingText', 'matchTriggerWidth', 'maxHeight', 'name', 'noOptionsText', 'noResultsText', 'open', 'options', 'placeholder', 'placement', 'required', 'reserveSupportingSpace', 'rowHeight', 'searchPlaceholder', 'searchingLabel', 'supportingText', 'value', 'valueMissingLabel', 'variant', 'virtualize'],
+  standalone: true
 })
 export class MdSelect {
   protected el: HTMLElement;
@@ -1993,6 +2171,7 @@ it uncomposed means each component reports only for itself, while
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdSelectOption,
   inputs: ['disabled', 'icon', 'iconColor', 'label', 'selected', 'supportingText', 'value']
 })
 @Component({
@@ -2001,6 +2180,7 @@ it uncomposed means each component reports only for itself, while
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['disabled', 'icon', 'iconColor', 'label', 'selected', 'supportingText', 'value'],
+  standalone: true
 })
 export class MdSelectOption {
   protected el: HTMLElement;
@@ -2022,6 +2202,7 @@ parent picker can re-read its option set.
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdSideSheet,
   inputs: ['bottomDivider', 'closeable', 'density', 'detached', 'headline', 'open', 'scrimDismissible', 'sheetAriaLabel', 'showBack', 'side', 'topDivider', 'variant'],
   methods: ['show', 'close']
 })
@@ -2031,6 +2212,7 @@ parent picker can re-read its option set.
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['bottomDivider', 'closeable', 'density', 'detached', 'headline', 'open', 'scrimDismissible', 'sheetAriaLabel', 'showBack', 'side', 'topDivider', 'variant'],
+  standalone: true
 })
 export class MdSideSheet {
   protected el: HTMLElement;
@@ -2063,6 +2245,7 @@ export declare interface MdSideSheet extends Components.MdSideSheet {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdSkeleton,
   inputs: ['animation', 'announce', 'ariaLabelProp', 'density', 'fullHeight', 'fullWidth', 'height', 'lines', 'variant', 'width']
 })
 @Component({
@@ -2071,6 +2254,7 @@ export declare interface MdSideSheet extends Components.MdSideSheet {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['animation', 'announce', 'ariaLabelProp', 'density', 'fullHeight', 'fullWidth', 'height', 'lines', 'variant', 'width'],
+  standalone: true
 })
 export class MdSkeleton {
   protected el: HTMLElement;
@@ -2085,6 +2269,7 @@ export declare interface MdSkeleton extends Components.MdSkeleton {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdSlider,
   inputs: ['ariaLabelEnd', 'ariaLabelStart', 'controlled', 'density', 'disabled', 'fullHeight', 'icon', 'insetIcon', 'labeled', 'max', 'min', 'name', 'nameEnd', 'nameStart', 'orientation', 'range', 'size', 'sliderAriaLabel', 'step', 'stops', 'value', 'valueEnd', 'valueEndText', 'valueIndicator', 'valueStart', 'valueStartText', 'valueText', 'variant']
 })
 @Component({
@@ -2093,6 +2278,7 @@ export declare interface MdSkeleton extends Components.MdSkeleton {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['ariaLabelEnd', 'ariaLabelStart', 'controlled', 'density', 'disabled', 'fullHeight', 'icon', 'insetIcon', 'labeled', 'max', 'min', 'name', 'nameEnd', 'nameStart', 'orientation', 'range', 'size', 'sliderAriaLabel', 'step', 'stops', 'value', 'valueEnd', 'valueEndText', 'valueIndicator', 'valueStart', 'valueStartText', 'valueText', 'variant'],
+  standalone: true
 })
 export class MdSlider {
   protected el: HTMLElement;
@@ -2104,9 +2290,9 @@ export class MdSlider {
 }
 
 
-import type { MdSliderValueDetail as IMdSliderMdSliderValueDetail } from '@awc-ui/core';
-import type { MdSliderThumbDetail as IMdSliderMdSliderThumbDetail } from '@awc-ui/core';
-import type { MdSliderDragDetail as IMdSliderMdSliderDragDetail } from '@awc-ui/core';
+import type { MdSliderValueDetail as IMdSliderMdSliderValueDetail } from '@awc-ui/core/dist/components';
+import type { MdSliderThumbDetail as IMdSliderMdSliderThumbDetail } from '@awc-ui/core/dist/components';
+import type { MdSliderDragDetail as IMdSliderMdSliderDragDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdSlider extends Components.MdSlider {
   /**
@@ -2137,6 +2323,7 @@ export declare interface MdSlider extends Components.MdSlider {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdSnackbar,
   inputs: ['action', 'autoHide', 'autoHideDuration', 'closeable', 'density', 'dismissLabel', 'message', 'open', 'politeness', 'position', 'stacked'],
   methods: ['show', 'hide']
 })
@@ -2146,6 +2333,7 @@ export declare interface MdSlider extends Components.MdSlider {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['action', 'autoHide', 'autoHideDuration', 'closeable', 'density', 'dismissLabel', 'message', 'open', 'politeness', 'position', 'stacked'],
+  standalone: true
 })
 export class MdSnackbar {
   protected el: HTMLElement;
@@ -2174,6 +2362,7 @@ export declare interface MdSnackbar extends Components.MdSnackbar {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdSparkline,
   inputs: ['barWidth', 'color', 'cornerRadius', 'curve', 'data', 'heightProp', 'labels', 'lineWidth', 'markSize', 'max', 'min', 'noAnimation', 'referenceAreas', 'showMarks', 'showTooltip', 'valueFormatter', 'variant'],
   methods: ['resize', 'getInstance']
 })
@@ -2183,6 +2372,7 @@ export declare interface MdSnackbar extends Components.MdSnackbar {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['barWidth', 'color', 'cornerRadius', 'curve', 'data', 'heightProp', 'labels', 'lineWidth', 'markSize', 'max', 'min', 'noAnimation', 'referenceAreas', 'showMarks', 'showTooltip', 'valueFormatter', 'variant'],
+  standalone: true
 })
 export class MdSparkline {
   protected el: HTMLElement;
@@ -2203,6 +2393,7 @@ export declare interface MdSparkline extends Components.MdSparkline {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdSplitButton,
   inputs: ['controls', 'density', 'disabled', 'fullWidth', 'haspopup', 'icon', 'label', 'menuLabel', 'ripple', 'size', 'softDisabled', 'trailingChecked', 'trailingIcon', 'variant']
 })
 @Component({
@@ -2211,6 +2402,7 @@ export declare interface MdSparkline extends Components.MdSparkline {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['controls', 'density', 'disabled', 'fullWidth', 'haspopup', 'icon', 'label', 'menuLabel', 'ripple', 'size', 'softDisabled', 'trailingChecked', 'trailingIcon', 'variant'],
+  standalone: true
 })
 export class MdSplitButton {
   protected el: HTMLElement;
@@ -2235,6 +2427,7 @@ export declare interface MdSplitButton extends Components.MdSplitButton {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdStatusDot,
   inputs: ['density', 'label', 'live', 'size', 'state']
 })
 @Component({
@@ -2243,6 +2436,7 @@ export declare interface MdSplitButton extends Components.MdSplitButton {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['density', 'label', 'live', 'size', 'state'],
+  standalone: true
 })
 export class MdStatusDot {
   protected el: HTMLElement;
@@ -2257,6 +2451,7 @@ export declare interface MdStatusDot extends Components.MdStatusDot {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdStep,
   inputs: ['accessibleName', 'active', 'completed', 'completedIcon', 'density', 'description', 'disabled', 'editable', 'error', 'errorIcon', 'errorText', 'hideActions', 'icon', 'label', 'optional']
 })
 @Component({
@@ -2265,6 +2460,7 @@ export declare interface MdStatusDot extends Components.MdStatusDot {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['accessibleName', 'active', 'completed', 'completedIcon', 'density', 'description', 'disabled', 'editable', 'error', 'errorIcon', 'errorText', 'hideActions', 'icon', 'label', 'optional'],
+  standalone: true
 })
 export class MdStep {
   protected el: HTMLElement;
@@ -2294,6 +2490,7 @@ Internal coordination event — consumed (and stopped) by `md-stepper`.
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdStepper,
   inputs: ['active', 'autoComplete', 'backLabel', 'completedWord', 'currentWord', 'density', 'errorWord', 'finishLabel', 'indicator', 'label', 'lazy', 'loading', 'mode', 'nav', 'nextDisabled', 'nextLabel', 'ofWord', 'optionalWord', 'orientation', 'stepWord', 'variant'],
   methods: ['next', 'prev', 'goTo', 'reset']
 })
@@ -2303,6 +2500,7 @@ Internal coordination event — consumed (and stopped) by `md-stepper`.
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['active', 'autoComplete', 'backLabel', 'completedWord', 'currentWord', 'density', 'errorWord', 'finishLabel', 'indicator', 'label', 'lazy', 'loading', 'mode', 'nav', 'nextDisabled', 'nextLabel', 'ofWord', 'optionalWord', 'orientation', 'stepWord', 'variant'],
+  standalone: true
 })
 export class MdStepper {
   protected el: HTMLElement;
@@ -2336,6 +2534,7 @@ yourself to commit authoritatively (e.g. after async validation).
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdSubMenuItem,
   inputs: ['badge', 'density', 'disabled', 'divider', 'gap', 'headline', 'supportingText'],
   methods: ['collapse']
 })
@@ -2345,6 +2544,7 @@ yourself to commit authoritatively (e.g. after async validation).
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['badge', 'density', 'disabled', 'divider', 'gap', 'headline', 'supportingText'],
+  standalone: true
 })
 export class MdSubMenuItem {
   protected el: HTMLElement;
@@ -2365,6 +2565,7 @@ export declare interface MdSubMenuItem extends Components.MdSubMenuItem {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdSwitch,
   inputs: ['density', 'disabled', 'icons', 'name', 'required', 'selected', 'selectedIcon', 'showOnlySelectedIcon', 'softDisabled', 'unselectedIcon', 'value', 'valueMissingLabel'],
   methods: ['setFocus', 'getValidity', 'checkValidity', 'reportValidity', 'setCustomValidity']
 })
@@ -2374,6 +2575,7 @@ export declare interface MdSubMenuItem extends Components.MdSubMenuItem {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['density', 'disabled', 'icons', 'name', 'required', 'selected', 'selectedIcon', 'showOnlySelectedIcon', 'softDisabled', 'unselectedIcon', 'value', 'valueMissingLabel'],
+  standalone: true
 })
 export class MdSwitch {
   protected el: HTMLElement;
@@ -2426,6 +2628,7 @@ it uncomposed means each component reports only for itself, while
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTab,
   inputs: ['active', 'badge', 'controls', 'density', 'disabled', 'icon', 'inlineIcon', 'label', 'variant']
 })
 @Component({
@@ -2434,6 +2637,7 @@ it uncomposed means each component reports only for itself, while
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['active', 'badge', 'controls', 'density', 'disabled', 'icon', 'inlineIcon', 'label', 'variant'],
+  standalone: true
 })
 export class MdTab {
   protected el: HTMLElement;
@@ -2454,6 +2658,7 @@ export declare interface MdTab extends Components.MdTab {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTabPanel,
   inputs: ['active']
 })
 @Component({
@@ -2462,6 +2667,7 @@ export declare interface MdTab extends Components.MdTab {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['active'],
+  standalone: true
 })
 export class MdTabPanel {
   protected el: HTMLElement;
@@ -2476,6 +2682,7 @@ export declare interface MdTabPanel extends Components.MdTabPanel {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTabPanels,
   inputs: ['for', 'sizing']
 })
 @Component({
@@ -2484,6 +2691,7 @@ export declare interface MdTabPanel extends Components.MdTabPanel {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['for', 'sizing'],
+  standalone: true
 })
 export class MdTabPanels {
   protected el: HTMLElement;
@@ -2498,6 +2706,7 @@ export declare interface MdTabPanels extends Components.MdTabPanels {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTable,
   inputs: ['caption', 'columnTemplate', 'columns', 'density', 'empty', 'frozenHeader', 'hoverable', 'keepHeight', 'label', 'loading', 'loadingMode', 'loadingRows', 'minWidth', 'motion', 'noDividers', 'pinIcon', 'pinMode', 'rowCount', 'rowOffset', 'scrollbar', 'selection', 'sortBy', 'sortOrder', 'stickyFooter', 'stickyHeader', 'striped', 'summary'],
   methods: ['getSelection', 'selectAll', 'deselectAll', 'toggleSelectAll', 'setSort', 'pinColumn', 'setColumnVisibility', 'animateNextChange']
 })
@@ -2507,6 +2716,7 @@ export declare interface MdTabPanels extends Components.MdTabPanels {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['caption', 'columnTemplate', 'columns', 'density', 'empty', 'frozenHeader', 'hoverable', 'keepHeight', 'label', 'loading', 'loadingMode', 'loadingRows', 'minWidth', 'motion', 'noDividers', 'pinIcon', 'pinMode', 'rowCount', 'rowOffset', 'scrollbar', 'selection', 'sortBy', 'sortOrder', 'stickyFooter', 'stickyHeader', 'striped', 'summary'],
+  standalone: true
 })
 export class MdTable {
   protected el: HTMLElement;
@@ -2518,8 +2728,8 @@ export class MdTable {
 }
 
 
-import type { MdTableSortState as IMdTableMdTableSortState } from '@awc-ui/core';
-import type { MdTableSelectionState as IMdTableMdTableSelectionState } from '@awc-ui/core';
+import type { MdTableSortState as IMdTableMdTableSortState } from '@awc-ui/core/dist/components';
+import type { MdTableSelectionState as IMdTableMdTableSelectionState } from '@awc-ui/core/dist/components';
 
 export declare interface MdTable extends Components.MdTable {
   /**
@@ -2546,6 +2756,7 @@ export declare interface MdTable extends Components.MdTable {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTableBody
 })
 @Component({
   selector: 'md-table-body',
@@ -2553,6 +2764,7 @@ export declare interface MdTable extends Components.MdTable {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: [],
+  standalone: true
 })
 export class MdTableBody {
   protected el: HTMLElement;
@@ -2567,6 +2779,7 @@ export declare interface MdTableBody extends Components.MdTableBody {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTableCell,
   inputs: ['align', 'colSpan', 'density', 'ellipsis', 'head', 'noPinIndicator', 'numeric', 'padding', 'pinIcon', 'rowSpan', 'scope', 'sticky', 'variant']
 })
 @Component({
@@ -2575,6 +2788,7 @@ export declare interface MdTableBody extends Components.MdTableBody {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['align', 'colSpan', 'density', 'ellipsis', 'head', 'noPinIndicator', 'numeric', 'padding', 'pinIcon', 'rowSpan', 'scope', 'sticky', 'variant'],
+  standalone: true
 })
 export class MdTableCell {
   protected el: HTMLElement;
@@ -2589,6 +2803,7 @@ export declare interface MdTableCell extends Components.MdTableCell {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTableContainer,
   inputs: ['elevation', 'maxHeight', 'minHeight', 'shape', 'variant', 'vibrant']
 })
 @Component({
@@ -2597,6 +2812,7 @@ export declare interface MdTableCell extends Components.MdTableCell {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['elevation', 'maxHeight', 'minHeight', 'shape', 'variant', 'vibrant'],
+  standalone: true
 })
 export class MdTableContainer {
   protected el: HTMLElement;
@@ -2611,6 +2827,7 @@ export declare interface MdTableContainer extends Components.MdTableContainer {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTableExpandToggle,
   inputs: ['buttonLabel', 'icon']
 })
 @Component({
@@ -2619,6 +2836,7 @@ export declare interface MdTableContainer extends Components.MdTableContainer {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['buttonLabel', 'icon'],
+  standalone: true
 })
 export class MdTableExpandToggle {
   protected el: HTMLElement;
@@ -2633,6 +2851,7 @@ export declare interface MdTableExpandToggle extends Components.MdTableExpandTog
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTableFoot
 })
 @Component({
   selector: 'md-table-foot',
@@ -2640,6 +2859,7 @@ export declare interface MdTableExpandToggle extends Components.MdTableExpandTog
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: [],
+  standalone: true
 })
 export class MdTableFoot {
   protected el: HTMLElement;
@@ -2654,6 +2874,7 @@ export declare interface MdTableFoot extends Components.MdTableFoot {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTableHead
 })
 @Component({
   selector: 'md-table-head',
@@ -2661,6 +2882,7 @@ export declare interface MdTableFoot extends Components.MdTableFoot {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: [],
+  standalone: true
 })
 export class MdTableHead {
   protected el: HTMLElement;
@@ -2675,6 +2897,7 @@ export declare interface MdTableHead extends Components.MdTableHead {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTablePagination,
   inputs: ['compact', 'count', 'density', 'disabled', 'labelAll', 'labelDisplayedRows', 'labelFirstPage', 'labelLastPage', 'labelNextPage', 'labelPreviousPage', 'labelRowsPerPage', 'page', 'rowsPerPage', 'rowsPerPageOptions', 'showFirstLast'],
   methods: ['goToPage', 'setRowsPerPage']
 })
@@ -2684,6 +2907,7 @@ export declare interface MdTableHead extends Components.MdTableHead {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['compact', 'count', 'density', 'disabled', 'labelAll', 'labelDisplayedRows', 'labelFirstPage', 'labelLastPage', 'labelNextPage', 'labelPreviousPage', 'labelRowsPerPage', 'page', 'rowsPerPage', 'rowsPerPageOptions', 'showFirstLast'],
+  standalone: true
 })
 export class MdTablePagination {
   protected el: HTMLElement;
@@ -2708,6 +2932,7 @@ export declare interface MdTablePagination extends Components.MdTablePagination 
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTableRow,
   inputs: ['clickable', 'disabled', 'expandable', 'expanded', 'highlight', 'rowgroup', 'selectable', 'selected', 'value'],
   methods: ['toggle']
 })
@@ -2717,6 +2942,7 @@ export declare interface MdTablePagination extends Components.MdTablePagination 
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['clickable', 'disabled', 'expandable', 'expanded', 'highlight', 'rowgroup', 'selectable', 'selected', 'value'],
+  standalone: true
 })
 export class MdTableRow {
   protected el: HTMLElement;
@@ -2746,6 +2972,7 @@ selection coordination).
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTableSortLabel,
   inputs: ['active', 'column', 'defaultOrder', 'density', 'disabled', 'icon', 'iconPosition', 'order']
 })
 @Component({
@@ -2754,6 +2981,7 @@ selection coordination).
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['active', 'column', 'defaultOrder', 'density', 'disabled', 'icon', 'iconPosition', 'order'],
+  standalone: true
 })
 export class MdTableSortLabel {
   protected el: HTMLElement;
@@ -2774,6 +3002,7 @@ export declare interface MdTableSortLabel extends Components.MdTableSortLabel {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTableToolbar,
   inputs: ['autoBind', 'compact', 'density', 'headline', 'labelSelected', 'numSelected', 'supportingText']
 })
 @Component({
@@ -2782,6 +3011,7 @@ export declare interface MdTableSortLabel extends Components.MdTableSortLabel {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['autoBind', 'compact', 'density', 'headline', 'labelSelected', 'numSelected', 'supportingText'],
+  standalone: true
 })
 export class MdTableToolbar {
   protected el: HTMLElement;
@@ -2796,6 +3026,7 @@ export declare interface MdTableToolbar extends Components.MdTableToolbar {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTabs,
   inputs: ['activeTabIndex', 'ariaLabelProp', 'tabWidth', 'variant', 'width'],
   methods: ['selectTab']
 })
@@ -2805,6 +3036,7 @@ export declare interface MdTableToolbar extends Components.MdTableToolbar {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['activeTabIndex', 'ariaLabelProp', 'tabWidth', 'variant', 'width'],
+  standalone: true
 })
 export class MdTabs {
   protected el: HTMLElement;
@@ -2825,6 +3057,7 @@ export declare interface MdTabs extends Components.MdTabs {
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTextField,
   inputs: ['appearFocused', 'autoCapitalize', 'autocomplete', 'chipsWrap', 'clearable', 'debounce', 'density', 'disabled', 'enterKeyHint', 'error', 'errorText', 'focusBorderWidth', 'formatOn', 'formatter', 'inputAriaAutocomplete', 'inputExpanded', 'inputMode', 'inputRole', 'label', 'max', 'maxLength', 'min', 'minLength', 'multiline', 'name', 'parser', 'passwordToggle', 'pattern', 'placeholder', 'prefixText', 'readOnly', 'required', 'reserveSupportingSpace', 'restrict', 'rows', 'speechLang', 'speechToText', 'spellcheck', 'step', 'suffixText', 'supportingText', 'throttle', 'type', 'value', 'variant'],
   methods: ['setFocus', 'select', 'getInputElement', 'getValidity', 'setCustomValidity', 'checkValidity', 'reportValidity']
 })
@@ -2834,6 +3067,7 @@ export declare interface MdTabs extends Components.MdTabs {
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['appearFocused', 'autoCapitalize', 'autocomplete', 'chipsWrap', 'clearable', 'debounce', 'density', 'disabled', 'enterKeyHint', 'error', 'errorText', 'focusBorderWidth', 'formatOn', 'formatter', 'inputAriaAutocomplete', 'inputExpanded', 'inputMode', 'inputRole', 'label', 'max', 'maxLength', 'min', 'minLength', 'multiline', 'name', 'parser', 'passwordToggle', 'pattern', 'placeholder', 'prefixText', 'readOnly', 'required', 'reserveSupportingSpace', 'restrict', 'rows', 'speechLang', 'speechToText', 'spellcheck', 'step', 'suffixText', 'supportingText', 'throttle', 'type', 'value', 'variant'],
+  standalone: true
 })
 export class MdTextField {
   protected el: HTMLElement;
@@ -2876,6 +3110,7 @@ it uncomposed means each component reports only for itself, while
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTimePicker,
   inputs: ['amLabel', 'cancelLabel', 'density', 'disabled', 'format', 'headline', 'headlineDialLabel', 'headlineInputLabel', 'hideTrigger', 'hourLabel', 'label', 'max', 'min', 'minuteLabel', 'minuteStep', 'name', 'okLabel', 'open', 'orientation', 'periodLabel', 'periodLayout', 'pmLabel', 'rangeOutsideLabel', 'rangeOverflowLabel', 'rangeUnderflowLabel', 'required', 'responsive', 'toggleDialLabel', 'toggleInputLabel', 'value', 'valueMissingLabel', 'variant'],
   methods: ['show', 'hide', 'checkValidity', 'reportValidity', 'getValidity']
 })
@@ -2885,6 +3120,7 @@ it uncomposed means each component reports only for itself, while
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['amLabel', 'cancelLabel', 'density', 'disabled', 'format', 'headline', 'headlineDialLabel', 'headlineInputLabel', 'hideTrigger', 'hourLabel', 'label', 'max', 'min', 'minuteLabel', 'minuteStep', 'name', 'okLabel', 'open', 'orientation', 'periodLabel', 'periodLayout', 'pmLabel', 'rangeOutsideLabel', 'rangeOverflowLabel', 'rangeUnderflowLabel', 'required', 'responsive', 'toggleDialLabel', 'toggleInputLabel', 'value', 'valueMissingLabel', 'variant'],
+  standalone: true
 })
 export class MdTimePicker {
   protected el: HTMLElement;
@@ -2896,8 +3132,8 @@ export class MdTimePicker {
 }
 
 
-import type { MdTimePickerChangeDetail as IMdTimePickerMdTimePickerChangeDetail } from '@awc-ui/core';
-import type { MdTimePickerModeChangeDetail as IMdTimePickerMdTimePickerModeChangeDetail } from '@awc-ui/core';
+import type { MdTimePickerChangeDetail as IMdTimePickerMdTimePickerChangeDetail } from '@awc-ui/core/dist/components';
+import type { MdTimePickerModeChangeDetail as IMdTimePickerMdTimePickerModeChangeDetail } from '@awc-ui/core/dist/components';
 
 export declare interface MdTimePicker extends Components.MdTimePicker {
   /**
@@ -2960,6 +3196,7 @@ it uncomposed means each component reports only for itself, while
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdToolbar,
   inputs: ['alignment', 'ariaLabelProp', 'ariaLabelledby', 'color', 'containerSemantics', 'density', 'layout', 'variant'],
   methods: ['setFocus']
 })
@@ -2969,6 +3206,7 @@ it uncomposed means each component reports only for itself, while
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['alignment', 'ariaLabelProp', 'ariaLabelledby', 'color', 'containerSemantics', 'density', 'layout', 'variant'],
+  standalone: true
 })
 export class MdToolbar {
   protected el: HTMLElement;
@@ -2983,6 +3221,7 @@ export declare interface MdToolbar extends Components.MdToolbar {}
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTooltip,
   inputs: ['autoPosition', 'crossOffset', 'density', 'disabled', 'hideDelay', 'offset', 'open', 'position', 'showDelay', 'subhead', 'text', 'variant'],
   methods: ['show', 'hide']
 })
@@ -2992,6 +3231,7 @@ export declare interface MdToolbar extends Components.MdToolbar {}
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['autoPosition', 'crossOffset', 'density', 'disabled', 'hideDelay', 'offset', 'open', 'position', 'showDelay', 'subhead', 'text', 'variant'],
+  standalone: true
 })
 export class MdTooltip {
   protected el: HTMLElement;
@@ -3018,6 +3258,7 @@ documented composed-event-leak class — see md-date-picker's swallow guards).
 
 
 @ProxyCmp({
+  defineCustomElementFn: defineMdTransferList,
   inputs: ['countTemplate', 'density', 'disabled', 'emptyIcon', 'emptyText', 'items', 'moveAllLeftIcon', 'moveAllLeftLabel', 'moveAllRightIcon', 'moveAllRightLabel', 'moveLeftIcon', 'moveLeftLabel', 'moveRightIcon', 'moveRightLabel', 'searchIcon', 'searchable', 'showSelectAll', 'singleStepOnly', 'sourceSearchPlaceholder', 'sourceTitle', 'targetSearchPlaceholder', 'targetTitle', 'value'],
   methods: ['moveSelectedRight', 'moveSelectedLeft']
 })
@@ -3027,6 +3268,7 @@ documented composed-event-leak class — see md-date-picker's swallow guards).
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
   inputs: ['countTemplate', 'density', 'disabled', 'emptyIcon', 'emptyText', 'items', 'moveAllLeftIcon', 'moveAllLeftLabel', 'moveAllRightIcon', 'moveAllRightLabel', 'moveLeftIcon', 'moveLeftLabel', 'moveRightIcon', 'moveRightLabel', 'searchIcon', 'searchable', 'showSelectAll', 'singleStepOnly', 'sourceSearchPlaceholder', 'sourceTitle', 'targetSearchPlaceholder', 'targetTitle', 'value'],
+  standalone: true
 })
 export class MdTransferList {
   protected el: HTMLElement;

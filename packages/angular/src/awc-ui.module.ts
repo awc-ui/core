@@ -26,9 +26,16 @@ export const VALUE_ACCESSORS = [
 ];
 
 /**
- * Registers the AWC UI custom elements (the Stencil lazy loader) during
- * application bootstrap. Add it to your root providers instead of calling
- * `defineCustomElements()` manually:
+ * Registers ALL AWC UI custom elements (the Stencil lazy loader) during
+ * application bootstrap.
+ *
+ * Since the proxies became standalone (each one statically imports and
+ * registers its own element), this provider is NO LONGER REQUIRED — importing
+ * a proxy is enough. It is kept for backwards compatibility and for apps that
+ * use raw `md-*` tags without importing the corresponding proxy. Element
+ * definition is idempotent, so using both mechanisms together is harmless —
+ * but adding this provider forces the whole lazy-loader registry into the
+ * bundle, so prefer omitting it.
  *
  * @example
  * // NgModule app
@@ -57,29 +64,26 @@ export function provideAwcUi(): Provider {
 /**
  * AwcUiModule
  *
- * Import this module in your Angular application to use all AWC UI
- * component proxies (typed inputs, outputs and methods).
+ * Convenience module exporting ALL AWC UI component proxies (typed inputs,
+ * outputs and methods) plus the form value accessors.
  *
- * The underlying custom elements must be registered once. Either add
- * `provideAwcUi()` to your root providers (recommended, see above), or
- * call `defineCustomElements()` from `@awc-ui/core/loader` in `main.ts`:
+ * NOTE: the proxies are standalone components that register their own custom
+ * element on import — no loader bootstrap needed. For the smallest bundles,
+ * prefer importing individual components over this module: this module
+ * references all 81 proxies, so the whole component set ships with your app.
  *
  * @example
- * // main.ts
- * import { defineCustomElements } from '@awc-ui/core/loader';
- * defineCustomElements(window);
+ * // Smallest bundle — standalone component imports exactly what it uses:
+ * import { MdButton } from '@awc-ui/angular';
+ * @Component({ standalone: true, imports: [MdButton], ... })
  *
- * // app.module.ts (or standalone component)
+ * // Convenience — everything at once (ships all components):
  * import { AwcUiModule } from '@awc-ui/angular';
- *
- * @NgModule({
- *   imports: [AwcUiModule, ...],
- * })
+ * @NgModule({ imports: [AwcUiModule, ...] })
  * export class AppModule {}
  */
 @NgModule({
-  imports: [CommonModule],
-  declarations: [...DIRECTIVES, ...VALUE_ACCESSORS],
+  imports: [CommonModule, ...DIRECTIVES, ...VALUE_ACCESSORS],
   exports: [...DIRECTIVES, ...VALUE_ACCESSORS],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })

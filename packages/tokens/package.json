@@ -4,6 +4,9 @@
   "description": "Material Design 3 design tokens as CSS custom properties",
   "main": "src/tokens.css",
   "style": "src/tokens.css",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "exports": {
     ".": "./src/tokens.css",
     "./tokens.css": "./src/tokens.css"

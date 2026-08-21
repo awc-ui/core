@@ -22,7 +22,14 @@ export const config: Config = {
     }),
     angularOutputTarget({
       componentCorePackage: '@awc-ui/core',
-      outputType: 'component',
+      // `standalone`: each generated component is standalone and statically
+      // imports + registers its own custom element from the tree-shakable
+      // dist-custom-elements build. Consumers add components to `imports: []`
+      // and bundle only what they use; the lazy-loader bootstrap
+      // (provideAwcUi()/defineCustomElements) is no longer required, though it
+      // remains harmless — element definition is idempotent.
+      outputType: 'standalone',
+      customElementsDir: 'dist/components',
       directivesProxyFile: '../angular/src/directives/proxies.ts',
       directivesArrayFile: '../angular/src/directives/index.ts',
       // ControlValueAccessor directives, so [(ngModel)] and formControlName bind
@@ -81,8 +88,14 @@ export const config: Config = {
     vueOutputTarget({
       componentCorePackage: '@awc-ui/core',
       proxiesFile: '../vue/lib/components.ts',
-      includeDefineCustomElements: true,
-      loaderDir: 'loader',
+      // Per-component static registration from the tree-shakable
+      // dist-custom-elements build. The previous `includeDefineCustomElements`
+      // mode called the lazy loader's defineCustomElements() at module top
+      // level, registering all components the moment anything was imported —
+      // unshakeable by construction. Now each proxy imports and defines only
+      // its own element, so consumers bundle exactly what they use.
+      includeImportCustomElements: true,
+      customElementsDir: 'dist/components',
     }),
     {
       type: 'dist',

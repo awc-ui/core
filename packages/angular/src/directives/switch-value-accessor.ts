@@ -28,6 +28,9 @@ import { ValueAccessor } from './value-accessor';
       multi: true,
     },
   ],
+  // Match the generated accessors: the output target stamps standalone: true
+  // on them, and AwcUiModule now lists all accessors under `imports`.
+  standalone: true,
 })
 export class SwitchValueAccessor extends ValueAccessor {
   constructor(el: ElementRef) {
