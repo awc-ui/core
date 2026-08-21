@@ -1,0 +1,294 @@
+---
+title: Material 3 charts gallery
+description: "Every data-viz component on one dashboard: line, area, bar, and pie charts, sparkline KPI tiles, meters, and a progress bar — re-themed live by segmented-button palette presets."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**One screen, the whole viz family.** A compact operations dashboard that puts
+[`md-line-chart`](/components/line-chart/), [`md-area-chart`](/components/area-chart/),
+[`md-bar-chart`](/components/bar-chart/), and [`md-pie-chart`](/components/pie-chart/)
+next to the small stuff — [`md-sparkline`](/components/sparkline/) KPI tiles,
+[`md-meter`](/components/meter/) readings, and an [`md-progress-indicator`](/components/progress-indicator/).
+A segmented button swaps palette presets by writing `--md-sys-color-*` custom
+properties onto the gallery wrapper: the CSS-driven components re-theme
+instantly, and the Canvas2D charts get the one nudge they need — a `series`
+reassignment — to repaint in the new brand.
+
+<ComponentDemo
+  label="Live preview — pick a palette preset to re-theme every chart"
+  html={`<div data-gallery style="display: grid; gap: 16px;">
+  <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+    <div style="display: grid; gap: 2px;">
+      <span style="font: var(--md-sys-typescale-title-large); color: var(--md-sys-color-on-surface);">Northwind Cloud — August 2026</span>
+      <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">Usage, revenue, and platform health</span>
+    </div>
+    <md-segmented-button-set aria-label="Chart palette preset">
+      <md-segmented-button value="default" label="Baseline" selected></md-segmented-button>
+      <md-segmented-button value="forest" label="Forest"></md-segmented-button>
+      <md-segmented-button value="ocean" label="Ocean"></md-segmented-button>
+      <md-segmented-button value="sunset" label="Sunset"></md-segmented-button>
+    </md-segmented-button-set>
+  </div>
+
+  <md-line-chart data-line label="Weekly active users" subtitle="March – August"
+    height="240px" show-marks curve="monotone"></md-line-chart>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+    <md-area-chart data-area label="Storage by type" subtitle="Stacked, GB"
+      height="230px"></md-area-chart>
+    <md-bar-chart data-bar label="Revenue by region" subtitle="USD thousands"
+      height="230px" corner-radius="4"></md-bar-chart>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+    <md-pie-chart data-pie label="Traffic by source" subtitle="Last 30 days"
+      inner-radius="62%" legend="bottom" height="300px">
+      <div slot="center" style="text-align: center;">
+        <strong style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);">11,540</strong><br>
+        <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">visits</span>
+      </div>
+    </md-pie-chart>
+
+    <div style="display: grid; gap: 12px; align-content: start;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 12px; background: var(--md-sys-color-surface-container-low);">
+        <div style="display: grid; gap: 2px;">
+          <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Deploys per day</span>
+          <span style="font: var(--md-sys-typescale-title-large); color: var(--md-sys-color-on-surface);">14</span>
+        </div>
+        <md-sparkline data-spark-deploys variant="bar" color="primary" height="36px" style="width: 120px;"></md-sparkline>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 12px; background: var(--md-sys-color-surface-container-low);">
+        <div style="display: grid; gap: 2px;">
+          <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">p95 latency</span>
+          <span style="font: var(--md-sys-typescale-title-large); color: var(--md-sys-color-on-surface);">318 ms</span>
+        </div>
+        <md-sparkline data-spark-latency color="tertiary" height="36px" style="width: 120px;"></md-sparkline>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 12px; background: var(--md-sys-color-surface-container-low);">
+        <div style="display: grid; gap: 2px;">
+          <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Error rate</span>
+          <span style="font: var(--md-sys-typescale-title-large); color: var(--md-sys-color-on-surface);">0.21%</span>
+        </div>
+        <md-sparkline data-spark-errors variant="area" color="secondary" height="36px" style="width: 120px;"></md-sparkline>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; padding: 16px; border-radius: 12px; background: var(--md-sys-color-surface-container-low);">
+        <div style="display: grid; gap: 12px;">
+          <md-meter value="62" label="Storage used" show-label show-value
+            value-text="1.24 TB of 2 TB"></md-meter>
+          <div style="display: grid; gap: 6px;">
+            <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Nightly export — 412 of 605 tables</span>
+            <md-progress-indicator value="412" max="605" label="Nightly export"></md-progress-indicator>
+          </div>
+        </div>
+        <md-meter variant="circular" value="84" size="88" thickness="8"
+          label="API quota" show-label show-value color="tertiary"></md-meter>
+      </div>
+    </div>
+  </div>
+</div>`}
+  htmlForCode={`<md-segmented-button-set aria-label="Chart palette preset">
+  <md-segmented-button value="default" label="Baseline" selected></md-segmented-button>
+  <md-segmented-button value="forest" label="Forest"></md-segmented-button>
+</md-segmented-button-set>
+
+<md-line-chart label="Weekly active users" height="240px" show-marks curve="monotone"></md-line-chart>
+<md-area-chart label="Storage by type" height="230px"></md-area-chart>
+<md-bar-chart label="Revenue by region" height="230px"></md-bar-chart>
+<md-pie-chart label="Traffic by source" inner-radius="62%" legend="bottom"></md-pie-chart>
+
+<md-sparkline variant="bar" color="primary" height="36px"></md-sparkline>
+<md-meter value="62" label="Storage used" show-label show-value value-text="1.24 TB of 2 TB"></md-meter>
+<md-progress-indicator value="412" max="605" label="Nightly export"></md-progress-indicator>`}
+  script={`
+    const wrap = root.querySelector('[data-gallery]');
+    const presetSet = root.querySelector('md-segmented-button-set');
+    const line = root.querySelector('[data-line]');
+    const area = root.querySelector('[data-area]');
+    const bar = root.querySelector('[data-bar]');
+    const pie = root.querySelector('[data-pie]');
+
+    const months = ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'];
+
+    // Arrays and objects never cross the attribute boundary — feed every
+    // chart its data as JS properties.
+    line.xAxis = { data: months, scale: 'category' };
+    line.yAxis = { label: 'Users', min: 0 };
+    line.series = [
+      { label: 'Web', color: 'primary', data: [4820, 5110, 5580, 5490, 6120, 6740] },
+      { label: 'Mobile', color: 'tertiary', data: [2210, 2480, 2900, 3350, 3610, 4020] },
+    ];
+
+    area.xAxis = { data: months, scale: 'category' };
+    area.yAxis = { label: 'GB', min: 0 };
+    area.series = [
+      { label: 'Media', color: 'primary', data: [520, 548, 600, 646, 700, 741] },
+      { label: 'Documents', color: 'tertiary', data: [310, 335, 352, 380, 401, 428] },
+      { label: 'Backups', color: 'secondary', data: [180, 182, 190, 204, 210, 222] },
+    ];
+    area.valueFormatter = function (v) { return v == null ? '' : v + ' GB'; };
+
+    bar.xAxis = { data: ['North America', 'Europe', 'APAC', 'LATAM'] };
+    bar.yAxis = { label: 'USD (k)', min: 0 };
+    bar.series = [
+      { label: 'FY25', color: 'secondary', data: [640, 520, 310, 190] },
+      { label: 'FY26', color: 'primary', data: [720, 590, 405, 238] },
+    ];
+
+    pie.data = [
+      { label: 'Organic', value: 5200 },
+      { label: 'Direct', value: 3120 },
+      { label: 'Referral', value: 1980 },
+      { label: 'Paid', value: 1240 },
+    ];
+
+    const sparkDeploys = root.querySelector('[data-spark-deploys]');
+    const sparkLatency = root.querySelector('[data-spark-latency]');
+    const sparkErrors = root.querySelector('[data-spark-errors]');
+    const days = ['Aug 13', 'Aug 14', 'Aug 15', 'Aug 16', 'Aug 17', 'Aug 18', 'Aug 19', 'Aug 20'];
+    sparkDeploys.data = [6, 9, 7, 11, 8, 12, 10, 14];
+    sparkDeploys.labels = days;
+    sparkLatency.data = [412, 398, 405, 371, 362, 340, 331, 318];
+    sparkLatency.labels = days;
+    sparkLatency.valueFormatter = function (v) { return (v == null ? 0 : v) + ' ms'; };
+    sparkErrors.data = [0.42, 0.36, 0.44, 0.31, 0.28, 0.24, 0.26, 0.21];
+    sparkErrors.labels = days;
+    sparkErrors.valueFormatter = function (v) { return (v == null ? 0 : v) + '%'; };
+
+    // Palette presets: each swaps the MD3 color roles the series resolve to.
+    // 'default' is the absence of overrides — the site theme shows through.
+    const presets = {
+      forest: {
+        '--md-sys-color-primary': '#3d6838',
+        '--md-sys-color-on-primary': '#ffffff',
+        '--md-sys-color-primary-container': '#bef0b3',
+        '--md-sys-color-on-primary-container': '#255022',
+        '--md-sys-color-secondary': '#53634e',
+        '--md-sys-color-secondary-container': '#d6e8cd',
+        '--md-sys-color-on-secondary-container': '#3b4b37',
+        '--md-sys-color-tertiary': '#386569',
+        '--md-sys-color-tertiary-container': '#bcebef',
+        '--md-sys-color-on-tertiary-container': '#1e4d51',
+      },
+      ocean: {
+        '--md-sys-color-primary': '#00658e',
+        '--md-sys-color-on-primary': '#ffffff',
+        '--md-sys-color-primary-container': '#c7e7ff',
+        '--md-sys-color-on-primary-container': '#004c6c',
+        '--md-sys-color-secondary': '#4f616e',
+        '--md-sys-color-secondary-container': '#d2e5f5',
+        '--md-sys-color-on-secondary-container': '#374955',
+        '--md-sys-color-tertiary': '#635a7c',
+        '--md-sys-color-tertiary-container': '#e9ddff',
+        '--md-sys-color-on-tertiary-container': '#4b4266',
+      },
+      sunset: {
+        '--md-sys-color-primary': '#8f4c38',
+        '--md-sys-color-on-primary': '#ffffff',
+        '--md-sys-color-primary-container': '#ffdbd1',
+        '--md-sys-color-on-primary-container': '#723523',
+        '--md-sys-color-secondary': '#77574e',
+        '--md-sys-color-secondary-container': '#ffdbd1',
+        '--md-sys-color-on-secondary-container': '#5d4037',
+        '--md-sys-color-tertiary': '#6c5d2f',
+        '--md-sys-color-tertiary-container': '#f6e1a7',
+        '--md-sys-color-on-tertiary-container': '#534619',
+      },
+    };
+
+    // Union of every token any preset touches, so Baseline can clear them all.
+    const allTokens = {};
+    Object.keys(presets).forEach(function (name) {
+      Object.keys(presets[name]).forEach(function (token) { allTokens[token] = true; });
+    });
+
+    function applyPreset(name) {
+      Object.keys(allTokens).forEach(function (token) { wrap.style.removeProperty(token); });
+      const preset = presets[name];
+      if (preset) {
+        Object.keys(preset).forEach(function (token) {
+          wrap.style.setProperty(token, preset[token]);
+        });
+      }
+      // Meters, progress and buttons re-theme through CSS alone. The Canvas2D
+      // charts sample the tokens at paint time, so reassign their data to
+      // trigger a repaint (a new array reference is enough).
+      line.series = line.series.slice();
+      area.series = area.series.slice();
+      bar.series = bar.series.slice();
+      pie.data = pie.data.slice();
+      root.querySelectorAll('md-sparkline').forEach(function (s) {
+        s.data = s.data.slice();
+      });
+    }
+
+    presetSet.addEventListener('mdChange', function (e) {
+      applyPreset(e.detail[0]);
+    });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-line-chart`](/components/line-chart/) | The trend headline. `series` and `xAxis` are JS properties (arrays never cross the attribute boundary); `curve="monotone"` avoids the overshoot a smooth spline adds to monotonic data; `show-marks` puts a point at each reading. |
+| [`md-area-chart`](/components/area-chart/) | Storage composition — `stack="normal"` is its default, so three series become a cumulative total with no extra configuration. |
+| [`md-bar-chart`](/components/bar-chart/) | Year-over-year comparison across four discrete regions — the case lines must not imply continuity for. |
+| [`md-pie-chart`](/components/pie-chart/) | Donut via `inner-radius="62%"`, with the headline total slotted into `center` — the hole is the layout. |
+| [`md-sparkline`](/components/sparkline/) | Three KPI tiles: `bar`, `line`, and `area` variants, each ~36px tall with no axes or legend. The number stays in the tile as text — the sparkline is the trend, never the value. |
+| [`md-meter`](/components/meter/) | Two static readings: a linear storage gauge with `value-text="1.24 TB of 2 TB"` overriding the percent readout, and a circular quota ring with the value centered inside it. |
+| [`md-progress-indicator`](/components/progress-indicator/) | The nightly export is an *activity*, not a state — so it gets a progress bar, fed the raw count (`value="412" max="605"`) rather than a pre-computed percentage. |
+| [`md-segmented-button`](/components/segmented-button/) | The palette switcher: a single-select set (`role="radiogroup"`), whose `mdChange` reports the selected preset. The handler writes `--md-sys-color-*` custom properties on the gallery wrapper. |
+
+## The details that make it production-grade
+
+- **Re-theming works with the grain of the engine.** Charts resolve series
+  colors from `--md-sys-color-*` tokens at paint time, but only repaint
+  automatically on a `prefers-color-scheme` change. Any other token swap needs
+  a nudge: reassign `series` (or `data`) — a `.slice()` copy is a new reference
+  and is enough. `resize()` will not do it; it returns early when the box has
+  not changed.
+- **Every chart carries a screen-reader story.** The host is `role="figure"`
+  with a generated summary, the plot is a focusable region walkable with arrow
+  keys (announced via `label-point`), and a screen-reader-only data table
+  renders inside the component. The sparklines are `role="img"` with a
+  generated "latest / range" label.
+- **Meter vs progress is a semantic split, not a visual one.** `md-meter` is
+  `role="meter"` — a state that sits still, with clamping and locale-aware
+  value text. `md-progress-indicator` is an activity; it takes the raw
+  `412 of 605` count and computes the fraction itself.
+- **The preset switcher is a real radiogroup.** The set owns selection —
+  clicking a segment emits `mdChange` with the full value snapshot, arrow keys
+  move and select per the WAI-ARIA radio pattern, and single-select can never
+  be emptied by a stray click.
+- **Baseline means no overrides, not a fourth palette.** The default preset
+  removes every inline token, so the gallery falls back to the site theme —
+  including dark mode, which the charts already track on their own.
+
+## Variations
+
+- **Zoomable history:** add `zoom="slider"` to the line chart — an `md-slider`
+  band under the plot with focusable thumbs; `mdZoom` reports absolute indices
+  you can mirror onto the area chart for linked panning.
+- **Share-of-total storage:** switch the area chart to `stack="percentage"`
+  when the question is "what fraction is media?" rather than "how many GB?".
+- **Single-hue pie:** add `monochrome` (or `monochrome="tertiary"`) to the
+  donut so slices become tints of one role — useful when the palette is
+  already busy elsewhere on the page.
+- **Comparable sparklines:** the three tiles measure different units, so each
+  auto-scales. If a row of tiles shares a unit, pin the same `min`/`max` on all
+  of them — otherwise identical-looking trends can hide a 10x difference.
+
+## Related
+
+- Recipe: [KPI overview](/recipes/kpi-overview/) — sparkline tiles and meters
+  arranged as a scanning-first summary page.
+- Recipe: [Release health drilldown](/recipes/release-health-drilldown/) —
+  charts wired to drill interactions instead of palette swaps.
+- Component manuals: [`md-line-chart`](/components/line-chart/),
+  [`md-pie-chart`](/components/pie-chart/), [`md-meter`](/components/meter/) —
+  full API tables, behavioral contracts, and anti-pattern lists.

@@ -1,0 +1,383 @@
+---
+title: Bulk-action data grid console
+description: "An admin records screen: a filterable, sortable, paginated md-table with row selection, a bulk deactivate with snackbar undo, and a split-button export."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**The classic admin console, wired end to end.** A member directory on
+[`md-table`](/components/table/) — toolbar, sort labels, checkbox selection and
+pagination — filtered live by an [`md-search`](/components/search/) bar and a
+set of status filter chips. Selecting rows flips the toolbar into selection
+mode with a bulk **Deactivate** action; the snackbar that follows carries a
+real, working **Undo**. The table never touches the data: every reorder,
+filter and page slice happens in the demo script, exactly as it would against
+your own store or API.
+
+<ComponentDemo
+  label="Live preview — filter, sort, select rows, then Deactivate and Undo"
+  html={`<div style="display: grid; gap: 16px; max-width: 760px; margin-inline: auto;">
+  <md-search layout="docked" trigger="bar" full-width debounce="200"
+             placeholder="Search name or role" input-aria-label="Search members">
+    <div slot="results" data-match-count
+         style="padding: 12px 16px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+      12 of 12 members match
+    </div>
+  </md-search>
+  <div role="group" aria-label="Filter by status" style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <md-chip variant="filter" label="Active"></md-chip>
+    <md-chip variant="filter" label="Invited"></md-chip>
+    <md-chip variant="filter" label="Suspended"></md-chip>
+  </div>
+  <md-table-container variant="outlined">
+    <md-table-toolbar slot="top" headline="Workspace members" supporting-text="Fabrikam GmbH · 12 seats" auto-bind>
+      <md-split-button slot="actions" id="export-split" variant="tonal" icon="download"
+                       label="Export CSV" menu-label="More export options" controls="export-menu"></md-split-button>
+      <md-button slot="selection-actions" variant="filled" icon="person_off" data-bulk>Deactivate</md-button>
+    </md-table-toolbar>
+    <md-table selection="multiple" striped label="Workspace members"
+              column-template="auto 1.6fr 1fr 1.2fr 110px" min-width="620px"
+              sort-by="last-active" sort-order="desc" row-count="12">
+      <md-table-head>
+        <md-table-row rowgroup="head">
+          <md-table-cell head padding="checkbox"><md-checkbox aria-label="Select all members"></md-checkbox></md-table-cell>
+          <md-table-cell head scope="col"><md-table-sort-label column="name">Member</md-table-sort-label></md-table-cell>
+          <md-table-cell head scope="col">Role</md-table-cell>
+          <md-table-cell head scope="col">Status</md-table-cell>
+          <md-table-cell head scope="col" numeric><md-table-sort-label column="last-active" default-order="desc">Last active</md-table-sort-label></md-table-cell>
+        </md-table-row>
+      </md-table-head>
+      <md-table-body>
+        <md-table-row value="u-01">
+          <md-table-cell padding="checkbox"><md-checkbox aria-label="Select Ada Okafor"></md-checkbox></md-table-cell>
+          <md-table-cell>Ada Okafor</md-table-cell>
+          <md-table-cell>Owner</md-table-cell>
+          <md-table-cell><span style="position: relative; display: inline-flex; padding-inline-end: 14px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</md-table-cell>
+          <md-table-cell numeric>1h ago</md-table-cell>
+        </md-table-row>
+        <md-table-row value="u-09">
+          <md-table-cell padding="checkbox"><md-checkbox aria-label="Select Mei-Ling Chen"></md-checkbox></md-table-cell>
+          <md-table-cell>Mei-Ling Chen</md-table-cell>
+          <md-table-cell>Admin</md-table-cell>
+          <md-table-cell><span style="position: relative; display: inline-flex; padding-inline-end: 14px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</md-table-cell>
+          <md-table-cell numeric>2h ago</md-table-cell>
+        </md-table-row>
+        <md-table-row value="u-02">
+          <md-table-cell padding="checkbox"><md-checkbox aria-label="Select Marius Ionescu"></md-checkbox></md-table-cell>
+          <md-table-cell>Marius Ionescu</md-table-cell>
+          <md-table-cell>Admin</md-table-cell>
+          <md-table-cell><span style="position: relative; display: inline-flex; padding-inline-end: 14px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</md-table-cell>
+          <md-table-cell numeric>3h ago</md-table-cell>
+        </md-table-row>
+        <md-table-row value="u-03">
+          <md-table-cell padding="checkbox"><md-checkbox aria-label="Select Priya Raghavan"></md-checkbox></md-table-cell>
+          <md-table-cell>Priya Raghavan</md-table-cell>
+          <md-table-cell>Editor</md-table-cell>
+          <md-table-cell><span style="position: relative; display: inline-flex; padding-inline-end: 14px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</md-table-cell>
+          <md-table-cell numeric>5h ago</md-table-cell>
+        </md-table-row>
+        <md-table-row value="u-07">
+          <md-table-cell padding="checkbox"><md-checkbox aria-label="Select Sofia Petrescu"></md-checkbox></md-table-cell>
+          <md-table-cell>Sofia Petrescu</md-table-cell>
+          <md-table-cell>Analyst</md-table-cell>
+          <md-table-cell><span style="position: relative; display: inline-flex; padding-inline-end: 14px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</md-table-cell>
+          <md-table-cell numeric>8h ago</md-table-cell>
+        </md-table-row>
+      </md-table-body>
+      <div slot="empty">No members match the current filters.</div>
+    </md-table>
+    <md-table-pagination slot="bottom" count="12" rows-per-page="5" rows-per-page-options="5,10,all"></md-table-pagination>
+  </md-table-container>
+  <md-menu id="export-menu" anchor="export-split" placement="bottom-end">
+    <md-menu-item headline="Export filtered rows" data-export="filtered"></md-menu-item>
+    <md-menu-item headline="Export selected rows" data-export="selected"></md-menu-item>
+    <md-menu-item headline="Export all members" data-export="all"></md-menu-item>
+  </md-menu>
+  <md-snackbar action="Undo"></md-snackbar>
+</div>`}
+  htmlForCode={`<md-search layout="docked" trigger="bar" full-width debounce="200"
+           placeholder="Search name or role" input-aria-label="Search members">
+  <div slot="results">12 of 12 members match</div>
+</md-search>
+
+<div role="group" aria-label="Filter by status">
+  <md-chip variant="filter" label="Active"></md-chip>
+  <md-chip variant="filter" label="Invited"></md-chip>
+  <md-chip variant="filter" label="Suspended"></md-chip>
+</div>
+
+<md-table-container variant="outlined">
+  <md-table-toolbar slot="top" headline="Workspace members" supporting-text="Fabrikam GmbH · 12 seats" auto-bind>
+    <md-split-button slot="actions" id="export-split" variant="tonal" icon="download"
+                     label="Export CSV" menu-label="More export options" controls="export-menu"></md-split-button>
+    <md-button slot="selection-actions" variant="filled" icon="person_off">Deactivate</md-button>
+  </md-table-toolbar>
+
+  <md-table selection="multiple" striped label="Workspace members"
+            column-template="auto 1.6fr 1fr 1.2fr 110px" min-width="620px"
+            sort-by="last-active" sort-order="desc" row-count="12">
+    <md-table-head>
+      <md-table-row rowgroup="head">
+        <md-table-cell head padding="checkbox"><md-checkbox aria-label="Select all members"></md-checkbox></md-table-cell>
+        <md-table-cell head scope="col"><md-table-sort-label column="name">Member</md-table-sort-label></md-table-cell>
+        <md-table-cell head scope="col">Role</md-table-cell>
+        <md-table-cell head scope="col">Status</md-table-cell>
+        <md-table-cell head scope="col" numeric><md-table-sort-label column="last-active" default-order="desc">Last active</md-table-sort-label></md-table-cell>
+      </md-table-row>
+    </md-table-head>
+    <md-table-body>
+      <md-table-row value="u-01">
+        <md-table-cell padding="checkbox"><md-checkbox aria-label="Select Ada Okafor"></md-checkbox></md-table-cell>
+        <md-table-cell>Ada Okafor</md-table-cell>
+        <md-table-cell>Owner</md-table-cell>
+        <md-table-cell><span style="position: relative; display: inline-flex; padding-inline-end: 14px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</md-table-cell>
+        <md-table-cell numeric>1h ago</md-table-cell>
+      </md-table-row>
+      <!-- one md-table-row per record; render them from your data -->
+    </md-table-body>
+    <div slot="empty">No members match the current filters.</div>
+  </md-table>
+
+  <md-table-pagination slot="bottom" count="12" rows-per-page="5" rows-per-page-options="5,10,all"></md-table-pagination>
+</md-table-container>
+
+<md-menu id="export-menu" anchor="export-split" placement="bottom-end">
+  <md-menu-item headline="Export filtered rows"></md-menu-item>
+  <md-menu-item headline="Export selected rows"></md-menu-item>
+  <md-menu-item headline="Export all members"></md-menu-item>
+</md-menu>
+
+<md-snackbar action="Undo"></md-snackbar>`}
+  script={`
+    const table = root.querySelector('md-table');
+    const body = root.querySelector('md-table-body');
+    const pager = root.querySelector('md-table-pagination');
+    const search = root.querySelector('md-search');
+    const readout = root.querySelector('[data-match-count]');
+    const chips = Array.from(root.querySelectorAll('md-chip[variant="filter"]'));
+    const bulkBtn = root.querySelector('[data-bulk]');
+    const split = root.querySelector('md-split-button');
+    const menu = root.querySelector('md-menu');
+    const snack = root.querySelector('md-snackbar');
+
+    const STATE = { Active: 'online', Invited: 'away', Suspended: 'offline' };
+    const members = [
+      { id: 'u-01', name: 'Ada Okafor', role: 'Owner', status: 'Active', hoursAgo: 1 },
+      { id: 'u-02', name: 'Marius Ionescu', role: 'Admin', status: 'Active', hoursAgo: 3 },
+      { id: 'u-03', name: 'Priya Raghavan', role: 'Editor', status: 'Active', hoursAgo: 5 },
+      { id: 'u-04', name: 'Tomas Lindqvist', role: 'Editor', status: 'Invited', hoursAgo: 96 },
+      { id: 'u-05', name: 'Elena Vasquez', role: 'Analyst', status: 'Active', hoursAgo: 26 },
+      { id: 'u-06', name: 'Jonas Weber', role: 'Editor', status: 'Suspended', hoursAgo: 240 },
+      { id: 'u-07', name: 'Sofia Petrescu', role: 'Analyst', status: 'Active', hoursAgo: 8 },
+      { id: 'u-08', name: 'Liam Gallagher', role: 'Viewer', status: 'Invited', hoursAgo: 120 },
+      { id: 'u-09', name: 'Mei-Ling Chen', role: 'Admin', status: 'Active', hoursAgo: 2 },
+      { id: 'u-10', name: 'Karim El-Sayed', role: 'Editor', status: 'Active', hoursAgo: 50 },
+      { id: 'u-11', name: 'Anouk De Vries', role: 'Viewer', status: 'Suspended', hoursAgo: 400 },
+      { id: 'u-12', name: 'Gabriel Santos', role: 'Analyst', status: 'Active', hoursAgo: 12 }
+    ];
+
+    let query = '';
+    let sortCol = 'last-active';
+    let sortOrder = 'desc';
+    let lastChange = null;
+    const statusFilter = new Set();
+
+    function ago(h) {
+      if (h < 1) return 'Just now';
+      if (h < 24) return h + 'h ago';
+      return Math.round(h / 24) + 'd ago';
+    }
+
+    function computeRows() {
+      const q = query.toLowerCase();
+      let rows = members.filter((m) =>
+        (!q || (m.name + ' ' + m.role).toLowerCase().indexOf(q) !== -1) &&
+        (statusFilter.size === 0 || statusFilter.has(m.status)));
+      if (sortCol && sortOrder !== 'none') {
+        const dir = sortOrder === 'asc' ? 1 : -1;
+        rows = rows.slice().sort((a, b) => {
+          if (sortCol === 'name') return dir * a.name.localeCompare(b.name);
+          return dir * (b.hoursAgo - a.hoursAgo);
+        });
+      }
+      return rows;
+    }
+
+    function rowHtml(m) {
+      return '<md-table-row value="' + m.id + '">' +
+        '<md-table-cell padding="checkbox"><md-checkbox aria-label="Select ' + m.name + '"></md-checkbox></md-table-cell>' +
+        '<md-table-cell>' + m.name + '</md-table-cell>' +
+        '<md-table-cell>' + m.role + '</md-table-cell>' +
+        '<md-table-cell><span style="position: relative; display: inline-flex; padding-inline-end: 14px;">' +
+        '<md-status-dot size="small" state="' + STATE[m.status] + '"></md-status-dot></span>' + m.status + '</md-table-cell>' +
+        '<md-table-cell numeric>' + ago(m.hoursAgo) + '</md-table-cell>' +
+        '</md-table-row>';
+    }
+
+    function render() {
+      const rows = computeRows();
+      pager.count = rows.length;            // may clamp pager.page down — read it back
+      const start = pager.page * pager.rowsPerPage;
+      table.rowOffset = start;
+      table.rowCount = rows.length;
+      table.empty = rows.length === 0;
+      body.innerHTML = rows.slice(start, start + pager.rowsPerPage).map(rowHtml).join('');
+      if (readout) readout.textContent = rows.length + ' of ' + members.length + ' members match';
+    }
+
+    // Filters are our own mutations: arm the FLIP motion, then render.
+    function renderFiltered() {
+      table.animateNextChange().then(render);
+    }
+
+    // Sort: the table only displays state; reordering is ours, synchronously.
+    table.addEventListener('mdSortChange', (e) => {
+      sortCol = e.detail.column;
+      sortOrder = e.detail.order;
+      render();
+    });
+
+    // Pagination: the container brackets these with the row motion already.
+    pager.addEventListener('mdPageChange', render);
+    pager.addEventListener('mdRowsPerPageChange', render);
+
+    // Search: mdSearch is debounced, trimmed and distinct-until-changed.
+    search.addEventListener('mdSearch', (e) => {
+      query = e.detail.value;
+      renderFiltered();
+    });
+
+    // Status chips: union filter; no chip selected = show everything.
+    chips.forEach((chip) => {
+      chip.addEventListener('mdSelect', (e) => {
+        if (e.detail.selected) statusFilter.add(chip.label);
+        else statusFilter.delete(chip.label);
+        renderFiltered();
+      });
+    });
+
+    // Bulk deactivate: snapshot the previous statuses so Undo can restore them.
+    bulkBtn.addEventListener('click', async () => {
+      const sel = await table.getSelection();
+      if (!sel.values.length) return;
+      lastChange = members
+        .filter((m) => sel.values.indexOf(m.id) !== -1)
+        .map((m) => ({ id: m.id, status: m.status }));
+      members.forEach((m) => {
+        if (sel.values.indexOf(m.id) !== -1) m.status = 'Suspended';
+      });
+      await table.deselectAll();
+      render();
+      snack.action = 'Undo';
+      snack.message = sel.values.length + (sel.values.length === 1 ? ' member' : ' members') + ' deactivated';
+      snack.show();
+    });
+
+    // The action button never closes the snackbar by itself — hide with a reason,
+    // then branch on that reason in mdClose.
+    snack.addEventListener('mdAction', () => snack.hide('action'));
+    snack.addEventListener('mdClose', (e) => {
+      if (e.detail.reason === 'action' && lastChange) {
+        lastChange.forEach((c) => {
+          const m = members.find((x) => x.id === c.id);
+          if (m) m.status = c.status;
+        });
+        render();
+      }
+      lastChange = null;
+    });
+
+    // Split button: leading segment = default export, trailing toggles the menu.
+    function toast(n, scope) {
+      lastChange = null;
+      snack.action = '';
+      snack.message = 'Exported ' + n + ' ' + scope + ' to members.csv';
+      snack.show();
+    }
+    split.addEventListener('mdLeadingClick', () => toast(computeRows().length, 'filtered rows'));
+    split.addEventListener('mdTrailingClick', (e) => {
+      if (e.detail.checked) menu.show();
+      else menu.close();
+    });
+    // mdClose does not bubble — listen on the menu itself to unstick the chevron.
+    menu.addEventListener('mdClose', () => { split.trailingChecked = false; });
+    menu.querySelectorAll('md-menu-item').forEach((item) => {
+      item.addEventListener('mdClick', async () => {
+        const kind = item.dataset.export;
+        if (kind === 'selected') toast((await table.getSelection()).count, 'selected rows');
+        else if (kind === 'all') toast(members.length, 'members');
+        else toast(computeRows().length, 'filtered rows');
+      });
+    });
+
+    render();
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-table`](/components/table/) | The grid. `selection="multiple"` auto-wires every slotted checkbox; `sort-by`/`sort-order` display the state while `mdSortChange` hands you the reorder; `row-offset`/`row-count` keep AT positions truthful across pages. |
+| [`md-table-container`](/components/table/) + toolbar + pagination | The container supplies the outlined surface and the `top`/`bottom` bands, and arms the row FLIP motion around page changes. The toolbar's `auto-bind` tracks the selection count with zero glue code; the pagination reports intent and clamps its own `page` when filters shrink the dataset. |
+| [`md-table-sort-label`](/components/table/) | Sortable headers for Member and Last active — `default-order="desc"` makes the first click on the date column newest-first. |
+| [`md-search`](/components/search/) | The query source. `mdSearch` is debounced, trimmed and distinct-until-changed, so it is the only event the filter listens to; the docked panel shows a live match count. |
+| [`md-chip`](/components/chip/) | `variant="filter"` status tokens — `mdSelect` toggles each status in and out of the filter set. |
+| [`md-checkbox`](/components/checkbox/) | Row and select-all checkboxes. The table pushes `checked`/`indeterminate` into them itself — the script never touches them. |
+| [`md-status-dot`](/components/status-dot/) | Per-row presence: Active/Invited/Suspended map to `online`/`away`/`offline`. The dot stays decorative because the cell text carries the words. |
+| [`md-split-button`](/components/split-button/) | Export: the leading segment runs the default (filtered rows), the trailing chevron opens an [`md-menu`](/components/menu/) of scoped variants. |
+| [`md-snackbar`](/components/snackbar/) | Feedback for both flows — bulk deactivate gets an `action="Undo"`, exports a plain confirmation. |
+
+## The details that make it production-grade
+
+- **Selection is declarative, not event soup.** With `selection="multiple"`,
+  a checkbox slotted into a body row toggles that row and the head checkbox is
+  the select-all; the table pushes `checked`, `indeterminate` and `disabled`
+  back into them on every change. `mdSelectionChange.detail.count` is the one
+  number the toolbar needs — or `auto-bind`, as here, and no wiring at all.
+- **Undo is real.** The snackbar's action button never dismisses the snackbar
+  itself; the script calls `hide('action')` and branches on
+  `mdClose.detail.reason` — `'action'` restores the snapshot, `'auto'` or
+  `'close'` lets the change stand. The auto-hide timer also pauses while the
+  surface is hovered or focused (WCAG 2.2.1), so Undo cannot expire mid-read.
+- **Pagination stays truthful.** Setting `count` after a filter clamps `page`
+  down automatically, and the script feeds `row-offset`/`row-count` back to the
+  table so screen readers hear "row 6 of 12", not "row 1 of 5". `keep-height`
+  (on by default) stops the last, shorter page from making the layout jump.
+- **Keyboard map, from the table manual:** sort labels are real buttons —
+  `Enter`/`Space` cycle the column through its `default-order`, the opposite,
+  then off, and `aria-sort` lands on the header cell for you. Row and
+  select-all checkboxes toggle with `Space`. In `frozen-header` mode the body
+  becomes a focusable scroll region: `Left`/`Right` scroll horizontally and
+  `Ctrl/Cmd + Home`/`End` jump to the ends (inert unless the grid actually
+  overflows).
+- **The motion is bracketed for you.** Sort and pagination changes are
+  FLIP-animated automatically as long as the handler re-renders synchronously;
+  the demo only calls `animateNextChange()` for its own mutations — the search
+  and chip filters — immediately before swapping the rows.
+
+## Variations
+
+- **Tall, unpaginated grid:** drop the pagination, set `frozen-header` on the
+  table and `max-height="60vh"` on the container — the scrollbar then spans
+  only the rows and the header keeps its own grid outside the scroll area.
+- **Single-select console** (for a detail-pane layout): `selection="single"`
+  deselects every other row on click and disables the select-all checkbox
+  automatically.
+- **Server-side data:** set `loading` with `loading-mode="skeleton"` and
+  `disabled` on the pagination while a page request is in flight, then update
+  `count` from the response — the pager clamps `page` if the dataset shrank.
+- **Destructive bulk actions:** retheme the toolbar's selection band via
+  `--md-table-toolbar-selection-bg: var(--md-sys-color-error-container)` and
+  keep the snackbar Undo — or swap it for an `md-dialog` confirmation when the
+  action is irreversible.
+
+## Related
+
+- Recipe: [Two-factor verification](/recipes/two-factor-verification/) — the
+  same snackbar-and-state discipline applied to an auth flow.
+- Component manuals: [`md-table`](/components/table/) — the full composite API,
+  keyboard map and anti-patterns — and [`md-snackbar`](/components/snackbar/)
+  for the undo contract.

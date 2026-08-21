@@ -1,0 +1,283 @@
+---
+title: Content moderation queue
+description: "A reviewer's report queue: one card per report with reporter identity, reason chips, an ML-confidence meter, a verdict segmented button, a split-button removal path, and snackbar confirmations."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**One report, one decision, next report.** A moderation queue built as a
+single [`md-card`](/components/card/) that reloads with the next item after
+every verdict: the reporter's [`md-avatar`](/components/avatar/) and metadata,
+the flagged content, report reasons as [`md-chip`](/components/chip/)s, the
+classifier's confidence as an [`md-meter`](/components/meter/) whose color role
+tracks severity, and a verdict row where
+[`md-segmented-button-set`](/components/segmented-button/) picks the outcome.
+Choosing **Remove** swaps the plain submit button for an
+[`md-split-button`](/components/split-button/) whose menu carries the harsher
+variants — every action is confirmed by an
+[`md-snackbar`](/components/snackbar/), and an [`md-badge`](/components/badge/)
+counts down the queue.
+
+<ComponentDemo
+  label="Live preview — pick a verdict to advance through the four pending reports"
+  html={`<div style="display: grid; gap: 16px; max-width: 640px; margin-inline: auto;">
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+    <span style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);">Moderation queue</span>
+    <span style="position: relative; display: inline-block; padding-inline-end: 10px; font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface-variant);">Pending<md-badge data-queue-count value="4"></md-badge></span>
+  </div>
+  <md-card variant="outlined" full-width data-report-card>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <md-avatar data-reporter-avatar initials="PD"></md-avatar>
+      <div style="display: grid; gap: 2px;">
+        <span data-reporter style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Priya Desai</span>
+        <span data-meta style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Reported @glowdeals · 12 min ago · Report #4821</span>
+      </div>
+    </div>
+    <blockquote data-excerpt style="margin: 0; padding: 12px 16px; border-inline-start: 3px solid var(--md-sys-color-outline-variant); background: var(--md-sys-color-surface-container); border-radius: 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);"></blockquote>
+    <div role="group" aria-label="Report reasons" data-reasons style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+    <md-meter data-confidence label="Model confidence" value="0" show-label show-value></md-meter>
+    <md-divider></md-divider>
+    <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+      <md-segmented-button-set aria-label="Verdict" data-verdict>
+        <md-segmented-button value="approve" label="Approve"></md-segmented-button>
+        <md-segmented-button value="escalate" label="Escalate"></md-segmented-button>
+        <md-segmented-button value="remove" label="Remove"></md-segmented-button>
+      </md-segmented-button-set>
+      <md-button data-submit variant="filled" disabled>Submit verdict</md-button>
+      <md-split-button id="mq-remove-split" data-split variant="filled" label="Remove post"
+        menu-label="More removal options" controls="mq-remove-menu"
+        style="display: none;"></md-split-button>
+      <md-menu id="mq-remove-menu" anchor="mq-remove-split" placement="bottom-end">
+        <md-menu-item headline="Remove and warn author" data-remove-warn></md-menu-item>
+        <md-menu-item headline="Remove and ban author" data-remove-ban></md-menu-item>
+      </md-menu>
+    </div>
+  </md-card>
+  <div data-empty style="display: none; padding: 32px 16px; text-align: center; border: 1px dashed var(--md-sys-color-outline-variant); border-radius: 12px;">
+    <div style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Queue clear</div>
+    <div style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">All pending reports have been reviewed. New reports land here as they arrive.</div>
+  </div>
+  <md-snackbar data-toast></md-snackbar>
+</div>`}
+  htmlForCode={`<div style="display: flex; align-items: center; justify-content: space-between;">
+  <span>Moderation queue</span>
+  <span style="position: relative;">Pending<md-badge value="4"></md-badge></span>
+</div>
+
+<md-card variant="outlined" full-width>
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <md-avatar initials="PD"></md-avatar>
+    <div>
+      <span>Priya Desai</span>
+      <span>Reported @glowdeals · 12 min ago · Report #4821</span>
+    </div>
+  </div>
+  <blockquote>"FINAL HOURS!! Send a $50 gift card code to claim your prize before midnight."</blockquote>
+  <div role="group" aria-label="Report reasons">
+    <md-chip variant="assist" label="Scam or fraud" color="error"></md-chip>
+    <md-chip variant="assist" label="Spam" color="warning"></md-chip>
+  </div>
+  <md-meter label="Model confidence — high" value="94" color="error" show-label show-value></md-meter>
+  <md-divider></md-divider>
+  <md-segmented-button-set aria-label="Verdict">
+    <md-segmented-button value="approve" label="Approve"></md-segmented-button>
+    <md-segmented-button value="escalate" label="Escalate"></md-segmented-button>
+    <md-segmented-button value="remove" label="Remove"></md-segmented-button>
+  </md-segmented-button-set>
+  <md-button variant="filled" disabled>Submit verdict</md-button>
+  <md-split-button id="remove-split" variant="filled" label="Remove post"
+    menu-label="More removal options" controls="remove-menu"></md-split-button>
+  <md-menu id="remove-menu" anchor="remove-split" placement="bottom-end">
+    <md-menu-item headline="Remove and warn author"></md-menu-item>
+    <md-menu-item headline="Remove and ban author"></md-menu-item>
+  </md-menu>
+</md-card>
+
+<md-snackbar></md-snackbar>`}
+  script={`
+    const card = root.querySelector('[data-report-card]');
+    const avatar = root.querySelector('[data-reporter-avatar]');
+    const reporterEl = root.querySelector('[data-reporter]');
+    const metaEl = root.querySelector('[data-meta]');
+    const excerptEl = root.querySelector('[data-excerpt]');
+    const reasonsEl = root.querySelector('[data-reasons]');
+    const meter = root.querySelector('[data-confidence]');
+    const verdictSet = root.querySelector('[data-verdict]');
+    const submitBtn = root.querySelector('[data-submit]');
+    const split = root.querySelector('[data-split]');
+    const menu = root.querySelector('#mq-remove-menu');
+    const toast = root.querySelector('[data-toast]');
+    const badge = root.querySelector('[data-queue-count]');
+    const emptyEl = root.querySelector('[data-empty]');
+
+    const reports = [
+      { reporter: 'Priya Desai', handle: '@glowdeals', age: '12 min', id: 4821,
+        excerpt: 'FINAL HOURS!! Send a $50 gift card code to claim your prize before midnight.',
+        reasons: [['Scam or fraud', 'error'], ['Spam', 'warning']], confidence: 94 },
+      { reporter: 'Marcus Webb', handle: '@kt_owens', age: '28 min', id: 4820,
+        excerpt: 'Everyone from that neighborhood is a criminal, simple as that.',
+        reasons: [['Hate speech', 'error']], confidence: 71 },
+      { reporter: 'Sofia Marek', handle: '@dailyfit_max', age: '1 hr', id: 4817,
+        excerpt: 'This supplement reverses diabetes in two weeks. Doctors will not tell you this.',
+        reasons: [['Medical misinformation', 'warning'], ['Spam', 'warning']], confidence: 88 },
+      { reporter: 'Devon Alvarez', handle: '@ravi.codes', age: '2 hr', id: 4809,
+        excerpt: 'Nice tutorial. I posted the full source code at the link in my bio.',
+        reasons: [['Self-promotion', 'info']], confidence: 23 },
+    ];
+    let index = 0;
+
+    function initialsOf(name) {
+      const parts = name.trim().split(/\\s+/);
+      const first = parts[0].charAt(0);
+      const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
+      return (first + last).toUpperCase();
+    }
+
+    function render() {
+      const r = reports[index];
+      badge.value = String(reports.length - index);
+      avatar.initials = initialsOf(r.reporter);
+      reporterEl.textContent = r.reporter;
+      metaEl.textContent = 'Reported ' + r.handle + ' \\u00b7 ' + r.age + ' ago \\u00b7 Report #' + r.id;
+      excerptEl.textContent = '\\u201c' + r.excerpt + '\\u201d';
+      reasonsEl.textContent = '';
+      r.reasons.forEach((pair) => {
+        const chip = document.createElement('md-chip');
+        chip.variant = 'assist';
+        chip.label = pair[0];
+        chip.color = pair[1];
+        reasonsEl.appendChild(chip);
+      });
+      meter.value = r.confidence;
+      const band = r.confidence >= 85 ? 'error' : r.confidence >= 50 ? 'warning' : 'success';
+      meter.color = band;
+      meter.label = 'Model confidence \\u2014 ' +
+        (band === 'error' ? 'high' : band === 'warning' ? 'medium' : 'low');
+      // Reset the verdict controls for the fresh item.
+      verdictSet.querySelectorAll('md-segmented-button').forEach((seg) => { seg.selected = false; });
+      submitBtn.disabled = true;
+      submitBtn.style.display = '';
+      split.style.display = 'none';
+    }
+
+    function advance(message) {
+      index += 1;
+      toast.message = message;
+      toast.show();
+      if (index >= reports.length) {
+        badge.value = '0';
+        card.style.display = 'none';
+        emptyEl.style.display = '';
+      } else {
+        render();
+      }
+    }
+
+    // The set owns selection; mdChange carries the selected values as an array.
+    verdictSet.addEventListener('mdChange', (e) => {
+      const verdict = e.detail[0] || '';
+      const isRemove = verdict === 'remove';
+      submitBtn.style.display = isRemove ? 'none' : '';
+      split.style.display = isRemove ? '' : 'none';
+      submitBtn.disabled = verdict === '';
+    });
+
+    submitBtn.addEventListener('mdClick', () => {
+      const r = reports[index];
+      const selected = verdictSet.querySelector('md-segmented-button[selected]');
+      if (!selected) return;
+      if (selected.value === 'approve') {
+        advance('Report #' + r.id + ' dismissed \\u2014 post stays up');
+      } else {
+        advance('Report #' + r.id + ' escalated to a senior reviewer');
+      }
+    });
+
+    // Split button: leading segment is the default removal; the menu holds variants.
+    split.addEventListener('mdLeadingClick', () => {
+      const r = reports[index];
+      advance('Post removed \\u2014 report #' + r.id + ' closed');
+    });
+    split.addEventListener('mdTrailingClick', (e) => {
+      if (e.detail.checked) menu.show();
+      else menu.close();
+    });
+    // Keep the chevron truthful when the menu closes by outside click or Escape.
+    menu.addEventListener('mdClose', () => { split.trailingChecked = false; });
+
+    root.querySelector('[data-remove-warn]').addEventListener('mdClick', () => {
+      const r = reports[index];
+      advance('Post removed, warning sent \\u2014 report #' + r.id + ' closed');
+    });
+    root.querySelector('[data-remove-ban]').addEventListener('mdClick', () => {
+      const r = reports[index];
+      advance('Post removed, author banned \\u2014 report #' + r.id + ' closed');
+    });
+
+    render();
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-card`](/components/card/) | The report container — one subject (the flagged post) per card, per M3. It stays a plain, non-`interactive` container because its children are the controls. |
+| [`md-avatar`](/components/avatar/) | Reporter identity. `initials` only, with `label`/`name` left empty — the name is adjacent text, so the avatar stays decorative and isn't announced twice. |
+| [`md-chip`](/components/chip/) | Report reasons as an assist-chip set inside a `role="group"`. `color` takes a theme role name (`error`, `warning`, `info`), so severity comes from the theme, not hard-coded hex. |
+| [`md-meter`](/components/meter/) | The classifier's confidence — a state, not an activity, which is exactly the meter/progress split. The script swaps `color` at the 50/85 thresholds and writes the band into `label` so color is never the only signal. |
+| [`md-segmented-button-set`](/components/segmented-button/) | The verdict: three exclusive options, all visible. The set owns selection and reports it through `mdChange`; the initial state has nothing selected, so the submit button starts disabled. |
+| [`md-split-button`](/components/split-button/) | The removal path: the leading segment is the default ("Remove post"), the trailing chevron opens an [`md-menu`](/components/menu/) of genuine variations (warn, ban). `controls` wires `aria-controls` to the menu's id. |
+| [`md-snackbar`](/components/snackbar/) | Per-verdict confirmation. One element, re-`show()`n with a new `message` — never two at once. |
+| [`md-badge`](/components/badge/) | The pending count, anchored to a `position: relative` wrapper and counting down as verdicts land. |
+
+## The details that make it production-grade
+
+- **The segmented set can't be un-chosen by accident.** Single-select
+  `mdChange` always reports a selection — clicking the active segment
+  re-selects it rather than clearing it — so once a reviewer picks a verdict,
+  the action buttons never flicker back to disabled. Arrow keys move and
+  select through the three verdicts per the radiogroup pattern.
+- **The destructive path costs one more decision.** "Remove" doesn't fire on
+  segment click; it reveals the split button, whose leading action is the
+  mildest removal. The harsher variants (warn, ban) live behind the chevron —
+  the M3 split-button contract of a default plus variations.
+- **The chevron never lies.** `mdTrailingClick.detail.checked` drives
+  `menu.show()`/`menu.close()`, and the menu's `mdClose` (fired on outside
+  click, `Escape`, or item pick) resets `trailingChecked` — the one sync the
+  component can't do itself.
+- **Confidence is never color-alone.** The meter carries `role="meter"` with
+  the full ARIA value contract, and the script writes the severity band into
+  the visible `label` ("Model confidence — high") whenever it swaps the color
+  role, satisfying WCAG 1.4.1.
+- **Snackbar timing respects the reader.** Auto-hide pauses while the surface
+  is hovered or focused (WCAG 2.2.1), and re-showing the single element for
+  each verdict means confirmations serialize instead of stacking.
+
+## Variations
+
+- **Undo the verdict:** set `action="Undo"` on the snackbar, `hide('action')`
+  from the `mdAction` handler, and re-insert the previous report at the front
+  of the queue when `mdClose` reports `reason: 'action'`.
+- **Multi-reason triage:** switch the reason chips to `variant="filter"` and
+  let reviewers toggle which reasons they're confirming; the verdict payload
+  then carries the checked subset.
+- **Keyboard-first review:** the segmented set is already three tab stops with
+  arrow-key selection; add a `keydown` shortcut layer (A/E/R) on the card for
+  high-volume queues.
+- **Circular confidence:** in a denser layout, `md-meter variant="circular"
+  size="56" show-value` turns the reading into a compact ring beside the
+  excerpt instead of a full-width bar.
+
+## Related
+
+- Recipe: [Two-factor verification](/recipes/two-factor-verification/) —
+  another single-decision screen with verification states and snackbar-style
+  feedback patterns.
+- Component manuals: [`md-split-button`](/components/split-button/) for the
+  menu-sync contract, [`md-meter`](/components/meter/) for formatting and
+  threshold-color guidance, and
+  [`md-segmented-button`](/components/segmented-button/) for the selection
+  model.

@@ -1,0 +1,310 @@
+---
+title: CSV import wizard
+description: "A four-step data-import flow: file upload with live progress, per-column mapping over a CSV preview, a validation report, and a self-running import with a snackbar result."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**The classic "bring your data" flow.** A linear
+[`md-stepper`](/components/stepper/) walks the user through Upload, Map
+columns, Validate, and Import. Each step gates the built-in Continue button on
+its own condition — the upload must finish, every CSV column must be mapped —
+and the final step runs the import itself, locking navigation with `loading`
+while rows stream in and confirming the result with a snackbar. Nothing
+advances past an incomplete step, and the whole wizard resets on Finish.
+
+<ComponentDemo
+  label="Live preview — upload, map the third column, then let the import run itself"
+  html={`<div style="max-width: 680px; margin-inline: auto;">
+  <md-stepper next-disabled label="CSV import progress">
+    <md-step label="Upload" description="Choose your file">
+      <div style="display: grid; gap: 14px; padding: 16px 4px 4px;">
+        <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Upload your CSV</span>
+        <span data-upload-status style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">contacts.csv — 214 KB, ready to upload</span>
+        <md-progress-indicator data-upload-progress value="0" max="2148" label="Uploading contacts.csv"></md-progress-indicator>
+        <div><md-button data-upload variant="tonal">Upload contacts.csv</md-button></div>
+      </div>
+    </md-step>
+    <md-step label="Map columns" description="Match CSV to fields">
+      <div style="display: grid; gap: 16px; padding: 16px 4px 4px;">
+        <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Match each CSV column to a contact field</span>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px;">
+          <md-select data-map label="name" value="full_name">
+            <md-select-option value="full_name">Full name</md-select-option>
+            <md-select-option value="email">Email</md-select-option>
+            <md-select-option value="company">Company</md-select-option>
+            <md-select-option value="phone">Phone</md-select-option>
+            <md-select-option value="skip">Do not import</md-select-option>
+          </md-select>
+          <md-select data-map label="email_address" value="email">
+            <md-select-option value="full_name">Full name</md-select-option>
+            <md-select-option value="email">Email</md-select-option>
+            <md-select-option value="company">Company</md-select-option>
+            <md-select-option value="phone">Phone</md-select-option>
+            <md-select-option value="skip">Do not import</md-select-option>
+          </md-select>
+          <md-select data-map label="company" placeholder="Choose a field" supporting-text="Unmapped">
+            <md-select-option value="full_name">Full name</md-select-option>
+            <md-select-option value="email">Email</md-select-option>
+            <md-select-option value="company">Company</md-select-option>
+            <md-select-option value="phone">Phone</md-select-option>
+            <md-select-option value="skip">Do not import</md-select-option>
+          </md-select>
+        </div>
+        <md-table-container>
+          <md-table column-template="1fr 1.4fr 1fr" label="CSV preview" density="compact">
+            <md-table-head>
+              <md-table-row rowgroup="head">
+                <md-table-cell head scope="col">name</md-table-cell>
+                <md-table-cell head scope="col">email_address</md-table-cell>
+                <md-table-cell head scope="col">company</md-table-cell>
+              </md-table-row>
+            </md-table-head>
+            <md-table-body>
+              <md-table-row>
+                <md-table-cell>Priya Raman</md-table-cell>
+                <md-table-cell>priya.raman@northwind.io</md-table-cell>
+                <md-table-cell>Northwind</md-table-cell>
+              </md-table-row>
+              <md-table-row>
+                <md-table-cell>Jonas Weber</md-table-cell>
+                <md-table-cell>j.weber@helios-labs.de</md-table-cell>
+                <md-table-cell>Helios Labs</md-table-cell>
+              </md-table-row>
+              <md-table-row>
+                <md-table-cell>Ana Petrescu</md-table-cell>
+                <md-table-cell>ana.petrescu@cluj.dev</md-table-cell>
+                <md-table-cell>—</md-table-cell>
+              </md-table-row>
+            </md-table-body>
+          </md-table>
+        </md-table-container>
+        <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Showing the first 3 of 2,148 rows.</span>
+      </div>
+    </md-step>
+    <md-step label="Validate" description="Review issues">
+      <div style="display: grid; gap: 14px; padding: 16px 4px 4px;">
+        <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">2 of 2,148 rows need attention</span>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="position: relative; display: inline-flex; width: 12px; height: 12px; flex: none;"><md-status-dot state="online"></md-status-dot></span>
+          <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">2,146 rows passed every check and are ready to import.</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="position: relative; display: inline-flex; width: 12px; height: 12px; flex: none;"><md-status-dot state="busy"></md-status-dot></span>
+          <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Error — row 214: "jmoore@@acmemail" is not a valid email address. The row will be skipped.</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="position: relative; display: inline-flex; width: 12px; height: 12px; flex: none;"><md-status-dot state="away"></md-status-dot></span>
+          <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Warning — row 1,027 duplicates row 312 (same email). The duplicate will be skipped.</span>
+        </div>
+      </div>
+    </md-step>
+    <md-step label="Import" description="Bring the data in">
+      <div style="display: grid; gap: 14px; padding: 16px 4px 4px;">
+        <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Importing into Contacts</span>
+        <md-progress-indicator data-import-progress value="0" max="2146" label="Importing contacts"></md-progress-indicator>
+        <span data-import-status style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">The import starts automatically when you reach this step.</span>
+      </div>
+    </md-step>
+  </md-stepper>
+</div>
+<md-snackbar data-result closeable auto-hide-duration="6000"></md-snackbar>`}
+  htmlForCode={`<md-stepper next-disabled label="CSV import progress">
+  <md-step label="Upload" description="Choose your file">
+    <md-progress-indicator value="0" max="2148" label="Uploading contacts.csv"></md-progress-indicator>
+    <md-button variant="tonal">Upload contacts.csv</md-button>
+  </md-step>
+  <md-step label="Map columns" description="Match CSV to fields">
+    <md-select label="email_address" value="email">
+      <md-select-option value="full_name">Full name</md-select-option>
+      <md-select-option value="email">Email</md-select-option>
+      <md-select-option value="company">Company</md-select-option>
+      <md-select-option value="skip">Do not import</md-select-option>
+    </md-select>
+    <md-table-container>
+      <md-table column-template="1fr 1.4fr 1fr" label="CSV preview" density="compact">
+        <md-table-head>
+          <md-table-row rowgroup="head">
+            <md-table-cell head scope="col">name</md-table-cell>
+            <md-table-cell head scope="col">email_address</md-table-cell>
+            <md-table-cell head scope="col">company</md-table-cell>
+          </md-table-row>
+        </md-table-head>
+        <md-table-body>
+          <md-table-row>
+            <md-table-cell>Priya Raman</md-table-cell>
+            <md-table-cell>priya.raman@northwind.io</md-table-cell>
+            <md-table-cell>Northwind</md-table-cell>
+          </md-table-row>
+        </md-table-body>
+      </md-table>
+    </md-table-container>
+  </md-step>
+  <md-step label="Validate" description="Review issues">
+    <span style="position: relative; display: inline-flex; width: 12px; height: 12px;">
+      <md-status-dot state="busy"></md-status-dot>
+    </span>
+    Error — row 214: invalid email address. The row will be skipped.
+  </md-step>
+  <md-step label="Import" description="Bring the data in">
+    <md-progress-indicator value="0" max="2146" label="Importing contacts"></md-progress-indicator>
+  </md-step>
+</md-stepper>
+<md-snackbar closeable auto-hide-duration="6000"></md-snackbar>`}
+  script={`
+    const stepper = root.querySelector('md-stepper');
+    const uploadBtn = root.querySelector('[data-upload]');
+    const uploadBar = root.querySelector('[data-upload-progress]');
+    const uploadStatus = root.querySelector('[data-upload-status]');
+    const importBar = root.querySelector('[data-import-progress]');
+    const importStatus = root.querySelector('[data-import-status]');
+    const snackbar = root.querySelector('[data-result]');
+    const maps = Array.prototype.slice.call(root.querySelectorAll('[data-map]'));
+
+    const TOTAL = 2148;   // rows in the file
+    const VALID = 2146;   // rows that survive validation
+    let uploaded = false;
+    let importStarted = false;
+    let imported = false;
+    let uploadTimer = null;
+    let importTimer = null;
+
+    const fmt = (n) => n.toLocaleString('en-US');
+
+    // One gate for the built-in Continue button, re-evaluated per step.
+    function syncNext() {
+      const i = stepper.active;
+      if (i === 0) stepper.nextDisabled = !uploaded;
+      else if (i === 1) stepper.nextDisabled = maps.some((s) => !s.value);
+      else if (i === 2) stepper.nextDisabled = false;
+      else stepper.nextDisabled = !imported;
+    }
+
+    // Step 1: simulated upload with a determinate progress bar.
+    uploadBtn.addEventListener('click', () => {
+      if (uploadTimer || uploaded) return;
+      uploadBtn.disabled = true;
+      let sent = 0;
+      uploadTimer = setInterval(() => {
+        sent = Math.min(TOTAL, sent + 179);
+        uploadBar.value = sent;
+        if (sent < TOTAL) {
+          uploadStatus.textContent = 'Uploading contacts.csv — ' + fmt(sent) + ' of ' + fmt(TOTAL) + ' rows';
+        } else {
+          clearInterval(uploadTimer);
+          uploadTimer = null;
+          uploaded = true;
+          uploadStatus.textContent = 'contacts.csv uploaded — ' + fmt(TOTAL) + ' rows, 3 columns detected.';
+          uploadBtn.textContent = 'Uploaded';
+          syncNext();
+        }
+      }, 90);
+    });
+
+    // Step 2: Continue unlocks once every column has a mapping.
+    maps.forEach((sel) => sel.addEventListener('mdChange', syncNext));
+
+    // Step 4: the import runs itself on arrival. The stepper's loading state
+    // locks Back and Continue while rows stream in — no double-submit.
+    function startImport() {
+      importStarted = true;
+      stepper.loading = true;
+      let done = 0;
+      importTimer = setInterval(() => {
+        done = Math.min(VALID, done + 143);
+        importBar.value = done;
+        if (done < VALID) {
+          importStatus.textContent = 'Importing — ' + fmt(done) + ' of ' + fmt(VALID) + ' contacts';
+        } else {
+          clearInterval(importTimer);
+          importTimer = null;
+          imported = true;
+          stepper.loading = false;
+          importStatus.textContent = fmt(VALID) + ' contacts imported. 2 rows were skipped. Press Finish to run the demo again.';
+          snackbar.message = fmt(VALID) + ' contacts imported · 2 rows skipped';
+          snackbar.show();
+          syncNext();
+        }
+      }, 80);
+    }
+
+    stepper.addEventListener('mdStepChange', (e) => {
+      syncNext();
+      if (e.detail.index === 3 && !importStarted) startImport();
+    });
+
+    // Finish resets the whole demo so it can be run again.
+    stepper.addEventListener('mdComplete', () => {
+      if (uploadTimer) { clearInterval(uploadTimer); uploadTimer = null; }
+      if (importTimer) { clearInterval(importTimer); importTimer = null; }
+      uploaded = false;
+      importStarted = false;
+      imported = false;
+      uploadBar.value = 0;
+      importBar.value = 0;
+      uploadBtn.disabled = false;
+      uploadBtn.textContent = 'Upload contacts.csv';
+      uploadStatus.textContent = 'contacts.csv — 214 KB, ready to upload';
+      importStatus.textContent = 'The import starts automatically when you reach this step.';
+      stepper.reset().then(syncNext);
+    });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-stepper`](/components/stepper/) | The spine. `mode="linear"` (the default) keeps future step headers unreachable, `next-disabled` gates the built-in Continue per step, `loading` locks both nav buttons during the import, and `mdComplete` on Finish resets the flow via `reset()`. Content inside each `md-step` gives every step a full-width panel under the header row. |
+| [`md-progress-indicator`](/components/progress-indicator/) | Two determinate bars fed raw counts (`value="1432" max="2148"`) rather than pre-computed percentages — the fraction is clamped internally and published as `aria-valuenow` / `aria-valuemax`. |
+| [`md-select`](/components/select/) | One mapping control per CSV column. `mdChange` re-evaluates the Continue gate, `placeholder` + `supporting-text` flag the still-unmapped column, and options carry stable `value` identifiers separate from their labels. |
+| [`md-table`](/components/table/) | A compact (`density="compact"`) three-column preview of the first rows, with explicit tracks via `column-template` and proper `head scope="col"` header cells. |
+| [`md-status-dot`](/components/status-dot/) | Per-finding severity in the validation report — green for clean rows, red for the hard error, amber for the duplicate warning. Each dot sits in a `position: relative` wrapper span, as the dot positions itself absolutely. |
+| [`md-snackbar`](/components/snackbar/) | The import result: low-priority confirmation that auto-hides after 6 s and carries a close button. |
+
+## The details that make it production-grade
+
+- **Two gates, no gaps.** `next-disabled` only disables the built-in Continue
+  button — step-header clicks are unaffected. That is why the stepper stays in
+  `mode="linear"`: unreachable headers are `aria-disabled` and out of the tab
+  order, so there is no route past an incomplete step.
+- **`loading` prevents a double import.** While rows stream in, the Continue /
+  Finish button shows a spinner and Back is disabled too — the user cannot
+  re-enter the import step or leave mid-write.
+- **The stepper announces itself.** The host is a `navigation` landmark named
+  by `label`, and a polite live region announces every move ("Step 2 of 4: Map
+  columns, current"), with an assertive one reserved for steps entering
+  `error`.
+- **The status dots are decorative on purpose.** With no `label` they render
+  `role="presentation"`, and the row text carries the words ("Error — row
+  214…") — so severity is never conveyed by colour alone (WCAG 1.4.1), which
+  also holds under forced-colors mode where every dot collapses to one colour.
+- **The snackbar respects slow readers.** Its auto-hide timer pauses while the
+  surface is hovered or holds focus (WCAG 2.2.1), and the result also stays
+  visible as text in the import panel, so nothing depends on catching a toast.
+
+## Variations
+
+- **Narrow screens:** `variant="mobile"` swaps the header row for a compact
+  Back · progress · Continue bar; move the panels into the stepper's `content`
+  slot and swap them on `mdStepChange`.
+- **Vertical layout:** `orientation="vertical"` renders each panel inline
+  under its step with per-step Back / Continue — better when panels are short
+  and the flow is embedded in a settings page.
+- **Server-confirmed stages:** set `auto-complete="false"` and mark each
+  `md-step` `completed` yourself only after the backend acknowledges it, so
+  steps never look done before they are.
+- **Revisitable mapping:** add `editable` to the Map columns step — users can
+  step back to adjust a mapping without un-completing the validation step
+  behind them.
+
+## Related
+
+- Recipe: [Two-factor verification](/recipes/two-factor-verification/) —
+  gating a flow on validation, with loading and error states.
+- Component manuals: [`md-stepper`](/components/stepper/) — the step
+  advancement API, `mdBeforeChange` validation hook, and panel placement
+  rules; [`md-select`](/components/select/) — filtering, async loading, and
+  form participation.

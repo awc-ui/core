@@ -1,0 +1,346 @@
+---
+title: Mobile filter bottom sheet
+description: "A product grid filtered from a bottom sheet: brand multi-select, price range slider, size chips, sort segments, a sticky apply button with a live result count, and removable applied-filter chips."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**The canonical mobile filtering pattern.** A grid of
+[`md-card`](/components/card/) products, a Filters button that opens an
+[`md-bottom-sheet`](/components/bottom-sheet/) holding four different filter
+controls — brand multi-select, price range slider, size filter chips, sort
+segments — and an actions-row apply button whose label recounts the matching
+results live as you tweak. Applying closes the sheet, reorders and prunes the
+grid, and renders each active filter as a removable chip above the results, so
+undoing one filter never means reopening the sheet.
+
+<ComponentDemo
+  label="Live preview — open Filters, tweak the controls, and apply"
+  html={`<div style="max-width: 720px; margin-inline: auto; display: grid; gap: 16px;">
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+    <div style="display: grid; gap: 2px;">
+      <span style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);">Running shoes</span>
+      <span data-result-line style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">6 of 6 products</span>
+    </div>
+    <md-button data-open-filters variant="tonal" icon="tune">Filters</md-button>
+  </div>
+  <div data-applied style="display: none; flex-wrap: wrap; gap: 8px;" aria-label="Applied filters"></div>
+  <div data-grid style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px;">
+    <md-card variant="outlined" data-brand="Nike" data-name="Pegasus 41" data-price="130" data-sizes="41 42 43">
+      <div style="height: 72px; margin: 12px 12px 0; border-radius: 8px; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface-variant);">NK</div>
+      <div style="display: grid; gap: 2px; padding: 4px 12px 12px;">
+        <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Nike</span>
+        <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">Pegasus 41</span>
+        <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">$130</span>
+      </div>
+    </md-card>
+    <md-card variant="outlined" data-brand="Adidas" data-name="Ultraboost Light" data-price="180" data-sizes="42 43 44">
+      <div style="height: 72px; margin: 12px 12px 0; border-radius: 8px; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface-variant);">AD</div>
+      <div style="display: grid; gap: 2px; padding: 4px 12px 12px;">
+        <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Adidas</span>
+        <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">Ultraboost Light</span>
+        <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">$180</span>
+      </div>
+    </md-card>
+    <md-card variant="outlined" data-brand="New Balance" data-name="Fresh Foam X 1080" data-price="165" data-sizes="40 42 44">
+      <div style="height: 72px; margin: 12px 12px 0; border-radius: 8px; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface-variant);">NB</div>
+      <div style="display: grid; gap: 2px; padding: 4px 12px 12px;">
+        <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">New Balance</span>
+        <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">Fresh Foam X 1080</span>
+        <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">$165</span>
+      </div>
+    </md-card>
+    <md-card variant="outlined" data-brand="Hoka" data-name="Clifton 9" data-price="145" data-sizes="40 41 44">
+      <div style="height: 72px; margin: 12px 12px 0; border-radius: 8px; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface-variant);">HK</div>
+      <div style="display: grid; gap: 2px; padding: 4px 12px 12px;">
+        <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Hoka</span>
+        <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">Clifton 9</span>
+        <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">$145</span>
+      </div>
+    </md-card>
+    <md-card variant="outlined" data-brand="Asics" data-name="Gel-Nimbus 26" data-price="160" data-sizes="42 43">
+      <div style="height: 72px; margin: 12px 12px 0; border-radius: 8px; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface-variant);">AS</div>
+      <div style="display: grid; gap: 2px; padding: 4px 12px 12px;">
+        <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Asics</span>
+        <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">Gel-Nimbus 26</span>
+        <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">$160</span>
+      </div>
+    </md-card>
+    <md-card variant="outlined" data-brand="Brooks" data-name="Ghost 16" data-price="140" data-sizes="40 41 42 43">
+      <div style="height: 72px; margin: 12px 12px 0; border-radius: 8px; background: var(--md-sys-color-surface-container-high); display: flex; align-items: center; justify-content: center; font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface-variant);">BR</div>
+      <div style="display: grid; gap: 2px; padding: 4px 12px 12px;">
+        <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Brooks</span>
+        <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">Ghost 16</span>
+        <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">$140</span>
+      </div>
+    </md-card>
+  </div>
+</div>
+<md-bottom-sheet data-filter-sheet headline="Filter products" closeable top-divider bottom-divider>
+  <div style="display: grid; gap: 24px; padding-block: 8px 16px;">
+    <md-multi-select label="Brand" placeholder="All brands" clearable>
+      <md-select-option value="Nike">Nike</md-select-option>
+      <md-select-option value="Adidas">Adidas</md-select-option>
+      <md-select-option value="New Balance">New Balance</md-select-option>
+      <md-select-option value="Hoka">Hoka</md-select-option>
+      <md-select-option value="Asics">Asics</md-select-option>
+      <md-select-option value="Brooks">Brooks</md-select-option>
+    </md-multi-select>
+    <div style="display: grid; gap: 4px;">
+      <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">Price</span>
+      <md-slider range min="100" max="200" step="5" value-start="100" value-end="200"
+        label-start="Minimum price" label-end="Maximum price" value-indicator></md-slider>
+      <span data-price-readout style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">$100 – $200</span>
+    </div>
+    <div style="display: grid; gap: 8px;">
+      <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">Size (EU)</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <md-chip variant="filter" label="EU 40" data-size-chip data-size="40"></md-chip>
+        <md-chip variant="filter" label="EU 41" data-size-chip data-size="41"></md-chip>
+        <md-chip variant="filter" label="EU 42" data-size-chip data-size="42"></md-chip>
+        <md-chip variant="filter" label="EU 43" data-size-chip data-size="43"></md-chip>
+        <md-chip variant="filter" label="EU 44" data-size-chip data-size="44"></md-chip>
+      </div>
+    </div>
+    <div style="display: grid; gap: 8px;">
+      <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">Sort by</span>
+      <md-segmented-button-set aria-label="Sort by">
+        <md-segmented-button value="featured" label="Featured" selected></md-segmented-button>
+        <md-segmented-button value="price" label="Price"></md-segmented-button>
+        <md-segmented-button value="name" label="Name"></md-segmented-button>
+      </md-segmented-button-set>
+    </div>
+  </div>
+  <md-button slot="actions" variant="text" data-reset>Reset</md-button>
+  <md-button slot="actions" variant="filled" data-apply>Show 6 results</md-button>
+</md-bottom-sheet>`}
+  htmlForCode={`<div style="display: flex; justify-content: space-between;">
+  <h2>Running shoes</h2>
+  <md-button variant="tonal" icon="tune">Filters</md-button>
+</div>
+<div class="applied-filters"><!-- removable md-chip per active filter --></div>
+<div class="product-grid">
+  <md-card variant="outlined">
+    <span>Nike</span>
+    <span>Pegasus 41</span>
+    <span>$130</span>
+  </md-card>
+  <!-- more cards … -->
+</div>
+
+<md-bottom-sheet headline="Filter products" closeable top-divider bottom-divider>
+  <md-multi-select label="Brand" placeholder="All brands" clearable>
+    <md-select-option value="Nike">Nike</md-select-option>
+    <md-select-option value="Adidas">Adidas</md-select-option>
+  </md-multi-select>
+  <md-slider range min="100" max="200" step="5" value-start="100" value-end="200"
+    label-start="Minimum price" label-end="Maximum price" value-indicator></md-slider>
+  <md-chip variant="filter" label="EU 40"></md-chip>
+  <md-chip variant="filter" label="EU 41"></md-chip>
+  <md-segmented-button-set aria-label="Sort by">
+    <md-segmented-button value="featured" label="Featured" selected></md-segmented-button>
+    <md-segmented-button value="price" label="Price"></md-segmented-button>
+    <md-segmented-button value="name" label="Name"></md-segmented-button>
+  </md-segmented-button-set>
+  <md-button slot="actions" variant="text">Reset</md-button>
+  <md-button slot="actions" variant="filled">Show 6 results</md-button>
+</md-bottom-sheet>`}
+  script={`
+    const grid = root.querySelector('[data-grid]');
+    const cards = Array.prototype.slice.call(grid.querySelectorAll('md-card'));
+    const sheet = root.querySelector('[data-filter-sheet]');
+    const openBtn = root.querySelector('[data-open-filters]');
+    const multi = root.querySelector('md-multi-select');
+    const slider = root.querySelector('md-slider');
+    const sizeChips = Array.prototype.slice.call(root.querySelectorAll('[data-size-chip]'));
+    const sortSet = root.querySelector('md-segmented-button-set');
+    const applyBtn = root.querySelector('[data-apply]');
+    const resetBtn = root.querySelector('[data-reset]');
+    const readout = root.querySelector('[data-price-readout]');
+    const appliedWrap = root.querySelector('[data-applied]');
+    const resultLine = root.querySelector('[data-result-line]');
+
+    const PRICE_MIN = 100;
+    const PRICE_MAX = 200;
+    const DEFAULTS = { brands: [], min: PRICE_MIN, max: PRICE_MAX, sizes: [], sort: 'featured' };
+    let applied = { brands: [], min: PRICE_MIN, max: PRICE_MAX, sizes: [], sort: 'featured' };
+
+    // The sheet's controls hold the *pending* state; read it straight off them.
+    function readPending() {
+      const sizes = [];
+      sizeChips.forEach((c) => { if (c.selected) sizes.push(c.getAttribute('data-size')); });
+      let sort = 'featured';
+      sortSet.querySelectorAll('md-segmented-button').forEach((s) => {
+        if (s.selected) sort = s.getAttribute('value');
+      });
+      return {
+        brands: (multi.value || []).slice(),
+        min: Number(slider.valueStart),
+        max: Number(slider.valueEnd),
+        sizes: sizes,
+        sort: sort,
+      };
+    }
+
+    function matches(card, f) {
+      const price = Number(card.getAttribute('data-price'));
+      const sizes = card.getAttribute('data-sizes').split(' ');
+      if (f.brands.length && f.brands.indexOf(card.getAttribute('data-brand')) === -1) return false;
+      if (price < f.min || price > f.max) return false;
+      if (f.sizes.length && !f.sizes.some((s) => sizes.indexOf(s) !== -1)) return false;
+      return true;
+    }
+
+    // Live result count on the sticky apply button, on every tweak.
+    function updateSheet() {
+      const f = readPending();
+      readout.textContent = '$' + f.min + ' – $' + f.max;
+      let n = 0;
+      cards.forEach((c) => { if (matches(c, f)) n += 1; });
+      applyBtn.textContent = 'Show ' + n + (n === 1 ? ' result' : ' results');
+    }
+
+    function addChip(label, kind, value) {
+      const chip = document.createElement('md-chip');
+      chip.setAttribute('variant', 'input');
+      chip.setAttribute('selectable', 'false');
+      chip.setAttribute('removable', '');
+      chip.setAttribute('label', label);
+      chip.setAttribute('data-kind', kind);
+      chip.setAttribute('data-value', value);
+      appliedWrap.appendChild(chip);
+    }
+
+    function applyFilters() {
+      const f = applied;
+      const ordered = cards.slice();
+      if (f.sort === 'price') {
+        ordered.sort((a, b) => Number(a.getAttribute('data-price')) - Number(b.getAttribute('data-price')));
+      } else if (f.sort === 'name') {
+        ordered.sort((a, b) => a.getAttribute('data-name').localeCompare(b.getAttribute('data-name')));
+      }
+      let shown = 0;
+      ordered.forEach((c) => {
+        grid.appendChild(c);
+        const ok = matches(c, f);
+        c.style.display = ok ? '' : 'none';
+        if (ok) shown += 1;
+      });
+      resultLine.textContent = shown + ' of ' + cards.length + ' products';
+
+      const priceNarrowed = f.min > PRICE_MIN || f.max < PRICE_MAX;
+      appliedWrap.textContent = '';
+      f.brands.forEach((b) => addChip(b, 'brand', b));
+      if (priceNarrowed) addChip('$' + f.min + ' – $' + f.max, 'price', '');
+      f.sizes.forEach((s) => addChip('EU ' + s, 'size', s));
+      const nFilters = f.brands.length + f.sizes.length + (priceNarrowed ? 1 : 0);
+      appliedWrap.style.display = nFilters ? 'flex' : 'none';
+      openBtn.textContent = nFilters ? 'Filters (' + nFilters + ')' : 'Filters';
+    }
+
+    function syncControls(f) {
+      multi.value = f.brands.slice();
+      slider.valueStart = f.min;
+      slider.valueEnd = f.max;
+      sizeChips.forEach((c) => { c.selected = f.sizes.indexOf(c.getAttribute('data-size')) !== -1; });
+      sortSet.querySelectorAll('md-segmented-button').forEach((s) => {
+        s.selected = s.getAttribute('value') === f.sort;
+      });
+    }
+
+    // Open with the sheet mirroring what is actually applied.
+    openBtn.addEventListener('mdClick', () => {
+      syncControls(applied);
+      updateSheet();
+      sheet.show();
+    });
+
+    multi.addEventListener('mdChange', updateSheet);
+    slider.addEventListener('mdInput', updateSheet);
+    slider.addEventListener('mdChange', updateSheet);
+    sizeChips.forEach((c) => c.addEventListener('mdSelect', updateSheet));
+    sortSet.addEventListener('mdChange', updateSheet);
+
+    resetBtn.addEventListener('mdClick', () => {
+      syncControls(DEFAULTS);
+      updateSheet();
+    });
+
+    // Slotted action buttons never close the sheet on their own — call close().
+    applyBtn.addEventListener('mdClick', () => {
+      applied = readPending();
+      applyFilters();
+      sheet.close();
+    });
+
+    // Removing an applied chip re-filters without reopening the sheet.
+    // mdRemove's default action already removes the chip from the DOM;
+    // we just update state and rebuild the row.
+    appliedWrap.addEventListener('mdRemove', (e) => {
+      const kind = e.target.getAttribute('data-kind');
+      const value = e.target.getAttribute('data-value');
+      if (kind === 'brand') applied.brands = applied.brands.filter((b) => b !== value);
+      if (kind === 'size') applied.sizes = applied.sizes.filter((s) => s !== value);
+      if (kind === 'price') { applied.min = PRICE_MIN; applied.max = PRICE_MAX; }
+      applyFilters();
+    });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-bottom-sheet`](/components/bottom-sheet/) | The filter surface. `closeable` gives keyboard users an exit (the drag handle is pointer-only), `top-divider`/`bottom-divider` frame the scrollable body, and the `actions` slot is the sticky footer holding Reset and the live-count Apply button. |
+| [`md-multi-select`](/components/multi-select/) | Brand picker. Selected brands stay visible as removable chips below the field, and `clearable` wipes them in one tap. `mdChange` delivers the full `string[]` for the live count. |
+| [`md-slider`](/components/slider/) | Price range: `range` + `value-start`/`value-end`, `step="5"`, per-thumb names via `label-start`/`label-end`, and `value-indicator` bubbles over each thumb. `mdInput` recounts continuously during the drag. |
+| [`md-chip`](/components/chip/) | Two jobs: `variant="filter"` size toggles inside the sheet, and `variant="input" selectable="false" removable` display tokens above the grid whose only action is the remove ✕. |
+| [`md-segmented-button-set`](/components/segmented-button/) | Sort order — three exclusive options, all visible, `mdChange` reports the selection as `string[]`. |
+| [`md-card`](/components/card/) | One product per card, `variant="outlined"` for a defined edge in a dense grid. The demo filters by toggling display and reorders by re-appending. |
+| [`md-button`](/components/button/) | The `tonal` Filters trigger (its label grows a live count, "Filters (3)"), plus the sheet's Reset and Apply actions. |
+
+## The details that make it production-grade
+
+- **The sheet is a real modal dialog.** `role="dialog"` with
+  `aria-modal="true"`, focus trapped inside while open, body scroll locked,
+  Escape handled on a capture-phase document listener — and on close, focus
+  returns to the Filters button that opened it.
+- **A slotted action button does not close the sheet by itself** — Apply calls
+  `close()` explicitly. That is deliberate: it lets Reset live in the same
+  actions row without dismissing anything.
+- **Each slider thumb is a native `<input type="range">`**, so arrow keys step
+  by `step`, Home/End jump to the bounds, and the two thumbs push each other
+  rather than crossing — the range can never invert.
+- **Filter chips do not rely on color alone**: the selected state renders a
+  leading checkmark. And every applied chip's ✕ gets a generated accessible
+  name — "Remove Nike" — with no extra markup.
+- **Removing an applied chip is the chip's own default action.** `mdRemove`
+  removes the element from the DOM unless you `preventDefault()`; the handler
+  here only updates state and re-renders, never calls `remove()` twice.
+
+## Variations
+
+- **Instant filtering, no Apply:** commit on every `mdChange`/`mdInput` and
+  drop the actions row. Keep the live count somewhere visible — the result
+  line above the grid already does that job.
+- **Desktop:** bottom sheets are a mobile pattern; at larger breakpoints swap
+  in `md-side-sheet` with `variant="standard"` so users filter alongside the
+  visible grid instead of over it.
+- **Many brands:** past ~15 options add `filterable` to the multi-select for
+  in-menu search, and switch to `display-mode="count"` so 20 selections read
+  as "20 selected" instead of a wall of chips.
+- **Guarded dismissal:** with expensive un-applied changes, set
+  `scrim-dismissible="false"` and listen for `mdCancel` (fired on Escape, drag,
+  or the close button) to confirm before discarding.
+
+## Related
+
+- Recipe: [Moderation queue](/recipes/moderation-queue/) — filtering and
+  triaging a work list with the same commit-on-apply pattern.
+- Recipe: [Role & permission assignment](/recipes/role-permission-assignment/)
+  — `md-multi-select` doing heavier lifting with caps and select-all.
+- Component manuals: [`md-bottom-sheet`](/components/bottom-sheet/) and
+  [`md-multi-select`](/components/multi-select/) — full API, behavioral
+  contracts, and anti-patterns.

@@ -1,0 +1,249 @@
+---
+title: Notification preferences
+description: "A settings screen for notification channels: per-category switch matrices in an accordion, digest topics, quiet hours, a mute-all override, and a save confirmation snackbar."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**The settings page every product ends up needing.** Three notification
+categories ([`md-accordion`](/components/accordion/)) each hold an
+email/push/SMS matrix of [`md-switch`](/components/switch/) controls with
+fieldset-style labeling, a [`md-multi-select`](/components/multi-select/)
+picks the weekly digest topics, two [`md-time-picker`](/components/time-picker/)s
+bound a quiet-hours window (overnight ranges supported), and a mute-all switch
+pauses everything at once — flagged by a warning
+[`md-chip`](/components/chip/) and confirmed on save by a
+[`md-snackbar`](/components/snackbar/).
+
+<ComponentDemo
+  label="Live preview — toggle channels, try Mute all, then Save preferences"
+  html={`<div style="display: grid; gap: 20px; max-width: 640px; margin-inline: auto;">
+  <div style="display: grid; gap: 4px;">
+    <span style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);">Notification preferences</span>
+    <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">Choose how Meridian reaches you, per category and per channel.</span>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--md-sys-color-surface-container); border-radius: 12px; padding: 12px 16px;">
+    <div style="display: grid; gap: 2px; flex: 1; min-width: 200px;">
+      <span id="np-mute-label" style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Mute all notifications</span>
+      <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Pauses email, push and SMS until you turn it back on</span>
+    </div>
+    <md-chip data-mute-chip color="warning" appearance="filled" label="Notifications paused" style="display: none;"></md-chip>
+    <md-switch data-mute aria-labelledby="np-mute-label" icons></md-switch>
+  </div>
+
+  <md-accordion heading-level="3" default-expanded="0">
+    <md-accordion-item headline="Product" supporting-text="3 of 6 channels on" icon="rocket_launch">
+      <div role="group" aria-label="Product notification channels" style="display: grid; grid-template-columns: 1fr 64px 64px 64px; align-items: center;">
+        <span></span>
+        <span id="np-p-em" style="justify-self: center; font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Email</span>
+        <span id="np-p-pu" style="justify-self: center; font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Push</span>
+        <span id="np-p-sm" style="justify-self: center; font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">SMS</span>
+        <span id="np-p-feat" style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Feature announcements</span>
+        <md-switch data-channel selected aria-labelledby="np-p-feat np-p-em" style="justify-self: center;"></md-switch>
+        <md-switch data-channel selected aria-labelledby="np-p-feat np-p-pu" style="justify-self: center;"></md-switch>
+        <md-switch data-channel aria-labelledby="np-p-feat np-p-sm" style="justify-self: center;"></md-switch>
+        <span id="np-p-tips" style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Tips and tutorials</span>
+        <md-switch data-channel selected aria-labelledby="np-p-tips np-p-em" style="justify-self: center;"></md-switch>
+        <md-switch data-channel aria-labelledby="np-p-tips np-p-pu" style="justify-self: center;"></md-switch>
+        <md-switch data-channel aria-labelledby="np-p-tips np-p-sm" style="justify-self: center;"></md-switch>
+      </div>
+    </md-accordion-item>
+    <md-accordion-item headline="Billing" supporting-text="4 of 6 channels on" icon="receipt_long">
+      <div role="group" aria-label="Billing notification channels" style="display: grid; grid-template-columns: 1fr 64px 64px 64px; align-items: center;">
+        <span></span>
+        <span id="np-b-em" style="justify-self: center; font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Email</span>
+        <span id="np-b-pu" style="justify-self: center; font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Push</span>
+        <span id="np-b-sm" style="justify-self: center; font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">SMS</span>
+        <span id="np-b-inv" style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Invoices and receipts</span>
+        <md-switch data-channel selected aria-labelledby="np-b-inv np-b-em" style="justify-self: center;"></md-switch>
+        <md-switch data-channel aria-labelledby="np-b-inv np-b-pu" style="justify-self: center;"></md-switch>
+        <md-switch data-channel aria-labelledby="np-b-inv np-b-sm" style="justify-self: center;"></md-switch>
+        <span id="np-b-fail" style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Payment failures</span>
+        <md-switch data-channel selected aria-labelledby="np-b-fail np-b-em" style="justify-self: center;"></md-switch>
+        <md-switch data-channel selected aria-labelledby="np-b-fail np-b-pu" style="justify-self: center;"></md-switch>
+        <md-switch data-channel selected aria-labelledby="np-b-fail np-b-sm" style="justify-self: center;"></md-switch>
+      </div>
+    </md-accordion-item>
+    <md-accordion-item headline="Security" supporting-text="4 of 6 channels on" icon="security">
+      <div role="group" aria-label="Security notification channels" style="display: grid; grid-template-columns: 1fr 64px 64px 64px; align-items: center;">
+        <span></span>
+        <span id="np-s-em" style="justify-self: center; font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Email</span>
+        <span id="np-s-pu" style="justify-self: center; font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Push</span>
+        <span id="np-s-sm" style="justify-self: center; font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">SMS</span>
+        <span id="np-s-sign" style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">New sign-ins</span>
+        <md-switch data-channel selected aria-labelledby="np-s-sign np-s-em" style="justify-self: center;"></md-switch>
+        <md-switch data-channel selected aria-labelledby="np-s-sign np-s-pu" style="justify-self: center;"></md-switch>
+        <md-switch data-channel aria-labelledby="np-s-sign np-s-sm" style="justify-self: center;"></md-switch>
+        <span id="np-s-pass" style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Password changes <span style="font: var(--md-sys-typescale-label-small); color: var(--md-sys-color-on-surface-variant);">(email always on)</span></span>
+        <md-switch data-channel data-locked selected disabled aria-labelledby="np-s-pass np-s-em" style="justify-self: center;"></md-switch>
+        <md-switch data-channel selected aria-labelledby="np-s-pass np-s-pu" style="justify-self: center;"></md-switch>
+        <md-switch data-channel aria-labelledby="np-s-pass np-s-sm" style="justify-self: center;"></md-switch>
+      </div>
+    </md-accordion-item>
+  </md-accordion>
+
+  <md-multi-select
+    data-topics
+    label="Weekly digest topics"
+    supporting-text="Bundled into one summary email every Monday at 09:00"
+    clearable
+  >
+    <md-select-option value="releases" selected>Release notes</md-select-option>
+    <md-select-option value="roadmap">Roadmap updates</md-select-option>
+    <md-select-option value="community">Community highlights</md-select-option>
+    <md-select-option value="advisories" selected>Security advisories</md-select-option>
+    <md-select-option value="pricing">Pricing changes</md-select-option>
+  </md-multi-select>
+
+  <div style="display: grid; gap: 8px;">
+    <span style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Quiet hours</span>
+    <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Push and SMS are held overnight and delivered after the window ends.</span>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <md-time-picker data-quiet-start label="Start" name="quiet_start" format="24h" value="22:00" minute-step="15" style="--md-time-picker-trigger-min-width: 200px;"></md-time-picker>
+      <md-time-picker data-quiet-end label="End" name="quiet_end" format="24h" value="07:00" minute-step="15" style="--md-time-picker-trigger-min-width: 200px;"></md-time-picker>
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: flex-end;">
+    <md-button data-save variant="filled">Save preferences</md-button>
+  </div>
+</div>
+<md-snackbar data-saved-bar closeable></md-snackbar>`}
+  htmlForCode={`<div style="display: flex; align-items: center; gap: 12px;">
+  <span id="mute-label">Mute all notifications</span>
+  <md-chip color="warning" appearance="filled" label="Notifications paused" hidden></md-chip>
+  <md-switch aria-labelledby="mute-label" icons></md-switch>
+</div>
+
+<md-accordion heading-level="3" default-expanded="0">
+  <md-accordion-item headline="Product" supporting-text="3 of 6 channels on" icon="rocket_launch">
+    <div role="group" aria-label="Product notification channels">
+      <!-- one grid row per notification type; every switch is named by
+           its row label AND its column header -->
+      <span id="p-em">Email</span> <span id="p-pu">Push</span> <span id="p-sm">SMS</span>
+      <span id="p-feat">Feature announcements</span>
+      <md-switch selected aria-labelledby="p-feat p-em"></md-switch>
+      <md-switch selected aria-labelledby="p-feat p-pu"></md-switch>
+      <md-switch aria-labelledby="p-feat p-sm"></md-switch>
+    </div>
+  </md-accordion-item>
+  <!-- Billing and Security items follow the same shape -->
+</md-accordion>
+
+<md-multi-select label="Weekly digest topics" clearable
+  supporting-text="Bundled into one summary email every Monday at 09:00">
+  <md-select-option value="releases" selected>Release notes</md-select-option>
+  <md-select-option value="advisories" selected>Security advisories</md-select-option>
+  <md-select-option value="roadmap">Roadmap updates</md-select-option>
+</md-multi-select>
+
+<md-time-picker label="Start" name="quiet_start" format="24h" value="22:00" minute-step="15"></md-time-picker>
+<md-time-picker label="End" name="quiet_end" format="24h" value="07:00" minute-step="15"></md-time-picker>
+
+<md-button variant="filled">Save preferences</md-button>
+<md-snackbar closeable></md-snackbar>`}
+  script={`
+    const mute = root.querySelector('[data-mute]');
+    const muteChip = root.querySelector('[data-mute-chip]');
+    const accordion = root.querySelector('md-accordion');
+    const items = Array.from(root.querySelectorAll('md-accordion-item'));
+    const channels = Array.from(root.querySelectorAll('md-switch[data-channel]'));
+    const saveBtn = root.querySelector('[data-save]');
+    const bar = root.querySelector('[data-saved-bar]');
+
+    // Keep each category's supporting text in sync with its matrix.
+    // md-switch's mdChange bubbles and is composed, so one listener on the
+    // accordion hears every switch inside it.
+    function refreshCounts() {
+      items.forEach((item) => {
+        const sws = Array.from(item.querySelectorAll('md-switch[data-channel]'));
+        const on = sws.filter((s) => s.selected).length;
+        item.supportingText = on + ' of ' + sws.length + ' channels on';
+      });
+    }
+    accordion.addEventListener('mdChange', refreshCounts);
+    refreshCounts();
+
+    // Mute all: show the warning chip and disable every channel switch.
+    // The always-on security email switch stays disabled either way.
+    mute.addEventListener('mdChange', (e) => {
+      const paused = e.detail.selected;
+      muteChip.style.display = paused ? '' : 'none';
+      channels.forEach((s) => {
+        if (!s.hasAttribute('data-locked')) s.disabled = paused;
+      });
+    });
+
+    // Save: confirm through the snackbar with a real summary.
+    saveBtn.addEventListener('mdClick', () => {
+      const active = channels.filter((s) => s.selected).length;
+      bar.message = mute.selected
+        ? 'Preferences saved — all notifications paused'
+        : 'Preferences saved — ' + active + ' channels active';
+      bar.show();
+    });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-accordion`](/components/accordion/) + `md-accordion-item` | One section per category. `heading-level="3"` slots real `<h3>` headings into the page outline; `default-expanded="0"` opens Product on load; each item's `supporting-text` is a live "n of 6 channels on" summary, visible even while collapsed. |
+| [`md-switch`](/components/switch/) | The channel matrix. Each switch is named via `aria-labelledby` pointing at *both* its row label and its column header — the fieldset/legend pattern for a grid of toggles. The mute-all switch uses `icons` so its state reads by shape, not just color. |
+| [`md-multi-select`](/components/multi-select/) | Digest topics as removable chips. Options carrying `selected` are adopted at load, so the initial selection lives in markup, not script. |
+| [`md-time-picker`](/components/time-picker/) | The quiet-hours window. `format="24h"` with `minute-step="15"` matches how delivery windows are actually scheduled; 22:00 → 07:00 is a legal overnight range. |
+| [`md-chip`](/components/chip/) | The `color="warning"` chip flags the muted state at the top of the screen — a theme role name that resolves to `--md-sys-color-warning-*` tokens. |
+| [`md-snackbar`](/components/snackbar/) | Save confirmation with a channel count. Low-priority by design: it auto-hides after 4 s and never blocks the screen. |
+| [`md-button`](/components/button/) | The save action, listening on `mdClick`. |
+
+## The details that make it production-grade
+
+- **Switch groups need fieldset-style labeling.** `md-switch` has no default
+  slot, so a bare switch has no accessible name. Here each matrix lives in a
+  `role="group"` with an `aria-label`, and every switch's `aria-labelledby`
+  chains its row label and column header — a screen reader announces
+  "Feature announcements Email, switch, on" instead of eighteen anonymous
+  toggles.
+- **Muting stays silent in the right way.** Assigning `selected` or `disabled`
+  from script never fires `mdInput`/`mdChange` on a switch — so bulk-disabling
+  the matrix doesn't trigger a cascade of phantom change handlers or corrupt
+  the per-category counts.
+- **"Always on" is `disabled`, not a lie.** The password-changes email switch
+  ships `selected disabled`: it renders as on, announces `aria-disabled`, and
+  leaves the tab order, while the mute-all sweep explicitly skips it so
+  unmuting never re-enables a channel the policy locked.
+- **The quiet-hours window can cross midnight.** `md-time-picker` treats a
+  reversed `min`/`max` as an overnight range (like native
+  `<input type="time">`), and `value` is always a canonical 24-hour `HH:MM` —
+  what you submit is what you stored, regardless of display format.
+- **The snackbar respects reading time.** Its auto-hide timer pauses while the
+  surface is hovered or focused (WCAG 2.2.1) and it announces through a polite
+  live region, so the save confirmation is perceivable without stealing focus.
+
+## Variations
+
+- **Settings-shell navigation:** add `exclusive keep-one-expanded` to the
+  accordion so exactly one category is open at a time — the locked-open panel
+  advertises `aria-disabled="true"` on its header.
+- **Server-confirmed SMS:** make the SMS switches controlled — call
+  `preventDefault()` on `mdInput`, verify the phone number server-side, then
+  assign `selected` yourself once the carrier accepts.
+- **Undo on save:** give the snackbar `action="Undo"`, call `hide('action')`
+  from your `mdAction` handler, and branch on `mdClose`'s
+  `detail.reason` to roll the preferences back.
+- **Many digest topics:** switch the multi-select to `display-mode="count"`
+  with a `countFormatter`, or add `filterable` once the topic list passes ~15
+  entries.
+
+## Related
+
+- Recipe: [Two-factor verification](/recipes/two-factor-verification/) — the
+  security settings these notifications guard.
+- Component manuals: [`md-switch`](/components/switch/) — the controlled-mode
+  event split; [`md-accordion`](/components/accordion/) — heading levels,
+  region roles and the full keyboard map.
+

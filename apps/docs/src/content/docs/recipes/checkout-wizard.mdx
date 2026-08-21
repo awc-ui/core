@@ -1,0 +1,289 @@
+---
+title: Checkout wizard
+description: "A three-step commerce flow on md-stepper: shipping address, payment method with a live order summary, and a review step — with async validation gating every forward move."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**A checkout that cannot be skipped ahead of.** Three steps on a linear
+[`md-stepper`](/components/stepper/) — Shipping, Payment, Review. Every
+forward move is vetoed in `mdBeforeChange`, the current step's fields are
+checked through the constraint-validation API (`required` on each field does
+the real work), and the transition is committed by assigning `active` only
+when everything passes. Failures land on the step header (`error` +
+`error-text`) *and* inline on the offending field. The order summary recomputes
+as quantities change, the Review step is rendered from the entered values, and
+placing the order puts the stepper's Finish button into a `loading` state
+before an `md-snackbar` confirms.
+
+<ComponentDemo
+  label="Live preview — leave a field empty and press Continue to see the gate"
+  html={`<div style="max-width: 680px; margin-inline: auto;">
+  <md-stepper label="Checkout progress" finish-label="Place order">
+    <md-step label="Shipping" description="Address and destination" editable
+             error-text="Complete the highlighted fields">
+      <div style="display: grid; gap: 16px; padding-block: 12px 4px;">
+        <md-text-field data-ship data-ship-name label="Full name" name="name" required
+          variant="outlined" autocomplete="name"
+          error-text="Enter the recipient's name" reserve-supporting-space></md-text-field>
+        <md-text-field data-ship data-ship-street label="Street address" name="street" required
+          variant="outlined" autocomplete="street-address"
+          error-text="Enter a street and house number" reserve-supporting-space></md-text-field>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px;">
+          <md-text-field data-ship data-ship-city label="City" name="city" required
+            variant="outlined" autocomplete="address-level2"
+            error-text="Enter a city" reserve-supporting-space></md-text-field>
+          <md-text-field data-ship data-ship-zip label="Postal code" name="postal" required
+            variant="outlined" autocomplete="postal-code"
+            error-text="Enter a postal code" reserve-supporting-space></md-text-field>
+        </div>
+        <md-select data-ship data-ship-country label="Country" name="country" required
+          variant="outlined" supporting-text="We currently ship within the EU"
+          error-text="Select a destination country" reserve-supporting-space
+          value-missing-label="Select a destination country.">
+          <md-select-option value="ro">Romania</md-select-option>
+          <md-select-option value="de">Germany</md-select-option>
+          <md-select-option value="fr">France</md-select-option>
+          <md-select-option value="nl">Netherlands</md-select-option>
+          <md-select-option value="es">Spain</md-select-option>
+        </md-select>
+      </div>
+    </md-step>
+    <md-step label="Payment" description="Method and order" editable
+             error-text="Accept the terms of sale to continue">
+      <div style="display: grid; gap: 20px; padding-block: 12px 4px;">
+        <div role="radiogroup" aria-labelledby="co-pay-label" style="display: grid; gap: 4px;">
+          <span id="co-pay-label" style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Payment method</span>
+          <label style="display: flex; align-items: center; gap: 10px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface); cursor: pointer;">
+            <md-radio name="pay-method" value="card" checked></md-radio> Credit or debit card
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface); cursor: pointer;">
+            <md-radio name="pay-method" value="bank"></md-radio> Bank transfer
+          </label>
+          <label style="display: flex; align-items: center; gap: 10px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface); cursor: pointer;">
+            <md-radio name="pay-method" value="cod"></md-radio> Cash on delivery
+          </label>
+        </div>
+        <md-card variant="outlined" style="padding: 16px; gap: 12px;">
+          <span style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Order summary</span>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="flex: 1; display: grid; gap: 2px;">
+              <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Aria desk lamp</span>
+              <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">€49.00 each</span>
+            </div>
+            <md-number-field data-qty data-price="49" data-item="Aria desk lamp"
+              label="Qty" value="1" min="1" max="10" step="1"
+              variant="outlined" density="-2" style="width: 140px;"></md-number-field>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="flex: 1; display: grid; gap: 2px;">
+              <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Oak monitor stand</span>
+              <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">€89.00 each</span>
+            </div>
+            <md-number-field data-qty data-price="89" data-item="Oak monitor stand"
+              label="Qty" value="1" min="1" max="10" step="1"
+              variant="outlined" density="-2" style="width: 140px;"></md-number-field>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 12px;">
+            <span style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Total</span>
+            <span data-total style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">€138.00</span>
+          </div>
+        </md-card>
+        <label style="display: flex; align-items: center; gap: 10px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface); cursor: pointer;">
+          <md-checkbox data-terms name="terms" required
+            value-missing-label="Please accept the terms of sale."
+            error-text="You must accept the terms to place an order"></md-checkbox>
+          I agree to the terms of sale and the 30-day return policy
+        </label>
+      </div>
+    </md-step>
+    <md-step label="Review">
+      <div style="display: grid; gap: 16px; padding-block: 12px 4px;">
+        <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Review your order</span>
+        <div style="display: grid; grid-template-columns: max-content 1fr; gap: 8px 24px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">
+          <span style="color: var(--md-sys-color-on-surface-variant);">Deliver to</span>
+          <span data-review-address></span>
+          <span style="color: var(--md-sys-color-on-surface-variant);">Payment</span>
+          <span data-review-payment></span>
+          <span style="color: var(--md-sys-color-on-surface-variant);">Items</span>
+          <span data-review-items></span>
+          <span style="color: var(--md-sys-color-on-surface-variant);">Total</span>
+          <span data-review-total style="font: var(--md-sys-typescale-title-small);"></span>
+        </div>
+        <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Press Place order to confirm. You can still go back and edit any step.</span>
+      </div>
+    </md-step>
+  </md-stepper>
+  <md-snackbar message="Order OD-58412 placed — a confirmation email is on its way"></md-snackbar>
+</div>`}
+  htmlForCode={`<md-stepper label="Checkout progress" finish-label="Place order">
+  <md-step label="Shipping" description="Address and destination" editable
+           error-text="Complete the highlighted fields">
+    <md-text-field label="Full name" name="name" required variant="outlined"
+      error-text="Enter the recipient's name" reserve-supporting-space></md-text-field>
+    <md-select label="Country" name="country" required variant="outlined"
+      value-missing-label="Select a destination country.">
+      <md-select-option value="ro">Romania</md-select-option>
+      <md-select-option value="de">Germany</md-select-option>
+    </md-select>
+  </md-step>
+  <md-step label="Payment" description="Method and order" editable
+           error-text="Accept the terms of sale to continue">
+    <label><md-radio name="pay-method" value="card" checked></md-radio> Credit or debit card</label>
+    <label><md-radio name="pay-method" value="bank"></md-radio> Bank transfer</label>
+    <md-card variant="outlined">
+      <md-number-field label="Qty" value="1" min="1" max="10" step="1"
+        variant="outlined" density="-2"></md-number-field>
+    </md-card>
+    <label>
+      <md-checkbox name="terms" required
+        error-text="You must accept the terms to place an order"></md-checkbox>
+      I agree to the terms of sale
+    </label>
+  </md-step>
+  <md-step label="Review">Summary rendered from the entered values.</md-step>
+</md-stepper>
+<md-snackbar message="Order OD-58412 placed — a confirmation email is on its way"></md-snackbar>`}
+  script={`
+    const wiz = root.querySelector('md-stepper');
+    const steps = wiz.querySelectorAll('md-step');
+    const shipFields = Array.prototype.slice.call(root.querySelectorAll('[data-ship]'));
+    const country = root.querySelector('[data-ship-country]');
+    const terms = root.querySelector('[data-terms]');
+    const radios = Array.prototype.slice.call(root.querySelectorAll('md-radio[name="pay-method"]'));
+    const qtyFields = Array.prototype.slice.call(root.querySelectorAll('[data-qty]'));
+    const totalEl = root.querySelector('[data-total]');
+    const snack = root.querySelector('md-snackbar');
+    const PAY_LABELS = { card: 'Credit or debit card', bank: 'Bank transfer', cod: 'Cash on delivery' };
+
+    const money = (n) => '\\u20AC' + n.toFixed(2);
+    const currentTotal = () => qtyFields.reduce(
+      (sum, f) => sum + (f.value || 0) * Number(f.dataset.price), 0);
+
+    // Live order total: md-number-field emits mdInput on every value move.
+    qtyFields.forEach((f) => f.addEventListener('mdInput', () => {
+      totalEl.textContent = money(currentTotal());
+    }));
+
+    // Constraint validation does the checking; we only surface the result.
+    const validateAll = (fields) =>
+      Promise.all(fields.map((f) =>
+        f.checkValidity().then((ok) => { f.error = !ok; return ok; })
+      )).then((results) => results.every(Boolean));
+
+    // Recover inline: once a flagged field becomes valid, clear its error.
+    shipFields.concat([terms]).forEach((f) => {
+      const settle = () => f.checkValidity().then((ok) => { if (ok) f.error = false; });
+      f.addEventListener('mdInput', settle);
+      f.addEventListener('mdChange', settle);
+    });
+
+    function fillReview() {
+      const val = (sel) => root.querySelector(sel).value;
+      const opt = country.querySelector('md-select-option[value="' + country.value + '"]');
+      root.querySelector('[data-review-address]').textContent =
+        val('[data-ship-name]') + ', ' + val('[data-ship-street]') + ', ' +
+        val('[data-ship-zip]') + ' ' + val('[data-ship-city]') + ', ' +
+        (opt ? opt.textContent.trim() : '');
+      const picked = radios.filter((r) => r.checked)[0];
+      root.querySelector('[data-review-payment]').textContent =
+        picked ? PAY_LABELS[picked.value] : '';
+      root.querySelector('[data-review-items]').textContent = qtyFields
+        .map((f) => (f.value || 0) + ' \\u00D7 ' + f.dataset.item)
+        .join(', ');
+      root.querySelector('[data-review-total]').textContent = money(currentTotal());
+    }
+
+    // Gate every forward move: veto, validate async, commit by assigning
+    // 'active' (never next()/goTo() here - they would re-enter this handler).
+    wiz.addEventListener('mdBeforeChange', (e) => {
+      const to = e.detail.index;
+      const from = e.detail.previous;
+      if (to <= from) return; // backward is always allowed
+      e.preventDefault();
+      const gate =
+        from === 0 ? validateAll(shipFields) :
+        from === 1 ? validateAll([terms]) :
+        Promise.resolve(true);
+      gate.then((ok) => {
+        steps[from].error = !ok;
+        if (!ok) return;
+        if (to === 2) fillReview();
+        wiz.active = to;
+      });
+    });
+
+    // Place order: loading disables Continue AND Back (no double submit),
+    // then the snackbar confirms.
+    wiz.addEventListener('mdComplete', () => {
+      wiz.loading = true;
+      setTimeout(() => {
+        wiz.loading = false;
+        snack.show();
+      }, 900);
+    });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-stepper`](/components/stepper/) | Owns the flow: `mode="linear"` (the default) keeps future step headers unreachable, `mdBeforeChange` is the validation gate, `finish-label="Place order"` renames the last Continue, and `loading` locks the nav during the fake submit. |
+| [`md-step`](/components/stepper/) | One panel per step, rendered full-width under the horizontal row. `editable` lets a completed step be revisited without wiping downstream progress; `error` + `error-text` announce a failed gate right on the header. |
+| [`md-text-field`](/components/text-field/) | Address fields. `required` feeds the constraint-validation API; `error-text` swaps in for the supporting line and `reserve-supporting-space` keeps the panel from jumping when it does. |
+| [`md-select`](/components/select/) | Country picker. Form-associated with a real `required` state and a localizable `value-missing-label`. |
+| [`md-radio`](/components/radio/) | Payment method. Radios sharing `name="pay-method"` form one exclusive group with a roving tabstop, and one option is pre-checked as M3 expects. |
+| [`md-number-field`](/components/number-field/) | Quantities in the order summary — typed or stepped, clamped to `min`/`max` on every path, emitting `mdInput` so the total recomputes live. |
+| [`md-card`](/components/card/) | The outlined order-summary container inside the Payment step. |
+| [`md-checkbox`](/components/checkbox/) | Terms of sale. `required` plus its own `error-text` line, so a failed check is explained next to the box, not in a transient balloon. |
+| [`md-snackbar`](/components/snackbar/) | The low-priority "order placed" confirmation after Finish. |
+
+## The details that make it production-grade
+
+- **The gate follows the documented veto-then-commit pattern.** The
+  `mdBeforeChange` handler calls `preventDefault()`, awaits `checkValidity()`
+  on every field in the step being left, and commits with `wiz.active = index`
+  — assigning `active` directly is the sanctioned way to finish an async
+  validation, because calling `next()` or `goTo()` from the handler would
+  re-emit the event and re-enter it.
+- **Errors live where the fix is.** A failed gate sets `error` on the step
+  header (announced assertively by the stepper's live region) and flips each
+  invalid field's own `error` state; the field clears itself the moment it
+  becomes valid again.
+- **Back never loses work.** Shipping and Payment are marked `editable`, so
+  revisiting a completed step keeps later steps completed — without it, the
+  stepper's auto-complete would un-complete everything downstream on a
+  backward move.
+- **No double submit.** `mdComplete` sets `loading` on the stepper, which puts
+  Finish into a spinner state and disables Back until the (simulated) server
+  call resolves.
+- **Quantities are bounded on every input path.** `md-number-field` clamps
+  arrow keys, stepper buttons and wheel to `min="1"`/`max="10"`, and a typed
+  out-of-range value is clamped at commit — the total can never go negative.
+
+## Variations
+
+- **Vertical layout for mobile:** set `orientation="vertical"` on the stepper —
+  each step then expands in place with its own Back / Continue actions, and
+  `variant="mobile"` gives an even more compact Back · progress · Continue bar
+  (with the active panel in the stepper's `content` slot).
+- **Declarative gating instead of the veto:** bind the stepper's
+  `next-disabled` to the current step's validity from each field's
+  `mdValidityChange` — Continue stays disabled until the step is complete, and
+  no `mdBeforeChange` handler is needed.
+- **Real server submit:** keep `loading` on while you `await fetch(...)` in the
+  `mdComplete` handler, and use `setCustomValidity()` on a field when the
+  server rejects a value (an unavailable postal code, a declined card).
+- **Payment confirmation step:** insert an `md-otp-field` step between Payment
+  and Review for 3-D Secure style verification — see the two-factor recipe.
+
+## Related
+
+- Recipe: [Two-factor verification](/recipes/two-factor-verification/) — the
+  OTP step you would slot in for payment confirmation.
+- Component manuals: [`md-stepper`](/components/stepper/) — the full
+  navigation contract, and [`md-number-field`](/components/number-field/) —
+  typed vs stepped value semantics.

@@ -1,0 +1,243 @@
+---
+title: Product reviews & ratings
+description: "A complete review block: aggregate score with per-star distribution meters, a write-a-review form with interactive stars, and a sortable list of verified reviews."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**The social-proof block every product page needs.** An aggregate score built
+from [`md-rating`](/components/rating/) in `readonly` mode, a per-star
+distribution rendered as five [`md-meter`](/components/meter/) bars sharing one
+`max`, a write-a-review form where an interactive rating and a multiline
+[`md-text-field`](/components/text-field/) submit together, and a review list
+that re-sorts between *Most recent* and *Most helpful* from an
+[`md-segmented-button-set`](/components/segmented-button/). Submitting with no
+stars is blocked — a rating of `0` means "no rating given", and the form treats
+it that way.
+
+<ComponentDemo
+  label="Live preview — pick stars, write a review, then flip the sort"
+  html={`<div style="max-width: 680px; margin-inline: auto; display: grid; gap: 24px;">
+  <div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: center;">
+    <div style="display: grid; gap: 4px; justify-items: center;">
+      <span style="font: var(--md-sys-typescale-display-medium); color: var(--md-sys-color-on-surface);">4.4</span>
+      <md-rating value="4.5" precision="0.5" readonly rating-label="Average rating 4.4 out of 5"></md-rating>
+      <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">128 reviews</span>
+    </div>
+    <div style="flex: 1; min-width: 260px; display: grid; gap: 6px;">
+      <md-meter label="5 stars" value="82" max="128" value-text="82 reviews" show-label show-value thickness="6"></md-meter>
+      <md-meter label="4 stars" value="29" max="128" value-text="29 reviews" show-label show-value thickness="6"></md-meter>
+      <md-meter label="3 stars" value="9" max="128" value-text="9 reviews" show-label show-value thickness="6"></md-meter>
+      <md-meter label="2 stars" value="5" max="128" value-text="5 reviews" show-label show-value thickness="6"></md-meter>
+      <md-meter label="1 star" value="3" max="128" value-text="3 reviews" show-label show-value thickness="6"></md-meter>
+    </div>
+  </div>
+  <form style="display: grid; gap: 12px; padding: 16px; border-radius: 16px; background: var(--md-sys-color-surface-container-low);">
+    <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Write a review</span>
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <md-rating data-write-rating name="score" size="lg" rating-label="Rate this product"></md-rating>
+      <span data-rating-hint hidden style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-error);">Choose a star rating first.</span>
+    </div>
+    <md-text-field name="body" label="Your review" multiline="auto-grow" rows="3"
+      max-length="500" supporting-text="What worked, what didn't — be specific."
+      variant="outlined"></md-text-field>
+    <md-button type="submit" variant="filled" style="justify-self: start;">Post review</md-button>
+  </form>
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+    <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">128 reviews</span>
+    <md-segmented-button-set aria-label="Sort reviews">
+      <md-segmented-button value="recent" label="Most recent" selected></md-segmented-button>
+      <md-segmented-button value="helpful" label="Most helpful"></md-segmented-button>
+    </md-segmented-button-set>
+  </div>
+  <md-list label="Customer reviews">
+    <md-list-item data-date="2026-08-18" data-helpful="34"
+      supporting-text="Battery lasted my whole work week on one charge, and the noise cancelling makes open-office Mondays bearable. Pairing with two laptops at once just works."
+      trailing-supporting-text="Aug 18">
+      <md-avatar slot="leading" initials="MI"></md-avatar>
+      <span slot="headline" style="display: flex; align-items: center; gap: 8px;">Mara Ionescu
+        <md-chip variant="assist" appearance="outlined" color="success" icon="verified" label="Verified purchase" density="-2"></md-chip>
+      </span>
+      <md-rating slot="overline" readonly size="xs" value="5" rating-label="Rated 5 out of 5"></md-rating>
+    </md-list-item>
+    <md-list-item data-date="2026-08-11" data-helpful="21"
+      supporting-text="Sound is warm and the app EQ is genuinely useful. One star off: the carrying case is bulkier than the photos suggest."
+      trailing-supporting-text="Aug 11">
+      <md-avatar slot="leading" initials="DP"></md-avatar>
+      <span slot="headline" style="display: flex; align-items: center; gap: 8px;">Dan Popa
+        <md-chip variant="assist" appearance="outlined" color="success" icon="verified" label="Verified purchase" density="-2"></md-chip>
+      </span>
+      <md-rating slot="overline" readonly size="xs" value="4" rating-label="Rated 4 out of 5"></md-rating>
+    </md-list-item>
+    <md-list-item data-date="2026-08-05" data-helpful="9"
+      supporting-text="Upgraded from the previous generation — the new ear cushions alone are worth it. Multipoint switching is instant."
+      trailing-supporting-text="Aug 5">
+      <md-avatar slot="leading" initials="EK"></md-avatar>
+      <span slot="headline">Elif Kaya</span>
+      <md-rating slot="overline" readonly size="xs" value="5" rating-label="Rated 5 out of 5"></md-rating>
+    </md-list-item>
+    <md-list-item data-date="2026-07-30" data-helpful="48"
+      supporting-text="Comfort and battery are excellent, but firmware 2.1 introduced a faint hiss on transparency mode. Support acknowledged it; holding a star until the fix ships."
+      trailing-supporting-text="Jul 30">
+      <md-avatar slot="leading" initials="JW"></md-avatar>
+      <span slot="headline" style="display: flex; align-items: center; gap: 8px;">Jonas Weber
+        <md-chip variant="assist" appearance="outlined" color="success" icon="verified" label="Verified purchase" density="-2"></md-chip>
+      </span>
+      <md-rating slot="overline" readonly size="xs" value="3" rating-label="Rated 3 out of 5"></md-rating>
+    </md-list-item>
+  </md-list>
+</div>`}
+  htmlForCode={`<!-- Aggregate score -->
+<md-rating value="4.5" precision="0.5" readonly rating-label="Average rating 4.4 out of 5"></md-rating>
+<md-meter label="5 stars" value="82" max="128" value-text="82 reviews" show-label show-value thickness="6"></md-meter>
+<md-meter label="4 stars" value="29" max="128" value-text="29 reviews" show-label show-value thickness="6"></md-meter>
+
+<!-- Write a review -->
+<form>
+  <md-rating name="score" size="lg" rating-label="Rate this product"></md-rating>
+  <md-text-field name="body" label="Your review" multiline="auto-grow" rows="3"
+    max-length="500" supporting-text="What worked, what didn't — be specific."
+    variant="outlined"></md-text-field>
+  <md-button type="submit" variant="filled">Post review</md-button>
+</form>
+
+<!-- Sort + review list -->
+<md-segmented-button-set aria-label="Sort reviews">
+  <md-segmented-button value="recent" label="Most recent" selected></md-segmented-button>
+  <md-segmented-button value="helpful" label="Most helpful"></md-segmented-button>
+</md-segmented-button-set>
+<md-list label="Customer reviews">
+  <md-list-item supporting-text="Battery lasted my whole work week on one charge."
+    trailing-supporting-text="Aug 18">
+    <md-avatar slot="leading" initials="MI"></md-avatar>
+    <span slot="headline">Mara Ionescu
+      <md-chip variant="assist" appearance="outlined" color="success" icon="verified"
+        label="Verified purchase" density="-2"></md-chip>
+    </span>
+    <md-rating slot="overline" readonly size="xs" value="5" rating-label="Rated 5 out of 5"></md-rating>
+  </md-list-item>
+</md-list>`}
+  script={`
+    const list = root.querySelector('md-list');
+    const sortSet = root.querySelector('md-segmented-button-set');
+    const form = root.querySelector('form');
+    const writeRating = root.querySelector('[data-write-rating]');
+    const field = root.querySelector('md-text-field');
+    const hint = root.querySelector('[data-rating-hint]');
+
+    // Localized per-value announcement + hover preview text.
+    writeRating.getLabel = function (v) { return v + ' out of 5 stars'; };
+
+    // Sorting: reorder the real md-list-item children in the DOM.
+    let sortBy = 'recent';
+    function resort() {
+      const items = Array.from(list.querySelectorAll('md-list-item'));
+      items.sort(function (a, b) {
+        if (sortBy === 'helpful') {
+          return Number(b.dataset.helpful) - Number(a.dataset.helpful);
+        }
+        return b.dataset.date.localeCompare(a.dataset.date);
+      });
+      items.forEach(function (item) { list.appendChild(item); });
+    }
+    sortSet.addEventListener('mdChange', function (e) {
+      sortBy = e.detail[0];
+      resort();
+    });
+
+    // Submit: a rating of 0 submits nothing, so block it explicitly.
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!writeRating.value) {
+        hint.hidden = false;
+        return;
+      }
+      hint.hidden = true;
+
+      const item = document.createElement('md-list-item');
+      item.dataset.date = new Date().toISOString().slice(0, 10);
+      item.dataset.helpful = '0';
+      item.setAttribute('headline', 'Alex Petrescu');
+      item.setAttribute('supporting-text', field.value || 'No written review.');
+      item.setAttribute('trailing-supporting-text', 'Just now');
+
+      const avatar = document.createElement('md-avatar');
+      avatar.setAttribute('slot', 'leading');
+      avatar.setAttribute('initials', 'AP');
+      item.appendChild(avatar);
+
+      const stars = document.createElement('md-rating');
+      stars.setAttribute('slot', 'overline');
+      stars.setAttribute('readonly', '');
+      stars.setAttribute('size', 'xs');
+      stars.setAttribute('value', String(writeRating.value));
+      stars.setAttribute('rating-label', 'Rated ' + writeRating.value + ' out of 5');
+      item.appendChild(stars);
+
+      list.appendChild(item);
+      resort();
+
+      writeRating.value = 0;
+      field.value = '';
+    });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-rating`](/components/rating/) | Three jobs: the interactive input (`name="score"`, `getLabel` for per-value announcements), the aggregate display (`readonly` + `precision="0.5"` switches it to `role="img"` and folds the score into its name), and the tiny `size="xs"` per-review stars in each row's `overline` slot. |
+| [`md-meter`](/components/meter/) | The star distribution. All five bars share `max="128"`, so widths are comparable at a glance; `value-text="82 reviews"` drives the visible value *and* `aria-valuetext` from one string. |
+| [`md-text-field`](/components/text-field/) | The review body — `multiline="auto-grow"` starts at 3 rows and grows with the text; `max-length="500"` renders a live character counter. |
+| [`md-segmented-button-set`](/components/segmented-button/) | The recent/helpful sort. Single-select `radiogroup` semantics; its `mdChange` detail is the array of selected values, and the script reorders the real list rows. |
+| [`md-list`](/components/list/) + `md-list-item` | One row per review: `md-avatar` in the `leading` slot, name + verified [`md-chip`](/components/chip/) in the `headline` slot, stars in `overline`, date as `trailing-supporting-text`. |
+| [`md-avatar`](/components/avatar/) | Reviewer identity via `initials` only — with `name`, `alt` and `label` all empty it renders `role="presentation"`, so the name isn't announced twice next to the headline text. |
+
+## The details that make it production-grade
+
+- **An unrated form can't slip through.** `md-rating` submits nothing when its
+  value is `0` — that state means "no rating given" — so the submit handler
+  checks `writeRating.value` and shows an inline error instead of posting a
+  zero-star review.
+- **Display ratings are really display-only.** `readonly` isn't a styling
+  trick: the control switches from `role="slider"` to `role="img"`, leaves the
+  tab order, and announces "Average rating 4.4 out of 5" as one name — nobody
+  accidentally "re-rates" the aggregate.
+- **The meters can't disagree with themselves.** `value-text` overrides both
+  the visible value and `aria-valuetext`, so what sighted users read and what
+  screen readers hear is the same string, and the bar geometry still comes
+  from `value`/`max`.
+- **Keyboard rating is first-class.** Arrow keys step the stars, `Home`/`End`
+  jump to 0/5, and pressing a digit key sets that value directly; the
+  arrow-key direction follows reading order and mirrors under RTL.
+- **Sorting keeps list semantics intact.** The segmented set is a
+  `radiogroup` where every segment is a real tab stop, and re-sorting moves
+  the actual `md-list-item` elements — `md-list` re-indexes its children
+  through a `MutationObserver`, so typeahead and roving focus stay correct.
+
+## Variations
+
+- **Half-star input:** add `precision="0.5"` to the write-rating — but only if
+  half-steps are meaningful data; ten touch targets across five stars is
+  harder to hit on phones.
+- **Touch-first pages:** set `hover="off"` on the interactive rating so the
+  preview state never flashes on scroll-past taps.
+- **Threshold-colored distribution:** give the 1–2 star meters
+  `color="warning"`/`color="error"` when their share crosses a threshold —
+  pair the color with the visible count, never color alone.
+- **Helpful votes:** make each row `type="button"` and toggle a "Helpful"
+  count from `md-list`'s `mdSelect`, or slot an `md-button variant="text"`
+  into the row's `trailing` slot.
+
+## Related
+
+- Recipe: [Moderation queue](/recipes/moderation-queue/) — the other side of
+  this screen: triaging the reviews users submit.
+- Recipe: [KPI overview](/recipes/kpi-overview/) — more `md-meter`, as
+  dashboard rings and bars.
+- Component manuals: [`md-rating`](/components/rating/),
+  [`md-meter`](/components/meter/) — full API, keyboard maps, and
+  anti-pattern lists.

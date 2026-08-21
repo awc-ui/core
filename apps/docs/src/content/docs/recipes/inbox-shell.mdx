@@ -1,0 +1,340 @@
+---
+title: Inbox with reading pane
+description: "A three-zone mail shell: a navigation rail with unread badges, a searchable message list with presence dots, a side-sheet reading pane, a Reply split button, and archive with snackbar undo."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**A whole mail app screen from seven components.** A
+[`md-navigation-rail`](/components/navigation-rail/) carries the folders and
+their unread counts; the message list is a single-select
+[`md-list`](/components/list/) whose rows get avatars and an unread
+[`md-status-dot`](/components/status-dot/); [`md-search`](/components/search/)
+filters conversations into its own results panel; opening a message slides in a
+standard (non-modal) [`md-side-sheet`](/components/side-sheet/) reading pane
+with a Reply [`md-split-button`](/components/split-button/); and Archive is
+reversible through an [`md-snackbar`](/components/snackbar/) with Undo —
+committed only when the snackbar closes without it.
+
+<ComponentDemo
+  label="Live preview — select a message to open the reading pane, then archive it and undo"
+  html={`<div style="position: relative; display: flex; block-size: 540px; max-inline-size: 720px; margin-inline: auto; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 16px; overflow: hidden; background: var(--md-sys-color-surface);">
+  <md-navigation-rail label="Mailboxes" active-index="0">
+    <md-navigation-rail-tab icon="inbox" label="Inbox" value="inbox" badge-value="3" data-tab-inbox></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="star" label="Starred" value="starred"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="send" label="Sent" value="sent"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="draft" label="Drafts" value="drafts" badge-value="2" data-tab-drafts></md-navigation-rail-tab>
+  </md-navigation-rail>
+  <div style="flex: 1; min-inline-size: 0; display: flex; flex-direction: column; border-inline-start: 1px solid var(--md-sys-color-outline-variant);">
+    <div style="padding: 12px 16px 0;">
+      <md-search data-search layout="docked" trigger="bar" full-width debounce="200" max-block-size="300"
+                 placeholder="Search mail" input-aria-label="Search mail"
+                 style="--md-search-container-min-inline-size: 240px;">
+        <md-list slot="results" data-search-results label="Search results"></md-list>
+      </md-search>
+    </div>
+    <span data-folder-title style="padding: 12px 16px 4px; font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface-variant);">Inbox</span>
+    <md-list data-messages selection-mode="single-select" label="Inbox conversations" style="flex: 1; overflow-y: auto;">
+      <md-list-item data-id="m1" data-unread data-time="Today, 09:41"
+        leading-avatar-name="Priya Raghavan" headline="Priya Raghavan"
+        supporting-text="Q3 budget review — final numbers" lines="2">
+        <span slot="trailing" style="display: flex; align-items: center; gap: 8px;">
+          <span style="font: var(--md-sys-typescale-label-small); color: var(--md-sys-color-on-surface-variant);">09:41</span>
+          <span data-dot style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;">
+            <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);"></md-status-dot>
+          </span>
+        </span>
+      </md-list-item>
+      <md-list-item data-id="m2" data-unread data-time="Today, 08:15"
+        leading-avatar-name="Marcus Webb" headline="Marcus Webb"
+        supporting-text="Re: Berlin offsite agenda" lines="2">
+        <span slot="trailing" style="display: flex; align-items: center; gap: 8px;">
+          <span style="font: var(--md-sys-typescale-label-small); color: var(--md-sys-color-on-surface-variant);">08:15</span>
+          <span data-dot style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;">
+            <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);"></md-status-dot>
+          </span>
+        </span>
+      </md-list-item>
+      <md-list-item data-id="m3" data-time="Yesterday, 17:02"
+        leading-avatar-name="Sofia Lindqvist" headline="Sofia Lindqvist"
+        supporting-text="Design tokens migration plan" lines="2">
+        <span slot="trailing" style="font: var(--md-sys-typescale-label-small); color: var(--md-sys-color-on-surface-variant);">Yesterday</span>
+      </md-list-item>
+      <md-list-item data-id="m4" data-time="Yesterday, 09:30"
+        leading-avatar-name="IT Operations" headline="IT Operations"
+        supporting-text="Scheduled maintenance this Saturday" lines="2">
+        <span slot="trailing" style="font: var(--md-sys-typescale-label-small); color: var(--md-sys-color-on-surface-variant);">Yesterday</span>
+      </md-list-item>
+      <md-list-item data-id="m5" data-unread data-time="Monday, 14:48"
+        leading-avatar-name="Daniel Okafor" headline="Daniel Okafor"
+        supporting-text="Contract renewal for Northwind" lines="2">
+        <span slot="trailing" style="display: flex; align-items: center; gap: 8px;">
+          <span style="font: var(--md-sys-typescale-label-small); color: var(--md-sys-color-on-surface-variant);">Mon</span>
+          <span data-dot style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;">
+            <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);"></md-status-dot>
+          </span>
+        </span>
+      </md-list-item>
+    </md-list>
+    <div data-empty hidden style="flex: 1; display: grid; place-content: center; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);"></div>
+  </div>
+  <md-side-sheet data-reader variant="standard" side="end" top-divider bottom-divider
+                 style="--md-side-sheet-width: 300px; --md-side-sheet-max-width: 320px;">
+    <div style="display: grid; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <md-avatar data-reader-avatar name=""></md-avatar>
+        <div style="display: grid; min-inline-size: 0;">
+          <span data-reader-sender style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);"></span>
+          <span data-reader-time style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);"></span>
+        </div>
+      </div>
+      <p data-reader-body style="margin: 0; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);"></p>
+    </div>
+    <md-split-button slot="actions" data-reply id="recipe-reply-split" icon="reply" label="Reply"
+                     menu-label="More reply options" controls="recipe-reply-menu"></md-split-button>
+    <md-button slot="actions" variant="text" data-archive>Archive</md-button>
+  </md-side-sheet>
+</div>
+<md-menu id="recipe-reply-menu" data-reply-menu anchor="recipe-reply-split" placement="top-end">
+  <md-menu-item headline="Reply all"></md-menu-item>
+  <md-menu-item headline="Forward"></md-menu-item>
+</md-menu>
+<md-snackbar data-undo-bar action="Undo"></md-snackbar>`}
+  htmlForCode={`<div style="position: relative; display: flex; block-size: 540px;">
+  <md-navigation-rail label="Mailboxes" active-index="0">
+    <md-navigation-rail-tab icon="inbox" label="Inbox" value="inbox" badge-value="3"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="star" label="Starred" value="starred"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="send" label="Sent" value="sent"></md-navigation-rail-tab>
+    <md-navigation-rail-tab icon="draft" label="Drafts" value="drafts" badge-value="2"></md-navigation-rail-tab>
+  </md-navigation-rail>
+
+  <div style="flex: 1; display: flex; flex-direction: column;">
+    <md-search layout="docked" trigger="bar" full-width debounce="200"
+               placeholder="Search mail" input-aria-label="Search mail">
+      <md-list slot="results" label="Search results"></md-list>
+    </md-search>
+
+    <md-list selection-mode="single-select" label="Inbox conversations">
+      <md-list-item leading-avatar-name="Priya Raghavan" headline="Priya Raghavan"
+                    supporting-text="Q3 budget review — final numbers" lines="2">
+        <span slot="trailing" style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;">
+          <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);"></md-status-dot>
+        </span>
+      </md-list-item>
+      <md-list-item leading-avatar-name="Sofia Lindqvist" headline="Sofia Lindqvist"
+                    supporting-text="Design tokens migration plan" lines="2"
+                    trailing-supporting-text="Yesterday"></md-list-item>
+    </md-list>
+  </div>
+
+  <md-side-sheet variant="standard" side="end" top-divider bottom-divider>
+    <p>Message body…</p>
+    <md-split-button slot="actions" id="reply-split" icon="reply" label="Reply"
+                     menu-label="More reply options" controls="reply-menu"></md-split-button>
+    <md-button slot="actions" variant="text">Archive</md-button>
+  </md-side-sheet>
+</div>
+
+<md-menu id="reply-menu" anchor="reply-split" placement="top-end">
+  <md-menu-item headline="Reply all"></md-menu-item>
+  <md-menu-item headline="Forward"></md-menu-item>
+</md-menu>
+
+<md-snackbar action="Undo"></md-snackbar>`}
+  script={`
+    const rail = root.querySelector('md-navigation-rail');
+    const inboxTab = root.querySelector('[data-tab-inbox]');
+    const draftsTab = root.querySelector('[data-tab-drafts]');
+    const list = root.querySelector('[data-messages]');
+    const emptyState = root.querySelector('[data-empty]');
+    const folderTitle = root.querySelector('[data-folder-title]');
+    const search = root.querySelector('[data-search]');
+    const results = root.querySelector('[data-search-results]');
+    const reader = root.querySelector('[data-reader]');
+    const replySplit = root.querySelector('[data-reply]');
+    const replyMenu = root.querySelector('[data-reply-menu]');
+    const archiveBtn = root.querySelector('[data-archive]');
+    const bar = root.querySelector('[data-undo-bar]');
+
+    const bodies = {
+      m1: 'Hi — the final Q3 numbers are in. We land 4.2% under budget overall, with cloud spend the only line that overran. Can you sign off before the Thursday board pack goes out?',
+      m2: 'Adding a 90-minute customer-panel slot on day two, as discussed. That pushes the roadmap workshop to after lunch. Shout if the new agenda clashes with your flight.',
+      m3: 'The migration plan is ready for review: we move color and typography tokens first, spacing in a second pass. Rollout is behind a flag, one product area per week.',
+      m4: 'Planned maintenance this Saturday 02:00-05:00 UTC. Mail and calendar stay up; the file service will be read-only. No action needed on your side.',
+      m5: 'Northwind wants to renew for 24 months at the current rate if we commit before the 30th. Draft contract attached in the deal room — flagging the liability clause for legal.'
+    };
+
+    let current = null;
+    let pendingArchive = null;
+
+    function syncBadge() {
+      const n = list.querySelectorAll('md-list-item[data-unread]').length;
+      inboxTab.badgeValue = n > 0 ? String(n) : '';
+    }
+
+    function openMessage(item) {
+      current = item;
+      if (item.hasAttribute('data-unread')) {
+        item.removeAttribute('data-unread');
+        const dot = item.querySelector('[data-dot]');
+        if (dot) dot.remove();
+        syncBadge();
+      }
+      const sender = item.getAttribute('headline');
+      reader.headline = item.getAttribute('supporting-text');
+      root.querySelector('[data-reader-avatar]').name = sender;
+      root.querySelector('[data-reader-sender]').textContent = sender;
+      root.querySelector('[data-reader-time]').textContent = item.getAttribute('data-time');
+      root.querySelector('[data-reader-body]').textContent = bodies[item.dataset.id] || '';
+      reader.show();
+    }
+
+    // Selecting a row in the message list opens the reading pane.
+    list.addEventListener('mdSelect', (e) => openMessage(e.detail.item));
+
+    // Search: fetch-free filter over the rows; md-search debounces and
+    // de-duplicates the query, we only render the hits.
+    search.addEventListener('mdSearch', (e) => {
+      const q = e.detail.value.toLowerCase();
+      results.innerHTML = '';
+      if (!q) return;
+      list.querySelectorAll('md-list-item').forEach((row) => {
+        const sender = row.getAttribute('headline') || '';
+        const subject = row.getAttribute('supporting-text') || '';
+        if ((sender + ' ' + subject).toLowerCase().indexOf(q) === -1) return;
+        const hit = document.createElement('md-list-item');
+        hit.setAttribute('type', 'button');
+        hit.setAttribute('headline', subject);
+        hit.setAttribute('supporting-text', sender);
+        hit.setAttribute('leading-icon', 'mail');
+        hit.dataset.id = row.dataset.id;
+        results.appendChild(hit);
+      });
+    });
+    results.addEventListener('mdClick', (e) => {
+      const id = e.detail.item.dataset.id;
+      const rows = Array.from(list.querySelectorAll('md-list-item'));
+      const row = rows.find((r) => r.dataset.id === id);
+      search.close();
+      if (!row) return;
+      list.selectItem(rows.indexOf(row));  // mirror state; emits no mdSelect
+      openMessage(row);
+    });
+    search.addEventListener('mdClose', () => { results.innerHTML = ''; });
+
+    // Folder switching: only the Inbox is populated in this demo.
+    const folderNames = { inbox: 'Inbox', starred: 'Starred', sent: 'Sent', drafts: 'Drafts' };
+    rail.addEventListener('mdTabChange', (e) => {
+      const isInbox = e.detail.value === 'inbox';
+      list.style.display = isInbox ? '' : 'none';
+      emptyState.hidden = isInbox;
+      folderTitle.textContent = folderNames[e.detail.value];
+      if (!isInbox) {
+        emptyState.textContent = folderNames[e.detail.value] + ' is empty in this demo.';
+        reader.close();
+      }
+    });
+
+    // Archive with undo: hide the row immediately, commit only when the
+    // snackbar closes for a reason other than the Undo action.
+    archiveBtn.addEventListener('mdClick', () => {
+      if (!current) return;
+      pendingArchive = current;
+      current.style.display = 'none';
+      current = null;
+      reader.close();
+      bar.action = 'Undo';
+      bar.message = 'Conversation archived';
+      bar.show();
+    });
+    bar.addEventListener('mdAction', () => bar.hide('action'));
+    bar.addEventListener('mdClose', (e) => {
+      if (!pendingArchive) return;
+      if (e.detail.reason === 'action') pendingArchive.style.display = '';
+      else pendingArchive.remove();
+      pendingArchive = null;
+    });
+
+    // Reply split button: the leading segment is the default action, the
+    // trailing toggle drives our own md-menu of variations.
+    function draftToast(kind) {
+      draftsTab.badgeValue = String(parseInt(draftsTab.badgeValue || '0', 10) + 1);
+      bar.action = '';
+      bar.message = kind + ' draft saved to Drafts';
+      bar.show();
+    }
+    replySplit.addEventListener('mdLeadingClick', () => draftToast('Reply'));
+    replySplit.addEventListener('mdTrailingClick', (e) => {
+      if (e.detail.checked) replyMenu.show();
+      else replyMenu.close();
+    });
+    // mdClose does not bubble — listen on the menu itself, and keep the
+    // chevron truthful when the menu closes by outside click or Escape.
+    replyMenu.addEventListener('mdClose', () => { replySplit.trailingChecked = false; });
+    replyMenu.addEventListener('mdClick', (e) => {
+      const item = e.target.closest('md-menu-item');
+      if (item) draftToast(item.getAttribute('headline'));
+    });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-navigation-rail`](/components/navigation-rail/) | The folder column. `mdTabChange` carries a stable `value` for routing; each `md-navigation-rail-tab`'s `badge-value` renders the unread capsule, announced as a `role="status"` with a "new notifications" label. |
+| [`md-search`](/components/search/) | Docked bar above the list. `debounce="200"` gates `mdSearch`, which arrives trimmed and de-duplicated — the demo renders hits into the `results` slot and never double-fetches. |
+| [`md-list`](/components/list/) + [`md-list-item`](/components/list/) | The message list, `selection-mode="single-select"` so the open conversation stays highlighted. `leading-avatar-name` renders the internal [`md-avatar`](/components/avatar/) with hashed, stable initials colors. |
+| [`md-status-dot`](/components/status-dot/) | The unread pip in each row's trailing cluster, tinted with `--md-status-dot-color` and carrying `label="Unread"` so the state exists as words, not only color. |
+| [`md-side-sheet`](/components/side-sheet/) | The reading pane. `variant="standard"` is a non-modal `role="region"` beside the list — no scrim, no focus trap — and occupies zero width while closed. |
+| [`md-split-button`](/components/split-button/) + [`md-menu`](/components/menu/) | Reply as the default action; Reply all and Forward as `md-menu-item` variations. The component renders the button — the menu is ours to open, close, and keep in sync. |
+| [`md-snackbar`](/components/snackbar/) | Archive feedback with Undo. The row is only removed for real when the snackbar closes with a reason other than `action`. |
+
+## The details that make it production-grade
+
+- **Undo is trustworthy.** The snackbar's action button does not dismiss it —
+  the handler calls `hide('action')`, and the `mdClose` listener branches on
+  `detail.reason`: `action` restores the row, anything else commits the
+  archive. The auto-hide timer also pauses while the surface is hovered or
+  focused (WCAG 2.2.1), so slow readers do not lose the Undo window.
+- **The reading pane is deliberately non-modal.** A standard side sheet is
+  `role="region"` with no scrim and no focus trap, so the rail, search, and
+  list stay fully interactive while a message is open — and a closed standard
+  sheet is `display: none`, returning its width to the list.
+- **Search keyboard flow comes for free.** Inside `md-search`, the slotted
+  results `md-list` stops handling arrow keys and the search surface takes
+  over: ArrowDown from the input lands on the first hit, ArrowUp from the
+  first hit returns to the input, and a polite live region announces the
+  result count.
+- **Unread state is never color-only.** The dot's `label="Unread"` gives it
+  `role="img"`, and the rail tab's `badge-value` is exposed as a status with a
+  spoken count — so the three signals (dot, bold count, badge) all reach
+  assistive tech.
+- **The split button's chevron cannot lie.** `trailing-checked` flips on every
+  toggle press, and the demo listens for the menu's own non-bubbling `mdClose`
+  to reset it when the menu is dismissed by outside click or Escape.
+
+## Variations
+
+- **Modal reading pane on narrow layouts:** switch the sheet to
+  `variant="modal"` — it gains a scrim, a focus trap, Escape handling, and
+  automatic focus restore to the row that opened it.
+- **Collapsible rail:** add `expandable` to `md-navigation-rail` for the
+  built-in toggle between the 80px icon rail and the labelled 220px drawer.
+- **More folders than fit:** set `max-visible="4"` on the rail — extra
+  destinations collapse into an overflow menu and stay first-class selection
+  targets.
+- **Bulk triage:** change the list to `selection-mode="multi-select"` with
+  `interaction-mode="multi-action"`, and move Archive into a toolbar acting on
+  `getSelectedIndices()`.
+
+## Related
+
+- Recipe: [Two-factor verification](/recipes/two-factor-verification/) — the
+  same demo-first pattern applied to an auth flow.
+- Component manuals: [`md-side-sheet`](/components/side-sheet/) — the standard
+  vs. modal accessibility contracts; [`md-search`](/components/search/) — the
+  full query-event model (`mdInput` vs. `mdSearch` vs. `mdSubmit`).
+

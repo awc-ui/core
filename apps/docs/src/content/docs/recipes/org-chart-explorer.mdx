@@ -1,0 +1,294 @@
+---
+title: Org chart explorer
+description: "A people directory built on md-organization-chart: search that highlights matches in the tree, and a profile side sheet with avatar, report count, contact chips, and the reporting line as breadcrumbs."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**A hierarchy you can actually interrogate.** A nine-person company rendered
+with [`md-organization-chart`](/components/organization-chart/) — a real ARIA
+tree with roving tabindex and arrow-key navigation — fronted by an
+[`md-search`](/components/search/) bar that filters people by name or role and
+tints the matching nodes. Selecting anyone (click, or Enter on a focused node)
+opens a modal [`md-side-sheet`](/components/side-sheet/) profile: initials
+avatar with a direct-report count badge, contact chips, and the full reporting
+line up to the CEO drawn as breadcrumbs.
+
+<ComponentDemo
+  label="Live preview — search 'engineer', or click any card to open a profile"
+  html={`<div style="display: grid; gap: 20px;">
+  <div style="display: grid; gap: 4px;">
+    <span style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);">Meridian Robotics</span>
+    <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">People directory — 9 people across Engineering, Design and Finance</span>
+  </div>
+  <md-search layout="docked" trigger="bar" full-width debounce="200"
+    placeholder="Search people and roles"
+    results-label="{count} people found"
+    no-results-label="No one matches that search">
+    <div slot="results" data-results style="display: grid; gap: 2px; padding: 8px;"></div>
+  </md-search>
+  <md-organization-chart selection-mode="single" density="-2"
+    label="Meridian Robotics reporting structure"
+    style="--md-org-chart-node-min-width: 150px; --md-org-chart-node-max-width: 190px;">
+    <div slot="empty">No people loaded.</div>
+  </md-organization-chart>
+</div>
+<md-side-sheet data-profile variant="modal" headline="Profile">
+  <div style="display: grid; gap: 20px;">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <span style="position: relative; display: inline-block;">
+        <md-avatar data-p-avatar size="large"></md-avatar>
+        <md-badge data-p-badge></md-badge>
+      </span>
+      <div style="display: grid; gap: 2px;">
+        <span data-p-name style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);"></span>
+        <span data-p-title style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);"></span>
+        <span data-p-reports style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);"></span>
+      </div>
+    </div>
+    <div style="display: grid; gap: 8px;">
+      <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">Reporting line</span>
+      <md-breadcrumbs data-p-crumbs label="Reporting line" separator="›"></md-breadcrumbs>
+    </div>
+    <div style="display: grid; gap: 8px;">
+      <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">Contact</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <md-chip data-p-email variant="assist" icon="mail" label=""></md-chip>
+        <md-chip data-p-phone variant="assist" icon="call" label=""></md-chip>
+      </div>
+    </div>
+  </div>
+</md-side-sheet>`}
+  htmlForCode={`<md-search id="people-search" layout="docked" trigger="bar" full-width
+  debounce="200" placeholder="Search people and roles"
+  results-label="{count} people found"
+  no-results-label="No one matches that search">
+  <div slot="results" id="people-results"></div>
+</md-search>
+
+<md-organization-chart id="org" selection-mode="single"
+  label="Meridian Robotics reporting structure">
+  <div slot="empty">No people loaded.</div>
+</md-organization-chart>
+
+<md-side-sheet id="profile" variant="modal" headline="Profile">
+  <span style="position: relative; display: inline-block;">
+    <md-avatar id="profile-avatar" size="large"></md-avatar>
+    <md-badge id="report-count"></md-badge>
+  </span>
+  <md-breadcrumbs id="reporting-line" label="Reporting line" separator="›"></md-breadcrumbs>
+  <md-chip id="email-chip" variant="assist" icon="mail"></md-chip>
+  <md-chip id="phone-chip" variant="assist" icon="call"></md-chip>
+</md-side-sheet>`}
+  script={`
+    const chart = root.querySelector('md-organization-chart');
+    const search = root.querySelector('md-search');
+    const resultsHost = root.querySelector('[data-results]');
+    const sheet = root.querySelector('[data-profile]');
+    const avatarEl = root.querySelector('[data-p-avatar]');
+    const badgeEl = root.querySelector('[data-p-badge]');
+    const nameEl = root.querySelector('[data-p-name]');
+    const titleEl = root.querySelector('[data-p-title]');
+    const reportsEl = root.querySelector('[data-p-reports]');
+    const crumbsEl = root.querySelector('[data-p-crumbs]');
+    const emailChip = root.querySelector('[data-p-email]');
+    const phoneChip = root.querySelector('[data-p-phone]');
+
+    // Flat records; the tree and the breadcrumb trail are both derived
+    // from the manager field, so there is a single source of truth.
+    const people = [
+      { id: 'ceo', name: 'Mara Voss', title: 'Chief Executive Officer', manager: null,
+        email: 'mara.voss@meridian.dev', phone: '+1 415 555 0138' },
+      { id: 'vp-eng', name: 'Daniel Okafor', title: 'VP of Engineering', manager: 'ceo',
+        email: 'daniel.okafor@meridian.dev', phone: '+1 415 555 0142' },
+      { id: 'em-platform', name: 'Priya Raman', title: 'Engineering Manager, Platform', manager: 'vp-eng',
+        email: 'priya.raman@meridian.dev', phone: '+1 415 555 0177' },
+      { id: 'be-1', name: 'Jonas Keller', title: 'Senior Backend Engineer', manager: 'em-platform',
+        email: 'jonas.keller@meridian.dev', phone: '+49 30 555 0104' },
+      { id: 'fe-1', name: 'Alice Zhang', title: 'Frontend Engineer', manager: 'em-platform',
+        email: 'alice.zhang@meridian.dev', phone: '+1 415 555 0191' },
+      { id: 'sre', name: 'Tom Bradshaw', title: 'Site Reliability Lead', manager: 'vp-eng',
+        email: 'tom.bradshaw@meridian.dev', phone: '+44 20 555 0126' },
+      { id: 'design', name: 'Elena Petrescu', title: 'Head of Design', manager: 'ceo',
+        email: 'elena.petrescu@meridian.dev', phone: '+40 21 555 0163' },
+      { id: 'pd-1', name: 'Marcus Hale', title: 'Product Designer', manager: 'design',
+        email: 'marcus.hale@meridian.dev', phone: '+1 415 555 0158' },
+      { id: 'finance', name: 'Sofia Lindqvist', title: 'Finance Lead', manager: 'ceo',
+        email: 'sofia.lindqvist@meridian.dev', phone: '+46 8 555 0119' },
+    ];
+    const byId = new Map(people.map(function (p) { return [p.id, p]; }));
+
+    function initialsOf(name) {
+      const parts = name.split(' ');
+      const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
+      return (parts[0].charAt(0) + last).toUpperCase();
+    }
+
+    function directReports(id) {
+      return people.filter(function (p) { return p.manager === id; });
+    }
+
+    // Reassigning nodes resets fold state, but this tree renders fully
+    // expanded anyway, so a rebuild per search is fine here.
+    function buildTree(highlight) {
+      const nodes = new Map();
+      people.forEach(function (p) {
+        nodes.set(p.id, {
+          id: p.id, name: p.name, title: p.title, children: [],
+          accent: highlight.has(p.id) ? 'var(--md-sys-color-tertiary)' : undefined,
+        });
+      });
+      const roots = [];
+      people.forEach(function (p) {
+        if (p.manager && nodes.has(p.manager)) {
+          nodes.get(p.manager).children.push(nodes.get(p.id));
+        } else {
+          roots.push(nodes.get(p.id));
+        }
+      });
+      return roots;
+    }
+
+    chart.nodes = buildTree(new Set());
+
+    function openProfile(id) {
+      const person = byId.get(id);
+      if (!person) return;
+      // The sheet repeats the name as text, so the avatar stays decorative:
+      // initials only, no name/label (see the md-avatar manual).
+      avatarEl.initials = initialsOf(person.name);
+      nameEl.textContent = person.name;
+      titleEl.textContent = person.title;
+      const count = directReports(id).length;
+      reportsEl.textContent = count === 0 ? 'No direct reports'
+        : count === 1 ? '1 direct report' : count + ' direct reports';
+      badgeEl.value = String(count);
+      badgeEl.style.display = count === 0 ? 'none' : '';
+      emailChip.label = person.email;
+      phoneChip.label = person.phone;
+      crumbsEl.innerHTML = '';
+      const chain = [];
+      let cursor = person;
+      while (cursor) {
+        chain.unshift(cursor);
+        cursor = cursor.manager ? byId.get(cursor.manager) : null;
+      }
+      chain.forEach(function (p) {
+        const crumb = document.createElement('md-breadcrumb-item');
+        crumb.textContent = p.name;
+        crumbsEl.appendChild(crumb);
+      });
+      sheet.show();
+    }
+
+    chart.addEventListener('mdSelectionChange', function (e) {
+      if (e.detail.selectedIds.length === 0) { sheet.close(); return; }
+      openProfile(e.detail.selectedIds[0]);
+    });
+
+    // Clearing the selection on close lets the same card be re-selected.
+    sheet.addEventListener('mdClose', function () { chart.selectedIds = []; });
+
+    let matches = [];
+    function pick(id) {
+      search.close();
+      chart.selectedIds = [id];
+      openProfile(id);
+    }
+
+    function renderResults(query) {
+      resultsHost.innerHTML = '';
+      const q = query.toLowerCase();
+      if (!q) { matches = []; chart.nodes = buildTree(new Set()); return; }
+      matches = people.filter(function (p) {
+        return p.name.toLowerCase().indexOf(q) !== -1
+          || p.title.toLowerCase().indexOf(q) !== -1;
+      });
+      chart.nodes = buildTree(new Set(matches.map(function (p) { return p.id; })));
+      matches.forEach(function (p) {
+        const row = document.createElement('button');
+        row.type = 'button';
+        // data-search-result makes the row count toward the live-region
+        // announcement and reachable with ArrowDown/ArrowUp from the input.
+        row.setAttribute('data-search-result', '');
+        row.style.cssText = 'display: flex; flex-direction: column; align-items: flex-start;'
+          + 'gap: 2px; padding: 10px 16px; border: none; background: transparent;'
+          + 'cursor: pointer; text-align: start; border-radius: 12px; inline-size: 100%;';
+        const nm = document.createElement('span');
+        nm.style.cssText = 'font: var(--md-sys-typescale-body-large); color: var(--md-sys-color-on-surface);';
+        nm.textContent = p.name;
+        const tl = document.createElement('span');
+        tl.style.cssText = 'font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);';
+        tl.textContent = p.title;
+        row.appendChild(nm);
+        row.appendChild(tl);
+        row.addEventListener('click', function () { pick(p.id); });
+        resultsHost.appendChild(row);
+      });
+    }
+
+    // One query source: mdSearch is debounced and de-duplicated on the
+    // trimmed query. Enter opens the top match.
+    search.addEventListener('mdSearch', function (e) { renderResults(e.detail.value); });
+    search.addEventListener('mdSubmit', function () {
+      if (matches.length > 0) pick(matches[0].id);
+    });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-organization-chart`](/components/organization-chart/) | The directory itself. `nodes` is derived from flat records with a `manager` field; `selection-mode="single"` makes every card selectable and `mdSelectionChange` drives the profile sheet. Search matches get a per-node `accent` tint. |
+| [`md-search`](/components/search/) | Docked bar above the tree. `mdSearch` (debounced 200 ms) filters the people list, re-renders result rows into the `results` slot, and re-tints the chart. `results-label` announces the match count. |
+| [`md-side-sheet`](/components/side-sheet/) | The profile panel, `variant="modal"`: scrim, focus trap, Escape to dismiss, and focus restored to the chart on close. `show()` / `close()` keep `open` the single source of truth. |
+| [`md-avatar`](/components/avatar/) | Initials with a name-hashed container colour, so each person keeps the same tint every time the sheet opens. Left nameless on purpose — the name is adjacent text, so the avatar stays decorative. |
+| [`md-badge`](/components/badge/) | Direct-report count pinned to the avatar's corner; the wrapper `span` provides the `position: relative` anchor. The count is mirrored as visible text below the name. |
+| [`md-chip`](/components/chip/) | Email and phone as assist chips with `mail` / `call` glyphs — contextual actions attached to the profile. |
+| [`md-breadcrumbs`](/components/breadcrumbs/) | The reporting line, CEO first. Crumbs are rebuilt by walking the `manager` chain; the last one is auto-promoted to `current`. |
+
+## The details that make it production-grade
+
+- **The chart is a real `role="tree"`.** Roving tabindex, Arrow Up/Down through
+  visible nodes, Enter/Space to select, Home/End to jump — so the whole
+  select-a-person flow works without a pointer, and `aria-selected` tracks the
+  open profile.
+- **One query source, announced.** The fetch-equivalent work hangs off
+  `mdSearch` alone (debounced, de-duplicated on the trimmed query), and each
+  result row carries `data-search-result`, so ArrowDown steps from the input
+  into the rows and the polite live region reports "3 people found".
+- **The modal sheet manages focus for you.** It traps Tab while open, closes on
+  Escape and scrim click, and restores focus to the previously focused element
+  — the org-chart node you selected — on close.
+- **The badge is not the only carrier of the count.** `md-badge` exposes
+  `role="status"`, but the sheet also prints "3 direct reports" as plain text,
+  following the M3 rule that the host content reflects what the badge says.
+- **RTL comes free.** The sheet's `side` is logical (`end`), the chart mirrors
+  its layout and swaps the horizontal arrow keys, and the breadcrumb trail
+  reverses with the reading direction.
+
+## Variations
+
+- **Deep orgs read better sideways:** set `orientation="horizontal"` on the
+  chart and start lower branches folded with `expanded: false` per node.
+- **Compare people instead of inspecting one:** `selection-mode="multiple"` and
+  a chip per selected person — `mdSelectionChange` hands you the full
+  `selectedIds` array on every click.
+- **Wide screens can keep the profile open:** switch the sheet to
+  `variant="standard"` inside a flex row so the tree and the profile sit side
+  by side with no scrim.
+- **Companies bigger than a screen:** load reports lazily in `mdNodeToggle`
+  (seed each branch with a placeholder child) and cap the tree with the
+  viewport's built-in horizontal panning.
+
+## Related
+
+- Recipe: [Two-factor verification](/recipes/two-factor-verification/) — the
+  same demo pattern applied to an auth flow.
+- Component manuals: [`md-organization-chart`](/components/organization-chart/)
+  — node data format, selection and toggle events, keyboard map — and
+  [`md-side-sheet`](/components/side-sheet/) — the standard vs. modal
+  accessibility contract.

@@ -1034,6 +1034,38 @@ document.getElementById('profile-tabs')
   .addEventListener('mdTabChange', (e) => console.log(e.detail.index, e.detail.previousIndex));
 ```
 
+### 8.7 The full recipe library
+
+Twenty-two more complete screens live in the documentation, each with a live
+demo, the full markup, framework tabs, and production notes. When the user's
+request matches one of these, read that page (append the slug to
+`https://awc-ui.dev/recipes/`) instead of composing from scratch:
+
+| Recipe slug | Screen |
+|---|---|
+| `two-factor-verification` | OTP entry, resend countdown, backup-codes dialog |
+| `kpi-overview` | Stat tiles with sparklines + charts under a range switcher |
+| `data-grid-console` | Bulk-action data table: filters, selection, undo |
+| `server-fleet-status` | Table of hosts with meters, sparklines, status dots |
+| `release-health-drilldown` | Table row → side-sheet master-detail with charts |
+| `csv-import-wizard` | Stepper: upload, map columns, validate, import |
+| `role-permission-assignment` | Transfer-list permissions with confirm dialog |
+| `org-chart-explorer` | Searchable org chart with side-sheet profiles |
+| `moderation-queue` | Verdict controls, confidence meter, card queue |
+| `checkout-wizard` | Three-step commerce checkout with validation |
+| `appointment-booking` | Date + time pickers inside a stepper flow |
+| `survey-nps` | Paged survey using every input control |
+| `notification-preferences` | Accordion × switch matrix, quiet hours |
+| `app-shell` | Responsive rail/bar chrome, SSR-ready, zero CLS |
+| `inbox-shell` | Three-zone list + reading-pane layout |
+| `mobile-filter-sheet` | Bottom-sheet filters with applied-chip row |
+| `product-reviews` | Rating input + per-star meter breakdown |
+| `order-tracking` | Shipment timeline stepper with progress meter |
+| `portfolio-markets` | Finance charts + holdings table + trade ticket |
+| `pricing-page` | Plan cards, billing toggle, comparison table |
+| `async-feedback-patterns` | Skeleton/progress/snackbar choreography rules |
+| `charts-gallery` | Every chart component, live-retheming palette |
+
 ---
 
 ## §9 — Universal do's and don'ts

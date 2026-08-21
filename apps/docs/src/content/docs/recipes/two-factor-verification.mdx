@@ -1,0 +1,150 @@
+---
+title: Two-factor verification
+description: "A complete 2FA screen: OTP entry with paste support, a resend countdown, verification states, and a backup-codes fallback dialog."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**Auth beyond the login form.** A verification step built around
+[`md-otp-field`](/components/otp-field/): six numeric cells with paste and
+autofill support, a resend button that counts down before re-enabling, a
+loading state while the code is checked, an error state that keeps layout
+stable, and a backup-codes escape hatch in a dialog. Everything participates
+in a real `<form>` — `required` blocks submission until the code is complete.
+
+<ComponentDemo
+  label="Live preview — try 123456 (accepts) or any other code (rejects)"
+  html={`<form style="display: grid; gap: 20px; max-width: 360px; margin-inline: auto; text-align: center;">
+  <div style="display: grid; gap: 4px;">
+    <span style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);">Check your phone</span>
+    <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">We sent a code to +40 ••• ••• •12</span>
+  </div>
+  <md-otp-field
+    name="code"
+    length="6"
+    required
+    label="Six-digit verification code"
+    supporting-text="The code expires in 10 minutes"
+    error-text="That code didn't match. Check the latest message."
+    reserve-supporting-space
+    incomplete-label="Enter all six digits."
+  ></md-otp-field>
+  <md-button type="submit" variant="filled" full-width>Verify</md-button>
+  <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+    <md-button variant="text" data-resend disabled>Resend code (30)</md-button>
+    <md-button variant="text" data-backup>Use a backup code</md-button>
+  </div>
+  <md-loading-indicator data-verifying hidden aria-label="Verifying code"></md-loading-indicator>
+</form>
+<md-dialog data-backup-dialog headline="Use a backup code">
+  <p style="margin: 0 0 12px; font: var(--md-sys-typescale-body-medium);">
+    Enter one of the ten single-use recovery codes you saved when enabling
+    two-factor authentication.
+  </p>
+  <md-otp-field length="8" validation-type="alphanumeric" transform="uppercase" group-size="4"
+    label="Backup code" supporting-text="Format: XXXX-XXXX"></md-otp-field>
+  <md-button slot="action" variant="text" data-dialog-close>Cancel</md-button>
+  <md-button slot="action" variant="filled">Verify backup code</md-button>
+</md-dialog>`}
+  htmlForCode={`<form>
+  <md-otp-field
+    name="code"
+    length="6"
+    required
+    label="Six-digit verification code"
+    supporting-text="The code expires in 10 minutes"
+    error-text="That code didn't match. Check the latest message."
+    reserve-supporting-space
+  ></md-otp-field>
+  <md-button type="submit" variant="filled">Verify</md-button>
+  <md-button variant="text" disabled>Resend code (30)</md-button>
+</form>`}
+  script={`
+    const form = root.querySelector('form');
+    const otp = root.querySelector('md-otp-field[name="code"]');
+    const resend = root.querySelector('[data-resend]');
+    const backupBtn = root.querySelector('[data-backup]');
+    const dialog = root.querySelector('[data-backup-dialog]');
+    const spinner = root.querySelector('[data-verifying]');
+
+    // Resend countdown: disabled for 30s, then re-enables.
+    let left = 30;
+    const tick = setInterval(() => {
+      left -= 1;
+      if (left <= 0) {
+        clearInterval(tick);
+        resend.disabled = false;
+        resend.textContent = 'Resend code';
+      } else {
+        resend.textContent = 'Resend code (' + left + ')';
+      }
+    }, 1000);
+    resend.addEventListener('click', () => {
+      left = 30;
+      resend.disabled = true;
+      otp.error = false;
+      otp.value = '';
+    });
+
+    // Fake verification: 123456 passes, anything else errors.
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      spinner.hidden = false;
+      otp.error = false;
+      setTimeout(() => {
+        spinner.hidden = true;
+        if (otp.value === '123456') {
+          otp.readOnly = true;
+          form.querySelector('md-button[type="submit"]').textContent = 'Verified ✓';
+        } else {
+          otp.error = true;
+          otp.value = '';
+        }
+      }, 700);
+    });
+
+    backupBtn.addEventListener('click', () => { dialog.open = true; });
+    dialog.querySelector('[data-dialog-close]').addEventListener('click', () => { dialog.open = false; });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-otp-field`](/components/otp-field/) | The star. `required` + `incomplete-label` make a half-typed code block submission with a clear message; `reserve-supporting-space` keeps the error swap from shifting layout; `validation-type="numeric"` (the default) rejects non-digits at the keystroke. |
+| [`md-button`](/components/button/) | `type="submit"` calls the form's `requestSubmit()`, so the OTP field's constraint validation actually gates the flow. |
+| [`md-loading-indicator`](/components/loading-indicator/) | Indeterminate wait state while the server checks the code. |
+| [`md-dialog`](/components/dialog/) | The backup-code fallback — a second `md-otp-field` configured for 8-character alphanumeric recovery codes (`transform="uppercase"`, `group-size="4"`). |
+
+## The details that make it production-grade
+
+- **Paste and autofill work for free.** A full-code paste fills every cell and
+  fires `mdComplete` — listen for it if you want to auto-submit, or set
+  `auto-submit` and skip the wiring entirely.
+- **Error recovery clears the code.** On a failed check, set `error` and reset
+  `value` — the field's `error-text` replaces the supporting text and focus
+  returns to the first cell for immediate retry.
+- **The resend countdown is a button, not a link,** and it is disabled while
+  counting — screen readers announce the state change when it re-enables.
+- **Value privacy:** `md-otp-field` deliberately never reflects `value` to a
+  DOM attribute, so entered codes don't leak into the inspector or server logs
+  that capture outerHTML.
+
+## Variations
+
+- **Auto-submit on completion:** add `auto-submit` to the field — it calls
+  `requestSubmit()` on the owning form the moment the sixth digit lands.
+- **Masked entry** for shared-screen situations: add `mask`.
+- **SMS + email split:** two shorter fields (`length="3"` each,
+  `group-size="0"`) work, but a single `length="6"` field with `group-size="3"`
+  is one focus stop instead of two — prefer it.
+
+## Related
+
+- Recipe: [Checkout wizard](/recipes/checkout-wizard/) — OTP as a payment
+  confirmation step inside a stepper flow.
+- Component manual: [`md-otp-field`](/components/otp-field/) — full API,
+  keyboard map, and the anti-patterns list.

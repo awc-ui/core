@@ -1,0 +1,241 @@
+---
+title: Order tracking timeline
+description: "A customer-facing shipment status page: a vertical stepper as the delivery timeline, a live status header, a route-progress meter, and a support side sheet."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**Where's my package, answered on one screen.** A vertical
+[`md-stepper`](/components/stepper/) plays the shipment timeline — completed
+scans above, the current leg expanded, future stages greyed out and
+unreachable. The header pairs an [`md-chip`](/components/chip/) state token
+with a pulsing [`md-status-dot`](/components/status-dot/) for the live carrier
+feed, an [`md-meter`](/components/meter/) reads out kilometres covered on the
+route, and an [`md-side-sheet`](/components/side-sheet/) keeps contact options
+one tap away without leaving the page.
+
+<ComponentDemo
+  label="Live preview — press 'Simulate carrier scan' to advance the shipment, or open Contact support"
+  html={`<div style="display: grid; gap: 24px; max-width: 620px; margin-inline: auto;">
+  <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+    <div style="display: grid; gap: 4px;">
+      <span style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);">Order #48213</span>
+      <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">AWB 3805 5521 0021 &middot; Curier Express</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <md-chip data-state-chip label="In transit" color="info" appearance="filled"></md-chip>
+      <span style="display: inline-flex; align-items: center; gap: 10px;">
+        <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;">
+          <md-status-dot data-feed-dot state="online" live label="Carrier feed live"></md-status-dot>
+        </span>
+        <span data-feed-text style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Live feed</span>
+      </span>
+    </div>
+  </div>
+  <md-meter
+    data-route-meter
+    label="Route progress — Bucharest to Cluj-Napoca"
+    max="449"
+    value="302"
+    value-text="302 km of 449 km"
+    show-label
+    show-value
+  ></md-meter>
+  <md-stepper data-timeline orientation="vertical" nav="false" auto-complete="false" active="2" label="Shipment timeline">
+    <md-step label="Order placed" description="Mon 18 Aug, 09:14" completed editable>
+      <p style="margin: 0; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+        Payment of 249,90 lei confirmed. Two items reserved at the Bucharest warehouse.
+      </p>
+    </md-step>
+    <md-step label="Packed" description="Mon 18 Aug, 16:40" completed editable>
+      <p style="margin: 0; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+        Sealed in one parcel (1.8 kg) and handed to Curier Express at gate D3.
+      </p>
+    </md-step>
+    <md-step label="In transit" description="Last scan: Sibiu hub, 07:52">
+      <p style="margin: 0; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+        Departed the Sibiu sorting hub on line-haul RO-114. Next scan expected
+        at the Cluj-Napoca depot around 13:30.
+      </p>
+    </md-step>
+    <md-step label="Out for delivery" description="Estimated Wed 20 Aug">
+      <p style="margin: 0; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+        Courier Andrei V. is on the route — your stop is number 8 of 22.
+      </p>
+    </md-step>
+    <md-step label="Delivered" description="Signature required">
+      <p style="margin: 0; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+        Parcel handed over at the door. A signed proof of delivery is attached
+        to this order.
+      </p>
+    </md-step>
+  </md-stepper>
+  <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+    <md-button data-advance variant="tonal">Simulate carrier scan</md-button>
+    <md-button data-contact variant="outlined">Contact support</md-button>
+  </div>
+</div>
+<md-side-sheet data-support-sheet variant="modal" headline="Delivery support" detached top-divider bottom-divider>
+  <p style="margin: 0 0 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+    Order #48213 &middot; AWB 3805 5521 0021
+  </p>
+  <md-list>
+    <md-list-item type="link" href="tel:+40723118402" leading-icon="call"
+      headline="Call the courier" supporting-text="Andrei V. — +40 723 118 402"></md-list-item>
+    <md-list-item type="link" href="mailto:support@curierexpress.ro" leading-icon="mail"
+      headline="Email support" supporting-text="Replies within one business day"></md-list-item>
+    <md-list-item type="button" leading-icon="report"
+      headline="Report a problem" supporting-text="Damaged, delayed, or missing parcel"></md-list-item>
+  </md-list>
+  <md-button slot="actions" data-sheet-done variant="text">Done</md-button>
+</md-side-sheet>`}
+  htmlForCode={`<div class="order-status">
+  <header>
+    <h2>Order #48213</h2>
+    <md-chip label="In transit" color="info" appearance="filled"></md-chip>
+    <span style="position: relative; display: inline-flex;">
+      <md-status-dot state="online" live label="Carrier feed live"></md-status-dot>
+    </span>
+  </header>
+
+  <md-meter label="Route progress — Bucharest to Cluj-Napoca"
+    max="449" value="302" value-text="302 km of 449 km"
+    show-label show-value></md-meter>
+
+  <md-stepper orientation="vertical" nav="false" auto-complete="false"
+    active="2" label="Shipment timeline">
+    <md-step label="Order placed" description="Mon 18 Aug, 09:14" completed editable>
+      Payment confirmed. Two items reserved at the Bucharest warehouse.
+    </md-step>
+    <md-step label="Packed" description="Mon 18 Aug, 16:40" completed editable>
+      Sealed in one parcel and handed to Curier Express.
+    </md-step>
+    <md-step label="In transit" description="Last scan: Sibiu hub, 07:52">
+      Departed the Sibiu sorting hub on line-haul RO-114.
+    </md-step>
+    <md-step label="Out for delivery" description="Estimated Wed 20 Aug"></md-step>
+    <md-step label="Delivered" description="Signature required"></md-step>
+  </md-stepper>
+
+  <md-button variant="outlined">Contact support</md-button>
+</div>
+
+<md-side-sheet variant="modal" headline="Delivery support" detached top-divider bottom-divider>
+  <md-list>
+    <md-list-item type="link" href="tel:+40723118402" leading-icon="call"
+      headline="Call the courier" supporting-text="Andrei V. — +40 723 118 402"></md-list-item>
+    <md-list-item type="link" href="mailto:support@curierexpress.ro" leading-icon="mail"
+      headline="Email support" supporting-text="Replies within one business day"></md-list-item>
+    <md-list-item type="button" leading-icon="report"
+      headline="Report a problem" supporting-text="Damaged, delayed, or missing parcel"></md-list-item>
+  </md-list>
+  <md-button slot="actions" variant="text">Done</md-button>
+</md-side-sheet>`}
+  script={`
+    const chip = root.querySelector('[data-state-chip]');
+    const dot = root.querySelector('[data-feed-dot]');
+    const feedText = root.querySelector('[data-feed-text]');
+    const meter = root.querySelector('[data-route-meter]');
+    const timeline = root.querySelector('[data-timeline]');
+    const steps = timeline.querySelectorAll('md-step');
+    const advance = root.querySelector('[data-advance]');
+    const contact = root.querySelector('[data-contact]');
+    const sheet = root.querySelector('[data-support-sheet]');
+    const done = root.querySelector('[data-sheet-done]');
+
+    // Each simulated scan: complete the current stage, activate the next,
+    // and keep the header chip + route meter in sync with the timeline.
+    const scans = [
+      { chip: 'Out for delivery', color: 'tertiary', km: 437 },
+      { chip: 'Delivered', color: 'success', km: 449 }
+    ];
+    let scan = 0;
+
+    advance.addEventListener('mdClick', () => {
+      const next = scans[scan];
+      steps[timeline.active].completed = true;
+      timeline.active = timeline.active + 1;
+      chip.label = next.chip;
+      chip.color = next.color;
+      meter.value = next.km;
+      meter.valueText = next.km + ' km of 449 km';
+      scan = scan + 1;
+
+      if (scan === scans.length) {
+        steps[timeline.active].completed = true;
+        meter.color = 'success';
+        // Setting state and label together: the live dot announces the change.
+        dot.state = 'neutral';
+        dot.live = false;
+        dot.label = 'Carrier feed closed';
+        feedText.textContent = 'Feed closed';
+        advance.disabled = true;
+        advance.textContent = 'Shipment delivered';
+      }
+    });
+
+    // Slotted side-sheet controls are never auto-wired — open and close it here.
+    contact.addEventListener('mdClick', () => sheet.show());
+    done.addEventListener('mdClick', () => sheet.close());
+    root.querySelector('md-list-item[type="button"]').addEventListener('mdClick', () => sheet.close());
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-stepper`](/components/stepper/) | The timeline. `orientation="vertical"` gives each stage an inline expanding panel; `nav="false"` removes Back / Continue because a shipment is not user-driven; `auto-complete="false"` hands `completed` to the carrier feed instead of to clicks. |
+| [`md-step`](/components/stepper/) | One scan event each — `label` for the stage, `description` for the timestamp, panel content for the detail. Past stages are `completed editable` so revisiting them never rewrites downstream state. |
+| [`md-chip`](/components/chip/) | The headline state token. `color` takes theme role names, so the same chip walks `info` → `tertiary` → `success` as the parcel moves. |
+| [`md-status-dot`](/components/status-dot/) | The carrier-feed pip. `label` + `live` make it a `role="status"` live region, so "Carrier feed closed" is announced when tracking ends. |
+| [`md-meter`](/components/meter/) | Route progress as a state, not an activity. `max="449"` with `value-text="302 km of 449 km"` shows kilometres while `aria-valuetext` says exactly the same string. |
+| [`md-side-sheet`](/components/side-sheet/) | Contact options in a `variant="modal"` overlay — scrim, focus trap, and Escape handling included, with an [`md-list`](/components/list/) of call / email / report rows. |
+
+## The details that make it production-grade
+
+- **The timeline can't lie about the future.** In the stepper's default
+  `mode="linear"`, stages after the active one are unreachable — their headers
+  render `aria-disabled` and leave the tab order — so a customer can review
+  past scans but never "open" a delivery that hasn't happened.
+- **Completion belongs to the carrier, not the click.** With
+  `auto-complete="false"` the checkmarks only change when the feed says so;
+  revisiting "Order placed" never un-completes "Packed" the way the default
+  auto-complete would on a backward move.
+- **The status dot is a real live region.** Because both `label` and `live`
+  are set it exposes `role="status"`, so the switch to "Carrier feed closed"
+  is announced politely — and its pulse is already gated behind
+  `prefers-reduced-motion`, with no extra wiring.
+- **One string drives what is seen and what is heard.** The meter's
+  `value-text` overrides both the visible header value and `aria-valuetext`,
+  so "437 km of 449 km" can never drift from what a screen reader announces.
+- **The support sheet has a guaranteed exit.** `variant="modal"` traps focus
+  and locks body scroll, but `closeable` (on by default), the scrim, and
+  Escape all dismiss it — and focus returns to the "Contact support" button
+  automatically on close.
+
+## Variations
+
+- **Compact tracking widget:** swap the meter to
+  `variant="circular" size="72" show-value` and place it beside the chip for
+  a dashboard-tile version of the same reading.
+- **Exception states:** a failed delivery attempt is `error` +
+  `error-text="Delivery attempted — nobody home"` on the affected step; the
+  stepper announces it assertively and the glyph switches to the error mark.
+- **Denser timeline for order history:** set `density="-2"` on the stepper to
+  compact indicators and connectors when the page lists several shipments.
+- **Mobile:** replace the side sheet with an `md-bottom-sheet` below ~600px —
+  side sheets are a large-screen surface by design.
+
+## Related
+
+- Recipe: [Checkout wizard](/recipes/checkout-wizard/) — the same stepper
+  driving an interactive flow instead of a read-only timeline.
+- Recipe: [Server fleet status](/recipes/server-fleet-status/) — status dots
+  and meters reporting health at fleet scale.
+- Component manuals: [`md-stepper`](/components/stepper/),
+  [`md-side-sheet`](/components/side-sheet/), [`md-meter`](/components/meter/),
+  [`md-status-dot`](/components/status-dot/) — full APIs, a11y contracts, and
+  anti-pattern lists.

@@ -1,0 +1,321 @@
+---
+title: Release health drilldown
+description: "A deploy dashboard: a clickable table of releases with environment chips, health dots and error-rate sparklines, drilling into a side sheet with an error chart, an adoption meter, and a rollback split button."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**Master-detail for on-call engineers.** A deploy table built on
+[`md-table`](/components/table/): each row pairs a version with an environment
+[`md-chip`](/components/chip/), an [`md-status-dot`](/components/status-dot/)
+whose meaning is carried in words, and a 24-hour error-rate
+[`md-sparkline`](/components/sparkline/) on a shared scale. Clicking a row
+opens a modal [`md-side-sheet`](/components/side-sheet/) with the full story —
+stacked 5xx/4xx errors in an [`md-area-chart`](/components/area-chart/), fleet
+adoption in an [`md-meter`](/components/meter/) — and an
+[`md-split-button`](/components/split-button/) whose default action rolls back
+to the previous version, with variations in a paired menu.
+
+<ComponentDemo
+  label="Live preview — click a deploy row to open the drilldown, then try Roll back"
+  html={`<div style="display: grid; gap: 12px;">
+  <div style="display: grid; gap: 2px;">
+    <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">checkout-service — recent deploys</span>
+    <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Error rate is the last 24 hours; all sparklines share a 0–6% scale.</span>
+  </div>
+  <md-table-container variant="outlined">
+    <md-table data-deploys label="Recent deploys" caption=""
+              column-template="minmax(130px, 1.1fr) 120px 140px minmax(150px, 1.4fr)">
+      <md-table-head>
+        <md-table-row rowgroup="head">
+          <md-table-cell head scope="col">Version</md-table-cell>
+          <md-table-cell head scope="col">Environment</md-table-cell>
+          <md-table-cell head scope="col">Status</md-table-cell>
+          <md-table-cell head scope="col">Error rate (24 h)</md-table-cell>
+        </md-table-row>
+      </md-table-head>
+      <md-table-body>
+        <md-table-row value="v2.14.0" clickable>
+          <md-table-cell><span style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;">v2.14.0</span></md-table-cell>
+          <md-table-cell><md-chip label="Production" color="primary" appearance="filled"></md-chip></md-table-cell>
+          <md-table-cell>
+            <span style="position: relative; display: inline-flex; padding-inline-end: 12px;"><md-status-dot size="small" state="online"></md-status-dot></span>
+            <span data-status>Healthy</span>
+          </md-table-cell>
+          <md-table-cell>
+            <span style="display: flex; align-items: center; gap: 10px;">
+              <span style="min-inline-size: 3.2em; font: var(--md-sys-typescale-body-medium);">0.4%</span>
+              <md-sparkline data-spark="v2.14.0" color="success" min="0" max="6" height="24px" show-tooltip="false" style="flex: 1;"></md-sparkline>
+            </span>
+          </md-table-cell>
+        </md-table-row>
+        <md-table-row value="v2.14.1-rc.2" clickable>
+          <md-table-cell><span style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;">v2.14.1-rc.2</span></md-table-cell>
+          <md-table-cell><md-chip label="Staging" color="secondary" appearance="filled"></md-chip></md-table-cell>
+          <md-table-cell>
+            <span style="position: relative; display: inline-flex; padding-inline-end: 12px;"><md-status-dot size="small" state="away"></md-status-dot></span>
+            <span data-status>Degraded</span>
+          </md-table-cell>
+          <md-table-cell>
+            <span style="display: flex; align-items: center; gap: 10px;">
+              <span style="min-inline-size: 3.2em; font: var(--md-sys-typescale-body-medium);">2.8%</span>
+              <md-sparkline data-spark="v2.14.1-rc.2" color="warning" min="0" max="6" height="24px" show-tooltip="false" style="flex: 1;"></md-sparkline>
+            </span>
+          </md-table-cell>
+        </md-table-row>
+        <md-table-row value="v2.14.1-canary" clickable>
+          <md-table-cell><span style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;">v2.14.1-canary</span></md-table-cell>
+          <md-table-cell><md-chip label="Canary" color="warning" appearance="filled"></md-chip></md-table-cell>
+          <md-table-cell>
+            <span style="position: relative; display: inline-flex; padding-inline-end: 12px;"><md-status-dot size="small" state="busy" live></md-status-dot></span>
+            <span data-status>Failing</span>
+          </md-table-cell>
+          <md-table-cell>
+            <span style="display: flex; align-items: center; gap: 10px;">
+              <span style="min-inline-size: 3.2em; font: var(--md-sys-typescale-body-medium);">5.1%</span>
+              <md-sparkline data-spark="v2.14.1-canary" color="error" min="0" max="6" height="24px" show-tooltip="false" style="flex: 1;"></md-sparkline>
+            </span>
+          </md-table-cell>
+        </md-table-row>
+        <md-table-row value="v2.13.2" clickable>
+          <md-table-cell><span style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;">v2.13.2</span></md-table-cell>
+          <md-table-cell><md-chip label="Production" color="primary" appearance="filled"></md-chip></md-table-cell>
+          <md-table-cell>
+            <span style="position: relative; display: inline-flex; padding-inline-end: 12px;"><md-status-dot size="small" state="online"></md-status-dot></span>
+            <span data-status>Healthy</span>
+          </md-table-cell>
+          <md-table-cell>
+            <span style="display: flex; align-items: center; gap: 10px;">
+              <span style="min-inline-size: 3.2em; font: var(--md-sys-typescale-body-medium);">0.3%</span>
+              <md-sparkline data-spark="v2.13.2" color="success" min="0" max="6" height="24px" show-tooltip="false" style="flex: 1;"></md-sparkline>
+            </span>
+          </md-table-cell>
+        </md-table-row>
+      </md-table-body>
+    </md-table>
+  </md-table-container>
+</div>
+<md-side-sheet data-detail variant="modal" headline="Deploy detail" top-divider bottom-divider>
+  <div style="display: grid; gap: 16px;">
+    <span data-meta style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);"></span>
+    <md-area-chart data-errors label="Errors by class" subtitle="Per minute, last 24 h"
+                   height="200px" legend="bottom" grid="horizontal"></md-area-chart>
+    <div style="display: grid; gap: 4px;">
+      <md-meter data-adoption label="Fleet adoption" show-label show-value></md-meter>
+      <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Share of pods currently running this version.</span>
+    </div>
+  </div>
+  <md-split-button slot="actions" data-rollback id="rh-rollback-btn"
+                   icon="undo" label="Roll back" variant="filled"
+                   menu-label="More rollback options" controls="rh-rollback-menu"></md-split-button>
+</md-side-sheet>
+<md-menu id="rh-rollback-menu" anchor="rh-rollback-btn" placement="top-start">
+  <md-menu-item headline="Roll back and pause auto-deploy" supporting-text="Stops the pipeline after reverting"></md-menu-item>
+  <md-menu-item headline="Roll back canary only" supporting-text="Staging keeps the new build"></md-menu-item>
+</md-menu>`}
+  htmlForCode={`<md-table-container variant="outlined">
+  <md-table id="deploys" label="Recent deploys"
+            column-template="minmax(130px, 1.1fr) 120px 140px minmax(150px, 1.4fr)">
+    <md-table-head>
+      <md-table-row rowgroup="head">
+        <md-table-cell head scope="col">Version</md-table-cell>
+        <md-table-cell head scope="col">Environment</md-table-cell>
+        <md-table-cell head scope="col">Status</md-table-cell>
+        <md-table-cell head scope="col">Error rate (24 h)</md-table-cell>
+      </md-table-row>
+    </md-table-head>
+    <md-table-body>
+      <md-table-row value="v2.14.0" clickable>
+        <md-table-cell>v2.14.0</md-table-cell>
+        <md-table-cell><md-chip label="Production" color="primary" appearance="filled"></md-chip></md-table-cell>
+        <md-table-cell>
+          <span style="position: relative; display: inline-flex; padding-inline-end: 12px;"><md-status-dot size="small" state="online"></md-status-dot></span>
+          Healthy
+        </md-table-cell>
+        <md-table-cell>
+          0.4% <md-sparkline color="success" min="0" max="6" height="24px" show-tooltip="false"></md-sparkline>
+        </md-table-cell>
+      </md-table-row>
+    </md-table-body>
+  </md-table>
+</md-table-container>
+
+<md-side-sheet id="detail" variant="modal" headline="Deploy detail" top-divider bottom-divider>
+  <md-area-chart id="errors" label="Errors by class" height="200px" legend="bottom"></md-area-chart>
+  <md-meter id="adoption" label="Fleet adoption" show-label show-value></md-meter>
+  <md-split-button slot="actions" id="rollback-btn" icon="undo" label="Roll back"
+                   menu-label="More rollback options" controls="rollback-menu"></md-split-button>
+</md-side-sheet>
+
+<md-menu id="rollback-menu" anchor="rollback-btn" placement="top-start">
+  <md-menu-item headline="Roll back and pause auto-deploy"></md-menu-item>
+  <md-menu-item headline="Roll back canary only"></md-menu-item>
+</md-menu>`}
+  script={`
+    const table = root.querySelector('[data-deploys]');
+    const sheet = root.querySelector('[data-detail]');
+    const chart = root.querySelector('[data-errors]');
+    const meter = root.querySelector('[data-adoption]');
+    const split = root.querySelector('[data-rollback]');
+    const menu  = root.querySelector('#rh-rollback-menu');
+    const meta  = root.querySelector('[data-meta]');
+
+    const hours = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
+
+    const deploys = {
+      'v2.14.0': {
+        env: 'Production', previous: 'v2.13.2', adoption: 97,
+        meta: 'Deployed 06:12 UTC by mira.chen · commit 8f3d21a',
+        spark: [0.5, 0.4, 0.6, 0.5, 0.4, 0.3, 0.4, 0.4],
+        fivexx: [2, 1, 3, 2, 1, 1, 2, 2],
+        fourxx: [14, 11, 16, 12, 10, 9, 12, 11]
+      },
+      'v2.14.1-rc.2': {
+        env: 'Staging', previous: 'v2.14.0', adoption: 100,
+        meta: 'Deployed 11:47 UTC by dan.kovacs · commit 51c9e02',
+        spark: [0.9, 1.2, 1.4, 1.8, 2.1, 2.4, 2.6, 2.8],
+        fivexx: [6, 9, 11, 14, 17, 19, 22, 24],
+        fourxx: [20, 24, 28, 31, 35, 38, 41, 44]
+      },
+      'v2.14.1-canary': {
+        env: 'Canary', previous: 'v2.14.0', adoption: 5,
+        meta: 'Deployed 13:05 UTC by mira.chen · commit b74e9c1',
+        spark: [0.6, 0.8, 1.4, 2.2, 3.1, 4.0, 4.7, 5.1],
+        fivexx: [4, 7, 12, 19, 27, 34, 41, 46],
+        fourxx: [10, 12, 15, 18, 22, 25, 29, 33]
+      },
+      'v2.13.2': {
+        env: 'Production', previous: 'v2.13.1', adoption: 3,
+        meta: 'Deployed Mon 09:20 UTC by priya.n · commit 2ab0d77',
+        spark: [0.4, 0.3, 0.4, 0.3, 0.3, 0.4, 0.3, 0.3],
+        fivexx: [1, 1, 2, 1, 1, 1, 1, 1],
+        fourxx: [9, 8, 10, 9, 8, 9, 8, 8]
+      }
+    };
+
+    // Feed each row's sparkline. Arrays never cross the attribute boundary,
+    // so data / labels / valueFormatter are set as JS properties.
+    root.querySelectorAll('[data-spark]').forEach((el) => {
+      const d = deploys[el.dataset.spark];
+      el.data = d.spark;
+      el.labels = hours;
+      el.valueFormatter = (v) => (v == null ? '0' : v) + '%';
+    });
+
+    let current = null;
+
+    // Master -> detail: mdRowClick carries the row's value.
+    table.addEventListener('mdRowClick', (e) => {
+      const d = deploys[e.detail.value];
+      if (!d) return;
+      current = e.detail.value;
+
+      sheet.headline = e.detail.value + ' · ' + d.env;
+      meta.textContent = d.meta;
+
+      chart.xAxis = { data: hours };
+      chart.series = [
+        { label: '5xx', data: d.fivexx, color: 'error' },
+        { label: '4xx', data: d.fourxx, color: 'warning' }
+      ];
+      chart.valueFormatter = (v) => (v == null ? 0 : v) + '/min';
+
+      meter.value = d.adoption;
+      meter.color = d.adoption >= 90 ? 'success' : 'primary';
+
+      split.label = 'Roll back to ' + d.previous;
+      sheet.show();
+    });
+
+    // The sheet slides in from off-screen; re-measure the canvas once open.
+    sheet.addEventListener('mdOpen', () => { chart.resize(); });
+
+    // Split button: the component renders the button, we drive the menu.
+    split.addEventListener('mdTrailingClick', async (e) => {
+      if (e.detail.checked) await menu.show();
+      else await menu.close();
+    });
+    // Keep the chevron truthful when the menu closes by outside click / Escape.
+    menu.addEventListener('mdClose', () => { split.trailingChecked = false; });
+
+    function rollback() {
+      const row = table.querySelector('md-table-row[value="' + current + '"]');
+      if (row) {
+        const dot = row.querySelector('md-status-dot');
+        const text = row.querySelector('[data-status]');
+        dot.state = 'busy';
+        dot.live = true;
+        text.textContent = 'Rolling back';
+        row.highlight = true;
+        setTimeout(() => {
+          dot.state = 'offline';
+          dot.live = false;
+          text.textContent = 'Rolled back';
+        }, 2200);
+      }
+      sheet.close();
+    }
+
+    split.addEventListener('mdLeadingClick', rollback);
+    menu.addEventListener('mdClick', rollback);
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-table`](/components/table/) | The master list. Rows are hand-authored, `clickable`, and carry a `value` — `mdRowClick` reports which deploy was chosen, and `column-template` declares the four tracks explicitly. |
+| [`md-chip`](/components/chip/) | The environment tag (`appearance="filled"`, semantic `color` role names — no raw hex). |
+| [`md-status-dot`](/components/status-dot/) | The health pip. Left unlabelled, it is decorative (`role="presentation"`); the adjacent text carries the state as words. `live` pulses only on the actively failing canary. |
+| [`md-sparkline`](/components/sparkline/) | The 24-hour error-rate trend. All four share `min="0" max="6"` so they read on one scale, and `show-tooltip="false"` keeps the hover card off the row's click target. |
+| [`md-side-sheet`](/components/side-sheet/) | The drilldown surface. `variant="modal"` gives it a scrim, a focus trap and Escape handling; `bottom-divider` separates the rollback actions row. |
+| [`md-area-chart`](/components/area-chart/) | Stacked (the default) 5xx over 4xx error volume — composition of the total error load over the day. |
+| [`md-meter`](/components/meter/) | Fleet adoption as a `role="meter"` reading — value clamped, announced once via `aria-valuetext`. |
+| [`md-split-button`](/components/split-button/) + [`md-menu`](/components/menu/) | "Roll back to v2.13.2" as the default action; the trailing chevron opens a menu of genuine variations of that same action. |
+
+## The details that make it production-grade
+
+- **Row clicks never fight embedded controls.** `mdRowClick` is suppressed for
+  clicks landing on interactive descendants (the `md-chip` is on that list),
+  and a `clickable` row is a real tab stop — Enter and Space open the
+  drilldown from the keyboard.
+- **Comparable sparklines, by contract.** Each `md-sparkline` auto-scales to
+  its own data by default, which would make a 0.4% row look as dramatic as a
+  5.1% one — pinning the same `min`/`max` on all four is what makes the column
+  honest.
+- **The modal sheet owns its accessibility.** `role="dialog"` with
+  `aria-modal`, focus moved in on open, trapped while open, and restored to
+  the clicked row on close — no wiring in the demo does any of that.
+- **The chevron cannot lie.** `md-split-button` flips `trailing-checked`
+  itself and mirrors it to `aria-expanded`; the one thing it cannot know — the
+  menu closing via outside click or Escape — is resynced from the menu's
+  `mdClose`.
+- **Status is words, not colour.** The dot is `aria-hidden` and the state
+  ("Healthy", "Failing", "Rolling back") lives in adjacent text, so the
+  column survives forced-colors mode and screen readers alike (WCAG 1.4.1).
+
+## Variations
+
+- **Persistent inspector:** switch the sheet to `variant="standard"` and place
+  it beside the table — no scrim, no focus trap, and the table stays
+  interactive while the detail panel is open.
+- **Bulk rollback:** add `selection="multiple"` to the table plus slotted
+  `md-checkbox` cells; the table auto-wires them and `mdSelectionChange`
+  reports the selected versions for a batch action.
+- **Long deploy history:** wrap in `md-table-container max-height="420px"`
+  with `frozen-header`, so the header stays put while the body scrolls.
+- **Discrete periods:** `variant="bar"` on the sparklines reads better when
+  the error rate is bucketed per deploy window rather than sampled
+  continuously.
+
+## Related
+
+- Recipe: [Two-factor verification](/recipes/two-factor-verification/) —
+  another full screen where component contracts (form participation, focus
+  management) do the heavy lifting.
+- Component manuals: [`md-table`](/components/table/) — the grid architecture
+  and selection model; [`md-side-sheet`](/components/side-sheet/) — the
+  standard vs modal accessibility contracts.

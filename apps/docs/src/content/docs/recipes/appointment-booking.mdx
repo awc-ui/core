@@ -1,0 +1,296 @@
+---
+title: Appointment booking
+description: "A three-step booking flow: service cards, a bounded date picker with weekends disabled, a time-slot picker, a review step, and a confirmation dialog with an Add-to-calendar split button."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**The classic wizard, done properly.** A physiotherapy clinic's booking screen
+built around [`md-stepper`](/components/stepper/): pick a service from
+interactive [`md-card`](/components/card/) tiles, choose a slot with
+[`md-date-picker`](/components/date-picker/) (September–October window,
+weekends disabled via `isDateDisabled`) and a 24-hour
+[`md-time-picker`](/components/time-picker/) snapped to 30-minute slots,
+review a summary, and confirm. Success lands in an
+[`md-dialog`](/components/dialog/) whose
+[`md-split-button`](/components/split-button/) downloads a real `.ics` file —
+or opens a menu of calendar variations. Continue stays disabled until each
+step's data exists, and `mode="linear"` keeps step headers honest.
+
+<ComponentDemo
+  label="Live preview — pick a service, then a weekday slot in Sep–Oct 2026"
+  html={`<div style="max-width: 680px; margin-inline: auto;">
+  <div style="display: grid; gap: 4px; margin-bottom: 20px;">
+    <span style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);">Book an appointment</span>
+    <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">Meridian Physio · Mon–Fri 09:00–17:00 · 14 Arcului St, Bucharest</span>
+  </div>
+  <md-stepper data-wizard label="Booking progress" finish-label="Book appointment" next-disabled>
+    <md-step label="Service" description="What do you need?">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; padding-block: 12px;">
+        <md-card interactive variant="outlined" data-service="Initial assessment" data-duration="60" data-price="€70"
+          aria-label="Choose initial assessment, 60 minutes, 70 euro">
+          <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Initial assessment</span>
+          <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Full movement screen and a treatment plan.</span>
+          <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-primary);">60 min · €70</span>
+        </md-card>
+        <md-card interactive variant="outlined" data-service="Follow-up session" data-duration="30" data-price="€45"
+          aria-label="Choose follow-up session, 30 minutes, 45 euro">
+          <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Follow-up session</span>
+          <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Continue an existing treatment plan.</span>
+          <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-primary);">30 min · €45</span>
+        </md-card>
+        <md-card interactive variant="outlined" data-service="Sports massage" data-duration="45" data-price="€55"
+          aria-label="Choose sports massage, 45 minutes, 55 euro">
+          <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Sports massage</span>
+          <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Deep-tissue work, pre- or post-event.</span>
+          <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-primary);">45 min · €55</span>
+        </md-card>
+      </div>
+    </md-step>
+    <md-step label="Date &amp; time" description="Pick a free slot">
+      <div style="display: flex; gap: 16px; flex-wrap: wrap; padding-block: 12px;">
+        <md-date-picker data-date label="Date" required clearable
+          min="2026-09-01" max="2026-10-30"
+          locale="en-GB" first-day-of-week="1"
+          supporting-text="Monday to Friday" reserve-supporting-space
+        ></md-date-picker>
+        <md-time-picker data-time label="Time" required
+          format="24h" min="09:00" max="16:30" minute-step="30"
+        ></md-time-picker>
+      </div>
+    </md-step>
+    <md-step label="Confirm" description="Review your booking">
+      <div style="display: grid; grid-template-columns: max-content 1fr; gap: 8px 24px; padding-block: 12px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">
+        <span style="color: var(--md-sys-color-on-surface-variant);">Service</span><span data-sum-service>—</span>
+        <span style="color: var(--md-sys-color-on-surface-variant);">When</span><span data-sum-when>—</span>
+        <span style="color: var(--md-sys-color-on-surface-variant);">Duration</span><span data-sum-duration>—</span>
+        <span style="color: var(--md-sys-color-on-surface-variant);">Price</span><span data-sum-price>—</span>
+        <span style="color: var(--md-sys-color-on-surface-variant);">Where</span><span>Meridian Physio, 14 Arcului St, Bucharest</span>
+      </div>
+    </md-step>
+  </md-stepper>
+</div>
+<md-dialog data-confirm headline="Appointment booked" icon="event_available" scrim-dismissible="false">
+  <p data-confirm-text style="margin: 0 0 16px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);"></p>
+  <md-split-button id="cal-split" variant="tonal" icon="event" label="Add to calendar"
+    menu-label="More calendar options" controls="cal-menu"></md-split-button>
+  <p data-cal-status hidden style="margin: 12px 0 0; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);"></p>
+  <md-button slot="actions" variant="text" data-dialog-done>Done</md-button>
+</md-dialog>
+<md-menu id="cal-menu" anchor="cal-split" placement="bottom-start" style="z-index: 2147483647; --md-sys-z-index-popup: 2147483647;">
+  <md-menu-item headline="Download .ics file" data-ics></md-menu-item>
+  <md-menu-item headline="Copy details" data-copy-details></md-menu-item>
+</md-menu>`}
+  htmlForCode={`<md-stepper label="Booking progress" finish-label="Book appointment" next-disabled>
+  <md-step label="Service" description="What do you need?">
+    <md-card interactive variant="outlined" aria-label="Choose initial assessment, 60 minutes, 70 euro">
+      <span>Initial assessment</span>
+      <span>60 min · €70</span>
+    </md-card>
+  </md-step>
+  <md-step label="Date &amp; time" description="Pick a free slot">
+    <md-date-picker label="Date" required clearable
+      min="2026-09-01" max="2026-10-30"
+      locale="en-GB" first-day-of-week="1"
+      supporting-text="Monday to Friday" reserve-supporting-space
+    ></md-date-picker>
+    <md-time-picker label="Time" required
+      format="24h" min="09:00" max="16:30" minute-step="30"
+    ></md-time-picker>
+  </md-step>
+  <md-step label="Confirm" description="Review your booking">
+    Summary rows go here.
+  </md-step>
+</md-stepper>
+
+<md-dialog headline="Appointment booked" icon="event_available" scrim-dismissible="false">
+  <p>Initial assessment on Tuesday 15 September 2026 at 09:30.</p>
+  <md-split-button id="cal-split" variant="tonal" icon="event" label="Add to calendar"
+    menu-label="More calendar options" controls="cal-menu"></md-split-button>
+  <md-button slot="actions" variant="text">Done</md-button>
+</md-dialog>
+
+<md-menu id="cal-menu" anchor="cal-split" placement="bottom-start">
+  <md-menu-item headline="Download .ics file"></md-menu-item>
+  <md-menu-item headline="Copy details"></md-menu-item>
+</md-menu>`}
+  script={`
+    var stepper = root.querySelector('[data-wizard]');
+    var cards = Array.prototype.slice.call(root.querySelectorAll('md-card[data-service]'));
+    var datePicker = root.querySelector('[data-date]');
+    var timePicker = root.querySelector('[data-time]');
+    var dialog = root.querySelector('[data-confirm]');
+    var confirmText = root.querySelector('[data-confirm-text]');
+    var split = root.querySelector('#cal-split');
+    var menu = root.querySelector('#cal-menu');
+    var status = root.querySelector('[data-cal-status]');
+
+    var booking = { service: '', duration: 0, price: '', date: '', time: '' };
+    var activeIndex = 0;
+
+    var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    var months = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'];
+
+    function formatDate(iso) {
+      var p = iso.split('-');
+      var dt = new Date(+p[0], p[1] - 1, +p[2]);
+      return days[dt.getDay()] + ' ' + (+p[2]) + ' ' + months[p[1] - 1] + ' ' + p[0];
+    }
+
+    // The clinic is closed on weekends — a function property, not an attribute.
+    datePicker.isDateDisabled = function (d) {
+      return d.getDay() === 0 || d.getDay() === 6;
+    };
+
+    // Continue is gated per step: a service on step 1, a full slot on step 2.
+    function updateGate() {
+      if (activeIndex === 0) stepper.nextDisabled = !booking.service;
+      else if (activeIndex === 1) stepper.nextDisabled = !(booking.date && booking.time);
+      else stepper.nextDisabled = false;
+    }
+
+    cards.forEach(function (card) {
+      card.addEventListener('mdClick', function () {
+        cards.forEach(function (c) { c.variant = c === card ? 'filled' : 'outlined'; });
+        booking.service = card.dataset.service;
+        booking.duration = +card.dataset.duration;
+        booking.price = card.dataset.price;
+        updateGate();
+      });
+    });
+
+    // mdChange is the commit event — mdSelected / mdInput would fire mid-pick.
+    datePicker.addEventListener('mdChange', function (e) { booking.date = e.detail.value; updateGate(); });
+    timePicker.addEventListener('mdChange', function (e) { booking.time = e.detail.value; updateGate(); });
+
+    function fillSummary() {
+      root.querySelector('[data-sum-service]').textContent = booking.service;
+      root.querySelector('[data-sum-when]').textContent = formatDate(booking.date) + ', ' + booking.time;
+      root.querySelector('[data-sum-duration]').textContent = booking.duration + ' minutes';
+      root.querySelector('[data-sum-price]').textContent = booking.price;
+    }
+
+    stepper.addEventListener('mdStepChange', function (e) {
+      activeIndex = e.detail.index;
+      if (activeIndex === 2) fillSummary();
+      updateGate();
+    });
+
+    // "Book appointment" (the finish-label) pressed on the last step.
+    stepper.addEventListener('mdComplete', function () {
+      confirmText.textContent = booking.service + ' with Dr. Elena Rusu on ' +
+        formatDate(booking.date) + ' at ' + booking.time +
+        '. A confirmation email is on its way to you.';
+      dialog.open = true;
+    });
+
+    root.querySelector('[data-dialog-done]').addEventListener('click', function () {
+      dialog.open = false;
+    });
+
+    // Split button: leading segment runs the default action, trailing drives the menu.
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    function stamp(dt) {
+      return '' + dt.getFullYear() + pad(dt.getMonth() + 1) + pad(dt.getDate()) +
+        'T' + pad(dt.getHours()) + pad(dt.getMinutes()) + '00';
+    }
+
+    function setStatus(msg) { status.hidden = false; status.textContent = msg; }
+
+    function downloadIcs() {
+      var p = booking.date.split('-');
+      var t = booking.time.split(':');
+      var start = new Date(+p[0], p[1] - 1, +p[2], +t[0], +t[1]);
+      var end = new Date(start.getTime() + booking.duration * 60000);
+      var lines = [
+        'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Meridian Physio//Booking//EN',
+        'BEGIN:VEVENT',
+        'UID:' + Date.now() + '@meridian-physio.example',
+        'DTSTART:' + stamp(start),
+        'DTEND:' + stamp(end),
+        'SUMMARY:' + booking.service + ' — Meridian Physio',
+        'LOCATION:Meridian Physio – 14 Arcului St (Bucharest)',
+        'END:VEVENT', 'END:VCALENDAR'
+      ];
+      var a = document.createElement('a');
+      a.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(lines.join('\\r\\n'));
+      a.download = 'meridian-appointment.ics';
+      a.click();
+      setStatus('meridian-appointment.ics saved — open it to add the event.');
+    }
+
+    split.addEventListener('mdLeadingClick', downloadIcs);
+    split.addEventListener('mdTrailingClick', function (e) {
+      if (e.detail.checked) menu.show(); else menu.close();
+    });
+    // mdClose does not bubble — listen on the menu itself, and keep the chevron honest.
+    menu.addEventListener('mdClose', function () { split.trailingChecked = false; });
+
+    root.querySelector('[data-ics]').addEventListener('mdClick', downloadIcs);
+    root.querySelector('[data-copy-details]').addEventListener('mdClick', function () {
+      var text = booking.service + ' — ' + formatDate(booking.date) + ' ' + booking.time +
+        ', Meridian Physio, 14 Arcului St, Bucharest';
+      if (navigator.clipboard) navigator.clipboard.writeText(text);
+      setStatus('Details copied to the clipboard.');
+    });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-stepper`](/components/stepper/) + `md-step` | The spine. `mode="linear"` (the default) blocks jumping ahead via step headers, `next-disabled` gates the built-in Continue until the step's data exists, `finish-label` turns the last Continue into "Book appointment", and `mdComplete` opens the confirmation dialog. Steps are direct children — a wrapper `<div>` would make the stepper see zero steps. |
+| [`md-card`](/components/card/) | Service tiles. `interactive` with no focusable children gives each card `role="button"`, `tabindex="0"` and Enter/Space activation for free; selection toggles `variant` from `outlined` to `filled`. |
+| [`md-date-picker`](/components/date-picker/) | The slot's day. `min`/`max` bound the calendar to the Sep–Oct window and the `isDateDisabled` **property** (there is no attribute) greys out weekends. `value` and `mdChange.detail.value` are always ISO `YYYY-MM-DD`, whatever `locale` displays. |
+| [`md-time-picker`](/components/time-picker/) | The slot's time. `min="09:00" max="16:30"` match opening hours, `minute-step="30"` snaps the dial to real slot granularity, and `value` is always a 24-hour `HH:MM` string. |
+| [`md-dialog`](/components/dialog/) | The booked confirmation. `scrim-dismissible="false"` so a stray click cannot dismiss it; the slotted Done button is wired to close it (slotted actions never close automatically). |
+| [`md-split-button`](/components/split-button/) + [`md-menu`](/components/menu/) | "Add to calendar" is the default action (it saves a genuine `.ics` file); the trailing chevron opens a menu of variations. `controls="cal-menu"` wires `aria-controls`, and the menu's `mdClose` resets `trailing-checked` so the chevron never lies. |
+
+## The details that make it production-grade
+
+- **Impossible slots cannot be picked, only possible ones confirmed.**
+  `min`/`max` on both pickers plus the weekend predicate mean the server never
+  has to reject a date — and disabled day cells are exposed to assistive tech
+  as `disabled`, not merely greyed out.
+- **Canonical value formats.** The date picker emits ISO `YYYY-MM-DD` and the
+  time picker 24-hour `HH:MM` regardless of display `locale` or `format`. Both
+  are form-associated via `ElementInternals`: give them a `name` inside a
+  `<form>` and they submit like native inputs — no hidden fields.
+- **The gating is layered, not decorative.** `next-disabled` only disables the
+  built-in Continue; `mode="linear"` is what blocks step-header jumps. The
+  stepper also announces progress ("Step 2 of 3: Date & time, current")
+  through a built-in polite live region.
+- **The dialog handles focus.** On open it focuses the first tabbable element
+  — the trap descends into slotted shadow roots, so the split button counts —
+  wraps Tab inside, and returns focus to the trigger on close.
+- **The split button's accessible names are explicit.** The leading segment is
+  named by `label`; the icon-only trailing toggle is named *only* by
+  `menu-label` (WCAG 4.1.2), and `aria-expanded` mirrors `trailing-checked`.
+
+## Variations
+
+- **One-click date picking:** add `commit-on-select` to the date picker and a
+  day click commits without the Cancel/OK row. Keep the confirm step for
+  bookings — the readme's rule is to drop it only on low-stakes, reversible
+  fields like filters.
+- **US audience:** set `format="12h"` on the time picker. Only the display
+  changes — `value` stays `"14:30"`, so no parsing code moves.
+- **Narrow screens:** switch the stepper to `variant="mobile"` and move the
+  active panel into its `content` slot, swapped on `mdStepChange` — the mobile
+  bar hides the step-header row entirely.
+- **Server-driven availability:** when free slots are sparse, replace the time
+  picker with an `md-select` of the actual openings — the time picker's own
+  guidance says a few fixed slots belong in a select, not on a dial.
+
+## Related
+
+- Recipe: [Two-factor verification](/recipes/two-factor-verification/) —
+  another gated flow: OTP entry with resend countdown and a dialog fallback.
+- Component manuals: [`md-date-picker`](/components/date-picker/) and
+  [`md-time-picker`](/components/time-picker/) — value formats, validation
+  templates, and the full keyboard maps; [`md-stepper`](/components/stepper/)
+  — the `mdBeforeChange` validation hook this demo's simpler gating sits on.

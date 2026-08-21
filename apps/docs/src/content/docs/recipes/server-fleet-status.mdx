@@ -1,0 +1,332 @@
+---
+title: Server fleet status board
+description: "An SRE monitor: a hand-authored table of hosts with status dots, CPU and memory meters, latency sparklines, last-check tooltips, a region filter, and a refresh cycle."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**A monitoring wall in one table.** Six hosts in an
+[`md-table`](/components/table/), each row carrying an
+[`md-status-dot`](/components/status-dot/) beside the state word, CPU and
+memory as [`md-meter`](/components/meter/) bars that recolour at 75% and 90%
+thresholds, a p95-latency [`md-sparkline`](/components/sparkline/) on a shared
+0–250 ms scale, and an [`md-tooltip`](/components/tooltip/) with the last
+health-check result. A segmented button filters by region (the table's FLIP
+motion animates rows out), and the refresh button shows an
+[`md-loading-indicator`](/components/loading-indicator/) while new readings
+land.
+
+<ComponentDemo
+  label="Live preview — switch regions, hover a status for the last check, or refresh for new readings"
+  html={`<div style="display: grid; gap: 16px;">
+  <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+    <div style="display: grid; gap: 2px;">
+      <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Production fleet</span>
+      <span data-updated style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Updated 08:40:12 UTC</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <md-loading-indicator data-refreshing hidden label="Refreshing readings" style="--md-loading-indicator-size: 28px;"></md-loading-indicator>
+      <md-segmented-button-set data-region-filter aria-label="Region filter" density="-1">
+        <md-segmented-button value="all" label="All" selected></md-segmented-button>
+        <md-segmented-button value="us-east" label="us-east"></md-segmented-button>
+        <md-segmented-button value="eu-west" label="eu-west"></md-segmented-button>
+      </md-segmented-button-set>
+      <md-button data-refresh variant="tonal" icon="refresh">Refresh</md-button>
+    </div>
+  </div>
+  <md-table-container variant="outlined">
+    <md-table data-fleet label="Server fleet status"
+              column-template="minmax(130px, 1.2fr) 150px minmax(100px, 1fr) minmax(100px, 1fr) 130px"
+              min-width="640px">
+      <md-table-head>
+        <md-table-row rowgroup="head">
+          <md-table-cell head scope="col">Host</md-table-cell>
+          <md-table-cell head scope="col">Status</md-table-cell>
+          <md-table-cell head scope="col">CPU</md-table-cell>
+          <md-table-cell head scope="col">Memory</md-table-cell>
+          <md-table-cell head scope="col">Latency p95</md-table-cell>
+        </md-table-row>
+      </md-table-head>
+      <md-table-body>
+        <md-table-row value="edge-01" data-region="us-east" data-host="edge-01">
+          <md-table-cell ellipsis>edge-01.use1</md-table-cell>
+          <md-table-cell>
+            <md-tooltip text="Last check 08:40:12 UTC — agent v2.14, HTTP 200 in 38 ms" position="bottom">
+              <span tabindex="0" style="display: inline-flex; align-items: center; gap: 10px; font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">
+                <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;"><md-status-dot state="online"></md-status-dot></span>
+                Healthy
+              </span>
+            </md-tooltip>
+          </md-table-cell>
+          <md-table-cell><md-meter label="CPU load, edge-01" value="34" show-value color="success"></md-meter></md-table-cell>
+          <md-table-cell><md-meter label="Memory used, edge-01" value="61" show-value color="success"></md-meter></md-table-cell>
+          <md-table-cell><md-sparkline data-spark min="0" max="250" height="24px" color="primary"></md-sparkline></md-table-cell>
+        </md-table-row>
+        <md-table-row value="api-01" data-region="us-east" data-host="api-01">
+          <md-table-cell ellipsis>api-01.use1</md-table-cell>
+          <md-table-cell>
+            <md-tooltip text="Last check 08:40:10 UTC — agent v2.14, HTTP 200 in 52 ms" position="bottom">
+              <span tabindex="0" style="display: inline-flex; align-items: center; gap: 10px; font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">
+                <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;"><md-status-dot state="online"></md-status-dot></span>
+                Healthy
+              </span>
+            </md-tooltip>
+          </md-table-cell>
+          <md-table-cell><md-meter label="CPU load, api-01" value="41" show-value color="success"></md-meter></md-table-cell>
+          <md-table-cell><md-meter label="Memory used, api-01" value="58" show-value color="success"></md-meter></md-table-cell>
+          <md-table-cell><md-sparkline data-spark min="0" max="250" height="24px" color="primary"></md-sparkline></md-table-cell>
+        </md-table-row>
+        <md-table-row value="queue-01" data-region="us-east" data-host="queue-01">
+          <md-table-cell ellipsis>queue-01.use1</md-table-cell>
+          <md-table-cell>
+            <md-tooltip text="Last check 08:40:11 UTC — agent v2.14, HTTP 200 in 187 ms (slow)" position="bottom">
+              <span tabindex="0" style="display: inline-flex; align-items: center; gap: 10px; font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">
+                <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;"><md-status-dot state="away"></md-status-dot></span>
+                Degraded
+              </span>
+            </md-tooltip>
+          </md-table-cell>
+          <md-table-cell><md-meter label="CPU load, queue-01" value="88" show-value color="warning"></md-meter></md-table-cell>
+          <md-table-cell><md-meter label="Memory used, queue-01" value="74" show-value color="success"></md-meter></md-table-cell>
+          <md-table-cell><md-sparkline data-spark min="0" max="250" height="24px" color="warning"></md-sparkline></md-table-cell>
+        </md-table-row>
+        <md-table-row value="db-01" data-region="eu-west" data-host="db-01">
+          <md-table-cell ellipsis>db-01.euw1</md-table-cell>
+          <md-table-cell>
+            <md-tooltip text="Last check 08:40:09 UTC — agent v2.14, HTTP 200 in 44 ms" position="bottom">
+              <span tabindex="0" style="display: inline-flex; align-items: center; gap: 10px; font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">
+                <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;"><md-status-dot state="online"></md-status-dot></span>
+                Healthy
+              </span>
+            </md-tooltip>
+          </md-table-cell>
+          <md-table-cell><md-meter label="CPU load, db-01" value="23" show-value color="success"></md-meter></md-table-cell>
+          <md-table-cell><md-meter label="Memory used, db-01" value="79" show-value color="warning"></md-meter></md-table-cell>
+          <md-table-cell><md-sparkline data-spark min="0" max="250" height="24px" color="primary"></md-sparkline></md-table-cell>
+        </md-table-row>
+        <md-table-row value="cache-01" data-region="eu-west" data-host="cache-01" data-down>
+          <md-table-cell ellipsis>cache-01.euw1</md-table-cell>
+          <md-table-cell>
+            <md-tooltip text="Last check 08:40:12 UTC — connection refused after 3 retries" position="bottom">
+              <span tabindex="0" style="display: inline-flex; align-items: center; gap: 10px; font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-error);">
+                <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;"><md-status-dot state="busy" live></md-status-dot></span>
+                Down
+              </span>
+            </md-tooltip>
+          </md-table-cell>
+          <md-table-cell><md-meter label="CPU load, cache-01" value="0" value-text="no data" show-value></md-meter></md-table-cell>
+          <md-table-cell><md-meter label="Memory used, cache-01" value="0" value-text="no data" show-value></md-meter></md-table-cell>
+          <md-table-cell><md-sparkline data-spark min="0" max="250" height="24px" color="error"></md-sparkline></md-table-cell>
+        </md-table-row>
+        <md-table-row value="worker-02" data-region="eu-west" data-host="worker-02">
+          <md-table-cell ellipsis>worker-02.euw1</md-table-cell>
+          <md-table-cell>
+            <md-tooltip text="Last check 08:40:08 UTC — agent v2.14, HTTP 200 in 61 ms" position="bottom">
+              <span tabindex="0" style="display: inline-flex; align-items: center; gap: 10px; font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">
+                <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;"><md-status-dot state="online"></md-status-dot></span>
+                Healthy
+              </span>
+            </md-tooltip>
+          </md-table-cell>
+          <md-table-cell><md-meter label="CPU load, worker-02" value="56" show-value color="success"></md-meter></md-table-cell>
+          <md-table-cell><md-meter label="Memory used, worker-02" value="47" show-value color="success"></md-meter></md-table-cell>
+          <md-table-cell><md-sparkline data-spark min="0" max="250" height="24px" color="primary"></md-sparkline></md-table-cell>
+        </md-table-row>
+      </md-table-body>
+    </md-table>
+  </md-table-container>
+</div>`}
+  htmlForCode={`<div class="fleet-toolbar">
+  <md-loading-indicator hidden label="Refreshing readings"></md-loading-indicator>
+  <md-segmented-button-set aria-label="Region filter" density="-1">
+    <md-segmented-button value="all" label="All" selected></md-segmented-button>
+    <md-segmented-button value="us-east" label="us-east"></md-segmented-button>
+    <md-segmented-button value="eu-west" label="eu-west"></md-segmented-button>
+  </md-segmented-button-set>
+  <md-button variant="tonal" icon="refresh">Refresh</md-button>
+</div>
+
+<md-table-container variant="outlined">
+  <md-table label="Server fleet status" min-width="640px"
+            column-template="minmax(130px, 1.2fr) 150px minmax(100px, 1fr) minmax(100px, 1fr) 130px">
+    <md-table-head>
+      <md-table-row rowgroup="head">
+        <md-table-cell head scope="col">Host</md-table-cell>
+        <md-table-cell head scope="col">Status</md-table-cell>
+        <md-table-cell head scope="col">CPU</md-table-cell>
+        <md-table-cell head scope="col">Memory</md-table-cell>
+        <md-table-cell head scope="col">Latency p95</md-table-cell>
+      </md-table-row>
+    </md-table-head>
+    <md-table-body>
+      <md-table-row value="edge-01">
+        <md-table-cell ellipsis>edge-01.use1</md-table-cell>
+        <md-table-cell>
+          <md-tooltip text="Last check 08:40:12 UTC — agent v2.14, HTTP 200 in 38 ms" position="bottom">
+            <span tabindex="0" class="host-status">
+              <span class="dot-anchor"><md-status-dot state="online"></md-status-dot></span>
+              Healthy
+            </span>
+          </md-tooltip>
+        </md-table-cell>
+        <md-table-cell><md-meter label="CPU load, edge-01" value="34" show-value color="success"></md-meter></md-table-cell>
+        <md-table-cell><md-meter label="Memory used, edge-01" value="61" show-value color="success"></md-meter></md-table-cell>
+        <md-table-cell><md-sparkline min="0" max="250" height="24px"></md-sparkline></md-table-cell>
+      </md-table-row>
+      <md-table-row value="cache-01">
+        <md-table-cell ellipsis>cache-01.euw1</md-table-cell>
+        <md-table-cell>
+          <md-tooltip text="Last check 08:40:12 UTC — connection refused after 3 retries" position="bottom">
+            <span tabindex="0" class="host-status">
+              <span class="dot-anchor"><md-status-dot state="busy" live></md-status-dot></span>
+              Down
+            </span>
+          </md-tooltip>
+        </md-table-cell>
+        <md-table-cell><md-meter label="CPU load, cache-01" value="0" value-text="no data" show-value></md-meter></md-table-cell>
+        <md-table-cell><md-meter label="Memory used, cache-01" value="0" value-text="no data" show-value></md-meter></md-table-cell>
+        <md-table-cell><md-sparkline min="0" max="250" height="24px" color="error"></md-sparkline></md-table-cell>
+      </md-table-row>
+    </md-table-body>
+  </md-table>
+</md-table-container>`}
+  script={`
+    const table = root.querySelector('[data-fleet]');
+    const filter = root.querySelector('[data-region-filter]');
+    const refreshBtn = root.querySelector('[data-refresh]');
+    const spinner = root.querySelector('[data-refreshing]');
+    const updated = root.querySelector('[data-updated]');
+    const rows = Array.from(root.querySelectorAll('md-table-row[data-host]'));
+
+    // Eight readings per host, 5-minute intervals; shared 0-250 ms scale.
+    const latency = {
+      'edge-01':   [36, 41, 38, 35, 39, 37, 40, 38],
+      'api-01':    [48, 55, 51, 47, 58, 54, 50, 52],
+      'queue-01':  [62, 71, 90, 118, 141, 156, 174, 187],
+      'db-01':     [42, 40, 45, 43, 47, 44, 41, 44],
+      'cache-01':  [58, 61, 66, 84, 140, 231, 244, 250],
+      'worker-02': [66, 59, 63, 70, 57, 62, 64, 61]
+    };
+    const times = ['08:05', '08:10', '08:15', '08:20', '08:25', '08:30', '08:35', '08:40'];
+
+    rows.forEach((row) => {
+      const spark = row.querySelector('md-sparkline');
+      spark.data = latency[row.getAttribute('data-host')].slice();
+      spark.labels = times.slice();
+      spark.valueFormatter = (v) => (v == null ? 'no data' : v + ' ms');
+    });
+
+    function meterColor(v) {
+      return v >= 90 ? 'error' : v >= 75 ? 'warning' : 'success';
+    }
+    function jitter(v, lo, hi) {
+      const next = v + Math.round(Math.random() * 12 - 6);
+      return Math.min(hi, Math.max(lo, next));
+    }
+
+    // Region filter: arm the FLIP snapshot, then mutate the rows.
+    filter.addEventListener('mdChange', (e) => {
+      const region = e.detail[0] || 'all';
+      table.animateNextChange().then(() => {
+        rows.forEach((row) => {
+          const match = region === 'all' || row.getAttribute('data-region') === region;
+          row.style.display = match ? '' : 'none';
+        });
+      });
+    });
+
+    // Refresh: brief indeterminate wait, then new readings everywhere.
+    refreshBtn.addEventListener('click', () => {
+      spinner.hidden = false;
+      refreshBtn.disabled = true;
+      setTimeout(() => {
+        const time = new Date().toISOString().slice(11, 19);
+        rows.forEach((row) => {
+          const tip = row.querySelector('md-tooltip');
+          const spark = row.querySelector('md-sparkline');
+          const series = latency[row.getAttribute('data-host')];
+          if (row.hasAttribute('data-down')) {
+            tip.text = 'Last check ' + time + ' UTC — connection refused after 3 retries';
+            return;
+          }
+          const meters = row.querySelectorAll('md-meter');
+          meters.forEach((m) => {
+            const next = jitter(m.value, 5, 98);
+            m.value = next;
+            m.color = meterColor(next);
+          });
+          series.shift();
+          series.push(jitter(series[series.length - 1], 20, 240));
+          spark.data = series.slice();
+          const ping = series[series.length - 1];
+          tip.text = 'Last check ' + time + ' UTC — agent v2.14, HTTP 200 in ' + ping + ' ms';
+        });
+        updated.textContent = 'Updated ' + time + ' UTC';
+        spinner.hidden = true;
+        refreshBtn.disabled = false;
+      }, 900);
+    });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-table`](/components/table/) | The board. A hand-authored CSS-Grid table — `column-template` declares the five tracks, `min-width="640px"` trades squished columns for a horizontal scroll inside [`md-table-container`](/components/table-container/), and `animateNextChange()` FLIP-animates the region filter. |
+| [`md-status-dot`](/components/status-dot/) | Health pip beside the state word: `online` = healthy, `away` = degraded, `busy` = down. The down host adds `live` — the one genuinely-changing state on the board gets the pulse. |
+| [`md-meter`](/components/meter/) | CPU and memory readings. `show-value` renders the percentage, `color` swaps `success` → `warning` → `error` as thresholds are crossed, and the unreachable host shows `value-text="no data"` so the same string drives the visible text and `aria-valuetext`. |
+| [`md-sparkline`](/components/sparkline/) | Latency trend per row. Every instance pins `min="0" max="250"`, so six sparklines share one comparable scale instead of each auto-scaling to its own drama. |
+| [`md-tooltip`](/components/tooltip/) | Last-check details on hover *and* keyboard focus — the trigger span carries `tabindex="0"` because a bare span gets hover only. |
+| [`md-segmented-button-set`](/components/segmented-button-set/) | Single-select region filter (`role="radiogroup"`); its `mdChange` payload is the array of selected values. |
+| [`md-loading-indicator`](/components/loading-indicator/) | Indeterminate refresh moment next to the [`md-button`](/components/button/) that triggers it — removed when readings land, never left spinning. |
+
+## The details that make it production-grade
+
+- **Status is words, not colour alone.** Each dot sits beside a visible
+  "Healthy / Degraded / Down" word, so the state survives forced-colors mode
+  (where every dot collapses to one system colour) and satisfies WCAG 1.4.1 —
+  the dots themselves stay decorative (`role="presentation"`) because the text
+  carries the meaning.
+- **The sparklines share a fixed scale.** Left to auto-scale, a 36–41 ms flat
+  line and a 60–250 ms meltdown would look identical; pinning `min`/`max`
+  across all six rows is what makes them comparable at a glance.
+- **Filtering can't make the page jump.** `md-table`'s height ratchet
+  (`keep-height`, on by default) keeps the board at its initial height when a
+  region filter drops rows, and `animateNextChange()` glides survivors into
+  place — with `prefers-reduced-motion` winning over both the FLIP and the
+  dot's pulse automatically.
+- **The tooltip is reachable without a mouse.** The trigger span's
+  `tabindex="0"` gives keyboard users the same last-check detail, the popup
+  stays hoverable across the gap (WCAG 1.4.13), and `Escape` dismisses it. The
+  tooltip sets `aria-description` on the trigger — a description, never the
+  accessible name.
+- **One string per reading, seen and spoken.** `md-meter` clamps `value` into
+  range, and `value-text` overrides the visible value and `aria-valuetext`
+  together, so the "no data" state on the down host can never drift between
+  what sighted users see and what screen readers announce.
+
+## Variations
+
+- **Large fleets:** add `frozen-header` plus `md-table-container
+  max-height="60vh"` so the header stays put while hundreds of hosts scroll;
+  with pagination, set `row-offset`/`row-count` so AT announces "row 41 of
+  480" instead of a per-page position.
+- **Sortable hot-spots:** wrap the CPU header in an `md-table-sort-label
+  column="cpu" default-order="desc"` and reorder rows in the `mdSortChange`
+  handler — the table animates the reorder for free.
+- **Bulk actions:** `selection="multiple"` with a checkbox column turns the
+  board into a target list for "silence alerts" or "drain and reboot".
+- **Tile view:** the same meters as `variant="circular"` rings
+  (`show-value show-label`) make a per-host card wall from identical data.
+
+## Related
+
+- Recipe: [Two-factor verification](/recipes/two-factor-verification/) — the
+  same loading-indicator pattern gating an async check.
+- Component manuals: [`md-table`](/components/table/) — the grid architecture,
+  frozen headers, and column pinning; [`md-sparkline`](/components/sparkline/)
+  — the shared-scale rule and reference areas for flagging outage windows.
+

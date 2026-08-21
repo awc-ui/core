@@ -1,0 +1,296 @@
+---
+title: Pricing page
+description: "A marketing pricing surface: a monthly/annual billing toggle that live-updates three plan cards, a full comparison table with fine-print tooltips, and a FAQ accordion."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**The page that sells the plan.** A billing-period switch built on
+[`md-segmented-button-set`](/components/segmented-button/) drives the prices in
+three plan [`md-card`](/components/card/)s — the popular one carrying an
+[`md-badge`](/components/badge/) and highlight
+[`md-chip`](/components/chip/)s — above a full
+[`md-table`](/components/table/) comparison whose fine-print rows explain
+themselves through [`md-tooltip`](/components/tooltip/), and a FAQ
+[`md-accordion`](/components/accordion/) that answers the objections before
+sales has to.
+
+<ComponentDemo
+  label="Live preview — switch to Annual and watch all three prices update"
+  html={`<div style="display: grid; gap: 28px;">
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;">
+    <span style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);">Plans that grow with your team</span>
+    <md-segmented-button-set data-billing aria-label="Billing period">
+      <md-segmented-button value="monthly" label="Monthly" selected></md-segmented-button>
+      <md-segmented-button value="annual" label="Annual"></md-segmented-button>
+    </md-segmented-button-set>
+    <span data-savings style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Save 20% with annual billing</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch;">
+    <md-card variant="outlined" style="text-align: start;">
+      <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Starter</span>
+      <div>
+        <span data-price data-monthly="19" data-annual="15" style="font: var(--md-sys-typescale-display-small); color: var(--md-sys-color-on-surface);">$19</span>
+        <span data-term style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);"> per month, billed monthly</span>
+      </div>
+      <ul style="margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+        <li>10 projects</li>
+        <li>3 team members</li>
+        <li>Community support</li>
+      </ul>
+      <md-button variant="outlined" full-width style="margin-top: auto;">Start free trial</md-button>
+    </md-card>
+
+    <md-card variant="outlined" style="text-align: start; position: relative; --md-card-outline-color: var(--md-sys-color-primary); --md-card-outline-width: 2px;">
+      <md-badge icon="star" style="--md-badge-container-color: var(--md-sys-color-primary); --md-badge-label-color: var(--md-sys-color-on-primary); --md-badge-offset-x: -14px; --md-badge-offset-y: 14px;"></md-badge>
+      <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Pro · Most popular</span>
+      <div>
+        <span data-price data-monthly="49" data-annual="39" style="font: var(--md-sys-typescale-display-small); color: var(--md-sys-color-on-surface);">$49</span>
+        <span data-term style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);"> per month, billed monthly</span>
+      </div>
+      <div role="group" aria-label="Pro plan highlights" style="display: flex; flex-wrap: wrap; gap: 6px;">
+        <md-chip variant="assist" label="SSO" density="-2"></md-chip>
+        <md-chip variant="assist" label="API access" density="-2"></md-chip>
+        <md-chip variant="assist" label="Priority support" density="-2"></md-chip>
+      </div>
+      <ul style="margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+        <li>Unlimited projects</li>
+        <li>25 team members</li>
+      </ul>
+      <md-button variant="filled" full-width style="margin-top: auto;">Choose Pro</md-button>
+    </md-card>
+
+    <md-card variant="outlined" style="text-align: start;">
+      <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Scale</span>
+      <div>
+        <span data-price data-monthly="99" data-annual="79" style="font: var(--md-sys-typescale-display-small); color: var(--md-sys-color-on-surface);">$99</span>
+        <span data-term style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);"> per month, billed monthly</span>
+      </div>
+      <ul style="margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">
+        <li>Unlimited everything</li>
+        <li>99.95% uptime SLA</li>
+        <li>Dedicated support</li>
+      </ul>
+      <md-button variant="outlined" full-width style="margin-top: auto;">Contact sales</md-button>
+    </md-card>
+  </div>
+
+  <md-table-container variant="outlined">
+    <md-table column-template="1.5fr 1fr 1fr 1fr" label="Plan comparison" striped>
+      <md-table-head>
+        <md-table-row rowgroup="head">
+          <md-table-cell head scope="col">Feature</md-table-cell>
+          <md-table-cell head scope="col" align="center">Starter</md-table-cell>
+          <md-table-cell head scope="col" align="center">Pro</md-table-cell>
+          <md-table-cell head scope="col" align="center">Scale</md-table-cell>
+        </md-table-row>
+      </md-table-head>
+      <md-table-body>
+        <md-table-row value="projects">
+          <md-table-cell head scope="row">Projects</md-table-cell>
+          <md-table-cell align="center">10</md-table-cell>
+          <md-table-cell align="center">Unlimited</md-table-cell>
+          <md-table-cell align="center">Unlimited</md-table-cell>
+        </md-table-row>
+        <md-table-row value="members">
+          <md-table-cell head scope="row">Team members</md-table-cell>
+          <md-table-cell align="center">3</md-table-cell>
+          <md-table-cell align="center">25</md-table-cell>
+          <md-table-cell align="center">Unlimited</md-table-cell>
+        </md-table-row>
+        <md-table-row value="api">
+          <md-table-cell head scope="row">
+            <md-tooltip text="Soft limit — bursts up to 2x are tolerated for 24 hours.">
+              <span tabindex="0" style="text-decoration: underline dotted; text-underline-offset: 3px; cursor: help;">API requests / month</span>
+            </md-tooltip>
+          </md-table-cell>
+          <md-table-cell align="center">10,000</md-table-cell>
+          <md-table-cell align="center">100,000</md-table-cell>
+          <md-table-cell align="center">2,000,000</md-table-cell>
+        </md-table-row>
+        <md-table-row value="sso">
+          <md-table-cell head scope="row">Single sign-on (SSO)</md-table-cell>
+          <md-table-cell align="center">—</md-table-cell>
+          <md-table-cell align="center">✓</md-table-cell>
+          <md-table-cell align="center">✓</md-table-cell>
+        </md-table-row>
+        <md-table-row value="audit">
+          <md-table-cell head scope="row">
+            <md-tooltip text="Older entries can be exported to cold storage on request.">
+              <span tabindex="0" style="text-decoration: underline dotted; text-underline-offset: 3px; cursor: help;">Audit log retention</span>
+            </md-tooltip>
+          </md-table-cell>
+          <md-table-cell align="center">—</md-table-cell>
+          <md-table-cell align="center">30 days</md-table-cell>
+          <md-table-cell align="center">365 days</md-table-cell>
+        </md-table-row>
+        <md-table-row value="sla">
+          <md-table-cell head scope="row">
+            <md-tooltip text="Measured per calendar month; service credits apply automatically.">
+              <span tabindex="0" style="text-decoration: underline dotted; text-underline-offset: 3px; cursor: help;">Uptime SLA</span>
+            </md-tooltip>
+          </md-table-cell>
+          <md-table-cell align="center">—</md-table-cell>
+          <md-table-cell align="center">99.9%</md-table-cell>
+          <md-table-cell align="center">99.95%</md-table-cell>
+        </md-table-row>
+        <md-table-row value="support">
+          <md-table-cell head scope="row">Support</md-table-cell>
+          <md-table-cell align="center">Community</md-table-cell>
+          <md-table-cell align="center">Email</md-table-cell>
+          <md-table-cell align="center">Dedicated</md-table-cell>
+        </md-table-row>
+      </md-table-body>
+    </md-table>
+  </md-table-container>
+
+  <div style="display: grid; gap: 12px;">
+    <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Frequently asked questions</span>
+    <md-accordion exclusive heading-level="3" variant="outlined">
+      <md-accordion-item headline="Can I change plans later?">
+        <p style="margin: 0; font: var(--md-sys-typescale-body-medium);">Yes — upgrades apply immediately and are prorated; downgrades take effect at the next renewal.</p>
+      </md-accordion-item>
+      <md-accordion-item headline="What happens when my trial ends?">
+        <p style="margin: 0; font: var(--md-sys-typescale-body-medium);">Your workspace becomes read-only. Nothing is deleted for 90 days, and picking any plan restores it instantly.</p>
+      </md-accordion-item>
+      <md-accordion-item headline="Do you offer invoicing?">
+        <p style="margin: 0; font: var(--md-sys-typescale-body-medium);">Annual Pro and Scale plans can pay by invoice with net-30 terms. Monthly plans are card-only.</p>
+      </md-accordion-item>
+      <md-accordion-item headline="How do refunds work?">
+        <p style="margin: 0; font: var(--md-sys-typescale-body-medium);">Annual plans can be refunded pro rata within 30 days of purchase. Contact billing@example.com with your invoice number.</p>
+      </md-accordion-item>
+    </md-accordion>
+  </div>
+</div>`}
+  htmlForCode={`<md-segmented-button-set aria-label="Billing period">
+  <md-segmented-button value="monthly" label="Monthly" selected></md-segmented-button>
+  <md-segmented-button value="annual" label="Annual"></md-segmented-button>
+</md-segmented-button-set>
+
+<md-card variant="outlined" style="position: relative;">
+  <md-badge icon="star"
+    style="--md-badge-offset-x: -14px; --md-badge-offset-y: 14px;"></md-badge>
+  <h3>Pro · Most popular</h3>
+  <p><strong>$49</strong> per month, billed monthly</p>
+  <div role="group" aria-label="Pro plan highlights">
+    <md-chip variant="assist" label="SSO"></md-chip>
+    <md-chip variant="assist" label="Priority support"></md-chip>
+  </div>
+  <md-button variant="filled" full-width>Choose Pro</md-button>
+</md-card>
+
+<md-table-container variant="outlined">
+  <md-table column-template="1.5fr 1fr 1fr 1fr" label="Plan comparison" striped>
+    <md-table-head>
+      <md-table-row rowgroup="head">
+        <md-table-cell head scope="col">Feature</md-table-cell>
+        <md-table-cell head scope="col" align="center">Pro</md-table-cell>
+      </md-table-row>
+    </md-table-head>
+    <md-table-body>
+      <md-table-row value="sla">
+        <md-table-cell head scope="row">
+          <md-tooltip text="Measured per calendar month; credits apply automatically.">
+            <span tabindex="0">Uptime SLA</span>
+          </md-tooltip>
+        </md-table-cell>
+        <md-table-cell align="center">99.9%</md-table-cell>
+      </md-table-row>
+    </md-table-body>
+  </md-table>
+</md-table-container>
+
+<md-accordion exclusive heading-level="3" variant="outlined">
+  <md-accordion-item headline="Can I change plans later?">
+    <p>Yes — upgrades apply immediately and are prorated.</p>
+  </md-accordion-item>
+</md-accordion>`}
+  script={`
+    const billing = root.querySelector('[data-billing]');
+    const prices = root.querySelectorAll('[data-price]');
+    const terms = root.querySelectorAll('[data-term]');
+    const savings = root.querySelector('[data-savings]');
+
+    // Single-select mdChange always reports exactly one value, and it fires on
+    // every activation (including a re-click of the selected segment), so the
+    // handler is written to be idempotent.
+    billing.addEventListener('mdChange', (e) => {
+      const annual = e.detail[0] === 'annual';
+      prices.forEach((el) => {
+        el.textContent = '$' + (annual ? el.dataset.annual : el.dataset.monthly);
+      });
+      terms.forEach((el) => {
+        el.textContent = annual
+          ? ' per month, billed annually'
+          : ' per month, billed monthly';
+      });
+      savings.textContent = annual
+        ? 'You are saving 20% with annual billing'
+        : 'Save 20% with annual billing';
+    });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-segmented-button-set`](/components/segmented-button/) | The billing toggle. Single-select `radiogroup` over two segments; its `mdChange` carries the full selection snapshot (`['annual']`), and the initial state is expressed with `selected` on the Monthly child — the set has no `value` prop. |
+| [`md-card`](/components/card/) | One outlined card per plan. They hold their own `md-button`s, so they are deliberately **not** `interactive` — the buttons are the controls. The popular card just overrides `--md-card-outline-color` and `--md-card-outline-width`. |
+| [`md-badge`](/components/badge/) | The "popular" marker on the Pro card. It anchors to the nearest positioned ancestor, so the card gets `position: relative`, and the offset properties pull it inside the card's `overflow: hidden` boundary. |
+| [`md-chip`](/components/chip/) | Plan highlights on the Pro card, as a set inside a labelled `role="group"` — chips never appear alone. |
+| [`md-table`](/components/table/) | The full comparison. `column-template` declares the four tracks, `head scope="col"` / `head scope="row"` make every value announce with its plan and feature, and `label` names the grid for screen readers. |
+| [`md-tooltip`](/components/tooltip/) | Fine print on the metered rows — the trigger is wrapped in the default slot, and each `span` gets `tabindex="0"` so keyboard users get the same disclosure. |
+| [`md-accordion`](/components/accordion/) | The FAQ. `exclusive` keeps one answer open at a time; each item renders a real heading wrapping a button with `aria-expanded`. |
+
+## The details that make it production-grade
+
+- **The price update is idempotent by design.** The set's `mdChange` fires on
+  every activation — including re-clicking the already-selected segment — and
+  single-select can never report an empty selection, so the handler just
+  rewrites the DOM from `e.detail[0]` with no state to diff.
+- **The badge is a glyph, not the word "Popular".** `md-badge` shows at most 4
+  characters of `value`, so the card uses `icon="star"` plus visible text in
+  the plan title; the badge itself is `role="status"`, takes no pointer events,
+  and never blocks the card underneath.
+- **Cards keep the keyboard path on the buttons.** A card holding an
+  `md-button` must not be `interactive`: the component would detect the
+  focusable child and drop its own `role="button"`, leaving a mouse-only card
+  action. Here each card is a plain container and the CTA is the single control.
+- **Tooltip fine print is keyboard-reachable and WCAG 1.4.13 compliant.** The
+  plain-text triggers carry `tabindex="0"` (a bare `span` gets hover only), the
+  popup opens on focus as well as hover, and the default `hide-delay` keeps the
+  grace period that lets a pointer travel into the popup. The tooltip sets
+  `aria-description` on the trigger — a description, never a name.
+- **The comparison table is a real ARIA grid.** `md-table` lays out with CSS
+  Grid but stamps `role="table"` / `row` / `columnheader` / `rowheader` from
+  your `head` + `scope` attributes, so "99.9%" announces as *Uptime SLA, Pro*
+  rather than as loose text.
+
+## Variations
+
+- **Localized currency:** format prices with `Intl.NumberFormat` before writing
+  `textContent`, and keep the raw amounts in the `data-monthly` / `data-annual`
+  attributes.
+- **Always-open FAQ:** add `keep-one-expanded` next to `exclusive` so exactly
+  one answer is open at all times — the open header advertises
+  `aria-disabled="true"` instead of collapsing.
+- **A third billing term:** segmented buttons scale to five segments, so a
+  "2-year" option is one more `md-segmented-button` child plus a
+  `data-biennial` price on each card.
+- **A very long feature matrix:** wrap the table in
+  `md-table-container max-height="60vh"` and set `frozen-header` so the plan
+  names stay visible while the body scrolls.
+
+## Related
+
+- Recipe: [Checkout wizard](/recipes/checkout-wizard/) — where the "Choose Pro"
+  click leads: payment, confirmation, and an OTP step.
+- Recipe: [Notification preferences](/recipes/notification-preferences/) —
+  another settings-style surface built on cards and toggles.
+- Component manuals: [`md-segmented-button`](/components/segmented-button/),
+  [`md-table`](/components/table/), [`md-tooltip`](/components/tooltip/),
+  [`md-accordion`](/components/accordion/).

@@ -1,0 +1,282 @@
+---
+title: Multi-step survey with NPS
+description: "A four-question paged survey: star satisfaction, a 0-10 NPS scale, usage questions, a renewal slider, a live progress header, and a thank-you card."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**One question per page, progress always visible.** A questionnaire built on
+[`md-stepper`](/components/stepper/): four linear steps with a
+[`md-progress-indicator`](/components/progress-indicator/) header that counts
+answered questions, an [`md-rating`](/components/rating/) satisfaction score, a
+0-10 NPS scale made of toggle [`md-button`](/components/button/)s (a
+[segmented set](/components/segmented-button/) caps at five options, so eleven
+segments would break its M3 contract), an [`md-slider`](/components/slider/)
+for renewal likelihood, radio and checkbox question types, and a
+[`md-multi-select`](/components/multi-select/) for feature usage. Continue
+stays disabled until the current question is answered, and finishing plays the
+progress bar's closing animation before the thank-you
+[`md-card`](/components/card/) appears.
+
+<ComponentDemo
+  label="Live preview — answer all four questions to reach the thank-you card"
+  html={`<div style="max-width: 640px; margin-inline: auto; display: grid; gap: 20px;">
+  <div style="display: grid; gap: 8px;">
+    <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;">
+      <span style="font: var(--md-sys-typescale-title-large); color: var(--md-sys-color-on-surface);">Quarterly product survey</span>
+      <span data-progress-caption style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Question 1 of 4</span>
+    </div>
+    <md-progress-indicator data-progress value="0" max="4" label="Survey progress"></md-progress-indicator>
+  </div>
+  <div data-survey>
+    <md-stepper data-stepper label="Survey questions" next-disabled finish-label="Submit survey">
+      <md-step label="Satisfaction" description="Overall experience">
+        <div style="display: grid; gap: 16px; justify-items: center; padding: 24px 8px; text-align: center;">
+          <span style="font: var(--md-sys-typescale-body-large); color: var(--md-sys-color-on-surface);">How satisfied are you with Meridian CRM overall?</span>
+          <md-rating data-rating size="lg" rating-label="Overall satisfaction"></md-rating>
+          <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Tap a star — tapping it again clears your answer.</span>
+        </div>
+      </md-step>
+      <md-step label="Recommend" description="0-10 scale">
+        <div style="display: grid; gap: 12px; padding: 24px 8px;">
+          <span style="font: var(--md-sys-typescale-body-large); color: var(--md-sys-color-on-surface);">How likely are you to recommend Meridian CRM to a colleague?</span>
+          <div data-nps role="group" aria-label="Likelihood to recommend, 0 to 10" style="display: flex; flex-wrap: wrap; gap: 6px; --md-button-width: 46px;">
+            <md-button variant="outlined" size="xs" toggle value="0">0</md-button>
+            <md-button variant="outlined" size="xs" toggle value="1">1</md-button>
+            <md-button variant="outlined" size="xs" toggle value="2">2</md-button>
+            <md-button variant="outlined" size="xs" toggle value="3">3</md-button>
+            <md-button variant="outlined" size="xs" toggle value="4">4</md-button>
+            <md-button variant="outlined" size="xs" toggle value="5">5</md-button>
+            <md-button variant="outlined" size="xs" toggle value="6">6</md-button>
+            <md-button variant="outlined" size="xs" toggle value="7">7</md-button>
+            <md-button variant="outlined" size="xs" toggle value="8">8</md-button>
+            <md-button variant="outlined" size="xs" toggle value="9">9</md-button>
+            <md-button variant="outlined" size="xs" toggle value="10">10</md-button>
+          </div>
+          <div style="display: flex; justify-content: space-between; font: var(--md-sys-typescale-label-small); color: var(--md-sys-color-on-surface-variant);">
+            <span>Not at all likely</span>
+            <span>Extremely likely</span>
+          </div>
+        </div>
+      </md-step>
+      <md-step label="Usage" description="How you work">
+        <div style="display: grid; gap: 24px; padding: 24px 8px;">
+          <div style="display: grid; gap: 8px;">
+            <span style="font: var(--md-sys-typescale-body-large); color: var(--md-sys-color-on-surface);">How often do you use Meridian?</span>
+            <div data-frequency role="radiogroup" aria-label="Usage frequency" style="display: grid; gap: 4px;">
+              <label style="display: flex; align-items: center; gap: 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);"><md-radio name="survey-frequency" value="daily"></md-radio>Every day</label>
+              <label style="display: flex; align-items: center; gap: 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);"><md-radio name="survey-frequency" value="weekly"></md-radio>A few times a week</label>
+              <label style="display: flex; align-items: center; gap: 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);"><md-radio name="survey-frequency" value="monthly"></md-radio>A few times a month</label>
+              <label style="display: flex; align-items: center; gap: 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);"><md-radio name="survey-frequency" value="rarely"></md-radio>Rarely</label>
+            </div>
+          </div>
+          <md-multi-select label="Features you use regularly" supporting-text="Optional — pick any that apply">
+            <md-select-option value="pipelines">Pipelines</md-select-option>
+            <md-select-option value="email-sync">Email sync</md-select-option>
+            <md-select-option value="reports">Reports</md-select-option>
+            <md-select-option value="automations">Automations</md-select-option>
+            <md-select-option value="mobile">Mobile app</md-select-option>
+          </md-multi-select>
+        </div>
+      </md-step>
+      <md-step label="Wrap-up" description="Almost done">
+        <div style="display: grid; gap: 24px; padding: 24px 8px;">
+          <div style="display: grid; gap: 20px;">
+            <span style="font: var(--md-sys-typescale-body-large); color: var(--md-sys-color-on-surface);">How likely are you to renew your subscription next quarter?</span>
+            <md-slider data-renew min="0" max="100" step="10" stops value="60" value-indicator aria-label="Likelihood to renew" value-text="60 percent"></md-slider>
+          </div>
+          <label style="display: flex; align-items: center; gap: 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);"><md-checkbox data-contact name="contact" value="yes" supporting-text="We only follow up on specific feedback"></md-checkbox>You can contact me about this feedback</label>
+        </div>
+      </md-step>
+    </md-stepper>
+  </div>
+  <div data-thanks hidden>
+    <md-card variant="filled" style="padding: 24px;">
+      <span style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);">Thanks — your feedback is in.</span>
+      <span data-summary style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);"></span>
+      <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Responses feed the Q3 product review on September 12.</span>
+    </md-card>
+  </div>
+</div>`}
+  htmlForCode={`<div style="display: grid; gap: 8px;">
+  <span>Quarterly product survey</span>
+  <md-progress-indicator value="0" max="4" label="Survey progress"></md-progress-indicator>
+</div>
+
+<md-stepper label="Survey questions" next-disabled finish-label="Submit survey">
+  <md-step label="Satisfaction" description="Overall experience">
+    <md-rating size="lg" rating-label="Overall satisfaction"></md-rating>
+  </md-step>
+  <md-step label="Recommend" description="0-10 scale">
+    <div role="group" aria-label="Likelihood to recommend, 0 to 10">
+      <md-button variant="outlined" size="xs" toggle value="0">0</md-button>
+      <!-- ...one toggle button per score, 1 through 9... -->
+      <md-button variant="outlined" size="xs" toggle value="10">10</md-button>
+    </div>
+  </md-step>
+  <md-step label="Usage" description="How you work">
+    <div role="radiogroup" aria-label="Usage frequency">
+      <label><md-radio name="survey-frequency" value="daily"></md-radio>Every day</label>
+      <label><md-radio name="survey-frequency" value="weekly"></md-radio>A few times a week</label>
+      <label><md-radio name="survey-frequency" value="monthly"></md-radio>A few times a month</label>
+      <label><md-radio name="survey-frequency" value="rarely"></md-radio>Rarely</label>
+    </div>
+    <md-multi-select label="Features you use regularly" supporting-text="Optional — pick any that apply">
+      <md-select-option value="pipelines">Pipelines</md-select-option>
+      <md-select-option value="email-sync">Email sync</md-select-option>
+      <md-select-option value="reports">Reports</md-select-option>
+      <md-select-option value="automations">Automations</md-select-option>
+      <md-select-option value="mobile">Mobile app</md-select-option>
+    </md-multi-select>
+  </md-step>
+  <md-step label="Wrap-up" description="Almost done">
+    <md-slider min="0" max="100" step="10" stops value="60" value-indicator
+      aria-label="Likelihood to renew" value-text="60 percent"></md-slider>
+    <label><md-checkbox name="contact" value="yes"></md-checkbox>You can contact me about this feedback</label>
+  </md-step>
+</md-stepper>
+
+<md-card variant="filled" hidden>
+  <span>Thanks — your feedback is in.</span>
+</md-card>`}
+  script={`
+    const stepper = root.querySelector('[data-stepper]');
+    const progress = root.querySelector('[data-progress]');
+    const caption = root.querySelector('[data-progress-caption]');
+    const rating = root.querySelector('[data-rating]');
+    const npsGroup = root.querySelector('[data-nps]');
+    const npsButtons = Array.from(npsGroup.querySelectorAll('md-button'));
+    const frequencyGroup = root.querySelector('[data-frequency]');
+    const renew = root.querySelector('[data-renew]');
+    const contact = root.querySelector('[data-contact]');
+    const survey = root.querySelector('[data-survey]');
+    const thanks = root.querySelector('[data-thanks]');
+    const summary = root.querySelector('[data-summary]');
+
+    let nps = null;
+    let frequency = null;
+
+    rating.getLabel = (v) => v + ' out of 5 stars';
+
+    // Continue is gated per question: the built-in button stays disabled
+    // until the active step has an answer. Linear mode already blocks
+    // jumping ahead via the step headers.
+    const gate = () => {
+      const i = stepper.active;
+      stepper.nextDisabled =
+        (i === 0 && rating.value === 0) ||
+        (i === 1 && nps === null) ||
+        (i === 2 && frequency === null);
+    };
+
+    rating.addEventListener('mdChange', gate);
+
+    // The NPS row is eleven toggle buttons kept single-select by hand:
+    // mdClick's detail.selected is the POST-click state, and preventDefault()
+    // vetoes the flip — so re-clicking the chosen score can't empty the scale.
+    npsGroup.addEventListener('mdClick', (e) => {
+      const btn = e.target.closest('md-button');
+      if (!btn) return;
+      if (e.detail.selected === false) {
+        e.preventDefault();
+        return;
+      }
+      npsButtons.forEach((b) => { if (b !== btn) b.selected = false; });
+      nps = Number(e.detail.value);
+      gate();
+    });
+
+    frequencyGroup.addEventListener('mdChange', (e) => {
+      frequency = e.detail.value;
+      gate();
+    });
+
+    // Keep the announced value human: "60 percent", not a bare number.
+    renew.addEventListener('mdInput', (e) => {
+      renew.valueText = e.detail.value + ' percent';
+    });
+
+    stepper.addEventListener('mdStepChange', (e) => {
+      progress.value = e.detail.index;
+      caption.textContent = 'Question ' + (e.detail.index + 1) + ' of 4';
+      gate();
+    });
+
+    stepper.addEventListener('mdComplete', () => {
+      progress.value = 4;
+      caption.textContent = 'All 4 questions answered';
+      progress.complete = true; // plays the closing animation, then self-hides
+      survey.hidden = true;
+      const band = nps >= 9 ? 'a promoter' : nps >= 7 ? 'passive' : 'a detractor';
+      summary.textContent = 'You rated Meridian ' + rating.value + '/5 and gave it an NPS of '
+        + nps + ' (' + band + ').'
+        + (contact.checked ? ' We will follow up by email.' : '');
+      thanks.hidden = false;
+    });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-stepper`](/components/stepper/) | Owns the flow: four `md-step` children with per-step panels, `mode="linear"` (the default) so headers ahead are unreachable, `next-disabled` re-bound to the active question's validity, and `mdComplete` as the submit signal. |
+| [`md-progress-indicator`](/components/progress-indicator/) | The header bar: `value` counts answered questions against `max="4"`, and `complete` plays the closing animation on submit — `mdComplete` follows that flag, never `value === max`. |
+| [`md-rating`](/components/rating/) | Five-star satisfaction. `getLabel` makes every value announce as "3 out of 5 stars"; re-clicking the current value clears back to `default-value` (0), which the gate treats as unanswered. |
+| [`md-button`](/components/button/) | Eleven `toggle` buttons form the 0-10 NPS scale — a [`md-segmented-button-set`](/components/segmented-button/) is capped at five segments by M3, so it is the wrong tool here. One delegated `mdClick` listener keeps the row single-select. |
+| [`md-slider`](/components/slider/) | Renewal likelihood: `step="10"` with `stops` for honest increments, `value-indicator` for the always-visible bubble, `value-text` for the spoken units. |
+| [`md-radio`](/components/radio/) | Usage frequency — four options sharing one `name` form the exclusive group with arrow-key selection and a roving tabstop. |
+| [`md-checkbox`](/components/checkbox/) | Contact consent, wrapped in a `<label>` (the component has no slot) with `supporting-text` under the box. |
+| [`md-multi-select`](/components/multi-select/) | Feature usage: several values from a list, shown as removable chips after the menu closes. |
+| [`md-card`](/components/card/) | The thank-you surface, filled variant, with a summary line computed from the answers. |
+
+## The details that make it production-grade
+
+- **Two gates, one per failure mode.** `next-disabled` only disables the
+  built-in Continue button — it never blocks step-header clicks. Those are
+  covered by the stepper's linear mode, which keeps unreachable headers
+  `aria-disabled` and out of the tab order until earlier steps complete.
+- **The NPS row can never end up empty or double-selected.** `mdClick`'s
+  `detail.selected` is the post-click state, and `preventDefault()` vetoes the
+  toggle flip — so a re-click on the chosen score is swallowed instead of
+  deselecting it, and every other button is cleared programmatically (a
+  script-driven `selected` write emits no events, so there is no feedback loop).
+- **Progress announces itself.** The stepper is a `navigation` landmark with a
+  polite live region ("Step 2 of 4: Recommend, current"), and the progress bar
+  carries `role="progressbar"` with `aria-valuenow` — two independent progress
+  reports, both free.
+- **The slider speaks units.** `value-text` is re-set on every `mdInput`, so a
+  screen reader hears "60 percent" rather than a bare "60"; `stops` on a
+  `step="10"` scale shows only increments a respondent can actually pick.
+- **Completion is an animation, not a jump cut.** Setting `complete` on the
+  progress indicator plays the M3 closing sequence and then self-hides; the
+  indicator's own `mdComplete` event — not `value` reaching `max` — is the
+  hook if you need to sequence anything after it.
+
+## Variations
+
+- **Narrow embeds:** switch the stepper to `variant="mobile"` — the header row
+  collapses into a Back · progress · Continue bar. Panels must then move into
+  the stepper's `content` slot and be swapped on `mdStepChange`.
+- **Server-side save per page:** cancel `mdBeforeChange`, set `loading` on the
+  stepper while the answer posts (this also disables Back, preventing a
+  double-submit), then commit by assigning `stepper.active = e.detail.index` —
+  never by calling `next()` from the handler, which would re-enter it.
+- **Five-point scales:** for CSAT-style 1-5 questions, a
+  [`md-segmented-button-set`](/components/segmented-button/) is the right
+  control — it owns exclusivity for you and stays within M3's five-segment cap.
+- **Long questionnaires:** `orientation="vertical"` puts each panel inline
+  under its step, and `lazy` mounts only the active panel when steps carry
+  heavy content.
+
+## Related
+
+- Recipe: [Checkout wizard](/recipes/checkout-wizard/) — the same stepper
+  spine driving a purchase flow with validation per step.
+- Recipe: [Product reviews](/recipes/product-reviews/) — `md-rating` on the
+  display side: aggregates, distributions, and read-only scores.
+- Component manuals: [`md-stepper`](/components/stepper/) and
+  [`md-rating`](/components/rating/) — full API, keyboard maps, and
+  anti-pattern lists.

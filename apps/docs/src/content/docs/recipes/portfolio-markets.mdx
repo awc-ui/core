@@ -1,0 +1,370 @@
+---
+title: Portfolio & markets
+description: "A finance screen: portfolio value chart with a range switch, a holdings table with sparklines and gain/loss chips, a market-open indicator, and a buy/sell ticket in a bottom sheet."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**A brokerage home screen.** The portfolio value trend in an
+[`md-line-chart`](/components/line-chart/) driven by an
+[`md-segmented-button-set`](/components/segmented-button/) range switch, a
+holdings table where every row carries a 7-day
+[`md-sparkline`](/components/sparkline/) and a gain/loss
+[`md-chip`](/components/chip/), a market-session
+[`md-status-dot`](/components/status-dot/), and a Trade button per row that
+opens a buy/sell ticket in an [`md-bottom-sheet`](/components/bottom-sheet/) —
+shares entered through a synced [`md-number-field`](/components/number-field/)
+and [`md-slider`](/components/slider/) pair, clamped to what the cash balance
+(or the position) actually allows.
+
+<ComponentDemo
+  label="Live preview — switch the range, then hit Trade on a row to open the ticket"
+  html={`<div style="display: grid; gap: 20px; max-width: 720px; margin-inline: auto;">
+  <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px;">
+    <div style="display: grid; gap: 6px;">
+      <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface-variant);">Portfolio value</span>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font: var(--md-sys-typescale-headline-large); color: var(--md-sys-color-on-surface);">$108,136.40</span>
+        <md-chip variant="assist" appearance="filled" color="success" density="-1" label="+$1,142.18 today"></md-chip>
+      </div>
+      <div style="display: flex; align-items: center; gap: 4px; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">
+        <span style="position: relative; display: inline-flex; inline-size: 14px; block-size: 14px;">
+          <md-status-dot state="online" size="small"></md-status-dot>
+        </span>
+        NYSE — Market open, closes 4:00 PM ET
+      </div>
+    </div>
+    <md-segmented-button-set aria-label="Chart range" density="-1" data-range>
+      <md-segmented-button value="1w" label="1W" selected></md-segmented-button>
+      <md-segmented-button value="1m" label="1M"></md-segmented-button>
+      <md-segmented-button value="3m" label="3M"></md-segmented-button>
+      <md-segmented-button value="1y" label="1Y"></md-segmented-button>
+    </md-segmented-button-set>
+  </div>
+  <md-line-chart data-chart area curve="monotone" legend="none" grid="horizontal" height="240px"
+    summary="Portfolio value over the selected range."></md-line-chart>
+  <md-table-container>
+    <md-table label="Holdings" column-template="1.1fr 0.8fr 1fr 0.9fr 0.9fr 0.7fr" min-width="640px">
+      <md-table-head>
+        <md-table-row rowgroup="head">
+          <md-table-cell head scope="col">Symbol</md-table-cell>
+          <md-table-cell head scope="col" numeric>Last</md-table-cell>
+          <md-table-cell head scope="col">7 days</md-table-cell>
+          <md-table-cell head scope="col" numeric>Value</md-table-cell>
+          <md-table-cell head scope="col">Gain/loss</md-table-cell>
+          <md-table-cell head scope="col"><span style="position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%);">Actions</span></md-table-cell>
+        </md-table-row>
+      </md-table-head>
+      <md-table-body>
+        <md-table-row value="AAPL">
+          <md-table-cell><div style="display: grid;"><strong>AAPL</strong><span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Apple Inc.</span></div></md-table-cell>
+          <md-table-cell numeric>$232.10</md-table-cell>
+          <md-table-cell><md-sparkline data-spark="AAPL" color="success" show-tooltip="false" height="24px"></md-sparkline></md-table-cell>
+          <md-table-cell numeric>$9,284.00</md-table-cell>
+          <md-table-cell><md-chip variant="assist" appearance="filled" color="success" density="-2" label="+18.4%"></md-chip></md-table-cell>
+          <md-table-cell><md-button variant="text" data-trade="AAPL">Trade</md-button></md-table-cell>
+        </md-table-row>
+        <md-table-row value="MSFT">
+          <md-table-cell><div style="display: grid;"><strong>MSFT</strong><span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Microsoft Corp.</span></div></md-table-cell>
+          <md-table-cell numeric>$456.80</md-table-cell>
+          <md-table-cell><md-sparkline data-spark="MSFT" color="success" show-tooltip="false" height="24px"></md-sparkline></md-table-cell>
+          <md-table-cell numeric>$11,420.00</md-table-cell>
+          <md-table-cell><md-chip variant="assist" appearance="filled" color="success" density="-2" label="+9.6%"></md-chip></md-table-cell>
+          <md-table-cell><md-button variant="text" data-trade="MSFT">Trade</md-button></md-table-cell>
+        </md-table-row>
+        <md-table-row value="NVDA">
+          <md-table-cell><div style="display: grid;"><strong>NVDA</strong><span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">NVIDIA Corp.</span></div></md-table-cell>
+          <md-table-cell numeric>$128.55</md-table-cell>
+          <md-table-cell><md-sparkline data-spark="NVDA" color="success" show-tooltip="false" height="24px"></md-sparkline></md-table-cell>
+          <md-table-cell numeric>$7,713.00</md-table-cell>
+          <md-table-cell><md-chip variant="assist" appearance="filled" color="success" density="-2" label="+42.1%"></md-chip></md-table-cell>
+          <md-table-cell><md-button variant="text" data-trade="NVDA">Trade</md-button></md-table-cell>
+        </md-table-row>
+        <md-table-row value="INTC">
+          <md-table-cell><div style="display: grid;"><strong>INTC</strong><span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Intel Corp.</span></div></md-table-cell>
+          <md-table-cell numeric>$21.48</md-table-cell>
+          <md-table-cell><md-sparkline data-spark="INTC" color="error" show-tooltip="false" height="24px"></md-sparkline></md-table-cell>
+          <md-table-cell numeric>$3,222.00</md-table-cell>
+          <md-table-cell><md-chip variant="assist" appearance="filled" color="error" density="-2" label="-12.3%"></md-chip></md-table-cell>
+          <md-table-cell><md-button variant="text" data-trade="INTC">Trade</md-button></md-table-cell>
+        </md-table-row>
+        <md-table-row value="VTI">
+          <md-table-cell><div style="display: grid;"><strong>VTI</strong><span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Vanguard Total Market ETF</span></div></md-table-cell>
+          <md-table-cell numeric>$291.35</md-table-cell>
+          <md-table-cell><md-sparkline data-spark="VTI" color="success" show-tooltip="false" height="24px"></md-sparkline></md-table-cell>
+          <md-table-cell numeric>$64,097.00</md-table-cell>
+          <md-table-cell><md-chip variant="assist" appearance="filled" color="success" density="-2" label="+6.2%"></md-chip></md-table-cell>
+          <md-table-cell><md-button variant="text" data-trade="VTI">Trade</md-button></md-table-cell>
+        </md-table-row>
+      </md-table-body>
+    </md-table>
+  </md-table-container>
+</div>
+<md-bottom-sheet data-ticket headline="Trade" closeable bottom-divider>
+  <div style="display: grid; gap: 16px; padding-block: 4px 8px;">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+      <md-segmented-button-set aria-label="Order side" density="-1" data-side>
+        <md-segmented-button value="buy" label="Buy" selected></md-segmented-button>
+        <md-segmented-button value="sell" label="Sell"></md-segmented-button>
+      </md-segmented-button-set>
+      <span data-ticket-price style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">Last $232.10</span>
+    </div>
+    <md-number-field data-qty name="shares" label="Shares" min="1" max="53" step="1" value="10"
+      supporting-text="Market order — executes at the next available price"></md-number-field>
+    <md-slider data-qty-slider aria-label="Shares" min="1" max="53" step="1" value="10" value-indicator></md-slider>
+    <div style="display: flex; justify-content: space-between; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">
+      <span data-estimate-label>Estimated cost</span>
+      <strong data-estimate>$2,321.00</strong>
+    </div>
+    <span data-limit style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Cash available $12,400.00</span>
+  </div>
+  <md-button slot="actions" variant="text" data-ticket-cancel>Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-ticket-submit>Buy 10 AAPL</md-button>
+</md-bottom-sheet>`}
+  htmlForCode={`<div class="portfolio">
+  <header>
+    <span>Portfolio value</span>
+    <strong>$108,136.40</strong>
+    <md-chip variant="assist" appearance="filled" color="success" label="+$1,142.18 today"></md-chip>
+    <span style="position: relative; display: inline-flex; inline-size: 14px; block-size: 14px;">
+      <md-status-dot state="online" size="small"></md-status-dot>
+    </span>
+    NYSE — Market open
+    <md-segmented-button-set aria-label="Chart range">
+      <md-segmented-button value="1w" label="1W" selected></md-segmented-button>
+      <md-segmented-button value="1m" label="1M"></md-segmented-button>
+      <md-segmented-button value="1y" label="1Y"></md-segmented-button>
+    </md-segmented-button-set>
+  </header>
+
+  <md-line-chart area curve="monotone" legend="none" height="240px"
+    summary="Portfolio value over the selected range."></md-line-chart>
+
+  <md-table-container>
+    <md-table label="Holdings" column-template="1.1fr 0.8fr 1fr 0.9fr 0.9fr 0.7fr" min-width="640px">
+      <md-table-head>
+        <md-table-row rowgroup="head">
+          <md-table-cell head scope="col">Symbol</md-table-cell>
+          <md-table-cell head scope="col" numeric>Last</md-table-cell>
+          <md-table-cell head scope="col">7 days</md-table-cell>
+          <md-table-cell head scope="col" numeric>Value</md-table-cell>
+          <md-table-cell head scope="col">Gain/loss</md-table-cell>
+          <md-table-cell head scope="col"></md-table-cell>
+        </md-table-row>
+      </md-table-head>
+      <md-table-body>
+        <md-table-row value="AAPL">
+          <md-table-cell><strong>AAPL</strong> Apple Inc.</md-table-cell>
+          <md-table-cell numeric>$232.10</md-table-cell>
+          <md-table-cell><md-sparkline color="success" show-tooltip="false" height="24px"></md-sparkline></md-table-cell>
+          <md-table-cell numeric>$9,284.00</md-table-cell>
+          <md-table-cell><md-chip variant="assist" appearance="filled" color="success" label="+18.4%"></md-chip></md-table-cell>
+          <md-table-cell><md-button variant="text">Trade</md-button></md-table-cell>
+        </md-table-row>
+      </md-table-body>
+    </md-table>
+  </md-table-container>
+</div>
+
+<md-bottom-sheet headline="Trade AAPL" closeable bottom-divider>
+  <md-segmented-button-set aria-label="Order side">
+    <md-segmented-button value="buy" label="Buy" selected></md-segmented-button>
+    <md-segmented-button value="sell" label="Sell"></md-segmented-button>
+  </md-segmented-button-set>
+  <md-number-field name="shares" label="Shares" min="1" max="53" step="1" value="10"
+    supporting-text="Market order — executes at the next available price"></md-number-field>
+  <md-slider aria-label="Shares" min="1" max="53" step="1" value="10" value-indicator></md-slider>
+  <md-button slot="actions" variant="text">Cancel</md-button>
+  <md-button slot="actions" variant="filled">Buy 10 AAPL</md-button>
+</md-bottom-sheet>`}
+  script={`
+    const chart = root.querySelector('[data-chart]');
+    const rangeSet = root.querySelector('[data-range]');
+    const sheet = root.querySelector('[data-ticket]');
+    const sideSet = root.querySelector('[data-side]');
+    const priceLine = root.querySelector('[data-ticket-price]');
+    const qty = root.querySelector('[data-qty]');
+    const slider = root.querySelector('[data-qty-slider]');
+    const estimateLabel = root.querySelector('[data-estimate-label]');
+    const estimate = root.querySelector('[data-estimate]');
+    const limitNote = root.querySelector('[data-limit]');
+    const submit = root.querySelector('[data-ticket-submit]');
+    const cancel = root.querySelector('[data-ticket-cancel]');
+
+    const CASH = 12400;
+    const HOLDINGS = {
+      AAPL: { name: 'Apple Inc.', price: 232.10, shares: 40,
+              spark: [221.4, 224.1, 219.8, 226.5, 229.9, 228.4, 232.1] },
+      MSFT: { name: 'Microsoft Corp.', price: 456.80, shares: 25,
+              spark: [449.2, 452.6, 447.1, 455.3, 451.8, 458.9, 456.8] },
+      NVDA: { name: 'NVIDIA Corp.', price: 128.55, shares: 60,
+              spark: [117.3, 121.8, 119.4, 124.6, 126.2, 125.1, 128.55] },
+      INTC: { name: 'Intel Corp.', price: 21.48, shares: 150,
+              spark: [23.1, 22.6, 22.9, 22.1, 21.8, 21.95, 21.48] },
+      VTI:  { name: 'Vanguard Total Market ETF', price: 291.35, shares: 220,
+              spark: [286.2, 287.9, 285.4, 288.8, 290.1, 289.6, 291.35] }
+    };
+
+    const money = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+    // Per-row sparklines: arrays cannot cross the attribute boundary,
+    // so the data is assigned as a JS property.
+    root.querySelectorAll('[data-spark]').forEach((sp) => {
+      sp.data = HOLDINGS[sp.getAttribute('data-spark')].spark;
+      sp.labels = ['Thu', 'Fri', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    });
+
+    // Portfolio value per range. Labels and values are index-aligned.
+    const RANGES = {
+      '1w': { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+              values: [106910, 107420, 106310, 107880, 108136] },
+      '1m': { labels: ['Jul 25', 'Aug 1', 'Aug 8', 'Aug 15', 'Aug 22'],
+              values: [103240, 105150, 104480, 106620, 108136] },
+      '3m': { labels: ['May 30', 'Jun 13', 'Jun 27', 'Jul 11', 'Jul 25', 'Aug 8', 'Aug 22'],
+              values: [98400, 99850, 101210, 100370, 103240, 104480, 108136] },
+      '1y': { labels: ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+              values: [84200, 86900, 90400, 88700, 92300, 94100, 91800, 95600, 98400, 101210, 103240, 108136] }
+    };
+
+    chart.valueFormatter = (v) => v == null ? '' : '$' + Math.round(v / 100) / 10 + 'k';
+    function setRange(key) {
+      const r = RANGES[key];
+      chart.xAxis = { data: r.labels, scale: 'category' };
+      chart.series = [{ label: 'Portfolio value', data: r.values, color: 'primary' }];
+    }
+    setRange('1w');
+    rangeSet.addEventListener('mdChange', (e) => setRange(e.detail[0]));
+
+    // --- Buy/sell ticket ---
+    let symbol = 'AAPL';
+    let side = 'buy';
+
+    function maxShares() {
+      return side === 'buy'
+        ? Math.max(1, Math.floor(CASH / HOLDINGS[symbol].price))
+        : HOLDINGS[symbol].shares;
+    }
+
+    function syncTicket() {
+      const h = HOLDINGS[symbol];
+      const max = maxShares();
+      qty.max = max;
+      slider.max = max;
+      const n = Math.min(Math.max(qty.value || 1, 1), max);
+      qty.value = n;
+      slider.value = n;
+      estimateLabel.textContent = side === 'buy' ? 'Estimated cost' : 'Estimated proceeds';
+      estimate.textContent = money(n * h.price);
+      submit.textContent = (side === 'buy' ? 'Buy ' : 'Sell ') + n + ' ' + symbol;
+      limitNote.textContent = side === 'buy'
+        ? 'Cash available ' + money(CASH)
+        : 'You hold ' + h.shares + ' shares';
+    }
+
+    root.querySelectorAll('[data-trade]').forEach((btn) => {
+      btn.addEventListener('mdClick', () => {
+        symbol = btn.getAttribute('data-trade');
+        side = 'buy';
+        sideSet.querySelectorAll('md-segmented-button').forEach((seg) => {
+          seg.selected = seg.value === 'buy';
+        });
+        sheet.headline = 'Trade ' + symbol + ' — ' + HOLDINGS[symbol].name;
+        priceLine.textContent = 'Last ' + money(HOLDINGS[symbol].price);
+        qty.value = Math.min(10, maxShares());
+        syncTicket();
+        sheet.show();
+      });
+    });
+
+    sideSet.addEventListener('mdChange', (e) => {
+      side = e.detail[0] || side;
+      syncTicket();
+    });
+
+    // Number field and slider stay in lockstep: programmatic writes are
+    // commits and emit nothing, so this cannot loop.
+    const onQty = () => {
+      if (qty.value == null) return;
+      slider.value = Math.min(qty.value, Number(slider.max));
+      const n = slider.value;
+      estimate.textContent = money(n * HOLDINGS[symbol].price);
+      submit.textContent = (side === 'buy' ? 'Buy ' : 'Sell ') + n + ' ' + symbol;
+    };
+    qty.addEventListener('mdInput', onQty);
+    qty.addEventListener('mdChange', onQty);
+
+    slider.addEventListener('mdInput', (e) => {
+      qty.value = e.detail.value;
+      estimate.textContent = money(e.detail.value * HOLDINGS[symbol].price);
+      submit.textContent = (side === 'buy' ? 'Buy ' : 'Sell ') + e.detail.value + ' ' + symbol;
+    });
+
+    submit.addEventListener('mdClick', () => sheet.close());
+    cancel.addEventListener('mdClick', () => sheet.close());
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-line-chart`](/components/line-chart/) | The portfolio trend. `series` and `xAxis` are JS properties (arrays never cross the attribute boundary), `area` fills under the line, and `valueFormatter` turns raw dollars into `$108.1k` ticks. |
+| [`md-segmented-button-set`](/components/segmented-button/) | The 1W/1M/3M/1Y range switch and the Buy/Sell toggle. Single-select mode is a `radiogroup` that can never be emptied, so `e.detail[0]` always holds exactly one value. |
+| [`md-table`](/components/table/) + container/head/body/row/cell | The hand-authored holdings grid. `column-template` declares the tracks, `numeric` right-aligns the money columns, `min-width` keeps the grid legible inside a scrolling container. |
+| [`md-sparkline`](/components/sparkline/) | The 7-day micro-trend per row — `show-tooltip="false"` because the row already has an interactive Trade target. |
+| [`md-chip`](/components/chip/) | Gain/loss badges. `color` takes a theme role name (`success` / `error`), which expands to the `--md-sys-color-*` pairs and re-themes with the tokens. |
+| [`md-status-dot`](/components/status-dot/) | The market-session pip. Label left empty on purpose: the adjacent text carries the words, so the dot stays decorative (`aria-hidden`). |
+| [`md-bottom-sheet`](/components/bottom-sheet/) | The order ticket — modal, focus-trapped, Escape- and scrim-dismissible, with Cancel and the submit action in the `actions` slot behind `bottom-divider`. |
+| [`md-number-field`](/components/number-field/) | Share quantity, typed or stepped, `min`/`max`-clamped to what cash (or the position) allows. |
+| [`md-slider`](/components/slider/) | The same quantity as a drag — `value-indicator` shows the count on the thumb, and the two inputs stay in lockstep. |
+| [`md-button`](/components/button/) | Row-level Trade triggers and the ticket's actions; `mdClick` fires for pointer, Enter and Space alike. |
+
+## The details that make it production-grade
+
+- **The ticket's bounds are real constraints, not hints.** `md-number-field`
+  stepping (arrows, steppers, wheel) always clamps to `max`, and a typed
+  overshoot is clamped at commit — so "Buy 999" collapses to the 53 shares the
+  cash balance covers before any order copy is rendered.
+- **Programmatic writes can't cause feedback loops.** Setting
+  `qty.value` or `slider.value` from the other control's event is a silent
+  commit — neither component re-emits, which is what makes the two-way sync a
+  four-line wiring job.
+- **The bottom sheet is genuinely modal.** It renders a scrim, traps focus,
+  locks body scroll and closes on a capture-phase Escape; slotted action
+  buttons never close it on their own, so Cancel and the submit button both
+  call `close()` explicitly and a dismissal still fires `mdCancel` + `mdClose`.
+- **The status dot follows the WCAG 1.4.1 contract.** With no `label` it is
+  `role="presentation"` + `aria-hidden`, and the visible "Market open" text
+  carries the meaning — the state never exists as colour alone.
+- **The chart is keyboard-walkable.** The plot is a focusable
+  `role="application"` region: arrow keys move point to point with polite
+  live-region announcements, and a screen-reader-only data table backs the
+  canvas — the range switch re-feeds `series` without losing any of it.
+
+## Variations
+
+- **Benchmark overlay:** push a second series (`label: 'S&P 500'`,
+  `color: 'tertiary'`) and set `legend="top-end"` — legend toggles survive
+  every range re-feed, keyed by label.
+- **Limit orders:** add a second `md-number-field` with
+  `format-options='{"style":"currency","currency":"USD"}'` for the limit
+  price; the raw number is what submits, the currency string is display-only.
+- **After-hours state:** swap the dot to `state="offline"`, change the text to
+  "Market closed — opens 9:30 AM ET", and set `disabled` on the row Trade
+  buttons so the ticket can't open against a stale price.
+- **Desktop ticket:** at wide breakpoints move the order form into an
+  `md-side-sheet` so the holdings stay visible while the order is built —
+  bottom sheets are a mobile pattern.
+
+## Related
+
+- Recipe: [KPI overview](/recipes/kpi-overview/) — the same
+  range-switch-drives-charts wiring, applied to a metrics dashboard.
+- Recipe: [Server fleet status](/recipes/server-fleet-status/) — status dots
+  and per-row actions in a monitoring table.
+- Component manuals: [`md-line-chart`](/components/line-chart/),
+  [`md-bottom-sheet`](/components/bottom-sheet/) and
+  [`md-number-field`](/components/number-field/) — full APIs, behavioral
+  contracts, and anti-pattern lists.

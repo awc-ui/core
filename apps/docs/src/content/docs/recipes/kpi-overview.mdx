@@ -1,0 +1,322 @@
+---
+title: KPI overview
+description: "An analytics landing block: stat cards with sparklines and trend dots, a 7d/30d/90d range switch driving an area and a bar chart, and skeleton placeholders on first load."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**The first screen of a dashboard.** Four stat tiles built on
+[`md-card`](/components/card/) — each pairing a headline number with an
+[`md-sparkline`](/components/sparkline/) micro-trend and an
+[`md-status-dot`](/components/status-dot/) health marker — above an
+[`md-area-chart`](/components/area-chart/) and an
+[`md-bar-chart`](/components/bar-chart/). One
+[`md-segmented-button-set`](/components/segmented-button-set/) switches the
+whole block between 7-, 30- and 90-day windows. On first load, every tile
+shows [`md-skeleton`](/components/skeleton/) placeholders and the charts sit
+in their `loading` state until the data lands.
+
+<ComponentDemo
+  label="Live preview — switch the range; hover a tile for its metric definition"
+  html={`<div style="display: grid; gap: 20px; max-width: 760px; margin-inline: auto;">
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+    <div style="display: grid; gap: 2px;">
+      <span style="font: var(--md-sys-typescale-title-large); color: var(--md-sys-color-on-surface);">Product analytics</span>
+      <span data-period style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Aug 14 – Aug 20, 2026</span>
+    </div>
+    <md-segmented-button-set aria-label="Date range" density="-1">
+      <md-segmented-button value="7d" label="7 days" selected></md-segmented-button>
+      <md-segmented-button value="30d" label="30 days"></md-segmented-button>
+      <md-segmented-button value="90d" label="90 days"></md-segmented-button>
+    </md-segmented-button-set>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+    <md-tooltip text="Unique users with at least one session in the period">
+      <md-card variant="outlined" full-width data-kpi>
+        <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Active users</span>
+        <md-skeleton data-skel variant="text" width="90px" height="1.6em"></md-skeleton>
+        <md-skeleton data-skel variant="rectangular" height="28px" full-width announce="false"></md-skeleton>
+        <div data-content hidden>
+          <span data-value style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);"></span>
+          <span style="display: inline-flex; align-items: center; gap: 8px; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">
+            <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;"><md-status-dot></md-status-dot></span>
+            <span data-delta></span>
+          </span>
+          <md-sparkline show-tooltip="false" height="28px" color="primary"></md-sparkline>
+        </div>
+      </md-card>
+    </md-tooltip>
+    <md-tooltip text="Booked revenue across all plans, before refunds">
+      <md-card variant="outlined" full-width data-kpi>
+        <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Revenue</span>
+        <md-skeleton data-skel variant="text" width="90px" height="1.6em" announce="false"></md-skeleton>
+        <md-skeleton data-skel variant="rectangular" height="28px" full-width announce="false"></md-skeleton>
+        <div data-content hidden>
+          <span data-value style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);"></span>
+          <span style="display: inline-flex; align-items: center; gap: 8px; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">
+            <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;"><md-status-dot></md-status-dot></span>
+            <span data-delta></span>
+          </span>
+          <md-sparkline variant="area" show-tooltip="false" height="28px" color="success"></md-sparkline>
+        </div>
+      </md-card>
+    </md-tooltip>
+    <md-tooltip text="Share of visitors who started a paid plan">
+      <md-card variant="outlined" full-width data-kpi>
+        <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Conversion</span>
+        <md-skeleton data-skel variant="text" width="90px" height="1.6em" announce="false"></md-skeleton>
+        <md-skeleton data-skel variant="rectangular" height="28px" full-width announce="false"></md-skeleton>
+        <div data-content hidden>
+          <span data-value style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);"></span>
+          <span style="display: inline-flex; align-items: center; gap: 8px; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">
+            <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;"><md-status-dot></md-status-dot></span>
+            <span data-delta></span>
+          </span>
+          <md-sparkline show-tooltip="false" height="28px" color="warning"></md-sparkline>
+        </div>
+      </md-card>
+    </md-tooltip>
+    <md-tooltip text="Support tickets opened in the period — lower is better">
+      <md-card variant="outlined" full-width data-kpi>
+        <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Support tickets</span>
+        <md-skeleton data-skel variant="text" width="90px" height="1.6em" announce="false"></md-skeleton>
+        <md-skeleton data-skel variant="rectangular" height="28px" full-width announce="false"></md-skeleton>
+        <div data-content hidden>
+          <span data-value style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);"></span>
+          <span style="display: inline-flex; align-items: center; gap: 8px; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">
+            <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;"><md-status-dot></md-status-dot></span>
+            <span data-delta></span>
+          </span>
+          <md-sparkline variant="bar" show-tooltip="false" height="28px" color="info"></md-sparkline>
+        </div>
+      </md-card>
+    </md-tooltip>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px;">
+    <md-area-chart data-users label="Active users" subtitle="Daily" height="280px"
+      loading loading-label="Loading active users"></md-area-chart>
+    <md-bar-chart data-revenue label="Revenue" subtitle="USD, by period" stack="normal" height="280px"
+      loading loading-label="Loading revenue"></md-bar-chart>
+  </div>
+</div>`}
+  htmlForCode={`<md-segmented-button-set aria-label="Date range" density="-1">
+  <md-segmented-button value="7d" label="7 days" selected></md-segmented-button>
+  <md-segmented-button value="30d" label="30 days"></md-segmented-button>
+  <md-segmented-button value="90d" label="90 days"></md-segmented-button>
+</md-segmented-button-set>
+
+<md-tooltip text="Unique users with at least one session in the period">
+  <md-card variant="outlined" full-width>
+    <span>Active users</span>
+    <span>24,318</span>
+    <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px;">
+      <md-status-dot state="online" label="Trending up"></md-status-dot>
+    </span>
+    <span>+12.4% vs prior period</span>
+    <md-sparkline show-tooltip="false" height="28px" color="primary"></md-sparkline>
+  </md-card>
+</md-tooltip>
+
+<md-area-chart label="Active users" subtitle="Daily" height="280px"
+  loading loading-label="Loading active users"></md-area-chart>
+<md-bar-chart label="Revenue" subtitle="USD, by period" stack="normal" height="280px"
+  loading loading-label="Loading revenue"></md-bar-chart>`}
+  script={`
+    const rangeSet = root.querySelector('md-segmented-button-set');
+    const periodEl = root.querySelector('[data-period]');
+    const cards = Array.from(root.querySelectorAll('[data-kpi]'));
+    const areaChart = root.querySelector('[data-users]');
+    const barChart = root.querySelector('[data-revenue]');
+
+    const fmtInt = new Intl.NumberFormat('en-US');
+    const fmtUsd = function (v) { return '$' + fmtInt.format(v == null ? 0 : v); };
+
+    // One entry per range: axis labels, four KPI tiles, and both chart series.
+    const DATA = {
+      '7d': {
+        period: 'Aug 14 – Aug 20, 2026',
+        subtitle: 'Daily',
+        labels: ['Aug 14', 'Aug 15', 'Aug 16', 'Aug 17', 'Aug 18', 'Aug 19', 'Aug 20'],
+        kpis: [
+          { value: '24,318', delta: '+12.4% vs prior 7 days', state: 'online', trend: 'Trending up',
+            spark: [21804, 22410, 21958, 23102, 23644, 24057, 24318] },
+          { value: '$86,420', delta: '+8.1% vs prior 7 days', state: 'online', trend: 'Trending up',
+            spark: [11190, 11862, 11408, 12295, 12904, 13247, 13514] },
+          { value: '3.42%', delta: '-0.19 pt vs prior 7 days', state: 'away', trend: 'Slipping',
+            spark: [3.61, 3.55, 3.58, 3.49, 3.44, 3.40, 3.42] },
+          { value: '129', delta: '-12.8% vs prior 7 days', state: 'online', trend: 'Improving',
+            spark: [148, 152, 141, 137, 133, 131, 129] }
+        ],
+        area: [
+          [3120, 3405, 3188, 3610, 3722, 3850, 3941],
+          [18684, 19005, 18770, 19492, 19922, 20207, 20377]
+        ],
+        bars: [
+          [8460, 8890, 8555, 9120, 9480, 9635, 9812],
+          [2730, 2972, 2853, 3175, 3424, 3612, 3702]
+        ]
+      },
+      '30d': {
+        period: 'Jul 22 – Aug 20, 2026',
+        subtitle: '3-day buckets',
+        labels: ['Jul 22', 'Jul 25', 'Jul 28', 'Jul 31', 'Aug 3', 'Aug 6', 'Aug 9', 'Aug 12', 'Aug 15', 'Aug 18'],
+        kpis: [
+          { value: '96,204', delta: '+9.6% vs prior 30 days', state: 'online', trend: 'Trending up',
+            spark: [19850, 20320, 20110, 20980, 21440, 21205, 22160, 22840, 23510, 24318] },
+          { value: '$342,180', delta: '+11.2% vs prior 30 days', state: 'online', trend: 'Trending up',
+            spark: [30200, 31450, 30980, 32700, 33410, 32960, 34480, 35620, 36890, 38120] },
+          { value: '3.51%', delta: '+0.06 pt vs prior 30 days', state: 'online', trend: 'Improving',
+            spark: [3.44, 3.47, 3.42, 3.50, 3.53, 3.48, 3.52, 3.49, 3.46, 3.51] },
+          { value: '561', delta: '-4.1% vs prior 30 days', state: 'online', trend: 'Improving',
+            spark: [58, 61, 55, 57, 60, 54, 56, 53, 55, 52] }
+        ],
+        area: [
+          [2840, 2960, 2905, 3120, 3260, 3180, 3390, 3540, 3705, 3941],
+          [17010, 17360, 17205, 17860, 18180, 18025, 18770, 19300, 19805, 20377]
+        ],
+        bars: [
+          [21300, 22050, 21780, 22900, 23380, 23050, 24120, 24890, 25760, 26610],
+          [8900, 9400, 9200, 9800, 10030, 9910, 10360, 10730, 11130, 11510]
+        ]
+      },
+      '90d': {
+        period: 'May 25 – Aug 20, 2026',
+        subtitle: 'Weekly',
+        labels: ['Jun 1', 'Jun 8', 'Jun 15', 'Jun 22', 'Jun 29', 'Jul 6', 'Jul 13', 'Jul 20', 'Jul 27', 'Aug 3', 'Aug 10', 'Aug 17'],
+        kpis: [
+          { value: '268,530', delta: '+21.3% vs prior 90 days', state: 'online', trend: 'Trending up',
+            spark: [16420, 17105, 17840, 18220, 18960, 19540, 20180, 20890, 21730, 22480, 23390, 24318] },
+          { value: '$918,400', delta: '+17.5% vs prior 90 days', state: 'online', trend: 'Trending up',
+            spark: [61200, 63800, 66500, 68100, 70900, 73200, 75800, 78400, 81600, 84300, 87900, 91400] },
+          { value: '3.38%', delta: '-0.31 pt vs prior 90 days', state: 'busy', trend: 'Needs attention',
+            spark: [3.69, 3.64, 3.60, 3.55, 3.52, 3.49, 3.46, 3.44, 3.42, 3.41, 3.40, 3.38] },
+          { value: '1,742', delta: '+2.9% vs prior 90 days', state: 'away', trend: 'Slipping',
+            spark: [138, 131, 142, 128, 135, 126, 133, 129, 140, 136, 144, 147] }
+        ],
+        area: [
+          [2210, 2340, 2480, 2545, 2690, 2810, 2930, 3070, 3240, 3390, 3620, 3941],
+          [14210, 14765, 15360, 15675, 16270, 16730, 17250, 17820, 18490, 19090, 19770, 20377]
+        ],
+        bars: [
+          [42800, 44600, 46500, 47600, 49600, 51200, 53000, 54800, 57100, 59000, 61500, 63900],
+          [18400, 19200, 20000, 20500, 21300, 22000, 22800, 23600, 24500, 25300, 26400, 27500]
+        ]
+      }
+    };
+
+    function apply(rangeKey) {
+      const d = DATA[rangeKey];
+      periodEl.textContent = d.period;
+
+      cards.forEach(function (card, i) {
+        const k = d.kpis[i];
+        card.querySelector('[data-value]').textContent = k.value;
+        card.querySelector('[data-delta]').textContent = k.delta;
+        // label + state together: with a label the dot is role="img",
+        // so the trend exists as words, not colour alone.
+        const dot = card.querySelector('md-status-dot');
+        dot.state = k.state;
+        dot.label = k.trend;
+        const spark = card.querySelector('md-sparkline');
+        spark.data = k.spark;
+        spark.labels = d.labels;
+      });
+
+      areaChart.subtitle = d.subtitle;
+      areaChart.xAxis = { data: d.labels };
+      areaChart.series = [
+        { label: 'New users', data: d.area[0], color: 'tertiary' },
+        { label: 'Returning', data: d.area[1], color: 'primary' }
+      ];
+      areaChart.valueFormatter = function (v) { return fmtInt.format(v == null ? 0 : v); };
+
+      barChart.subtitle = d.subtitle + ' · USD';
+      barChart.xAxis = { data: d.labels };
+      barChart.series = [
+        { label: 'Subscriptions', data: d.bars[0], color: 'primary' },
+        { label: 'Usage', data: d.bars[1], color: 'secondary' }
+      ];
+      barChart.valueFormatter = fmtUsd;
+    }
+
+    // First load: skeletons in the tiles, loading overlays on the charts,
+    // then the real content once the "fetch" resolves.
+    setTimeout(function () {
+      cards.forEach(function (card) {
+        card.querySelectorAll('[data-skel]').forEach(function (s) { s.hidden = true; });
+        const content = card.querySelector('[data-content]');
+        content.hidden = false;
+        content.style.display = 'grid';
+        content.style.gap = '6px';
+      });
+      apply('7d');
+      areaChart.loading = false;
+      barChart.loading = false;
+      // md-area-chart does not replay its entrance when loading clears.
+      areaChart.replay();
+    }, 900);
+
+    // The set owns selection; mdChange reports every selected value in DOM order.
+    rangeSet.addEventListener('mdChange', function (e) {
+      apply(e.detail[0]);
+    });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-card`](/components/card/) | One `outlined` tile per KPI. `full-width` lets the responsive grid own the sizing; the card's own `gap` spacing stacks label, number, trend and sparkline. |
+| [`md-sparkline`](/components/sparkline/) | The micro-trend beside each number — deliberately chrome-free, with `show-tooltip="false"` because the tile itself already owns hover (the `md-tooltip`). |
+| [`md-status-dot`](/components/status-dot/) | The trend marker. `state` carries the colour, `label` carries the words ("Trending up", "Needs attention"), so the read never depends on colour alone. |
+| [`md-segmented-button-set`](/components/segmented-button-set/) | Owns the 7d/30d/90d choice: single-select `radiogroup`, `mdChange` with the selected `value`, arrow-key navigation between segments. |
+| [`md-segmented-button`](/components/segmented-button/) | One per range, each with a unique `value`; `selected` on "7 days" expresses the initial state. |
+| [`md-area-chart`](/components/area-chart/) | New vs. returning users, stacked (`stack="normal"` is its default) so the band total reads as total actives. |
+| [`md-bar-chart`](/components/bar-chart/) | Revenue split into subscriptions and usage, `stack="normal"` for composition per period. |
+| [`md-skeleton`](/components/skeleton/) | Reserves the number and sparkline boxes during the first load, so the tiles never jump when data lands. |
+| [`md-tooltip`](/components/tooltip/) | Wraps each tile and describes what the metric actually counts — the kind of definition that otherwise lives in a wiki nobody opens. |
+
+## The details that make it production-grade
+
+- **The trend is words, not just colour.** Each `md-status-dot` gets `label`
+  set alongside `state`, which turns it into `role="img"` with an
+  `aria-label` — and under forced-colors, where every state collapses to one
+  system colour, the delta text and label still carry the meaning (WCAG 1.4.1).
+- **Only one skeleton announces.** The first tile's skeleton keeps its default
+  `role="status"` live region; every other one is `announce="false"` and
+  therefore `aria-hidden`, so screen readers hear "Loading" once, not eight
+  times. Reduced-motion users automatically get static placeholders.
+- **The charts are keyboard-walkable.** Each plot is a focusable
+  `role="application"` region: arrow keys move point to point with a polite
+  live announcement per stop, Home/End jump to the ends, and a
+  screen-reader-only data table backs the canvas.
+- **Legend toggles survive the range switch.** Hiding "Usage" in the bar
+  chart's legend persists when `series` is reassigned on `mdChange` — the
+  engine keys hidden series by label across re-feeds.
+- **Sparklines defer to the tile tooltip.** `show-tooltip="false"` keeps the
+  sparkline's hover readout from fighting the `md-tooltip` wrapped around the
+  card, per the sparkline manual's rule for trends inside interactive tiles —
+  and each one sits next to its actual number, never alone.
+
+## Variations
+
+- **Share instead of volume:** set `stack="percentage"` on the area chart when
+  the story is the new-vs-returning mix, and say so in the subtitle.
+- **Dense ops wall:** put `data-density="-2"` on the wrapper — cards, segments
+  and charts all tighten together from the one attribute.
+- **Long ranges with zoom:** on the 90-day view, `zoom="slider"` on either
+  chart adds a range-brush; indices reported by `mdZoom` stay absolute.
+- **Comparable sparklines:** if two tiles show the same metric for different
+  regions, pin the same `min`/`max` on both sparklines — otherwise each
+  auto-scales and implies false comparability.
+
+## Related
+
+- Recipe: [Two-factor verification](/recipes/two-factor-verification/) — the
+  same demo pattern applied to an auth flow.
+- Component manuals: [`md-sparkline`](/components/sparkline/) and
+  [`md-area-chart`](/components/area-chart/) — full API, the data-prop
+  contracts, and the anti-patterns list for each.

@@ -1,0 +1,272 @@
+---
+title: Responsive app shell
+description: "The canonical chrome: an app bar with docked search and an account menu, a navigation rail for desktop, a navigation bar for mobile, and a breadcrumb content header — all at fixed, token-driven sizes so nothing shifts at first paint."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**Every screen starts with the chrome.** This recipe assembles the standard
+Material 3 application frame: [`md-app-bar`](/components/app-bar/) in its
+search variant hosting a docked [`md-search`](/components/search/) and an
+avatar-triggered account menu, [`md-navigation-rail`](/components/navigation-rail/)
+for medium-and-up windows, [`md-navigation-bar`](/components/navigation-bar/)
+for compact ones, and [`md-breadcrumbs`](/components/breadcrumbs/) heading the
+content region. Every piece renders at a fixed, token-driven size — 64dp app
+bar row, 80dp rail, 64dp bottom bar — so server-rendered markup paints in its
+final position with zero layout shift. The demo shows the rail *and* the bar
+at once so you can compare them; in production one media query swaps them at
+the 600px compact breakpoint.
+
+<ComponentDemo
+  label="Live preview — switch destinations, toggle the rail with the menu button, try search and the account menu"
+  html={`<div style="max-width: 720px; margin-inline: auto; border: 1px solid var(--md-sys-color-outline-variant); background: var(--md-sys-color-surface);">
+  <md-app-bar data-appbar variant="search" leading-icon="menu" leading-icon-label="Toggle navigation">
+    <md-search slot="search" data-search layout="docked" trigger="bar" full-width debounce="200"
+      placeholder="Search projects, files, and people" no-results-label="No matches in this workspace">
+      <md-list slot="results" label="Search results" data-results>
+        <md-list-item type="button" headline="Atlas ingestion pipeline" supporting-text="Project - updated 2h ago"></md-list-item>
+        <md-list-item type="button" headline="Billing dashboard" supporting-text="Project - updated yesterday"></md-list-item>
+        <md-list-item type="button" headline="Q3 usage report.pdf" supporting-text="File - 1.8 MB"></md-list-item>
+        <md-list-item type="button" headline="Priya Raman" supporting-text="Person - Data Platform"></md-list-item>
+      </md-list>
+    </md-search>
+    <md-icon-button slot="trailing" id="shell-account" aria-haspopup="menu" aria-label="Account: Priya Raman">
+      <md-avatar initials="PR"></md-avatar>
+    </md-icon-button>
+  </md-app-bar>
+  <md-menu data-account-menu anchor="shell-account" placement="bottom-end">
+    <md-menu-item headline="Profile"></md-menu-item>
+    <md-menu-item headline="Workspace settings" divider></md-menu-item>
+    <md-menu-item headline="Sign out"></md-menu-item>
+  </md-menu>
+  <div style="display: flex; align-items: stretch; height: 400px;">
+    <md-navigation-rail data-rail label="Main navigation" active-index="1">
+      <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="folder" label="Projects" value="projects"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="rate_review" label="Reviews" value="reviews" badge-value="3"></md-navigation-rail-tab>
+      <md-navigation-rail-tab icon="settings" label="Settings" value="settings" badge></md-navigation-rail-tab>
+    </md-navigation-rail>
+    <main data-content style="flex: 1; min-width: 0; overflow-y: auto; padding: 20px 24px; display: grid; gap: 16px; align-content: start; border-inline-start: 1px solid var(--md-sys-color-outline-variant);">
+      <md-breadcrumbs data-crumbs label="Breadcrumb">
+        <md-breadcrumb-item href="#" icon="home">Home</md-breadcrumb-item>
+        <md-breadcrumb-item href="#">Projects</md-breadcrumb-item>
+        <md-breadcrumb-item>Atlas ingestion pipeline</md-breadcrumb-item>
+      </md-breadcrumbs>
+      <span data-title style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);">Atlas ingestion pipeline</span>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+        <div style="border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px;">
+          <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Last run</span>
+          <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Passed - 3m 41s</span>
+        </div>
+        <div style="border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px;">
+          <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Rows today</span>
+          <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">12.4M</span>
+        </div>
+        <div style="border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px;">
+          <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Open reviews</span>
+          <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">3</span>
+        </div>
+      </div>
+      <div style="display: grid; gap: 0; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; overflow: hidden;">
+        <div style="padding: 12px 16px; border-bottom: 1px solid var(--md-sys-color-outline-variant);">
+          <span style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Recent activity</span>
+        </div>
+        <div style="padding: 12px 16px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">Scheduled run #482 finished - 09:20</div>
+        <div style="padding: 12px 16px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">Priya Raman approved schema change SC-118 - 08:54</div>
+        <div style="padding: 12px 16px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">Retry policy updated to exponential backoff - yesterday</div>
+        <div style="padding: 12px 16px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">Source "events-eu" reconnected after 6m outage - yesterday</div>
+        <div style="padding: 12px 16px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">Scheduled run #481 finished - yesterday</div>
+      </div>
+      <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Scroll this pane — the app bar swaps to its scrolled container color.</span>
+    </main>
+  </div>
+  <div style="padding: 10px 16px 6px; border-top: 1px solid var(--md-sys-color-outline-variant); background: var(--md-sys-color-surface-container-low);">
+    <span style="font: var(--md-sys-typescale-label-small); color: var(--md-sys-color-on-surface-variant);">Compact windows (below 600 px) replace the rail with this bottom bar — both are shown here for comparison</span>
+  </div>
+  <md-navigation-bar data-bottom-nav aria-label="Main navigation" active-index="1">
+    <md-navigation-tab icon="home" active-icon="home" label="Home"></md-navigation-tab>
+    <md-navigation-tab icon="folder" active-icon="folder" label="Projects"></md-navigation-tab>
+    <md-navigation-tab icon="rate_review" label="Reviews" badge-value="3"></md-navigation-tab>
+    <md-navigation-tab icon="settings" label="Settings" badge></md-navigation-tab>
+  </md-navigation-bar>
+</div>`}
+  htmlForCode={`<!-- The chrome renders at fixed, token-driven sizes: no layout shift on first paint. -->
+<md-app-bar variant="search" leading-icon="menu" leading-icon-label="Toggle navigation">
+  <md-search slot="search" layout="docked" trigger="bar" full-width debounce="200"
+    placeholder="Search projects, files, and people">
+    <md-list slot="results" label="Search results"></md-list>
+  </md-search>
+  <md-icon-button slot="trailing" id="account" aria-haspopup="menu" aria-label="Account: Priya Raman">
+    <md-avatar initials="PR"></md-avatar>
+  </md-icon-button>
+</md-app-bar>
+<md-menu anchor="account" placement="bottom-end">
+  <md-menu-item headline="Profile"></md-menu-item>
+  <md-menu-item headline="Workspace settings" divider></md-menu-item>
+  <md-menu-item headline="Sign out"></md-menu-item>
+</md-menu>
+
+<!-- Desktop: side rail. Hide with a media query below 600px. -->
+<md-navigation-rail class="wide-only" label="Main navigation" active-index="1">
+  <md-navigation-rail-tab icon="home" label="Home" value="home"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="folder" label="Projects" value="projects"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="rate_review" label="Reviews" value="reviews" badge-value="3"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="settings" label="Settings" value="settings" badge></md-navigation-rail-tab>
+</md-navigation-rail>
+
+<main>
+  <md-breadcrumbs label="Breadcrumb">
+    <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+    <md-breadcrumb-item href="/projects">Projects</md-breadcrumb-item>
+    <md-breadcrumb-item>Atlas ingestion pipeline</md-breadcrumb-item>
+  </md-breadcrumbs>
+  <h1>Atlas ingestion pipeline</h1>
+</main>
+
+<!-- Mobile: bottom bar. Show only below 600px. -->
+<md-navigation-bar class="compact-only" aria-label="Main navigation" active-index="1">
+  <md-navigation-tab icon="home" active-icon="home" label="Home"></md-navigation-tab>
+  <md-navigation-tab icon="folder" active-icon="folder" label="Projects"></md-navigation-tab>
+  <md-navigation-tab icon="rate_review" label="Reviews" badge-value="3"></md-navigation-tab>
+  <md-navigation-tab icon="settings" label="Settings" badge></md-navigation-tab>
+</md-navigation-bar>`}
+  script={`
+    const appBar = root.querySelector('[data-appbar]');
+    const rail = root.querySelector('[data-rail]');
+    const bottomNav = root.querySelector('[data-bottom-nav]');
+    const crumbs = root.querySelector('[data-crumbs]');
+    const pageTitle = root.querySelector('[data-title]');
+    const content = root.querySelector('[data-content]');
+    const search = root.querySelector('[data-search]');
+    const results = root.querySelector('[data-results]');
+    const accountBtn = root.querySelector('#shell-account');
+    const accountMenu = root.querySelector('[data-account-menu]');
+
+    const VALUES = ['home', 'projects', 'reviews', 'settings'];
+    const LABELS = { home: 'Home', projects: 'Projects', reviews: 'Reviews', settings: 'Settings' };
+
+    // Rebuild the breadcrumb trail and content header for a destination.
+    function setSection(value) {
+      let trail;
+      let heading;
+      if (value === 'home') {
+        trail = '<md-breadcrumb-item icon="home">Home</md-breadcrumb-item>';
+        heading = 'Home';
+      } else if (value === 'projects') {
+        trail =
+          '<md-breadcrumb-item href="#" icon="home">Home</md-breadcrumb-item>' +
+          '<md-breadcrumb-item href="#">Projects</md-breadcrumb-item>' +
+          '<md-breadcrumb-item>Atlas ingestion pipeline</md-breadcrumb-item>';
+        heading = 'Atlas ingestion pipeline';
+      } else {
+        trail =
+          '<md-breadcrumb-item href="#" icon="home">Home</md-breadcrumb-item>' +
+          '<md-breadcrumb-item>' + LABELS[value] + '</md-breadcrumb-item>';
+        heading = LABELS[value];
+      }
+      crumbs.innerHTML = trail;
+      pageTitle.textContent = heading;
+    }
+
+    // Keep rail and bottom bar in lockstep. select() and a property write are
+    // both no-ops when the destination is already current, so this cannot loop.
+    rail.addEventListener('mdTabChange', (e) => {
+      bottomNav.select(VALUES.indexOf(e.detail.value));
+      setSection(e.detail.value);
+    });
+    bottomNav.addEventListener('mdChange', (e) => {
+      rail.activeIndex = e.detail.index;
+      setSection(VALUES[e.detail.index]);
+    });
+
+    // The app bar's menu button expands the rail to its labelled drawer form.
+    appBar.addEventListener('mdLeadingClick', () => { rail.toggle(); });
+
+    // scrolled is a prop you drive: swap to the tonal container on scroll.
+    content.addEventListener('scroll', () => {
+      appBar.scrolled = content.scrollTop > 0;
+    }, { passive: true });
+
+    // SPA-style breadcrumb interception: mdSelect is cancelable.
+    crumbs.addEventListener('mdSelect', (e) => { e.preventDefault(); });
+
+    // Account menu on the avatar button.
+    accountBtn.addEventListener('mdClick', () => { accountMenu.show(); });
+
+    // Filter the static suggestion list on the debounced query event.
+    search.addEventListener('mdSearch', (e) => {
+      const q = e.detail.value.toLowerCase();
+      results.querySelectorAll('md-list-item').forEach((item) => {
+        const text = (item.getAttribute('headline') || '').toLowerCase();
+        item.hidden = q !== '' && text.indexOf(q) === -1;
+      });
+    });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-app-bar`](/components/app-bar/) | The banner. `variant="search"` puts a search pill in the 64dp row; the host is already `position: sticky; top: 0`, so it pins itself to its scroll container. `scrolled` is a prop you set from your own scroll listener — the bar never measures the page. |
+| [`md-search`](/components/search/) | Slotted into the app bar's `search` slot, which replaces the built-in input entirely. `layout="docked"` anchors the results panel beneath the bar; `debounce="200"` gates `mdSearch` so the filter runs once per pause, not per keystroke. |
+| [`md-navigation-rail`](/components/navigation-rail/) | Desktop destinations. `mdTabChange` carries a stable `value` for routing; `toggle()` swaps between the 80dp icon rail and the 220dp labelled drawer. Badge counts ride on each `md-navigation-rail-tab` via `badge-value`. |
+| [`md-navigation-bar`](/components/navigation-bar/) | The same four destinations for compact windows. It owns `active-index`, roving focus, and label policy; `select()` is a no-op on a reselect, which is what makes the two-way sync with the rail loop-safe. |
+| [`md-breadcrumbs`](/components/breadcrumbs/) | The content header's where-am-I trail. The last crumb is auto-promoted to the non-interactive current page, and `mdSelect` is cancelable for SPA routing. |
+| [`md-menu`](/components/menu/) | The account menu, anchored to the avatar button by `id`. It writes `aria-haspopup` / `aria-expanded` onto the trigger while open and returns focus to it on `Escape`. |
+| [`md-avatar`](/components/avatar/) + [`md-icon-button`](/components/icon-button/) | The signed-in user. The avatar itself is never focusable, so it sits inside an icon button that carries the accessible name and the click target. |
+
+## The details that make it production-grade
+
+- **Zero layout shift is structural, not tuned.** The app bar row is a fixed
+  64dp, the rail 80dp wide, the bottom bar 64dp tall — all deterministic
+  tokens, and nothing in the chrome measures the DOM to lay itself out (even
+  the app bar's `scrolled` tonal swap is a prop you drive). Server-rendered or
+  statically generated markup paints in its final geometry before any script
+  runs.
+- **Landmarks come free and stay unique.** The app bar is the page's one
+  `role="banner"`; rail and bar are `navigation` landmarks named by
+  `label` / `aria-label`. Because only one of the two navigation surfaces
+  exists per breakpoint in production, screen-reader users always find exactly
+  one "Main navigation".
+- **Keyboard behavior is owned by the containers.** Rail and bar manage roving
+  tabindex: one tab stop each, arrow keys move between destinations (wrapping,
+  RTL-aware), `Home`/`End` jump to the ends. The account menu adds typeahead,
+  `Escape`-to-close, and focus return to the avatar button.
+- **Badge counts are announced, not just drawn.** `badge-value="3"` renders a
+  `role="status"` capsule ("3 new"), numeric values cap at `999+`, and the dot
+  variant flags activity without a number — no extra ARIA wiring needed.
+- **Breadcrumbs are real links with real semantics.** The trail is an `<ol>`
+  inside a labelled navigation region, separators are `aria-hidden`, the last
+  crumb automatically gets `aria-current="page"`, and `preventDefault()` on
+  `mdSelect` is the sanctioned SPA-routing hook — middle-click and
+  copy-link-address keep working.
+
+## Variations
+
+- **Expandable rail:** add `expandable` to render the built-in menu/menu_open
+  toggle instead of driving `toggle()` from the app bar, or add `modal` so the
+  expanded drawer floats over content with a scrim instead of reflowing it.
+- **Horizontal rail as an application bar:** on wide, content-hungry layouts
+  (tables, editors), `orientation="horizontal"` lays the same destinations out
+  as a top bar — brand in `slot="logo"`, account in `slot="footer"` — spending
+  height instead of width.
+- **More destinations than fit:** `max-visible="4"` on the rail collapses the
+  rest behind an overflow menu trigger that stays outside the tablist and
+  still activates destinations first-class.
+- **Full-screen search on compact:** switch the slotted `md-search` to
+  `layout="full-screen"` below the breakpoint — it locks document scroll,
+  traps Tab in the overlay, and keeps the same `mdSearch` wiring.
+
+## Related
+
+- Recipe: [Inbox with reading pane](/recipes/inbox-shell/) — a full working
+  screen built inside exactly this chrome, rail badges included.
+- Recipe: [Two-factor verification](/recipes/two-factor-verification/) — the
+  auth screen that typically sits just outside this shell.
+- Component manuals: [`md-app-bar`](/components/app-bar/),
+  [`md-navigation-rail`](/components/navigation-rail/),
+  [`md-navigation-bar`](/components/navigation-bar/) — full API, breakpoint
+  guidance, and the anti-patterns lists.

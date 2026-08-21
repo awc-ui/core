@@ -1,0 +1,232 @@
+---
+title: Role & permission assignment
+description: "An admin access screen: a role picker, a dual-list permission editor, a confirmation dialog gating elevated grants, and an undoable save."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**The access-control screen every admin console needs.** A role picker built on
+[`md-select`](/components/select/) drives an
+[`md-transfer-list`](/components/transfer-list/) whose target column *is* the
+role's granted permissions. Moving an elevated permission — Delete users,
+Manage API keys — into the Granted column opens a confirming
+[`md-dialog`](/components/dialog/) first, and cancelling puts the item straight
+back. Saving raises an [`md-snackbar`](/components/snackbar/) with a working
+Undo. One immovable item (Configure SSO) shows how `disabled` entries stay
+visible instead of vanishing.
+
+<ComponentDemo
+  label="Live preview — move Delete users into Granted to trigger the confirmation"
+  html={`<div style="display: grid; gap: 20px; max-width: 720px; margin-inline: auto;">
+  <div style="display: grid; gap: 4px;">
+    <span style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);">Edit role access</span>
+    <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">Pick a role, then move permissions between the columns. Elevated permissions ask for confirmation before they land.</span>
+  </div>
+  <md-select data-role label="Role" value="support" style="max-width: 320px;">
+    <md-select-option value="support" supporting-text="14 members">Support agent</md-select-option>
+    <md-select-option value="billing" supporting-text="3 members">Billing admin</md-select-option>
+    <md-select-option value="engineer" supporting-text="27 members">Engineer</md-select-option>
+    <md-select-option value="auditor" supporting-text="2 members">Compliance auditor</md-select-option>
+  </md-select>
+  <md-transfer-list data-permissions
+    source-title="Available permissions"
+    target-title="Granted permissions"
+    source-search-placeholder="Search available"
+    target-search-placeholder="Search granted"
+    empty-icon="inbox"
+    empty-text="Nothing here yet"
+    density="-1"
+    move-right-label="Grant selected permissions"
+    move-left-label="Revoke selected permissions"
+    move-all-right-label="Grant all permissions"
+    move-all-left-label="Revoke all permissions"
+    style="--md-transfer-list-height: 380px;"
+  ></md-transfer-list>
+  <div style="display: flex; justify-content: flex-end;">
+    <md-button variant="filled" data-save>Save changes</md-button>
+  </div>
+</div>
+<md-dialog data-confirm headline="Grant elevated access?" icon="warning" scrim-dismissible="false">
+  <p style="margin: 0; font: var(--md-sys-typescale-body-medium);">
+    This grants <strong data-elevated-names></strong> to every member of this
+    role. Elevated actions are recorded in the audit log and cannot be limited
+    to individual members.
+  </p>
+  <md-button slot="actions" variant="text" data-confirm-cancel>Cancel</md-button>
+  <md-button slot="actions" variant="filled" data-confirm-grant>Grant access</md-button>
+</md-dialog>
+<md-snackbar data-saved action="Undo" position="bottom-start"></md-snackbar>`}
+  htmlForCode={`<md-select id="role" label="Role" value="support">
+  <md-select-option value="support" supporting-text="14 members">Support agent</md-select-option>
+  <md-select-option value="billing" supporting-text="3 members">Billing admin</md-select-option>
+</md-select>
+
+<md-transfer-list id="permissions"
+  source-title="Available permissions"
+  target-title="Granted permissions"
+  move-right-label="Grant selected permissions"
+  move-left-label="Revoke selected permissions"
+  move-all-right-label="Grant all permissions"
+  move-all-left-label="Revoke all permissions"
+  style="--md-transfer-list-height: 380px;"
+></md-transfer-list>
+
+<md-button variant="filled" id="save">Save changes</md-button>
+
+<md-dialog id="confirm" headline="Grant elevated access?" icon="warning" scrim-dismissible="false">
+  <p>This grants <strong id="elevated-names"></strong> to every member of this role.</p>
+  <md-button slot="actions" variant="text" id="confirm-cancel">Cancel</md-button>
+  <md-button slot="actions" variant="filled" id="confirm-grant">Grant access</md-button>
+</md-dialog>
+
+<md-snackbar id="saved" action="Undo" position="bottom-start"></md-snackbar>`}
+  script={`
+    const roleSelect = root.querySelector('[data-role]');
+    const list = root.querySelector('[data-permissions]');
+    const saveBtn = root.querySelector('[data-save]');
+    const dialog = root.querySelector('[data-confirm]');
+    const namesEl = root.querySelector('[data-elevated-names]');
+    const bar = root.querySelector('[data-saved]');
+
+    const PERMISSIONS = [
+      { value: 'view-dashboards', label: 'View dashboards', description: 'Read-only analytics and usage' },
+      { value: 'export-reports', label: 'Export reports', description: 'CSV and PDF downloads' },
+      { value: 'invite-users', label: 'Invite users', description: 'Send and revoke invitations' },
+      { value: 'manage-billing', label: 'Manage billing', description: 'Invoices and payment methods' },
+      { value: 'issue-refunds', label: 'Issue refunds', description: 'Up to 5,000 EUR per order' },
+      { value: 'view-audit-log', label: 'View audit log', description: 'Every privileged action, 90 days' },
+      { value: 'manage-api-keys', label: 'Manage API keys', description: 'Create and revoke live keys' },
+      { value: 'delete-users', label: 'Delete users', description: 'Permanent, after a 30-day grace period' },
+      { value: 'configure-sso', label: 'Configure SSO', description: 'Requires the Enterprise plan', disabled: true },
+    ];
+    const PRESETS = {
+      support: ['view-dashboards', 'issue-refunds'],
+      billing: ['view-dashboards', 'export-reports', 'manage-billing', 'issue-refunds'],
+      engineer: ['view-dashboards', 'view-audit-log', 'manage-api-keys'],
+      auditor: ['view-dashboards', 'export-reports', 'view-audit-log'],
+    };
+    const ROLE_NAMES = {
+      support: 'Support agent',
+      billing: 'Billing admin',
+      engineer: 'Engineer',
+      auditor: 'Compliance auditor',
+    };
+    const ELEVATED = ['delete-users', 'manage-api-keys'];
+    const LABELS = {};
+    PERMISSIONS.forEach((p) => { LABELS[p.value] = p.label; });
+
+    list.items = PERMISSIONS;
+    let saved = PRESETS[roleSelect.value].slice();
+    list.value = saved.slice();
+
+    // Switching roles re-partitions the list. Assigning value emits no
+    // mdChange/mdMove, so a role switch can never trip the elevated check.
+    roleSelect.addEventListener('mdChange', (e) => {
+      saved = (PRESETS[e.detail] || []).slice();
+      list.value = saved.slice();
+    });
+
+    // Elevated grants need an explicit yes. mdMove describes the move;
+    // if it carried an elevated permission, hold a revert snapshot and ask.
+    let pendingRevert = null;
+    list.addEventListener('mdMove', (e) => {
+      if (e.detail.direction !== 'right') return;
+      const risky = e.detail.moved.filter((v) => ELEVATED.indexOf(v) !== -1);
+      if (risky.length === 0) return;
+      pendingRevert = e.detail.target.filter((v) => risky.indexOf(v) === -1);
+      namesEl.textContent = risky.map((v) => LABELS[v]).join(' and ');
+      dialog.show();
+    });
+
+    const revert = () => {
+      if (pendingRevert) {
+        list.value = pendingRevert;
+        pendingRevert = null;
+      }
+    };
+    root.querySelector('[data-confirm-cancel]').addEventListener('mdClick', () => {
+      revert();
+      dialog.close();
+    });
+    root.querySelector('[data-confirm-grant]').addEventListener('mdClick', () => {
+      pendingRevert = null;
+      dialog.close();
+    });
+    // Escape is a dismissal too — treat it exactly like Cancel.
+    dialog.addEventListener('mdCancel', revert);
+
+    // Save commits the current target set; Undo restores the previous one.
+    let lastSaved = saved.slice();
+    saveBtn.addEventListener('mdClick', () => {
+      lastSaved = saved.slice();
+      saved = list.value.slice();
+      bar.message = ROLE_NAMES[roleSelect.value] + ' now has ' + saved.length + ' permissions';
+      bar.show();
+    });
+    bar.addEventListener('mdAction', () => {
+      saved = lastSaved.slice();
+      list.value = saved.slice();
+      bar.hide('action');
+    });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-transfer-list`](/components/transfer-list/) | The centre of the screen. One `items` pool; `value` *is* the Granted column, so switching roles is a single property write. `mdMove` describes every move (`direction`, `moved`, `target`) — exactly what the elevated-grant check needs. The `disabled` Configure SSO entry is visible but immovable. |
+| [`md-select`](/components/select/) | Picks the role. Each `md-select-option` carries a member count as `supporting-text`; `mdChange` delivers the new value as a plain string. |
+| [`md-dialog`](/components/dialog/) | Confirms the elevated grant. `scrim-dismissible="false"` forces an explicit choice; slotted action buttons never close the dialog themselves, so both handlers call `close()`. |
+| [`md-snackbar`](/components/snackbar/) | Post-save feedback with a single reversing action. `hide('action')` from the `mdAction` handler is the only way `reason: 'action'` is produced. |
+| [`md-button`](/components/button/) | Save and the dialog's action pair — dismissive Cancel on the leading side of the confirming Grant access, per M3. |
+
+## The details that make it production-grade
+
+- **Programmatic writes are silent by design.** Assigning
+  `list.value` emits neither `mdChange` nor `mdMove`, so switching roles or
+  reverting after Cancel can never re-trigger the confirmation dialog —
+  events fire only for real user moves.
+- **The movers respect the filter, and never the disabled.** The single-step
+  `›`/`‹` buttons act only on items both checked *and* visible under the
+  current search; the bulk `»`/`«` buttons ignore the filter but still skip
+  `disabled` items — Grant all can never sneak Configure SSO across.
+- **Escape and Cancel are one code path.** The dialog emits `mdCancel` only on
+  dismissal (Escape here, since the scrim is off) and `mdClose` on every
+  close, so the revert handler is written idempotent — a dismissal fires both
+  events without double-reverting.
+- **Undo is a real reversal, not a toast.** The snackbar's action button never
+  dismisses the surface on its own; the handler restores the previous saved
+  set and then calls `hide('action')`. The auto-hide timer pauses while the
+  snackbar is hovered or focused (WCAG 2.2.1), so slow readers keep their
+  Undo window.
+- **Each permission row is one tab stop.** Rows are `role="option"` inside an
+  `aria-multiselectable` listbox — Space or Enter toggles — and the inner
+  checkbox is `inert` + `aria-hidden`. The four mover buttons take their
+  accessible names from the `move-*-label` props set in the markup.
+
+## Variations
+
+- **Safety-first editing:** add `single-step-only` and
+  `show-select-all="false"` to the transfer list — no bulk movers, no
+  select-all, every grant is deliberate.
+- **Save-per-move instead of a Save button:** persist on each `mdChange`
+  (`e.detail` is the fresh target array) and show the Undo snackbar per move.
+- **Inside a real `<form>`:** the transfer list is not form-associated —
+  mirror `mdChange` into hidden `<input name="permissions">` elements, as in
+  the pattern in the [`md-transfer-list`](/components/transfer-list/) manual.
+- **Narrow viewports:** three columns don't fit below ~600px — collapse to an
+  [`md-multi-select`](/components/multi-select/) there and keep the same
+  confirmation dialog.
+
+## Related
+
+- Recipe: [Two-factor verification](/recipes/two-factor-verification/) —
+  another confirm-the-risky-step flow, built around `md-otp-field` and
+  `md-dialog`.
+- Component manuals: [`md-transfer-list`](/components/transfer-list/) — the
+  item/selection API, move semantics, and theming;
+  [`md-select`](/components/select/) — option sources, filtering, and form
+  participation.

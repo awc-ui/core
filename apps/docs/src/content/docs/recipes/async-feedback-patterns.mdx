@@ -1,0 +1,363 @@
+---
+title: "Async task & feedback patterns"
+description: "Rules for async feedback: a skeleton first paint, per-job progress, live status dots, retry and cancel affordances, and the three snackbar conventions."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+**Every async state has one correct component — treat this page as rules, not
+suggestions.** Structured content that is on its way gets
+[`md-skeleton`](/components/skeleton/); queued work with no measurable progress
+gets [`md-loading-indicator`](/components/loading-indicator/); a running job
+you can measure gets a determinate
+[`md-progress-indicator`](/components/progress-indicator/); state itself is a
+labelled [`md-status-dot`](/components/status-dot/); destructive cancellation
+is a blocking [`md-dialog`](/components/dialog/); and everything that *already
+happened* is a snackbar — success plain, error with a retry action, reversible
+actions with Undo. The demo below runs a whole job queue through those rules.
+
+<ComponentDemo
+  label="Live preview — watch the rollup finish, retry the failed webhook, or cancel the running job"
+  html={`<div style="max-width: 640px; margin-inline: auto; display: grid; gap: 16px;">
+  <div style="display: grid; gap: 2px;">
+    <span style="font: var(--md-sys-typescale-title-large); color: var(--md-sys-color-on-surface);">Export jobs</span>
+    <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">Shared worker pool - one live region, one snackbar, one rule per state.</span>
+  </div>
+  <div data-loading role="status" aria-label="Loading export jobs" style="display: grid; gap: 18px; padding-block: 8px;">
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <md-skeleton variant="circular" width="12px" height="12px" announce="false"></md-skeleton>
+      <div style="flex: 1; display: grid; gap: 6px;">
+        <md-skeleton variant="text" width="45%" announce="false"></md-skeleton>
+        <md-skeleton variant="text" full-width announce="false"></md-skeleton>
+      </div>
+    </div>
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <md-skeleton variant="circular" width="12px" height="12px" announce="false"></md-skeleton>
+      <div style="flex: 1; display: grid; gap: 6px;">
+        <md-skeleton variant="text" width="60%" announce="false"></md-skeleton>
+        <md-skeleton variant="text" full-width announce="false"></md-skeleton>
+      </div>
+    </div>
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <md-skeleton variant="circular" width="12px" height="12px" announce="false"></md-skeleton>
+      <div style="flex: 1; display: grid; gap: 6px;">
+        <md-skeleton variant="text" width="52%" announce="false"></md-skeleton>
+        <md-skeleton variant="text" full-width announce="false"></md-skeleton>
+      </div>
+    </div>
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <md-skeleton variant="circular" width="12px" height="12px" announce="false"></md-skeleton>
+      <div style="flex: 1; display: grid; gap: 6px;">
+        <md-skeleton variant="text" width="40%" announce="false"></md-skeleton>
+        <md-skeleton variant="text" full-width announce="false"></md-skeleton>
+      </div>
+    </div>
+  </div>
+  <div data-jobs style="display: none;">
+    <md-list label="Export jobs" interaction-mode="multi-action">
+      <md-list-item headline="Usage rollup - July">
+        <span slot="leading" style="position: relative; display: inline-flex; width: 12px; height: 12px;">
+          <md-status-dot state="online" live label="Running" data-dot="rollup"></md-status-dot>
+        </span>
+        <span slot="supporting-text" style="display: grid; gap: 8px; padding-block-start: 2px;">
+          <span data-status="rollup">Step 3 of 5 - aggregating events (38%)</span>
+          <md-progress-indicator data-progress value="38" max="100" label="Usage rollup progress"></md-progress-indicator>
+        </span>
+        <md-icon-button slot="trailing" icon="close" size="xs" data-cancel aria-label="Cancel the usage rollup export"></md-icon-button>
+      </md-list-item>
+      <md-list-item headline="Invoice PDF batch (412 files)">
+        <span slot="leading" style="position: relative; display: inline-flex; width: 12px; height: 12px;">
+          <md-status-dot state="neutral" label="Queued" data-dot="invoices"></md-status-dot>
+        </span>
+        <span slot="supporting-text" data-status="invoices">Queued behind 1 job - no worker assigned yet</span>
+        <md-loading-indicator slot="trailing" data-queue-spinner label="Waiting for a worker" style="--md-loading-indicator-size: 28px;"></md-loading-indicator>
+      </md-list-item>
+      <md-list-item headline="Webhook redelivery - order.created">
+        <span slot="leading" style="position: relative; display: inline-flex; width: 12px; height: 12px;">
+          <md-status-dot state="busy" label="Failed" data-dot="webhooks"></md-status-dot>
+        </span>
+        <span slot="supporting-text" data-status="webhooks">Attempt 2 failed at 09:12 - endpoint returned 503</span>
+        <md-icon-button slot="trailing" icon="refresh" variant="tonal" size="xs" data-retry aria-label="Retry webhook redelivery"></md-icon-button>
+      </md-list-item>
+      <md-list-item headline="Audit log archive - Q2" trailing-supporting-text="Yesterday 03:12">
+        <span slot="leading" style="position: relative; display: inline-flex; width: 12px; height: 12px;">
+          <md-status-dot state="online" label="Succeeded" data-dot="archive"></md-status-dot>
+        </span>
+        <span slot="supporting-text">Completed - 41,208 events, 12.4 MB</span>
+      </md-list-item>
+    </md-list>
+  </div>
+</div>
+<md-snackbar data-bar></md-snackbar>
+<md-dialog data-cancel-dialog headline="Cancel this export?" icon="warning" scrim-dismissible="false">
+  <p style="margin: 0; font: var(--md-sys-typescale-body-medium);">
+    "Usage rollup - July" is still running. Cancelling discards the partial
+    file; a restarted job begins again from step 1.
+  </p>
+  <md-button slot="actions" variant="text" data-keep>Keep running</md-button>
+  <md-button slot="actions" variant="filled" data-confirm>Cancel export</md-button>
+</md-dialog>`}
+  htmlForCode={`<!-- Initial load: ONE live region, every skeleton inside it silent -->
+<div role="status" aria-label="Loading export jobs">
+  <md-skeleton variant="circular" width="12px" height="12px" announce="false"></md-skeleton>
+  <md-skeleton variant="text" lines="2" full-width announce="false"></md-skeleton>
+</div>
+
+<md-list label="Export jobs" interaction-mode="multi-action">
+  <!-- RUNNING: live labelled dot + determinate progress + cancel affordance -->
+  <md-list-item headline="Usage rollup - July">
+    <span slot="leading" style="position: relative; display: inline-flex; width: 12px; height: 12px;">
+      <md-status-dot state="online" live label="Running"></md-status-dot>
+    </span>
+    <span slot="supporting-text">
+      <span>Step 3 of 5 - aggregating events (38%)</span>
+      <md-progress-indicator value="38" max="100" label="Usage rollup progress"></md-progress-indicator>
+    </span>
+    <md-icon-button slot="trailing" icon="close" size="xs"
+      aria-label="Cancel the usage rollup export"></md-icon-button>
+  </md-list-item>
+  <!-- QUEUED: indeterminate wait, no fake percentages -->
+  <md-list-item headline="Invoice PDF batch (412 files)"
+    supporting-text="Queued behind 1 job - no worker assigned yet">
+    <span slot="leading" style="position: relative; display: inline-flex; width: 12px; height: 12px;">
+      <md-status-dot state="neutral" label="Queued"></md-status-dot>
+    </span>
+    <md-loading-indicator slot="trailing" label="Waiting for a worker"
+      style="--md-loading-indicator-size: 28px;"></md-loading-indicator>
+  </md-list-item>
+  <!-- FAILED: state as words + an inline retry affordance -->
+  <md-list-item headline="Webhook redelivery - order.created"
+    supporting-text="Attempt 2 failed at 09:12 - endpoint returned 503">
+    <span slot="leading" style="position: relative; display: inline-flex; width: 12px; height: 12px;">
+      <md-status-dot state="busy" label="Failed"></md-status-dot>
+    </span>
+    <md-icon-button slot="trailing" icon="refresh" variant="tonal" size="xs"
+      aria-label="Retry webhook redelivery"></md-icon-button>
+  </md-list-item>
+</md-list>
+
+<!-- ONE snackbar element serves all three conventions -->
+<md-snackbar></md-snackbar>
+
+<!-- Destructive cancellation blocks the flow and cannot be click-away dismissed -->
+<md-dialog headline="Cancel this export?" icon="warning" scrim-dismissible="false">
+  <p>Cancelling discards the partial file.</p>
+  <md-button slot="actions" variant="text">Keep running</md-button>
+  <md-button slot="actions" variant="filled">Cancel export</md-button>
+</md-dialog>`}
+  script={`
+    const bar = root.querySelector('[data-bar]');
+    const dialog = root.querySelector('[data-cancel-dialog]');
+    const loading = root.querySelector('[data-loading]');
+    const jobs = root.querySelector('[data-jobs]');
+    const prog = root.querySelector('[data-progress]');
+    const cancelBtn = root.querySelector('[data-cancel]');
+    const retryBtn = root.querySelector('[data-retry]');
+    const queueSpinner = root.querySelector('[data-queue-spinner]');
+    const dot = function (id) { return root.querySelector('[data-dot="' + id + '"]'); };
+    const status = function (id) { return root.querySelector('[data-status="' + id + '"]'); };
+
+    // Snackbar conventions: one element, one pending-close callback.
+    // RULE: the action button never dismisses by itself -> hide('action').
+    // RULE: commit/undo on mdClose by reason, never inside mdAction.
+    let onClose = null;
+    bar.addEventListener('mdAction', function () { bar.hide('action'); });
+    bar.addEventListener('mdClose', function (e) {
+      const cb = onClose; onClose = null;
+      if (cb) cb(e.detail.reason);
+    });
+    function toast(message, opts) {
+      opts = opts || {};
+      bar.message = message;
+      bar.action = opts.action || '';
+      bar.politeness = opts.assertive ? 'assertive' : 'polite';
+      bar.autoHide = !opts.sticky;
+      bar.closeable = !!opts.sticky;
+      bar.autoHideDuration = opts.duration || 4000;
+      onClose = opts.onClose || null;
+      bar.show();
+    }
+
+    // RULE: skeletons render until replaced - swap them for the real rows,
+    // never leave them up on error.
+    setTimeout(function () {
+      loading.style.display = 'none';
+      jobs.style.display = '';
+      startRollup();
+    }, 1400);
+
+    // Determinate progress: raw value against max, text mirror beside the bar.
+    let value = 38;
+    let timer = null;
+    function startRollup() {
+      timer = setInterval(function () {
+        value += 2;
+        if (value >= 100) {
+          value = 100;
+          clearInterval(timer);
+          timer = null;
+        }
+        prog.value = value;
+        status('rollup').textContent = 'Step 3 of 5 - aggregating events (' + value + '%)';
+        if (value === 100) finishRollup();
+      }, 250);
+    }
+    function finishRollup() {
+      // RULE: mdComplete follows the complete flag, not value === max.
+      prog.complete = true;
+      const d = dot('rollup');
+      d.live = false;
+      d.label = 'Finished';
+      status('rollup').textContent = 'Completed - 2.1 MB written to exports/usage-2026-07.csv';
+      cancelBtn.style.display = 'none';
+      toast('Usage rollup finished');
+      // The queue drains: the queued job takes the freed worker.
+      queueSpinner.remove();
+      const inv = dot('invoices');
+      inv.state = 'online';
+      inv.label = 'Running';
+      inv.live = true;
+      status('invoices').textContent = 'Rendering invoice 18 of 412...';
+    }
+
+    // Cancellation: destructive -> dialog, then a reversible Undo snackbar.
+    cancelBtn.addEventListener('click', function () {
+      if (timer) dialog.open = true;
+    });
+    root.querySelector('[data-keep]').addEventListener('click', function () {
+      dialog.open = false;
+    });
+    root.querySelector('[data-confirm]').addEventListener('click', function () {
+      dialog.open = false;
+      clearInterval(timer);
+      timer = null;
+      const at = value;
+      prog.style.display = 'none';
+      const d = dot('rollup');
+      d.state = 'offline';
+      d.live = false;
+      d.label = 'Cancelled';
+      status('rollup').textContent = 'Cancelled at ' + at + '% - partial output discarded';
+      cancelBtn.style.display = 'none';
+      toast('Usage rollup cancelled', {
+        action: 'Undo',
+        duration: 6000,
+        onClose: function (reason) {
+          if (reason !== 'action') return;   // auto/close = committed
+          prog.style.display = '';
+          d.state = 'online';
+          d.live = true;
+          d.label = 'Running';
+          cancelBtn.style.display = '';
+          startRollup();
+        }
+      });
+    });
+
+    // Retry: first attempt fails again (sticky error snackbar with a Retry
+    // action), the next one lands.
+    let attempt = 2;
+    function runRetry() {
+      attempt += 1;
+      retryBtn.disabled = true;
+      const d = dot('webhooks');
+      d.state = 'online';
+      d.live = true;
+      d.label = 'Retrying';
+      status('webhooks').textContent = 'Attempt ' + attempt + ' - delivering to hooks.acme-billing.com...';
+      setTimeout(function () {
+        if (attempt < 4) {
+          d.state = 'busy';
+          d.live = false;
+          d.label = 'Failed';
+          status('webhooks').textContent = 'Attempt ' + attempt + ' failed - endpoint returned 503';
+          retryBtn.disabled = false;
+          toast('Webhook redelivery failed (503)', {
+            assertive: true,
+            sticky: true,
+            action: 'Retry',
+            onClose: function (reason) { if (reason === 'action') runRetry(); }
+          });
+        } else {
+          d.state = 'online';
+          d.live = false;
+          d.label = 'Delivered';
+          status('webhooks').textContent = 'Delivered on attempt ' + attempt + ' - 200 OK in 340 ms';
+          retryBtn.style.display = 'none';
+          toast('Webhook delivered');
+        }
+      }, 1600);
+    }
+    retryBtn.addEventListener('click', function () { runRetry(); });
+  `}
+/>
+
+## How it's built
+
+| Component | Role in this screen |
+|---|---|
+| [`md-skeleton`](/components/skeleton/) | The initial paint. Shapes match the real rows (a 12px circle plus two text lines), and **one** wrapping `role="status"` region announces the load while every skeleton inside is `announce="false"`. |
+| [`md-list`](/components/list/) + [`md-list-item`](/components/list/) | The job queue. `interaction-mode="multi-action"` lets each row host its own trailing control (cancel, retry) with independent focus and click semantics. |
+| [`md-status-dot`](/components/status-dot/) | Per-job state. The running job's dot is `live` + labelled, which makes it a `role="status"` live region — state *changes* are announced. Every other dot carries a static `label`, so no state exists as colour alone. |
+| [`md-progress-indicator`](/components/progress-indicator/) | Determinate progress for the one measurable job: raw `value` against `max`, a text percentage beside the bar, and `complete` to play the closing animation when it lands. |
+| [`md-loading-indicator`](/components/loading-indicator/) | The queued job's indeterminate wait — no fake percentages while no worker is assigned. |
+| [`md-icon-button`](/components/icon-button/) | Inline cancel (`icon="close"`, `size="xs"`) and retry (`icon="refresh"`, tonal) affordances, each with a job-specific `aria-label`. |
+| [`md-dialog`](/components/dialog/) | Cancellation confirmation. Destructive, so `scrim-dismissible="false"` — a stray click outside cannot discard the partial file. |
+| [`md-button`](/components/button/) | The dialog's slotted actions — dismissive "Keep running" (text) on the leading side of the confirming "Cancel export" (filled). Slotted buttons never close the dialog by themselves; each handler sets `open = false` itself. |
+| [`md-snackbar`](/components/snackbar/) | One element, three conventions: plain auto-hiding success, sticky assertive error with a Retry action, and a reversible Undo. |
+
+## The details that make it production-grade
+
+- **One loading region announces once.** Twenty skeletons each saying
+  "Loading" is the most common defect in this pattern — here the wrapping
+  `div` is the single `role="status"` element and every `md-skeleton` inside
+  it is `announce="false"`. On failure, replace the skeletons with an error
+  state; they have no timeout of their own.
+- **Completion is explicit, not inferred.** `md-progress-indicator` fires
+  `mdComplete` only after you set `complete = true` — reaching
+  `value === max` changes nothing on its own. The demo sets the flag when the
+  rollup lands, which plays the closing animation and removes the bar instead
+  of leaving a finished bar that reads as stalled.
+- **Undo commits on `mdClose`, never in `mdAction`.** The snackbar's action
+  button does not dismiss it; the handler calls `hide('action')` and the
+  `mdClose` listener branches on `detail.reason`. Handling the action in both
+  events runs your rollback twice.
+- **Errors persist, successes evaporate.** The failure snackbar is
+  `auto-hide="false"` + `closeable` + `politeness="assertive"` — a 4-second
+  toast is the wrong vehicle for something that needs a decision. The success
+  message keeps the polite default and disappears on its own.
+- **State is words, not colour.** Every `md-status-dot` carries a `label`, so
+  WCAG 1.4.1 holds even under forced-colors where all six states collapse to
+  one system colour. Only the genuinely changing dot uses `live` — a pulse on
+  every row would mean nothing.
+
+## Variations
+
+- **Several jobs running at once:** M3 says show the *group* total, not a bar
+  per row — replace the per-job indicators with one linear
+  `md-progress-indicator` above the list (`value="3" max="12"
+  label="Exporting 12 jobs"`).
+- **Queued work whose total becomes known:** start an `md-progress-indicator`
+  as `indeterminate`, then clear `indeterminate` *before* setting
+  `value`/`max` — it silently overrides the number otherwise. Do not swap an
+  `md-loading-indicator` for a determinate bar mid-operation; M3 explicitly
+  discourages that transition.
+- **Connection lost:** a persistent snackbar — `auto-hide="false"`,
+  `closeable`, `politeness="assertive"` — that you `hide()` yourself when the
+  socket reconnects.
+- **Dense ops console:** move the queue into an `md-table` with
+  `size="small"` status dots and a negative density rung; the dot's logical
+  insets and the linear track both mirror automatically in RTL.
+
+## Related
+
+- Recipe: [Server fleet status](/recipes/server-fleet-status/) — status dots
+  and live health at dashboard scale.
+- Recipe: [CSV import wizard](/recipes/csv-import-wizard/) — a single
+  long-running job with staged determinate progress.
+- Component manuals: [`md-snackbar`](/components/snackbar/) — the full event
+  contract and queueing rules; [`md-progress-indicator`](/components/progress-indicator/)
+  — the `complete`/`mdComplete` lifecycle and the determinate/indeterminate
+  switch.
