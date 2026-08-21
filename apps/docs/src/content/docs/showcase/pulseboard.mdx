@@ -1,0 +1,29 @@
+---
+title: "Pulseboard"
+description: "Product analytics SaaS: KPI tiles, DAU/adoption charts, funnels, and a skeleton-loading events explorer."
+---
+
+**SvelteKit · `apps/showcase-pulseboard` in the repository.** Product analytics SaaS: KPI tiles, DAU/adoption charts, funnels, and a skeleton-loading events explorer.
+
+## Screens
+
+- / (Overview) — KPI md-cards with md-sparklines, stacked DAU md-area-chart by platform, horizontal feature-adoption md-bar-chart
+- /funnels (Funnels) — md-segmented-button-set 7/30/90-day period switcher driving a cohort-retention md-line-chart and per-step conversion md-meters
+- /events (Events) — md-table with skeleton loading mode and sparkline trend cells, md-search docked bar with live suggestions, md-chip category filters, md-skeleton summary placeholder
+
+## Components exercised (21)
+
+[`md-app-bar`](/components/app-bar/) · [`md-area-chart`](/components/area-chart/) · [`md-bar-chart`](/components/bar-chart/) · [`md-card`](/components/card/) · [`md-chip`](/components/chip/) · [`md-icon-button`](/components/icon-button/) · [`md-line-chart`](/components/line-chart/) · [`md-meter`](/components/meter/) · [`md-navigation-rail`](/components/navigation-rail/) · [`md-navigation-rail-tab`](/components/navigation-rail-tab/) · [`md-search`](/components/search/) · [`md-segmented-button`](/components/segmented-button/) · [`md-segmented-button-set`](/components/segmented-button-set/) · [`md-skeleton`](/components/skeleton/) · [`md-sparkline`](/components/sparkline/) · [`md-table`](/components/table/) · [`md-table-body`](/components/table-body/) · [`md-table-cell`](/components/table-cell/) · [`md-table-container`](/components/table-container/) · [`md-table-head`](/components/table-head/) · [`md-table-row`](/components/table-row/)
+
+## Run it
+
+```bash
+git clone https://github.com/awc-ui/core
+cd core && pnpm install
+pnpm --filter @awc-ui/showcase-pulseboard dev
+```
+
+The app's `README.md` documents its structure and any framework-specific
+wiring. Like every showcase app, it is styled exclusively with `--md-sys-*`
+tokens — retheme it by changing one seed in the
+[theme generator](/theme-generator/).

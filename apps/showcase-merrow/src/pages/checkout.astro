@@ -1,0 +1,252 @@
+---
+import Base from '../layouts/Base.astro';
+import { formatPrice } from '../data/products';
+
+const basket = [
+  { name: 'Fenwick Cast-Iron Casserole', qty: 1, price: 119 },
+  { name: 'Bramble Linen Throw', qty: 2, price: 128 },
+];
+const subtotal = basket.reduce((sum, item) => sum + item.price, 0);
+const delivery = 6.5;
+const total = subtotal + delivery;
+---
+<Base
+  title="Checkout — Merrow & Co"
+  description="Secure checkout for your Merrow & Co order: shipping details, payment method and order review in three short steps."
+  currentPath="/checkout"
+>
+  <main>
+    <md-breadcrumbs label="You are here" separator="›">
+      <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+      <md-breadcrumb-item href="/">Shop</md-breadcrumb-item>
+      <md-breadcrumb-item current>Checkout</md-breadcrumb-item>
+    </md-breadcrumbs>
+
+    <div>
+      <h1 class="page-title">Checkout</h1>
+      <p class="page-subtitle">Three short steps — your basket is saved as you go.</p>
+    </div>
+
+    <div class="checkout-layout">
+      <md-card variant="outlined" style="padding: var(--md-sys-spacing-inset-lg)">
+        <md-stepper
+          id="checkout-stepper"
+          orientation="vertical"
+          mode="linear"
+          label="Checkout progress"
+          finish-label="Place order"
+        >
+          <md-step label="Shipping" description="Where should it go?">
+            <div class="checkout-step" id="shipping-step">
+              <md-text-field
+                variant="outlined"
+                label="Full name"
+                name="fullName"
+                autocomplete="name"
+                required
+                data-review="name"
+              ></md-text-field>
+              <md-text-field
+                variant="outlined"
+                label="Email"
+                type="email"
+                name="email"
+                autocomplete="email"
+                required
+                supporting-text="We only use this for order updates"
+                data-review="email"
+              ></md-text-field>
+              <div class="field-grid">
+                <md-text-field
+                  class="span-2"
+                  variant="outlined"
+                  label="Address"
+                  name="address"
+                  autocomplete="street-address"
+                  required
+                  data-review="address"
+                ></md-text-field>
+                <md-text-field
+                  variant="outlined"
+                  label="Town or city"
+                  name="city"
+                  autocomplete="address-level2"
+                  required
+                  data-review="city"
+                ></md-text-field>
+                <md-text-field
+                  variant="outlined"
+                  label="Postcode"
+                  name="postcode"
+                  autocomplete="postal-code"
+                  required
+                  data-review="postcode"
+                ></md-text-field>
+              </div>
+            </div>
+          </md-step>
+
+          <md-step label="Payment" description="How would you like to pay?">
+            <div class="checkout-step">
+              <fieldset class="payment-options" id="payment-options">
+                <legend class="section-title" style="padding:0; margin-block-end: var(--md-sys-spacing-gap-sm)">
+                  Payment method
+                </legend>
+                <label class="payment-option">
+                  <md-radio name="payment" value="card" checked data-label="Credit or debit card"></md-radio>
+                  <span class="payment-option__text">
+                    <span class="payment-option__title">Credit or debit card</span>
+                    <span class="payment-option__hint">Charged when your order ships</span>
+                  </span>
+                </label>
+                <label class="payment-option">
+                  <md-radio name="payment" value="giftcard" data-label="Merrow gift card"></md-radio>
+                  <span class="payment-option__text">
+                    <span class="payment-option__title">Merrow gift card</span>
+                    <span class="payment-option__hint">Any remaining balance stays on the card</span>
+                  </span>
+                </label>
+                <label class="payment-option">
+                  <md-radio name="payment" value="invoice" data-label="Pay by invoice"></md-radio>
+                  <span class="payment-option__text">
+                    <span class="payment-option__title">Pay by invoice</span>
+                    <span class="payment-option__hint">14-day terms for trade accounts</span>
+                  </span>
+                </label>
+              </fieldset>
+            </div>
+          </md-step>
+
+          <md-step label="Review" description="Check everything looks right">
+            <div class="checkout-step">
+              <div class="review-block">
+                <h3>Deliver to</h3>
+                <p id="review-shipping">Complete the shipping step to see your address here.</p>
+              </div>
+              <div class="review-block">
+                <h3>Pay with</h3>
+                <p id="review-payment">Credit or debit card</p>
+              </div>
+              <div class="review-block">
+                <h3>Order total</h3>
+                <p>{basket.length} items · {formatPrice(total)} including delivery</p>
+              </div>
+            </div>
+          </md-step>
+        </md-stepper>
+      </md-card>
+
+      <md-card variant="filled" class="summary-card" full-width>
+        <h2 class="section-title">Order summary</h2>
+        {basket.map((item) => (
+          <div class="summary-item">
+            <span>
+              <span class="summary-item__name">{item.name}</span><br />
+              <span class="summary-item__qty">Qty {item.qty}</span>
+            </span>
+            <span class="price" style="font: var(--md-sys-typescale-body-large-font)">{formatPrice(item.price)}</span>
+          </div>
+        ))}
+        <hr class="divider-line" />
+        <div class="summary-line summary-line--muted">
+          <span>Subtotal</span>
+          <span>{formatPrice(subtotal)}</span>
+        </div>
+        <div class="summary-line summary-line--muted">
+          <span>Delivery (tracked, 2–3 days)</span>
+          <span>{formatPrice(delivery)}</span>
+        </div>
+        <hr class="divider-line" />
+        <div class="summary-line summary-line--total">
+          <span>Total</span>
+          <span>{formatPrice(total)}</span>
+        </div>
+        <p style="margin:0; font: var(--md-sys-typescale-body-small-font); color: var(--md-sys-color-on-surface-variant)">
+          Every order is packed in recycled kraft and shipped carbon-neutral from our
+          Whitby warehouse.
+        </p>
+      </md-card>
+    </div>
+  </main>
+
+  <md-dialog
+    id="confirm-dialog"
+    headline="Order confirmed"
+    icon="check_circle"
+    scrim-dismissible="false"
+  >
+    <p style="margin:0">
+      Thank you — your order <strong>MW-58214</strong> is on its way to the workshop
+      bench. A confirmation email with tracking will follow within the hour.
+    </p>
+    <md-button id="dialog-close" slot="actions" variant="text">Close</md-button>
+    <md-button slot="actions" variant="filled" href="/">Back to shop</md-button>
+  </md-dialog>
+
+  <script>
+    const stepper = document.getElementById('checkout-stepper') as any;
+    const dialog = document.getElementById('confirm-dialog') as any;
+    const closeButton = document.getElementById('dialog-close');
+    const reviewShipping = document.getElementById('review-shipping')!;
+    const reviewPayment = document.getElementById('review-payment')!;
+
+    const shippingFields = () =>
+      Array.from(document.querySelectorAll('#shipping-step md-text-field[required]')) as any[];
+
+    function validateShipping(): boolean {
+      let ok = true;
+      for (const field of shippingFields()) {
+        const empty = !field.value || !String(field.value).trim();
+        field.error = empty;
+        field.errorText = empty ? 'This field is required' : '';
+        if (empty) ok = false;
+      }
+      return ok;
+    }
+
+    function fieldValue(key: string): string {
+      const field = document.querySelector(`#shipping-step md-text-field[data-review="${key}"]`) as any;
+      return field && field.value ? String(field.value).trim() : '';
+    }
+
+    function selectedPayment(): string {
+      const checked = document.querySelector('#payment-options md-radio[checked]') as HTMLElement | null;
+      const current = Array.from(
+        document.querySelectorAll('#payment-options md-radio')
+      ).find((r: any) => r.checked) as HTMLElement | undefined;
+      const radio = current || checked;
+      return radio?.dataset.label || 'Credit or debit card';
+    }
+
+    stepper?.addEventListener('mdBeforeChange', (e: Event) => {
+      const detail = (e as CustomEvent<{ index: number; previous: number }>).detail;
+      if (detail.previous === 0 && detail.index > 0 && !validateShipping()) {
+        e.preventDefault();
+      }
+    });
+
+    stepper?.addEventListener('mdStepChange', (e: Event) => {
+      const detail = (e as CustomEvent<{ index: number }>).detail;
+      if (detail.index === 2) {
+        const lines = [
+          fieldValue('name'),
+          fieldValue('address'),
+          `${fieldValue('city')} ${fieldValue('postcode')}`.trim(),
+          fieldValue('email'),
+        ].filter(Boolean);
+        reviewShipping.textContent = lines.length
+          ? lines.join('\n')
+          : 'Complete the shipping step to see your address here.';
+        reviewPayment.textContent = selectedPayment();
+      }
+    });
+
+    stepper?.addEventListener('mdComplete', () => {
+      dialog?.show();
+    });
+
+    closeButton?.addEventListener('mdClick', () => {
+      dialog?.close();
+    });
+  </script>
+</Base>

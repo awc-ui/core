@@ -1,0 +1,98 @@
+---
+title: Accessibility lab
+description: "Run the same axe-core engine CI uses — live, in your browser, against a region of real AWC UI components. Plus the CI contract and a keyboard tour."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import A11yLab from "../../../components/A11yLab.astro";
+
+**Don't take the accessibility claim on faith — audit it yourself.** The
+region below contains real, live AWC UI components: a
+[`md-button`](/components/button/), a labelled
+[`md-text-field`](/components/text-field/), a
+[`md-checkbox`](/components/checkbox/), a [`md-tabs`](/components/tabs/)
+strip with panels, a [`md-dialog`](/components/dialog/) behind a trigger, and
+a [`md-table`](/components/table/). The button underneath runs
+[axe-core](https://github.com/dequelabs/axe-core) — the same engine the CI
+gate runs on every component story — scoped to that region, in your browser,
+and prints exactly what it finds.
+
+## The lab
+
+<A11yLab />
+
+## What this proves — and what it doesn't
+
+Honest framing, because accessibility claims attract inflated ones:
+
+- **This audits this page's demo region, in your browser, right now.** Not a
+  lab result, not a cached report — the components you just interacted with,
+  as they exist in your DOM, including their shadow roots (axe-core traverses
+  open shadow DOM).
+- **A clean run is not WCAG certification.** Automated engines detect roughly
+  a third to a half of WCAG failures. What axe *can't* see — sensible focus
+  order, whether a label actually describes the field, whether the experience
+  is usable with a screen reader — is why the components also carry manual
+  keyboard maps and per-component ARIA documentation.
+- **Three rules are excluded, and here's why:** `region`,
+  `landmark-one-main`, and `page-has-heading-one` assert things about whole
+  documents (landmark structure, heading hierarchy). The audit target is a
+  fragment of this docs page, so those rules would report on Starlight's
+  chrome, not the components. Everything else runs with axe defaults.
+
+## The CI contract
+
+The button above is a live re-run of a gate that already ran before this
+library shipped. The contract has two layers:
+
+1. **Per-component axe specs.** Each component in `packages/core` carries an
+   `*.axe.spec.ts` alongside its unit tests, driven by `jest-axe` — the axe
+   engine wrapped as a test matcher. These run in the core package's test
+   suite on every push.
+2. **The Storybook-wide gate.** A dedicated CI job — `Accessibility
+   (axe-core via Storybook)` in the pipeline — boots every component story
+   in real Chromium (Vitest browser mode + Playwright) and runs axe-core
+   against each rendered story. A violation in any story fails the job, and
+   the job is required: a component that regresses its accessibility cannot
+   merge.
+
+Same engine, same rules, three places: the component's own test file, the CI
+gate across every story, and this page in your browser. If you find a
+violation here that CI missed, that's a bug report we want.
+
+## Keyboard tour
+
+Put your pointer down and walk the region with the keyboard — this is the
+part no automated engine can vouch for:
+
+1. **Click just before the region, then press <kbd>Tab</kbd>.** Focus lands
+   in the text field. The label is a real floating label, not a placeholder:
+   it stays visible while you type, and a screen reader announces it as the
+   field's name.
+2. **<kbd>Tab</kbd> again** — the checkbox. Press <kbd>Space</kbd> to toggle
+   it. The visible focus ring sits on the checkbox itself; because the text
+   is a wrapping `<label>`, clicking the words toggles it too.
+3. **<kbd>Tab</kbd> again** — the tabs strip, which is **one** tab stop.
+   <kbd>ArrowRight</kbd> and <kbd>ArrowLeft</kbd> move between Summary,
+   Details, and History; the panel switches with the tab, and the inactive
+   panels are `inert`, so their contents never intercept focus.
+4. **<kbd>Tab</kbd> again** — the dialog trigger. Press <kbd>Enter</kbd>:
+   focus moves into the dialog, <kbd>Tab</kbd> cycles inside it only (the
+   page behind is inert), and <kbd>Escape</kbd> — or the Close button —
+   dismisses it and returns focus to the trigger that opened it. That
+   round-trip is the whole point of a modal.
+5. **<kbd>Tab</kbd> once more** past the table — the table is a data grid of
+   static text, so it adds no tab stops of its own — and you reach the **Run
+   axe-core audit** button. Press <kbd>Enter</kbd>. The results land in an
+   `aria-live="polite"` container, so a screen reader announces the outcome
+   without focus ever being yanked away from the button.
+
+## Related
+
+- [Accessibility guide](/guides/accessibility/) — the library-wide policy:
+  focus management, ARIA patterns, reduced motion, touch targets.
+- [SSR proof page](/showcase/ssr/) — the other live-demonstration page in
+  this section.
+- Component manuals — every component page documents its keyboard map and
+  ARIA contract individually.

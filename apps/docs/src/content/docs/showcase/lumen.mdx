@@ -1,0 +1,30 @@
+---
+title: "Lumen Bank"
+description: "Retail banking: sparkline balances, spending breakdown, an OTP-confirmed transfer flow, and budget meters — mobile-first."
+---
+
+**Next.js · `apps/showcase-lumen` in the repository.** Retail banking: sparkline balances, spending breakdown, an OTP-confirmed transfer flow, and budget meters — mobile-first.
+
+## Screens
+
+- / — Accounts overview (balance cards + sparklines, spending pie chart, recent activity list)
+- /transactions — md-table with expandable rows, docked md-search with suggestions, md-chip category filters
+- /transfer — linear vertical md-stepper: recipient md-select (filterable), amount md-number-field (USD), md-otp-field confirm, md-snackbar success
+- /budgets — md-meter per category with status colors, edit md-slider inside md-bottom-sheet, md-snackbar confirmation
+
+## Components exercised (30)
+
+[`md-app-bar`](/components/app-bar/) · [`md-bottom-sheet`](/components/bottom-sheet/) · [`md-button`](/components/button/) · [`md-card`](/components/card/) · [`md-chip`](/components/chip/) · [`md-divider`](/components/divider/) · [`md-icon-button`](/components/icon-button/) · [`md-list`](/components/list/) · [`md-list-item`](/components/list-item/) · [`md-meter`](/components/meter/) · [`md-navigation-bar`](/components/navigation-bar/) · [`md-navigation-tab`](/components/navigation-tab/) · [`md-number-field`](/components/number-field/) · [`md-otp-field`](/components/otp-field/) · [`md-pie-chart`](/components/pie-chart/) · [`md-search`](/components/search/) · [`md-select`](/components/select/) · [`md-select-option`](/components/select-option/) · [`md-slider`](/components/slider/) · [`md-snackbar`](/components/snackbar/) · [`md-sparkline`](/components/sparkline/) · [`md-step`](/components/step/) · [`md-stepper`](/components/stepper/) · [`md-table`](/components/table/) · [`md-table-body`](/components/table-body/) · [`md-table-cell`](/components/table-cell/) · [`md-table-container`](/components/table-container/) · [`md-table-expand-toggle`](/components/table-expand-toggle/) · [`md-table-head`](/components/table-head/) · [`md-table-row`](/components/table-row/)
+
+## Run it
+
+```bash
+git clone https://github.com/awc-ui/core
+cd core && pnpm install
+pnpm --filter @awc-ui/showcase-lumen dev
+```
+
+The app's `README.md` documents its structure and any framework-specific
+wiring. Like every showcase app, it is styled exclusively with `--md-sys-*`
+tokens — retheme it by changing one seed in the
+[theme generator](/theme-generator/).

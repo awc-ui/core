@@ -1,0 +1,30 @@
+---
+title: "Caduceus Health"
+description: "Patient portal: OTP sign-in, appointment booking with both pickers, lab results with reference-range meters, vitals trends."
+---
+
+**Angular SSR · `apps/showcase-caduceus` in the repository.** Patient portal: OTP sign-in, appointment booking with both pickers, lab results with reference-range meters, vitals trends.
+
+## Screens
+
+- / — Sign-in with md-text-field credentials and md-otp-field second factor (auto-submit form)
+- /appointments — md-stepper booking intake with md-select, md-date-picker + md-time-picker, review step, md-snackbar confirmation, upcoming md-list
+- /lab-results — md-table panel with reference-range md-meters and md-status-dot status column plus legend and care-team note
+- /vitals — md-line-chart trends (heart rate, blood pressure, weight, glucose) switched by md-segmented-button-set, with stat tiles and in-range md-meter
+
+## Components exercised (30)
+
+[`md-app-bar`](/components/app-bar/) · [`md-button`](/components/button/) · [`md-card`](/components/card/) · [`md-chip`](/components/chip/) · [`md-date-picker`](/components/date-picker/) · [`md-divider`](/components/divider/) · [`md-icon-button`](/components/icon-button/) · [`md-line-chart`](/components/line-chart/) · [`md-list`](/components/list/) · [`md-list-item`](/components/list-item/) · [`md-meter`](/components/meter/) · [`md-navigation-bar`](/components/navigation-bar/) · [`md-navigation-tab`](/components/navigation-tab/) · [`md-otp-field`](/components/otp-field/) · [`md-segmented-button`](/components/segmented-button/) · [`md-segmented-button-set`](/components/segmented-button-set/) · [`md-select`](/components/select/) · [`md-select-option`](/components/select-option/) · [`md-snackbar`](/components/snackbar/) · [`md-status-dot`](/components/status-dot/) · [`md-step`](/components/step/) · [`md-stepper`](/components/stepper/) · [`md-table`](/components/table/) · [`md-table-body`](/components/table-body/) · [`md-table-cell`](/components/table-cell/) · [`md-table-container`](/components/table-container/) · [`md-table-head`](/components/table-head/) · [`md-table-row`](/components/table-row/) · [`md-text-field`](/components/text-field/) · [`md-time-picker`](/components/time-picker/)
+
+## Run it
+
+```bash
+git clone https://github.com/awc-ui/core
+cd core && pnpm install
+pnpm --filter @awc-ui/showcase-caduceus dev
+```
+
+The app's `README.md` documents its structure and any framework-specific
+wiring. Like every showcase app, it is styled exclusively with `--md-sys-*`
+tokens — retheme it by changing one seed in the
+[theme generator](/theme-generator/).

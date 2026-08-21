@@ -1,0 +1,520 @@
+/* Tessellate Academy — global page styles. MD3 tokens only. */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--md-sys-color-surface);
+}
+
+body {
+  margin: 0;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-sys-typescale-body-large-font);
+  letter-spacing: var(--md-sys-typescale-body-large-letter-spacing);
+}
+
+/* ---- App chrome ---- */
+
+.site-header {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--md-sys-z-index-app-bar);
+  background: var(--md-sys-color-surface-container);
+  border-block-end: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.site-header__inner {
+  max-inline-size: 1080px;
+  margin-inline: auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.site-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-sys-typescale-title-large-font);
+}
+
+.site-brand__mark {
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background:
+    conic-gradient(
+      var(--md-sys-color-primary) 0 25%,
+      var(--md-sys-color-tertiary) 25% 50%,
+      var(--md-sys-color-primary-container) 50% 75%,
+      var(--md-sys-color-secondary) 75% 100%
+    );
+}
+
+.site-nav {
+  display: flex;
+  gap: 4px;
+  margin-inline-start: auto;
+}
+
+.site-nav a {
+  text-decoration: none;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-label-large-font);
+  letter-spacing: var(--md-sys-typescale-label-large-letter-spacing);
+  padding: 8px 16px;
+  border-radius: var(--md-sys-shape-corner-full);
+  transition: background var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.site-nav a:hover {
+  background: var(--md-sys-color-surface-container-high);
+}
+
+.site-nav a.router-link-exact-active {
+  color: var(--md-sys-color-on-secondary-container);
+  background: var(--md-sys-color-secondary-container);
+}
+
+.page {
+  max-inline-size: 1080px;
+  margin-inline: auto;
+  padding: 32px 24px 72px;
+}
+
+.site-footer {
+  border-block-start: 1px solid var(--md-sys-color-outline-variant);
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-small-font);
+}
+
+.site-footer__inner {
+  max-inline-size: 1080px;
+  margin-inline: auto;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* ---- Shared text roles ---- */
+
+.page-headline {
+  margin: 0;
+  font: var(--md-sys-typescale-headline-large-font);
+}
+
+.page-sub {
+  margin: 8px 0 0;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-large-font);
+  max-inline-size: 60ch;
+}
+
+.section-title {
+  margin: 0 0 16px;
+  font: var(--md-sys-typescale-title-large-font);
+}
+
+/* ---- Catalog ---- */
+
+.catalog-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-block: 28px 24px;
+}
+
+.topic-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.topic-filter__label {
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-label-large-font);
+  margin-inline-end: 4px;
+}
+
+.course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.course-card {
+  padding: 20px;
+}
+
+.course-card__level {
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-label-medium-font);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.course-card__title {
+  margin: 0;
+  font: var(--md-sys-typescale-title-large-font);
+}
+
+.course-card__tagline {
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-medium-font);
+}
+
+.course-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-label-medium-font);
+}
+
+.course-card__chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.course-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-block-start: auto;
+}
+
+.course-card__price {
+  font: var(--md-sys-typescale-title-medium-font);
+}
+
+.search-result {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: var(--md-sys-shape-corner-small);
+  cursor: pointer;
+}
+
+.search-result:hover,
+.search-result:focus-visible {
+  background: var(--md-sys-color-surface-container-high);
+  outline: none;
+}
+
+.search-result__title {
+  font: var(--md-sys-typescale-body-large-font);
+}
+
+.search-result__meta {
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-label-medium-font);
+  white-space: nowrap;
+}
+
+.search-empty {
+  padding: 16px;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-medium-font);
+}
+
+/* ---- Course detail ---- */
+
+.course-hero {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: start;
+  margin-block-end: 28px;
+}
+
+@media (max-width: 720px) {
+  .course-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+.course-hero__rating {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-block-start: 14px;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-label-large-font);
+}
+
+.enroll-card {
+  padding: 24px;
+  min-inline-size: 260px;
+}
+
+.enroll-card__price {
+  margin: 0;
+  font: var(--md-sys-typescale-headline-medium-font);
+}
+
+.enroll-card__facts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-medium-font);
+}
+
+.enrolled-note {
+  margin: 0;
+  color: var(--md-sys-color-success);
+  font: var(--md-sys-typescale-label-large-font);
+}
+
+.lesson-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 2px;
+}
+
+.lesson-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 4px;
+  border-block-end: 1px solid var(--md-sys-color-outline-variant);
+  font: var(--md-sys-typescale-body-medium-font);
+}
+
+.lesson-list li:last-child {
+  border-block-end: none;
+}
+
+.lesson-list .duration {
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-label-medium-font);
+  white-space: nowrap;
+}
+
+.about-copy p {
+  margin: 0 0 14px;
+  max-inline-size: 70ch;
+}
+
+.outcome-list {
+  margin: 8px 0 0;
+  padding-inline-start: 20px;
+  display: grid;
+  gap: 8px;
+  color: var(--md-sys-color-on-surface);
+}
+
+.instructor-box {
+  margin-block-start: 24px;
+  padding: 16px 20px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container);
+  display: grid;
+  gap: 2px;
+}
+
+.instructor-box .name {
+  font: var(--md-sys-typescale-title-medium-font);
+}
+
+.instructor-box .role {
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-medium-font);
+}
+
+.review-list {
+  display: grid;
+  gap: 16px;
+}
+
+.review-card {
+  padding: 20px;
+}
+
+.review-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.review-card__name {
+  font: var(--md-sys-typescale-title-medium-font);
+}
+
+.review-card__date {
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-label-medium-font);
+}
+
+.review-card__text {
+  margin: 8px 0 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.tab-region {
+  margin-block-start: 20px;
+}
+
+/* ---- Progress ---- */
+
+.progress-layout {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+  margin-block-start: 28px;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .progress-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.progress-course {
+  padding: 20px;
+}
+
+.progress-course__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.progress-course__title {
+  margin: 0;
+  font: var(--md-sys-typescale-title-medium-font);
+}
+
+.progress-course__count {
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-label-large-font);
+  white-space: nowrap;
+}
+
+.progress-course__last {
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-medium-font);
+}
+
+.completion-card {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.completion-card p {
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-medium-font);
+  max-inline-size: 32ch;
+}
+
+.chart-card {
+  padding: 20px;
+}
+
+/* ---- Quiz ---- */
+
+.quiz-shell {
+  margin-block-start: 28px;
+}
+
+.quiz-question {
+  display: grid;
+  gap: 4px;
+  padding-block: 12px;
+}
+
+.quiz-question legend,
+.quiz-question__prompt {
+  margin: 0 0 10px;
+  font: var(--md-sys-typescale-title-medium-font);
+}
+
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--md-sys-shape-corner-small);
+  cursor: pointer;
+}
+
+.quiz-option:hover {
+  background: var(--md-sys-color-surface-container-high);
+}
+
+.quiz-results {
+  padding: 28px;
+  margin-block-start: 24px;
+}
+
+.quiz-results__score {
+  margin: 0;
+  font: var(--md-sys-typescale-display-small-font);
+}
+
+.quiz-results__sub {
+  margin: 4px 0 0;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.quiz-review {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 14px;
+}
+
+.quiz-review li {
+  padding: 14px 16px;
+  border-radius: var(--md-sys-shape-corner-small);
+  background: var(--md-sys-color-surface-container);
+  display: grid;
+  gap: 4px;
+}
+
+.quiz-review .verdict {
+  font: var(--md-sys-typescale-label-large-font);
+}
+
+.quiz-review .verdict.correct {
+  color: var(--md-sys-color-success);
+}
+
+.quiz-review .verdict.incorrect {
+  color: var(--md-sys-color-error);
+}
+
+.quiz-review .explanation {
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-medium-font);
+}

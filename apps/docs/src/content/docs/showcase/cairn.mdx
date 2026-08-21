@@ -1,0 +1,29 @@
+---
+title: "Cairn"
+description: "Lightweight project tracker: board/list toggle, side-sheet task detail, sprint burndown, quick-create FAB menu."
+---
+
+**SvelteKit · `apps/showcase-cairn` in the repository.** Lightweight project tracker: board/list toggle, side-sheet task detail, sprint burndown, quick-create FAB menu.
+
+## Screens
+
+- Tasks (/) — md-segmented-button-set board/list toggle; list = md-table with md-chip statuses and md-avatar assignees; board = four status columns of interactive md-cards; task click opens a modal md-side-sheet with md-tabs (Details / Checklist / Activity)
+- Sprint (/sprint) — burndown md-bar-chart (Remaining vs Ideal story points per day), circular sprint-completion indicator, per-goal linear md-progress-indicators on cards
+- Global (all screens) — quick-create md-fab + md-fab-menu (Task / Milestone / Note) with md-snackbar confirmations
+
+## Components exercised (26)
+
+[`md-avatar`](/components/avatar/) · [`md-bar-chart`](/components/bar-chart/) · [`md-button`](/components/button/) · [`md-card`](/components/card/) · [`md-chip`](/components/chip/) · [`md-divider`](/components/divider/) · [`md-fab`](/components/fab/) · [`md-fab-menu`](/components/fab-menu/) · [`md-fab-menu-item`](/components/fab-menu-item/) · [`md-list`](/components/list/) · [`md-list-item`](/components/list-item/) · [`md-progress-indicator`](/components/progress-indicator/) · [`md-segmented-button`](/components/segmented-button/) · [`md-segmented-button-set`](/components/segmented-button-set/) · [`md-side-sheet`](/components/side-sheet/) · [`md-snackbar`](/components/snackbar/) · [`md-tab`](/components/tab/) · [`md-tab-panel`](/components/tab-panel/) · [`md-tab-panels`](/components/tab-panels/) · [`md-table`](/components/table/) · [`md-table-body`](/components/table-body/) · [`md-table-cell`](/components/table-cell/) · [`md-table-container`](/components/table-container/) · [`md-table-head`](/components/table-head/) · [`md-table-row`](/components/table-row/) · [`md-tabs`](/components/tabs/)
+
+## Run it
+
+```bash
+git clone https://github.com/awc-ui/core
+cd core && pnpm install
+pnpm --filter @awc-ui/showcase-cairn dev
+```
+
+The app's `README.md` documents its structure and any framework-specific
+wiring. Like every showcase app, it is styled exclusively with `--md-sys-*`
+tokens — retheme it by changing one seed in the
+[theme generator](/theme-generator/).

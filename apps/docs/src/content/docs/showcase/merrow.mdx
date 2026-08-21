@@ -1,0 +1,29 @@
+---
+title: "Merrow & Co"
+description: "Homewares storefront: near-zero-JS catalog and product pages with a stepper checkout — the SEO-first SSR story."
+---
+
+**Astro · `apps/showcase-merrow` in the repository.** Homewares storefront: near-zero-JS catalog and product pages with a stepper checkout — the SEO-first SSR story.
+
+## Screens
+
+- / (catalog: breadcrumbs, md-chip filter row + md-select sort, product md-cards with md-rating, price, md-chip tags)
+- /products/[slug] (8 static product pages: md-skeleton gallery placeholder, md-meter rating breakdown, md-number-field quantity, add-to-basket md-button + md-snackbar)
+- /checkout (vertical linear md-stepper: shipping md-text-fields with validation gating, payment md-radio group, review summary; md-dialog order confirmation on mdComplete)
+
+## Components exercised (17)
+
+[`md-breadcrumb-item`](/components/breadcrumb-item/) · [`md-breadcrumbs`](/components/breadcrumbs/) · [`md-button`](/components/button/) · [`md-card`](/components/card/) · [`md-chip`](/components/chip/) · [`md-dialog`](/components/dialog/) · [`md-meter`](/components/meter/) · [`md-number-field`](/components/number-field/) · [`md-radio`](/components/radio/) · [`md-rating`](/components/rating/) · [`md-select`](/components/select/) · [`md-select-option`](/components/select-option/) · [`md-skeleton`](/components/skeleton/) · [`md-snackbar`](/components/snackbar/) · [`md-step`](/components/step/) · [`md-stepper`](/components/stepper/) · [`md-text-field`](/components/text-field/)
+
+## Run it
+
+```bash
+git clone https://github.com/awc-ui/core
+cd core && pnpm install
+pnpm --filter @awc-ui/showcase-merrow dev
+```
+
+The app's `README.md` documents its structure and any framework-specific
+wiring. Like every showcase app, it is styled exclusively with `--md-sys-*`
+tokens — retheme it by changing one seed in the
+[theme generator](/theme-generator/).

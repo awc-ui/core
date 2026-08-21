@@ -1,0 +1,247 @@
+/* Lumen Bank — global styles. MD3 tokens only; no hardcoded colors. */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-sys-typescale-body-large-font);
+  letter-spacing: var(--md-sys-typescale-body-large-letter-spacing, normal);
+}
+
+/* Page column — mobile-first, centred on wider screens. Bottom padding
+   clears the fixed navigation bar. */
+.page {
+  max-inline-size: 720px;
+  margin-inline: auto;
+  padding: var(--md-sys-spacing-inset-lg, 16px);
+  padding-block-end: calc(112px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+}
+
+/* Fixed dock for md-navigation-bar (the bar does not position itself). */
+.nav-dock {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: var(--md-sys-z-index-navigation, 200);
+  background: var(--md-sys-color-surface-container);
+  padding-block-end: env(safe-area-inset-bottom, 0px);
+}
+
+.section-title {
+  margin: 0;
+  font: var(--md-sys-typescale-title-medium-font);
+  color: var(--md-sys-color-on-surface);
+}
+
+.muted {
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-small-font);
+}
+
+/* ---- Accounts overview ---- */
+
+.account-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+@media (min-width: 560px) {
+  .account-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.account-card-inner {
+  padding: var(--md-sys-spacing-inset-lg, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+}
+
+.account-overline {
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.account-balance {
+  font: var(--md-sys-typescale-headline-small-font);
+  color: var(--md-sys-color-on-surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.account-delta {
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.account-delta.up {
+  color: var(--md-sys-color-success);
+}
+
+.account-delta.down {
+  color: var(--md-sys-color-error);
+}
+
+.account-spark {
+  margin-block-start: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+.chart-card-inner {
+  padding: var(--md-sys-spacing-inset-lg, 16px);
+}
+
+.pie-center strong {
+  display: block;
+  font: var(--md-sys-typescale-title-large-font);
+  font-variant-numeric: tabular-nums;
+}
+
+.pie-center span {
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.amount-credit {
+  color: var(--md-sys-color-success);
+  font-variant-numeric: tabular-nums;
+}
+
+.amount-debit {
+  color: var(--md-sys-color-on-surface);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Transactions ---- */
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+.tx-detail {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  padding: var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px);
+  background: var(--md-sys-color-surface-container-low);
+  border-radius: var(--md-sys-shape-corner-small);
+}
+
+.tx-detail .k {
+  display: block;
+  margin: 0;
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.tx-detail .v {
+  display: block;
+  margin: 2px 0 0;
+  font: var(--md-sys-typescale-body-medium-font);
+  color: var(--md-sys-color-on-surface);
+}
+
+.visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- Transfer ---- */
+
+.transfer-card-inner {
+  padding: var(--md-sys-spacing-inset-lg, 16px);
+}
+
+.step-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+  padding-block: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+.confirm-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  padding: var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px);
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container-low);
+  margin-block-end: var(--md-sys-spacing-gap-lg, 16px);
+}
+
+.confirm-summary .row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+.confirm-summary .row .k {
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-medium-font);
+}
+
+.confirm-summary .row .v {
+  font: var(--md-sys-typescale-body-medium-font);
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+
+/* ---- Budgets ---- */
+
+.budget-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  padding: var(--md-sys-spacing-inset-lg, 16px);
+}
+
+.budget-meta {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+.budget-hint {
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+  padding: var(--md-sys-spacing-inset-lg, 16px);
+  padding-block-start: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+.sheet-amount {
+  font: var(--md-sys-typescale-headline-small-font);
+  font-variant-numeric: tabular-nums;
+}
+
+.sheet-amount span {
+  font: var(--md-sys-typescale-body-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+  margin-inline-start: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+.sheet-slider {
+  padding-inline: var(--md-sys-spacing-inset-sm, 8px);
+}

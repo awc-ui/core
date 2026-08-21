@@ -1,0 +1,345 @@
+/* Relaymesh console — dark-leaning MD3 surface styling. Every colour and
+   type ramp below resolves to a --md-sys-* token; no raw values. */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-sys-typescale-body-medium-font);
+  letter-spacing: var(--md-sys-typescale-body-medium-letter-spacing);
+}
+
+/* Material Symbols glyphs used in light DOM (the library only registers the
+   class inside its own shadow roots). */
+.msym {
+  font-family: 'Material Symbols Outlined', sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 22px;
+  line-height: 1;
+  display: inline-block;
+  color: var(--md-sys-color-on-surface-variant);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Shell ---------- */
+
+.shell {
+  display: flex;
+  min-block-size: 100dvh;
+}
+
+.shell-rail {
+  position: sticky;
+  inset-block-start: 0;
+  block-size: 100dvh;
+  flex: none;
+  border-inline-end: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  padding-block: var(--md-sys-spacing-inset-sm);
+}
+
+.brand-mark svg {
+  color: var(--md-sys-color-primary);
+}
+
+.brand-name {
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+  letter-spacing: var(--md-sys-typescale-label-small-letter-spacing);
+}
+
+.shell-main {
+  flex: 1;
+  min-inline-size: 0;
+  padding: var(--md-sys-spacing-inset-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-lg);
+}
+
+/* ---------- Page headers ---------- */
+
+.page-head h1 {
+  margin: 0;
+  font: var(--md-sys-typescale-headline-medium-font);
+  letter-spacing: var(--md-sys-typescale-headline-medium-letter-spacing);
+}
+
+.page-head p {
+  margin: 4px 0 0;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-medium-font);
+}
+
+.page-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-gap-lg);
+  flex-wrap: wrap;
+}
+
+/* ---------- Services grid ---------- */
+
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--md-sys-spacing-gap-md);
+}
+
+.summary-tile {
+  padding: var(--md-sys-spacing-inset-lg);
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.summary-tile .k {
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: var(--md-sys-typescale-label-medium-letter-spacing);
+}
+
+.summary-tile .v {
+  font: var(--md-sys-typescale-headline-small-font);
+  margin-block-start: 4px;
+}
+
+.summary-tile .v.ok {
+  color: var(--md-sys-color-success);
+}
+
+.summary-tile .v.warn {
+  color: var(--md-sys-color-warning);
+}
+
+.summary-tile .v.err {
+  color: var(--md-sys-color-error);
+}
+
+.svc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--md-sys-spacing-gap-lg);
+}
+
+.svc-body {
+  padding: var(--md-sys-spacing-inset-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-md);
+}
+
+.svc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-gap-sm);
+}
+
+.svc-title {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-md);
+  min-inline-size: 0;
+}
+
+.svc-title h2 {
+  margin: 0;
+  font: var(--md-sys-typescale-title-medium-font);
+  letter-spacing: var(--md-sys-typescale-title-medium-letter-spacing);
+}
+
+.svc-meta {
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.dot-anchor {
+  position: relative;
+  inline-size: 14px;
+  block-size: 14px;
+  flex: none;
+  --md-status-dot-inset-end: 0px;
+  --md-status-dot-inset-block-end: 0px;
+}
+
+.badge-anchor {
+  position: relative;
+  display: inline-flex;
+  padding: 4px;
+}
+
+.svc-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--md-sys-spacing-gap-sm);
+  border-block-start: 1px solid var(--md-sys-color-outline-variant);
+  padding-block-start: var(--md-sys-spacing-inset-sm);
+}
+
+.svc-stats .k {
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.svc-stats .v {
+  font: var(--md-sys-typescale-title-small-font);
+  margin-block-start: 2px;
+}
+
+/* ---------- Latency ---------- */
+
+.chart-card {
+  background: var(--md-sys-color-surface-container-low);
+  border-radius: var(--md-sys-shape-corner-large);
+  padding: var(--md-sys-spacing-inset-lg);
+}
+
+.chart-stack {
+  display: grid;
+  gap: var(--md-sys-spacing-gap-lg);
+}
+
+.latency-kpis {
+  display: flex;
+  gap: var(--md-sys-spacing-gap-lg);
+  flex-wrap: wrap;
+}
+
+.latency-kpis .kpi {
+  display: flex;
+  flex-direction: column;
+}
+
+.latency-kpis .kpi .k {
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.latency-kpis .kpi .v {
+  font: var(--md-sys-typescale-title-large-font);
+}
+
+/* ---------- Request log ---------- */
+
+.reqlog-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-lg);
+  flex-wrap: wrap;
+}
+
+.reqlog-search {
+  flex: 1;
+  min-inline-size: 260px;
+  max-inline-size: 480px;
+}
+
+.reqlog-count {
+  font: var(--md-sys-typescale-label-large-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.code-pill {
+  font: var(--md-sys-typescale-label-medium-font);
+  padding: 2px 10px;
+  border-radius: var(--md-sys-shape-corner-full);
+}
+
+.code-pill.ok {
+  background: var(--md-sys-color-success-container);
+  color: var(--md-sys-color-on-success-container);
+}
+
+.code-pill.warn {
+  background: var(--md-sys-color-warning-container);
+  color: var(--md-sys-color-on-warning-container);
+}
+
+.code-pill.err {
+  background: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+}
+
+.mono {
+  font-family: 'Roboto Mono', ui-monospace, monospace;
+  font-size: var(--md-sys-typescale-body-small-font-size);
+}
+
+.payload-panel {
+  padding: var(--md-sys-spacing-inset-lg);
+  display: grid;
+  gap: var(--md-sys-spacing-gap-sm);
+  background: var(--md-sys-color-surface-container);
+}
+
+.payload-panel h3 {
+  margin: 0;
+  font: var(--md-sys-typescale-title-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.payload-panel pre {
+  margin: 0;
+  padding: var(--md-sys-spacing-inset-md);
+  border-radius: var(--md-sys-shape-corner-small);
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface);
+  font-family: ui-monospace, monospace;
+  font-size: var(--md-sys-typescale-body-small-font-size);
+  line-height: var(--md-sys-typescale-body-small-line-height);
+  overflow-x: auto;
+}
+
+/* ---------- Incidents ---------- */
+
+.incident-card {
+  background: var(--md-sys-color-surface-container-low);
+  border-radius: var(--md-sys-shape-corner-large);
+  padding-block: var(--md-sys-spacing-inset-sm);
+}
+
+.incident-tags {
+  display: flex;
+  gap: var(--md-sys-spacing-gap-xs);
+  flex-wrap: wrap;
+  margin-block-start: 6px;
+}
+
+.incident-desc {
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-medium-font);
+  margin: 0;
+}
+
+.incident-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm);
+}
+
+.acked-note {
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-success);
+}
+
+@media (max-width: 720px) {
+  .shell-main {
+    padding: var(--md-sys-spacing-inset-md);
+  }
+  .svc-grid {
+    grid-template-columns: 1fr;
+  }
+}

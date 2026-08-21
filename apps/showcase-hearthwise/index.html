@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hearthwise — Smart Home Control</title>
+
+    <link rel="stylesheet" href="node_modules/@awc-ui/tokens/src/tokens.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+    />
+    <link rel="stylesheet" href="app.css" />
+
+    <script type="module">
+      import { defineCustomElements } from './node_modules/@awc-ui/core/loader/index.mjs';
+      defineCustomElements(window);
+    </script>
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="app-header__inner">
+        <div class="app-header__brand">
+          <span class="app-header__mark" aria-hidden="true"></span>
+          <div>
+            <h1>Hearthwise</h1>
+            <p class="app-header__sub">Maplebrook Lane 14 &middot; 6 rooms &middot; 18 devices</p>
+          </div>
+        </div>
+        <div class="app-header__status">
+          <span class="hub-dot">
+            <md-status-dot state="online" live label="Hub online"></md-status-dot>
+          </span>
+          <span class="hub-label">Hub connected</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <!-- ================= ROOMS ================= -->
+      <section id="section-rooms" class="app-section" data-section>
+        <h2 class="section-title">Rooms</h2>
+        <p class="section-lede">Toggle devices directly, or open a device's settings for schedules and fine-tuning.</p>
+
+        <div class="room-grid">
+          <md-card variant="filled" class="device-card">
+            <div class="device-card__head">
+              <span class="device-card__dotwrap">
+                <span class="device-card__icon material-symbols-outlined" aria-hidden="true">weekend</span>
+                <md-status-dot state="online" size="small" label="Responding"></md-status-dot>
+              </span>
+              <md-icon-button icon="tune" aria-label="Living room lamp settings"
+                data-device="Arc Floor Lamp" data-room="Living Room"></md-icon-button>
+            </div>
+            <h3>Arc Floor Lamp</h3>
+            <p class="device-card__meta">Living Room &middot; 9 W now</p>
+            <label class="device-card__toggle">
+              <md-switch selected aria-label="Arc floor lamp power" data-power></md-switch>
+              <span class="device-card__state" data-power-label>On</span>
+            </label>
+          </md-card>
+
+          <md-card variant="filled" class="device-card">
+            <div class="device-card__head">
+              <span class="device-card__dotwrap">
+                <span class="device-card__icon material-symbols-outlined" aria-hidden="true">thermostat</span>
+                <md-status-dot state="online" size="small" label="Responding"></md-status-dot>
+              </span>
+              <md-icon-button icon="tune" aria-label="Hallway thermostat settings"
+                data-device="Comfort Thermostat" data-room="Hallway"></md-icon-button>
+            </div>
+            <h3>Comfort Thermostat</h3>
+            <p class="device-card__meta">Hallway &middot; 21.5&deg;C, heating to 22&deg;C</p>
+            <label class="device-card__toggle">
+              <md-switch selected aria-label="Thermostat power" data-power></md-switch>
+              <span class="device-card__state" data-power-label>On</span>
+            </label>
+          </md-card>
+
+          <md-card variant="filled" class="device-card">
+            <div class="device-card__head">
+              <span class="device-card__dotwrap">
+                <span class="device-card__icon material-symbols-outlined" aria-hidden="true">kitchen</span>
+                <md-status-dot state="away" size="small" label="Idle"></md-status-dot>
+              </span>
+              <md-icon-button icon="tune" aria-label="Kitchen counter strip settings"
+                data-device="Counter Light Strip" data-room="Kitchen"></md-icon-button>
+            </div>
+            <h3>Counter Light Strip</h3>
+            <p class="device-card__meta">Kitchen &middot; idle since 14:20</p>
+            <label class="device-card__toggle">
+              <md-switch aria-label="Counter light strip power" data-power></md-switch>
+              <span class="device-card__state" data-power-label>Off</span>
+            </label>
+          </md-card>
+
+          <md-card variant="filled" class="device-card">
+            <div class="device-card__head">
+              <span class="device-card__dotwrap">
+                <span class="device-card__icon material-symbols-outlined" aria-hidden="true">bed</span>
+                <md-status-dot state="online" size="small" label="Responding"></md-status-dot>
+              </span>
+              <md-icon-button icon="tune" aria-label="Bedroom lamp settings"
+                data-device="Dawn Bedside Lamp" data-room="Bedroom"></md-icon-button>
+            </div>
+            <h3>Dawn Bedside Lamp</h3>
+            <p class="device-card__meta">Bedroom &middot; wake fade 06:45</p>
+            <label class="device-card__toggle">
+              <md-switch aria-label="Bedside lamp power" data-power></md-switch>
+              <span class="device-card__state" data-power-label>Off</span>
+            </label>
+          </md-card>
+
+          <md-card variant="filled" class="device-card">
+            <div class="device-card__head">
+              <span class="device-card__dotwrap">
+                <span class="device-card__icon material-symbols-outlined" aria-hidden="true">desktop_windows</span>
+                <md-status-dot state="busy" size="small" label="Updating firmware"></md-status-dot>
+              </span>
+              <md-icon-button icon="tune" aria-label="Office desk lamp settings"
+                data-device="Focus Desk Lamp" data-room="Home Office"></md-icon-button>
+            </div>
+            <h3>Focus Desk Lamp</h3>
+            <p class="device-card__meta">Home Office &middot; firmware 2.4.1 installing</p>
+            <label class="device-card__toggle">
+              <md-switch selected aria-label="Desk lamp power" data-power></md-switch>
+              <span class="device-card__state" data-power-label>On</span>
+            </label>
+          </md-card>
+
+          <md-card variant="filled" class="device-card">
+            <div class="device-card__head">
+              <span class="device-card__dotwrap">
+                <span class="device-card__icon material-symbols-outlined" aria-hidden="true">bathtub</span>
+                <md-status-dot state="offline" size="small" label="Unreachable"></md-status-dot>
+              </span>
+              <md-icon-button icon="tune" aria-label="Bathroom mirror light settings"
+                data-device="Mirror Halo Light" data-room="Bathroom"></md-icon-button>
+            </div>
+            <h3>Mirror Halo Light</h3>
+            <p class="device-card__meta">Bathroom &middot; last seen yesterday 23:05</p>
+            <label class="device-card__toggle">
+              <md-switch disabled aria-label="Mirror light power (unreachable)" data-power></md-switch>
+              <span class="device-card__state" data-power-label>Unreachable</span>
+            </label>
+          </md-card>
+        </div>
+      </section>
+
+      <!-- ================= LIGHTING ================= -->
+      <section id="section-lighting" class="app-section" data-section hidden>
+        <h2 class="section-title">Lighting</h2>
+        <p class="section-lede">Brightness and colour temperature per zone. Changes apply immediately.</p>
+
+        <div class="lighting-stack">
+          <md-card variant="outlined" class="light-card">
+            <h3>Living Room</h3>
+            <div class="light-card__row">
+              <span class="light-card__label">Brightness</span>
+              <md-slider min="0" max="100" value="72" step="1" value-indicator inset-icon icon="light_mode"
+                aria-label="Living room brightness" data-zone="living" data-kind="brightness"></md-slider>
+              <span class="light-card__value" data-readout="living-brightness">72%</span>
+            </div>
+            <div class="light-card__row">
+              <span class="light-card__label">Warmth</span>
+              <md-slider min="2200" max="6500" value="3400" step="100" value-indicator
+                aria-label="Living room colour temperature" data-zone="living" data-kind="warmth"></md-slider>
+              <span class="light-card__value" data-readout="living-warmth">3400 K</span>
+            </div>
+          </md-card>
+
+          <md-card variant="outlined" class="light-card">
+            <h3>Kitchen</h3>
+            <div class="light-card__row">
+              <span class="light-card__label">Brightness</span>
+              <md-slider min="0" max="100" value="90" step="1" value-indicator inset-icon icon="light_mode"
+                aria-label="Kitchen brightness" data-zone="kitchen" data-kind="brightness"></md-slider>
+              <span class="light-card__value" data-readout="kitchen-brightness">90%</span>
+            </div>
+            <div class="light-card__row">
+              <span class="light-card__label">Warmth</span>
+              <md-slider min="2200" max="6500" value="4600" step="100" value-indicator
+                aria-label="Kitchen colour temperature" data-zone="kitchen" data-kind="warmth"></md-slider>
+              <span class="light-card__value" data-readout="kitchen-warmth">4600 K</span>
+            </div>
+          </md-card>
+
+          <md-card variant="outlined" class="light-card">
+            <h3>Bedroom</h3>
+            <div class="light-card__row">
+              <span class="light-card__label">Brightness</span>
+              <md-slider min="0" max="100" value="35" step="1" value-indicator inset-icon icon="light_mode"
+                aria-label="Bedroom brightness" data-zone="bedroom" data-kind="brightness"></md-slider>
+              <span class="light-card__value" data-readout="bedroom-brightness">35%</span>
+            </div>
+            <div class="light-card__row">
+              <span class="light-card__label">Warmth</span>
+              <md-slider min="2200" max="6500" value="2700" step="100" value-indicator
+                aria-label="Bedroom colour temperature" data-zone="bedroom" data-kind="warmth"></md-slider>
+              <span class="light-card__value" data-readout="bedroom-warmth">2700 K</span>
+            </div>
+          </md-card>
+        </div>
+      </section>
+
+      <!-- ================= AMBIENCE ================= -->
+      <section id="section-ambience" class="app-section" data-section hidden>
+        <h2 class="section-title">Ambience</h2>
+        <p class="section-lede">
+          Pick an accent colour for the whole control panel. Hearthwise re-tints the interface live
+          so the app matches tonight's scene.
+        </p>
+
+        <div class="ambience-layout">
+          <md-card variant="outlined" class="ambience-card">
+            <h3>Accent colour</h3>
+            <md-color-picker
+              id="accent-picker"
+              variant="inline"
+              value="#6750A4"
+              format="hex"
+              presets="#6750A4,#2E6B4F,#38608F,#7A4A2B,#8C2F4F,#3E5C46"
+              aria-label="Interface accent colour"
+            ></md-color-picker>
+          </md-card>
+
+          <md-card variant="filled" class="ambience-card ambience-preview">
+            <h3>Live preview</h3>
+            <p>The chosen colour is written onto the page's MD3 colour roles.</p>
+            <div class="ambience-preview__chips">
+              <span class="swatch swatch--primary">primary</span>
+              <span class="swatch swatch--container">primary container</span>
+              <span class="swatch swatch--secondary">secondary container</span>
+            </div>
+            <md-button variant="filled" icon="auto_awesome" id="scene-apply">Save as evening scene</md-button>
+            <p class="ambience-preview__hint" id="scene-hint" role="status"></p>
+          </md-card>
+        </div>
+      </section>
+
+      <!-- ================= ENERGY ================= -->
+      <section id="section-energy" class="app-section" data-section hidden>
+        <h2 class="section-title">Energy</h2>
+        <p class="section-lede">Today's consumption against the household budget of 11 kWh.</p>
+
+        <div class="energy-grid">
+          <md-card variant="filled" class="energy-card energy-card--ring">
+            <md-meter variant="circular" value="7.4" min="0" max="11" size="120" thickness="10"
+              label="Today so far" show-label show-value value-text="7.4 kWh of 11 kWh"
+              color="primary"></md-meter>
+          </md-card>
+
+          <md-card variant="outlined" class="energy-card">
+            <h3>Circuit load</h3>
+            <div class="energy-meter-row">
+              <md-meter value="62" label="Heating" show-label show-value value-text="62%" color="warning"></md-meter>
+            </div>
+            <div class="energy-meter-row">
+              <md-meter value="28" label="Lighting" show-label show-value value-text="28%" color="success"></md-meter>
+            </div>
+            <div class="energy-meter-row">
+              <md-meter value="41" label="Appliances" show-label show-value value-text="41%" color="info"></md-meter>
+            </div>
+          </md-card>
+
+          <md-card variant="outlined" class="energy-card">
+            <h3>Last 14 days</h3>
+            <p class="energy-card__meta">Household total, kWh per day</p>
+            <md-sparkline id="spark-total" variant="area" curve="monotone" height="56px"
+              show-marks="extremes" aria-label="Household energy, last 14 days"></md-sparkline>
+            <div class="energy-trend">
+              <div class="energy-trend__row">
+                <span>Heating</span>
+                <md-sparkline id="spark-heating" variant="line" curve="monotone" height="32px"
+                  show-marks="none"></md-sparkline>
+                <strong>4.1 kWh</strong>
+              </div>
+              <div class="energy-trend__row">
+                <span>Lighting</span>
+                <md-sparkline id="spark-lighting" variant="bar" height="32px" bar-width="5"
+                  color="success"></md-sparkline>
+                <strong>1.2 kWh</strong>
+              </div>
+            </div>
+          </md-card>
+        </div>
+      </section>
+    </main>
+
+    <!-- ================= DEVICE SETTINGS SHEET ================= -->
+    <md-bottom-sheet id="device-sheet" headline="Device settings" closeable aria-label="Device settings">
+      <div class="sheet-body">
+        <p class="sheet-body__room" id="sheet-room">Living Room</p>
+        <div class="sheet-body__row">
+          <span>Default brightness</span>
+          <md-slider min="0" max="100" value="65" step="5" value-indicator
+            aria-label="Default brightness for this device"></md-slider>
+        </div>
+        <label class="sheet-body__row sheet-body__row--switch">
+          <span>Follow sunrise schedule</span>
+          <md-switch selected aria-label="Follow sunrise schedule"></md-switch>
+        </label>
+        <label class="sheet-body__row sheet-body__row--switch">
+          <span>Include in Away mode</span>
+          <md-switch aria-label="Include in away mode"></md-switch>
+        </label>
+      </div>
+      <md-button slot="actions" variant="text" id="sheet-cancel">Cancel</md-button>
+      <md-button slot="actions" variant="filled" id="sheet-save">Save</md-button>
+    </md-bottom-sheet>
+
+    <!-- ================= FOOTER NAV ================= -->
+    <footer class="app-footer">
+      <md-navigation-bar id="main-nav" active-index="0" aria-label="Hearthwise sections">
+        <md-navigation-tab label="Rooms" icon="home"></md-navigation-tab>
+        <md-navigation-tab label="Lighting" icon="lightbulb"></md-navigation-tab>
+        <md-navigation-tab label="Ambience" icon="palette"></md-navigation-tab>
+        <md-navigation-tab label="Energy" icon="bolt"></md-navigation-tab>
+      </md-navigation-bar>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
