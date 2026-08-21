@@ -314,6 +314,15 @@ const CONTRAST_PAIRS = [
           ))}
         </div>
 
+        <!-- Record mode: a scripted ~12s walkthrough (3 preset seeds → dark
+             mode → RTL → density dip → restore) used to capture marketing
+             clips. Disabled under prefers-reduced-motion — the tour is pure
+             automated motion, exactly what that preference opts out of. -->
+        <button type="button" class="tg-tour" id="tg-tour">
+          <span class="material-symbols-outlined" aria-hidden="true">movie</span>
+          Tour
+        </button>
+
         <button type="button" class="tg-download" id="tg-download" disabled>
           <span class="material-symbols-outlined" aria-hidden="true">download</span>
           Download theme.css
@@ -1667,6 +1676,86 @@ const CONTRAST_PAIRS = [
       const dlBtn = document.getElementById("tg-download");
       dlBtn?.addEventListener("click", downloadTheme);
 
+      // ─── TOUR (record mode) ────────────────────────────────────────────
+      // Scripted ~12-second walkthrough for capturing marketing clips:
+      // three preset seeds in turn, a dark-mode toggle, an RTL flip on the
+      // preview panel, a density dip and recovery, then a full restore of
+      // whatever the user had before. Every step drives the SAME functions
+      // the manual controls use (handleColorChange / setMode / setDensity),
+      // so the tour exercises the real code paths rather than duplicates.
+      const TOUR_SEEDS = ["#0B57D0", "#146C2E", "#8F4C38"];
+      const tourBtn = document.getElementById("tg-tour") as HTMLButtonElement | null;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      let touring = false;
+
+      // Mirror what the picker's input listener does: reflect into the text
+      // field, then hand off to the existing pipeline (validation, picker
+      // sync, debounced worker compute).
+      function tourApplySeed(hex: string) {
+        const text = document.querySelector<HTMLInputElement>(
+          '[data-color-text][data-key="primary"]',
+        );
+        if (text) text.value = hex;
+        handleColorChange("primary", hex);
+      }
+
+      // setDensity() only touches the panel attribute; keep the toolbar's
+      // md-select showing the value the tour applied so the UI stays honest.
+      function tourApplyDensity(value: string) {
+        const sel = densitySelect as (HTMLElement & { value?: string }) | null;
+        if (sel) sel.value = value;
+        setDensity(value);
+      }
+
+      function syncTourAvailability() {
+        if (!tourBtn) return;
+        if (reducedMotion.matches) {
+          tourBtn.disabled = true;
+          tourBtn.title =
+            "Tour is disabled because your system prefers reduced motion.";
+        } else {
+          tourBtn.disabled = touring;
+          tourBtn.removeAttribute("title");
+        }
+      }
+
+      function runTour() {
+        if (!tourBtn || touring || reducedMotion.matches) return;
+        touring = true;
+        tourBtn.disabled = true;
+
+        const panel = document.querySelector<HTMLElement>("[data-preview-panel]");
+        // Snapshot the user's state so the tour always hands it back.
+        const prior = {
+          primary: state.primary,
+          mode,
+          density: panel?.getAttribute("data-density") ?? "0",
+        };
+
+        const steps: Array<[number, () => void]> = [
+          [0, () => tourApplySeed(TOUR_SEEDS[0])],
+          [2000, () => tourApplySeed(TOUR_SEEDS[1])],
+          [4000, () => tourApplySeed(TOUR_SEEDS[2])],
+          [5500, () => setMode(prior.mode === "dark" ? "light" : "dark")],
+          [7000, () => panel?.setAttribute("dir", "rtl")],
+          [8500, () => tourApplyDensity("-2")],
+          [10000, () => tourApplyDensity(prior.density)],
+          [12000, () => {
+            panel?.removeAttribute("dir");
+            setMode(prior.mode);
+            tourApplyDensity(prior.density);
+            tourApplySeed(prior.primary);
+            touring = false;
+            syncTourAvailability();
+          }],
+        ];
+        for (const [delay, fn] of steps) window.setTimeout(fn, delay);
+      }
+
+      tourBtn?.addEventListener("click", runTour);
+      syncTourAvailability();
+      reducedMotion.addEventListener?.("change", syncTourAvailability);
+
       // ─── LAZY-LOAD AWC UI CUSTOM ELEMENTS ────────────────────────────
       // Components render as plain unstyled HTML until upgrade. We defer the
       // loader until the preview panel scrolls into view to avoid blocking
@@ -2173,6 +2262,35 @@ const CONTRAST_PAIRS = [
       .tg-toggle--active:hover {
         background: var(--tg-accent-hover);
         color: #fff;
+      }
+
+      /* Tour button — outlined sibling of the filled download CTA. */
+      .tg-tour {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1.25rem;
+        border-radius: 100px;
+        border: 1px solid var(--tg-border);
+        background: var(--tg-surface);
+        color: var(--tg-accent);
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.15s ease, opacity 0.15s ease;
+      }
+
+      .tg-tour .material-symbols-outlined {
+        font-size: 18px;
+      }
+
+      .tg-tour:hover:not(:disabled) {
+        background: rgba(103, 80, 164, 0.08);
+      }
+
+      .tg-tour:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
 
       .tg-download {
@@ -2688,6 +2806,7 @@ const CONTRAST_PAIRS = [
         }
 
         .tg-toggle-group,
+        .tg-tour,
         .tg-download {
           inline-size: 100%;
           justify-content: center;

@@ -1,0 +1,166 @@
+---
+title: AWC UI vs @material/web
+description: "An honest comparison with Google's @material/web: where the canonical M3 library is the better choice, and what AWC UI ships that it never did."
+tableOfContents:
+  maxHeadingLevel: 2
+---
+
+import ComponentDemo from "../../../components/ComponentDemo.astro";
+
+Both libraries implement Material Design 3 as framework-agnostic web
+components, and both register `md-*` custom element tags. That overlap makes
+the comparison unusually direct — and makes the two mutually exclusive on a
+single page (see [the tag-collision FAQ](#faq-the-md--tag-collision) below).
+
+:::note[30-second verdict]
+**Choose `@material/web` if…** you want Google's own implementation, built by
+the Material Design team itself; your UI fits inside its component set
+(buttons, fields, selection controls, menus, dialogs, lists, tabs, sliders);
+and you value years of production hardening and a large install base over new
+component development — the project has been
+[in maintenance mode since June 2024](https://github.com/material-components/material-web#readme).
+
+**Choose AWC UI if…** you need components `@material/web` never shipped —
+date/time/color pickers, a data table, charts, snackbar, tooltip, badge,
+rating, OTP entry, and more across 56 components; you want first-party SSR
+with declarative shadow DOM; or you want a library where new components and
+fixes are actively landing.
+:::
+
+## Side by side
+
+| Criterion | `@material/web` | AWC UI |
+|---|---|---|
+| Component count | ~15 component families (buttons, checkbox, chips, dialog, fields, icon buttons, lists, menus, progress, radio, select, slider, switch, tabs, …) | [56 components](/components/) across forms, navigation, containment, data display, pickers, and charts |
+| SSR / declarative shadow DOM | Client-side rendering; built on Lit, where SSR support lives in the experimental `@lit-labs/ssr` package | First-party hydrate module (`@awc-ui/core/hydrate`) renders declarative shadow DOM on the server; components hydrate in place |
+| Charts | None | `md-line-chart`, `md-bar-chart`, `md-area-chart`, `md-pie-chart`, `md-sparkline` — see the [charts gallery](/recipes/charts-gallery/) |
+| Data table | None | Full `md-table` family: sorting, pagination, row expansion, selection, toolbar |
+| Pickers | None shipped (a date picker was planned but never released) | `md-date-picker`, `md-time-picker`, `md-color-picker` |
+| Accessibility in CI | Components built to Material and ARIA guidance by the team that wrote them | The same ARIA discipline, plus an axe-core audit of every Storybook story runs in CI on every pull request |
+| Maintenance status | [In maintenance mode since June 2024](https://github.com/material-components/material-web#readme), per the project README: existing components are maintained, new component work is paused | Actively developed |
+| Provenance | Google's Material Design team — the canonical M3 web implementation | Independent implementation of the public M3 spec |
+| Install base | Large, with years of production use across Google properties and the wider community | Younger and smaller |
+| Framework story | Framework-agnostic custom elements | Framework-agnostic custom elements, plus published React, Angular, Vue, and Svelte wrapper packages |
+
+## Where @material/web is genuinely ahead
+
+An honest comparison concedes the other side's strengths, and
+`@material/web` has real ones:
+
+- **Provenance.** It is written by the same organization that writes the
+  Material Design spec. When the spec is ambiguous, their reading is the
+  authoritative one.
+- **Maturity.** Its core components have shipped in high-traffic production
+  surfaces for years. That kind of hardening only comes from install base.
+- **Stability as a feature.** Maintenance mode also means a frozen API
+  surface — if your product only needs the components it already has, "no new
+  components" can read as "no churn."
+
+If your component needs end where its catalog ends, `@material/web` remains a
+solid choice.
+
+## What AWC UI adds
+
+The clearest difference is the catalog. Every component below is one
+`@material/web` never shipped — each demo is live.
+
+### Date picker
+
+<ComponentDemo
+  label="Live preview"
+  html={`<md-date-picker variant="docked" label="Due date" clearable style="max-width: 280px;"></md-date-picker>`}
+/>
+
+### Snackbar
+
+<ComponentDemo
+  label="Live preview — archive, then undo"
+  html={`<md-button variant="tonal" data-archive>Archive message</md-button>
+<md-snackbar message="Message archived" action="Undo"></md-snackbar>`}
+  script={`
+    const snackbar = root.querySelector('md-snackbar');
+    root.querySelector('[data-archive]').addEventListener('click', () => snackbar.show());
+    snackbar.addEventListener('mdAction', () => snackbar.hide('action'));
+  `}
+/>
+
+### Tooltip
+
+<ComponentDemo
+  label="Live preview — hover or focus the button"
+  html={`<md-tooltip text="Download report">
+  <md-icon-button icon="download" aria-label="Download report"></md-icon-button>
+</md-tooltip>`}
+/>
+
+### Badge
+
+<ComponentDemo
+  label="Live preview"
+  html={`<md-icon-button icon="mail" variant="standard" aria-label="Inbox, 5 unread">
+  <md-badge value="5"></md-badge>
+</md-icon-button>
+<md-icon-button icon="notifications" variant="standard" aria-label="Notifications, new activity">
+  <md-badge variant="small"></md-badge>
+</md-icon-button>`}
+/>
+
+### Rating
+
+<ComponentDemo
+  label="Live preview"
+  html={`<md-rating value="3.5" precision="0.5" show-value-label rating-label="Product rating"></md-rating>`}
+/>
+
+### OTP field
+
+<ComponentDemo
+  label="Live preview — try pasting a six-digit code"
+  html={`<md-otp-field length="6" group-size="3" label="Verification code" style="max-width: 320px;"></md-otp-field>`}
+/>
+
+To see these composed into full screens — checkout flows, dashboards, data
+consoles — browse the [recipes](/recipes/).
+
+## FAQ: the md-* tag collision
+
+**Can I use AWC UI and @material/web on the same page?**
+
+No. Both libraries define the same `md-*` tag names (`md-button`,
+`md-checkbox`, `md-dialog`, …), and the custom elements registry allows each
+tag to be defined exactly once per page — the second library to load throws a
+`DOMException` on `customElements.define`. There is no scoping trick that
+makes them coexist in one document.
+
+**So how do I migrate?**
+
+Treat it as a per-page (or per-app) decision, not a per-component one:
+
+- **Whole page at a time.** Swap the loader import, keep the markup, and
+  reconcile attribute differences. Because the tag names match, most templates
+  port without renaming elements — the diff is in attributes and events, not
+  structure.
+- **Separate documents can differ.** A multi-page site or micro-frontend setup
+  with genuinely separate documents (including iframes) can run one library
+  per document during a transition.
+- **What doesn't work:** trialing AWC UI inside an existing `@material/web`
+  page. That is a real constraint of the shared tag prefix, and it cuts both
+  ways.
+
+**Is the shared prefix intentional?**
+
+The `md-*` prefix is the natural one for a Material Design library, and
+keeping it means a migration reads as an attribute-level diff rather than a
+rewrite. The cost is the mutual exclusion above — we would rather state that
+plainly than have you discover it in a console error.
+
+## Related
+
+- [Comparisons index](/compare/) — the other options measured the same way
+- [Recipes](/recipes/) — complete screens built from the AWC UI catalog
+- [Getting started](/getting-started/) — install and render your first component
+
+---
+
+Material Design is a trademark of Google LLC. AWC UI is not affiliated with
+or endorsed by Google.
