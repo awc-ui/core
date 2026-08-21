@@ -32,6 +32,7 @@ const coreDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'packages', 
 const stamps = [
   ['dist/esm', 'module'],
   ['dist/components', 'module'],
+  ['dist/components-csr', 'module'],
   ['dist/cjs', 'commonjs'],
 ];
 

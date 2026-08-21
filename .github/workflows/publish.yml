@@ -155,16 +155,22 @@ jobs:
 
       - name: Assert custom-elements output is clean
         run: |
-          cd packages/core/dist/components
-          if grep -l "entry\.js" ./*.js; then
-            echo "::error::custom-elements output references the lazy loader — a dev build leaked into dist/"
+          for d in packages/core/dist/components packages/core/dist/components-csr; do
+            if grep -l "entry\.js" "$d"/*.js; then
+              echo "::error::$d references the lazy loader — a dev build leaked into dist/"
+              exit 1
+            fi
+            if grep -l "Design Tokens" "$d"/*.js; then
+              echo "::error::$d has the global stylesheet baked in — a dev build leaked into dist/"
+              exit 1
+            fi
+          done
+          # The CSR build's whole point is compiling out SSR hydration support.
+          if grep -l "hydrateClientSide:true" packages/core/dist/components-csr/*.js; then
+            echo "::error::dist/components-csr still contains client-hydration support — CSR build misconfigured"
             exit 1
           fi
-          if grep -l "Design Tokens" ./*.js; then
-            echo "::error::custom-elements output has the global stylesheet baked in — a dev build leaked into dist/"
-            exit 1
-          fi
-          echo "custom-elements output is clean"
+          echo "custom-elements outputs are clean"
 
       - name: Publish-readiness gate (publint + attw)
         run: |

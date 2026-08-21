@@ -8,7 +8,15 @@ export const config: Config = {
   sourceMap: true,
   minifyJs: true,
   minifyCss: true,
-  globalStyle: 'node_modules/@awc-ui/tokens/src/tokens.css',
+  // NOTE: no `globalStyle`. With it set, Stencil embedded the full 14 kB token
+  // stylesheet as a JS string inside the custom-elements runtime chunk — while
+  // every consumer ALSO imports the same tokens as real CSS
+  // ('@awc-ui/core/css/tokens.css'), i.e. the tokens shipped twice (~2.7 kB gz
+  // of pure waste per app). Tokens are CSS custom properties: they inherit
+  // through shadow boundaries from the document, so per-shadow-root injection
+  // was redundant. dist/md3/md3.css (the "./css/tokens.css" export target) is
+  // now produced by scripts/emit-tokens-css.mjs in the build chain, and the
+  // www dev server gets the sheet via the copy task on the www target below.
   outputTargets: [
     reactOutputTarget({
       // react-output-target 1.x: SSR-capable wrappers. `hydrateModule` turns on
@@ -131,6 +139,9 @@ export const config: Config = {
     {
       type: 'www',
       serviceWorker: null,
+      // index.html links /build/md3.css; with `globalStyle` gone (see above)
+      // the dev server gets the token sheet via a plain copy instead.
+      copy: [{ src: '../node_modules/@awc-ui/tokens/src/tokens.css', dest: 'build/md3.css' }],
     },
   ],
   testing: {

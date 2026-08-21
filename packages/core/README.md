@@ -63,6 +63,24 @@ something else:
 | CDN / no bundler | load the loader, plus `<link rel="stylesheet" href="…/@awc-ui/tokens/src/tokens.css">` |
 | Server-side rendering | `@awc-ui/core/hydrate` — reference apps for Next, Nuxt, SvelteKit, Astro and Angular live under `apps/` in the repo |
 
+### Smallest bundles: per-component imports
+
+`define` registers all 81 elements. Apps that want to ship only what they use
+import per component instead (the tokens then need one explicit CSS import):
+
+```js
+import '@awc-ui/core/css/tokens.css';
+import { defineCustomElement } from '@awc-ui/core/components/md-button';
+defineCustomElement();
+```
+
+Client-only apps (no SSR) can go one step further: every `components/*` module
+also exists under `components-csr/*` — the same element with the
+Declarative-Shadow-DOM hydration support compiled out (≈3 kB gz smaller
+runtime). Import from there directly, or alias
+`@awc-ui/core/dist/components` → `@awc-ui/core/dist/components-csr` in the
+bundler to switch a whole app (framework wrappers included) in one line.
+
 ## Framework wrappers
 
 The elements work untouched anywhere, but typed wrappers give you props, events
