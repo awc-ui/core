@@ -96,7 +96,16 @@ describe('md-status-dot · anchoring (logical-property RTL flip)', () => {
 describe('md-status-dot · state colors', () => {
   async function bg(state: string) {
     const page = await newE2EPage();
-    await page.setContent(`<md-status-dot id="d" state="${state}"></md-status-dot>`);
+    // The host transitions background-color over 200ms on state changes, and
+    // that transition also runs transparent -> state color on first upgrade.
+    // Sampling getComputedStyle mid-transition returns an interpolated rgba
+    // (this test once caught rgba(45, 198, 83, 0.92) — 92% through), so kill
+    // the transition for the assertion: document-level styles on the host
+    // element outrank :host rules, making the read deterministic.
+    await page.setContent(
+      `<style>md-status-dot { transition: none !important; }</style>` +
+        `<md-status-dot id="d" state="${state}"></md-status-dot>`,
+    );
     await page.waitForChanges();
     return page.evaluate(() => getComputedStyle(document.getElementById('d')!).backgroundColor);
   }
