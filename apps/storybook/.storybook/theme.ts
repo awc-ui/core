@@ -56,12 +56,13 @@ const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="118" height="28
     </style>
   </defs>
   <rect width="28" height="28" rx="8" fill="url(#awc-tile)"/>
-  <g stroke="${brand.mark}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="none">
-    <circle cx="14" cy="8.1" r="2.2"/>
-    <path d="M14 5.9V4.4"/>
-    <path d="M12.7 10.1 9.1 20.4"/>
-    <path d="M15.3 10.1 18.9 20.4"/>
-    <path d="M11.9 15.2h4.2"/>
+  <!-- Google Material Symbols Outlined — "architecture" (drafting compass),
+       the same glyph and geometry as the canonical mark in
+       apps/docs/public/favicon.svg. Native viewBox is 0 -960 960 960; the
+       glyph fills 2/3 of the tile like the docs mark (24/36), so for the
+       28px tile: scale 18.667/960 = 0.019444, padding (28 - 18.667)/2. -->
+  <g transform="translate(4.667 23.333) scale(0.019444)" fill="${brand.mark}">
+    <path d="m270-120-10-88 114-314q15 14 32.5 23.5T444-484L334-182l-64 62Zm420 0-64-62-110-302q20-5 37.5-14.5T586-522l114 314-10 88ZM480-520q-50 0-85-35t-35-85q0-39 22.5-69.5T440-752v-88h80v88q35 12 57.5 42.5T600-640q0 50-35 85t-85 35Zm0-80q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Z"/>
   </g>
   <text class="awc-wordmark" x="38" y="19.6" font-family="Roboto, 'Segoe UI', system-ui, sans-serif" font-size="17" font-weight="700" letter-spacing="-0.2">AWC UI</text>
 </svg>`;
