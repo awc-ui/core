@@ -172,6 +172,12 @@ jobs:
         #   lib/index.ts), so react no longer needs this ignore.
         run: pnpm ci:attw
 
+      - name: Size budgets (size-limit)
+        # Consumer-shaped bundle budgets (gz, react excluded where noted).
+        # Catches tree-shaking regressions — a lost sideEffects field or a new
+        # eager dependency — on every push instead of at publish time.
+        run: pnpm ci:size
+
   test-ct:
     name: Component Tests (Playwright CT + coverage)
     runs-on: ubuntu-latest

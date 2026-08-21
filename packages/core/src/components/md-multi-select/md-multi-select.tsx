@@ -1,4 +1,5 @@
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, forceUpdate, h } from '@stencil/core';
+import { LazyLoadingIndicator } from '../../utils/lazy-loading-indicator';
 import {
   collectOptions,
   normalizeInits,
@@ -1064,7 +1065,7 @@ export class MdMultiSelect {
           // swap it via the `loader` slot; the default is md-loading-indicator.
           <span slot="trailing-icon" class="md-multi-select__loader" part="loading-spinner">
             <slot name="loader">
-              <md-loading-indicator label={this.loadingText}></md-loading-indicator>
+              <LazyLoadingIndicator label={this.loadingText}></LazyLoadingIndicator>
             </slot>
           </span>
         ) : (
@@ -1491,12 +1492,12 @@ export class MdMultiSelect {
               onClick={(e: MouseEvent) => e.stopPropagation()}
             />
             {this.searching && (
-              <md-loading-indicator
+              <LazyLoadingIndicator
                 class="md-multi-select__search-spinner"
                 part="search-spinner"
                 label={this.searchingLabel}
                 aria-hidden="true"
-              ></md-loading-indicator>
+              ></LazyLoadingIndicator>
             )}
           </div>
         )}

@@ -1,4 +1,5 @@
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element, AttachInternals } from '@stencil/core';
+import { LazyLoadingIndicator } from '../../utils/lazy-loading-indicator';
 import { triggerRipple } from '../../utils/ripple';
 import { sanitizeHref, SAFE_WINDOW_FEATURES } from '../../utils/url';
 
@@ -340,7 +341,7 @@ export class MdButton {
              cascade to whatever ends up inside it, default or slotted. */
           <span class="md-button__loading" part="loading" aria-hidden="true">
             <slot name="loader">
-              <md-loading-indicator class="md-button__loading-default" />
+              <LazyLoadingIndicator class="md-button__loading-default" />
             </slot>
           </span>
         )}

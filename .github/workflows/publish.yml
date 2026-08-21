@@ -177,6 +177,12 @@ jobs:
           pnpm ci:publint
           pnpm ci:attw
 
+      - name: Size budgets (size-limit)
+        # Consumer-shaped bundle budgets: a lost sideEffects field, a dev
+        # build leaking into dist, or a new eager dependency fails here
+        # instead of silently costing every consumer hundreds of kB.
+        run: pnpm ci:size
+
       - name: Publish to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,4 +1,5 @@
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, forceUpdate, h } from '@stencil/core';
+import { LazyLoadingIndicator } from '../../utils/lazy-loading-indicator';
 import { setFormValue, checkValidityOf, reportValidityOf, getValidityOf } from '../../utils/form';
 import {
   collectOptions,
@@ -1152,7 +1153,7 @@ export class MdAutocomplete {
             this.renderClearButton(true),
             <span slot="trailing-icon" class="md-autocomplete__loader" part="loading-spinner">
               <slot name="loader">
-                <md-loading-indicator label={this.loadingText}></md-loading-indicator>
+                <LazyLoadingIndicator label={this.loadingText}></LazyLoadingIndicator>
               </slot>
             </span>,
           ]

@@ -11,6 +11,7 @@ import {
   Watch,
   Listen,
 } from '@stencil/core';
+import { LazyLoadingIndicator } from '../../utils/lazy-loading-indicator';
 
 /**
  * Minimal structural type for the Web Speech API `SpeechRecognition`
@@ -1660,12 +1661,12 @@ export class MdSearch {
               // md-progress-indicator); the default keeps the morph classes and
               // the exported shape part.
               <slot name="loader">
-                <md-loading-indicator
+                <LazyLoadingIndicator
                   class="md-search__loading"
                   part="loading"
                   exportparts="shape:loading-shape"
                   label={this.loadingLabel}
-                ></md-loading-indicator>
+                ></LazyLoadingIndicator>
               </slot>
             )}
             {showClear && this.renderClearButton()}

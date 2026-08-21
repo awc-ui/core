@@ -27,6 +27,18 @@
     "./dist/components-csr/index.js",
     "./dist/md3/**"
   ],
+  "size-limit": [
+    {
+      "name": "custom element md-button (SSR-capable default, min+br)",
+      "path": "dist/components/md-button.js",
+      "limit": "19 kB"
+    },
+    {
+      "name": "custom element md-button (CSR build, min+br)",
+      "path": "dist/components-csr/md-button.js",
+      "limit": "16 kB"
+    }
+  ],
   "main": "dist/index.cjs.js",
   "module": "dist/index.js",
   "types": "dist/types/index.d.ts",
@@ -99,8 +111,8 @@
     "test:ssr": "node scripts/ssr-smoke.mjs",
     "lint": "tsc --noEmit",
     "dev": "stencil build --dev --watch --serve",
+    "size": "size-limit",
     "size:why": "size-limit --why",
-    "size:baseline": "node ../../scripts/update-size-baseline.mjs",
     "prepack": "node ../../scripts/build-package-docs.mjs"
   },
   "devDependencies": {
@@ -109,6 +121,7 @@
     "@stencil/core": "^4.20.0",
     "@stencil/react-output-target": "^1.6.1",
     "@stencil/vue-output-target": "^0.8.8",
+    "@size-limit/preset-small-lib": "^11.1.6",
     "@types/jest": "^29.5.0",
     "@types/jest-axe": "^3.5.9",
     "@types/jsdom": "^21.1.0",

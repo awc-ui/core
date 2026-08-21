@@ -41,8 +41,21 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.json"
+    "build": "rm -rf dist && tsc -p tsconfig.json",
+    "size": "size-limit"
   },
+  "size-limit": [
+    {
+      "name": "import { MdButton } from '@awc-ui/react' — wrapper share only (react and @awc-ui/core are peers, excluded). Tripwire: if barrel tree-shaking breaks, all 81 wrappers land here.",
+      "path": "dist/index.js",
+      "import": "{ MdButton }",
+      "ignore": [
+        "react",
+        "react-dom"
+      ],
+      "limit": "2 kB"
+    }
+  ],
   "dependencies": {
     "@stencil/react-output-target": "^1.6.1"
   },
@@ -53,6 +66,7 @@
   },
   "devDependencies": {
     "@awc-ui/core": "workspace:*",
+    "@size-limit/preset-small-lib": "^11.1.6",
     "@types/node": "^20.14.0",
     "@types/react": "~18.2.79",
     "@types/react-dom": "~18.2.25",

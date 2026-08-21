@@ -12,6 +12,7 @@
     "test:a11y": "pnpm --filter @awc-ui/storybook test:a11y",
     "size": "pnpm --filter @awc-ui/core size",
     "size:why": "pnpm --filter @awc-ui/core size:why",
+    "ci:size": "pnpm --filter @awc-ui/core size && pnpm --filter @awc-ui/react size",
     "ci:wrappers": "pnpm --filter @awc-ui/react --filter @awc-ui/vue --filter @awc-ui/angular --filter @awc-ui/svelte --filter @awc-ui/theme build",
     "ci:publint": "publint packages/core && publint packages/react && publint packages/vue && publint packages/svelte && publint packages/theme",
     "ci:attw": "attw --pack packages/react --ignore-rules false-cjs cjs-resolves-to-esm no-resolution && attw --pack packages/vue --ignore-rules cjs-resolves-to-esm internal-resolution-error && attw --pack packages/svelte --profile esm-only --ignore-rules internal-resolution-error && attw --pack packages/theme --profile esm-only --ignore-rules internal-resolution-error",

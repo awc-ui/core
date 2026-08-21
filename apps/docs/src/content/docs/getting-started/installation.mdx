@@ -54,6 +54,25 @@ Add these to your HTML `<head>` for icons and typography:
   href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
 ```
 
+:::caution[Subset the icon font for production]
+The request above downloads the **entire** variable icon font — close to
+4 MB. That is convenient while prototyping (every icon just works) but is by
+far the largest transfer an AWC UI app makes. For production, list the icons
+you actually use with `icon_names` — Google Fonts then serves a subset font
+of a few kB with the same variable axes, so `FILL` transitions keep working:
+
+```html
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,delete,menu,search&display=block">
+```
+
+Two rules: the `icon_names` list must be **alphabetically sorted** (the API
+rejects unsorted lists), and prefer `display=block` for icon fonts — with
+`swap`, users see the raw ligature text ("search") until the font arrives.
+Audit your icons with a grep over `icon=` attributes and slotted
+`material-symbols-outlined` spans when the list drifts.
+:::
+
 Or install from npm:
 
 ```bash
