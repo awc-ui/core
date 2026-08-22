@@ -20,7 +20,7 @@ committed only when the snackbar closes without it.
 
 <ComponentDemo
   label="Live preview — select a message to open the reading pane, then archive it and undo"
-  html={`<div style="position: relative; display: flex; block-size: 540px; max-inline-size: 720px; margin-inline: auto; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 16px; overflow: hidden; background: var(--md-sys-color-surface);">
+  html={`<div style="position: relative; display: flex; block-size: clamp(540px, 78vh, 820px); max-inline-size: 720px; margin-inline: auto; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 16px; overflow: hidden; background: var(--md-sys-color-surface);">
   <md-navigation-rail label="Mailboxes" active-index="0">
     <md-navigation-rail-tab icon="inbox" label="Inbox" value="inbox" badge-value="3" data-tab-inbox></md-navigation-rail-tab>
     <md-navigation-rail-tab icon="star" label="Starred" value="starred"></md-navigation-rail-tab>
@@ -102,7 +102,7 @@ committed only when the snackbar closes without it.
   <md-menu-item headline="Forward"></md-menu-item>
 </md-menu>
 <md-snackbar data-undo-bar action="Undo"></md-snackbar>`}
-  htmlForCode={`<div style="position: relative; display: flex; block-size: 540px;">
+  htmlForCode={`<div style="position: relative; display: flex; block-size: clamp(540px, 78vh, 820px);">
   <md-navigation-rail label="Mailboxes" active-index="0">
     <md-navigation-rail-tab icon="inbox" label="Inbox" value="inbox" badge-value="3"></md-navigation-rail-tab>
     <md-navigation-rail-tab icon="star" label="Starred" value="starred"></md-navigation-rail-tab>
@@ -437,7 +437,7 @@ interface Message {
   // The proxies bind camelCase inputs and re-emit the component events;
   // #search and #bar expose close() / show() / hide() for the imperative moments.
   template:
-    '<div style="position: relative; display: flex; block-size: 540px;">' +
+    '<div style="position: relative; display: flex; block-size: clamp(540px, 78vh, 820px);">' +
     '  <md-navigation-rail label="Mailboxes" [activeIndex]="folderIndex" (mdTabChange)="setFolder($event.detail.value)">' +
     '    @for (f of folders; track f.value) {' +
     '      <md-navigation-rail-tab [icon]="f.icon" [label]="f.label" [value]="f.value" [badgeValue]="badgeFor(f.value)"></md-navigation-rail-tab>' +
@@ -613,7 +613,7 @@ function draftToast(kind: string) { drafts.value += 1; showToast(kind + ' draft 
 </script>
 
 <template>
-  <div style="position: relative; display: flex; block-size: 540px;">
+  <div style="position: relative; display: flex; block-size: clamp(540px, 78vh, 820px);">
     <MdNavigationRail label="Mailboxes" :active-index="folderIndex"
       @md-tab-change="setFolder($event.detail.value)">
       <MdNavigationRailTab v-for="f in folders" :key="f.value" :icon="f.icon"
@@ -721,7 +721,7 @@ function draftToast(kind: string) { drafts.value += 1; showToast(kind + ' draft 
   function draftToast(kind) { drafts += 1; showToast(kind + ' draft saved to Drafts', ''); }
 </script>
 
-<div style="position: relative; display: flex; block-size: 540px;">
+<div style="position: relative; display: flex; block-size: clamp(540px, 78vh, 820px);">
   <md-navigation-rail label="Mailboxes" active-index={folderIndex}
     on:mdTabChange={(e) => setFolder(e.detail.value)}>
     {#each folders as f (f.value)}
@@ -806,6 +806,11 @@ function draftToast(kind: string) { drafts.value += 1; showToast(kind + ' draft 
 
 ## The details that make it production-grade
 
+- **The shell owns its height.** A three-zone layout needs a definite block
+  size for the list and reading pane to scroll independently, so the chassis
+  sets `clamp(540px, 78vh, 820px)` — a floor for short windows, a ceiling so it
+  stops growing on tall monitors. A full-page mail client would use `100dvh`
+  instead; the clamp is what suits an embedded panel like this one.
 - **Undo is trustworthy.** The snackbar's action button does not dismiss it —
   the handler calls `hide('action')`, and the `mdClose` listener branches on
   `detail.reason`: `action` restores the row, anything else commits the
