@@ -41,11 +41,26 @@ body {
   border-inline-end: 1px solid var(--md-sys-color-outline-variant);
 }
 
+/* The rail centres its logo slot by anchoring the slotted content's LEADING
+   edge at (rail width - --md-navigation-rail-logo-icon-size) / 2, so that
+   custom property must describe the slotted block's real footprint — not just
+   the glyph. This brand mark is a glyph stacked over a wordmark, so it is
+   given a fixed width and the property is set to match on the rail below;
+   with the two in agreement the block centres on the same x=40 axis as every
+   tab icon. Leaving the property at its 24px default made the block start at
+   x=28 and run 59px wide, pushing its centre 17px right of the tabs. */
 .brand-mark {
+  --brand-mark-width: 64px;
+
+  inline-size: var(--brand-mark-width);
   display: grid;
   place-items: center;
   gap: 4px;
   padding-block: var(--md-sys-spacing-inset-sm);
+}
+
+.shell-rail md-navigation-rail {
+  --md-navigation-rail-logo-icon-size: 64px;
 }
 
 .brand-mark svg {
