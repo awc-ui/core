@@ -456,3 +456,15 @@
 :host([density='-2']) { --md-sys-density-scale: -2; }
 :host([density='-3']) { --md-sys-density-scale: -3; }
 :host([density='-4']) { --md-sys-density-scale: -4; }
+
+/* ==========================================================
+   HIDDEN
+   `[hidden]` is a UA-stylesheet rule, and every `:host` display
+   declaration above is an AUTHOR rule — author origin beats UA, so without
+   this guard `el.hidden = true` left the component fully laid out.
+   `!important` because state rules in this file set `display` at equal or
+   higher specificity than `:host([hidden])`.
+   ========================================================== */
+:host([hidden]) {
+  display: none !important;
+}

@@ -2,3 +2,15 @@
 :host {
   display: contents;
 }
+
+/* ==========================================================
+   HIDDEN
+   `[hidden]` is a UA-stylesheet rule, and every `:host` display
+   declaration above is an AUTHOR rule — author origin beats UA, so without
+   this guard `el.hidden = true` left the component fully laid out.
+   `!important` because state rules in this file set `display` at equal or
+   higher specificity than `:host([hidden])`.
+   ========================================================== */
+:host([hidden]) {
+  display: none !important;
+}
