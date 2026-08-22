@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 
 const APPS = {
-  'showcase-fieldstone': { title: 'Fieldstone Ops', fw: 'Next.js', tagline: 'Logistics admin console — the flagship internal-tools showcase: big data table, transfer-list permissions, org chart, and audit log, all server-rendered.' },
+  'showcase-fieldstone': { title: 'Fieldstone Ops', fw: 'Next.js', tagline: 'Logistics admin console — the flagship internal-tools showcase: big data table, transfer-list permissions, org chart, and audit log — statically prerendered by Next, with components upgrading on the client.' },
   'showcase-lumen': { title: 'Lumen Bank', fw: 'Next.js', tagline: 'Retail banking: sparkline balances, spending breakdown, an OTP-confirmed transfer flow, and budget meters — mobile-first.' },
   'showcase-relaymesh': { title: 'Relaymesh', fw: 'Next.js', tagline: 'API observability console in dark theme: service health, latency charts, request log, incident timeline.' },
   'showcase-pulseboard': { title: 'Pulseboard', fw: 'SvelteKit', tagline: 'Product analytics SaaS: KPI tiles, DAU/adoption charts, funnels, and a skeleton-loading events explorer.' },
