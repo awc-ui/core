@@ -232,6 +232,459 @@ sales has to.
         : 'Save 20% with annual billing';
     });
   `}
+  react={`import { useState } from 'react';
+import {
+  MdAccordion, MdAccordionItem, MdBadge, MdButton, MdCard, MdChip,
+  MdSegmentedButton, MdSegmentedButtonSet, MdTable, MdTableBody, MdTableCell,
+  MdTableContainer, MdTableHead, MdTableRow, MdTooltip,
+} from '@awc-ui/react';
+
+const PLANS = [
+  { name: 'Starter', monthly: 19, annual: 15, popular: false, variant: 'outlined', cta: 'Start free trial', features: ['10 projects', '3 team members', 'Community support'] },
+  { name: 'Pro · Most popular', monthly: 49, annual: 39, popular: true, variant: 'filled', cta: 'Choose Pro', features: ['Unlimited projects', '25 team members'] },
+  { name: 'Scale', monthly: 99, annual: 79, popular: false, variant: 'outlined', cta: 'Contact sales', features: ['Unlimited everything', '99.95% uptime SLA', 'Dedicated support'] },
+];
+
+const finePrint = { textDecoration: 'underline dotted', textUnderlineOffset: 3, cursor: 'help' };
+
+export default function PricingPage() {
+  const [annual, setAnnual] = useState(false);
+  const term = annual ? ' per month, billed annually' : ' per month, billed monthly';
+
+  return (
+    <div style={{ display: 'grid', gap: 28 }}>
+      <div style={{ display: 'grid', justifyItems: 'center', gap: 12, textAlign: 'center' }}>
+        <span style={{ font: 'var(--md-sys-typescale-headline-small)' }}>Plans that grow with your team</span>
+        {/* Single-select mdChange always reports exactly one value in e.detail[0]. */}
+        <MdSegmentedButtonSet aria-label="Billing period" onMdChange={(e) => setAnnual(e.detail[0] === 'annual')}>
+          <MdSegmentedButton value="monthly" label="Monthly" selected={!annual} />
+          <MdSegmentedButton value="annual" label="Annual" selected={annual} />
+        </MdSegmentedButtonSet>
+        <span style={{ font: 'var(--md-sys-typescale-body-small)', color: 'var(--md-sys-color-on-surface-variant)' }}>
+          {annual ? 'You are saving 20% with annual billing' : 'Save 20% with annual billing'}
+        </span>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 16, alignItems: 'stretch' }}>
+        {PLANS.map((p) => (
+          <MdCard
+            key={p.name}
+            variant="outlined"
+            style={p.popular ? { position: 'relative', '--md-card-outline-color': 'var(--md-sys-color-primary)', '--md-card-outline-width': '2px' } : undefined}
+          >
+            {p.popular && <MdBadge icon="star" style={{ '--md-badge-offset-x': '-14px', '--md-badge-offset-y': '14px' }} />}
+            <span style={{ font: 'var(--md-sys-typescale-title-medium)' }}>{p.name}</span>
+            <div>
+              <span style={{ font: 'var(--md-sys-typescale-display-small)' }}>{'$' + (annual ? p.annual : p.monthly)}</span>
+              <span style={{ font: 'var(--md-sys-typescale-body-small)', color: 'var(--md-sys-color-on-surface-variant)' }}>{term}</span>
+            </div>
+            {p.popular && (
+              <div role="group" aria-label="Pro plan highlights" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                <MdChip variant="assist" label="SSO" density={-2} />
+                <MdChip variant="assist" label="API access" density={-2} />
+                <MdChip variant="assist" label="Priority support" density={-2} />
+              </div>
+            )}
+            <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: 6 }}>
+              {p.features.map((f) => <li key={f}>{f}</li>)}
+            </ul>
+            <MdButton variant={p.variant} fullWidth style={{ marginTop: 'auto' }}>{p.cta}</MdButton>
+          </MdCard>
+        ))}
+      </div>
+
+      <MdTableContainer variant="outlined">
+        <MdTable columnTemplate="1.5fr 1fr 1fr 1fr" label="Plan comparison" striped>
+          <MdTableHead>
+            <MdTableRow rowgroup="head">
+              <MdTableCell head scope="col">Feature</MdTableCell>
+              <MdTableCell head scope="col" align="center">Starter</MdTableCell>
+              <MdTableCell head scope="col" align="center">Pro</MdTableCell>
+              <MdTableCell head scope="col" align="center">Scale</MdTableCell>
+            </MdTableRow>
+          </MdTableHead>
+          <MdTableBody>
+            <MdTableRow value="projects">
+              <MdTableCell head scope="row">Projects</MdTableCell>
+              <MdTableCell align="center">10</MdTableCell>
+              <MdTableCell align="center">Unlimited</MdTableCell>
+              <MdTableCell align="center">Unlimited</MdTableCell>
+            </MdTableRow>
+            <MdTableRow value="sla">
+              <MdTableCell head scope="row">
+                <MdTooltip text="Measured per calendar month; service credits apply automatically.">
+                  <span tabIndex={0} style={finePrint}>Uptime SLA</span>
+                </MdTooltip>
+              </MdTableCell>
+              <MdTableCell align="center">—</MdTableCell>
+              <MdTableCell align="center">99.9%</MdTableCell>
+              <MdTableCell align="center">99.95%</MdTableCell>
+            </MdTableRow>
+          </MdTableBody>
+        </MdTable>
+      </MdTableContainer>
+
+      <div style={{ display: 'grid', gap: 12 }}>
+        <span style={{ font: 'var(--md-sys-typescale-title-medium)' }}>Frequently asked questions</span>
+        <MdAccordion exclusive headingLevel={3} variant="outlined">
+          <MdAccordionItem headline="Can I change plans later?">
+            <p style={{ margin: 0 }}>Yes — upgrades apply immediately and are prorated; downgrades take effect at the next renewal.</p>
+          </MdAccordionItem>
+          <MdAccordionItem headline="What happens when my trial ends?">
+            <p style={{ margin: 0 }}>Your workspace becomes read-only. Nothing is deleted for 90 days, and picking any plan restores it instantly.</p>
+          </MdAccordionItem>
+        </MdAccordion>
+      </div>
+    </div>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+import {
+  MdAccordion, MdAccordionItem, MdBadge, MdButton, MdCard, MdChip,
+  MdSegmentedButton, MdSegmentedButtonSet, MdTable, MdTableBody, MdTableCell,
+  MdTableContainer, MdTableHead, MdTableRow, MdTooltip,
+} from '@awc-ui/angular';
+
+@Component({
+  selector: 'app-pricing-page',
+  standalone: true,
+  imports: [
+    MdSegmentedButtonSet, MdSegmentedButton, MdCard, MdBadge, MdChip, MdButton,
+    MdTableContainer, MdTable, MdTableHead, MdTableBody, MdTableRow, MdTableCell,
+    MdTooltip, MdAccordion, MdAccordionItem,
+  ],
+  template:
+    '<div class="pricing">' +
+    '  <div class="pricing-head">' +
+    '    <span class="pricing-title">Plans that grow with your team</span>' +
+    '    <md-segmented-button-set aria-label="Billing period" (mdChange)="onBilling($event)">' +
+    '      <md-segmented-button value="monthly" label="Monthly" [selected]="!annual"></md-segmented-button>' +
+    '      <md-segmented-button value="annual" label="Annual" [selected]="annual"></md-segmented-button>' +
+    '    </md-segmented-button-set>' +
+    '    <span class="pricing-savings">{{ savings }}</span>' +
+    '  </div>' +
+    '  <div class="pricing-grid">' +
+    '    @for (p of plans; track p.name) {' +
+    '      <md-card variant="outlined" [class.popular]="p.popular">' +
+    '        @if (p.popular) { <md-badge icon="star" class="pop-badge"></md-badge> }' +
+    '        <span class="plan-name">{{ p.name }}</span>' +
+    '        <div><span class="plan-price">{{ price(p) }}</span><span class="plan-term">{{ term }}</span></div>' +
+    '        @if (p.popular) {' +
+    '          <div role="group" aria-label="Pro plan highlights" class="plan-chips">' +
+    '            <md-chip variant="assist" label="SSO" [density]="-2"></md-chip>' +
+    '            <md-chip variant="assist" label="API access" [density]="-2"></md-chip>' +
+    '            <md-chip variant="assist" label="Priority support" [density]="-2"></md-chip>' +
+    '          </div>' +
+    '        }' +
+    '        <ul class="plan-features">@for (f of p.features; track f) { <li>{{ f }}</li> }</ul>' +
+    '        <md-button [variant]="p.variant" [fullWidth]="true" class="plan-cta">{{ p.cta }}</md-button>' +
+    '      </md-card>' +
+    '    }' +
+    '  </div>' +
+    '  <md-table-container variant="outlined">' +
+    '    <md-table columnTemplate="1.5fr 1fr 1fr 1fr" label="Plan comparison" [striped]="true">' +
+    '      <md-table-head>' +
+    '        <md-table-row rowgroup="head">' +
+    '          <md-table-cell [head]="true" scope="col">Feature</md-table-cell>' +
+    '          <md-table-cell [head]="true" scope="col" align="center">Starter</md-table-cell>' +
+    '          <md-table-cell [head]="true" scope="col" align="center">Pro</md-table-cell>' +
+    '          <md-table-cell [head]="true" scope="col" align="center">Scale</md-table-cell>' +
+    '        </md-table-row>' +
+    '      </md-table-head>' +
+    '      <md-table-body>' +
+    '        <md-table-row value="projects">' +
+    '          <md-table-cell [head]="true" scope="row">Projects</md-table-cell>' +
+    '          <md-table-cell align="center">10</md-table-cell>' +
+    '          <md-table-cell align="center">Unlimited</md-table-cell>' +
+    '          <md-table-cell align="center">Unlimited</md-table-cell>' +
+    '        </md-table-row>' +
+    '        <md-table-row value="sla">' +
+    '          <md-table-cell [head]="true" scope="row">' +
+    '            <md-tooltip text="Measured per calendar month; service credits apply automatically.">' +
+    '              <span tabindex="0" class="fine-print">Uptime SLA</span>' +
+    '            </md-tooltip>' +
+    '          </md-table-cell>' +
+    '          <md-table-cell align="center">—</md-table-cell>' +
+    '          <md-table-cell align="center">99.9%</md-table-cell>' +
+    '          <md-table-cell align="center">99.95%</md-table-cell>' +
+    '        </md-table-row>' +
+    '      </md-table-body>' +
+    '    </md-table>' +
+    '  </md-table-container>' +
+    '  <div class="pricing-faq">' +
+    '    <span class="faq-title">Frequently asked questions</span>' +
+    '    <md-accordion [exclusive]="true" [headingLevel]="3" variant="outlined">' +
+    '      <md-accordion-item headline="Can I change plans later?">' +
+    '        <p>Yes — upgrades apply immediately and are prorated; downgrades take effect at the next renewal.</p>' +
+    '      </md-accordion-item>' +
+    '      <md-accordion-item headline="What happens when my trial ends?">' +
+    '        <p>Your workspace becomes read-only. Nothing is deleted for 90 days, and picking any plan restores it instantly.</p>' +
+    '      </md-accordion-item>' +
+    '    </md-accordion>' +
+    '  </div>' +
+    '</div>',
+  styles: [
+    '.pricing { display: grid; gap: 28px; } ' +
+    '.pricing-head { display: grid; justify-items: center; gap: 12px; text-align: center; } ' +
+    '.pricing-title { font: var(--md-sys-typescale-headline-small); } ' +
+    '.pricing-savings { font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant); } ' +
+    '.pricing-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; } ' +
+    'md-card.popular { position: relative; --md-card-outline-color: var(--md-sys-color-primary); --md-card-outline-width: 2px; } ' +
+    '.pop-badge { --md-badge-offset-x: -14px; --md-badge-offset-y: 14px; } ' +
+    '.plan-name { font: var(--md-sys-typescale-title-medium); } ' +
+    '.plan-price { font: var(--md-sys-typescale-display-small); } ' +
+    '.plan-term { font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant); } ' +
+    '.plan-chips { display: flex; flex-wrap: wrap; gap: 6px; } ' +
+    '.plan-features { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; } ' +
+    '.plan-cta { margin-top: auto; } ' +
+    '.pricing-faq { display: grid; gap: 12px; } ' +
+    '.faq-title { font: var(--md-sys-typescale-title-medium); } ' +
+    '.fine-print { text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }'
+  ],
+})
+export class PricingPageComponent {
+  annual = false;
+
+  plans = [
+    { name: 'Starter', monthly: 19, annual: 15, popular: false, variant: 'outlined', cta: 'Start free trial', features: ['10 projects', '3 team members', 'Community support'] },
+    { name: 'Pro · Most popular', monthly: 49, annual: 39, popular: true, variant: 'filled', cta: 'Choose Pro', features: ['Unlimited projects', '25 team members'] },
+    { name: 'Scale', monthly: 99, annual: 79, popular: false, variant: 'outlined', cta: 'Contact sales', features: ['Unlimited everything', '99.95% uptime SLA', 'Dedicated support'] },
+  ];
+
+  // Single-select mdChange always reports exactly one value in e.detail[0].
+  onBilling(e: CustomEvent<string[]>) { this.annual = e.detail[0] === 'annual'; }
+
+  price(p: { monthly: number; annual: number }) { return '$' + (this.annual ? p.annual : p.monthly); }
+  get term() { return this.annual ? ' per month, billed annually' : ' per month, billed monthly'; }
+  get savings() { return this.annual ? 'You are saving 20% with annual billing' : 'Save 20% with annual billing'; }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  MdAccordion, MdAccordionItem, MdBadge, MdButton, MdCard, MdChip,
+  MdSegmentedButton, MdSegmentedButtonSet, MdTable, MdTableBody, MdTableCell,
+  MdTableContainer, MdTableHead, MdTableRow, MdTooltip,
+} from '@awc-ui/vue';
+
+const annual = ref(false);
+
+const plans = [
+  { name: 'Starter', monthly: 19, annual: 15, popular: false, variant: 'outlined', cta: 'Start free trial', features: ['10 projects', '3 team members', 'Community support'] },
+  { name: 'Pro · Most popular', monthly: 49, annual: 39, popular: true, variant: 'filled', cta: 'Choose Pro', features: ['Unlimited projects', '25 team members'] },
+  { name: 'Scale', monthly: 99, annual: 79, popular: false, variant: 'outlined', cta: 'Contact sales', features: ['Unlimited everything', '99.95% uptime SLA', 'Dedicated support'] },
+];
+
+const term = computed(() => (annual.value ? ' per month, billed annually' : ' per month, billed monthly'));
+const savings = computed(() => (annual.value ? 'You are saving 20% with annual billing' : 'Save 20% with annual billing'));
+
+function price(p: { monthly: number; annual: number }) {
+  return '$' + (annual.value ? p.annual : p.monthly);
+}
+</script>
+
+<template>
+  <div class="pricing">
+    <div class="pricing-head">
+      <span class="pricing-title">Plans that grow with your team</span>
+      <!-- Single-select mdChange always reports exactly one value in detail[0]. -->
+      <MdSegmentedButtonSet aria-label="Billing period" @mdChange="annual = $event.detail[0] === 'annual'">
+        <MdSegmentedButton value="monthly" label="Monthly" :selected="!annual" />
+        <MdSegmentedButton value="annual" label="Annual" :selected="annual" />
+      </MdSegmentedButtonSet>
+      <span class="pricing-savings">{{ savings }}</span>
+    </div>
+
+    <div class="pricing-grid">
+      <MdCard v-for="p in plans" :key="p.name" variant="outlined" :class="{ popular: p.popular }">
+        <MdBadge v-if="p.popular" icon="star" class="pop-badge" />
+        <span class="plan-name">{{ p.name }}</span>
+        <div><span class="plan-price">{{ price(p) }}</span><span class="plan-term">{{ term }}</span></div>
+        <div v-if="p.popular" role="group" aria-label="Pro plan highlights" class="plan-chips">
+          <MdChip variant="assist" label="SSO" :density="-2" />
+          <MdChip variant="assist" label="API access" :density="-2" />
+          <MdChip variant="assist" label="Priority support" :density="-2" />
+        </div>
+        <ul class="plan-features"><li v-for="f in p.features" :key="f">{{ f }}</li></ul>
+        <MdButton :variant="p.variant" :fullWidth="true" class="plan-cta">{{ p.cta }}</MdButton>
+      </MdCard>
+    </div>
+
+    <MdTableContainer variant="outlined">
+      <MdTable columnTemplate="1.5fr 1fr 1fr 1fr" label="Plan comparison" :striped="true">
+        <MdTableHead>
+          <MdTableRow rowgroup="head">
+            <MdTableCell :head="true" scope="col">Feature</MdTableCell>
+            <MdTableCell :head="true" scope="col" align="center">Starter</MdTableCell>
+            <MdTableCell :head="true" scope="col" align="center">Pro</MdTableCell>
+            <MdTableCell :head="true" scope="col" align="center">Scale</MdTableCell>
+          </MdTableRow>
+        </MdTableHead>
+        <MdTableBody>
+          <MdTableRow value="projects">
+            <MdTableCell :head="true" scope="row">Projects</MdTableCell>
+            <MdTableCell align="center">10</MdTableCell>
+            <MdTableCell align="center">Unlimited</MdTableCell>
+            <MdTableCell align="center">Unlimited</MdTableCell>
+          </MdTableRow>
+          <MdTableRow value="sla">
+            <MdTableCell :head="true" scope="row">
+              <MdTooltip text="Measured per calendar month; service credits apply automatically.">
+                <span tabindex="0" class="fine-print">Uptime SLA</span>
+              </MdTooltip>
+            </MdTableCell>
+            <MdTableCell align="center">—</MdTableCell>
+            <MdTableCell align="center">99.9%</MdTableCell>
+            <MdTableCell align="center">99.95%</MdTableCell>
+          </MdTableRow>
+        </MdTableBody>
+      </MdTable>
+    </MdTableContainer>
+
+    <div class="pricing-faq">
+      <span class="faq-title">Frequently asked questions</span>
+      <MdAccordion :exclusive="true" :headingLevel="3" variant="outlined">
+        <MdAccordionItem headline="Can I change plans later?">
+          <p>Yes — upgrades apply immediately and are prorated; downgrades take effect at the next renewal.</p>
+        </MdAccordionItem>
+        <MdAccordionItem headline="What happens when my trial ends?">
+          <p>Your workspace becomes read-only. Nothing is deleted for 90 days, and picking any plan restores it instantly.</p>
+        </MdAccordionItem>
+      </MdAccordion>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.pricing { display: grid; gap: 28px; }
+.pricing-head { display: grid; justify-items: center; gap: 12px; text-align: center; }
+.pricing-title { font: var(--md-sys-typescale-headline-small); }
+.pricing-savings { font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant); }
+.pricing-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+md-card.popular { position: relative; --md-card-outline-color: var(--md-sys-color-primary); --md-card-outline-width: 2px; }
+.pop-badge { --md-badge-offset-x: -14px; --md-badge-offset-y: 14px; }
+.plan-name { font: var(--md-sys-typescale-title-medium); }
+.plan-price { font: var(--md-sys-typescale-display-small); }
+.plan-term { font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant); }
+.plan-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.plan-features { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.plan-cta { margin-top: auto; }
+.pricing-faq { display: grid; gap: 12px; }
+.faq-title { font: var(--md-sys-typescale-title-medium); }
+.fine-print { text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
+</style>`}
+  svelte={`<script>
+  import { defineCustomElements } from '@awc-ui/svelte';
+  // Client-only registration — in SvelteKit guard with: if (browser) defineCustomElements(window);
+  if (typeof window !== 'undefined') defineCustomElements(window);
+
+  let annual = false;
+
+  const plans = [
+    { name: 'Starter', monthly: 19, annual: 15, popular: false, variant: 'outlined', cta: 'Start free trial', features: ['10 projects', '3 team members', 'Community support'] },
+    { name: 'Pro · Most popular', monthly: 49, annual: 39, popular: true, variant: 'filled', cta: 'Choose Pro', features: ['Unlimited projects', '25 team members'] },
+    { name: 'Scale', monthly: 99, annual: 79, popular: false, variant: 'outlined', cta: 'Contact sales', features: ['Unlimited everything', '99.95% uptime SLA', 'Dedicated support'] },
+  ];
+
+  $: term = annual ? ' per month, billed annually' : ' per month, billed monthly';
+  $: savings = annual ? 'You are saving 20% with annual billing' : 'Save 20% with annual billing';
+
+  // Single-select mdChange always reports exactly one value in e.detail[0].
+  function onBilling(e) {
+    annual = e.detail[0] === 'annual';
+  }
+</script>
+
+<div class="pricing">
+  <div class="pricing-head">
+    <span class="pricing-title">Plans that grow with your team</span>
+    <md-segmented-button-set aria-label="Billing period" on:mdChange={onBilling}>
+      <md-segmented-button value="monthly" label="Monthly" selected={!annual}></md-segmented-button>
+      <md-segmented-button value="annual" label="Annual" selected={annual}></md-segmented-button>
+    </md-segmented-button-set>
+    <span class="pricing-savings">{savings}</span>
+  </div>
+
+  <div class="pricing-grid">
+    {#each plans as p (p.name)}
+      <md-card variant="outlined" class:popular={p.popular}>
+        {#if p.popular}<md-badge icon="star" class="pop-badge"></md-badge>{/if}
+        <span class="plan-name">{p.name}</span>
+        <div><span class="plan-price">{'$' + (annual ? p.annual : p.monthly)}</span><span class="plan-term">{term}</span></div>
+        {#if p.popular}
+          <div role="group" aria-label="Pro plan highlights" class="plan-chips">
+            <md-chip variant="assist" label="SSO" density="-2"></md-chip>
+            <md-chip variant="assist" label="API access" density="-2"></md-chip>
+            <md-chip variant="assist" label="Priority support" density="-2"></md-chip>
+          </div>
+        {/if}
+        <ul class="plan-features">{#each p.features as f}<li>{f}</li>{/each}</ul>
+        <md-button variant={p.variant} fullWidth={true} class="plan-cta">{p.cta}</md-button>
+      </md-card>
+    {/each}
+  </div>
+
+  <md-table-container variant="outlined">
+    <md-table columnTemplate="1.5fr 1fr 1fr 1fr" label="Plan comparison" striped>
+      <md-table-head>
+        <md-table-row rowgroup="head">
+          <md-table-cell head scope="col">Feature</md-table-cell>
+          <md-table-cell head scope="col" align="center">Starter</md-table-cell>
+          <md-table-cell head scope="col" align="center">Pro</md-table-cell>
+          <md-table-cell head scope="col" align="center">Scale</md-table-cell>
+        </md-table-row>
+      </md-table-head>
+      <md-table-body>
+        <md-table-row value="projects">
+          <md-table-cell head scope="row">Projects</md-table-cell>
+          <md-table-cell align="center">10</md-table-cell>
+          <md-table-cell align="center">Unlimited</md-table-cell>
+          <md-table-cell align="center">Unlimited</md-table-cell>
+        </md-table-row>
+        <md-table-row value="sla">
+          <md-table-cell head scope="row">
+            <md-tooltip text="Measured per calendar month; service credits apply automatically.">
+              <span tabindex="0" class="fine-print">Uptime SLA</span>
+            </md-tooltip>
+          </md-table-cell>
+          <md-table-cell align="center">—</md-table-cell>
+          <md-table-cell align="center">99.9%</md-table-cell>
+          <md-table-cell align="center">99.95%</md-table-cell>
+        </md-table-row>
+      </md-table-body>
+    </md-table>
+  </md-table-container>
+
+  <div class="pricing-faq">
+    <span class="faq-title">Frequently asked questions</span>
+    <md-accordion exclusive heading-level="3" variant="outlined">
+      <md-accordion-item headline="Can I change plans later?">
+        <p>Yes — upgrades apply immediately and are prorated; downgrades take effect at the next renewal.</p>
+      </md-accordion-item>
+      <md-accordion-item headline="What happens when my trial ends?">
+        <p>Your workspace becomes read-only. Nothing is deleted for 90 days, and picking any plan restores it instantly.</p>
+      </md-accordion-item>
+    </md-accordion>
+  </div>
+</div>
+
+<style>
+  .pricing { display: grid; gap: 28px; }
+  .pricing-head { display: grid; justify-items: center; gap: 12px; text-align: center; }
+  .pricing-title { font: var(--md-sys-typescale-headline-small); }
+  .pricing-savings { font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant); }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+  md-card.popular { position: relative; --md-card-outline-color: var(--md-sys-color-primary); --md-card-outline-width: 2px; }
+  .pop-badge { --md-badge-offset-x: -14px; --md-badge-offset-y: 14px; }
+  .plan-name { font: var(--md-sys-typescale-title-medium); }
+  .plan-price { font: var(--md-sys-typescale-display-small); }
+  .plan-term { font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant); }
+  .plan-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .plan-features { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+  .plan-cta { margin-top: auto; }
+  .pricing-faq { display: grid; gap: 12px; }
+  .faq-title { font: var(--md-sys-typescale-title-medium); }
+  .fine-print { text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
+</style>`}
 />
 
 ## How it's built

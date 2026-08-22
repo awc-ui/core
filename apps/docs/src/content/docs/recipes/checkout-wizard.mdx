@@ -224,6 +224,583 @@ before an `md-snackbar` confirms.
       }, 900);
     });
   `}
+  react={`import { useMemo, useState } from 'react';
+import {
+  MdCard, MdCheckbox, MdNumberField, MdRadio, MdSelect, MdSelectOption,
+  MdSnackbar, MdStep, MdStepper, MdTextField,
+} from '@awc-ui/react';
+
+const COUNTRIES = [
+  { code: 'ro', name: 'Romania' }, { code: 'de', name: 'Germany' }, { code: 'fr', name: 'France' },
+];
+const PAY_METHODS = [
+  { value: 'card', label: 'Credit or debit card' },
+  { value: 'bank', label: 'Bank transfer' },
+  { value: 'cod', label: 'Cash on delivery' },
+];
+const SHIP_FIELDS = [
+  { key: 'name', label: 'Full name', errorText: "Enter the recipient's name" },
+  { key: 'street', label: 'Street address', errorText: 'Enter a street and house number' },
+  { key: 'city', label: 'City', errorText: 'Enter a city' },
+  { key: 'postal', label: 'Postal code', errorText: 'Enter a postal code' },
+];
+
+export default function CheckoutWizard() {
+  const [active, setActive] = useState(0);
+  const [ship, setShip] = useState({ name: '', street: '', city: '', postal: '', country: '' });
+  const [shipErrors, setShipErrors] = useState({});
+  const [payMethod, setPayMethod] = useState('card');
+  const [items, setItems] = useState([
+    { name: 'Aria desk lamp', price: 49, qty: 1 },
+    { name: 'Oak monitor stand', price: 89, qty: 1 },
+  ]);
+  const [terms, setTerms] = useState(false);
+  const [termsError, setTermsError] = useState(false);
+  const [stepErrors, setStepErrors] = useState([false, false]);
+  const [loading, setLoading] = useState(false);
+  const [placed, setPlaced] = useState(false);
+
+  const total = useMemo(() => items.reduce((sum, i) => sum + (i.qty || 0) * i.price, 0), [items]);
+  const money = (n) => '€' + n.toFixed(2);
+
+  const setShipField = (key, value) => {
+    setShip((s) => ({ ...s, [key]: value }));
+    if (value.trim()) setShipErrors((e) => ({ ...e, [key]: false })); // recover inline
+  };
+
+  const validateStep = (index) => {
+    if (index === 0) {
+      const errors = {};
+      SHIP_FIELDS.forEach((f) => { errors[f.key] = !ship[f.key].trim(); });
+      errors.country = !ship.country;
+      setShipErrors(errors);
+      return !Object.values(errors).some(Boolean);
+    }
+    if (index === 1) {
+      setTermsError(!terms);
+      return terms;
+    }
+    return true;
+  };
+
+  // Gate every forward move: veto, validate, then commit by setting active.
+  const onBeforeChange = (e) => {
+    e.preventDefault();
+    const { index, previous } = e.detail;
+    if (index <= previous) return setActive(index); // backward is always allowed
+    const ok = validateStep(previous);
+    setStepErrors((errs) => errs.map((v, i) => (i === previous ? !ok : v)));
+    if (ok) setActive(index);
+  };
+
+  const placeOrder = () => {
+    setLoading(true); // disables Continue AND Back — no double submit
+    setTimeout(() => { setLoading(false); setPlaced(true); }, 900);
+  };
+
+  return (
+    <div style={{ maxWidth: 680, marginInline: 'auto' }}>
+      <MdStepper label="Checkout progress" finishLabel="Place order" active={active}
+        loading={loading} onMdBeforeChange={onBeforeChange} onMdComplete={placeOrder}>
+        <MdStep label="Shipping" description="Address and destination" editable
+          error={stepErrors[0]} errorText="Complete the highlighted fields">
+          <div style={{ display: 'grid', gap: 16, paddingBlock: 12 }}>
+            {SHIP_FIELDS.map((f) => (
+              <MdTextField key={f.key} label={f.label} required variant="outlined"
+                errorText={f.errorText} reserveSupportingSpace
+                value={ship[f.key]} error={!!shipErrors[f.key]}
+                onMdInput={(e) => setShipField(f.key, e.detail)} />
+            ))}
+            <MdSelect label="Country" required variant="outlined" reserveSupportingSpace
+              errorText="Select a destination country" value={ship.country}
+              error={!!shipErrors.country} onMdChange={(e) => setShipField('country', e.detail)}>
+              {COUNTRIES.map((c) => (
+                <MdSelectOption key={c.code} value={c.code}>{c.name}</MdSelectOption>
+              ))}
+            </MdSelect>
+          </div>
+        </MdStep>
+        <MdStep label="Payment" description="Method and order" editable
+          error={stepErrors[1]} errorText="Accept the terms of sale to continue">
+          <div style={{ display: 'grid', gap: 20, paddingBlock: 12 }}>
+            <div role="radiogroup" aria-label="Payment method" style={{ display: 'grid', gap: 4 }}>
+              {PAY_METHODS.map((m) => (
+                <label key={m.value} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <MdRadio name="pay-method" value={m.value} checked={payMethod === m.value}
+                    onMdChange={(e) => setPayMethod(e.detail.value)} /> {m.label}
+                </label>
+              ))}
+            </div>
+            <MdCard variant="outlined" style={{ padding: 16, gap: 12 }}>
+              {items.map((item, i) => (
+                <div key={item.name} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ flex: 1 }}>{item.name} — {money(item.price)} each</span>
+                  <MdNumberField label="Qty" value={item.qty} min={1} max={10} step={1}
+                    variant="outlined" density={-2} style={{ width: 140 }}
+                    onMdInput={(e) => setItems((list) => list.map((it, j) =>
+                      (j === i ? { ...it, qty: e.detail.value || 0 } : it)))} />
+                </div>
+              ))}
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <strong>Total</strong><strong>{money(total)}</strong>
+              </div>
+            </MdCard>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+              <MdCheckbox required checked={terms} error={termsError}
+                errorText="You must accept the terms to place an order"
+                onMdChange={(e) => { setTerms(e.detail.checked); if (e.detail.checked) setTermsError(false); }} />
+              <span>I agree to the terms of sale and the 30-day return policy</span>
+            </label>
+          </div>
+        </MdStep>
+        <MdStep label="Review">
+          <div style={{ display: 'grid', gap: 8, paddingBlock: 12 }}>
+            <strong>Review your order</strong>
+            <span>Deliver to: {ship.name}, {ship.street}, {ship.postal} {ship.city},
+              {' '}{(COUNTRIES.find((c) => c.code === ship.country) || {}).name}</span>
+            <span>Payment: {(PAY_METHODS.find((m) => m.value === payMethod) || {}).label}</span>
+            <span>Items: {items.map((i) => (i.qty || 0) + ' × ' + i.name).join(', ')}</span>
+            <strong>Total: {money(total)}</strong>
+          </div>
+        </MdStep>
+      </MdStepper>
+      <MdSnackbar message="Order OD-58412 placed — a confirmation email is on its way"
+        open={placed} onMdClose={() => setPlaced(false)} />
+    </div>
+  );
+}`}
+  angular={`import { Component, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import {
+  BooleanValueAccessor, MdCard, MdCheckbox, MdNumberField, MdRadio, MdSelect,
+  MdSelectOption, MdSnackbar, MdStep, MdStepper, MdTextField,
+  SelectValueAccessor, TextValueAccessor,
+} from '@awc-ui/angular';
+
+@Component({
+  selector: 'app-checkout-wizard',
+  standalone: true,
+  imports: [
+    FormsModule, MdCard, MdCheckbox, MdNumberField, MdRadio, MdSelect, MdSelectOption,
+    MdSnackbar, MdStep, MdStepper, MdTextField,
+    TextValueAccessor, SelectValueAccessor, BooleanValueAccessor,
+  ],
+  // Inline and concatenated to stay single-file here — a real app would use templateUrl.
+  template:
+    '<div style="max-width: 680px; margin-inline: auto;">' +
+    '<md-stepper label="Checkout progress" finish-label="Place order" [active]="active"' +
+    ' [loading]="loading" (mdBeforeChange)="gate($event)" (mdComplete)="placeOrder()">' +
+    '<md-step label="Shipping" description="Address and destination" [editable]="true"' +
+    ' [error]="stepErrors[0]" error-text="Complete the highlighted fields">' +
+    '<div style="display: grid; gap: 16px; padding-block: 12px 4px;">' +
+    '@for (f of shipFields; track f.key) {' +
+    '<md-text-field variant="outlined" [required]="true" [reserveSupportingSpace]="true"' +
+    ' [label]="f.label" [errorText]="f.errorText" [name]="f.key"' +
+    ' [(ngModel)]="ship[f.key]" [error]="shipErrors[f.key]"' +
+    ' (mdInput)="settleShip(f.key, $event.detail)"></md-text-field>' +
+    '}' +
+    '<md-select label="Country" variant="outlined" [required]="true"' +
+    ' [reserveSupportingSpace]="true" error-text="Select a destination country"' +
+    ' [(ngModel)]="ship.country" [error]="shipErrors.country"' +
+    ' (mdChange)="shipErrors.country = false">' +
+    '@for (c of countries; track c.code) {' +
+    '<md-select-option [value]="c.code">{{ c.name }}</md-select-option>' +
+    '}' +
+    '</md-select>' +
+    '</div>' +
+    '</md-step>' +
+    '<md-step label="Payment" description="Method and order" [editable]="true"' +
+    ' [error]="stepErrors[1]" error-text="Accept the terms of sale to continue">' +
+    '<div style="display: grid; gap: 20px; padding-block: 12px 4px;">' +
+    '<div role="radiogroup" aria-label="Payment method" style="display: grid; gap: 4px;">' +
+    '@for (m of payMethods; track m.value) {' +
+    '<label style="display: flex; align-items: center; gap: 10px;">' +
+    '<md-radio name="pay-method" [value]="m.value" [checked]="payMethod === m.value"' +
+    ' (mdChange)="payMethod = m.value"></md-radio> {{ m.label }}</label>' +
+    '}' +
+    '</div>' +
+    '<md-card variant="outlined" style="padding: 16px; gap: 12px;">' +
+    '@for (item of items; track item.name) {' +
+    '<div style="display: flex; align-items: center; gap: 12px;">' +
+    '<span style="flex: 1;">{{ item.name }} — {{ money(item.price) }} each</span>' +
+    '<md-number-field label="Qty" variant="outlined" [density]="-2" style="width: 140px;"' +
+    ' [min]="1" [max]="10" [step]="1" [value]="item.qty"' +
+    ' (mdInput)="item.qty = $event.detail.value || 0"></md-number-field>' +
+    '</div>' +
+    '}' +
+    '<div style="display: flex; justify-content: space-between;">' +
+    '<strong>Total</strong><strong>{{ money(total) }}</strong>' +
+    '</div>' +
+    '</md-card>' +
+    '<label style="display: flex; align-items: flex-start; gap: 10px;">' +
+    '<md-checkbox [required]="true" [(ngModel)]="terms" [error]="termsError"' +
+    ' error-text="You must accept the terms to place an order"' +
+    ' (mdChange)="settleTerms($event.detail.checked)"></md-checkbox>' +
+    '<span>I agree to the terms of sale and the 30-day return policy</span>' +
+    '</label>' +
+    '</div>' +
+    '</md-step>' +
+    '<md-step label="Review">' +
+    '<div style="display: grid; gap: 8px; padding-block: 12px 4px;">' +
+    '<strong>Review your order</strong>' +
+    '<span>Deliver to: {{ ship.name }}, {{ ship.street }}, {{ ship.postal }}' +
+    ' {{ ship.city }}, {{ countryName(ship.country) }}</span>' +
+    '<span>Payment: {{ payLabel(payMethod) }}</span>' +
+    '<span>Items: {{ itemsSummary() }}</span>' +
+    '<strong>Total: {{ money(total) }}</strong>' +
+    '</div>' +
+    '</md-step>' +
+    '</md-stepper>' +
+    '<md-snackbar #snack' +
+    ' message="Order OD-58412 placed — a confirmation email is on its way"></md-snackbar>' +
+    '</div>',
+})
+export class CheckoutWizardComponent {
+  @ViewChild('snack') snack!: MdSnackbar;
+
+  shipFields = [
+    { key: 'name', label: 'Full name', errorText: "Enter the recipient's name" },
+    { key: 'street', label: 'Street address', errorText: 'Enter a street and house number' },
+    { key: 'city', label: 'City', errorText: 'Enter a city' },
+    { key: 'postal', label: 'Postal code', errorText: 'Enter a postal code' },
+  ];
+  countries = [
+    { code: 'ro', name: 'Romania' }, { code: 'de', name: 'Germany' }, { code: 'fr', name: 'France' },
+  ];
+  payMethods = [
+    { value: 'card', label: 'Credit or debit card' },
+    { value: 'bank', label: 'Bank transfer' },
+    { value: 'cod', label: 'Cash on delivery' },
+  ];
+
+  active = 0;
+  loading = false;
+  ship: Record<string, string> = { name: '', street: '', city: '', postal: '', country: '' };
+  shipErrors: Record<string, boolean> = {};
+  payMethod = 'card';
+  items = [
+    { name: 'Aria desk lamp', price: 49, qty: 1 },
+    { name: 'Oak monitor stand', price: 89, qty: 1 },
+  ];
+  terms = false;
+  termsError = false;
+  stepErrors = [false, false];
+
+  get total() { return this.items.reduce((sum, i) => sum + (i.qty || 0) * i.price, 0); }
+  money(n: number) { return '€' + n.toFixed(2); }
+  countryName(code: string) { return (this.countries.find((c) => c.code === code) || { name: '' }).name; }
+  payLabel(value: string) { return (this.payMethods.find((m) => m.value === value) || { label: '' }).label; }
+  itemsSummary() { return this.items.map((i) => (i.qty || 0) + ' × ' + i.name).join(', '); }
+
+  settleShip(key: string, value: string) { if (value.trim()) this.shipErrors[key] = false; } // recover inline
+  settleTerms(checked: boolean) { if (checked) this.termsError = false; }
+
+  // Gate every forward move: veto, validate, then commit by setting active.
+  gate(e: CustomEvent<{ index: number; previous: number }>) {
+    e.preventDefault();
+    const { index, previous } = e.detail;
+    if (index <= previous) { this.active = index; return; } // backward is always allowed
+    const ok = previous === 0 ? this.validateShipping() : previous === 1 ? this.validateTerms() : true;
+    this.stepErrors[previous] = !ok;
+    if (ok) this.active = index;
+  }
+
+  validateShipping() {
+    for (const f of this.shipFields) this.shipErrors[f.key] = !this.ship[f.key].trim();
+    this.shipErrors['country'] = !this.ship['country'];
+    return !Object.values(this.shipErrors).some(Boolean);
+  }
+  validateTerms() { this.termsError = !this.terms; return this.terms; }
+
+  placeOrder() {
+    this.loading = true; // disables Continue AND Back — no double submit
+    setTimeout(() => { this.loading = false; this.snack.show(); }, 900);
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, reactive, ref } from 'vue';
+import {
+  MdCard, MdCheckbox, MdNumberField, MdRadio, MdSelect, MdSelectOption,
+  MdSnackbar, MdStep, MdStepper, MdTextField,
+} from '@awc-ui/vue';
+
+const shipFields = [
+  { key: 'name', label: 'Full name', errorText: "Enter the recipient's name" },
+  { key: 'street', label: 'Street address', errorText: 'Enter a street and house number' },
+  { key: 'city', label: 'City', errorText: 'Enter a city' },
+  { key: 'postal', label: 'Postal code', errorText: 'Enter a postal code' },
+];
+const countries = [
+  { code: 'ro', name: 'Romania' }, { code: 'de', name: 'Germany' }, { code: 'fr', name: 'France' },
+];
+const payMethods = [
+  { value: 'card', label: 'Credit or debit card' },
+  { value: 'bank', label: 'Bank transfer' },
+  { value: 'cod', label: 'Cash on delivery' },
+];
+
+const active = ref(0);
+const loading = ref(false);
+const placed = ref(false);
+const ship = reactive<Record<string, string>>({ name: '', street: '', city: '', postal: '', country: '' });
+const shipErrors = reactive<Record<string, boolean>>({});
+const payMethod = ref('card');
+const items = reactive([
+  { name: 'Aria desk lamp', price: 49, qty: 1 },
+  { name: 'Oak monitor stand', price: 89, qty: 1 },
+]);
+const terms = ref(false);
+const termsError = ref(false);
+const stepErrors = reactive([false, false]);
+
+const total = computed(() => items.reduce((sum, i) => sum + (i.qty || 0) * i.price, 0));
+const money = (n: number) => '€' + n.toFixed(2);
+const countryName = computed(() => (countries.find((c) => c.code === ship.country) || { name: '' }).name);
+const payLabel = computed(() => (payMethods.find((m) => m.value === payMethod.value) || { label: '' }).label);
+const itemsSummary = computed(() => items.map((i) => (i.qty || 0) + ' × ' + i.name).join(', '));
+
+function setShipField(key: string, value: string) {
+  ship[key] = value;
+  if (value.trim()) shipErrors[key] = false; // recover inline
+}
+
+function validateStep(index: number) {
+  if (index === 0) {
+    for (const f of shipFields) shipErrors[f.key] = !ship[f.key].trim();
+    shipErrors.country = !ship.country;
+    return !Object.values(shipErrors).some(Boolean);
+  }
+  if (index === 1) {
+    termsError.value = !terms.value;
+    return terms.value;
+  }
+  return true;
+}
+
+// Gate every forward move: veto, validate, then commit by setting active.
+function gate(e: CustomEvent<{ index: number; previous: number }>) {
+  e.preventDefault();
+  const { index, previous } = e.detail;
+  if (index <= previous) { active.value = index; return; } // backward is always allowed
+  const ok = validateStep(previous);
+  stepErrors[previous] = !ok;
+  if (ok) active.value = index;
+}
+
+function onTerms(checked: boolean) {
+  terms.value = checked;
+  if (checked) termsError.value = false;
+}
+
+function placeOrder() {
+  loading.value = true; // disables Continue AND Back — no double submit
+  setTimeout(() => { loading.value = false; placed.value = true; }, 900);
+}
+</script>
+
+<template>
+  <div style="max-width: 680px; margin-inline: auto;">
+    <MdStepper label="Checkout progress" finish-label="Place order" :active="active"
+      :loading="loading" @md-before-change="gate" @md-complete="placeOrder">
+      <MdStep label="Shipping" description="Address and destination" :editable="true"
+        :error="stepErrors[0]" error-text="Complete the highlighted fields">
+        <div style="display: grid; gap: 16px; padding-block: 12px 4px;">
+          <MdTextField v-for="f in shipFields" :key="f.key" variant="outlined" :required="true"
+            :reserve-supporting-space="true" :label="f.label" :error-text="f.errorText"
+            :value="ship[f.key]" :error="shipErrors[f.key]"
+            @md-input="setShipField(f.key, $event.detail)" />
+          <MdSelect label="Country" variant="outlined" :required="true" :reserve-supporting-space="true"
+            error-text="Select a destination country" :value="ship.country" :error="shipErrors.country"
+            @md-change="setShipField('country', $event.detail)">
+            <MdSelectOption v-for="c in countries" :key="c.code" :value="c.code">{{ c.name }}</MdSelectOption>
+          </MdSelect>
+        </div>
+      </MdStep>
+      <MdStep label="Payment" description="Method and order" :editable="true"
+        :error="stepErrors[1]" error-text="Accept the terms of sale to continue">
+        <div style="display: grid; gap: 20px; padding-block: 12px 4px;">
+          <div role="radiogroup" aria-label="Payment method" style="display: grid; gap: 4px;">
+            <label v-for="m in payMethods" :key="m.value"
+              style="display: flex; align-items: center; gap: 10px;">
+              <MdRadio name="pay-method" :value="m.value" :checked="payMethod === m.value"
+                @md-change="payMethod = m.value" /> {{ m.label }}
+            </label>
+          </div>
+          <MdCard variant="outlined" style="padding: 16px; gap: 12px;">
+            <div v-for="item in items" :key="item.name"
+              style="display: flex; align-items: center; gap: 12px;">
+              <span style="flex: 1;">{{ item.name }} — {{ money(item.price) }} each</span>
+              <MdNumberField label="Qty" variant="outlined" :density="-2" style="width: 140px;"
+                :min="1" :max="10" :step="1" :value="item.qty"
+                @md-input="item.qty = $event.detail.value || 0" />
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <strong>Total</strong><strong>{{ money(total) }}</strong>
+            </div>
+          </MdCard>
+          <label style="display: flex; align-items: flex-start; gap: 10px;">
+            <MdCheckbox :required="true" :checked="terms" :error="termsError"
+              error-text="You must accept the terms to place an order"
+              @md-change="onTerms($event.detail.checked)" />
+            <span>I agree to the terms of sale and the 30-day return policy</span>
+          </label>
+        </div>
+      </MdStep>
+      <MdStep label="Review">
+        <div style="display: grid; gap: 8px; padding-block: 12px 4px;">
+          <strong>Review your order</strong>
+          <span>Deliver to: {{ ship.name }}, {{ ship.street }}, {{ ship.postal }} {{ ship.city }}, {{ countryName }}</span>
+          <span>Payment: {{ payLabel }}</span>
+          <span>Items: {{ itemsSummary }}</span>
+          <strong>Total: {{ money(total) }}</strong>
+        </div>
+      </MdStep>
+    </MdStepper>
+    <MdSnackbar message="Order OD-58412 placed — a confirmation email is on its way"
+      :open="placed" @md-close="placed = false" />
+  </div>
+</template>`}
+  svelte={`<script>
+  // Svelte uses the raw md-* elements — register them once on the client.
+  // (SvelteKit: import { browser } from '$app/environment' and guard with it.)
+  import { defineCustomElements } from '@awc-ui/svelte';
+  if (typeof window !== 'undefined') defineCustomElements(window);
+
+  const shipFields = [
+    { key: 'name', label: 'Full name', errorText: "Enter the recipient's name" },
+    { key: 'street', label: 'Street address', errorText: 'Enter a street and house number' },
+    { key: 'city', label: 'City', errorText: 'Enter a city' },
+    { key: 'postal', label: 'Postal code', errorText: 'Enter a postal code' },
+  ];
+  const countries = [
+    { code: 'ro', name: 'Romania' }, { code: 'de', name: 'Germany' }, { code: 'fr', name: 'France' },
+  ];
+  const payMethods = [
+    { value: 'card', label: 'Credit or debit card' },
+    { value: 'bank', label: 'Bank transfer' },
+    { value: 'cod', label: 'Cash on delivery' },
+  ];
+
+  let active = 0;
+  let loading = false;
+  let placed = false;
+  let ship = { name: '', street: '', city: '', postal: '', country: '' };
+  let shipErrors = {};
+  let payMethod = 'card';
+  let items = [
+    { name: 'Aria desk lamp', price: 49, qty: 1 },
+    { name: 'Oak monitor stand', price: 89, qty: 1 },
+  ];
+  let terms = false;
+  let termsError = false;
+  let stepErrors = [false, false];
+
+  $: total = items.reduce((sum, i) => sum + (i.qty || 0) * i.price, 0);
+
+  function money(n) { return '€' + n.toFixed(2); }
+  function countryName(code) { return (countries.find((c) => c.code === code) || { name: '' }).name; }
+  function payLabel(value) { return (payMethods.find((m) => m.value === value) || { label: '' }).label; }
+
+  function setShipField(key, value) {
+    ship[key] = value;
+    if (value.trim()) shipErrors[key] = false; // recover inline
+  }
+
+  function validateStep(index) {
+    if (index === 0) {
+      for (const f of shipFields) shipErrors[f.key] = !ship[f.key].trim();
+      shipErrors.country = !ship.country;
+      return !Object.values(shipErrors).some(Boolean);
+    }
+    if (index === 1) {
+      termsError = !terms;
+      return terms;
+    }
+    return true;
+  }
+
+  // Gate every forward move: veto, validate, then commit by setting active.
+  function gate(e) {
+    e.preventDefault();
+    const { index, previous } = e.detail;
+    if (index <= previous) { active = index; return; } // backward is always allowed
+    const ok = validateStep(previous);
+    stepErrors[previous] = !ok;
+    if (ok) active = index;
+  }
+
+  function placeOrder() {
+    loading = true; // disables Continue AND Back — no double submit
+    setTimeout(() => { loading = false; placed = true; }, 900);
+  }
+</script>
+
+<div style="max-width: 680px; margin-inline: auto;">
+  <md-stepper label="Checkout progress" finish-label="Place order" {active} {loading}
+    on:mdBeforeChange={gate} on:mdComplete={placeOrder}>
+    <md-step label="Shipping" description="Address and destination" editable
+      error={stepErrors[0]} error-text="Complete the highlighted fields">
+      <div style="display: grid; gap: 16px; padding-block: 12px 4px;">
+        {#each shipFields as f (f.key)}
+          <md-text-field variant="outlined" required reserve-supporting-space
+            label={f.label} error-text={f.errorText} value={ship[f.key]} error={shipErrors[f.key]}
+            on:mdInput={(e) => setShipField(f.key, e.detail)}></md-text-field>
+        {/each}
+        <md-select label="Country" variant="outlined" required reserve-supporting-space
+          error-text="Select a destination country" value={ship.country} error={shipErrors.country}
+          on:mdChange={(e) => setShipField('country', e.detail)}>
+          {#each countries as c (c.code)}
+            <md-select-option value={c.code}>{c.name}</md-select-option>
+          {/each}
+        </md-select>
+      </div>
+    </md-step>
+    <md-step label="Payment" description="Method and order" editable
+      error={stepErrors[1]} error-text="Accept the terms of sale to continue">
+      <div style="display: grid; gap: 20px; padding-block: 12px 4px;">
+        <div role="radiogroup" aria-label="Payment method" style="display: grid; gap: 4px;">
+          {#each payMethods as m (m.value)}
+            <label style="display: flex; align-items: center; gap: 10px;">
+              <md-radio name="pay-method" value={m.value} checked={payMethod === m.value}
+                on:mdChange={() => (payMethod = m.value)}></md-radio>
+              {m.label}
+            </label>
+          {/each}
+        </div>
+        <md-card variant="outlined" style="padding: 16px; gap: 12px;">
+          {#each items as item, i (item.name)}
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="flex: 1;">{item.name} — {money(item.price)} each</span>
+              <md-number-field label="Qty" variant="outlined" density="-2" style="width: 140px;"
+                min="1" max="10" step="1" value={item.qty}
+                on:mdInput={(e) => (items[i].qty = e.detail.value || 0)}></md-number-field>
+            </div>
+          {/each}
+          <div style="display: flex; justify-content: space-between;">
+            <strong>Total</strong><strong>{money(total)}</strong>
+          </div>
+        </md-card>
+        <label style="display: flex; align-items: flex-start; gap: 10px;">
+          <md-checkbox required checked={terms} error={termsError}
+            error-text="You must accept the terms to place an order"
+            on:mdChange={(e) => { terms = e.detail.checked; if (terms) termsError = false; }}></md-checkbox>
+          <span>I agree to the terms of sale and the 30-day return policy</span>
+        </label>
+      </div>
+    </md-step>
+    <md-step label="Review">
+      <div style="display: grid; gap: 8px; padding-block: 12px 4px;">
+        <strong>Review your order</strong>
+        <span>Deliver to: {ship.name}, {ship.street}, {ship.postal} {ship.city}, {countryName(ship.country)}</span>
+        <span>Payment: {payLabel(payMethod)}</span>
+        <span>Items: {items.map((i) => (i.qty || 0) + ' × ' + i.name).join(', ')}</span>
+        <strong>Total: {money(total)}</strong>
+      </div>
+    </md-step>
+  </md-stepper>
+  <md-snackbar message="Order OD-58412 placed — a confirmation email is on its way"
+    open={placed} on:mdClose={() => (placed = false)}></md-snackbar>
+</div>`}
 />
 
 ## How it's built

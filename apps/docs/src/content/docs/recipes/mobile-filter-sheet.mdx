@@ -287,6 +287,543 @@ undoing one filter never means reopening the sheet.
       applyFilters();
     });
   `}
+  react={`import { useMemo, useState } from 'react';
+import {
+  MdBottomSheet, MdButton, MdCard, MdChip, MdMultiSelect,
+  MdSegmentedButton, MdSegmentedButtonSet, MdSelectOption, MdSlider,
+} from '@awc-ui/react';
+
+const PRODUCTS = [
+  { brand: 'Nike', name: 'Pegasus 41', price: 130, sizes: ['41', '42', '43'] },
+  { brand: 'Adidas', name: 'Ultraboost Light', price: 180, sizes: ['42', '43', '44'] },
+  { brand: 'New Balance', name: 'Fresh Foam X 1080', price: 165, sizes: ['40', '42', '44'] },
+  { brand: 'Hoka', name: 'Clifton 9', price: 145, sizes: ['40', '41', '44'] },
+  { brand: 'Asics', name: 'Gel-Nimbus 26', price: 160, sizes: ['42', '43'] },
+  { brand: 'Brooks', name: 'Ghost 16', price: 140, sizes: ['40', '41', '42', '43'] },
+];
+const BRANDS = PRODUCTS.map((p) => p.brand);
+const SIZES = ['40', '41', '42', '43', '44'];
+const DEFAULTS = { brands: [] as string[], min: 100, max: 200, sizes: [] as string[], sort: 'featured' };
+type Filters = typeof DEFAULTS;
+
+const matches = (p: (typeof PRODUCTS)[number], f: Filters) =>
+  (!f.brands.length || f.brands.includes(p.brand)) &&
+  p.price >= f.min && p.price <= f.max &&
+  (!f.sizes.length || f.sizes.some((s) => p.sizes.includes(s)));
+
+export default function MobileFilterSheet() {
+  const [open, setOpen] = useState(false);
+  const [pending, setPending] = useState<Filters>(DEFAULTS);
+  const [applied, setApplied] = useState<Filters>(DEFAULTS);
+
+  const pendingCount = PRODUCTS.filter((p) => matches(p, pending)).length;
+  const visible = useMemo(() => {
+    const list = PRODUCTS.filter((p) => matches(p, applied));
+    if (applied.sort === 'price') list.sort((a, b) => a.price - b.price);
+    if (applied.sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
+    return list;
+  }, [applied]);
+  const chips = [
+    ...applied.brands.map((b) => ({ kind: 'brand', label: b, value: b })),
+    ...(applied.min > 100 || applied.max < 200
+      ? [{ kind: 'price', label: '$' + applied.min + ' – $' + applied.max, value: '' }] : []),
+    ...applied.sizes.map((s) => ({ kind: 'size', label: 'EU ' + s, value: s })),
+  ];
+
+  const removeChip = (c: { kind: string; value: string }) => setApplied((f) =>
+    c.kind === 'brand' ? { ...f, brands: f.brands.filter((b) => b !== c.value) }
+    : c.kind === 'size' ? { ...f, sizes: f.sizes.filter((s) => s !== c.value) }
+    : { ...f, min: 100, max: 200 });
+
+  return (
+    <div style={{ display: 'grid', gap: 16, maxWidth: 720, marginInline: 'auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ display: 'grid', gap: 2 }}>
+          <span>Running shoes</span>
+          <span>{visible.length} of {PRODUCTS.length} products</span>
+        </div>
+        <MdButton variant="tonal" icon="tune" onMdClick={() => { setPending(applied); setOpen(true); }}>
+          {chips.length ? 'Filters (' + chips.length + ')' : 'Filters'}
+        </MdButton>
+      </div>
+      {chips.length > 0 && (
+        <div aria-label="Applied filters" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {chips.map((c) => (
+            <MdChip key={c.kind + c.value} variant="input" selectable={false} removable label={c.label}
+              onMdRemove={(e) => { e.preventDefault(); removeChip(c); }} />
+          ))}
+        </div>
+      )}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16 }}>
+        {visible.map((p) => (
+          <MdCard key={p.name} variant="outlined">
+            <div style={{ display: 'grid', gap: 2, padding: 12 }}>
+              <span>{p.brand}</span>
+              <span>{p.name}</span>
+              <span>{'$' + p.price}</span>
+            </div>
+          </MdCard>
+        ))}
+      </div>
+      <MdBottomSheet headline="Filter products" closeable topDivider bottomDivider
+        open={open} onMdClose={() => setOpen(false)}>
+        <div style={{ display: 'grid', gap: 24, paddingBlock: '8px 16px' }}>
+          <MdMultiSelect label="Brand" placeholder="All brands" clearable value={pending.brands}
+            onMdChange={(e) => setPending({ ...pending, brands: e.detail })}>
+            {BRANDS.map((b) => <MdSelectOption key={b} value={b}>{b}</MdSelectOption>)}
+          </MdMultiSelect>
+          <div style={{ display: 'grid', gap: 4 }}>
+            <span>Price</span>
+            <MdSlider range min={100} max={200} step={5} valueIndicator
+              valueStart={pending.min} valueEnd={pending.max}
+              ariaLabelStart="Minimum price" ariaLabelEnd="Maximum price"
+              onMdInput={(e) => setPending({ ...pending, min: e.detail.valueStart ?? 100, max: e.detail.valueEnd ?? 200 })} />
+            <span>{'$' + pending.min + ' – $' + pending.max}</span>
+          </div>
+          <div style={{ display: 'grid', gap: 8 }}>
+            <span>Size (EU)</span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {SIZES.map((s) => (
+                <MdChip key={s} variant="filter" label={'EU ' + s} selected={pending.sizes.includes(s)}
+                  onMdSelect={(e) => setPending({ ...pending,
+                    sizes: e.detail.selected ? [...pending.sizes, s] : pending.sizes.filter((x) => x !== s) })} />
+              ))}
+            </div>
+          </div>
+          <div style={{ display: 'grid', gap: 8 }}>
+            <span>Sort by</span>
+            <MdSegmentedButtonSet aria-label="Sort by"
+              onMdChange={(e) => setPending({ ...pending, sort: e.detail[0] || 'featured' })}>
+              <MdSegmentedButton value="featured" label="Featured" selected={pending.sort === 'featured'} />
+              <MdSegmentedButton value="price" label="Price" selected={pending.sort === 'price'} />
+              <MdSegmentedButton value="name" label="Name" selected={pending.sort === 'name'} />
+            </MdSegmentedButtonSet>
+          </div>
+        </div>
+        <MdButton slot="actions" variant="text" onMdClick={() => setPending({ ...DEFAULTS })}>Reset</MdButton>
+        <MdButton slot="actions" variant="filled" onMdClick={() => { setApplied(pending); setOpen(false); }}>
+          {'Show ' + pendingCount + (pendingCount === 1 ? ' result' : ' results')}
+        </MdButton>
+      </MdBottomSheet>
+    </div>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+import {
+  MdBottomSheet, MdButton, MdCard, MdChip, MdMultiSelect,
+  MdSegmentedButton, MdSegmentedButtonSet, MdSelectOption, MdSlider,
+} from '@awc-ui/angular';
+
+interface Product { brand: string; name: string; price: number; sizes: string[]; }
+interface Filters { brands: string[]; min: number; max: number; sizes: string[]; sort: string; }
+const fresh = (): Filters => ({ brands: [], min: 100, max: 200, sizes: [], sort: 'featured' });
+
+@Component({
+  selector: 'app-mobile-filter-sheet',
+  standalone: true,
+  imports: [
+    MdBottomSheet, MdButton, MdCard, MdChip, MdMultiSelect,
+    MdSegmentedButton, MdSegmentedButtonSet, MdSelectOption, MdSlider,
+  ],
+  template:
+    '<div class="shop">' +
+    '<div class="head"><div class="titles"><span>Running shoes</span>' +
+    '<span>{{ visible.length }} of {{ products.length }} products</span></div>' +
+    '<md-button variant="tonal" icon="tune" (mdClick)="openSheet()">{{ filtersLabel }}</md-button></div>' +
+    '@if (chips.length) {<div class="applied" aria-label="Applied filters">' +
+    '@for (c of chips; track c.kind + c.value) {' +
+    '<md-chip variant="input" [selectable]="false" removable [label]="c.label" (mdRemove)="removeChip(c, $event)"></md-chip>' +
+    '}</div>}' +
+    '<div class="grid">' +
+    '@for (p of visible; track p.name) {' +
+    '<md-card variant="outlined"><div class="body">' +
+    '<span>{{ p.brand }}</span><span>{{ p.name }}</span><span>{{ "$" + p.price }}</span>' +
+    '</div></md-card>}' +
+    '</div>' +
+    '<md-bottom-sheet headline="Filter products" closeable top-divider bottom-divider [open]="sheetOpen" (mdClose)="sheetOpen = false">' +
+    '<div class="controls">' +
+    '<md-multi-select label="Brand" placeholder="All brands" clearable [value]="pending.brands" (mdChange)="onBrands($event)">' +
+    '@for (b of brands; track b) {<md-select-option [value]="b">{{ b }}</md-select-option>}' +
+    '</md-multi-select>' +
+    '<div class="field"><span>Price</span>' +
+    '<md-slider range min="100" max="200" step="5" value-indicator label-start="Minimum price" label-end="Maximum price" ' +
+    '[valueStart]="pending.min" [valueEnd]="pending.max" (mdInput)="onPrice($event)"></md-slider>' +
+    '<span>{{ priceReadout }}</span></div>' +
+    '<div class="field"><span>Size (EU)</span><div class="chips">' +
+    '@for (s of sizes; track s) {' +
+    '<md-chip variant="filter" [label]="sizeLabel(s)" [selected]="pending.sizes.includes(s)" (mdSelect)="toggleSize(s, $event)"></md-chip>' +
+    '}</div></div>' +
+    '<div class="field"><span>Sort by</span>' +
+    '<md-segmented-button-set aria-label="Sort by" (mdChange)="onSort($event)">' +
+    '<md-segmented-button value="featured" label="Featured" [selected]="sortFeatured"></md-segmented-button>' +
+    '<md-segmented-button value="price" label="Price" [selected]="sortPrice"></md-segmented-button>' +
+    '<md-segmented-button value="name" label="Name" [selected]="sortName"></md-segmented-button>' +
+    '</md-segmented-button-set></div>' +
+    '</div>' +
+    '<md-button slot="actions" variant="text" (mdClick)="resetPending()">Reset</md-button>' +
+    '<md-button slot="actions" variant="filled" (mdClick)="apply()">{{ applyLabel }}</md-button>' +
+    '</md-bottom-sheet></div>',
+  styles: [
+    '.shop { display: grid; gap: 16px; max-width: 720px; margin-inline: auto; }' +
+    ' .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }' +
+    ' .titles { display: grid; gap: 2px; }' +
+    ' .applied, .chips { display: flex; flex-wrap: wrap; gap: 8px; }' +
+    ' .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }' +
+    ' .body { display: grid; gap: 2px; padding: 12px; }' +
+    ' .controls { display: grid; gap: 24px; padding-block: 8px 16px; }' +
+    ' .field { display: grid; gap: 8px; }',
+  ],
+})
+export class MobileFilterSheetComponent {
+  readonly products: Product[] = [
+    { brand: 'Nike', name: 'Pegasus 41', price: 130, sizes: ['41', '42', '43'] },
+    { brand: 'Adidas', name: 'Ultraboost Light', price: 180, sizes: ['42', '43', '44'] },
+    { brand: 'New Balance', name: 'Fresh Foam X 1080', price: 165, sizes: ['40', '42', '44'] },
+    { brand: 'Hoka', name: 'Clifton 9', price: 145, sizes: ['40', '41', '44'] },
+    { brand: 'Asics', name: 'Gel-Nimbus 26', price: 160, sizes: ['42', '43'] },
+    { brand: 'Brooks', name: 'Ghost 16', price: 140, sizes: ['40', '41', '42', '43'] },
+  ];
+  readonly brands = this.products.map((p) => p.brand);
+  readonly sizes = ['40', '41', '42', '43', '44'];
+  sheetOpen = false;
+  pending = fresh();
+  applied = fresh();
+
+  private matches(p: Product, f: Filters) {
+    return (!f.brands.length || f.brands.includes(p.brand)) &&
+      p.price >= f.min && p.price <= f.max &&
+      (!f.sizes.length || f.sizes.some((s) => p.sizes.includes(s)));
+  }
+
+  get visible() {
+    const list = this.products.filter((p) => this.matches(p, this.applied));
+    if (this.applied.sort === 'price') list.sort((a, b) => a.price - b.price);
+    if (this.applied.sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
+    return list;
+  }
+  get pendingCount() { return this.products.filter((p) => this.matches(p, this.pending)).length; }
+  get chips() {
+    const f = this.applied;
+    const out = f.brands.map((b) => ({ kind: 'brand', label: b, value: b }));
+    if (f.min > 100 || f.max < 200) out.push({ kind: 'price', label: '$' + f.min + ' – $' + f.max, value: '' });
+    f.sizes.forEach((s) => out.push({ kind: 'size', label: 'EU ' + s, value: s }));
+    return out;
+  }
+  get filtersLabel() { return this.chips.length ? 'Filters (' + this.chips.length + ')' : 'Filters'; }
+  get priceReadout() { return '$' + this.pending.min + ' – $' + this.pending.max; }
+  get applyLabel() { return 'Show ' + this.pendingCount + (this.pendingCount === 1 ? ' result' : ' results'); }
+  get sortFeatured() { return this.pending.sort === 'featured'; }
+  get sortPrice() { return this.pending.sort === 'price'; }
+  get sortName() { return this.pending.sort === 'name'; }
+
+  sizeLabel(s: string) { return 'EU ' + s; }
+  openSheet() {
+    this.pending = { ...this.applied, brands: [...this.applied.brands], sizes: [...this.applied.sizes] };
+    this.sheetOpen = true;
+  }
+  resetPending() { this.pending = fresh(); }
+  apply() { this.applied = this.pending; this.sheetOpen = false; }
+  onBrands(e: CustomEvent<string[]>) { this.pending.brands = e.detail; }
+  onSort(e: CustomEvent<string[]>) { this.pending.sort = e.detail[0] || 'featured'; }
+  onPrice(e: CustomEvent<{ value: number; valueStart?: number; valueEnd?: number }>) {
+    this.pending.min = e.detail.valueStart ?? 100;
+    this.pending.max = e.detail.valueEnd ?? 200;
+  }
+  toggleSize(s: string, e: CustomEvent<{ selected: boolean }>) {
+    this.pending.sizes = e.detail.selected
+      ? [...this.pending.sizes, s]
+      : this.pending.sizes.filter((x) => x !== s);
+  }
+  removeChip(c: { kind: string; value: string }, e: Event) {
+    e.preventDefault();
+    const f = this.applied;
+    if (c.kind === 'brand') this.applied = { ...f, brands: f.brands.filter((b) => b !== c.value) };
+    else if (c.kind === 'size') this.applied = { ...f, sizes: f.sizes.filter((s) => s !== c.value) };
+    else this.applied = { ...f, min: 100, max: 200 };
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  MdBottomSheet, MdButton, MdCard, MdChip, MdMultiSelect,
+  MdSegmentedButton, MdSegmentedButtonSet, MdSelectOption, MdSlider,
+} from '@awc-ui/vue';
+
+interface Filters { brands: string[]; min: number; max: number; sizes: string[]; sort: string; }
+const products = [
+  { brand: 'Nike', name: 'Pegasus 41', price: 130, sizes: ['41', '42', '43'] },
+  { brand: 'Adidas', name: 'Ultraboost Light', price: 180, sizes: ['42', '43', '44'] },
+  { brand: 'New Balance', name: 'Fresh Foam X 1080', price: 165, sizes: ['40', '42', '44'] },
+  { brand: 'Hoka', name: 'Clifton 9', price: 145, sizes: ['40', '41', '44'] },
+  { brand: 'Asics', name: 'Gel-Nimbus 26', price: 160, sizes: ['42', '43'] },
+  { brand: 'Brooks', name: 'Ghost 16', price: 140, sizes: ['40', '41', '42', '43'] },
+];
+const brands = products.map((p) => p.brand);
+const sizes = ['40', '41', '42', '43', '44'];
+const fresh = (): Filters => ({ brands: [], min: 100, max: 200, sizes: [], sort: 'featured' });
+
+const open = ref(false);
+const pending = ref(fresh());
+const applied = ref(fresh());
+
+function matches(p: (typeof products)[number], f: Filters) {
+  return (!f.brands.length || f.brands.includes(p.brand)) &&
+    p.price >= f.min && p.price <= f.max &&
+    (!f.sizes.length || f.sizes.some((s) => p.sizes.includes(s)));
+}
+
+const visible = computed(() => {
+  const list = products.filter((p) => matches(p, applied.value));
+  if (applied.value.sort === 'price') list.sort((a, b) => a.price - b.price);
+  if (applied.value.sort === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
+  return list;
+});
+const pendingCount = computed(() => products.filter((p) => matches(p, pending.value)).length);
+const chips = computed(() => {
+  const f = applied.value;
+  const out = f.brands.map((b) => ({ kind: 'brand', label: b, value: b }));
+  if (f.min > 100 || f.max < 200) out.push({ kind: 'price', label: '$' + f.min + ' – $' + f.max, value: '' });
+  f.sizes.forEach((s) => out.push({ kind: 'size', label: 'EU ' + s, value: s }));
+  return out;
+});
+const filtersLabel = computed(() => (chips.value.length ? 'Filters (' + chips.value.length + ')' : 'Filters'));
+const applyLabel = computed(() => 'Show ' + pendingCount.value + (pendingCount.value === 1 ? ' result' : ' results'));
+const priceReadout = computed(() => '$' + pending.value.min + ' – $' + pending.value.max);
+
+function openSheet() {
+  pending.value = { ...applied.value, brands: [...applied.value.brands], sizes: [...applied.value.sizes] };
+  open.value = true;
+}
+function onPrice(e: CustomEvent<{ value: number; valueStart?: number; valueEnd?: number }>) {
+  pending.value.min = e.detail.valueStart ?? 100;
+  pending.value.max = e.detail.valueEnd ?? 200;
+}
+function toggleSize(s: string, e: CustomEvent<{ selected: boolean }>) {
+  pending.value.sizes = e.detail.selected
+    ? [...pending.value.sizes, s]
+    : pending.value.sizes.filter((x) => x !== s);
+}
+function removeChip(c: { kind: string; value: string }, e: Event) {
+  e.preventDefault();
+  const f = applied.value;
+  if (c.kind === 'brand') applied.value = { ...f, brands: f.brands.filter((b) => b !== c.value) };
+  else if (c.kind === 'size') applied.value = { ...f, sizes: f.sizes.filter((s) => s !== c.value) };
+  else applied.value = { ...f, min: 100, max: 200 };
+}
+function apply() {
+  applied.value = pending.value;
+  open.value = false;
+}
+</script>
+
+<template>
+  <div class="shop">
+    <div class="head">
+      <div class="titles">
+        <span>Running shoes</span>
+        <span>{{ visible.length }} of {{ products.length }} products</span>
+      </div>
+      <MdButton variant="tonal" icon="tune" @md-click="openSheet">{{ filtersLabel }}</MdButton>
+    </div>
+    <div v-if="chips.length" class="applied" aria-label="Applied filters">
+      <MdChip v-for="c in chips" :key="c.kind + c.value" variant="input" :selectable="false" removable
+        :label="c.label" @md-remove="removeChip(c, $event)" />
+    </div>
+    <div class="grid">
+      <MdCard v-for="p in visible" :key="p.name" variant="outlined">
+        <div class="body">
+          <span>{{ p.brand }}</span><span>{{ p.name }}</span><span>{{ '$' + p.price }}</span>
+        </div>
+      </MdCard>
+    </div>
+    <MdBottomSheet headline="Filter products" closeable top-divider bottom-divider
+      :open="open" @md-close="open = false">
+      <div class="controls">
+        <MdMultiSelect label="Brand" placeholder="All brands" clearable :value="pending.brands"
+          @md-change="pending.brands = $event.detail">
+          <MdSelectOption v-for="b in brands" :key="b" :value="b">{{ b }}</MdSelectOption>
+        </MdMultiSelect>
+        <div class="field">
+          <span>Price</span>
+          <MdSlider range :min="100" :max="200" :step="5" value-indicator
+            aria-label-start="Minimum price" aria-label-end="Maximum price"
+            :value-start="pending.min" :value-end="pending.max" @md-input="onPrice" />
+          <span>{{ priceReadout }}</span>
+        </div>
+        <div class="field">
+          <span>Size (EU)</span>
+          <div class="chips">
+            <MdChip v-for="s in sizes" :key="s" variant="filter" :label="'EU ' + s"
+              :selected="pending.sizes.includes(s)" @md-select="toggleSize(s, $event)" />
+          </div>
+        </div>
+        <div class="field">
+          <span>Sort by</span>
+          <MdSegmentedButtonSet aria-label="Sort by" @md-change="pending.sort = $event.detail[0] || 'featured'">
+            <MdSegmentedButton value="featured" label="Featured" :selected="pending.sort === 'featured'" />
+            <MdSegmentedButton value="price" label="Price" :selected="pending.sort === 'price'" />
+            <MdSegmentedButton value="name" label="Name" :selected="pending.sort === 'name'" />
+          </MdSegmentedButtonSet>
+        </div>
+      </div>
+      <MdButton slot="actions" variant="text" @md-click="pending = fresh()">Reset</MdButton>
+      <MdButton slot="actions" variant="filled" @md-click="apply">{{ applyLabel }}</MdButton>
+    </MdBottomSheet>
+  </div>
+</template>
+
+<style scoped>
+.shop { display: grid; gap: 16px; max-width: 720px; margin-inline: auto; }
+.head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.titles { display: grid; gap: 2px; }
+.applied, .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+.body { display: grid; gap: 2px; padding: 12px; }
+.controls { display: grid; gap: 24px; padding-block: 8px 16px; }
+.field { display: grid; gap: 8px; }
+</style>`}
+  svelte={`<script>
+  // Registers every md-* element once on the client.
+  // In SvelteKit, run this behind an if (browser) guard from '$app/environment'.
+  import { defineCustomElements } from '@awc-ui/svelte';
+  if (typeof window !== 'undefined') defineCustomElements(window);
+
+  const products = [
+    { brand: 'Nike', name: 'Pegasus 41', price: 130, sizes: ['41', '42', '43'] },
+    { brand: 'Adidas', name: 'Ultraboost Light', price: 180, sizes: ['42', '43', '44'] },
+    { brand: 'New Balance', name: 'Fresh Foam X 1080', price: 165, sizes: ['40', '42', '44'] },
+    { brand: 'Hoka', name: 'Clifton 9', price: 145, sizes: ['40', '41', '44'] },
+    { brand: 'Asics', name: 'Gel-Nimbus 26', price: 160, sizes: ['42', '43'] },
+    { brand: 'Brooks', name: 'Ghost 16', price: 140, sizes: ['40', '41', '42', '43'] },
+  ];
+  const brands = products.map((p) => p.brand);
+  const sizes = ['40', '41', '42', '43', '44'];
+  const fresh = () => ({ brands: [], min: 100, max: 200, sizes: [], sort: 'featured' });
+
+  let open = false;
+  let pending = fresh();
+  let applied = fresh();
+  let multiRef;
+
+  function matches(p, f) {
+    return (!f.brands.length || f.brands.includes(p.brand)) &&
+      p.price >= f.min && p.price <= f.max &&
+      (!f.sizes.length || f.sizes.some((s) => p.sizes.includes(s)));
+  }
+
+  $: visible = products
+    .filter((p) => matches(p, applied))
+    .sort((a, b) => applied.sort === 'price' ? a.price - b.price
+      : applied.sort === 'name' ? a.name.localeCompare(b.name) : 0);
+  $: pendingCount = products.filter((p) => matches(p, pending)).length;
+  $: chips = [
+    ...applied.brands.map((b) => ({ kind: 'brand', label: b, value: b })),
+    ...(applied.min > 100 || applied.max < 200
+      ? [{ kind: 'price', label: '$' + applied.min + ' – $' + applied.max, value: '' }] : []),
+    ...applied.sizes.map((s) => ({ kind: 'size', label: 'EU ' + s, value: s })),
+  ];
+  // md-multi-select's value is a string[] — assign it as a property, not an attribute.
+  $: if (multiRef) multiRef.value = pending.brands;
+
+  function openSheet() {
+    pending = { ...applied, brands: [...applied.brands], sizes: [...applied.sizes] };
+    open = true;
+  }
+  function onPrice(e) {
+    pending = { ...pending, min: e.detail.valueStart ?? 100, max: e.detail.valueEnd ?? 200 };
+  }
+  function toggleSize(s, e) {
+    pending = { ...pending,
+      sizes: e.detail.selected ? [...pending.sizes, s] : pending.sizes.filter((x) => x !== s) };
+  }
+  function removeChip(c, e) {
+    e.preventDefault();
+    if (c.kind === 'brand') applied = { ...applied, brands: applied.brands.filter((b) => b !== c.value) };
+    else if (c.kind === 'size') applied = { ...applied, sizes: applied.sizes.filter((s) => s !== c.value) };
+    else applied = { ...applied, min: 100, max: 200 };
+  }
+  function apply() { applied = pending; open = false; }
+</script>
+
+<div class="shop">
+  <div class="head">
+    <div class="titles">
+      <span>Running shoes</span>
+      <span>{visible.length} of {products.length} products</span>
+    </div>
+    <md-button variant="tonal" icon="tune" on:mdClick={openSheet}>
+      {chips.length ? 'Filters (' + chips.length + ')' : 'Filters'}
+    </md-button>
+  </div>
+  {#if chips.length}
+    <div class="applied" aria-label="Applied filters">
+      {#each chips as c (c.kind + c.value)}
+        <md-chip variant="input" selectable="false" removable label={c.label}
+          on:mdRemove={(e) => removeChip(c, e)}></md-chip>
+      {/each}
+    </div>
+  {/if}
+  <div class="grid">
+    {#each visible as p (p.name)}
+      <md-card variant="outlined">
+        <div class="body">
+          <span>{p.brand}</span><span>{p.name}</span><span>{'$' + p.price}</span>
+        </div>
+      </md-card>
+    {/each}
+  </div>
+  <md-bottom-sheet headline="Filter products" closeable top-divider bottom-divider
+    open={open} on:mdClose={() => (open = false)}>
+    <div class="controls">
+      <md-multi-select label="Brand" placeholder="All brands" clearable bind:this={multiRef}
+        on:mdChange={(e) => (pending = { ...pending, brands: e.detail })}>
+        {#each brands as b (b)}
+          <md-select-option value={b}>{b}</md-select-option>
+        {/each}
+      </md-multi-select>
+      <div class="field">
+        <span>Price</span>
+        <md-slider range min="100" max="200" step="5" value-indicator
+          label-start="Minimum price" label-end="Maximum price"
+          value-start={pending.min} value-end={pending.max} on:mdInput={onPrice}></md-slider>
+        <span>{'$' + pending.min + ' – $' + pending.max}</span>
+      </div>
+      <div class="field">
+        <span>Size (EU)</span>
+        <div class="chips">
+          {#each sizes as s (s)}
+            <md-chip variant="filter" label={'EU ' + s} selected={pending.sizes.includes(s)}
+              on:mdSelect={(e) => toggleSize(s, e)}></md-chip>
+          {/each}
+        </div>
+      </div>
+      <div class="field">
+        <span>Sort by</span>
+        <md-segmented-button-set aria-label="Sort by"
+          on:mdChange={(e) => (pending = { ...pending, sort: e.detail[0] || 'featured' })}>
+          <md-segmented-button value="featured" label="Featured" selected={pending.sort === 'featured'}></md-segmented-button>
+          <md-segmented-button value="price" label="Price" selected={pending.sort === 'price'}></md-segmented-button>
+          <md-segmented-button value="name" label="Name" selected={pending.sort === 'name'}></md-segmented-button>
+        </md-segmented-button-set>
+      </div>
+    </div>
+    <md-button slot="actions" variant="text" on:mdClick={() => (pending = fresh())}>Reset</md-button>
+    <md-button slot="actions" variant="filled" on:mdClick={apply}>
+      {'Show ' + pendingCount + (pendingCount === 1 ? ' result' : ' results')}
+    </md-button>
+  </md-bottom-sheet>
+</div>
+
+<style>
+  .shop { display: grid; gap: 16px; max-width: 720px; margin-inline: auto; }
+  .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .titles { display: grid; gap: 2px; }
+  .applied, .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+  .body { display: grid; gap: 2px; padding: 12px; }
+  .controls { display: grid; gap: 24px; padding-block: 8px 16px; }
+  .field { display: grid; gap: 8px; }
+</style>`}
 />
 
 ## How it's built

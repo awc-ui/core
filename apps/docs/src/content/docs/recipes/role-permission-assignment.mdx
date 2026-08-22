@@ -171,6 +171,468 @@ visible instead of vanishing.
       bar.hide('action');
     });
   `}
+  react={`import { useRef, useState } from 'react';
+import {
+  MdButton,
+  MdDialog,
+  MdSelect,
+  MdSelectOption,
+  MdSnackbar,
+  MdTransferList,
+} from '@awc-ui/react';
+
+const PERMISSIONS = [
+  { value: 'view-dashboards', label: 'View dashboards', description: 'Read-only analytics and usage' },
+  { value: 'export-reports', label: 'Export reports', description: 'CSV and PDF downloads' },
+  { value: 'issue-refunds', label: 'Issue refunds', description: 'Up to 5,000 EUR per order' },
+  { value: 'manage-api-keys', label: 'Manage API keys', description: 'Create and revoke live keys' },
+  { value: 'delete-users', label: 'Delete users', description: 'Permanent, after a 30-day grace period' },
+  { value: 'configure-sso', label: 'Configure SSO', description: 'Requires the Enterprise plan', disabled: true },
+];
+const PRESETS: Record<string, string[]> = {
+  support: ['view-dashboards', 'issue-refunds'],
+  billing: ['view-dashboards', 'export-reports', 'issue-refunds'],
+  engineer: ['view-dashboards', 'manage-api-keys'],
+};
+const ROLE_NAMES: Record<string, string> = {
+  support: 'Support agent',
+  billing: 'Billing admin',
+  engineer: 'Engineer',
+};
+const ELEVATED = ['delete-users', 'manage-api-keys'];
+const label = (v: string) => PERMISSIONS.find((p) => p.value === v)?.label ?? v;
+
+export function RoleAccessEditor() {
+  const [role, setRole] = useState('support');
+  const [granted, setGranted] = useState<string[]>(PRESETS.support);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [elevatedNames, setElevatedNames] = useState('');
+  const [message, setMessage] = useState('');
+  const saved = useRef<string[]>(PRESETS.support);
+  const lastSaved = useRef<string[]>(PRESETS.support);
+  const pendingRevert = useRef<string[] | null>(null);
+  const bar = useRef<HTMLMdSnackbarElement>(null);
+
+  // Setting value programmatically emits no mdChange/mdMove, so a role
+  // switch can never trip the elevated-grant check.
+  const onRole = (next: string) => {
+    setRole(next);
+    saved.current = PRESETS[next] ?? [];
+    setGranted(saved.current);
+  };
+
+  // mdMove describes each user move; hold a revert snapshot and ask first.
+  const onMove = (e: CustomEvent<{ direction: string; moved: string[]; target: string[] }>) => {
+    if (e.detail.direction !== 'right') return;
+    const risky = e.detail.moved.filter((v) => ELEVATED.includes(v));
+    if (risky.length === 0) return;
+    pendingRevert.current = e.detail.target.filter((v) => !risky.includes(v));
+    setElevatedNames(risky.map(label).join(' and '));
+    setConfirmOpen(true);
+  };
+
+  // Escape (mdCancel) and the Cancel button share this; it is idempotent.
+  const revert = () => {
+    if (pendingRevert.current) {
+      setGranted(pendingRevert.current);
+      pendingRevert.current = null;
+    }
+  };
+
+  const onSave = () => {
+    lastSaved.current = saved.current;
+    saved.current = granted;
+    setMessage(ROLE_NAMES[role] + ' now has ' + granted.length + ' permissions');
+    bar.current?.show();
+  };
+
+  const onUndo = () => {
+    saved.current = lastSaved.current;
+    setGranted(saved.current);
+    bar.current?.hide('action');
+  };
+
+  return (
+    <>
+      <MdSelect label="Role" value={role} style={{ maxWidth: '320px' }} onMdChange={(e) => onRole(e.detail)}>
+        <MdSelectOption value="support" supportingText="14 members">Support agent</MdSelectOption>
+        <MdSelectOption value="billing" supportingText="3 members">Billing admin</MdSelectOption>
+        <MdSelectOption value="engineer" supportingText="27 members">Engineer</MdSelectOption>
+      </MdSelect>
+
+      <MdTransferList
+        items={PERMISSIONS}
+        value={granted}
+        sourceTitle="Available permissions"
+        targetTitle="Granted permissions"
+        moveRightLabel="Grant selected permissions"
+        moveLeftLabel="Revoke selected permissions"
+        moveAllRightLabel="Grant all permissions"
+        moveAllLeftLabel="Revoke all permissions"
+        onMdChange={(e) => setGranted(e.detail)}
+        onMdMove={onMove}
+        style={{ '--md-transfer-list-height': '380px' }}
+      />
+
+      <MdButton variant="filled" onMdClick={onSave}>Save changes</MdButton>
+
+      <MdDialog
+        open={confirmOpen}
+        headline="Grant elevated access?"
+        icon="warning"
+        scrimDismissible={false}
+        onMdCancel={revert}
+        onMdClose={() => setConfirmOpen(false)}
+      >
+        <p>This grants <strong>{elevatedNames}</strong> to every member of this role.</p>
+        <MdButton slot="actions" variant="text" onMdClick={() => { revert(); setConfirmOpen(false); }}>Cancel</MdButton>
+        <MdButton slot="actions" variant="filled" onMdClick={() => { pendingRevert.current = null; setConfirmOpen(false); }}>Grant access</MdButton>
+      </MdDialog>
+
+      <MdSnackbar ref={bar} action="Undo" position="bottom-start" message={message} onMdAction={onUndo} />
+    </>
+  );
+}`}
+  angular={`import { Component, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import {
+  MdButton, MdDialog, MdSelect, MdSelectOption,
+  MdSnackbar, MdTransferList, SelectValueAccessor,
+} from '@awc-ui/angular';
+
+const PERMISSIONS = [
+  { value: 'view-dashboards', label: 'View dashboards', description: 'Read-only analytics and usage' },
+  { value: 'export-reports', label: 'Export reports', description: 'CSV and PDF downloads' },
+  { value: 'issue-refunds', label: 'Issue refunds', description: 'Up to 5,000 EUR per order' },
+  { value: 'manage-api-keys', label: 'Manage API keys', description: 'Create and revoke live keys' },
+  { value: 'delete-users', label: 'Delete users', description: 'Permanent, after a 30-day grace period' },
+  { value: 'configure-sso', label: 'Configure SSO', description: 'Requires the Enterprise plan', disabled: true },
+];
+const PRESETS: Record<string, string[]> = {
+  support: ['view-dashboards', 'issue-refunds'],
+  billing: ['view-dashboards', 'export-reports', 'issue-refunds'],
+  engineer: ['view-dashboards', 'manage-api-keys'],
+};
+const ROLE_NAMES: Record<string, string> = {
+  support: 'Support agent', billing: 'Billing admin', engineer: 'Engineer',
+};
+const ELEVATED = ['delete-users', 'manage-api-keys'];
+
+@Component({
+  selector: 'app-role-access',
+  standalone: true,
+  imports: [FormsModule, SelectValueAccessor, MdButton, MdDialog, MdSelect, MdSelectOption, MdSnackbar, MdTransferList],
+  template:
+    '<md-select label="Role" style="max-width: 320px" [(ngModel)]="role" (ngModelChange)="onRole($event)">' +
+      '<md-select-option value="support" supporting-text="14 members">Support agent</md-select-option>' +
+      '<md-select-option value="billing" supporting-text="3 members">Billing admin</md-select-option>' +
+      '<md-select-option value="engineer" supporting-text="27 members">Engineer</md-select-option>' +
+    '</md-select>' +
+    '<md-transfer-list [items]="permissions" [value]="granted" ' +
+      'source-title="Available permissions" target-title="Granted permissions" ' +
+      'move-right-label="Grant selected permissions" move-left-label="Revoke selected permissions" ' +
+      'move-all-right-label="Grant all permissions" move-all-left-label="Revoke all permissions" ' +
+      'style="--md-transfer-list-height: 380px" ' +
+      '(mdChange)="granted = $event.detail" (mdMove)="onMove($event)"></md-transfer-list>' +
+    '<md-button variant="filled" (mdClick)="save()">Save changes</md-button>' +
+    '<md-dialog [open]="confirmOpen" headline="Grant elevated access?" icon="warning" ' +
+      '[scrimDismissible]="false" (mdCancel)="revert()" (mdClose)="confirmOpen = false">' +
+      '<p>This grants <strong>{{ elevatedNames }}</strong> to every member of this role.</p>' +
+      '<md-button slot="actions" variant="text" (mdClick)="cancel()">Cancel</md-button>' +
+      '<md-button slot="actions" variant="filled" (mdClick)="grant()">Grant access</md-button>' +
+    '</md-dialog>' +
+    '<md-snackbar #bar action="Undo" position="bottom-start" [message]="message" (mdAction)="undo()"></md-snackbar>',
+})
+export class RoleAccessComponent {
+  @ViewChild('bar') bar!: MdSnackbar;
+
+  permissions = PERMISSIONS;
+  role = 'support';
+  granted = [...PRESETS['support']];
+  saved = [...this.granted];
+  lastSaved = [...this.saved];
+  pendingRevert: string[] | null = null;
+  confirmOpen = false;
+  elevatedNames = '';
+  message = '';
+
+  // Programmatic [value] writes emit no mdChange/mdMove, so a role switch
+  // can never trip the elevated-grant confirmation.
+  onRole(next: string) {
+    this.saved = [...(PRESETS[next] || [])];
+    this.granted = [...this.saved];
+  }
+
+  onMove(e: CustomEvent<{ direction: string; moved: string[]; target: string[] }>) {
+    if (e.detail.direction !== 'right') return;
+    const risky = e.detail.moved.filter((v) => ELEVATED.includes(v));
+    if (risky.length === 0) return;
+    this.pendingRevert = e.detail.target.filter((v) => !risky.includes(v));
+    this.elevatedNames = risky.map((v) => this.label(v)).join(' and ');
+    this.confirmOpen = true;
+  }
+
+  label(v: string) {
+    const p = PERMISSIONS.find((x) => x.value === v);
+    return p ? p.label : v;
+  }
+
+  // Escape (mdCancel) and Cancel share this; it is idempotent.
+  revert() {
+    if (this.pendingRevert) {
+      this.granted = this.pendingRevert;
+      this.pendingRevert = null;
+    }
+  }
+  cancel() { this.revert(); this.confirmOpen = false; }
+  grant() { this.pendingRevert = null; this.confirmOpen = false; }
+
+  save() {
+    this.lastSaved = [...this.saved];
+    this.saved = [...this.granted];
+    this.message = ROLE_NAMES[this.role] + ' now has ' + this.saved.length + ' permissions';
+    this.bar.show();
+  }
+
+  undo() {
+    this.saved = [...this.lastSaved];
+    this.granted = [...this.saved];
+    this.bar.hide('action');
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+import {
+  MdButton, MdDialog, MdSelect, MdSelectOption, MdSnackbar, MdTransferList,
+} from '@awc-ui/vue';
+
+const PERMISSIONS = [
+  { value: 'view-dashboards', label: 'View dashboards', description: 'Read-only analytics and usage' },
+  { value: 'export-reports', label: 'Export reports', description: 'CSV and PDF downloads' },
+  { value: 'issue-refunds', label: 'Issue refunds', description: 'Up to 5,000 EUR per order' },
+  { value: 'manage-api-keys', label: 'Manage API keys', description: 'Create and revoke live keys' },
+  { value: 'delete-users', label: 'Delete users', description: 'Permanent, after a 30-day grace period' },
+  { value: 'configure-sso', label: 'Configure SSO', description: 'Requires the Enterprise plan', disabled: true },
+];
+const PRESETS: Record<string, string[]> = {
+  support: ['view-dashboards', 'issue-refunds'],
+  billing: ['view-dashboards', 'export-reports', 'issue-refunds'],
+  engineer: ['view-dashboards', 'manage-api-keys'],
+};
+const ROLE_NAMES: Record<string, string> = {
+  support: 'Support agent', billing: 'Billing admin', engineer: 'Engineer',
+};
+const ELEVATED = ['delete-users', 'manage-api-keys'];
+const label = (v: string) => PERMISSIONS.find((p) => p.value === v)?.label ?? v;
+
+const role = ref('support');
+const granted = ref<string[]>([...PRESETS.support]);
+const confirmOpen = ref(false);
+const elevatedNames = ref('');
+const message = ref('');
+// The snackbar writes open back to false itself, so an :open binding would
+// go stale — call show()/hide() on the element instead.
+const bar = ref<InstanceType<typeof MdSnackbar> | null>(null);
+
+let saved = [...PRESETS.support];
+let lastSaved = [...saved];
+let pendingRevert: string[] | null = null;
+
+// Programmatic :value writes emit no mdChange/mdMove, so a role switch
+// can never trip the elevated-grant confirmation.
+function onRole(e: CustomEvent<string>) {
+  role.value = e.detail;
+  saved = [...(PRESETS[e.detail] || [])];
+  granted.value = [...saved];
+}
+
+function onMove(e: CustomEvent<{ direction: string; moved: string[]; target: string[] }>) {
+  if (e.detail.direction !== 'right') return;
+  const risky = e.detail.moved.filter((v) => ELEVATED.includes(v));
+  if (risky.length === 0) return;
+  pendingRevert = e.detail.target.filter((v) => !risky.includes(v));
+  elevatedNames.value = risky.map(label).join(' and ');
+  confirmOpen.value = true;
+}
+
+// Escape (mdCancel) and Cancel share this; it is idempotent.
+function revert() {
+  if (pendingRevert) {
+    granted.value = pendingRevert;
+    pendingRevert = null;
+  }
+}
+function cancel() { revert(); confirmOpen.value = false; }
+function grant() { pendingRevert = null; confirmOpen.value = false; }
+
+function save() {
+  lastSaved = [...saved];
+  saved = [...granted.value];
+  message.value = ROLE_NAMES[role.value] + ' now has ' + saved.length + ' permissions';
+  bar.value?.$el.show();
+}
+
+function undo() {
+  saved = [...lastSaved];
+  granted.value = [...saved];
+  bar.value?.$el.hide('action');
+}
+</script>
+
+<template>
+  <MdSelect label="Role" :value="role" style="max-width: 320px" @md-change="onRole">
+    <MdSelectOption value="support" supporting-text="14 members">Support agent</MdSelectOption>
+    <MdSelectOption value="billing" supporting-text="3 members">Billing admin</MdSelectOption>
+    <MdSelectOption value="engineer" supporting-text="27 members">Engineer</MdSelectOption>
+  </MdSelect>
+
+  <MdTransferList
+    :items="PERMISSIONS"
+    :value="granted"
+    source-title="Available permissions"
+    target-title="Granted permissions"
+    move-right-label="Grant selected permissions"
+    move-left-label="Revoke selected permissions"
+    move-all-right-label="Grant all permissions"
+    move-all-left-label="Revoke all permissions"
+    style="--md-transfer-list-height: 380px"
+    @md-change="granted = $event.detail"
+    @md-move="onMove"
+  />
+
+  <MdButton variant="filled" @md-click="save">Save changes</MdButton>
+
+  <MdDialog
+    :open="confirmOpen"
+    headline="Grant elevated access?"
+    icon="warning"
+    :scrim-dismissible="false"
+    @md-cancel="revert"
+    @md-close="confirmOpen = false"
+  >
+    <p>This grants <strong>{{ elevatedNames }}</strong> to every member of this role.</p>
+    <MdButton slot="actions" variant="text" @md-click="cancel">Cancel</MdButton>
+    <MdButton slot="actions" variant="filled" @md-click="grant">Grant access</MdButton>
+  </MdDialog>
+
+  <MdSnackbar ref="bar" action="Undo" position="bottom-start" :message="message" @md-action="undo" />
+</template>`}
+  svelte={`<script lang="ts">
+  // Registers every md-* element; in SvelteKit guard it client-side:
+  // if (browser) defineCustomElements(window);
+  import { defineCustomElements } from '@awc-ui/svelte';
+  if (typeof window !== 'undefined') defineCustomElements(window);
+
+  const PERMISSIONS = [
+    { value: 'view-dashboards', label: 'View dashboards', description: 'Read-only analytics and usage' },
+    { value: 'export-reports', label: 'Export reports', description: 'CSV and PDF downloads' },
+    { value: 'issue-refunds', label: 'Issue refunds', description: 'Up to 5,000 EUR per order' },
+    { value: 'manage-api-keys', label: 'Manage API keys', description: 'Create and revoke live keys' },
+    { value: 'delete-users', label: 'Delete users', description: 'Permanent, after a 30-day grace period' },
+    { value: 'configure-sso', label: 'Configure SSO', description: 'Requires the Enterprise plan', disabled: true },
+  ];
+  const PRESETS: Record<string, string[]> = {
+    support: ['view-dashboards', 'issue-refunds'],
+    billing: ['view-dashboards', 'export-reports', 'issue-refunds'],
+    engineer: ['view-dashboards', 'manage-api-keys'],
+  };
+  const ROLE_NAMES: Record<string, string> = {
+    support: 'Support agent', billing: 'Billing admin', engineer: 'Engineer',
+  };
+  const ELEVATED = ['delete-users', 'manage-api-keys'];
+  const label = (v: string) => PERMISSIONS.find((p) => p.value === v)?.label ?? v;
+
+  let list: HTMLMdTransferListElement;
+  let dialog: HTMLMdDialogElement;
+  let bar: HTMLMdSnackbarElement;
+
+  let role = 'support';
+  let granted = [...PRESETS.support];
+  let saved = [...granted];
+  let lastSaved = [...saved];
+  let pendingRevert: string[] | null = null;
+  let elevatedNames = '';
+  let message = '';
+
+  // items/value are arrays — assign them as properties, not attributes.
+  // Programmatic value writes emit no mdChange/mdMove, so a role switch
+  // can never trip the elevated-grant confirmation.
+  $: if (list) list.items = PERMISSIONS;
+  $: if (list) list.value = granted;
+
+  function onRole(e: CustomEvent<string>) {
+    role = e.detail;
+    saved = [...(PRESETS[role] || [])];
+    granted = [...saved];
+  }
+
+  function onMove(e: CustomEvent<{ direction: string; moved: string[]; target: string[] }>) {
+    if (e.detail.direction !== 'right') return;
+    const risky = e.detail.moved.filter((v) => ELEVATED.includes(v));
+    if (risky.length === 0) return;
+    pendingRevert = e.detail.target.filter((v) => !risky.includes(v));
+    elevatedNames = risky.map(label).join(' and ');
+    dialog.show();
+  }
+
+  // Escape (mdCancel) and Cancel share this; it is idempotent.
+  function revert() {
+    if (pendingRevert) {
+      granted = pendingRevert;
+      pendingRevert = null;
+    }
+  }
+  function cancel() { revert(); dialog.close(); }
+  function grant() { pendingRevert = null; dialog.close(); }
+
+  function save() {
+    lastSaved = [...saved];
+    saved = [...granted];
+    message = ROLE_NAMES[role] + ' now has ' + saved.length + ' permissions';
+    bar.show();
+  }
+
+  function undo() {
+    saved = [...lastSaved];
+    granted = [...saved];
+    bar.hide('action');
+  }
+</script>
+
+<md-select label="Role" value="support" style="max-width: 320px" on:mdChange={onRole}>
+  <md-select-option value="support" supporting-text="14 members">Support agent</md-select-option>
+  <md-select-option value="billing" supporting-text="3 members">Billing admin</md-select-option>
+  <md-select-option value="engineer" supporting-text="27 members">Engineer</md-select-option>
+</md-select>
+
+<md-transfer-list
+  bind:this={list}
+  source-title="Available permissions"
+  target-title="Granted permissions"
+  move-right-label="Grant selected permissions"
+  move-left-label="Revoke selected permissions"
+  move-all-right-label="Grant all permissions"
+  move-all-left-label="Revoke all permissions"
+  style="--md-transfer-list-height: 380px"
+  on:mdChange={(e) => (granted = e.detail)}
+  on:mdMove={onMove}
+></md-transfer-list>
+
+<md-button variant="filled" on:mdClick={save}>Save changes</md-button>
+
+<md-dialog
+  bind:this={dialog}
+  headline="Grant elevated access?"
+  icon="warning"
+  scrim-dismissible="false"
+  on:mdCancel={revert}
+>
+  <p>This grants <strong>{elevatedNames}</strong> to every member of this role.</p>
+  <md-button slot="actions" variant="text" on:mdClick={cancel}>Cancel</md-button>
+  <md-button slot="actions" variant="filled" on:mdClick={grant}>Grant access</md-button>
+</md-dialog>
+
+<md-snackbar bind:this={bar} action="Undo" position="bottom-start" message={message} on:mdAction={undo}></md-snackbar>`}
 />
 
 ## How it's built

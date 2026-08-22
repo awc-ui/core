@@ -237,6 +237,468 @@ step's data exists, and `mode="linear"` keeps step headers honest.
       setStatus('Details copied to the clipboard.');
     });
   `}
+  react={`import { useState } from 'react';
+import {
+  MdButton, MdCard, MdDatePicker, MdDialog, MdMenu, MdMenuItem,
+  MdSplitButton, MdStep, MdStepper, MdTimePicker
+} from '@awc-ui/react';
+
+const SERVICES = [
+  { name: 'Initial assessment', detail: 'Full movement screen and a treatment plan.', duration: 60, price: '€70' },
+  { name: 'Follow-up session', detail: 'Continue an existing treatment plan.', duration: 30, price: '€45' },
+  { name: 'Sports massage', detail: 'Deep-tissue work, pre- or post-event.', duration: 45, price: '€55' }
+];
+
+// Function property on md-date-picker — the clinic closes on weekends.
+const isWeekend = (d) => d.getDay() === 0 || d.getDay() === 6;
+
+function formatDate(iso) {
+  const p = iso.split('-');
+  return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('en-GB',
+    { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+export default function AppointmentBooking() {
+  const [service, setService] = useState(null);
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [step, setStep] = useState(0);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [status, setStatus] = useState('');
+
+  // Continue is gated per step: a service on step 1, a full slot on step 2.
+  const nextDisabled = step === 0 ? !service : step === 1 ? !(date && time) : false;
+
+  function downloadIcs() {
+    const pad = (n) => (n < 10 ? '0' : '') + n;
+    const stamp = (dt) => '' + dt.getFullYear() + pad(dt.getMonth() + 1) +
+      pad(dt.getDate()) + 'T' + pad(dt.getHours()) + pad(dt.getMinutes()) + '00';
+    const p = date.split('-');
+    const t = time.split(':');
+    const start = new Date(+p[0], +p[1] - 1, +p[2], +t[0], +t[1]);
+    const end = new Date(start.getTime() + service.duration * 60000);
+    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'BEGIN:VEVENT',
+      'DTSTART:' + stamp(start), 'DTEND:' + stamp(end),
+      'SUMMARY:' + service.name + ' — Meridian Physio',
+      'LOCATION:Meridian Physio, 14 Arcului St, Bucharest',
+      'END:VEVENT', 'END:VCALENDAR'];
+    const a = document.createElement('a');
+    a.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(lines.join('\\r\\n'));
+    a.download = 'meridian-appointment.ics';
+    a.click();
+    setStatus('meridian-appointment.ics saved — open it to add the event.');
+  }
+
+  function copyDetails() {
+    navigator.clipboard.writeText(service.name + ' — ' + formatDate(date) + ' ' +
+      time + ', Meridian Physio, 14 Arcului St, Bucharest');
+    setStatus('Details copied to the clipboard.');
+  }
+
+  return (
+    <div style={{ maxWidth: 680, marginInline: 'auto' }}>
+      <MdStepper label="Booking progress" finishLabel="Book appointment"
+        nextDisabled={nextDisabled}
+        onMdStepChange={(e) => setStep(e.detail.index)}
+        onMdComplete={() => setConfirmOpen(true)}>
+        <MdStep label="Service" description="What do you need?">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+            {SERVICES.map((s) => (
+              <MdCard key={s.name} interactive
+                variant={service && service.name === s.name ? 'filled' : 'outlined'}
+                onMdClick={() => setService(s)}>
+                <span>{s.name}</span>
+                <span>{s.detail}</span>
+                <span>{s.duration + ' min · ' + s.price}</span>
+              </MdCard>
+            ))}
+          </div>
+        </MdStep>
+        <MdStep label="Date & time" description="Pick a free slot">
+          <MdDatePicker label="Date" required clearable
+            min="2026-09-01" max="2026-10-30" locale="en-GB" firstDayOfWeek={1}
+            supportingText="Monday to Friday" reserveSupportingSpace
+            isDateDisabled={isWeekend}
+            onMdChange={(e) => setDate(e.detail.value)} />
+          <MdTimePicker label="Time" required format="24h"
+            min="09:00" max="16:30" minuteStep={30}
+            onMdChange={(e) => setTime(e.detail.value)} />
+        </MdStep>
+        <MdStep label="Confirm" description="Review your booking">
+          <div style={{ display: 'grid', gridTemplateColumns: 'max-content 1fr', gap: '8px 24px' }}>
+            <span>Service</span><span>{service ? service.name : '—'}</span>
+            <span>When</span><span>{date && time ? formatDate(date) + ', ' + time : '—'}</span>
+            <span>Duration</span><span>{service ? service.duration + ' minutes' : '—'}</span>
+            <span>Price</span><span>{service ? service.price : '—'}</span>
+          </div>
+        </MdStep>
+      </MdStepper>
+
+      <MdDialog open={confirmOpen} headline="Appointment booked" icon="event_available"
+        scrimDismissible={false} onMdClose={() => setConfirmOpen(false)}>
+        {service && date && (
+          <p>{service.name + ' with Dr. Elena Rusu on ' + formatDate(date) + ' at ' + time + '.'}</p>
+        )}
+        <MdSplitButton id="cal-split" variant="tonal" icon="event" label="Add to calendar"
+          menuLabel="More calendar options" controls="cal-menu" trailingChecked={menuOpen}
+          onMdLeadingClick={downloadIcs}
+          onMdTrailingClick={(e) => setMenuOpen(e.detail.checked)} />
+        {status && <p>{status}</p>}
+        <MdButton slot="actions" variant="text" onMdClick={() => setConfirmOpen(false)}>Done</MdButton>
+      </MdDialog>
+
+      <MdMenu id="cal-menu" anchor="cal-split" placement="bottom-start"
+        open={menuOpen} onMdClose={() => setMenuOpen(false)}>
+        <MdMenuItem headline="Download .ics file" onMdClick={downloadIcs} />
+        <MdMenuItem headline="Copy details" onMdClick={copyDetails} />
+      </MdMenu>
+    </div>
+  );
+}`}
+  angular={`<!-- booking.component.html -->
+<md-stepper label="Booking progress" finishLabel="Book appointment"
+  [nextDisabled]="nextDisabled"
+  (mdStepChange)="step = $event.detail.index" (mdComplete)="confirmOpen = true">
+  <md-step label="Service" description="What do you need?">
+    @for (s of services; track s.name) {
+      <md-card interactive [variant]="service === s ? 'filled' : 'outlined'"
+        (mdClick)="service = s">
+        <span>{{ s.name }}</span>
+        <span>{{ s.detail }}</span>
+        <span>{{ s.duration }} min · {{ s.price }}</span>
+      </md-card>
+    }
+  </md-step>
+  <md-step label="Date & time" description="Pick a free slot">
+    <md-date-picker label="Date" required clearable min="2026-09-01" max="2026-10-30"
+      locale="en-GB" [firstDayOfWeek]="1" supportingText="Monday to Friday"
+      [reserveSupportingSpace]="true" [isDateDisabled]="isWeekend"
+      (mdChange)="date = $event.detail.value"></md-date-picker>
+    <md-time-picker label="Time" required format="24h" min="09:00" max="16:30"
+      [minuteStep]="30" (mdChange)="time = $event.detail.value"></md-time-picker>
+  </md-step>
+  <md-step label="Confirm" description="Review your booking">
+    <span>Service</span><span>{{ service ? service.name : '—' }}</span>
+    <span>When</span><span>{{ date && time ? formatDate(date) + ', ' + time : '—' }}</span>
+    <span>Duration</span><span>{{ service ? service.duration + ' minutes' : '—' }}</span>
+    <span>Price</span><span>{{ service ? service.price : '—' }}</span>
+  </md-step>
+</md-stepper>
+
+<md-dialog [open]="confirmOpen" headline="Appointment booked" icon="event_available"
+  [scrimDismissible]="false" (mdClose)="confirmOpen = false">
+  @if (service && date) {
+    <p>{{ service.name }} with Dr. Elena Rusu on {{ formatDate(date) }} at {{ time }}.</p>
+  }
+  <md-split-button id="cal-split" variant="tonal" icon="event" label="Add to calendar"
+    menuLabel="More calendar options" controls="cal-menu" [trailingChecked]="menuOpen"
+    (mdLeadingClick)="downloadIcs()"
+    (mdTrailingClick)="menuOpen = $event.detail.checked"></md-split-button>
+  @if (status) { <p>{{ status }}</p> }
+  <md-button slot="actions" variant="text" (mdClick)="confirmOpen = false">Done</md-button>
+</md-dialog>
+
+<md-menu id="cal-menu" anchor="cal-split" placement="bottom-start"
+  [open]="menuOpen" (mdClose)="menuOpen = false">
+  <md-menu-item headline="Download .ics file" (mdClick)="downloadIcs()"></md-menu-item>
+  <md-menu-item headline="Copy details" (mdClick)="copyDetails()"></md-menu-item>
+</md-menu>
+
+// booking.component.ts
+import { Component } from '@angular/core';
+import {
+  MdButton, MdCard, MdDatePicker, MdDialog, MdMenu, MdMenuItem,
+  MdSplitButton, MdStep, MdStepper, MdTimePicker
+} from '@awc-ui/angular';
+
+interface Service { name: string; detail: string; duration: number; price: string; }
+
+@Component({
+  selector: 'app-booking',
+  standalone: true,
+  imports: [MdStepper, MdStep, MdCard, MdDatePicker, MdTimePicker,
+    MdDialog, MdSplitButton, MdMenu, MdMenuItem, MdButton],
+  templateUrl: './booking.component.html',
+})
+export class BookingComponent {
+  services: Service[] = [
+    { name: 'Initial assessment', detail: 'Full movement screen and a treatment plan.', duration: 60, price: '€70' },
+    { name: 'Follow-up session', detail: 'Continue an existing treatment plan.', duration: 30, price: '€45' },
+    { name: 'Sports massage', detail: 'Deep-tissue work, pre- or post-event.', duration: 45, price: '€55' },
+  ];
+
+  service?: Service;
+  date = ''; time = ''; step = 0;
+  confirmOpen = false; menuOpen = false; status = '';
+
+  // Function property on md-date-picker — the clinic closes on weekends.
+  isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6;
+
+  // Continue is gated per step: a service on step 1, a full slot on step 2.
+  get nextDisabled(): boolean {
+    if (this.step === 0) return !this.service;
+    if (this.step === 1) return !(this.date && this.time);
+    return false;
+  }
+
+  formatDate(iso: string): string {
+    const p = iso.split('-');
+    return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('en-GB',
+      { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  downloadIcs(): void {
+    const pad = (n: number) => (n < 10 ? '0' : '') + n;
+    const stamp = (dt: Date) => '' + dt.getFullYear() + pad(dt.getMonth() + 1) +
+      pad(dt.getDate()) + 'T' + pad(dt.getHours()) + pad(dt.getMinutes()) + '00';
+    const p = this.date.split('-');
+    const t = this.time.split(':');
+    const start = new Date(+p[0], +p[1] - 1, +p[2], +t[0], +t[1]);
+    const end = new Date(start.getTime() + (this.service?.duration ?? 0) * 60000);
+    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'BEGIN:VEVENT',
+      'DTSTART:' + stamp(start), 'DTEND:' + stamp(end),
+      'SUMMARY:' + this.service?.name + ' — Meridian Physio',
+      'LOCATION:Meridian Physio, 14 Arcului St, Bucharest',
+      'END:VEVENT', 'END:VCALENDAR'];
+    const a = document.createElement('a');
+    a.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(lines.join('\\r\\n'));
+    a.download = 'meridian-appointment.ics';
+    a.click();
+    this.status = 'meridian-appointment.ics saved — open it to add the event.';
+  }
+
+  copyDetails(): void {
+    navigator.clipboard.writeText(this.service?.name + ' — ' + this.formatDate(this.date) +
+      ' ' + this.time + ', Meridian Physio, 14 Arcului St, Bucharest');
+    this.status = 'Details copied to the clipboard.';
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  MdButton, MdCard, MdDatePicker, MdDialog, MdMenu, MdMenuItem,
+  MdSplitButton, MdStep, MdStepper, MdTimePicker
+} from '@awc-ui/vue';
+
+interface Service { name: string; detail: string; duration: number; price: string; }
+
+const services: Service[] = [
+  { name: 'Initial assessment', detail: 'Full movement screen and a treatment plan.', duration: 60, price: '€70' },
+  { name: 'Follow-up session', detail: 'Continue an existing treatment plan.', duration: 30, price: '€45' },
+  { name: 'Sports massage', detail: 'Deep-tissue work, pre- or post-event.', duration: 45, price: '€55' }
+];
+
+const service = ref<Service | null>(null);
+const date = ref('');
+const time = ref('');
+const step = ref(0);
+const confirmOpen = ref(false);
+const menuOpen = ref(false);
+const status = ref('');
+
+// Function property on md-date-picker — the clinic closes on weekends.
+const isWeekend = (d: Date) => d.getDay() === 0 || d.getDay() === 6;
+
+// Continue is gated per step: a service on step 1, a full slot on step 2.
+const nextDisabled = computed(() =>
+  step.value === 0 ? !service.value :
+  step.value === 1 ? !(date.value && time.value) : false);
+
+function formatDate(iso: string) {
+  const p = iso.split('-');
+  return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('en-GB',
+    { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function downloadIcs() {
+  const pad = (n: number) => (n < 10 ? '0' : '') + n;
+  const stamp = (dt: Date) => '' + dt.getFullYear() + pad(dt.getMonth() + 1) +
+    pad(dt.getDate()) + 'T' + pad(dt.getHours()) + pad(dt.getMinutes()) + '00';
+  const p = date.value.split('-');
+  const t = time.value.split(':');
+  const start = new Date(+p[0], +p[1] - 1, +p[2], +t[0], +t[1]);
+  const end = new Date(start.getTime() + (service.value?.duration ?? 0) * 60000);
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'BEGIN:VEVENT',
+    'DTSTART:' + stamp(start), 'DTEND:' + stamp(end),
+    'SUMMARY:' + service.value?.name + ' — Meridian Physio',
+    'LOCATION:Meridian Physio, 14 Arcului St, Bucharest',
+    'END:VEVENT', 'END:VCALENDAR'];
+  const a = document.createElement('a');
+  a.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(lines.join('\\r\\n'));
+  a.download = 'meridian-appointment.ics';
+  a.click();
+  status.value = 'meridian-appointment.ics saved — open it to add the event.';
+}
+
+function copyDetails() {
+  navigator.clipboard.writeText(service.value?.name + ' — ' + formatDate(date.value) +
+    ' ' + time.value + ', Meridian Physio, 14 Arcului St, Bucharest');
+  status.value = 'Details copied to the clipboard.';
+}
+</script>
+
+<template>
+  <MdStepper label="Booking progress" finish-label="Book appointment"
+    :next-disabled="nextDisabled"
+    @md-step-change="step = $event.detail.index" @md-complete="confirmOpen = true">
+    <MdStep label="Service" description="What do you need?">
+      <MdCard v-for="s in services" :key="s.name" interactive
+        :variant="service && service.name === s.name ? 'filled' : 'outlined'"
+        @md-click="service = s">
+        <span>{{ s.name }}</span>
+        <span>{{ s.detail }}</span>
+        <span>{{ s.duration }} min · {{ s.price }}</span>
+      </MdCard>
+    </MdStep>
+    <MdStep label="Date & time" description="Pick a free slot">
+      <MdDatePicker label="Date" required clearable min="2026-09-01" max="2026-10-30"
+        locale="en-GB" :first-day-of-week="1" supporting-text="Monday to Friday"
+        reserve-supporting-space :is-date-disabled="isWeekend"
+        @md-change="date = $event.detail.value" />
+      <MdTimePicker label="Time" required format="24h" min="09:00" max="16:30"
+        :minute-step="30" @md-change="time = $event.detail.value" />
+    </MdStep>
+    <MdStep label="Confirm" description="Review your booking">
+      <span>Service</span><span>{{ service ? service.name : '—' }}</span>
+      <span>When</span><span>{{ date && time ? formatDate(date) + ', ' + time : '—' }}</span>
+      <span>Duration</span><span>{{ service ? service.duration + ' minutes' : '—' }}</span>
+      <span>Price</span><span>{{ service ? service.price : '—' }}</span>
+    </MdStep>
+  </MdStepper>
+
+  <MdDialog :open="confirmOpen" headline="Appointment booked" icon="event_available"
+    :scrim-dismissible="false" @md-close="confirmOpen = false">
+    <p v-if="service && date">
+      {{ service.name }} with Dr. Elena Rusu on {{ formatDate(date) }} at {{ time }}.
+    </p>
+    <MdSplitButton id="cal-split" variant="tonal" icon="event" label="Add to calendar"
+      menu-label="More calendar options" controls="cal-menu" :trailing-checked="menuOpen"
+      @md-leading-click="downloadIcs" @md-trailing-click="menuOpen = $event.detail.checked" />
+    <p v-if="status">{{ status }}</p>
+    <MdButton slot="actions" variant="text" @md-click="confirmOpen = false">Done</MdButton>
+  </MdDialog>
+
+  <MdMenu id="cal-menu" anchor="cal-split" placement="bottom-start"
+    :open="menuOpen" @md-close="menuOpen = false">
+    <MdMenuItem headline="Download .ics file" @md-click="downloadIcs" />
+    <MdMenuItem headline="Copy details" @md-click="copyDetails" />
+  </MdMenu>
+</template>`}
+  svelte={`<script>
+  import { onMount } from 'svelte';
+  // Registers every md-* element on the client. In SvelteKit, onMount already
+  // guarantees the browser — plain SPAs can call it at module level instead.
+  import { defineCustomElements } from '@awc-ui/svelte';
+
+  const services = [
+    { name: 'Initial assessment', detail: 'Full movement screen and a treatment plan.', duration: 60, price: '€70' },
+    { name: 'Follow-up session', detail: 'Continue an existing treatment plan.', duration: 30, price: '€45' },
+    { name: 'Sports massage', detail: 'Deep-tissue work, pre- or post-event.', duration: 45, price: '€55' }
+  ];
+
+  let service = null;
+  let date = '';
+  let time = '';
+  let step = 0;
+  let status = '';
+
+  let stepperEl;
+  let datePickerEl;
+  let dialogEl;
+  let menuEl;
+  let splitEl;
+
+  // Continue is gated per step: a service on step 1, a full slot on step 2.
+  $: nextDisabled = step === 0 ? !service : step === 1 ? !(date && time) : false;
+  $: if (stepperEl) stepperEl.nextDisabled = nextDisabled;
+
+  onMount(() => {
+    defineCustomElements(window);
+    // isDateDisabled is a function property — assign it, there is no attribute.
+    datePickerEl.isDateDisabled = (d) => d.getDay() === 0 || d.getDay() === 6;
+  });
+
+  function formatDate(iso) {
+    const p = iso.split('-');
+    return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString('en-GB',
+      { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  function downloadIcs() {
+    const pad = (n) => (n < 10 ? '0' : '') + n;
+    const stamp = (dt) => '' + dt.getFullYear() + pad(dt.getMonth() + 1) +
+      pad(dt.getDate()) + 'T' + pad(dt.getHours()) + pad(dt.getMinutes()) + '00';
+    const p = date.split('-');
+    const t = time.split(':');
+    const start = new Date(+p[0], +p[1] - 1, +p[2], +t[0], +t[1]);
+    const end = new Date(start.getTime() + service.duration * 60000);
+    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'BEGIN:VEVENT',
+      'DTSTART:' + stamp(start), 'DTEND:' + stamp(end),
+      'SUMMARY:' + service.name + ' — Meridian Physio',
+      'LOCATION:Meridian Physio, 14 Arcului St, Bucharest',
+      'END:VEVENT', 'END:VCALENDAR'];
+    const a = document.createElement('a');
+    a.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(lines.join('\\r\\n'));
+    a.download = 'meridian-appointment.ics';
+    a.click();
+    status = 'meridian-appointment.ics saved — open it to add the event.';
+  }
+
+  function copyDetails() {
+    navigator.clipboard.writeText(service.name + ' — ' + formatDate(date) + ' ' +
+      time + ', Meridian Physio, 14 Arcului St, Bucharest');
+    status = 'Details copied to the clipboard.';
+  }
+</script>
+
+<md-stepper bind:this={stepperEl} label="Booking progress" finish-label="Book appointment"
+  on:mdStepChange={(e) => (step = e.detail.index)}
+  on:mdComplete={() => (dialogEl.open = true)}>
+  <md-step label="Service" description="What do you need?">
+    {#each services as s (s.name)}
+      <md-card interactive variant={service === s ? 'filled' : 'outlined'}
+        on:mdClick={() => (service = s)}>
+        <span>{s.name}</span>
+        <span>{s.detail}</span>
+        <span>{s.duration} min · {s.price}</span>
+      </md-card>
+    {/each}
+  </md-step>
+  <md-step label="Date & time" description="Pick a free slot">
+    <md-date-picker bind:this={datePickerEl} label="Date" required clearable
+      min="2026-09-01" max="2026-10-30" locale="en-GB" first-day-of-week="1"
+      supporting-text="Monday to Friday" reserve-supporting-space
+      on:mdChange={(e) => (date = e.detail.value)}></md-date-picker>
+    <md-time-picker label="Time" required format="24h" min="09:00" max="16:30"
+      minute-step="30" on:mdChange={(e) => (time = e.detail.value)}></md-time-picker>
+  </md-step>
+  <md-step label="Confirm" description="Review your booking">
+    <span>Service</span><span>{service ? service.name : '—'}</span>
+    <span>When</span><span>{date && time ? formatDate(date) + ', ' + time : '—'}</span>
+    <span>Duration</span><span>{service ? service.duration + ' minutes' : '—'}</span>
+    <span>Price</span><span>{service ? service.price : '—'}</span>
+  </md-step>
+</md-stepper>
+
+<md-dialog bind:this={dialogEl} headline="Appointment booked" icon="event_available"
+  scrim-dismissible="false">
+  {#if service && date}
+    <p>{service.name} with Dr. Elena Rusu on {formatDate(date)} at {time}.</p>
+  {/if}
+  <md-split-button bind:this={splitEl} id="cal-split" variant="tonal" icon="event"
+    label="Add to calendar" menu-label="More calendar options" controls="cal-menu"
+    on:mdLeadingClick={downloadIcs}
+    on:mdTrailingClick={(e) => (e.detail.checked ? menuEl.show() : menuEl.close())}></md-split-button>
+  {#if status}<p>{status}</p>{/if}
+  <md-button slot="actions" variant="text" on:mdClick={() => (dialogEl.open = false)}>Done</md-button>
+</md-dialog>
+
+<md-menu bind:this={menuEl} id="cal-menu" anchor="cal-split" placement="bottom-start"
+  on:mdClose={() => (splitEl.trailingChecked = false)}>
+  <md-menu-item headline="Download .ics file" on:mdClick={downloadIcs}></md-menu-item>
+  <md-menu-item headline="Copy details" on:mdClick={copyDetails}></md-menu-item>
+</md-menu>`}
 />
 
 ## How it's built

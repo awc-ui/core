@@ -181,6 +181,351 @@ one tap away without leaving the page.
     done.addEventListener('mdClick', () => sheet.close());
     root.querySelector('md-list-item[type="button"]').addEventListener('mdClick', () => sheet.close());
   `}
+  react={`import { useState } from 'react';
+import {
+  MdButton, MdChip, MdList, MdListItem, MdMeter, MdSideSheet,
+  MdStatusDot, MdStep, MdStepper,
+} from '@awc-ui/react';
+
+const STAGES = [
+  { label: 'Order placed', description: 'Mon 18 Aug, 09:14',
+    detail: 'Payment of 249,90 lei confirmed. Two items reserved at the Bucharest warehouse.' },
+  { label: 'Packed', description: 'Mon 18 Aug, 16:40',
+    detail: 'Sealed in one parcel (1.8 kg) and handed to Curier Express at gate D3.' },
+  { label: 'In transit', description: 'Last scan: Sibiu hub, 07:52',
+    detail: 'Departed the Sibiu sorting hub on line-haul RO-114.' },
+  { label: 'Out for delivery', description: 'Estimated Wed 20 Aug',
+    detail: 'Courier Andrei V. is on the route — your stop is number 8 of 22.' },
+  { label: 'Delivered', description: 'Signature required',
+    detail: 'Parcel handed over at the door. A signed proof of delivery is attached to this order.' },
+];
+
+// One scan index drives everything: the chip, the feed dot, the meter,
+// and which timeline stages are completed.
+const SCANS = [
+  { chip: 'In transit', color: 'info', km: 302 },
+  { chip: 'Out for delivery', color: 'tertiary', km: 437 },
+  { chip: 'Delivered', color: 'success', km: 449 },
+];
+
+export default function OrderTracking() {
+  const [scan, setScan] = useState(0);
+  const [supportOpen, setSupportOpen] = useState(false);
+
+  const active = 2 + scan;
+  const delivered = scan === SCANS.length - 1;
+  const current = SCANS[scan];
+
+  return (
+    <div style={{ display: 'grid', gap: 24, maxWidth: 620 }}>
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+        <h2 style={{ margin: 0 }}>Order #48213</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <MdChip label={current.chip} color={current.color} appearance="filled" />
+          <span style={{ position: 'relative', display: 'inline-flex' }}>
+            <MdStatusDot state={delivered ? 'neutral' : 'online'} live={!delivered}
+                         label={delivered ? 'Carrier feed closed' : 'Carrier feed live'} />
+          </span>
+          <span>{delivered ? 'Feed closed' : 'Live feed'}</span>
+        </div>
+      </header>
+
+      <MdMeter label="Route progress — Bucharest to Cluj-Napoca" max={449}
+               value={current.km} valueText={current.km + ' km of 449 km'}
+               color={delivered ? 'success' : 'primary'} showLabel showValue />
+
+      <MdStepper orientation="vertical" nav={false} autoComplete={false}
+                 active={active} label="Shipment timeline">
+        {STAGES.map((s, i) => (
+          <MdStep key={s.label} label={s.label} description={s.description}
+                  completed={i < active || (delivered && i === active)}
+                  editable={i < active}>
+            <p style={{ margin: 0 }}>{s.detail}</p>
+          </MdStep>
+        ))}
+      </MdStepper>
+
+      <div style={{ display: 'flex', gap: 12 }}>
+        <MdButton variant="tonal" disabled={delivered} onMdClick={() => setScan(scan + 1)}>
+          {delivered ? 'Shipment delivered' : 'Simulate carrier scan'}
+        </MdButton>
+        <MdButton variant="outlined" onMdClick={() => setSupportOpen(true)}>Contact support</MdButton>
+      </div>
+
+      <MdSideSheet variant="modal" headline="Delivery support" detached topDivider bottomDivider
+                   open={supportOpen} onMdClose={() => setSupportOpen(false)}>
+        <p>Order #48213 · AWB 3805 5521 0021</p>
+        <MdList>
+          <MdListItem type="link" href="tel:+40723118402" leadingIcon="call"
+                      headline="Call the courier" supportingText="Andrei V. — +40 723 118 402" />
+          <MdListItem type="link" href="mailto:support@curierexpress.ro" leadingIcon="mail"
+                      headline="Email support" supportingText="Replies within one business day" />
+          <MdListItem type="button" leadingIcon="report" headline="Report a problem"
+                      supportingText="Damaged, delayed, or missing parcel"
+                      onMdClick={() => setSupportOpen(false)} />
+        </MdList>
+        <MdButton slot="actions" variant="text" onMdClick={() => setSupportOpen(false)}>Done</MdButton>
+      </MdSideSheet>
+    </div>
+  );
+}`}
+  angular={`// order-tracking.component.ts — standalone; the md-* tags are used directly
+// (elements registered once in main.ts:  import '@awc-ui/core/define';)
+import { Component, CUSTOM_ELEMENTS_SCHEMA, computed, signal } from '@angular/core';
+
+const STAGES = [
+  { label: 'Order placed', description: 'Mon 18 Aug, 09:14',
+    detail: 'Payment of 249,90 lei confirmed. Two items reserved at the Bucharest warehouse.' },
+  { label: 'Packed', description: 'Mon 18 Aug, 16:40',
+    detail: 'Sealed in one parcel (1.8 kg) and handed to Curier Express at gate D3.' },
+  { label: 'In transit', description: 'Last scan: Sibiu hub, 07:52',
+    detail: 'Departed the Sibiu sorting hub on line-haul RO-114.' },
+  { label: 'Out for delivery', description: 'Estimated Wed 20 Aug',
+    detail: 'Courier Andrei V. is on the route — your stop is number 8 of 22.' },
+  { label: 'Delivered', description: 'Signature required',
+    detail: 'Parcel handed over at the door. A signed proof of delivery is attached to this order.' },
+];
+
+// One scan index drives the chip, the feed dot, the meter, and the timeline.
+const SCANS = [
+  { chip: 'In transit', color: 'info', km: 302 },
+  { chip: 'Out for delivery', color: 'tertiary', km: 437 },
+  { chip: 'Delivered', color: 'success', km: 449 },
+];
+
+@Component({
+  selector: 'app-order-tracking',
+  standalone: true,
+  // Without this the compiler rejects the property bindings on md-* tags.
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  templateUrl: './order-tracking.component.html',
+})
+export class OrderTrackingComponent {
+  stages = STAGES;
+  scan = signal(0);
+  supportOpen = signal(false);
+
+  active = computed(() => 2 + this.scan());
+  delivered = computed(() => this.scan() === SCANS.length - 1);
+  current = computed(() => SCANS[this.scan()]);
+
+  advance() { if (!this.delivered()) this.scan.update((s) => s + 1); }
+}
+
+<!-- order-tracking.component.html -->
+<div class="order-status">
+  <header>
+    <h2>Order #48213</h2>
+    <md-chip [label]="current().chip" [color]="current().color" appearance="filled"></md-chip>
+    <span style="position: relative; display: inline-flex;">
+      <md-status-dot [state]="delivered() ? 'neutral' : 'online'" [live]="!delivered()"
+                     [label]="delivered() ? 'Carrier feed closed' : 'Carrier feed live'"></md-status-dot>
+    </span>
+    <span>{{ delivered() ? 'Feed closed' : 'Live feed' }}</span>
+  </header>
+
+  <md-meter label="Route progress — Bucharest to Cluj-Napoca" max="449"
+            [value]="current().km" [valueText]="current().km + ' km of 449 km'"
+            [color]="delivered() ? 'success' : 'primary'" show-label show-value></md-meter>
+
+  <md-stepper orientation="vertical" nav="false" auto-complete="false"
+              [active]="active()" label="Shipment timeline">
+    @for (s of stages; track s.label; let i = $index) {
+      <md-step [label]="s.label" [description]="s.description"
+               [completed]="i < active() || (delivered() && i === active())"
+               [editable]="i < active()">
+        <p>{{ s.detail }}</p>
+      </md-step>
+    }
+  </md-stepper>
+
+  <div class="actions">
+    <md-button variant="tonal" [disabled]="delivered()" (mdClick)="advance()">
+      {{ delivered() ? 'Shipment delivered' : 'Simulate carrier scan' }}
+    </md-button>
+    <md-button variant="outlined" (mdClick)="supportOpen.set(true)">Contact support</md-button>
+  </div>
+</div>
+
+<md-side-sheet variant="modal" headline="Delivery support" detached top-divider bottom-divider
+               [open]="supportOpen()" (mdClose)="supportOpen.set(false)">
+  <p>Order #48213 · AWB 3805 5521 0021</p>
+  <md-list>
+    <md-list-item type="link" href="tel:+40723118402" leading-icon="call"
+      headline="Call the courier" supporting-text="Andrei V. — +40 723 118 402"></md-list-item>
+    <md-list-item type="link" href="mailto:support@curierexpress.ro" leading-icon="mail"
+      headline="Email support" supporting-text="Replies within one business day"></md-list-item>
+    <md-list-item type="button" leading-icon="report" headline="Report a problem"
+      supporting-text="Damaged, delayed, or missing parcel" (mdClick)="supportOpen.set(false)"></md-list-item>
+  </md-list>
+  <md-button slot="actions" variant="text" (mdClick)="supportOpen.set(false)">Done</md-button>
+</md-side-sheet>`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  MdButton, MdChip, MdList, MdListItem, MdMeter, MdSideSheet,
+  MdStatusDot, MdStep, MdStepper,
+} from '@awc-ui/vue';
+
+const STAGES = [
+  { label: 'Order placed', description: 'Mon 18 Aug, 09:14',
+    detail: 'Payment of 249,90 lei confirmed. Two items reserved at the Bucharest warehouse.' },
+  { label: 'Packed', description: 'Mon 18 Aug, 16:40',
+    detail: 'Sealed in one parcel (1.8 kg) and handed to Curier Express at gate D3.' },
+  { label: 'In transit', description: 'Last scan: Sibiu hub, 07:52',
+    detail: 'Departed the Sibiu sorting hub on line-haul RO-114.' },
+  { label: 'Out for delivery', description: 'Estimated Wed 20 Aug',
+    detail: 'Courier Andrei V. is on the route — your stop is number 8 of 22.' },
+  { label: 'Delivered', description: 'Signature required',
+    detail: 'Parcel handed over at the door. A signed proof of delivery is attached to this order.' },
+];
+
+// One scan index drives the chip, the feed dot, the meter, and the timeline.
+const SCANS = [
+  { chip: 'In transit', color: 'info', km: 302 },
+  { chip: 'Out for delivery', color: 'tertiary', km: 437 },
+  { chip: 'Delivered', color: 'success', km: 449 },
+];
+
+const scan = ref(0);
+const supportOpen = ref(false);
+
+const active = computed(() => 2 + scan.value);
+const delivered = computed(() => scan.value === SCANS.length - 1);
+const current = computed(() => SCANS[scan.value]);
+
+function advance() { if (!delivered.value) scan.value += 1; }
+</script>
+
+<template>
+  <div class="order-status">
+    <header>
+      <h2>Order #48213</h2>
+      <MdChip :label="current.chip" :color="current.color" appearance="filled" />
+      <span style="position: relative; display: inline-flex;">
+        <MdStatusDot :state="delivered ? 'neutral' : 'online'" :live="!delivered"
+                     :label="delivered ? 'Carrier feed closed' : 'Carrier feed live'" />
+      </span>
+      <span>{{ delivered ? 'Feed closed' : 'Live feed' }}</span>
+    </header>
+
+    <MdMeter label="Route progress — Bucharest to Cluj-Napoca" :max="449"
+             :value="current.km" :valueText="current.km + ' km of 449 km'"
+             :color="delivered ? 'success' : 'primary'" :showLabel="true" :showValue="true" />
+
+    <MdStepper orientation="vertical" :nav="false" :autoComplete="false"
+               :active="active" label="Shipment timeline">
+      <MdStep v-for="(s, i) in STAGES" :key="s.label" :label="s.label" :description="s.description"
+              :completed="i < active || (delivered && i === active)" :editable="i < active">
+        <p>{{ s.detail }}</p>
+      </MdStep>
+    </MdStepper>
+
+    <div class="actions">
+      <MdButton variant="tonal" :disabled="delivered" @md-click="advance">
+        {{ delivered ? 'Shipment delivered' : 'Simulate carrier scan' }}
+      </MdButton>
+      <MdButton variant="outlined" @md-click="supportOpen = true">Contact support</MdButton>
+    </div>
+
+    <MdSideSheet variant="modal" headline="Delivery support" :detached="true"
+                 :topDivider="true" :bottomDivider="true"
+                 :open="supportOpen" @md-close="supportOpen = false">
+      <p>Order #48213 · AWB 3805 5521 0021</p>
+      <MdList>
+        <MdListItem type="link" href="tel:+40723118402" leadingIcon="call"
+                    headline="Call the courier" supportingText="Andrei V. — +40 723 118 402" />
+        <MdListItem type="link" href="mailto:support@curierexpress.ro" leadingIcon="mail"
+                    headline="Email support" supportingText="Replies within one business day" />
+        <MdListItem type="button" leadingIcon="report" headline="Report a problem"
+                    supportingText="Damaged, delayed, or missing parcel" @md-click="supportOpen = false" />
+      </MdList>
+      <MdButton slot="actions" variant="text" @md-click="supportOpen = false">Done</MdButton>
+    </MdSideSheet>
+  </div>
+</template>`}
+  svelte={`<script>
+  // Register the md-* elements once on the client. In SvelteKit, guard it:
+  //   if (browser) defineCustomElements(window);
+  import { defineCustomElements } from '@awc-ui/svelte';
+  defineCustomElements(window);
+
+  const STAGES = [
+    { label: 'Order placed', description: 'Mon 18 Aug, 09:14',
+      detail: 'Payment of 249,90 lei confirmed. Two items reserved at the Bucharest warehouse.' },
+    { label: 'Packed', description: 'Mon 18 Aug, 16:40',
+      detail: 'Sealed in one parcel (1.8 kg) and handed to Curier Express at gate D3.' },
+    { label: 'In transit', description: 'Last scan: Sibiu hub, 07:52',
+      detail: 'Departed the Sibiu sorting hub on line-haul RO-114.' },
+    { label: 'Out for delivery', description: 'Estimated Wed 20 Aug',
+      detail: 'Courier Andrei V. is on the route — your stop is number 8 of 22.' },
+    { label: 'Delivered', description: 'Signature required',
+      detail: 'Parcel handed over at the door. A signed proof of delivery is attached to this order.' },
+  ];
+
+  // One scan index drives the chip, the feed dot, the meter, and the timeline.
+  const SCANS = [
+    { chip: 'In transit', color: 'info', km: 302 },
+    { chip: 'Out for delivery', color: 'tertiary', km: 437 },
+    { chip: 'Delivered', color: 'success', km: 449 },
+  ];
+
+  let scan = 0;
+  let supportOpen = false;
+
+  $: active = 2 + scan;
+  $: delivered = scan === SCANS.length - 1;
+  $: current = SCANS[scan];
+
+  function advance() { if (!delivered) scan += 1; }
+</script>
+
+<div class="order-status">
+  <header>
+    <h2>Order #48213</h2>
+    <md-chip label={current.chip} color={current.color} appearance="filled"></md-chip>
+    <span style="position: relative; display: inline-flex;">
+      <md-status-dot state={delivered ? 'neutral' : 'online'} live={!delivered}
+                     label={delivered ? 'Carrier feed closed' : 'Carrier feed live'}></md-status-dot>
+    </span>
+    <span>{delivered ? 'Feed closed' : 'Live feed'}</span>
+  </header>
+
+  <md-meter label="Route progress — Bucharest to Cluj-Napoca" max="449"
+            value={current.km} value-text={current.km + ' km of 449 km'}
+            color={delivered ? 'success' : 'primary'} show-label show-value></md-meter>
+
+  <md-stepper orientation="vertical" nav="false" auto-complete="false"
+              active={active} label="Shipment timeline">
+    {#each STAGES as s, i (s.label)}
+      <md-step label={s.label} description={s.description}
+               completed={i < active || (delivered && i === active)} editable={i < active}>
+        <p>{s.detail}</p>
+      </md-step>
+    {/each}
+  </md-stepper>
+
+  <div class="actions">
+    <md-button variant="tonal" disabled={delivered} on:mdClick={advance}>
+      {delivered ? 'Shipment delivered' : 'Simulate carrier scan'}
+    </md-button>
+    <md-button variant="outlined" on:mdClick={() => (supportOpen = true)}>Contact support</md-button>
+  </div>
+</div>
+
+<md-side-sheet variant="modal" headline="Delivery support" detached top-divider bottom-divider
+               open={supportOpen} on:mdClose={() => (supportOpen = false)}>
+  <p>Order #48213 · AWB 3805 5521 0021</p>
+  <md-list>
+    <md-list-item type="link" href="tel:+40723118402" leading-icon="call"
+      headline="Call the courier" supporting-text="Andrei V. — +40 723 118 402"></md-list-item>
+    <md-list-item type="link" href="mailto:support@curierexpress.ro" leading-icon="mail"
+      headline="Email support" supporting-text="Replies within one business day"></md-list-item>
+    <md-list-item type="button" leading-icon="report" headline="Report a problem"
+      supporting-text="Damaged, delayed, or missing parcel" on:mdClick={() => (supportOpen = false)}></md-list-item>
+  </md-list>
+  <md-button slot="actions" variant="text" on:mdClick={() => (supportOpen = false)}>Done</md-button>
+</md-side-sheet>`}
 />
 
 ## How it's built

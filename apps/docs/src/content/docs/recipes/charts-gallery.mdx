@@ -229,6 +229,506 @@ reassignment — to repaint in the new brand.
       applyPreset(e.detail[0]);
     });
   `}
+  react={`import { useMemo, useState } from 'react';
+import {
+  MdAreaChart, MdBarChart, MdLineChart, MdMeter, MdPieChart,
+  MdProgressIndicator, MdSegmentedButton, MdSegmentedButtonSet, MdSparkline
+} from '@awc-ui/react';
+
+const MONTHS = ['May', 'Jun', 'Jul', 'Aug'];
+const DAYS = ['Aug 17', 'Aug 18', 'Aug 19', 'Aug 20'];
+
+const LINE = [
+  { label: 'Web', color: 'primary', data: [5580, 5490, 6120, 6740] },
+  { label: 'Mobile', color: 'tertiary', data: [2900, 3350, 3610, 4020] }
+];
+const AREA = [
+  { label: 'Media', color: 'primary', data: [600, 646, 700, 741] },
+  { label: 'Documents', color: 'tertiary', data: [352, 380, 401, 428] },
+  { label: 'Backups', color: 'secondary', data: [190, 204, 210, 222] }
+];
+const BARS = [
+  { label: 'FY25', color: 'secondary', data: [640, 520, 310, 190] },
+  { label: 'FY26', color: 'primary', data: [720, 590, 405, 238] }
+];
+const PIE = [
+  { label: 'Organic', value: 5200 }, { label: 'Direct', value: 3120 },
+  { label: 'Referral', value: 1980 }, { label: 'Paid', value: 1240 }
+];
+
+// Palette presets swap the MD3 roles the series resolve to. 'default' is the
+// absence of overrides — the site theme shows through. (Full presets also
+// swap the on-* / container roles; trimmed to the roles the series sample.)
+const PRESETS = {
+  default: {},
+  forest: { '--md-sys-color-primary': '#3d6838', '--md-sys-color-secondary': '#53634e', '--md-sys-color-tertiary': '#386569' },
+  ocean: { '--md-sys-color-primary': '#00658e', '--md-sys-color-secondary': '#4f616e', '--md-sys-color-tertiary': '#635a7c' },
+  sunset: { '--md-sys-color-primary': '#8f4c38', '--md-sys-color-secondary': '#77574e', '--md-sys-color-tertiary': '#6c5d2f' }
+};
+
+const tile = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', padding: '12px 16px', borderRadius: '12px', background: 'var(--md-sys-color-surface-container-low)' };
+const row = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' };
+
+export default function ChartsGallery() {
+  const [preset, setPreset] = useState('default');
+
+  // The Canvas2D charts sample the tokens at paint time and only repaint when
+  // their data changes — so every preset swap hands them FRESH references.
+  const charts = useMemo(() => ({
+    line: LINE.map((s) => ({ ...s })),
+    area: AREA.map((s) => ({ ...s })),
+    bars: BARS.map((s) => ({ ...s })),
+    pie: PIE.map((d) => ({ ...d })),
+    deploys: [8, 12, 10, 14],
+    latency: [362, 340, 331, 318]
+  }), [preset]);
+
+  return (
+    <div style={{ display: 'grid', gap: '16px', ...PRESETS[preset] }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+        <div>
+          <h2 style={{ margin: 0 }}>Northwind Cloud — August 2026</h2>
+          <span>Usage, revenue, and platform health</span>
+        </div>
+        <MdSegmentedButtonSet aria-label="Chart palette preset" onMdChange={(e) => setPreset(e.detail[0])}>
+          <MdSegmentedButton value="default" label="Baseline" selected={preset === 'default'} />
+          <MdSegmentedButton value="forest" label="Forest" selected={preset === 'forest'} />
+          <MdSegmentedButton value="ocean" label="Ocean" selected={preset === 'ocean'} />
+          <MdSegmentedButton value="sunset" label="Sunset" selected={preset === 'sunset'} />
+        </MdSegmentedButtonSet>
+      </div>
+
+      <MdLineChart label="Weekly active users" subtitle="May – August" heightProp="240px"
+        showMarks curve="monotone" xAxis={{ data: MONTHS, scale: 'category' }}
+        yAxis={{ label: 'Users', min: 0 }} series={charts.line} />
+
+      <div style={row}>
+        <MdAreaChart label="Storage by type" subtitle="Stacked, GB" heightProp="230px"
+          xAxis={{ data: MONTHS, scale: 'category' }} yAxis={{ label: 'GB', min: 0 }}
+          series={charts.area} valueFormatter={(v) => (v == null ? '' : v + ' GB')} />
+        <MdBarChart label="Revenue by region" subtitle="USD thousands" heightProp="230px"
+          cornerRadius={4} xAxis={{ data: ['North America', 'Europe', 'APAC', 'LATAM'] }}
+          yAxis={{ label: 'USD (k)', min: 0 }} series={charts.bars} />
+      </div>
+
+      <div style={row}>
+        <MdPieChart label="Traffic by source" subtitle="Last 30 days" showLabels={false}
+          innerRadius="45%" legend="bottom" heightProp="300px" data={charts.pie}>
+          <div slot="center" style={{ textAlign: 'center' }}>
+            <strong>11,540</strong><br />visits
+          </div>
+        </MdPieChart>
+
+        <div style={{ display: 'grid', gap: '12px', alignContent: 'start' }}>
+          <div style={tile}>
+            <div><div>Deploys per day</div><strong>14</strong></div>
+            <MdSparkline variant="bar" color="primary" heightProp="36px" style={{ width: '120px' }}
+              data={charts.deploys} labels={DAYS} />
+          </div>
+          <div style={tile}>
+            <div><div>p95 latency</div><strong>318 ms</strong></div>
+            <MdSparkline color="tertiary" heightProp="36px" style={{ width: '120px' }}
+              data={charts.latency} labels={DAYS}
+              valueFormatter={(v) => (v == null ? 0 : v) + ' ms'} />
+          </div>
+          <div style={{ ...tile, padding: '16px' }}>
+            <div style={{ display: 'grid', gap: '12px', flex: 1 }}>
+              <MdMeter value={62} label="Storage used" showLabel showValue valueText="1.24 TB of 2 TB" />
+              <div>
+                <div>Nightly export — 412 of 605 tables</div>
+                <MdProgressIndicator value={412} max={605} label="Nightly export" />
+              </div>
+            </div>
+            <MdMeter variant="circular" value={84} size={88} thickness={8}
+              label="API quota" showLabel showValue color="tertiary" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+import {
+  MdAreaChart, MdBarChart, MdLineChart, MdMeter, MdPieChart,
+  MdProgressIndicator, MdSegmentedButton, MdSegmentedButtonSet, MdSparkline
+} from '@awc-ui/angular';
+
+// Palette presets swap the MD3 roles the chart series resolve to. Baseline is
+// the absence of overrides — a null binding removes the inline property, so
+// the site theme (dark mode included) shows through.
+const PRESETS: any = {
+  forest: { primary: '#3d6838', secondary: '#53634e', tertiary: '#386569' },
+  ocean: { primary: '#00658e', secondary: '#4f616e', tertiary: '#635a7c' },
+  sunset: { primary: '#8f4c38', secondary: '#77574e', tertiary: '#6c5d2f' }
+};
+
+@Component({
+  selector: 'app-charts-gallery',
+  standalone: true,
+  imports: [
+    MdAreaChart, MdBarChart, MdLineChart, MdMeter, MdPieChart,
+    MdProgressIndicator, MdSegmentedButton, MdSegmentedButtonSet, MdSparkline
+  ],
+  template:
+    '<div class="gallery"' +
+    '  [style.--md-sys-color-primary]="tokens?.primary || null"' +
+    '  [style.--md-sys-color-secondary]="tokens?.secondary || null"' +
+    '  [style.--md-sys-color-tertiary]="tokens?.tertiary || null">' +
+    '  <header>' +
+    '    <div><h2>Northwind Cloud — August 2026</h2><span>Usage, revenue, and platform health</span></div>' +
+    '    <md-segmented-button-set aria-label="Chart palette preset" (mdChange)="onPreset($event)">' +
+    '      @for (p of segments; track p.value) {' +
+    '        <md-segmented-button [value]="p.value" [label]="p.label" [selected]="preset === p.value"></md-segmented-button>' +
+    '      }' +
+    '    </md-segmented-button-set>' +
+    '  </header>' +
+    '  <md-line-chart label="Weekly active users" subtitle="May – August" heightProp="240px" [showMarks]="true" curve="monotone" [xAxis]="monthsAxis" [yAxis]="usersAxis" [series]="lineSeries"></md-line-chart>' +
+    '  <div class="row">' +
+    '    <md-area-chart label="Storage by type" subtitle="Stacked, GB" heightProp="230px" [xAxis]="monthsAxis" [yAxis]="gbAxis" [series]="areaSeries" [valueFormatter]="fmtGb"></md-area-chart>' +
+    '    <md-bar-chart label="Revenue by region" subtitle="USD thousands" heightProp="230px" [cornerRadius]="4" [xAxis]="regionAxis" [yAxis]="usdAxis" [series]="barSeries"></md-bar-chart>' +
+    '  </div>' +
+    '  <div class="row">' +
+    '    <md-pie-chart label="Traffic by source" subtitle="Last 30 days" [showLabels]="false" innerRadius="45%" legend="bottom" heightProp="300px" [data]="pieData">' +
+    '      <div slot="center" style="text-align: center;"><strong>11,540</strong><br>visits</div>' +
+    '    </md-pie-chart>' +
+    '    <div class="tiles">' +
+    '      <div class="tile"><div><div>Deploys per day</div><strong>14</strong></div>' +
+    '        <md-sparkline variant="bar" color="primary" heightProp="36px" style="width: 120px" [data]="deploys" [labels]="days"></md-sparkline></div>' +
+    '      <div class="tile"><div><div>p95 latency</div><strong>318 ms</strong></div>' +
+    '        <md-sparkline color="tertiary" heightProp="36px" style="width: 120px" [data]="latency" [labels]="days" [valueFormatter]="fmtMs"></md-sparkline></div>' +
+    '      <div class="tile">' +
+    '        <div class="gauges">' +
+    '          <md-meter [value]="62" label="Storage used" [showLabel]="true" [showValue]="true" valueText="1.24 TB of 2 TB"></md-meter>' +
+    '          <div><div>Nightly export — 412 of 605 tables</div>' +
+    '            <md-progress-indicator [value]="412" [max]="605" label="Nightly export"></md-progress-indicator></div>' +
+    '        </div>' +
+    '        <md-meter variant="circular" [value]="84" [size]="88" [thickness]="8" label="API quota" [showLabel]="true" [showValue]="true" color="tertiary"></md-meter>' +
+    '      </div>' +
+    '    </div>' +
+    '  </div>' +
+    '</div>',
+  styles: [
+    '.gallery { display: grid; gap: 16px; } header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; } ' +
+    '.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; } .tiles { display: grid; gap: 12px; align-content: start; } ' +
+    '.tile { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 12px; background: var(--md-sys-color-surface-container-low); } ' +
+    '.gauges { display: grid; gap: 12px; flex: 1; }'
+  ]
+})
+export class ChartsGalleryComponent {
+  segments = [
+    { value: 'default', label: 'Baseline' }, { value: 'forest', label: 'Forest' },
+    { value: 'ocean', label: 'Ocean' }, { value: 'sunset', label: 'Sunset' }
+  ];
+  preset = 'default';
+  tokens: any = null;
+
+  days = ['Aug 17', 'Aug 18', 'Aug 19', 'Aug 20'];
+  monthsAxis: any = { data: ['May', 'Jun', 'Jul', 'Aug'], scale: 'category' };
+  usersAxis: any = { label: 'Users', min: 0 };
+  gbAxis: any = { label: 'GB', min: 0 };
+  regionAxis: any = { data: ['North America', 'Europe', 'APAC', 'LATAM'] };
+  usdAxis: any = { label: 'USD (k)', min: 0 };
+
+  lineSeries: any[] = [
+    { label: 'Web', color: 'primary', data: [5580, 5490, 6120, 6740] },
+    { label: 'Mobile', color: 'tertiary', data: [2900, 3350, 3610, 4020] }
+  ];
+  areaSeries: any[] = [
+    { label: 'Media', color: 'primary', data: [600, 646, 700, 741] },
+    { label: 'Documents', color: 'tertiary', data: [352, 380, 401, 428] },
+    { label: 'Backups', color: 'secondary', data: [190, 204, 210, 222] }
+  ];
+  barSeries: any[] = [
+    { label: 'FY25', color: 'secondary', data: [640, 520, 310, 190] },
+    { label: 'FY26', color: 'primary', data: [720, 590, 405, 238] }
+  ];
+  pieData: any[] = [
+    { label: 'Organic', value: 5200 }, { label: 'Direct', value: 3120 },
+    { label: 'Referral', value: 1980 }, { label: 'Paid', value: 1240 }
+  ];
+  deploys = [8, 12, 10, 14];
+  latency = [362, 340, 331, 318];
+
+  fmtGb = (v: number | null | undefined) => (v == null ? '' : v + ' GB');
+  fmtMs = (v: number | null) => (v == null ? 0 : v) + ' ms';
+
+  onPreset(event: Event) {
+    const name = (event as CustomEvent<string[]>).detail[0];
+    this.preset = name;
+    this.tokens = PRESETS[name] || null;
+    // The Canvas2D charts sample the tokens at paint time and only repaint on
+    // a data change — a fresh array reference per chart is the whole nudge.
+    this.lineSeries = this.lineSeries.slice();
+    this.areaSeries = this.areaSeries.slice();
+    this.barSeries = this.barSeries.slice();
+    this.pieData = this.pieData.slice();
+    this.deploys = this.deploys.slice();
+    this.latency = this.latency.slice();
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  MdAreaChart, MdBarChart, MdLineChart, MdMeter, MdPieChart,
+  MdProgressIndicator, MdSegmentedButton, MdSegmentedButtonSet, MdSparkline
+} from '@awc-ui/vue';
+
+const MONTHS = ['May', 'Jun', 'Jul', 'Aug'];
+const DAYS = ['Aug 17', 'Aug 18', 'Aug 19', 'Aug 20'];
+
+const LINE = [
+  { label: 'Web', color: 'primary', data: [5580, 5490, 6120, 6740] },
+  { label: 'Mobile', color: 'tertiary', data: [2900, 3350, 3610, 4020] }
+];
+const AREA = [
+  { label: 'Media', color: 'primary', data: [600, 646, 700, 741] },
+  { label: 'Documents', color: 'tertiary', data: [352, 380, 401, 428] },
+  { label: 'Backups', color: 'secondary', data: [190, 204, 210, 222] }
+];
+const BARS = [
+  { label: 'FY25', color: 'secondary', data: [640, 520, 310, 190] },
+  { label: 'FY26', color: 'primary', data: [720, 590, 405, 238] }
+];
+const PIE = [
+  { label: 'Organic', value: 5200 }, { label: 'Direct', value: 3120 },
+  { label: 'Referral', value: 1980 }, { label: 'Paid', value: 1240 }
+];
+
+// Palette presets swap the MD3 roles the series resolve to. Baseline is the
+// absence of overrides — an empty style object lets the site theme through.
+const PRESETS: Record<string, Record<string, string>> = {
+  forest: { '--md-sys-color-primary': '#3d6838', '--md-sys-color-secondary': '#53634e', '--md-sys-color-tertiary': '#386569' },
+  ocean: { '--md-sys-color-primary': '#00658e', '--md-sys-color-secondary': '#4f616e', '--md-sys-color-tertiary': '#635a7c' },
+  sunset: { '--md-sys-color-primary': '#8f4c38', '--md-sys-color-secondary': '#77574e', '--md-sys-color-tertiary': '#6c5d2f' }
+};
+
+const preset = ref('default');
+const presetStyle = computed(() => PRESETS[preset.value] || {});
+
+// The Canvas2D charts sample the tokens at paint time and only repaint when
+// their data changes. fresh() reads preset, so every computed below re-runs
+// on a palette swap and hands its chart a NEW reference — that is the nudge.
+function fresh<T extends object>(rows: T[]): T[] {
+  void preset.value;
+  return rows.map((r) => ({ ...r }));
+}
+const lineSeries = computed(() => fresh(LINE));
+const areaSeries = computed(() => fresh(AREA));
+const barSeries = computed(() => fresh(BARS));
+const pieData = computed(() => fresh(PIE));
+const deploys = computed(() => { void preset.value; return [8, 12, 10, 14]; });
+const latency = computed(() => { void preset.value; return [362, 340, 331, 318]; });
+
+const fmtGb = (v: number | null | undefined) => (v == null ? '' : v + ' GB');
+const fmtMs = (v: number | null) => (v == null ? 0 : v) + ' ms';
+
+function onPreset(e: CustomEvent<string[]>) {
+  preset.value = e.detail[0];
+}
+</script>
+
+<template>
+  <div class="gallery" :style="presetStyle">
+    <header>
+      <div><h2>Northwind Cloud — August 2026</h2><span>Usage, revenue, and platform health</span></div>
+      <MdSegmentedButtonSet aria-label="Chart palette preset" @md-change="onPreset">
+        <MdSegmentedButton value="default" label="Baseline" :selected="preset === 'default'" />
+        <MdSegmentedButton value="forest" label="Forest" :selected="preset === 'forest'" />
+        <MdSegmentedButton value="ocean" label="Ocean" :selected="preset === 'ocean'" />
+        <MdSegmentedButton value="sunset" label="Sunset" :selected="preset === 'sunset'" />
+      </MdSegmentedButtonSet>
+    </header>
+
+    <MdLineChart label="Weekly active users" subtitle="May – August" height-prop="240px"
+      :show-marks="true" curve="monotone" :x-axis="{ data: MONTHS, scale: 'category' }"
+      :y-axis="{ label: 'Users', min: 0 }" :series="lineSeries" />
+
+    <div class="row">
+      <MdAreaChart label="Storage by type" subtitle="Stacked, GB" height-prop="230px"
+        :x-axis="{ data: MONTHS, scale: 'category' }" :y-axis="{ label: 'GB', min: 0 }"
+        :series="areaSeries" :value-formatter="fmtGb" />
+      <MdBarChart label="Revenue by region" subtitle="USD thousands" height-prop="230px"
+        :corner-radius="4" :x-axis="{ data: ['North America', 'Europe', 'APAC', 'LATAM'] }"
+        :y-axis="{ label: 'USD (k)', min: 0 }" :series="barSeries" />
+    </div>
+
+    <div class="row">
+      <MdPieChart label="Traffic by source" subtitle="Last 30 days" :show-labels="false"
+        inner-radius="45%" legend="bottom" height-prop="300px" :data="pieData">
+        <div slot="center" style="text-align: center;"><strong>11,540</strong><br />visits</div>
+      </MdPieChart>
+
+      <div class="tiles">
+        <div class="tile">
+          <div><div>Deploys per day</div><strong>14</strong></div>
+          <MdSparkline variant="bar" color="primary" height-prop="36px" style="width: 120px"
+            :data="deploys" :labels="DAYS" />
+        </div>
+        <div class="tile">
+          <div><div>p95 latency</div><strong>318 ms</strong></div>
+          <MdSparkline color="tertiary" height-prop="36px" style="width: 120px"
+            :data="latency" :labels="DAYS" :value-formatter="fmtMs" />
+        </div>
+        <div class="tile">
+          <div class="gauges">
+            <MdMeter :value="62" label="Storage used" :show-label="true" :show-value="true"
+              value-text="1.24 TB of 2 TB" />
+            <div>
+              <div>Nightly export — 412 of 605 tables</div>
+              <MdProgressIndicator :value="412" :max="605" label="Nightly export" />
+            </div>
+          </div>
+          <MdMeter variant="circular" :value="84" :size="88" :thickness="8"
+            label="API quota" :show-label="true" :show-value="true" color="tertiary" />
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.gallery { display: grid; gap: 16px; }
+header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.tiles { display: grid; gap: 12px; align-content: start; }
+.tile { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 12px; background: var(--md-sys-color-surface-container-low); }
+.gauges { display: grid; gap: 12px; flex: 1; }
+</style>`}
+  svelte={`<script>
+  // The Svelte package ships the raw md-* elements — register them once on the client.
+  import { defineCustomElements } from '@awc-ui/svelte';
+  if (typeof window !== 'undefined') defineCustomElements(window); // SvelteKit: if (browser) ...
+
+  import { onMount } from 'svelte';
+
+  const MONTHS = ['May', 'Jun', 'Jul', 'Aug'];
+  const DAYS = ['Aug 17', 'Aug 18', 'Aug 19', 'Aug 20'];
+
+  // Palette presets swap the MD3 roles the chart series resolve to. Baseline
+  // is the absence of overrides — an empty style string lets the site theme
+  // (dark mode included) show through.
+  const PRESETS = {
+    forest: { primary: '#3d6838', secondary: '#53634e', tertiary: '#386569' },
+    ocean: { primary: '#00658e', secondary: '#4f616e', tertiary: '#635a7c' },
+    sunset: { primary: '#8f4c38', secondary: '#77574e', tertiary: '#6c5d2f' }
+  };
+
+  let preset = 'default';
+  let lineEl, areaEl, barEl, pieEl, deploysEl, latencyEl;
+
+  $: tokens = PRESETS[preset];
+  $: styleVars = tokens
+    ? '--md-sys-color-primary:' + tokens.primary +
+      ';--md-sys-color-secondary:' + tokens.secondary +
+      ';--md-sys-color-tertiary:' + tokens.tertiary + ';'
+    : '';
+
+  // Arrays never cross the attribute boundary — assign chart data as element
+  // properties. The Canvas2D charts also sample the color tokens at paint
+  // time and only repaint on a data change, so this runs again on every
+  // preset swap: the fresh references are the repaint nudge.
+  function applyData() {
+    if (!lineEl) return;
+    lineEl.xAxis = { data: MONTHS, scale: 'category' };
+    lineEl.yAxis = { label: 'Users', min: 0 };
+    lineEl.series = [
+      { label: 'Web', color: 'primary', data: [5580, 5490, 6120, 6740] },
+      { label: 'Mobile', color: 'tertiary', data: [2900, 3350, 3610, 4020] }
+    ];
+    areaEl.xAxis = { data: MONTHS, scale: 'category' };
+    areaEl.yAxis = { label: 'GB', min: 0 };
+    areaEl.series = [
+      { label: 'Media', color: 'primary', data: [600, 646, 700, 741] },
+      { label: 'Documents', color: 'tertiary', data: [352, 380, 401, 428] },
+      { label: 'Backups', color: 'secondary', data: [190, 204, 210, 222] }
+    ];
+    areaEl.valueFormatter = (v) => (v == null ? '' : v + ' GB');
+    barEl.xAxis = { data: ['North America', 'Europe', 'APAC', 'LATAM'] };
+    barEl.yAxis = { label: 'USD (k)', min: 0 };
+    barEl.series = [
+      { label: 'FY25', color: 'secondary', data: [640, 520, 310, 190] },
+      { label: 'FY26', color: 'primary', data: [720, 590, 405, 238] }
+    ];
+    pieEl.data = [
+      { label: 'Organic', value: 5200 }, { label: 'Direct', value: 3120 },
+      { label: 'Referral', value: 1980 }, { label: 'Paid', value: 1240 }
+    ];
+    deploysEl.data = [8, 12, 10, 14];
+    deploysEl.labels = DAYS;
+    latencyEl.data = [362, 340, 331, 318];
+    latencyEl.labels = DAYS;
+    latencyEl.valueFormatter = (v) => (v == null ? 0 : v) + ' ms';
+  }
+
+  $: preset, applyData(); // re-runs on every palette swap
+
+  onMount(async () => {
+    await customElements.whenDefined('md-line-chart');
+    applyData();
+  });
+
+  function onPreset(e) {
+    preset = e.detail[0];
+  }
+</script>
+
+<div class="gallery" style={styleVars}>
+  <header>
+    <div><h2>Northwind Cloud — August 2026</h2><span>Usage, revenue, and platform health</span></div>
+    <md-segmented-button-set aria-label="Chart palette preset" on:mdChange={onPreset}>
+      <md-segmented-button value="default" label="Baseline" selected={preset === 'default'}></md-segmented-button>
+      <md-segmented-button value="forest" label="Forest" selected={preset === 'forest'}></md-segmented-button>
+      <md-segmented-button value="ocean" label="Ocean" selected={preset === 'ocean'}></md-segmented-button>
+      <md-segmented-button value="sunset" label="Sunset" selected={preset === 'sunset'}></md-segmented-button>
+    </md-segmented-button-set>
+  </header>
+
+  <md-line-chart bind:this={lineEl} label="Weekly active users" subtitle="May – August"
+    height="240px" show-marks curve="monotone"></md-line-chart>
+
+  <div class="row">
+    <md-area-chart bind:this={areaEl} label="Storage by type" subtitle="Stacked, GB" height="230px"></md-area-chart>
+    <md-bar-chart bind:this={barEl} label="Revenue by region" subtitle="USD thousands" height="230px" corner-radius="4"></md-bar-chart>
+  </div>
+
+  <div class="row">
+    <md-pie-chart bind:this={pieEl} label="Traffic by source" subtitle="Last 30 days"
+      show-labels="false" inner-radius="45%" legend="bottom" height="300px">
+      <div slot="center" style="text-align: center;"><strong>11,540</strong><br />visits</div>
+    </md-pie-chart>
+
+    <div class="tiles">
+      <div class="tile">
+        <div><div>Deploys per day</div><strong>14</strong></div>
+        <md-sparkline bind:this={deploysEl} variant="bar" color="primary" height="36px" style="width: 120px"></md-sparkline>
+      </div>
+      <div class="tile">
+        <div><div>p95 latency</div><strong>318 ms</strong></div>
+        <md-sparkline bind:this={latencyEl} color="tertiary" height="36px" style="width: 120px"></md-sparkline>
+      </div>
+      <div class="tile">
+        <div class="gauges">
+          <md-meter value="62" label="Storage used" show-label show-value value-text="1.24 TB of 2 TB"></md-meter>
+          <div>
+            <div>Nightly export — 412 of 605 tables</div>
+            <md-progress-indicator value="412" max="605" label="Nightly export"></md-progress-indicator>
+          </div>
+        </div>
+        <md-meter variant="circular" value="84" size="88" thickness="8"
+          label="API quota" show-label show-value color="tertiary"></md-meter>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .gallery { display: grid; gap: 16px; }
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .tiles { display: grid; gap: 12px; align-content: start; }
+  .tile { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 12px; background: var(--md-sys-color-surface-container-low); }
+  .gauges { display: grid; gap: 12px; flex: 1; }
+</style>`}
 />
 
 ## How it's built

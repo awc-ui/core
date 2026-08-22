@@ -292,6 +292,555 @@ actions with Undo. The demo below runs a whole job queue through those rules.
     }
     retryBtn.addEventListener('click', function () { runRetry(); });
   `}
+  react={`import { useEffect, useRef, useState } from 'react';
+import {
+  MdButton, MdDialog, MdIconButton, MdList, MdListItem, MdLoadingIndicator,
+  MdProgressIndicator, MdSkeleton, MdSnackbar, MdStatusDot,
+} from '@awc-ui/react';
+
+const ROLLUP_DOT = { running: ['online', 'Running'], done: ['online', 'Finished'], cancelled: ['offline', 'Cancelled'] };
+const HOOK_DOT = { failed: ['busy', 'Failed'], retrying: ['online', 'Retrying'], delivered: ['online', 'Delivered'] };
+
+export default function ExportJobs() {
+  const bar = useRef(null);
+  const pendingClose = useRef(null);
+  const timer = useRef(null);
+  const [loading, setLoading] = useState(true);
+  const [rollup, setRollup] = useState({ value: 38, state: 'running' });
+  const [invoices, setInvoices] = useState('queued');
+  const [hook, setHook] = useState({ attempt: 2, state: 'failed' });
+  const [confirming, setConfirming] = useState(false);
+
+  // Snackbar conventions: ONE element, one pending-close callback.
+  // RULE: the action button never dismisses by itself -> hide('action').
+  // RULE: commit/undo on mdClose by reason, never inside mdAction.
+  const toast = (message, opts = {}) => {
+    const el = bar.current;
+    el.message = message; el.action = opts.action || '';
+    el.politeness = opts.assertive ? 'assertive' : 'polite';
+    el.autoHide = !opts.sticky; el.closeable = !!opts.sticky;
+    el.autoHideDuration = opts.duration || 4000;
+    pendingClose.current = opts.onClose || null;
+    el.show();
+  };
+
+  const startRollup = () => {
+    timer.current = setInterval(() => setRollup((r) => {
+      const value = Math.min(100, r.value + 2);
+      if (value === 100) { clearInterval(timer.current); timer.current = null; }
+      return { value, state: value === 100 ? 'done' : 'running' };
+    }), 250);
+  };
+
+  useEffect(() => { // stands in for the jobs fetch; skeletons render until replaced
+    const t = setTimeout(() => { setLoading(false); startRollup(); }, 1400);
+    return () => { clearTimeout(t); clearInterval(timer.current); };
+  }, []);
+
+  useEffect(() => { // the queue drains: the queued job takes the freed worker
+    if (rollup.state !== 'done') return;
+    setInvoices('running');
+    toast('Usage rollup finished');
+  }, [rollup.state]);
+
+  const confirmCancel = () => {
+    setConfirming(false);
+    clearInterval(timer.current); timer.current = null;
+    setRollup((r) => ({ ...r, state: 'cancelled' }));
+    toast('Usage rollup cancelled', { action: 'Undo', duration: 6000, onClose: (reason) => {
+      if (reason !== 'action') return; // auto/close = committed
+      setRollup((r) => ({ ...r, state: 'running' })); startRollup();
+    } });
+  };
+
+  const runRetry = (prev) => {
+    const attempt = prev + 1;
+    setHook({ attempt, state: 'retrying' });
+    setTimeout(() => { // stands in for the redelivery call
+      if (attempt < 4) {
+        setHook({ attempt, state: 'failed' });
+        toast('Webhook redelivery failed (503)', { assertive: true, sticky: true, action: 'Retry',
+          onClose: (reason) => { if (reason === 'action') runRetry(attempt); } });
+      } else { setHook({ attempt, state: 'delivered' }); toast('Webhook delivered'); }
+    }, 1600);
+  };
+
+  const rollupText = rollup.state === 'running' ? 'Step 3 of 5 - aggregating events (' + rollup.value + '%)'
+    : rollup.state === 'done' ? 'Completed - 2.1 MB written to exports/usage-2026-07.csv'
+    : 'Cancelled at ' + rollup.value + '% - partial output discarded';
+  const hookText = hook.state === 'retrying' ? 'Attempt ' + hook.attempt + ' - delivering to hooks.acme-billing.com...'
+    : hook.state === 'failed' ? 'Attempt ' + hook.attempt + ' failed - endpoint returned 503'
+    : 'Delivered on attempt ' + hook.attempt + ' - 200 OK in 340 ms';
+
+  if (loading) return ( // ONE live region, every skeleton inside it silent
+    <div role="status" aria-label="Loading export jobs" style={{ display: 'grid', gap: 18 }}>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+        <MdSkeleton variant="circular" width="12px" height="12px" announce={false} />
+        <div style={{ flex: 1 }}><MdSkeleton variant="text" lines={2} fullWidth announce={false} /></div>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      <MdList label="Export jobs" interactionMode="multi-action">
+        <MdListItem headline="Usage rollup - July">
+          <span slot="leading"><MdStatusDot state={ROLLUP_DOT[rollup.state][0]} live={rollup.state === 'running'}
+                                            label={ROLLUP_DOT[rollup.state][1]} /></span>
+          <span slot="supporting-text">
+            <span>{rollupText}</span>
+            {rollup.state !== 'cancelled' &&
+              <MdProgressIndicator value={rollup.value} max={100} complete={rollup.state === 'done'}
+                                   label="Usage rollup progress" />}
+          </span>
+          {rollup.state === 'running' &&
+            <MdIconButton slot="trailing" icon="close" size="xs" aria-label="Cancel the usage rollup export"
+                          onMdClick={() => setConfirming(true)} />}
+        </MdListItem>
+        <MdListItem headline="Invoice PDF batch (412 files)">
+          <span slot="leading"><MdStatusDot state={invoices === 'queued' ? 'neutral' : 'online'}
+                                            live={invoices === 'running'} label={invoices === 'queued' ? 'Queued' : 'Running'} /></span>
+          <span slot="supporting-text">{invoices === 'queued' ? 'Queued behind 1 job - no worker assigned yet' : 'Rendering invoice 18 of 412...'}</span>
+          {invoices === 'queued' && <MdLoadingIndicator slot="trailing" label="Waiting for a worker" />}
+        </MdListItem>
+        <MdListItem headline="Webhook redelivery - order.created">
+          <span slot="leading"><MdStatusDot state={HOOK_DOT[hook.state][0]} live={hook.state === 'retrying'}
+                                            label={HOOK_DOT[hook.state][1]} /></span>
+          <span slot="supporting-text">{hookText}</span>
+          {hook.state !== 'delivered' &&
+            <MdIconButton slot="trailing" icon="refresh" variant="tonal" size="xs" disabled={hook.state === 'retrying'}
+                          aria-label="Retry webhook redelivery" onMdClick={() => runRetry(hook.attempt)} />}
+        </MdListItem>
+      </MdList>
+
+      <MdSnackbar ref={bar} onMdAction={() => bar.current.hide('action')}
+                  onMdClose={(e) => { const cb = pendingClose.current; pendingClose.current = null; if (cb) cb(e.detail.reason); }} />
+
+      <MdDialog open={confirming} headline="Cancel this export?" icon="warning" scrimDismissible={false}
+                onMdCancel={() => setConfirming(false)}>
+        <p>"Usage rollup - July" is still running. Cancelling discards the partial file.</p>
+        <MdButton slot="actions" variant="text" onMdClick={() => setConfirming(false)}>Keep running</MdButton>
+        <MdButton slot="actions" variant="filled" onMdClick={confirmCancel}>Cancel export</MdButton>
+      </MdDialog>
+    </>
+  );
+}`}
+  angular={`// export-jobs.component.ts — standalone; the md-* tags are used directly
+// (elements registered once in main.ts:  import '@awc-ui/core/define';)
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, ViewChild, computed, signal } from '@angular/core';
+
+@Component({
+  selector: 'app-export-jobs',
+  standalone: true,
+  // Without this the compiler rejects the property bindings on md-* tags.
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  templateUrl: './export-jobs.component.html',
+})
+export class ExportJobsComponent {
+  @ViewChild('bar') bar!: ElementRef;
+
+  loading = signal(true);
+  rollup = signal({ value: 38, state: 'running' as 'running' | 'done' | 'cancelled' });
+  invoices = signal<'queued' | 'running'>('queued');
+  hook = signal({ attempt: 2, state: 'failed' as 'failed' | 'retrying' | 'delivered' });
+  confirming = signal(false);
+
+  rollupText = computed(() => {
+    const r = this.rollup();
+    if (r.state === 'running') return 'Step 3 of 5 - aggregating events (' + r.value + '%)';
+    if (r.state === 'done') return 'Completed - 2.1 MB written to exports/usage-2026-07.csv';
+    return 'Cancelled at ' + r.value + '% - partial output discarded';
+  });
+  hookText = computed(() => {
+    const h = this.hook();
+    if (h.state === 'retrying') return 'Attempt ' + h.attempt + ' - delivering to hooks.acme-billing.com...';
+    if (h.state === 'failed') return 'Attempt ' + h.attempt + ' failed - endpoint returned 503';
+    return 'Delivered on attempt ' + h.attempt + ' - 200 OK in 340 ms';
+  });
+
+  private timer: ReturnType<typeof setInterval> | null = null;
+  private pendingClose: ((reason: string) => void) | null = null;
+
+  ngOnInit() { // stands in for the jobs fetch; skeletons render until replaced
+    setTimeout(() => { this.loading.set(false); this.startRollup(); }, 1400);
+  }
+
+  // Snackbar conventions: ONE element, one pending-close callback.
+  // RULE: the action button never dismisses by itself -> hide('action').
+  // RULE: commit/undo on mdClose by reason, never inside mdAction.
+  toast(message: string, opts: any = {}) {
+    const el = this.bar.nativeElement;
+    el.message = message; el.action = opts.action || '';
+    el.politeness = opts.assertive ? 'assertive' : 'polite';
+    el.autoHide = !opts.sticky; el.closeable = !!opts.sticky;
+    el.autoHideDuration = opts.duration || 4000;
+    this.pendingClose = opts.onClose || null;
+    el.show();
+  }
+  onBarClose(e: Event) {
+    const cb = this.pendingClose; this.pendingClose = null;
+    if (cb) cb((e as CustomEvent<{ reason: string }>).detail.reason);
+  }
+
+  startRollup() {
+    this.timer = setInterval(() => {
+      const value = Math.min(100, this.rollup().value + 2);
+      if (value === 100) {
+        clearInterval(this.timer!); this.timer = null;
+        this.rollup.set({ value, state: 'done' });
+        this.invoices.set('running'); // the queue drains: the queued job takes the freed worker
+        this.toast('Usage rollup finished');
+      } else this.rollup.set({ value, state: 'running' });
+    }, 250);
+  }
+
+  confirmCancel() {
+    this.confirming.set(false);
+    if (this.timer) { clearInterval(this.timer); this.timer = null; }
+    this.rollup.update((r) => ({ ...r, state: 'cancelled' as const }));
+    this.toast('Usage rollup cancelled', { action: 'Undo', duration: 6000,
+      onClose: (reason: string) => {
+        if (reason !== 'action') return; // auto/close = committed
+        this.rollup.update((r) => ({ ...r, state: 'running' as const }));
+        this.startRollup();
+      } });
+  }
+
+  runRetry(prev: number) {
+    const attempt = prev + 1;
+    this.hook.set({ attempt, state: 'retrying' });
+    setTimeout(() => { // stands in for the redelivery call
+      if (attempt < 4) {
+        this.hook.set({ attempt, state: 'failed' });
+        this.toast('Webhook redelivery failed (503)', { assertive: true, sticky: true, action: 'Retry',
+          onClose: (reason: string) => { if (reason === 'action') this.runRetry(attempt); } });
+      } else { this.hook.set({ attempt, state: 'delivered' }); this.toast('Webhook delivered'); }
+    }, 1600);
+  }
+}
+
+<!-- export-jobs.component.html -->
+@if (loading()) {
+  <!-- ONE live region, every skeleton inside it silent -->
+  <div role="status" aria-label="Loading export jobs">
+    <md-skeleton variant="circular" width="12px" height="12px" [announce]="false"></md-skeleton>
+    <md-skeleton variant="text" lines="2" full-width [announce]="false"></md-skeleton>
+  </div>
+} @else {
+  <md-list label="Export jobs" interaction-mode="multi-action">
+    <md-list-item headline="Usage rollup - July">
+      <span slot="leading">
+        <md-status-dot [state]="rollup().state === 'cancelled' ? 'offline' : 'online'" [live]="rollup().state === 'running'"
+                       [label]="rollup().state === 'running' ? 'Running' : rollup().state === 'done' ? 'Finished' : 'Cancelled'"></md-status-dot>
+      </span>
+      <span slot="supporting-text">
+        <span>{{ rollupText() }}</span>
+        @if (rollup().state !== 'cancelled') {
+          <md-progress-indicator [value]="rollup().value" max="100" [complete]="rollup().state === 'done'"
+                                 label="Usage rollup progress"></md-progress-indicator>
+        }
+      </span>
+      @if (rollup().state === 'running') {
+        <md-icon-button slot="trailing" icon="close" size="xs" (mdClick)="confirming.set(true)"
+                        aria-label="Cancel the usage rollup export"></md-icon-button>
+      }
+    </md-list-item>
+    <md-list-item headline="Invoice PDF batch (412 files)">
+      <span slot="leading">
+        <md-status-dot [state]="invoices() === 'queued' ? 'neutral' : 'online'" [live]="invoices() === 'running'"
+                       [label]="invoices() === 'queued' ? 'Queued' : 'Running'"></md-status-dot>
+      </span>
+      <span slot="supporting-text">{{ invoices() === 'queued' ? 'Queued behind 1 job - no worker assigned yet' : 'Rendering invoice 18 of 412...' }}</span>
+      @if (invoices() === 'queued') {
+        <md-loading-indicator slot="trailing" label="Waiting for a worker"></md-loading-indicator>
+      }
+    </md-list-item>
+    <md-list-item headline="Webhook redelivery - order.created">
+      <span slot="leading">
+        <md-status-dot [state]="hook().state === 'failed' ? 'busy' : 'online'" [live]="hook().state === 'retrying'"
+                       [label]="hook().state === 'failed' ? 'Failed' : hook().state === 'retrying' ? 'Retrying' : 'Delivered'"></md-status-dot>
+      </span>
+      <span slot="supporting-text">{{ hookText() }}</span>
+      @if (hook().state !== 'delivered') {
+        <md-icon-button slot="trailing" icon="refresh" variant="tonal" size="xs" [disabled]="hook().state === 'retrying'"
+                        (mdClick)="runRetry(hook().attempt)" aria-label="Retry webhook redelivery"></md-icon-button>
+      }
+    </md-list-item>
+  </md-list>
+}
+
+<md-snackbar #bar (mdAction)="bar.nativeElement.hide('action')" (mdClose)="onBarClose($event)"></md-snackbar>
+
+<md-dialog [open]="confirming()" headline="Cancel this export?" icon="warning" [scrimDismissible]="false"
+           (mdCancel)="confirming.set(false)">
+  <p>"Usage rollup - July" is still running. Cancelling discards the partial file.</p>
+  <md-button slot="actions" variant="text" (mdClick)="confirming.set(false)">Keep running</md-button>
+  <md-button slot="actions" variant="filled" (mdClick)="confirmCancel()">Cancel export</md-button>
+</md-dialog>`}
+  vue={`<script setup lang="ts">
+import { computed, nextTick, onMounted, reactive, ref } from 'vue';
+import {
+  MdButton, MdDialog, MdIconButton, MdList, MdListItem, MdLoadingIndicator,
+  MdProgressIndicator, MdSkeleton, MdSnackbar, MdStatusDot,
+} from '@awc-ui/vue';
+
+const loading = ref(true);
+const rollup = reactive({ value: 38, state: 'running' });
+const invoices = ref('queued');
+const hook = reactive({ attempt: 2, state: 'failed' });
+const confirming = ref(false);
+const bar = ref();
+const snack = reactive({ message: '', action: '', politeness: 'polite', autoHide: true, closeable: false, duration: 4000 });
+
+let pendingClose: ((reason: string) => void) | null = null;
+let timer: ReturnType<typeof setInterval> | null = null;
+
+// Snackbar conventions: ONE element, one pending-close callback.
+// RULE: the action button never dismisses by itself -> hide('action').
+// RULE: commit/undo on mdClose by reason, never inside mdAction.
+function toast(message: string, opts: any = {}) {
+  snack.message = message; snack.action = opts.action || '';
+  snack.politeness = opts.assertive ? 'assertive' : 'polite';
+  snack.autoHide = !opts.sticky; snack.closeable = !!opts.sticky;
+  snack.duration = opts.duration || 4000;
+  pendingClose = opts.onClose || null;
+  nextTick(() => bar.value.$el.show());
+}
+function onBarClose(e: CustomEvent<{ reason: string }>) {
+  const cb = pendingClose; pendingClose = null;
+  if (cb) cb(e.detail.reason);
+}
+
+function startRollup() {
+  timer = setInterval(() => {
+    rollup.value = Math.min(100, rollup.value + 2);
+    if (rollup.value === 100) {
+      clearInterval(timer!); timer = null;
+      rollup.state = 'done';
+      invoices.value = 'running'; // the queue drains: the queued job takes the freed worker
+      toast('Usage rollup finished');
+    }
+  }, 250);
+}
+
+onMounted(() => { // stands in for the jobs fetch; skeletons render until replaced
+  setTimeout(() => { loading.value = false; startRollup(); }, 1400);
+});
+
+function confirmCancel() {
+  confirming.value = false;
+  if (timer) { clearInterval(timer); timer = null; }
+  rollup.state = 'cancelled';
+  toast('Usage rollup cancelled', { action: 'Undo', duration: 6000, onClose: (reason: string) => {
+    if (reason !== 'action') return; // auto/close = committed
+    rollup.state = 'running';
+    startRollup();
+  } });
+}
+
+function runRetry(prev: number) {
+  const attempt = prev + 1;
+  hook.attempt = attempt; hook.state = 'retrying';
+  setTimeout(() => { // stands in for the redelivery call
+    if (attempt < 4) {
+      hook.state = 'failed';
+      toast('Webhook redelivery failed (503)', { assertive: true, sticky: true, action: 'Retry',
+        onClose: (reason: string) => { if (reason === 'action') runRetry(attempt); } });
+    } else { hook.state = 'delivered'; toast('Webhook delivered'); }
+  }, 1600);
+}
+
+const rollupText = computed(() => rollup.state === 'running' ? 'Step 3 of 5 - aggregating events (' + rollup.value + '%)'
+  : rollup.state === 'done' ? 'Completed - 2.1 MB written to exports/usage-2026-07.csv'
+  : 'Cancelled at ' + rollup.value + '% - partial output discarded');
+const hookText = computed(() => hook.state === 'retrying' ? 'Attempt ' + hook.attempt + ' - delivering to hooks.acme-billing.com...'
+  : hook.state === 'failed' ? 'Attempt ' + hook.attempt + ' failed - endpoint returned 503'
+  : 'Delivered on attempt ' + hook.attempt + ' - 200 OK in 340 ms');
+</script>
+
+<template>
+  <!-- ONE live region, every skeleton inside it silent -->
+  <div v-if="loading" role="status" aria-label="Loading export jobs">
+    <MdSkeleton variant="circular" width="12px" height="12px" :announce="false" />
+    <MdSkeleton variant="text" :lines="2" :fullWidth="true" :announce="false" />
+  </div>
+  <MdList v-else label="Export jobs" interactionMode="multi-action">
+    <MdListItem headline="Usage rollup - July">
+      <span slot="leading">
+        <MdStatusDot :state="rollup.state === 'cancelled' ? 'offline' : 'online'" :live="rollup.state === 'running'"
+                     :label="rollup.state === 'running' ? 'Running' : rollup.state === 'done' ? 'Finished' : 'Cancelled'" />
+      </span>
+      <span slot="supporting-text">
+        <span>{{ rollupText }}</span>
+        <MdProgressIndicator v-if="rollup.state !== 'cancelled'" :value="rollup.value" :max="100"
+                             :complete="rollup.state === 'done'" label="Usage rollup progress" />
+      </span>
+      <MdIconButton v-if="rollup.state === 'running'" slot="trailing" icon="close" size="xs"
+                    aria-label="Cancel the usage rollup export" @md-click="confirming = true" />
+    </MdListItem>
+    <MdListItem headline="Invoice PDF batch (412 files)">
+      <span slot="leading">
+        <MdStatusDot :state="invoices === 'queued' ? 'neutral' : 'online'" :live="invoices === 'running'"
+                     :label="invoices === 'queued' ? 'Queued' : 'Running'" />
+      </span>
+      <span slot="supporting-text">{{ invoices === 'queued' ? 'Queued behind 1 job - no worker assigned yet' : 'Rendering invoice 18 of 412...' }}</span>
+      <MdLoadingIndicator v-if="invoices === 'queued'" slot="trailing" label="Waiting for a worker" />
+    </MdListItem>
+    <MdListItem headline="Webhook redelivery - order.created">
+      <span slot="leading">
+        <MdStatusDot :state="hook.state === 'failed' ? 'busy' : 'online'" :live="hook.state === 'retrying'"
+                     :label="hook.state === 'failed' ? 'Failed' : hook.state === 'retrying' ? 'Retrying' : 'Delivered'" />
+      </span>
+      <span slot="supporting-text">{{ hookText }}</span>
+      <MdIconButton v-if="hook.state !== 'delivered'" slot="trailing" icon="refresh" variant="tonal" size="xs"
+                    :disabled="hook.state === 'retrying'" aria-label="Retry webhook redelivery" @md-click="runRetry(hook.attempt)" />
+    </MdListItem>
+  </MdList>
+
+  <MdSnackbar ref="bar" :message="snack.message" :action="snack.action" :politeness="snack.politeness"
+              :autoHide="snack.autoHide" :closeable="snack.closeable" :autoHideDuration="snack.duration"
+              @md-action="bar.$el.hide('action')" @md-close="onBarClose" />
+
+  <MdDialog :open="confirming" headline="Cancel this export?" icon="warning" :scrimDismissible="false"
+            @md-cancel="confirming = false">
+    <p>"Usage rollup - July" is still running. Cancelling discards the partial file.</p>
+    <MdButton slot="actions" variant="text" @md-click="confirming = false">Keep running</MdButton>
+    <MdButton slot="actions" variant="filled" @md-click="confirmCancel">Cancel export</MdButton>
+  </MdDialog>
+</template>`}
+  svelte={`<script>
+  // Register the md-* elements once on the client. In SvelteKit, guard it:
+  //   if (browser) defineCustomElements(window);
+  import { defineCustomElements } from '@awc-ui/svelte';
+  defineCustomElements(window);
+
+  let loading = true;
+  let rollup = { value: 38, state: 'running' };
+  let invoices = 'queued';
+  let hook = { attempt: 2, state: 'failed' };
+  let confirming = false;
+  let bar;
+  let pendingClose = null;
+  let timer = null;
+
+  $: rollupText = rollup.state === 'running' ? 'Step 3 of 5 - aggregating events (' + rollup.value + '%)'
+    : rollup.state === 'done' ? 'Completed - 2.1 MB written to exports/usage-2026-07.csv'
+    : 'Cancelled at ' + rollup.value + '% - partial output discarded';
+  $: hookText = hook.state === 'retrying' ? 'Attempt ' + hook.attempt + ' - delivering to hooks.acme-billing.com...'
+    : hook.state === 'failed' ? 'Attempt ' + hook.attempt + ' failed - endpoint returned 503'
+    : 'Delivered on attempt ' + hook.attempt + ' - 200 OK in 340 ms';
+
+  // Snackbar conventions: ONE element, one pending-close callback.
+  // RULE: the action button never dismisses by itself -> hide('action').
+  // RULE: commit/undo on mdClose by reason, never inside mdAction.
+  function toast(message, opts = {}) {
+    bar.message = message; bar.action = opts.action || '';
+    bar.politeness = opts.assertive ? 'assertive' : 'polite';
+    bar.autoHide = !opts.sticky; bar.closeable = !!opts.sticky;
+    bar.autoHideDuration = opts.duration || 4000;
+    pendingClose = opts.onClose || null;
+    bar.show();
+  }
+  function onBarClose(e) {
+    const cb = pendingClose; pendingClose = null;
+    if (cb) cb(e.detail.reason);
+  }
+
+  function startRollup() {
+    timer = setInterval(() => {
+      const value = Math.min(100, rollup.value + 2);
+      rollup = { value, state: value === 100 ? 'done' : 'running' };
+      if (value === 100) {
+        clearInterval(timer); timer = null;
+        invoices = 'running'; // the queue drains: the queued job takes the freed worker
+        toast('Usage rollup finished');
+      }
+    }, 250);
+  }
+  // stands in for the jobs fetch; skeletons render until replaced
+  setTimeout(() => { loading = false; startRollup(); }, 1400);
+
+  function confirmCancel() {
+    confirming = false;
+    if (timer) { clearInterval(timer); timer = null; }
+    rollup = { ...rollup, state: 'cancelled' };
+    toast('Usage rollup cancelled', { action: 'Undo', duration: 6000, onClose: (reason) => {
+      if (reason !== 'action') return; // auto/close = committed
+      rollup = { ...rollup, state: 'running' };
+      startRollup();
+    } });
+  }
+
+  function runRetry(prev) {
+    const attempt = prev + 1;
+    hook = { attempt, state: 'retrying' };
+    setTimeout(() => { // stands in for the redelivery call
+      if (attempt < 4) {
+        hook = { attempt, state: 'failed' };
+        toast('Webhook redelivery failed (503)', { assertive: true, sticky: true, action: 'Retry',
+          onClose: (reason) => { if (reason === 'action') runRetry(attempt); } });
+      } else { hook = { attempt, state: 'delivered' }; toast('Webhook delivered'); }
+    }, 1600);
+  }
+</script>
+
+{#if loading}
+  <!-- ONE live region, every skeleton inside it silent -->
+  <div role="status" aria-label="Loading export jobs">
+    <md-skeleton variant="circular" width="12px" height="12px" announce="false"></md-skeleton>
+    <md-skeleton variant="text" lines="2" full-width announce="false"></md-skeleton>
+  </div>
+{:else}
+  <md-list label="Export jobs" interaction-mode="multi-action">
+    <md-list-item headline="Usage rollup - July">
+      <span slot="leading">
+        <md-status-dot state={rollup.state === 'cancelled' ? 'offline' : 'online'} live={rollup.state === 'running'}
+                       label={rollup.state === 'running' ? 'Running' : rollup.state === 'done' ? 'Finished' : 'Cancelled'}></md-status-dot>
+      </span>
+      <span slot="supporting-text">
+        <span>{rollupText}</span>
+        {#if rollup.state !== 'cancelled'}
+          <md-progress-indicator value={rollup.value} max="100" complete={rollup.state === 'done'}
+                                 label="Usage rollup progress"></md-progress-indicator>
+        {/if}
+      </span>
+      {#if rollup.state === 'running'}
+        <md-icon-button slot="trailing" icon="close" size="xs" aria-label="Cancel the usage rollup export"
+                        on:mdClick={() => (confirming = true)}></md-icon-button>
+      {/if}
+    </md-list-item>
+    <md-list-item headline="Invoice PDF batch (412 files)">
+      <span slot="leading">
+        <md-status-dot state={invoices === 'queued' ? 'neutral' : 'online'} live={invoices === 'running'}
+                       label={invoices === 'queued' ? 'Queued' : 'Running'}></md-status-dot>
+      </span>
+      <span slot="supporting-text">{invoices === 'queued' ? 'Queued behind 1 job - no worker assigned yet' : 'Rendering invoice 18 of 412...'}</span>
+      {#if invoices === 'queued'}
+        <md-loading-indicator slot="trailing" label="Waiting for a worker"></md-loading-indicator>
+      {/if}
+    </md-list-item>
+    <md-list-item headline="Webhook redelivery - order.created">
+      <span slot="leading">
+        <md-status-dot state={hook.state === 'failed' ? 'busy' : 'online'} live={hook.state === 'retrying'}
+                       label={hook.state === 'failed' ? 'Failed' : hook.state === 'retrying' ? 'Retrying' : 'Delivered'}></md-status-dot>
+      </span>
+      <span slot="supporting-text">{hookText}</span>
+      {#if hook.state !== 'delivered'}
+        <md-icon-button slot="trailing" icon="refresh" variant="tonal" size="xs" disabled={hook.state === 'retrying'}
+                        aria-label="Retry webhook redelivery" on:mdClick={() => runRetry(hook.attempt)}></md-icon-button>
+      {/if}
+    </md-list-item>
+  </md-list>
+{/if}
+
+<md-snackbar bind:this={bar} on:mdAction={() => bar.hide('action')} on:mdClose={onBarClose}></md-snackbar>
+
+<md-dialog open={confirming} headline="Cancel this export?" icon="warning" scrim-dismissible="false"
+           on:mdCancel={() => (confirming = false)}>
+  <p>"Usage rollup - July" is still running. Cancelling discards the partial file.</p>
+  <md-button slot="actions" variant="text" on:mdClick={() => (confirming = false)}>Keep running</md-button>
+  <md-button slot="actions" variant="filled" on:mdClick={confirmCancel}>Cancel export</md-button>
+</md-dialog>`}
 />
 
 ## How it's built

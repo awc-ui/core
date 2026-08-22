@@ -183,6 +183,437 @@ it that way.
       field.value = '';
     });
   `}
+  react={`import { useMemo, useState } from 'react';
+import {
+  MdAvatar, MdButton, MdChip, MdList, MdListItem, MdMeter, MdRating,
+  MdSegmentedButton, MdSegmentedButtonSet, MdTextField,
+} from '@awc-ui/react';
+
+const DISTRIBUTION = [
+  { label: '5 stars', count: 82 }, { label: '4 stars', count: 29 }, { label: '3 stars', count: 9 },
+  { label: '2 stars', count: 5 }, { label: '1 star', count: 3 },
+];
+
+const SEED_REVIEWS = [
+  { name: 'Mara Ionescu', initials: 'MI', verified: true, rating: 5, date: '2026-08-18', dateLabel: 'Aug 18', helpful: 34,
+    body: 'Battery lasted my whole work week on one charge, and the noise cancelling makes open-office Mondays bearable.' },
+  { name: 'Dan Popa', initials: 'DP', verified: true, rating: 4, date: '2026-08-11', dateLabel: 'Aug 11', helpful: 21,
+    body: 'Sound is warm and the app EQ is genuinely useful. One star off: the carrying case is bulkier than the photos suggest.' },
+  { name: 'Jonas Weber', initials: 'JW', verified: true, rating: 3, date: '2026-07-30', dateLabel: 'Jul 30', helpful: 48,
+    body: 'Comfort and battery are excellent, but firmware 2.1 introduced a faint hiss on transparency mode.' },
+];
+
+export default function ProductReviews() {
+  const [reviews, setReviews] = useState(SEED_REVIEWS);
+  const [sortBy, setSortBy] = useState('recent');
+  const [score, setScore] = useState(0);
+  const [body, setBody] = useState('');
+  const [needsRating, setNeedsRating] = useState(false);
+
+  const sorted = useMemo(() => {
+    const next = [...reviews];
+    next.sort((a, b) => (sortBy === 'helpful' ? b.helpful - a.helpful : b.date.localeCompare(a.date)));
+    return next;
+  }, [reviews, sortBy]);
+
+  const submit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!score) { setNeedsRating(true); return; } // 0 means "no rating given"
+    setNeedsRating(false);
+    setReviews([...reviews, {
+      name: 'Alex Petrescu', initials: 'AP', verified: false, rating: score,
+      date: new Date().toISOString().slice(0, 10), dateLabel: 'Just now', helpful: 0,
+      body: body || 'No written review.',
+    }]);
+    setScore(0);
+    setBody('');
+  };
+
+  return (
+    <div style={{ maxWidth: 680, marginInline: 'auto', display: 'grid', gap: 24 }}>
+      <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ display: 'grid', gap: 4, justifyItems: 'center' }}>
+          <span style={{ font: 'var(--md-sys-typescale-display-medium)' }}>4.4</span>
+          <MdRating value={4.5} precision={0.5} readonly ratingLabel="Average rating 4.4 out of 5" />
+          <span>128 reviews</span>
+        </div>
+        <div style={{ flex: 1, minWidth: 260, display: 'grid', gap: 6 }}>
+          {DISTRIBUTION.map((bar) => (
+            <MdMeter key={bar.label} label={bar.label} value={bar.count} max={128}
+              valueText={bar.count + ' reviews'} showLabel showValue thickness={6} />
+          ))}
+        </div>
+      </div>
+      <form onSubmit={submit} style={{ display: 'grid', gap: 12 }}>
+        <span>Write a review</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <MdRating name="score" size="lg" ratingLabel="Rate this product" value={score}
+            getLabel={(v) => v + ' out of 5 stars'}
+            onMdChange={(e) => setScore(e.detail)} />
+          {needsRating && (
+            <span style={{ color: 'var(--md-sys-color-error)' }}>Choose a star rating first.</span>
+          )}
+        </div>
+        <MdTextField label="Your review" multiline="auto-grow" rows={3} maxLength={500}
+          supportingText="What worked, what didn't — be specific." variant="outlined"
+          value={body} onMdInput={(e) => setBody(e.detail)} />
+        <MdButton type="submit" variant="filled" style={{ justifySelf: 'start' }}>Post review</MdButton>
+      </form>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+        <span>128 reviews</span>
+        <MdSegmentedButtonSet aria-label="Sort reviews" onMdChange={(e) => setSortBy(e.detail[0] ?? 'recent')}>
+          <MdSegmentedButton value="recent" label="Most recent" selected={sortBy === 'recent'} />
+          <MdSegmentedButton value="helpful" label="Most helpful" selected={sortBy === 'helpful'} />
+        </MdSegmentedButtonSet>
+      </div>
+      <MdList label="Customer reviews">
+        {sorted.map((r) => (
+          <MdListItem key={r.name + r.date} supportingText={r.body} trailingSupportingText={r.dateLabel}>
+            <MdAvatar slot="leading" initials={r.initials} />
+            <span slot="headline" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {r.name}
+              {r.verified && (
+                <MdChip variant="assist" appearance="outlined" color="success" icon="verified"
+                  label="Verified purchase" density={-2} />
+              )}
+            </span>
+            <MdRating slot="overline" readonly size="xs" value={r.rating}
+              ratingLabel={'Rated ' + r.rating + ' out of 5'} />
+          </MdListItem>
+        ))}
+      </MdList>
+    </div>
+  );
+}
+`}
+  angular={`import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import {
+  MdAvatar, MdButton, MdChip, MdList, MdListItem, MdMeter, MdRating,
+  MdSegmentedButton, MdSegmentedButtonSet, MdTextField,
+  NumericValueAccessor, TextValueAccessor,
+} from '@awc-ui/angular';
+
+@Component({
+  selector: 'app-product-reviews',
+  standalone: true,
+  imports: [
+    FormsModule, NumericValueAccessor, TextValueAccessor,
+    MdAvatar, MdButton, MdChip, MdList, MdListItem, MdMeter, MdRating,
+    MdSegmentedButton, MdSegmentedButtonSet, MdTextField,
+  ],
+  template:
+    '<div class="reviews">' +
+    '<div class="aggregate">' +
+    '<div class="score"><span class="num">4.4</span>' +
+    '<md-rating [value]="4.5" [precision]="0.5" readonly rating-label="Average rating 4.4 out of 5"></md-rating>' +
+    '<span>128 reviews</span></div>' +
+    '<div class="bars">' +
+    '@for (bar of distribution; track bar.label) {' +
+    '<md-meter [label]="bar.label" [value]="bar.count" [max]="128" [valueText]="bar.text" show-label show-value thickness="6"></md-meter>' +
+    '}</div></div>' +
+    '<form class="write" (ngSubmit)="submit()">' +
+    '<span>Write a review</span>' +
+    '<div class="stars">' +
+    '<md-rating name="score" size="lg" rating-label="Rate this product" [getLabel]="labelFor" [(ngModel)]="score"></md-rating>' +
+    '@if (needsRating) {<span class="hint">Choose a star rating first.</span>}' +
+    '</div>' +
+    '<md-text-field name="body" label="Your review" multiline="auto-grow" rows="3" max-length="500" ' +
+    '[supportingText]="supportingHint" variant="outlined" [(ngModel)]="body"></md-text-field>' +
+    '<md-button type="submit" variant="filled" class="post">Post review</md-button>' +
+    '</form>' +
+    '<div class="sort"><span>128 reviews</span>' +
+    '<md-segmented-button-set aria-label="Sort reviews" (mdChange)="onSort($event)">' +
+    '<md-segmented-button value="recent" label="Most recent" [selected]="isRecent"></md-segmented-button>' +
+    '<md-segmented-button value="helpful" label="Most helpful" [selected]="isHelpful"></md-segmented-button>' +
+    '</md-segmented-button-set></div>' +
+    '<md-list label="Customer reviews">' +
+    '@for (r of sorted; track r.name + r.date) {' +
+    '<md-list-item [supportingText]="r.body" [trailingSupportingText]="r.dateLabel">' +
+    '<md-avatar slot="leading" [initials]="r.initials"></md-avatar>' +
+    '<span slot="headline" class="who">{{ r.name }}' +
+    '@if (r.verified) {<md-chip variant="assist" appearance="outlined" color="success" icon="verified" label="Verified purchase" density="-2"></md-chip>}' +
+    '</span>' +
+    '<md-rating slot="overline" readonly size="xs" [value]="r.rating" [ratingLabel]="ratedLabel(r.rating)"></md-rating>' +
+    '</md-list-item>}' +
+    '</md-list></div>',
+  styles: [
+    '.reviews { max-width: 680px; margin-inline: auto; display: grid; gap: 24px; }' +
+    ' .aggregate { display: flex; gap: 32px; flex-wrap: wrap; align-items: center; }' +
+    ' .score { display: grid; gap: 4px; justify-items: center; }' +
+    ' .num { font: var(--md-sys-typescale-display-medium); }' +
+    ' .bars { flex: 1; min-width: 260px; display: grid; gap: 6px; }' +
+    ' .write { display: grid; gap: 12px; }' +
+    ' .stars { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }' +
+    ' .hint { color: var(--md-sys-color-error); }' +
+    ' .post { justify-self: start; }' +
+    ' .sort { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }' +
+    ' .who { display: flex; align-items: center; gap: 8px; }',
+  ],
+})
+export class ProductReviewsComponent {
+  readonly distribution = [
+    { label: '5 stars', count: 82, text: '82 reviews' }, { label: '4 stars', count: 29, text: '29 reviews' },
+    { label: '3 stars', count: 9, text: '9 reviews' }, { label: '2 stars', count: 5, text: '5 reviews' },
+    { label: '1 star', count: 3, text: '3 reviews' },
+  ];
+  reviews = [
+    { name: 'Mara Ionescu', initials: 'MI', verified: true, rating: 5, date: '2026-08-18', dateLabel: 'Aug 18', helpful: 34,
+      body: 'Battery lasted my whole work week on one charge, and the noise cancelling makes open-office Mondays bearable.' },
+    { name: 'Dan Popa', initials: 'DP', verified: true, rating: 4, date: '2026-08-11', dateLabel: 'Aug 11', helpful: 21,
+      body: 'Sound is warm and the app EQ is genuinely useful. One star off: the carrying case is bulkier than the photos suggest.' },
+    { name: 'Jonas Weber', initials: 'JW', verified: true, rating: 3, date: '2026-07-30', dateLabel: 'Jul 30', helpful: 48,
+      body: 'Comfort and battery are excellent, but firmware 2.1 introduced a faint hiss on transparency mode.' },
+  ];
+  sortBy = 'recent';
+  score = 0;
+  body = '';
+  needsRating = false;
+  readonly supportingHint = "What worked, what didn't — be specific.";
+  labelFor = (v: number) => v + ' out of 5 stars';
+
+  get isRecent() { return this.sortBy === 'recent'; }
+  get isHelpful() { return this.sortBy === 'helpful'; }
+  get sorted() {
+    const next = [...this.reviews];
+    next.sort((a, b) => (this.sortBy === 'helpful' ? b.helpful - a.helpful : b.date.localeCompare(a.date)));
+    return next;
+  }
+
+  ratedLabel(v: number) { return 'Rated ' + v + ' out of 5'; }
+  onSort(e: CustomEvent<string[]>) { this.sortBy = e.detail[0] || 'recent'; }
+  submit() {
+    if (!this.score) { this.needsRating = true; return; } // 0 means "no rating given"
+    this.needsRating = false;
+    this.reviews = [...this.reviews, {
+      name: 'Alex Petrescu', initials: 'AP', verified: false, rating: this.score,
+      date: new Date().toISOString().slice(0, 10), dateLabel: 'Just now', helpful: 0,
+      body: this.body || 'No written review.',
+    }];
+    this.score = 0;
+    this.body = '';
+  }
+}
+`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  MdAvatar, MdButton, MdChip, MdList, MdListItem, MdMeter, MdRating,
+  MdSegmentedButton, MdSegmentedButtonSet, MdTextField,
+} from '@awc-ui/vue';
+
+const distribution = [
+  { label: '5 stars', count: 82 }, { label: '4 stars', count: 29 }, { label: '3 stars', count: 9 },
+  { label: '2 stars', count: 5 }, { label: '1 star', count: 3 },
+];
+
+const reviews = ref([
+  { name: 'Mara Ionescu', initials: 'MI', verified: true, rating: 5, date: '2026-08-18', dateLabel: 'Aug 18', helpful: 34,
+    body: 'Battery lasted my whole work week on one charge, and the noise cancelling makes open-office Mondays bearable.' },
+  { name: 'Dan Popa', initials: 'DP', verified: true, rating: 4, date: '2026-08-11', dateLabel: 'Aug 11', helpful: 21,
+    body: 'Sound is warm and the app EQ is genuinely useful. One star off: the carrying case is bulkier than the photos suggest.' },
+  { name: 'Jonas Weber', initials: 'JW', verified: true, rating: 3, date: '2026-07-30', dateLabel: 'Jul 30', helpful: 48,
+    body: 'Comfort and battery are excellent, but firmware 2.1 introduced a faint hiss on transparency mode.' },
+]);
+const sortBy = ref('recent');
+const score = ref(0);
+const body = ref('');
+const needsRating = ref(false);
+
+const sorted = computed(() => {
+  const next = [...reviews.value];
+  next.sort((a, b) => (sortBy.value === 'helpful' ? b.helpful - a.helpful : b.date.localeCompare(a.date)));
+  return next;
+});
+
+function labelFor(v: number) { return v + ' out of 5 stars'; }
+function ratedLabel(v: number) { return 'Rated ' + v + ' out of 5'; }
+function onSort(e: CustomEvent<string[]>) { sortBy.value = e.detail[0] || 'recent'; }
+function submit() {
+  if (!score.value) { needsRating.value = true; return; } // 0 means "no rating given"
+  needsRating.value = false;
+  reviews.value = [...reviews.value, {
+    name: 'Alex Petrescu', initials: 'AP', verified: false, rating: score.value,
+    date: new Date().toISOString().slice(0, 10), dateLabel: 'Just now', helpful: 0,
+    body: body.value || 'No written review.',
+  }];
+  score.value = 0;
+  body.value = '';
+}
+</script>
+
+<template>
+  <div class="reviews">
+    <div class="aggregate">
+      <div class="score">
+        <span class="num">4.4</span>
+        <MdRating :value="4.5" :precision="0.5" readonly rating-label="Average rating 4.4 out of 5" />
+        <span>128 reviews</span>
+      </div>
+      <div class="bars">
+        <MdMeter v-for="bar in distribution" :key="bar.label" :label="bar.label" :value="bar.count"
+          :max="128" :value-text="bar.count + ' reviews'" show-label show-value :thickness="6" />
+      </div>
+    </div>
+    <form class="write" @submit.prevent="submit">
+      <span>Write a review</span>
+      <div class="stars">
+        <MdRating name="score" size="lg" rating-label="Rate this product" :value="score"
+          :get-label="labelFor" @md-change="score = $event.detail" />
+        <span v-if="needsRating" class="hint">Choose a star rating first.</span>
+      </div>
+      <MdTextField label="Your review" multiline="auto-grow" :rows="3" :max-length="500"
+        supporting-text="What worked, what didn't — be specific." variant="outlined"
+        :value="body" @md-input="body = $event.detail" />
+      <MdButton type="submit" variant="filled" class="post">Post review</MdButton>
+    </form>
+    <div class="sort">
+      <span>128 reviews</span>
+      <MdSegmentedButtonSet aria-label="Sort reviews" @md-change="onSort">
+        <MdSegmentedButton value="recent" label="Most recent" :selected="sortBy === 'recent'" />
+        <MdSegmentedButton value="helpful" label="Most helpful" :selected="sortBy === 'helpful'" />
+      </MdSegmentedButtonSet>
+    </div>
+    <MdList label="Customer reviews">
+      <MdListItem v-for="r in sorted" :key="r.name + r.date"
+        :supporting-text="r.body" :trailing-supporting-text="r.dateLabel">
+        <MdAvatar slot="leading" :initials="r.initials" />
+        <span slot="headline" class="who">
+          {{ r.name }}
+          <MdChip v-if="r.verified" variant="assist" appearance="outlined" color="success"
+            icon="verified" label="Verified purchase" :density="-2" />
+        </span>
+        <MdRating slot="overline" readonly size="xs" :value="r.rating" :rating-label="ratedLabel(r.rating)" />
+      </MdListItem>
+    </MdList>
+  </div>
+</template>
+
+<style scoped>
+.reviews { max-width: 680px; margin-inline: auto; display: grid; gap: 24px; }
+.aggregate { display: flex; gap: 32px; flex-wrap: wrap; align-items: center; }
+.score { display: grid; gap: 4px; justify-items: center; }
+.num { font: var(--md-sys-typescale-display-medium); }
+.bars { flex: 1; min-width: 260px; display: grid; gap: 6px; }
+.write { display: grid; gap: 12px; }
+.stars { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.hint { color: var(--md-sys-color-error); }
+.post { justify-self: start; }
+.sort { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.who { display: flex; align-items: center; gap: 8px; }
+</style>
+`}
+  svelte={`<script>
+  // Registers every md-* element once on the client.
+  // In SvelteKit, run this behind an if (browser) guard from '$app/environment'.
+  import { defineCustomElements } from '@awc-ui/svelte';
+  import { onMount } from 'svelte';
+  if (typeof window !== 'undefined') defineCustomElements(window);
+
+  const distribution = [
+    { label: '5 stars', count: 82 }, { label: '4 stars', count: 29 }, { label: '3 stars', count: 9 },
+    { label: '2 stars', count: 5 }, { label: '1 star', count: 3 },
+  ];
+
+  let reviews = [
+    { name: 'Mara Ionescu', initials: 'MI', verified: true, rating: 5, date: '2026-08-18', dateLabel: 'Aug 18', helpful: 34,
+      body: 'Battery lasted my whole work week on one charge, and the noise cancelling makes open-office Mondays bearable.' },
+    { name: 'Dan Popa', initials: 'DP', verified: true, rating: 4, date: '2026-08-11', dateLabel: 'Aug 11', helpful: 21,
+      body: 'Sound is warm and the app EQ is genuinely useful. One star off: the carrying case is bulkier than the photos suggest.' },
+    { name: 'Jonas Weber', initials: 'JW', verified: true, rating: 3, date: '2026-07-30', dateLabel: 'Jul 30', helpful: 48,
+      body: 'Comfort and battery are excellent, but firmware 2.1 introduced a faint hiss on transparency mode.' },
+  ];
+  let sortBy = 'recent';
+  let score = 0;
+  let body = '';
+  let needsRating = false;
+  let writeRating;
+
+  // getLabel is a function prop, so assign it on the element itself.
+  onMount(() => { writeRating.getLabel = (v) => v + ' out of 5 stars'; });
+
+  $: sorted = [...reviews].sort((a, b) =>
+    sortBy === 'helpful' ? b.helpful - a.helpful : b.date.localeCompare(a.date));
+
+  function onSort(e) { sortBy = e.detail[0] || 'recent'; }
+  function submit() {
+    if (!score) { needsRating = true; return; } // 0 means "no rating given"
+    needsRating = false;
+    reviews = [...reviews, {
+      name: 'Alex Petrescu', initials: 'AP', verified: false, rating: score,
+      date: new Date().toISOString().slice(0, 10), dateLabel: 'Just now', helpful: 0,
+      body: body || 'No written review.',
+    }];
+    score = 0;
+    body = '';
+  }
+</script>
+
+<div class="reviews">
+  <div class="aggregate">
+    <div class="score">
+      <span class="num">4.4</span>
+      <md-rating value="4.5" precision="0.5" readonly rating-label="Average rating 4.4 out of 5"></md-rating>
+      <span>128 reviews</span>
+    </div>
+    <div class="bars">
+      {#each distribution as bar (bar.label)}
+        <md-meter label={bar.label} value={bar.count} max="128" value-text={bar.count + ' reviews'}
+          show-label show-value thickness="6"></md-meter>
+      {/each}
+    </div>
+  </div>
+  <form class="write" on:submit|preventDefault={submit}>
+    <span>Write a review</span>
+    <div class="stars">
+      <md-rating bind:this={writeRating} name="score" size="lg" rating-label="Rate this product"
+        value={score} on:mdChange={(e) => (score = e.detail)}></md-rating>
+      {#if needsRating}<span class="hint">Choose a star rating first.</span>{/if}
+    </div>
+    <md-text-field label="Your review" multiline="auto-grow" rows="3" max-length="500"
+      supporting-text="What worked, what didn't — be specific." variant="outlined"
+      value={body} on:mdInput={(e) => (body = e.detail)}></md-text-field>
+    <md-button type="submit" variant="filled" class="post">Post review</md-button>
+  </form>
+  <div class="sort">
+    <span>128 reviews</span>
+    <md-segmented-button-set aria-label="Sort reviews" on:mdChange={onSort}>
+      <md-segmented-button value="recent" label="Most recent" selected={sortBy === 'recent'}></md-segmented-button>
+      <md-segmented-button value="helpful" label="Most helpful" selected={sortBy === 'helpful'}></md-segmented-button>
+    </md-segmented-button-set>
+  </div>
+  <md-list label="Customer reviews">
+    {#each sorted as r (r.name + r.date)}
+      <md-list-item supporting-text={r.body} trailing-supporting-text={r.dateLabel}>
+        <md-avatar slot="leading" initials={r.initials}></md-avatar>
+        <span slot="headline" class="who">
+          {r.name}
+          {#if r.verified}
+            <md-chip variant="assist" appearance="outlined" color="success" icon="verified"
+              label="Verified purchase" density="-2"></md-chip>
+          {/if}
+        </span>
+        <md-rating slot="overline" readonly size="xs" value={r.rating}
+          rating-label={'Rated ' + r.rating + ' out of 5'}></md-rating>
+      </md-list-item>
+    {/each}
+  </md-list>
+</div>
+
+<style>
+  .reviews { max-width: 680px; margin-inline: auto; display: grid; gap: 24px; }
+  .aggregate { display: flex; gap: 32px; flex-wrap: wrap; align-items: center; }
+  .score { display: grid; gap: 4px; justify-items: center; }
+  .num { font: var(--md-sys-typescale-display-medium); }
+  .bars { flex: 1; min-width: 260px; display: grid; gap: 6px; }
+  .write { display: grid; gap: 12px; }
+  .stars { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .hint { color: var(--md-sys-color-error); }
+  .post { justify-self: start; }
+  .sort { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .who { display: flex; align-items: center; gap: 8px; }
+</style>
+`}
 />
 
 ## How it's built

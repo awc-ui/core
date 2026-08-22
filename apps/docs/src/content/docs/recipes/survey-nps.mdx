@@ -216,6 +216,488 @@ progress bar's closing animation before the thank-you
       thanks.hidden = false;
     });
   `}
+  react={`import { useState } from 'react';
+import {
+  MdButton, MdCard, MdCheckbox, MdMultiSelect, MdProgressIndicator,
+  MdRadio, MdRating, MdSelectOption, MdSlider, MdStep, MdStepper,
+} from '@awc-ui/react';
+
+const SCORES = Array.from({ length: 11 }, (_, i) => i);
+const FREQUENCIES = [
+  { value: 'daily', label: 'Every day' },
+  { value: 'weekly', label: 'A few times a week' },
+  { value: 'monthly', label: 'A few times a month' },
+  { value: 'rarely', label: 'Rarely' },
+];
+
+export default function ProductSurvey() {
+  const [active, setActive] = useState(0);
+  const [rating, setRating] = useState(0);
+  const [nps, setNps] = useState(null);
+  const [frequency, setFrequency] = useState(null);
+  const [features, setFeatures] = useState([]);
+  const [renew, setRenew] = useState(60);
+  const [contact, setContact] = useState(false);
+  const [done, setDone] = useState(false);
+
+  // Continue stays disabled until the active question is answered.
+  const nextDisabled =
+    (active === 0 && rating === 0) ||
+    (active === 1 && nps === null) ||
+    (active === 2 && frequency === null);
+
+  // detail.selected is the POST-click state; preventDefault() vetoes the
+  // flip, so re-clicking the chosen score cannot empty the scale.
+  const onNpsClick = (e, score) => {
+    if (e.detail.selected === false) {
+      e.preventDefault();
+      return;
+    }
+    setNps(score);
+  };
+
+  const band = nps >= 9 ? 'a promoter' : nps >= 7 ? 'passive' : 'a detractor';
+
+  return (
+    <div style={{ maxWidth: 640, marginInline: 'auto', display: 'grid', gap: 20 }}>
+      <div style={{ display: 'grid', gap: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <span>Quarterly product survey</span>
+          <span>{done ? 'All 4 questions answered' : 'Question ' + (active + 1) + ' of 4'}</span>
+        </div>
+        <MdProgressIndicator value={done ? 4 : active} max={4} complete={done} label="Survey progress" />
+      </div>
+
+      {!done && (
+        <MdStepper
+          label="Survey questions"
+          finishLabel="Submit survey"
+          nextDisabled={nextDisabled}
+          onMdStepChange={(e) => setActive(e.detail.index)}
+          onMdComplete={() => setDone(true)}
+        >
+          <MdStep label="Satisfaction" description="Overall experience">
+            <p>How satisfied are you with Meridian CRM overall?</p>
+            <MdRating size="lg" ratingLabel="Overall satisfaction"
+              getLabel={(v) => v + ' out of 5 stars'}
+              onMdChange={(e) => setRating(e.detail)} />
+          </MdStep>
+          <MdStep label="Recommend" description="0-10 scale">
+            <p>How likely are you to recommend Meridian CRM to a colleague?</p>
+            <div role="group" aria-label="Likelihood to recommend, 0 to 10"
+              style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {SCORES.map((score) => (
+                <MdButton key={score} variant="outlined" size="xs" toggle
+                  value={String(score)} selected={nps === score}
+                  onMdClick={(e) => onNpsClick(e, score)}>
+                  {score}
+                </MdButton>
+              ))}
+            </div>
+          </MdStep>
+          <MdStep label="Usage" description="How you work">
+            <div role="radiogroup" aria-label="Usage frequency">
+              {FREQUENCIES.map((f) => (
+                <label key={f.value} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <MdRadio name="survey-frequency" value={f.value}
+                    checked={frequency === f.value}
+                    onMdChange={() => setFrequency(f.value)} />
+                  {f.label}
+                </label>
+              ))}
+            </div>
+            <MdMultiSelect label="Features you use regularly"
+              supportingText="Optional — pick any that apply"
+              value={features} onMdChange={(e) => setFeatures(e.detail)}>
+              <MdSelectOption value="pipelines">Pipelines</MdSelectOption>
+              <MdSelectOption value="email-sync">Email sync</MdSelectOption>
+              <MdSelectOption value="reports">Reports</MdSelectOption>
+            </MdMultiSelect>
+          </MdStep>
+          <MdStep label="Wrap-up" description="Almost done">
+            <p>How likely are you to renew your subscription next quarter?</p>
+            <MdSlider min={0} max={100} step={10} stops valueIndicator
+              value={renew} valueText={renew + ' percent'}
+              sliderAriaLabel="Likelihood to renew"
+              onMdInput={(e) => setRenew(e.detail.value)} />
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <MdCheckbox checked={contact}
+                onMdChange={(e) => setContact(e.detail.checked)} />
+              You can contact me about this feedback
+            </label>
+          </MdStep>
+        </MdStepper>
+      )}
+
+      {done && (
+        <MdCard variant="filled" style={{ padding: 24, display: 'grid', gap: 8 }}>
+          <span>Thanks — your feedback is in.</span>
+          <span>
+            {'You rated Meridian ' + rating + '/5 and gave it an NPS of ' + nps +
+              ' (' + band + ').' + (contact ? ' We will follow up by email.' : '')}
+          </span>
+        </MdCard>
+      )}
+    </div>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import {
+  MdButton, MdCard, MdCheckbox, MdMultiSelect, MdProgressIndicator, MdRadio,
+  MdRating, MdSelectOption, MdSlider, MdStep, MdStepper,
+  BooleanValueAccessor, NumericValueAccessor, SelectValueAccessor,
+} from '@awc-ui/angular';
+
+@Component({
+  selector: 'app-product-survey',
+  standalone: true,
+  imports: [
+    FormsModule, MdButton, MdCard, MdCheckbox, MdMultiSelect, MdProgressIndicator,
+    MdRadio, MdRating, MdSelectOption, MdSlider, MdStep, MdStepper,
+    BooleanValueAccessor, NumericValueAccessor, SelectValueAccessor,
+  ],
+  // Written as a concatenated string only to keep this snippet paste-safe;
+  // in your app a normal template (or templateUrl) is the usual choice.
+  template:
+    '<div class="survey">' +
+    '  <header>' +
+    '    <span>Quarterly product survey</span>' +
+    '    <span>{{ caption }}</span>' +
+    '  </header>' +
+    '  <md-progress-indicator [value]="done ? 4 : active" [max]="4" [complete]="done" label="Survey progress"></md-progress-indicator>' +
+    '  @if (!done) {' +
+    '  <md-stepper label="Survey questions" finishLabel="Submit survey" [nextDisabled]="nextDisabled"' +
+    '    (mdStepChange)="active = $event.detail.index" (mdComplete)="done = true">' +
+    '    <md-step label="Satisfaction" description="Overall experience">' +
+    '      <p>How satisfied are you with Meridian CRM overall?</p>' +
+    '      <md-rating size="lg" ratingLabel="Overall satisfaction" [getLabel]="labelFor" [(ngModel)]="rating"></md-rating>' +
+    '    </md-step>' +
+    '    <md-step label="Recommend" description="0-10 scale">' +
+    '      <p>How likely are you to recommend Meridian CRM to a colleague?</p>' +
+    '      <div role="group" aria-label="Likelihood to recommend, 0 to 10">' +
+    '        @for (s of scores; track s) {' +
+    '        <md-button variant="outlined" size="xs" toggle [value]="s" [selected]="nps === s"' +
+    '          (mdClick)="onNps($event, s)">{{ s }}</md-button>' +
+    '        }' +
+    '      </div>' +
+    '    </md-step>' +
+    '    <md-step label="Usage" description="How you work">' +
+    '      <div role="radiogroup" aria-label="Usage frequency">' +
+    '        @for (f of frequencies; track f.value) {' +
+    '        <label>' +
+    '          <md-radio name="survey-frequency" [value]="f.value" [checked]="frequency === f.value"' +
+    '            (mdChange)="frequency = f.value"></md-radio>' +
+    '          {{ f.label }}' +
+    '        </label>' +
+    '        }' +
+    '      </div>' +
+    '      <md-multi-select label="Features you use regularly" supportingText="Optional — pick any that apply"' +
+    '        [(ngModel)]="features">' +
+    '        <md-select-option value="pipelines">Pipelines</md-select-option>' +
+    '        <md-select-option value="email-sync">Email sync</md-select-option>' +
+    '        <md-select-option value="reports">Reports</md-select-option>' +
+    '      </md-multi-select>' +
+    '    </md-step>' +
+    '    <md-step label="Wrap-up" description="Almost done">' +
+    '      <p>How likely are you to renew your subscription next quarter?</p>' +
+    '      <md-slider [min]="0" [max]="100" [step]="10" stops valueIndicator [value]="renew"' +
+    '        [valueText]="renewText" sliderAriaLabel="Likelihood to renew"' +
+    '        (mdInput)="renew = $event.detail.value"></md-slider>' +
+    '      <label>' +
+    '        <md-checkbox [(ngModel)]="contact"></md-checkbox>' +
+    '        You can contact me about this feedback' +
+    '      </label>' +
+    '    </md-step>' +
+    '  </md-stepper>' +
+    '  } @else {' +
+    '  <md-card variant="filled">' +
+    '    <span>Thanks — your feedback is in.</span>' +
+    '    <span>{{ summary }}</span>' +
+    '  </md-card>' +
+    '  }' +
+    '</div>',
+})
+export class ProductSurveyComponent {
+  scores = Array.from({ length: 11 }, (_, i) => i);
+  frequencies = [
+    { value: 'daily', label: 'Every day' },
+    { value: 'weekly', label: 'A few times a week' },
+    { value: 'monthly', label: 'A few times a month' },
+    { value: 'rarely', label: 'Rarely' },
+  ];
+
+  active = 0;
+  rating = 0;
+  nps: number | null = null;
+  frequency: string | null = null;
+  features: string[] = [];
+  renew = 60;
+  contact = false;
+  done = false;
+
+  labelFor = (v: number) => v + ' out of 5 stars';
+
+  // Continue stays disabled until the active question is answered.
+  get nextDisabled(): boolean {
+    return (
+      (this.active === 0 && this.rating === 0) ||
+      (this.active === 1 && this.nps === null) ||
+      (this.active === 2 && this.frequency === null)
+    );
+  }
+
+  get caption(): string {
+    return this.done ? 'All 4 questions answered' : 'Question ' + (this.active + 1) + ' of 4';
+  }
+
+  get renewText(): string {
+    return this.renew + ' percent';
+  }
+
+  get summary(): string {
+    const n = this.nps ?? 0;
+    const band = n >= 9 ? 'a promoter' : n >= 7 ? 'passive' : 'a detractor';
+    return 'You rated Meridian ' + this.rating + '/5 and gave it an NPS of ' + n +
+      ' (' + band + ').' + (this.contact ? ' We will follow up by email.' : '');
+  }
+
+  // detail.selected is the post-click state; preventDefault() vetoes the
+  // flip, so re-clicking the chosen score cannot empty the scale.
+  onNps(e: CustomEvent, score: number) {
+    if ((e.detail as any).selected === false) {
+      e.preventDefault();
+      return;
+    }
+    this.nps = score;
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref, computed } from 'vue';
+import {
+  MdButton, MdCard, MdCheckbox, MdMultiSelect, MdProgressIndicator,
+  MdRadio, MdRating, MdSelectOption, MdSlider, MdStep, MdStepper,
+} from '@awc-ui/vue';
+
+const scores = Array.from({ length: 11 }, (_, i) => i);
+const frequencies = [
+  { value: 'daily', label: 'Every day' },
+  { value: 'weekly', label: 'A few times a week' },
+  { value: 'monthly', label: 'A few times a month' },
+  { value: 'rarely', label: 'Rarely' },
+];
+
+const active = ref(0);
+const rating = ref(0);
+const nps = ref<number | null>(null);
+const frequency = ref<string | null>(null);
+const features = ref<string[]>([]);
+const renew = ref(60);
+const contact = ref(false);
+const done = ref(false);
+
+const labelFor = (v: number) => v + ' out of 5 stars';
+
+// Continue stays disabled until the active question is answered.
+const nextDisabled = computed(() =>
+  (active.value === 0 && rating.value === 0) ||
+  (active.value === 1 && nps.value === null) ||
+  (active.value === 2 && frequency.value === null)
+);
+
+const caption = computed(() =>
+  done.value ? 'All 4 questions answered' : 'Question ' + (active.value + 1) + ' of 4'
+);
+
+const summary = computed(() => {
+  const n = nps.value ?? 0;
+  const band = n >= 9 ? 'a promoter' : n >= 7 ? 'passive' : 'a detractor';
+  return 'You rated Meridian ' + rating.value + '/5 and gave it an NPS of ' + n +
+    ' (' + band + ').' + (contact.value ? ' We will follow up by email.' : '');
+});
+
+// detail.selected is the post-click state; preventDefault() vetoes the flip,
+// so re-clicking the chosen score cannot empty the scale.
+function onNpsClick(e: CustomEvent, score: number) {
+  if (e.detail.selected === false) {
+    e.preventDefault();
+    return;
+  }
+  nps.value = score;
+}
+</script>
+
+<template>
+  <div class="survey">
+    <header>
+      <span>Quarterly product survey</span>
+      <span>{{ caption }}</span>
+    </header>
+    <MdProgressIndicator :value="done ? 4 : active" :max="4" :complete="done" label="Survey progress" />
+
+    <MdStepper v-if="!done" label="Survey questions" finishLabel="Submit survey"
+      :nextDisabled="nextDisabled"
+      @mdStepChange="active = $event.detail.index" @mdComplete="done = true">
+      <MdStep label="Satisfaction" description="Overall experience">
+        <p>How satisfied are you with Meridian CRM overall?</p>
+        <MdRating size="lg" ratingLabel="Overall satisfaction" :getLabel="labelFor"
+          @mdChange="rating = $event.detail" />
+      </MdStep>
+      <MdStep label="Recommend" description="0-10 scale">
+        <p>How likely are you to recommend Meridian CRM to a colleague?</p>
+        <div role="group" aria-label="Likelihood to recommend, 0 to 10">
+          <MdButton v-for="score in scores" :key="score" variant="outlined" size="xs" toggle
+            :value="String(score)" :selected="nps === score" @mdClick="onNpsClick($event, score)">
+            {{ score }}
+          </MdButton>
+        </div>
+      </MdStep>
+      <MdStep label="Usage" description="How you work">
+        <div role="radiogroup" aria-label="Usage frequency">
+          <label v-for="f in frequencies" :key="f.value">
+            <MdRadio name="survey-frequency" :value="f.value" :checked="frequency === f.value"
+              @mdChange="frequency = f.value" />
+            {{ f.label }}
+          </label>
+        </div>
+        <MdMultiSelect label="Features you use regularly"
+          supportingText="Optional — pick any that apply"
+          :value="features" @mdChange="features = $event.detail">
+          <MdSelectOption value="pipelines">Pipelines</MdSelectOption>
+          <MdSelectOption value="email-sync">Email sync</MdSelectOption>
+          <MdSelectOption value="reports">Reports</MdSelectOption>
+        </MdMultiSelect>
+      </MdStep>
+      <MdStep label="Wrap-up" description="Almost done">
+        <p>How likely are you to renew your subscription next quarter?</p>
+        <MdSlider :min="0" :max="100" :step="10" stops valueIndicator :value="renew"
+          :valueText="renew + ' percent'" sliderAriaLabel="Likelihood to renew"
+          @mdInput="renew = $event.detail.value" />
+        <label>
+          <MdCheckbox :checked="contact" @mdChange="contact = $event.detail.checked" />
+          You can contact me about this feedback
+        </label>
+      </MdStep>
+    </MdStepper>
+
+    <MdCard v-else variant="filled">
+      <span>Thanks — your feedback is in.</span>
+      <span>{{ summary }}</span>
+    </MdCard>
+  </div>
+</template>`}
+  svelte={`<script>
+  // Register the elements once on the client — in SvelteKit, guard it with
+  // 'if (browser)' from '$app/environment' (registration is client-only).
+  import { defineCustomElements } from '@awc-ui/svelte';
+  if (typeof window !== 'undefined') defineCustomElements(window);
+
+  const scores = Array.from({ length: 11 }, (_, i) => i);
+  const frequencies = [
+    { value: 'daily', label: 'Every day' },
+    { value: 'weekly', label: 'A few times a week' },
+    { value: 'monthly', label: 'A few times a month' },
+    { value: 'rarely', label: 'Rarely' },
+  ];
+
+  let active = 0;
+  let rating = 0;
+  let nps = null;
+  let frequency = null;
+  let features = [];
+  let renew = 60;
+  let contact = false;
+  let done = false;
+
+  const labelFor = (v) => v + ' out of 5 stars';
+
+  // Continue stays disabled until the active question is answered.
+  $: nextDisabled =
+    (active === 0 && rating === 0) ||
+    (active === 1 && nps === null) ||
+    (active === 2 && frequency === null);
+
+  $: caption = done ? 'All 4 questions answered' : 'Question ' + (active + 1) + ' of 4';
+  $: band = nps >= 9 ? 'a promoter' : nps >= 7 ? 'passive' : 'a detractor';
+  $: summary =
+    'You rated Meridian ' + rating + '/5 and gave it an NPS of ' + nps +
+    ' (' + band + ').' + (contact ? ' We will follow up by email.' : '');
+
+  // detail.selected is the post-click state; preventDefault() vetoes the
+  // flip, so re-clicking the chosen score cannot empty the scale.
+  function onNpsClick(e, score) {
+    if (e.detail.selected === false) {
+      e.preventDefault();
+      return;
+    }
+    nps = score;
+  }
+</script>
+
+<div class="survey">
+  <header>
+    <span>Quarterly product survey</span>
+    <span>{caption}</span>
+  </header>
+  <md-progress-indicator value={done ? 4 : active} max={4} complete={done}
+    label="Survey progress"></md-progress-indicator>
+
+  {#if !done}
+    <md-stepper label="Survey questions" finish-label="Submit survey"
+      nextDisabled={nextDisabled}
+      on:mdStepChange={(e) => (active = e.detail.index)}
+      on:mdComplete={() => (done = true)}>
+      <md-step label="Satisfaction" description="Overall experience">
+        <p>How satisfied are you with Meridian CRM overall?</p>
+        <md-rating size="lg" rating-label="Overall satisfaction" getLabel={labelFor}
+          on:mdChange={(e) => (rating = e.detail)}></md-rating>
+      </md-step>
+      <md-step label="Recommend" description="0-10 scale">
+        <p>How likely are you to recommend Meridian CRM to a colleague?</p>
+        <div role="group" aria-label="Likelihood to recommend, 0 to 10">
+          {#each scores as score (score)}
+            <md-button variant="outlined" size="xs" toggle value={String(score)}
+              selected={nps === score} on:mdClick={(e) => onNpsClick(e, score)}>{score}</md-button>
+          {/each}
+        </div>
+      </md-step>
+      <md-step label="Usage" description="How you work">
+        <div role="radiogroup" aria-label="Usage frequency">
+          {#each frequencies as f (f.value)}
+            <label>
+              <md-radio name="survey-frequency" value={f.value} checked={frequency === f.value}
+                on:mdChange={() => (frequency = f.value)}></md-radio>
+              {f.label}
+            </label>
+          {/each}
+        </div>
+        <md-multi-select label="Features you use regularly"
+          supporting-text="Optional — pick any that apply"
+          value={features} on:mdChange={(e) => (features = e.detail)}>
+          <md-select-option value="pipelines">Pipelines</md-select-option>
+          <md-select-option value="email-sync">Email sync</md-select-option>
+          <md-select-option value="reports">Reports</md-select-option>
+        </md-multi-select>
+      </md-step>
+      <md-step label="Wrap-up" description="Almost done">
+        <p>How likely are you to renew your subscription next quarter?</p>
+        <md-slider min={0} max={100} step={10} stops value-indicator value={renew}
+          valueText={renew + ' percent'} aria-label="Likelihood to renew"
+          on:mdInput={(e) => (renew = e.detail.value)}></md-slider>
+        <label>
+          <md-checkbox checked={contact}
+            on:mdChange={(e) => (contact = e.detail.checked)}></md-checkbox>
+          You can contact me about this feedback
+        </label>
+      </md-step>
+    </md-stepper>
+  {:else}
+    <md-card variant="filled">
+      <span>Thanks — your feedback is in.</span>
+      <span>{summary}</span>
+    </md-card>
+  {/if}
+</div>`}
 />
 
 ## How it's built

@@ -186,6 +186,366 @@ pauses everything at once — flagged by a warning
       bar.show();
     });
   `}
+  react={`import {
+  MdAccordion, MdAccordionItem, MdButton, MdChip, MdMultiSelect,
+  MdSelectOption, MdSnackbar, MdSwitch, MdTimePicker,
+} from '@awc-ui/react';
+import { useRef, useState } from 'react';
+
+type Cell = { ch: string; on: boolean; locked?: boolean };
+type Category = { name: string; icon: string; rows: { label: string; cells: Cell[] }[] };
+
+const cell = (ch: string, on: boolean, locked = false): Cell => ({ ch, on, locked });
+
+const initial: Category[] = [
+  { name: 'Product', icon: 'rocket_launch', rows: [
+    { label: 'Feature announcements', cells: [cell('Email', true), cell('Push', true), cell('SMS', false)] },
+    { label: 'Tips and tutorials', cells: [cell('Email', true), cell('Push', false), cell('SMS', false)] },
+  ] },
+  { name: 'Security', icon: 'security', rows: [
+    { label: 'New sign-ins', cells: [cell('Email', true), cell('Push', true), cell('SMS', false)] },
+    { label: 'Password changes', cells: [cell('Email', true, true), cell('Push', true), cell('SMS', false)] },
+  ] },
+];
+
+const countOn = (cat: Category) => {
+  const cells = cat.rows.flatMap((r) => r.cells);
+  return cells.filter((c) => c.on).length + ' of ' + cells.length + ' channels on';
+};
+
+export function NotificationPreferences() {
+  const [categories, setCategories] = useState(initial);
+  const [muted, setMuted] = useState(false);
+  const [topics, setTopics] = useState(['releases', 'advisories']);
+  const [quiet, setQuiet] = useState({ start: '22:00', end: '07:00' });
+  const [message, setMessage] = useState('');
+  const bar = useRef<HTMLMdSnackbarElement>(null);
+
+  const setCell = (ci: number, ri: number, k: number, on: boolean) =>
+    setCategories((cats) => cats.map((cat, i) => i !== ci ? cat : {
+      ...cat,
+      rows: cat.rows.map((row, j) => j !== ri ? row : {
+        ...row,
+        cells: row.cells.map((c, n) => (n !== k ? c : { ...c, on })),
+      }),
+    }));
+
+  const save = () => {
+    const active = categories.flatMap((c) => c.rows).flatMap((r) => r.cells).filter((c) => c.on).length;
+    setMessage(muted
+      ? 'Preferences saved — all notifications paused'
+      : 'Preferences saved — ' + active + ' channels active');
+    requestAnimationFrame(() => bar.current?.show());
+  };
+
+  return (
+    <div style={{ display: 'grid', gap: 20, maxWidth: 640 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span id="mute-label" style={{ flex: 1 }}>Mute all notifications</span>
+        {muted && <MdChip color="warning" appearance="filled" label="Notifications paused" />}
+        <MdSwitch icons aria-labelledby="mute-label" selected={muted}
+          onMdChange={(e) => setMuted(e.detail.selected)} />
+      </div>
+
+      <MdAccordion headingLevel={3} defaultExpanded={0}>
+        {categories.map((cat, ci) => (
+          <MdAccordionItem key={cat.name} headline={cat.name} icon={cat.icon} supportingText={countOn(cat)}>
+            {cat.rows.map((row, ri) => (
+              <div key={row.label} style={{ display: 'grid', gridTemplateColumns: '1fr 64px 64px 64px', alignItems: 'center' }}>
+                <span>{row.label}</span>
+                {row.cells.map((c, k) => (
+                  <MdSwitch key={c.ch} selected={c.on} disabled={muted || c.locked}
+                    aria-label={row.label + ' ' + c.ch}
+                    onMdChange={(e) => setCell(ci, ri, k, e.detail.selected)} />
+                ))}
+              </div>
+            ))}
+          </MdAccordionItem>
+        ))}
+      </MdAccordion>
+
+      <MdMultiSelect label="Weekly digest topics" clearable value={topics}
+        supportingText="Bundled into one summary email every Monday at 09:00"
+        onMdChange={(e) => setTopics(e.detail)}>
+        <MdSelectOption value="releases">Release notes</MdSelectOption>
+        <MdSelectOption value="advisories">Security advisories</MdSelectOption>
+        <MdSelectOption value="roadmap">Roadmap updates</MdSelectOption>
+      </MdMultiSelect>
+
+      <div style={{ display: 'flex', gap: 12 }}>
+        <MdTimePicker label="Start" format="24h" minuteStep={15} value={quiet.start}
+          onMdChange={(e) => setQuiet((q) => ({ ...q, start: e.detail.value }))} />
+        <MdTimePicker label="End" format="24h" minuteStep={15} value={quiet.end}
+          onMdChange={(e) => setQuiet((q) => ({ ...q, end: e.detail.value }))} />
+      </div>
+
+      <MdButton variant="filled" onMdClick={save}>Save preferences</MdButton>
+      <MdSnackbar ref={bar} message={message} closeable />
+    </div>
+  );
+}`}
+  angular={`import { Component, ElementRef, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import {
+  MdAccordion, MdAccordionItem, MdButton, MdChip, MdMultiSelect,
+  MdSelectOption, MdSnackbar, MdSwitch, MdTimePicker,
+  SelectValueAccessor, SwitchValueAccessor,
+} from '@awc-ui/angular';
+
+type Cell = { ch: string; on: boolean; locked?: boolean };
+type Category = { name: string; icon: string; rows: { label: string; cells: Cell[] }[] };
+
+const cell = (ch: string, on: boolean, locked = false): Cell => ({ ch, on, locked });
+
+@Component({
+  selector: 'app-notification-preferences',
+  standalone: true,
+  imports: [
+    FormsModule, MdAccordion, MdAccordionItem, MdButton, MdChip, MdMultiSelect,
+    MdSelectOption, MdSnackbar, MdSwitch, MdTimePicker,
+    SelectValueAccessor, SwitchValueAccessor,
+  ],
+  template: [
+    '<div style="display: grid; gap: 20px; max-width: 640px;">',
+    '  <div style="display: flex; align-items: center; gap: 12px;">',
+    '    <span id="mute-label" style="flex: 1;">Mute all notifications</span>',
+    '    @if (muted) { <md-chip color="warning" appearance="filled" label="Notifications paused"></md-chip> }',
+    '    <md-switch icons aria-labelledby="mute-label" [(ngModel)]="muted"></md-switch>',
+    '  </div>',
+    '  <md-accordion [headingLevel]="3" [defaultExpanded]="0">',
+    '    @for (cat of categories; track cat.name) {',
+    '      <md-accordion-item [headline]="cat.name" [icon]="cat.icon" [supportingText]="countOn(cat)">',
+    '        @for (row of cat.rows; track row.label) {',
+    '          <div style="display: grid; grid-template-columns: 1fr 64px 64px 64px; align-items: center;">',
+    '            <span>{{ row.label }}</span>',
+    '            @for (c of row.cells; track c.ch) {',
+    '              <md-switch [(ngModel)]="c.on" [disabled]="muted || c.locked" aria-label="{{ row.label }} {{ c.ch }}"></md-switch>',
+    '            }',
+    '          </div>',
+    '        }',
+    '      </md-accordion-item>',
+    '    }',
+    '  </md-accordion>',
+    '  <md-multi-select label="Weekly digest topics" clearable [(ngModel)]="topics">',
+    '    <md-select-option value="releases">Release notes</md-select-option>',
+    '    <md-select-option value="advisories">Security advisories</md-select-option>',
+    '    <md-select-option value="roadmap">Roadmap updates</md-select-option>',
+    '  </md-multi-select>',
+    '  <div style="display: flex; gap: 12px;">',
+    '    <md-time-picker label="Start" format="24h" minute-step="15" [(ngModel)]="quietStart"></md-time-picker>',
+    '    <md-time-picker label="End" format="24h" minute-step="15" [(ngModel)]="quietEnd"></md-time-picker>',
+    '  </div>',
+    '  <md-button variant="filled" (mdClick)="save()">Save preferences</md-button>',
+    '</div>',
+    '<md-snackbar #bar closeable></md-snackbar>',
+  ].join('\\n'),
+})
+export class NotificationPreferencesComponent {
+  categories: Category[] = [
+    { name: 'Product', icon: 'rocket_launch', rows: [
+      { label: 'Feature announcements', cells: [cell('Email', true), cell('Push', true), cell('SMS', false)] },
+      { label: 'Tips and tutorials', cells: [cell('Email', true), cell('Push', false), cell('SMS', false)] },
+    ] },
+    { name: 'Security', icon: 'security', rows: [
+      { label: 'New sign-ins', cells: [cell('Email', true), cell('Push', true), cell('SMS', false)] },
+      { label: 'Password changes', cells: [cell('Email', true, true), cell('Push', true), cell('SMS', false)] },
+    ] },
+  ];
+  muted = false;
+  topics = ['releases', 'advisories'];
+  quietStart = '22:00';
+  quietEnd = '07:00';
+
+  @ViewChild('bar') bar!: ElementRef<HTMLMdSnackbarElement>;
+
+  countOn(cat: Category): string {
+    const cells = cat.rows.flatMap((r) => r.cells);
+    return cells.filter((c) => c.on).length + ' of ' + cells.length + ' channels on';
+  }
+
+  save(): void {
+    const active = this.categories.flatMap((c) => c.rows).flatMap((r) => r.cells).filter((c) => c.on).length;
+    const el = this.bar.nativeElement;
+    el.message = this.muted
+      ? 'Preferences saved — all notifications paused'
+      : 'Preferences saved — ' + active + ' channels active';
+    el.show();
+  }
+}`}
+  vue={`<script setup lang="ts">
+import {
+  MdAccordion, MdAccordionItem, MdButton, MdChip, MdMultiSelect,
+  MdSelectOption, MdSnackbar, MdSwitch, MdTimePicker,
+} from '@awc-ui/vue';
+import { reactive, ref } from 'vue';
+
+type Cell = { ch: string; on: boolean; locked?: boolean };
+type Category = { name: string; icon: string; rows: { label: string; cells: Cell[] }[] };
+
+const cell = (ch: string, on: boolean, locked = false): Cell => ({ ch, on, locked });
+
+const categories = reactive<Category[]>([
+  { name: 'Product', icon: 'rocket_launch', rows: [
+    { label: 'Feature announcements', cells: [cell('Email', true), cell('Push', true), cell('SMS', false)] },
+    { label: 'Tips and tutorials', cells: [cell('Email', true), cell('Push', false), cell('SMS', false)] },
+  ] },
+  { name: 'Security', icon: 'security', rows: [
+    { label: 'New sign-ins', cells: [cell('Email', true), cell('Push', true), cell('SMS', false)] },
+    { label: 'Password changes', cells: [cell('Email', true, true), cell('Push', true), cell('SMS', false)] },
+  ] },
+]);
+
+const muted = ref(false);
+const topics = ref(['releases', 'advisories']);
+const quietStart = ref('22:00');
+const quietEnd = ref('07:00');
+const bar = ref<any>(null);
+
+const countOn = (cat: Category) => {
+  const cells = cat.rows.flatMap((r) => r.cells);
+  return cells.filter((c) => c.on).length + ' of ' + cells.length + ' channels on';
+};
+
+function save() {
+  const active = categories.flatMap((c) => c.rows).flatMap((r) => r.cells).filter((c) => c.on).length;
+  const el = bar.value?.$el as HTMLMdSnackbarElement;
+  if (!el) return;
+  el.message = muted.value
+    ? 'Preferences saved — all notifications paused'
+    : 'Preferences saved — ' + active + ' channels active';
+  el.show();
+}
+</script>
+
+<template>
+  <div style="display: grid; gap: 20px; max-width: 640px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span id="mute-label" style="flex: 1;">Mute all notifications</span>
+      <MdChip v-if="muted" color="warning" appearance="filled" label="Notifications paused" />
+      <MdSwitch icons aria-labelledby="mute-label" :selected="muted"
+        @md-change="muted = $event.detail.selected" />
+    </div>
+
+    <MdAccordion :heading-level="3" :default-expanded="0">
+      <MdAccordionItem v-for="cat in categories" :key="cat.name"
+        :headline="cat.name" :icon="cat.icon" :supporting-text="countOn(cat)">
+        <div v-for="row in cat.rows" :key="row.label"
+          style="display: grid; grid-template-columns: 1fr 64px 64px 64px; align-items: center;">
+          <span>{{ row.label }}</span>
+          <MdSwitch v-for="c in row.cells" :key="c.ch" :selected="c.on"
+            :disabled="muted || c.locked" :aria-label="row.label + ' ' + c.ch"
+            @md-change="c.on = $event.detail.selected" />
+        </div>
+      </MdAccordionItem>
+    </MdAccordion>
+
+    <MdMultiSelect label="Weekly digest topics" clearable :value="topics"
+      supporting-text="Bundled into one summary email every Monday at 09:00"
+      @md-change="topics = $event.detail">
+      <MdSelectOption value="releases">Release notes</MdSelectOption>
+      <MdSelectOption value="advisories">Security advisories</MdSelectOption>
+      <MdSelectOption value="roadmap">Roadmap updates</MdSelectOption>
+    </MdMultiSelect>
+
+    <div style="display: flex; gap: 12px;">
+      <MdTimePicker label="Start" format="24h" :minute-step="15" :value="quietStart"
+        @md-change="quietStart = $event.detail.value" />
+      <MdTimePicker label="End" format="24h" :minute-step="15" :value="quietEnd"
+        @md-change="quietEnd = $event.detail.value" />
+    </div>
+
+    <MdButton variant="filled" @md-click="save">Save preferences</MdButton>
+  </div>
+  <MdSnackbar ref="bar" closeable />
+</template>`}
+  svelte={`<script>
+  // Register the md-* elements once in your client entry:
+  //   import { defineCustomElements } from '@awc-ui/svelte';
+  //   defineCustomElements(window);
+  // (SvelteKit: run it behind an if (browser) guard — registration is client-only.)
+
+  const cell = (ch, on, locked = false) => ({ ch, on, locked });
+
+  let categories = [
+    { name: 'Product', icon: 'rocket_launch', rows: [
+      { label: 'Feature announcements', cells: [cell('Email', true), cell('Push', true), cell('SMS', false)] },
+      { label: 'Tips and tutorials', cells: [cell('Email', true), cell('Push', false), cell('SMS', false)] },
+    ] },
+    { name: 'Security', icon: 'security', rows: [
+      { label: 'New sign-ins', cells: [cell('Email', true), cell('Push', true), cell('SMS', false)] },
+      { label: 'Password changes', cells: [cell('Email', true, true), cell('Push', true), cell('SMS', false)] },
+    ] },
+  ];
+  let muted = false;
+  let topics = ['releases', 'advisories'];
+  let quietStart = '22:00';
+  let quietEnd = '07:00';
+  let bar;
+
+  const countOn = (cat) => {
+    const cells = cat.rows.flatMap((r) => r.cells);
+    return cells.filter((c) => c.on).length + ' of ' + cells.length + ' channels on';
+  };
+
+  function toggleCell(c, e) {
+    c.on = e.detail.selected;
+    categories = categories; // reassign so the counts re-derive
+  }
+
+  function save() {
+    const active = categories.flatMap((c) => c.rows).flatMap((r) => r.cells).filter((c) => c.on).length;
+    bar.message = muted
+      ? 'Preferences saved — all notifications paused'
+      : 'Preferences saved — ' + active + ' channels active';
+    bar.show();
+  }
+</script>
+
+<div style="display: grid; gap: 20px; max-width: 640px;">
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <span id="mute-label" style="flex: 1;">Mute all notifications</span>
+    {#if muted}
+      <md-chip color="warning" appearance="filled" label="Notifications paused"></md-chip>
+    {/if}
+    <md-switch icons aria-labelledby="mute-label" selected={muted}
+      on:mdChange={(e) => (muted = e.detail.selected)}></md-switch>
+  </div>
+
+  <md-accordion heading-level="3" default-expanded="0">
+    {#each categories as cat (cat.name)}
+      <md-accordion-item headline={cat.name} icon={cat.icon} supporting-text={countOn(cat)}>
+        {#each cat.rows as row (row.label)}
+          <div style="display: grid; grid-template-columns: 1fr 64px 64px 64px; align-items: center;">
+            <span>{row.label}</span>
+            {#each row.cells as c (c.ch)}
+              <md-switch selected={c.on} disabled={muted || c.locked}
+                aria-label={row.label + ' ' + c.ch}
+                on:mdChange={(e) => toggleCell(c, e)}></md-switch>
+            {/each}
+          </div>
+        {/each}
+      </md-accordion-item>
+    {/each}
+  </md-accordion>
+
+  <md-multi-select label="Weekly digest topics" clearable
+    supporting-text="Bundled into one summary email every Monday at 09:00"
+    on:mdChange={(e) => (topics = e.detail)}>
+    <md-select-option value="releases" selected>Release notes</md-select-option>
+    <md-select-option value="advisories" selected>Security advisories</md-select-option>
+    <md-select-option value="roadmap">Roadmap updates</md-select-option>
+  </md-multi-select>
+
+  <div style="display: flex; gap: 12px;">
+    <md-time-picker label="Start" format="24h" minute-step="15" value={quietStart}
+      on:mdChange={(e) => (quietStart = e.detail.value)}></md-time-picker>
+    <md-time-picker label="End" format="24h" minute-step="15" value={quietEnd}
+      on:mdChange={(e) => (quietEnd = e.detail.value)}></md-time-picker>
+  </div>
+
+  <md-button variant="filled" on:mdClick={save}>Save preferences</md-button>
+</div>
+<md-snackbar bind:this={bar} closeable></md-snackbar>`}
 />
 
 ## How it's built

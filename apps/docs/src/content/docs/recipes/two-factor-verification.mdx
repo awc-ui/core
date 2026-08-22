@@ -108,6 +108,370 @@ in a real `<form>` — `required` blocks submission until the code is complete.
     backupBtn.addEventListener('click', () => { dialog.open = true; });
     dialog.querySelector('[data-dialog-close]').addEventListener('click', () => { dialog.open = false; });
   `}
+  react={`import { useEffect, useState } from 'react';
+import { MdButton, MdDialog, MdLoadingIndicator, MdOtpField } from '@awc-ui/react';
+
+export default function TwoFactorVerification() {
+  const [code, setCode] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [verified, setVerified] = useState(false);
+  const [error, setError] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(30);
+  const [backupOpen, setBackupOpen] = useState(false);
+
+  // Resend countdown: disabled for 30s, then re-enables.
+  useEffect(() => {
+    if (secondsLeft === 0) return;
+    const id = setTimeout(() => setSecondsLeft(secondsLeft - 1), 1000);
+    return () => clearTimeout(id);
+  }, [secondsLeft]);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    setVerifying(true);
+    setError(false);
+    // Replace with your verification API call — here 123456 passes.
+    setTimeout(() => {
+      setVerifying(false);
+      if (code === '123456') {
+        setVerified(true);
+      } else {
+        setError(true);
+        setCode('');
+      }
+    }, 700);
+  }
+
+  function resend() {
+    setSecondsLeft(30);
+    setError(false);
+    setCode('');
+  }
+
+  return (
+    <>
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 20, maxWidth: 360, marginInline: 'auto', textAlign: 'center' }}>
+        <div style={{ display: 'grid', gap: 4 }}>
+          <span style={{ font: 'var(--md-sys-typescale-headline-small)' }}>Check your phone</span>
+          <span style={{ font: 'var(--md-sys-typescale-body-medium)', color: 'var(--md-sys-color-on-surface-variant)' }}>We sent a code to +40 ••• ••• •12</span>
+        </div>
+        <MdOtpField
+          name="code"
+          length={6}
+          required
+          label="Six-digit verification code"
+          supportingText="The code expires in 10 minutes"
+          errorText="That code didn't match. Check the latest message."
+          reserveSupportingSpace
+          incompleteLabel="Enter all six digits."
+          value={code}
+          error={error}
+          readOnly={verified}
+          onMdInput={(e) => setCode(e.detail)}
+        />
+        <MdButton type="submit" variant="filled" fullWidth>
+          {verified ? 'Verified ✓' : 'Verify'}
+        </MdButton>
+        {verifying && <MdLoadingIndicator aria-label="Verifying code" style={{ justifySelf: 'center' }} />}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <MdButton variant="text" disabled={secondsLeft > 0} onMdClick={resend}>
+            {secondsLeft > 0 ? 'Resend code (' + secondsLeft + ')' : 'Resend code'}
+          </MdButton>
+          <MdButton variant="text" onMdClick={() => setBackupOpen(true)}>Use a backup code</MdButton>
+        </div>
+      </form>
+
+      <MdDialog open={backupOpen} headline="Use a backup code" onMdClose={() => setBackupOpen(false)}>
+        <p style={{ margin: '0 0 12px', font: 'var(--md-sys-typescale-body-medium)' }}>
+          Enter one of the ten single-use recovery codes you saved when enabling
+          two-factor authentication.
+        </p>
+        <MdOtpField length={8} validationType="alphanumeric" transform="uppercase" groupSize={4} label="Backup code" supportingText="Format: XXXX-XXXX" />
+        <MdButton slot="action" variant="text" onMdClick={() => setBackupOpen(false)}>Cancel</MdButton>
+        <MdButton slot="action" variant="filled">Verify backup code</MdButton>
+      </MdDialog>
+    </>
+  );
+}`}
+  angular={`import { Component, OnDestroy, OnInit } from '@angular/core';
+import { MdButton, MdDialog, MdLoadingIndicator, MdOtpField } from '@awc-ui/angular';
+
+@Component({
+  selector: 'app-two-factor-verification',
+  standalone: true,
+  imports: [MdOtpField, MdButton, MdLoadingIndicator, MdDialog],
+  template:
+    '<form class="tfa" (submit)="onSubmit($event)">' +
+    '  <div class="tfa-head">' +
+    '    <span class="tfa-title">Check your phone</span>' +
+    '    <span class="tfa-sub">We sent a code to +40 ••• ••• •12</span>' +
+    '  </div>' +
+    '  <md-otp-field name="code" [length]="6" [required]="true"' +
+    '    label="Six-digit verification code"' +
+    '    supportingText="The code expires in 10 minutes"' +
+    '    errorText="That code didn\\'t match. Check the latest message."' +
+    '    [reserveSupportingSpace]="true" incompleteLabel="Enter all six digits."' +
+    '    [value]="code" [error]="error" [readOnly]="verified"' +
+    '    (mdInput)="onCode($event)"></md-otp-field>' +
+    '  <md-button type="submit" variant="filled" [fullWidth]="true">{{ verifyLabel }}</md-button>' +
+    '  @if (verifying) { <md-loading-indicator class="tfa-spinner" aria-label="Verifying code"></md-loading-indicator> }' +
+    '  <div class="tfa-row">' +
+    '    <md-button variant="text" [disabled]="secondsLeft > 0" (mdClick)="resend()">{{ resendLabel }}</md-button>' +
+    '    <md-button variant="text" (mdClick)="backupOpen = true">Use a backup code</md-button>' +
+    '  </div>' +
+    '</form>' +
+    '<md-dialog [open]="backupOpen" headline="Use a backup code" (mdClose)="backupOpen = false">' +
+    '  <p>Enter one of the ten single-use recovery codes you saved when enabling two-factor authentication.</p>' +
+    '  <md-otp-field [length]="8" validationType="alphanumeric" transform="uppercase" [groupSize]="4"' +
+    '    label="Backup code" supportingText="Format: XXXX-XXXX"></md-otp-field>' +
+    '  <md-button slot="action" variant="text" (mdClick)="backupOpen = false">Cancel</md-button>' +
+    '  <md-button slot="action" variant="filled">Verify backup code</md-button>' +
+    '</md-dialog>',
+  styles: [
+    '.tfa { display: grid; gap: 20px; max-width: 360px; margin-inline: auto; text-align: center; } ' +
+    '.tfa-head { display: grid; gap: 4px; } ' +
+    '.tfa-row { display: flex; align-items: center; justify-content: center; gap: 8px; } ' +
+    '.tfa-spinner { justify-self: center; }'
+  ],
+})
+export class TwoFactorVerificationComponent implements OnInit, OnDestroy {
+  code = '';
+  verifying = false;
+  verified = false;
+  error = false;
+  secondsLeft = 30;
+  backupOpen = false;
+  private timer?: ReturnType<typeof setInterval>;
+
+  ngOnInit() { this.startCountdown(); }
+  ngOnDestroy() { clearInterval(this.timer); }
+
+  get verifyLabel() { return this.verified ? 'Verified ✓' : 'Verify'; }
+  get resendLabel() {
+    return this.secondsLeft > 0 ? 'Resend code (' + this.secondsLeft + ')' : 'Resend code';
+  }
+
+  // Resend countdown: disabled for 30s, then re-enables.
+  startCountdown() {
+    this.secondsLeft = 30;
+    clearInterval(this.timer);
+    this.timer = setInterval(() => {
+      this.secondsLeft -= 1;
+      if (this.secondsLeft <= 0) clearInterval(this.timer);
+    }, 1000);
+  }
+
+  onCode(e: CustomEvent<string>) { this.code = e.detail; }
+
+  onSubmit(e: Event) {
+    e.preventDefault();
+    this.verifying = true;
+    this.error = false;
+    // Replace with your verification API call — here 123456 passes.
+    setTimeout(() => {
+      this.verifying = false;
+      if (this.code === '123456') {
+        this.verified = true;
+      } else {
+        this.error = true;
+        this.code = '';
+      }
+    }, 700);
+  }
+
+  resend() {
+    this.error = false;
+    this.code = '';
+    this.startCountdown();
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { ref } from 'vue';
+import { MdButton, MdDialog, MdLoadingIndicator, MdOtpField } from '@awc-ui/vue';
+
+const code = ref('');
+const verifying = ref(false);
+const verified = ref(false);
+const error = ref(false);
+const secondsLeft = ref(30);
+const backupOpen = ref(false);
+
+let timer: ReturnType<typeof setInterval> | undefined;
+
+// Resend countdown: disabled for 30s, then re-enables.
+function startCountdown() {
+  secondsLeft.value = 30;
+  clearInterval(timer);
+  timer = setInterval(() => {
+    secondsLeft.value -= 1;
+    if (secondsLeft.value <= 0) clearInterval(timer);
+  }, 1000);
+}
+startCountdown();
+
+function onSubmit(e: Event) {
+  e.preventDefault();
+  verifying.value = true;
+  error.value = false;
+  // Replace with your verification API call — here 123456 passes.
+  setTimeout(() => {
+    verifying.value = false;
+    if (code.value === '123456') {
+      verified.value = true;
+    } else {
+      error.value = true;
+      code.value = '';
+    }
+  }, 700);
+}
+
+function resend() {
+  error.value = false;
+  code.value = '';
+  startCountdown();
+}
+</script>
+
+<template>
+  <form class="tfa" @submit="onSubmit">
+    <div class="tfa-head">
+      <span class="tfa-title">Check your phone</span>
+      <span class="tfa-sub">We sent a code to +40 ••• ••• •12</span>
+    </div>
+    <MdOtpField
+      name="code"
+      :length="6"
+      :required="true"
+      label="Six-digit verification code"
+      supportingText="The code expires in 10 minutes"
+      errorText="That code didn't match. Check the latest message."
+      :reserveSupportingSpace="true"
+      incompleteLabel="Enter all six digits."
+      :value="code"
+      :error="error"
+      :readOnly="verified"
+      @mdInput="code = $event.detail"
+    />
+    <MdButton type="submit" variant="filled" :fullWidth="true">{{ verified ? 'Verified ✓' : 'Verify' }}</MdButton>
+    <MdLoadingIndicator v-if="verifying" class="tfa-spinner" aria-label="Verifying code" />
+    <div class="tfa-row">
+      <MdButton variant="text" :disabled="secondsLeft > 0" @mdClick="resend">
+        {{ secondsLeft > 0 ? 'Resend code (' + secondsLeft + ')' : 'Resend code' }}
+      </MdButton>
+      <MdButton variant="text" @mdClick="backupOpen = true">Use a backup code</MdButton>
+    </div>
+  </form>
+
+  <MdDialog :open="backupOpen" headline="Use a backup code" @mdClose="backupOpen = false">
+    <p>Enter one of the ten single-use recovery codes you saved when enabling two-factor authentication.</p>
+    <MdOtpField :length="8" validationType="alphanumeric" transform="uppercase" :groupSize="4" label="Backup code" supportingText="Format: XXXX-XXXX" />
+    <MdButton slot="action" variant="text" @mdClick="backupOpen = false">Cancel</MdButton>
+    <MdButton slot="action" variant="filled">Verify backup code</MdButton>
+  </MdDialog>
+</template>
+
+<style scoped>
+.tfa { display: grid; gap: 20px; max-width: 360px; margin-inline: auto; text-align: center; }
+.tfa-head { display: grid; gap: 4px; }
+.tfa-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.tfa-spinner { justify-self: center; }
+</style>`}
+  svelte={`<script>
+  import { defineCustomElements } from '@awc-ui/svelte';
+  // Client-only registration — in SvelteKit guard with: if (browser) defineCustomElements(window);
+  if (typeof window !== 'undefined') defineCustomElements(window);
+
+  let code = '';
+  let verifying = false;
+  let verified = false;
+  let error = false;
+  let secondsLeft = 30;
+  let backupOpen = false;
+  let timer;
+
+  // Resend countdown: disabled for 30s, then re-enables.
+  function startCountdown() {
+    secondsLeft = 30;
+    clearInterval(timer);
+    timer = setInterval(() => {
+      secondsLeft -= 1;
+      if (secondsLeft <= 0) clearInterval(timer);
+    }, 1000);
+  }
+  startCountdown();
+
+  function onCode(e) {
+    code = e.detail;
+  }
+
+  function onSubmit(e) {
+    e.preventDefault();
+    verifying = true;
+    error = false;
+    // Replace with your verification API call — here 123456 passes.
+    setTimeout(() => {
+      verifying = false;
+      if (code === '123456') {
+        verified = true;
+      } else {
+        error = true;
+        code = '';
+      }
+    }, 700);
+  }
+
+  function resend() {
+    error = false;
+    code = '';
+    startCountdown();
+  }
+</script>
+
+<form class="tfa" on:submit={onSubmit}>
+  <div class="tfa-head">
+    <span class="tfa-title">Check your phone</span>
+    <span class="tfa-sub">We sent a code to +40 ••• ••• •12</span>
+  </div>
+  <md-otp-field
+    name="code"
+    length={6}
+    required
+    label="Six-digit verification code"
+    supportingText="The code expires in 10 minutes"
+    errorText="That code didn't match. Check the latest message."
+    reserveSupportingSpace={true}
+    incompleteLabel="Enter all six digits."
+    value={code}
+    error={error}
+    readOnly={verified}
+    on:mdInput={onCode}
+  ></md-otp-field>
+  <md-button type="submit" variant="filled" fullWidth={true}>{verified ? 'Verified ✓' : 'Verify'}</md-button>
+  {#if verifying}
+    <md-loading-indicator class="tfa-spinner" aria-label="Verifying code"></md-loading-indicator>
+  {/if}
+  <div class="tfa-row">
+    <md-button variant="text" disabled={secondsLeft > 0} on:mdClick={resend}>
+      {secondsLeft > 0 ? 'Resend code (' + secondsLeft + ')' : 'Resend code'}
+    </md-button>
+    <md-button variant="text" on:mdClick={() => (backupOpen = true)}>Use a backup code</md-button>
+  </div>
+</form>
+
+<md-dialog open={backupOpen} headline="Use a backup code" on:mdClose={() => (backupOpen = false)}>
+  <p>Enter one of the ten single-use recovery codes you saved when enabling two-factor authentication.</p>
+  <md-otp-field length={8} validationType="alphanumeric" transform="uppercase" groupSize={4}
+    label="Backup code" supportingText="Format: XXXX-XXXX"></md-otp-field>
+  <md-button slot="action" variant="text" on:mdClick={() => (backupOpen = false)}>Cancel</md-button>
+  <md-button slot="action" variant="filled">Verify backup code</md-button>
+</md-dialog>
+
+<style>
+  .tfa { display: grid; gap: 20px; max-width: 360px; margin-inline: auto; text-align: center; }
+  .tfa-head { display: grid; gap: 4px; }
+  .tfa-row { display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .tfa-spinner { justify-self: center; }
+</style>`}
 />
 
 ## How it's built

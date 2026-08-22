@@ -278,6 +278,518 @@ committed only when the snackbar closes without it.
       if (item) draftToast(item.getAttribute('headline'));
     });
   `}
+  react={`import { useMemo, useRef, useState } from 'react';
+import {
+  MdAvatar, MdButton, MdList, MdListItem, MdMenu, MdMenuItem,
+  MdNavigationRail, MdNavigationRailTab, MdSearch, MdSideSheet,
+  MdSnackbar, MdSplitButton, MdStatusDot,
+} from '@awc-ui/react';
+
+const FOLDERS = [
+  { value: 'inbox', icon: 'inbox', label: 'Inbox' },
+  { value: 'starred', icon: 'star', label: 'Starred' },
+  { value: 'sent', icon: 'send', label: 'Sent' },
+  { value: 'drafts', icon: 'draft', label: 'Drafts' },
+];
+const INITIAL = [
+  { id: 'm1', sender: 'Priya Raghavan', subject: 'Q3 budget review — final numbers',
+    time: 'Today, 09:41', clock: '09:41', unread: true,
+    body: 'The final Q3 numbers are in — 4.2% under budget overall. Can you sign off before Thursday?' },
+  { id: 'm2', sender: 'Marcus Webb', subject: 'Re: Berlin offsite agenda',
+    time: 'Today, 08:15', clock: '08:15', unread: true,
+    body: 'Adding a 90-minute customer-panel slot on day two; the roadmap workshop moves to after lunch.' },
+  { id: 'm3', sender: 'Sofia Lindqvist', subject: 'Design tokens migration plan',
+    time: 'Yesterday, 17:02', clock: 'Yesterday', unread: false,
+    body: 'The migration plan is ready for review: color and typography tokens first, spacing second.' },
+];
+const dotWrap = { position: 'relative', display: 'inline-flex', inlineSize: 12, blockSize: 12,
+  '--md-status-dot-inset-end': '0px', '--md-status-dot-inset-block-end': '0px' };
+
+export default function InboxShell() {
+  const [messages, setMessages] = useState(INITIAL);
+  const [folder, setFolder] = useState('inbox');
+  const [query, setQuery] = useState('');
+  const [openId, setOpenId] = useState(null);
+  const [pendingId, setPendingId] = useState(null); // archived, awaiting the snackbar verdict
+  const [drafts, setDrafts] = useState(2);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [toast, setToast] = useState({ message: '', action: '' });
+  const searchRef = useRef(null);
+  const barRef = useRef(null);
+
+  const visible = messages.filter((m) => m.id !== pendingId);
+  const unread = messages.filter((m) => m.unread).length;
+  const openMsg = visible.find((m) => m.id === openId) || null;
+  const hits = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return q ? messages.filter((m) => (m.sender + ' ' + m.subject).toLowerCase().includes(q)) : [];
+  }, [messages, query]);
+
+  const openMessage = (id) => { // opening marks the row read — dot and badge follow the state
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, unread: false } : m)));
+    setOpenId(id);
+  };
+  const showToast = (message, action) => { setToast({ message, action }); barRef.current.show(); };
+  const archive = () => { setPendingId(openId); setOpenId(null); showToast('Conversation archived', 'Undo'); };
+  const settle = (reason) => { // commit only when the snackbar closes without Undo
+    if (!pendingId) return;
+    if (reason !== 'action') setMessages((prev) => prev.filter((m) => m.id !== pendingId));
+    setPendingId(null);
+  };
+  const draftToast = (kind) => { setDrafts((n) => n + 1); showToast(kind + ' draft saved to Drafts', ''); };
+
+  return (
+    <div style={{ position: 'relative', display: 'flex', blockSize: 540 }}>
+      <MdNavigationRail label="Mailboxes" activeIndex={FOLDERS.findIndex((f) => f.value === folder)}
+        onMdTabChange={(e) => { setFolder(e.detail.value); if (e.detail.value !== 'inbox') setOpenId(null); }}>
+        {FOLDERS.map((f) => (
+          <MdNavigationRailTab key={f.value} icon={f.icon} label={f.label} value={f.value}
+            badgeValue={f.value === 'inbox' ? (unread ? String(unread) : '')
+              : f.value === 'drafts' ? String(drafts) : ''} />
+        ))}
+      </MdNavigationRail>
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <MdSearch ref={searchRef} layout="docked" trigger="bar" fullWidth debounce={200}
+          placeholder="Search mail" inputAriaLabel="Search mail"
+          onMdSearch={(e) => setQuery(e.detail.value)} onMdClose={() => setQuery('')}>
+          <MdList slot="results" label="Search results">
+            {hits.map((m) => (
+              <MdListItem key={m.id} type="button" leadingIcon="mail" headline={m.subject}
+                supportingText={m.sender}
+                onMdClick={() => { searchRef.current.close(); openMessage(m.id); }} />
+            ))}
+          </MdList>
+        </MdSearch>
+
+        {folder === 'inbox' ? (
+          <MdList selectionMode="single-select" label="Inbox conversations"
+            style={{ flex: 1, overflowY: 'auto' }}
+            onMdSelect={(e) => openMessage(visible[e.detail.index].id)}>
+            {visible.map((m) => (
+              <MdListItem key={m.id} leadingAvatarName={m.sender} headline={m.sender}
+                supportingText={m.subject} lines={2} selected={m.id === openId}>
+                <span slot="trailing" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {m.clock}
+                  {m.unread && (
+                    <span style={dotWrap}>
+                      <MdStatusDot label="Unread"
+                        style={{ '--md-status-dot-color': 'var(--md-sys-color-primary)' }} />
+                    </span>
+                  )}
+                </span>
+              </MdListItem>
+            ))}
+          </MdList>
+        ) : (
+          <p style={{ margin: 'auto' }}>{FOLDERS.find((f) => f.value === folder).label} is empty in this demo.</p>
+        )}
+      </div>
+
+      <MdSideSheet variant="standard" side="end" topDivider bottomDivider
+        open={openMsg !== null} headline={openMsg ? openMsg.subject : ''}>
+        {openMsg && (
+          <div style={{ display: 'grid', gap: 12 }}>
+            <MdAvatar name={openMsg.sender} />
+            <span>{openMsg.sender} · {openMsg.time}</span>
+            <p style={{ margin: 0 }}>{openMsg.body}</p>
+          </div>
+        )}
+        <MdSplitButton slot="actions" id="reply-split" icon="reply" label="Reply"
+          menuLabel="More reply options" controls="reply-menu" trailingChecked={menuOpen}
+          onMdLeadingClick={() => draftToast('Reply')}
+          onMdTrailingClick={(e) => setMenuOpen(e.detail.checked)} />
+        <MdButton slot="actions" variant="text" onMdClick={archive}>Archive</MdButton>
+      </MdSideSheet>
+
+      <MdMenu id="reply-menu" anchor="reply-split" placement="top-end"
+        open={menuOpen} onMdClose={() => setMenuOpen(false)}>
+        <MdMenuItem headline="Reply all" onMdClick={() => draftToast('Reply all')} />
+        <MdMenuItem headline="Forward" onMdClick={() => draftToast('Forward')} />
+      </MdMenu>
+
+      <MdSnackbar ref={barRef} message={toast.message} action={toast.action}
+        onMdAction={() => barRef.current.hide('action')}
+        onMdClose={(e) => settle(e.detail.reason)} />
+    </div>
+  );
+}`}
+  angular={`import { Component, ViewChild } from '@angular/core';
+import {
+  MdAvatar, MdButton, MdList, MdListItem, MdMenu, MdMenuItem,
+  MdNavigationRail, MdNavigationRailTab, MdSearch, MdSideSheet,
+  MdSnackbar, MdSplitButton, MdStatusDot,
+} from '@awc-ui/angular';
+
+interface Message {
+  id: string; sender: string; subject: string;
+  time: string; clock: string; unread: boolean; body: string;
+}
+
+@Component({
+  selector: 'inbox-shell',
+  standalone: true,
+  imports: [
+    MdAvatar, MdButton, MdList, MdListItem, MdMenu, MdMenuItem,
+    MdNavigationRail, MdNavigationRailTab, MdSearch, MdSideSheet,
+    MdSnackbar, MdSplitButton, MdStatusDot,
+  ],
+  // The proxies bind camelCase inputs and re-emit the component events;
+  // #search and #bar expose close() / show() / hide() for the imperative moments.
+  template:
+    '<div style="position: relative; display: flex; block-size: 540px;">' +
+    '  <md-navigation-rail label="Mailboxes" [activeIndex]="folderIndex" (mdTabChange)="setFolder($event.detail.value)">' +
+    '    @for (f of folders; track f.value) {' +
+    '      <md-navigation-rail-tab [icon]="f.icon" [label]="f.label" [value]="f.value" [badgeValue]="badgeFor(f.value)"></md-navigation-rail-tab>' +
+    '    }' +
+    '  </md-navigation-rail>' +
+    '  <div style="flex: 1; display: flex; flex-direction: column;">' +
+    '    <md-search #search layout="docked" trigger="bar" full-width debounce="200"' +
+    '        placeholder="Search mail" input-aria-label="Search mail"' +
+    '        (mdSearch)="query = $event.detail.value" (mdClose)="clearQuery()">' +
+    '      <md-list slot="results" label="Search results">' +
+    '        @for (m of hits; track m.id) {' +
+    '          <md-list-item type="button" leading-icon="mail" [headline]="m.subject" [supportingText]="m.sender" (mdClick)="pickHit(m.id)"></md-list-item>' +
+    '        }' +
+    '      </md-list>' +
+    '    </md-search>' +
+    '    @if (inInbox) {' +
+    '      <md-list selection-mode="single-select" label="Inbox conversations" style="flex: 1; overflow-y: auto;" (mdSelect)="openAt($event.detail.index)">' +
+    '        @for (m of visible; track m.id) {' +
+    '          <md-list-item [leadingAvatarName]="m.sender" [headline]="m.sender" [supportingText]="m.subject" lines="2" [selected]="m.id === openId">' +
+    '            <span slot="trailing" style="display: flex; align-items: center; gap: 8px;">' +
+    '              {{ m.clock }}' +
+    '              @if (m.unread) {' +
+    '                <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;">' +
+    '                  <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);"></md-status-dot>' +
+    '                </span>' +
+    '              }' +
+    '            </span>' +
+    '          </md-list-item>' +
+    '        }' +
+    '      </md-list>' +
+    '    } @else {' +
+    '      <p style="margin: auto;">{{ folderLabel }} is empty in this demo.</p>' +
+    '    }' +
+    '  </div>' +
+    '  <md-side-sheet variant="standard" side="end" top-divider bottom-divider [open]="!!openMsg" [headline]="readerHeadline">' +
+    '    @if (openMsg; as m) {' +
+    '      <div style="display: grid; gap: 12px;">' +
+    '        <md-avatar [name]="m.sender"></md-avatar>' +
+    '        <span>{{ m.sender }} · {{ m.time }}</span>' +
+    '        <p style="margin: 0;">{{ m.body }}</p>' +
+    '      </div>' +
+    '    }' +
+    '    <md-split-button slot="actions" id="reply-split" icon="reply" label="Reply" menu-label="More reply options" controls="reply-menu"' +
+    '        [trailingChecked]="menuOpen" (mdLeadingClick)="draftToast(defaultReply)" (mdTrailingClick)="menuOpen = $event.detail.checked"></md-split-button>' +
+    '    <md-button slot="actions" variant="text" (mdClick)="archive()">Archive</md-button>' +
+    '  </md-side-sheet>' +
+    '  <md-menu id="reply-menu" anchor="reply-split" placement="top-end" [open]="menuOpen" (mdClose)="menuOpen = false">' +
+    '    @for (kind of replyKinds; track kind) {' +
+    '      <md-menu-item [headline]="kind" (mdClick)="draftToast(kind)"></md-menu-item>' +
+    '    }' +
+    '  </md-menu>' +
+    '  <md-snackbar #bar [message]="toastMsg" [action]="toastAction" (mdAction)="undo()" (mdClose)="settle($event.detail.reason)"></md-snackbar>' +
+    '</div>',
+})
+export class InboxShellComponent {
+  @ViewChild('search') search!: MdSearch;
+  @ViewChild('bar') bar!: MdSnackbar;
+
+  folders = [
+    { value: 'inbox', icon: 'inbox', label: 'Inbox' },
+    { value: 'starred', icon: 'star', label: 'Starred' },
+    { value: 'sent', icon: 'send', label: 'Sent' },
+    { value: 'drafts', icon: 'draft', label: 'Drafts' },
+  ];
+  defaultReply = 'Reply';
+  replyKinds = ['Reply all', 'Forward'];
+  messages: Message[] = [
+    { id: 'm1', sender: 'Priya Raghavan', subject: 'Q3 budget review — final numbers', time: 'Today, 09:41', clock: '09:41', unread: true, body: 'The final Q3 numbers are in — 4.2% under budget overall. Can you sign off before Thursday?' },
+    { id: 'm2', sender: 'Marcus Webb', subject: 'Re: Berlin offsite agenda', time: 'Today, 08:15', clock: '08:15', unread: true, body: 'Adding a 90-minute customer-panel slot on day two; the roadmap workshop moves to after lunch.' },
+    { id: 'm3', sender: 'Sofia Lindqvist', subject: 'Design tokens migration plan', time: 'Yesterday, 17:02', clock: 'Yesterday', unread: false, body: 'The migration plan is ready for review: color and typography tokens first, spacing second.' },
+  ];
+  folder = 'inbox';
+  query = '';
+  openId: string | null = null;
+  pendingId: string | null = null; // archived, awaiting the snackbar verdict
+  drafts = 2;
+  menuOpen = false;
+  toastMsg = '';
+  toastAction = '';
+
+  get folderIndex() { return this.folders.findIndex((f) => f.value === this.folder); }
+  get inInbox() { return this.folder === 'inbox'; }
+  get folderLabel() { return this.folders[this.folderIndex].label; }
+  get visible() { return this.messages.filter((m) => m.id !== this.pendingId); }
+  get openMsg() { return this.visible.find((m) => m.id === this.openId) ?? null; }
+  get readerHeadline() { return this.openMsg ? this.openMsg.subject : ''; }
+  get hits() {
+    const q = this.query.trim().toLowerCase();
+    return q ? this.messages.filter((m) => (m.sender + ' ' + m.subject).toLowerCase().includes(q)) : [];
+  }
+
+  badgeFor(value: string) {
+    if (value === 'inbox') {
+      const n = this.messages.filter((m) => m.unread).length;
+      return n ? String(n) : '';
+    }
+    return value === 'drafts' ? String(this.drafts) : '';
+  }
+  setFolder(value: string) { this.folder = value; if (value !== 'inbox') this.openId = null; }
+  clearQuery() { this.query = ''; }
+  openMessage(id: string) { // opening marks the row read — dot and badge follow the state
+    this.messages = this.messages.map((m) => (m.id === id ? { ...m, unread: false } : m));
+    this.openId = id;
+  }
+  openAt(index: number) { this.openMessage(this.visible[index].id); }
+  pickHit(id: string) { this.search.close(); this.openMessage(id); }
+  showToast(message: string, action: string) { this.toastMsg = message; this.toastAction = action; this.bar.show(); }
+  archive() { this.pendingId = this.openId; this.openId = null; this.showToast('Conversation archived', 'Undo'); }
+  undo() { this.bar.hide('action'); }
+  settle(reason: string) { // commit only when the snackbar closes without Undo
+    if (!this.pendingId) return;
+    if (reason !== 'action') this.messages = this.messages.filter((m) => m.id !== this.pendingId);
+    this.pendingId = null;
+  }
+  draftToast(kind: string) { this.drafts += 1; this.showToast(kind + ' draft saved to Drafts', ''); }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  MdAvatar, MdButton, MdList, MdListItem, MdMenu, MdMenuItem,
+  MdNavigationRail, MdNavigationRailTab, MdSearch, MdSideSheet,
+  MdSnackbar, MdSplitButton, MdStatusDot,
+} from '@awc-ui/vue';
+
+const folders = [
+  { value: 'inbox', icon: 'inbox', label: 'Inbox' },
+  { value: 'starred', icon: 'star', label: 'Starred' },
+  { value: 'sent', icon: 'send', label: 'Sent' },
+  { value: 'drafts', icon: 'draft', label: 'Drafts' },
+];
+const messages = ref([
+  { id: 'm1', sender: 'Priya Raghavan', subject: 'Q3 budget review — final numbers', time: 'Today, 09:41', clock: '09:41', unread: true, body: 'The final Q3 numbers are in — 4.2% under budget overall. Can you sign off before Thursday?' },
+  { id: 'm2', sender: 'Marcus Webb', subject: 'Re: Berlin offsite agenda', time: 'Today, 08:15', clock: '08:15', unread: true, body: 'Adding a 90-minute customer-panel slot on day two; the roadmap workshop moves to after lunch.' },
+  { id: 'm3', sender: 'Sofia Lindqvist', subject: 'Design tokens migration plan', time: 'Yesterday, 17:02', clock: 'Yesterday', unread: false, body: 'The migration plan is ready for review: color and typography tokens first, spacing second.' },
+]);
+const folder = ref('inbox');
+const query = ref('');
+const openId = ref<string | null>(null);
+const pendingId = ref<string | null>(null); // archived, awaiting the snackbar verdict
+const drafts = ref(2);
+const menuOpen = ref(false);
+const toast = ref({ message: '', action: '' });
+const search = ref();
+const bar = ref();
+
+const folderIndex = computed(() => folders.findIndex((f) => f.value === folder.value));
+const visible = computed(() => messages.value.filter((m) => m.id !== pendingId.value));
+const openMsg = computed(() => visible.value.find((m) => m.id === openId.value) ?? null);
+const unread = computed(() => messages.value.filter((m) => m.unread).length);
+const hits = computed(() => {
+  const q = query.value.trim().toLowerCase();
+  return q ? messages.value.filter((m) => (m.sender + ' ' + m.subject).toLowerCase().includes(q)) : [];
+});
+
+function badgeFor(value: string) {
+  if (value === 'inbox') return unread.value ? String(unread.value) : '';
+  return value === 'drafts' ? String(drafts.value) : '';
+}
+function setFolder(value: string) { folder.value = value; if (value !== 'inbox') openId.value = null; }
+function openMessage(id: string) { // opening marks the row read — dot and badge follow the state
+  messages.value = messages.value.map((m) => (m.id === id ? { ...m, unread: false } : m));
+  openId.value = id;
+}
+function pickHit(id: string) { search.value.$el.close(); openMessage(id); }
+function showToast(message: string, action: string) { toast.value = { message, action }; bar.value.$el.show(); }
+function archive() { pendingId.value = openId.value; openId.value = null; showToast('Conversation archived', 'Undo'); }
+function settle(reason: string) { // commit only when the snackbar closes without Undo
+  if (!pendingId.value) return;
+  if (reason !== 'action') messages.value = messages.value.filter((m) => m.id !== pendingId.value);
+  pendingId.value = null;
+}
+function draftToast(kind: string) { drafts.value += 1; showToast(kind + ' draft saved to Drafts', ''); }
+</script>
+
+<template>
+  <div style="position: relative; display: flex; block-size: 540px;">
+    <MdNavigationRail label="Mailboxes" :active-index="folderIndex"
+      @md-tab-change="setFolder($event.detail.value)">
+      <MdNavigationRailTab v-for="f in folders" :key="f.value" :icon="f.icon"
+        :label="f.label" :value="f.value" :badge-value="badgeFor(f.value)" />
+    </MdNavigationRail>
+
+    <div style="flex: 1; display: flex; flex-direction: column;">
+      <MdSearch ref="search" layout="docked" trigger="bar" full-width :debounce="200"
+        placeholder="Search mail" input-aria-label="Search mail"
+        @md-search="query = $event.detail.value" @md-close="query = ''">
+        <MdList slot="results" label="Search results">
+          <MdListItem v-for="m in hits" :key="m.id" type="button" leading-icon="mail"
+            :headline="m.subject" :supporting-text="m.sender" @md-click="pickHit(m.id)" />
+        </MdList>
+      </MdSearch>
+
+      <MdList v-if="folder === 'inbox'" selection-mode="single-select" label="Inbox conversations"
+        style="flex: 1; overflow-y: auto;" @md-select="openMessage(visible[$event.detail.index].id)">
+        <MdListItem v-for="m in visible" :key="m.id" :leading-avatar-name="m.sender"
+          :headline="m.sender" :supporting-text="m.subject" lines="2" :selected="m.id === openId">
+          <span slot="trailing" style="display: flex; align-items: center; gap: 8px;">
+            {{ m.clock }}
+            <span v-if="m.unread" style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;">
+              <MdStatusDot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);" />
+            </span>
+          </span>
+        </MdListItem>
+      </MdList>
+      <p v-else style="margin: auto;">{{ folders[folderIndex].label }} is empty in this demo.</p>
+    </div>
+
+    <MdSideSheet variant="standard" side="end" top-divider bottom-divider
+      :open="openMsg !== null" :headline="openMsg ? openMsg.subject : ''">
+      <div v-if="openMsg" style="display: grid; gap: 12px;">
+        <MdAvatar :name="openMsg.sender" />
+        <span>{{ openMsg.sender }} · {{ openMsg.time }}</span>
+        <p style="margin: 0;">{{ openMsg.body }}</p>
+      </div>
+      <MdSplitButton slot="actions" id="reply-split" icon="reply" label="Reply"
+        menu-label="More reply options" controls="reply-menu" :trailing-checked="menuOpen"
+        @md-leading-click="draftToast('Reply')" @md-trailing-click="menuOpen = $event.detail.checked" />
+      <MdButton slot="actions" variant="text" @md-click="archive">Archive</MdButton>
+    </MdSideSheet>
+
+    <MdMenu id="reply-menu" anchor="reply-split" placement="top-end"
+      :open="menuOpen" @md-close="menuOpen = false">
+      <MdMenuItem headline="Reply all" @md-click="draftToast('Reply all')" />
+      <MdMenuItem headline="Forward" @md-click="draftToast('Forward')" />
+    </MdMenu>
+
+    <MdSnackbar ref="bar" :message="toast.message" :action="toast.action"
+      @md-action="bar.$el.hide('action')" @md-close="settle($event.detail.reason)" />
+  </div>
+</template>`}
+  svelte={`<script>
+  // The svelte package registers the raw md-* elements — client-only.
+  // In SvelteKit guard it: if (browser) defineCustomElements(window);
+  import { defineCustomElements } from '@awc-ui/svelte';
+  import { onMount } from 'svelte';
+  onMount(() => defineCustomElements(window));
+
+  const folders = [
+    { value: 'inbox', icon: 'inbox', label: 'Inbox' },
+    { value: 'starred', icon: 'star', label: 'Starred' },
+    { value: 'sent', icon: 'send', label: 'Sent' },
+    { value: 'drafts', icon: 'draft', label: 'Drafts' },
+  ];
+  let messages = [
+    { id: 'm1', sender: 'Priya Raghavan', subject: 'Q3 budget review — final numbers', time: 'Today, 09:41', clock: '09:41', unread: true, body: 'The final Q3 numbers are in — 4.2% under budget overall. Can you sign off before Thursday?' },
+    { id: 'm2', sender: 'Marcus Webb', subject: 'Re: Berlin offsite agenda', time: 'Today, 08:15', clock: '08:15', unread: true, body: 'Adding a 90-minute customer-panel slot on day two; the roadmap workshop moves to after lunch.' },
+    { id: 'm3', sender: 'Sofia Lindqvist', subject: 'Design tokens migration plan', time: 'Yesterday, 17:02', clock: 'Yesterday', unread: false, body: 'The migration plan is ready for review: color and typography tokens first, spacing second.' },
+  ];
+  let folder = 'inbox';
+  let query = '';
+  let openId = null;
+  let pendingId = null; // archived, awaiting the snackbar verdict
+  let drafts = 2;
+  let menuOpen = false;
+  let toastMsg = '';
+  let toastAction = '';
+  let search;
+  let bar;
+
+  $: folderIndex = folders.findIndex((f) => f.value === folder);
+  $: visible = messages.filter((m) => m.id !== pendingId);
+  $: openMsg = visible.find((m) => m.id === openId) ?? null;
+  $: unread = messages.filter((m) => m.unread).length;
+  $: hits = query.trim()
+    ? messages.filter((m) => (m.sender + ' ' + m.subject).toLowerCase().includes(query.trim().toLowerCase()))
+    : [];
+
+  function setFolder(value) { folder = value; if (value !== 'inbox') openId = null; }
+  function openMessage(id) { // opening marks the row read — dot and badge follow the state
+    messages = messages.map((m) => (m.id === id ? { ...m, unread: false } : m));
+    openId = id;
+  }
+  function pickHit(id) { search.close(); openMessage(id); }
+  function showToast(message, action) { toastMsg = message; toastAction = action; bar.show(); }
+  function archive() { pendingId = openId; openId = null; showToast('Conversation archived', 'Undo'); }
+  function settle(reason) { // commit only when the snackbar closes without Undo
+    if (!pendingId) return;
+    if (reason !== 'action') messages = messages.filter((m) => m.id !== pendingId);
+    pendingId = null;
+  }
+  function draftToast(kind) { drafts += 1; showToast(kind + ' draft saved to Drafts', ''); }
+</script>
+
+<div style="position: relative; display: flex; block-size: 540px;">
+  <md-navigation-rail label="Mailboxes" active-index={folderIndex}
+    on:mdTabChange={(e) => setFolder(e.detail.value)}>
+    {#each folders as f (f.value)}
+      <md-navigation-rail-tab icon={f.icon} label={f.label} value={f.value}
+        badge-value={f.value === 'inbox' ? (unread ? String(unread) : '') : f.value === 'drafts' ? String(drafts) : ''}></md-navigation-rail-tab>
+    {/each}
+  </md-navigation-rail>
+
+  <div style="flex: 1; display: flex; flex-direction: column;">
+    <md-search bind:this={search} layout="docked" trigger="bar" full-width debounce="200"
+      placeholder="Search mail" input-aria-label="Search mail"
+      on:mdSearch={(e) => (query = e.detail.value)} on:mdClose={() => (query = '')}>
+      <md-list slot="results" label="Search results">
+        {#each hits as m (m.id)}
+          <md-list-item type="button" leading-icon="mail" headline={m.subject}
+            supporting-text={m.sender} on:mdClick={() => pickHit(m.id)}></md-list-item>
+        {/each}
+      </md-list>
+    </md-search>
+
+    {#if folder === 'inbox'}
+      <md-list selection-mode="single-select" label="Inbox conversations"
+        style="flex: 1; overflow-y: auto;"
+        on:mdSelect={(e) => openMessage(visible[e.detail.index].id)}>
+        {#each visible as m (m.id)}
+          <md-list-item leading-avatar-name={m.sender} headline={m.sender}
+            supporting-text={m.subject} lines="2" selected={m.id === openId}>
+            <span slot="trailing" style="display: flex; align-items: center; gap: 8px;">
+              {m.clock}
+              {#if m.unread}
+                <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;">
+                  <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);"></md-status-dot>
+                </span>
+              {/if}
+            </span>
+          </md-list-item>
+        {/each}
+      </md-list>
+    {:else}
+      <p style="margin: auto;">{folders[folderIndex].label} is empty in this demo.</p>
+    {/if}
+  </div>
+
+  <md-side-sheet variant="standard" side="end" top-divider bottom-divider
+    open={openMsg !== null} headline={openMsg ? openMsg.subject : ''}>
+    {#if openMsg}
+      <div style="display: grid; gap: 12px;">
+        <md-avatar name={openMsg.sender}></md-avatar>
+        <span>{openMsg.sender} · {openMsg.time}</span>
+        <p style="margin: 0;">{openMsg.body}</p>
+      </div>
+    {/if}
+    <md-split-button slot="actions" id="reply-split" icon="reply" label="Reply"
+      menu-label="More reply options" controls="reply-menu" trailing-checked={menuOpen}
+      on:mdLeadingClick={() => draftToast('Reply')}
+      on:mdTrailingClick={(e) => (menuOpen = e.detail.checked)}></md-split-button>
+    <md-button slot="actions" variant="text" on:mdClick={archive}>Archive</md-button>
+  </md-side-sheet>
+
+  <md-menu id="reply-menu" anchor="reply-split" placement="top-end"
+    open={menuOpen} on:mdClose={() => (menuOpen = false)}>
+    <md-menu-item headline="Reply all" on:mdClick={() => draftToast('Reply all')}></md-menu-item>
+    <md-menu-item headline="Forward" on:mdClick={() => draftToast('Forward')}></md-menu-item>
+  </md-menu>
+
+  <md-snackbar bind:this={bar} message={toastMsg} action={toastAction}
+    on:mdAction={() => bar.hide('action')} on:mdClose={(e) => settle(e.detail.reason)}></md-snackbar>
+</div>`}
 />
 
 ## How it's built

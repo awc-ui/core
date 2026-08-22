@@ -179,6 +179,576 @@ and [`md-slider`](/components/slider/) pair, clamped to what the cash balance
   <md-button slot="actions" variant="text">Cancel</md-button>
   <md-button slot="actions" variant="filled">Buy 10 AAPL</md-button>
 </md-bottom-sheet>`}
+  react={`import { useState } from 'react';
+import {
+  MdBottomSheet, MdButton, MdChip, MdLineChart, MdNumberField, MdSegmentedButton,
+  MdSegmentedButtonSet, MdSlider, MdSparkline, MdStatusDot, MdTable, MdTableBody,
+  MdTableCell, MdTableContainer, MdTableHead, MdTableRow
+} from '@awc-ui/react';
+
+const CASH = 12400;
+const DAYS = ['Thu', 'Fri', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const HOLDINGS = [
+  { symbol: 'AAPL', name: 'Apple Inc.', price: 232.10, shares: 40, value: '$9,284.00',
+    gain: '+18.4%', color: 'success', spark: [221.4, 224.1, 219.8, 226.5, 229.9, 228.4, 232.1] },
+  { symbol: 'MSFT', name: 'Microsoft Corp.', price: 456.80, shares: 25, value: '$11,420.00',
+    gain: '+9.6%', color: 'success', spark: [449.2, 452.6, 447.1, 455.3, 451.8, 458.9, 456.8] },
+  { symbol: 'INTC', name: 'Intel Corp.', price: 21.48, shares: 150, value: '$3,222.00',
+    gain: '-12.3%', color: 'error', spark: [23.1, 22.6, 22.9, 22.1, 21.8, 21.95, 21.48] }
+];
+const RANGES = {
+  '1w': { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], values: [106910, 107420, 106310, 107880, 108136] },
+  '1m': { labels: ['Jul 25', 'Aug 1', 'Aug 8', 'Aug 15', 'Aug 22'], values: [103240, 105150, 104480, 106620, 108136] },
+  '1y': { labels: ['Sep', 'Nov', 'Jan', 'Mar', 'May', 'Jul', 'Aug'], values: [84200, 90400, 92300, 91800, 98400, 103240, 108136] }
+};
+const money = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+const maxFor = (h, side) => side === 'buy' ? Math.max(1, Math.floor(CASH / h.price)) : h.shares;
+
+export default function PortfolioMarkets() {
+  const [range, setRange] = useState('1w');
+  const [symbol, setSymbol] = useState('AAPL');
+  const [side, setSide] = useState('buy');
+  const [qty, setQty] = useState(10);
+  const [open, setOpen] = useState(false);
+
+  const r = RANGES[range];
+  const h = HOLDINGS.find((x) => x.symbol === symbol);
+  const max = maxFor(h, side);
+  const shares = Math.min(Math.max(qty, 1), max); // a typed overshoot clamps to what cash allows
+
+  const openTicket = (sym) => {
+    const next = HOLDINGS.find((x) => x.symbol === sym);
+    setSymbol(sym);
+    setSide('buy');
+    setQty(Math.min(10, maxFor(next, 'buy')));
+    setOpen(true);
+  };
+
+  return (
+    <div style={{ display: 'grid', gap: '20px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px' }}>
+        <div style={{ display: 'grid', gap: '6px' }}>
+          <span>Portfolio value</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <strong>$108,136.40</strong>
+            <MdChip variant="assist" appearance="filled" color="success" density={-1} label="+$1,142.18 today" />
+          </div>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            {/* the dot stays decorative — the adjacent words carry the session state */}
+            <MdStatusDot state="online" size="small" /> NYSE — Market open, closes 4:00 PM ET
+          </span>
+        </div>
+        <MdSegmentedButtonSet aria-label="Chart range" density={-1} onMdChange={(e) => setRange(e.detail[0])}>
+          <MdSegmentedButton value="1w" label="1W" selected={range === '1w'} />
+          <MdSegmentedButton value="1m" label="1M" selected={range === '1m'} />
+          <MdSegmentedButton value="1y" label="1Y" selected={range === '1y'} />
+        </MdSegmentedButtonSet>
+      </div>
+
+      {/* series and xAxis are arrays/objects, so they ride JSX props, not attributes */}
+      <MdLineChart area curve="monotone" legend="none" grid="horizontal" heightProp="240px"
+        summary="Portfolio value over the selected range."
+        xAxis={{ data: r.labels, scale: 'category' }}
+        series={[{ label: 'Portfolio value', data: r.values, color: 'primary' }]}
+        valueFormatter={(v) => v == null ? '' : '$' + Math.round(v / 100) / 10 + 'k'} />
+
+      <MdTableContainer>
+        <MdTable label="Holdings" columnTemplate="1.1fr 0.8fr 1fr 0.9fr 0.9fr 0.7fr" minWidth="640px">
+          <MdTableHead>
+            <MdTableRow rowgroup="head">
+              <MdTableCell head scope="col">Symbol</MdTableCell>
+              <MdTableCell head scope="col" numeric>Last</MdTableCell>
+              <MdTableCell head scope="col">7 days</MdTableCell>
+              <MdTableCell head scope="col" numeric>Value</MdTableCell>
+              <MdTableCell head scope="col">Gain/loss</MdTableCell>
+              <MdTableCell head scope="col" />
+            </MdTableRow>
+          </MdTableHead>
+          <MdTableBody>
+            {HOLDINGS.map((row) => (
+              <MdTableRow key={row.symbol} value={row.symbol}>
+                <MdTableCell><strong>{row.symbol}</strong> {row.name}</MdTableCell>
+                <MdTableCell numeric>{money(row.price)}</MdTableCell>
+                <MdTableCell>
+                  <MdSparkline data={row.spark} labels={DAYS} color={row.color} showTooltip={false} heightProp="24px" />
+                </MdTableCell>
+                <MdTableCell numeric>{row.value}</MdTableCell>
+                <MdTableCell><MdChip variant="assist" appearance="filled" color={row.color} density={-2} label={row.gain} /></MdTableCell>
+                <MdTableCell><MdButton variant="text" onMdClick={() => openTicket(row.symbol)}>Trade</MdButton></MdTableCell>
+              </MdTableRow>
+            ))}
+          </MdTableBody>
+        </MdTable>
+      </MdTableContainer>
+
+      <MdBottomSheet open={open} closeable bottomDivider headline={'Trade ' + symbol + ' — ' + h.name}
+        onMdClose={() => setOpen(false)}>
+        <div style={{ display: 'grid', gap: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+            <MdSegmentedButtonSet aria-label="Order side" density={-1}
+              onMdChange={(e) => e.detail.length && setSide(e.detail[0])}>
+              <MdSegmentedButton value="buy" label="Buy" selected={side === 'buy'} />
+              <MdSegmentedButton value="sell" label="Sell" selected={side === 'sell'} />
+            </MdSegmentedButtonSet>
+            <span>Last {money(h.price)}</span>
+          </div>
+          {/* both inputs render the same clamped state — programmatic writes are silent, so no loop */}
+          <MdNumberField label="Shares" min={1} max={max} step={1} value={shares}
+            supportingText="Market order — executes at the next available price"
+            onMdInput={(e) => e.detail.value != null && setQty(e.detail.value)} />
+          <MdSlider aria-label="Shares" min={1} max={max} step={1} value={shares} valueIndicator
+            onMdInput={(e) => setQty(e.detail.value)} />
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span>{side === 'buy' ? 'Estimated cost' : 'Estimated proceeds'}</span>
+            <strong>{money(shares * h.price)}</strong>
+          </div>
+          <span>{side === 'buy' ? 'Cash available ' + money(CASH) : 'You hold ' + h.shares + ' shares'}</span>
+        </div>
+        <MdButton slot="actions" variant="text" onMdClick={() => setOpen(false)}>Cancel</MdButton>
+        <MdButton slot="actions" variant="filled" onMdClick={() => setOpen(false)}>
+          {(side === 'buy' ? 'Buy ' : 'Sell ') + shares + ' ' + symbol}
+        </MdButton>
+      </MdBottomSheet>
+    </div>
+  );
+}`}
+  angular={`import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import {
+  MdBottomSheet, MdButton, MdChip, MdLineChart, MdNumberField, MdSegmentedButton,
+  MdSegmentedButtonSet, MdSlider, MdSparkline, MdStatusDot, MdTable, MdTableBody,
+  MdTableCell, MdTableContainer, MdTableHead, MdTableRow, NumericValueAccessor
+} from '@awc-ui/angular';
+
+const CASH = 12400;
+const DAYS = ['Thu', 'Fri', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const HOLDINGS: any[] = [
+  { symbol: 'AAPL', name: 'Apple Inc.', price: 232.10, shares: 40, value: '$9,284.00',
+    gain: '+18.4%', color: 'success', spark: [221.4, 224.1, 219.8, 226.5, 229.9, 228.4, 232.1] },
+  { symbol: 'MSFT', name: 'Microsoft Corp.', price: 456.80, shares: 25, value: '$11,420.00',
+    gain: '+9.6%', color: 'success', spark: [449.2, 452.6, 447.1, 455.3, 451.8, 458.9, 456.8] },
+  { symbol: 'INTC', name: 'Intel Corp.', price: 21.48, shares: 150, value: '$3,222.00',
+    gain: '-12.3%', color: 'error', spark: [23.1, 22.6, 22.9, 22.1, 21.8, 21.95, 21.48] }
+];
+const RANGES: any = {
+  '1w': { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], values: [106910, 107420, 106310, 107880, 108136] },
+  '1m': { labels: ['Jul 25', 'Aug 1', 'Aug 8', 'Aug 15', 'Aug 22'], values: [103240, 105150, 104480, 106620, 108136] },
+  '1y': { labels: ['Sep', 'Nov', 'Jan', 'Mar', 'May', 'Jul', 'Aug'], values: [84200, 90400, 92300, 91800, 98400, 103240, 108136] }
+};
+const money = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+@Component({
+  selector: 'app-portfolio-markets',
+  standalone: true,
+  imports: [
+    FormsModule, NumericValueAccessor, MdBottomSheet, MdButton, MdChip, MdLineChart,
+    MdNumberField, MdSegmentedButton, MdSegmentedButtonSet, MdSlider, MdSparkline,
+    MdStatusDot, MdTable, MdTableBody, MdTableCell, MdTableContainer, MdTableHead, MdTableRow
+  ],
+  template:
+    '<div class="portfolio">' +
+    '  <header>' +
+    '    <div>' +
+    '      <span>Portfolio value</span> <strong>$108,136.40</strong>' +
+    '      <md-chip variant="assist" appearance="filled" color="success" [density]="-1" label="+$1,142.18 today"></md-chip>' +
+    '      <!-- the dot stays decorative — the adjacent words carry the session state -->' +
+    '      <span class="session"><md-status-dot state="online" size="small"></md-status-dot> NYSE — Market open, closes 4:00 PM ET</span>' +
+    '    </div>' +
+    '    <md-segmented-button-set aria-label="Chart range" [density]="-1" (mdChange)="onRange($event)">' +
+    '      @for (s of segments; track s.value) {' +
+    '        <md-segmented-button [value]="s.value" [label]="s.label" [selected]="range === s.value"></md-segmented-button>' +
+    '      }' +
+    '    </md-segmented-button-set>' +
+    '  </header>' +
+    '  <md-line-chart area curve="monotone" legend="none" grid="horizontal" heightProp="240px"' +
+    '    summary="Portfolio value over the selected range."' +
+    '    [xAxis]="axis" [series]="series" [valueFormatter]="fmtK"></md-line-chart>' +
+    '  <md-table-container>' +
+    '    <md-table label="Holdings" columnTemplate="1.1fr 0.8fr 1fr 0.9fr 0.9fr 0.7fr" minWidth="640px">' +
+    '      <md-table-head><md-table-row rowgroup="head">' +
+    '        <md-table-cell head scope="col">Symbol</md-table-cell>' +
+    '        <md-table-cell head scope="col" numeric>Last</md-table-cell>' +
+    '        <md-table-cell head scope="col">7 days</md-table-cell>' +
+    '        <md-table-cell head scope="col" numeric>Value</md-table-cell>' +
+    '        <md-table-cell head scope="col">Gain/loss</md-table-cell>' +
+    '        <md-table-cell head scope="col"></md-table-cell>' +
+    '      </md-table-row></md-table-head>' +
+    '      <md-table-body>' +
+    '        @for (h of holdings; track h.symbol) {' +
+    '          <md-table-row [value]="h.symbol">' +
+    '            <md-table-cell><strong>{{ h.symbol }}</strong> {{ h.name }}</md-table-cell>' +
+    '            <md-table-cell numeric>{{ money(h.price) }}</md-table-cell>' +
+    '            <md-table-cell><md-sparkline [data]="h.spark" [labels]="days" [color]="h.color" [showTooltip]="false" heightProp="24px"></md-sparkline></md-table-cell>' +
+    '            <md-table-cell numeric>{{ h.value }}</md-table-cell>' +
+    '            <md-table-cell><md-chip variant="assist" appearance="filled" [color]="h.color" [density]="-2" [label]="h.gain"></md-chip></md-table-cell>' +
+    '            <md-table-cell><md-button variant="text" (mdClick)="openTicket(h.symbol)">Trade</md-button></md-table-cell>' +
+    '          </md-table-row>' +
+    '        }' +
+    '      </md-table-body>' +
+    '    </md-table>' +
+    '  </md-table-container>' +
+    '</div>' +
+    '<md-bottom-sheet [open]="open" [closeable]="true" [bottomDivider]="true" [headline]="headline" (mdClose)="open = false">' +
+    '  <div class="ticket">' +
+    '    <md-segmented-button-set aria-label="Order side" [density]="-1" (mdChange)="onSide($event)">' +
+    '      @for (s of sideSegments; track s.value) {' +
+    '        <md-segmented-button [value]="s.value" [label]="s.label" [selected]="side === s.value"></md-segmented-button>' +
+    '      }' +
+    '    </md-segmented-button-set>' +
+    '    <span>Last {{ money(holding.price) }}</span>' +
+    '    <md-number-field label="Shares" [min]="1" [max]="max" [step]="1" [(ngModel)]="shares"' +
+    '      supportingText="Market order — executes at the next available price"' +
+    '      (mdInput)="onType($event)"></md-number-field>' +
+    '    <md-slider aria-label="Shares" [min]="1" [max]="max" [step]="1" [(ngModel)]="shares"' +
+    '      [valueIndicator]="true" (mdInput)="onSlide($event)"></md-slider>' +
+    '    <div class="estimate"><span>{{ estimateLabel }}</span> <strong>{{ estimate }}</strong></div>' +
+    '    <span class="limit">{{ limitNote }}</span>' +
+    '  </div>' +
+    '  <md-button slot="actions" variant="text" (mdClick)="open = false">Cancel</md-button>' +
+    '  <md-button slot="actions" variant="filled" (mdClick)="open = false">{{ submitLabel }}</md-button>' +
+    '</md-bottom-sheet>'
+})
+export class PortfolioMarketsComponent implements OnInit {
+  holdings = HOLDINGS;
+  days = DAYS;
+  segments = [{ value: '1w', label: '1W' }, { value: '1m', label: '1M' }, { value: '1y', label: '1Y' }];
+  sideSegments = [{ value: 'buy', label: 'Buy' }, { value: 'sell', label: 'Sell' }];
+  range = '1w';
+  symbol = 'AAPL';
+  side = 'buy';
+  shares = 10;
+  open = false;
+  axis: any = {};
+  series: any[] = [];
+
+  money = money;
+  fmtK = (v: number | null | undefined) => v == null ? '' : '$' + Math.round(v / 100) / 10 + 'k';
+
+  get holding() { return HOLDINGS.find((h) => h.symbol === this.symbol); }
+  get max() {
+    const h = this.holding;
+    return this.side === 'buy' ? Math.max(1, Math.floor(CASH / h.price)) : h.shares;
+  }
+  get headline() { return 'Trade ' + this.symbol + ' — ' + this.holding.name; }
+  get estimateLabel() { return this.side === 'buy' ? 'Estimated cost' : 'Estimated proceeds'; }
+  get estimate() { return money(this.shares * this.holding.price); }
+  get submitLabel() { return (this.side === 'buy' ? 'Buy ' : 'Sell ') + this.shares + ' ' + this.symbol; }
+  get limitNote() {
+    return this.side === 'buy'
+      ? 'Cash available ' + money(CASH)
+      : 'You hold ' + this.holding.shares + ' shares';
+  }
+
+  ngOnInit() { this.applyRange('1w'); }
+
+  // series and xAxis are arrays/objects — property bindings, never attributes.
+  applyRange(key: string) {
+    const r = RANGES[key];
+    this.axis = { data: r.labels, scale: 'category' };
+    this.series = [{ label: 'Portfolio value', data: r.values, color: 'primary' }];
+  }
+
+  onRange(event: Event) {
+    const values = (event as CustomEvent<string[]>).detail;
+    if (values.length) { this.range = values[0]; this.applyRange(values[0]); }
+  }
+
+  openTicket(sym: string) {
+    this.symbol = sym;
+    this.side = 'buy';
+    this.shares = Math.min(10, this.max);
+    this.open = true;
+  }
+
+  onSide(event: Event) {
+    const values = (event as CustomEvent<string[]>).detail;
+    if (values.length) { this.side = values[0]; this.shares = Math.min(this.shares, this.max); }
+  }
+
+  // Live estimate while typing / dragging; ngModel itself syncs at the commit points.
+  onType(event: Event) {
+    const v = (event as CustomEvent<any>).detail.value;
+    if (v != null) this.shares = Math.min(Math.max(v, 1), this.max);
+  }
+  onSlide(event: Event) { this.shares = (event as CustomEvent<any>).detail.value; }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  MdBottomSheet, MdButton, MdChip, MdLineChart, MdNumberField, MdSegmentedButton,
+  MdSegmentedButtonSet, MdSlider, MdSparkline, MdStatusDot, MdTable, MdTableBody,
+  MdTableCell, MdTableContainer, MdTableHead, MdTableRow
+} from '@awc-ui/vue';
+
+const CASH = 12400;
+const DAYS = ['Thu', 'Fri', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const HOLDINGS = [
+  { symbol: 'AAPL', name: 'Apple Inc.', price: 232.10, shares: 40, value: '$9,284.00',
+    gain: '+18.4%', color: 'success', spark: [221.4, 224.1, 219.8, 226.5, 229.9, 228.4, 232.1] },
+  { symbol: 'MSFT', name: 'Microsoft Corp.', price: 456.80, shares: 25, value: '$11,420.00',
+    gain: '+9.6%', color: 'success', spark: [449.2, 452.6, 447.1, 455.3, 451.8, 458.9, 456.8] },
+  { symbol: 'INTC', name: 'Intel Corp.', price: 21.48, shares: 150, value: '$3,222.00',
+    gain: '-12.3%', color: 'error', spark: [23.1, 22.6, 22.9, 22.1, 21.8, 21.95, 21.48] }
+];
+const RANGES: any = {
+  '1w': { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], values: [106910, 107420, 106310, 107880, 108136] },
+  '1m': { labels: ['Jul 25', 'Aug 1', 'Aug 8', 'Aug 15', 'Aug 22'], values: [103240, 105150, 104480, 106620, 108136] },
+  '1y': { labels: ['Sep', 'Nov', 'Jan', 'Mar', 'May', 'Jul', 'Aug'], values: [84200, 90400, 92300, 91800, 98400, 103240, 108136] }
+};
+const money = (n: number) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+const range = ref('1w');
+const symbol = ref('AAPL');
+const side = ref('buy');
+const qty = ref(10);
+const open = ref(false);
+
+// series and xAxis are arrays/objects — bound with :series / :x-axis, never attributes.
+const axis = computed(() => ({ data: RANGES[range.value].labels, scale: 'category' }));
+const series = computed(() => [{ label: 'Portfolio value', data: RANGES[range.value].values, color: 'primary' }]);
+const holding = computed(() => HOLDINGS.find((h) => h.symbol === symbol.value)!);
+const max = computed(() => side.value === 'buy'
+  ? Math.max(1, Math.floor(CASH / holding.value.price))
+  : holding.value.shares);
+const shares = computed(() => Math.min(Math.max(qty.value, 1), max.value));
+const estimate = computed(() => money(shares.value * holding.value.price));
+const submitLabel = computed(() => (side.value === 'buy' ? 'Buy ' : 'Sell ') + shares.value + ' ' + symbol.value);
+const limitNote = computed(() => side.value === 'buy'
+  ? 'Cash available ' + money(CASH)
+  : 'You hold ' + holding.value.shares + ' shares');
+
+const fmtK = (v: number | null | undefined) => v == null ? '' : '$' + Math.round(v / 100) / 10 + 'k';
+
+function onRange(e: CustomEvent<string[]>) { if (e.detail.length) range.value = e.detail[0]; }
+function onSide(e: CustomEvent<string[]>) { if (e.detail.length) side.value = e.detail[0]; }
+function onQty(e: CustomEvent<{ value: number | null }>) { if (e.detail.value != null) qty.value = e.detail.value; }
+function onSlide(e: CustomEvent<{ value: number }>) { qty.value = e.detail.value; }
+function openTicket(sym: string) {
+  const h = HOLDINGS.find((x) => x.symbol === sym)!;
+  symbol.value = sym;
+  side.value = 'buy';
+  qty.value = Math.min(10, Math.max(1, Math.floor(CASH / h.price)));
+  open.value = true;
+}
+</script>
+
+<template>
+  <div class="portfolio">
+    <header>
+      <div>
+        <span>Portfolio value</span> <strong>$108,136.40</strong>
+        <MdChip variant="assist" appearance="filled" color="success" :density="-1" label="+$1,142.18 today" />
+        <!-- the dot stays decorative — the adjacent words carry the session state -->
+        <span class="session"><MdStatusDot state="online" size="small" /> NYSE — Market open, closes 4:00 PM ET</span>
+      </div>
+      <MdSegmentedButtonSet aria-label="Chart range" :density="-1" @md-change="onRange">
+        <MdSegmentedButton value="1w" label="1W" :selected="range === '1w'" />
+        <MdSegmentedButton value="1m" label="1M" :selected="range === '1m'" />
+        <MdSegmentedButton value="1y" label="1Y" :selected="range === '1y'" />
+      </MdSegmentedButtonSet>
+    </header>
+
+    <MdLineChart area curve="monotone" legend="none" grid="horizontal" height-prop="240px"
+      summary="Portfolio value over the selected range."
+      :x-axis="axis" :series="series" :value-formatter="fmtK" />
+
+    <MdTableContainer>
+      <MdTable label="Holdings" column-template="1.1fr 0.8fr 1fr 0.9fr 0.9fr 0.7fr" min-width="640px">
+        <MdTableHead>
+          <MdTableRow rowgroup="head">
+            <MdTableCell head scope="col">Symbol</MdTableCell>
+            <MdTableCell head scope="col" numeric>Last</MdTableCell>
+            <MdTableCell head scope="col">7 days</MdTableCell>
+            <MdTableCell head scope="col" numeric>Value</MdTableCell>
+            <MdTableCell head scope="col">Gain/loss</MdTableCell>
+            <MdTableCell head scope="col" />
+          </MdTableRow>
+        </MdTableHead>
+        <MdTableBody>
+          <MdTableRow v-for="h in HOLDINGS" :key="h.symbol" :value="h.symbol">
+            <MdTableCell><strong>{{ h.symbol }}</strong> {{ h.name }}</MdTableCell>
+            <MdTableCell numeric>{{ money(h.price) }}</MdTableCell>
+            <MdTableCell>
+              <MdSparkline :data="h.spark" :labels="DAYS" :color="h.color" :show-tooltip="false" height-prop="24px" />
+            </MdTableCell>
+            <MdTableCell numeric>{{ h.value }}</MdTableCell>
+            <MdTableCell><MdChip variant="assist" appearance="filled" :color="h.color" :density="-2" :label="h.gain" /></MdTableCell>
+            <MdTableCell><MdButton variant="text" @md-click="openTicket(h.symbol)">Trade</MdButton></MdTableCell>
+          </MdTableRow>
+        </MdTableBody>
+      </MdTable>
+    </MdTableContainer>
+
+    <MdBottomSheet :open="open" closeable bottom-divider :headline="'Trade ' + symbol + ' — ' + holding.name"
+      @md-close="open = false">
+      <div class="ticket">
+        <MdSegmentedButtonSet aria-label="Order side" :density="-1" @md-change="onSide">
+          <MdSegmentedButton value="buy" label="Buy" :selected="side === 'buy'" />
+          <MdSegmentedButton value="sell" label="Sell" :selected="side === 'sell'" />
+        </MdSegmentedButtonSet>
+        <span>Last {{ money(holding.price) }}</span>
+        <!-- both inputs render the same clamped state — programmatic writes are silent, so no loop -->
+        <MdNumberField label="Shares" :min="1" :max="max" :step="1" :value="shares"
+          supporting-text="Market order — executes at the next available price" @md-input="onQty" />
+        <MdSlider aria-label="Shares" :min="1" :max="max" :step="1" :value="shares" value-indicator
+          @md-input="onSlide" />
+        <div class="estimate">
+          <span>{{ side === 'buy' ? 'Estimated cost' : 'Estimated proceeds' }}</span>
+          <strong>{{ estimate }}</strong>
+        </div>
+        <span class="limit">{{ limitNote }}</span>
+      </div>
+      <MdButton slot="actions" variant="text" @md-click="open = false">Cancel</MdButton>
+      <MdButton slot="actions" variant="filled" @md-click="open = false">{{ submitLabel }}</MdButton>
+    </MdBottomSheet>
+  </div>
+</template>`}
+  svelte={`<script>
+  // The Svelte package ships the raw md-* elements — register them once on the client.
+  import { defineCustomElements } from '@awc-ui/svelte';
+  if (typeof window !== 'undefined') defineCustomElements(window); // SvelteKit: if (browser) ...
+
+  import { onMount } from 'svelte';
+
+  const CASH = 12400;
+  const DAYS = ['Thu', 'Fri', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+  const HOLDINGS = [
+    { symbol: 'AAPL', name: 'Apple Inc.', price: 232.10, shares: 40, value: '$9,284.00',
+      gain: '+18.4%', color: 'success', spark: [221.4, 224.1, 219.8, 226.5, 229.9, 228.4, 232.1] },
+    { symbol: 'MSFT', name: 'Microsoft Corp.', price: 456.80, shares: 25, value: '$11,420.00',
+      gain: '+9.6%', color: 'success', spark: [449.2, 452.6, 447.1, 455.3, 451.8, 458.9, 456.8] },
+    { symbol: 'INTC', name: 'Intel Corp.', price: 21.48, shares: 150, value: '$3,222.00',
+      gain: '-12.3%', color: 'error', spark: [23.1, 22.6, 22.9, 22.1, 21.8, 21.95, 21.48] }
+  ];
+  const RANGES = {
+    '1w': { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], values: [106910, 107420, 106310, 107880, 108136] },
+    '1m': { labels: ['Jul 25', 'Aug 1', 'Aug 8', 'Aug 15', 'Aug 22'], values: [103240, 105150, 104480, 106620, 108136] },
+    '1y': { labels: ['Sep', 'Nov', 'Jan', 'Mar', 'May', 'Jul', 'Aug'], values: [84200, 90400, 92300, 91800, 98400, 103240, 108136] }
+  };
+  const money = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+  let range = '1w';
+  let symbol = 'AAPL';
+  let side = 'buy';
+  let qty = 10;
+  let chartEl;
+  let sheetEl;
+  let sparkEls = [];
+
+  $: holding = HOLDINGS.find((h) => h.symbol === symbol);
+  $: max = side === 'buy' ? Math.max(1, Math.floor(CASH / holding.price)) : holding.shares;
+  $: shares = Math.min(Math.max(qty, 1), max);
+  $: estimate = money(shares * holding.price);
+  $: submitLabel = (side === 'buy' ? 'Buy ' : 'Sell ') + shares + ' ' + symbol;
+  $: limitNote = side === 'buy'
+    ? 'Cash available ' + money(CASH)
+    : 'You hold ' + holding.shares + ' shares';
+
+  // series and xAxis are arrays/objects — they cannot cross the attribute
+  // boundary, so they are assigned as element properties via bind:this.
+  function applyChart(key) {
+    if (!chartEl) return;
+    const r = RANGES[key];
+    chartEl.xAxis = { data: r.labels, scale: 'category' };
+    chartEl.series = [{ label: 'Portfolio value', data: r.values, color: 'primary' }];
+  }
+
+  function onRange(e) {
+    if (!e.detail.length) return;
+    range = e.detail[0];
+    applyChart(range);
+  }
+
+  function onSide(e) {
+    if (e.detail.length) side = e.detail[0];
+  }
+
+  function openTicket(sym) {
+    const h = HOLDINGS.find((x) => x.symbol === sym);
+    symbol = sym;
+    side = 'buy';
+    qty = Math.min(10, Math.max(1, Math.floor(CASH / h.price)));
+    sheetEl.show();
+  }
+
+  onMount(async () => {
+    await customElements.whenDefined('md-line-chart');
+    chartEl.valueFormatter = (v) => v == null ? '' : '$' + Math.round(v / 100) / 10 + 'k';
+    applyChart(range);
+    sparkEls.forEach((el, i) => {
+      if (el) { el.data = HOLDINGS[i].spark; el.labels = DAYS; }
+    });
+  });
+</script>
+
+<div class="portfolio">
+  <header>
+    <div>
+      <span>Portfolio value</span> <strong>$108,136.40</strong>
+      <md-chip variant="assist" appearance="filled" color="success" density="-1" label="+$1,142.18 today"></md-chip>
+      <!-- the dot stays decorative — the adjacent words carry the session state -->
+      <span class="session"><md-status-dot state="online" size="small"></md-status-dot> NYSE — Market open, closes 4:00 PM ET</span>
+    </div>
+    <md-segmented-button-set aria-label="Chart range" density="-1" on:mdChange={onRange}>
+      <md-segmented-button value="1w" label="1W" selected={range === '1w'}></md-segmented-button>
+      <md-segmented-button value="1m" label="1M" selected={range === '1m'}></md-segmented-button>
+      <md-segmented-button value="1y" label="1Y" selected={range === '1y'}></md-segmented-button>
+    </md-segmented-button-set>
+  </header>
+
+  <md-line-chart bind:this={chartEl} area curve="monotone" legend="none" grid="horizontal" height="240px"
+    summary="Portfolio value over the selected range."></md-line-chart>
+
+  <md-table-container>
+    <md-table label="Holdings" column-template="1.1fr 0.8fr 1fr 0.9fr 0.9fr 0.7fr" min-width="640px">
+      <md-table-head>
+        <md-table-row rowgroup="head">
+          <md-table-cell head scope="col">Symbol</md-table-cell>
+          <md-table-cell head scope="col" numeric>Last</md-table-cell>
+          <md-table-cell head scope="col">7 days</md-table-cell>
+          <md-table-cell head scope="col" numeric>Value</md-table-cell>
+          <md-table-cell head scope="col">Gain/loss</md-table-cell>
+          <md-table-cell head scope="col"></md-table-cell>
+        </md-table-row>
+      </md-table-head>
+      <md-table-body>
+        {#each HOLDINGS as h, i (h.symbol)}
+          <md-table-row value={h.symbol}>
+            <md-table-cell><strong>{h.symbol}</strong> {h.name}</md-table-cell>
+            <md-table-cell numeric>{money(h.price)}</md-table-cell>
+            <md-table-cell><md-sparkline bind:this={sparkEls[i]} color={h.color} show-tooltip="false" height="24px"></md-sparkline></md-table-cell>
+            <md-table-cell numeric>{h.value}</md-table-cell>
+            <md-table-cell><md-chip variant="assist" appearance="filled" color={h.color} density="-2" label={h.gain}></md-chip></md-table-cell>
+            <md-table-cell><md-button variant="text" on:mdClick={() => openTicket(h.symbol)}>Trade</md-button></md-table-cell>
+          </md-table-row>
+        {/each}
+      </md-table-body>
+    </md-table>
+  </md-table-container>
+</div>
+
+<md-bottom-sheet bind:this={sheetEl} closeable bottom-divider headline={'Trade ' + symbol + ' — ' + holding.name}>
+  <div class="ticket">
+    <md-segmented-button-set aria-label="Order side" density="-1" on:mdChange={onSide}>
+      <md-segmented-button value="buy" label="Buy" selected={side === 'buy'}></md-segmented-button>
+      <md-segmented-button value="sell" label="Sell" selected={side === 'sell'}></md-segmented-button>
+    </md-segmented-button-set>
+    <span>Last {money(holding.price)}</span>
+    <!-- both inputs render the same clamped state — programmatic writes are silent, so no loop -->
+    <md-number-field label="Shares" min="1" max={max} step="1" value={shares}
+      supporting-text="Market order — executes at the next available price"
+      on:mdInput={(e) => { if (e.detail.value != null) qty = e.detail.value; }}></md-number-field>
+    <md-slider aria-label="Shares" min="1" max={max} step="1" value={shares} value-indicator
+      on:mdInput={(e) => qty = e.detail.value}></md-slider>
+    <div class="estimate">
+      <span>{side === 'buy' ? 'Estimated cost' : 'Estimated proceeds'}</span>
+      <strong>{estimate}</strong>
+    </div>
+    <span class="limit">{limitNote}</span>
+  </div>
+  <md-button slot="actions" variant="text" on:mdClick={() => sheetEl.close()}>Cancel</md-button>
+  <md-button slot="actions" variant="filled" on:mdClick={() => sheetEl.close()}>{submitLabel}</md-button>
+</md-bottom-sheet>`}
   script={`
     const chart = root.querySelector('[data-chart]');
     const rangeSet = root.querySelector('[data-range]');

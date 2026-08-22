@@ -315,6 +315,693 @@ your own store or API.
 
     render();
   `}
+  react={`import { useMemo, useRef, useState } from 'react';
+import {
+  MdButton, MdCheckbox, MdChip, MdMenu, MdMenuItem, MdSearch, MdSnackbar,
+  MdSplitButton, MdStatusDot, MdTable, MdTableBody, MdTableCell, MdTableContainer,
+  MdTableHead, MdTablePagination, MdTableRow, MdTableSortLabel, MdTableToolbar,
+} from '@awc-ui/react';
+
+const DOT = { Active: 'online', Invited: 'away', Suspended: 'offline' };
+const SEED = [
+  { id: 'u-01', name: 'Ada Okafor', role: 'Owner', status: 'Active', hoursAgo: 1 },
+  { id: 'u-02', name: 'Marius Ionescu', role: 'Admin', status: 'Active', hoursAgo: 3 },
+  { id: 'u-04', name: 'Tomas Lindqvist', role: 'Editor', status: 'Invited', hoursAgo: 96 },
+  { id: 'u-06', name: 'Jonas Weber', role: 'Editor', status: 'Suspended', hoursAgo: 240 },
+  { id: 'u-08', name: 'Liam Gallagher', role: 'Viewer', status: 'Invited', hoursAgo: 120 },
+  { id: 'u-09', name: 'Mei-Ling Chen', role: 'Admin', status: 'Active', hoursAgo: 2 },
+];
+const ago = (h) => (h < 24 ? h + 'h ago' : Math.round(h / 24) + 'd ago');
+const dotAnchor = { position: 'relative', display: 'inline-flex', inlineSize: '8px',
+  blockSize: '8px', '--md-status-dot-inset-end': '0px', '--md-status-dot-inset-block-end': '0px' };
+
+export function MemberConsole() {
+  const grid = useRef(null);
+  const snack = useRef(null);
+  const undo = useRef(null);
+  const [members, setMembers] = useState(SEED);
+  const [query, setQuery] = useState('');
+  const [statuses, setStatuses] = useState([]);
+  const [sort, setSort] = useState({ column: 'last-active', order: 'desc' });
+  const [page, setPage] = useState(0);
+  const [perPage, setPerPage] = useState(5);
+  const [selected, setSelected] = useState([]);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [toast, setToast] = useState({ message: '', action: '' });
+
+  // The table never touches the data: filter, sort and slice are all ours.
+  const rows = useMemo(() => {
+    const q = query.toLowerCase();
+    const list = members.filter((m) =>
+      (!q || (m.name + ' ' + m.role).toLowerCase().includes(q)) &&
+      (statuses.length === 0 || statuses.includes(m.status)));
+    if (sort.order === 'none') return list;
+    const dir = sort.order === 'asc' ? 1 : -1;
+    return [...list].sort((a, b) => sort.column === 'name'
+      ? dir * a.name.localeCompare(b.name) : dir * (b.hoursAgo - a.hoursAgo));
+  }, [members, query, statuses, sort]);
+  const shownPage = Math.min(page, Math.max(0, Math.ceil(rows.length / perPage) - 1));
+  const pageRows = rows.slice(shownPage * perPage, shownPage * perPage + perPage);
+
+  // Filters are our own mutations: arm the FLIP row motion, then re-render.
+  const filter = (apply) => grid.current.animateNextChange().then(apply);
+  const notify = (message, action) => { setToast({ message, action }); snack.current.show(); };
+
+  const deactivate = async () => {
+    const ids = [...selected];
+    if (!ids.length) return;
+    undo.current = members.filter((m) => ids.includes(m.id))
+      .map((m) => ({ id: m.id, status: m.status }));
+    setMembers(members.map((m) => (ids.includes(m.id) ? { ...m, status: 'Suspended' } : m)));
+    await grid.current.deselectAll();
+    notify(ids.length + (ids.length === 1 ? ' member' : ' members') + ' deactivated', 'Undo');
+  };
+
+  const onSnackClose = (e) => {
+    if (e.detail.reason === 'action' && undo.current) {
+      const prev = undo.current;
+      setMembers((ms) => ms.map((m) => {
+        const p = prev.find((c) => c.id === m.id);
+        return p ? { ...m, status: p.status } : m;
+      }));
+    }
+    undo.current = null;
+  };
+
+  const exportToast = (n, scope) => {
+    undo.current = null;
+    notify('Exported ' + n + ' ' + scope + ' to members.csv', '');
+  };
+
+  return (
+    <div style={{ display: 'grid', gap: '16px' }}>
+      <MdSearch layout="docked" trigger="bar" fullWidth debounce={200}
+        placeholder="Search name or role" inputAriaLabel="Search members"
+        onMdSearch={(e) => filter(() => setQuery(e.detail.value))}>
+        <div slot="results" style={{ padding: '12px 16px' }}>
+          {rows.length + ' of ' + members.length + ' members match'}
+        </div>
+      </MdSearch>
+
+      <div role="group" aria-label="Filter by status" style={{ display: 'flex', gap: '8px' }}>
+        {['Active', 'Invited', 'Suspended'].map((s) => (
+          <MdChip key={s} variant="filter" label={s}
+            onMdSelect={(e) => filter(() => setStatuses((prev) =>
+              e.detail.selected ? [...prev, s] : prev.filter((x) => x !== s)))} />
+        ))}
+      </div>
+
+      <MdTableContainer variant="outlined">
+        <MdTableToolbar slot="top" headline="Workspace members"
+          supportingText={'Fabrikam GmbH · ' + members.length + ' seats'} autoBind>
+          <MdSplitButton slot="actions" id="export-split" variant="tonal" icon="download"
+            label="Export CSV" menuLabel="More export options" controls="export-menu"
+            trailingChecked={menuOpen}
+            onMdLeadingClick={() => exportToast(rows.length, 'filtered rows')}
+            onMdTrailingClick={(e) => setMenuOpen(e.detail.checked)} />
+          <MdButton slot="selection-actions" variant="filled" icon="person_off"
+            onMdClick={deactivate}>Deactivate</MdButton>
+        </MdTableToolbar>
+        <MdTable ref={grid} selection="multiple" striped label="Workspace members"
+          columnTemplate="auto 1.6fr 1fr 1.2fr 110px" minWidth="620px"
+          sortBy={sort.column} sortOrder={sort.order}
+          rowOffset={shownPage * perPage} rowCount={rows.length} empty={rows.length === 0}
+          onMdSortChange={(e) => setSort(e.detail)}
+          onMdSelectionChange={(e) => setSelected(e.detail.values)}>
+          <MdTableHead>
+            <MdTableRow rowgroup="head">
+              <MdTableCell head padding="checkbox"><MdCheckbox aria-label="Select all members" /></MdTableCell>
+              <MdTableCell head scope="col"><MdTableSortLabel column="name">Member</MdTableSortLabel></MdTableCell>
+              <MdTableCell head scope="col">Role</MdTableCell>
+              <MdTableCell head scope="col">Status</MdTableCell>
+              <MdTableCell head scope="col" numeric>
+                <MdTableSortLabel column="last-active" defaultOrder="desc">Last active</MdTableSortLabel>
+              </MdTableCell>
+            </MdTableRow>
+          </MdTableHead>
+          <MdTableBody>
+            {pageRows.map((m) => (
+              <MdTableRow key={m.id} value={m.id}>
+                <MdTableCell padding="checkbox"><MdCheckbox aria-label={'Select ' + m.name} /></MdTableCell>
+                <MdTableCell>{m.name}</MdTableCell>
+                <MdTableCell>{m.role}</MdTableCell>
+                <MdTableCell>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={dotAnchor}><MdStatusDot size="small" state={DOT[m.status]} /></span>
+                    {m.status}
+                  </span>
+                </MdTableCell>
+                <MdTableCell numeric>{ago(m.hoursAgo)}</MdTableCell>
+              </MdTableRow>
+            ))}
+          </MdTableBody>
+          <div slot="empty">No members match the current filters.</div>
+        </MdTable>
+        <MdTablePagination slot="bottom" count={rows.length} page={shownPage}
+          rowsPerPage={perPage} rowsPerPageOptions="5,10,all"
+          onMdPageChange={(e) => setPage(e.detail.page)}
+          onMdRowsPerPageChange={(e) => { setPerPage(e.detail.rowsPerPage); setPage(0); }} />
+      </MdTableContainer>
+
+      <MdMenu id="export-menu" anchor="export-split" placement="bottom-end"
+        open={menuOpen} onMdClose={() => setMenuOpen(false)}>
+        <MdMenuItem headline="Export filtered rows" onMdClick={() => exportToast(rows.length, 'filtered rows')} />
+        <MdMenuItem headline="Export selected rows" onMdClick={() => exportToast(selected.length, 'selected rows')} />
+        <MdMenuItem headline="Export all members" onMdClick={() => exportToast(members.length, 'members')} />
+      </MdMenu>
+
+      {/* The action button never closes the snackbar itself: hide with a reason,
+          then branch on that reason in mdClose. */}
+      <MdSnackbar ref={snack} message={toast.message} action={toast.action}
+        onMdAction={() => snack.current.hide('action')} onMdClose={onSnackClose} />
+    </div>
+  );
+}`}
+  angular={`<!-- members-console.component.html -->
+<md-search layout="docked" trigger="bar" full-width debounce="200"
+  placeholder="Search name or role" input-aria-label="Search members"
+  (mdSearch)="onSearch($any($event).detail.value)">
+  <div slot="results">{{ rows.length }} of {{ members.length }} members match</div>
+</md-search>
+
+<div role="group" aria-label="Filter by status">
+  @for (s of allStatuses; track s) {
+    <md-chip variant="filter" [label]="s"
+      (mdSelect)="toggleStatus(s, $any($event).detail.selected)"></md-chip>
+  }
+</div>
+
+<md-table-container variant="outlined">
+  <md-table-toolbar slot="top" headline="Workspace members"
+    [supportingText]="'Fabrikam GmbH · ' + members.length + ' seats'" auto-bind>
+    <md-split-button slot="actions" id="export-split" variant="tonal" icon="download"
+      label="Export CSV" menu-label="More export options" controls="export-menu"
+      [trailingChecked]="menuOpen"
+      (mdLeadingClick)="exportToast(rows.length, 'filtered rows')"
+      (mdTrailingClick)="menuOpen = $any($event).detail.checked"></md-split-button>
+    <md-button slot="selection-actions" variant="filled" icon="person_off"
+      (mdClick)="deactivate()">Deactivate</md-button>
+  </md-table-toolbar>
+
+  <md-table #grid selection="multiple" striped label="Workspace members"
+    column-template="auto 1.6fr 1fr 1.2fr 110px" min-width="620px"
+    [sortBy]="sort.column" [sortOrder]="sort.order"
+    [rowOffset]="shownPage * perPage" [rowCount]="rows.length" [empty]="rows.length === 0"
+    (mdSortChange)="sort = $any($event).detail"
+    (mdSelectionChange)="selected = $any($event).detail.values">
+    <md-table-head>
+      <md-table-row rowgroup="head">
+        <md-table-cell head padding="checkbox"><md-checkbox aria-label="Select all members"></md-checkbox></md-table-cell>
+        <md-table-cell head scope="col"><md-table-sort-label column="name">Member</md-table-sort-label></md-table-cell>
+        <md-table-cell head scope="col">Role</md-table-cell>
+        <md-table-cell head scope="col">Status</md-table-cell>
+        <md-table-cell head scope="col" numeric>
+          <md-table-sort-label column="last-active" default-order="desc">Last active</md-table-sort-label>
+        </md-table-cell>
+      </md-table-row>
+    </md-table-head>
+    <md-table-body>
+      @for (m of pageRows; track m.id) {
+        <md-table-row [value]="m.id">
+          <md-table-cell padding="checkbox"><md-checkbox [attr.aria-label]="'Select ' + m.name"></md-checkbox></md-table-cell>
+          <md-table-cell>{{ m.name }}</md-table-cell>
+          <md-table-cell>{{ m.role }}</md-table-cell>
+          <md-table-cell>
+            <span style="display: inline-flex; align-items: center; gap: 8px;">
+              <span style="position: relative; display: inline-flex; inline-size: 8px; block-size: 8px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;">
+                <md-status-dot size="small" [state]="dot[m.status]"></md-status-dot>
+              </span>{{ m.status }}
+            </span>
+          </md-table-cell>
+          <md-table-cell numeric>{{ ago(m.hoursAgo) }}</md-table-cell>
+        </md-table-row>
+      }
+    </md-table-body>
+    <div slot="empty">No members match the current filters.</div>
+  </md-table>
+
+  <md-table-pagination slot="bottom" [count]="rows.length" [page]="shownPage"
+    [rowsPerPage]="perPage" rows-per-page-options="5,10,all"
+    (mdPageChange)="page = $any($event).detail.page"
+    (mdRowsPerPageChange)="perPage = $any($event).detail.rowsPerPage; page = 0"></md-table-pagination>
+</md-table-container>
+
+<md-menu id="export-menu" anchor="export-split" placement="bottom-end"
+  [open]="menuOpen" (mdClose)="menuOpen = false">
+  <md-menu-item headline="Export filtered rows" (mdClick)="exportToast(rows.length, 'filtered rows')"></md-menu-item>
+  <md-menu-item headline="Export selected rows" (mdClick)="exportToast(selected.length, 'selected rows')"></md-menu-item>
+  <md-menu-item headline="Export all members" (mdClick)="exportToast(members.length, 'members')"></md-menu-item>
+</md-menu>
+
+<!-- The action button never closes the snackbar itself: hide with a reason,
+     then branch on that reason in mdClose. -->
+<md-snackbar #snack [message]="snackMessage" [action]="snackAction"
+  (mdAction)="$any(snack).hide('action')"
+  (mdClose)="onSnackClose($any($event).detail.reason)"></md-snackbar>
+
+// members-console.component.ts
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, ViewChild } from '@angular/core';
+import { defineCustomElements } from '@awc-ui/core/loader';
+
+defineCustomElements(window);
+
+interface Member { id: string; name: string; role: string; status: string; hoursAgo: number; }
+
+@Component({
+  selector: 'app-members-console',
+  standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  templateUrl: './members-console.component.html',
+})
+export class MembersConsoleComponent {
+  @ViewChild('grid') grid!: ElementRef<any>;
+  @ViewChild('snack') snackRef!: ElementRef<any>;
+
+  dot: Record<string, string> = { Active: 'online', Invited: 'away', Suspended: 'offline' };
+  allStatuses = ['Active', 'Invited', 'Suspended'];
+  members: Member[] = [
+    { id: 'u-01', name: 'Ada Okafor', role: 'Owner', status: 'Active', hoursAgo: 1 },
+    { id: 'u-02', name: 'Marius Ionescu', role: 'Admin', status: 'Active', hoursAgo: 3 },
+    { id: 'u-04', name: 'Tomas Lindqvist', role: 'Editor', status: 'Invited', hoursAgo: 96 },
+    { id: 'u-06', name: 'Jonas Weber', role: 'Editor', status: 'Suspended', hoursAgo: 240 },
+    { id: 'u-08', name: 'Liam Gallagher', role: 'Viewer', status: 'Invited', hoursAgo: 120 },
+    { id: 'u-09', name: 'Mei-Ling Chen', role: 'Admin', status: 'Active', hoursAgo: 2 },
+  ];
+
+  query = '';
+  statuses = new Set<string>();
+  sort = { column: 'last-active', order: 'desc' };
+  page = 0; perPage = 5;
+  selected: string[] = [];
+  menuOpen = false;
+  snackMessage = ''; snackAction = '';
+  private lastChange: { id: string; status: string }[] | null = null;
+
+  // The table never touches the data: filter, sort and slice are all ours.
+  get rows(): Member[] {
+    const q = this.query.toLowerCase();
+    const list = this.members.filter((m) =>
+      (!q || (m.name + ' ' + m.role).toLowerCase().includes(q)) &&
+      (this.statuses.size === 0 || this.statuses.has(m.status)));
+    if (this.sort.order === 'none') return list;
+    const dir = this.sort.order === 'asc' ? 1 : -1;
+    return [...list].sort((a, b) => this.sort.column === 'name'
+      ? dir * a.name.localeCompare(b.name) : dir * (b.hoursAgo - a.hoursAgo));
+  }
+  get shownPage(): number {
+    return Math.min(this.page, Math.max(0, Math.ceil(this.rows.length / this.perPage) - 1));
+  }
+  get pageRows(): Member[] {
+    const start = this.shownPage * this.perPage;
+    return this.rows.slice(start, start + this.perPage);
+  }
+
+  ago(h: number): string { return h < 24 ? h + 'h ago' : Math.round(h / 24) + 'd ago'; }
+
+  // Filters are our own mutations: arm the FLIP row motion, then re-render.
+  onSearch(value: string): void {
+    this.grid.nativeElement.animateNextChange().then(() => (this.query = value));
+  }
+  toggleStatus(s: string, on: boolean): void {
+    this.grid.nativeElement.animateNextChange().then(() =>
+      on ? this.statuses.add(s) : this.statuses.delete(s));
+  }
+
+  async deactivate(): Promise<void> {
+    const ids = [...this.selected];
+    if (!ids.length) return;
+    this.lastChange = this.members.filter((m) => ids.includes(m.id))
+      .map((m) => ({ id: m.id, status: m.status }));
+    this.members = this.members.map((m) =>
+      ids.includes(m.id) ? { ...m, status: 'Suspended' } : m);
+    await this.grid.nativeElement.deselectAll();
+    this.notify(ids.length + (ids.length === 1 ? ' member' : ' members') + ' deactivated', 'Undo');
+  }
+
+  onSnackClose(reason: string): void {
+    if (reason === 'action' && this.lastChange) {
+      const prev = this.lastChange;
+      this.members = this.members.map((m) => {
+        const p = prev.find((c) => c.id === m.id);
+        return p ? { ...m, status: p.status } : m;
+      });
+    }
+    this.lastChange = null;
+  }
+
+  exportToast(n: number, scope: string): void {
+    this.lastChange = null;
+    this.notify('Exported ' + n + ' ' + scope + ' to members.csv', '');
+  }
+
+  private notify(message: string, action: string): void {
+    this.snackMessage = message;
+    this.snackAction = action;
+    this.snackRef.nativeElement.show();
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  MdButton, MdCheckbox, MdChip, MdMenu, MdMenuItem, MdSearch, MdSnackbar,
+  MdSplitButton, MdStatusDot, MdTable, MdTableBody, MdTableCell, MdTableContainer,
+  MdTableHead, MdTablePagination, MdTableRow, MdTableSortLabel, MdTableToolbar
+} from '@awc-ui/vue';
+
+interface Member { id: string; name: string; role: string; status: string; hoursAgo: number; }
+
+const DOT: Record<string, string> = { Active: 'online', Invited: 'away', Suspended: 'offline' };
+const members = ref<Member[]>([
+  { id: 'u-01', name: 'Ada Okafor', role: 'Owner', status: 'Active', hoursAgo: 1 },
+  { id: 'u-02', name: 'Marius Ionescu', role: 'Admin', status: 'Active', hoursAgo: 3 },
+  { id: 'u-04', name: 'Tomas Lindqvist', role: 'Editor', status: 'Invited', hoursAgo: 96 },
+  { id: 'u-06', name: 'Jonas Weber', role: 'Editor', status: 'Suspended', hoursAgo: 240 },
+  { id: 'u-08', name: 'Liam Gallagher', role: 'Viewer', status: 'Invited', hoursAgo: 120 },
+  { id: 'u-09', name: 'Mei-Ling Chen', role: 'Admin', status: 'Active', hoursAgo: 2 }
+]);
+
+const query = ref('');
+const statuses = ref<string[]>([]);
+const sort = ref({ column: 'last-active', order: 'desc' });
+const page = ref(0);
+const perPage = ref(5);
+const selected = ref<string[]>([]);
+const menuOpen = ref(false);
+const snackMessage = ref('');
+const snackAction = ref('');
+let lastChange: { id: string; status: string }[] | null = null;
+
+// Wrapper components forward to the custom element via $el — that is where
+// the table and snackbar methods live.
+const grid = ref();
+const snack = ref();
+
+// The table never touches the data: filter, sort and slice are all ours.
+const rows = computed(() => {
+  const q = query.value.toLowerCase();
+  const list = members.value.filter((m) =>
+    (!q || (m.name + ' ' + m.role).toLowerCase().includes(q)) &&
+    (statuses.value.length === 0 || statuses.value.includes(m.status)));
+  if (sort.value.order === 'none') return list;
+  const dir = sort.value.order === 'asc' ? 1 : -1;
+  return [...list].sort((a, b) => sort.value.column === 'name'
+    ? dir * a.name.localeCompare(b.name) : dir * (b.hoursAgo - a.hoursAgo));
+});
+const shownPage = computed(() =>
+  Math.min(page.value, Math.max(0, Math.ceil(rows.value.length / perPage.value) - 1)));
+const pageRows = computed(() => {
+  const start = shownPage.value * perPage.value;
+  return rows.value.slice(start, start + perPage.value);
+});
+
+const ago = (h: number) => (h < 24 ? h + 'h ago' : Math.round(h / 24) + 'd ago');
+
+// Filters are our own mutations: arm the FLIP row motion, then re-render.
+function filterWithMotion(apply: () => void) {
+  grid.value.$el.animateNextChange().then(apply);
+}
+function onSearch(value: string) { filterWithMotion(() => (query.value = value)); }
+function toggleStatus(s: string, on: boolean) {
+  filterWithMotion(() => {
+    statuses.value = on ? [...statuses.value, s] : statuses.value.filter((x) => x !== s);
+  });
+}
+
+function notify(message: string, action: string) {
+  snackMessage.value = message;
+  snackAction.value = action;
+  snack.value.$el.show();
+}
+
+async function deactivate() {
+  const ids = [...selected.value];
+  if (!ids.length) return;
+  lastChange = members.value.filter((m) => ids.includes(m.id))
+    .map((m) => ({ id: m.id, status: m.status }));
+  members.value = members.value.map((m) =>
+    ids.includes(m.id) ? { ...m, status: 'Suspended' } : m);
+  await grid.value.$el.deselectAll();
+  notify(ids.length + (ids.length === 1 ? ' member' : ' members') + ' deactivated', 'Undo');
+}
+
+function onSnackClose(reason: string) {
+  if (reason === 'action' && lastChange) {
+    const prev = lastChange;
+    members.value = members.value.map((m) => {
+      const p = prev.find((c) => c.id === m.id);
+      return p ? { ...m, status: p.status } : m;
+    });
+  }
+  lastChange = null;
+}
+
+function exportToast(n: number, scope: string) {
+  lastChange = null;
+  notify('Exported ' + n + ' ' + scope + ' to members.csv', '');
+}
+</script>
+
+<template>
+  <MdSearch layout="docked" trigger="bar" full-width :debounce="200"
+    placeholder="Search name or role" input-aria-label="Search members"
+    @md-search="onSearch($event.detail.value)">
+    <div slot="results">{{ rows.length }} of {{ members.length }} members match</div>
+  </MdSearch>
+
+  <div role="group" aria-label="Filter by status">
+    <MdChip v-for="s in ['Active', 'Invited', 'Suspended']" :key="s" variant="filter" :label="s"
+      @md-select="toggleStatus(s, $event.detail.selected)" />
+  </div>
+
+  <MdTableContainer variant="outlined">
+    <MdTableToolbar slot="top" headline="Workspace members"
+      :supporting-text="'Fabrikam GmbH · ' + members.length + ' seats'" auto-bind>
+      <MdSplitButton slot="actions" id="export-split" variant="tonal" icon="download"
+        label="Export CSV" menu-label="More export options" controls="export-menu"
+        :trailing-checked="menuOpen"
+        @md-leading-click="exportToast(rows.length, 'filtered rows')"
+        @md-trailing-click="menuOpen = $event.detail.checked" />
+      <MdButton slot="selection-actions" variant="filled" icon="person_off"
+        @md-click="deactivate">Deactivate</MdButton>
+    </MdTableToolbar>
+
+    <MdTable ref="grid" selection="multiple" striped label="Workspace members"
+      column-template="auto 1.6fr 1fr 1.2fr 110px" min-width="620px"
+      :sort-by="sort.column" :sort-order="sort.order"
+      :row-offset="shownPage * perPage" :row-count="rows.length" :empty="rows.length === 0"
+      @md-sort-change="sort = $event.detail"
+      @md-selection-change="selected = $event.detail.values">
+      <MdTableHead>
+        <MdTableRow rowgroup="head">
+          <MdTableCell head padding="checkbox"><MdCheckbox aria-label="Select all members" /></MdTableCell>
+          <MdTableCell head scope="col"><MdTableSortLabel column="name">Member</MdTableSortLabel></MdTableCell>
+          <MdTableCell head scope="col">Role</MdTableCell>
+          <MdTableCell head scope="col">Status</MdTableCell>
+          <MdTableCell head scope="col" numeric>
+            <MdTableSortLabel column="last-active" default-order="desc">Last active</MdTableSortLabel>
+          </MdTableCell>
+        </MdTableRow>
+      </MdTableHead>
+      <MdTableBody>
+        <MdTableRow v-for="m in pageRows" :key="m.id" :value="m.id">
+          <MdTableCell padding="checkbox"><MdCheckbox :aria-label="'Select ' + m.name" /></MdTableCell>
+          <MdTableCell>{{ m.name }}</MdTableCell>
+          <MdTableCell>{{ m.role }}</MdTableCell>
+          <MdTableCell>
+            <span style="display: inline-flex; align-items: center; gap: 8px;">
+              <span style="position: relative; display: inline-flex; inline-size: 8px; block-size: 8px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;">
+                <MdStatusDot size="small" :state="DOT[m.status]" />
+              </span>{{ m.status }}
+            </span>
+          </MdTableCell>
+          <MdTableCell numeric>{{ ago(m.hoursAgo) }}</MdTableCell>
+        </MdTableRow>
+      </MdTableBody>
+      <div slot="empty">No members match the current filters.</div>
+    </MdTable>
+
+    <MdTablePagination slot="bottom" :count="rows.length" :page="shownPage"
+      :rows-per-page="perPage" rows-per-page-options="5,10,all"
+      @md-page-change="page = $event.detail.page"
+      @md-rows-per-page-change="perPage = $event.detail.rowsPerPage; page = 0" />
+  </MdTableContainer>
+
+  <MdMenu id="export-menu" anchor="export-split" placement="bottom-end"
+    :open="menuOpen" @md-close="menuOpen = false">
+    <MdMenuItem headline="Export filtered rows" @md-click="exportToast(rows.length, 'filtered rows')" />
+    <MdMenuItem headline="Export selected rows" @md-click="exportToast(selected.length, 'selected rows')" />
+    <MdMenuItem headline="Export all members" @md-click="exportToast(members.length, 'members')" />
+  </MdMenu>
+
+  <!-- The action button never closes the snackbar itself: hide with a reason,
+       then branch on that reason in mdClose. -->
+  <MdSnackbar ref="snack" :message="snackMessage" :action="snackAction"
+    @md-action="snack.$el.hide('action')" @md-close="onSnackClose($event.detail.reason)" />
+</template>`}
+  svelte={`<script>
+  import { onMount } from 'svelte';
+  // Registers every md-* element on the client. In SvelteKit, onMount already
+  // guarantees the browser — a plain SPA can call this at module level instead.
+  import { defineCustomElements } from '@awc-ui/svelte';
+
+  const DOT = { Active: 'online', Invited: 'away', Suspended: 'offline' };
+  let members = [
+    { id: 'u-01', name: 'Ada Okafor', role: 'Owner', status: 'Active', hoursAgo: 1 },
+    { id: 'u-02', name: 'Marius Ionescu', role: 'Admin', status: 'Active', hoursAgo: 3 },
+    { id: 'u-04', name: 'Tomas Lindqvist', role: 'Editor', status: 'Invited', hoursAgo: 96 },
+    { id: 'u-06', name: 'Jonas Weber', role: 'Editor', status: 'Suspended', hoursAgo: 240 },
+    { id: 'u-08', name: 'Liam Gallagher', role: 'Viewer', status: 'Invited', hoursAgo: 120 },
+    { id: 'u-09', name: 'Mei-Ling Chen', role: 'Admin', status: 'Active', hoursAgo: 2 }
+  ];
+
+  let query = '';
+  let statuses = [];
+  let sort = { column: 'last-active', order: 'desc' };
+  let page = 0;
+  let perPage = 5;
+  let selected = [];
+  let snackMessage = '';
+  let snackAction = '';
+  let lastChange = null;
+  let gridEl, snackEl, menuEl, splitEl;
+
+  onMount(() => defineCustomElements(window));
+
+  // The table never touches the data: filter, sort and slice are all ours.
+  $: rows = computeRows(members, query, statuses, sort);
+  $: shownPage = Math.min(page, Math.max(0, Math.ceil(rows.length / perPage) - 1));
+  $: pageRows = rows.slice(shownPage * perPage, shownPage * perPage + perPage);
+
+  function computeRows(list, q, sts, srt) {
+    const needle = q.toLowerCase();
+    const out = list.filter((m) =>
+      (!needle || (m.name + ' ' + m.role).toLowerCase().includes(needle)) &&
+      (sts.length === 0 || sts.includes(m.status)));
+    if (srt.order === 'none') return out;
+    const dir = srt.order === 'asc' ? 1 : -1;
+    return [...out].sort((a, b) => srt.column === 'name'
+      ? dir * a.name.localeCompare(b.name) : dir * (b.hoursAgo - a.hoursAgo));
+  }
+
+  const ago = (h) => (h < 24 ? h + 'h ago' : Math.round(h / 24) + 'd ago');
+
+  // Filters are our own mutations: arm the FLIP row motion, then re-render.
+  function withMotion(apply) { gridEl.animateNextChange().then(apply); }
+
+  function notify(message, action) {
+    snackMessage = message;
+    snackAction = action;
+    snackEl.show();
+  }
+
+  async function deactivate() {
+    const ids = [...selected];
+    if (!ids.length) return;
+    lastChange = members.filter((m) => ids.includes(m.id))
+      .map((m) => ({ id: m.id, status: m.status }));
+    members = members.map((m) => (ids.includes(m.id) ? { ...m, status: 'Suspended' } : m));
+    await gridEl.deselectAll();
+    notify(ids.length + (ids.length === 1 ? ' member' : ' members') + ' deactivated', 'Undo');
+  }
+
+  function onSnackClose(reason) {
+    if (reason === 'action' && lastChange) {
+      const prev = lastChange;
+      members = members.map((m) => {
+        const p = prev.find((c) => c.id === m.id);
+        return p ? { ...m, status: p.status } : m;
+      });
+    }
+    lastChange = null;
+  }
+
+  function exportToast(n, scope) {
+    lastChange = null;
+    notify('Exported ' + n + ' ' + scope + ' to members.csv', '');
+  }
+</script>
+
+<md-search layout="docked" trigger="bar" full-width debounce="200"
+  placeholder="Search name or role" input-aria-label="Search members"
+  on:mdSearch={(e) => withMotion(() => (query = e.detail.value))}>
+  <div slot="results">{rows.length} of {members.length} members match</div>
+</md-search>
+
+<div role="group" aria-label="Filter by status">
+  {#each ['Active', 'Invited', 'Suspended'] as s}
+    <md-chip variant="filter" label={s}
+      on:mdSelect={(e) => withMotion(() => {
+        statuses = e.detail.selected ? [...statuses, s] : statuses.filter((x) => x !== s);
+      })}></md-chip>
+  {/each}
+</div>
+
+<md-table-container variant="outlined">
+  <md-table-toolbar slot="top" headline="Workspace members"
+    supporting-text={'Fabrikam GmbH · ' + members.length + ' seats'} auto-bind>
+    <md-split-button bind:this={splitEl} slot="actions" id="export-split" variant="tonal"
+      icon="download" label="Export CSV" menu-label="More export options" controls="export-menu"
+      on:mdLeadingClick={() => exportToast(rows.length, 'filtered rows')}
+      on:mdTrailingClick={(e) => (e.detail.checked ? menuEl.show() : menuEl.close())}></md-split-button>
+    <md-button slot="selection-actions" variant="filled" icon="person_off"
+      on:mdClick={deactivate}>Deactivate</md-button>
+  </md-table-toolbar>
+
+  <md-table bind:this={gridEl} selection="multiple" striped label="Workspace members"
+    column-template="auto 1.6fr 1fr 1.2fr 110px" min-width="620px"
+    sort-by={sort.column} sort-order={sort.order}
+    row-offset={shownPage * perPage} row-count={rows.length} empty={rows.length === 0}
+    on:mdSortChange={(e) => (sort = e.detail)}
+    on:mdSelectionChange={(e) => (selected = e.detail.values)}>
+    <md-table-head>
+      <md-table-row rowgroup="head">
+        <md-table-cell head padding="checkbox"><md-checkbox aria-label="Select all members"></md-checkbox></md-table-cell>
+        <md-table-cell head scope="col"><md-table-sort-label column="name">Member</md-table-sort-label></md-table-cell>
+        <md-table-cell head scope="col">Role</md-table-cell>
+        <md-table-cell head scope="col">Status</md-table-cell>
+        <md-table-cell head scope="col" numeric>
+          <md-table-sort-label column="last-active" default-order="desc">Last active</md-table-sort-label>
+        </md-table-cell>
+      </md-table-row>
+    </md-table-head>
+    <md-table-body>
+      {#each pageRows as m (m.id)}
+        <md-table-row value={m.id}>
+          <md-table-cell padding="checkbox"><md-checkbox aria-label={'Select ' + m.name}></md-checkbox></md-table-cell>
+          <md-table-cell>{m.name}</md-table-cell>
+          <md-table-cell>{m.role}</md-table-cell>
+          <md-table-cell>
+            <span style="display: inline-flex; align-items: center; gap: 8px;">
+              <span style="position: relative; display: inline-flex; inline-size: 8px; block-size: 8px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;">
+                <md-status-dot size="small" state={DOT[m.status]}></md-status-dot>
+              </span>{m.status}
+            </span>
+          </md-table-cell>
+          <md-table-cell numeric>{ago(m.hoursAgo)}</md-table-cell>
+        </md-table-row>
+      {/each}
+    </md-table-body>
+    <div slot="empty">No members match the current filters.</div>
+  </md-table>
+
+  <md-table-pagination slot="bottom" count={rows.length} page={shownPage}
+    rows-per-page={perPage} rows-per-page-options="5,10,all"
+    on:mdPageChange={(e) => (page = e.detail.page)}
+    on:mdRowsPerPageChange={(e) => { perPage = e.detail.rowsPerPage; page = 0; }}></md-table-pagination>
+</md-table-container>
+
+<md-menu bind:this={menuEl} id="export-menu" anchor="export-split" placement="bottom-end"
+  on:mdClose={() => (splitEl.trailingChecked = false)}>
+  <md-menu-item headline="Export filtered rows" on:mdClick={() => exportToast(rows.length, 'filtered rows')}></md-menu-item>
+  <md-menu-item headline="Export selected rows" on:mdClick={() => exportToast(selected.length, 'selected rows')}></md-menu-item>
+  <md-menu-item headline="Export all members" on:mdClick={() => exportToast(members.length, 'members')}></md-menu-item>
+</md-menu>
+
+<!-- The action button never closes the snackbar itself: hide with a reason,
+     then branch on that reason in mdClose. -->
+<md-snackbar bind:this={snackEl} message={snackMessage} action={snackAction}
+  on:mdAction={() => snackEl.hide('action')}
+  on:mdClose={(e) => onSnackClose(e.detail.reason)}></md-snackbar>`}
 />
 
 ## How it's built

@@ -251,6 +251,528 @@ advances past an incomplete step, and the whole wizard resets on Finish.
       stepper.reset().then(syncNext);
     });
   `}
+  react={`import { useRef, useState } from 'react';
+import {
+  MdButton, MdProgressIndicator, MdSelect, MdSelectOption, MdSnackbar,
+  MdStatusDot, MdStep, MdStepper, MdTable, MdTableBody, MdTableCell,
+  MdTableContainer, MdTableHead, MdTableRow,
+} from '@awc-ui/react';
+
+const TOTAL = 2148;   // rows in the file
+const VALID = 2146;   // rows that survive validation
+const FIELDS = [
+  ['full_name', 'Full name'], ['email', 'Email'], ['company', 'Company'],
+  ['phone', 'Phone'], ['skip', 'Do not import'],
+];
+const fmt = (n) => n.toLocaleString('en-US');
+const dotWrap = { position: 'relative', display: 'inline-flex', width: 12, height: 12 };
+
+export function CsvImportWizard() {
+  const stepper = useRef(null);
+  const snackbar = useRef(null);
+  const [active, setActive] = useState(0);
+  const [sent, setSent] = useState(0);
+  const [uploaded, setUploaded] = useState(false);
+  const [mapping, setMapping] = useState({ name: 'full_name', email_address: 'email', company: '' });
+  const [done, setDone] = useState(0);
+  const [importing, setImporting] = useState(false);
+  const [imported, setImported] = useState(false);
+
+  const allMapped = Object.values(mapping).every(Boolean);
+  const nextDisabled =
+    active === 0 ? !uploaded : active === 1 ? !allMapped : active === 2 ? false : !imported;
+
+  function startUpload() {
+    const t = setInterval(() => setSent((s) => {
+      const next = Math.min(TOTAL, s + 179);
+      if (next === TOTAL) { clearInterval(t); setUploaded(true); }
+      return next;
+    }), 90);
+  }
+
+  // The import runs itself on arrival; loading locks Back and Continue meanwhile.
+  function startImport() {
+    setImporting(true);
+    const t = setInterval(() => setDone((d) => {
+      const next = Math.min(VALID, d + 143);
+      if (next === VALID) {
+        clearInterval(t); setImporting(false); setImported(true);
+        snackbar.current?.show();
+      }
+      return next;
+    }), 80);
+  }
+
+  function onStepChange(e) {
+    setActive(e.detail.index);
+    if (e.detail.index === 3 && !importing && !imported) startImport();
+  }
+
+  function onFinish() {   // Finish resets the whole flow
+    setSent(0); setUploaded(false); setDone(0); setImported(false);
+    setMapping({ name: 'full_name', email_address: 'email', company: '' });
+    stepper.current?.reset();
+    setActive(0);
+  }
+
+  const uploadStatus = uploaded
+    ? 'contacts.csv uploaded — ' + fmt(TOTAL) + ' rows, 3 columns detected.'
+    : sent > 0
+      ? 'Uploading contacts.csv — ' + fmt(sent) + ' of ' + fmt(TOTAL) + ' rows'
+      : 'contacts.csv — 214 KB, ready to upload';
+  const importStatus = imported
+    ? fmt(VALID) + ' contacts imported. 2 rows were skipped. Press Finish to run the demo again.'
+    : importing
+      ? 'Importing — ' + fmt(done) + ' of ' + fmt(VALID) + ' contacts'
+      : 'The import starts automatically when you reach this step.';
+
+  return (
+    <>
+      <MdStepper ref={stepper} label="CSV import progress" nextDisabled={nextDisabled}
+        loading={importing} onMdStepChange={onStepChange} onMdComplete={onFinish}>
+        <MdStep label="Upload" description="Choose your file">
+          <p>{uploadStatus}</p>
+          <MdProgressIndicator value={sent} max={TOTAL} label="Uploading contacts.csv" />
+          <MdButton variant="tonal" disabled={sent > 0} onMdClick={startUpload}>
+            {uploaded ? 'Uploaded' : 'Upload contacts.csv'}
+          </MdButton>
+        </MdStep>
+        <MdStep label="Map columns" description="Match CSV to fields">
+          {Object.keys(mapping).map((col) => (
+            <MdSelect key={col} label={col} value={mapping[col]} placeholder="Choose a field"
+              onMdChange={(e) => setMapping({ ...mapping, [col]: e.detail })}>
+              {FIELDS.map(([v, text]) => <MdSelectOption key={v} value={v}>{text}</MdSelectOption>)}
+            </MdSelect>
+          ))}
+          <MdTableContainer>
+            <MdTable columnTemplate="1fr 1.4fr 1fr" label="CSV preview" density="compact">
+              <MdTableHead>
+                <MdTableRow rowgroup="head">
+                  <MdTableCell head scope="col">name</MdTableCell>
+                  <MdTableCell head scope="col">email_address</MdTableCell>
+                  <MdTableCell head scope="col">company</MdTableCell>
+                </MdTableRow>
+              </MdTableHead>
+              <MdTableBody>
+                <MdTableRow>
+                  <MdTableCell>Priya Raman</MdTableCell>
+                  <MdTableCell>priya.raman@northwind.io</MdTableCell>
+                  <MdTableCell>Northwind</MdTableCell>
+                </MdTableRow>
+              </MdTableBody>
+            </MdTable>
+          </MdTableContainer>
+        </MdStep>
+        <MdStep label="Validate" description="Review issues">
+          <p><span style={dotWrap}><MdStatusDot state="online" /></span> 2,146 rows passed every check and are ready to import.</p>
+          <p><span style={dotWrap}><MdStatusDot state="busy" /></span> Error — row 214: the email address is invalid. The row will be skipped.</p>
+          <p><span style={dotWrap}><MdStatusDot state="away" /></span> Warning — row 1,027 duplicates row 312 (same email). The duplicate will be skipped.</p>
+        </MdStep>
+        <MdStep label="Import" description="Bring the data in">
+          <MdProgressIndicator value={done} max={VALID} label="Importing contacts" />
+          <p>{importStatus}</p>
+        </MdStep>
+      </MdStepper>
+      <MdSnackbar ref={snackbar} closeable autoHideDuration={6000}
+        message={fmt(VALID) + ' contacts imported · 2 rows skipped'} />
+    </>
+  );
+}`}
+  angular={`import { Component, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import {
+  MdButton, MdProgressIndicator, MdSelect, MdSelectOption, MdSnackbar,
+  MdStatusDot, MdStep, MdStepper, MdTable, MdTableBody, MdTableCell,
+  MdTableContainer, MdTableHead, MdTableRow, SelectValueAccessor,
+} from '@awc-ui/angular';
+
+const initialColumns = () => [
+  { label: 'name', value: 'full_name' },
+  { label: 'email_address', value: 'email' },
+  { label: 'company', value: '' },
+];
+
+@Component({
+  selector: 'app-csv-import-wizard',
+  standalone: true,
+  imports: [
+    FormsModule, SelectValueAccessor, MdButton, MdProgressIndicator, MdSelect,
+    MdSelectOption, MdSnackbar, MdStatusDot, MdStep, MdStepper, MdTable,
+    MdTableBody, MdTableCell, MdTableContainer, MdTableHead, MdTableRow,
+  ],
+  template:
+    '<md-stepper label="CSV import progress" [nextDisabled]="nextDisabled" ' +
+    '  [loading]="importing" (mdStepChange)="onStepChange($event)" (mdComplete)="onFinish()">' +
+    '  <md-step label="Upload" description="Choose your file">' +
+    '    <p>{{ uploadStatus }}</p>' +
+    '    <md-progress-indicator [value]="sent" [max]="total" label="Uploading contacts.csv"></md-progress-indicator>' +
+    '    <md-button variant="tonal" [disabled]="sent > 0" (mdClick)="startUpload()">{{ uploaded ? "Uploaded" : "Upload contacts.csv" }}</md-button>' +
+    '  </md-step>' +
+    '  <md-step label="Map columns" description="Match CSV to fields">' +
+    '    @for (col of columns; track col.label) {' +
+    '      <md-select [label]="col.label" [(ngModel)]="col.value" placeholder="Choose a field">' +
+    '        @for (f of fields; track f.value) {' +
+    '          <md-select-option [value]="f.value">{{ f.label }}</md-select-option>' +
+    '        }' +
+    '      </md-select>' +
+    '    }' +
+    '    <md-table-container>' +
+    '      <md-table columnTemplate="1fr 1.4fr 1fr" label="CSV preview" density="compact">' +
+    '        <md-table-head><md-table-row rowgroup="head">' +
+    '          <md-table-cell [head]="true" scope="col">name</md-table-cell>' +
+    '          <md-table-cell [head]="true" scope="col">email_address</md-table-cell>' +
+    '          <md-table-cell [head]="true" scope="col">company</md-table-cell>' +
+    '        </md-table-row></md-table-head>' +
+    '        <md-table-body><md-table-row>' +
+    '          <md-table-cell>Priya Raman</md-table-cell>' +
+    '          <md-table-cell>priya.raman@northwind.io</md-table-cell>' +
+    '          <md-table-cell>Northwind</md-table-cell>' +
+    '        </md-table-row></md-table-body>' +
+    '      </md-table>' +
+    '    </md-table-container>' +
+    '  </md-step>' +
+    '  <md-step label="Validate" description="Review issues">' +
+    '    <p><span class="dot"><md-status-dot state="online"></md-status-dot></span> 2,146 rows passed every check and are ready to import.</p>' +
+    '    <p><span class="dot"><md-status-dot state="busy"></md-status-dot></span> Error — row 214: the email address is invalid. The row will be skipped.</p>' +
+    '    <p><span class="dot"><md-status-dot state="away"></md-status-dot></span> Warning — row 1,027 duplicates row 312 (same email). The duplicate will be skipped.</p>' +
+    '  </md-step>' +
+    '  <md-step label="Import" description="Bring the data in">' +
+    '    <md-progress-indicator [value]="done" [max]="valid" label="Importing contacts"></md-progress-indicator>' +
+    '    <p>{{ importStatus }}</p>' +
+    '  </md-step>' +
+    '</md-stepper>' +
+    '<md-snackbar [closeable]="true" [autoHideDuration]="6000" [message]="resultMsg"></md-snackbar>',
+  styles: ['.dot { position: relative; display: inline-flex; width: 12px; height: 12px; }'],
+})
+export class CsvImportWizardComponent {
+  @ViewChild(MdStepper) stepper!: MdStepper;
+  @ViewChild(MdSnackbar) snackbar!: MdSnackbar;
+
+  total = 2148;   // rows in the file
+  valid = 2146;   // rows that survive validation
+  active = 0;
+  sent = 0;
+  uploaded = false;
+  done = 0;
+  importing = false;
+  imported = false;
+  columns = initialColumns();
+  fields = [
+    { value: 'full_name', label: 'Full name' }, { value: 'email', label: 'Email' },
+    { value: 'company', label: 'Company' }, { value: 'phone', label: 'Phone' },
+    { value: 'skip', label: 'Do not import' },
+  ];
+  resultMsg = '2,146 contacts imported · 2 rows skipped';
+
+  get nextDisabled(): boolean {
+    if (this.active === 0) return !this.uploaded;
+    if (this.active === 1) return this.columns.some((c) => !c.value);
+    if (this.active === 2) return false;
+    return !this.imported;
+  }
+  get uploadStatus(): string {
+    if (this.uploaded) return 'contacts.csv uploaded — ' + this.fmt(this.total) + ' rows, 3 columns detected.';
+    if (this.sent > 0) return 'Uploading contacts.csv — ' + this.fmt(this.sent) + ' of ' + this.fmt(this.total) + ' rows';
+    return 'contacts.csv — 214 KB, ready to upload';
+  }
+  get importStatus(): string {
+    if (this.imported) return this.fmt(this.valid) + ' contacts imported. 2 rows were skipped. Press Finish to run the demo again.';
+    if (this.importing) return 'Importing — ' + this.fmt(this.done) + ' of ' + this.fmt(this.valid) + ' contacts';
+    return 'The import starts automatically when you reach this step.';
+  }
+  fmt(n: number): string { return n.toLocaleString('en-US'); }
+
+  startUpload(): void {
+    const t = setInterval(() => {
+      this.sent = Math.min(this.total, this.sent + 179);
+      if (this.sent === this.total) { clearInterval(t); this.uploaded = true; }
+    }, 90);
+  }
+  onStepChange(e: CustomEvent<{ index: number }>): void {
+    this.active = e.detail.index;
+    if (this.active === 3 && !this.importing && !this.imported) this.startImport();
+  }
+  startImport(): void {   // loading locks Back and Continue while rows stream in
+    this.importing = true;
+    const t = setInterval(() => {
+      this.done = Math.min(this.valid, this.done + 143);
+      if (this.done === this.valid) {
+        clearInterval(t);
+        this.importing = false;
+        this.imported = true;
+        this.snackbar.show();
+      }
+    }, 80);
+  }
+  onFinish(): void {   // Finish resets the whole flow
+    this.sent = 0; this.uploaded = false; this.done = 0; this.imported = false;
+    this.columns = initialColumns();
+    this.stepper.reset();
+    this.active = 0;
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, reactive, ref } from 'vue';
+import {
+  MdButton, MdProgressIndicator, MdSelect, MdSelectOption, MdSnackbar,
+  MdStatusDot, MdStep, MdStepper, MdTable, MdTableBody, MdTableCell,
+  MdTableContainer, MdTableHead, MdTableRow,
+} from '@awc-ui/vue';
+
+const TOTAL = 2148;   // rows in the file
+const VALID = 2146;   // rows that survive validation
+const FIELDS = [
+  { value: 'full_name', label: 'Full name' }, { value: 'email', label: 'Email' },
+  { value: 'company', label: 'Company' }, { value: 'phone', label: 'Phone' },
+  { value: 'skip', label: 'Do not import' },
+];
+
+const stepper = ref();    // wrapper component — its $el is the md-stepper element
+const snackbar = ref();
+const active = ref(0);
+const sent = ref(0);
+const uploaded = ref(false);
+const done = ref(0);
+const importing = ref(false);
+const imported = ref(false);
+const columns = reactive([
+  { label: 'name', value: 'full_name' },
+  { label: 'email_address', value: 'email' },
+  { label: 'company', value: '' },
+]);
+
+const fmt = (n: number) => n.toLocaleString('en-US');
+const nextDisabled = computed(() => {
+  if (active.value === 0) return !uploaded.value;
+  if (active.value === 1) return columns.some((c) => !c.value);
+  if (active.value === 2) return false;
+  return !imported.value;
+});
+const uploadStatus = computed(() =>
+  uploaded.value ? 'contacts.csv uploaded — ' + fmt(TOTAL) + ' rows, 3 columns detected.'
+  : sent.value > 0 ? 'Uploading contacts.csv — ' + fmt(sent.value) + ' of ' + fmt(TOTAL) + ' rows'
+  : 'contacts.csv — 214 KB, ready to upload');
+const importStatus = computed(() =>
+  imported.value ? fmt(VALID) + ' contacts imported. 2 rows were skipped. Press Finish to run the demo again.'
+  : importing.value ? 'Importing — ' + fmt(done.value) + ' of ' + fmt(VALID) + ' contacts'
+  : 'The import starts automatically when you reach this step.');
+
+function startUpload() {
+  const t = setInterval(() => {
+    sent.value = Math.min(TOTAL, sent.value + 179);
+    if (sent.value === TOTAL) { clearInterval(t); uploaded.value = true; }
+  }, 90);
+}
+function onStepChange(e: CustomEvent<{ index: number }>) {
+  active.value = e.detail.index;
+  if (active.value === 3 && !importing.value && !imported.value) startImport();
+}
+function startImport() {   // loading locks Back and Continue while rows stream in
+  importing.value = true;
+  const t = setInterval(() => {
+    done.value = Math.min(VALID, done.value + 143);
+    if (done.value === VALID) {
+      clearInterval(t);
+      importing.value = false;
+      imported.value = true;
+      snackbar.value.$el.show();
+    }
+  }, 80);
+}
+function onFinish() {   // Finish resets the whole flow
+  sent.value = 0; uploaded.value = false; done.value = 0; imported.value = false;
+  columns.forEach((c, i) => (c.value = i === 0 ? 'full_name' : i === 1 ? 'email' : ''));
+  stepper.value.$el.reset();
+  active.value = 0;
+}
+</script>
+
+<template>
+  <MdStepper ref="stepper" label="CSV import progress" :nextDisabled="nextDisabled"
+    :loading="importing" @md-step-change="onStepChange" @md-complete="onFinish">
+    <MdStep label="Upload" description="Choose your file">
+      <p>{{ uploadStatus }}</p>
+      <MdProgressIndicator :value="sent" :max="TOTAL" label="Uploading contacts.csv" />
+      <MdButton variant="tonal" :disabled="sent > 0" @md-click="startUpload">
+        {{ uploaded ? 'Uploaded' : 'Upload contacts.csv' }}
+      </MdButton>
+    </MdStep>
+    <MdStep label="Map columns" description="Match CSV to fields">
+      <MdSelect v-for="col in columns" :key="col.label" :label="col.label" :value="col.value"
+        placeholder="Choose a field" @md-change="col.value = $event.detail">
+        <MdSelectOption v-for="f in FIELDS" :key="f.value" :value="f.value">{{ f.label }}</MdSelectOption>
+      </MdSelect>
+      <MdTableContainer>
+        <MdTable columnTemplate="1fr 1.4fr 1fr" label="CSV preview" density="compact">
+          <MdTableHead>
+            <MdTableRow rowgroup="head">
+              <MdTableCell :head="true" scope="col">name</MdTableCell>
+              <MdTableCell :head="true" scope="col">email_address</MdTableCell>
+              <MdTableCell :head="true" scope="col">company</MdTableCell>
+            </MdTableRow>
+          </MdTableHead>
+          <MdTableBody>
+            <MdTableRow>
+              <MdTableCell>Priya Raman</MdTableCell>
+              <MdTableCell>priya.raman@northwind.io</MdTableCell>
+              <MdTableCell>Northwind</MdTableCell>
+            </MdTableRow>
+          </MdTableBody>
+        </MdTable>
+      </MdTableContainer>
+    </MdStep>
+    <MdStep label="Validate" description="Review issues">
+      <p><span class="dot"><MdStatusDot state="online" /></span> 2,146 rows passed every check and are ready to import.</p>
+      <p><span class="dot"><MdStatusDot state="busy" /></span> Error — row 214: the email address is invalid. The row will be skipped.</p>
+      <p><span class="dot"><MdStatusDot state="away" /></span> Warning — row 1,027 duplicates row 312 (same email). The duplicate will be skipped.</p>
+    </MdStep>
+    <MdStep label="Import" description="Bring the data in">
+      <MdProgressIndicator :value="done" :max="VALID" label="Importing contacts" />
+      <p>{{ importStatus }}</p>
+    </MdStep>
+  </MdStepper>
+  <MdSnackbar ref="snackbar" :closeable="true" :autoHideDuration="6000"
+    :message="fmt(VALID) + ' contacts imported · 2 rows skipped'" />
+</template>
+
+<style scoped>
+.dot { position: relative; display: inline-flex; width: 12px; height: 12px; }
+</style>`}
+  svelte={`<script lang="ts">
+  // The package registers the raw md-* elements. Client-only — in SvelteKit,
+  // guard with: import { browser } from '$app/environment'; if (browser) ...
+  import { defineCustomElements } from '@awc-ui/svelte';
+  if (typeof window !== 'undefined') defineCustomElements(window);
+
+  const TOTAL = 2148;   // rows in the file
+  const VALID = 2146;   // rows that survive validation
+  const FIELDS = [
+    { value: 'full_name', label: 'Full name' }, { value: 'email', label: 'Email' },
+    { value: 'company', label: 'Company' }, { value: 'phone', label: 'Phone' },
+    { value: 'skip', label: 'Do not import' },
+  ];
+
+  let stepperEl: HTMLElement & { reset: () => Promise<void> };
+  let snackbarEl: HTMLElement & { message: string; show: () => Promise<void> };
+  let active = 0;
+  let sent = 0;
+  let uploaded = false;
+  let done = 0;
+  let importing = false;
+  let imported = false;
+  let columns = [
+    { label: 'name', value: 'full_name' },
+    { label: 'email_address', value: 'email' },
+    { label: 'company', value: '' },
+  ];
+
+  const fmt = (n: number) => n.toLocaleString('en-US');
+
+  $: nextDisabled =
+    active === 0 ? !uploaded
+    : active === 1 ? columns.some((c) => !c.value)
+    : active === 2 ? false
+    : !imported;
+  $: uploadStatus = uploaded
+    ? 'contacts.csv uploaded — ' + fmt(TOTAL) + ' rows, 3 columns detected.'
+    : sent > 0 ? 'Uploading contacts.csv — ' + fmt(sent) + ' of ' + fmt(TOTAL) + ' rows'
+    : 'contacts.csv — 214 KB, ready to upload';
+  $: importStatus = imported
+    ? fmt(VALID) + ' contacts imported. 2 rows were skipped. Press Finish to run the demo again.'
+    : importing ? 'Importing — ' + fmt(done) + ' of ' + fmt(VALID) + ' contacts'
+    : 'The import starts automatically when you reach this step.';
+
+  function startUpload() {
+    const t = setInterval(() => {
+      sent = Math.min(TOTAL, sent + 179);
+      if (sent === TOTAL) { clearInterval(t); uploaded = true; }
+    }, 90);
+  }
+  function onStepChange(e: CustomEvent<{ index: number }>) {
+    active = e.detail.index;
+    if (active === 3 && !importing && !imported) startImport();
+  }
+  function startImport() {   // loading locks Back and Continue while rows stream in
+    importing = true;
+    const t = setInterval(() => {
+      done = Math.min(VALID, done + 143);
+      if (done === VALID) {
+        clearInterval(t);
+        importing = false;
+        imported = true;
+        snackbarEl.message = fmt(VALID) + ' contacts imported · 2 rows skipped';
+        snackbarEl.show();
+      }
+    }, 80);
+  }
+  function setColumn(i: number, value: string) {
+    columns[i].value = value;
+    columns = columns;   // reassign so the gate recomputes
+  }
+  function onFinish() {   // Finish resets the whole flow
+    sent = 0; uploaded = false; done = 0; imported = false;
+    columns = [
+      { label: 'name', value: 'full_name' },
+      { label: 'email_address', value: 'email' },
+      { label: 'company', value: '' },
+    ];
+    stepperEl.reset();
+    active = 0;
+  }
+</script>
+
+<md-stepper bind:this={stepperEl} label="CSV import progress" next-disabled={nextDisabled}
+  loading={importing} on:mdStepChange={onStepChange} on:mdComplete={onFinish}>
+  <md-step label="Upload" description="Choose your file">
+    <p>{uploadStatus}</p>
+    <md-progress-indicator value={sent} max={TOTAL} label="Uploading contacts.csv"></md-progress-indicator>
+    <md-button variant="tonal" disabled={sent > 0} on:mdClick={startUpload}>
+      {uploaded ? 'Uploaded' : 'Upload contacts.csv'}
+    </md-button>
+  </md-step>
+  <md-step label="Map columns" description="Match CSV to fields">
+    {#each columns as col, i (col.label)}
+      <md-select label={col.label} value={col.value} placeholder="Choose a field"
+        on:mdChange={(e) => setColumn(i, e.detail)}>
+        {#each FIELDS as f (f.value)}
+          <md-select-option value={f.value}>{f.label}</md-select-option>
+        {/each}
+      </md-select>
+    {/each}
+    <md-table-container>
+      <md-table column-template="1fr 1.4fr 1fr" label="CSV preview" density="compact">
+        <md-table-head>
+          <md-table-row rowgroup="head">
+            <md-table-cell head scope="col">name</md-table-cell>
+            <md-table-cell head scope="col">email_address</md-table-cell>
+            <md-table-cell head scope="col">company</md-table-cell>
+          </md-table-row>
+        </md-table-head>
+        <md-table-body>
+          <md-table-row>
+            <md-table-cell>Priya Raman</md-table-cell>
+            <md-table-cell>priya.raman@northwind.io</md-table-cell>
+            <md-table-cell>Northwind</md-table-cell>
+          </md-table-row>
+        </md-table-body>
+      </md-table>
+    </md-table-container>
+  </md-step>
+  <md-step label="Validate" description="Review issues">
+    <p><span class="dot"><md-status-dot state="online"></md-status-dot></span> 2,146 rows passed every check and are ready to import.</p>
+    <p><span class="dot"><md-status-dot state="busy"></md-status-dot></span> Error — row 214: the email address is invalid. The row will be skipped.</p>
+    <p><span class="dot"><md-status-dot state="away"></md-status-dot></span> Warning — row 1,027 duplicates row 312 (same email). The duplicate will be skipped.</p>
+  </md-step>
+  <md-step label="Import" description="Bring the data in">
+    <md-progress-indicator value={done} max={VALID} label="Importing contacts"></md-progress-indicator>
+    <p>{importStatus}</p>
+  </md-step>
+</md-stepper>
+<md-snackbar bind:this={snackbarEl} closeable auto-hide-duration="6000"></md-snackbar>
+
+<style>
+  .dot { position: relative; display: inline-flex; width: 12px; height: 12px; }
+</style>`}
 />
 
 ## How it's built

@@ -261,6 +261,473 @@ to the previous version, with variations in a paired menu.
     split.addEventListener('mdLeadingClick', rollback);
     menu.addEventListener('mdClick', rollback);
   `}
+  react={`import { useMemo, useRef, useState } from 'react';
+import {
+  MdAreaChart, MdChip, MdMenu, MdMenuItem, MdMeter, MdSideSheet, MdSparkline,
+  MdSplitButton, MdStatusDot, MdTable, MdTableBody, MdTableCell,
+  MdTableContainer, MdTableHead, MdTableRow,
+} from '@awc-ui/react';
+
+const HOURS = ['00:00', '06:00', '12:00', '18:00'];
+const DEPLOYS = [
+  { version: 'v2.14.0', env: 'Production', envColor: 'primary', status: 'Healthy',
+    dot: 'online', rate: '0.4%', sparkColor: 'success', spark: [0.5, 0.4, 0.3, 0.4],
+    fivexx: [2, 1, 1, 2], fourxx: [14, 11, 9, 12], adoption: 97, previous: 'v2.13.2',
+    meta: 'Deployed 06:12 UTC by mira.chen · commit 8f3d21a' },
+  { version: 'v2.14.1-rc.2', env: 'Staging', envColor: 'secondary', status: 'Degraded',
+    dot: 'away', rate: '2.8%', sparkColor: 'warning', spark: [0.9, 1.4, 2.1, 2.8],
+    fivexx: [6, 11, 17, 24], fourxx: [20, 28, 35, 44], adoption: 100, previous: 'v2.14.0',
+    meta: 'Deployed 11:47 UTC by dan.kovacs · commit 51c9e02' },
+  { version: 'v2.14.1-canary', env: 'Canary', envColor: 'warning', status: 'Failing',
+    dot: 'busy', rate: '5.1%', sparkColor: 'error', spark: [0.6, 1.4, 3.1, 5.1],
+    fivexx: [4, 12, 27, 46], fourxx: [10, 15, 22, 33], adoption: 5, previous: 'v2.14.0',
+    meta: 'Deployed 13:05 UTC by mira.chen · commit b74e9c1' },
+];
+
+const pct = (v) => (v == null ? 0 : v) + '%';
+const perMin = (v) => (v == null ? 0 : v) + '/min';
+
+export default function ReleaseHealthDrilldown() {
+  const chartRef = useRef(null);
+  const [current, setCurrent] = useState(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [rolledBack, setRolledBack] = useState({});
+
+  // Arrays never cross the attribute boundary: the wrapper sets series,
+  // xAxis and valueFormatter as element PROPERTIES — plain props suffice.
+  const series = useMemo(() => (current ? [
+    { label: '5xx', data: current.fivexx, color: 'error' },
+    { label: '4xx', data: current.fourxx, color: 'warning' },
+  ] : []), [current]);
+
+  const rollback = () => {
+    if (current) setRolledBack((prev) => ({ ...prev, [current.version]: true }));
+    setMenuOpen(false);
+    setSheetOpen(false);
+  };
+
+  return (
+    <>
+      <MdTableContainer variant="outlined">
+        <MdTable label="Recent deploys"
+                 columnTemplate="minmax(130px, 1.1fr) 120px 140px minmax(150px, 1.4fr)">
+          <MdTableHead>
+            <MdTableRow rowgroup="head">
+              <MdTableCell head scope="col">Version</MdTableCell>
+              <MdTableCell head scope="col">Environment</MdTableCell>
+              <MdTableCell head scope="col">Status</MdTableCell>
+              <MdTableCell head scope="col">Error rate (24 h)</MdTableCell>
+            </MdTableRow>
+          </MdTableHead>
+          <MdTableBody>
+            {DEPLOYS.map((d) => {
+              const done = rolledBack[d.version];
+              return (
+                <MdTableRow key={d.version} value={d.version} clickable highlight={!!done}
+                            onMdRowClick={() => { setCurrent(d); setSheetOpen(true); }}>
+                  <MdTableCell>{d.version}</MdTableCell>
+                  <MdTableCell>
+                    <MdChip label={d.env} color={d.envColor} appearance="filled" />
+                  </MdTableCell>
+                  <MdTableCell>
+                    <MdStatusDot size="small" state={done ? 'offline' : d.dot}
+                                 live={!done && d.dot === 'busy'} />{' '}
+                    {done ? 'Rolled back' : d.status}
+                  </MdTableCell>
+                  <MdTableCell>
+                    {d.rate}{' '}
+                    <MdSparkline data={d.spark} labels={HOURS} color={d.sparkColor}
+                                 min={0} max={6} heightProp="24px" showTooltip={false}
+                                 valueFormatter={pct} />
+                  </MdTableCell>
+                </MdTableRow>
+              );
+            })}
+          </MdTableBody>
+        </MdTable>
+      </MdTableContainer>
+
+      <MdSideSheet variant="modal" topDivider bottomDivider open={sheetOpen}
+                   headline={current ? current.version + ' · ' + current.env : 'Deploy detail'}
+                   onMdOpen={() => chartRef.current && chartRef.current.resize()}
+                   onMdClose={() => setSheetOpen(false)}>
+        <p>{current && current.meta}</p>
+        <MdAreaChart ref={chartRef} label="Errors by class" subtitle="Per minute, last 24 h"
+                     heightProp="200px" legend="bottom" grid="horizontal"
+                     series={series} xAxis={{ data: HOURS }} valueFormatter={perMin} />
+        <MdMeter label="Fleet adoption" showLabel showValue
+                 value={current ? current.adoption : 0}
+                 color={current && current.adoption >= 90 ? 'success' : 'primary'} />
+        <MdSplitButton slot="actions" id="rollback-btn" icon="undo" variant="filled"
+                       label={current ? 'Roll back to ' + current.previous : 'Roll back'}
+                       menuLabel="More rollback options" controls="rollback-menu"
+                       trailingChecked={menuOpen} onMdLeadingClick={rollback}
+                       onMdTrailingClick={(e) => setMenuOpen(e.detail.checked)} />
+      </MdSideSheet>
+
+      <MdMenu id="rollback-menu" anchor="rollback-btn" placement="top-start"
+              open={menuOpen} onMdClose={() => setMenuOpen(false)}>
+        <MdMenuItem headline="Roll back and pause auto-deploy" onMdClick={rollback} />
+        <MdMenuItem headline="Roll back canary only" onMdClick={rollback} />
+      </MdMenu>
+    </>
+  );
+}`}
+  angular={`// release-health.component.ts
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core';
+import { AwcUiModule, MdAreaChart } from '@awc-ui/angular';
+
+interface Deploy {
+  version: string; env: string; envColor: string; status: string; dot: string;
+  rate: string; sparkColor: string; spark: number[]; fivexx: number[];
+  fourxx: number[]; adoption: number; previous: string; meta: string;
+}
+
+const HOURS = ['00:00', '06:00', '12:00', '18:00'];
+
+const DEPLOYS: Deploy[] = [
+  { version: 'v2.14.0', env: 'Production', envColor: 'primary', status: 'Healthy',
+    dot: 'online', rate: '0.4%', sparkColor: 'success', spark: [0.5, 0.4, 0.3, 0.4],
+    fivexx: [2, 1, 1, 2], fourxx: [14, 11, 9, 12], adoption: 97, previous: 'v2.13.2',
+    meta: 'Deployed 06:12 UTC by mira.chen · commit 8f3d21a' },
+  { version: 'v2.14.1-rc.2', env: 'Staging', envColor: 'secondary', status: 'Degraded',
+    dot: 'away', rate: '2.8%', sparkColor: 'warning', spark: [0.9, 1.4, 2.1, 2.8],
+    fivexx: [6, 11, 17, 24], fourxx: [20, 28, 35, 44], adoption: 100, previous: 'v2.14.0',
+    meta: 'Deployed 11:47 UTC by dan.kovacs · commit 51c9e02' },
+  { version: 'v2.14.1-canary', env: 'Canary', envColor: 'warning', status: 'Failing',
+    dot: 'busy', rate: '5.1%', sparkColor: 'error', spark: [0.6, 1.4, 3.1, 5.1],
+    fivexx: [4, 12, 27, 46], fourxx: [10, 15, 22, 33], adoption: 5, previous: 'v2.14.0',
+    meta: 'Deployed 13:05 UTC by mira.chen · commit b74e9c1' },
+];
+
+@Component({
+  selector: 'app-release-health',
+  standalone: true,
+  // AwcUiModule provides the md-* directives, so [series] and (mdRowClick)
+  // are typed property/event bindings — no querySelector anywhere.
+  imports: [AwcUiModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  templateUrl: './release-health.component.html',
+})
+export class ReleaseHealthComponent {
+  // The MdAreaChart directive proxies the element's methods (resize()).
+  @ViewChild(MdAreaChart) chart?: MdAreaChart;
+
+  hours = HOURS;
+  deploys = DEPLOYS;
+  current: Deploy | null = null;
+  sheetOpen = false;
+  menuOpen = false;
+  rolledBack = new Set<string>();
+  series: Array<{ label: string; data: number[]; color: string }> = [];
+  xAxis = { data: HOURS };
+
+  // Arrow properties, so 'this' stays bound when the components call them.
+  pct = (v: number | null) => (v == null ? 0 : v) + '%';
+  perMin = (v: number | null) => (v == null ? 0 : v) + '/min';
+
+  openDeploy(d: Deploy) {
+    this.current = d;
+    this.series = [
+      { label: '5xx', data: d.fivexx, color: 'error' },
+      { label: '4xx', data: d.fourxx, color: 'warning' },
+    ];
+    this.sheetOpen = true;
+  }
+
+  rollback() {
+    if (this.current) this.rolledBack.add(this.current.version);
+    this.menuOpen = false;
+    this.sheetOpen = false;
+  }
+}
+
+<!-- release-health.component.html -->
+<md-table-container variant="outlined">
+  <md-table label="Recent deploys"
+            column-template="minmax(130px, 1.1fr) 120px 140px minmax(150px, 1.4fr)">
+    <md-table-head>
+      <md-table-row rowgroup="head">
+        <md-table-cell head scope="col">Version</md-table-cell>
+        <md-table-cell head scope="col">Environment</md-table-cell>
+        <md-table-cell head scope="col">Status</md-table-cell>
+        <md-table-cell head scope="col">Error rate (24 h)</md-table-cell>
+      </md-table-row>
+    </md-table-head>
+    <md-table-body>
+      @for (d of deploys; track d.version) {
+        <md-table-row [value]="d.version" clickable [highlight]="rolledBack.has(d.version)"
+                      (mdRowClick)="openDeploy(d)">
+          <md-table-cell>{{ d.version }}</md-table-cell>
+          <md-table-cell>
+            <md-chip [label]="d.env" [color]="d.envColor" appearance="filled"></md-chip>
+          </md-table-cell>
+          <md-table-cell>
+            <md-status-dot size="small" [state]="rolledBack.has(d.version) ? 'offline' : d.dot"
+                           [live]="!rolledBack.has(d.version) && d.dot === 'busy'"></md-status-dot>
+            {{ rolledBack.has(d.version) ? 'Rolled back' : d.status }}
+          </md-table-cell>
+          <md-table-cell>
+            {{ d.rate }}
+            <md-sparkline [data]="d.spark" [labels]="hours" [color]="d.sparkColor"
+                          [min]="0" [max]="6" heightProp="24px" [showTooltip]="false"
+                          [valueFormatter]="pct"></md-sparkline>
+          </md-table-cell>
+        </md-table-row>
+      }
+    </md-table-body>
+  </md-table>
+</md-table-container>
+
+<md-side-sheet variant="modal" top-divider bottom-divider [open]="sheetOpen"
+               [headline]="current ? current.version + ' · ' + current.env : 'Deploy detail'"
+               (mdOpen)="chart?.resize()" (mdClose)="sheetOpen = false">
+  <p>{{ current?.meta }}</p>
+  <md-area-chart label="Errors by class" subtitle="Per minute, last 24 h" heightProp="200px"
+                 legend="bottom" grid="horizontal" [series]="series" [xAxis]="xAxis"
+                 [valueFormatter]="perMin"></md-area-chart>
+  <md-meter label="Fleet adoption" show-label show-value [value]="current?.adoption ?? 0"
+            [color]="(current?.adoption ?? 0) >= 90 ? 'success' : 'primary'"></md-meter>
+  <md-split-button slot="actions" id="rollback-btn" icon="undo" variant="filled"
+                   [label]="current ? 'Roll back to ' + current.previous : 'Roll back'"
+                   menu-label="More rollback options" controls="rollback-menu"
+                   [trailingChecked]="menuOpen" (mdLeadingClick)="rollback()"
+                   (mdTrailingClick)="menuOpen = $event.detail.checked"></md-split-button>
+</md-side-sheet>
+
+<md-menu id="rollback-menu" anchor="rollback-btn" placement="top-start" [open]="menuOpen"
+         (mdClose)="menuOpen = false">
+  <md-menu-item headline="Roll back and pause auto-deploy" (mdClick)="rollback()"></md-menu-item>
+  <md-menu-item headline="Roll back canary only" (mdClick)="rollback()"></md-menu-item>
+</md-menu>`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  MdAreaChart, MdChip, MdMenu, MdMenuItem, MdMeter, MdSideSheet, MdSparkline,
+  MdSplitButton, MdStatusDot, MdTable, MdTableBody, MdTableCell,
+  MdTableContainer, MdTableHead, MdTableRow,
+} from '@awc-ui/vue';
+
+const HOURS = ['00:00', '06:00', '12:00', '18:00'];
+const DEPLOYS = [
+  { version: 'v2.14.0', env: 'Production', envColor: 'primary', status: 'Healthy',
+    dot: 'online', rate: '0.4%', sparkColor: 'success', spark: [0.5, 0.4, 0.3, 0.4],
+    fivexx: [2, 1, 1, 2], fourxx: [14, 11, 9, 12], adoption: 97, previous: 'v2.13.2',
+    meta: 'Deployed 06:12 UTC by mira.chen · commit 8f3d21a' },
+  { version: 'v2.14.1-rc.2', env: 'Staging', envColor: 'secondary', status: 'Degraded',
+    dot: 'away', rate: '2.8%', sparkColor: 'warning', spark: [0.9, 1.4, 2.1, 2.8],
+    fivexx: [6, 11, 17, 24], fourxx: [20, 28, 35, 44], adoption: 100, previous: 'v2.14.0',
+    meta: 'Deployed 11:47 UTC by dan.kovacs · commit 51c9e02' },
+  { version: 'v2.14.1-canary', env: 'Canary', envColor: 'warning', status: 'Failing',
+    dot: 'busy', rate: '5.1%', sparkColor: 'error', spark: [0.6, 1.4, 3.1, 5.1],
+    fivexx: [4, 12, 27, 46], fourxx: [10, 15, 22, 33], adoption: 5, previous: 'v2.14.0',
+    meta: 'Deployed 13:05 UTC by mira.chen · commit b74e9c1' },
+];
+
+const current = ref<(typeof DEPLOYS)[number] | null>(null);
+const sheetOpen = ref(false);
+const menuOpen = ref(false);
+const rolledBack = ref<Record<string, boolean>>({});
+const chartEl = ref();
+
+// :series / :xAxis are PROPERTY bindings — arrays never get stringified.
+const series = computed(() => (current.value ? [
+  { label: '5xx', data: current.value.fivexx, color: 'error' },
+  { label: '4xx', data: current.value.fourxx, color: 'warning' },
+] : []));
+const xAxis = { data: HOURS };
+
+// Plain functions (not refs): the components call them back with a value.
+const pct = (v: number | null) => (v == null ? 0 : v) + '%';
+const perMin = (v: number | null) => (v == null ? 0 : v) + '/min';
+
+function openDeploy(d: (typeof DEPLOYS)[number]) {
+  current.value = d;
+  sheetOpen.value = true;
+}
+function rollback() {
+  if (current.value) rolledBack.value = { ...rolledBack.value, [current.value.version]: true };
+  menuOpen.value = false;
+  sheetOpen.value = false;
+}
+function onSheetOpen() {
+  // The sheet slides in from off-screen; re-measure the canvas once open.
+  if (chartEl.value) chartEl.value.$el.resize();
+}
+</script>
+
+<template>
+  <MdTableContainer variant="outlined">
+    <MdTable label="Recent deploys"
+             columnTemplate="minmax(130px, 1.1fr) 120px 140px minmax(150px, 1.4fr)">
+      <MdTableHead>
+        <MdTableRow rowgroup="head">
+          <MdTableCell :head="true" scope="col">Version</MdTableCell>
+          <MdTableCell :head="true" scope="col">Environment</MdTableCell>
+          <MdTableCell :head="true" scope="col">Status</MdTableCell>
+          <MdTableCell :head="true" scope="col">Error rate (24 h)</MdTableCell>
+        </MdTableRow>
+      </MdTableHead>
+      <MdTableBody>
+        <MdTableRow v-for="d in DEPLOYS" :key="d.version" :value="d.version" :clickable="true"
+                    :highlight="!!rolledBack[d.version]" @md-row-click="openDeploy(d)">
+          <MdTableCell>{{ d.version }}</MdTableCell>
+          <MdTableCell><MdChip :label="d.env" :color="d.envColor" appearance="filled" /></MdTableCell>
+          <MdTableCell>
+            <MdStatusDot size="small" :state="rolledBack[d.version] ? 'offline' : d.dot"
+                         :live="!rolledBack[d.version] && d.dot === 'busy'" />
+            {{ rolledBack[d.version] ? 'Rolled back' : d.status }}
+          </MdTableCell>
+          <MdTableCell>
+            {{ d.rate }}
+            <MdSparkline :data="d.spark" :labels="HOURS" :color="d.sparkColor" :min="0" :max="6"
+                         heightProp="24px" :showTooltip="false" :valueFormatter="pct" />
+          </MdTableCell>
+        </MdTableRow>
+      </MdTableBody>
+    </MdTable>
+  </MdTableContainer>
+
+  <MdSideSheet variant="modal" :topDivider="true" :bottomDivider="true" :open="sheetOpen"
+               :headline="current ? current.version + ' · ' + current.env : 'Deploy detail'"
+               @md-open="onSheetOpen" @md-close="sheetOpen = false">
+    <p>{{ current ? current.meta : '' }}</p>
+    <MdAreaChart ref="chartEl" label="Errors by class" subtitle="Per minute, last 24 h"
+                 heightProp="200px" legend="bottom" grid="horizontal"
+                 :series="series" :xAxis="xAxis" :valueFormatter="perMin" />
+    <MdMeter label="Fleet adoption" :showLabel="true" :showValue="true"
+             :value="current ? current.adoption : 0"
+             :color="current && current.adoption >= 90 ? 'success' : 'primary'" />
+    <MdSplitButton slot="actions" id="rollback-btn" icon="undo" variant="filled"
+                   :label="current ? 'Roll back to ' + current.previous : 'Roll back'"
+                   menuLabel="More rollback options" controls="rollback-menu"
+                   :trailingChecked="menuOpen" @md-leading-click="rollback"
+                   @md-trailing-click="menuOpen = $event.detail.checked" />
+  </MdSideSheet>
+
+  <MdMenu id="rollback-menu" anchor="rollback-btn" placement="top-start"
+          :open="menuOpen" @md-close="menuOpen = false">
+    <MdMenuItem headline="Roll back and pause auto-deploy" @md-click="rollback" />
+    <MdMenuItem headline="Roll back canary only" @md-click="rollback" />
+  </MdMenu>
+</template>`}
+  svelte={`<script>
+  import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
+  import { defineCustomElements } from '@awc-ui/svelte';
+
+  // Register the md-* elements once, on the client only (SvelteKit SSR guard).
+  if (browser) defineCustomElements(window);
+
+  const HOURS = ['00:00', '06:00', '12:00', '18:00'];
+  const DEPLOYS = [
+    { version: 'v2.14.0', env: 'Production', envColor: 'primary', status: 'Healthy',
+      dot: 'online', rate: '0.4%', sparkColor: 'success', spark: [0.5, 0.4, 0.3, 0.4],
+      fivexx: [2, 1, 1, 2], fourxx: [14, 11, 9, 12], adoption: 97, previous: 'v2.13.2',
+      meta: 'Deployed 06:12 UTC by mira.chen · commit 8f3d21a' },
+    { version: 'v2.14.1-rc.2', env: 'Staging', envColor: 'secondary', status: 'Degraded',
+      dot: 'away', rate: '2.8%', sparkColor: 'warning', spark: [0.9, 1.4, 2.1, 2.8],
+      fivexx: [6, 11, 17, 24], fourxx: [20, 28, 35, 44], adoption: 100, previous: 'v2.14.0',
+      meta: 'Deployed 11:47 UTC by dan.kovacs · commit 51c9e02' },
+    { version: 'v2.14.1-canary', env: 'Canary', envColor: 'warning', status: 'Failing',
+      dot: 'busy', rate: '5.1%', sparkColor: 'error', spark: [0.6, 1.4, 3.1, 5.1],
+      fivexx: [4, 12, 27, 46], fourxx: [10, 15, 22, 33], adoption: 5, previous: 'v2.14.0',
+      meta: 'Deployed 13:05 UTC by mira.chen · commit b74e9c1' },
+  ];
+
+  let current = null;
+  let rolledBack = {};
+  let chartEl;
+  let sheetEl;
+  let menuEl;
+  let splitEl;
+  let sparkEls = [];
+
+  // Arrays never cross the attribute boundary — assign them as properties.
+  onMount(async () => {
+    await customElements.whenDefined('md-sparkline');
+    sparkEls.forEach((el, i) => {
+      el.data = DEPLOYS[i].spark;
+      el.labels = HOURS;
+      el.valueFormatter = (v) => (v == null ? 0 : v) + '%';
+    });
+  });
+
+  function openDeploy(e) {
+    const d = DEPLOYS.find((x) => x.version === e.detail.value);
+    if (!d) return;
+    current = d;
+    chartEl.xAxis = { data: HOURS };
+    chartEl.series = [
+      { label: '5xx', data: d.fivexx, color: 'error' },
+      { label: '4xx', data: d.fourxx, color: 'warning' },
+    ];
+    chartEl.valueFormatter = (v) => (v == null ? 0 : v) + '/min';
+    sheetEl.show();
+  }
+
+  function rollback() {
+    if (current) rolledBack = { ...rolledBack, [current.version]: true };
+    menuEl.close();
+    sheetEl.close();
+  }
+</script>
+
+<md-table-container variant="outlined">
+  <!-- mdRowClick bubbles: one listener on the table serves every row. -->
+  <md-table label="Recent deploys" on:mdRowClick={openDeploy}
+            column-template="minmax(130px, 1.1fr) 120px 140px minmax(150px, 1.4fr)">
+    <md-table-head>
+      <md-table-row rowgroup="head">
+        <md-table-cell head scope="col">Version</md-table-cell>
+        <md-table-cell head scope="col">Environment</md-table-cell>
+        <md-table-cell head scope="col">Status</md-table-cell>
+        <md-table-cell head scope="col">Error rate (24 h)</md-table-cell>
+      </md-table-row>
+    </md-table-head>
+    <md-table-body>
+      {#each DEPLOYS as d, i (d.version)}
+        <md-table-row value={d.version} clickable highlight={!!rolledBack[d.version]}>
+          <md-table-cell>{d.version}</md-table-cell>
+          <md-table-cell><md-chip label={d.env} color={d.envColor} appearance="filled"></md-chip></md-table-cell>
+          <md-table-cell>
+            <md-status-dot size="small" state={rolledBack[d.version] ? 'offline' : d.dot}
+                           live={!rolledBack[d.version] && d.dot === 'busy'}></md-status-dot>
+            {rolledBack[d.version] ? 'Rolled back' : d.status}
+          </md-table-cell>
+          <md-table-cell>
+            {d.rate}
+            <md-sparkline bind:this={sparkEls[i]} color={d.sparkColor} min="0" max="6"
+                          height="24px" show-tooltip="false"></md-sparkline>
+          </md-table-cell>
+        </md-table-row>
+      {/each}
+    </md-table-body>
+  </md-table>
+</md-table-container>
+
+<md-side-sheet bind:this={sheetEl} variant="modal" top-divider bottom-divider
+               headline={current ? current.version + ' · ' + current.env : 'Deploy detail'}
+               on:mdOpen={() => chartEl.resize()}>
+  <p>{current ? current.meta : ''}</p>
+  <md-area-chart bind:this={chartEl} label="Errors by class" subtitle="Per minute, last 24 h"
+                 height="200px" legend="bottom" grid="horizontal"></md-area-chart>
+  <md-meter label="Fleet adoption" show-label show-value value={current ? current.adoption : 0}
+            color={current && current.adoption >= 90 ? 'success' : 'primary'}></md-meter>
+  <md-split-button bind:this={splitEl} slot="actions" id="rollback-btn" icon="undo" variant="filled"
+                   label={current ? 'Roll back to ' + current.previous : 'Roll back'}
+                   menu-label="More rollback options" controls="rollback-menu"
+                   on:mdLeadingClick={rollback}
+                   on:mdTrailingClick={(e) => (e.detail.checked ? menuEl.show() : menuEl.close())}></md-split-button>
+</md-side-sheet>
+
+<!-- Keep the chevron truthful when the menu closes by outside click / Escape. -->
+<md-menu bind:this={menuEl} id="rollback-menu" anchor="rollback-btn" placement="top-start"
+         on:mdClose={() => (splitEl.trailingChecked = false)}>
+  <md-menu-item headline="Roll back and pause auto-deploy" on:mdClick={rollback}></md-menu-item>
+  <md-menu-item headline="Roll back canary only" on:mdClick={rollback}></md-menu-item>
+</md-menu>`}
 />
 
 ## How it's built

@@ -218,6 +218,454 @@ counts down the queue.
 
     render();
   `}
+  react={`import { useState } from 'react';
+import {
+  MdAvatar, MdBadge, MdButton, MdCard, MdChip, MdDivider, MdMenu, MdMenuItem,
+  MdMeter, MdSegmentedButton, MdSegmentedButtonSet, MdSnackbar, MdSplitButton,
+} from '@awc-ui/react';
+
+const REPORTS = [
+  { reporter: 'Priya Desai', handle: '@glowdeals', age: '12 min', id: 4821,
+    excerpt: 'FINAL HOURS!! Send a gift card code to claim your prize before midnight.',
+    reasons: [['Scam or fraud', 'error'], ['Spam', 'warning']], confidence: 94 },
+  { reporter: 'Marcus Webb', handle: '@kt_owens', age: '28 min', id: 4820,
+    excerpt: 'Everyone from that neighborhood is a criminal, simple as that.',
+    reasons: [['Hate speech', 'error']], confidence: 71 },
+  { reporter: 'Devon Alvarez', handle: '@ravi.codes', age: '2 hr', id: 4809,
+    excerpt: 'Nice tutorial. I posted the full source code at the link in my bio.',
+    reasons: [['Self-promotion', 'info']], confidence: 23 },
+];
+
+const initialsOf = (name: string) => {
+  const parts = name.trim().split(' ');
+  return (parts[0].charAt(0) + (parts.length > 1 ? parts[parts.length - 1].charAt(0) : '')).toUpperCase();
+};
+
+export default function ModerationQueue() {
+  const [index, setIndex] = useState(0);
+  const [verdict, setVerdict] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [toast, setToast] = useState({ open: false, message: '' });
+
+  const report = REPORTS[index];
+  const done = index >= REPORTS.length;
+  const band = done ? 'success' : report.confidence >= 85 ? 'error' : report.confidence >= 50 ? 'warning' : 'success';
+  const bandWord = band === 'error' ? 'high' : band === 'warning' ? 'medium' : 'low';
+
+  const advance = (message: string) => {
+    setIndex(index + 1);
+    setVerdict('');
+    setMenuOpen(false);
+    setToast({ open: true, message });
+  };
+
+  const submit = () => {
+    if (verdict === 'approve') advance('Report #' + report.id + ' dismissed — post stays up');
+    else advance('Report #' + report.id + ' escalated to a senior reviewer');
+  };
+
+  return (
+    <div style={{ display: 'grid', gap: 16, maxWidth: 640, marginInline: 'auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span>Moderation queue</span>
+        <span style={{ position: 'relative', paddingInlineEnd: 10 }}>
+          Pending<MdBadge value={String(REPORTS.length - index)} />
+        </span>
+      </div>
+      {!done ? (
+        <MdCard variant="outlined" fullWidth>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <MdAvatar initials={initialsOf(report.reporter)} />
+            <div style={{ display: 'grid' }}>
+              <span>{report.reporter}</span>
+              <span>Reported {report.handle} · {report.age} ago · Report #{report.id}</span>
+            </div>
+          </div>
+          <blockquote style={{ margin: 0, padding: '12px 16px', borderRadius: 8, background: 'var(--md-sys-color-surface-container)' }}>
+            “{report.excerpt}”
+          </blockquote>
+          <div role="group" aria-label="Report reasons" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {report.reasons.map(([label, color]) => (
+              <MdChip key={label} variant="assist" label={label} color={color} />
+            ))}
+          </div>
+          <MdMeter value={report.confidence} color={band} label={'Model confidence — ' + bandWord} showLabel showValue />
+          <MdDivider />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
+            <MdSegmentedButtonSet aria-label="Verdict" onMdChange={(e) => setVerdict(e.detail[0] ?? '')}>
+              <MdSegmentedButton value="approve" label="Approve" selected={verdict === 'approve'} />
+              <MdSegmentedButton value="escalate" label="Escalate" selected={verdict === 'escalate'} />
+              <MdSegmentedButton value="remove" label="Remove" selected={verdict === 'remove'} />
+            </MdSegmentedButtonSet>
+            {verdict !== 'remove' ? (
+              <MdButton variant="filled" disabled={!verdict} onMdClick={submit}>Submit verdict</MdButton>
+            ) : (
+              <MdSplitButton id="remove-split" variant="filled" label="Remove post"
+                menuLabel="More removal options" controls="remove-menu"
+                trailingChecked={menuOpen}
+                onMdLeadingClick={() => advance('Post removed — report #' + report.id + ' closed')}
+                onMdTrailingClick={(e) => setMenuOpen(e.detail.checked)} />
+            )}
+            <MdMenu id="remove-menu" anchor="remove-split" placement="bottom-end"
+              open={menuOpen} onMdClose={() => setMenuOpen(false)}>
+              <MdMenuItem headline="Remove and warn author"
+                onMdClick={() => advance('Post removed, warning sent — report #' + report.id + ' closed')} />
+              <MdMenuItem headline="Remove and ban author"
+                onMdClick={() => advance('Post removed, author banned — report #' + report.id + ' closed')} />
+            </MdMenu>
+          </div>
+        </MdCard>
+      ) : (
+        <div style={{ padding: '32px 16px', textAlign: 'center' }}>
+          <div>Queue clear</div>
+          <div>All pending reports have been reviewed.</div>
+        </div>
+      )}
+      <MdSnackbar open={toast.open} message={toast.message}
+        onMdClose={() => setToast({ open: false, message: toast.message })} />
+    </div>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+import {
+  MdAvatar, MdBadge, MdButton, MdCard, MdChip, MdDivider, MdMenu, MdMenuItem,
+  MdMeter, MdSegmentedButton, MdSegmentedButtonSet, MdSnackbar, MdSplitButton,
+} from '@awc-ui/angular';
+
+@Component({
+  selector: 'app-moderation-queue',
+  standalone: true,
+  imports: [
+    MdAvatar, MdBadge, MdButton, MdCard, MdChip, MdDivider, MdMenu, MdMenuItem,
+    MdMeter, MdSegmentedButton, MdSegmentedButtonSet, MdSnackbar, MdSplitButton,
+  ],
+  template:
+    '<div class="queue">' +
+    '<div class="head"><span>Moderation queue</span>' +
+    '<span class="pending">Pending<md-badge [value]="remaining"></md-badge></span></div>' +
+    '@if (!done) {' +
+    '<md-card variant="outlined" full-width>' +
+    '<div class="reporter"><md-avatar [initials]="reporterInitials"></md-avatar>' +
+    '<div><span>{{ report.reporter }}</span>' +
+    '<span>Reported {{ report.handle }} · {{ report.age }} ago · Report #{{ report.id }}</span></div></div>' +
+    '<blockquote>“{{ report.excerpt }}”</blockquote>' +
+    '<div role="group" aria-label="Report reasons" class="reasons">' +
+    '@for (pair of report.reasons; track pair[0]) {' +
+    '<md-chip variant="assist" [label]="pair[0]" [color]="pair[1]"></md-chip>' +
+    '}</div>' +
+    '<md-meter [value]="report.confidence" [color]="band" [label]="meterLabel" show-label show-value></md-meter>' +
+    '<md-divider></md-divider>' +
+    '<div class="actions">' +
+    '<md-segmented-button-set aria-label="Verdict" (mdChange)="onVerdict($event)">' +
+    '<md-segmented-button value="approve" label="Approve" [selected]="isApprove"></md-segmented-button>' +
+    '<md-segmented-button value="escalate" label="Escalate" [selected]="isEscalate"></md-segmented-button>' +
+    '<md-segmented-button value="remove" label="Remove" [selected]="isRemove"></md-segmented-button>' +
+    '</md-segmented-button-set>' +
+    '@if (!isRemove) {' +
+    '<md-button variant="filled" [disabled]="!verdict" (mdClick)="submit()">Submit verdict</md-button>' +
+    '} @else {' +
+    '<md-split-button id="remove-split" variant="filled" label="Remove post" ' +
+    'menu-label="More removal options" controls="remove-menu" [trailingChecked]="menuOpen" ' +
+    '(mdLeadingClick)="removePost()" (mdTrailingClick)="onChevron($event)"></md-split-button>' +
+    '}' +
+    '<md-menu id="remove-menu" anchor="remove-split" placement="bottom-end" [open]="menuOpen" (mdClose)="menuOpen = false">' +
+    '<md-menu-item headline="Remove and warn author" (mdClick)="removeAndWarn()"></md-menu-item>' +
+    '<md-menu-item headline="Remove and ban author" (mdClick)="removeAndBan()"></md-menu-item>' +
+    '</md-menu></div></md-card>' +
+    '} @else {' +
+    '<div class="empty"><div>Queue clear</div><div>All pending reports have been reviewed.</div></div>' +
+    '}' +
+    '<md-snackbar [open]="toastOpen" [message]="toastMessage" (mdClose)="toastOpen = false"></md-snackbar>' +
+    '</div>',
+  styles: [
+    '.queue { display: grid; gap: 16px; max-width: 640px; margin-inline: auto; }' +
+    ' .head { display: flex; align-items: center; justify-content: space-between; }' +
+    ' .pending { position: relative; padding-inline-end: 10px; }' +
+    ' .reporter { display: flex; align-items: center; gap: 12px; }' +
+    ' .reasons { display: flex; gap: 8px; flex-wrap: wrap; }' +
+    ' .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }',
+  ],
+})
+export class ModerationQueueComponent {
+  readonly reports = [
+    { reporter: 'Priya Desai', handle: '@glowdeals', age: '12 min', id: 4821,
+      excerpt: 'FINAL HOURS!! Send a gift card code to claim your prize before midnight.',
+      reasons: [['Scam or fraud', 'error'], ['Spam', 'warning']], confidence: 94 },
+    { reporter: 'Marcus Webb', handle: '@kt_owens', age: '28 min', id: 4820,
+      excerpt: 'Everyone from that neighborhood is a criminal, simple as that.',
+      reasons: [['Hate speech', 'error']], confidence: 71 },
+    { reporter: 'Devon Alvarez', handle: '@ravi.codes', age: '2 hr', id: 4809,
+      excerpt: 'Nice tutorial. I posted the full source code at the link in my bio.',
+      reasons: [['Self-promotion', 'info']], confidence: 23 },
+  ];
+  index = 0;
+  verdict = '';
+  menuOpen = false;
+  toastOpen = false;
+  toastMessage = '';
+
+  get report() { return this.reports[this.index]; }
+  get done() { return this.index >= this.reports.length; }
+  get remaining() { return String(this.reports.length - this.index); }
+  get isApprove() { return this.verdict === 'approve'; }
+  get isEscalate() { return this.verdict === 'escalate'; }
+  get isRemove() { return this.verdict === 'remove'; }
+  get band() {
+    const c = this.done ? 0 : this.report.confidence;
+    return c >= 85 ? 'error' : c >= 50 ? 'warning' : 'success';
+  }
+  get meterLabel() {
+    return 'Model confidence — ' + (this.band === 'error' ? 'high' : this.band === 'warning' ? 'medium' : 'low');
+  }
+  get reporterInitials() {
+    const parts = this.report.reporter.trim().split(' ');
+    return (parts[0].charAt(0) + (parts.length > 1 ? parts[parts.length - 1].charAt(0) : '')).toUpperCase();
+  }
+
+  onVerdict(e: CustomEvent<string[]>) { this.verdict = e.detail[0] || ''; }
+  onChevron(e: CustomEvent<{ checked: boolean }>) { this.menuOpen = e.detail.checked; }
+
+  submit() {
+    if (this.isApprove) this.advance('Report #' + this.report.id + ' dismissed — post stays up');
+    else this.advance('Report #' + this.report.id + ' escalated to a senior reviewer');
+  }
+  removePost() { this.advance('Post removed — report #' + this.report.id + ' closed'); }
+  removeAndWarn() { this.advance('Post removed, warning sent — report #' + this.report.id + ' closed'); }
+  removeAndBan() { this.advance('Post removed, author banned — report #' + this.report.id + ' closed'); }
+
+  private advance(message: string) {
+    this.index += 1;
+    this.verdict = '';
+    this.menuOpen = false;
+    this.toastMessage = message;
+    this.toastOpen = true;
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  MdAvatar, MdBadge, MdButton, MdCard, MdChip, MdDivider, MdMenu, MdMenuItem,
+  MdMeter, MdSegmentedButton, MdSegmentedButtonSet, MdSnackbar, MdSplitButton,
+} from '@awc-ui/vue';
+
+const reports = [
+  { reporter: 'Priya Desai', handle: '@glowdeals', age: '12 min', id: 4821,
+    excerpt: 'FINAL HOURS!! Send a gift card code to claim your prize before midnight.',
+    reasons: [['Scam or fraud', 'error'], ['Spam', 'warning']], confidence: 94 },
+  { reporter: 'Marcus Webb', handle: '@kt_owens', age: '28 min', id: 4820,
+    excerpt: 'Everyone from that neighborhood is a criminal, simple as that.',
+    reasons: [['Hate speech', 'error']], confidence: 71 },
+  { reporter: 'Devon Alvarez', handle: '@ravi.codes', age: '2 hr', id: 4809,
+    excerpt: 'Nice tutorial. I posted the full source code at the link in my bio.',
+    reasons: [['Self-promotion', 'info']], confidence: 23 },
+];
+
+const index = ref(0);
+const verdict = ref('');
+const menuOpen = ref(false);
+const toastOpen = ref(false);
+const toastMessage = ref('');
+
+const report = computed(() => reports[index.value]);
+const done = computed(() => index.value >= reports.length);
+const remaining = computed(() => String(reports.length - index.value));
+const band = computed(() => {
+  const c = report.value ? report.value.confidence : 0;
+  return c >= 85 ? 'error' : c >= 50 ? 'warning' : 'success';
+});
+const meterLabel = computed(() =>
+  'Model confidence — ' + (band.value === 'error' ? 'high' : band.value === 'warning' ? 'medium' : 'low'));
+
+function initialsOf(name: string) {
+  const parts = name.trim().split(' ');
+  return (parts[0].charAt(0) + (parts.length > 1 ? parts[parts.length - 1].charAt(0) : '')).toUpperCase();
+}
+function onVerdict(e: CustomEvent<string[]>) {
+  verdict.value = e.detail[0] || '';
+}
+function advance(message: string) {
+  index.value += 1;
+  verdict.value = '';
+  menuOpen.value = false;
+  toastMessage.value = message;
+  toastOpen.value = true;
+}
+function submit() {
+  if (verdict.value === 'approve') advance('Report #' + report.value.id + ' dismissed — post stays up');
+  else advance('Report #' + report.value.id + ' escalated to a senior reviewer');
+}
+</script>
+
+<template>
+  <div class="queue">
+    <div class="head">
+      <span>Moderation queue</span>
+      <span class="pending">Pending<MdBadge :value="remaining" /></span>
+    </div>
+    <MdCard v-if="!done" variant="outlined" full-width>
+      <div class="reporter">
+        <MdAvatar :initials="initialsOf(report.reporter)" />
+        <div>
+          <span>{{ report.reporter }}</span>
+          <span>Reported {{ report.handle }} · {{ report.age }} ago · Report #{{ report.id }}</span>
+        </div>
+      </div>
+      <blockquote>“{{ report.excerpt }}”</blockquote>
+      <div role="group" aria-label="Report reasons" class="reasons">
+        <MdChip v-for="pair in report.reasons" :key="pair[0]" variant="assist" :label="pair[0]" :color="pair[1]" />
+      </div>
+      <MdMeter :value="report.confidence" :color="band" :label="meterLabel" show-label show-value />
+      <MdDivider />
+      <div class="actions">
+        <MdSegmentedButtonSet aria-label="Verdict" @md-change="onVerdict">
+          <MdSegmentedButton value="approve" label="Approve" :selected="verdict === 'approve'" />
+          <MdSegmentedButton value="escalate" label="Escalate" :selected="verdict === 'escalate'" />
+          <MdSegmentedButton value="remove" label="Remove" :selected="verdict === 'remove'" />
+        </MdSegmentedButtonSet>
+        <MdButton v-if="verdict !== 'remove'" variant="filled" :disabled="!verdict" @md-click="submit">
+          Submit verdict
+        </MdButton>
+        <MdSplitButton v-else id="remove-split" variant="filled" label="Remove post"
+          menu-label="More removal options" controls="remove-menu" :trailing-checked="menuOpen"
+          @md-leading-click="advance('Post removed — report #' + report.id + ' closed')"
+          @md-trailing-click="menuOpen = $event.detail.checked" />
+        <MdMenu id="remove-menu" anchor="remove-split" placement="bottom-end"
+          :open="menuOpen" @md-close="menuOpen = false">
+          <MdMenuItem headline="Remove and warn author"
+            @md-click="advance('Post removed, warning sent — report #' + report.id + ' closed')" />
+          <MdMenuItem headline="Remove and ban author"
+            @md-click="advance('Post removed, author banned — report #' + report.id + ' closed')" />
+        </MdMenu>
+      </div>
+    </MdCard>
+    <div v-else class="empty">
+      <div>Queue clear</div>
+      <div>All pending reports have been reviewed.</div>
+    </div>
+    <MdSnackbar :open="toastOpen" :message="toastMessage" @md-close="toastOpen = false" />
+  </div>
+</template>
+
+<style scoped>
+.queue { display: grid; gap: 16px; max-width: 640px; margin-inline: auto; }
+.head { display: flex; align-items: center; justify-content: space-between; }
+.pending { position: relative; padding-inline-end: 10px; }
+.reporter { display: flex; align-items: center; gap: 12px; }
+.reasons { display: flex; gap: 8px; flex-wrap: wrap; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+</style>`}
+  svelte={`<script>
+  // Registers every md-* element once on the client.
+  // In SvelteKit, run this behind an if (browser) guard from '$app/environment'.
+  import { defineCustomElements } from '@awc-ui/svelte';
+  if (typeof window !== 'undefined') defineCustomElements(window);
+
+  const reports = [
+    { reporter: 'Priya Desai', handle: '@glowdeals', age: '12 min', id: 4821,
+      excerpt: 'FINAL HOURS!! Send a gift card code to claim your prize before midnight.',
+      reasons: [['Scam or fraud', 'error'], ['Spam', 'warning']], confidence: 94 },
+    { reporter: 'Marcus Webb', handle: '@kt_owens', age: '28 min', id: 4820,
+      excerpt: 'Everyone from that neighborhood is a criminal, simple as that.',
+      reasons: [['Hate speech', 'error']], confidence: 71 },
+    { reporter: 'Devon Alvarez', handle: '@ravi.codes', age: '2 hr', id: 4809,
+      excerpt: 'Nice tutorial. I posted the full source code at the link in my bio.',
+      reasons: [['Self-promotion', 'info']], confidence: 23 },
+  ];
+
+  let index = 0;
+  let verdict = '';
+  let menuOpen = false;
+  let toastOpen = false;
+  let toastMessage = '';
+
+  $: report = reports[index];
+  $: done = index >= reports.length;
+  $: remaining = String(reports.length - index);
+  $: band = !report ? 'success' : report.confidence >= 85 ? 'error' : report.confidence >= 50 ? 'warning' : 'success';
+  $: meterLabel = 'Model confidence — ' + (band === 'error' ? 'high' : band === 'warning' ? 'medium' : 'low');
+
+  function initialsOf(name) {
+    const parts = name.trim().split(' ');
+    return (parts[0].charAt(0) + (parts.length > 1 ? parts[parts.length - 1].charAt(0) : '')).toUpperCase();
+  }
+  function onVerdict(e) {
+    verdict = e.detail[0] || '';
+  }
+  function advance(message) {
+    index += 1;
+    verdict = '';
+    menuOpen = false;
+    toastMessage = message;
+    toastOpen = true;
+  }
+  function submit() {
+    if (verdict === 'approve') advance('Report #' + report.id + ' dismissed — post stays up');
+    else advance('Report #' + report.id + ' escalated to a senior reviewer');
+  }
+</script>
+
+<div class="queue">
+  <div class="head">
+    <span>Moderation queue</span>
+    <span class="pending">Pending<md-badge value={remaining}></md-badge></span>
+  </div>
+  {#if !done}
+    <md-card variant="outlined" full-width>
+      <div class="reporter">
+        <md-avatar initials={initialsOf(report.reporter)}></md-avatar>
+        <div>
+          <span>{report.reporter}</span>
+          <span>Reported {report.handle} · {report.age} ago · Report #{report.id}</span>
+        </div>
+      </div>
+      <blockquote>“{report.excerpt}”</blockquote>
+      <div role="group" aria-label="Report reasons" class="reasons">
+        {#each report.reasons as pair (pair[0])}
+          <md-chip variant="assist" label={pair[0]} color={pair[1]}></md-chip>
+        {/each}
+      </div>
+      <md-meter value={report.confidence} color={band} label={meterLabel} show-label show-value></md-meter>
+      <md-divider></md-divider>
+      <div class="actions">
+        <md-segmented-button-set aria-label="Verdict" on:mdChange={onVerdict}>
+          <md-segmented-button value="approve" label="Approve" selected={verdict === 'approve'}></md-segmented-button>
+          <md-segmented-button value="escalate" label="Escalate" selected={verdict === 'escalate'}></md-segmented-button>
+          <md-segmented-button value="remove" label="Remove" selected={verdict === 'remove'}></md-segmented-button>
+        </md-segmented-button-set>
+        {#if verdict !== 'remove'}
+          <md-button variant="filled" disabled={!verdict} on:mdClick={submit}>Submit verdict</md-button>
+        {:else}
+          <md-split-button id="remove-split" variant="filled" label="Remove post"
+            menu-label="More removal options" controls="remove-menu" trailing-checked={menuOpen}
+            on:mdLeadingClick={() => advance('Post removed — report #' + report.id + ' closed')}
+            on:mdTrailingClick={(e) => (menuOpen = e.detail.checked)}></md-split-button>
+        {/if}
+        <md-menu id="remove-menu" anchor="remove-split" placement="bottom-end"
+          open={menuOpen} on:mdClose={() => (menuOpen = false)}>
+          <md-menu-item headline="Remove and warn author"
+            on:mdClick={() => advance('Post removed, warning sent — report #' + report.id + ' closed')}></md-menu-item>
+          <md-menu-item headline="Remove and ban author"
+            on:mdClick={() => advance('Post removed, author banned — report #' + report.id + ' closed')}></md-menu-item>
+        </md-menu>
+      </div>
+    </md-card>
+  {:else}
+    <div class="empty">
+      <div>Queue clear</div>
+      <div>All pending reports have been reviewed.</div>
+    </div>
+  {/if}
+  <md-snackbar open={toastOpen} message={toastMessage} on:mdClose={() => (toastOpen = false)}></md-snackbar>
+</div>
+
+<style>
+  .queue { display: grid; gap: 16px; max-width: 640px; margin-inline: auto; }
+  .head { display: flex; align-items: center; justify-content: space-between; }
+  .pending { position: relative; padding-inline-end: 10px; }
+  .reporter { display: flex; align-items: center; gap: 12px; }
+  .reasons { display: flex; gap: 8px; flex-wrap: wrap; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+</style>`}
 />
 
 ## How it's built

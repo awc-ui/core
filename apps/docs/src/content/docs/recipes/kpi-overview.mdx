@@ -263,6 +263,570 @@ in their `loading` state until the data lands.
       apply(e.detail[0]);
     });
   `}
+  react={`import { useEffect, useRef, useState } from 'react';
+import {
+  MdAreaChart, MdBarChart, MdCard, MdSegmentedButton, MdSegmentedButtonSet,
+  MdSkeleton, MdSparkline, MdStatusDot, MdTooltip
+} from '@awc-ui/react';
+
+const TILES = [
+  { name: 'Active users', tip: 'Unique users with at least one session in the period', variant: 'line', color: 'primary' },
+  { name: 'Revenue', tip: 'Booked revenue across all plans, before refunds', variant: 'area', color: 'success' },
+  { name: 'Conversion', tip: 'Share of visitors who started a paid plan', variant: 'line', color: 'warning' },
+  { name: 'Support tickets', tip: 'Support tickets opened in the period — lower is better', variant: 'bar', color: 'info' }
+];
+
+// One entry per range: axis labels, four KPI tiles, and both chart series.
+const DATA = {
+  '7d': {
+    period: 'Aug 14 – Aug 20, 2026', subtitle: 'Daily',
+    labels: ['Aug 14', 'Aug 15', 'Aug 16', 'Aug 17', 'Aug 18', 'Aug 19', 'Aug 20'],
+    kpis: [
+      { value: '24,318', delta: '+12.4% vs prior 7 days', state: 'online', trend: 'Trending up', spark: [21804, 22410, 21958, 23102, 23644, 24057, 24318] },
+      { value: '$86,420', delta: '+8.1% vs prior 7 days', state: 'online', trend: 'Trending up', spark: [11190, 11862, 11408, 12295, 12904, 13247, 13514] },
+      { value: '3.42%', delta: '-0.19 pt vs prior 7 days', state: 'away', trend: 'Slipping', spark: [3.61, 3.55, 3.58, 3.49, 3.44, 3.40, 3.42] },
+      { value: '129', delta: '-12.8% vs prior 7 days', state: 'online', trend: 'Improving', spark: [148, 152, 141, 137, 133, 131, 129] }
+    ],
+    area: [[3120, 3405, 3188, 3610, 3722, 3850, 3941], [18684, 19005, 18770, 19492, 19922, 20207, 20377]],
+    bars: [[8460, 8890, 8555, 9120, 9480, 9635, 9812], [2730, 2972, 2853, 3175, 3424, 3612, 3702]]
+  },
+  '30d': {
+    period: 'Jul 22 – Aug 20, 2026', subtitle: 'Weekly',
+    labels: ['Jul 22', 'Jul 29', 'Aug 5', 'Aug 12', 'Aug 19'],
+    kpis: [
+      { value: '96,204', delta: '+9.6% vs prior 30 days', state: 'online', trend: 'Trending up', spark: [19850, 20980, 21440, 22840, 24318] },
+      { value: '$342,180', delta: '+11.2% vs prior 30 days', state: 'online', trend: 'Trending up', spark: [30200, 32700, 33410, 35620, 38120] },
+      { value: '3.51%', delta: '+0.06 pt vs prior 30 days', state: 'online', trend: 'Improving', spark: [3.44, 3.50, 3.53, 3.49, 3.51] },
+      { value: '561', delta: '-4.1% vs prior 30 days', state: 'online', trend: 'Improving', spark: [58, 57, 60, 56, 52] }
+    ],
+    area: [[2840, 3120, 3260, 3540, 3941], [17010, 17860, 18180, 19300, 20377]],
+    bars: [[21300, 22900, 23380, 24890, 26610], [8900, 9800, 10030, 10730, 11510]]
+  },
+  '90d': {
+    period: 'May 25 – Aug 20, 2026', subtitle: 'Biweekly',
+    labels: ['Jun 1', 'Jun 15', 'Jun 29', 'Jul 13', 'Jul 27', 'Aug 10'],
+    kpis: [
+      { value: '268,530', delta: '+21.3% vs prior 90 days', state: 'online', trend: 'Trending up', spark: [16420, 17840, 18960, 20180, 21730, 23390] },
+      { value: '$918,400', delta: '+17.5% vs prior 90 days', state: 'online', trend: 'Trending up', spark: [61200, 66500, 70900, 75800, 81600, 87900] },
+      { value: '3.38%', delta: '-0.31 pt vs prior 90 days', state: 'busy', trend: 'Needs attention', spark: [3.69, 3.60, 3.52, 3.46, 3.42, 3.40] },
+      { value: '1,742', delta: '+2.9% vs prior 90 days', state: 'away', trend: 'Slipping', spark: [138, 142, 135, 133, 140, 144] }
+    ],
+    area: [[2210, 2480, 2690, 2930, 3240, 3620], [14210, 15360, 16270, 17250, 18490, 19770]],
+    bars: [[42800, 46500, 49600, 53000, 57100, 61500], [18400, 20000, 21300, 22800, 24500, 26400]]
+  }
+};
+
+const fmtInt = new Intl.NumberFormat('en-US');
+const num = (v) => fmtInt.format(v == null ? 0 : v);
+const usd = (v) => '$' + fmtInt.format(v == null ? 0 : v);
+
+function KpiTile({ tile, kpi, labels, loading, announce }) {
+  return (
+    <MdTooltip text={tile.tip}>
+      <MdCard variant="outlined" fullWidth>
+        <span>{tile.name}</span>
+        {loading ? (
+          <>
+            <MdSkeleton variant="text" width="90px" height="1.6em" announce={announce} />
+            <MdSkeleton variant="rectangular" height="28px" fullWidth announce={false} />
+          </>
+        ) : (
+          <div style={{ display: 'grid', gap: '6px' }}>
+            <span>{kpi.value}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              {/* state + label together: the trend reads as words, not colour alone */}
+              <MdStatusDot state={kpi.state} label={kpi.trend} />
+              {kpi.delta}
+            </span>
+            <MdSparkline variant={tile.variant} data={kpi.spark} labels={labels}
+              showTooltip={false} heightProp="28px" color={tile.color} />
+          </div>
+        )}
+      </MdCard>
+    </MdTooltip>
+  );
+}
+
+export default function KpiOverview() {
+  const [range, setRange] = useState('7d');
+  const [loading, setLoading] = useState(true);
+  const areaRef = useRef(null);
+  const d = DATA[range];
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 900); // simulated first fetch
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    // md-area-chart does not replay its entrance when loading clears.
+    if (!loading && areaRef.current) areaRef.current.replay();
+  }, [loading]);
+
+  return (
+    <div style={{ display: 'grid', gap: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+        <div>
+          <h2 style={{ margin: 0 }}>Product analytics</h2>
+          <span>{d.period}</span>
+        </div>
+        <MdSegmentedButtonSet aria-label="Date range" density={-1}
+          onMdChange={(e) => setRange(e.detail[0])}>
+          <MdSegmentedButton value="7d" label="7 days" selected={range === '7d'} />
+          <MdSegmentedButton value="30d" label="30 days" selected={range === '30d'} />
+          <MdSegmentedButton value="90d" label="90 days" selected={range === '90d'} />
+        </MdSegmentedButtonSet>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px' }}>
+        {TILES.map((tile, i) => (
+          <KpiTile key={tile.name} tile={tile} kpi={d.kpis[i]} labels={d.labels}
+            loading={loading} announce={i === 0} />
+        ))}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '12px' }}>
+        <MdAreaChart ref={areaRef} label="Active users" subtitle={d.subtitle} heightProp="280px"
+          loading={loading} loadingLabel="Loading active users"
+          xAxis={{ data: d.labels }} valueFormatter={num}
+          series={[
+            { label: 'New users', data: d.area[0], color: 'tertiary' },
+            { label: 'Returning', data: d.area[1], color: 'primary' }
+          ]} />
+        <MdBarChart label="Revenue" subtitle={d.subtitle + ' · USD'} stack="normal" heightProp="280px"
+          loading={loading} loadingLabel="Loading revenue"
+          xAxis={{ data: d.labels }} valueFormatter={usd}
+          series={[
+            { label: 'Subscriptions', data: d.bars[0], color: 'primary' },
+            { label: 'Usage', data: d.bars[1], color: 'secondary' }
+          ]} />
+      </div>
+    </div>
+  );
+}`}
+  angular={`import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {
+  MdAreaChart, MdBarChart, MdCard, MdSegmentedButton, MdSegmentedButtonSet,
+  MdSkeleton, MdSparkline, MdStatusDot, MdTooltip
+} from '@awc-ui/angular';
+
+const TILES = [
+  { name: 'Active users', tip: 'Unique users with at least one session in the period', variant: 'line', color: 'primary' },
+  { name: 'Revenue', tip: 'Booked revenue across all plans, before refunds', variant: 'area', color: 'success' },
+  { name: 'Conversion', tip: 'Share of visitors who started a paid plan', variant: 'line', color: 'warning' },
+  { name: 'Support tickets', tip: 'Support tickets opened in the period — lower is better', variant: 'bar', color: 'info' }
+];
+
+// One entry per range: axis labels, four KPI tiles, and both chart series.
+const DATA: any = {
+  '7d': {
+    period: 'Aug 14 – Aug 20, 2026', subtitle: 'Daily',
+    labels: ['Aug 14', 'Aug 15', 'Aug 16', 'Aug 17', 'Aug 18', 'Aug 19', 'Aug 20'],
+    kpis: [
+      { value: '24,318', delta: '+12.4% vs prior 7 days', state: 'online', trend: 'Trending up', spark: [21804, 22410, 21958, 23102, 23644, 24057, 24318] },
+      { value: '$86,420', delta: '+8.1% vs prior 7 days', state: 'online', trend: 'Trending up', spark: [11190, 11862, 11408, 12295, 12904, 13247, 13514] },
+      { value: '3.42%', delta: '-0.19 pt vs prior 7 days', state: 'away', trend: 'Slipping', spark: [3.61, 3.55, 3.58, 3.49, 3.44, 3.40, 3.42] },
+      { value: '129', delta: '-12.8% vs prior 7 days', state: 'online', trend: 'Improving', spark: [148, 152, 141, 137, 133, 131, 129] }
+    ],
+    area: [[3120, 3405, 3188, 3610, 3722, 3850, 3941], [18684, 19005, 18770, 19492, 19922, 20207, 20377]],
+    bars: [[8460, 8890, 8555, 9120, 9480, 9635, 9812], [2730, 2972, 2853, 3175, 3424, 3612, 3702]]
+  },
+  '30d': {
+    period: 'Jul 22 – Aug 20, 2026', subtitle: 'Weekly',
+    labels: ['Jul 22', 'Jul 29', 'Aug 5', 'Aug 12', 'Aug 19'],
+    kpis: [
+      { value: '96,204', delta: '+9.6% vs prior 30 days', state: 'online', trend: 'Trending up', spark: [19850, 20980, 21440, 22840, 24318] },
+      { value: '$342,180', delta: '+11.2% vs prior 30 days', state: 'online', trend: 'Trending up', spark: [30200, 32700, 33410, 35620, 38120] },
+      { value: '3.51%', delta: '+0.06 pt vs prior 30 days', state: 'online', trend: 'Improving', spark: [3.44, 3.50, 3.53, 3.49, 3.51] },
+      { value: '561', delta: '-4.1% vs prior 30 days', state: 'online', trend: 'Improving', spark: [58, 57, 60, 56, 52] }
+    ],
+    area: [[2840, 3120, 3260, 3540, 3941], [17010, 17860, 18180, 19300, 20377]],
+    bars: [[21300, 22900, 23380, 24890, 26610], [8900, 9800, 10030, 10730, 11510]]
+  },
+  '90d': {
+    period: 'May 25 – Aug 20, 2026', subtitle: 'Biweekly',
+    labels: ['Jun 1', 'Jun 15', 'Jun 29', 'Jul 13', 'Jul 27', 'Aug 10'],
+    kpis: [
+      { value: '268,530', delta: '+21.3% vs prior 90 days', state: 'online', trend: 'Trending up', spark: [16420, 17840, 18960, 20180, 21730, 23390] },
+      { value: '$918,400', delta: '+17.5% vs prior 90 days', state: 'online', trend: 'Trending up', spark: [61200, 66500, 70900, 75800, 81600, 87900] },
+      { value: '3.38%', delta: '-0.31 pt vs prior 90 days', state: 'busy', trend: 'Needs attention', spark: [3.69, 3.60, 3.52, 3.46, 3.42, 3.40] },
+      { value: '1,742', delta: '+2.9% vs prior 90 days', state: 'away', trend: 'Slipping', spark: [138, 142, 135, 133, 140, 144] }
+    ],
+    area: [[2210, 2480, 2690, 2930, 3240, 3620], [14210, 15360, 16270, 17250, 18490, 19770]],
+    bars: [[42800, 46500, 49600, 53000, 57100, 61500], [18400, 20000, 21300, 22800, 24500, 26400]]
+  }
+};
+
+@Component({
+  selector: 'app-kpi-overview',
+  standalone: true,
+  imports: [
+    MdAreaChart, MdBarChart, MdCard, MdSegmentedButton, MdSegmentedButtonSet,
+    MdSkeleton, MdSparkline, MdStatusDot, MdTooltip
+  ],
+  template:
+    '<div class="kpi-block">' +
+    '  <header>' +
+    '    <div><h2>Product analytics</h2><span>{{ d.period }}</span></div>' +
+    '    <md-segmented-button-set aria-label="Date range" [density]="-1" (mdChange)="onRange($event)">' +
+    '      @for (s of segments; track s.value) {' +
+    '        <md-segmented-button [value]="s.value" [label]="s.label" [selected]="range === s.value"></md-segmented-button>' +
+    '      }' +
+    '    </md-segmented-button-set>' +
+    '  </header>' +
+    '  <div class="tiles">' +
+    '    @for (t of tiles; track t.name; let i = $index) {' +
+    '      <md-tooltip [text]="t.tip">' +
+    '        <md-card variant="outlined" [fullWidth]="true">' +
+    '          <span>{{ t.name }}</span>' +
+    '          @if (loading) {' +
+    '            <md-skeleton variant="text" width="90px" height="1.6em" [announce]="i === 0"></md-skeleton>' +
+    '            <md-skeleton variant="rectangular" height="28px" [fullWidth]="true" [announce]="false"></md-skeleton>' +
+    '          } @else {' +
+    '            <span>{{ d.kpis[i].value }}</span>' +
+    '            <!-- state + label together: the trend reads as words, not colour alone -->' +
+    '            <span class="delta"><md-status-dot [state]="d.kpis[i].state" [label]="d.kpis[i].trend"></md-status-dot> {{ d.kpis[i].delta }}</span>' +
+    '            <md-sparkline [variant]="t.variant" [data]="d.kpis[i].spark" [labels]="d.labels" [showTooltip]="false" heightProp="28px" [color]="t.color"></md-sparkline>' +
+    '          }' +
+    '        </md-card>' +
+    '      </md-tooltip>' +
+    '    }' +
+    '  </div>' +
+    '  <div class="charts">' +
+    '    <md-area-chart #area label="Active users" [subtitle]="d.subtitle" heightProp="280px" [loading]="loading" loadingLabel="Loading active users" [xAxis]="axis" [series]="areaSeries" [valueFormatter]="fmtNum"></md-area-chart>' +
+    '    <md-bar-chart label="Revenue" [subtitle]="barSubtitle" stack="normal" heightProp="280px" [loading]="loading" loadingLabel="Loading revenue" [xAxis]="axis" [series]="barSeries" [valueFormatter]="fmtUsd"></md-bar-chart>' +
+    '  </div>' +
+    '</div>'
+})
+export class KpiOverviewComponent implements OnInit {
+  @ViewChild('area', { read: ElementRef }) area?: ElementRef<any>;
+
+  tiles = TILES;
+  segments = [
+    { value: '7d', label: '7 days' },
+    { value: '30d', label: '30 days' },
+    { value: '90d', label: '90 days' }
+  ];
+  range = '7d';
+  loading = true;
+  d = DATA['7d'];
+  axis: any = { data: DATA['7d'].labels };
+  areaSeries: any[] = [];
+  barSeries: any[] = [];
+  barSubtitle = '';
+
+  private fmt = new Intl.NumberFormat('en-US');
+  fmtNum = (v: number | null | undefined) => this.fmt.format(v == null ? 0 : v);
+  fmtUsd = (v: number | null | undefined) => '$' + this.fmt.format(v == null ? 0 : v);
+
+  ngOnInit() {
+    this.apply('7d');
+    // Simulated first fetch: skeletons in the tiles, loading overlays on the charts.
+    setTimeout(() => {
+      this.loading = false;
+      // md-area-chart does not replay its entrance when loading clears.
+      setTimeout(() => this.area?.nativeElement.replay());
+    }, 900);
+  }
+
+  onRange(event: Event) {
+    const values = (event as CustomEvent<string[]>).detail;
+    if (values.length) this.apply(values[0]);
+  }
+
+  private apply(key: string) {
+    this.range = key;
+    const d = DATA[key];
+    this.d = d;
+    this.axis = { data: d.labels };
+    this.areaSeries = [
+      { label: 'New users', data: d.area[0], color: 'tertiary' },
+      { label: 'Returning', data: d.area[1], color: 'primary' }
+    ];
+    this.barSeries = [
+      { label: 'Subscriptions', data: d.bars[0], color: 'primary' },
+      { label: 'Usage', data: d.bars[1], color: 'secondary' }
+    ];
+    this.barSubtitle = d.subtitle + ' · USD';
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, nextTick, onMounted, ref } from 'vue';
+import {
+  MdAreaChart, MdBarChart, MdCard, MdSegmentedButton, MdSegmentedButtonSet,
+  MdSkeleton, MdSparkline, MdStatusDot, MdTooltip
+} from '@awc-ui/vue';
+
+const TILES = [
+  { name: 'Active users', tip: 'Unique users with at least one session in the period', variant: 'line', color: 'primary' },
+  { name: 'Revenue', tip: 'Booked revenue across all plans, before refunds', variant: 'area', color: 'success' },
+  { name: 'Conversion', tip: 'Share of visitors who started a paid plan', variant: 'line', color: 'warning' },
+  { name: 'Support tickets', tip: 'Support tickets opened in the period — lower is better', variant: 'bar', color: 'info' }
+];
+
+// One entry per range: axis labels, four KPI tiles, and both chart series.
+const DATA: any = {
+  '7d': {
+    period: 'Aug 14 – Aug 20, 2026', subtitle: 'Daily',
+    labels: ['Aug 14', 'Aug 15', 'Aug 16', 'Aug 17', 'Aug 18', 'Aug 19', 'Aug 20'],
+    kpis: [
+      { value: '24,318', delta: '+12.4% vs prior 7 days', state: 'online', trend: 'Trending up', spark: [21804, 22410, 21958, 23102, 23644, 24057, 24318] },
+      { value: '$86,420', delta: '+8.1% vs prior 7 days', state: 'online', trend: 'Trending up', spark: [11190, 11862, 11408, 12295, 12904, 13247, 13514] },
+      { value: '3.42%', delta: '-0.19 pt vs prior 7 days', state: 'away', trend: 'Slipping', spark: [3.61, 3.55, 3.58, 3.49, 3.44, 3.40, 3.42] },
+      { value: '129', delta: '-12.8% vs prior 7 days', state: 'online', trend: 'Improving', spark: [148, 152, 141, 137, 133, 131, 129] }
+    ],
+    area: [[3120, 3405, 3188, 3610, 3722, 3850, 3941], [18684, 19005, 18770, 19492, 19922, 20207, 20377]],
+    bars: [[8460, 8890, 8555, 9120, 9480, 9635, 9812], [2730, 2972, 2853, 3175, 3424, 3612, 3702]]
+  },
+  '30d': {
+    period: 'Jul 22 – Aug 20, 2026', subtitle: 'Weekly',
+    labels: ['Jul 22', 'Jul 29', 'Aug 5', 'Aug 12', 'Aug 19'],
+    kpis: [
+      { value: '96,204', delta: '+9.6% vs prior 30 days', state: 'online', trend: 'Trending up', spark: [19850, 20980, 21440, 22840, 24318] },
+      { value: '$342,180', delta: '+11.2% vs prior 30 days', state: 'online', trend: 'Trending up', spark: [30200, 32700, 33410, 35620, 38120] },
+      { value: '3.51%', delta: '+0.06 pt vs prior 30 days', state: 'online', trend: 'Improving', spark: [3.44, 3.50, 3.53, 3.49, 3.51] },
+      { value: '561', delta: '-4.1% vs prior 30 days', state: 'online', trend: 'Improving', spark: [58, 57, 60, 56, 52] }
+    ],
+    area: [[2840, 3120, 3260, 3540, 3941], [17010, 17860, 18180, 19300, 20377]],
+    bars: [[21300, 22900, 23380, 24890, 26610], [8900, 9800, 10030, 10730, 11510]]
+  },
+  '90d': {
+    period: 'May 25 – Aug 20, 2026', subtitle: 'Biweekly',
+    labels: ['Jun 1', 'Jun 15', 'Jun 29', 'Jul 13', 'Jul 27', 'Aug 10'],
+    kpis: [
+      { value: '268,530', delta: '+21.3% vs prior 90 days', state: 'online', trend: 'Trending up', spark: [16420, 17840, 18960, 20180, 21730, 23390] },
+      { value: '$918,400', delta: '+17.5% vs prior 90 days', state: 'online', trend: 'Trending up', spark: [61200, 66500, 70900, 75800, 81600, 87900] },
+      { value: '3.38%', delta: '-0.31 pt vs prior 90 days', state: 'busy', trend: 'Needs attention', spark: [3.69, 3.60, 3.52, 3.46, 3.42, 3.40] },
+      { value: '1,742', delta: '+2.9% vs prior 90 days', state: 'away', trend: 'Slipping', spark: [138, 142, 135, 133, 140, 144] }
+    ],
+    area: [[2210, 2480, 2690, 2930, 3240, 3620], [14210, 15360, 16270, 17250, 18490, 19770]],
+    bars: [[42800, 46500, 49600, 53000, 57100, 61500], [18400, 20000, 21300, 22800, 24500, 26400]]
+  }
+};
+
+const range = ref('7d');
+const loading = ref(true);
+const area = ref();
+
+const d = computed(() => DATA[range.value]);
+const areaSeries = computed(() => [
+  { label: 'New users', data: d.value.area[0], color: 'tertiary' },
+  { label: 'Returning', data: d.value.area[1], color: 'primary' }
+]);
+const barSeries = computed(() => [
+  { label: 'Subscriptions', data: d.value.bars[0], color: 'primary' },
+  { label: 'Usage', data: d.value.bars[1], color: 'secondary' }
+]);
+
+const fmt = new Intl.NumberFormat('en-US');
+const num = (v: number | null | undefined) => fmt.format(v == null ? 0 : v);
+const usd = (v: number | null | undefined) => '$' + fmt.format(v == null ? 0 : v);
+
+function onRange(e: CustomEvent<string[]>) {
+  if (e.detail.length) range.value = e.detail[0];
+}
+
+onMounted(() => {
+  // Simulated first fetch: skeletons in the tiles, loading overlays on the charts.
+  setTimeout(async () => {
+    loading.value = false;
+    await nextTick();
+    // md-area-chart does not replay its entrance when loading clears.
+    area.value?.$el.replay();
+  }, 900);
+});
+</script>
+
+<template>
+  <div class="kpi-block">
+    <header>
+      <div>
+        <h2>Product analytics</h2>
+        <span>{{ d.period }}</span>
+      </div>
+      <MdSegmentedButtonSet aria-label="Date range" :density="-1" @md-change="onRange">
+        <MdSegmentedButton value="7d" label="7 days" :selected="range === '7d'" />
+        <MdSegmentedButton value="30d" label="30 days" :selected="range === '30d'" />
+        <MdSegmentedButton value="90d" label="90 days" :selected="range === '90d'" />
+      </MdSegmentedButtonSet>
+    </header>
+    <div class="tiles">
+      <MdTooltip v-for="(t, i) in TILES" :key="t.name" :text="t.tip">
+        <MdCard variant="outlined" :full-width="true">
+          <span>{{ t.name }}</span>
+          <template v-if="loading">
+            <MdSkeleton variant="text" width="90px" height="1.6em" :announce="i === 0" />
+            <MdSkeleton variant="rectangular" height="28px" :full-width="true" :announce="false" />
+          </template>
+          <template v-else>
+            <span>{{ d.kpis[i].value }}</span>
+            <span class="delta">
+              <!-- state + label together: the trend reads as words, not colour alone -->
+              <MdStatusDot :state="d.kpis[i].state" :label="d.kpis[i].trend" />
+              {{ d.kpis[i].delta }}
+            </span>
+            <MdSparkline :variant="t.variant" :data="d.kpis[i].spark" :labels="d.labels"
+              :show-tooltip="false" height-prop="28px" :color="t.color" />
+          </template>
+        </MdCard>
+      </MdTooltip>
+    </div>
+    <div class="charts">
+      <MdAreaChart ref="area" label="Active users" :subtitle="d.subtitle" height-prop="280px"
+        :loading="loading" loading-label="Loading active users"
+        :x-axis="{ data: d.labels }" :series="areaSeries" :value-formatter="num" />
+      <MdBarChart label="Revenue" :subtitle="d.subtitle + ' · USD'" stack="normal" height-prop="280px"
+        :loading="loading" loading-label="Loading revenue"
+        :x-axis="{ data: d.labels }" :series="barSeries" :value-formatter="usd" />
+    </div>
+  </div>
+</template>`}
+  svelte={`<script>
+  // The Svelte package ships the raw md-* elements — register them once on the client.
+  import { defineCustomElements } from '@awc-ui/svelte';
+  if (typeof window !== 'undefined') defineCustomElements(window); // SvelteKit: if (browser) ...
+
+  import { onMount, tick } from 'svelte';
+
+  const TILES = [
+    { name: 'Active users', tip: 'Unique users with at least one session in the period', variant: 'line', color: 'primary' },
+    { name: 'Revenue', tip: 'Booked revenue across all plans, before refunds', variant: 'area', color: 'success' },
+    { name: 'Conversion', tip: 'Share of visitors who started a paid plan', variant: 'line', color: 'warning' },
+    { name: 'Support tickets', tip: 'Support tickets opened in the period — lower is better', variant: 'bar', color: 'info' }
+  ];
+
+  // One entry per range: axis labels, four KPI tiles, and both chart series.
+  const DATA = {
+    '7d': {
+      period: 'Aug 14 – Aug 20, 2026', subtitle: 'Daily',
+      labels: ['Aug 14', 'Aug 15', 'Aug 16', 'Aug 17', 'Aug 18', 'Aug 19', 'Aug 20'],
+      kpis: [
+        { value: '24,318', delta: '+12.4% vs prior 7 days', state: 'online', trend: 'Trending up', spark: [21804, 22410, 21958, 23102, 23644, 24057, 24318] },
+        { value: '$86,420', delta: '+8.1% vs prior 7 days', state: 'online', trend: 'Trending up', spark: [11190, 11862, 11408, 12295, 12904, 13247, 13514] },
+        { value: '3.42%', delta: '-0.19 pt vs prior 7 days', state: 'away', trend: 'Slipping', spark: [3.61, 3.55, 3.58, 3.49, 3.44, 3.40, 3.42] },
+        { value: '129', delta: '-12.8% vs prior 7 days', state: 'online', trend: 'Improving', spark: [148, 152, 141, 137, 133, 131, 129] }
+      ],
+      area: [[3120, 3405, 3188, 3610, 3722, 3850, 3941], [18684, 19005, 18770, 19492, 19922, 20207, 20377]],
+      bars: [[8460, 8890, 8555, 9120, 9480, 9635, 9812], [2730, 2972, 2853, 3175, 3424, 3612, 3702]]
+    },
+    '30d': {
+      period: 'Jul 22 – Aug 20, 2026', subtitle: 'Weekly',
+      labels: ['Jul 22', 'Jul 29', 'Aug 5', 'Aug 12', 'Aug 19'],
+      kpis: [
+        { value: '96,204', delta: '+9.6% vs prior 30 days', state: 'online', trend: 'Trending up', spark: [19850, 20980, 21440, 22840, 24318] },
+        { value: '$342,180', delta: '+11.2% vs prior 30 days', state: 'online', trend: 'Trending up', spark: [30200, 32700, 33410, 35620, 38120] },
+        { value: '3.51%', delta: '+0.06 pt vs prior 30 days', state: 'online', trend: 'Improving', spark: [3.44, 3.50, 3.53, 3.49, 3.51] },
+        { value: '561', delta: '-4.1% vs prior 30 days', state: 'online', trend: 'Improving', spark: [58, 57, 60, 56, 52] }
+      ],
+      area: [[2840, 3120, 3260, 3540, 3941], [17010, 17860, 18180, 19300, 20377]],
+      bars: [[21300, 22900, 23380, 24890, 26610], [8900, 9800, 10030, 10730, 11510]]
+    },
+    '90d': {
+      period: 'May 25 – Aug 20, 2026', subtitle: 'Biweekly',
+      labels: ['Jun 1', 'Jun 15', 'Jun 29', 'Jul 13', 'Jul 27', 'Aug 10'],
+      kpis: [
+        { value: '268,530', delta: '+21.3% vs prior 90 days', state: 'online', trend: 'Trending up', spark: [16420, 17840, 18960, 20180, 21730, 23390] },
+        { value: '$918,400', delta: '+17.5% vs prior 90 days', state: 'online', trend: 'Trending up', spark: [61200, 66500, 70900, 75800, 81600, 87900] },
+        { value: '3.38%', delta: '-0.31 pt vs prior 90 days', state: 'busy', trend: 'Needs attention', spark: [3.69, 3.60, 3.52, 3.46, 3.42, 3.40] },
+        { value: '1,742', delta: '+2.9% vs prior 90 days', state: 'away', trend: 'Slipping', spark: [138, 142, 135, 133, 140, 144] }
+      ],
+      area: [[2210, 2480, 2690, 2930, 3240, 3620], [14210, 15360, 16270, 17250, 18490, 19770]],
+      bars: [[42800, 46500, 49600, 53000, 57100, 61500], [18400, 20000, 21300, 22800, 24500, 26400]]
+    }
+  };
+
+  let range = '7d';
+  let loading = true;
+  let areaEl;
+  let barEl;
+  let sparkEls = [];
+
+  $: d = DATA[range];
+
+  const fmt = new Intl.NumberFormat('en-US');
+  const num = (v) => fmt.format(v == null ? 0 : v);
+  const usd = (v) => '$' + fmt.format(v == null ? 0 : v);
+
+  // Charts and sparklines take arrays / objects — assign them as element properties.
+  function applyCharts(key) {
+    const dd = DATA[key];
+    if (areaEl) {
+      areaEl.xAxis = { data: dd.labels };
+      areaEl.series = [
+        { label: 'New users', data: dd.area[0], color: 'tertiary' },
+        { label: 'Returning', data: dd.area[1], color: 'primary' }
+      ];
+      areaEl.valueFormatter = num;
+    }
+    if (barEl) {
+      barEl.xAxis = { data: dd.labels };
+      barEl.series = [
+        { label: 'Subscriptions', data: dd.bars[0], color: 'primary' },
+        { label: 'Usage', data: dd.bars[1], color: 'secondary' }
+      ];
+      barEl.valueFormatter = usd;
+    }
+    sparkEls.forEach((el, i) => {
+      if (el) { el.data = dd.kpis[i].spark; el.labels = dd.labels; }
+    });
+  }
+
+  function onRange(e) {
+    if (!e.detail.length) return;
+    range = e.detail[0];
+    applyCharts(range);
+  }
+
+  onMount(() => {
+    // Simulated first fetch: skeletons in the tiles, loading overlays on the charts.
+    const t = setTimeout(async () => {
+      loading = false;
+      await tick(); // the tiles swap skeletons for content — sparkline refs exist now
+      await customElements.whenDefined('md-area-chart');
+      applyCharts(range);
+      // md-area-chart does not replay its entrance when loading clears.
+      areaEl.replay();
+    }, 900);
+    return () => clearTimeout(t);
+  });
+</script>
+
+<div class="kpi-block">
+  <header>
+    <div>
+      <h2>Product analytics</h2>
+      <span>{d.period}</span>
+    </div>
+    <md-segmented-button-set aria-label="Date range" density="-1" on:mdChange={onRange}>
+      <md-segmented-button value="7d" label="7 days" selected={range === '7d'}></md-segmented-button>
+      <md-segmented-button value="30d" label="30 days" selected={range === '30d'}></md-segmented-button>
+      <md-segmented-button value="90d" label="90 days" selected={range === '90d'}></md-segmented-button>
+    </md-segmented-button-set>
+  </header>
+  <div class="tiles">
+    {#each TILES as t, i (t.name)}
+      <md-tooltip text={t.tip}>
+        <md-card variant="outlined" full-width>
+          <span>{t.name}</span>
+          {#if loading}
+            <md-skeleton variant="text" width="90px" height="1.6em" announce={i === 0}></md-skeleton>
+            <md-skeleton variant="rectangular" height="28px" full-width announce={false}></md-skeleton>
+          {:else}
+            <span>{d.kpis[i].value}</span>
+            <span class="delta">
+              <!-- state + label together: the trend reads as words, not colour alone -->
+              <md-status-dot state={d.kpis[i].state} label={d.kpis[i].trend}></md-status-dot>
+              {d.kpis[i].delta}
+            </span>
+            <md-sparkline bind:this={sparkEls[i]} variant={t.variant} show-tooltip="false" height="28px" color={t.color}></md-sparkline>
+          {/if}
+        </md-card>
+      </md-tooltip>
+    {/each}
+  </div>
+  <div class="charts">
+    <md-area-chart bind:this={areaEl} label="Active users" subtitle={d.subtitle} height="280px" loading={loading} loading-label="Loading active users"></md-area-chart>
+    <md-bar-chart bind:this={barEl} label="Revenue" subtitle={d.subtitle + ' · USD'} stack="normal" height="280px" loading={loading} loading-label="Loading revenue"></md-bar-chart>
+  </div>
+</div>`}
 />
 
 ## How it's built

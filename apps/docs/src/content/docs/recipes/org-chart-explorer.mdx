@@ -246,6 +246,538 @@ line up to the CEO drawn as breadcrumbs.
       if (matches.length > 0) pick(matches[0].id);
     });
   `}
+  react={`import { useMemo, useRef, useState } from 'react';
+import {
+  MdAvatar, MdBadge, MdBreadcrumbItem, MdBreadcrumbs, MdChip,
+  MdOrganizationChart, MdSearch, MdSideSheet,
+} from '@awc-ui/react';
+
+// Flat records; the tree and the breadcrumb trail are both derived
+// from the manager field, so there is a single source of truth.
+const PEOPLE = [
+  { id: 'ceo', name: 'Mara Voss', title: 'Chief Executive Officer', manager: null,
+    email: 'mara.voss@meridian.dev', phone: '+1 415 555 0138' },
+  { id: 'vp-eng', name: 'Daniel Okafor', title: 'VP of Engineering', manager: 'ceo',
+    email: 'daniel.okafor@meridian.dev', phone: '+1 415 555 0142' },
+  { id: 'em-platform', name: 'Priya Raman', title: 'Engineering Manager, Platform',
+    manager: 'vp-eng', email: 'priya.raman@meridian.dev', phone: '+1 415 555 0177' },
+  { id: 'fe-1', name: 'Alice Zhang', title: 'Frontend Engineer', manager: 'em-platform',
+    email: 'alice.zhang@meridian.dev', phone: '+1 415 555 0191' },
+  { id: 'design', name: 'Elena Petrescu', title: 'Head of Design', manager: 'ceo',
+    email: 'elena.petrescu@meridian.dev', phone: '+40 21 555 0163' },
+];
+
+const initialsOf = (name) => {
+  const parts = name.split(' ');
+  const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
+  return (parts[0].charAt(0) + last).toUpperCase();
+};
+
+const buildTree = (highlight) => {
+  const byId = new Map(PEOPLE.map((p) => [p.id, {
+    id: p.id, name: p.name, title: p.title, children: [],
+    accent: highlight.has(p.id) ? 'var(--md-sys-color-tertiary)' : undefined,
+  }]));
+  const roots = [];
+  for (const p of PEOPLE) {
+    if (p.manager) byId.get(p.manager).children.push(byId.get(p.id));
+    else roots.push(byId.get(p.id));
+  }
+  return roots;
+};
+
+export default function OrgChartExplorer() {
+  const searchRef = useRef(null);
+  const [query, setQuery] = useState('');
+  const [selectedId, setSelectedId] = useState(null);
+
+  const matches = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return PEOPLE.filter((p) =>
+      p.name.toLowerCase().includes(q) || p.title.toLowerCase().includes(q));
+  }, [query]);
+
+  const nodes = useMemo(
+    () => buildTree(new Set(matches.map((p) => p.id))), [matches]);
+
+  const person = PEOPLE.find((p) => p.id === selectedId) ?? null;
+  const reportCount = person
+    ? PEOPLE.filter((p) => p.manager === person.id).length : 0;
+  const chain = [];
+  for (let c = person; c; c = PEOPLE.find((p) => p.id === c.manager) ?? null) {
+    chain.unshift(c);
+  }
+
+  const pick = (id) => {
+    searchRef.current?.close();
+    setSelectedId(id);
+  };
+
+  return (
+    <div style={{ display: 'grid', gap: 20 }}>
+      <MdSearch ref={searchRef} layout="docked" trigger="bar" fullWidth
+        debounce={200} placeholder="Search people and roles"
+        resultsLabel="{count} people found"
+        noResultsLabel="No one matches that search"
+        onMdSearch={(e) => setQuery(e.detail.value)}
+        onMdSubmit={() => { if (matches.length > 0) pick(matches[0].id); }}>
+        <div slot="results" style={{ display: 'grid', gap: 2, padding: 8 }}>
+          {matches.map((p) => (
+            <button key={p.id} type="button" data-search-result=""
+              onClick={() => pick(p.id)}>
+              {p.name} — {p.title}
+            </button>
+          ))}
+        </div>
+      </MdSearch>
+
+      <MdOrganizationChart selectionMode="single" nodes={nodes}
+        selectedIds={person ? [person.id] : []}
+        label="Meridian Robotics reporting structure"
+        onMdSelectionChange={(e) => setSelectedId(e.detail.selectedIds[0] ?? null)}>
+        <div slot="empty">No people loaded.</div>
+      </MdOrganizationChart>
+
+      {/* Clearing the selection on close lets the same card be re-selected. */}
+      <MdSideSheet variant="modal" headline="Profile" open={person !== null}
+        onMdClose={() => setSelectedId(null)}>
+        {person && (
+          <div style={{ display: 'grid', gap: 20 }}>
+            <span style={{ position: 'relative', display: 'inline-block' }}>
+              <MdAvatar size="large" initials={initialsOf(person.name)} />
+              {reportCount > 0 && <MdBadge value={String(reportCount)} />}
+            </span>
+            <div>
+              <div>{person.name}</div>
+              <div>{person.title}</div>
+              <div>{reportCount === 0 ? 'No direct reports'
+                : reportCount === 1 ? '1 direct report'
+                : reportCount + ' direct reports'}</div>
+            </div>
+            <MdBreadcrumbs label="Reporting line" separator="›">
+              {chain.map((p) => (
+                <MdBreadcrumbItem key={p.id}>{p.name}</MdBreadcrumbItem>
+              ))}
+            </MdBreadcrumbs>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <MdChip variant="assist" icon="mail" label={person.email} />
+              <MdChip variant="assist" icon="call" label={person.phone} />
+            </div>
+          </div>
+        )}
+      </MdSideSheet>
+    </div>
+  );
+}`}
+  angular={`// org-chart-explorer.component.ts
+import { Component, computed, signal } from '@angular/core';
+import {
+  MdAvatar, MdBadge, MdBreadcrumbItem, MdBreadcrumbs, MdChip,
+  MdOrganizationChart, MdSearch, MdSideSheet,
+} from '@awc-ui/angular';
+
+interface Person {
+  id: string; name: string; title: string;
+  manager: string | null; email: string; phone: string;
+}
+
+// Flat records; tree and breadcrumbs both derive from the manager field.
+const PEOPLE: Person[] = [
+  { id: 'ceo', name: 'Mara Voss', title: 'Chief Executive Officer', manager: null,
+    email: 'mara.voss@meridian.dev', phone: '+1 415 555 0138' },
+  { id: 'vp-eng', name: 'Daniel Okafor', title: 'VP of Engineering', manager: 'ceo',
+    email: 'daniel.okafor@meridian.dev', phone: '+1 415 555 0142' },
+  { id: 'em-platform', name: 'Priya Raman', title: 'Engineering Manager, Platform',
+    manager: 'vp-eng', email: 'priya.raman@meridian.dev', phone: '+1 415 555 0177' },
+  { id: 'fe-1', name: 'Alice Zhang', title: 'Frontend Engineer', manager: 'em-platform',
+    email: 'alice.zhang@meridian.dev', phone: '+1 415 555 0191' },
+  { id: 'design', name: 'Elena Petrescu', title: 'Head of Design', manager: 'ceo',
+    email: 'elena.petrescu@meridian.dev', phone: '+40 21 555 0163' },
+];
+
+@Component({
+  selector: 'app-org-chart-explorer',
+  standalone: true,
+  imports: [
+    MdAvatar, MdBadge, MdBreadcrumbItem, MdBreadcrumbs, MdChip,
+    MdOrganizationChart, MdSearch, MdSideSheet,
+  ],
+  templateUrl: './org-chart-explorer.component.html',
+})
+export class OrgChartExplorerComponent {
+  query = signal('');
+  selectedId = signal<string | null>(null);
+
+  matches = computed(() => {
+    const q = this.query().trim().toLowerCase();
+    if (!q) return [];
+    return PEOPLE.filter((p) =>
+      p.name.toLowerCase().includes(q) || p.title.toLowerCase().includes(q));
+  });
+
+  nodes = computed(() => {
+    const hits = new Set(this.matches().map((p) => p.id));
+    const byId = new Map<string, any>(PEOPLE.map((p) => [p.id, {
+      id: p.id, name: p.name, title: p.title, children: [],
+      accent: hits.has(p.id) ? 'var(--md-sys-color-tertiary)' : undefined,
+    }]));
+    const roots: any[] = [];
+    for (const p of PEOPLE) {
+      if (p.manager) byId.get(p.manager).children.push(byId.get(p.id));
+      else roots.push(byId.get(p.id));
+    }
+    return roots;
+  });
+
+  person = computed(() => PEOPLE.find((p) => p.id === this.selectedId()) ?? null);
+  selectedIds = computed(() => { const p = this.person(); return p ? [p.id] : []; });
+  reportCount = computed(() => {
+    const me = this.person();
+    return me ? PEOPLE.filter((p) => p.manager === me.id).length : 0;
+  });
+  chain = computed(() => {
+    const trail: Person[] = [];
+    let cursor = this.person();
+    while (cursor) {
+      trail.unshift(cursor);
+      const mgr: string | null = cursor.manager;
+      cursor = mgr ? PEOPLE.find((p) => p.id === mgr) ?? null : null;
+    }
+    return trail;
+  });
+
+  initialsOf(name: string): string {
+    const parts = name.split(' ');
+    const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
+    return (parts[0].charAt(0) + last).toUpperCase();
+  }
+
+  reportsLabel(): string {
+    const n = this.reportCount();
+    return n === 0 ? 'No direct reports'
+      : n === 1 ? '1 direct report' : n + ' direct reports';
+  }
+
+  onQuery(e: CustomEvent<{ value: string }>): void {
+    this.query.set(e.detail.value);
+  }
+
+  onSelection(e: CustomEvent<{ selectedIds: string[] }>): void {
+    this.selectedId.set(e.detail.selectedIds[0] ?? null);
+  }
+
+  // md-search's close() is proxied onto the Angular wrapper, so the
+  // template reference variable can call it directly.
+  pick(id: string, search: MdSearch): void {
+    search.close();
+    this.selectedId.set(id);
+  }
+
+  pickTop(search: MdSearch): void {
+    const m = this.matches();
+    if (m.length > 0) this.pick(m[0].id, search);
+  }
+}
+
+<!-- org-chart-explorer.component.html -->
+<md-search #search layout="docked" trigger="bar" [fullWidth]="true"
+  [debounce]="200" placeholder="Search people and roles"
+  resultsLabel="{count} people found"
+  noResultsLabel="No one matches that search"
+  (mdSearch)="onQuery($event)" (mdSubmit)="pickTop(search)">
+  <div slot="results">
+    @for (p of matches(); track p.id) {
+      <button type="button" data-search-result (click)="pick(p.id, search)">
+        {{ p.name }} — {{ p.title }}
+      </button>
+    }
+  </div>
+</md-search>
+
+<md-organization-chart selectionMode="single" [nodes]="nodes()"
+  [selectedIds]="selectedIds()"
+  label="Meridian Robotics reporting structure"
+  (mdSelectionChange)="onSelection($event)">
+  <div slot="empty">No people loaded.</div>
+</md-organization-chart>
+
+<!-- Clearing the selection on close lets the same card be re-selected. -->
+<md-side-sheet variant="modal" headline="Profile"
+  [open]="person() !== null" (mdClose)="selectedId.set(null)">
+  @if (person(); as p) {
+    <span style="position: relative; display: inline-block;">
+      <md-avatar size="large" [initials]="initialsOf(p.name)"></md-avatar>
+      @if (reportCount() > 0) {
+        <md-badge [value]="'' + reportCount()"></md-badge>
+      }
+    </span>
+    <div>{{ p.name }}</div>
+    <div>{{ p.title }}</div>
+    <div>{{ reportsLabel() }}</div>
+    <md-breadcrumbs label="Reporting line" separator="›">
+      @for (c of chain(); track c.id) {
+        <md-breadcrumb-item>{{ c.name }}</md-breadcrumb-item>
+      }
+    </md-breadcrumbs>
+    <md-chip variant="assist" icon="mail" [label]="p.email"></md-chip>
+    <md-chip variant="assist" icon="call" [label]="p.phone"></md-chip>
+  }
+</md-side-sheet>`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  MdAvatar, MdBadge, MdBreadcrumbItem, MdBreadcrumbs, MdChip,
+  MdOrganizationChart, MdSearch, MdSideSheet,
+} from '@awc-ui/vue';
+
+// Flat records; tree and breadcrumbs both derive from the manager field.
+const PEOPLE = [
+  { id: 'ceo', name: 'Mara Voss', title: 'Chief Executive Officer', manager: null,
+    email: 'mara.voss@meridian.dev', phone: '+1 415 555 0138' },
+  { id: 'vp-eng', name: 'Daniel Okafor', title: 'VP of Engineering', manager: 'ceo',
+    email: 'daniel.okafor@meridian.dev', phone: '+1 415 555 0142' },
+  { id: 'em-platform', name: 'Priya Raman', title: 'Engineering Manager, Platform',
+    manager: 'vp-eng', email: 'priya.raman@meridian.dev', phone: '+1 415 555 0177' },
+  { id: 'fe-1', name: 'Alice Zhang', title: 'Frontend Engineer', manager: 'em-platform',
+    email: 'alice.zhang@meridian.dev', phone: '+1 415 555 0191' },
+  { id: 'design', name: 'Elena Petrescu', title: 'Head of Design', manager: 'ceo',
+    email: 'elena.petrescu@meridian.dev', phone: '+40 21 555 0163' },
+];
+
+const query = ref('');
+const selectedId = ref<string | null>(null);
+// The wrapper's root node IS the md-search element, so its close()
+// method is reachable through the component ref's $el.
+const searchRef = ref<any>(null);
+
+const matches = computed(() => {
+  const q = query.value.trim().toLowerCase();
+  if (!q) return [];
+  return PEOPLE.filter((p) =>
+    p.name.toLowerCase().includes(q) || p.title.toLowerCase().includes(q));
+});
+
+const nodes = computed(() => {
+  const hits = new Set(matches.value.map((p) => p.id));
+  const byId = new Map<string, any>(PEOPLE.map((p) => [p.id, {
+    id: p.id, name: p.name, title: p.title, children: [],
+    accent: hits.has(p.id) ? 'var(--md-sys-color-tertiary)' : undefined,
+  }]));
+  const roots: any[] = [];
+  for (const p of PEOPLE) {
+    if (p.manager) byId.get(p.manager).children.push(byId.get(p.id));
+    else roots.push(byId.get(p.id));
+  }
+  return roots;
+});
+
+const person = computed(() => PEOPLE.find((p) => p.id === selectedId.value) ?? null);
+const selectedIds = computed(() => (person.value ? [person.value.id] : []));
+const reportCount = computed(() => {
+  const me = person.value;
+  return me ? PEOPLE.filter((p) => p.manager === me.id).length : 0;
+});
+const chain = computed(() => {
+  const trail: Array<(typeof PEOPLE)[number]> = [];
+  let cursor = person.value;
+  while (cursor) {
+    trail.unshift(cursor);
+    const mgr: string | null = cursor.manager;
+    cursor = mgr ? PEOPLE.find((p) => p.id === mgr) ?? null : null;
+  }
+  return trail;
+});
+const reportsLabel = computed(() => {
+  const n = reportCount.value;
+  return n === 0 ? 'No direct reports'
+    : n === 1 ? '1 direct report' : n + ' direct reports';
+});
+
+function initialsOf(name: string): string {
+  const parts = name.split(' ');
+  const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
+  return (parts[0].charAt(0) + last).toUpperCase();
+}
+
+function pick(id: string): void {
+  if (searchRef.value) searchRef.value.$el.close();
+  selectedId.value = id;
+}
+
+function onQuery(e: CustomEvent<{ value: string }>) { query.value = e.detail.value; }
+function onSubmit() { if (matches.value.length > 0) pick(matches.value[0].id); }
+function onSelection(e: CustomEvent<{ selectedIds: string[] }>) {
+  selectedId.value = e.detail.selectedIds[0] ?? null;
+}
+</script>
+
+<template>
+  <MdSearch ref="searchRef" layout="docked" trigger="bar" :fullWidth="true"
+    :debounce="200" placeholder="Search people and roles"
+    resultsLabel="{count} people found"
+    noResultsLabel="No one matches that search"
+    @mdSearch="onQuery" @mdSubmit="onSubmit">
+    <div slot="results">
+      <button v-for="p in matches" :key="p.id" type="button" data-search-result
+        @click="pick(p.id)">
+        {{ p.name }} — {{ p.title }}
+      </button>
+    </div>
+  </MdSearch>
+
+  <MdOrganizationChart selectionMode="single" :nodes="nodes"
+    :selectedIds="selectedIds" label="Meridian Robotics reporting structure"
+    @mdSelectionChange="onSelection">
+    <div slot="empty">No people loaded.</div>
+  </MdOrganizationChart>
+
+  <!-- Clearing the selection on close lets the same card be re-selected. -->
+  <MdSideSheet variant="modal" headline="Profile" :open="person !== null"
+    @mdClose="selectedId = null">
+    <template v-if="person">
+      <span style="position: relative; display: inline-block;">
+        <MdAvatar size="large" :initials="initialsOf(person.name)" />
+        <MdBadge v-if="reportCount > 0" :value="'' + reportCount" />
+      </span>
+      <div>{{ person.name }}</div>
+      <div>{{ person.title }}</div>
+      <div>{{ reportsLabel }}</div>
+      <MdBreadcrumbs label="Reporting line" separator="›">
+        <MdBreadcrumbItem v-for="c in chain" :key="c.id">{{ c.name }}</MdBreadcrumbItem>
+      </MdBreadcrumbs>
+      <MdChip variant="assist" icon="mail" :label="person.email" />
+      <MdChip variant="assist" icon="call" :label="person.phone" />
+    </template>
+  </MdSideSheet>
+</template>`}
+  svelte={`<script>
+  import { onMount } from 'svelte';
+  // Registers every md-* element once on the client. In SvelteKit run this
+  // browser-side only: if (browser) defineCustomElements(window);
+  import { defineCustomElements } from '@awc-ui/svelte';
+  defineCustomElements(window);
+
+  // Flat records; tree and breadcrumbs both derive from the manager field.
+  const PEOPLE = [
+    { id: 'ceo', name: 'Mara Voss', title: 'Chief Executive Officer', manager: null,
+      email: 'mara.voss@meridian.dev', phone: '+1 415 555 0138' },
+    { id: 'vp-eng', name: 'Daniel Okafor', title: 'VP of Engineering', manager: 'ceo',
+      email: 'daniel.okafor@meridian.dev', phone: '+1 415 555 0142' },
+    { id: 'em-platform', name: 'Priya Raman', title: 'Engineering Manager, Platform',
+      manager: 'vp-eng', email: 'priya.raman@meridian.dev', phone: '+1 415 555 0177' },
+    { id: 'fe-1', name: 'Alice Zhang', title: 'Frontend Engineer', manager: 'em-platform',
+      email: 'alice.zhang@meridian.dev', phone: '+1 415 555 0191' },
+    { id: 'design', name: 'Elena Petrescu', title: 'Head of Design', manager: 'ceo',
+      email: 'elena.petrescu@meridian.dev', phone: '+40 21 555 0163' },
+  ];
+
+  let query = '';
+  let selectedId = null;
+  let searchEl;
+  let chartEl;
+  let chartReady = false;
+
+  onMount(async () => {
+    await customElements.whenDefined('md-organization-chart');
+    chartReady = true;
+  });
+
+  function initialsOf(name) {
+    const parts = name.split(' ');
+    const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
+    return (parts[0].charAt(0) + last).toUpperCase();
+  }
+
+  function buildTree(highlight) {
+    const byId = new Map(PEOPLE.map((p) => [p.id, {
+      id: p.id, name: p.name, title: p.title, children: [],
+      accent: highlight.has(p.id) ? 'var(--md-sys-color-tertiary)' : undefined,
+    }]));
+    const roots = [];
+    for (const p of PEOPLE) {
+      if (p.manager) byId.get(p.manager).children.push(byId.get(p.id));
+      else roots.push(byId.get(p.id));
+    }
+    return roots;
+  }
+
+  function trailOf(p) {
+    const trail = [];
+    let cursor = p;
+    while (cursor) {
+      trail.unshift(cursor);
+      cursor = cursor.manager ? PEOPLE.find((x) => x.id === cursor.manager) : null;
+    }
+    return trail;
+  }
+
+  function pick(id) {
+    if (searchEl) searchEl.close();
+    selectedId = id;
+  }
+
+  $: q = query.trim().toLowerCase();
+  $: matches = q ? PEOPLE.filter((p) =>
+    p.name.toLowerCase().includes(q) || p.title.toLowerCase().includes(q)) : [];
+  $: person = PEOPLE.find((p) => p.id === selectedId) || null;
+  $: reportCount = person
+    ? PEOPLE.filter((p) => p.manager === person.id).length : 0;
+  $: chain = trailOf(person);
+  $: reportsLabel = reportCount === 0 ? 'No direct reports'
+    : reportCount === 1 ? '1 direct report' : reportCount + ' direct reports';
+
+  // nodes and selectedIds are array props no attribute can carry — assign
+  // them once the element has upgraded, and again whenever they change.
+  $: if (chartReady && chartEl) {
+    chartEl.nodes = buildTree(new Set(matches.map((p) => p.id)));
+    chartEl.selectedIds = selectedId ? [selectedId] : [];
+  }
+</script>
+
+<md-search bind:this={searchEl} layout="docked" trigger="bar" full-width
+  debounce="200" placeholder="Search people and roles"
+  results-label={'{count} people found'}
+  no-results-label="No one matches that search"
+  on:mdSearch={(e) => (query = e.detail.value)}
+  on:mdSubmit={() => matches.length > 0 && pick(matches[0].id)}>
+  <div slot="results">
+    {#each matches as p (p.id)}
+      <button type="button" data-search-result on:click={() => pick(p.id)}>
+        {p.name} — {p.title}
+      </button>
+    {/each}
+  </div>
+</md-search>
+
+<md-organization-chart bind:this={chartEl} selection-mode="single"
+  label="Meridian Robotics reporting structure"
+  on:mdSelectionChange={(e) => (selectedId = e.detail.selectedIds[0] || null)}>
+  <div slot="empty">No people loaded.</div>
+</md-organization-chart>
+
+<!-- Clearing the selection on close lets the same card be re-selected. -->
+<md-side-sheet variant="modal" headline="Profile" open={person !== null}
+  on:mdClose={() => (selectedId = null)}>
+  {#if person}
+    <span style="position: relative; display: inline-block;">
+      <md-avatar size="large" initials={initialsOf(person.name)}></md-avatar>
+      {#if reportCount > 0}
+        <md-badge value={String(reportCount)}></md-badge>
+      {/if}
+    </span>
+    <div>{person.name}</div>
+    <div>{person.title}</div>
+    <div>{reportsLabel}</div>
+    <md-breadcrumbs label="Reporting line" separator="›">
+      {#each chain as c (c.id)}
+        <md-breadcrumb-item>{c.name}</md-breadcrumb-item>
+      {/each}
+    </md-breadcrumbs>
+    <md-chip variant="assist" icon="mail" label={person.email}></md-chip>
+    <md-chip variant="assist" icon="call" label={person.phone}></md-chip>
+  {/if}
+</md-side-sheet>`}
 />
 
 ## How it's built

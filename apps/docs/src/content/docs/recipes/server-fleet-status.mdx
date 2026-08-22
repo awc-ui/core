@@ -269,6 +269,463 @@ land.
       }, 900);
     });
   `}
+  react={`import { useRef, useState } from 'react';
+import {
+  MdButton, MdLoadingIndicator, MdMeter, MdSegmentedButton, MdSegmentedButtonSet,
+  MdSparkline, MdStatusDot, MdTable, MdTableBody, MdTableCell, MdTableContainer,
+  MdTableHead, MdTableRow, MdTooltip,
+} from '@awc-ui/react';
+
+const TIMES = ['08:05', '08:10', '08:15', '08:20', '08:25', '08:30', '08:35', '08:40'];
+const DOT = { healthy: 'online', degraded: 'away', down: 'busy' };
+const WORD = { healthy: 'Healthy', degraded: 'Degraded', down: 'Down' };
+const SPARK = { healthy: 'primary', degraded: 'warning', down: 'error' };
+
+const INITIAL = [
+  { id: 'edge-01', name: 'edge-01.use1', region: 'us-east', status: 'healthy', cpu: 34, mem: 61,
+    latency: [36, 41, 38, 35, 39, 37, 40, 38], check: 'Last check 08:40:12 UTC — agent v2.14, HTTP 200 in 38 ms' },
+  { id: 'queue-01', name: 'queue-01.use1', region: 'us-east', status: 'degraded', cpu: 88, mem: 74,
+    latency: [62, 71, 90, 118, 141, 156, 174, 187], check: 'Last check 08:40:11 UTC — agent v2.14, HTTP 200 in 187 ms (slow)' },
+  { id: 'db-01', name: 'db-01.euw1', region: 'eu-west', status: 'healthy', cpu: 23, mem: 79,
+    latency: [42, 40, 45, 43, 47, 44, 41, 44], check: 'Last check 08:40:09 UTC — agent v2.14, HTTP 200 in 44 ms' },
+  { id: 'cache-01', name: 'cache-01.euw1', region: 'eu-west', status: 'down', cpu: null, mem: null,
+    latency: [58, 61, 66, 84, 140, 231, 244, 250], check: 'Last check 08:40:12 UTC — connection refused after 3 retries' },
+];
+
+const meterColor = (v) => (v == null ? 'primary' : v >= 90 ? 'error' : v >= 75 ? 'warning' : 'success');
+const jitter = (v, lo, hi) => Math.min(hi, Math.max(lo, v + Math.round(Math.random() * 12 - 6)));
+const fmtMs = (v) => (v == null ? 'no data' : v + ' ms');
+
+export default function FleetBoard() {
+  const tableRef = useRef(null);
+  const [hosts, setHosts] = useState(INITIAL);
+  const [region, setRegion] = useState('all');
+  const [refreshing, setRefreshing] = useState(false);
+  const [updated, setUpdated] = useState('08:40:12');
+
+  const visible = hosts.filter((h) => region === 'all' || h.region === region);
+
+  const onRegion = (e) => {
+    // Arm the FLIP snapshot first, then let React drop the filtered rows.
+    const next = e.detail[0] || 'all';
+    tableRef.current.animateNextChange().then(() => setRegion(next));
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => { // stands in for the real readings fetch
+      const time = new Date().toISOString().slice(11, 19);
+      setHosts((prev) => prev.map((h) => {
+        if (h.status === 'down') return { ...h, check: 'Last check ' + time + ' UTC — connection refused after 3 retries' };
+        const latency = h.latency.slice(1).concat(jitter(h.latency[7], 20, 240));
+        return { ...h, latency, cpu: jitter(h.cpu, 5, 98), mem: jitter(h.mem, 5, 98),
+          check: 'Last check ' + time + ' UTC — agent v2.14, HTTP 200 in ' + latency[7] + ' ms' };
+      }));
+      setUpdated(time);
+      setRefreshing(false);
+    }, 900);
+  };
+
+  return (
+    <div style={{ display: 'grid', gap: 16 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <span>Updated {updated} UTC</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <MdLoadingIndicator hidden={!refreshing} label="Refreshing readings" />
+          <MdSegmentedButtonSet aria-label="Region filter" density={-1} onMdChange={onRegion}>
+            <MdSegmentedButton value="all" label="All" selected={region === 'all'} />
+            <MdSegmentedButton value="us-east" label="us-east" selected={region === 'us-east'} />
+            <MdSegmentedButton value="eu-west" label="eu-west" selected={region === 'eu-west'} />
+          </MdSegmentedButtonSet>
+          <MdButton variant="tonal" icon="refresh" disabled={refreshing} onMdClick={onRefresh}>Refresh</MdButton>
+        </div>
+      </div>
+      <MdTableContainer variant="outlined">
+        <MdTable ref={tableRef} label="Server fleet status" minWidth="640px"
+                 columnTemplate="minmax(130px, 1.2fr) 150px minmax(100px, 1fr) minmax(100px, 1fr) 130px">
+          <MdTableHead>
+            <MdTableRow rowgroup="head">
+              <MdTableCell head scope="col">Host</MdTableCell>
+              <MdTableCell head scope="col">Status</MdTableCell>
+              <MdTableCell head scope="col">CPU</MdTableCell>
+              <MdTableCell head scope="col">Memory</MdTableCell>
+              <MdTableCell head scope="col">Latency p95</MdTableCell>
+            </MdTableRow>
+          </MdTableHead>
+          <MdTableBody>
+            {visible.map((h) => (
+              <MdTableRow key={h.id} value={h.id}>
+                <MdTableCell ellipsis>{h.name}</MdTableCell>
+                <MdTableCell>
+                  <MdTooltip text={h.check} position="bottom">
+                    <span tabIndex={0} style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+                      <MdStatusDot state={DOT[h.status]} live={h.status === 'down'} />
+                      {WORD[h.status]}
+                    </span>
+                  </MdTooltip>
+                </MdTableCell>
+                <MdTableCell>
+                  <MdMeter label={'CPU load, ' + h.id} value={h.cpu ?? 0} showValue
+                           valueText={h.cpu == null ? 'no data' : undefined} color={meterColor(h.cpu)} />
+                </MdTableCell>
+                <MdTableCell>
+                  <MdMeter label={'Memory used, ' + h.id} value={h.mem ?? 0} showValue
+                           valueText={h.mem == null ? 'no data' : undefined} color={meterColor(h.mem)} />
+                </MdTableCell>
+                <MdTableCell>
+                  <MdSparkline min={0} max={250} heightProp="24px" color={SPARK[h.status]}
+                               data={h.latency} labels={TIMES} valueFormatter={fmtMs} />
+                </MdTableCell>
+              </MdTableRow>
+            ))}
+          </MdTableBody>
+        </MdTable>
+      </MdTableContainer>
+    </div>
+  );
+}`}
+  angular={`// fleet-board.component.ts — standalone; the md-* tags are used directly
+// (elements registered once in main.ts:  import '@awc-ui/core/define';)
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, ViewChild, computed, signal } from '@angular/core';
+
+interface Host { id: string; name: string; region: string; status: 'healthy' | 'degraded' | 'down';
+  cpu: number | null; mem: number | null; latency: number[]; check: string; }
+
+const HOSTS: Host[] = [
+  { id: 'edge-01', name: 'edge-01.use1', region: 'us-east', status: 'healthy', cpu: 34, mem: 61,
+    latency: [36, 41, 38, 35, 39, 37, 40, 38], check: 'Last check 08:40:12 UTC — agent v2.14, HTTP 200 in 38 ms' },
+  { id: 'queue-01', name: 'queue-01.use1', region: 'us-east', status: 'degraded', cpu: 88, mem: 74,
+    latency: [62, 71, 90, 118, 141, 156, 174, 187], check: 'Last check 08:40:11 UTC — agent v2.14, HTTP 200 in 187 ms (slow)' },
+  { id: 'db-01', name: 'db-01.euw1', region: 'eu-west', status: 'healthy', cpu: 23, mem: 79,
+    latency: [42, 40, 45, 43, 47, 44, 41, 44], check: 'Last check 08:40:09 UTC — agent v2.14, HTTP 200 in 44 ms' },
+  { id: 'cache-01', name: 'cache-01.euw1', region: 'eu-west', status: 'down', cpu: null, mem: null,
+    latency: [58, 61, 66, 84, 140, 231, 244, 250], check: 'Last check 08:40:12 UTC — connection refused after 3 retries' },
+];
+
+@Component({
+  selector: 'app-fleet-board',
+  standalone: true,
+  // Without this the compiler rejects the property bindings on md-* tags.
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  templateUrl: './fleet-board.component.html',
+})
+export class FleetBoardComponent {
+  @ViewChild('fleet') fleet!: ElementRef;
+
+  times = ['08:05', '08:10', '08:15', '08:20', '08:25', '08:30', '08:35', '08:40'];
+  dot = { healthy: 'online', degraded: 'away', down: 'busy' } as const;
+  word = { healthy: 'Healthy', degraded: 'Degraded', down: 'Down' } as const;
+  spark = { healthy: 'primary', degraded: 'warning', down: 'error' } as const;
+
+  hosts = signal<Host[]>(HOSTS);
+  region = signal('all');
+  refreshing = signal(false);
+  updated = signal('08:40:12');
+  visible = computed(() => this.hosts().filter((h) => this.region() === 'all' || h.region === this.region()));
+
+  fmtMs = (v: number | null) => (v == null ? 'no data' : v + ' ms');
+  meterColor(v: number | null) { return v == null ? 'primary' : v >= 90 ? 'error' : v >= 75 ? 'warning' : 'success'; }
+  private jitter(v: number, lo: number, hi: number) { return Math.min(hi, Math.max(lo, v + Math.round(Math.random() * 12 - 6))); }
+
+  onRegion(e: Event) {
+    const next = (e as CustomEvent<string[]>).detail[0] || 'all';
+    // Arm the FLIP snapshot, then mutate the row list.
+    this.fleet.nativeElement.animateNextChange().then(() => this.region.set(next));
+  }
+
+  refresh() {
+    this.refreshing.set(true);
+    setTimeout(() => { // stands in for the real readings fetch
+      const time = new Date().toISOString().slice(11, 19);
+      this.hosts.update((hosts) => hosts.map((h) => {
+        if (h.status === 'down') return { ...h, check: 'Last check ' + time + ' UTC — connection refused after 3 retries' };
+        const latency = h.latency.slice(1).concat(this.jitter(h.latency[7], 20, 240));
+        return { ...h, latency, cpu: this.jitter(h.cpu!, 5, 98), mem: this.jitter(h.mem!, 5, 98),
+          check: 'Last check ' + time + ' UTC — agent v2.14, HTTP 200 in ' + latency[7] + ' ms' };
+      }));
+      this.updated.set(time);
+      this.refreshing.set(false);
+    }, 900);
+  }
+}
+
+<!-- fleet-board.component.html -->
+<div class="fleet-toolbar">
+  <span>Updated {{ updated() }} UTC</span>
+  <md-loading-indicator [hidden]="!refreshing()" label="Refreshing readings"></md-loading-indicator>
+  <md-segmented-button-set aria-label="Region filter" density="-1" (mdChange)="onRegion($event)">
+    <md-segmented-button value="all" label="All" [selected]="region() === 'all'"></md-segmented-button>
+    <md-segmented-button value="us-east" label="us-east" [selected]="region() === 'us-east'"></md-segmented-button>
+    <md-segmented-button value="eu-west" label="eu-west" [selected]="region() === 'eu-west'"></md-segmented-button>
+  </md-segmented-button-set>
+  <md-button variant="tonal" icon="refresh" [disabled]="refreshing()" (mdClick)="refresh()">Refresh</md-button>
+</div>
+
+<md-table-container variant="outlined">
+  <md-table #fleet label="Server fleet status" min-width="640px"
+            column-template="minmax(130px, 1.2fr) 150px minmax(100px, 1fr) minmax(100px, 1fr) 130px">
+    <md-table-head>
+      <md-table-row rowgroup="head">
+        <md-table-cell head scope="col">Host</md-table-cell>
+        <md-table-cell head scope="col">Status</md-table-cell>
+        <md-table-cell head scope="col">CPU</md-table-cell>
+        <md-table-cell head scope="col">Memory</md-table-cell>
+        <md-table-cell head scope="col">Latency p95</md-table-cell>
+      </md-table-row>
+    </md-table-head>
+    <md-table-body>
+      @for (h of visible(); track h.id) {
+        <md-table-row [value]="h.id">
+          <md-table-cell ellipsis>{{ h.name }}</md-table-cell>
+          <md-table-cell>
+            <md-tooltip [text]="h.check" position="bottom">
+              <span tabindex="0" class="host-status">
+                <md-status-dot [state]="dot[h.status]" [live]="h.status === 'down'"></md-status-dot>
+                {{ word[h.status] }}
+              </span>
+            </md-tooltip>
+          </md-table-cell>
+          <md-table-cell>
+            <md-meter [label]="'CPU load, ' + h.id" [value]="h.cpu ?? 0" show-value
+                      [valueText]="h.cpu == null ? 'no data' : ''" [color]="meterColor(h.cpu)"></md-meter>
+          </md-table-cell>
+          <md-table-cell>
+            <md-meter [label]="'Memory used, ' + h.id" [value]="h.mem ?? 0" show-value
+                      [valueText]="h.mem == null ? 'no data' : ''" [color]="meterColor(h.mem)"></md-meter>
+          </md-table-cell>
+          <md-table-cell>
+            <md-sparkline min="0" max="250" height="24px" [color]="spark[h.status]"
+                          [data]="h.latency" [labels]="times" [valueFormatter]="fmtMs"></md-sparkline>
+          </md-table-cell>
+        </md-table-row>
+      }
+    </md-table-body>
+  </md-table>
+</md-table-container>`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  MdButton, MdLoadingIndicator, MdMeter, MdSegmentedButton, MdSegmentedButtonSet,
+  MdSparkline, MdStatusDot, MdTable, MdTableBody, MdTableCell, MdTableContainer,
+  MdTableHead, MdTableRow, MdTooltip,
+} from '@awc-ui/vue';
+
+const TIMES = ['08:05', '08:10', '08:15', '08:20', '08:25', '08:30', '08:35', '08:40'];
+const DOT = { healthy: 'online', degraded: 'away', down: 'busy' };
+const WORD = { healthy: 'Healthy', degraded: 'Degraded', down: 'Down' };
+const SPARK = { healthy: 'primary', degraded: 'warning', down: 'error' };
+
+const hosts = ref([
+  { id: 'edge-01', name: 'edge-01.use1', region: 'us-east', status: 'healthy', cpu: 34, mem: 61,
+    latency: [36, 41, 38, 35, 39, 37, 40, 38], check: 'Last check 08:40:12 UTC — agent v2.14, HTTP 200 in 38 ms' },
+  { id: 'queue-01', name: 'queue-01.use1', region: 'us-east', status: 'degraded', cpu: 88, mem: 74,
+    latency: [62, 71, 90, 118, 141, 156, 174, 187], check: 'Last check 08:40:11 UTC — agent v2.14, HTTP 200 in 187 ms (slow)' },
+  { id: 'db-01', name: 'db-01.euw1', region: 'eu-west', status: 'healthy', cpu: 23, mem: 79,
+    latency: [42, 40, 45, 43, 47, 44, 41, 44], check: 'Last check 08:40:09 UTC — agent v2.14, HTTP 200 in 44 ms' },
+  { id: 'cache-01', name: 'cache-01.euw1', region: 'eu-west', status: 'down', cpu: null, mem: null,
+    latency: [58, 61, 66, 84, 140, 231, 244, 250], check: 'Last check 08:40:12 UTC — connection refused after 3 retries' },
+]);
+const region = ref('all');
+const refreshing = ref(false);
+const updated = ref('08:40:12');
+const table = ref();
+
+const visible = computed(() => hosts.value.filter((h) => region.value === 'all' || h.region === region.value));
+
+const fmtMs = (v: number | null) => (v == null ? 'no data' : v + ' ms');
+const meterColor = (v: number | null) => (v == null ? 'primary' : v >= 90 ? 'error' : v >= 75 ? 'warning' : 'success');
+const jitter = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v + Math.round(Math.random() * 12 - 6)));
+
+function onRegion(e: CustomEvent<string[]>) {
+  const next = e.detail[0] || 'all';
+  // The wrapper's $el is the md-table element — arm the FLIP, then filter.
+  table.value.$el.animateNextChange().then(() => { region.value = next; });
+}
+
+function refresh() {
+  refreshing.value = true;
+  setTimeout(() => { // stands in for the real readings fetch
+    const time = new Date().toISOString().slice(11, 19);
+    hosts.value = hosts.value.map((h) => {
+      if (h.status === 'down') return { ...h, check: 'Last check ' + time + ' UTC — connection refused after 3 retries' };
+      const latency = h.latency.slice(1).concat(jitter(h.latency[7], 20, 240));
+      return { ...h, latency, cpu: jitter(h.cpu, 5, 98), mem: jitter(h.mem, 5, 98),
+        check: 'Last check ' + time + ' UTC — agent v2.14, HTTP 200 in ' + latency[7] + ' ms' };
+    });
+    updated.value = time;
+    refreshing.value = false;
+  }, 900);
+}
+</script>
+
+<template>
+  <div class="fleet-toolbar">
+    <span>Updated {{ updated }} UTC</span>
+    <MdLoadingIndicator :hidden="!refreshing" label="Refreshing readings" />
+    <MdSegmentedButtonSet aria-label="Region filter" :density="-1" @md-change="onRegion">
+      <MdSegmentedButton value="all" label="All" :selected="region === 'all'" />
+      <MdSegmentedButton value="us-east" label="us-east" :selected="region === 'us-east'" />
+      <MdSegmentedButton value="eu-west" label="eu-west" :selected="region === 'eu-west'" />
+    </MdSegmentedButtonSet>
+    <MdButton variant="tonal" icon="refresh" :disabled="refreshing" @md-click="refresh">Refresh</MdButton>
+  </div>
+
+  <MdTableContainer variant="outlined">
+    <MdTable ref="table" label="Server fleet status" minWidth="640px"
+             columnTemplate="minmax(130px, 1.2fr) 150px minmax(100px, 1fr) minmax(100px, 1fr) 130px">
+      <MdTableHead>
+        <MdTableRow rowgroup="head">
+          <MdTableCell :head="true" scope="col">Host</MdTableCell>
+          <MdTableCell :head="true" scope="col">Status</MdTableCell>
+          <MdTableCell :head="true" scope="col">CPU</MdTableCell>
+          <MdTableCell :head="true" scope="col">Memory</MdTableCell>
+          <MdTableCell :head="true" scope="col">Latency p95</MdTableCell>
+        </MdTableRow>
+      </MdTableHead>
+      <MdTableBody>
+        <MdTableRow v-for="h in visible" :key="h.id" :value="h.id">
+          <MdTableCell :ellipsis="true">{{ h.name }}</MdTableCell>
+          <MdTableCell>
+            <MdTooltip :text="h.check" position="bottom">
+              <span tabindex="0" class="host-status">
+                <MdStatusDot :state="DOT[h.status]" :live="h.status === 'down'" />
+                {{ WORD[h.status] }}
+              </span>
+            </MdTooltip>
+          </MdTableCell>
+          <MdTableCell>
+            <MdMeter :label="'CPU load, ' + h.id" :value="h.cpu ?? 0" :showValue="true"
+                     :valueText="h.cpu == null ? 'no data' : ''" :color="meterColor(h.cpu)" />
+          </MdTableCell>
+          <MdTableCell>
+            <MdMeter :label="'Memory used, ' + h.id" :value="h.mem ?? 0" :showValue="true"
+                     :valueText="h.mem == null ? 'no data' : ''" :color="meterColor(h.mem)" />
+          </MdTableCell>
+          <MdTableCell>
+            <MdSparkline :min="0" :max="250" heightProp="24px" :color="SPARK[h.status]"
+                         :data="h.latency" :labels="TIMES" :valueFormatter="fmtMs" />
+          </MdTableCell>
+        </MdTableRow>
+      </MdTableBody>
+    </MdTable>
+  </MdTableContainer>
+</template>`}
+  svelte={`<script>
+  // Register the md-* elements once on the client. In SvelteKit, guard it:
+  //   if (browser) defineCustomElements(window);
+  import { defineCustomElements } from '@awc-ui/svelte';
+  defineCustomElements(window);
+
+  const TIMES = ['08:05', '08:10', '08:15', '08:20', '08:25', '08:30', '08:35', '08:40'];
+  const DOT = { healthy: 'online', degraded: 'away', down: 'busy' };
+  const WORD = { healthy: 'Healthy', degraded: 'Degraded', down: 'Down' };
+  const SPARK = { healthy: 'primary', degraded: 'warning', down: 'error' };
+
+  let hosts = [
+    { id: 'edge-01', name: 'edge-01.use1', region: 'us-east', status: 'healthy', cpu: 34, mem: 61,
+      latency: [36, 41, 38, 35, 39, 37, 40, 38], check: 'Last check 08:40:12 UTC — agent v2.14, HTTP 200 in 38 ms' },
+    { id: 'queue-01', name: 'queue-01.use1', region: 'us-east', status: 'degraded', cpu: 88, mem: 74,
+      latency: [62, 71, 90, 118, 141, 156, 174, 187], check: 'Last check 08:40:11 UTC — agent v2.14, HTTP 200 in 187 ms (slow)' },
+    { id: 'db-01', name: 'db-01.euw1', region: 'eu-west', status: 'healthy', cpu: 23, mem: 79,
+      latency: [42, 40, 45, 43, 47, 44, 41, 44], check: 'Last check 08:40:09 UTC — agent v2.14, HTTP 200 in 44 ms' },
+    { id: 'cache-01', name: 'cache-01.euw1', region: 'eu-west', status: 'down', cpu: null, mem: null,
+      latency: [58, 61, 66, 84, 140, 231, 244, 250], check: 'Last check 08:40:12 UTC — connection refused after 3 retries' },
+  ];
+  let region = 'all';
+  let refreshing = false;
+  let updated = '08:40:12';
+  let table;
+
+  $: visible = hosts.filter((h) => region === 'all' || h.region === region);
+
+  const fmtMs = (v) => (v == null ? 'no data' : v + ' ms');
+  const meterColor = (v) => (v == null ? 'primary' : v >= 90 ? 'error' : v >= 75 ? 'warning' : 'success');
+  const jitter = (v, lo, hi) => Math.min(hi, Math.max(lo, v + Math.round(Math.random() * 12 - 6)));
+
+  // Sparkline data/labels/formatter are object props — assign via an action.
+  function spark(node, host) {
+    const apply = (h) => {
+      node.data = h.latency.slice();
+      node.labels = TIMES.slice();
+      node.valueFormatter = fmtMs;
+    };
+    customElements.whenDefined('md-sparkline').then(() => apply(host));
+    return { update: apply };
+  }
+
+  function onRegion(e) {
+    const next = e.detail[0] || 'all';
+    // Arm the FLIP snapshot, then filter the rows.
+    table.animateNextChange().then(() => (region = next));
+  }
+
+  function refresh() {
+    refreshing = true;
+    setTimeout(() => { // stands in for the real readings fetch
+      const time = new Date().toISOString().slice(11, 19);
+      hosts = hosts.map((h) => {
+        if (h.status === 'down') return { ...h, check: 'Last check ' + time + ' UTC — connection refused after 3 retries' };
+        const latency = h.latency.slice(1).concat(jitter(h.latency[7], 20, 240));
+        return { ...h, latency, cpu: jitter(h.cpu, 5, 98), mem: jitter(h.mem, 5, 98),
+          check: 'Last check ' + time + ' UTC — agent v2.14, HTTP 200 in ' + latency[7] + ' ms' };
+      });
+      updated = time;
+      refreshing = false;
+    }, 900);
+  }
+</script>
+
+<div class="fleet-toolbar">
+  <span>Updated {updated} UTC</span>
+  <md-loading-indicator hidden={!refreshing} label="Refreshing readings"></md-loading-indicator>
+  <md-segmented-button-set aria-label="Region filter" density="-1" on:mdChange={onRegion}>
+    <md-segmented-button value="all" label="All" selected={region === 'all'}></md-segmented-button>
+    <md-segmented-button value="us-east" label="us-east" selected={region === 'us-east'}></md-segmented-button>
+    <md-segmented-button value="eu-west" label="eu-west" selected={region === 'eu-west'}></md-segmented-button>
+  </md-segmented-button-set>
+  <md-button variant="tonal" icon="refresh" disabled={refreshing} on:mdClick={refresh}>Refresh</md-button>
+</div>
+
+<md-table-container variant="outlined">
+  <md-table bind:this={table} label="Server fleet status" min-width="640px"
+            column-template="minmax(130px, 1.2fr) 150px minmax(100px, 1fr) minmax(100px, 1fr) 130px">
+    <md-table-head>
+      <md-table-row rowgroup="head">
+        <md-table-cell head scope="col">Host</md-table-cell>
+        <md-table-cell head scope="col">Status</md-table-cell>
+        <md-table-cell head scope="col">CPU</md-table-cell>
+        <md-table-cell head scope="col">Memory</md-table-cell>
+        <md-table-cell head scope="col">Latency p95</md-table-cell>
+      </md-table-row>
+    </md-table-head>
+    <md-table-body>
+      {#each visible as h (h.id)}
+        <md-table-row value={h.id}>
+          <md-table-cell ellipsis>{h.name}</md-table-cell>
+          <md-table-cell>
+            <md-tooltip text={h.check} position="bottom">
+              <span tabindex="0" class="host-status">
+                <md-status-dot state={DOT[h.status]} live={h.status === 'down'}></md-status-dot>
+                {WORD[h.status]}
+              </span>
+            </md-tooltip>
+          </md-table-cell>
+          <md-table-cell>
+            <md-meter label={'CPU load, ' + h.id} value={h.cpu ?? 0} show-value
+                      value-text={h.cpu == null ? 'no data' : undefined} color={meterColor(h.cpu)}></md-meter>
+          </md-table-cell>
+          <md-table-cell>
+            <md-meter label={'Memory used, ' + h.id} value={h.mem ?? 0} show-value
+                      value-text={h.mem == null ? 'no data' : undefined} color={meterColor(h.mem)}></md-meter>
+          </md-table-cell>
+          <md-table-cell>
+            <md-sparkline use:spark={h} min="0" max="250" height="24px" color={SPARK[h.status]}></md-sparkline>
+          </md-table-cell>
+        </md-table-row>
+      {/each}
+    </md-table-body>
+  </md-table>
+</md-table-container>`}
 />
 
 ## How it's built

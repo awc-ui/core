@@ -257,6 +257,459 @@ the 600px compact breakpoint.
       });
     });
   `}
+  react={`import { useMemo, useRef, useState } from 'react';
+import {
+  MdAppBar, MdAvatar, MdBreadcrumbItem, MdBreadcrumbs, MdIconButton,
+  MdList, MdListItem, MdMenu, MdMenuItem, MdNavigationBar,
+  MdNavigationRail, MdNavigationRailTab, MdNavigationTab, MdSearch,
+} from '@awc-ui/react';
+
+const DESTINATIONS = [
+  { value: 'home', icon: 'home', label: 'Home' },
+  { value: 'projects', icon: 'folder', label: 'Projects' },
+  { value: 'reviews', icon: 'rate_review', label: 'Reviews', badgeValue: '3' },
+  { value: 'settings', icon: 'settings', label: 'Settings', badge: true },
+];
+
+const SUGGESTIONS = [
+  { headline: 'Atlas ingestion pipeline', supportingText: 'Project - updated 2h ago' },
+  { headline: 'Billing dashboard', supportingText: 'Project - updated yesterday' },
+  { headline: 'Q3 usage report.pdf', supportingText: 'File - 1.8 MB' },
+  { headline: 'Priya Raman', supportingText: 'Person - Data Platform' },
+];
+
+const PANE_TEXT = {
+  home: 'Good morning, Priya — run #482 passed 12 minutes ago.',
+  projects: 'Last run passed in 3m 41s - 12.4M rows today - 3 open reviews.',
+  reviews: 'Schema change SC-119 is awaiting your review, opened yesterday.',
+  settings: 'Workspace Meridian Robotics - data region eu-central.',
+};
+
+export default function AppShell() {
+  // One state field drives rail, bottom bar, breadcrumbs, and the visible pane.
+  const [activeIndex, setActiveIndex] = useState(1);
+  const [scrolled, setScrolled] = useState(false);
+  const [query, setQuery] = useState('');
+  const railRef = useRef(null);
+  const menuRef = useRef(null);
+  const contentRef = useRef(null);
+
+  const section = DESTINATIONS[activeIndex];
+  const heading = section.value === 'projects' ? 'Atlas ingestion pipeline' : section.label;
+  const results = useMemo(() => {
+    const q = query.toLowerCase();
+    return SUGGESTIONS.filter((s) => q === '' || s.headline.toLowerCase().includes(q));
+  }, [query]);
+
+  const navigate = (index) => {
+    setActiveIndex(index);
+    if (contentRef.current) contentRef.current.scrollTop = 0;
+  };
+  const stay = (e) => e.preventDefault(); // SPA routing hook: mdSelect is cancelable
+
+  return (
+    <div className="shell">
+      <MdAppBar variant="search" leadingIcon="menu" leadingIconLabel="Toggle navigation"
+        scrolled={scrolled} onMdLeadingClick={() => railRef.current.toggle()}>
+        <MdSearch slot="search" layout="docked" trigger="bar" fullWidth debounce={200}
+          placeholder="Search projects, files, and people"
+          noResultsLabel="No matches in this workspace"
+          onMdSearch={(e) => setQuery(e.detail.value)}>
+          <MdList slot="results" label="Search results">
+            {results.map((s) => (
+              <MdListItem key={s.headline} type="button" headline={s.headline}
+                supportingText={s.supportingText} />
+            ))}
+          </MdList>
+        </MdSearch>
+        <MdIconButton slot="trailing" id="account" aria-haspopup="menu"
+          aria-label="Account: Priya Raman" onMdClick={() => menuRef.current.show()}>
+          <MdAvatar initials="PR" />
+        </MdIconButton>
+      </MdAppBar>
+
+      <MdMenu ref={menuRef} anchor="account" placement="bottom-end">
+        <MdMenuItem headline="Profile" />
+        <MdMenuItem headline="Workspace settings" divider />
+        <MdMenuItem headline="Sign out" />
+      </MdMenu>
+
+      <div style={{ display: 'flex', height: 400 }}>
+        {/* Desktop destinations; hide below the 600px breakpoint in production */}
+        <MdNavigationRail ref={railRef} label="Main navigation" activeIndex={activeIndex}
+          onMdTabChange={(e) => navigate(e.detail.index)}>
+          {DESTINATIONS.map((d) => (
+            <MdNavigationRailTab key={d.value} icon={d.icon} label={d.label}
+              value={d.value} badge={d.badge} badgeValue={d.badgeValue} />
+          ))}
+        </MdNavigationRail>
+
+        <main ref={contentRef} style={{ flex: 1, overflowY: 'auto' }}
+          onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 0)}>
+          <MdBreadcrumbs label="Breadcrumb">
+            {section.value === 'home' ? (
+              <MdBreadcrumbItem icon="home">Home</MdBreadcrumbItem>
+            ) : (
+              <>
+                <MdBreadcrumbItem href="/" icon="home" onMdSelect={stay}>Home</MdBreadcrumbItem>
+                {section.value === 'projects' && (
+                  <MdBreadcrumbItem href="/projects" onMdSelect={stay}>Projects</MdBreadcrumbItem>
+                )}
+                <MdBreadcrumbItem>{heading}</MdBreadcrumbItem>
+              </>
+            )}
+          </MdBreadcrumbs>
+          <h1>{heading}</h1>
+          <p>{PANE_TEXT[section.value]}</p>
+        </main>
+      </div>
+
+      {/* Compact windows swap the rail for this bottom bar via a media query */}
+      <MdNavigationBar aria-label="Main navigation" activeIndex={activeIndex}
+        onMdChange={(e) => navigate(e.detail.index)}>
+        {DESTINATIONS.map((d) => (
+          <MdNavigationTab key={d.value} icon={d.icon} label={d.label}
+            badge={d.badge} badgeValue={d.badgeValue} />
+        ))}
+      </MdNavigationBar>
+    </div>
+  );
+}`}
+  angular={`import { Component } from '@angular/core';
+import {
+  MdAppBar, MdAvatar, MdBreadcrumbItem, MdBreadcrumbs, MdIconButton,
+  MdList, MdListItem, MdMenu, MdMenuItem, MdNavigationBar,
+  MdNavigationRail, MdNavigationRailTab, MdNavigationTab, MdSearch,
+} from '@awc-ui/angular';
+
+interface Destination {
+  value: string;
+  icon: string;
+  label: string;
+  badge?: boolean;
+  badgeValue?: string;
+}
+
+@Component({
+  selector: 'app-shell',
+  standalone: true,
+  imports: [
+    MdAppBar, MdAvatar, MdBreadcrumbItem, MdBreadcrumbs, MdIconButton,
+    MdList, MdListItem, MdMenu, MdMenuItem, MdNavigationBar,
+    MdNavigationRail, MdNavigationRailTab, MdNavigationTab, MdSearch,
+  ],
+  // The proxies bind camelCase inputs and re-emit the component events, so the
+  // template stays declarative; #rail / #accountMenu expose toggle() / show().
+  template:
+    '<md-app-bar variant="search" leading-icon="menu" leading-icon-label="Toggle navigation"' +
+    '    [scrolled]="scrolled" (mdLeadingClick)="rail.toggle()">' +
+    '  <md-search slot="search" layout="docked" trigger="bar" full-width debounce="200"' +
+    '      placeholder="Search projects, files, and people"' +
+    '      no-results-label="No matches in this workspace"' +
+    '      (mdSearch)="query = $event.detail.value">' +
+    '    <md-list slot="results" label="Search results">' +
+    '      @for (s of results; track s.headline) {' +
+    '        <md-list-item type="button" [headline]="s.headline" [supportingText]="s.supportingText"></md-list-item>' +
+    '      }' +
+    '    </md-list>' +
+    '  </md-search>' +
+    '  <md-icon-button slot="trailing" id="account" aria-haspopup="menu"' +
+    '      aria-label="Account: Priya Raman" (mdClick)="accountMenu.show()">' +
+    '    <md-avatar initials="PR"></md-avatar>' +
+    '  </md-icon-button>' +
+    '</md-app-bar>' +
+    '<md-menu #accountMenu anchor="account" placement="bottom-end">' +
+    '  <md-menu-item headline="Profile"></md-menu-item>' +
+    '  <md-menu-item headline="Workspace settings" divider></md-menu-item>' +
+    '  <md-menu-item headline="Sign out"></md-menu-item>' +
+    '</md-menu>' +
+    '<md-navigation-rail #rail label="Main navigation" [activeIndex]="activeIndex"' +
+    '    (mdTabChange)="navigate($event.detail.index, content)">' +
+    '  @for (d of destinations; track d.value) {' +
+    '    <md-navigation-rail-tab [icon]="d.icon" [label]="d.label" [value]="d.value"' +
+    '        [badge]="d.badge" [badgeValue]="d.badgeValue"></md-navigation-rail-tab>' +
+    '  }' +
+    '</md-navigation-rail>' +
+    '<main #content (scroll)="scrolled = content.scrollTop > 0">' +
+    '  <md-breadcrumbs label="Breadcrumb">' +
+    '    @if (isHome) {' +
+    '      <md-breadcrumb-item icon="home">Home</md-breadcrumb-item>' +
+    '    } @else {' +
+    '      <md-breadcrumb-item href="/" icon="home" (mdSelect)="$event.preventDefault()">Home</md-breadcrumb-item>' +
+    '      @if (isProjects) {' +
+    '        <md-breadcrumb-item href="/projects" (mdSelect)="$event.preventDefault()">Projects</md-breadcrumb-item>' +
+    '      }' +
+    '      <md-breadcrumb-item>{{ heading }}</md-breadcrumb-item>' +
+    '    }' +
+    '  </md-breadcrumbs>' +
+    '  <h1>{{ heading }}</h1>' +
+    '  <p>{{ paneText[section.value] }}</p>' +
+    '</main>' +
+    '<md-navigation-bar aria-label="Main navigation" [activeIndex]="activeIndex"' +
+    '    (mdChange)="navigate($event.detail.index, content)">' +
+    '  @for (d of destinations; track d.value) {' +
+    '    <md-navigation-tab [icon]="d.icon" [label]="d.label"' +
+    '        [badge]="d.badge" [badgeValue]="d.badgeValue"></md-navigation-tab>' +
+    '  }' +
+    '</md-navigation-bar>',
+})
+export class AppShellComponent {
+  activeIndex = 1;
+  scrolled = false;
+  query = '';
+
+  destinations: Destination[] = [
+    { value: 'home', icon: 'home', label: 'Home' },
+    { value: 'projects', icon: 'folder', label: 'Projects' },
+    { value: 'reviews', icon: 'rate_review', label: 'Reviews', badgeValue: '3' },
+    { value: 'settings', icon: 'settings', label: 'Settings', badge: true },
+  ];
+
+  suggestions = [
+    { headline: 'Atlas ingestion pipeline', supportingText: 'Project - updated 2h ago' },
+    { headline: 'Billing dashboard', supportingText: 'Project - updated yesterday' },
+    { headline: 'Q3 usage report.pdf', supportingText: 'File - 1.8 MB' },
+    { headline: 'Priya Raman', supportingText: 'Person - Data Platform' },
+  ];
+
+  paneText: Record<string, string> = {
+    home: 'Good morning, Priya — run #482 passed 12 minutes ago.',
+    projects: 'Last run passed in 3m 41s - 12.4M rows today - 3 open reviews.',
+    reviews: 'Schema change SC-119 is awaiting your review, opened yesterday.',
+    settings: 'Workspace Meridian Robotics - data region eu-central.',
+  };
+
+  get section(): Destination {
+    return this.destinations[this.activeIndex];
+  }
+  get isHome(): boolean {
+    return this.section.value === 'home';
+  }
+  get isProjects(): boolean {
+    return this.section.value === 'projects';
+  }
+  get heading(): string {
+    return this.isProjects ? 'Atlas ingestion pipeline' : this.section.label;
+  }
+  get results() {
+    const q = this.query.toLowerCase();
+    return this.suggestions.filter((s) => q === '' || s.headline.toLowerCase().includes(q));
+  }
+
+  navigate(index: number, content: HTMLElement) {
+    this.activeIndex = index;
+    content.scrollTop = 0;
+  }
+}`}
+  vue={`<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  MdAppBar, MdAvatar, MdBreadcrumbItem, MdBreadcrumbs, MdIconButton,
+  MdList, MdListItem, MdMenu, MdMenuItem, MdNavigationBar,
+  MdNavigationRail, MdNavigationRailTab, MdNavigationTab, MdSearch,
+} from '@awc-ui/vue';
+
+const destinations = [
+  { value: 'home', icon: 'home', label: 'Home' },
+  { value: 'projects', icon: 'folder', label: 'Projects' },
+  { value: 'reviews', icon: 'rate_review', label: 'Reviews', badgeValue: '3' },
+  { value: 'settings', icon: 'settings', label: 'Settings', badge: true },
+];
+
+const suggestions = [
+  { headline: 'Atlas ingestion pipeline', supportingText: 'Project - updated 2h ago' },
+  { headline: 'Billing dashboard', supportingText: 'Project - updated yesterday' },
+  { headline: 'Q3 usage report.pdf', supportingText: 'File - 1.8 MB' },
+  { headline: 'Priya Raman', supportingText: 'Person - Data Platform' },
+];
+
+const paneText: Record<string, string> = {
+  home: 'Good morning, Priya — run #482 passed 12 minutes ago.',
+  projects: 'Last run passed in 3m 41s - 12.4M rows today - 3 open reviews.',
+  reviews: 'Schema change SC-119 is awaiting your review, opened yesterday.',
+  settings: 'Workspace Meridian Robotics - data region eu-central.',
+};
+
+const activeIndex = ref(1);
+const scrolled = ref(false);
+const query = ref('');
+const rail = ref();
+const accountMenu = ref();
+const content = ref<HTMLElement>();
+
+const section = computed(() => destinations[activeIndex.value]);
+const heading = computed(() =>
+  section.value.value === 'projects' ? 'Atlas ingestion pipeline' : section.value.label,
+);
+const results = computed(() => {
+  const q = query.value.toLowerCase();
+  return suggestions.filter((s) => q === '' || s.headline.toLowerCase().includes(q));
+});
+
+function navigate(index: number) {
+  activeIndex.value = index;
+  if (content.value) content.value.scrollTop = 0;
+}
+</script>
+
+<template>
+  <MdAppBar variant="search" leading-icon="menu" leading-icon-label="Toggle navigation"
+    :scrolled="scrolled" @md-leading-click="rail.$el.toggle()">
+    <MdSearch slot="search" layout="docked" trigger="bar" full-width :debounce="200"
+      placeholder="Search projects, files, and people"
+      no-results-label="No matches in this workspace"
+      @md-search="query = $event.detail.value">
+      <MdList slot="results" label="Search results">
+        <MdListItem v-for="s in results" :key="s.headline" type="button"
+          :headline="s.headline" :supporting-text="s.supportingText" />
+      </MdList>
+    </MdSearch>
+    <MdIconButton slot="trailing" id="account" aria-haspopup="menu"
+      aria-label="Account: Priya Raman" @md-click="accountMenu.$el.show()">
+      <MdAvatar initials="PR" />
+    </MdIconButton>
+  </MdAppBar>
+
+  <MdMenu ref="accountMenu" anchor="account" placement="bottom-end">
+    <MdMenuItem headline="Profile" />
+    <MdMenuItem headline="Workspace settings" divider />
+    <MdMenuItem headline="Sign out" />
+  </MdMenu>
+
+  <!-- Desktop destinations; hide below the 600px breakpoint in production -->
+  <MdNavigationRail ref="rail" label="Main navigation"
+    :active-index="activeIndex" @md-tab-change="navigate($event.detail.index)">
+    <MdNavigationRailTab v-for="d in destinations" :key="d.value" :icon="d.icon"
+      :label="d.label" :value="d.value" :badge="d.badge" :badge-value="d.badgeValue" />
+  </MdNavigationRail>
+
+  <main ref="content" @scroll.passive="scrolled = (content?.scrollTop ?? 0) > 0">
+    <MdBreadcrumbs label="Breadcrumb">
+      <MdBreadcrumbItem v-if="section.value === 'home'" icon="home">Home</MdBreadcrumbItem>
+      <template v-else>
+        <MdBreadcrumbItem href="/" icon="home" @md-select="$event.preventDefault()">Home</MdBreadcrumbItem>
+        <MdBreadcrumbItem v-if="section.value === 'projects'" href="/projects"
+          @md-select="$event.preventDefault()">Projects</MdBreadcrumbItem>
+        <MdBreadcrumbItem>{{ heading }}</MdBreadcrumbItem>
+      </template>
+    </MdBreadcrumbs>
+    <h1>{{ heading }}</h1>
+    <p>{{ paneText[section.value] }}</p>
+  </main>
+
+  <!-- Compact windows swap the rail for this bottom bar via a media query -->
+  <MdNavigationBar aria-label="Main navigation"
+    :active-index="activeIndex" @md-change="navigate($event.detail.index)">
+    <MdNavigationTab v-for="d in destinations" :key="d.value" :icon="d.icon"
+      :label="d.label" :badge="d.badge" :badge-value="d.badgeValue" />
+  </MdNavigationBar>
+</template>`}
+  svelte={`<script>
+  // The svelte package registers the raw md-* elements — client-only.
+  // In SvelteKit guard it: if (browser) defineCustomElements(window);
+  import { defineCustomElements } from '@awc-ui/svelte';
+  import { onMount } from 'svelte';
+  onMount(() => defineCustomElements(window));
+
+  let rail;
+  let accountMenu;
+  let content;
+
+  let activeIndex = 1;
+  let scrolled = false;
+  let query = '';
+
+  const destinations = [
+    { value: 'home', icon: 'home', label: 'Home' },
+    { value: 'projects', icon: 'folder', label: 'Projects' },
+    { value: 'reviews', icon: 'rate_review', label: 'Reviews', badgeValue: '3' },
+    { value: 'settings', icon: 'settings', label: 'Settings', badge: true },
+  ];
+  const suggestions = [
+    { headline: 'Atlas ingestion pipeline', supportingText: 'Project - updated 2h ago' },
+    { headline: 'Billing dashboard', supportingText: 'Project - updated yesterday' },
+    { headline: 'Q3 usage report.pdf', supportingText: 'File - 1.8 MB' },
+    { headline: 'Priya Raman', supportingText: 'Person - Data Platform' },
+  ];
+  const paneText = {
+    home: 'Good morning, Priya — run #482 passed 12 minutes ago.',
+    projects: 'Last run passed in 3m 41s - 12.4M rows today - 3 open reviews.',
+    reviews: 'Schema change SC-119 is awaiting your review, opened yesterday.',
+    settings: 'Workspace Meridian Robotics - data region eu-central.',
+  };
+
+  $: section = destinations[activeIndex];
+  $: heading = section.value === 'projects' ? 'Atlas ingestion pipeline' : section.label;
+  $: results = suggestions.filter(
+    (s) => query === '' || s.headline.toLowerCase().includes(query.toLowerCase()),
+  );
+
+  function navigate(index) {
+    activeIndex = index;
+    if (content) content.scrollTop = 0;
+  }
+</script>
+
+<md-app-bar variant="search" leading-icon="menu" leading-icon-label="Toggle navigation"
+  scrolled={scrolled} on:mdLeadingClick={() => rail.toggle()}>
+  <md-search slot="search" layout="docked" trigger="bar" full-width debounce="200"
+    placeholder="Search projects, files, and people"
+    no-results-label="No matches in this workspace"
+    on:mdSearch={(e) => (query = e.detail.value)}>
+    <md-list slot="results" label="Search results">
+      {#each results as s (s.headline)}
+        <md-list-item type="button" headline={s.headline}
+          supporting-text={s.supportingText}></md-list-item>
+      {/each}
+    </md-list>
+  </md-search>
+  <md-icon-button slot="trailing" id="account" aria-haspopup="menu"
+    aria-label="Account: Priya Raman" on:mdClick={() => accountMenu.show()}>
+    <md-avatar initials="PR"></md-avatar>
+  </md-icon-button>
+</md-app-bar>
+
+<md-menu bind:this={accountMenu} anchor="account" placement="bottom-end">
+  <md-menu-item headline="Profile"></md-menu-item>
+  <md-menu-item headline="Workspace settings" divider></md-menu-item>
+  <md-menu-item headline="Sign out"></md-menu-item>
+</md-menu>
+
+<!-- Desktop destinations; hide below the 600px breakpoint in production -->
+<md-navigation-rail bind:this={rail} label="Main navigation"
+  active-index={activeIndex} on:mdTabChange={(e) => navigate(e.detail.index)}>
+  {#each destinations as d (d.value)}
+    <md-navigation-rail-tab icon={d.icon} label={d.label} value={d.value}
+      badge={d.badge} badge-value={d.badgeValue}></md-navigation-rail-tab>
+  {/each}
+</md-navigation-rail>
+
+<main bind:this={content} on:scroll={() => (scrolled = content.scrollTop > 0)}>
+  <md-breadcrumbs label="Breadcrumb">
+    {#if section.value === 'home'}
+      <md-breadcrumb-item icon="home">Home</md-breadcrumb-item>
+    {:else}
+      <md-breadcrumb-item href="/" icon="home"
+        on:mdSelect={(e) => e.preventDefault()}>Home</md-breadcrumb-item>
+      {#if section.value === 'projects'}
+        <md-breadcrumb-item href="/projects"
+          on:mdSelect={(e) => e.preventDefault()}>Projects</md-breadcrumb-item>
+      {/if}
+      <md-breadcrumb-item>{heading}</md-breadcrumb-item>
+    {/if}
+  </md-breadcrumbs>
+  <h1>{heading}</h1>
+  <p>{paneText[section.value]}</p>
+</main>
+
+<!-- Compact windows swap the rail for this bottom bar via a media query -->
+<md-navigation-bar aria-label="Main navigation"
+  active-index={activeIndex} on:mdChange={(e) => navigate(e.detail.index)}>
+  {#each destinations as d (d.value)}
+    <md-navigation-tab icon={d.icon} label={d.label}
+      badge={d.badge} badge-value={d.badgeValue}></md-navigation-tab>
+  {/each}
+</md-navigation-bar>`}
 />
 
 ## How it's built
