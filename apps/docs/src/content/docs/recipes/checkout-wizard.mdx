@@ -91,11 +91,10 @@ before an `md-snackbar` confirms.
             <span data-total style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">€138.00</span>
           </div>
         </md-card>
-        <label style="display: flex; align-items: center; gap: 10px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface); cursor: pointer;">
+        <label style="display: flex; align-items: flex-start; gap: 10px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface); cursor: pointer;">
           <md-checkbox data-terms name="terms" required
-            value-missing-label="Please accept the terms of sale."
-            error-text="You must accept the terms to place an order"></md-checkbox>
-          I agree to the terms of sale and the 30-day return policy
+            value-missing-label="Please accept the terms of sale."></md-checkbox>
+          <span style="padding-block-start: 10px;">I agree to the terms of sale and the 30-day return policy</span>
         </label>
       </div>
     </md-step>

@@ -54,35 +54,35 @@ your own store or API.
           <md-table-cell padding="checkbox"><md-checkbox aria-label="Select Ada Okafor"></md-checkbox></md-table-cell>
           <md-table-cell>Ada Okafor</md-table-cell>
           <md-table-cell>Owner</md-table-cell>
-          <md-table-cell><span style="position: relative; display: inline-flex; padding-inline-end: 14px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</md-table-cell>
+          <md-table-cell><span style="display: inline-flex; align-items: center; gap: 8px;"><span style="position: relative; display: inline-flex; inline-size: 8px; block-size: 8px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</span></md-table-cell>
           <md-table-cell numeric>1h ago</md-table-cell>
         </md-table-row>
         <md-table-row value="u-09">
           <md-table-cell padding="checkbox"><md-checkbox aria-label="Select Mei-Ling Chen"></md-checkbox></md-table-cell>
           <md-table-cell>Mei-Ling Chen</md-table-cell>
           <md-table-cell>Admin</md-table-cell>
-          <md-table-cell><span style="position: relative; display: inline-flex; padding-inline-end: 14px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</md-table-cell>
+          <md-table-cell><span style="display: inline-flex; align-items: center; gap: 8px;"><span style="position: relative; display: inline-flex; inline-size: 8px; block-size: 8px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</span></md-table-cell>
           <md-table-cell numeric>2h ago</md-table-cell>
         </md-table-row>
         <md-table-row value="u-02">
           <md-table-cell padding="checkbox"><md-checkbox aria-label="Select Marius Ionescu"></md-checkbox></md-table-cell>
           <md-table-cell>Marius Ionescu</md-table-cell>
           <md-table-cell>Admin</md-table-cell>
-          <md-table-cell><span style="position: relative; display: inline-flex; padding-inline-end: 14px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</md-table-cell>
+          <md-table-cell><span style="display: inline-flex; align-items: center; gap: 8px;"><span style="position: relative; display: inline-flex; inline-size: 8px; block-size: 8px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</span></md-table-cell>
           <md-table-cell numeric>3h ago</md-table-cell>
         </md-table-row>
         <md-table-row value="u-03">
           <md-table-cell padding="checkbox"><md-checkbox aria-label="Select Priya Raghavan"></md-checkbox></md-table-cell>
           <md-table-cell>Priya Raghavan</md-table-cell>
           <md-table-cell>Editor</md-table-cell>
-          <md-table-cell><span style="position: relative; display: inline-flex; padding-inline-end: 14px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</md-table-cell>
+          <md-table-cell><span style="display: inline-flex; align-items: center; gap: 8px;"><span style="position: relative; display: inline-flex; inline-size: 8px; block-size: 8px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</span></md-table-cell>
           <md-table-cell numeric>5h ago</md-table-cell>
         </md-table-row>
         <md-table-row value="u-07">
           <md-table-cell padding="checkbox"><md-checkbox aria-label="Select Sofia Petrescu"></md-checkbox></md-table-cell>
           <md-table-cell>Sofia Petrescu</md-table-cell>
           <md-table-cell>Analyst</md-table-cell>
-          <md-table-cell><span style="position: relative; display: inline-flex; padding-inline-end: 14px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</md-table-cell>
+          <md-table-cell><span style="display: inline-flex; align-items: center; gap: 8px;"><span style="position: relative; display: inline-flex; inline-size: 8px; block-size: 8px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</span></md-table-cell>
           <md-table-cell numeric>8h ago</md-table-cell>
         </md-table-row>
       </md-table-body>
@@ -132,7 +132,7 @@ your own store or API.
         <md-table-cell padding="checkbox"><md-checkbox aria-label="Select Ada Okafor"></md-checkbox></md-table-cell>
         <md-table-cell>Ada Okafor</md-table-cell>
         <md-table-cell>Owner</md-table-cell>
-        <md-table-cell><span style="position: relative; display: inline-flex; padding-inline-end: 14px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</md-table-cell>
+        <md-table-cell><span style="display: inline-flex; align-items: center; gap: 8px;"><span style="position: relative; display: inline-flex; inline-size: 8px; block-size: 8px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;"><md-status-dot size="small" state="online"></md-status-dot></span>Active</span></md-table-cell>
         <md-table-cell numeric>1h ago</md-table-cell>
       </md-table-row>
       <!-- one md-table-row per record; render them from your data -->
@@ -210,8 +210,9 @@ your own store or API.
         '<md-table-cell padding="checkbox"><md-checkbox aria-label="Select ' + m.name + '"></md-checkbox></md-table-cell>' +
         '<md-table-cell>' + m.name + '</md-table-cell>' +
         '<md-table-cell>' + m.role + '</md-table-cell>' +
-        '<md-table-cell><span style="position: relative; display: inline-flex; padding-inline-end: 14px;">' +
-        '<md-status-dot size="small" state="' + STATE[m.status] + '"></md-status-dot></span>' + m.status + '</md-table-cell>' +
+        '<md-table-cell><span style="display: inline-flex; align-items: center; gap: 8px;">' +
+        '<span style="position: relative; display: inline-flex; inline-size: 8px; block-size: 8px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;">' +
+        '<md-status-dot size="small" state="' + STATE[m.status] + '"></md-status-dot></span>' + m.status + '</span></md-table-cell>' +
         '<md-table-cell numeric>' + ago(m.hoursAgo) + '</md-table-cell>' +
         '</md-table-row>';
     }

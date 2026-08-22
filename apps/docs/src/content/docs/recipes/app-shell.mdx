@@ -22,7 +22,8 @@ the 600px compact breakpoint.
 <ComponentDemo
   label="Live preview — switch destinations, toggle the rail with the menu button, try search and the account menu"
   html={`<div style="max-width: 720px; margin-inline: auto; border: 1px solid var(--md-sys-color-outline-variant); background: var(--md-sys-color-surface);">
-  <md-app-bar data-appbar variant="search" leading-icon="menu" leading-icon-label="Toggle navigation">
+  <md-app-bar data-appbar variant="search" leading-icon="menu" leading-icon-label="Toggle navigation"
+    style="--md-app-bar-search-container-color: transparent; --md-app-bar-search-container-color-scrolled: transparent;">
     <md-search slot="search" data-search layout="docked" trigger="bar" full-width debounce="200"
       placeholder="Search projects, files, and people" no-results-label="No matches in this workspace">
       <md-list slot="results" label="Search results" data-results>
@@ -55,6 +56,49 @@ the 600px compact breakpoint.
         <md-breadcrumb-item>Atlas ingestion pipeline</md-breadcrumb-item>
       </md-breadcrumbs>
       <span data-title style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);">Atlas ingestion pipeline</span>
+      <div data-pane="home" style="display: none; gap: 16px;">
+        <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Good morning, Priya</span>
+        <div style="display: grid; gap: 8px;">
+          <div style="border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 12px 16px; display: grid; gap: 2px;">
+            <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Jump back in</span>
+            <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Atlas ingestion pipeline — run #482 passed 12 minutes ago</span>
+          </div>
+          <div style="border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 12px 16px; display: grid; gap: 2px;">
+            <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Waiting on you</span>
+            <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">3 reviews — oldest is schema change SC-119, opened yesterday</span>
+          </div>
+          <div style="border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 12px 16px; display: grid; gap: 2px;">
+            <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Workspace</span>
+            <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Meridian Robotics — 14 members, 6 active projects</span>
+          </div>
+        </div>
+      </div>
+      <div data-pane="reviews" style="display: none; gap: 8px;">
+        <div style="border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 12px 16px; display: grid; gap: 2px;">
+          <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Schema change SC-119 — events partitioning</span>
+          <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-tertiary);">Awaiting your review — opened yesterday by Jonas</span>
+        </div>
+        <div style="border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 12px 16px; display: grid; gap: 2px;">
+          <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Retry policy — exponential backoff</span>
+          <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-primary);">Approved by you — merged this morning</span>
+        </div>
+        <div style="border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 12px 16px; display: grid; gap: 2px;">
+          <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Ingest alert threshold 5% → 2%</span>
+          <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-error);">Changes requested — waiting on Alice</span>
+        </div>
+      </div>
+      <div data-pane="settings" style="display: none; gap: 8px;">
+        <div style="border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; gap: 12px;">
+          <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Workspace</span>
+          <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">Meridian Robotics</span>
+        </div>
+        <div style="border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; gap: 12px;">
+          <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">Data region</span>
+          <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">eu-central</span>
+        </div>
+        <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">The full pattern for a page like this lives in the Notification preferences recipe.</span>
+      </div>
+      <div data-pane="projects" style="display: grid; gap: 16px;">
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
         <div style="border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px;">
           <span style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);">Last run</span>
@@ -80,6 +124,7 @@ the 600px compact breakpoint.
         <div style="padding: 12px 16px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">Scheduled run #481 finished - yesterday</div>
       </div>
       <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">Scroll this pane — the app bar swaps to its scrolled container color.</span>
+      </div>
     </main>
   </div>
   <div style="padding: 10px 16px 6px; border-top: 1px solid var(--md-sys-color-outline-variant); background: var(--md-sys-color-surface-container-low);">
@@ -93,7 +138,9 @@ the 600px compact breakpoint.
   </md-navigation-bar>
 </div>`}
   htmlForCode={`<!-- The chrome renders at fixed, token-driven sizes: no layout shift on first paint. -->
-<md-app-bar variant="search" leading-icon="menu" leading-icon-label="Toggle navigation">
+<!-- A slotted md-search draws its own pill — blank the app bar's built-in one. -->
+<md-app-bar variant="search" leading-icon="menu" leading-icon-label="Toggle navigation"
+  style="--md-app-bar-search-container-color: transparent; --md-app-bar-search-container-color-scrolled: transparent;">
   <md-search slot="search" layout="docked" trigger="bar" full-width debounce="200"
     placeholder="Search projects, files, and people">
     <md-list slot="results" label="Search results"></md-list>
@@ -168,6 +215,12 @@ the 600px compact breakpoint.
       }
       crumbs.innerHTML = trail;
       pageTitle.textContent = heading;
+      // Swap the visible content pane to match — a destination change that
+      // only retitles the page reads as a bug, not a navigation.
+      root.querySelectorAll('[data-pane]').forEach((pane) => {
+        pane.style.display = pane.getAttribute('data-pane') === value ? 'grid' : 'none';
+      });
+      content.scrollTop = 0;
     }
 
     // Keep rail and bottom bar in lockstep. select() and a property write are

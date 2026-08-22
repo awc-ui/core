@@ -45,7 +45,7 @@ reassignment — to repaint in the new brand.
 
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
     <md-pie-chart data-pie label="Traffic by source" subtitle="Last 30 days"
-      inner-radius="62%" legend="bottom" height="300px">
+      inner-radius="45%" legend="bottom" height="300px">
       <div slot="center" style="text-align: center;">
         <strong style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);">11,540</strong><br>
         <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">visits</span>
@@ -98,7 +98,7 @@ reassignment — to repaint in the new brand.
 <md-line-chart label="Weekly active users" height="240px" show-marks curve="monotone"></md-line-chart>
 <md-area-chart label="Storage by type" height="230px"></md-area-chart>
 <md-bar-chart label="Revenue by region" height="230px"></md-bar-chart>
-<md-pie-chart label="Traffic by source" inner-radius="62%" legend="bottom"></md-pie-chart>
+<md-pie-chart label="Traffic by source" inner-radius="45%" legend="bottom"></md-pie-chart>
 
 <md-sparkline variant="bar" color="primary" height="36px"></md-sparkline>
 <md-meter value="62" label="Storage used" show-label show-value value-text="1.24 TB of 2 TB"></md-meter>
@@ -238,7 +238,7 @@ reassignment — to repaint in the new brand.
 | [`md-line-chart`](/components/line-chart/) | The trend headline. `series` and `xAxis` are JS properties (arrays never cross the attribute boundary); `curve="monotone"` avoids the overshoot a smooth spline adds to monotonic data; `show-marks` puts a point at each reading. |
 | [`md-area-chart`](/components/area-chart/) | Storage composition — `stack="normal"` is its default, so three series become a cumulative total with no extra configuration. |
 | [`md-bar-chart`](/components/bar-chart/) | Year-over-year comparison across four discrete regions — the case lines must not imply continuity for. |
-| [`md-pie-chart`](/components/pie-chart/) | Donut via `inner-radius="62%"`, with the headline total slotted into `center` — the hole is the layout. |
+| [`md-pie-chart`](/components/pie-chart/) | Donut via `inner-radius="45%"`, with the headline total slotted into `center` — the hole is the layout. |
 | [`md-sparkline`](/components/sparkline/) | Three KPI tiles: `bar`, `line`, and `area` variants, each ~36px tall with no axes or legend. The number stays in the tile as text — the sparkline is the trend, never the value. |
 | [`md-meter`](/components/meter/) | Two static readings: a linear storage gauge with `value-text="1.24 TB of 2 TB"` overriding the percent readout, and a circular quota ring with the value centered inside it. |
 | [`md-progress-indicator`](/components/progress-indicator/) | The nightly export is an *activity*, not a state — so it gets a progress bar, fed the raw count (`value="412" max="605"`) rather than a pre-computed percentage. |

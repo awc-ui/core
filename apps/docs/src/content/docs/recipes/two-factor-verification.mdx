@@ -32,11 +32,11 @@ in a real `<form>` — `required` blocks submission until the code is complete.
     incomplete-label="Enter all six digits."
   ></md-otp-field>
   <md-button type="submit" variant="filled" full-width>Verify</md-button>
+  <md-loading-indicator data-verifying hidden aria-label="Verifying code" style="justify-self: center;"></md-loading-indicator>
   <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
     <md-button variant="text" data-resend disabled>Resend code (30)</md-button>
     <md-button variant="text" data-backup>Use a backup code</md-button>
   </div>
-  <md-loading-indicator data-verifying hidden aria-label="Verifying code"></md-loading-indicator>
 </form>
 <md-dialog data-backup-dialog headline="Use a backup code">
   <p style="margin: 0 0 12px; font: var(--md-sys-typescale-body-medium);">

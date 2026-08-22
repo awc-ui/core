@@ -18,7 +18,7 @@ line up to the CEO drawn as breadcrumbs.
 
 <ComponentDemo
   label="Live preview — search 'engineer', or click any card to open a profile"
-  html={`<div style="display: grid; gap: 20px;">
+  html={`<div style="display: grid; gap: 20px; max-width: 100%; min-width: 0;">
   <div style="display: grid; gap: 4px;">
     <span style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);">Meridian Robotics</span>
     <span style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">People directory — 9 people across Engineering, Design and Finance</span>
@@ -31,9 +31,10 @@ line up to the CEO drawn as breadcrumbs.
   </md-search>
   <md-organization-chart selection-mode="single" density="-2"
     label="Meridian Robotics reporting structure"
-    style="--md-org-chart-node-min-width: 150px; --md-org-chart-node-max-width: 190px;">
+    style="--md-org-chart-node-min-width: 150px; --md-org-chart-node-max-width: 190px; width: 100%; max-width: 100%; min-width: 0;">
     <div slot="empty">No people loaded.</div>
   </md-organization-chart>
+  <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">The tree scrolls sideways when it outgrows the panel.</span>
 </div>
 <md-side-sheet data-profile variant="modal" headline="Profile">
   <div style="display: grid; gap: 20px;">
@@ -84,6 +85,15 @@ line up to the CEO drawn as breadcrumbs.
 </md-side-sheet>`}
   script={`
     const chart = root.querySelector('md-organization-chart');
+    // The component scrolls internally via its exported viewport part when the
+    // tree outgrows the container. Start centered on the root node so the
+    // first paint shows the CEO, not a cropped corner.
+    setTimeout(() => {
+      const viewport = chart.shadowRoot && chart.shadowRoot.querySelector('[part~="viewport"]');
+      if (viewport) {
+        viewport.scrollLeft = Math.max(0, (viewport.scrollWidth - viewport.clientWidth) / 2);
+      }
+    }, 400);
     const search = root.querySelector('md-search');
     const resultsHost = root.querySelector('[data-results]');
     const sheet = root.querySelector('[data-profile]');
