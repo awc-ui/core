@@ -87,9 +87,9 @@ progress bar's closing animation before the thank-you
             <span style="font: var(--md-sys-typescale-body-large); color: var(--md-sys-color-on-surface);">How likely are you to renew your subscription next quarter?</span>
             <md-slider data-renew min="0" max="100" step="10" stops value="60" value-indicator aria-label="Likelihood to renew" value-text="60 percent"></md-slider>
           </div>
-          <!-- Grid, not a flex row: md-checkbox renders `supporting-text` INSIDE
+          <!-- Grid, not a flex row: md-checkbox renders supporting-text INSIDE
                its own host, which makes the host two rows tall — in a flex row
-               `align-items: center` then centres the box against box+support
+               align-items: center then centres the box against box+support
                (lifting it off the label's baseline) and the support line starts
                at the box's left edge instead of under the label. Putting the
                support text in the label's own second row, column 2, aligns it
