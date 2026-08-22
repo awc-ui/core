@@ -1,14 +1,19 @@
 ---
 title: Showcase
-description: "Full fictional apps built with AWC UI — one per framework — plus the proof pages behind the library's SSR and accessibility claims."
+description: "Live demonstrations of the claims this library makes — accessibility you can audit in your own browser, and server rendering you can verify in view-source."
 ---
 
-Ten complete applications live in the repository under `apps/showcase-*`, each
-a coherent multi-screen product built end-to-end with AWC UI and nothing else.
-They exist to answer one question: *can this library carry a whole app, not
-just a widget?* Each app's page below lists its screens, the components it
-exercises, and how to run it locally.
+Some claims deserve more than prose. The pages here are running
+demonstrations you can check yourself:
 
-This section also hosts the proof pages — live demonstrations of the claims
-the library makes about [server-side rendering](/showcase/ssr/) and
-[accessibility](/showcase/a11y-lab/).
+- **[Accessibility lab](/showcase/a11y-lab/)** — runs axe-core in *your*
+  browser against live components and shows you the result, rather than asking
+  you to trust a badge.
+- **[SSR that actually paints](/showcase/ssr/)** — the server-rendered pane on
+  that page really is server-rendered; view-source and look for
+  `<template shadowrootmode="open">`.
+
+A gallery of complete applications built with AWC UI is being rebuilt and will
+land here. In the meantime, the [recipes](/recipes/) cover the same ground one
+screen at a time — each with a live demo and copy-paste code for every
+supported framework.

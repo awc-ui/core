@@ -409,8 +409,8 @@ export default defineConfig({
             { label: 'Async feedback patterns', link: '/recipes/async-feedback-patterns/' },
           ],
         },
-        // Full fictional apps (apps/showcase-* in the repo) and the proof
-        // pages that demonstrate library-level claims (SSR, a11y).
+        // Live proof pages for library-level claims (SSR, accessibility).
+        // The application gallery that used to live here is being rebuilt.
         {
           label: 'Showcase',
           collapsed: true,
