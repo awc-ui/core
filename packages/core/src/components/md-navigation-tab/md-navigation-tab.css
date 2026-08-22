@@ -22,7 +22,7 @@
      --md-navigation-tab-label-font            (label-medium font shorthand)
      --md-navigation-tab-label-font-weight     (active label weight; defaults 600)
      --md-navigation-tab-icon-size             (default 24px)
-     --md-navigation-tab-padding-block-start   (default 5px — centers 54px content in 64dp bar)
+     --md-navigation-tab-padding-block-start   (default 5px — centers 54px content in 64px bar)
      --md-navigation-tab-padding-block-end     (default 5px)
      --md-navigation-tab-hover-state-layer-color
      --md-navigation-tab-focus-state-layer-color
@@ -181,7 +181,7 @@
   opacity: var(--md-navigation-tab-focus-state-layer-opacity, 0.1);
 }
 
-/* Visible 3dp focus ring per M3 accessibility guidance.
+/* Visible 3px focus ring per M3 accessibility guidance.
    Wraps the active-indicator pill (centered, rounded) rather than the whole
    tab: a full-tab inset outline gets clipped at the navigation bar's rounded
    corners, and `secondary` matches the focus-ring color used library-wide
@@ -209,8 +209,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  /* M3 vertical item: active-indicator → label "container between space" = 6dp.
-     (The 24dp icon centered in the 32dp indicator yields the 4dp icon inset.) */
+  /* M3 vertical item: active-indicator → label "container between space" = 6px.
+     (The 24px icon centered in the 32px indicator yields the 4px icon inset.) */
   gap: max(2px, calc(6px + var(--md-sys-density-scale, 0) * 1px));
   inline-size: 100%;
   pointer-events: none; /* Click goes through to host. */
@@ -219,7 +219,7 @@
 /* ==========================================================
    5. ACTIVE INDICATOR PILL
    Animates from a vertically-collapsed shape into the full
-   56×32dp pill — per M3's emphasized-decelerate spec.
+   56×32px pill — per M3's emphasized-decelerate spec.
    ========================================================== */
 .md-navigation-tab__indicator {
   position: absolute;
@@ -275,11 +275,11 @@
 
 /* Custom icons via slot="icon" / "active-icon" (SVG, emoji, custom font):
    slotted light-DOM nodes don't inherit the shadow icon-span's sizing, so a
-   bare <span>★</span> would render at the host font-size. Pin them to the 24dp
+   bare <span>★</span> would render at the host font-size. Pin them to the 24px
    Material Symbols footprint, inherit the active/inactive icon color (so SVGs
    using currentColor tint correctly), and center within the box. */
 .md-navigation-tab__icon ::slotted(*) {
-  /* Fixed 24dp flex box so text glyphs (★, emoji) and SVGs share one footprint
+  /* Fixed 24px flex box so text glyphs (★, emoji) and SVGs share one footprint
      and center identically — a bare inline glyph otherwise gets a taller line
      box and rides off-center against an SVG's box. */
   display: inline-flex;
@@ -326,8 +326,8 @@
 /* ==========================================================
    7. BADGES
    Two flavors per M3 spec:
-     - small  → 6dp dot
-     - large  → numeric / textual capsule (16dp min height)
+     - small  → 6px dot
+     - large  → numeric / textual capsule (16px min height)
    Both anchor to the top-right of the icon container.
    ========================================================== */
 .md-navigation-tab__badge {
@@ -409,7 +409,7 @@
    not rendered at all — collapse the vertical padding so the icon
    sits centered in the row. */
 :host(.md-navigation-tab--label-hidden) {
-  /* No label: center the 32dp icon-container in the 64dp bar → 16dp each side. */
+  /* No label: center the 32px icon-container in the 64px bar → 16px each side. */
   --_pad-top: var(--md-sys-spacing-inset-lg, 16px);
   --_pad-bottom: var(--md-sys-spacing-inset-lg, 16px);
   justify-content: center;

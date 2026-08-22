@@ -91,7 +91,7 @@ undoing one filter never means reopening the sheet.
     <div style="display: grid; gap: 4px;">
       <span style="font: var(--md-sys-typescale-label-large); color: var(--md-sys-color-on-surface);">Price</span>
       <md-slider range min="100" max="200" step="5" value-start="100" value-end="200"
-        label-start="Minimum price" label-end="Maximum price" value-indicator></md-slider>
+        label-start="Minimum price" label-end="Maximum price"></md-slider>
       <span data-price-readout style="font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);">$100 – $200</span>
     </div>
     <div style="display: grid; gap: 8px;">
@@ -136,7 +136,7 @@ undoing one filter never means reopening the sheet.
     <md-select-option value="Adidas">Adidas</md-select-option>
   </md-multi-select>
   <md-slider range min="100" max="200" step="5" value-start="100" value-end="200"
-    label-start="Minimum price" label-end="Maximum price" value-indicator></md-slider>
+    label-start="Minimum price" label-end="Maximum price"></md-slider>
   <md-chip variant="filter" label="EU 40"></md-chip>
   <md-chip variant="filter" label="EU 41"></md-chip>
   <md-segmented-button-set aria-label="Sort by">
@@ -374,7 +374,7 @@ export default function MobileFilterSheet() {
           </MdMultiSelect>
           <div style={{ display: 'grid', gap: 4 }}>
             <span>Price</span>
-            <MdSlider range min={100} max={200} step={5} valueIndicator
+            <MdSlider range min={100} max={200} step={5}
               valueStart={pending.min} valueEnd={pending.max}
               ariaLabelStart="Minimum price" ariaLabelEnd="Maximum price"
               onMdInput={(e) => setPending({ ...pending, min: e.detail.valueStart ?? 100, max: e.detail.valueEnd ?? 200 })} />
@@ -446,7 +446,7 @@ const fresh = (): Filters => ({ brands: [], min: 100, max: 200, sizes: [], sort:
     '@for (b of brands; track b) {<md-select-option [value]="b">{{ b }}</md-select-option>}' +
     '</md-multi-select>' +
     '<div class="field"><span>Price</span>' +
-    '<md-slider range min="100" max="200" step="5" value-indicator label-start="Minimum price" label-end="Maximum price" ' +
+    '<md-slider range min="100" max="200" step="5" label-start="Minimum price" label-end="Maximum price" ' +
     '[valueStart]="pending.min" [valueEnd]="pending.max" (mdInput)="onPrice($event)"></md-slider>' +
     '<span>{{ priceReadout }}</span></div>' +
     '<div class="field"><span>Size (EU)</span><div class="chips">' +
@@ -645,8 +645,7 @@ function apply() {
         </MdMultiSelect>
         <div class="field">
           <span>Price</span>
-          <MdSlider range :min="100" :max="200" :step="5" value-indicator
-            aria-label-start="Minimum price" aria-label-end="Maximum price"
+          <MdSlider range :min="100" :max="200" :step="5"            aria-label-start="Minimum price" aria-label-end="Maximum price"
             :value-start="pending.min" :value-end="pending.max" @md-input="onPrice" />
           <span>{{ priceReadout }}</span>
         </div>
@@ -783,8 +782,7 @@ function apply() {
       </md-multi-select>
       <div class="field">
         <span>Price</span>
-        <md-slider range min="100" max="200" step="5" value-indicator
-          label-start="Minimum price" label-end="Maximum price"
+        <md-slider range min="100" max="200" step="5"          label-start="Minimum price" label-end="Maximum price"
           value-start={pending.min} value-end={pending.max} on:mdInput={onPrice}></md-slider>
         <span>{'$' + pending.min + ' – $' + pending.max}</span>
       </div>
@@ -832,7 +830,7 @@ function apply() {
 |---|---|
 | [`md-bottom-sheet`](/components/bottom-sheet/) | The filter surface. `closeable` gives keyboard users an exit (the drag handle is pointer-only), `top-divider`/`bottom-divider` frame the scrollable body, and the `actions` slot is the sticky footer holding Reset and the live-count Apply button. |
 | [`md-multi-select`](/components/multi-select/) | Brand picker. Selected brands stay visible as removable chips below the field, and `clearable` wipes them in one tap. `mdChange` delivers the full `string[]` for the live count. |
-| [`md-slider`](/components/slider/) | Price range: `range` + `value-start`/`value-end`, `step="5"`, per-thumb names via `label-start`/`label-end`, and `value-indicator` bubbles over each thumb. `mdInput` recounts continuously during the drag. |
+| [`md-slider`](/components/slider/) | Price range: `range` + `value-start`/`value-end`, `step="5"`, per-thumb names via `label-start`/`label-end`. The text readout below carries the values — `value-indicator` bubbles are always-on and would overflow the sheet at the endpoints. `mdInput` recounts continuously during the drag. |
 | [`md-chip`](/components/chip/) | Two jobs: `variant="filter"` size toggles inside the sheet, and `variant="input" selectable="false" removable` display tokens above the grid whose only action is the remove ✕. |
 | [`md-segmented-button-set`](/components/segmented-button/) | Sort order — three exclusive options, all visible, `mdChange` reports the selection as `string[]`. |
 | [`md-card`](/components/card/) | One product per card, `variant="outlined"` for a defined edge in a dense grid. The demo filters by toggling display and reorders by re-appending. |

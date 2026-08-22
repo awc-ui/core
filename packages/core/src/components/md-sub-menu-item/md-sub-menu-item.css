@@ -23,7 +23,7 @@
      See packages/tokens/src/tokens.css §10-12. */
   min-height: calc(48px + var(--md-sys-density-scale, 0) * 4px);
   /* Icon lever, mirroring md-menu-item so a submenu row and its siblings taper
-     in lockstep — 1px per rung off 24dp, floored at 18px. */
+     in lockstep — 1px per rung off 24px, floored at 18px. */
   --_icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
   padding: 0 var(--md-sys-spacing-inset-md, 12px);
   gap: var(--md-sys-spacing-gap-sm, 8px);

@@ -4,7 +4,7 @@ import type { Entry } from '../index';
  *  localized: the anchor FAB accessible name (aria-label) and each menu item's
  *  visible `label`. Reuses the shared `edit` / `delete` verbs from `common.ts`.
  *  Left as-is: the variant/size caption spans (Primary/Secondary/Tertiary,
- *  Standard/Medium/Large 56/80/96dp), Material Symbols icon names, CSS / custom-
+ *  Standard/Medium/Large 56/80/96px), Material Symbols icon names, CSS / custom-
  *  property demos, docs.description prose and explanatory demo copy, the live
  *  event-log panel chrome (Live log / Awaiting events… / Clear log), the
  *  responsive scaffold instructions and breakpoint labels, and the two

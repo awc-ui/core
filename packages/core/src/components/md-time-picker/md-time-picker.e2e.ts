@@ -231,7 +231,7 @@ describe('md-time-picker (e2e)', () => {
 
      Important: the dialog has a 300ms `scale(0.92 → 1)` entrance
      animation, so measurements taken before it lands are off by
-     ~1% (e.g. a 96dp tile reads back as ~95.04). Each test below
+     ~1% (e.g. a 96px tile reads back as ~95.04). Each test below
      awaits the animation via the `animationend` event (with a small
      wall-clock fallback) before reading any geometry.
 
@@ -294,26 +294,26 @@ describe('md-time-picker (e2e)', () => {
       await awaitDialogReady(page);
 
       // After unifying both variants around the typeable input row
-      // the HH/MM tiles are 96dp × 72dp (M3 *input* spec) instead of
-      // the old read-only dial 96×80 — the 8dp delta is absorbed by
+      // the HH/MM tiles are 96px × 72px (M3 *input* spec) instead of
+      // the old read-only dial 96×80 — the 8px delta is absorbed by
       // the "Hour" / "Minute" hint label stacked underneath each
       // input, keeping the overall time-area height aligned with
       // the AM/PM pill alongside it.
       expect(await measureByPart(page, 'input-hour')).toEqual({ w: 96, h: 72 });
       expect(await measureByPart(page, 'input-minute')).toEqual({ w: 96, h: 72 });
 
-      // Period selector container (vertical, default) — 52dp × 72dp
+      // Period selector container (vertical, default) — 52px × 72px
       // (matches the input-tile height, NOT the old 52×80 dial pill).
       expect(await measureByPart(page, 'period-toggle')).toEqual({ w: 52, h: 72 });
 
-      // Clock dial container — 256dp
+      // Clock dial container — 256px
       expect(await measureByPart(page, 'dial')).toEqual({ w: 256, h: 256 });
 
-      // Clock dial selector handle — 48dp.
+      // Clock dial selector handle — 48px.
       // The handle's parent (.md-time-picker__dial-hand) is rotated, so we
       // intentionally read offsetWidth/Height — the layout box — instead of
       // getBoundingClientRect, which would report the rotated visual bbox
-      // (48 × √2 ≈ 68dp).
+      // (48 × √2 ≈ 68px).
       const handle = await page.evaluate(() => {
         const host = document.querySelector('md-time-picker');
         const tip = host?.shadowRoot?.querySelector('.md-time-picker__dial-hand-tip') as HTMLElement | null;
@@ -322,7 +322,7 @@ describe('md-time-picker (e2e)', () => {
       });
       expect(handle).toEqual({ w: 48, h: 48 });
 
-      // Clock dial selector centre — 8dp (no rotation here, but use
+      // Clock dial selector centre — 8px (no rotation here, but use
       // offsetWidth for parity with the handle measurement).
       const centre = await page.evaluate(() => {
         const host = document.querySelector('md-time-picker');
@@ -331,7 +331,7 @@ describe('md-time-picker (e2e)', () => {
       });
       expect(centre).toEqual({ w: 8, h: 8 });
 
-      // Clock dial selector track width — 2dp.
+      // Clock dial selector track width — 2px.
       const trackWidth = await page.evaluate(() => {
         const host = document.querySelector('md-time-picker');
         const line = host?.shadowRoot?.querySelector('.md-time-picker__dial-hand-line') as HTMLElement | null;
@@ -339,7 +339,7 @@ describe('md-time-picker (e2e)', () => {
       });
       expect(trackWidth).toBe(2);
 
-      // Container padding — 24dp on all sides
+      // Container padding — 24px on all sides
       const padding = await page.evaluate(() => {
         const host = document.querySelector('md-time-picker');
         const dialog = host?.shadowRoot?.querySelector('[part="dialog"]') as HTMLElement | null;
@@ -357,8 +357,8 @@ describe('md-time-picker (e2e)', () => {
 
     it('dial variant in 24-hour mode keeps the input tiles at 96×72 and drops the AM/PM toggle', async () => {
       // With the typeable HH/MM input row now shared between variants
-      // the 24h dial dialog no longer widens the tiles to 114dp — the
-      // input fields stay at the 96dp M3 input spec regardless of
+      // the 24h dial dialog no longer widens the tiles to 114px — the
+      // input fields stay at the 96px M3 input spec regardless of
       // clock format. The dialog naturally narrows because there's no
       // AM/PM column on the inline-end edge.
       const page = await newE2EPage();
@@ -406,32 +406,32 @@ describe('md-time-picker (e2e)', () => {
       expect(Math.abs(alignment.centre!.y - alignment.dial!.y)).toBeLessThanOrEqual(1);
 
       // The hand tip is centred on the selected number. This locks in
-      // the fix for the bug where the handle floated 23dp past the
+      // the fix for the bug where the handle floated 23px past the
       // number it pointed to because the hand defaulted to a 100%
       // length while the number ring sits at 80%.
       expect(Math.abs(alignment.tip!.x - alignment.activeNumber!.x)).toBeLessThanOrEqual(1);
       expect(Math.abs(alignment.tip!.y - alignment.activeNumber!.y)).toBeLessThanOrEqual(1);
     });
 
-    it('insets the outer number ring so the 48dp handle hugs the dial edge (~1–2dp clearance)', async () => {
+    it('insets the outer number ring so the 48px handle hugs the dial edge (~1–2px clearance)', async () => {
       // The canonical M3 reference (MUI X, Material Web Components,
       // m3.material.io spec image) sits the handle's outer edge
       // *tangent* to the dial circle with only a hair of breathing
-      // room. With a 256dp dial (128dp radius), a 48dp handle (24dp
+      // room. With a 256px dial (128px radius), a 48px handle (24px
       // radius), and a 0.80 outer ring ratio, the math is:
       //
-      //   number center : 0.80 * 128 = 102.4dp from centre
-      //   handle outer  : 102.4 + 24 = 126.4dp from centre
-      //   clearance     : 128 - 126.4 = ~1.6dp (handle hugs dial)
+      //   number center : 0.80 * 128 = 102.4px from centre
+      //   handle outer  : 102.4 + 24 = 126.4px from centre
+      //   clearance     : 128 - 126.4 = ~1.6px (handle hugs dial)
       //
       // History — what we used to test for:
-      //   0.82 (pre-fix)   → handle 1dp PAST dial edge (overflow)
-      //   0.75 (overshoot) → handle 8dp away (visually "too inside")
-      //   0.80 (current)   → ~1.6dp, matches canonical reference
+      //   0.82 (pre-fix)   → handle 1px PAST dial edge (overflow)
+      //   0.75 (overshoot) → handle 8px away (visually "too inside")
+      //   0.80 (current)   → ~1.6px, matches canonical reference
       //
-      // The 2.5dp tolerance accommodates retina sub-pixel rounding
+      // The 2.5px tolerance accommodates retina sub-pixel rounding
       // and locks the handle to "hugs the edge" without re-allowing
-      // overflow or the 8dp empty gap.
+      // overflow or the 8px empty gap.
       const page = await newE2EPage();
       await page.setContent('<md-time-picker open variant="dial" format="12h" value="10:30"></md-time-picker>');
       await awaitDialogReady(page);
@@ -470,10 +470,10 @@ describe('md-time-picker (e2e)', () => {
       expect(geometry!.clearance).toBeLessThanOrEqual(3);
     });
 
-    it('focus ring on the AM/PM tiles matches md-button (3dp secondary outline + 2dp offset)', async () => {
+    it('focus ring on the AM/PM tiles matches md-button (3px secondary outline + 2px offset)', async () => {
       // Only the AM and PM tiles still get the canonical md-button
-      // 3dp secondary outline focus ring — the HH/MM tiles are now
-      // typeable <input> elements whose `:focus` paints a 2dp primary
+      // 3px secondary outline focus ring — the HH/MM tiles are now
+      // typeable <input> elements whose `:focus` paints a 2px primary
       // border on the field itself (M3 input spec), not an external
       // outline. That input focus treatment is verified separately
       // by the input-focus-color test below.
@@ -523,14 +523,14 @@ describe('md-time-picker (e2e)', () => {
       }
     });
 
-    it('focused HH/MM input paints ONLY the M3 primary-container fill + 2dp primary border (no extra outer ring)', async () => {
+    it('focused HH/MM input paints ONLY the M3 primary-container fill + 2px primary border (no extra outer ring)', async () => {
       // The HH/MM <input> elements get TWO focus treatments — and
       // ONLY two — when the user lands on them:
       //
       //   1. M3 text-field "active" fill — background: primary-container.
-      //   2. M3 text-field "active" border — 2dp primary.
+      //   2. M3 text-field "active" border — 2px primary.
       //
-      // We deliberately do NOT layer the dialog-wide 3dp secondary
+      // We deliberately do NOT layer the dialog-wide 3px secondary
       // focus ring on top of the input (the way AM/PM tiles, the
       // mode-toggle icon button, and Cancel / OK do). The primary
       // border is already a strong, dial-meaningful "this is the
@@ -542,7 +542,7 @@ describe('md-time-picker (e2e)', () => {
       //
       // The test pins:
       //   - background → primary-container
-      //   - border    → 2dp primary
+      //   - border    → 2px primary
       //   - outline   → "none" (no extra ring)
       const page = await newE2EPage();
       await pinNormalColors(page); // immune to a sibling file's forced-colors bleed
@@ -589,7 +589,7 @@ describe('md-time-picker (e2e)', () => {
     });
 
     it('renders every dial number in the same Body Large size with no tracking', async () => {
-      // MD3 spec assigns body-large (16dp / 24 line-height / 400 weight)
+      // MD3 spec assigns body-large (16px / 24 line-height / 400 weight)
       // to *every* dial number on both rings of the 24-hour dial. The
       // selected number stays at the same font-size — only its weight
       // shifts to 500 so it reads inside the primary handle. Tracking
@@ -651,7 +651,7 @@ describe('md-time-picker (e2e)', () => {
       expect(typography.active[0].opacity).toBe('1');
     });
 
-    it('horizontal period selector layout renders a 216×38 toggle with 8dp corners', async () => {
+    it('horizontal period selector layout renders a 216×38 toggle with 8px corners', async () => {
       const page = await newE2EPage();
       // The 216×38 horizontal period pill replaces the 52×80 vertical
       // stack inside the dial variant. Pin variant="dial" so the test
@@ -663,16 +663,16 @@ describe('md-time-picker (e2e)', () => {
       expect(await measureByPart(page, 'input-hour')).toEqual({ w: 96, h: 72 });
       expect(await measureByPart(page, 'input-minute')).toEqual({ w: 96, h: 72 });
 
-      // Period selector container (horizontal) — 216dp × 38dp
+      // Period selector container (horizontal) — 216px × 38px
       expect(await measureByPart(page, 'period-toggle')).toEqual({ w: 216, h: 38 });
 
       // ARIA orientation reflects the new layout.
       const period = await page.find('md-time-picker >>> [part="period-toggle"]');
       expect(period.getAttribute('aria-orientation')).toBe('horizontal');
 
-      // Corner radius — `shape-corner-small` (8dp) on every corner. The
+      // Corner radius — `shape-corner-small` (8px) on every corner. The
       // horizontal toggle is intentionally NOT a full pill: it pairs
-      // with the 8dp HH:MM tiles, so a matching radius keeps the time
+      // with the 8px HH:MM tiles, so a matching radius keeps the time
       // area's corner language consistent. The vertical 52×80 toggle
       // uses the same value, which the next assertion also verifies.
       const horizontalCorners = await page.evaluate(() => {
@@ -695,32 +695,32 @@ describe('md-time-picker (e2e)', () => {
        reference image):
 
          padding_l(24) + input(96) + colon(24) + input(96)
-            + gap(12) + period(52) + padding_r(24) = 328dp wide (12h)
+            + gap(12) + period(52) + padding_r(24) = 328px wide (12h)
 
        Anatomy mirrors the spec image:
-         • Headline left-aligned, 20dp gap below
-         • 72dp input row: HH:MM inputs + AM/PM stack, all the same
+         • Headline left-aligned, 20px gap below
+         • 72px input row: HH:MM inputs + AM/PM stack, all the same
            block-size so they top-align cleanly with the hint labels
            stacked underneath each input
-         • 24dp gap below the input area to the footer
-         • 24dp padding on every dialog edge
+         • 24px gap below the input area to the footer
+         • 24px padding on every dialog edge
 
        Asserting each measurement here means a future refactor that
        drifts a single dimension off-spec fails noisily. */
-    it('input variant matches the 12-hour spec (96×72 inputs, 24dp colon, 12dp gap, 52×72 AM/PM)', async () => {
+    it('input variant matches the 12-hour spec (96×72 inputs, 24px colon, 12px gap, 52×72 AM/PM)', async () => {
       const page = await newE2EPage();
       await page.setContent('<md-time-picker open variant="input" format="12h" value="07:00"></md-time-picker>');
       await awaitDialogReady(page);
 
-      // HH/MM input fields — 96dp × 72dp.
+      // HH/MM input fields — 96px × 72px.
       expect(await measureByPart(page, 'input-hour')).toEqual({ w: 96, h: 72 });
       expect(await measureByPart(page, 'input-minute')).toEqual({ w: 96, h: 72 });
 
-      // AM/PM toggle in input mode — 52dp × 72dp (the 80dp dial-variant
-      // height shrinks by 8dp to align with the 72dp input row).
+      // AM/PM toggle in input mode — 52px × 72px (the 80px dial-variant
+      // height shrinks by 8px to align with the 72px input row).
       expect(await measureByPart(page, 'period-toggle')).toEqual({ w: 52, h: 72 });
 
-      // Colon separator column — 24dp wide.
+      // Colon separator column — 24px wide.
       const separator = await page.evaluate(() => {
         const host = document.querySelector('md-time-picker');
         const el = host?.shadowRoot?.querySelector('.md-time-picker__input-separator') as HTMLElement | null;
@@ -730,7 +730,7 @@ describe('md-time-picker (e2e)', () => {
       });
       expect(separator).toEqual({ w: 24, h: 72 });
 
-      // 12dp inline-start gap between the MM input and the AM/PM
+      // 12px inline-start gap between the MM input and the AM/PM
       // toggle — `margin-inline-start: 12px` on the vertical period
       // selector, with the parent flex `gap: 0` so no extra slack
       // creeps in.
@@ -743,7 +743,7 @@ describe('md-time-picker (e2e)', () => {
       });
       expect(periodGap).toBe(12);
 
-      // Dialog padding — 24dp on every edge.
+      // Dialog padding — 24px on every edge.
       const padding = await page.evaluate(() => {
         const host = document.querySelector('md-time-picker');
         const dialog = host?.shadowRoot?.querySelector('[part="dialog"]') as HTMLElement | null;
@@ -758,7 +758,7 @@ describe('md-time-picker (e2e)', () => {
       });
       expect(padding).toEqual({ top: 24, right: 24, bottom: 24, left: 24 });
 
-      // Total dialog width — 328dp = 24 + 96 + 24 + 96 + 12 + 52 + 24
+      // Total dialog width — 328px = 24 + 96 + 24 + 96 + 12 + 52 + 24
       const dialogWidth = await page.evaluate(() => {
         const host = document.querySelector('md-time-picker');
         const d = host?.shadowRoot?.querySelector('[part="dialog"]') as HTMLElement | null;
@@ -797,7 +797,7 @@ describe('md-time-picker (e2e)', () => {
          surface-container-highest the moment the user clicked into it.
          The assertion below pins the canonical M3 behavior — the
          focused active input MUST keep its primary-container fill and
-         only gain a primary 2dp outline on top. The picker auto-
+         only gain a primary 2px outline on top. The picker auto-
          focuses HH on open, so we assert the focused state directly. */
       const page = await newE2EPage();
       await pinNormalColors(page); // author-color reads are meaningless under a forced-colors bleed
@@ -1008,7 +1008,7 @@ describe('md-time-picker (e2e)', () => {
 
     it('input variant always uses the vertical 52×72 AM/PM toggle, even when period-layout="horizontal"', async () => {
       // The author asked for the 216×38 horizontal pill, but the
-      // input dialog has no room for it inside its single 72dp row
+      // input dialog has no room for it inside its single 72px row
       // — the spec only shows the 52×72 vertical stack. We coerce
       // the layout via `effectivePeriodLayout` (see the getter) so
       // the same prop value can stay safe across dial and input.
@@ -1020,10 +1020,10 @@ describe('md-time-picker (e2e)', () => {
       expect(await measureByPart(page, 'period-toggle')).toEqual({ w: 52, h: 72 });
     });
 
-    it('vertical and horizontal period selectors share the same 8dp corner radius', async () => {
+    it('vertical and horizontal period selectors share the same 8px corner radius', async () => {
       // Regression test: it should be possible to swap `period-layout`
       // without re-skinning the toggle. Both layouts must land on the
-      // canonical `shape-corner-small` (8dp) the rest of the picker's
+      // canonical `shape-corner-small` (8px) the rest of the picker's
       // headline tiles also use.
       const page = await newE2EPage();
       await page.setContent('<md-time-picker open format="12h" period-layout="vertical" value="07:00"></md-time-picker>');
@@ -1041,16 +1041,16 @@ describe('md-time-picker (e2e)', () => {
        Canonical MD3 landscape dial sheet:
 
          padding_l(24) + tile(96) + colon(24) + tile(96)
-            + gap(52) + dial(256) + padding_r(24) = 572dp (12h)
+            + gap(52) + dial(256) + padding_r(24) = 572px (12h)
 
        Anatomy mirrors the spec image:
          • Headline left-aligned at the top, full-width
-         • Left column: HH:MM row → 16dp gap → 216×38 AM/PM pill
-         • Right column: 256dp dial
+         • Left column: HH:MM row → 16px gap → 216×38 AM/PM pill
+         • Right column: 256px dial
          • Footer below both columns, full-width
 
        These assertions are intentionally exact so any future refactor
-       that drifts even 1dp away from the spec sheet fails noisily. */
+       that drifts even 1px away from the spec sheet fails noisily. */
     it('horizontal orientation lays out the 12-hour landscape dialog with input tiles + 216×38 AM/PM pill', async () => {
       const page = await newE2EPage();
       // `orientation="horizontal"` is meaningful only for the dial
@@ -1059,8 +1059,8 @@ describe('md-time-picker (e2e)', () => {
       await page.setContent('<md-time-picker open variant="dial" format="12h" orientation="horizontal" value="07:00"></md-time-picker>');
       await awaitDialogReady(page);
 
-      // Dialog padding stays at the canonical 24dp on every edge.
-      // The total dialog width is implicitly 24 + 96 + 24 + 96 + 52 + 256 + 24 = 572dp,
+      // Dialog padding stays at the canonical 24px on every edge.
+      // The total dialog width is implicitly 24 + 96 + 24 + 96 + 52 + 256 + 24 = 572px,
       // but we don't pin it here because the typeable input row uses
       // the smaller 96×72 tile (instead of the old read-only 96×80 dial
       // tile) and a future tweak to the hint label could subtly shift
@@ -1080,7 +1080,7 @@ describe('md-time-picker (e2e)', () => {
       expect(dialogPadding).toEqual({ paddingTop: 24, paddingRight: 24, paddingBottom: 24, paddingLeft: 24 });
 
       // HH/MM input tiles are 96×72 in both orientations; the dial
-      // stays at the canonical 256dp.
+      // stays at the canonical 256px.
       expect(await measureByPart(page, 'input-hour')).toEqual({ w: 96, h: 72 });
       expect(await measureByPart(page, 'input-minute')).toEqual({ w: 96, h: 72 });
       expect(await measureByPart(page, 'dial')).toEqual({ w: 256, h: 256 });
@@ -1090,7 +1090,7 @@ describe('md-time-picker (e2e)', () => {
       // vertical pill cannot share the left column with HH:MM.
       expect(await measureByPart(page, 'period-toggle')).toEqual({ w: 216, h: 38 });
 
-      // Body uses flex-row with a 52dp column-gap (the spec gap between
+      // Body uses flex-row with a 52px column-gap (the spec gap between
       // the time-area and the dial).
       const bodyLayout = await page.evaluate(() => {
         const host = document.querySelector('md-time-picker');
@@ -1126,7 +1126,7 @@ describe('md-time-picker (e2e)', () => {
       await awaitDialogReady(page);
 
       // With the unified typeable input row, 24h mode no longer
-      // widens the tiles — they stay at the 96dp M3 input spec
+      // widens the tiles — they stay at the 96px M3 input spec
       // regardless of clock format. The dialog naturally narrows
       // because the AM/PM column is absent.
       expect(await measureByPart(page, 'input-hour')).toEqual({ w: 96, h: 72 });
@@ -1135,7 +1135,7 @@ describe('md-time-picker (e2e)', () => {
       // No period selector is rendered in 24h mode.
       expect(await measureByPart(page, 'period-toggle')).toBeNull();
 
-      // The 52dp dial gap survives the format change; measure against
+      // The 52px dial gap survives the format change; measure against
       // the time-area wrapper so the hint labels under the inputs
       // don't poison the gap arithmetic.
       const dialGap = await page.evaluate(() => {
@@ -1148,9 +1148,9 @@ describe('md-time-picker (e2e)', () => {
       expect(dialGap).toBe(52);
     });
 
-    it('horizontal orientation falls back to the vertical 328dp dialog for the input variant', async () => {
+    it('horizontal orientation falls back to the vertical 328px dialog for the input variant', async () => {
       // `orientation="horizontal"` only applies to the dial variant —
-      // the input dialog stays at 328dp because there's no clock face
+      // the input dialog stays at 328px because there's no clock face
       // to balance against in the right column.
       const page = await newE2EPage();
       await page.setContent('<md-time-picker open variant="input" orientation="horizontal" value="14:30"></md-time-picker>');
@@ -1176,7 +1176,7 @@ describe('md-time-picker (e2e)', () => {
            than in dial mode. The dial variant uses M3
            display-large (57px) for its 96×80 tiles; the input
            variant uses M3 display-medium (45px) inside the 96×72
-           fields. The 12dp font-size delta is what makes the
+           fields. The 12px font-size delta is what makes the
            toggle between modes read as a *focus shift* (read →
            edit) rather than a layout reshuffle.
 
@@ -1692,7 +1692,7 @@ describe('md-time-picker (e2e)', () => {
 
     it('respects explicit variant="dial" when responsive is OFF (default), even on a tiny viewport', async () => {
       const page = await newE2EPage();
-      // 320×400 — well below the 460dp adaptive threshold. Without
+      // 320×400 — well below the 460px adaptive threshold. Without
       // `responsive`, the picker MUST still render the dial as the
       // author requested. Opt-in is the whole point of the flag.
       await page.setViewport({ width: 320, height: 400 });
@@ -1819,7 +1819,7 @@ describe('md-time-picker (e2e)', () => {
       const page = await newE2EPage();
       // Even on the widest viewport, `variant="input"` stays
       // portrait — there's no dial to balance against in the
-      // right column, so a 572dp two-column dialog would just
+      // right column, so a 572px two-column dialog would just
       // leave half the body empty.
       await page.setViewport({ width: 1280, height: 720 });
       await page.setContent('<md-time-picker open variant="input" responsive></md-time-picker>');
@@ -2008,7 +2008,7 @@ describe('md-time-picker (e2e)', () => {
 
       expect(tip).not.toBeNull();
       expect(num).not.toBeNull();
-      // 48dp handle, 16px digit — the tip's centre overlaps the
+      // 48px handle, 16px digit — the tip's centre overlaps the
       // number's centre within a couple of pixels (line stroke
       // rounding + sub-pixel positioning slack).
       expect(Math.abs(tip!.x - num!.x)).toBeLessThan(3);

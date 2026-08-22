@@ -73,7 +73,7 @@
 
   inline-size: 100%;
   /* min (not fixed) so the safe-area inset EXTENDS the bar on notched devices
-     instead of eating into the 64dp content area. */
+     instead of eating into the 64px content area. */
   min-block-size: var(--_height);
   padding-inline: var(--_padding);
   padding-block-end: env(safe-area-inset-bottom, 0px);
@@ -86,7 +86,7 @@
   /* No host gap: the only host children are the content container and the FAB
      wrapper. Item spacing lives on the inner container (--_gap); the space to the
      FAB is the fab-container's own --_fab-gap margin. A host gap here would
-     double-count against that margin (32 + 16 = 48dp instead of the documented 16). */
+     double-count against that margin (32 + 16 = 48px instead of the documented 16). */
   gap: 0;
 }
 

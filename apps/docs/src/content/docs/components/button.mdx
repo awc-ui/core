@@ -229,7 +229,7 @@ loading state (inert, `aria-busy`, the label staying put) is unchanged.
 :::note[Sizing a slotted loader is yours]
 The button sizes its **own** spinner from the icon box (see below). A slotted
 element keeps its own sizing — `md-progress-indicator` takes a `size` in dp, and
-its circular variant floors at 24dp unless you set one, which is exactly why the
+its circular variant floors at 24px unless you set one, which is exactly why the
 button's default is `md-loading-indicator`.
 :::
 
@@ -291,7 +291,7 @@ action, trailing as its *outcome*:
 />
 
 :::caution[It will not match the built-in spinner's size]
-`md-progress-indicator` clamps its circular variant to M3's **24dp minimum**, so
+`md-progress-indicator` clamps its circular variant to M3's **24px minimum**, so
 it renders larger than the `loading` spinner (14px at `sm`) and suits size `md`
 and up. That clamp is exactly why `loading` uses
 [`md-loading-indicator`](/components/loading-indicator/) internally — it has no

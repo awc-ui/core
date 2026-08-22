@@ -18,36 +18,36 @@
      --md-search-loading-color             In-bar loading indicator shape colour
                                            (#6750A4 / primary)
      --md-search-container-shape           Bar border-radius
-     --md-search-container-height          Bar block-size — docked / contained (56dp)
+     --md-search-container-height          Bar block-size — docked / contained (56px)
      --md-search-divided-fullscreen-bar-height
-                                           Divided × full-screen header height (72dp)
-     --md-search-icon-button-size          Leading / trailing icon tap target (48dp)
+                                           Divided × full-screen header height (72px)
+     --md-search-icon-button-size          Leading / trailing icon tap target (48px)
      --md-search-contained-docked-panel-offset
-                                           Contained docked bar ↔ results gap (4dp)
-     --md-search-leading-icon-label-gap    Tap target → label gap (4dp)
-     --md-search-trailing-icon-label-gap   Label → tap target gap (4dp)
-     --md-search-container-min-inline-size Bar minimum width             (360dp)
-     --md-search-container-max-inline-size Bar maximum width             (720dp)
-     --md-search-container-padding-inline           Extra inline padding on the bar  (0dp)
+                                           Contained docked bar ↔ results gap (4px)
+     --md-search-leading-icon-label-gap    Tap target → label gap (4px)
+     --md-search-trailing-icon-label-gap   Label → tap target gap (4px)
+     --md-search-container-min-inline-size Bar minimum width             (360px)
+     --md-search-container-max-inline-size Bar maximum width             (720px)
+     --md-search-container-padding-inline           Extra inline padding on the bar  (0px)
      --md-search-container-padding-inline-focused   Inline padding on the bar when focused / open
      --md-search-leading-padding-inline             Space from the bar's leading edge
-                                                    to the leading icon tap target    (4dp)
+                                                    to the leading icon tap target    (4px)
      --md-search-trailing-padding-inline            Space from the bar's trailing edge
-                                                    to the trailing icon tap target   (4dp)
+                                                    to the trailing icon tap target   (4px)
      --md-search-input-color               Input text colour
      --md-search-input-font-family         Input typescale font (body-large)
-     --md-search-input-font-size           Input typescale size (16dp)
-     --md-search-input-line-height         Input typescale line height (24dp)
+     --md-search-input-font-size           Input typescale size (16px)
+     --md-search-input-line-height         Input typescale line height (24px)
      --md-search-input-font-weight         Input typescale weight (400)
-     --md-search-input-letter-spacing      Input typescale tracking (0.5dp)
+     --md-search-input-letter-spacing      Input typescale tracking (0.5px)
      --md-search-placeholder-color         Placeholder / supporting text colour
      --md-search-state-layer-color         Hover/press wash (#1D1B20 / on-surface)
      --md-search-hover-state-layer-opacity Hover state layer opacity (0.08)
      --md-search-pressed-state-layer-opacity Pressed state layer opacity (0.1)
      --md-search-focus-indicator-color     Focus ring colour (#625B71 / secondary)
-     --md-search-focus-indicator-thickness Focus ring thickness (3dp)
-     --md-search-focus-indicator-offset    Focus ring offset (2dp)
-     --md-search-avatar-size               Avatar diameter when slotted   (40dp)
+     --md-search-focus-indicator-thickness Focus ring thickness (3px)
+     --md-search-focus-indicator-offset    Focus ring offset (2px)
+     --md-search-avatar-size               Avatar diameter when slotted   (40px)
      --md-search-panel-min-block-size      Docked panel floor — 0 = shrink to
                                            content; raise for a taller empty drawer
      --md-search-panel-max-block-size      Docked panel maximum height —
@@ -56,8 +56,8 @@
                                            overlay cap or docked panel cap
                                            (unset = layout default)
      --md-search-docked-panel-shape        Contained docked results card radius
-                                           (16dp / shape-corner-large)
-     --md-search-panel-offset              Docked panel gap fallback (divided / generic 4dp)
+                                           (16px / shape-corner-large)
+     --md-search-panel-offset              Docked panel gap fallback (divided / generic 4px)
      --md-search-bar-fullscreen-color      Bar background in full-screen open
      --md-search-fullscreen-results-color  Opaque results surface in full-screen
                                            open (default: surface-container-low)
@@ -65,24 +65,24 @@
      --md-search-divider-thickness         Hairline thickness            (1px)
      --md-search-fullscreen-bar-offset-block-start
                                            Contained full-screen: bar inset
-                                           from viewport block-start (16dp)
+                                           from viewport block-start (16px)
      --md-search-fullscreen-bar-offset-inline
                                            Contained full-screen: bar inset from
-                                           viewport inline edges (8dp)
+                                           viewport inline edges (8px)
      --md-search-fullscreen-bar-panel-gap  Contained full-screen: gap between
                                            the pill bar and the results panel
      --md-search-panel-padding-block-start Full-screen panel padding above
-                                           slotted results (0dp)
+                                           slotted results (0px)
      --md-search-empty-color               No-results message colour
      --md-search-empty-padding-block       No-results vertical padding
      --md-search-empty-padding-inline      No-results horizontal padding
      --md-search-expand-inset              Docked/inline bar RESTING side
-                                           margin (24dp). The bar springs to
+                                           margin (24px). The bar springs to
                                            the focused margin on focus/open,
                                            evenly left + right. Full-screen
                                            ignores this (pure fade)
      --md-search-expand-focused-inset      Docked/inline bar FOCUSED side
-                                           margin (12dp). Set equal to the
+                                           margin (12px). Set equal to the
                                            resting inset to disable the motion.
                                            Set BOTH insets to 0 (or use the
                                            `full-width` prop) for an edge-to-edge
@@ -191,9 +191,9 @@
      resting bar; contained full-screen already uses the density-responsive
      --_container-height. */
   --_divided-fullscreen-bar-height: var(--md-search-divided-fullscreen-bar-height, max(48px, calc(72px + var(--md-sys-density-scale, 0) * 4px)));
-  /* M3 search-bar layout: icons live inside 48dp tap targets; the gap from a
-     tap target to the label is 4dp (the 48dp target absorbs the rest, landing
-     the visible glyph ~16dp from the bar edge and the label ~56dp in). */
+  /* M3 search-bar layout: icons live inside 48px tap targets; the gap from a
+     tap target to the label is 4px (the 48px target absorbs the rest, landing
+     the visible glyph ~16px from the bar edge and the label ~56px in). */
   --_leading-icon-label-gap: var(--md-search-leading-icon-label-gap, 4px);
   --_trailing-icon-label-gap: var(--md-search-trailing-icon-label-gap, 4px);
   /* Leading (back) + trailing tap targets shrink with global density (48px at
@@ -203,7 +203,7 @@
   --_container-min-inline-size: var(--md-search-container-min-inline-size, 360px);
   --_container-max-inline-size: var(--md-search-container-max-inline-size, 720px);
   /* Padding lives on the leading / trailing wrappers so the icons stay at a
-     stable 16dp from the bar's edges regardless of focus state. The bar
+     stable 16px from the bar's edges regardless of focus state. The bar
      itself has no inline padding by default; consumers can still inject
      extra inline padding on the bar via these props. */
   --_container-padding-inline: var(--md-search-container-padding-inline, 0px);
@@ -213,8 +213,8 @@
   );
 
   /* Stable inline padding inside the leading / trailing clusters: the space
-     from the bar edge to the icon's 48dp tap target (4dp per M3). The tap
-     target centres a 24dp glyph, so the visible icon lands ~16dp from the
+     from the bar edge to the icon's 48px tap target (4px per M3). The tap
+     target centres a 24px glyph, so the visible icon lands ~16px from the
      bar edge and the trailing cluster mirrors it. As the bar's outer edge
      expands during the expressive focus motion, the icon rides along. */
   --_leading-padding-inline: var(--md-search-leading-padding-inline, 4px);
@@ -223,10 +223,10 @@
   /* Unified M3 Expressive expansion (docked / inline bars ONLY).
 
      The single, consistent expansion mechanism across ALL docked/inline bars
-     — contained AND divided alike: the bar rests at a 24dp side margin and
-     springs to a 12dp side margin on focus / open, symmetrically (even
+     — contained AND divided alike: the bar rests at a 24px side margin and
+     springs to a 12px side margin on focus / open, symmetrically (even
      left + right). Both edges move inward-to-outward by exactly the
-     24 → 12 = 12dp delta, so the container grows evenly on both sides. The
+     24 → 12 = 12px delta, so the container grows evenly on both sides. The
      default easing is a back-out curve that briefly overshoots the target
      width and snaps back, giving the motion a slick, springy feel.
 
@@ -243,9 +243,9 @@
      (400ms) gives the gesture a deliberate, expressive feel without
      drifting into the ceremonial long-tier durations.
 
-     `--md-search-expand-inset` sets the RESTING margin (24dp default) and
-     `--md-search-expand-focused-inset` the FOCUSED margin (12dp default).
-     The per-side travel is `resting - focused` (12dp by default); its
+     `--md-search-expand-inset` sets the RESTING margin (24px default) and
+     `--md-search-expand-focused-inset` the FOCUSED margin (12px default).
+     The per-side travel is `resting - focused` (12px by default); its
      concrete length is resolved in JS (host-anchored probe) before being
      forwarded to the ripple — see `measureRippleExtend()` and the ripple
      note below. Set both equal (e.g. `--md-search-expand-inset: 0` and
@@ -460,7 +460,7 @@
 }
 
 /* Full-screen icon trigger (default): compact closed chrome — only the
-   search icon button, not the 360–720dp resting bar. Shrink-wrap the host
+   search icon button, not the 360–720px resting bar. Shrink-wrap the host
    (no 100% inline stretch) and drop the inert panel from layout — the panel
    still sizes to slotted results while visibility:hidden, which otherwise
    inflates the host to the full results height and pins the icon to the
@@ -490,7 +490,7 @@
 }
 
 /* Pass-through wrapper — no extra box, background, or clipping around the
-   icon button (Storybook previously clipped a 56dp button inside 48dp). */
+   icon button (Storybook previously clipped a 56px button inside 48px). */
 .md-search__trigger {
   display: contents;
 }
@@ -506,11 +506,11 @@
   );
 }
 
-/* Contained & Divided share the unified M3 search-bar layout: a 4dp space
-   from each bar edge to a 48dp icon tap target, then a 4dp gap to the label.
-   This lands the leading/trailing glyphs 16dp from the bar edges and the
-   label 56dp in — matching the contained (4 + 48 + 4) and divided (16dp to
-   glyph, 16dp glyph → label) measurement sheets simultaneously. Spacing is
+/* Contained & Divided share the unified M3 search-bar layout: a 4px space
+   from each bar edge to a 48px icon tap target, then a 4px gap to the label.
+   This lands the leading/trailing glyphs 16px from the bar edges and the
+   label 56px in — matching the contained (4 + 48 + 4) and divided (16px to
+   glyph, 16px glyph → label) measurement sheets simultaneously. Spacing is
    therefore inherited from the :host defaults; no per-variant override. */
 
 :host(.md-search--contained.md-search--docked) {
@@ -530,7 +530,7 @@
 }
 
 /* Opt-in full-width (docked / inline): zero BOTH expand insets so the bar
-   fills its container edge-to-edge with no side gutters and no 24 → 12dp
+   fills its container edge-to-edge with no side gutters and no 24 → 12px
    margin animation. The aligned results drawer (inset by --_expand-inset-focused)
    then fills the same full width. This is exactly the `full-width` prop's
    effect; consumers can achieve the identical result purely via the CSS vars
@@ -565,10 +565,10 @@
 }
 
 /* Resting divided × full-screen reads as the same compact, rounded pill as the
-   contained variant (56dp, `--_container-shape`). The 72dp flat app-bar header
+   contained variant (56px, `--_container-shape`). The 72px flat app-bar header
    chrome only applies once the view is open/expanded — see the open rules. */
 :host(.md-search--divided.md-search--full-screen.md-search--open) {
-  /* M3 divided baseline: full-screen header is 72dp; docked stays 56dp. */
+  /* M3 divided baseline: full-screen header is 72px; docked stays 56px. */
   --_container-height: var(--_divided-fullscreen-bar-height);
   /* Flat app-bar flush to the viewport edges (safe-area only). */
   --_fullscreen-bar-offset-block-start: max(0px, env(safe-area-inset-block-start, 0px));
@@ -607,7 +607,7 @@
 }
 
 /* Bar floats on top of the full-viewport panel. `inset-inline` insets it by
-   the per-variant gutter (contained pill = 8dp, divided header = flush). */
+   the per-variant gutter (contained pill = 8px, divided header = flush). */
 :host(.md-search--full-screen.md-search--open) .md-search__bar {
   position: fixed;
   inset-block-start: var(--_fullscreen-bar-offset-block-start);
@@ -642,8 +642,8 @@
 }
 
 /* Contained open: cancel the open-state leading-button pull. The leading
-   space is now the spec's 4dp "with actions" value, so the 40dp back button
-   sits flush against that 4dp gutter (glyph lands ~12dp from the bar edge)
+   space is now the spec's 4px "with actions" value, so the 40px back button
+   sits flush against that 4px gutter (glyph lands ~12px from the bar edge)
    without the legacy -8px overshoot. */
 :host(.md-search--contained.md-search--open) .md-search__leading-button {
   margin-inline-start: 0;
@@ -664,7 +664,7 @@
   box-sizing: border-box;
   /* No flex gap — spacing is provided by the leading/trailing wrappers'
      own padding-inline, so the icon-to-text distance equals exactly
-     `--_leading-padding-inline` (16dp) with no double-spacing. */
+     `--_leading-padding-inline` (16px) with no double-spacing. */
   gap: 0;
   /* Resting width is inset symmetrically; margin-inline: auto keeps the bar
      centred so the focused expansion grows into both edges at once
@@ -706,8 +706,8 @@
 :host(.md-search--elevation-4) { --_container-elevation-level: var(--md-sys-elevation-4); }
 :host(.md-search--elevation-5) { --_container-elevation-level: var(--md-sys-elevation-5); }
 
-/* Focused or open: the docked/inline bar springs from its 24dp resting
-   margin out to the 12dp focused margin, evenly left + right (M3 Expressive
+/* Focused or open: the docked/inline bar springs from its 24px resting
+   margin out to the 12px focused margin, evenly left + right (M3 Expressive
    "container width" focus motion). Full-screen zeroes both insets, so this
    resolves to the full overlay width there. */
 .md-search__bar--focused,
@@ -722,7 +722,7 @@
 }
 
 /* Full-screen: the host flips position:relative → fixed on open and its
-   containing block changes from the 720dp max to the viewport. Animating
+   containing block changes from the 720px max to the viewport. Animating
    the bar's percentage `inline-size` with the springy overshoot across
    that switch resolves the percentage against a moving target and reads
    as jitter. In full-screen the bar simply fills the overlay, so we drop
@@ -825,7 +825,7 @@
   inset-block-start: 0;
   inset-inline-start: 0;
   /* The ripple's per-side reach equals the bar's per-side travel on focus:
-     the resting margin minus the focused margin (24 → 12 = 12dp default). */
+     the resting margin minus the focused margin (24 → 12 = 12px default). */
   inline-size: max(0px, calc(var(--_expand-inset) - var(--_expand-inset-focused)));
   block-size: 0;
   visibility: hidden;
@@ -864,7 +864,7 @@
   opacity: var(--_hover-state-layer-opacity);
 }
 
-/* M3 Search bar / Focused: focus indicator ring (3dp / 2dp offset) — not a
+/* M3 Search bar / Focused: focus indicator ring (3px / 2px offset) — not a
    state-layer wash. Box-shadow avoids clipping from overflow:hidden.
 
    The ring is keyboard-only: a text input always matches :focus-visible (even
@@ -984,9 +984,9 @@
 }
 
 /* Inline loading indicator (shape-morph) shown while results are fetched.
-   Occupies the same 48dp trailing slot as an icon button so the cluster
+   Occupies the same 48px trailing slot as an icon button so the cluster
    width doesn't jump when it replaces the clear button; its morphing shape
-   matches the 24dp trailing icon size. */
+   matches the 24px trailing icon size. */
 .md-search__loading {
   --md-loading-indicator-size: var(--_icon-button-size);
   --md-loading-indicator-shape-size: var(--_icon-size);
@@ -1088,7 +1088,7 @@
   }
 }
 
-/* Inside the bar there's only ~4dp of room around a 48dp icon button, so an
+/* Inside the bar there's only ~4px of room around a 48px icon button, so an
    outset ring (offset + thickness) would spill over the bar edge / rounded
    corners. Draw the ring INSET instead — it hugs the inner perimeter of the
    tap target and stays fully contained within the bar. */
@@ -1105,9 +1105,9 @@
    smoothly morphing (cross-fade + rotation + scale) rather than two
    sibling glyphs swapping.
 
-   The wrapper is always a 48dp circular tap target (the M3 search-bar icon
-   target). With the 4dp leading space, the 24dp glyph centred inside lands
-   ~16dp from the bar's leading edge in both states — so there's no size or
+   The wrapper is always a 48px circular tap target (the M3 search-bar icon
+   target). With the 4px leading space, the 24px glyph centred inside lands
+   ~16px from the bar's leading edge in both states — so there's no size or
    position jump on open.
 
    In the resting state pointer-events are turned off so a click on the
@@ -1146,7 +1146,7 @@
    (rather than a `background-color` wash on the button itself) guarantees a
    fully transparent idle — there is no painted circle behind the icon until
    the button is genuinely hovered / pressed — while still rendering a clean
-   circular layer sized exactly to the 48dp tap target on interaction. It
+   circular layer sized exactly to the 48px tap target on interaction. It
    sits behind the morphing glyphs and is inert. */
 .md-search__leading-state-layer {
   position: absolute;
@@ -1265,7 +1265,7 @@
   line-height: var(--_input-line-height);
   letter-spacing: var(--_input-letter-spacing);
   /* No internal padding — the leading/trailing wrappers control the entire
-     icon-to-text distance (16dp by default) with no double-spacing. */
+     icon-to-text distance (16px by default) with no double-spacing. */
   padding-inline: 0;
   position: relative;
   z-index: 1;
@@ -1395,7 +1395,7 @@
 
 /* Docked: anchored popup beneath the bar. The drawer aligns EXACTLY to the
    open bar's edges — it is inset by the same focused expand margin
-   (`--_expand-inset-focused`, 12dp) on both sides, so the bar and the results
+   (`--_expand-inset-focused`, 12px) on both sides, so the bar and the results
    drawer share identical inline-start / inline-end edges at every responsive
    width. The host already clamps the overall inline-size (min 360 / max 720),
    so the drawer inherits that clamp through `inset-inline` rather than carrying
@@ -1406,7 +1406,7 @@
   position: absolute;
   inset-inline: var(--_expand-inset-focused);
   inset-block-start: calc(var(--_container-height) + var(--_panel-offset));
-  /* Intrinsic height from slotted rows, capped by max — no fixed 240dp bay. */
+  /* Intrinsic height from slotted rows, capped by max — no fixed 240px bay. */
   block-size: fit-content;
   min-block-size: var(--_panel-min-block-size);
   max-block-size: var(--_max-block-size, var(--_panel-max-block-size));
@@ -1515,7 +1515,7 @@
 }
 
 /* Contained × docked open: the results panel is a standalone rounded card
-   below the bar (4dp gap). Keep ALL four corners rounded; the panel's
+   below the bar (4px gap). Keep ALL four corners rounded; the panel's
    `overflow: hidden` then clips the scrolling viewport, its scrollbar, and the
    slotted list surface inside that radius, so enabling scroll never squares off
    the top corners (under the bar seam) or the bottom corners (below the last
@@ -1535,7 +1535,7 @@
    chrome. Suppress the default M3 `surface` list-item fill so rows don't
    read as a nested dark card against surface-container-* panels — especially
    in dark theme. Authors can re-tint per-list when they want a distinct bay.
-   Zero out the list's default 8dp block padding so the first and last rows
+   Zero out the list's default 8px block padding so the first and last rows
    sit flush against the drawer edges with no gap. */
 ::slotted([slot='results']) {
   display: block;

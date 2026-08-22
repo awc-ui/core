@@ -7,7 +7,7 @@ import type { Entry } from '../index';
  *  no-results label. Everything else stays byte-for-byte: sample product /
  *  catalogue data (Wireless headphones, USB-C cable…) and email content (Eli,
  *  Adopt a pup?…), demo-mechanic placeholders that describe a CSS / motion demo
- *  (Hover / press me, 64dp tall, Rounded, Level 0…), CSS / ::part() / Icons
+ *  (Hover / press me, 64px tall, Rounded, Level 0…), CSS / ::part() / Icons
  *  demo labels and aria-labels, the developer prose + section headings, the
  *  imperative async-bootstrap status/log text, and the intentional static
  *  Localization + RTL locale demos. */

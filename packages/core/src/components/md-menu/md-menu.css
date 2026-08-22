@@ -45,7 +45,7 @@
   min-width: var(--md-menu-min-width, 112px);
   /* Grow to fit the widest item, bounded only by the viewport (minus an edge
      margin) — long labels no longer truncate at a fixed 280px. Consumers wanting
-     the MD3 280dp cap (or any cap) set --md-menu-max-width; we still clamp that
+     the MD3 280px cap (or any cap) set --md-menu-max-width; we still clamp that
      to the viewport so it can never run off-screen. */
   max-width: min(
     var(--md-menu-max-width, 100vw),

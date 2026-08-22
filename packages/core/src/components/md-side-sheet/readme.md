@@ -152,7 +152,7 @@ Sourced from [M3 · Side sheets · Guidelines](https://m3.material.io/components
 
 | ✅ Do | ❌ Don't |
 |---|---|
-| Place the sheet along the screen edge — usually the trailing side, to stay clear of leading-edge navigation; a slight 16dp inset is fine | Don't inset it far beyond that margin — it makes position and scroll behaviour unclear and obscures primary content |
+| Place the sheet along the screen edge — usually the trailing side, to stay clear of leading-edge navigation; a slight 16px inset is fine | Don't inset it far beyond that margin — it makes position and scroll behaviour unclear and obscures primary content |
 | Let it scroll vertically when content exceeds the screen height | Don't allow horizontal scrolling, or lay it out so it looks horizontally scrollable — the narrow width can't show wide items |
 | Use `standard` when the user works with the sheet and the content together | Don't trap focus in a non-modal panel |
 | Use `modal` when the side task should take over | Don't leave a modal sheet without a keyboard exit |
@@ -260,7 +260,7 @@ Sourced from [M3 · Side sheets · Guidelines](https://m3.material.io/components
 | `<span slot="headline">` as the only name | Also set `headline` or `aria-label` | `aria-labelledby` is wired only from the prop. |
 | A wide, multi-column side sheet | Keep it narrow, single column | M3 explicit rule. |
 | Horizontal scrolling inside | Vertical only | M3 explicit rule. |
-| Deeply insetting the sheet from the edge | ~16dp at most (`detached`) | M3 explicit rule. |
+| Deeply insetting the sheet from the edge | ~16px at most (`detached`) | M3 explicit rule. |
 | A side sheet on mobile | `md-bottom-sheet` | Wrong surface for narrow viewports. |
 
 ## Accessibility, RTL, density, i18n

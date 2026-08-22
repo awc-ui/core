@@ -15,8 +15,8 @@ import {
  * Implements the current (M3 Expressive) app-bars specification:
  *   https://m3.material.io/components/app-bars/specs
  *
- * Size variants: `small` (64dp), `medium` (112/136dp expanded), `large`
- * (120/152dp expanded), and `search` (inline search field in the 64dp row).
+ * Size variants: `small` (64px), `medium` (112/136px expanded), `large`
+ * (120/152px expanded), and `search` (inline search field in the 64px row).
  * Flexible `medium` / `large` bars always render the expanded headline block.
  * Title alignment (`title-alignment`) is configuration, not a variant.
  *
@@ -37,10 +37,10 @@ export class MdAppBar {
   /**
    * App bar size variant.
    *
-   * - `small` — 64dp action row with inline title-large headline.
-   * - `medium` — flexible 112dp (136dp with subtitle) expanded headline block.
-   * - `large` — flexible 120dp (152dp with subtitle) expanded headline block.
-   * - `search` — 64dp row with inline search field (M3 search app bar).
+   * - `small` — 64px action row with inline title-large headline.
+   * - `medium` — flexible 112px (136px with subtitle) expanded headline block.
+   * - `large` — flexible 120px (152px with subtitle) expanded headline block.
+   * - `search` — 64px row with inline search field (M3 search app bar).
    */
   @Prop({ reflect: true })
   variant: 'small' | 'medium' | 'large' | 'search' = 'small';
@@ -89,7 +89,7 @@ export class MdAppBar {
   @Prop({ reflect: true }) scrolled: boolean = false;
 
   /**
-   * Density scale: 0 (default 64dp row), -1 (60dp), -2 (56dp), -3 (52dp), -4 (48dp).
+   * Density scale: 0 (default 64px row), -1 (60px), -2 (56px), -3 (52px), -4 (48px).
    * Tightens the action row, icon targets, search field, and expanded heights.
    */
   @Prop({ reflect: true }) density: 0 | -1 | -2 | -3 | -4 = 0;

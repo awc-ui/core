@@ -95,7 +95,7 @@ describe('md-fab', () => {
     expect(page.root?.classList.contains('md-fab--standard')).toBe(true);
   });
 
-  it('applies size class: medium (80dp)', async () => {
+  it('applies size class: medium (80px)', async () => {
     const page = await newSpecPage({
       components: [MdFab],
       html: `<md-fab size="medium" icon="add"></md-fab>`,

@@ -12,11 +12,11 @@
    --md-list-item-active-container-shape       Meta-override applied to every active state
                                                (hover / focus / pressed / selected / dragged)
    --md-list-item-hover-container-shape        Border-radius on hover    (default 0 — no morph; opt-in)
-   --md-list-item-focus-container-shape        Border-radius on focus    (default 16dp / corner-large)
-   --md-list-item-pressed-container-shape      Border-radius on press    (default 16dp / corner-large)
-   --md-list-item-selected-container-shape     Border-radius on selected (default 16dp / corner-large)
+   --md-list-item-focus-container-shape        Border-radius on focus    (default 16px / corner-large)
+   --md-list-item-pressed-container-shape      Border-radius on press    (default 16px / corner-large)
+   --md-list-item-selected-container-shape     Border-radius on selected (default 16px / corner-large)
    --md-list-item-active-container-shape       Shared default for all four states above
-   --md-list-item-dragged-container-shape      Border-radius on dragged  (default 16dp / corner-large)
+   --md-list-item-dragged-container-shape      Border-radius on dragged  (default 16px / corner-large)
    --md-list-item-hover-state-layer-opacity    State-layer opacity on hover    (M3: 0.08)
    --md-list-item-focus-state-layer-opacity    State-layer opacity on focus    (M3: 0.10)
    --md-list-item-pressed-state-layer-opacity  State-layer opacity on press    (M3: 0.10)
@@ -30,31 +30,31 @@
     --md-list-item-trailing-supporting-text-color  Trailing supporting text color
     --md-list-item-trailing-supporting-text-font   Trailing supporting text font family
     --md-list-item-leading-icon-color           Leading icon color
-    --md-list-item-leading-icon-size            Leading icon size, default (M3: 24dp)
-    --md-list-item-leading-icon-expressive-size Leading icon size, Expressive list-style (M3: 20dp).
+    --md-list-item-leading-icon-size            Leading icon size, default (M3: 24px)
+    --md-list-item-leading-icon-expressive-size Leading icon size, Expressive list-style (M3: 20px).
                                                 Auto-applied when the row sits inside an
                                                 md-list[list-style="standard"|"segmented"].
     --md-list-item-trailing-icon-color          Trailing icon color
     --md-list-item-unselected-trailing-icon-color  Trailing icon color when row is in selection
                                                    mode but NOT selected (M3: on-surface)
-    --md-list-item-trailing-icon-size           Trailing icon size, default (M3: 24dp)
-    --md-list-item-trailing-icon-expressive-size  Trailing icon size, Expressive list-style (M3: 20dp)
-    --md-list-item-leading-space                Inline-start padding (M3: 16dp)
-    --md-list-item-trailing-space               Inline-end  padding (M3: 16dp)
-    --md-list-item-top-space                    Block-start padding (M3: 8dp)
-    --md-list-item-bottom-space                 Block-end   padding (M3: 10dp)
-    --md-list-item-between-space                Gap between leading / content / trailing (M3: 12dp)
-    --md-list-item-three-line-top-space         Block-start padding when 3-line / 88dp+ (M3: 12dp)
-    --md-list-item-three-line-bottom-space      Block-end padding when 3-line / 88dp+ (M3: 12dp)
+    --md-list-item-trailing-icon-size           Trailing icon size, default (M3: 24px)
+    --md-list-item-trailing-icon-expressive-size  Trailing icon size, Expressive list-style (M3: 20px)
+    --md-list-item-leading-space                Inline-start padding (M3: 16px)
+    --md-list-item-trailing-space               Inline-end  padding (M3: 16px)
+    --md-list-item-top-space                    Block-start padding (M3: 8px)
+    --md-list-item-bottom-space                 Block-end   padding (M3: 10px)
+    --md-list-item-between-space                Gap between leading / content / trailing (M3: 12px)
+    --md-list-item-three-line-top-space         Block-start padding when 3-line / 88px+ (M3: 12px)
+    --md-list-item-three-line-bottom-space      Block-end padding when 3-line / 88px+ (M3: 12px)
     --md-list-item-dragged-container-elevation  Box-shadow applied when host carries
                                                 .md-list-item--dragged (M3: level 4 lift)
-    --md-list-item-leading-video-width          Width of <video slot="leading"> thumbnail (M3: 100dp)
-    --md-list-item-leading-video-height         Height of <video slot="leading"> thumbnail (M3: 56dp)
+    --md-list-item-leading-video-width          Width of <video slot="leading"> thumbnail (M3: 100px)
+    --md-list-item-leading-video-height         Height of <video slot="leading"> thumbnail (M3: 56px)
     --md-list-item-leading-video-shape          Border-radius of <video slot="leading"> (M3: corner-small)
     --md-list-item-leading-video-top-space      Block-start padding bumped when the row carries
-                                                a <video slot="leading"> (M3: 12dp). Bottom padding
+                                                a <video slot="leading"> (M3: 12px). Bottom padding
                                                 is unaffected — the asymmetry visually anchors the
-                                                wider 100×56dp video thumbnail.
+                                                wider 100×56px video thumbnail.
     --md-list-item-leading-avatar-color         Avatar circle color (label avatar)
     --md-list-item-leading-avatar-label-color   Avatar label text color
     --md-list-item-leading-avatar-size          Avatar dimensions (default 40px)
@@ -63,12 +63,12 @@
     --md-list-item-leading-image-height         Image thumbnail height (default 56px)
     --md-list-item-leading-image-shape          Image thumbnail radius, default (M3: 0)
     --md-list-item-leading-image-expressive-shape  Image thumbnail radius, Expressive list-style
-                                                  (M3: corner-small / 8dp). Auto-applied on
+                                                  (M3: corner-small / 8px). Auto-applied on
                                                   md-list[list-style="standard"|"segmented"].
     --md-list-item-leading-image-selection-scrim-color   Full-thumbnail scrim when selected (M3: scrim @ 32%)
     --md-list-item-leading-image-selection-circle-color  Checkmark circle fill when selected (M3: on-surface @ 60%)
     --md-list-item-leading-image-selection-icon-color    Checkmark glyph color (M3: surface / white)
-    --md-list-item-leading-image-selection-icon-size     Checkmark circle diameter (M3: 24dp)
+    --md-list-item-leading-image-selection-icon-size     Checkmark circle diameter (M3: 24px)
    --md-list-item-selected-container-color     Selected container background (M3: secondary-container)
    --md-list-item-selected-label-text-color    Selected headline color (M3: on-secondary-container)
    --md-list-item-selected-active-icon-color   Leading/trailing icon color when row is BOTH
@@ -157,16 +157,16 @@
 
   /* Per-state container shape morph per the M3 Lists spec:
        Hover            → no default morph (state layer only)
-       Focus            → 16dp (corner-large)
-       Pressed          → 16dp (corner-large)
-       Selected         → 16dp (corner-large)
-       Dragged          → 16dp (corner-large)
+       Focus            → 16px (corner-large)
+       Pressed          → 16px (corner-large)
+       Selected         → 16px (corner-large)
+       Dragged          → 16px (corner-large)
      `--md-list-item-active-container-shape` acts as a meta-override —
      set it once to apply the same shape across focus / pressed / selected /
      dragged. Hover is excluded unless `--md-list-item-hover-container-shape`
      is set explicitly. */
   /* Active-state corner radii — focus / pressed / selected / dragged default
-     to corner-large (16dp). Hover defaults to 0 so flat middle rows keep
+     to corner-large (16px). Hover defaults to 0 so flat middle rows keep
      sharp corners during pointer-over; only the state layer signals hover. */
   /* Hover defaults to 0 so flat / middle rows keep their resting corners.
      Hover feedback is the state layer only — rounding on hover made
@@ -200,9 +200,9 @@
   --_trailing-supporting-text-font: var(--md-list-item-trailing-supporting-text-font, var(--md-sys-typescale-label-small-font-family, Roboto, sans-serif));
 
   --_leading-icon-color: var(--md-list-item-leading-icon-color, var(--md-sys-color-on-surface-variant, #49454f));
-  /* M3 token spec: list-item leading icon = 24dp (default).
+  /* M3 token spec: list-item leading icon = 24px (default).
      The Expressive list-styles (`standard`, `segmented`) tighten this to
-     20dp via the `--_leading-icon-expressive-size` override below. */
+     20px via the `--_leading-icon-expressive-size` override below. */
   --_leading-icon-size: var(--md-list-item-leading-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
   --_leading-icon-expressive-size: var(--md-list-item-leading-icon-expressive-size, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)));
   --_trailing-icon-color: var(--md-list-item-trailing-icon-color, var(--md-sys-color-on-surface-variant, #49454f));
@@ -222,7 +222,7 @@
   --_leading-image-width: var(--md-list-item-leading-image-width, 56px);
   --_leading-image-height: var(--md-list-item-leading-image-height, 56px);
   /* M3: default image is square (corner-none); Expressive image rounds
-     to corner-small (8dp). The expressive value is applied by the
+     to corner-small (8px). The expressive value is applied by the
      `:host-context(.md-list--standard|.md-list--segmented)` rule
      down in Section 3. */
   --_leading-image-shape: var(--md-list-item-leading-image-shape, var(--md-sys-shape-corner-none, 0px));
@@ -242,7 +242,7 @@
   --_leading-image-selection-icon-size: var(--md-list-item-leading-image-selection-icon-size, 24px);
 
   /* Per the M3 spec the leading slot may also hold a <video> thumbnail.
-     Default size is 100×56dp (small video token). Authors slot a
+     Default size is 100×56px (small video token). Authors slot a
      `<video slot="leading">` and these props size it automatically. */
   --_leading-video-width: var(--md-list-item-leading-video-width, 100px);
   --_leading-video-height: var(--md-list-item-leading-video-height, 56px);
@@ -276,15 +276,15 @@
   --_disabled-state-layer-opacity: var(--md-list-item-disabled-state-layer-opacity, 0);
 
   /* Row spacing tokens — defaults track the M3 Lists token spec
-     (leading 16dp, trailing 16dp, top 8dp, bottom 10dp, between 12dp).
-     When the row sits inside a 88dp+ chassis (lines=3) the top/bottom
-     flips to 12dp per the spec. When the leading slot hosts a <video>
-     thumbnail, the top padding is bumped to 12dp (see the `:has()`
-     override below) so the 100×56dp tile reads as anchored rather than
+     (leading 16px, trailing 16px, top 8px, bottom 10px, between 12px).
+     When the row sits inside a 88px+ chassis (lines=3) the top/bottom
+     flips to 12px per the spec. When the leading slot hosts a <video>
+     thumbnail, the top padding is bumped to 12px (see the `:has()`
+     override below) so the 100×56px tile reads as anchored rather than
      hugged-tight against the chassis edge. */
   --_leading-space: var(--md-list-item-leading-space, var(--md-sys-spacing-inset-lg, 16px));
   --_trailing-space: var(--md-list-item-trailing-space, var(--md-sys-spacing-inset-lg, 16px));
-  /* Vertical padding rides inset-sm (8px at density 0, so the M3 8dp/10dp
+  /* Vertical padding rides inset-sm (8px at density 0, so the M3 8px/10px
      defaults are unchanged) so multi-line rows keep tightening past the point
      where min-block-size alone floors on the text height. */
   /* Vertical padding tightens with global density down to 2px (8/10px at
@@ -366,14 +366,14 @@
    All spacing flows through public custom properties so apps can
    re-tune individual edges without rewriting padding shorthands. The
    defaults track the M3 Lists token spec:
-     - Leading space    16dp  (--md-list-item-leading-space)
-     - Trailing space   16dp  (--md-list-item-trailing-space)
-     - Top space        10dp  (--md-list-item-top-space)
-     - Bottom space     10dp  (--md-list-item-bottom-space)
-     - Between space    12dp  (--md-list-item-between-space)   — gap
-     - 3-line top/bottom 12dp (--md-list-item-three-line-{top,bottom}-space)
-     - Minimum touch    48dp  → min-block-size 56px (≥48dp)
-   To revert to the older 24dp trailing / 16dp between (M3 baseline
+     - Leading space    16px  (--md-list-item-leading-space)
+     - Trailing space   16px  (--md-list-item-trailing-space)
+     - Top space        10px  (--md-list-item-top-space)
+     - Bottom space     10px  (--md-list-item-bottom-space)
+     - Between space    12px  (--md-list-item-between-space)   — gap
+     - 3-line top/bottom 12px (--md-list-item-three-line-{top,bottom}-space)
+     - Minimum touch    48px  → min-block-size 56px (≥48px)
+   To revert to the older 24px trailing / 16px between (M3 baseline
    pre-Expressive), set:
      md-list-item {
        --md-list-item-trailing-space: 24px;
@@ -460,13 +460,13 @@
 
 /* ==========================================================
    2. LINE HEIGHT VARIANTS
-   1-line: 56dp  |  2-line: 72dp  |  3-line: 88dp+
-   At 88dp+ the spec says elements top-align; we apply that
+   1-line: 56px  |  2-line: 72px  |  3-line: 88px+
+   At 88px+ the spec says elements top-align; we apply that
    to both leading and trailing so an avatar/icon sits at
    the top of a multi-line row like the M3 reference image.
    ========================================================== */
 /* 1 / 2-line rows: keep the host's --_top-space / --_bottom-space
-   defaults (8dp / 10dp). Only the row height changes per the M3 spec. */
+   defaults (8px / 10px). Only the row height changes per the M3 spec. */
 :host(.md-list-item--1-line) .md-list-item__row {
   min-block-size: calc(56px + var(--_density-delta));
 }
@@ -475,9 +475,9 @@
   min-block-size: calc(72px + var(--_density-delta-multi));
 }
 
-/* 3-line rows (88dp+): the M3 spec bumps top / bottom padding to 12dp
+/* 3-line rows (88px+): the M3 spec bumps top / bottom padding to 12px
    and top-aligns the leading + trailing wrappers so the leading icon
-   sits flush to the spec's 12dp leading-icon-top-padding mark. */
+   sits flush to the spec's 12px leading-icon-top-padding mark. */
 :host(.md-list-item--3-line) .md-list-item__row {
   min-block-size: calc(88px + var(--_density-delta-multi));
   padding-block-start: var(--_three-line-top-space);
@@ -485,13 +485,13 @@
   align-items: flex-start;
 }
 
-/* When the leading slot hosts a <video> thumbnail (100×56dp), the M3
-   spec asks for a 12dp top inset instead of the 8dp default so the
+/* When the leading slot hosts a <video> thumbnail (100×56px), the M3
+   spec asks for a 12px top inset instead of the 8px default so the
    wider thumbnail reads as anchored to the row, not crammed against
    the chassis edge. We override --_top-space at the host level so the
    `.md-list-item__row` rule above keeps the single source of truth.
    The 3-line override above still wins by source order for 3-line +
-   video (both ask for 12dp anyway).
+   video (both ask for 12px anyway).
 
    Detection is done via the `md-list-item--with-video` host class set
    from TSX (see `detectSlottedFromLightDom` in md-list-item.tsx). We
@@ -505,15 +505,15 @@
 
 :host(.md-list-item--3-line) .md-list-item__leading {
   align-self: flex-start;
-  /* Leading icon top padding = 12dp on ≥88dp rows per the M3 spec.
+  /* Leading icon top padding = 12px on ≥88px rows per the M3 spec.
      The row already provides padding-block: 12px when 3-line, so the
      leading wrapper doesn't add anything on top — it just pins to
      flex-start so the row's padding is the only offset. */
 }
 
 /* …but an AVATAR centres instead. The flex-start above is the spec rule for a
-   24dp leading ICON, which reads as aligned to the first text line. A 40dp
-   avatar is a much heavier object and pinning it to the top of an 88dp row
+   24px leading ICON, which reads as aligned to the first text line. A 40px
+   avatar is a much heavier object and pinning it to the top of an 88px row
    leaves it visibly high — measured 12px above the row's centre. Icons keep the
    spec behaviour; only avatars change.
 
@@ -554,8 +554,8 @@
    md-list[list-style="standard"] and md-list[list-style="segmented"].
 
    Both Expressive variants tighten the leading + trailing icons from
-   24dp (baseline token) to 20dp (Expressive token) and round the
-   leading image thumbnail from sharp corners to corner-small (8dp).
+   24px (baseline token) to 20px (Expressive token) and round the
+   leading image thumbnail from sharp corners to corner-small (8px).
    The `--md-list-item-*-expressive-*` props are the user-overrideable
    inputs; the rule simply re-binds the internal slots so the rest of
    the CSS keeps referring to the canonical
@@ -613,10 +613,10 @@
 }
 
 /* Segmented connected stack — first / last row corner emphasis at rest.
-   Tiles keep corner-extra-small (4dp) on internal edges; the first row
+   Tiles keep corner-extra-small (4px) on internal edges; the first row
    lifts its top corners and the last row lifts its bottom corners to
-   corner-large (16dp) so the separated stack reads as one grouped chassis
-   (mirrors standard list first/last treatment). Middle rows stay 4dp
+   corner-large (16px) so the separated stack reads as one grouped chassis
+   (mirrors standard list first/last treatment). Middle rows stay 4px
    on all four corners. */
 :host-context(.md-list--segmented):host(:first-of-type) {
   --md-list-item-container-shape-start-start: var(--md-sys-shape-corner-large, 16px);
@@ -736,22 +736,22 @@
    morphs from its resting shape into a state-specific corner radius:
 
      Hover    → no default morph (state layer only)
-     Focus    → 16dp (corner-large)
-     Pressed  → 16dp (corner-large)
-     Selected → 16dp (corner-large)
-     Dragged  → 16dp (corner-large)
+     Focus    → 16px (corner-large)
+     Pressed  → 16px (corner-large)
+     Selected → 16px (corner-large)
+     Dragged  → 16px (corner-large)
 
    Applied on focus / selected / pressed / dragged — NOT hover. Hover
    uses the state layer only; morphing corners on hover made flat middle
-   rows round to 16dp then snap back to sharp on mouse-out. Even with
+   rows round to 16px then snap back to sharp on mouse-out. Even with
    border-radius transitions removed, the fading state layer made that
    snap read as an animated corner morph.
 
    Coverage:
      - focus / selected / pressed / dragged on standard rows
      - standard first / last edge corners — focus would otherwise SHRINK
-       below resting 16dp; clamped via max()
-     - segmented tiles (resting 4dp) — focus morphs up to corner-large;
+       below resting 16px; clamped via max()
+     - segmented tiles (resting 4px) — focus morphs up to corner-large;
        clamped via max()
      - grouped first / middle / last rows — morph that lifts out of the
        shared chassis
@@ -973,7 +973,7 @@
 }
 
 /* ==========================================================
-   8. LEADING SLOT — icon (18dp), avatar (40dp), image (56dp)
+   8. LEADING SLOT — icon (18px), avatar (40px), image (56px)
    ========================================================== */
 .md-list-item__leading {
   display: flex;
@@ -1102,7 +1102,7 @@ md-avatar.md-list-item__avatar {
 }
 
 /* Outscore the generic `.material-symbols-outlined { display: inline-block }`
-   rule in Section 11 so the glyph centers inside the 24dp circle. */
+   rule in Section 11 so the glyph centers inside the 24px circle. */
 .md-list-item__image-selection-check.material-symbols-outlined {
   display: inline-flex;
   align-items: center;
@@ -1338,7 +1338,7 @@ md-tooltip.md-list-item__supporting-tooltip--empty {
    pointer would fall through to the row, `pointerdown`'s composedPath would
    never include the handle, and the drag would never start. */
 .md-list-item__drag-handle.material-symbols-outlined {
-  /* Visual parity with md-accordion-item's drag handle: a 24dp box holding a
+  /* Visual parity with md-accordion-item's drag handle: a 24px box holding a
      22px `drag_indicator` glyph that rests at on-surface-variant / 0.55 opacity
      and lifts to full opacity + a subtle scale on hover. */
   display: inline-flex;
@@ -1396,7 +1396,7 @@ md-tooltip.md-list-item__supporting-tooltip--empty {
    ========================================================== */
 .md-list-item__expand-button {
   flex-shrink: 0;
-  /* xs (32dp) fits the 56dp row chassis — sm (40dp) + 8/10 padding overshoots
+  /* xs (32px) fits the 56px row chassis — sm (40px) + 8/10 padding overshoots
      min-block-size and makes the trigger look taller than child rows. */
   --md-icon-button-container-width: var(--md-list-item-expand-button-size, 32px);
   --md-icon-button-container-height: var(--md-list-item-expand-button-size, 32px);

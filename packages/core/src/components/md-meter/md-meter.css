@@ -4,7 +4,7 @@
    (storage used, quota, password strength), drawn on
    md-progress-indicator's linear track geometry.
 
-   Deliberately a PLAIN track + fill: the M3-Expressive 4dp gap
+   Deliberately a PLAIN track + fill: the M3-Expressive 4px gap
    and stop dot are md-progress-indicator's activity identity;
    a meter shows a state, so it keeps the clean classic bar.
 
@@ -48,13 +48,13 @@
   --_track-color: var(--md-meter-track-color, var(--_c-container));
   --_track-shape: var(--md-meter-track-shape, var(--md-sys-shape-corner-full, 9999px));
 
-  /* 4dp default bar, density-scaled at 0.5px per rung, floored at 2px.
+  /* 4px default bar, density-scaled at 0.5px per rung, floored at 2px.
      A `thickness` prop ≠ 4 re-declares this inline on the host with the same
      hook + taper + floor (see thicknessVar in md-meter.tsx). */
   --_thickness: var(--md-meter-height, max(2px, calc(4px + var(--md-sys-density-scale, 0) * 0.5px)));
   /* Ring diameter for the circular variant. Density tapers the whole ring
      (2px per rung) rather than the stroke alone, so radius and stroke stay in
-     proportion; floored at the M3 24dp minimum. A `size` prop != 48
+     proportion; floored at the M3 24px minimum. A `size` prop != 48
      re-declares this inline on the host with the same hook + taper + floor
      (see sizeVar in md-meter.tsx). */
   --_size: var(--md-meter-size, max(24px, calc(48px + var(--md-sys-density-scale, 0) * 2px)));

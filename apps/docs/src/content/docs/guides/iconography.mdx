@@ -25,8 +25,8 @@ The pairing isn't incidental — the library depends on the font's variable axes
 - **`FILL`** — components animate this axis between 0 and 1 to show selection. A
   navigation destination's icon fills as it becomes active; nothing is swapped,
   the glyph itself morphs. An SVG set cannot do that.
-- **`opsz`** (optical size) — glyph weight is tuned per size, so a 20dp icon in a
-  dense table doesn't read thinner than a 24dp one in a nav rail.
+- **`opsz`** (optical size) — glyph weight is tuned per size, so a 20px icon in a
+  dense table doesn't read thinner than a 24px one in a nav rail.
 - **`wght`** — tracks the surrounding type when you change the type scale.
 - **One ligature name** covers every variant, so `icon="settings"` is all the
   markup ever carries.
@@ -98,8 +98,8 @@ picks up the component's own state colours for free.
 
 ## Sizing
 
-Icons size themselves from the component, not from you — a 40dp icon button and a
-56dp FAB draw the same ligature at different optical sizes. Set a size directly
+Icons size themselves from the component, not from you — a 40px icon button and a
+56px FAB draw the same ligature at different optical sizes. Set a size directly
 only for standalone icons:
 
 <ComponentDemo
@@ -109,10 +109,10 @@ only for standalone icons:
   <span class="material-symbols-outlined" style="font-size:32px;">rocket_launch</span>
   <span class="material-symbols-outlined" style="font-size:48px;">rocket_launch</span>
 </div>`}
-  label="20, 24, 32 and 48dp — opsz keeps the stroke weight even"
+  label="20, 24, 32 and 48px — opsz keeps the stroke weight even"
 />
 
-MD3's sizes are **20dp** (dense UI), **24dp** (the default), **40dp** and **48dp**.
+MD3's sizes are **20px** (dense UI), **24px** (the default), **40px** and **48px**.
 Pair `font-size` with a matching `opsz` if you go far outside that range.
 
 ## The FILL axis

@@ -626,7 +626,7 @@ export const CustomCSS: Story = {
       </div>
     </md-dialog>
     <md-dialog id="custom-rounded" class="rounded-dialog" headline="Custom shape">
-      This dialog has a custom 40dp corner radius and custom background.
+      This dialog has a custom 40px corner radius and custom background.
       <div slot="actions">
         <md-button variant="text" @click=${() => getDialog('custom-rounded')?.close()}>${t(globals.locale, 'dialog.close')}</md-button>
       </div>

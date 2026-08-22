@@ -11,7 +11,7 @@
      --md-list-drop-placeholder-color         Drop-target ghost fill (default primary-container @ ~45%, on-theme)
      --md-list-drop-placeholder-outline-color Drop-target ghost outline (default primary @ ~55%, dashed, on-theme)
      --md-list-drop-placeholder-outline-width Drop-target ghost outline width (default 2px)
-     --md-list-drop-placeholder-shape         Drop-target ghost corner radius (default corner-large / 16dp)
+     --md-list-drop-placeholder-shape         Drop-target ghost corner radius (default corner-large / 16px)
      --md-list-drop-placeholder-opacity       Drop-target ghost opacity (default 1)
 
    CSS PARTS:
@@ -38,7 +38,7 @@
      the ghost reads as a low-opacity version of the dragged card's color
      rather than a neutral grey slot. Both are built from --md-sys-color-*
      via color-mix, so the placeholder tracks the dynamic theme seed and
-     flips correctly between light and dark. Rounds to corner-large (16dp) to
+     flips correctly between light and dark. Rounds to corner-large (16px) to
      match the dragged row's morphed shape. */
   --_drop-placeholder-color: var(--md-list-drop-placeholder-color, color-mix(in srgb, var(--md-sys-color-primary-container, #eaddff) 45%, transparent));
   --_drop-placeholder-outline-color: var(--md-list-drop-placeholder-outline-color, color-mix(in srgb, var(--md-sys-color-primary, #6750a4) 55%, transparent));
@@ -124,9 +124,9 @@
    2. SEGMENTED STYLE (M3 Expressive — separated)
    Each row is a rounded tile separated from its neighbours by
    --md-list-segmented-gap (2px default). Middle tiles round all
-   four corners to corner-extra-small (4dp) at rest. The first
+   four corners to corner-extra-small (4px) at rest. The first
    tile emphasises its top corners and the last tile emphasises
-   its bottom corners with corner-large (16dp) so the stack reads
+   its bottom corners with corner-large (16px) so the stack reads
    as one grouped chassis; focus / press / selected morph to
    corner-large on every tile. The container stays transparent
    so the tiles float on the host surface; opt into a tinted bay

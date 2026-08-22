@@ -153,7 +153,7 @@
   outline-offset: 2px;
 }
 
-/* Expanded pills sit close together (4dp apart); an outset ring would overlap
+/* Expanded pills sit close together (4px apart); an outset ring would overlap
    the neighbour's. Draw it just inside the pill edge instead — it follows the
    pill's rounded shape and can never bleed into the adjacent item. (Collapsed
    items are tall with ample spacing, so they keep the outset ring above.) */
@@ -251,7 +251,7 @@ md-ripple {
   pointer-events: none;
 }
 
-/* Icon-sized box that anchors the badge. Sized to the icon (24dp) and centred
+/* Icon-sized box that anchors the badge. Sized to the icon (24px) and centred
    in the wrapper, so the badge sits at the ICON's corner in both layouts —
    collapsed (56×32 wrapper) and expanded (24×24 wrapper) alike. */
 .md-navigation-rail-tab__icon-box {
@@ -367,9 +367,9 @@ md-ripple {
 }
 
 /* ---------- Expanded variant (labels inline with icons) ----------
-   Spec "horizontal item": 56dp-tall pill that HUGS the icon + label
+   Spec "horizontal item": 56px-tall pill that HUGS the icon + label
    (left-aligned, not full-width — see the spec's "Expanded layout"
-   figure), 16dp leading/trailing space inside the pill, 8dp icon→label
+   figure), 16px leading/trailing space inside the pill, 8px icon→label
    space, label-large typography. */
 :host(.md-navigation-rail-tab--expanded) {
   flex-direction: row;
@@ -508,7 +508,7 @@ md-ripple {
    The rail stamps `data-orientation`. The destination fills the bar's height so
    the RIPPLE — clipped to this box — sweeps the whole bar instead of a short
    band. The active pill and the hover tint must NOT stretch with it: they are
-   pinned 4dp from the host's top, which stops matching the icon once the host
+   pinned 4px from the host's top, which stops matching the icon once the host
    is taller than its content. In a bar they ride on the icon wrapper instead,
    which is already exactly the pill's size and sits with the centred content.
    ========================================================== */

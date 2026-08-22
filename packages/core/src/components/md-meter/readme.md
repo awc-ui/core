@@ -47,7 +47,7 @@ formatting (locale-aware percent by default), and MD3 semantic status colors.
 **Meter vs progress indicator** is the load-bearing distinction: a meter shows a
 *state* ("how full"), a progress indicator shows an *activity* ("how far
 along"). That is why md-meter deliberately has **no** indeterminate mode, no
-4dp expressive gap, no stop dot, and no completion animation — it is a plain
+4px expressive gap, no stop dot, and no completion animation — it is a plain
 track + fill that sits still.
 
 ## Decision cues
@@ -59,7 +59,7 @@ value and carry identical semantics.
 |---|---|
 | Reading sits under a label, full container width | `variant="linear"` (default) |
 | Reading is a tile / card headline / dashboard cell | `variant="circular"` |
-| Ring needs to be bigger or smaller than 48dp | `size="24…240"` |
+| Ring needs to be bigger or smaller than 48px | `size="24…240"` |
 | Value should be readable inside the ring | `show-value` (centres it) |
 | Ring needs a caption | `show-label` (sits underneath) |
 | Ring is decorative-small (no room for text) | omit both; `label` still names it for AT |
@@ -146,7 +146,7 @@ two SVG circles on the circular one — the same names, so a consumer's
 - **`variant="circular"` replaces the header row**, it does not add to it:
   `show-value` renders the value inside the ring, `show-label` captions it
   underneath. Only one element ever carries `part="track"`.
-- `size` is **clamped to 24–240dp** (md-progress-indicator's band) and ignored
+- `size` is **clamped to 24–240px** (md-progress-indicator's band) and ignored
   entirely by the bar. Density tapers the whole ring (2px/rung) rather than the
   stroke alone, so radius and stroke stay in proportion.
 - The centred ring value is sized at 26% of the diameter, so a small ring
@@ -171,8 +171,8 @@ and by native `<meter>` semantics.
 |---|---|
 | Pick the shape by the space — bar in a column of labelled rows, ring as a tile's focal point | Don't show the same reading as both a bar and a ring on one screen — it reads as two measurements |
 | Let one element carry the reading: `show-value` (+ `value-text`) | Don't pair the meter with your own `<span>` of the same number — the two will drift |
-| Size the ring for its text; drop `show-value` below ~40dp | Don't cram "45 GB of 100 GB" into a 24dp ring |
-| Treat `thickness` as legibility: thicken it (6–8dp) as the ring grows | Don't leave a hairline arc on a large ring, or a fat one that closes a small ring's hole |
+| Size the ring for its text; drop `show-value` below ~40px | Don't cram "45 GB of 100 GB" into a 24px ring |
+| Treat `thickness` as legibility: thicken it (6–8px) as the ring grows | Don't leave a hairline arc on a large ring, or a fat one that closes a small ring's hole |
 | Pair threshold colour with visible text or a label | Don't let a red ring be the only signal — that fails WCAG 1.4.1 |
 | Pass `color` a theme **role name** | Don't pass a raw CSS colour — use `--md-meter-indicator-color` for that |
 | Fix the range when a reading can exceed it | Don't try to render the overflow; `value` is clamped |
@@ -262,7 +262,7 @@ not mirror**: it fills clockwise from twelve o'clock in every locale (Material's
 circular progress behaves the same). Only its caption text flips.
 
 **Density** — `density="-1…-4"` locally overrides the inherited `data-density`
-rung: it thins the track (4dp → 2px floor), tightens the header spacing and
+rung: it thins the track (4px → 2px floor), tightens the header spacing and
 type, and on the ring shrinks the whole circle 2px per rung (floored at 24px) so
 radius and stroke stay in proportion. Rung `0` is the uncompacted default and is
 inert — it does **not** opt a meter out of an inherited rung; for that, set
@@ -285,8 +285,8 @@ locale.
 | `--md-meter-indicator-color` | Fill color | The `color` role (`--md-sys-color-primary` by default) |
 | `--md-meter-track-color` | Track background | The role's container (`--md-sys-color-secondary-container` by default) |
 | `--md-meter-track-shape` | Track + fill corner radius | `--md-sys-shape-corner-full` |
-| `--md-meter-height` | Track thickness | The `thickness` prop (4dp, density-scaled, floor 2px) |
-| `--md-meter-size` | Ring diameter (circular only) | The `size` prop (48dp, density-scaled, floor 24px) |
+| `--md-meter-height` | Track thickness | The `thickness` prop (4px, density-scaled, floor 2px) |
+| `--md-meter-size` | Ring diameter (circular only) | The `size` prop (48px, density-scaled, floor 24px) |
 | `--md-meter-label-color` | Header / caption label text | `--md-sys-color-on-surface` |
 | `--md-meter-value-color` | Header / centre value text | `--md-sys-color-on-surface-variant` |
 

@@ -209,7 +209,7 @@
 
   /* Trigger (closed-state outlined field) */
   --_trigger-min-width: var(--md-time-picker-trigger-min-width, 240px);
-  /* 1px per density rung off 24dp (18px floor) — the library-wide icon taper,
+  /* 1px per density rung off 24px (18px floor) — the library-wide icon taper,
      matching md-text-field's own glyphs so the trigger reads as one unit. */
   --_trigger-icon-size: var(--md-time-picker-trigger-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
   --_trigger-shape: var(--md-time-picker-trigger-shape, var(--md-sys-shape-corner-extra-small, 4px));
@@ -323,7 +323,7 @@
 
      `--md-time-picker-trigger-shape` is piped onto the text-field's
      `--md-text-field-container-shape` so authors can swap the trigger
-     corners from the M3 default (extra-small / 4dp) to anything between
+     corners from the M3 default (extra-small / 4px) to anything between
      sharp and pill without having to learn md-text-field's own API. */
   --md-text-field-label-color: var(--_trigger-icon-color);
   --md-text-field-input-color: var(--_trigger-color);
@@ -415,17 +415,17 @@
   color: var(--_dialog-on-color);
   border-radius: var(--_dialog-shape);
   box-shadow: var(--_dialog-elevation);
-  /* MD3 spec: 24dp padding on every edge, both portrait and
+  /* MD3 spec: 24px padding on every edge, both portrait and
      landscape dialogs. Exposed as `--md-time-picker-dialog-padding`
      for authors who need to compact the chrome on dense surfaces. */
   padding: var(--_dialog-padding);
   /* Default (vertical / portrait) dialog width — the canonical M3
-     reference shows 328dp. Override via
+     reference shows 328px. Override via
      `--md-time-picker-dialog-min-width`. The horizontal modifier
      below widens this to fit the dial in a right column. */
   width: min(var(--_dialog-min-width), calc(100vw - 48px));
   /* Never trap the OK/Cancel row off-screen: when the viewport is
-     shorter than the dialog (landscape phones showing the ~440dp
+     shorter than the dialog (landscape phones showing the ~440px
      dial dialog), the dialog clamps to the viewport and scrolls
      internally instead of overflowing past the scrim. */
   /* stylelint-disable-next-line declaration-block-no-duplicate-properties -- intentional vh→dvh progressive-enhancement fallback */
@@ -458,12 +458,12 @@
 }
 
 /* ── Horizontal (landscape) dial dialog ──
-   Two-column body: HH:MM + AM/PM in the left column, 256dp dial in
+   Two-column body: HH:MM + AM/PM in the left column, 256px dial in
    the right column. Width math (per MD3 spec sheet):
      padding_l(24) + tile(96) + colon(24) + tile(96)
-     + gap(52) + dial(256) + padding_r(24) = 572dp (12h)
+     + gap(52) + dial(256) + padding_r(24) = 572px (12h)
      padding_l(24) + tile(114) + colon(24) + tile(114)
-     + gap(52) + dial(256) + padding_r(24) = 608dp (24h)
+     + gap(52) + dial(256) + padding_r(24) = 608px (24h)
    Both widths are public tokens
    (`--md-time-picker-dialog-horizontal-width-12h` /
     `--md-time-picker-dialog-horizontal-width-24h`) so authors can
@@ -473,8 +473,8 @@
   width: min(var(--_dialog-horizontal-width-12h), calc(100vw - 48px));
 }
 
-/* 24-hour mode in horizontal orientation needs an extra 36dp of
-   width because each HH/MM tile widens from 96dp → 114dp (the
+/* 24-hour mode in horizontal orientation needs an extra 36px of
+   width because each HH/MM tile widens from 96px → 114px (the
    "Width (24h vertical)" spec measurement which the horizontal
    layout reuses since no AM/PM rides alongside). */
 :host(.md-time-picker--format-24h) .md-time-picker__dialog--horizontal {
@@ -482,7 +482,7 @@
 }
 
 @keyframes md-time-picker-dialog-in {
-  /* Unfold-from-the-top: scale up from 0.88 + translate down 12dp
+  /* Unfold-from-the-top: scale up from 0.88 + translate down 12px
      while fading in. The scale alone read as "zoom" rather than
      "unfold"; pairing it with the block-axis translate gives the
      dialog a clear "dropping into place" direction of motion that
@@ -507,7 +507,7 @@
    range (0.96 → 1.0) so it doesn't compound visibly with the
    dialog's outer 0.88 → 1.0 unfold.
 
-   A small block-axis translate (8dp → 0) sells the "new content
+   A small block-axis translate (8px → 0) sells the "new content
    has just arrived" feel without making the digits feel weighty.
 
    The transform-origin is anchored to `center top` so the dial /
@@ -535,7 +535,7 @@
   margin-block-end: var(--_headline-spacing);
   /* Spec: headline is always left-aligned, both portrait and
      landscape. The dialog box already starts the inline axis at the
-     24dp left padding, so we just keep the default text alignment. */
+     24px left padding, so we just keep the default text alignment. */
   text-align: start;
 }
 
@@ -543,7 +543,7 @@
    Holds the time-area (HH:MM + AM/PM) and the dial / inputs. In the
    vertical (default) layout the body is a column flex that visually
    matches the pre-refactor structure. In the horizontal layout it
-   becomes a row flex with a 52dp gap between the left column and
+   becomes a row flex with a 52px gap between the left column and
    the dial — exactly the gap shown in the canonical MD3 landscape
    spec sheet. */
 .md-time-picker__body {
@@ -554,12 +554,12 @@
 .md-time-picker__body--horizontal {
   flex-direction: row;
   /* Anchor both columns to the top edge — the left column (HH:MM +
-     AM/PM = 134dp tall in 12h mode) is naturally shorter than the
-     256dp dial, so flex-start keeps everything aligned with the
+     AM/PM = 134px tall in 12h mode) is naturally shorter than the
+     256px dial, so flex-start keeps everything aligned with the
      headline above instead of letting the time-area drift to the
      middle of the row. */
   align-items: flex-start;
-  /* 52dp gap between MM tile (right edge of time-area) and the dial
+  /* 52px gap between MM tile (right edge of time-area) and the dial
      wrap, per the M3 horizontal spec measurement. */
   column-gap: 52px;
 }
@@ -580,18 +580,18 @@
   flex: 0 0 auto;
 }
 
-/* The dial wrap keeps its default 24dp block-end margin — that's
+/* The dial wrap keeps its default 24px block-end margin — that's
    the gap between the dial's bottom and the footer row. In the
    horizontal layout we also drop the implicit `flex: 1` so the dial
-   centers in its 256dp column instead of stretching to fill the
+   centers in its 256px column instead of stretching to fill the
    leftover inline space. */
 .md-time-picker__body--horizontal .md-time-picker__dial-wrap {
   flex: 0 0 auto;
 }
 
 /* Inside the dial horizontal landscape layout the typeable input row
-   needs to give up its default 24dp block-end margin — the horizontal
-   AM/PM pill that follows owns the 16dp spec gap, and the column
+   needs to give up its default 24px block-end margin — the horizontal
+   AM/PM pill that follows owns the 16px spec gap, and the column
    already sits inside its own flex track next to the dial. */
 .md-time-picker__body--horizontal .md-time-picker__input-area {
   margin-block-end: 0;
@@ -599,7 +599,7 @@
 
 /* The horizontal AM/PM pill sits flush below the input row in the
    left column. Override the default `margin-block-start: 12px` so
-   the 16dp spec gap above isn't doubled, and zero the bottom margin
+   the 16px spec gap above isn't doubled, and zero the bottom margin
    so the column doesn't stretch taller than the dial unnecessarily. */
 .md-time-picker__body--horizontal .md-time-picker__period--horizontal {
   margin-block-start: var(--md-sys-spacing-inset-lg, 16px);
@@ -610,11 +610,11 @@
 /* ── Period (AM/PM) toggle ──
    MD3 supports two layouts (see `MdTimePickerPeriodLayout`):
 
-   - Vertical (default): 52dp × 80dp stack, sits 12dp to the end-side
+   - Vertical (default): 52px × 80px stack, sits 12px to the end-side
      of the minute tile. Each row is 50% tall so AM and PM split the
-     80dp envelope evenly. The 1px hairline divider lives between them.
+     80px envelope evenly. The 1px hairline divider lives between them.
 
-   - Horizontal: 216dp × 38dp inline pill that sits centered below the
+   - Horizontal: 216px × 38px inline pill that sits centered below the
      HH:MM display. The divider becomes inline-end on the AM button.
 
    The base ruleset below covers values shared across both layouts;
@@ -623,8 +623,8 @@
 
    ⚠️ The container is intentionally NOT `overflow: hidden`. We
    previously clipped here to mask the AM/PM corner backgrounds, but
-   that also clipped the canonical M3 external focus ring (3dp
-   secondary outline + 2dp offset) on each child button. The corner
+   that also clipped the canonical M3 external focus ring (3px
+   secondary outline + 2px offset) on each child button. The corner
    masking is now done by the AM and PM buttons themselves via
    matching border-radius — see the per-layout rules below — which
    keeps the pill shape clean *and* lets each button paint its own
@@ -646,11 +646,11 @@
   block-size: var(--_period-vertical-height);
 }
 
-/* In the input variant the AM/PM toggle shrinks from 80dp → 72dp so
-   it aligns to the 72dp input field above. The 8dp delta is the
+/* In the input variant the AM/PM toggle shrinks from 80px → 72px so
+   it aligns to the 72px input field above. The 8px delta is the
    exact difference between the dial variant's HH/MM tile height
-   (80dp) and the input variant's HH/MM input height (72dp), and the
-   spec sheet reuses the 52dp width across both variants. We scope
+   (80px) and the input variant's HH/MM input height (72px), and the
+   spec sheet reuses the 52px width across both variants. We scope
    the override to the input area rather than introducing a new
    modifier class so callers don't have to thread state through the
    toggle render. The input-variant height is independently
@@ -663,9 +663,9 @@
 
 .md-time-picker__period--horizontal {
   flex-direction: row;
-  /* 216dp × 38dp container with `shape-corner-small` rounding (8dp).
+  /* 216px × 38px container with `shape-corner-small` rounding (8px).
      Intentionally NOT a full pill — the horizontal AM/PM toggle is
-     paired with the 8dp HH:MM tiles above it, so matching that
+     paired with the 8px HH:MM tiles above it, so matching that
      radius keeps the corner language of the entire time area
      consistent (and matches the vertical 52×80 toggle). The pill
      belongs to the canonical M3 *segmented button* surface; the
@@ -734,7 +734,7 @@
 }
 
 /* Canonical M3 focus ring on each AM/PM tile — identical to the
-   md-button / md-icon-button pattern (3dp secondary outline at 2dp
+   md-button / md-icon-button pattern (3px secondary outline at 2px
    offset). Because the parent no longer clips, the ring renders
    in full *around* the focused button. The ring auto-follows each
    tile's own corner radii (see the `--am` / `--pm` rules below), so
@@ -755,9 +755,9 @@
    square. The result is the same visual pill, with each button able
    to paint its own external focus ring uncliped.
 
-   `calc(<parent-radius> - 1px)` accounts for the parent's 1dp border
+   `calc(<parent-radius> - 1px)` accounts for the parent's 1px border
    so the button's background lines up with the inside of the border
-   instead of leaving a 1dp halo at the corners. */
+   instead of leaving a 1px halo at the corners. */
 
 .md-time-picker__period--vertical .md-time-picker__period-btn--am {
   border-block-end: var(--_period-outline-width) solid var(--_period-outline-color);
@@ -919,10 +919,10 @@
 }
 
 /* ── Dial numbers ──
-   MD3 Body Large typography (16dp / 400 weight / 24 line-height /
+   MD3 Body Large typography (16px / 400 weight / 24 line-height /
    0.5px tracking) is used for every number on the dial, regardless
    of ring (outer 12h or inner 24h). Tracking is forced to 0 for the
-   numerals so the digits stay optically aligned with the 48dp touch
+   numerals so the digits stay optically aligned with the 48px touch
    targets — a stock 0.5px tracking visibly pushes two-digit numbers
    (10, 11, 12) off-centre compared to one-digit ones.
 
@@ -975,10 +975,10 @@
 
 /* ── Input variant ── */
 .md-time-picker__input-area {
-  /* M3 input spec: 24dp from the bottom of the input row (including
+  /* M3 input spec: 24px from the bottom of the input row (including
      the "Hour" / "Minute" hint labels stacked underneath each input)
      to the top of the footer / actions row. Previously this was
-     36dp, which inflated the dialog beyond the canonical layout. */
+     36px, which inflated the dialog beyond the canonical layout. */
   margin-block-end: var(--md-sys-spacing-inset-xl, 24px);
   /* Bloom in on mount (dialog open AND mode swap) — see the
      `@keyframes md-time-picker-mode-in` comment for the geometry
@@ -996,11 +996,11 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  /* No flex gap — the colon separator owns its own 24dp column
+  /* No flex gap — the colon separator owns its own 24px column
      (M3 spec) and the AM/PM toggle uses `margin-inline-start: 12px`
-     to introduce the 12dp gutter shown in the M3 input spec sheet.
+     to introduce the 12px gutter shown in the M3 input spec sheet.
      Mirroring this to the dial variant (which also lays out HH /
-     colon / MM with a fixed 24dp column and no flex gap) keeps the
+     colon / MM with a fixed 24px column and no flex gap) keeps the
      two variants pixel-aligned. */
   gap: 0;
 }
@@ -1031,7 +1031,7 @@
   color: var(--_input-color);
   border: var(--_input-border-width) solid var(--_input-outline-color);
   border-radius: var(--_time-display-shape);
-  /* M3 input spec: 96dp × 72dp container. With the smaller
+  /* M3 input spec: 96px × 72px container. With the smaller
      display-medium glyphs the box has extra breathing room above
      and below the digits, so vertical alignment stays clean via
      native <input> text centering. Both axes are themable
@@ -1078,7 +1078,7 @@
    active input took focus. With both classes plus the pseudo we
    land at (0, 2, 1) which decisively wins the cascade. The MD3
    spec calls for the active input to KEEP its primary-container
-   fill in the focused state and gain a primary 2dp outline on top
+   fill in the focused state and gain a primary 2px outline on top
    — anything else looks like a flicker bug to the user. Authors
    re-skinning the active state should set BOTH
    `--md-time-picker-input-active-bg` and
@@ -1116,7 +1116,7 @@
   font-weight: var(--_input-font-weight);
   line-height: 1;
   color: var(--_input-separator-color);
-  /* M3 spec: 24dp-wide column with the colon visually centered inside
+  /* M3 spec: 24px-wide column with the colon visually centered inside
      the input row (NOT inside the full input+hint column — otherwise
      the colon would drift down into the hint band). Pin block-size
      to the input height so the colon sits flush with the input row

@@ -63,7 +63,7 @@ application bar.
 
 | Window | Use |
 |---|---|
-| Compact (< 600dp) | `md-navigation-bar`, docked to the bottom |
+| Compact (< 600px) | `md-navigation-bar`, docked to the bottom |
 | Medium / expanded, content is wide (tables, canvases, editors) | `orientation="horizontal"` — a bar spends height, not the width the content wants |
 | Medium / expanded, content is narrow or reading-width | `orientation="vertical"` (default) — the M3 rail |
 
@@ -131,7 +131,7 @@ children), `logo`, `logo-expanded`, `header`, `fab`, `footer`.
   nowhere to grow, so no toggle button is rendered.
 - **`modal` is a presentation mode, not a dialog.** Expanded, the rail's
   container becomes an absolutely-positioned overlay with a 32%-opacity scrim,
-  while the host keeps its collapsed 80dp footprint so the page never reflows.
+  while the host keeps its collapsed 80px footprint so the page never reflows.
   `Escape` and a scrim click collapse it, and focus returns to the **built-in**
   toggle button — which is only rendered when `expandable` is also set on a
   vertical rail. A `modal` rail driven from your own control in the `header`
@@ -412,7 +412,7 @@ Implements MD3 specs:
 | `overflowIcon`           | `overflow-icon`            | Material Symbols ligature for the overflow trigger.                                                                                                                                                                                                                                                                                                                                          | `string`                        | `'more_horiz'`        |
 | `overflowLabel`          | `overflow-label`           | Accessible name and label for the overflow trigger. Localize per page.                                                                                                                                                                                                                                                                                                                       | `string`                        | `'More'`              |
 | `toggleLabel`            | `toggle-label`             | Accessible label for the built-in toggle button (only rendered when `expandable` is set). Announced to assistive tech as the button's name.                                                                                                                                                                                                                                                   | `string`                        | `'Toggle navigation'` |
-| `variant`                | `variant`                  | Visual variant — `standard` (the spec's *collapsed* rail: 80dp wide, stacked icon + label) or `expanded` (icons + label inline, 220–360dp wide).                                                                                                                                                                                                                                              | `"expanded" \| "standard"`      | `'standard'`          |
+| `variant`                | `variant`                  | Visual variant — `standard` (the spec's *collapsed* rail: 80px wide, stacked icon + label) or `expanded` (icons + label inline, 220–360px wide).                                                                                                                                                                                                                                              | `"expanded" \| "standard"`      | `'standard'`          |
 
 
 ## Events
@@ -428,7 +428,7 @@ Implements MD3 specs:
 
 ### `collapse() => Promise<void>`
 
-Programmatically collapse the rail (standard 80dp width).
+Programmatically collapse the rail (standard 80px width).
 
 #### Returns
 

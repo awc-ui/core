@@ -220,7 +220,7 @@ Sourced from [M3 · Navigation bar · Guidelines](https://m3.material.io/compone
 **RTL** — layout uses logical properties, so destination order mirrors under
 `dir="rtl"`, and the bar swaps the arrow keys to match.
 
-**Density** — `density="-1…-4"` shortens the bar from 64dp toward its 48px
+**Density** — `density="-1…-4"` shortens the bar from 64px toward its 48px
 floor. Rung `0` is the uncompacted default and is inert. To opt a bar out of an
 inherited global `data-density` rung, set `style="--md-sys-density-scale: 0"`
 on it.

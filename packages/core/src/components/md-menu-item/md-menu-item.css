@@ -40,7 +40,7 @@
      glyph so they can never drift apart. Tapers 1px per rung (24 → 20px at -4)
      with an 18px floor, matching md-list-item's icon convention. */
   --_icon-size: var(--md-menu-item-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
-  /* Selection check/radio glyph — 20dp per M3, same 1px/rung taper, 16px floor. */
+  /* Selection check/radio glyph — 20px per M3, same 1px/rung taper, 16px floor. */
   --_check-size: var(--md-menu-item-check-size, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)));
   padding: 0 var(--md-menu-item-padding-inline, var(--md-sys-spacing-inset-md, 12px));
   gap: var(--md-menu-item-gap, var(--md-sys-spacing-gap-md, 12px));
@@ -442,7 +442,7 @@
   color: var(--md-sys-color-on-surface, #1C1B1F);
   gap: 8px;
   border-radius: var(--md-sys-shape-corner-small, 8px);
-  /* The vertical variants tighten icons to 20dp; retargeting the same lever
+  /* The vertical variants tighten icons to 20px; retargeting the same lever
      keeps them on the density curve instead of freezing at 20px. */
   --_icon-size: var(--md-menu-item-icon-size, max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px)));
 }

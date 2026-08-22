@@ -144,7 +144,7 @@ export const Playground: Story = {
     expect(el.classList.contains("md-progress-indicator--linear")).toBe(true);
 
     // Everything below MUTATES the live component, and play() runs on VIEW —
-    // ungated, the reader watches the bar jump to 8dp and flip indeterminate
+    // ungated, the reader watches the bar jump to 8px and flip indeterminate
     // before settling. Same gate (and same reason) as the block that follows.
     if (drivingCoverage()) {
       // A value change flows through the @Watch('value') → ariaValueNow render.
@@ -449,11 +449,11 @@ export const WavyLinear: Story = {
       style="display: flex; flex-direction: column; gap: 24px; width: 320px; padding: 24px;"
     >
       <h3 style="margin: 0;">
-        Wavy — default (4dp, amplitude 3, wavelength 40)
+        Wavy — default (4px, amplitude 3, wavelength 40)
       </h3>
       <md-progress-indicator wave value="60"></md-progress-indicator>
 
-      <h3 style="margin: 0;">Wavy — thick (8dp)</h3>
+      <h3 style="margin: 0;">Wavy — thick (8px)</h3>
       <md-progress-indicator
         wave
         value="60"
@@ -486,7 +486,7 @@ export const WavyLinear: Story = {
     expect(el.classList.contains("md-progress-indicator--wave")).toBe(true);
 
     // The wave+linear branch of syncHostStyles publishes the resolved wavelength
-    // (default 40dp) as a host custom property.
+    // (default 40px) as a host custom property.
     await waitFor(() =>
       expect(el.style.getPropertyValue("--_wave-length-px")).toBe("40px"),
     );
@@ -555,8 +555,8 @@ export const WavyCircular: Story = {
     docs: {
       description: {
         story:
-          "M3 Expressive wavy circular indicator (48dp, 15dp wavelength snapped to an integer " +
-          "number of waves, 1.6dp amplitude). The wave travels around the ring and flattens at the endpoints.",
+          "M3 Expressive wavy circular indicator (48px, 15px wavelength snapped to an integer " +
+          "number of waves, 1.6px amplitude). The wave travels around the ring and flattens at the endpoints.",
       },
     },
   },
@@ -617,7 +617,7 @@ export const WavyCircular: Story = {
       expect((trackPath()?.getAttribute("d") ?? "").startsWith("M")).toBe(true);
     });
 
-    // Near completion the leftover arc no longer fits both 4dp gaps, so circularPaths
+    // Near completion the leftover arc no longer fits both 4px gaps, so circularPaths
     // hides the track (trackEnd ≤ trackStart → empty d) while the active arc keeps
     // growing — exercises the other branch of the determinate track computation.
     det.value = 99;

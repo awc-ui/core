@@ -99,7 +99,7 @@ the surface. Behaviour differs by `variant`:
 
 | Variant | Bar chrome |
 |---|---|
-| `contained` | Floating expressive pill bar, inset from the viewport edges by `--md-search-fullscreen-bar-offset-inline` (8dp) / `--md-search-fullscreen-bar-offset-block-start` (16dp). Its gutters sit over the opaque results surface, so they read as the surface — never a page band |
+| `contained` | Floating expressive pill bar, inset from the viewport edges by `--md-search-fullscreen-bar-offset-inline` (8px) / `--md-search-fullscreen-bar-offset-block-start` (16px). Its gutters sit over the opaque results surface, so they read as the surface — never a page band |
 | `divided` | Edge-bleed flat app-bar header (no rounding) flush to the viewport top (safe-area only) |
 
 Because the panel surface fills `inset: 0` (behind the bar too) there are no
@@ -148,14 +148,14 @@ Tune contained full-screen spacing with `--md-search-fullscreen-bar-offset-block
 ### Docked
 
 When `layout="docked"` and `open` is `true`, the results drawer anchors beneath
-the bar with just enough offset to clear the bar's focus ring (8dp by default —
-focus-ring offset + thickness + 3dp), a **content-driven** height (no fixed
+the bar with just enough offset to clear the bar's focus ring (8px by default —
+focus-ring offset + thickness + 3px), a **content-driven** height (no fixed
 empty bay — the drawer shrinks to fit few rows), and a max-height of
 `min(400px, 60vh)` (`--md-search-panel-max-block-size`).
 The drawer's inline width matches the **open bar exactly** — both are
-inset by the focused expand margin (`--md-search-expand-focused-inset`, 12dp),
+inset by the focused expand margin (`--md-search-expand-focused-inset`, 12px),
 so the bar and the drawer share identical left and right edges across the whole
-responsive range (the overall component stays within the 360–720dp clamp). The
+responsive range (the overall component stays within the 360–720px clamp). The
 component:
 
 - Does **not** lock document scroll
@@ -397,7 +397,7 @@ const trigger = ref<HTMLElement | null>(null);
 |---|---|
 | Enabled | Container: `--md-sys-color-surface-container-high` |
 | Hover | State layer at `--md-sys-state-hover-state-layer-opacity` |
-| Focus | No state-layer wash — the layer is zeroed and a `--md-search-focus-indicator-color` ring is drawn instead (3dp at 2dp offset, keyboard-only). The bar's side inset springs from 24dp → 12dp (Expressive motion) |
+| Focus | No state-layer wash — the layer is zeroed and a `--md-search-focus-indicator-color` ring is drawn instead (3px at 2px offset, keyboard-only). The bar's side inset springs from 24px → 12px (Expressive motion) |
 | Pressed | `md-ripple` plus state layer at `--md-search-pressed-state-layer-opacity` (literal `0.1`) |
 | Disabled | Bar at 38% opacity, ripple disabled, input disabled |
 
@@ -876,9 +876,9 @@ with no consumer-side adjustment. See [RTL](/behaviour/rtl/).
 `md-search` takes a local `density` rung (`-1` … `-4`) and also honours a global
 `data-density` ancestor; a local `-1` … `-4` rung wins over the inherited one.
 `0` is the undensified baseline you get when nothing sets a rung. Each rung
-takes 4dp off the bar (`56px` at `0`, floor `40px`), 4dp off the leading /
-trailing tap targets (`48px` at `0`, floor `32px`), 1dp off the icon glyphs
-(`24px` at `0`, floor `18px`) and 0.5dp off the input type (`16px` at `0`, floor
+takes 4px off the bar (`56px` at `0`, floor `40px`), 4px off the leading /
+trailing tap targets (`48px` at `0`, floor `32px`), 1px off the icon glyphs
+(`24px` at `0`, floor `18px`) and 0.5px off the input type (`16px` at `0`, floor
 `13px`). Override any of it directly with `--md-search-container-height` or
 `--md-search-icon-button-size`.
 
@@ -899,8 +899,8 @@ trailing tap targets (`48px` at `0`, floor `32px`), 1dp off the icon glyphs
 />
 
 :::caution[At `-2` and below, check your touch targets]
-The leading / trailing icon buttons shrink 4dp per rung: 44dp at `-1`, 40dp at
-`-2`, 36dp at `-3`, 32dp at `-4` — under the minimum recommended by
+The leading / trailing icon buttons shrink 4px per rung: 44px at `-1`, 40px at
+`-2`, 36px at `-3`, 32px at `-4` — under the minimum recommended by
 [Density](/behaviour/density/#accessibility). Reserve those rungs for
 pointer-first, information-dense surfaces.
 :::
@@ -963,7 +963,7 @@ reset a subtree, set `--md-sys-density-scale: 0` directly.
 | `--md-search-container-padding-inline-focused` | Inline padding when focused / open | inherits resting |
 | `--md-search-leading-padding-inline` | Bar leading edge → leading tap target | `4px` |
 | `--md-search-trailing-padding-inline` | Bar trailing edge → trailing tap target | `8px` |
-| `--md-search-icon-button-size` | Leading / trailing tap-target diameter (M3 48dp) | `48px` at density `0` |
+| `--md-search-icon-button-size` | Leading / trailing tap-target diameter (M3 48px) | `48px` at density `0` |
 | `--md-search-leading-icon-label-gap` | Leading tap target → input text | `4px` |
 | `--md-search-trailing-icon-label-gap` | Input text → trailing tap target | `4px` |
 | `--md-search-input-color` | Input text colour | `--md-sys-color-on-surface` |
@@ -1048,16 +1048,16 @@ custom properties follows the theme on its own.
 ### Expressive expansion
 
 This is the single, unified expansion mechanism for **all docked/inline
-bars** — `contained` and `divided` alike. The bar rests with a **24dp** side
-margin (`--md-search-expand-inset`) and springs to a **12dp** side margin
+bars** — `contained` and `divided` alike. The bar rests with a **24px** side
+margin (`--md-search-expand-inset`) and springs to a **12px** side margin
 (`--md-search-expand-focused-inset`) on focus / open, symmetrically (even
-left + right). Each edge travels the `24 − 12 = 12dp` delta, so the container
+left + right). Each edge travels the `24 − 12 = 12px` delta, so the container
 grows evenly on both sides.
 
 :::note[Full-screen does not use margin expansion]
 It zeroes both insets and carries its open / close with a `translateY(30px)`
 slide + opacity fade instead (see [Full-screen](#full-screen)); only docked /
-inline bars spring from 24dp to 12dp.
+inline bars spring from 24px to 12px.
 :::
 
 The default easing is a **back-out spring curve**: the bar briefly
@@ -1070,9 +1070,9 @@ press response and the bar settle land at the same instant.
 <ComponentDemo
   html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:14px 16px;align-items:center;">
   <span style="inline-size:4.5rem;opacity:.7;font-size:.8rem;font-family:ui-monospace,monospace;">default</span>
-  <md-search layout="docked" placeholder="24 → 12dp" style="max-inline-size:440px;"></md-search>
+  <md-search layout="docked" placeholder="24 → 12px" style="max-inline-size:440px;"></md-search>
   <span style="inline-size:4.5rem;opacity:.7;font-size:.8rem;font-family:ui-monospace,monospace;">theatrical</span>
-  <md-search layout="docked" placeholder="48 → 12dp" style="max-inline-size:440px; --md-search-expand-inset: 48px; --md-search-expand-focused-inset: 12px; --md-search-expand-duration: 350ms;"></md-search>
+  <md-search layout="docked" placeholder="48 → 12px" style="max-inline-size:440px; --md-search-expand-inset: 48px; --md-search-expand-focused-inset: 12px; --md-search-expand-duration: 350ms;"></md-search>
   <span style="inline-size:4.5rem;opacity:.7;font-size:.8rem;font-family:ui-monospace,monospace;">no expand</span>
   <md-search layout="docked" placeholder="Fixed margin" style="max-inline-size:440px; --md-search-expand-inset: 12px; --md-search-expand-focused-inset: 12px;"></md-search>
 </div>`}
@@ -1092,7 +1092,7 @@ md-search.calm {
 
 Set the `full-width` boolean prop to make a docked/inline bar span its
 container edge-to-edge with **no** side gutters. It zeroes both expand insets
-for that instance (resting + focused = `0`), so there is no 24 → 12dp margin
+for that instance (resting + focused = `0`), so there is no 24 → 12px margin
 animation and the aligned results drawer fills the same full width. It has no
 effect on `full-screen` (already edge-to-edge).
 

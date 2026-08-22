@@ -369,19 +369,19 @@ export const InsetIcon: Story = {
       </div>
       <div>
         <div style="margin-bottom:8px; font:500 12px/16px system-ui; color:var(--md-sys-color-on-surface-variant, #49454F);">
-          MD — 24dp icon
+          MD — 24px icon
         </div>
         <md-slider size="md" inset-icon icon="volume_up" value="60"></md-slider>
       </div>
       <div>
         <div style="margin-bottom:8px; font:500 12px/16px system-ui; color:var(--md-sys-color-on-surface-variant, #49454F);">
-          LG — 24dp icon
+          LG — 24px icon
         </div>
         <md-slider size="lg" inset-icon icon="volume_up" value="60"></md-slider>
       </div>
       <div>
         <div style="margin-bottom:8px; font:500 12px/16px system-ui; color:var(--md-sys-color-on-surface-variant, #49454F);">
-          XL — 32dp icon
+          XL — 32px icon
         </div>
         <md-slider size="xl" inset-icon icon="volume_up" value="60"></md-slider>
       </div>

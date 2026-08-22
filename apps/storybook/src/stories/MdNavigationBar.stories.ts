@@ -987,7 +987,7 @@ export const Responsiveness: Story = {
       description: {
         story:
           'The navigation bar is **fluid**: `width: 100%`, equal-width ' +
-          'destinations (`flex: 1`), and a fixed `64dp` height. It targets ' +
+          'destinations (`flex: 1`), and a fixed `64px` height. It targets ' +
           '**compact** window widths (&lt; 600 dp) — the same markup fills its ' +
           'container at any phone width. At ≥ 600 dp, M3 recommends switching to a ' +
           '[navigation rail](?path=/docs/components-navigation-rail--docs) or ' +

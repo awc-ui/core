@@ -1,7 +1,7 @@
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element, Watch } from '@stencil/core';
 
 /**
- * Preset size buckets. Map to MD3 reference dimensions (24/40/56dp).
+ * Preset size buckets. Map to MD3 reference dimensions (24/40/56px).
  */
 export type MdAvatarPresetSize = 'small' | 'medium' | 'large';
 
@@ -112,7 +112,7 @@ export class MdAvatar {
   /**
    * Container shape.
    * - `circle`  — fully rounded (`50%`)             [default]
-   * - `rounded` — `--md-sys-shape-corner-medium` (12dp)
+   * - `rounded` — `--md-sys-shape-corner-medium` (12px)
    * - `square`  — sharp corners (`0`)
    */
   @Prop({ reflect: true }) shape: MdAvatarShape = 'circle';

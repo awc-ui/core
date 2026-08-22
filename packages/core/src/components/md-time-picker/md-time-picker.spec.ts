@@ -1424,7 +1424,7 @@ describe('md-time-picker', () => {
     it('ignores orientation="horizontal" on the input variant', async () => {
       // The input variant has no dial to balance against, so the
       // landscape modifier MUST NOT be applied — otherwise the
-      // dialog would stretch awkwardly to 572dp with empty space
+      // dialog would stretch awkwardly to 572px with empty space
       // where the dial would normally sit.
       const page = await create(
         '<md-time-picker open variant="input" orientation="horizontal" value="14:30"></md-time-picker>'

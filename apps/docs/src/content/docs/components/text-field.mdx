@@ -810,7 +810,7 @@ mirror will move it.
 
 ### Every density rung
 
-`density="-1…-4"` compresses the container from 56dp down to 40dp, 4dp per rung,
+`density="-1…-4"` compresses the container from 56px down to 40px, 4px per rung,
 and the label, input line box and every glyph taper with it.
 
 <ComponentDemo
@@ -845,9 +845,9 @@ and the label, input line box and every glyph taper with it.
 />
 
 :::caution[Below `-2`, check your touch targets]
-The rungs shrink the field box with the row — 56dp at `0` down to 40dp at `-4`
+The rungs shrink the field box with the row — 56px at `0` down to 40px at `-4`
 — and the internal clear / password-toggle / speech buttons shrink with it
-(24dp glyphs taper 1px per rung to an 18px floor). 40dp is under the 48px that
+(24px glyphs taper 1px per rung to an 18px floor). 40px is under the 48px that
 pointer-coarse devices want. See [Density](/behaviour/density/#accessibility).
 :::
 
@@ -861,7 +861,7 @@ and any one field can override it with a rung of its own.
 Only the rungs `-1` through `-4` have a rule; there is no `:host([density="0"])`
 and no `[data-density="0"]`. Because the signal is an inherited custom property,
 a field written `density="0"` inside a `data-density="-2"` wrapper still
-inherits `-2` and renders at 48dp like its neighbours. To restore the default
+inherits `-2` and renders at 48px like its neighbours. To restore the default
 rung on one element, reset the signal directly:
 `style="--md-sys-density-scale: 0"`.
 :::

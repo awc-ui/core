@@ -105,7 +105,7 @@ export class MdSearch {
    * edge-to-edge with an opaque results surface and a focus trap (no scrim —
    * open/close uses the same translateY + opacity motion as md-dialog
    * fullscreen); `docked` anchors a popup beneath the bar
-   * (min 360dp / max 720dp wide; results drawer shrinks to content up to max ⅔ vh).
+   * (min 360px / max 720px wide; results drawer shrinks to content up to max ⅔ vh).
    */
   @Prop({ reflect: true }) layout: 'full-screen' | 'docked' = 'full-screen';
 
@@ -147,7 +147,7 @@ export class MdSearch {
   /**
    * Make the docked / inline bar span its container's full inline width with
    * NO side gutters. This zeroes both expand insets for the instance
-   * (resting + focused = 0), so there is no 24 → 12dp margin animation and the
+   * (resting + focused = 0), so there is no 24 → 12px margin animation and the
    * aligned results drawer fills the same full width. Purely an ergonomic
    * switch over the CSS vars — the identical effect is available by setting
    * `--md-search-expand-inset: 0` and `--md-search-expand-focused-inset: 0`.
@@ -574,7 +574,7 @@ export class MdSearch {
    * Resolve the bar's per-side focus travel to a concrete pixel length and
    * forward it to the ripple as `--md-ripple-extend-inline`. The docked/inline
    * bar springs from `100% - 2 * resting` to `100% - 2 * focused` on focus,
-   * which moves each edge out by exactly `resting - focused` (24 → 12 = 12dp
+   * which moves each edge out by exactly `resting - focused` (24 → 12 = 12px
    * default) — the probe resolves that delta. md-ripple
    * applies the extend PER SIDE — `left = rect.left - extend`,
    * `right = rect.right + extend` — so the per-side value it needs is one
@@ -676,7 +676,7 @@ export class MdSearch {
     const ripple = this.rippleEl;
     if (!ripple) return;
 
-    // Full-screen: the bar snaps from its resting (inset / max-720dp) width
+    // Full-screen: the bar snaps from its resting (inset / max-720px) width
     // to the full viewport width on open. md-ripple sizes the wave from the
     // bar's rect AT PRESS TIME — the resting width — so without an extend the
     // wave only covers the initial bar and stops half-way across the

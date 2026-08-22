@@ -2,7 +2,7 @@
    md-switch — Material Design 3 Switch
    Spec: https://m3.material.io/components/switch/specs
 
-   MD3-Expressive motion: the thumb morphs (16→24→28dp) and slides on a
+   MD3-Expressive motion: the thumb morphs (16→24→28px) and slides on a
    SPATIAL spring, colors cross-fade on an EFFECTS spring. All sizing derives
    from the track tokens via calc(), so resizing the track keeps the thumb
    aligned (no hand-tuned offsets).
@@ -203,9 +203,9 @@
 
 /* ==========================================================
    7. HANDLE — morphs size per state on the spatial spring
-      Unselected (no icon): --_handle-unsel (16dp @ 32 track)
-      Unselected (icon) / Selected: --_handle-sel (24dp)
-      Pressed: --_handle-press (28dp)
+      Unselected (no icon): --_handle-unsel (16px @ 32 track)
+      Unselected (icon) / Selected: --_handle-sel (24px)
+      Pressed: --_handle-press (28px)
    ========================================================== */
 
 .md-switch__handle {

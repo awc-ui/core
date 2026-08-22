@@ -34,8 +34,8 @@ export class MdNavigationRail {
   @Element() el!: HTMLElement;
 
   /**
-   * Visual variant — `standard` (the spec's *collapsed* rail: 80dp wide,
-   * stacked icon + label) or `expanded` (icons + label inline, 220–360dp wide).
+   * Visual variant — `standard` (the spec's *collapsed* rail: 80px wide,
+   * stacked icon + label) or `expanded` (icons + label inline, 220–360px wide).
    */
   @Prop({ mutable: true, reflect: true }) variant: 'standard' | 'expanded' = 'standard';
 
@@ -155,7 +155,7 @@ export class MdNavigationRail {
     }
   }
 
-  /** Programmatically collapse the rail (standard 80dp width). */
+  /** Programmatically collapse the rail (standard 80px width). */
   @Method()
   async collapse(): Promise<void> {
     if (this.variant !== 'standard') {

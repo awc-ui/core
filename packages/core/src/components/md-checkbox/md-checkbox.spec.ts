@@ -33,7 +33,7 @@ describe('md-checkbox', () => {
       expect(page.root).toHaveClass('md-checkbox--selected');
     });
 
-    it('renders md-ripple inside 40dp ripple layer', async () => {
+    it('renders md-ripple inside 40px ripple layer', async () => {
       const page = await create('<md-checkbox></md-checkbox>');
       const layer = page.root?.shadowRoot?.querySelector('.md-checkbox__ripple-layer');
       expect(layer).toBeTruthy();

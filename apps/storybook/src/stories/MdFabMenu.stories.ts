@@ -235,7 +235,7 @@ export const FabSizes: Story = {
   render: (_args, { globals }) => html`
     <div style="display: flex; gap: 120px; justify-content: center; align-items: end; min-height: 500px; padding: 48px;">
       <div style="position: relative; text-align: center;">
-        <span style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--md-sys-color-on-surface-variant);">Standard (56dp)</span>
+        <span style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--md-sys-color-on-surface-variant);">Standard (56px)</span>
         <md-fab id="fab-std" icon="add" size="standard" aria-label="${t(globals.locale, 'fabMenu.actions')}"></md-fab>
         <md-fab-menu anchor="fab-std" variant="primary">
           <md-fab-menu-item icon="edit" label="${t(globals.locale, 'edit')}"></md-fab-menu-item>
@@ -243,7 +243,7 @@ export const FabSizes: Story = {
         </md-fab-menu>
       </div>
       <div style="position: relative; text-align: center;">
-        <span style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--md-sys-color-on-surface-variant);">Medium (80dp)</span>
+        <span style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--md-sys-color-on-surface-variant);">Medium (80px)</span>
         <md-fab id="fab-med" icon="add" size="medium" aria-label="${t(globals.locale, 'fabMenu.actions')}"></md-fab>
         <md-fab-menu anchor="fab-med" variant="primary">
           <md-fab-menu-item icon="edit" label="${t(globals.locale, 'edit')}"></md-fab-menu-item>
@@ -251,7 +251,7 @@ export const FabSizes: Story = {
         </md-fab-menu>
       </div>
       <div style="position: relative; text-align: center;">
-        <span style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--md-sys-color-on-surface-variant);">Large (96dp)</span>
+        <span style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--md-sys-color-on-surface-variant);">Large (96px)</span>
         <md-fab id="fab-lg" icon="add" size="large" aria-label="${t(globals.locale, 'fabMenu.actions')}"></md-fab>
         <md-fab-menu anchor="fab-lg" variant="primary">
           <md-fab-menu-item icon="edit" label="${t(globals.locale, 'edit')}"></md-fab-menu-item>

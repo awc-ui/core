@@ -31,7 +31,7 @@ const typeSearch = (bar: AppBarEl, text: string) => {
 // Shared helpers
 // ────────────────────────────────────────────────────────────────────────
 
-/** M3 app-bar action icon — 48dp touch target (`size="md"` + `button-width="narrow"`). */
+/** M3 app-bar action icon — 48px touch target (`size="md"` + `button-width="narrow"`). */
 const appBarIcon = (
   slot: string,
   icon: string,
@@ -307,7 +307,7 @@ const meta: Meta = {
       description: {
         component:
           'Material Design 3 top app bar implementing the [MD3 App bars spec](https://m3.material.io/components/app-bars/specs). ' +
-          'Variants: `small` (64dp), `medium` (112/136dp), `large` (120/152dp), and `search` (inline search field). ' +
+          'Variants: `small` (64px), `medium` (112/136px), `large` (120/152px), and `search` (inline search field). ' +
           'Use `title-alignment` for centered titles.',
       },
       source: { language: 'html' },
@@ -347,7 +347,7 @@ const meta: Meta = {
     density: {
       control: 'select',
       options: [0, -1, -2, -3, -4],
-      description: 'Density scale: 0 (default 64dp row), -1 (60dp), -2 (56dp), -3 (52dp), -4 (48dp).',
+      description: 'Density scale: 0 (default 64px row), -1 (60px), -2 (56px), -3 (52px), -4 (48px).',
     },
   },
   args: {
@@ -618,7 +618,7 @@ export const CustomIcons: Story = {
         story:
           'Replace prop-based or Material Symbols actions with slotted custom icons. ' +
           'Use `leading`, `trailing`, and `search-trailing` on `md-icon-button` (or raw SVG in `leading` per readme); ' +
-          'slots take priority over `leading-icon`. Host `::slotted` rules map `--md-icon-button-container-*` to the 48dp app-bar touch target. ' +
+          'slots take priority over `leading-icon`. Host `::slotted` rules map `--md-icon-button-container-*` to the 48px app-bar touch target. ' +
           'Compare the first section (`leading-icon` prop) with the slotted examples below.',
       },
       source: {
@@ -744,7 +744,7 @@ export const RTL: Story = {
       description: {
         story:
           'Leading/trailing slots mirror automatically under `dir="rtl"`. Use `data-directional` on `arrow_back` for glyph mirroring. ' +
-          'Search rows keep 48dp touch targets; hint inset follows container-query tiers from the host.',
+          'Search rows keep 48px touch targets; hint inset follows container-query tiers from the host.',
       },
     },
   },
@@ -1278,8 +1278,8 @@ export const Responsiveness: Story = {
     docs: {
       description: {
         story:
-          'The search row uses host container queries: hint inset steps down below 600dp and 400dp; second+ `search-trailing` icons hide unless `data-compact-keep`. ' +
-          'Fixed-width frames at 320 / 600 / 800px show the tiers. Row gaps and 48dp touch targets stay constant.',
+          'The search row uses host container queries: hint inset steps down below 600px and 400px; second+ `search-trailing` icons hide unless `data-compact-keep`. ' +
+          'Fixed-width frames at 320 / 600 / 800px show the tiers. Row gaps and 48px touch targets stay constant.',
       },
     },
   },
@@ -1290,12 +1290,12 @@ export const Responsiveness: Story = {
       html`
     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 840px;">
       <p style="margin: 0 0 8px; font-size: 13px; line-height: 1.5; color: var(--md-sys-color-on-surface-variant);">
-        Mic stays visible; sparkle uses <code>data-compact-keep</code> so it remains below 600dp.
+        Mic stays visible; sparkle uses <code>data-compact-keep</code> so it remains below 600px.
       </p>
       ${[
-        { label: '320px · extra-narrow (12dp hint, one in-pill icon)', width: '320px' },
-        { label: '600px · compact tier boundary (16dp hint)', width: '600px' },
-        { label: '800px · full width (24dp hint, both in-pill icons)', width: '800px' },
+        { label: '320px · extra-narrow (12px hint, one in-pill icon)', width: '320px' },
+        { label: '600px · compact tier boundary (16px hint)', width: '600px' },
+        { label: '800px · full width (24px hint, both in-pill icons)', width: '800px' },
       ].map((vp) =>
         viewportFrame(
           vp.label,

@@ -802,7 +802,7 @@ export const CardGrid: Story = {
             <div style="padding: 16px;">
               <h3 style="margin: 0 0 8px; font-size: 16px; font-weight: 500;">Card ${i}</h3>
               <p style="margin: 0; font-size: 14px; color: var(--md-sys-color-on-surface-variant);">
-                Cards are laid out with 8dp max gap between them.
+                Cards are laid out with 8px max gap between them.
               </p>
             </div>
           </md-card>

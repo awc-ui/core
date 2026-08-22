@@ -30,7 +30,7 @@ export class MdChip {
    * Surface style of the chip. Distinct from `variant`, which selects the M3
    * chip TYPE (assist / filter / input / suggestion); a chip has both.
    *
-   * - `outlined` (default) — transparent container with a 1dp outline.
+   * - `outlined` (default) — transparent container with a 1px outline.
    * - `filled` — tonal container, no outline.
    * - `elevated` — tonal container with elevation and no outline.
    */

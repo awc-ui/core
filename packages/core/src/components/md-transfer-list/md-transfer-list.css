@@ -22,7 +22,7 @@
      --md-transfer-list-header-color       Header background
      --md-transfer-list-header-text-color  Header text color
      --md-transfer-list-item-inset         Row plate inset from the panel edge
-                                           (6dp; overriding it alone keeps the
+                                           (6px; overriding it alone keeps the
                                            checkbox column aligned)
      --md-transfer-list-item-padding       Padding of each row (derived from
                                            inset-lg so the row checkbox lines up
@@ -319,7 +319,7 @@
 }
 
 .md-transfer-list__empty-icon {
-  /* 2px/rung off 32dp (24px floor) — the rate the library uses for 32px
+  /* 2px/rung off 32px (24px floor) — the rate the library uses for 32px
      decorative glyphs (cf. md-app-bar's --_avatar-size), not the 1px/rung
      action-icon rate: this one is a large empty-state illustration and would
      otherwise stay visually huge inside a collapsing panel. */

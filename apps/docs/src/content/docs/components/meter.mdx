@@ -66,7 +66,7 @@ progress-indicator geometry, so the visuals follow M3 while the semantics follow
 :::tip[Meter vs progress indicator]
 The load-bearing distinction: a meter shows a **state** ("how full"), a
 progress indicator shows an **activity** ("how far along"). That is why
-`md-meter` deliberately has no indeterminate mode, no M3-Expressive 4dp gap, no
+`md-meter` deliberately has no indeterminate mode, no M3-Expressive 4px gap, no
 stop dot and no completion animation — it is a plain track + fill that sits
 still.
 :::
@@ -271,10 +271,10 @@ The canonical quota recipe switches the role as thresholds are crossed:
 
 <ComponentDemo
   html={`<div style="display: flex; flex-direction: column; gap: 20px; inline-size: 100%; max-inline-size: 360px;">
-  <md-meter value="65" thickness="2" label="2dp"></md-meter>
-  <md-meter value="65" label="4dp (default)"></md-meter>
-  <md-meter value="65" thickness="8" label="8dp"></md-meter>
-  <md-meter value="65" thickness="12" label="12dp"></md-meter>
+  <md-meter value="65" thickness="2" label="2px"></md-meter>
+  <md-meter value="65" label="4px (default)"></md-meter>
+  <md-meter value="65" thickness="8" label="8px"></md-meter>
+  <md-meter value="65" thickness="12" label="12px"></md-meter>
 </div>`}
   label="Track thickness"
   storyId="communication-meter--thickness"
@@ -528,7 +528,7 @@ text direction — never add your own `scaleX(-1)`.
 
 ### Every density rung
 
-`density="-1…-4"` thins the track (4dp down to the 2px floor at `-4`) and
+`density="-1…-4"` thins the track (4px down to the 2px floor at `-4`) and
 tightens the header spacing and type. Those four rungs locally override an
 inherited global `data-density`; `density="0"` is the default and means
 "inherit whatever the ancestor says". All five rungs, both shapes, same meter:
@@ -608,8 +608,8 @@ separators, percent signs, units and currencies all follow the locale. See the
 | `--md-meter-indicator-color` | Fill colour | The `color` role (primary) |
 | `--md-meter-track-color` | Track background | The role's container (secondary-container) |
 | `--md-meter-track-shape` | Track + fill corner radius | `--md-sys-shape-corner-full` |
-| `--md-meter-height` | Track thickness | `thickness` prop (4dp, density-scaled) |
-| `--md-meter-size` | Ring diameter (circular only) | `size` prop (48dp, density-scaled) |
+| `--md-meter-height` | Track thickness | `thickness` prop (4px, density-scaled) |
+| `--md-meter-size` | Ring diameter (circular only) | `size` prop (48px, density-scaled) |
 | `--md-meter-label-color` | Header label text | `--md-sys-color-on-surface` |
 | `--md-meter-value-color` | Header value text | `--md-sys-color-on-surface-variant` |
 

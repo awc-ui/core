@@ -52,9 +52,9 @@ medium / large window sizes, laid out **vertically** (the M3 default) or
 
 Holds **3–7 destinations** plus optional **header**, **FAB**, and **footer** slots.
 
-Per the current M3 spec, the collapsed rail is **96dp** wide (override
+Per the current M3 spec, the collapsed rail is **96px** wide (override
 \`--md-navigation-rail-container-width: 80px\` for the narrow variant) and the
-expanded rail spans **220–360dp** with full-width 56dp destination rows. Set
+expanded rail spans **220–360px** with full-width 56px destination rows. Set
 \`modal\` on a floating expanded rail for the surface-container + elevation-2
 treatment. Use **labels-selected** / **labels-none** to control label visibility.
 
@@ -500,7 +500,7 @@ export const ExpandedVariant: Story = {
         <p>
           When horizontal space allows, set <code>variant="expanded"</code> to show
           full-width labels alongside the icons. Per spec the expanded rail is
-          220–360dp wide with 56dp-tall destination rows and label-large typography.
+          220–360px wide with 56px-tall destination rows and label-large typography.
         </p>
         <p>
           The <code>expandable</code> attribute renders the built-in menu button —
@@ -523,7 +523,7 @@ export const SectionHeaders: Story = {
         story:
           'Group destinations under labelled sections in the expanded rail. Mark a ' +
           'slotted element with <code>data-section-header</code> and place it between ' +
-          'destinations. Section headers show only when expanded (12dp above / 8dp ' +
+          'destinations. Section headers show only when expanded (12px above / 8px ' +
           'below per spec) and are hidden in the collapsed icon-only rail. Use the ' +
           'toggle to collapse and see them disappear.',
       },
@@ -548,7 +548,7 @@ export const SectionHeaders: Story = {
         <h2 style="margin-top:0">Section headers</h2>
         <p>
           A <code>data-section-header</code> element groups destinations under a label.
-          They appear only in the expanded rail (spec: 12dp above, 8dp below) and are
+          They appear only in the expanded rail (spec: 12px above, 8px below) and are
           hidden when collapsed. Toggle the rail to compare.
         </p>
       </main>
@@ -565,7 +565,7 @@ export const ModalExpanded: Story = {
     docs: {
       description: {
         story:
-          'A modal rail. Collapsed, it is a normal docked 96dp rail that sits in ' +
+          'A modal rail. Collapsed, it is a normal docked 96px rail that sits in ' +
           'the content. Use the built-in toggle (<code>expandable</code>) to open ' +
           'it: it becomes a floating overlay over the content with a scrim behind ' +
           '(<code>surface-container</code> background, level-2 elevation, large ' +
@@ -672,7 +672,7 @@ export const ExpandedItemStates: Story = {
         .force-hover::part(state-layer) { opacity: 0.08; }
         .force-focus::part(state-layer) { opacity: 0.10; }
         /* Inset ring, matching the real expanded focus-visible style — an
-           outset ring would overlap the adjacent pill (4dp apart). */
+           outset ring would overlap the adjacent pill (4px apart). */
         .force-focus::part(indicator) {
           outline: 3px solid var(--md-sys-color-secondary, #625B71);
           outline-offset: -3px;

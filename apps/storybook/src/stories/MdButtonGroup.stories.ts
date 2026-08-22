@@ -288,7 +288,7 @@ export const Standard: Story = {
   name: 'Standard',
   render: () => html`
     <div style="${SECTION}">
-      <p style="${HEADING}">Round — all sizes (gap: XS 18dp, SM 12dp, MD–XL 8dp)</p>
+      <p style="${HEADING}">Round — all sizes (gap: XS 18px, SM 12px, MD–XL 8px)</p>
       ${sizes.map(s => html`
         <div style="${ROW}; margin-bottom:12px;">
           <span style="width:24px; font-size:11px; color:#49454F; font-weight:600;">${s.toUpperCase()}</span>
@@ -342,11 +342,11 @@ export const Connected: Story = {
   render: (_args, { globals }) => html`
     <div style="${SECTION}">
       <p style="color:#49454F; margin:0 0 16px; font-size:13px; line-height:1.6;">
-        Connected groups fuse buttons with <strong>2dp</strong> inner padding at every size.
+        Connected groups fuse buttons with <strong>2px</strong> inner padding at every size.
         <strong>Round</strong> outer edges are fully round; inner edges use size-dependent radii
         (XS 4, SM 8, MD 8, LG 16, XL 20).
         <strong>Square</strong> outer edges use the same size-dependent radii.
-        XS and SM enforce a <strong>48dp minimum width</strong> for touch targets.
+        XS and SM enforce a <strong>48px minimum width</strong> for touch targets.
       </p>
 
       <p style="${HEADING}">Round — all sizes (outer: fully round, inner: size-dependent)</p>
@@ -397,7 +397,7 @@ export const Connected: Story = {
         </div>
       `)}
 
-      <p style="${HEADING}">Minimum width — XS/SM icon buttons (48dp target area)</p>
+      <p style="${HEADING}">Minimum width — XS/SM icon buttons (48px target area)</p>
       <div style="${ROW}; margin-bottom:12px;">
         <span style="width:24px; font-size:11px; color:#49454F; font-weight:600;">XS</span>
         <md-button-group variant="connected" size="xs" shape="round">

@@ -325,21 +325,21 @@ export const Density: Story = {
   render: () => html`
     <div style="display: grid; gap: 24px; max-width: 520px;">
       <div>
-        <div style="${labelStyle}">Default (56dp header)</div>
+        <div style="${labelStyle}">Default (56px header)</div>
         <md-accordion>
           <md-accordion-item headline="Default density">Lorem ipsum.</md-accordion-item>
           <md-accordion-item headline="Default density">Lorem ipsum.</md-accordion-item>
         </md-accordion>
       </div>
       <div>
-        <div style="${labelStyle}">Density -1 (48dp)</div>
+        <div style="${labelStyle}">Density -1 (48px)</div>
         <md-accordion density="-1">
           <md-accordion-item headline="Compact">Lorem ipsum.</md-accordion-item>
           <md-accordion-item headline="Compact">Lorem ipsum.</md-accordion-item>
         </md-accordion>
       </div>
       <div>
-        <div style="${labelStyle}">Density -2 (40dp)</div>
+        <div style="${labelStyle}">Density -2 (40px)</div>
         <md-accordion density="-2">
           <md-accordion-item headline="Dense">Lorem ipsum.</md-accordion-item>
           <md-accordion-item headline="Dense">Lorem ipsum.</md-accordion-item>
@@ -3201,18 +3201,18 @@ export const CustomSizes: Story = {
           dense layouts. Underneath it tweaks the min-height + paddings.
         </p>
         <md-accordion>
-          <md-accordion-item headline="Default · 56-64dp">…</md-accordion-item>
-          <md-accordion-item headline="Default · 56-64dp">…</md-accordion-item>
+          <md-accordion-item headline="Default · 56-64px">…</md-accordion-item>
+          <md-accordion-item headline="Default · 56-64px">…</md-accordion-item>
         </md-accordion>
         <div style="height: 16px;"></div>
         <md-accordion density="-1">
-          <md-accordion-item headline="Compact · 48dp">…</md-accordion-item>
-          <md-accordion-item headline="Compact · 48dp">…</md-accordion-item>
+          <md-accordion-item headline="Compact · 48px">…</md-accordion-item>
+          <md-accordion-item headline="Compact · 48px">…</md-accordion-item>
         </md-accordion>
         <div style="height: 16px;"></div>
         <md-accordion density="-2">
-          <md-accordion-item headline="Dense · 40dp">…</md-accordion-item>
-          <md-accordion-item headline="Dense · 40dp">…</md-accordion-item>
+          <md-accordion-item headline="Dense · 40px">…</md-accordion-item>
+          <md-accordion-item headline="Dense · 40px">…</md-accordion-item>
         </md-accordion>
       </section>
     </div>

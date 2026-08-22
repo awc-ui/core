@@ -18,7 +18,7 @@ const CIRCULAR_SIZE_DEFAULT = 48;
  *
  * Deliberately NOT a progress indicator: a meter shows a *state* ("how full"),
  * a progress indicator shows an *activity* ("how far along"). It is therefore
- * a plain track + fill — no 4dp gap, no stop dot, no indeterminate mode, no
+ * a plain track + fill — no 4px gap, no stop dot, no indeterminate mode, no
  * completion animation. Nothing here is focusable or interactive and no events
  * are emitted.
  *
@@ -213,7 +213,7 @@ export class MdMeter {
   }
 
   /**
-   * Inline `--_thickness` ONLY when the prop deviates from the 4dp default
+   * Inline `--_thickness` ONLY when the prop deviates from the 4px default
    * (md-text-field's focusBorderWidth precedent) — the resting look stays pure
    * CSS. The public `--md-meter-height` hook is repeated inside the override
    * so it still wins, and the density taper + 2px floor stay applied.
@@ -227,7 +227,7 @@ export class MdMeter {
   }
 
   /**
-   * Ring diameter, clamped into the same 24…240dp band md-progress-indicator
+   * Ring diameter, clamped into the same 24…240px band md-progress-indicator
    * uses. This is the SVG's user-unit box; the rendered pixel size comes from
    * `--_size` on the host, so density tapers the whole ring proportionally
    * rather than desynchronising the stroke from the radius.
@@ -249,7 +249,7 @@ export class MdMeter {
   }
 
   /**
-   * Inline `--_size` only when `size` deviates from the 48dp default, matching
+   * Inline `--_size` only when `size` deviates from the 48px default, matching
    * how `thicknessVar` leaves the resting look to pure CSS. The public
    * `--md-meter-size` hook is repeated inside so it still wins, and the density
    * taper + 24px floor stay applied.

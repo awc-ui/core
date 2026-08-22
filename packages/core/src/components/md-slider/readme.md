@@ -156,7 +156,7 @@ Sourced from [M3 · Sliders · Guidelines](https://m3.material.io/components/sli
 |---|---|
 | Keep range sliders **horizontal** | Don't use a range slider vertically — the cognitive load is too high |
 | Use an inset icon to reinforce what's being adjusted | Don't use an inset icon on a **range** slider |
-| Use inset icons only on thick tracks | Don't use an inset icon when the track is under 40dp |
+| Use inset icons only on thick tracks | Don't use an inset icon when the track is under 40px |
 | Let the inset icon change placement with the handle | Don't use an inset icon on a **centered** slider |
 | Use `stops` when the increments are meaningful | Don't show ticks on a continuous scale — it implies false precision |
 | Give every slider an accessible label | Don't ship an unlabelled slider |

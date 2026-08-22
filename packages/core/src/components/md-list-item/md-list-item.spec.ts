@@ -124,7 +124,7 @@ describe('md-list-item', () => {
     it('flags `md-list-item--with-video` when a <video slot="leading"> child is present', async () => {
       // Asserts the workaround for the Chromium `:host(:has(...))` limitation —
       // the row must learn from TSX detection that it carries a video thumbnail
-      // so the CSS-only top-padding bump (8dp → 12dp) actually fires.
+      // so the CSS-only top-padding bump (8px → 12px) actually fires.
       const page = await newSpecPage({
         components: [MdListItem],
         html: `<md-list-item headline="Clip"><video slot="leading"></video></md-list-item>`,

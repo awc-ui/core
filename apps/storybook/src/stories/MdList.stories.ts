@@ -305,7 +305,7 @@ export const ThreeLine: Story = {
     };
     return html`
     ${caption(
-      'Auto-promotes to 3-line (88dp+) when both overline and supporting-text are present, or explicitly via `lines="3"`. Leading + trailing slots top-align, supporting-text clamps to 2 visible lines, and top/bottom padding flips to 12dp per the M3 spec. The eight sections below walk every officially supported three-line composition.',
+      'Auto-promotes to 3-line (88px+) when both overline and supporting-text are present, or explicitly via `lines="3"`. Leading + trailing slots top-align, supporting-text clamps to 2 visible lines, and top/bottom padding flips to 12px per the M3 spec. The eight sections below walk every officially supported three-line composition.',
     )}
 
     <!-- ─── 1. Icon leading — classic 3-line row ─────────────────────────── -->
@@ -373,7 +373,7 @@ export const ThreeLine: Story = {
     </md-list>
 
     <!-- ─── 3. Image leading — article / media row ────────────────────────── -->
-    ${sectionLabel('3. Image leading (56dp) — article / media row')}
+    ${sectionLabel('3. Image leading (56px) — article / media row')}
     <md-list style="max-inline-size: 480px; margin-block-end: 24px;">
       <md-list-item
         type="button"
@@ -389,15 +389,15 @@ export const ThreeLine: Story = {
         type="button"
         overline="GUIDE"
         headline="Designing for variable density"
-        supporting-text="Why the same row needs to flex from 56dp (mobile) all the way down to 40dp (desktop dense) without losing M3 fidelity or readability."
+        supporting-text="Why the same row needs to flex from 56px (mobile) all the way down to 40px (desktop dense) without losing M3 fidelity or readability."
         leading-image="https://picsum.photos/seed/article2/80/80"
         leading-image-alt=""
         trailing-icon="bookmark"
       ></md-list-item>
     </md-list>
 
-    <!-- ─── 4. Video leading — bumped 12dp top padding ────────────────────── -->
-    ${sectionLabel('4. Video leading (100×56dp) — top padding bumps to 12dp')}
+    <!-- ─── 4. Video leading — bumped 12px top padding ────────────────────── -->
+    ${sectionLabel('4. Video leading (100×56px) — top padding bumps to 12px')}
     <md-list style="max-inline-size: 480px; margin-block-end: 24px;">
       <md-list-item
         type="button"
@@ -538,7 +538,7 @@ export const ThreeLine: Story = {
     <!-- ─── 8. lines="3" opt-in — headline + 2-line supporting, NO overline ─ -->
     ${sectionLabel('8. lines="3" opt-in — headline + multi-line supporting, no overline')}
     ${caption(
-      'Without an overline the row defaults to 2-line. Setting `lines="3"` forces the 88dp chassis + 12dp insets so supporting-text gets room to breathe — useful for trip cards, summaries, or anything where the second line of body copy carries real meaning.',
+      'Without an overline the row defaults to 2-line. Setting `lines="3"` forces the 88px chassis + 12px insets so supporting-text gets room to breathe — useful for trip cards, summaries, or anything where the second line of body copy carries real meaning.',
     )}
     <md-list style="max-inline-size: 480px;">
       <md-list-item
@@ -1296,7 +1296,7 @@ export const States: Story = {
    ═══════════════════════════════════════════════════════════════════════════ */
 export const ShapeMorph: Story = {
   render: () => html`
-    ${caption('Hover, focus (Tab) and press each row — the container morphs to corner-large (16dp) on every interactive state so a standard row in hover / focus / selected / pressed matches the segmented tile resting shape. The animation is wired with `border-radius` transitions on both the host and the row.')}
+    ${caption('Hover, focus (Tab) and press each row — the container morphs to corner-large (16px) on every interactive state so a standard row in hover / focus / selected / pressed matches the segmented tile resting shape. The animation is wired with `border-radius` transitions on both the host and the row.')}
     <md-list style="max-inline-size: 420px;" selection-mode="single-select" label="Shape morph demo">
       <md-list-item headline="Hover me" supporting-text="Corner-large on hover" leading-icon="touch_app"></md-list-item>
       <md-divider inset-start></md-divider>
@@ -1779,7 +1779,7 @@ export const NoDividers: Story = {
       <!-- 1 ─── Segmented quick actions: gaps separate, no chrome needed ──── -->
       <div>
         ${sectionLabel('1. Segmented action set')}
-        ${caption('Each row is its own rounded tile. The 4dp inter-tile gap is the separator — adding dividers would double the visual chrome.')}
+        ${caption('Each row is its own rounded tile. The 4px inter-tile gap is the separator — adding dividers would double the visual chrome.')}
         <md-list list-style="segmented" label="Quick actions">
           <md-list-item type="button" headline="Share" leading-icon="share" trailing-icon="chevron_right"></md-list-item>
           <md-list-item type="button" headline="Duplicate" leading-icon="content_copy" trailing-icon="chevron_right"></md-list-item>
@@ -1807,7 +1807,7 @@ export const NoDividers: Story = {
       <!-- 3 ─── Avatar inbox: tall rows + photo leading make dividers redundant -->
       <div>
         ${sectionLabel('3. Avatar inbox (standard)')}
-        ${caption('80dp three-line rows with photo avatars give every entry its own gravity — hover/focus shape morph is the only delimiter needed.')}
+        ${caption('80px three-line rows with photo avatars give every entry its own gravity — hover/focus shape morph is the only delimiter needed.')}
         <md-list label="Recent threads">
           <md-list-item
             type="button"
@@ -1847,7 +1847,7 @@ export const NoDividers: Story = {
       <!-- 4 ─── Settings switches: trailing control + supporting text ───────── -->
       <div>
         ${sectionLabel('4. Settings switches (standard)')}
-        ${caption('Two-line rows with leading icon + supporting text + trailing `md-switch`. The 64dp row height + trailing controls already separate items visually.')}
+        ${caption('Two-line rows with leading icon + supporting text + trailing `md-switch`. The 64px row height + trailing controls already separate items visually.')}
         <md-list label="Privacy settings">
           <md-list-item
             headline="Personalised ads"
@@ -1883,7 +1883,7 @@ export const NoDividers: Story = {
       <!-- 5 ─── Image news feed: 3-line cards where the image IS the divider ── -->
       <div>
         ${sectionLabel('5. Image news feed (three-line)')}
-        ${caption('56dp leading images at 88dp row height. The hard-edged image rectangle + content density carry the separation; a divider would just clutter the seam.')}
+        ${caption('56px leading images at 88px row height. The hard-edged image rectangle + content density carry the separation; a divider would just clutter the seam.')}
         <md-list label="Today's stories">
           <md-list-item
             type="button"

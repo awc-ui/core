@@ -11,7 +11,7 @@
      --md-text-field-error-color             Error accent (label, indicator, icon, helper)
      --md-text-field-supporting-text-color   Supporting text + character counter
      --md-text-field-icon-color              Leading / trailing / clear / password / speech icons
-     --md-text-field-icon-size               All glyph sizes (24dp; tapers with
+     --md-text-field-icon-size               All glyph sizes (24px; tapers with
                                              density — set to opt out)
      --md-text-field-padding-inline-start / -end   Per-side container inset
      --md-text-field-optical-nudge           Outlined only: px the input text is
@@ -58,7 +58,7 @@
   --_supporting-text-color: var(--md-text-field-supporting-text-color, var(--md-sys-color-on-surface-variant, #49454F));
   --_icon-color: var(--md-text-field-icon-color, var(--md-sys-color-on-surface-variant, #49454F));
   /* One lever for every glyph in the field — leading, trailing, clear,
-     password toggle, speech, error. 1px per density rung off 24dp (18px floor),
+     password toggle, speech, error. 1px per density rung off 24px (18px floor),
      the library-wide icon taper. Previously each of the six was a separate
      hard-coded 24px, so the glyphs stayed full size while the container
      tightened around them. */

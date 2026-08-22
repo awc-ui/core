@@ -65,15 +65,15 @@ export const Sizes: Story = {
     <div style="display: flex; gap: 32px; align-items: center;">
       <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
         <md-loading-indicator style="--md-loading-indicator-size: 32px; --md-loading-indicator-shape-size: 24px;"></md-loading-indicator>
-        <span style="${labelStyle}">Small (32dp)</span>
+        <span style="${labelStyle}">Small (32px)</span>
       </div>
       <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
         <md-loading-indicator></md-loading-indicator>
-        <span style="${labelStyle}">Default (48dp)</span>
+        <span style="${labelStyle}">Default (48px)</span>
       </div>
       <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
         <md-loading-indicator style="--md-loading-indicator-size: 64px; --md-loading-indicator-shape-size: 52px;"></md-loading-indicator>
-        <span style="${labelStyle}">Large (64dp)</span>
+        <span style="${labelStyle}">Large (64px)</span>
       </div>
       <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
         <md-loading-indicator variant="contained" style="--md-loading-indicator-size: 32px; --md-loading-indicator-shape-size: 24px;"></md-loading-indicator>

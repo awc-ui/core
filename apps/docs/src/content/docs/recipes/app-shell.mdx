@@ -13,8 +13,8 @@ search variant hosting a docked [`md-search`](/components/search/) and an
 avatar-triggered account menu, [`md-navigation-rail`](/components/navigation-rail/)
 for medium-and-up windows, [`md-navigation-bar`](/components/navigation-bar/)
 for compact ones, and [`md-breadcrumbs`](/components/breadcrumbs/) heading the
-content region. Every piece renders at a fixed, token-driven size — 64dp app
-bar row, 80dp rail, 64dp bottom bar — so server-rendered markup paints in its
+content region. Every piece renders at a fixed, token-driven size — 64px app
+bar row, 80px rail, 64px bottom bar — so server-rendered markup paints in its
 final position with zero layout shift. The demo shows the rail *and* the bar
 at once so you can compare them; in production one media query swaps them at
 the 600px compact breakpoint.
@@ -23,10 +23,13 @@ the 600px compact breakpoint.
   label="Live preview — switch destinations, toggle the rail with the menu button, try search and the account menu"
   html={`<div style="max-width: 720px; margin-inline: auto; border: 1px solid var(--md-sys-color-outline-variant); background: var(--md-sys-color-surface);">
   <style>
-    /* A slotted md-search brings its own pill and hover overlay — hide the
-       app bar's built-in ones so the two don't stack (the container via its
-       custom property below, the hover state layer via its exported part). */
+    /* A slotted md-search brings its own pill, hover overlay and press
+       ripple — hide the app bar's built-in ones so the two don't stack:
+       container fill via its custom property (inline below), hover state
+       layer via its exported part, and the press ripple by zeroing the
+       ripple opacity that cascades through the search part. */
     md-app-bar[data-appbar]::part(search-state-layer) { display: none; }
+    md-app-bar[data-appbar]::part(search) { --md-ripple-opacity: 0; }
   </style>
   <md-app-bar data-appbar variant="search" leading-icon="menu" leading-icon-label="Toggle navigation"
     style="--md-app-bar-search-container-color: transparent; --md-app-bar-search-container-color-scrolled: transparent;">
@@ -144,11 +147,13 @@ the 600px compact breakpoint.
   </md-navigation-bar>
 </div>`}
   htmlForCode={`<!-- The chrome renders at fixed, token-driven sizes: no layout shift on first paint. -->
-<!-- A slotted md-search draws its own pill and hover overlay — blank the app
-     bar's built-in ones (container via custom property, hover state layer via
-     its exported part): -->
+<!-- A slotted md-search draws its own pill, hover overlay and press ripple —
+     blank the app bar's built-in ones (container via custom property, hover
+     state layer via its exported part, ripple via the opacity token that
+     cascades through the part): -->
 <style>
   md-app-bar::part(search-state-layer) { display: none; }
+  md-app-bar::part(search) { --md-ripple-opacity: 0; }
 </style>
 <md-app-bar variant="search" leading-icon="menu" leading-icon-label="Toggle navigation"
   style="--md-app-bar-search-container-color: transparent; --md-app-bar-search-container-color-scrolled: transparent;">
@@ -727,9 +732,9 @@ function navigate(index: number) {
 
 | Component | Role in this screen |
 |---|---|
-| [`md-app-bar`](/components/app-bar/) | The banner. `variant="search"` puts a search pill in the 64dp row; the host is already `position: sticky; top: 0`, so it pins itself to its scroll container. `scrolled` is a prop you set from your own scroll listener — the bar never measures the page. |
+| [`md-app-bar`](/components/app-bar/) | The banner. `variant="search"` puts a search pill in the 64px row; the host is already `position: sticky; top: 0`, so it pins itself to its scroll container. `scrolled` is a prop you set from your own scroll listener — the bar never measures the page. |
 | [`md-search`](/components/search/) | Slotted into the app bar's `search` slot, which replaces the built-in input entirely. `layout="docked"` anchors the results panel beneath the bar; `debounce="200"` gates `mdSearch` so the filter runs once per pause, not per keystroke. |
-| [`md-navigation-rail`](/components/navigation-rail/) | Desktop destinations. `mdTabChange` carries a stable `value` for routing; `toggle()` swaps between the 80dp icon rail and the 220dp labelled drawer. Badge counts ride on each `md-navigation-rail-tab` via `badge-value`. |
+| [`md-navigation-rail`](/components/navigation-rail/) | Desktop destinations. `mdTabChange` carries a stable `value` for routing; `toggle()` swaps between the 80px icon rail and the 220px labelled drawer. Badge counts ride on each `md-navigation-rail-tab` via `badge-value`. |
 | [`md-navigation-bar`](/components/navigation-bar/) | The same four destinations for compact windows. It owns `active-index`, roving focus, and label policy; `select()` is a no-op on a reselect, which is what makes the two-way sync with the rail loop-safe. |
 | [`md-breadcrumbs`](/components/breadcrumbs/) | The content header's where-am-I trail. The last crumb is auto-promoted to the non-interactive current page, and `mdSelect` is cancelable for SPA routing. |
 | [`md-menu`](/components/menu/) | The account menu, anchored to the avatar button by `id`. It writes `aria-haspopup` / `aria-expanded` onto the trigger while open and returns focus to it on `Escape`. |
@@ -738,7 +743,7 @@ function navigate(index: number) {
 ## The details that make it production-grade
 
 - **Zero layout shift is structural, not tuned.** The app bar row is a fixed
-  64dp, the rail 80dp wide, the bottom bar 64dp tall — all deterministic
+  64px, the rail 80px wide, the bottom bar 64px tall — all deterministic
   tokens, and nothing in the chrome measures the DOM to lay itself out (even
   the app bar's `scrolled` tonal swap is a prop you drive). Server-rendered or
   statically generated markup paints in its final geometry before any script

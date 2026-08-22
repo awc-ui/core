@@ -57,8 +57,8 @@ container's inline size; `circular` is a fixed-size ring.
 
 | Variant | Layout | Use for |
 |---|---|---|
-| `linear` | **Default.** `inline-size: 100%`, 4dp tall | A bar under a header, row, or app bar |
-| `circular` | 40dp ring (48dp when `wave`) | A compact spinner inline with content |
+| `linear` | **Default.** `inline-size: 100%`, 4px tall | A bar under a header, row, or app bar |
+| `circular` | 40px ring (48px when `wave`) | A compact spinner inline with content |
 
 <ComponentDemo
   html={`<div style="inline-size: 100%; max-inline-size: 360px; display: flex; flex-direction: column; gap: 20px;">
@@ -153,22 +153,22 @@ circular indicator scale it with `size` (a good rule of thumb is
 
 ## Circular size
 
-`size` is the ring diameter in dp. M3 specifies a range of **24dp minimum to
-240dp maximum** and the component clamps to it — smaller values snap up, larger
+`size` is the ring diameter in dp. M3 specifies a range of **24px minimum to
+240px maximum** and the component clamps to it — smaller values snap up, larger
 snap down.
 
 :::caution[`size` and the `wave-*` props default to `0`, meaning "auto"]
 `0` is *not* zero-sized or zero-amplitude — it means "use the component
-default" (40dp flat, 48dp wavy). To hide an indicator, use CSS.
+default" (40px flat, 48px wavy). To hide an indicator, use CSS.
 :::
 
 <ComponentDemo
-  html={`<md-progress-indicator variant="circular" value="60" size="24" thickness="2" label="24dp"></md-progress-indicator>
-<md-progress-indicator variant="circular" value="60" size="32" thickness="3" label="32dp"></md-progress-indicator>
-<md-progress-indicator variant="circular" value="60" size="40" thickness="4" label="40dp"></md-progress-indicator>
-<md-progress-indicator variant="circular" value="60" size="48" thickness="4" label="48dp"></md-progress-indicator>
-<md-progress-indicator variant="circular" value="60" size="64" thickness="6" label="64dp"></md-progress-indicator>
-<md-progress-indicator variant="circular" value="60" size="96" thickness="10" label="96dp"></md-progress-indicator>`}
+  html={`<md-progress-indicator variant="circular" value="60" size="24" thickness="2" label="24px"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="60" size="32" thickness="3" label="32px"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="60" size="40" thickness="4" label="40px"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="60" size="48" thickness="4" label="48px"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="60" size="64" thickness="6" label="64px"></md-progress-indicator>
+<md-progress-indicator variant="circular" value="60" size="96" thickness="10" label="96px"></md-progress-indicator>`}
   label="Circular sizes — 24 / 32 / 40 / 48 / 64 / 96 dp"
   storyId="communication-progress-indicator--circular-sizes"
 />
@@ -204,8 +204,8 @@ the completion animation collapses the wave shape itself rather than a flat
 line.
 
 `wave-amplitude`, `wave-length` and `wave-speed` all default to `0` = auto
-(linear: amplitude 3dp, wavelength 40dp; circular: amplitude 1.6dp, wavelength
-15dp; speed tracks the wavelength at roughly one wave per second).
+(linear: amplitude 3px, wavelength 40px; circular: amplitude 1.6px, wavelength
+15px; speed tracks the wavelength at roughly one wave per second).
 
 <ComponentDemo
   html={`<div style="inline-size: 100%; max-inline-size: 360px; display: flex; flex-direction: column; gap: 24px;">
@@ -225,7 +225,7 @@ line.
   html={`<md-progress-indicator variant="circular" wave value="25" label="25 percent"></md-progress-indicator>
 <md-progress-indicator variant="circular" wave value="50" label="50 percent"></md-progress-indicator>
 <md-progress-indicator variant="circular" wave value="75" label="75 percent"></md-progress-indicator>
-<md-progress-indicator variant="circular" wave value="50" size="72" thickness="6" label="72dp"></md-progress-indicator>
+<md-progress-indicator variant="circular" wave value="50" size="72" thickness="6" label="72px"></md-progress-indicator>
 <md-progress-indicator variant="circular" wave indeterminate label="Loading"></md-progress-indicator>`}
   label="Wavy circular — determinate, larger, indeterminate"
   storyId="communication-progress-indicator--wavy-circular"
@@ -708,9 +708,9 @@ is why the rung demos above leave both unset and why the "opt out" row sets
 | `--md-progress-indicator-active-indicator-shape` | Filled portion radius | Track shape |
 | `--md-progress-indicator-track-color` | Track fill | `secondary-container` |
 | `--md-progress-indicator-track-shape` | Track radius | `corner-full` |
-| `--md-progress-indicator-stop-indicator-color` / `-shape` / `-size` | End stop dot | `primary` / `corner-full` / 4dp |
+| `--md-progress-indicator-stop-indicator-color` / `-shape` / `-size` | End stop dot | `primary` / `corner-full` / 4px |
 | `--md-progress-indicator-stop-indicator-trailing-space` | Space past the stop dot | `0px` |
-| `--md-progress-indicator-track-active-indicator-space` | Gap between track and fill | 4dp |
+| `--md-progress-indicator-track-active-indicator-space` | Gap between track and fill | 4px |
 | `--md-progress-indicator-four-color-1` … `-4` | `four-color` palette | primary → primary-container → tertiary → tertiary-container |
 
 <ComponentDemo

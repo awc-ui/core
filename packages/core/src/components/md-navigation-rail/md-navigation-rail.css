@@ -52,9 +52,9 @@
     --md-navigation-rail-container-color,
     var(--md-sys-color-surface, #FFFBFE)
   );
-  /* Spec: collapsed container = 80dp (the collapsed-rail maximum width). */
+  /* Spec: collapsed container = 80px (the collapsed-rail maximum width). */
   --_container-width: var(--md-navigation-rail-container-width, max(56px, calc(80px + var(--md-sys-density-scale, 0) * 4px)));
-  /* Spec: expanded container = 220dp minimum, 360dp maximum. */
+  /* Spec: expanded container = 220px minimum, 360px maximum. */
   --_expanded-width: var(--md-navigation-rail-expanded-width, max(140px, calc(220px + var(--md-sys-density-scale, 0) * 20px)));
   --_expanded-max-width: var(--md-navigation-rail-expanded-max-width, 360px);
   --_container-shape: var(--md-navigation-rail-container-shape, 0px);
@@ -70,7 +70,7 @@
   );
   /* Footprint of the brand glyph in the `logo`/`logo-expanded` slots. Used to
      centre the logo on the rail's axis (x=40) so it stays pixel-stationary
-     across expand/collapse. Defaults to the 24dp destination-icon size; set it
+     across expand/collapse. Defaults to the 24px destination-icon size; set it
      to match a larger brand glyph. */
   --_logo-icon-size: var(--md-navigation-rail-logo-icon-size, 24px);
   /* Motion — the rail width expand/collapse size/position morph. Tuned to match
@@ -139,17 +139,17 @@
   inline-size: var(--_expanded-width);
   min-inline-size: var(--_expanded-width);
   max-inline-size: var(--_expanded-max-width);
-  /* Leading inset for expanded content. Spec is 16dp, but we use 12dp so each
+  /* Leading inset for expanded content. Spec is 16px, but we use 12px so each
      control's icon lands back on the rail's centre axis (x=40) — exactly where
      it sits while collapsed — giving ZERO horizontal icon movement during the
-     expand/collapse spring. A 24dp icon centred in the 80dp collapsed rail is at
-     x=28; with this 12dp inset the expanded icons (toggle 12+8 button inset,
+     expand/collapse spring. A 24px icon centred in the 80px collapsed rail is at
+     x=28; with this 12px inset the expanded icons (toggle 12+8 button inset,
      destinations 12+16 pill inset, etc.) also resolve to x=28. */
   --_padding-inline: var(--md-sys-spacing-inset-md, 12px);
 }
 
 /* ---------- Modal variant ----------
-   Collapsed, the modal rail is identical to the standard rail: a docked 80dp
+   Collapsed, the modal rail is identical to the standard rail: a docked 80px
    surface that sits IN the content (no elevation/floating). Expanded, it
    becomes a modal overlay — it floats over the content with a scrim behind it,
    per the M3 spec (surface-container color, level-2 elevation, large corner
@@ -157,9 +157,9 @@
    positioned ancestor, so the rail's content area should be `position: relative`
    (a full-page app rail is already relative to the viewport).
 
-   The collapsed 80dp footprint is preserved while expanded so the page content
+   The collapsed 80px footprint is preserved while expanded so the page content
    does not reflow when the modal opens. */
-/* The host is always an 80dp spacer for the modal variant — its surface lives on
+/* The host is always an 80px spacer for the modal variant — its surface lives on
    the container overlay below. Dropping the stacking context + positioning lets
    the overlay/scrim resolve to the content container (which must be
    `position: relative`), and keeps the page from reflowing when the modal
@@ -211,7 +211,7 @@
 
 /* ---------- Modal surface (always the overlay container) ----------
    For the modal variant the container is always an absolutely-positioned,
-   full-height surface at the leading edge. Collapsed it is 80dp, square, no
+   full-height surface at the leading edge. Collapsed it is 80px, square, no
    elevation — visually a docked rail sitting over its own spacer. Expanded it
    grows to the expanded width, gains elevation + a large trailing corner, and
    the scrim fades in. Because only width/shadow/colour/radius change (never the
@@ -253,7 +253,7 @@
 :host(.md-navigation-rail--modal.md-navigation-rail--expanded) .md-navigation-rail__container {
   inline-size: var(--_expanded-width);
   max-inline-size: var(--_expanded-max-width);
-  /* Detached overlay — same exterior insets as the detached side sheet: 16dp
+  /* Detached overlay — same exterior insets as the detached side sheet: 16px
      from every edge, all corners rounded, full elevation. (Collapsed, the
      container is flush at the leading edge as a docked rail; this lifts it off
      all edges as it opens.) */
@@ -297,7 +297,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  /* Anchor the leading glyph on the rail's centre axis (x=40 in the 80dp rail).
+  /* Anchor the leading glyph on the rail's centre axis (x=40 in the 80px rail).
      This padding is leading-edge based (NOT justify-content: center, which would
      track the animating host width and drift). Identical in both states — the
      expanded rule below cancels the host padding — so the logo NEVER moves. */
@@ -410,7 +410,7 @@
   min-block-size: 0;
   /* Fill the height and scroll vertically when the destinations overflow.
      overflow-x is `clip` (not hidden/auto) so the collapsed OUTSET focus ring —
-     which is centred within the 80dp width and never exceeds it — isn't clipped
+     which is centred within the 80px width and never exceeds it — isn't clipped
      horizontally, while the expanded ring is INSET (inside the pill). A small
      block padding gives the first/last rings vertical room within the scroll
      viewport. */
@@ -421,7 +421,7 @@
   padding-block: 5px;
 }
 
-/* Spec: keep ≥40dp between the header/FAB group and the first destination.
+/* Spec: keep ≥40px between the header/FAB group and the first destination.
    The container already contributes --_gap; pad the difference. */
 :host(.md-navigation-rail--with-header) .md-navigation-rail__destinations,
 :host(.md-navigation-rail--with-fab) .md-navigation-rail__destinations {
@@ -510,7 +510,7 @@
 /* ---------- Section header ----------
    A slotted label that groups destinations in the EXPANDED rail (mark it with
    `data-section-header`). Hidden while collapsed — the icon-only rail has no
-   room for it. Spec spacing: 12dp above, 8dp below. */
+   room for it. Spec spacing: 12px above, 8px below. */
 ::slotted([data-section-header]) {
   display: none;
 }
@@ -586,7 +586,7 @@
   min-inline-size: 0;
   max-inline-size: none;
   block-size: auto;
-  /* Bar height. Taller than a destination's own 56dp so the row has some weight
+  /* Bar height. Taller than a destination's own 56px so the row has some weight
      — and because the destination stretches to fill it, the ripple still sweeps
      edge to edge. Density-aware, and overridable in one place. */
   min-block-size: var(

@@ -196,7 +196,7 @@ describe('md-meter', () => {
 
   // ── Thickness ────────────────────────────────────────────
   describe('thickness', () => {
-    it('default 4dp sets no inline override (pure CSS resting look)', async () => {
+    it('default 4px sets no inline override (pure CSS resting look)', async () => {
       const page = await create('<md-meter></md-meter>');
       expect(page.root?.style.getPropertyValue('--_thickness')).toBe('');
     });
@@ -279,7 +279,7 @@ describe('md-meter', () => {
       expect(arc?.getAttribute('transform')).toBe('rotate(-90 24 24)');
     });
 
-    it('clamps size into the 24-240dp band and insets the radius by half the stroke', async () => {
+    it('clamps size into the 24-240px band and insets the radius by half the stroke', async () => {
       const tiny = await create('<md-meter variant="circular" size="4" thickness="4"></md-meter>');
       expect(tiny.root?.shadowRoot?.querySelector('svg')?.getAttribute('viewBox')).toBe('0 0 24 24');
 
@@ -310,7 +310,7 @@ describe('md-meter', () => {
       expect(arc?.getAttribute('stroke-dashoffset')).toBe('1');
     });
 
-    it('inlines --_size only when size deviates from the 48dp default', async () => {
+    it('inlines --_size only when size deviates from the 48px default', async () => {
       const dflt = await create('<md-meter variant="circular"></md-meter>');
       expect(dflt.root?.getAttribute('style') ?? '').not.toContain('--_size');
 

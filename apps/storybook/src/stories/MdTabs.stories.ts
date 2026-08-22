@@ -225,7 +225,7 @@ export const PrimaryLabelOnly: Story = {
       <md-tab label=${t(globals.locale, 'tabs.trips')}></md-tab>
     </md-tabs>
     <p style="font-family: Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant); font-size: 14px; padding: 16px;">
-      Primary tabs with label text only — container height 48dp, active indicator inset 2dp with 3dp height.
+      Primary tabs with label text only — container height 48px, active indicator inset 2px with 3px height.
     </p>
   `,
 };
@@ -240,7 +240,7 @@ export const PrimaryIconAndLabel: Story = {
       <md-tab label=${t(globals.locale, 'tabs.trips')} icon="explore"></md-tab>
     </md-tabs>
     <p style="font-family: Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant); font-size: 14px; padding: 16px;">
-      Primary tabs with icon + label — container height increases to 64dp.
+      Primary tabs with icon + label — container height increases to 64px.
     </p>
   `,
 };
@@ -255,7 +255,7 @@ export const PrimaryInlineIcon: Story = {
       <md-tab label=${t(globals.locale, 'tabs.trips')} icon="explore" inline-icon></md-tab>
     </md-tabs>
     <p style="font-family: Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant); font-size: 14px; padding: 16px;">
-      Inline icon layout — icon and label side-by-side with 8dp gap.
+      Inline icon layout — icon and label side-by-side with 8px gap.
     </p>
   `,
 };
@@ -270,7 +270,7 @@ export const SecondaryTabs: Story = {
       <md-tab label=${t(globals.locale, 'tabs.audiobooks')}></md-tab>
     </md-tabs>
     <p style="font-family: Roboto, sans-serif; color: var(--md-sys-color-on-surface-variant); font-size: 14px; padding: 16px;">
-      Secondary tabs — full-width active indicator with 2dp height. Active color is on-surface.
+      Secondary tabs — full-width active indicator with 2px height. Active color is on-surface.
     </p>
   `,
 };

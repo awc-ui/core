@@ -11,7 +11,7 @@ import type { Entry } from '../index';
  *  Everything else stays byte-for-byte: section headings and state/variant
  *  captions (Filled/Outlined, Empty/Populated/With Placeholder, Filled Dark,
  *  Both icons, Custom leading/trailing, All slots, Empty Field, With clear,
- *  German input), density labels (Default (56dp), Density -1 (52dp)),
+ *  German input), density labels (Default (56px), Density -1 (52px)),
  *  restriction- and formatter-demo labels + example output (Numeric only,
  *  132,000.00, HELLO WORLD, getUserName…), debounce/throttle timing-demo labels,
  *  behavior-describing supporting-text (Expands as you type, Fixed height, scrolls

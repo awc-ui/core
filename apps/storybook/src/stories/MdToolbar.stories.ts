@@ -191,10 +191,10 @@ export const Playground: Story = {
 
 /* ==========================================================
    Docked Configurations — matches MD3 spec exactly
-   Config 1: Default (start-aligned, 32dp gap, 16dp margins)
+   Config 1: Default (start-aligned, 32px gap, 16px margins)
    Config 2: Leading/trailing with Fill (space-between)
    Config 3: Back / Next (space-between)
-   Config 4: Center-aligned mixed controls (8dp gap)
+   Config 4: Center-aligned mixed controls (8px gap)
    ========================================================== */
 
 export const DockedConfigurations: Story = {
@@ -203,7 +203,7 @@ export const DockedConfigurations: Story = {
 
       <div>
         <p style="margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--md-sys-color-on-surface-variant, #49454F);">
-          1 &nbsp;Default margins and padding (start-aligned, 32dp gap)
+          1 &nbsp;Default margins and padding (start-aligned, 32px gap)
         </p>
         <div style="border: 1px solid var(--md-sys-color-outline-variant, #CAC4D0); border-radius: 16px; overflow: hidden; height: 140px; position: relative;">
           <md-toolbar aria-label="Default layout">
@@ -244,7 +244,7 @@ export const DockedConfigurations: Story = {
 
       <div>
         <p style="margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--md-sys-color-on-surface-variant, #49454F);">
-          2 &nbsp;Center-aligned, 8dp padding between items
+          2 &nbsp;Center-aligned, 8px padding between items
         </p>
         <div style="border: 1px solid var(--md-sys-color-outline-variant, #CAC4D0); border-radius: 16px; overflow: hidden; height: 140px; position: relative;">
           <md-toolbar alignment="center" aria-label="Center actions">
@@ -446,7 +446,7 @@ export const FloatingConfigurations: Story = {
     <div style="display: flex; flex-direction: column; gap: 32px; font-family: Roboto, sans-serif;">
       <div>
         <p style="margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--md-sys-color-on-surface-variant, #49454F);">
-          Default floating — pill shape, 8dp padding, 4dp gap
+          Default floating — pill shape, 8px padding, 4px gap
         </p>
         <md-toolbar variant="floating" aria-label="Quick actions">
           <md-icon-button icon="check_box" aria-label="Checkbox"></md-icon-button>
@@ -457,7 +457,7 @@ export const FloatingConfigurations: Story = {
       </div>
       <div>
         <p style="margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--md-sys-color-on-surface-variant, #49454F);">
-          Floating with separate FAB (56dp height, 8dp gap)
+          Floating with separate FAB (56px height, 8px gap)
         </p>
         <md-toolbar variant="floating" aria-label="Actions with FAB">
           <md-icon-button icon="check_box" aria-label="Checkbox"></md-icon-button>
@@ -469,11 +469,11 @@ export const FloatingConfigurations: Story = {
       </div>
       <div>
         <p style="margin: 0 0 8px; font-size: 13px; font-weight: 500; color: var(--md-sys-color-on-surface-variant, #49454F);">
-          Floating in context — 16dp minimum margins, text formatting
+          Floating in context — 16px minimum margins, text formatting
         </p>
         <div style="max-width: 400px; border: 1px solid var(--md-sys-color-outline-variant, #CAC4D0); border-radius: 16px; overflow: hidden; position: relative; height: 240px;">
           <div style="padding: 16px; font-size: 14px; color: var(--md-sys-color-on-surface, #1C1B1F);">
-            Content area — the floating toolbar sits above with 16dp margins on each side.
+            Content area — the floating toolbar sits above with 16px margins on each side.
           </div>
           <div style="position: absolute; inset-block-end: 40px; inset-inline: 0; display: flex; justify-content: center;">
             <md-toolbar variant="floating" aria-label="Text formatting">

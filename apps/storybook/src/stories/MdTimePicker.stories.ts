@@ -79,13 +79,13 @@ const meta: Meta = {
       control: "inline-radio",
       options: ["vertical", "horizontal"],
       description:
-        "AM/PM selector layout. `vertical` is 52×80dp next to the minute tile; `horizontal` is 216×38dp below HH:MM. Ignored when format is 24h.",
+        "AM/PM selector layout. `vertical` is 52×80px next to the minute tile; `horizontal` is 216×38px below HH:MM. Ignored when format is 24h.",
     },
     orientation: {
       control: "inline-radio",
       options: ["vertical", "horizontal"],
       description:
-        "Dialog orientation. `vertical` (default) is the portrait 328dp dialog. `horizontal` is the landscape 572dp (608dp in 24h) dialog with HH:MM + AM/PM in a left column and the 256dp dial in a right column. Has no effect on the input variant.",
+        "Dialog orientation. `vertical` (default) is the portrait 328px dialog. `horizontal` is the landscape 572px (608px in 24h) dialog with HH:MM + AM/PM in a left column and the 256px dial in a right column. Has no effect on the input variant.",
     },
     label: { control: "text", description: "Trigger floating label" },
     headline: { control: "text", description: "Headline above the picker" },
@@ -422,7 +422,7 @@ export const InputFormatsComparison: Story = {
     docs: {
       description: {
         story:
-          "Side-by-side comparison of the input variant in 12-hour and 24-hour modes — mirrors the canonical *12-hour and 24-hour time picker inputs* spec sheet. The 12h dialog includes the 52×72 vertical AM/PM stack; the 24h dialog drops the AM/PM column entirely (no period concept in 24-hour time) and the dialog stays 328dp wide because the 24dp colon + 12dp gap + 52dp AM/PM (= 88dp) is replaced by 88dp of right-padding negative space.",
+          "Side-by-side comparison of the input variant in 12-hour and 24-hour modes — mirrors the canonical *12-hour and 24-hour time picker inputs* spec sheet. The 12h dialog includes the 52×72 vertical AM/PM stack; the 24h dialog drops the AM/PM column entirely (no period concept in 24-hour time) and the dialog stays 328px wide because the 24px colon + 12px gap + 52px AM/PM (= 88px) is replaced by 88px of right-padding negative space.",
       },
     },
     layout: "fullscreen",
@@ -471,14 +471,14 @@ export const InputFormatsComparison: Story = {
   `,
 };
 
-/* ─── 24-hour dial (114dp tiles, no AM/PM) ─────────────────────── */
+/* ─── 24-hour dial (114px tiles, no AM/PM) ─────────────────────── */
 export const Dial24HourOpen: Story = {
   name: "Dial — 24-hour Open",
   parameters: {
     docs: {
       description: {
         story:
-          "MD3 dial variant in 24-hour mode. With no AM/PM column to balance against, the spec widens each HH/MM tile from 96dp to 114dp so the time display stays optically centered inside the 328dp dialog.",
+          "MD3 dial variant in 24-hour mode. With no AM/PM column to balance against, the spec widens each HH/MM tile from 96px to 114px so the time display stays optically centered inside the 328px dialog.",
       },
     },
   },
@@ -500,7 +500,7 @@ export const HorizontalPeriodToggle: Story = {
     docs: {
       description: {
         story:
-          "Alternate MD3 dial layout where the AM/PM selector renders as a 216dp × 38dp horizontal segmented button placed between the HH:MM display and the clock face. Useful in compact layouts where the inline gutter cannot fit the 52×80 vertical stack.",
+          "Alternate MD3 dial layout where the AM/PM selector renders as a 216px × 38px horizontal segmented button placed between the HH:MM display and the clock face. Useful in compact layouts where the inline gutter cannot fit the 52×80 vertical stack.",
       },
     },
   },
@@ -523,7 +523,7 @@ export const HorizontalDial: Story = {
     docs: {
       description: {
         story:
-          "Canonical MD3 *landscape* dial dialog. The body splits into two columns: HH:MM tiles + the 216×38dp horizontal AM/PM pill on the left, the 256dp clock dial on the right. Total dialog width is 572dp in 12-hour mode (608dp in 24-hour mode) with the spec's 52dp gap between the time area and the dial.",
+          "Canonical MD3 *landscape* dial dialog. The body splits into two columns: HH:MM tiles + the 216×38px horizontal AM/PM pill on the left, the 256px clock dial on the right. Total dialog width is 572px in 12-hour mode (608px in 24-hour mode) with the spec's 52px gap between the time area and the dial.",
       },
     },
   },
@@ -545,7 +545,7 @@ export const HorizontalDial24h: Story = {
     docs: {
       description: {
         story:
-          "24-hour landscape dialog. Tiles widen to 114dp (no AM/PM column to balance against), expanding the dialog to 608dp wide. AM/PM is never rendered in 24-hour mode regardless of orientation.",
+          "24-hour landscape dialog. Tiles widen to 114px (no AM/PM column to balance against), expanding the dialog to 608px wide. AM/PM is never rendered in 24-hour mode regardless of orientation.",
       },
     },
   },

@@ -67,16 +67,16 @@ is one you set.
 
 ## Variants
 
-`small` (the default) is a single 64dp row. `medium` and `large` add an
+`small` (the default) is a single 64px row. `medium` and `large` add an
 expanded title block below the action row — M3 allows their headline to wrap to
 **two lines maximum**. `small` must never wrap.
 
 | Variant | Shape | Height (no subtitle → with) | Use for |
 |---|---|---|---|
-| `small` | One row, inline title | 64dp | **Default.** Standard screen header |
-| `medium` | Row + expanded title | 112dp → 136dp | A prominent page title |
-| `large` | Row + taller expanded title | 120dp → 152dp | The most prominent page title |
-| `search` | Row with an inline search pill | 64dp | Search is the app's primary function |
+| `small` | One row, inline title | 64px | **Default.** Standard screen header |
+| `medium` | Row + expanded title | 112px → 136px | A prominent page title |
+| `large` | Row + taller expanded title | 120px → 152px | The most prominent page title |
+| `search` | Row with an inline search pill | 64px | Search is the app's primary function |
 
 <ComponentDemo
   html={`<div style="display: flex; flex-direction: column; gap: 24px; inline-size: 100%;">
@@ -97,7 +97,7 @@ expanded title block below the action row — M3 allows their headline to wrap t
 />
 
 :::caution[A subtitle makes a flexible bar taller]
-`medium` grows 112dp → **136dp** and `large` 120dp → **152dp** the moment a
+`medium` grows 112px → **136px** and `large` 120px → **152px** the moment a
 subtitle is present. Budget for the taller number, or the content below shifts
 when a subtitle appears. Each has its own custom property —
 `--md-app-bar-medium-height` and `--md-app-bar-medium-height-with-subtitle` —
@@ -110,11 +110,11 @@ so overriding only the first silently does nothing on a bar with a subtitle.
     <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
   </md-app-bar>
 
-  <md-app-bar variant="medium" headline="Medium, with subtitle" subtitle="24dp taller" leading-icon="arrow_back" leading-icon-label="Back">
+  <md-app-bar variant="medium" headline="Medium, with subtitle" subtitle="24px taller" leading-icon="arrow_back" leading-icon-label="Back">
     <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
   </md-app-bar>
 </div>`}
-  label="Medium — the subtitle adds 24dp"
+  label="Medium — the subtitle adds 24px"
   storyId="navigation-app-bar--medium-variants"
 />
 
@@ -124,11 +124,11 @@ so overriding only the first silently does nothing on a bar with a subtitle.
     <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
   </md-app-bar>
 
-  <md-app-bar variant="large" headline="Large, with subtitle" subtitle="32dp taller" leading-icon="arrow_back" leading-icon-label="Back">
+  <md-app-bar variant="large" headline="Large, with subtitle" subtitle="32px taller" leading-icon="arrow_back" leading-icon-label="Back">
     <md-icon-button slot="trailing" icon="more_vert" variant="standard" size="md" button-width="narrow" aria-label="More options"></md-icon-button>
   </md-app-bar>
 </div>`}
-  label="Large — the subtitle adds 32dp"
+  label="Large — the subtitle adds 32px"
   storyId="navigation-app-bar--large-variants"
 />
 
@@ -250,39 +250,39 @@ The search row responds to its own **container** width, not just the viewport:
 
 | Container width | Behaviour |
 |---|---|
-| ≥ 600dp | Hint inset 24dp, every `search-trailing` icon visible |
-| < 600dp | Hint inset 16dp, **second and later** `search-trailing` icons hidden |
-| < 400dp | Hint inset 12dp |
+| ≥ 600px | Hint inset 24px, every `search-trailing` icon visible |
+| < 600px | Hint inset 16px, **second and later** `search-trailing` icons hidden |
+| < 400px | Hint inset 12px |
 
 Add `data-compact-keep` to a `search-trailing` child to exempt it from the
-compact hide. Row gaps and the 48dp touch targets never shrink.
+compact hide. Row gaps and the 48px touch targets never shrink.
 
 <ComponentDemo
   html={`<div style="display:grid;gap:20px;inline-size:100%;">
   <div style="inline-size:min(100%,320px);">
-    <md-app-bar variant="search" search-placeholder="320dp — 12dp hint" search-aria-label="Search" leading-icon="menu" leading-icon-label="Open navigation">
+    <md-app-bar variant="search" search-placeholder="320px — 12px hint" search-aria-label="Search" leading-icon="menu" leading-icon-label="Open navigation">
       <md-icon-button slot="search-trailing" icon="mic" variant="standard" size="md" button-width="narrow" aria-label="Voice search"></md-icon-button>
       <md-icon-button slot="search-trailing" data-compact-keep icon="auto_awesome" variant="standard" size="md" button-width="narrow" aria-label="AI search"></md-icon-button>
       <md-icon-button slot="search-trailing" icon="tune" variant="standard" size="md" button-width="narrow" aria-label="Search filters"></md-icon-button>
     </md-app-bar>
   </div>
   <div style="inline-size:min(100%,520px);">
-    <md-app-bar variant="search" search-placeholder="~510dp — 16dp hint" search-aria-label="Search" leading-icon="menu" leading-icon-label="Open navigation">
+    <md-app-bar variant="search" search-placeholder="~510px — 16px hint" search-aria-label="Search" leading-icon="menu" leading-icon-label="Open navigation">
       <md-icon-button slot="search-trailing" icon="mic" variant="standard" size="md" button-width="narrow" aria-label="Voice search"></md-icon-button>
       <md-icon-button slot="search-trailing" data-compact-keep icon="auto_awesome" variant="standard" size="md" button-width="narrow" aria-label="AI search"></md-icon-button>
       <md-icon-button slot="search-trailing" icon="tune" variant="standard" size="md" button-width="narrow" aria-label="Search filters"></md-icon-button>
     </md-app-bar>
   </div>
 </div>`}
-  label="Both frames are under 600dp — the tune icon is hidden in both, only the hint inset differs"
+  label="Both frames are under 600px — the tune icon is hidden in both, only the hint inset differs"
   storyId="navigation-app-bar--responsiveness"
 />
 
 :::note[The wide tier isn't visible on this page]
-The docs content column caps these bars at roughly 510dp, so both frames above
+The docs content column caps these bars at roughly 510px, so both frames above
 sit in the compact tier — the `tune` icon is hidden in each, and only the hint
 inset changes between them. Open the Storybook story, which frames the bar at a
-fixed 800px, to see the ≥ 600dp tier with every in-pill icon showing.
+fixed 800px, to see the ≥ 600px tier with every in-pill icon showing.
 :::
 ## Scrolled state
 
@@ -380,7 +380,7 @@ Past three, move the rest behind an overflow [`md-menu`](/components/menu/).
 Slot `md-icon-button` (or a raw SVG) into `leading`, `trailing` or
 `search-trailing` when the Material Symbols name isn't enough — a brand glyph,
 an icon font, a logo. Host `::slotted` rules map the icon button onto the bar's
-48dp touch target for you.
+48px touch target for you.
 
 <ComponentDemo
   html={`<md-app-bar headline="Custom glyphs">
@@ -623,7 +623,7 @@ bar cannot tell an arrow from a logo. Mark the directional ones:
 ### Every density rung
 
 `density="-1…-4"` is a local override of the inherited `data-density`. It tapers
-the row height (64dp → 48dp floor), the icon touch targets, the glyph size, the
+the row height (64px → 48px floor), the icon touch targets, the glyph size, the
 avatar, the title type scale and the expanded heights together.
 
 <ComponentDemo
@@ -643,7 +643,7 @@ avatar, the title type scale and the expanded heights together.
 />
 
 :::caution[M3 warns against going below the default height]
-The row floors at 48dp and the icon touch targets at 32dp — both under the 48dp
+The row floors at 48px and the icon touch targets at 32px — both under the 48px
 pointer-coarse devices want. A header is the one surface where a mis-hit is most
 costly, so use the deep rungs only on genuinely dense desktop UIs. See
 [Density](/behaviour/density/#accessibility).
@@ -683,16 +683,16 @@ long string truncates there.
 | `--md-app-bar-container-elevation` | Container shadow | elevation-0 |
 | `--md-app-bar-headline-color` / `-subtitle-color` | Title text | `on-surface` / `on-surface-variant` |
 | `--md-app-bar-leading-icon-color` / `-trailing-icon-color` | Icons | `on-surface` / `on-surface-variant` |
-| `--md-app-bar-row-height` | Action row height | 64dp, density-derived |
-| `--md-app-bar-padding-inline-start` / `-end` | Row padding | 4dp |
-| `--md-app-bar-icon-size` / `-icon-button-size` | Glyph / touch target | 24dp / 48dp, density-derived |
-| `--md-app-bar-trailing-gap` / `-trailing-touch-size` | Trailing cluster | 2dp / 48dp |
-| `--md-app-bar-avatar-size` | Avatar in trailing slots | 32dp |
-| `--md-app-bar-medium-height` / `-medium-height-with-subtitle` | Medium expanded | 112dp / 136dp |
-| `--md-app-bar-large-height` / `-large-height-with-subtitle` | Large expanded | 120dp / 152dp |
+| `--md-app-bar-row-height` | Action row height | 64px, density-derived |
+| `--md-app-bar-padding-inline-start` / `-end` | Row padding | 4px |
+| `--md-app-bar-icon-size` / `-icon-button-size` | Glyph / touch target | 24px / 48px, density-derived |
+| `--md-app-bar-trailing-gap` / `-trailing-touch-size` | Trailing cluster | 2px / 48px |
+| `--md-app-bar-avatar-size` | Avatar in trailing slots | 32px |
+| `--md-app-bar-medium-height` / `-medium-height-with-subtitle` | Medium expanded | 112px / 136px |
+| `--md-app-bar-large-height` / `-large-height-with-subtitle` | Large expanded | 120px / 152px |
 | `--md-app-bar-search-container-color` / `-scrolled` | Search pill fill | `surface-container-highest` / `surface-container` |
-| `--md-app-bar-search-container-height` / `-shape` | Search pill box | 56dp, density-derived |
-| `--md-app-bar-search-padding-inline-start` / `-end` | Hint inset / in-pill inset | 24dp / 8dp |
+| `--md-app-bar-search-container-height` / `-shape` | Search pill box | 56px, density-derived |
+| `--md-app-bar-search-padding-inline-start` / `-end` | Hint inset / in-pill inset | 24px / 8px |
 | `--md-app-bar-search-placeholder-color` / `-input-color` | Hint / typed text | `on-surface-variant` / `on-surface` |
 
 <ComponentDemo
@@ -762,7 +762,7 @@ when you need one specific measurement rather than the whole taper.
 />
 
 :::caution[Shrinking the row by hand skips the density guardrails]
-`density` floors the row at 48dp and the touch target at 32dp.
+`density` floors the row at 48px and the touch target at 32px.
 `--md-app-bar-row-height: 32px` has no floor — you own the accessibility
 consequences. Prefer `density` unless you need one specific measurement.
 :::

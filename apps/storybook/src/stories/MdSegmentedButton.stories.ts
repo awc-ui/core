@@ -439,28 +439,28 @@ export const States: Story = {
 export const Density: Story = {
   render: (_args, { globals }) => html`
     <div style="${SECTION}">
-      <p style="${HEADING}">Density 0 (default — 40dp)</p>
+      <p style="${HEADING}">Density 0 (default — 40px)</p>
       <md-segmented-button-set density="0">
         <md-segmented-button value="a" label="${t(globals.locale, 'segmentedButton.day')}" selected></md-segmented-button>
         <md-segmented-button value="b" label="${t(globals.locale, 'segmentedButton.week')}"></md-segmented-button>
         <md-segmented-button value="c" label="${t(globals.locale, 'segmentedButton.month')}"></md-segmented-button>
       </md-segmented-button-set>
 
-      <p style="${HEADING}">Density -1 (36dp)</p>
+      <p style="${HEADING}">Density -1 (36px)</p>
       <md-segmented-button-set density="-1">
         <md-segmented-button value="a" label="${t(globals.locale, 'segmentedButton.day')}" selected></md-segmented-button>
         <md-segmented-button value="b" label="${t(globals.locale, 'segmentedButton.week')}"></md-segmented-button>
         <md-segmented-button value="c" label="${t(globals.locale, 'segmentedButton.month')}"></md-segmented-button>
       </md-segmented-button-set>
 
-      <p style="${HEADING}">Density -2 (32dp)</p>
+      <p style="${HEADING}">Density -2 (32px)</p>
       <md-segmented-button-set density="-2">
         <md-segmented-button value="a" label="${t(globals.locale, 'segmentedButton.day')}" selected></md-segmented-button>
         <md-segmented-button value="b" label="${t(globals.locale, 'segmentedButton.week')}"></md-segmented-button>
         <md-segmented-button value="c" label="${t(globals.locale, 'segmentedButton.month')}"></md-segmented-button>
       </md-segmented-button-set>
 
-      <p style="${HEADING}">Density -3 (28dp)</p>
+      <p style="${HEADING}">Density -3 (28px)</p>
       <md-segmented-button-set density="-3">
         <md-segmented-button value="a" label="${t(globals.locale, 'segmentedButton.day')}" selected></md-segmented-button>
         <md-segmented-button value="b" label="${t(globals.locale, 'segmentedButton.week')}"></md-segmented-button>
@@ -468,7 +468,7 @@ export const Density: Story = {
       </md-segmented-button-set>
 
       <p style="color:#49454F; font-size:12px; margin-top:16px;">
-        Each density step removes 4dp from the height.
+        Each density step removes 4px from the height.
       </p>
     </div>
   `,

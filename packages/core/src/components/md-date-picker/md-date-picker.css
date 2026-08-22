@@ -188,7 +188,7 @@
   --_panel-width: var(--md-date-picker-panel-width, max(288px, calc(380px + var(--md-sys-density-scale, 0) * 20px)));
   --_panel-max-block-size: var(--md-date-picker-panel-max-block-size, 524px);
   --_error-color: var(--md-sys-color-error);
-  /* 1px per rung off 24dp (18px floor) — the library-wide icon taper. */
+  /* 1px per rung off 24px (18px floor) — the library-wide icon taper. */
   --_icon-size: var(--md-date-picker-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
   /* Day cell follows global density (40px at 0 → 28px at -4, 3px/rung). The grid
      columns/rows, day buttons and panel width all derive from this. */
@@ -1371,7 +1371,7 @@
 /* ---- Motion --------------------------------------------------------- */
 
 /* Docked month/year selection — expressive bloom below nav/divider
-   (mirrors md-time-picker mode-swap: scale 0.94 + 8dp drop + fade). */
+   (mirrors md-time-picker mode-swap: scale 0.94 + 8px drop + fade). */
 @keyframes md-date-picker-selection-bloom-in {
   from {
     opacity: 0;

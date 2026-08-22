@@ -3,7 +3,7 @@ import type { Entry } from '../index';
 /** Loading Indicator demo strings — the user-visible app content shown beside a
  *  spinner in the "In Context" scenarios (loading messages + list rows). The
  *  labelStyle demo captions (variant/size names like "Uncontained", "Small
- *  (32dp)", "Page loading"), the Accessibility documentation prose + aria-label
+ *  (32px)", "Page loading"), the Accessibility documentation prose + aria-label
  *  props, and the dedicated RTL showcase (its own inline Arabic content) stay
  *  byte-for-byte in the story. */
 export const messages: Record<string, Entry> = {

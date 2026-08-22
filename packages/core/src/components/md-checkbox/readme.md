@@ -369,7 +369,7 @@ Type: `Promise<void>`
 | `"icon"`            | Material Symbols glyph: `check`, or `remove` when indeterminate |
 | `"state-layer"`     | State-layer overlay                |
 | `"supporting-text"` | The message line (`supporting-text` / `error-text`) |
-| `"target"`          | The 48dp touch target that clips the ripple |
+| `"target"`          | The 48px touch target that clips the ripple |
 
 
 ## Dependencies

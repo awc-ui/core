@@ -505,7 +505,7 @@ export const Loading: Story = {
         The <code>loading</code> prop renders an md-loading-indicator sized from
         the icon box (14px at sm). Slot a circular md-progress-indicator into
         <code>leading-icon</code> when you want the determinate/indeterminate
-        API instead — note it clamps to M3's 24dp circular minimum, so it reads
+        API instead — note it clamps to M3's 24px circular minimum, so it reads
         larger than the built-in spinner and suits md and up. Keep
         <code>soft-disabled</code> on so the busy button still swallows clicks.
       </p>

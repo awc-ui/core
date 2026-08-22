@@ -5,7 +5,7 @@ import { Component, Host, h, Prop, Element, Watch, State, Event, EventEmitter } 
  * Spec: https://m3.material.io/components/progress-indicators/specs
  *
  * Conforms to the 2024+ "expressive" generation (the version shown on
- * m3.material.io today): animated wavy waveforms, 4dp indicator↔track gaps,
+ * m3.material.io today): animated wavy waveforms, 4px indicator↔track gaps,
  * round caps, and the expressive indeterminate motion. Constants below were
  * verified against the Compose Material3 source (the authoritative source for
  * the wavy geometry/motion) and Material Web (baseline CSS/tokens).
@@ -100,13 +100,13 @@ export class MdProgressIndicator {
 
   /**
    * Wave amplitude (center-to-peak) in dp. `0` = auto per M3 spec
-   * (linear 3dp, circular 1.6dp).
+   * (linear 3px, circular 1.6px).
    */
   @Prop({ attribute: 'wave-amplitude' }) waveAmplitude: number = 0;
 
   /**
    * Wavelength (peak-to-peak) in dp. `0` = auto
-   * (linear 40dp for both determinate + indeterminate, circular 15dp).
+   * (linear 40px for both determinate + indeterminate, circular 15px).
    */
   @Prop({ attribute: 'wave-length' }) waveLength: number = 0;
 
@@ -117,8 +117,8 @@ export class MdProgressIndicator {
   @Prop({ attribute: 'wave-speed' }) waveSpeed: number = 0;
 
   /**
-   * Circular indicator outer size in dp. `0` = auto (non-wavy 40dp,
-   * wavy 48dp per the M3 expressive spec). Clamped to the M3 range 24–240dp.
+   * Circular indicator outer size in dp. `0` = auto (non-wavy 40px,
+   * wavy 48px per the M3 expressive spec). Clamped to the M3 range 24–240px.
    */
   @Prop() size: number = 0;
 
@@ -287,7 +287,7 @@ export class MdProgressIndicator {
     return this.resolvedWavelength;
   }
 
-  /** Fixed wavy linear container height (2·amp + wave stroke; 10dp at determinate
+  /** Fixed wavy linear container height (2·amp + wave stroke; 10px at determinate
    *  defaults). Uses the (possibly bolder) wave stroke so the mask viewBox and
    *  the band height both contain the round caps. */
   private get linearWaveHeight(): number {
@@ -897,7 +897,7 @@ export class MdProgressIndicator {
 
     // Lock the track's leading edge to the SAME eased fraction that drew the wave
     // (NOT the instant `fraction`), so the indicator↔track gap stays a constant
-    // 4dp while the value animates. The flat variant achieves this by CSS-
+    // 4px while the value animates. The flat variant achieves this by CSS-
     // transitioning the track in lockstep with the bar; the wave path is repainted
     // per-frame in JS, so its track must be driven per-frame from the same source —
     // otherwise the track jumps to the target while the wave edge eases behind it,
@@ -921,7 +921,7 @@ export class MdProgressIndicator {
    */
   private updateLinearFlat() {
     if (!(this.variant === 'linear' && !this.wave && !this.indeterminate)) return;
-    // Round to 3dp then drop trailing zeros (unary +) so settled integer values
+    // Round to 3px then drop trailing zeros (unary +) so settled integer values
     // read as e.g. "60%" (matching the declarative render) rather than "60.000%".
     const pct = +(this.linearRenderFraction * 100).toFixed(3);
     this.flatActiveRef?.style.setProperty('--_fill-width', `${pct}%`);
@@ -1355,7 +1355,7 @@ export class MdProgressIndicator {
     }
 
     // Track: full ring at 0%; a gapped arc [f+gap, 1−gap] mid-progress; hidden once
-    // the remaining arc no longer fits both 4dp gaps. The last sliver (shorter than
+    // the remaining arc no longer fits both 4px gaps. The last sliver (shorter than
     // the round-cap dot ≈ one stroke width) fades out via opacity so it never pops.
     const tr = this.circularFlatTrackRef;
     if (tr) {
@@ -1452,12 +1452,12 @@ export class MdProgressIndicator {
               style={{
                 // Same formula as the flat linear — gap from the nominal fill edge.
                 // Adding thickness/2 on top made the visual gap feel larger than
-                // the flat's 4dp because the eye reads the wave end as the last
+                // the flat's 4px because the eye reads the wave end as the last
                 // full-height section, not the tapered cap tip.
                 // This declarative value is the steady-state / SSR position; while
                 // the value animates, updateLinearPath() overrides it per-frame from
                 // the eased fraction so the track tracks the wave's leading edge and
-                // the gap stays a constant 4dp (see updateLinearPath).
+                // the gap stays a constant 4px (see updateLinearPath).
                 '--_track-start': hasProgress
                   ? `calc(${pct}% + var(--_gap))`
                   : '0',
@@ -1499,7 +1499,7 @@ export class MdProgressIndicator {
         {/* Always rendered: as the bar grows, --_track-start follows it (+gap) so
             the track recedes in lockstep and slides off at 100%. updateLinearFlat()
             drives both per-frame from the same eased fraction as the bar, so the
-            4dp gap stays constant and the flat variant moves identically to wavy. */}
+            4px gap stays constant and the flat variant moves identically to wavy. */}
         <div
           class="md-progress-indicator__track md-progress-indicator__track--determinate"
           part="track"
@@ -1603,7 +1603,7 @@ export class MdProgressIndicator {
     const showGap = f > 0 && f < 1;
     // Track = the leftover arc after a constant idealGap is removed at each end:
     // trackFrac = remaining − 2·gap. Constant gap → the active end (f) and the track
-    // start (f + gap) move in perfect lockstep, so the 4dp gap never stretches. These
+    // start (f + gap) move in perfect lockstep, so the 4px gap never stretches. These
     // are the steady-state / SSR values; while the value animates updateCircularFlat()
     // overrides the dash/offset/opacity per-frame from the eased renderFraction, in
     // lockstep with the active arc (so the track recedes exactly as the arc grows and

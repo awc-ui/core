@@ -11,9 +11,9 @@ const meta: Meta = {
     },
   },
   argTypes: {
-    inset: { control: 'boolean', description: 'Middle-inset (16dp both sides)' },
-    'inset-start': { control: 'boolean', description: 'Inset start only (16dp leading)' },
-    'inset-end': { control: 'boolean', description: 'Inset end only (16dp trailing)' },
+    inset: { control: 'boolean', description: 'Middle-inset (16px both sides)' },
+    'inset-start': { control: 'boolean', description: 'Inset start only (16px leading)' },
+    'inset-end': { control: 'boolean', description: 'Inset end only (16px trailing)' },
     vertical: { control: 'boolean', description: 'Vertical orientation' },
   },
   args: {
@@ -58,7 +58,7 @@ export const AllVariants: Story = {
         </div>
       </div>
       <div>
-        <div style="${labelStyle}">Inset start (16dp leading, 0dp trailing)</div>
+        <div style="${labelStyle}">Inset start (16px leading, 0px trailing)</div>
         <div style="background: var(--md-sys-color-surface, #FFFBFE); border-radius: 12px; overflow: hidden; box-shadow: var(--md-sys-elevation-1, 0 1px 2px rgba(0,0,0,0.3));">
           <div style="${listItemStyle}">Above</div>
           <md-divider inset-start></md-divider>
@@ -66,7 +66,7 @@ export const AllVariants: Story = {
         </div>
       </div>
       <div>
-        <div style="${labelStyle}">Middle-inset (16dp both sides)</div>
+        <div style="${labelStyle}">Middle-inset (16px both sides)</div>
         <div style="background: var(--md-sys-color-surface, #FFFBFE); border-radius: 12px; overflow: hidden; box-shadow: var(--md-sys-elevation-1, 0 1px 2px rgba(0,0,0,0.3));">
           <div style="${listItemStyle}">Above</div>
           <md-divider inset></md-divider>
@@ -74,7 +74,7 @@ export const AllVariants: Story = {
         </div>
       </div>
       <div>
-        <div style="${labelStyle}">Inset end (0dp leading, 16dp trailing)</div>
+        <div style="${labelStyle}">Inset end (0px leading, 16px trailing)</div>
         <div style="background: var(--md-sys-color-surface, #FFFBFE); border-radius: 12px; overflow: hidden; box-shadow: var(--md-sys-elevation-1, 0 1px 2px rgba(0,0,0,0.3));">
           <div style="${listItemStyle}">Above</div>
           <md-divider inset-end></md-divider>
@@ -208,7 +208,7 @@ export const CustomCSS: Story = {
         </div>
       </div>
       <div>
-        <div style="${labelStyle}">Wide inset start (72dp)</div>
+        <div style="${labelStyle}">Wide inset start (72px)</div>
         <div style="background: var(--md-sys-color-surface, #FFFBFE); border-radius: 12px; overflow: hidden; box-shadow: var(--md-sys-elevation-1, 0 1px 2px rgba(0,0,0,0.3));">
           <div style="${listItemStyle}">Above</div>
           <md-divider inset-start class="wide-inset"></md-divider>

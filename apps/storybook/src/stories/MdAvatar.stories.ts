@@ -286,7 +286,7 @@ export const FallbackChain: Story = {
    ═══════════════════════════════════════════════════════════════════════════ */
 export const Sizes: Story = {
   render: () => html`
-    ${caption('Three preset sizes (24 / 40 / 56dp). The `size` prop also accepts any CSS length — unitless numbers default to pixels, units pass through verbatim.')}
+    ${caption('Three preset sizes (24 / 40 / 56px). The `size` prop also accepts any CSS length — unitless numbers default to pixels, units pass through verbatim.')}
     ${grid(html`
       <div>
         ${sectionLabel('Presets')}
@@ -329,7 +329,7 @@ export const Sizes: Story = {
    ═══════════════════════════════════════════════════════════════════════════ */
 export const Shapes: Story = {
   render: () => html`
-    ${caption('Three shape presets: `circle` (default), `rounded` (12dp), `square` (sharp).')}
+    ${caption('Three shape presets: `circle` (default), `rounded` (12px), `square` (sharp).')}
     ${row(html`
       <md-avatar shape="circle" name="Ada Lovelace"></md-avatar>
       <md-avatar shape="rounded" name="Ada Lovelace"></md-avatar>

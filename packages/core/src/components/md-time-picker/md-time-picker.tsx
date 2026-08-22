@@ -8,9 +8,9 @@ export type MdTimePickerPeriod = 'AM' | 'PM';
 /**
  * MD3 supports two AM/PM period-selector layouts inside the dial dialog:
  *
- * - `vertical` (default) — 52×80dp stack on the trailing side of the
+ * - `vertical` (default) — 52×80px stack on the trailing side of the
  *   minute tile. Matches the canonical reference dialog.
- * - `horizontal` — 216×38dp segmented button placed below the
+ * - `horizontal` — 216×38px segmented button placed below the
  *   HH:MM display. Useful in compact layouts where the inline gutter
  *   cannot fit the vertical toggle.
  */
@@ -20,17 +20,17 @@ export type MdTimePickerPeriodLayout = 'vertical' | 'horizontal';
  * MD3 supports two **dialog** orientations for the dial variant:
  *
  * - `vertical` (default, portrait) — headline / HH:MM / dial / actions
- *   stacked top-to-bottom inside a ~328dp-wide dialog. Optimal for
+ *   stacked top-to-bottom inside a ~328px-wide dialog. Optimal for
  *   phone-portrait screens.
  * - `horizontal` (landscape) — two-column body with HH:MM + AM/PM in
- *   the left column and the 256dp dial in the right column, inside a
- *   wider (~572dp / 608dp for 24h) dialog. Matches the canonical M3
+ *   the left column and the 256px dial in the right column, inside a
+ *   wider (~572px / 608px for 24h) dialog. Matches the canonical M3
  *   "Time picker dial - horizontal" spec sheet. Always uses the
- *   216×38dp horizontal AM/PM pill — the 52×80dp vertical pill does
+ *   216×38px horizontal AM/PM pill — the 52×80px vertical pill does
  *   not fit the landscape layout.
  *
  * `orientation` has no effect when `variant="input"` (the input
- * dialog is always vertical / 328dp wide).
+ * dialog is always vertical / 328px wide).
  */
 export type MdTimePickerOrientation = 'vertical' | 'horizontal';
 
@@ -251,19 +251,19 @@ export class MdTimePicker {
    * Layout for the AM/PM period selector. Has no effect when
    * `format="24h"` (the toggle is not rendered).
    *
-   * - `vertical` — 52×72dp stack next to the minute tile (default).
-   * - `horizontal` — 216×38dp segmented button below HH:MM.
+   * - `vertical` — 52×72px stack next to the minute tile (default).
+   * - `horizontal` — 216×38px segmented button below HH:MM.
    */
   @Prop({ attribute: 'period-layout' }) periodLayout: MdTimePickerPeriodLayout = 'vertical';
 
   /**
    * Dialog orientation for the dial variant.
    *
-   * - `vertical` (default) — single-column portrait layout (~328dp wide).
-   * - `horizontal` — two-column landscape layout (~572dp wide in both
-   *   12h and 24h modes since the HH/MM input tiles are 96dp in either
-   *   format). Forces the AM/PM pill into the 216×38dp horizontal
-   *   variant since the 52×72dp vertical pill cannot share the left
+   * - `vertical` (default) — single-column portrait layout (~328px wide).
+   * - `horizontal` — two-column landscape layout (~572px wide in both
+   *   12h and 24h modes since the HH/MM input tiles are 96px in either
+   *   format). Forces the AM/PM pill into the 216×38px horizontal
+   *   variant since the 52×72px vertical pill cannot share the left
    *   column cleanly. Has no effect when `variant="input"`.
    */
   @Prop({ attribute: 'orientation' }) orientation: MdTimePickerOrientation = 'vertical';
@@ -275,13 +275,13 @@ export class MdTimePicker {
    * automatically:
    *
    *   • Falls back to `variant="input"` when the viewport height is
-   *     too short to fit the 256dp dial (default threshold: 460px),
+   *     too short to fit the 256px dial (default threshold: 460px),
    *     matching the spec line "Time pickers can fallback to the
    *     input time picker when there isn't enough vertical real
    *     estate to present the landscape orientation without
    *     scrolling".
    *   • Promotes the dial variant to `orientation="horizontal"`
-   *     when the viewport is wide enough for the 572/608dp landscape
+   *     when the viewport is wide enough for the 572/608px landscape
    *     dialog (default threshold: width ≥ 720px AND width > height),
    *     matching "the time picker can change to landscape orientation
    *     on larger breakpoints or when viewport height is limited".
@@ -1847,15 +1847,15 @@ export class MdTimePicker {
      Thresholds — picked off the canonical MD3 reference and our
      own dialog math:
 
-       • `--_adaptive-min-dial-height` (460dp): the dial dialog is
-         the headline (~32dp) + HH:MM tile row (80dp) + dial
-         (256dp) + footer (~48dp) + 2 × 24dp padding ≈ 440dp.
-         Add the 24dp scrim padding and 460dp is the smallest
+       • `--_adaptive-min-dial-height` (460px): the dial dialog is
+         the headline (~32px) + HH:MM tile row (80px) + dial
+         (256px) + footer (~48px) + 2 × 24px padding ≈ 440px.
+         Add the 24px scrim padding and 460px is the smallest
          viewport that fits the picker without scroll.
-       • `--_adaptive-landscape-width` (720dp): the 12-hour
-         horizontal dialog is 572dp wide and 24-hour is 608dp. With
-         24dp scrim padding either side we need at least ~656dp;
-         720dp gives the dialog comfortable breathing room.
+       • `--_adaptive-landscape-width` (720px): the 12-hour
+         horizontal dialog is 572px wide and 24-hour is 608px. With
+         24px scrim padding either side we need at least ~656px;
+         720px gives the dialog comfortable breathing room.
 
      The author's prop values are honored unless the viewport
      literally cannot fit them. `responsive=false` skips the entire
@@ -1863,8 +1863,8 @@ export class MdTimePicker {
   private static readonly ADAPTIVE_MIN_DIAL_HEIGHT = 460;
   private static readonly ADAPTIVE_LANDSCAPE_WIDTH = 720;
   /* Demotion threshold for an explicit `orientation="horizontal"`:
-     the 12h landscape dialog is 572dp wide (608dp for 24h) + 2×24dp
-     scrim padding ≈ 620/656dp. Below 620px the horizontal layout
+     the 12h landscape dialog is 572px wide (608px for 24h) + 2×24px
+     scrim padding ≈ 620/656px. Below 620px the horizontal layout
      cannot fit even the narrower 12h dialog, so the responsive
      policy falls back to the vertical portrait dialog. Deliberately
      lower than ADAPTIVE_LANDSCAPE_WIDTH (720) so there's a hysteresis
@@ -1874,7 +1874,7 @@ export class MdTimePicker {
   private get effectiveVariant(): MdTimePickerMode {
     if (!this.responsive) return this.variant;
     if (!this.viewportHeight) return this.variant;
-    // Vertical real estate too small for the 256dp dial → fall
+    // Vertical real estate too small for the 256px dial → fall
     // back to input even if the author asked for `dial`.
     if (this.viewportHeight < MdTimePicker.ADAPTIVE_MIN_DIAL_HEIGHT) return 'input';
     return this.variant;
@@ -1900,7 +1900,7 @@ export class MdTimePicker {
       return 'horizontal';
     }
     // Demote horizontal → vertical when the viewport cannot fit the
-    // 572/608dp landscape dialog (+ scrim padding) — the symmetric
+    // 572/608px landscape dialog (+ scrim padding) — the symmetric
     // counterpart of the promotion above. Without it an explicit
     // `orientation="horizontal"` on a narrow viewport overflowed the
     // dialog ~196px past the right edge with no scroll access to OK.
@@ -2005,35 +2005,35 @@ export class MdTimePicker {
     const isHour = this.selecting === 'hour';
     const radius = 50;
     // Number-ring radii expressed as a fraction of the half-dial radius
-    // (128dp on a 256dp dial). Two competing constraints:
-    //   1) The OUTER handle must hug the dial circle (~1–2dp clear).
+    // (128px on a 256px dial). Two competing constraints:
+    //   1) The OUTER handle must hug the dial circle (~1–2px clear).
     //   2) The INNER handle must not engulf outer-ring numbers.
     //
-    // With a 48dp handle (24dp radius), constraint #2 requires
-    //   outer_center − (inner_center + 24dp) ≥ ~10dp
+    // With a 48px handle (24px radius), constraint #2 requires
+    //   outer_center − (inner_center + 24px) ≥ ~10px
     // ⇒ inner ≤ (outer × 128 − 24 − 10) / 128 = outer − 0.266r
     // With outer = 0.80r, that caps inner at ~0.534r.
     //
     // Current values (verified by E2E):
-    //   outer ring center  = 0.80  →  102.4dp from dial centre
-    //   handle outer edge  = 102.4 + 24 = 126.4dp
-    //   dial radius        = 128dp
-    //   clearance to edge  = ~1.6dp (handle hugs the dial) ✓
+    //   outer ring center  = 0.80  →  102.4px from dial centre
+    //   handle outer edge  = 102.4 + 24 = 126.4px
+    //   dial radius        = 128px
+    //   clearance to edge  = ~1.6px (handle hugs the dial) ✓
     //
-    //   inner 24h ring     = 0.52  →  66.56dp from dial centre
-    //   inner-handle outer = 66.56 + 24 = 90.56dp
-    //   gap to outer ring  = 102.4 − 90.56 = 11.84dp ✓
-    //   gap to centre dot  = 66.56 − 4 = 62.56dp ✓
+    //   inner 24h ring     = 0.52  →  66.56px from dial centre
+    //   inner-handle outer = 66.56 + 24 = 90.56px
+    //   gap to outer ring  = 102.4 − 90.56 = 11.84px ✓
+    //   gap to centre dot  = 66.56 − 4 = 62.56px ✓
     //
     // History — the iteration trail that landed here:
-    //   0.82 / 0.62 → outer handle 1dp PAST dial edge (overflow)
-    //   0.75 / 0.50 → outer handle 8dp away ("too inside")
+    //   0.82 / 0.62 → outer handle 1px PAST dial edge (overflow)
+    //   0.75 / 0.50 → outer handle 8px away ("too inside")
     //   0.80 / 0.55 → outer good, inner-handle engulfed outer numbers
-    //                 (only 8dp clearance between rings)
+    //                 (only 8px clearance between rings)
     //   0.80 / 0.50 → safe but the inner ring felt "too inner" — the
     //                 empty centre was visually dominant
     //   0.80 / 0.52 → inner pushed outward by ~4% while keeping
-    //                 11.84dp clearance to the outer ring
+    //                 11.84px clearance to the outer ring
     const outerRadiusRatio = 0.8;
     const innerRadiusRatio = 0.52;
 
@@ -2168,7 +2168,7 @@ export class MdTimePicker {
     value: number,
   ) {
     // Number placement MUST agree with `renderDial`'s hand length so the
-    // 48dp handle visually overlaps the selected number rather than
+    // 48px handle visually overlaps the selected number rather than
     // floating past it. Both ratios are sourced from the single pair
     // declared in renderDial().
     const r = inner ? radius * innerRatio : radius * outerRatio;
@@ -2311,7 +2311,7 @@ export class MdTimePicker {
     if (!this.isOpen) return null;
     const isInput = this.mode === 'input';
     // Horizontal orientation only applies to the dial variant — the
-    // input variant always renders as a compact 328dp portrait dialog
+    // input variant always renders as a compact 328px portrait dialog
     // because there's no dial to balance against in the right column.
     // `effectiveOrientation` factors in the adaptive `responsive`
     // policy so a vertical preference is auto-promoted to horizontal
@@ -2330,7 +2330,7 @@ export class MdTimePicker {
     // resolve a node.
     //
     // `inlinePeriod` controls whether the 12-hour AM/PM toggle
-    // renders inline with MM (default — vertical 52dp pill) or
+    // renders inline with MM (default — vertical 52px pill) or
     // gets suppressed so the horizontal 216×38 pill can render
     // below the row in landscape dial dialogs.
     const useHorizontalPeriod =

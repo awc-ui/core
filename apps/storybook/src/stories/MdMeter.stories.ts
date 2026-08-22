@@ -368,16 +368,16 @@ export const Formatting: Story = {
 export const Thickness: Story = {
   render: () => html`
     <div style="${ROW}">
-      <p style="${CAPTION}">2dp</p>
+      <p style="${CAPTION}">2px</p>
       <md-meter value="65" thickness="2" label="Thin meter"></md-meter>
 
-      <p style="${CAPTION}">4dp (default)</p>
+      <p style="${CAPTION}">4px (default)</p>
       <md-meter value="65" label="Default meter"></md-meter>
 
-      <p style="${CAPTION}">8dp</p>
+      <p style="${CAPTION}">8px</p>
       <md-meter value="65" thickness="8" label="Thick meter"></md-meter>
 
-      <p style="${CAPTION}">12dp</p>
+      <p style="${CAPTION}">12px</p>
       <md-meter value="65" thickness="12" label="Extra thick meter"></md-meter>
 
       <p style="${CAPTION}">--md-meter-height override (16px)</p>

@@ -220,7 +220,7 @@ describe('md-progress-indicator', () => {
       expect(mask).toContain('data:image/svg+xml');
     });
 
-    it('sets wave mask size from default wavelength (40) and fixed 10dp height', async () => {
+    it('sets wave mask size from default wavelength (40) and fixed 10px height', async () => {
       const page = await create('<md-progress-indicator wave value="50"></md-progress-indicator>');
       expect(page.root?.style.getPropertyValue('--_wave-mask-size')).toBe('40px 10px');
     });
@@ -330,25 +330,25 @@ describe('md-progress-indicator', () => {
 
   // ── Circular size clamping ────────────────────────────────
   describe('circular size clamping', () => {
-    it('clamps size below 24dp up to the M3 minimum', async () => {
+    it('clamps size below 24px up to the M3 minimum', async () => {
       const page = await create('<md-progress-indicator variant="circular" size="10"></md-progress-indicator>');
       expect(shadow(page, 'svg')?.getAttribute('viewBox')).toBe('0 0 24 24');
       expect(page.root?.style.getPropertyValue('--_size')).toBe('24px');
     });
 
-    it('clamps size above 240dp down to the M3 maximum', async () => {
+    it('clamps size above 240px down to the M3 maximum', async () => {
       const page = await create('<md-progress-indicator variant="circular" size="300"></md-progress-indicator>');
       expect(shadow(page, 'svg')?.getAttribute('viewBox')).toBe('0 0 240 240');
       expect(page.root?.style.getPropertyValue('--_size')).toBe('240px');
     });
 
-    it('auto size defaults to 40dp (non-wavy)', async () => {
+    it('auto size defaults to 40px (non-wavy)', async () => {
       const page = await create('<md-progress-indicator variant="circular" value="50"></md-progress-indicator>');
       expect(shadow(page, 'svg')?.getAttribute('viewBox')).toBe('0 0 40 40');
       expect(page.root?.style.getPropertyValue('--_size')).toBe('40px');
     });
 
-    it('auto size defaults to 48dp when wavy', async () => {
+    it('auto size defaults to 48px when wavy', async () => {
       const page = await create('<md-progress-indicator variant="circular" wave value="50"></md-progress-indicator>');
       expect(shadow(page, 'svg')?.getAttribute('viewBox')).toBe('0 0 48 48');
       expect(page.root?.style.getPropertyValue('--_size')).toBe('48px');
@@ -409,7 +409,7 @@ describe('md-progress-indicator', () => {
       expect(tr.style.opacity).toBe('0');
     });
 
-    it('track dashoffset starts at f + idealGap (constant 4dp visual gap)', async () => {
+    it('track dashoffset starts at f + idealGap (constant 4px visual gap)', async () => {
       const page = await create('<md-progress-indicator variant="circular" value="60" thickness="4"></md-progress-indicator>');
       const tr = shadow(page, '.md-progress-indicator__circular-track--determinate') as Element;
       const offset = parseFloat(tr.getAttribute('stroke-dashoffset') ?? '0');

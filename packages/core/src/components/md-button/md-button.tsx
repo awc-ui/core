@@ -332,7 +332,7 @@ export class MdButton {
           /* md-loading-indicator, not a hand-rolled ring: never ship a custom
              loading affordance where a library component exists. It is
              md-loading-indicator rather than md-progress-indicator because the
-             latter clamps its circular variant to a 24dp M3 minimum, while a
+             latter clamps its circular variant to a 24px M3 minimum, while a
              button spinner runs 10-28px -- every tier but xl would clamp up and
              lose the density taper. Same choice md-select made for its trigger.
 

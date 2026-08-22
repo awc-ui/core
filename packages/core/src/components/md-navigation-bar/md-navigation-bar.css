@@ -56,7 +56,7 @@
 }
 
 /* The container is responsible for the equal-distribution layout
-   and the canonical 64dp height. */
+   and the canonical 64px height. */
 .md-navigation-bar__container {
   display: flex;
   flex-direction: row;
@@ -71,7 +71,7 @@
 /* ==========================================================
    2. SLOTTED TABS
    Each tab claims an equal share of the row. The minimum
-   width matches the M3 64dp item width recommendation while
+   width matches the M3 64px item width recommendation while
    still leaving room for narrow 3-destination layouts.
    ========================================================== */
 ::slotted(md-navigation-tab) {

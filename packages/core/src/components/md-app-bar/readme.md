@@ -112,7 +112,7 @@ variant for apps where search is the primary global function.
 - On `medium` / `large` the expanded headline block is always rendered and the
   inline row title is hidden (`opacity: 0`, `aria-hidden="true"`), so the
   headline is announced once.
-- `subtitle` grows a flexible bar: medium 112 → 136dp, large 120 → 152dp.
+- `subtitle` grows a flexible bar: medium 112 → 136px, large 120 → 152px.
 - **Filling `slot="search"` replaces the built-in `<input>` entirely.** With it
   filled, `search-value`, `search-placeholder`, `search-aria-label` and both
   `mdSearchInput` / `mdSearchActivate` events are inert — your slotted field
@@ -235,7 +235,7 @@ Sourced from [M3 · App bars · Guidelines](https://m3.material.io/components/ap
 properties and mirror under `dir="rtl"`. A directional slotted leading glyph
 (`arrow_back`) mirrors when you mark it `data-directional`.
 
-**Density** — `density="-1…-4"` shortens the action row (64 → 48dp), the icon
+**Density** — `density="-1…-4"` shortens the action row (64 → 48px), the icon
 targets, the search pill and the expanded heights. Rung `0` is the uncompacted
 default and is inert. M3 warns against going below the default height, so use
 deep rungs sparingly here. To opt an app bar out of an inherited global
@@ -312,8 +312,8 @@ md-app-bar.brand {
 Implements the current (M3 Expressive) app-bars specification:
   https://m3.material.io/components/app-bars/specs
 
-Size variants: `small` (64dp), `medium` (112/136dp expanded), `large`
-(120/152dp expanded), and `search` (inline search field in the 64dp row).
+Size variants: `small` (64px), `medium` (112/136px expanded), `large`
+(120/152px expanded), and `search` (inline search field in the 64px row).
 Flexible `medium` / `large` bars always render the expanded headline block.
 Title alignment (`title-alignment`) is configuration, not a variant.
 
@@ -323,7 +323,7 @@ Selecting the search field should open an `md-search` view via `mdSearchActivate
 
 | Property            | Attribute            | Description                                                                                                                                                                                                                                                                                                   | Type                                         | Default    |
 | ------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- | ---------- |
-| `density`           | `density`            | Density scale: 0 (default 64dp row), -1 (60dp), -2 (56dp), -3 (52dp), -4 (48dp). Tightens the action row, icon targets, search field, and expanded heights.                                                                                                                                                   | `-1 \| -2 \| -3 \| -4 \| 0`                  | `0`        |
+| `density`           | `density`            | Density scale: 0 (default 64px row), -1 (60px), -2 (56px), -3 (52px), -4 (48px). Tightens the action row, icon targets, search field, and expanded heights.                                                                                                                                                   | `-1 \| -2 \| -3 \| -4 \| 0`                  | `0`        |
 | `headline`          | `headline`           | Inline or expanded headline text. Falls back to the `headline` slot when empty.                                                                                                                                                                                                                               | `string`                                     | `''`       |
 | `leadingIcon`       | `leading-icon`       | Material Symbols name for the leading navigation icon (slot takes priority).                                                                                                                                                                                                                                  | `string`                                     | `''`       |
 | `leadingIconLabel`  | `leading-icon-label` | Accessible label for the prop-based leading icon button. Required when `leading-icon` is set.                                                                                                                                                                                                                 | `string`                                     | `''`       |
@@ -334,7 +334,7 @@ Selecting the search field should open an `md-search` view via `mdSearchActivate
 | `searchValue`       | `search-value`       | Search variant only: current search field value (two-way bindable).                                                                                                                                                                                                                                           | `string`                                     | `''`       |
 | `subtitle`          | `subtitle`           | Optional subtitle. On flexible variants it sits below the expanded headline (and grows the container); on `small` it stacks under the inline title. Falls back to the `subtitle` slot when empty.                                                                                                             | `string`                                     | `''`       |
 | `titleAlignment`    | `title-alignment`    | Title horizontal alignment — `start` (leading edge, default) or `center`. On search bars it centers the placeholder when empty and unfocused; once focused or when typing, the caret and text align to the inline-start edge.                                                                                 | `"center" \| "start"`                        | `'start'`  |
-| `variant`           | `variant`            | App bar size variant.  - `small` — 64dp action row with inline title-large headline. - `medium` — flexible 112dp (136dp with subtitle) expanded headline block. - `large` — flexible 120dp (152dp with subtitle) expanded headline block. - `search` — 64dp row with inline search field (M3 search app bar). | `"large" \| "medium" \| "search" \| "small"` | `'small'`  |
+| `variant`           | `variant`            | App bar size variant.  - `small` — 64px action row with inline title-large headline. - `medium` — flexible 112px (136px with subtitle) expanded headline block. - `large` — flexible 120px (152px with subtitle) expanded headline block. - `search` — 64px row with inline search field (M3 search app bar). | `"large" \| "medium" \| "search" \| "small"` | `'small'`  |
 
 
 ## Events

@@ -92,7 +92,7 @@
 
 /* Determinate (flat) track: its start edge is rAF-driven per-frame by
    updateLinearFlat() from the same eased fraction as the active fill, so the two
-   move in lockstep and the gap stays a constant 4dp. No CSS transition — that
+   move in lockstep and the gap stays a constant 4px. No CSS transition — that
    would re-tween each per-frame write and break the lockstep with the fill. */
 .md-progress-indicator__track--determinate {
   transition: none;
@@ -324,7 +324,7 @@
 }
 
 /* Determinate (flat) circular track: rAF-driven per-frame by updateCircularFlat()
-   from the eased renderFraction, in lockstep with the active arc, so the 4dp gap
+   from the eased renderFraction, in lockstep with the active arc, so the 4px gap
    stays constant and the track recedes exactly as the arc grows (its final sliver
    fades via opacity instead of popping). No CSS transition — that would re-tween
    each per-frame write and reintroduce the lag/pop this fix removes. */

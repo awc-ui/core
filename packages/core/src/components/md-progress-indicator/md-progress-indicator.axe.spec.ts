@@ -45,8 +45,8 @@ describe('md-progress-indicator · axe', () => {
     ['circular wavy indeterminate', '<md-progress-indicator variant="circular" wave indeterminate label="Loading"></md-progress-indicator>'],
 
     // Circular size variants
-    ['circular small (24dp)', '<md-progress-indicator variant="circular" size="24" thickness="2" value="60" label="Loading"></md-progress-indicator>'],
-    ['circular large (120dp)', '<md-progress-indicator variant="circular" size="120" thickness="10" value="60" label="Loading"></md-progress-indicator>'],
+    ['circular small (24px)', '<md-progress-indicator variant="circular" size="24" thickness="2" value="60" label="Loading"></md-progress-indicator>'],
+    ['circular large (120px)', '<md-progress-indicator variant="circular" size="120" thickness="10" value="60" label="Loading"></md-progress-indicator>'],
 
     // Edge: default label ("Progress")
     ['default label', '<md-progress-indicator value="50"></md-progress-indicator>'],

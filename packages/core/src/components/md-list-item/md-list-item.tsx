@@ -241,7 +241,7 @@ export class MdListItem {
   @State() private hasExpandedListItemChildren = false;
   /** True when the row has a direct `<video slot="leading">` child.
    *  Drives the `md-list-item--with-video` class which CSS uses to bump
-   *  top padding to 12dp per M3. Detected from light DOM (in
+   *  top padding to 12px per M3. Detected from light DOM (in
    *  `detectSlottedFromLightDom`) because `:host(:has(...))` can't cross
    *  the shadow boundary in Chromium. */
   @State() private hasLeadingVideo = false;
@@ -439,7 +439,7 @@ export class MdListItem {
     if (leading !== this.hasSlottedLeading) this.hasSlottedLeading = leading;
 
     /* The video check uses tagName instead of just `slot=` because the
-       M3 spec specifically bumps top padding for the 100×56dp video
+       M3 spec specifically bumps top padding for the 100×56px video
        thumbnail token — not for arbitrary slotted leading content. */
     const video = children.some(
       c => c.tagName === 'VIDEO' && c.getAttribute('slot') === 'leading',

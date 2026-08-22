@@ -480,12 +480,12 @@ export const ExpressiveExpansion: Story = {
     <div style="display: grid; gap: 32px;">
       <section>
         <h3 style="margin: 0 0 8px; font-family: Roboto; font-weight: 500;">
-          Default — 24dp → 12dp margins, springy settle
+          Default — 24px → 12px margins, springy settle
         </h3>
         <p style="margin: 0 0 12px; opacity: 0.7; font-family: Roboto;">
-          Click the bar. At rest it keeps 24dp side margins
+          Click the bar. At rest it keeps 24px side margins
           (<code>--md-search-expand-inset</code>); on focus the margins shrink to
-          the new <code>--md-search-expand-focused-inset</code> (12dp), so the bar
+          the new <code>--md-search-expand-focused-inset</code> (12px), so the bar
           springs out symmetrically left + right over 400 ms with a lively
           back-out settle. Both insets are fixed lengths, so the motion reads the
           same at any container width.
@@ -555,14 +555,14 @@ export const ExpressiveExpansion: Story = {
     docs: {
       description: {
         story:
-          'Expressive expansion (docked / inline bars only): the bar rests with 24dp side margins (`--md-search-expand-inset`) and on focus the margins shrink to the new `--md-search-expand-focused-inset` (12dp), so it grows symmetrically left + right over 400 ms with a springy back-out settle. Pure CSS, no Web Animations API. Tunable via `--md-search-expand-inset`, `--md-search-expand-focused-inset`, `--md-search-expand-duration`, and `--md-search-expand-easing` (set the two insets equal to disable). The full-screen layout does not margin-expand — it slides up from translateY(30px) with an opacity fade (matching md-dialog fullscreen), with no scrim or dimmer.',
+          'Expressive expansion (docked / inline bars only): the bar rests with 24px side margins (`--md-search-expand-inset`) and on focus the margins shrink to the new `--md-search-expand-focused-inset` (12px), so it grows symmetrically left + right over 400 ms with a springy back-out settle. Pure CSS, no Web Animations API. Tunable via `--md-search-expand-inset`, `--md-search-expand-focused-inset`, `--md-search-expand-duration`, and `--md-search-expand-easing` (set the two insets equal to disable). The full-screen layout does not margin-expand — it slides up from translateY(30px) with an opacity fade (matching md-dialog fullscreen), with no scrim or dimmer.',
       },
     },
   },
 };
 
 // ────────────────────────────────────────────────────────────────────────
-// Full-width — no 24→12dp gutters
+// Full-width — no 24→12px gutters
 // ────────────────────────────────────────────────────────────────────────
 
 export const FullWidth: Story = {
@@ -573,7 +573,7 @@ export const FullWidth: Story = {
         story:
           'The **`full-width`** boolean prop makes a docked / inline bar span its ' +
           'container edge-to-edge with **no side gutters** — both expand insets ' +
-          'are zeroed (resting + focused), so there is no 24 → 12dp margin ' +
+          'are zeroed (resting + focused), so there is no 24 → 12px margin ' +
           'animation and the results drawer aligns to the same full width. ' +
           'The identical effect is available via CSS: ' +
           '`--md-search-expand-inset: 0; --md-search-expand-focused-inset: 0`. ' +
@@ -623,7 +623,7 @@ export const FullWidth: Story = {
     </style>
 
     <p style="margin: 0 0 16px; max-width: 960px; opacity: 0.75; font-family: Roboto; font-size: 13px;">
-      Side-by-side: default expressive gutters (24dp resting → 12dp focused) vs
+      Side-by-side: default expressive gutters (24px resting → 12px focused) vs
       edge-to-edge full width. Cards have no horizontal padding so the gutter
       difference is visible at the container edges.
     </p>
@@ -631,7 +631,7 @@ export const FullWidth: Story = {
     <div class="fw-grid">
       <div class="fw-card">
         <div class="fw-card-head">
-          <h4>Normal — 24dp → 12dp gutters</h4>
+          <h4>Normal — 24px → 12px gutters</h4>
           <p>Default expand insets; bar and drawer inset from the card edges.</p>
         </div>
         <div class="fw-card-body">
@@ -804,7 +804,7 @@ export const DividedDocked: Story = {
     docs: {
       description: {
         story:
-          'Baseline divided search in docked layout: a single floating card (12dp corners) with a flat bar, hairline divider, and results list beneath — non-modal, 360–720dp wide. Bar and panel share surface-container-low. Matches the M3 "Style Divided, Docked layout" spec sheet. Follows the toolbar Theme selection.',
+          'Baseline divided search in docked layout: a single floating card (12px corners) with a flat bar, hairline divider, and results list beneath — non-modal, 360–720px wide. Bar and panel share surface-container-low. Matches the M3 "Style Divided, Docked layout" spec sheet. Follows the toolbar Theme selection.',
       },
     },
   },
@@ -845,7 +845,7 @@ export const ContainedDocked: Story = {
     docs: {
       description: {
         story:
-          'Expressive contained search in docked layout: a pill bar with an anchored results popup beneath it (non-modal, 360–720dp wide). The slotted results sit on a rounded surface card. Matches the M3 "Style Contained, Docked layout" spec sheet. Follows the toolbar Theme selection.',
+          'Expressive contained search in docked layout: a pill bar with an anchored results popup beneath it (non-modal, 360–720px wide). The slotted results sit on a rounded surface card. Matches the M3 "Style Contained, Docked layout" spec sheet. Follows the toolbar Theme selection.',
       },
     },
   },
@@ -1535,7 +1535,7 @@ export const CustomCSS: Story = {
         --md-search-focus-indicator-color: #ffffff;
       }
       /* Let each demo bar shrink to fit its card instead of forcing the
-         360dp host minimum (which overflows narrow grid columns). */
+         360px host minimum (which overflows narrow grid columns). */
       .demo md-search {
         --md-search-container-min-inline-size: 0;
       }
@@ -1691,7 +1691,7 @@ export const CustomCSS: Story = {
               <md-search
                 variant="contained"
                 layout="docked"
-                placeholder="64dp tall"
+                placeholder="64px tall"
                 style="--md-search-container-height: 64px;
                        --md-search-icon-size: 28px;"
               >
@@ -1839,7 +1839,7 @@ export const CustomCSS: Story = {
 
           <div class="demo">
             <h4>Dense / compact</h4>
-            <code>.dense — 44dp height, 20dp icons</code>
+            <code>.dense — 44px height, 20px icons</code>
             ${dockedFrame(html`
               <md-search class="dense" variant="contained" layout="docked"
                 placeholder="Compact search">
@@ -1927,7 +1927,7 @@ export const CSSParts: Story = {
         border-radius: 12px;
       }
       /* Let each demo bar shrink to fit its card instead of forcing the
-         360dp host minimum (which overflows narrow grid columns). */
+         360px host minimum (which overflows narrow grid columns). */
       .demo md-search {
         --md-search-container-min-inline-size: 0;
       }
@@ -2081,7 +2081,7 @@ export const Icons: Story = {
           opacity: 0.75;
         }
         /* Let each demo bar shrink to fit its card instead of forcing the
-           360dp host minimum (which overflows narrow grid columns). */
+           360px host minimum (which overflows narrow grid columns). */
         .demo md-search {
           --md-search-container-min-inline-size: 0;
         }

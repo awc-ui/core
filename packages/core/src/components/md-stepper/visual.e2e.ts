@@ -277,7 +277,7 @@ describe('md-stepper · connectors', () => {
     expect(r.connW).toBeGreaterThan(r.gap * 0.6); // spans the bulk of the gap (not ~half)
   }, 60000);
 
-  it('connector is an expressive rounded 4dp progress track (no mask)', async () => {
+  it('connector is an expressive rounded 4px progress track (no mask)', async () => {
     const page = await newE2EPage();
     await page.setViewport({ width: 900, height: 400 });
     await page.setContent(`
@@ -293,7 +293,7 @@ describe('md-stepper · connectors', () => {
       };
     });
     expect(line.mask === 'none' || !line.mask).toBe(true);
-    expect(line.h).toBeGreaterThanOrEqual(3); // expressive 4dp, not a hairline
+    expect(line.h).toBeGreaterThanOrEqual(3); // expressive 4px, not a hairline
     expect(line.h).toBeLessThanOrEqual(5);
     expect(line.radius).toBeGreaterThanOrEqual(line.h / 2 - 1); // rounded caps
   }, 60000);

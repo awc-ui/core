@@ -278,19 +278,19 @@ export const Variants: Story = {
 export const Sizes: Story = {
   render: () => html`
     <div style="${SECTION}">
-      <p style="${HEADING}">Extra Small (32dp)</p>
+      <p style="${HEADING}">Extra Small (32px)</p>
       <md-split-button variant="tonal" size="xs" icon="edit" label="Label"></md-split-button>
 
-      <p style="${HEADING}">Small (40dp) — default</p>
+      <p style="${HEADING}">Small (40px) — default</p>
       <md-split-button variant="tonal" size="sm" icon="edit" label="Label"></md-split-button>
 
-      <p style="${HEADING}">Medium (56dp)</p>
+      <p style="${HEADING}">Medium (56px)</p>
       <md-split-button variant="tonal" size="md" icon="edit" label="Label"></md-split-button>
 
-      <p style="${HEADING}">Large (96dp)</p>
+      <p style="${HEADING}">Large (96px)</p>
       <md-split-button variant="tonal" size="lg" icon="edit" label="Label"></md-split-button>
 
-      <p style="${HEADING}">Extra Large (136dp)</p>
+      <p style="${HEADING}">Extra Large (136px)</p>
       <md-split-button variant="tonal" size="xl" icon="edit" label="Label"></md-split-button>
 
       <p style="color:#49454F; font-size:12px; margin-top:16px;">
@@ -307,11 +307,11 @@ export const InnerCornerSizing: Story = {
   name: 'Inner Corner Sizing (M3 Spec)',
   render: () => {
     const sizes = [
-      { size: 'xs', label: 'Extra small', innerRadius: '4dp', height: '32dp' },
-      { size: 'sm', label: 'Small',       innerRadius: '4dp', height: '40dp' },
-      { size: 'md', label: 'Medium',      innerRadius: '8dp', height: '56dp' },
-      { size: 'lg', label: 'Large',       innerRadius: '12dp', height: '96dp' },
-      { size: 'xl', label: 'Extra large', innerRadius: '16dp', height: '136dp' },
+      { size: 'xs', label: 'Extra small', innerRadius: '4px', height: '32px' },
+      { size: 'sm', label: 'Small',       innerRadius: '4px', height: '40px' },
+      { size: 'md', label: 'Medium',      innerRadius: '8px', height: '56px' },
+      { size: 'lg', label: 'Large',       innerRadius: '12px', height: '96px' },
+      { size: 'xl', label: 'Extra large', innerRadius: '16px', height: '136px' },
     ];
     const NOTE = 'font-size:11px; color:#49454F; font-family:Roboto Mono,monospace; text-align:center;';
     const BADGE = 'display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:#49454F; color:#fff; font-size:11px; font-weight:500;';
@@ -320,7 +320,7 @@ export const InnerCornerSizing: Story = {
       <div style="padding:40px; font-family:Roboto, sans-serif;">
         <p style="color:#49454F; font-size:13px; font-weight:400; margin:0 0 8px; max-width:500px;">
           The inner corner radius changes depending on button sizing.
-          The space should always be 2dp.
+          The space should always be 2px.
         </p>
 
         <div style="display:flex; gap:32px; align-items:flex-end; padding:32px 0 16px; flex-wrap:wrap;">
@@ -358,11 +358,11 @@ export const OpticalCentering: Story = {
   name: 'Trailing Icon Optical Centering',
   render: () => {
     const sizes = [
-      { size: 'xs', height: '32dp', left: '12', right: '14', center: '13' },
-      { size: 'sm', height: '40dp', left: '12', right: '14', center: '13' },
-      { size: 'md', height: '56dp', left: '13', right: '17', center: '15' },
-      { size: 'lg', height: '96dp', left: '26', right: '32', center: '29' },
-      { size: 'xl', height: '136dp', left: '37', right: '49', center: '43' },
+      { size: 'xs', height: '32px', left: '12', right: '14', center: '13' },
+      { size: 'sm', height: '40px', left: '12', right: '14', center: '13' },
+      { size: 'md', height: '56px', left: '13', right: '17', center: '15' },
+      { size: 'lg', height: '96px', left: '26', right: '32', center: '29' },
+      { size: 'xl', height: '136px', left: '37', right: '49', center: '43' },
     ];
     const NOTE = 'font-size:11px; color:#49454F; font-family:Roboto Mono,monospace; text-align:center;';
     const COL_LABEL = 'font-size:12px; color:#49454F; font-weight:500; margin:0 0 12px; text-align:center;';

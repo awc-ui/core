@@ -419,7 +419,7 @@ export class MdNavigationRailTab {
       // but stays below the icon/label (z-index 1).
       <md-ripple disabled={this.disabled}></md-ripple>,
       <span class="md-navigation-rail-tab__icon-wrapper" part="icon-wrapper">
-        {/* icon-box is exactly the icon size (24dp) so the badge hugs the icon's
+        {/* icon-box is exactly the icon size (24px) so the badge hugs the icon's
             corner in both layouts — not the 56×32 wrapper corner when collapsed. */}
         <span class="md-navigation-rail-tab__icon-box">
           {this.renderIcon()}

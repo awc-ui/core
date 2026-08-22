@@ -1238,19 +1238,19 @@ export const Density: Story = {
     <div style="display:flex; gap:32px; flex-wrap:wrap; padding:16px;">
       <div style="display:flex; flex-direction:column; gap:24px; width:280px;">
         <h3 style="margin:0; font-family:sans-serif; font-size:14px; color:#666;">Filled</h3>
-        <md-text-field variant="filled" label="Default (56dp)" value="density 0"></md-text-field>
-        <md-text-field variant="filled" label="Density -1 (52dp)" value="density -1" density="-1"></md-text-field>
-        <md-text-field variant="filled" label="Density -2 (48dp)" value="density -2" density="-2"></md-text-field>
-        <md-text-field variant="filled" label="Density -3 (44dp)" value="density -3" density="-3"></md-text-field>
-        <md-text-field variant="filled" label="Density -4 (40dp)" value="density -4" density="-4"></md-text-field>
+        <md-text-field variant="filled" label="Default (56px)" value="density 0"></md-text-field>
+        <md-text-field variant="filled" label="Density -1 (52px)" value="density -1" density="-1"></md-text-field>
+        <md-text-field variant="filled" label="Density -2 (48px)" value="density -2" density="-2"></md-text-field>
+        <md-text-field variant="filled" label="Density -3 (44px)" value="density -3" density="-3"></md-text-field>
+        <md-text-field variant="filled" label="Density -4 (40px)" value="density -4" density="-4"></md-text-field>
       </div>
       <div style="display:flex; flex-direction:column; gap:24px; width:280px;">
         <h3 style="margin:0; font-family:sans-serif; font-size:14px; color:#666;">Outlined</h3>
-        <md-text-field variant="outlined" label="Default (56dp)" value="density 0"></md-text-field>
-        <md-text-field variant="outlined" label="Density -1 (52dp)" value="density -1" density="-1"></md-text-field>
-        <md-text-field variant="outlined" label="Density -2 (48dp)" value="density -2" density="-2"></md-text-field>
-        <md-text-field variant="outlined" label="Density -3 (44dp)" value="density -3" density="-3"></md-text-field>
-        <md-text-field variant="outlined" label="Density -4 (40dp)" value="density -4" density="-4"></md-text-field>
+        <md-text-field variant="outlined" label="Default (56px)" value="density 0"></md-text-field>
+        <md-text-field variant="outlined" label="Density -1 (52px)" value="density -1" density="-1"></md-text-field>
+        <md-text-field variant="outlined" label="Density -2 (48px)" value="density -2" density="-2"></md-text-field>
+        <md-text-field variant="outlined" label="Density -3 (44px)" value="density -3" density="-3"></md-text-field>
+        <md-text-field variant="outlined" label="Density -4 (40px)" value="density -4" density="-4"></md-text-field>
       </div>
     </div>
   `,

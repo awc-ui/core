@@ -372,7 +372,7 @@ and `…-duration`. Spatial = position/size/shape; effects = colour/opacity.
   `-letter-spacing`, plus a `-font` shorthand
   (e.g. `--md-sys-typescale-headline-medium-font: 400 28px/36px Roboto, sans-serif`).
   Use the shorthand on the `font` property for headings you write yourself.
-- **Spacing** — a 4dp scale that tightens with density:
+- **Spacing** — a 4px scale that tightens with density:
   `--md-sys-spacing-inset-{xs,sm,md,lg,xl}` (internal padding, 4/8/12/16/24px)
   and `--md-sys-spacing-gap-{xs,sm,md,lg}` (between siblings, 4/8/12/16px), plus
   `--md-sys-spacing-row-height` (`56px` at density 0).

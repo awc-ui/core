@@ -11,35 +11,35 @@
      --md-app-bar-leading-icon-color           Leading icon colour (on-surface)
      --md-app-bar-trailing-icon-color          Trailing icon colour (on-surface-variant)
      --md-app-bar-container-elevation          Container shadow (elevation-0 default)
-     --md-app-bar-row-height                   Action row height (64dp)
-     --md-app-bar-padding-inline-start         Action row inline-start padding (4dp)
-     --md-app-bar-padding-inline-end           Action row inline-end padding (4dp)
-     --md-app-bar-row-padding-inline           Deprecated alias for both paddings (4dp)
-     --md-app-bar-row-padding-block-start      Action row block-start padding (20dp large expanded)
-     --md-app-bar-trailing-gap                 Gap between trailing action icons (2dp)
-     --md-app-bar-trailing-icon-touch-size     Trailing icon touch target (48dp; matches leading)
+     --md-app-bar-row-height                   Action row height (64px)
+     --md-app-bar-padding-inline-start         Action row inline-start padding (4px)
+     --md-app-bar-padding-inline-end           Action row inline-end padding (4px)
+     --md-app-bar-row-padding-inline           Deprecated alias for both paddings (4px)
+     --md-app-bar-row-padding-block-start      Action row block-start padding (20px large expanded)
+     --md-app-bar-trailing-gap                 Gap between trailing action icons (2px)
+     --md-app-bar-trailing-icon-touch-size     Trailing icon touch target (48px; matches leading)
      --md-app-bar-icon-gap                     Gap between icons and row content (0)
-     --md-app-bar-icon-size                    Icon glyph size in action row (24dp,
+     --md-app-bar-icon-size                    Icon glyph size in action row (24px,
                                                tapers with density; set to opt out)
-     --md-app-bar-avatar-size                  Avatar size in trailing slots (32dp)
+     --md-app-bar-avatar-size                  Avatar size in trailing slots (32px)
      --md-app-bar-expanded-padding-inline      Inline padding of expanded title block
      --md-app-bar-expanded-padding-block-end   Block-end padding of expanded title block
-     --md-app-bar-medium-height                Medium expanded height, no subtitle (112dp)
-     --md-app-bar-medium-height-with-subtitle  Medium expanded height, with subtitle (136dp)
-     --md-app-bar-large-height                 Large expanded height, no subtitle (120dp)
-     --md-app-bar-large-height-with-subtitle   Large expanded height, with subtitle (152dp)
-     --md-app-bar-icon-button-size             Leading icon touch target (48dp)
+     --md-app-bar-medium-height                Medium expanded height, no subtitle (112px)
+     --md-app-bar-medium-height-with-subtitle  Medium expanded height, with subtitle (136px)
+     --md-app-bar-large-height                 Large expanded height, no subtitle (120px)
+     --md-app-bar-large-height-with-subtitle   Large expanded height, with subtitle (152px)
+     --md-app-bar-icon-button-size             Leading icon touch target (48px)
      --md-app-bar-search-container-color       Search pill resting fill (surface-container-highest)
      --md-app-bar-search-container-color-scrolled
                                                Search pill fill when scrolled (surface-container)
      --md-app-bar-search-container-shape       Search field border-radius
-     --md-app-bar-search-container-height      Search field block-size (56dp)
-     --md-app-bar-search-padding-inline-start  Search hint inline-start padding (24dp default)
-     --md-app-bar-search-padding-inline-end    Search pill inline-end padding after in-pill icons (8dp)
-     --md-app-bar-search-row-gap               Gap between leading, pill bay, and trailing (8dp)
-     --md-app-bar-search-trailing-gap          Gap between in-pill trailing icons — mic ↔ sparkle (4dp)
-     --md-app-bar-search-field-trailing-gap    Gap between hint field and in-pill trailing cluster (6dp; fits focus ring)
-     --md-app-bar-trailing-touch-size          Outside trailing touch target — avatar area (48dp)
+     --md-app-bar-search-container-height      Search field block-size (56px)
+     --md-app-bar-search-padding-inline-start  Search hint inline-start padding (24px default)
+     --md-app-bar-search-padding-inline-end    Search pill inline-end padding after in-pill icons (8px)
+     --md-app-bar-search-row-gap               Gap between leading, pill bay, and trailing (8px)
+     --md-app-bar-search-trailing-gap          Gap between in-pill trailing icons — mic ↔ sparkle (4px)
+     --md-app-bar-search-field-trailing-gap    Gap between hint field and in-pill trailing cluster (6px; fits focus ring)
+     --md-app-bar-trailing-touch-size          Outside trailing touch target — avatar area (48px)
      --md-app-bar-search-placeholder-color     Hint / placeholder colour (on-surface-variant)
      --md-app-bar-search-input-color           Typed search text colour (on-surface)
      --md-app-bar-search-trailing-icon-color   Icons inside the search field (on-surface-variant)
@@ -73,8 +73,8 @@
      Slotted directional icons may use data-directional for RTL mirroring.
 
    RESPONSIVE (search variant, container + viewport):
-     < 600dp  — hint inset 16dp, hide 2nd+ search-trailing (data-compact-keep opts out)
-     < 400dp  — hint inset 12dp
+     < 600px  — hint inset 16px, hide 2nd+ search-trailing (data-compact-keep opts out)
+     < 400px  — hint inset 12px
    ========================================================== */
 
 :host {
@@ -108,7 +108,7 @@
   --_trailing-icon-touch-size: var(--md-app-bar-trailing-icon-touch-size, var(--_icon-button-size));
   --_trailing-gap: var(--md-app-bar-trailing-gap, 2px);
   --_row-padding-block-start: var(--md-app-bar-row-padding-block-start, 0px);
-  /* 1px per rung off 24dp (18px floor) — the library-wide icon taper. Feeds
+  /* 1px per rung off 24px (18px floor) — the library-wide icon taper. Feeds
      --md-icon-button-icon-size for the leading/trailing buttons further down,
      so the glyphs shrink with the row instead of sitting oversized in it. */
   --_icon-size: var(--md-app-bar-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
@@ -366,9 +366,9 @@
   letter-spacing: var(--md-sys-typescale-title-medium-letter-spacing);
 }
 
-/* ── Search app bar (64dp row, 56dp search field) ───────── */
+/* ── Search app bar (64px row, 56px search field) ───────── */
 
-/* Container queries: compact when the bar is narrower than ~600dp (M3 compact). */
+/* Container queries: compact when the bar is narrower than ~600px (M3 compact). */
 :host(.md-app-bar--search) {
   container-type: inline-size;
 }
@@ -378,7 +378,7 @@
   gap: var(--_search-row-gap);
 }
 
-/* Search row: leading (48dp) | 8dp | pill bay | 8dp | trailing avatar (48dp). */
+/* Search row: leading (48px) | 8px | pill bay | 8px | trailing avatar (48px). */
 :host(.md-app-bar--search) .md-app-bar__leading {
   min-inline-size: var(--_icon-button-size);
 }
@@ -595,7 +595,7 @@
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  /* mic ↔ sparkle: 4dp; row gap (8dp) separates pill edge from outside avatar. */
+  /* mic ↔ sparkle: 4px; row gap (8px) separates pill edge from outside avatar. */
   gap: var(--_search-trailing-gap);
   color: var(--_search-trailing-icon-color);
   position: relative;
@@ -610,7 +610,7 @@
   padding-inline-end: var(--_search-padding-inline-end);
 }
 
-/* Hint field ↔ mic: 6dp fits icon-button focus ring (3px outline + 2px offset). */
+/* Hint field ↔ mic: 6px fits icon-button focus ring (3px outline + 2px offset). */
 :host(.md-app-bar--with-search-trailing) .md-app-bar__search-trailing {
   margin-inline-start: var(--_search-field-trailing-gap);
 }
@@ -640,8 +640,8 @@
   }
 }
 
-/* Compact search row (< 600dp): tighter hint insets; hide secondary in-pill icons
-   unless marked with data-compact-keep. Row gaps (8dp) and 48dp touch targets
+/* Compact search row (< 600px): tighter hint insets; hide secondary in-pill icons
+   unless marked with data-compact-keep. Row gaps (8px) and 48px touch targets
    are unchanged. Custom --md-app-bar-search-padding-inline-start (e.g. 0) is preserved. */
 @container (max-width: 599px) {
   :host(.md-app-bar--search:not(.md-app-bar--center)) {
