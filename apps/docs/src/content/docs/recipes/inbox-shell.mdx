@@ -42,9 +42,7 @@ committed only when the snackbar closes without it.
         supporting-text="Q3 budget review — final numbers" lines="2">
         <span slot="trailing" style="display: flex; align-items: center; gap: 8px;">
           <span style="font: var(--md-sys-typescale-label-small); color: var(--md-sys-color-on-surface-variant);">09:41</span>
-          <span data-dot style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;">
-            <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);"></md-status-dot>
-          </span>
+          <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);" inline></md-status-dot>
         </span>
       </md-list-item>
       <md-list-item data-id="m2" data-unread data-time="Today, 08:15"
@@ -52,9 +50,7 @@ committed only when the snackbar closes without it.
         supporting-text="Re: Berlin offsite agenda" lines="2">
         <span slot="trailing" style="display: flex; align-items: center; gap: 8px;">
           <span style="font: var(--md-sys-typescale-label-small); color: var(--md-sys-color-on-surface-variant);">08:15</span>
-          <span data-dot style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;">
-            <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);"></md-status-dot>
-          </span>
+          <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);" inline></md-status-dot>
         </span>
       </md-list-item>
       <md-list-item data-id="m3" data-time="Yesterday, 17:02"
@@ -72,13 +68,11 @@ committed only when the snackbar closes without it.
         supporting-text="Contract renewal for Northwind" lines="2">
         <span slot="trailing" style="display: flex; align-items: center; gap: 8px;">
           <span style="font: var(--md-sys-typescale-label-small); color: var(--md-sys-color-on-surface-variant);">Mon</span>
-          <span data-dot style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;">
-            <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);"></md-status-dot>
-          </span>
+          <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);" inline></md-status-dot>
         </span>
       </md-list-item>
     </md-list>
-    <div data-empty hidden style="flex: 1; display: grid; place-content: center; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);"></div>
+    <div data-empty style="flex: 1; display: none; place-content: center; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface-variant);"></div>
   </div>
   <md-side-sheet data-reader variant="standard" side="end" top-divider bottom-divider
                  style="--md-side-sheet-width: 300px; --md-side-sheet-max-width: 320px;">
@@ -119,9 +113,7 @@ committed only when the snackbar closes without it.
     <md-list selection-mode="single-select" label="Inbox conversations">
       <md-list-item leading-avatar-name="Priya Raghavan" headline="Priya Raghavan"
                     supporting-text="Q3 budget review — final numbers" lines="2">
-        <span slot="trailing" style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;">
-          <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);"></md-status-dot>
-        </span>
+        <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);" inline></md-status-dot>
       </md-list-item>
       <md-list-item leading-avatar-name="Sofia Lindqvist" headline="Sofia Lindqvist"
                     supporting-text="Design tokens migration plan" lines="2"
@@ -229,7 +221,12 @@ committed only when the snackbar closes without it.
     rail.addEventListener('mdTabChange', (e) => {
       const isInbox = e.detail.value === 'inbox';
       list.style.display = isInbox ? '' : 'none';
-      emptyState.hidden = isInbox;
+      // Toggled via style.display, not the hidden attribute: this element
+      // carries an inline display, and an inline style outranks the UA
+      // stylesheet's [hidden] { display: none } — so hidden alone left it
+      // laid out (an invisible flex:1 sibling eating half the pane and
+      // squeezing the message list into a scroller).
+      emptyState.style.display = isInbox ? 'none' : 'grid';
       folderTitle.textContent = folderNames[e.detail.value];
       if (!isInbox) {
         emptyState.textContent = folderNames[e.detail.value] + ' is empty in this demo.';
@@ -302,8 +299,6 @@ const INITIAL = [
     time: 'Yesterday, 17:02', clock: 'Yesterday', unread: false,
     body: 'The migration plan is ready for review: color and typography tokens first, spacing second.' },
 ];
-const dotWrap = { position: 'relative', display: 'inline-flex', inlineSize: 12, blockSize: 12,
-  '--md-status-dot-inset-end': '0px', '--md-status-dot-inset-block-end': '0px' };
 
 export default function InboxShell() {
   const [messages, setMessages] = useState(INITIAL);
@@ -372,10 +367,8 @@ export default function InboxShell() {
                 <span slot="trailing" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {m.clock}
                   {m.unread && (
-                    <span style={dotWrap}>
-                      <MdStatusDot label="Unread"
-                        style={{ '--md-status-dot-color': 'var(--md-sys-color-primary)' }} />
-                    </span>
+                    <MdStatusDot inline label="Unread"
+                      style={{ '--md-status-dot-color': 'var(--md-sys-color-primary)' }} />
                   )}
                 </span>
               </MdListItem>
@@ -460,9 +453,7 @@ interface Message {
     '            <span slot="trailing" style="display: flex; align-items: center; gap: 8px;">' +
     '              {{ m.clock }}' +
     '              @if (m.unread) {' +
-    '                <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;">' +
-    '                  <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);"></md-status-dot>' +
-    '                </span>' +
+    '                <md-status-dot inline label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);"></md-status-dot>' +
     '              }' +
     '            </span>' +
     '          </md-list-item>' +
@@ -636,9 +627,8 @@ function draftToast(kind: string) { drafts.value += 1; showToast(kind + ' draft 
           :headline="m.sender" :supporting-text="m.subject" lines="2" :selected="m.id === openId">
           <span slot="trailing" style="display: flex; align-items: center; gap: 8px;">
             {{ m.clock }}
-            <span v-if="m.unread" style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;">
-              <MdStatusDot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);" />
-            </span>
+            <MdStatusDot v-if="m.unread" inline label="Unread"
+              style="--md-status-dot-color: var(--md-sys-color-primary);" />
           </span>
         </MdListItem>
       </MdList>
@@ -752,9 +742,7 @@ function draftToast(kind: string) { drafts.value += 1; showToast(kind + ' draft 
             <span slot="trailing" style="display: flex; align-items: center; gap: 8px;">
               {m.clock}
               {#if m.unread}
-                <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;">
-                  <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);"></md-status-dot>
-                </span>
+                <md-status-dot label="Unread" style="--md-status-dot-color: var(--md-sys-color-primary);" inline></md-status-dot>
               {/if}
             </span>
           </md-list-item>

@@ -41,7 +41,7 @@ in their `loading` state until the data lands.
         <div data-content hidden>
           <span data-value style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);"></span>
           <span style="display: inline-flex; align-items: center; gap: 8px; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">
-            <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;"><md-status-dot></md-status-dot></span>
+            <md-status-dot inline></md-status-dot>
             <span data-delta></span>
           </span>
           <md-sparkline show-tooltip="false" height="28px" color="primary"></md-sparkline>
@@ -56,7 +56,7 @@ in their `loading` state until the data lands.
         <div data-content hidden>
           <span data-value style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);"></span>
           <span style="display: inline-flex; align-items: center; gap: 8px; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">
-            <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;"><md-status-dot></md-status-dot></span>
+            <md-status-dot inline></md-status-dot>
             <span data-delta></span>
           </span>
           <md-sparkline variant="area" show-tooltip="false" height="28px" color="success"></md-sparkline>
@@ -71,7 +71,7 @@ in their `loading` state until the data lands.
         <div data-content hidden>
           <span data-value style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);"></span>
           <span style="display: inline-flex; align-items: center; gap: 8px; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">
-            <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;"><md-status-dot></md-status-dot></span>
+            <md-status-dot inline></md-status-dot>
             <span data-delta></span>
           </span>
           <md-sparkline show-tooltip="false" height="28px" color="warning"></md-sparkline>
@@ -86,7 +86,7 @@ in their `loading` state until the data lands.
         <div data-content hidden>
           <span data-value style="font: var(--md-sys-typescale-headline-small); color: var(--md-sys-color-on-surface);"></span>
           <span style="display: inline-flex; align-items: center; gap: 8px; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">
-            <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;"><md-status-dot></md-status-dot></span>
+            <md-status-dot inline></md-status-dot>
             <span data-delta></span>
           </span>
           <md-sparkline variant="bar" show-tooltip="false" height="28px" color="info"></md-sparkline>
@@ -111,9 +111,7 @@ in their `loading` state until the data lands.
   <md-card variant="outlined" full-width>
     <span>Active users</span>
     <span>24,318</span>
-    <span style="position: relative; display: inline-flex; inline-size: 12px; block-size: 12px; --md-status-dot-inset-end: 0px; --md-status-dot-inset-block-end: 0px;">
-      <md-status-dot state="online" label="Trending up"></md-status-dot>
-    </span>
+    <md-status-dot state="online" label="Trending up" inline></md-status-dot>
     <span>+12.4% vs prior period</span>
     <md-sparkline show-tooltip="false" height="28px" color="primary"></md-sparkline>
   </md-card>

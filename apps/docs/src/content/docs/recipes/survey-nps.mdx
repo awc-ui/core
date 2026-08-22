@@ -87,7 +87,14 @@ progress bar's closing animation before the thank-you
             <span style="font: var(--md-sys-typescale-body-large); color: var(--md-sys-color-on-surface);">How likely are you to renew your subscription next quarter?</span>
             <md-slider data-renew min="0" max="100" step="10" stops value="60" value-indicator aria-label="Likelihood to renew" value-text="60 percent"></md-slider>
           </div>
-          <label style="display: flex; align-items: center; gap: 8px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);"><md-checkbox data-contact name="contact" value="yes" supporting-text="We only follow up on specific feedback"></md-checkbox>You can contact me about this feedback</label>
+          <!-- Grid, not a flex row: md-checkbox renders `supporting-text` INSIDE
+               its own host, which makes the host two rows tall — in a flex row
+               `align-items: center` then centres the box against box+support
+               (lifting it off the label's baseline) and the support line starts
+               at the box's left edge instead of under the label. Putting the
+               support text in the label's own second row, column 2, aligns it
+               with the label text and keeps the box centred on line one. -->
+          <label style="display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 8px; row-gap: 2px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);"><md-checkbox data-contact name="contact" value="yes"></md-checkbox><span>You can contact me about this feedback</span><span style="grid-column: 2; font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">We only follow up on specific feedback</span></label>
         </div>
       </md-step>
     </md-stepper>
