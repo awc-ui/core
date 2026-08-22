@@ -22,6 +22,12 @@ the 600px compact breakpoint.
 <ComponentDemo
   label="Live preview — switch destinations, toggle the rail with the menu button, try search and the account menu"
   html={`<div style="max-width: 720px; margin-inline: auto; border: 1px solid var(--md-sys-color-outline-variant); background: var(--md-sys-color-surface);">
+  <style>
+    /* A slotted md-search brings its own pill and hover overlay — hide the
+       app bar's built-in ones so the two don't stack (the container via its
+       custom property below, the hover state layer via its exported part). */
+    md-app-bar[data-appbar]::part(search-state-layer) { display: none; }
+  </style>
   <md-app-bar data-appbar variant="search" leading-icon="menu" leading-icon-label="Toggle navigation"
     style="--md-app-bar-search-container-color: transparent; --md-app-bar-search-container-color-scrolled: transparent;">
     <md-search slot="search" data-search layout="docked" trigger="bar" full-width debounce="200"
@@ -138,7 +144,12 @@ the 600px compact breakpoint.
   </md-navigation-bar>
 </div>`}
   htmlForCode={`<!-- The chrome renders at fixed, token-driven sizes: no layout shift on first paint. -->
-<!-- A slotted md-search draws its own pill — blank the app bar's built-in one. -->
+<!-- A slotted md-search draws its own pill and hover overlay — blank the app
+     bar's built-in ones (container via custom property, hover state layer via
+     its exported part): -->
+<style>
+  md-app-bar::part(search-state-layer) { display: none; }
+</style>
 <md-app-bar variant="search" leading-icon="menu" leading-icon-label="Toggle navigation"
   style="--md-app-bar-search-container-color: transparent; --md-app-bar-search-container-color-scrolled: transparent;">
   <md-search slot="search" layout="docked" trigger="bar" full-width debounce="200"
