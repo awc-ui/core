@@ -101,6 +101,32 @@
 }
 
 /* ==========================================================
+   2b. INLINE MODE — dot in normal flow, beside text
+
+   The default host is an avatar corner badge: absolutely positioned 2-3px
+   OUTSIDE its positioned parent. Beside text that is wrong twice over — it
+   escapes the line box (landing low and to the trailing side, overlapping
+   its own label) and its surface-toned halo reads as a stray ring rather
+   than separation from a tile.
+
+   `inline` puts the host back in flow. Declared AFTER the size presets on
+   purpose: `:host([inline])` and `:host(.md-status-dot--large)` have equal
+   specificity, so source order is what lets an inline large dot drop the
+   -3px anchor. The halo defaults off but stays reachable through the same
+   public hook.
+   ========================================================== */
+:host([inline]) {
+  --_outline-width: var(--md-status-dot-outline-width, 0px);
+  position: relative;
+  inset: auto;
+  display: inline-block;
+  vertical-align: middle;
+  /* Never let a flex/grid parent stretch or shrink the dot out of round. */
+  flex: 0 0 auto;
+  align-self: center;
+}
+
+/* ==========================================================
    3. STATE MODIFIERS — semantic colors
    Each state writes to `--_color` (dot fill) and `--_pulse-color`
    (live-pulse halo). Custom properties on the host take priority,

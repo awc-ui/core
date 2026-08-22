@@ -86,6 +86,26 @@ export class MdStatusDot {
   @Prop({ reflect: true }) size: MdStatusDotSize = 'medium';
 
   /**
+   * Lay the dot out in normal flow instead of as an absolutely-positioned
+   * corner badge.
+   *
+   * The default mode is the avatar badge: `position: absolute` pinned 2px
+   * outside its positioned parent's inline/block end, with a surface-toned
+   * halo separating it from the tile beneath. That is wrong wherever the dot
+   * sits BESIDE something — a legend swatch, a "Market open" line, a status
+   * label in a table cell — where it needs to flow with the text. Without
+   * this prop each such use had to wrap the dot in a `position: relative`
+   * span of an explicit size AND null out both inset custom properties; miss
+   * one and the dot hangs low and to the right, overlapping its own label.
+   *
+   * `inline` makes the host an `inline-block` in normal flow, vertically
+   * centred on the text, with no halo (the halo exists to separate the dot
+   * from an avatar tile; over ordinary text it reads as a stray ring). Set
+   * `--md-status-dot-outline-width` to bring it back.
+   */
+  @Prop({ reflect: true }) inline: boolean = false;
+
+  /**
    * Pulse the dot outward in its own colour. Useful for "live now",
    * "in a call", "recording" affordances. Respects
    * `prefers-reduced-motion: reduce` automatically.

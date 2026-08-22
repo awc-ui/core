@@ -118,3 +118,43 @@ describe('md-status-dot · state colors', () => {
     expect(busy).toBe('rgb(219, 68, 55)');
   }, 60000);
 });
+
+describe('md-status-dot · inline mode', () => {
+  it('flows in the line box instead of escaping as a corner badge', async () => {
+    const page = await newE2EPage();
+    await page.setContent(`
+      <p id="line" style="margin: 0; font: 14px/20px system-ui;">
+        <md-status-dot id="badge" state="online" size="small"></md-status-dot>NYSE
+      </p>
+      <p id="line2" style="margin: 0; font: 14px/20px system-ui;">
+        <md-status-dot id="flow" state="online" size="small" inline></md-status-dot>NYSE
+      </p>
+    `);
+    await page.waitForChanges();
+
+    const read = (id: string) =>
+      page.evaluate((elId: string) => {
+        const el = document.getElementById(elId)!;
+        const cs = getComputedStyle(el);
+        const parent = el.parentElement!.getBoundingClientRect();
+        const r = el.getBoundingClientRect();
+        return {
+          position: cs.position,
+          // How far the dot sits below its line box — the badge escapes it.
+          overshootBelow: Math.round(r.bottom - parent.bottom),
+          outlineWidth: cs.outlineWidth,
+        };
+      }, id);
+
+    const badge = await read('badge');
+    const flow = await read('flow');
+
+    // Default stays the absolutely-positioned avatar badge (unchanged contract).
+    expect(badge.position).toBe('absolute');
+
+    // Inline mode is in normal flow, contained by its line box, halo off.
+    expect(flow.position).toBe('relative');
+    expect(flow.overshootBelow).toBeLessThanOrEqual(0);
+    expect(flow.outlineWidth).toBe('0px');
+  }, 60000);
+});
