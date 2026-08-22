@@ -133,6 +133,13 @@
 :host(.md-step--horizontal.md-step--panel-step) .md-step__content {
   grid-row: 2;
   grid-column: 1 / -1;
+  /* The base .md-step__content carries a leading-only margin that aligns a
+     VERTICAL step's panel under its label (indicator + ring + gap ≈ 68px at
+     density 0). Here the panel spans every column with no indicator above it,
+     so that indent has nothing to align to — it just shifts the panel's
+     content box half the indent to the inline-end (content centered inside
+     the panel rendered ~34px off the stepper's center). Zero it. */
+  margin-inline-start: 0;
 }
 
 :host(.md-step--vertical) {
