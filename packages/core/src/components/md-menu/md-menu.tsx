@@ -289,10 +289,12 @@ export class MdMenu {
   }
 
   /**
-   * Recompute the menu's position against its anchor. md-menu already reacts to
-   * scroll/resize, but not to the anchor MOVING because sibling content reflowed
-   * (e.g. a multi-select whose button trigger shifts as chips are added beside
-   * it). Call this after such a reflow to keep the popup glued to the anchor.
+   * Recompute the menu's position against its anchor immediately. While open,
+   * md-menu already tracks scroll, resize, its own surface size AND the anchor
+   * moving (a per-frame rect watch — covers transform-animated ancestors like
+   * a sliding bottom sheet, and sibling reflow shifting the trigger), so this
+   * is rarely needed; call it when the next frame is too late — e.g. to avoid
+   * a one-frame lag right after a synchronous layout change.
    */
   @Method()
   async reposition() {
@@ -335,6 +337,7 @@ export class MdMenu {
         window.addEventListener('scroll', this.handleScroll, true);
         window.addEventListener('resize', this.handleScroll);
         this.observeSurfaceResize();
+        this.startAnchorWatch();
       }
       if (this.skipAutoFocus || !this.autoFocus) {
         this.scheduleFocus(() => this.initRovingTabindex());
@@ -359,6 +362,7 @@ export class MdMenu {
         window.removeEventListener('scroll', this.handleScroll, true);
         window.removeEventListener('resize', this.handleScroll);
       }
+      this.stopAnchorWatch();
       this.unobserveSurfaceResize();
     }
   }
@@ -392,6 +396,48 @@ export class MdMenu {
   private unobserveSurfaceResize() {
     this.surfaceRO?.disconnect();
     this.surfaceRO = undefined;
+  }
+
+  /** While open, track the ANCHOR itself moving. The scroll/resize listeners
+   *  cover viewport-driven movement and the surface RO covers the menu's own
+   *  size, but a transform-animated ancestor — a bottom sheet, side sheet or
+   *  dialog still sliding in when the user opens the menu — moves the anchor
+   *  without firing any of those, leaving the surface glued to the anchor's
+   *  mid-flight position. So does sibling reflow (a multi-select's trigger
+   *  shifting as chips wrap). A per-frame rect compare (Floating UI's
+   *  autoUpdate `animationFrame` strategy) is the only signal that catches
+   *  every cause; the cost is one getBoundingClientRect per frame, only while
+   *  a menu is open. */
+  private anchorWatchRaf?: number;
+  private lastAnchorRect = '';
+
+  private startAnchorWatch() {
+    if (this.anchorWatchRaf != null || typeof requestAnimationFrame === 'undefined') return;
+    this.lastAnchorRect = '';
+    const tick = () => {
+      if (!this.open) {
+        this.anchorWatchRaf = undefined;
+        return;
+      }
+      // Re-resolved every frame on purpose: wrappers can re-render the
+      // trigger, and a cached element would track a detached node.
+      const anchorEl = this.getAnchorEl();
+      if (anchorEl) {
+        const r = anchorEl.getBoundingClientRect();
+        const key = `${Math.round(r.x)},${Math.round(r.y)},${Math.round(r.width)},${Math.round(r.height)}`;
+        // The first frame only records the baseline — positionMenu already ran
+        // for this open; reposition only when the anchor has actually moved.
+        if (this.lastAnchorRect && key !== this.lastAnchorRect) this.positionMenu();
+        this.lastAnchorRect = key;
+      }
+      this.anchorWatchRaf = requestAnimationFrame(tick);
+    };
+    this.anchorWatchRaf = requestAnimationFrame(tick);
+  }
+
+  private stopAnchorWatch() {
+    if (this.anchorWatchRaf != null) cancelAnimationFrame(this.anchorWatchRaf);
+    this.anchorWatchRaf = undefined;
   }
 
   @Listen('focusin')
@@ -1160,6 +1206,7 @@ export class MdMenu {
     clearTimeout(this.typeaheadTimer);
     this.itemObserver?.disconnect();
     this.itemObserver = undefined;
+    this.stopAnchorWatch();
     this.unobserveSurfaceResize();
     this.updateAnchorAria(false);
   }

@@ -150,8 +150,11 @@ its own; the composite pickers set it. `setComboboxElement()` and
 - **Group cards need three settings together**: `variant="standard"` or
   `"vibrant"`, `layout="grouped"`, and `use-gap`. `layout` is ignored entirely
   while `variant="baseline"`.
-- `reposition()` exists because the menu tracks scroll, resize and its own
-  surface size — but not the anchor moving because sibling content reflowed.
+- While open, the menu tracks scroll, resize, its own surface size AND the
+  anchor moving (per-frame rect watch — covers a transform-animated ancestor
+  like a bottom sheet still sliding in, and sibling reflow shifting the
+  trigger). `reposition()` remains for the rare synchronous case where waiting
+  for the next frame is too late.
 - ⚠️ **Never ship `open` in the initial markup.** Positioning, outside-click and
   scroll dismissal, `mdOpen` and the anchor's ARIA are all wired by the `open`
   change handler, which does not run for an attribute that is already present at
@@ -399,10 +402,12 @@ Type: `Promise<HTMLElement | null>`
 
 ### `reposition() => Promise<void>`
 
-Recompute the menu's position against its anchor. md-menu already reacts to
-scroll/resize, but not to the anchor MOVING because sibling content reflowed
-(e.g. a multi-select whose button trigger shifts as chips are added beside
-it). Call this after such a reflow to keep the popup glued to the anchor.
+Recompute the menu's position against its anchor immediately. While open,
+md-menu already tracks scroll, resize, its own surface size AND the anchor
+moving (a per-frame rect watch — covers transform-animated ancestors like
+a sliding bottom sheet, and sibling reflow shifting the trigger), so this
+is rarely needed; call it when the next frame is too late — e.g. to avoid
+a one-frame lag right after a synchronous layout change.
 
 #### Returns
 
