@@ -32,3 +32,28 @@ and an energy dashboard.
 pnpm --filter @awc-ui/showcase-hearthwise dev
 # then open http://localhost:4180/
 ```
+
+## Build
+
+```bash
+pnpm --filter @awc-ui/core build          # build.mjs reads packages/core/dist/md3
+pnpm --filter @awc-ui/showcase-hearthwise build
+```
+
+`build.mjs` emits `dist/` — a self-contained static tree that can be dropped at **any**
+mount path. It does two things the dev page cannot:
+
+- **Relative everything.** The dev page loads its token sheet and the Stencil loader out of
+  `node_modules/`, which only resolves when the app dir is the web root. The build copies
+  those into `dist/` and rewrites each reference to `./`-relative, so there is not a single
+  leading-slash URL in the output and there is no base path to configure. Stencil's lazy
+  loader already resolves its chunks against `import.meta.url`, so it follows along.
+- **Declarative Shadow DOM.** The HTML is run through `@awc-ui/core/hydrate` with
+  `serializeShadowRoot: 'declarative-shadow-dom'` — the same primitive as the Astro
+  middleware and the SvelteKit/Nuxt server hooks — so the file on disk already carries every
+  component's shadow tree and the page renders fully styled before the runtime boots.
+
+One caveat that comes with relative URLs: the page must be served **with** its trailing
+slash. `…/hearthwise/index.html` and `…/hearthwise/` are fine; `…/hearthwise` (no slash)
+resolves `./app.css` one directory too high. Netlify and `python3 -m http.server` both 301
+to the trailing slash, so this only bites a host configured not to.

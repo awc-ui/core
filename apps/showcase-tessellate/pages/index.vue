@@ -91,7 +91,7 @@
             size="sm"
             trailing-icon="arrow_forward"
             mirror-icon
-            :href="`/courses/${course.slug}`"
+            :href="appHref(`/courses/${course.slug}`)"
           >View course</md-button>
         </div>
       </md-card>

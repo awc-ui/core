@@ -122,7 +122,7 @@
   <main class="page" v-else>
     <h1 class="page-headline">Course not found</h1>
     <p class="page-sub">This course is not in the catalog. It may have been retired.</p>
-    <md-button variant="tonal" href="/" icon="arrow_back" mirror-icon style="margin-block-start: 16px;">
+    <md-button variant="tonal" :href="appHref('/')" icon="arrow_back" mirror-icon style="margin-block-start: 16px;">
       Back to catalog
     </md-button>
   </main>

@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { products, formatPrice } from '../data/products';
+import { withBase } from '../lib/base';
 
 const categories = ['Tableware', 'Kitchen', 'Textiles', 'Decor'] as const;
 ---
@@ -11,7 +12,7 @@ const categories = ['Tableware', 'Kitchen', 'Textiles', 'Decor'] as const;
 >
   <main>
     <md-breadcrumbs label="You are here" separator="›">
-      <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
+      <md-breadcrumb-item href={withBase('/')} icon="home">Home</md-breadcrumb-item>
       <md-breadcrumb-item current>Shop</md-breadcrumb-item>
     </md-breadcrumbs>
 
@@ -61,12 +62,12 @@ const categories = ['Tableware', 'Kitchen', 'Textiles', 'Decor'] as const;
           <div class="product-card__inner">
             <a
               class={`product-media tone-${p.tone}`}
-              href={`/products/${p.slug}`}
+              href={withBase(`/products/${p.slug}`)}
               aria-label={`${p.name} — view product`}
             ></a>
             <p class="product-card__category">{p.category}</p>
             <h2 class="product-card__name">
-              <a href={`/products/${p.slug}`}>{p.name}</a>
+              <a href={withBase(`/products/${p.slug}`)}>{p.name}</a>
             </h2>
             <div class="product-card__rating">
               <md-rating
@@ -85,7 +86,7 @@ const categories = ['Tableware', 'Kitchen', 'Textiles', 'Decor'] as const;
             </div>
             <div class="product-card__foot">
               <span class="price">{formatPrice(p.price)}</span>
-              <md-button variant="tonal" href={`/products/${p.slug}`}>View</md-button>
+              <md-button variant="tonal" href={withBase(`/products/${p.slug}`)}>View</md-button>
             </div>
           </div>
         </md-card>

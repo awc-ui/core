@@ -73,7 +73,7 @@
         </li>
       </ul>
       <div style="display: flex; gap: 8px; justify-content: flex-end;">
-        <md-button variant="text" href="/progress">Go to my progress</md-button>
+        <md-button variant="text" :href="appHref('/progress')">Go to my progress</md-button>
         <md-button variant="filled" icon="replay" @mdClick="retake">Retake quiz</md-button>
       </div>
     </md-card>

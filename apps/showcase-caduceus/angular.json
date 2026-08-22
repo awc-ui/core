@@ -12,6 +12,7 @@
           "builder": "@angular-devkit/build-angular:application",
           "options": {
             "outputPath": "dist",
+            "baseHref": "/showcase/SPIKE/angular/",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "server": "src/main.server.ts",

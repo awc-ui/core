@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { formatPrice } from '../data/products';
+import { withBase } from '../lib/base';
 
 const basket = [
   { name: 'Fenwick Cast-Iron Casserole', qty: 1, price: 119 },
@@ -17,8 +18,8 @@ const total = subtotal + delivery;
 >
   <main>
     <md-breadcrumbs label="You are here" separator="›">
-      <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
-      <md-breadcrumb-item href="/">Shop</md-breadcrumb-item>
+      <md-breadcrumb-item href={withBase('/')} icon="home">Home</md-breadcrumb-item>
+      <md-breadcrumb-item href={withBase('/')}>Shop</md-breadcrumb-item>
       <md-breadcrumb-item current>Checkout</md-breadcrumb-item>
     </md-breadcrumbs>
 
@@ -180,7 +181,7 @@ const total = subtotal + delivery;
       bench. A confirmation email with tracking will follow within the hour.
     </p>
     <md-button id="dialog-close" slot="actions" variant="text">Close</md-button>
-    <md-button slot="actions" variant="filled" href="/">Back to shop</md-button>
+    <md-button slot="actions" variant="filled" href={withBase('/')}>Back to shop</md-button>
   </md-dialog>
 
   <script>

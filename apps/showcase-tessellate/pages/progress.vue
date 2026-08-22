@@ -34,7 +34,7 @@
             </template>
           </p>
           <div>
-            <md-button variant="text" size="sm" :href="`/courses/${item.slug}`" trailing-icon="arrow_forward" mirror-icon>
+            <md-button variant="text" size="sm" :href="appHref(`/courses/${item.slug}`)" trailing-icon="arrow_forward" mirror-icon>
               {{ item.completedLessons === item.totalLessons ? 'Review course' : 'Continue' }}
             </md-button>
           </div>

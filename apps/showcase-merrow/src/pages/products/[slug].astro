@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { products, formatPrice, type Product } from '../../data/products';
+import { withBase } from '../../lib/base';
 
 export function getStaticPaths() {
   return products.map((product) => ({
@@ -22,8 +23,8 @@ const stars = [5, 4, 3, 2, 1] as const;
 >
   <main>
     <md-breadcrumbs label="You are here" separator="›">
-      <md-breadcrumb-item href="/" icon="home">Home</md-breadcrumb-item>
-      <md-breadcrumb-item href="/">Shop</md-breadcrumb-item>
+      <md-breadcrumb-item href={withBase('/')} icon="home">Home</md-breadcrumb-item>
+      <md-breadcrumb-item href={withBase('/')}>Shop</md-breadcrumb-item>
       <md-breadcrumb-item current>{product.name}</md-breadcrumb-item>
     </md-breadcrumbs>
 
@@ -142,6 +143,8 @@ const stars = [5, 4, 3, 2, 1] as const;
   ></md-snackbar>
 
   <script>
+    import { withBase } from '../../lib/base';
+
     const qty = document.getElementById('qty-field') as any;
     const addButton = document.getElementById('add-to-cart') as HTMLElement | null;
     const toast = document.getElementById('cart-toast') as any;
@@ -154,7 +157,7 @@ const stars = [5, 4, 3, 2, 1] as const;
     });
 
     toast?.addEventListener('mdAction', () => {
-      window.location.assign('/checkout');
+      window.location.assign(withBase('/checkout'));
     });
   </script>
 </Base>

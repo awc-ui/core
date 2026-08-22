@@ -2,6 +2,7 @@
   import '@awc-ui/core/css/tokens.css';
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
+  import { base } from '$app/paths';
 
   // Client-only: register the custom elements so the server DSD hydrates.
   onMount(async () => {
@@ -15,7 +16,10 @@
     { value: '/events', icon: 'stream', label: 'Events' },
   ];
 
-  $: activeIndex = destinations.findIndex((d) => d.value === $page.url.pathname.replace(/\/$/, '') || (d.value === '/' && $page.url.pathname === '/'));
+  // SvelteKit does NOT prefix `base` onto in-app hrefs automatically, and
+  // `$page.url.pathname` DOES include it — so both directions are handled here.
+  $: currentRoute = ($page.url.pathname.slice(base.length).replace(/\/$/, '') || '/');
+  $: activeIndex = destinations.findIndex((d) => d.value === currentRoute);
 </script>
 
 <div class="shell">
@@ -27,7 +31,12 @@
   >
     <span slot="logo" class="brand-mark" aria-hidden="true">P</span>
     {#each destinations as d}
-      <md-navigation-rail-tab icon={d.icon} label={d.label} value={d.value} href={d.value}></md-navigation-rail-tab>
+      <md-navigation-rail-tab
+        icon={d.icon}
+        label={d.label}
+        value={d.value}
+        href={d.value === '/' ? `${base}/` : `${base}${d.value}/`}
+      ></md-navigation-rail-tab>
     {/each}
     <div slot="footer" class="rail-footer">
       <span class="rail-footer-org">Harborlight Labs</span>

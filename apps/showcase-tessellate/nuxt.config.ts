@@ -8,6 +8,10 @@ export default defineNuxtConfig({
     },
   },
   app: {
+    // Mounted under the docs site at awc-ui.dev/showcase/SPIKE/nuxt/.
+    // Nuxt joins buildAssetsDir (default `/_nuxt/`) onto this, so every emitted
+    // asset URL becomes /showcase/SPIKE/nuxt/_nuxt/...
+    baseURL: '/showcase/SPIKE/nuxt/',
     head: {
       title: 'Tessellate Academy',
       link: [
@@ -23,5 +27,24 @@ export default defineNuxtConfig({
   // server build so Nitro requires it at runtime instead of inlining it.
   nitro: {
     externals: { inline: [], external: ['@awc-ui/core/hydrate'] },
+    // Fully static output: every route is rendered to a real index.html (which is
+    // what carries the Declarative Shadow DOM). The dynamic /courses/:slug routes
+    // are listed explicitly rather than relying on the crawler, because their
+    // links live inside web-component shadow roots.
+    prerender: {
+      crawlLinks: true,
+      failOnError: true,
+      routes: [
+        '/',
+        '/progress',
+        '/quiz',
+        '/courses/geometric-pattern-design',
+        '/courses/svg-data-visualization',
+        '/courses/color-theory-in-practice',
+        '/courses/typography-systems',
+        '/courses/creative-coding-fundamentals',
+        '/courses/motion-design-principles',
+      ],
+    },
   },
 });

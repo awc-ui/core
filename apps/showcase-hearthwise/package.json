@@ -5,7 +5,7 @@
   "description": "Showcase app (hearthwise) — plain HTML, no build step",
   "scripts": {
     "dev": "python3 -m http.server 4180",
-    "build": "echo 'static app: no build needed'"
+    "build": "node build.mjs"
   },
   "dependencies": {
     "@awc-ui/core": "workspace:*",
