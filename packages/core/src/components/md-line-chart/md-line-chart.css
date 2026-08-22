@@ -77,6 +77,13 @@
      no JS measurements needed for the host's box. ECharts
      inside still uses ResizeObserver to react to those CSS
      dimension changes. */
+  /* A bare <ratio> aspect-ratio plus a definite block size (what height="200px"
+     injects) transfers through the ratio into an automatic MINIMUM inline size —
+     200px x 16/9 = 355.5px. As a flex/grid item with min-inline-size: auto that
+     becomes a min-content floor the parent cannot shrink below, so the chart
+     silently widened its track and every sibling stretched onto it and clipped.
+     Same guard the inner canvas already carries, and md-split-button documents. */
+  min-inline-size: 0;
   aspect-ratio: var(--_aspect-ratio);
 }
 
