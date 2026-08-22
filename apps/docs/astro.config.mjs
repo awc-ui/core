@@ -409,13 +409,6 @@ export default defineConfig({
             { label: 'Async feedback patterns', link: '/recipes/async-feedback-patterns/' },
           ],
         },
-        // Live proof pages for library-level claims (SSR, accessibility).
-        // The application gallery that used to live here is being rebuilt.
-        {
-          label: 'Showcase',
-          collapsed: true,
-          autogenerate: { directory: 'showcase' },
-        },
         {
           label: 'Compare',
           collapsed: true,
