@@ -409,6 +409,17 @@ export default defineConfig({
             { label: 'Async feedback patterns', link: '/recipes/async-feedback-patterns/' },
           ],
         },
+        // Full applications, each shipped in every supported framework and
+        // mounted under /showcase/<app>/<framework>/ on the deployed site.
+        // Ordered deliberately: the gallery index first, then one page per app.
+        {
+          label: 'Showcase',
+          collapsed: true,
+          items: [
+            { label: 'Overview', link: '/showcase/' },
+            { label: 'Credit Risk Console', link: '/showcase/credit-risk/' },
+          ],
+        },
         {
           label: 'Compare',
           collapsed: true,

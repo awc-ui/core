@@ -1,0 +1,48 @@
+/* eslint-disable */
+/**
+ * GENERATED FILE — do not edit by hand.
+ *
+ * Produced by `scripts/generate-seeds.mjs` from `@awc-ui/theme`'s computeTheme.
+ * Each preset is a complete pair of :root / [data-theme="dark"] --md-sys-color-*
+ * overrides. The `default` preset carries no CSS: it is the token sheet as shipped.
+ */
+
+export interface SeedPreset {
+  /** Stable id — the value written to the `seed` URL param and localStorage. */
+  id: string;
+  /** Seed colour, for the dock's swatch. */
+  seed: string;
+  /** i18n key for the preset's name. */
+  labelKey: string;
+  /** Complete override sheet, or '' for the default palette. */
+  css: string;
+}
+
+export const SEED_PRESETS: readonly SeedPreset[] = [
+  {
+    "id": "default",
+    "seed": "#6750A4",
+    "labelKey": "dock.accent.default",
+    "css": ""
+  },
+  {
+    "id": "azure",
+    "seed": "#00629E",
+    "labelKey": "dock.accent.azure",
+    "css": ":root{--md-sys-color-primary:#01629E;--md-sys-color-on-primary:#FFFFFF;--md-sys-color-primary-container:#CFE5FF;--md-sys-color-on-primary-container:#004A79;--md-sys-color-inverse-primary:#9ACBFF;--md-sys-color-secondary:#526070;--md-sys-color-on-secondary:#FFFFFF;--md-sys-color-secondary-container:#D6E4F7;--md-sys-color-on-secondary-container:#3A4857;--md-sys-color-tertiary:#695779;--md-sys-color-on-tertiary:#FFFFFF;--md-sys-color-tertiary-container:#F0DBFF;--md-sys-color-on-tertiary-container:#514060;--md-sys-color-error:#BA1A1A;--md-sys-color-on-error:#FFFFFF;--md-sys-color-error-container:#FFDAD6;--md-sys-color-on-error-container:#93000A;--md-sys-color-background:#F9F9FC;--md-sys-color-on-background:#1A1C1E;--md-sys-color-surface:#F9F9FC;--md-sys-color-on-surface:#1A1C1E;--md-sys-color-surface-variant:#DEE3EB;--md-sys-color-on-surface-variant:#42474E;--md-sys-color-surface-container-lowest:#FFFFFF;--md-sys-color-surface-container-low:#F4F3F7;--md-sys-color-surface-container:#EEEDF1;--md-sys-color-surface-container-high:#E8E8EB;--md-sys-color-surface-container-highest:#E2E2E5;--md-sys-color-surface-dim:#DADADD;--md-sys-color-surface-bright:#F9F9FC;--md-sys-color-outline:#73777F;--md-sys-color-outline-variant:#C2C7CF;--md-sys-color-inverse-surface:#2F3033;--md-sys-color-inverse-on-surface:#F1F0F4;--md-sys-color-shadow:#000000;--md-sys-color-scrim:#000000;--md-sys-color-surface-tint:#01629E}[data-theme=\"dark\"]{--md-sys-color-primary:#9ACBFF;--md-sys-color-on-primary:#003355;--md-sys-color-primary-container:#004A79;--md-sys-color-on-primary-container:#CFE5FF;--md-sys-color-inverse-primary:#01629E;--md-sys-color-secondary:#BAC8DA;--md-sys-color-on-secondary:#243240;--md-sys-color-secondary-container:#3A4857;--md-sys-color-on-secondary-container:#D6E4F7;--md-sys-color-tertiary:#D4BEE5;--md-sys-color-on-tertiary:#392A49;--md-sys-color-tertiary-container:#514060;--md-sys-color-on-tertiary-container:#F0DBFF;--md-sys-color-error:#FFB4AB;--md-sys-color-on-error:#690005;--md-sys-color-error-container:#93000A;--md-sys-color-on-error-container:#FFDAD6;--md-sys-color-background:#121316;--md-sys-color-on-background:#E2E2E5;--md-sys-color-surface:#121316;--md-sys-color-on-surface:#E2E2E5;--md-sys-color-surface-variant:#42474E;--md-sys-color-on-surface-variant:#C2C7CF;--md-sys-color-surface-container-lowest:#0C0E11;--md-sys-color-surface-container-low:#1A1C1E;--md-sys-color-surface-container:#1E2022;--md-sys-color-surface-container-high:#282A2D;--md-sys-color-surface-container-highest:#333538;--md-sys-color-surface-dim:#121316;--md-sys-color-surface-bright:#38393C;--md-sys-color-outline:#8C9199;--md-sys-color-outline-variant:#42474E;--md-sys-color-inverse-surface:#E2E2E5;--md-sys-color-inverse-on-surface:#2F3033;--md-sys-color-shadow:#000000;--md-sys-color-scrim:#000000;--md-sys-color-surface-tint:#9ACBFF}"
+  },
+  {
+    "id": "evergreen",
+    "seed": "#216E39",
+    "labelKey": "dock.accent.evergreen",
+    "css": ":root{--md-sys-color-primary:#1E6C37;--md-sys-color-on-primary:#FFFFFF;--md-sys-color-primary-container:#A6F5B2;--md-sys-color-on-primary-container:#005323;--md-sys-color-inverse-primary:#8BD897;--md-sys-color-secondary:#506351;--md-sys-color-on-secondary:#FFFFFF;--md-sys-color-secondary-container:#D3E8D2;--md-sys-color-on-secondary-container:#394B3B;--md-sys-color-tertiary:#39656D;--md-sys-color-on-tertiary:#FFFFFF;--md-sys-color-tertiary-container:#BDEAF4;--md-sys-color-on-tertiary-container:#204D55;--md-sys-color-error:#BA1A1A;--md-sys-color-on-error:#FFFFFF;--md-sys-color-error-container:#FFDAD6;--md-sys-color-on-error-container:#93000A;--md-sys-color-background:#F9FAF4;--md-sys-color-on-background:#1A1C19;--md-sys-color-surface:#F9FAF4;--md-sys-color-on-surface:#1A1C19;--md-sys-color-surface-variant:#DDE5DA;--md-sys-color-on-surface-variant:#414941;--md-sys-color-surface-container-lowest:#FFFFFF;--md-sys-color-surface-container-low:#F3F4EF;--md-sys-color-surface-container:#EDEEE9;--md-sys-color-surface-container-high:#E7E9E3;--md-sys-color-surface-container-highest:#E2E3DE;--md-sys-color-surface-dim:#D9DBD5;--md-sys-color-surface-bright:#F9FAF4;--md-sys-color-outline:#727970;--md-sys-color-outline-variant:#C1C9BE;--md-sys-color-inverse-surface:#2E312E;--md-sys-color-inverse-on-surface:#F0F1EC;--md-sys-color-shadow:#000000;--md-sys-color-scrim:#000000;--md-sys-color-surface-tint:#1E6C37}[data-theme=\"dark\"]{--md-sys-color-primary:#8BD897;--md-sys-color-on-primary:#003916;--md-sys-color-primary-container:#005323;--md-sys-color-on-primary-container:#A6F5B2;--md-sys-color-inverse-primary:#1E6C37;--md-sys-color-secondary:#B7CCB6;--md-sys-color-on-secondary:#233425;--md-sys-color-secondary-container:#394B3B;--md-sys-color-on-secondary-container:#D3E8D2;--md-sys-color-tertiary:#A1CED8;--md-sys-color-on-tertiary:#00363E;--md-sys-color-tertiary-container:#204D55;--md-sys-color-on-tertiary-container:#BDEAF4;--md-sys-color-error:#FFB4AB;--md-sys-color-on-error:#690005;--md-sys-color-error-container:#93000A;--md-sys-color-on-error-container:#FFDAD6;--md-sys-color-background:#111411;--md-sys-color-on-background:#E2E3DE;--md-sys-color-surface:#111411;--md-sys-color-on-surface:#E2E3DE;--md-sys-color-surface-variant:#414941;--md-sys-color-on-surface-variant:#C1C9BE;--md-sys-color-surface-container-lowest:#0C0F0C;--md-sys-color-surface-container-low:#1A1C19;--md-sys-color-surface-container:#1E201D;--md-sys-color-surface-container-high:#282B27;--md-sys-color-surface-container-highest:#333532;--md-sys-color-surface-dim:#111411;--md-sys-color-surface-bright:#373A36;--md-sys-color-outline:#8B9389;--md-sys-color-outline-variant:#414941;--md-sys-color-inverse-surface:#E2E3DE;--md-sys-color-inverse-on-surface:#2E312E;--md-sys-color-shadow:#000000;--md-sys-color-scrim:#000000;--md-sys-color-surface-tint:#8BD897}"
+  },
+  {
+    "id": "bronze",
+    "seed": "#8B5000",
+    "labelKey": "dock.accent.bronze",
+    "css": ":root{--md-sys-color-primary:#8B5000;--md-sys-color-on-primary:#FFFFFF;--md-sys-color-primary-container:#FFDCBE;--md-sys-color-on-primary-container:#6A3C00;--md-sys-color-inverse-primary:#FFB871;--md-sys-color-secondary:#735A42;--md-sys-color-on-secondary:#FFFFFF;--md-sys-color-secondary-container:#FFDCBE;--md-sys-color-on-secondary-container:#59422D;--md-sys-color-tertiary:#586339;--md-sys-color-on-tertiary:#FFFFFF;--md-sys-color-tertiary-container:#DCE8B4;--md-sys-color-on-tertiary-container:#414B24;--md-sys-color-error:#BA1A1A;--md-sys-color-on-error:#FFFFFF;--md-sys-color-error-container:#FFDAD6;--md-sys-color-on-error-container:#93000A;--md-sys-color-background:#FFF8F5;--md-sys-color-on-background:#201B16;--md-sys-color-surface:#FFF8F5;--md-sys-color-on-surface:#201B16;--md-sys-color-surface-variant:#F2DFD1;--md-sys-color-on-surface-variant:#51453A;--md-sys-color-surface-container-lowest:#FFFFFF;--md-sys-color-surface-container-low:#FDF1EA;--md-sys-color-surface-container:#F7ECE5;--md-sys-color-surface-container-high:#F1E6DF;--md-sys-color-surface-container-highest:#EBE0D9;--md-sys-color-surface-dim:#E3D8D1;--md-sys-color-surface-bright:#FFF8F5;--md-sys-color-outline:#837468;--md-sys-color-outline-variant:#D5C3B5;--md-sys-color-inverse-surface:#352F2B;--md-sys-color-inverse-on-surface:#FAEFE7;--md-sys-color-shadow:#000000;--md-sys-color-scrim:#000000;--md-sys-color-surface-tint:#8B5000}[data-theme=\"dark\"]{--md-sys-color-primary:#FFB871;--md-sys-color-on-primary:#4A2800;--md-sys-color-primary-container:#6A3C00;--md-sys-color-on-primary-container:#FFDCBE;--md-sys-color-inverse-primary:#8B5000;--md-sys-color-secondary:#E1C1A4;--md-sys-color-on-secondary:#402C18;--md-sys-color-secondary-container:#59422D;--md-sys-color-on-secondary-container:#FFDCBE;--md-sys-color-tertiary:#C0CC9A;--md-sys-color-on-tertiary:#2B3410;--md-sys-color-tertiary-container:#414B24;--md-sys-color-on-tertiary-container:#DCE8B4;--md-sys-color-error:#FFB4AB;--md-sys-color-on-error:#690005;--md-sys-color-error-container:#93000A;--md-sys-color-on-error-container:#FFDAD6;--md-sys-color-background:#17120F;--md-sys-color-on-background:#EBE0D9;--md-sys-color-surface:#17120F;--md-sys-color-on-surface:#EBE0D9;--md-sys-color-surface-variant:#51453A;--md-sys-color-on-surface-variant:#D5C3B5;--md-sys-color-surface-container-lowest:#120D0A;--md-sys-color-surface-container-low:#201B16;--md-sys-color-surface-container:#241F1A;--md-sys-color-surface-container-high:#2E2924;--md-sys-color-surface-container-highest:#3A342F;--md-sys-color-surface-dim:#17120F;--md-sys-color-surface-bright:#3E3833;--md-sys-color-outline:#9E8E81;--md-sys-color-outline-variant:#51453A;--md-sys-color-inverse-surface:#EBE0D9;--md-sys-color-inverse-on-surface:#352F2B;--md-sys-color-shadow:#000000;--md-sys-color-scrim:#000000;--md-sys-color-surface-tint:#FFB871}"
+  }
+];
+
+export const DEFAULT_SEED_PRESET = 'default';

@@ -1,0 +1,326 @@
+/*
+ * Page furniture only. Every component on every screen is an `md-*` element
+ * that styles itself; what is left is the grid the screens sit on, and that is
+ * written entirely in `--md-sys-*` tokens so it themes, densifies and mirrors
+ * with the library rather than beside it.
+ *
+ * There is not one hard-coded colour, radius, shadow or font stack in this file.
+ * All spacing is logical (`inline-start`, `block-end`), so `dir="rtl"` — which
+ * the dock sets on <html> — mirrors the layout without a single RTL override.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* The dock also writes lang/dir/data-theme/data-density here. */
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-sys-typescale-body-medium-font);
+  /* <awc-showcase-dock> is position: fixed and publishes its measured height
+     here. Without this the last row of every screen sits under the bar. */
+  padding-block-end: var(--awc-dock-height, 0px);
+}
+
+a {
+  color: inherit;
+}
+
+/* ------------------------------------------------------------------- shell */
+
+.shell {
+  max-width: 1360px;
+  margin-inline: auto;
+  padding-inline: var(--md-sys-spacing-inset-lg, 16px);
+  padding-block: var(--md-sys-spacing-inset-lg, 16px) var(--md-sys-spacing-inset-xl, 24px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+}
+
+.shell__masthead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--md-sys-spacing-gap-sm, 8px) var(--md-sys-spacing-gap-md, 12px);
+  padding-block-end: var(--md-sys-spacing-inset-sm, 8px);
+  border-block-end: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.shell__brand {
+  font: var(--md-sys-typescale-title-medium-font);
+  color: var(--md-sys-color-primary);
+  margin: 0;
+}
+
+.shell__meta {
+  margin-inline-start: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.shell__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+/* ------------------------------------------------------------- screen head */
+
+.screen-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+.screen-head__text {
+  min-inline-size: 0;
+  flex: 1 1 260px;
+}
+
+.screen-head h1 {
+  font: var(--md-sys-typescale-headline-medium-font);
+  margin: 0;
+}
+
+.screen-head p {
+  font: var(--md-sys-typescale-body-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+  margin: var(--md-sys-spacing-gap-xs, 4px) 0 0;
+}
+
+.screen-head__aside {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  flex-wrap: wrap;
+}
+
+/* ------------------------------------------------------------------- cards */
+
+.panel {
+  display: block;
+}
+
+.panel__inner {
+  padding: var(--md-sys-spacing-inset-lg, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  min-inline-size: 0;
+}
+
+.panel__title {
+  font: var(--md-sys-typescale-title-small-font);
+  margin: 0;
+}
+
+.panel__sub {
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+  margin: 0;
+}
+
+.panel__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------- kpi tiles */
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  padding: var(--md-sys-spacing-inset-lg, 16px);
+  min-inline-size: 0;
+}
+
+.kpi__label {
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+  margin: 0;
+}
+
+.kpi__value {
+  font: var(--md-sys-typescale-headline-small-font);
+  color: var(--md-sys-color-on-surface);
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.kpi__spark {
+  margin-block-start: var(--md-sys-spacing-gap-xs, 4px);
+}
+
+/* ------------------------------------------------------------------ layout */
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  align-items: start;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  align-items: start;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+/* ------------------------------------------------------------------- links */
+
+.drill {
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+}
+
+.drill:hover {
+  text-decoration: underline;
+}
+
+.drill:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------- data bits */
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  margin: 0;
+}
+
+.dl > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.dl dt {
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.dl dd {
+  font: var(--md-sys-typescale-body-large-font);
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.covenant {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  padding: var(--md-sys-spacing-inset-md, 12px);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.covenant__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  flex-wrap: wrap;
+}
+
+.covenant__name {
+  font: var(--md-sys-typescale-title-small-font);
+  margin: 0;
+}
+
+.covenant__figures {
+  display: flex;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+  flex-wrap: wrap;
+}
+
+.empty {
+  padding: var(--md-sys-spacing-inset-xl, 24px);
+  text-align: center;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-medium-font);
+}
+
+.empty p {
+  margin: 0;
+}
+
+.empty p + p {
+  margin-block-start: var(--md-sys-spacing-gap-xs, 4px);
+  font: var(--md-sys-typescale-body-small-font);
+}
+
+/* The chart elements own their own box; this only keeps them from collapsing
+   before the runtime upgrades them. */
+md-bar-chart,
+md-line-chart,
+md-area-chart,
+md-pie-chart {
+  display: block;
+  min-block-size: 240px;
+}
+
+md-organization-chart {
+  display: block;
+  min-block-size: 200px;
+}

@@ -12,3 +12,13 @@
   from = "/storybook"
   to = "/storybook/index.html"
   status = 200
+
+# Showcase applications are built separately and copied into public/showcase/
+# <app>/<framework>/ before the Astro build, the same way Storybook is. Netlify
+# resolves a directory request to its index.html on its own, but the extension-
+# less variant (no trailing slash) needs saying explicitly — otherwise it falls
+# through to Starlight's 404 for the docs route that owns the parent path.
+[[redirects]]
+  from = "/showcase/:app/:framework"
+  to = "/showcase/:app/:framework/index.html"
+  status = 200

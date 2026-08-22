@@ -225,6 +225,37 @@ importers:
         specifier: ^5.4.11
         version: 5.4.21(@types/node@24.13.3)(less@4.9.0)(lightningcss@1.33.0)(sass@1.103.0)(terser@5.50.0)
 
+  apps/showcase/credit-risk/react:
+    dependencies:
+      '@awc-ui/core':
+        specifier: workspace:*
+        version: link:../../../../packages/core
+      '@awc-ui/showcase-kit':
+        specifier: workspace:*
+        version: link:../../../../packages/showcase-kit
+      next:
+        specifier: ^14.2.18
+        version: 14.2.35(@playwright/test@1.62.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(sass@1.103.0)
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.14.0
+        version: 20.19.43
+      '@types/react':
+        specifier: ^18.3.0
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.7(@types/react@18.3.31)
+      typescript:
+        specifier: ^5.4.0
+        version: 5.4.5
+
   apps/storybook:
     dependencies:
       '@awc-ui/core':
@@ -677,6 +708,15 @@ importers:
       size-limit:
         specifier: ^11.1.6
         version: 11.2.0
+      typescript:
+        specifier: ^5.4.0
+        version: 5.4.5
+
+  packages/showcase-kit:
+    devDependencies:
+      esbuild:
+        specifier: ^0.25.12
+        version: 0.25.12
       typescript:
         specifier: ^5.4.0
         version: 5.4.5

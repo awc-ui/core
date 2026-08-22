@@ -1,0 +1,63 @@
+---
+title: Credit Risk Console
+description: "A wholesale-banking credit risk workbench for the fictional Aurelia Bank — drill from portfolio exposure down to individual covenants, in the framework of your choice."
+---
+
+**Aurelia Bank's credit risk team needs to answer one question repeatedly: where
+is the risk concentrated, and what is moving?** This application is how they
+answer it — and it is built entirely from AWC UI components.
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 28px 0;">
+  <a
+    href="/showcase/credit-risk/react/"
+    style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border-radius: 999px; background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); font: var(--md-sys-typescale-label-large); text-decoration: none;"
+  >
+    Open the application
+  </a>
+  <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">
+    Opens in React — switch framework, theme, density, direction and language from inside the app.
+  </span>
+</div>
+
+## What you can drill into
+
+The portfolio is not a single screen with a chart on it. Every number is a way
+in:
+
+| Level | What it shows | Where it leads |
+|---|---|---|
+| **Portfolio** | Exposure at default, expected loss, RWA and weighted-average PD, with sector concentration and rating distribution | A sector, or straight to a large counterparty |
+| **Sector** | Concentration against its limit, exposure trend, and every counterparty in it | A counterparty |
+| **Counterparty** | Internal rating and watchlist status, facilities, rating history, and the corporate group it belongs to | A facility, or a group member |
+| **Facility** | Terms, covenant headroom, collateral and haircuts, drawdown schedule | A breached covenant |
+| **Watchlist** | Early-warning signals by severity, across the book | The counterparty that triggered it |
+| **Stress testing** | Baseline, adverse and severe scenarios compared by expected loss and RWA | The sector that moves most |
+
+## What it is really demonstrating
+
+Credit risk was chosen because it is hostile to component libraries. It needs
+dense tables that sort and page without losing their place, breadcrumbs that
+survive four levels of drilling, charts that read the same data as the tables
+beside them, hierarchy views for corporate group structures, and numbers that
+stay legible at compact density.
+
+Three things the control bar lets you verify directly:
+
+- **Framework** — the same screens in React, Angular, Vue, Svelte, Astro, and
+  plain HTML. The URL carries the framework, so
+  `/showcase/credit-risk/react/` and `/showcase/credit-risk/svelte/` are the
+  same application.
+- **Direction and language** — English, Romanian and Arabic. Switching to Arabic
+  flips the whole application right-to-left with real translated content, not
+  mirrored Latin text.
+- **Theme and density** — a seed colour retints every component including the
+  charts, and density rungs compress the tables the way a real trading-floor
+  build would.
+
+## Fictional data
+
+Aurelia Bank, its counterparties, ratings and exposures are invented. The
+figures are internally consistent — sector exposures sum to the portfolio total,
+facility drawdowns sum to counterparty exposure, and covenant headroom is
+computed from the stated thresholds — so the drill-downs reconcile the way a
+real book would, but no real institution or company is represented.

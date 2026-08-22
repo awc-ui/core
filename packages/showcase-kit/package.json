@@ -1,0 +1,75 @@
+{
+  "name": "@awc-ui/showcase-kit",
+  "version": "1.0.0-beta.4",
+  "description": "Framework-free data, i18n, control dock and preboot script for the AWC UI showcase verticals",
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./data": {
+      "types": "./dist/data/index.d.ts",
+      "import": "./dist/data/index.mjs"
+    },
+    "./i18n": {
+      "types": "./dist/i18n/index.d.ts",
+      "import": "./dist/i18n/index.mjs"
+    },
+    "./dock": {
+      "types": "./dist/dock/index.d.ts",
+      "import": "./dist/dock/index.mjs"
+    },
+    "./preboot": {
+      "types": "./dist/preboot/index.d.ts",
+      "import": "./dist/preboot/index.mjs"
+    },
+    "./preboot.js": "./dist/preboot.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.json --emitDeclarationOnly && esbuild src/index.ts src/data/index.ts src/i18n/index.ts src/dock/index.ts src/preboot/index.ts --bundle --splitting --format=esm --target=es2020 --sourcemap --outdir=dist --out-extension:.js=.mjs --chunk-names=chunks/[name]-[hash] && node scripts/emit-preboot.mjs",
+    "generate:fixture": "node scripts/generate-fixture.mjs",
+    "generate:seeds": "node scripts/generate-seeds.mjs",
+    "verify": "node scripts/verify.mjs",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12",
+    "typescript": "^5.4.0"
+  },
+  "keywords": [
+    "awc-ui",
+    "showcase",
+    "fixture",
+    "i18n",
+    "web-components"
+  ],
+  "license": "MIT",
+  "author": "AWC UI",
+  "homepage": "https://awc-ui.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awc-ui/core.git",
+    "directory": "packages/showcase-kit"
+  },
+  "bugs": {
+    "url": "https://github.com/awc-ui/core/issues"
+  },
+  "module": "./dist/index.mjs",
+  "sideEffects": [
+    "./dist/dock/index.mjs",
+    "./src/dock/index.ts",
+    "./dist/preboot.js"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
