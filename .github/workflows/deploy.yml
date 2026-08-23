@@ -45,6 +45,14 @@ jobs:
           test -f apps/docs/dist/index.html || (echo "::error::Missing apps/docs/dist/index.html" && exit 1)
           test -f apps/docs/dist/pagefind/pagefind.js || (echo "::error::Missing apps/docs/dist/pagefind/pagefind.js (Pagefind index not built)" && exit 1)
           test -f apps/docs/dist/storybook/index.html || (echo "::error::Missing apps/docs/dist/storybook/index.html (Storybook not embedded)" && exit 1)
+          # Every framework build the showcase page links to. Without this the
+          # site can deploy with the page advertising six applications and the
+          # URLs behind all of them returning 404 — which is exactly what
+          # happened before build-docs.sh learned to build them.
+          for fw in html astro react vue angular svelte; do
+            test -f "apps/docs/dist/showcase/credit-risk/$fw/index.html" \
+              || (echo "::error::Missing apps/docs/dist/showcase/credit-risk/$fw/index.html (showcase build not embedded)" && exit 1)
+          done
 
       - uses: actions/upload-artifact@v4
         with:
