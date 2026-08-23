@@ -1,0 +1,23 @@
+{
+  "name": "@awc-ui/showcase-credit-risk-html",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Credit Risk Console \u2014 plain HTML build (no framework, pre-rendered, locale-routed)",
+  "scripts": {
+    "sync-runtime": "node scripts/sync-runtime.mjs",
+    "build": "pnpm sync-runtime && node scripts/build.mjs",
+    "dev": "pnpm build && node scripts/serve.mjs",
+    "serve": "node scripts/serve.mjs",
+    "lint": "node scripts/lint.mjs",
+    "verify": "node scripts/verify-browser.mjs"
+  },
+  "dependencies": {
+    "@awc-ui/core": "workspace:*",
+    "@awc-ui/showcase-kit": "workspace:*"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12",
+    "puppeteer": "^24.0.0"
+  }
+}

@@ -11,6 +11,7 @@
     "lint:stylelint": "stylelint \"packages/core/src/**/*.css\"",
     "test:a11y": "pnpm --filter @awc-ui/storybook test:a11y",
     "verify:showcase-a11y": "node scripts/verify-showcase-a11y.mjs",
+    "verify:showcase-parity": "node scripts/verify-showcase-parity.mjs",
     "size": "pnpm --filter @awc-ui/core size",
     "size:why": "pnpm --filter @awc-ui/core size:why",
     "ci:size": "pnpm --filter @awc-ui/core size && pnpm --filter @awc-ui/react size",
@@ -30,6 +31,15 @@
     "dev:svelte": "pnpm --filter @awc-ui/test-svelte dev",
     "dev:angular": "pnpm --filter @awc-ui/test-angular dev",
     "dev:playgrounds": "pnpm --parallel --filter \"./apps/test-*\" --stream dev",
+    "showcase:build": "node scripts/build-showcase.mjs",
+    "showcase:lint": "pnpm --filter \"@awc-ui/showcase-credit-risk-*\" lint",
+    "showcase:verify": "pnpm --filter \"@awc-ui/showcase-credit-risk-*\" verify",
+    "dev:showcase-html": "pnpm --filter @awc-ui/showcase-credit-risk-html dev",
+    "dev:showcase-react": "pnpm --filter @awc-ui/showcase-credit-risk-react dev",
+    "dev:showcase-vue": "pnpm --filter @awc-ui/showcase-credit-risk-vue dev",
+    "dev:showcase-angular": "pnpm --filter @awc-ui/showcase-credit-risk-angular dev",
+    "dev:showcase-svelte": "pnpm --filter @awc-ui/showcase-credit-risk-svelte dev",
+    "dev:showcase-astro": "pnpm --filter @awc-ui/showcase-credit-risk-astro dev",
     "coverage:merge": "node scripts/merge-coverage.mjs"
   },
   "devDependencies": {
