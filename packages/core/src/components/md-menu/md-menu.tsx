@@ -870,6 +870,82 @@ export class MdMenu {
     this.el.style.zIndex = 'var(--md-sys-z-index-popup, 1000)';
   }
 
+  /**
+   * Origin of the containing block this `position: fixed` host actually
+   * resolves against.
+   *
+   * `fixed` normally means "relative to the viewport", which is what every
+   * measurement here assumes — anchor rects and the viewport clamp are all in
+   * viewport coordinates. But an ancestor with a transform, filter,
+   * perspective, backdrop-filter, contain: paint/layout, or a will-change on
+   * any of those becomes the containing block for its fixed descendants, and
+   * the offsets are then interpreted relative to ITS padding box instead.
+   *
+   * That is not exotic: md-bottom-sheet keeps `transform: translateY(0)` while
+   * open (translateY(0) still counts), and a menu on a select inside an open
+   * sheet landed a full sheet-height below its field. Dialogs, side sheets and
+   * any app-level animated wrapper do the same.
+   *
+   * Walks up through shadow boundaries, since the menu usually lives inside
+   * another component's shadow root. Returns {0,0} when the viewport really is
+   * the containing block, making the correction a no-op in the common case.
+   */
+  private fixedContainingBlockOrigin(): { x: number; y: number } {
+    if (typeof getComputedStyle !== 'function') return { x: 0, y: 0 };
+    let node: Element | null = this.stepUp(this.el);
+
+    while (node) {
+      const cs = getComputedStyle(node as HTMLElement);
+      const willChange = cs.willChange || '';
+      const contain = cs.contain || '';
+      const backdrop =
+        (cs as CSSStyleDeclaration & { backdropFilter?: string }).backdropFilter || 'none';
+      if (
+        cs.transform !== 'none' ||
+        cs.perspective !== 'none' ||
+        cs.filter !== 'none' ||
+        backdrop !== 'none' ||
+        /\b(transform|perspective|filter)\b/.test(willChange) ||
+        /\b(paint|layout|strict|content)\b/.test(contain)
+      ) {
+        const r = (node as HTMLElement).getBoundingClientRect();
+        // The containing block is the PADDING box, so step inside the border.
+        return {
+          x: r.left + (parseFloat(cs.borderLeftWidth) || 0),
+          y: r.top + (parseFloat(cs.borderTopWidth) || 0),
+        };
+      }
+      node = this.stepUp(node);
+    }
+    return { x: 0, y: 0 };
+  }
+
+  /**
+   * One step up the FLATTENED tree — the tree that actually determines layout.
+   *
+   * `parentElement` alone is wrong here: slotted content keeps its light-DOM
+   * parent chain, so walking it from a menu inside a select inside a bottom
+   * sheet goes select -> sheet host -> body and never visits the sheet's
+   * shadow container, which is the transformed element doing the damage.
+   * Following `assignedSlot` first crosses into the shadow tree where the
+   * element is really rendered.
+   */
+  private stepUp(node: Element): Element | null {
+    const slot = (node as HTMLElement).assignedSlot;
+    if (slot) return slot;
+    if (node.parentElement) return node.parentElement;
+    const root = node.getRootNode();
+    return root instanceof ShadowRoot ? root.host : null;
+  }
+
+  /** Apply a VIEWPORT-space position, converted to whatever containing block
+   *  this host resolves against. */
+  private applyPosition(top: number, left: number) {
+    const origin = this.fixedContainingBlockOrigin();
+    this.el.style.top = `${top - origin.y}px`;
+    this.el.style.left = `${left - origin.x}px`;
+  }
+
   private positionMenu() {
     if (!this.anchor) return;
     const anchorEl = this.getAnchorEl();
@@ -914,8 +990,7 @@ export class MdMenu {
         surface.style.transformOrigin = 'top left';
       }
       top = Math.max(m, Math.min(top, vh - h - m));
-      this.el.style.top = `${top}px`;
-      this.el.style.left = `${m}px`;
+      this.applyPosition(top, m);
       return;
     }
 
@@ -972,8 +1047,7 @@ export class MdMenu {
     const clampedLeft = Math.max(m, Math.min(left, vw - menuW - m));
     const clampedTop = Math.max(m, Math.min(top, vh - menuH - m));
 
-    this.el.style.top = `${clampedTop}px`;
-    this.el.style.left = `${clampedLeft}px`;
+    this.applyPosition(clampedTop, clampedLeft);
   }
 
   private restoreFocusToAnchor() {
