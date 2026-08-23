@@ -172,7 +172,12 @@
      the wheel handler still scroll it. */
   overflow-x: hidden;
   overflow-y: auto;
-  overscroll-behavior: contain;
+  /* No overscroll containment. This body scroller is inline page content, so
+     reaching its first or last row must chain to the page — `contain` left a
+     reader stuck inside the table with no way to scroll back up. It also
+     contained the INLINE axis, which this element does not even scroll
+     (overflow-x is hidden above), and containing an axis an element cannot
+     scroll still blocks chaining on it. */
 }
 /* Default `scrollbar="overlay"`: the native vertical bar is fully hidden —
    the custom overlay bar (.md-table__vscroll) floats over the rows' right

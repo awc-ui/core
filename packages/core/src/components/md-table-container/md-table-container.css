@@ -148,9 +148,14 @@
 :host(.md-table-container--scrollable) .md-table-container__scroll {
   max-block-size: var(--_max-h);
   overflow-y: auto;
-  /* Now it really is a vertical scroll port, so containing the vertical axis
-     is correct: reaching the last row must not start scrolling the page. */
-  overscroll-behavior-y: contain;
+  /* Vertical chaining stays ON (the default `auto`) even though this is now a
+     real scroll port. A capped table is INLINE PAGE CONTENT, not an overlay:
+     a reader who scrolls up through it and reaches the first row expects the
+     page to keep going, and `contain` strands them mid-document with no way
+     back except moving the pointer off the table. Containment belongs to
+     surfaces that float ABOVE the page — md-menu and md-search's results
+     panel keep it, because scrolling those must not move the page behind
+     them. */
 }
 
 /* Frozen header: the md-table owns its own body scroll, so the container's

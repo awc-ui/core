@@ -775,7 +775,10 @@
 .md-accordion-item__content-inner--scroll {
   overflow-x: hidden;
   overflow-y: auto;
-  overscroll-behavior: contain;
+  /* No overscroll containment, for the same reason as the table scrollers:
+     a capped accordion panel is inline page content, so reaching the top or
+     bottom of it must chain to the page rather than strand the reader inside
+     the panel. */
 }
 .md-accordion-item__content-inner--scroll:focus-visible {
   outline: 3px solid var(--md-sys-color-secondary, #625B71);

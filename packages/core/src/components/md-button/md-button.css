@@ -370,11 +370,19 @@
   --_state-layer-color: var(--md-sys-color-primary);
   border: var(--md-button-outline-width, 1px) solid var(--md-button-outline-color, var(--md-sys-color-outline));
 }
-:host(.md-button--outlined.md-button--xs) { padding: 0 max(3px, calc(11px + var(--md-sys-density-scale, 0) * 2px)); }
-:host(.md-button--outlined.md-button--sm) { padding: 0 max(7px, calc(23px + var(--md-sys-density-scale, 0) * 4px)); }
-:host(.md-button--outlined.md-button--md) { padding: 0 max(9px, calc(27px + var(--md-sys-density-scale, 0) * 4px)); }
-:host(.md-button--outlined.md-button--lg) { padding: 0 max(10px, calc(31px + var(--md-sys-density-scale, 0) * 4px)); }
-:host(.md-button--outlined.md-button--xl) { padding: 0 max(15px, calc(47px + var(--md-sys-density-scale, 0) * 2px)); }
+/* Variant padding follows the SAME density rule as the base size rules above:
+   slope = base/16 (25% shrink across the four rungs) and a floor of base/2.
+   These overrides previously decayed at 52-133% per the old tuning — text sm
+   lost 133% of its inset and pinned to its floor by rung -2 — so outlined and
+   text shrank far faster than the button did. Past rung -2 that INVERTED the
+   variants: an outlined button, wider than filled at density 0, became
+   narrower than it, and a row of mixed-variant buttons went visibly ragged.
+   Density-0 values are unchanged; only the decay was corrected. */
+:host(.md-button--outlined.md-button--xs) { padding: 0 max(5.5px, calc(11px + var(--md-sys-density-scale, 0) * 0.6875px)); }
+:host(.md-button--outlined.md-button--sm) { padding: 0 max(11.5px, calc(23px + var(--md-sys-density-scale, 0) * 1.4375px)); }
+:host(.md-button--outlined.md-button--md) { padding: 0 max(13.5px, calc(27px + var(--md-sys-density-scale, 0) * 1.6875px)); }
+:host(.md-button--outlined.md-button--lg) { padding: 0 max(15.5px, calc(31px + var(--md-sys-density-scale, 0) * 1.9375px)); }
+:host(.md-button--outlined.md-button--xl) { padding: 0 max(23.5px, calc(47px + var(--md-sys-density-scale, 0) * 2.9375px)); }
 :host(.md-button--outlined:hover:not(.md-button--disabled)) {
   border-color: var(--md-button-outline-color, var(--md-sys-color-primary));
 }
@@ -388,11 +396,16 @@
   --_label-color: var(--md-button-label-color, var(--md-sys-color-primary));
   --_state-layer-color: var(--md-sys-color-primary);
 }
-:host(.md-button--text.md-button--xs) { padding: 0 max(3px, calc(8px + var(--md-sys-density-scale, 0) * 2px)); }
-:host(.md-button--text.md-button--sm) { padding: 0 max(4px, calc(12px + var(--md-sys-density-scale, 0) * 4px)); }
-:host(.md-button--text.md-button--md) { padding: 0 max(5px, calc(16px + var(--md-sys-density-scale, 0) * 4px)); }
-:host(.md-button--text.md-button--lg) { padding: 0 max(6px, calc(20px + var(--md-sys-density-scale, 0) * 4px)); }
-:host(.md-button--text.md-button--xl) { padding: 0 max(10px, calc(32px + var(--md-sys-density-scale, 0) * 2px)); }
+/* Text buttons intentionally carry the SAME horizontal padding as every other
+   variant (the base size rules above); there is deliberately no override here.
+   They used to sit far tighter — a text button's inset was a third of a
+   filled one's and pinned to its floor at tight densities (4px by rung -2).
+   The container is invisible at rest, but the hover/press state layer is not:
+   it paints the padding box, so a text button in a toggle strip beside a
+   tonal or filled one showed a cramped pill hugging its label while its
+   neighbour's was roomy, and the mismatch grew with density. Sharing the base
+   padding keeps every state layer in a strip the same shape, and keeps a
+   button's width stable if its variant changes to signal selection. */
 
 /* Elevated */
 :host(.md-button--elevated) {
@@ -723,6 +736,51 @@ slot[name="trailing-icon"] {
 :host([density='-2']) { --md-sys-density-scale: -2; }
 :host([density='-3']) { --md-sys-density-scale: -3; }
 :host([density='-4']) { --md-sys-density-scale: -4; }
+
+/* ==========================================================
+   LINK MODE — the anchor rendered when `href` is set
+
+   The anchor wraps the button's innards so the LABEL gives it its accessible
+   name, and it carries the tab stop (the host drops role/tabindex in this
+   mode). It reproduces the host's own flex row rather than sitting inside it,
+   so a link button lays out identically to a plain one.
+
+   `::after` stretches the hit area over the host's padding: the anchor itself
+   only fills the CONTENT box, so without it a click on the padding — a good
+   third of a large button — would miss the link and lose native activation.
+   The host is already `position: relative`, so the inset resolves to it.
+   ========================================================== */
+.md-button__anchor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Not inherited by default; picking up the host's computed value keeps the
+     icon/label spacing identical to a non-link button at every density. */
+  gap: inherit;
+  inline-size: 100%;
+  block-size: 100%;
+  min-inline-size: 0;
+  /* A button is not underlined blue text. */
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  outline: none;
+}
+
+.md-button__anchor::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Behind the state layer and ripple so neither is occluded. */
+  z-index: 0;
+}
+
+/* The focus ring belongs to the whole button, not the inner content box. */
+:host(:has(.md-button__anchor:focus-visible)) {
+  outline: var(--md-sys-state-focus-ring-width, 3px) solid
+    var(--md-button-focus-ring-color, var(--md-sys-color-secondary, #625B71));
+  outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
+}
 
 /* ==========================================================
    HIDDEN

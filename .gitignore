@@ -59,3 +59,9 @@ packages/core/main-llm.md
 # commit by a broad `git add <dir>`. Two of them were, once.
 .*.mjs
 !.eslintrc.mjs
+
+# Git worktrees created by Claude Code sessions (`.claude/worktrees/<branch>`).
+# These are working copies of THIS repo — committing one would nest the repo
+# inside itself. Only the worktrees dir is ignored, so shared .claude config
+# (settings, agents) can still be committed deliberately.
+.claude/worktrees/
