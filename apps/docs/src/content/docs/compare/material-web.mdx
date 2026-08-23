@@ -1,6 +1,6 @@
 ---
 title: AWC UI vs @material/web
-description: "An honest comparison with Google's @material/web: where the canonical M3 library is the better choice, and what AWC UI ships that it never did."
+description: "An honest comparison with Google's @material/web: how the two libraries differ, and what AWC UI ships that it never did."
 tableOfContents:
   maxHeadingLevel: 2
 ---
@@ -13,13 +13,6 @@ the comparison unusually direct — and makes the two mutually exclusive on a
 single page (see [the tag-collision FAQ](#faq-the-md--tag-collision) below).
 
 :::note[30-second verdict]
-**Choose `@material/web` if…** you want Google's own implementation, built by
-the Material Design team itself; your UI fits inside its component set
-(buttons, fields, selection controls, menus, dialogs, lists, tabs, sliders);
-and you value years of production hardening and a large install base over new
-component development — the project has been
-[in maintenance mode since June 2024](https://github.com/material-components/material-web#readme).
-
 **Choose AWC UI if…** you need components `@material/web` never shipped —
 date/time/color pickers, a data table, charts, snackbar, tooltip, badge,
 rating, OTP entry, and more across 56 components; you want first-party SSR
@@ -55,9 +48,6 @@ An honest comparison concedes the other side's strengths, and
 - **Stability as a feature.** Maintenance mode also means a frozen API
   surface — if your product only needs the components it already has, "no new
   components" can read as "no churn."
-
-If your component needs end where its catalog ends, `@material/web` remains a
-solid choice.
 
 ## What AWC UI adds
 
