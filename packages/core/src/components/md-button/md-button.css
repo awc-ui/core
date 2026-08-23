@@ -396,11 +396,16 @@
   --_label-color: var(--md-button-label-color, var(--md-sys-color-primary));
   --_state-layer-color: var(--md-sys-color-primary);
 }
-:host(.md-button--text.md-button--xs) { padding: 0 max(4px, calc(8px + var(--md-sys-density-scale, 0) * 0.5px)); }
-:host(.md-button--text.md-button--sm) { padding: 0 max(6px, calc(12px + var(--md-sys-density-scale, 0) * 0.75px)); }
-:host(.md-button--text.md-button--md) { padding: 0 max(8px, calc(16px + var(--md-sys-density-scale, 0) * 1px)); }
-:host(.md-button--text.md-button--lg) { padding: 0 max(10px, calc(20px + var(--md-sys-density-scale, 0) * 1.25px)); }
-:host(.md-button--text.md-button--xl) { padding: 0 max(16px, calc(32px + var(--md-sys-density-scale, 0) * 2px)); }
+/* Text buttons intentionally carry the SAME horizontal padding as every other
+   variant (the base size rules above); there is deliberately no override here.
+   They used to sit far tighter — a text button's inset was a third of a
+   filled one's and pinned to its floor at tight densities (4px by rung -2).
+   The container is invisible at rest, but the hover/press state layer is not:
+   it paints the padding box, so a text button in a toggle strip beside a
+   tonal or filled one showed a cramped pill hugging its label while its
+   neighbour's was roomy, and the mismatch grew with density. Sharing the base
+   padding keeps every state layer in a strip the same shape, and keeps a
+   button's width stable if its variant changes to signal selection. */
 
 /* Elevated */
 :host(.md-button--elevated) {
