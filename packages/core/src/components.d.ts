@@ -394,6 +394,10 @@ export namespace Components {
          */
         "noAnimation": boolean;
         /**
+          * Re-read the MD3 tokens from the host's computed style and repaint.  The chart does this automatically when the tokens actually change, so reach for this only when a theme is applied in a way the watcher cannot observe — tokens injected into a stylesheet rather than onto an element, for instance. Cheaper and more direct than reassigning `series` to force a rebuild.
+         */
+        "refreshTheme": () => Promise<void>;
+        /**
           * Replay the entry animation from the start (uses the current `animation`).
          */
         "replay": () => Promise<void>;
@@ -955,6 +959,10 @@ export namespace Components {
           * Fraction of the circle the value axis spans on a polar chart. Default 0.75.
          */
         "polarSweep"?: number;
+        /**
+          * Re-read the MD3 tokens from the host's computed style and repaint.  The chart does this automatically when the tokens actually change, so reach for this only when a theme is applied in a way the watcher cannot observe — tokens injected into a stylesheet rather than onto an element, for instance. Cheaper and more direct than reassigning `series` to force a rebuild.
+         */
+        "refreshTheme": () => Promise<void>;
         /**
           * Replay the entry animation from the start (uses the current `animation`).
          */
@@ -2339,6 +2347,10 @@ export namespace Components {
          */
         "noAnimation": boolean;
         /**
+          * Re-read the MD3 tokens from the host's computed style and repaint.  The chart does this automatically when the tokens actually change, so reach for this only when a theme is applied in a way the watcher cannot observe — tokens injected into a stylesheet rather than onto an element, for instance. Cheaper and more direct than reassigning `series` to force a rebuild.
+         */
+        "refreshTheme": () => Promise<void>;
+        /**
           * Replay the entry animation from the start (uses the current `animation`).
          */
         "replay": () => Promise<void>;
@@ -2346,9 +2358,6 @@ export namespace Components {
           * Drop the zoom window and show the full range.
          */
         "resetZoom": () => Promise<void>;
-        /**
-          * Force a resize — useful after the chart was hidden then shown.
-         */
         "resize": () => Promise<void>;
         /**
           * Series array. Each entry is one line. Empty → empty state.  `data` is either a bare list of y values, positioned by index against `xAxis.data`, or a list of points carrying their own x — `{ x: '2021-11-13', y: 0.12 }` / `['2021-11-13', 0.12]`. Points are what irregular data needs: uneven sampling, or several series measured on completely different dates. Set `xAxis.scale = 'time'` (or `'value'`) so the gaps render proportionally; series carrying their own x need no `xAxis.data` at all.
@@ -2741,7 +2750,7 @@ export namespace Components {
          */
         "quick": boolean;
         /**
-          * Recompute the menu's position against its anchor. md-menu already reacts to scroll/resize, but not to the anchor MOVING because sibling content reflowed (e.g. a multi-select whose button trigger shifts as chips are added beside it). Call this after such a reflow to keep the popup glued to the anchor.
+          * Recompute the menu's position against its anchor immediately. While open, md-menu already tracks scroll, resize, its own surface size AND the anchor moving (a per-frame rect watch — covers transform-animated ancestors like a sliding bottom sheet, and sibling reflow shifting the trigger), so this is rarely needed; call it when the next frame is too late — e.g. to avoid a one-frame lag right after a synchronous layout change.
          */
         "reposition": () => Promise<void>;
         /**
@@ -4039,6 +4048,10 @@ export namespace Components {
          */
         "paddingAngle": number;
         /**
+          * Re-read the MD3 tokens from the host's computed style and repaint.  The chart does this automatically when the tokens actually change, so reach for this only when a theme is applied in a way the watcher cannot observe — tokens injected into a stylesheet rather than onto an element, for instance. Cheaper and more direct than reassigning `series` to force a rebuild.
+         */
+        "refreshTheme": () => Promise<void>;
+        /**
           * Replay the entry animation from the start (uses the current `animation`).
          */
         "replay": () => Promise<void>;
@@ -5282,6 +5295,10 @@ export namespace Components {
           * Highlight a vertical range (e.g. weekend, anomaly window).
          */
         "referenceAreas": MdSparklineReferenceArea[] | undefined;
+        /**
+          * Re-read the MD3 tokens from the host's computed style and repaint.  The chart does this automatically when the tokens actually change, so reach for this only when a theme is applied in a way the watcher cannot observe — tokens injected into a stylesheet rather than onto an element, for instance. Cheaper and more direct than reassigning `series` to force a rebuild.
+         */
+        "refreshTheme": () => Promise<void>;
         "resize": () => Promise<void>;
         /**
           * Show min / max / first / last markers.
@@ -5412,6 +5429,11 @@ export namespace Components {
           * @default 0
          */
         "density": 0 | -1 | -2 | -3 | -4;
+        /**
+          * Lay the dot out in normal flow instead of as an absolutely-positioned corner badge.  The default mode is the avatar badge: `position: absolute` pinned 2px outside its positioned parent's inline/block end, with a surface-toned halo separating it from the tile beneath. That is wrong wherever the dot sits BESIDE something — a legend swatch, a "Market open" line, a status label in a table cell — where it needs to flow with the text. Without this prop each such use had to wrap the dot in a `position: relative` span of an explicit size AND null out both inset custom properties; miss one and the dot hangs low and to the right, overlapping its own label.  `inline` makes the host an `inline-block` in normal flow, vertically centred on the text, with no halo (the halo exists to separate the dot from an avatar tile; over ordinary text it reads as a stray ring). Set `--md-status-dot-outline-width` to bring it back.
+          * @default false
+         */
+        "inline": boolean;
         /**
           * Optional accessible label.  - When **empty** (default), the dot is exposed to AT as decorative   (`role="presentation"` + `aria-hidden="true"`) so the parent   element (typically an `md-avatar` or a list-item) can carry the   spoken status without doubling. - When **set** and `live` is **off**, the dot becomes `role="img"` with   the value as its `aria-label` — a static, labelled status image. - When **set** and `live` is **on**, the dot becomes a `role="status"`   live region so presence *changes* are announced as they occur. Use this   for standalone dots that aren't paired with another labelled element.
           * @default ''
@@ -15088,6 +15110,11 @@ declare namespace LocalJSX {
          */
         "density"?: 0 | -1 | -2 | -3 | -4;
         /**
+          * Lay the dot out in normal flow instead of as an absolutely-positioned corner badge.  The default mode is the avatar badge: `position: absolute` pinned 2px outside its positioned parent's inline/block end, with a surface-toned halo separating it from the tile beneath. That is wrong wherever the dot sits BESIDE something — a legend swatch, a "Market open" line, a status label in a table cell — where it needs to flow with the text. Without this prop each such use had to wrap the dot in a `position: relative` span of an explicit size AND null out both inset custom properties; miss one and the dot hangs low and to the right, overlapping its own label.  `inline` makes the host an `inline-block` in normal flow, vertically centred on the text, with no halo (the halo exists to separate the dot from an avatar tile; over ordinary text it reads as a stray ring). Set `--md-status-dot-outline-width` to bring it back.
+          * @default false
+         */
+        "inline"?: boolean;
+        /**
           * Optional accessible label.  - When **empty** (default), the dot is exposed to AT as decorative   (`role="presentation"` + `aria-hidden="true"`) so the parent   element (typically an `md-avatar` or a list-item) can carry the   spoken status without doubling. - When **set** and `live` is **off**, the dot becomes `role="img"` with   the value as its `aria-label` — a static, labelled status image. - When **set** and `live` is **on**, the dot becomes a `role="status"`   live region so presence *changes* are announced as they occur. Use this   for standalone dots that aren't paired with another labelled element.
           * @default ''
          */
@@ -17930,6 +17957,7 @@ declare namespace LocalJSX {
     interface MdStatusDotAttributes {
         "state": MdStatusDotState;
         "size": MdStatusDotSize;
+        "inline": boolean;
         "live": boolean;
         "label": string;
         "density": 0 | -1 | -2 | -3 | -4;

@@ -111,6 +111,18 @@
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   overflow: hidden;
+  /* Keep the chip's internal layering internal. The label and primary action
+     sit at z-index 2 so they paint over the state layer and background — but
+     the host is position: relative with z-index auto, which opens NO stacking
+     context, so those 2s competed in the nearest ANCESTOR context instead.
+     Inside a sticky-header table (the head row is also z-index 2) equal
+     z-index falls back to tree order and the body row wins: a chip's LABEL
+     painted over the pinned header while its background correctly went under,
+     so the text appeared to float on the header. `isolation` is the general
+     guard — raising the header's z-index would be whack-a-mole against every
+     component carrying an internal z-index. Nothing needs to escape a chip:
+     the host already clips with overflow: hidden. */
+  isolation: isolate;
 
   font-family: var(--md-sys-typescale-label-large-font-family, Roboto, sans-serif);
   font-size: max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));

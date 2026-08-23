@@ -40,6 +40,7 @@ import {
   type MdChartTooltipTrigger,
   type MdChartXYSeries,
   type NormalizedSeriesX,
+  watchMdChartTheme,
 } from '../../utils/charts';
 
 /**
@@ -343,8 +344,8 @@ export class MdLineChart {
   private ro: ResizeObserver | null = null;
   private chartHost?: HTMLDivElement;
   private a11yTableHost?: HTMLDivElement;
-  private themeMql?: MediaQueryList;
-  private themeListener?: () => void;
+  /** Tears down the theme watch (media query + ancestor attribute observer). */
+  private disposeThemeWatch?: () => void;
   /**
    * Legend-toggle memory, keyed by series identity (id → label → position).
    * A legend click self-toggles the engine, but a live-updating consumer that
@@ -367,11 +368,10 @@ export class MdLineChart {
 
   componentDidLoad() {
     this.initChart();
-    if (typeof window !== 'undefined' && window.matchMedia) {
-      this.themeMql = window.matchMedia('(prefers-color-scheme: dark)');
-      this.themeListener = () => this.applyEngine();
-      this.themeMql.addEventListener?.('change', this.themeListener);
-    }
+    // Repaint whenever the resolved tokens change — an OS dark-mode flip, a
+    // data-theme toggle, or a seed/accent palette written as --md-sys-color-*
+    // overrides at runtime. A canvas is pixels: nothing retints it for us.
+    this.disposeThemeWatch = watchMdChartTheme(this.el, () => this.applyEngine());
   }
 
   disconnectedCallback() {
@@ -379,11 +379,8 @@ export class MdLineChart {
     this.ro = null;
     this.engine?.dispose();
     this.engine = null;
-    if (this.themeMql && this.themeListener) {
-      this.themeMql.removeEventListener?.('change', this.themeListener);
-      this.themeListener = undefined;
-      this.themeMql = undefined;
-    }
+    this.disposeThemeWatch?.();
+    this.disposeThemeWatch = undefined;
   }
 
   @Watch('series')
@@ -431,6 +428,20 @@ export class MdLineChart {
   // ─────────────────── public API ───────────────────
 
   /** Force a resize — useful after the chart was hidden then shown. */
+  /**
+   * Re-read the MD3 tokens from the host's computed style and repaint.
+   *
+   * The chart does this automatically when the tokens actually change, so
+   * reach for this only when a theme is applied in a way the watcher cannot
+   * observe — tokens injected into a stylesheet rather than onto an element,
+   * for instance. Cheaper and more direct than reassigning `series` to force
+   * a rebuild.
+   */
+  @Method()
+  async refreshTheme(): Promise<void> {
+    this.applyEngine();
+  }
+
   @Method()
   async resize(): Promise<void> {
     this.engine?.resize();

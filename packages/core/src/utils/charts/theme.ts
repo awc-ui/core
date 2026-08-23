@@ -410,3 +410,99 @@ export function buildTooltipStyle(theme: MdChartTheme): {
     },
   };
 }
+
+/* ===========================================================
+ * Theme-change watching
+ * ===========================================================
+ * `readMdChartTheme` resolves tokens from the host's computed
+ * style, so a chart is correct at paint time — but a canvas is
+ * pixels, not CSS: it does not retint itself when the tokens
+ * change underneath it. Charts used to watch only
+ * `prefers-color-scheme`, which catches an OS dark-mode flip
+ * and nothing else. Every in-page theme change — `data-theme`
+ * toggled on a wrapper, a seed/accent palette written as
+ * `--md-sys-color-*` overrides by @awc-ui/theme, a class swap —
+ * left the canvas painted in the previous palette while the DOM
+ * around it retinted.
+ *
+ * `watchMdChartTheme` closes that: it listens to the media
+ * query AND to attribute mutations on the host's ancestor chain
+ * (which is where `data-theme`, `class` and inline custom
+ * properties actually land), then re-reads a cheap fingerprint
+ * of the tokens that matter and only calls back when one really
+ * changed. That guard matters — pages toggle classes constantly,
+ * and a chart repaint rebuilds the engine.
+ * =========================================================== */
+
+/** Tokens whose change must repaint a chart. Deliberately short:
+ *  this runs on every candidate mutation, unlike the full read. */
+const THEME_FINGERPRINT_VARS = [
+  '--md-sys-color-primary',
+  '--md-sys-color-secondary',
+  '--md-sys-color-tertiary',
+  '--md-sys-color-surface',
+  '--md-sys-color-on-surface',
+  '--md-sys-color-on-surface-variant',
+  '--md-sys-color-outline-variant',
+  '--md-sys-color-error',
+] as const;
+
+/** Cheap signature of the host's resolved chart-relevant tokens. */
+export function mdChartThemeFingerprint(host: HTMLElement): string {
+  if (typeof getComputedStyle !== 'function') return '';
+  const cs = getComputedStyle(host);
+  let out = '';
+  for (const v of THEME_FINGERPRINT_VARS) out += cs.getPropertyValue(v).trim() + '|';
+  // Font family shifts metrics, not just colour, so it belongs in the signature.
+  return out + cs.getPropertyValue('--md-sys-typescale-body-small-font-family').trim();
+}
+
+/**
+ * Call `onChange` whenever the tokens this host resolves actually change.
+ *
+ * Watches the `prefers-color-scheme` media query plus `data-theme` / `class` /
+ * `style` attribute mutations on the host and each of its ancestors — the
+ * places a theme is switched in practice. The fingerprint check means a
+ * mutation that does not move a token costs one `getComputedStyle` and
+ * nothing more.
+ *
+ * @returns a dispose function; call it from `disconnectedCallback`.
+ */
+export function watchMdChartTheme(host: HTMLElement, onChange: () => void): () => void {
+  if (typeof window === 'undefined' || typeof MutationObserver === 'undefined') {
+    return () => {};
+  }
+
+  let last = mdChartThemeFingerprint(host);
+  const check = () => {
+    const next = mdChartThemeFingerprint(host);
+    if (next === last) return;
+    last = next;
+    onChange();
+  };
+
+  // The media query fires BEFORE styles settle in some engines, so re-check on
+  // the next frame rather than reading synchronously.
+  const mql = window.matchMedia?.('(prefers-color-scheme: dark)');
+  const onMedia = () => requestAnimationFrame(check);
+  mql?.addEventListener?.('change', onMedia);
+
+  const observer = new MutationObserver(check);
+  const opts: MutationObserverInit = {
+    attributes: true,
+    attributeFilter: ['data-theme', 'class', 'style'],
+  };
+  // Ancestor chain only — never `subtree: true` on the document, which would
+  // fire for every unrelated attribute write on a busy page.
+  for (let node: HTMLElement | null = host; node; node = node.parentElement) {
+    observer.observe(node, opts);
+  }
+  if (typeof document !== 'undefined' && document.documentElement) {
+    observer.observe(document.documentElement, opts);
+  }
+
+  return () => {
+    mql?.removeEventListener?.('change', onMedia);
+    observer.disconnect();
+  };
+}
