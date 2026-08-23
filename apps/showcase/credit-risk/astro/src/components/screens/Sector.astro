@@ -107,7 +107,11 @@ const facts: [string, string][] = [
       legend="top-end"
       height="340px"
       label={`${t('kpi.expectedLoss')} · ${t('kpi.rwa')}`}
-      subtitle={t('rating.historyHint', { quarter: REPORTING_QUARTER })}></md-line-chart>
+      subtitle={t('rating.historyHint', { quarter: REPORTING_QUARTER })}
+      summary={t('chart.summary.line', {
+        label: `${t('kpi.expectedLoss')} · ${t('kpi.rwa')}`,
+        count: 2,
+      })}></md-line-chart>
   </Panel>
 </section>
 

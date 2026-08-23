@@ -74,10 +74,28 @@ export function OverviewScreen() {
             label={t('common.of', { count: totals.counterpartyCount, total: totals.facilityCount })}
             title={`${t('kpi.counterparties')} / ${t('kpi.facilities')}`}
           />
-          <md-button variant="tonal" size="sm" icon="warning" href={withBase(route.watchlist())}>
-            {t('kpi.watchlist')}
-            <md-badge slot="trailing-icon" variant="large" value={String(totals.watchlistCount)} />
-          </md-button>
+          {/* The badge is a SIBLING of the button, not slotted into it.
+              md-badge anchors absolutely and translates itself past its host's
+              corner; md-button sets `overflow: hidden` with no accommodation
+              for that, so a slotted badge is sliced in half. (md-icon-button
+              has a `--has-badge` hook that switches overflow to visible;
+              md-button has none — reported upstream.) The trailing-icon slot
+              would also force it into the 18px icon box.
+
+              With the badge outside, the button no longer contains the count,
+              so it needs an explicit accessible name that does. */}
+          <span className="badge-anchor">
+            <md-button
+              variant="tonal"
+              size="sm"
+              icon="warning"
+              href={withBase(route.watchlist())}
+              aria-label={`${t('kpi.watchlist')}, ${totals.watchlistCount}`}
+            >
+              {t('kpi.watchlist')}
+            </md-button>
+            <md-badge value={String(totals.watchlistCount)} />
+          </span>
         </>
       }
     >
@@ -178,6 +196,10 @@ export function OverviewScreen() {
           height="300px"
           label={`${t('kpi.ead')} · ${t('table.band')}`}
           subtitle={t('rating.historyHint', { quarter: REPORTING_QUARTER })}
+          summary={t('chart.summary.area', {
+            label: `${t('kpi.ead')} · ${t('table.band')}`,
+            count: 3,
+          })}
         />
       </Panel>
 

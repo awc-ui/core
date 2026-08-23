@@ -127,6 +127,10 @@ export function SectorScreen({ sectorId }: { sectorId: string }) {
             height="340px"
             label={`${t('kpi.expectedLoss')} · ${t('kpi.rwa')}`}
             subtitle={t('rating.historyHint', { quarter: REPORTING_QUARTER })}
+            summary={t('chart.summary.line', {
+              label: `${t('kpi.expectedLoss')} · ${t('kpi.rwa')}`,
+              count: 2,
+            })}
           />
         </Panel>
       </section>

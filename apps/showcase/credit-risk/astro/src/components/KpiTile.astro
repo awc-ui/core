@@ -40,7 +40,6 @@ const showTrend = Array.isArray(trend) && trend.length > 1;
           <md-sparkline
             {...props({ data: trend, labels: trendLabels })}
             data-chart={chartConfig({ format })}
-            locale={locale}
             variant="area"
             color={color}
             curve="monotone"

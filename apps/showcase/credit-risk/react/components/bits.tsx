@@ -121,7 +121,11 @@ export function SeverityChip({ severity }: { severity: SignalSeverity }) {
   const t = useT();
   return (
     <span className="row" style={{ gap: 'var(--md-sys-spacing-gap-xs, 4px)' }}>
-      <md-status-dot inline state={severityDot[severity]} size="small" label={t(`severity.${severity}`)} />
+      {/* No label: the chip beside it carries the same word, and naming both
+          announces the severity twice per row. Unlabelled, the dot falls back
+          to role="presentation" + aria-hidden — correct for a decorative mark
+          sitting next to its own label. */}
+      <md-status-dot inline state={severityDot[severity]} size="small" />
       <md-chip variant="assist" appearance="filled" color={severityColor[severity]} label={t(`severity.${severity}`)} />
     </span>
   );
@@ -163,7 +167,7 @@ export function CovenantMeter({ covenant }: { covenant: Covenant }) {
         max="50"
         color={covenantColor[covenant.status]}
         thickness="8"
-        label={t('covenant.headroomLabel', { value: headroomText })}
+        label={t('table.headroom')}
         show-label
         value-text={headroomText}
         show-value

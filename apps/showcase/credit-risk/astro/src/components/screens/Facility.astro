@@ -165,7 +165,10 @@ const facts: [string, string][] = [
           </md-table-body>
           <md-table-foot>
             <md-table-row rowgroup="foot">
-              <md-table-cell>{t('common.total')}</md-table-cell>
+              {/* head + scope="row" makes this a rowheader, which is what
+                  associates the net-collateral figure below with the word
+                  "Total". `scope` without `head` is inert. */}
+              <md-table-cell head scope="row">{t('common.total')}</md-table-cell>
               <md-table-cell />
               <md-table-cell />
               <md-table-cell />

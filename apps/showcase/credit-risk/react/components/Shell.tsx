@@ -29,21 +29,39 @@ export interface Crumb {
 /** The breadcrumb trail, with `mdSelect` intercepted for client-side routing. */
 function Breadcrumbs({ crumbs }: { crumbs: Crumb[] }) {
   const router = useRouter();
+  const t = useT();
   const ref = useRef<HTMLElement | null>(null);
 
   // mdSelect is cancelable and bubbles from the item to the strip, so one
   // listener on the strip is enough. preventDefault() stops the anchor from
   // doing a full page load; the trail still works with JS off because the
   // anchors carry real hrefs.
-  useCustomEvent<CustomEvent<{ href: string }>>(ref, 'mdSelect', (event) => {
-    const href = event.detail?.href;
-    if (!href) return;
-    event.preventDefault();
-    router.push(href.replace(withBase(''), '') || '/');
-  });
+  //
+  // MODIFIER KEYS PASS THROUGH. Cancelling unconditionally would route a
+  // ⌘-click in place instead of opening a new tab — the crumb would look like
+  // a link, carry a real href, and then quietly refuse to behave like one.
+  // `originalEvent` is the MouseEvent or KeyboardEvent that produced the
+  // selection, so one check covers the Enter path too.
+  useCustomEvent<CustomEvent<{ href: string; originalEvent?: MouseEvent | KeyboardEvent }>>(
+    ref,
+    'mdSelect',
+    (event) => {
+      const { href, originalEvent } = event.detail ?? {};
+      if (!href) return;
+      if (originalEvent?.metaKey || originalEvent?.ctrlKey || originalEvent?.shiftKey) return;
+      event.preventDefault();
+      router.push(href.replace(withBase(''), '') || '/');
+    },
+  );
 
   return (
-    <md-breadcrumbs ref={ref} max-items="4" items-before-collapse="1" items-after-collapse="2">
+    <md-breadcrumbs
+      ref={ref}
+      label={t('nav.breadcrumb')}
+      max-items="4"
+      items-before-collapse="1"
+      items-after-collapse="2"
+    >
       {crumbs.map((crumb, index) => (
         <md-breadcrumb-item key={`${crumb.label}-${index}`} href={crumb.href ? withBase(crumb.href) : undefined}>
           {crumb.label}

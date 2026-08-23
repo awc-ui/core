@@ -105,6 +105,18 @@ a {
   margin-inline-start: var(--md-sys-spacing-gap-sm, 8px);
 }
 
+/*
+ * A positioning context for a badge that sits BESIDE a control rather than
+ * inside it. `md-badge` anchors absolutely and translates itself past its
+ * host's corner, which needs a positioned ancestor — and `md-button` clips a
+ * slotted badge, because its own box is `overflow: hidden` with no
+ * accommodation for one.
+ */
+.badge-anchor {
+  position: relative;
+  display: inline-flex;
+}
+
 /* ------------------------------------------------------------- screen head */
 
 .screen-head {

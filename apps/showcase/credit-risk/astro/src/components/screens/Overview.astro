@@ -162,7 +162,11 @@ const byGrade = scale.map((grade) =>
     axis-ticks
     height="300px"
     label={`${t('kpi.ead')} · ${t('table.band')}`}
-    subtitle={t('rating.historyHint', { quarter: REPORTING_QUARTER })}></md-area-chart>
+    subtitle={t('rating.historyHint', { quarter: REPORTING_QUARTER })}
+    summary={t('chart.summary.area', {
+      label: `${t('kpi.ead')} · ${t('table.band')}`,
+      count: 3,
+    })}></md-area-chart>
 </Panel>
 
 {/*

@@ -32,6 +32,26 @@ function formatterFor(locale: LocaleCode, kind: Format): (v: number | null) => s
 export function configureCharts(root: ParentNode = document): void {
   const lang = document.documentElement.lang;
   const locale = (['en', 'ro', 'ar'].includes(lang) ? lang : 'en') as LocaleCode;
+  const t = createTranslator(locale);
+
+  /*
+   * A chart's plot is a focusable `role="application"` region named by
+   * `label-plot`, whose default is an English sentence — so every chart on the
+   * Romanian and Arabic pages was naming that region in English. Set here for
+   * every chart, including the sparklines, rather than at each call site, so a
+   * chart cannot be added without it.
+   *
+   * This one IS safe to apply after paint: it renames a region, it does not
+   * change what is drawn. The names still server-render in English for a
+   * moment; that is the same trade the plot itself already makes.
+   */
+  for (const chart of root.querySelectorAll<HTMLElement>(
+    'md-bar-chart,md-line-chart,md-area-chart',
+  )) {
+    if (!chart.hasAttribute('label-plot')) {
+      chart.setAttribute('label-plot', t.t('chart.plotHint'));
+    }
+  }
 
   for (const el of root.querySelectorAll<HTMLElement>('[data-chart]')) {
     if (el.hasAttribute('data-chart-applied')) continue;

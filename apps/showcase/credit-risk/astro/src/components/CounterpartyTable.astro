@@ -88,14 +88,16 @@ const layout = TABLES.counterparties(showSector);
         sort-order="desc"
       >
         <md-table-head>
+          {/* The sort labels carry no `active` / `order`: md-table already
+              declares sort-by / sort-order above and pushes both down into
+              every label on sync, so anything written here could only ever
+              disagree with it. */}
           <md-table-row rowgroup="head">
             {columns.map((column) => (
               <md-table-cell head scope="col" numeric={column.numeric || undefined}>
                 {column.key ? (
                   <md-table-sort-label
                     column={column.key}
-                    active={column.key === 'ead' || undefined}
-                    order={column.key === 'ead' ? 'desc' : 'none'}
                     default-order={NUMERIC_KEYS.includes(column.key) ? 'desc' : 'asc'}
                   >
                     {column.label}

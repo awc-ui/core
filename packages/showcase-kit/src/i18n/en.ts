@@ -17,6 +17,10 @@ export const en = {
 
   /* ---------------------------------------------------------- navigation */
   'nav.label': 'Sections',
+  'nav.breadcrumb': 'Breadcrumb',
+  'chart.summary.area': '{label}. Area chart with {count} series.',
+  'chart.summary.line': '{label}. Line chart with {count} series.',
+  'chart.plotHint': 'Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.',
   'nav.overview': 'Overview',
   'nav.counterparties': 'Counterparties',
   'nav.facilities': 'Facilities',

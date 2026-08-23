@@ -18,6 +18,7 @@
  */
 
 import { useCallback, useEffect, useRef, type MutableRefObject } from 'react';
+import { useT } from '@/lib/showcase';
 
 /** A ref the caller owns, so a screen can attach `mdBarClick` to a chart it renders. */
 export type ElementRef = MutableRefObject<HTMLElement | null>;
@@ -120,7 +121,15 @@ function useChart(props: ChartProps) {
     [internal, elementRef],
   );
 
-  return { setRef, attributes };
+  // A chart's plot is a focusable `role="application"` region, and its name
+  // comes from `label-plot`, whose default is an English sentence. Defaulted
+  // here rather than at each call site so no chart can be added without it —
+  // fourteen of them exist and every one had shipped the English default into
+  // the Romanian and Arabic pages. A call site may still override it.
+  const t = useT();
+  const withPlotLabel = { 'label-plot': t('chart.plotHint'), ...attributes };
+
+  return { setRef, attributes: withPlotLabel };
 }
 
 export function BarChart(props: ChartProps) {

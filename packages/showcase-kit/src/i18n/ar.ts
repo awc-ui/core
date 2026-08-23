@@ -17,6 +17,10 @@ export const ar: Dictionary = {
 
   /* ---------------------------------------------------------- navigation */
   'nav.label': 'الأقسام',
+  'nav.breadcrumb': 'مسار التنقل',
+  'chart.summary.area': '{label}. رسم بياني مساحي يحتوي على {count} سلسلة.',
+  'chart.summary.line': '{label}. رسم بياني خطي يحتوي على {count} سلسلة.',
+  'chart.plotHint': 'بيانات الرسم البياني. استخدم مفاتيح الأسهم للتنقل بين النقاط، وHome وEnd للأولى والأخيرة، وEscape للخروج.',
   'nav.overview': 'نظرة عامة',
   'nav.counterparties': 'الأطراف المقابلة',
   'nav.facilities': 'التسهيلات',

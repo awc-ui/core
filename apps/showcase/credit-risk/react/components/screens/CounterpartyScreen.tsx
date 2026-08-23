@@ -163,6 +163,7 @@ export function CounterpartyScreen({ counterpartyId }: { counterpartyId: string 
                 height="300px"
                 label={t('rating.history')}
                 subtitle={t('rating.historyHint', { quarter: REPORTING_QUARTER })}
+                summary={t('chart.summary.line', { label: t('rating.history'), count: 1 })}
               />
               <div className="row">
                 {history.map((observation) => (

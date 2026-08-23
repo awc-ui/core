@@ -12,6 +12,10 @@ export const ro: Dictionary = {
 
   /* ---------------------------------------------------------- navigation */
   'nav.label': 'Secțiuni',
+  'nav.breadcrumb': 'Fir de navigare',
+  'chart.summary.area': '{label}. Grafic cu arii, cu {count} serii.',
+  'chart.summary.line': '{label}. Grafic liniar, cu {count} serii.',
+  'chart.plotHint': 'Date din grafic. Folosiți tastele săgeți pentru a naviga între puncte, Home și End pentru primul și ultimul, Escape pentru a ieși.',
   'nav.overview': 'Prezentare generală',
   'nav.counterparties': 'Contrapărți',
   'nav.facilities': 'Facilități',

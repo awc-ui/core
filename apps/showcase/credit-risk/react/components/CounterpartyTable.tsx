@@ -92,8 +92,10 @@ export function CounterpartyTable({
     paginationRef,
     'mdRowsPerPageChange',
     (event) => {
+      // No setPage(0) here: md-table-pagination has already reset the page and
+      // emitted mdPageChange, which the handler above consumes. Resetting again
+      // is the component's documented anti-pattern.
       setRowsPerPage(event.detail.rowsPerPage);
-      setPage(0);
     },
   );
 
@@ -130,16 +132,23 @@ export function CounterpartyTable({
         striped
         sort-by={sort.column}
         sort-order={sort.order}
+        // Without these, assistive tech announces "row 1 of 10" on every page
+        // instead of the row's position in the whole book. row-count takes the
+        // BODY total; md-table adds the head and foot rows itself.
+        row-offset={safePage * rowsPerPage}
+        row-count={allRows.length}
       >
         <md-table-head>
+          {/* The sort labels carry no `active` / `order`: md-table already
+              declares sort-by / sort-order above and pushes both down into
+              every label on sync, so anything written here could only ever
+              disagree with it. */}
           <md-table-row rowgroup="head">
             {columns.map((column) => (
               <md-table-cell key={column.label} head scope="col" numeric={column.numeric || undefined}>
                 {column.key ? (
                   <md-table-sort-label
                     column={column.key}
-                    active={sort.column === column.key || undefined}
-                    order={sort.column === column.key ? sort.order : 'none'}
                     default-order={NUMERIC_KEYS.includes(column.key) ? 'desc' : 'asc'}
                   >
                     {column.label}

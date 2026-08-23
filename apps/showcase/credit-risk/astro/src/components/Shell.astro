@@ -69,7 +69,12 @@ const href = (path: string) => localeHref(locale, path);
 
   {
     crumbs.length > 1 && (
-      <md-breadcrumbs max-items="4" items-before-collapse="1" items-after-collapse="2">
+      <md-breadcrumbs
+        label={t('nav.breadcrumb')}
+        max-items="4"
+        items-before-collapse="1"
+        items-after-collapse="2"
+      >
         {crumbs.map((crumb) => (
           <md-breadcrumb-item href={crumb.href ? href(crumb.href) : undefined}>
             {crumb.label}
