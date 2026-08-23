@@ -63,6 +63,25 @@ if (!existsSync(join(root, 'packages/core/dist/md3'))) {
   process.exit(1);
 }
 
+/* Every showcase app imports @awc-ui/showcase-kit's COMPILED dist (data,
+   credit-risk, i18n, dock, preboot), so the kit has to exist before any of
+   them build. Building it here rather than guarding on it: it is a couple of
+   seconds, and a guard only converts one confusing failure
+   ("ERR_MODULE_NOT_FOUND: .../showcase-kit/dist/data/index.mjs", six levels
+   deep in a per-app build) into a slightly less confusing one. This is the
+   single entry point every caller uses — the deploy workflow, CI, and a
+   developer running it by hand — so fixing it here fixes it for all of them. */
+console.log('==> showcase-kit');
+const kit = spawnSync('pnpm', ['--filter', '@awc-ui/showcase-kit', 'build'], {
+  cwd: root,
+  stdio: 'inherit',
+  shell: false,
+});
+if (kit.status !== 0) {
+  console.error('[build-showcase] @awc-ui/showcase-kit failed — the apps import its dist');
+  process.exit(1);
+}
+
 const staging = join(root, 'apps/docs/public/showcase', VERTICAL);
 mkdirSync(staging, { recursive: true });
 
