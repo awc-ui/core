@@ -24,7 +24,7 @@ before an `md-snackbar` confirms.
   <md-stepper label="Checkout progress" finish-label="Place order">
     <md-step label="Shipping" description="Address and destination" editable
              error-text="Complete the highlighted fields">
-      <div style="display: grid; gap: 16px; padding-block: 12px 4px;">
+      <div style="display: grid; gap: 16px; padding: 12px 20px 4px;">
         <md-text-field data-ship data-ship-name label="Full name" name="name" required
           variant="outlined" autocomplete="name"
           error-text="Enter the recipient's name" reserve-supporting-space></md-text-field>
@@ -53,7 +53,7 @@ before an `md-snackbar` confirms.
     </md-step>
     <md-step label="Payment" description="Method and order" editable
              error-text="Accept the terms of sale to continue">
-      <div style="display: grid; gap: 20px; padding-block: 12px 4px;">
+      <div style="display: grid; gap: 20px; padding: 12px 20px 4px;">
         <div role="radiogroup" aria-labelledby="co-pay-label" style="display: grid; gap: 4px;">
           <span id="co-pay-label" style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-on-surface);">Payment method</span>
           <label style="display: flex; align-items: center; gap: 10px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface); cursor: pointer;">
@@ -99,7 +99,7 @@ before an `md-snackbar` confirms.
       </div>
     </md-step>
     <md-step label="Review">
-      <div style="display: grid; gap: 16px; padding-block: 12px 4px;">
+      <div style="display: grid; gap: 16px; padding: 12px 20px 4px;">
         <span style="font: var(--md-sys-typescale-title-medium); color: var(--md-sys-color-on-surface);">Review your order</span>
         <div style="display: grid; grid-template-columns: max-content 1fr; gap: 8px 24px; font: var(--md-sys-typescale-body-medium); color: var(--md-sys-color-on-surface);">
           <span style="color: var(--md-sys-color-on-surface-variant);">Deliver to</span>
@@ -392,7 +392,7 @@ import {
     ' [loading]="loading" (mdBeforeChange)="gate($event)" (mdComplete)="placeOrder()">' +
     '<md-step label="Shipping" description="Address and destination" [editable]="true"' +
     ' [error]="stepErrors[0]" error-text="Complete the highlighted fields">' +
-    '<div style="display: grid; gap: 16px; padding-block: 12px 4px;">' +
+    '<div style="display: grid; gap: 16px; padding: 12px 20px 4px;">' +
     '@for (f of shipFields; track f.key) {' +
     '<md-text-field variant="outlined" [required]="true" [reserveSupportingSpace]="true"' +
     ' [label]="f.label" [errorText]="f.errorText" [name]="f.key"' +
@@ -411,7 +411,7 @@ import {
     '</md-step>' +
     '<md-step label="Payment" description="Method and order" [editable]="true"' +
     ' [error]="stepErrors[1]" error-text="Accept the terms of sale to continue">' +
-    '<div style="display: grid; gap: 20px; padding-block: 12px 4px;">' +
+    '<div style="display: grid; gap: 20px; padding: 12px 20px 4px;">' +
     '<div role="radiogroup" aria-label="Payment method" style="display: grid; gap: 4px;">' +
     '@for (m of payMethods; track m.value) {' +
     '<label style="display: flex; align-items: center; gap: 10px;">' +
@@ -441,7 +441,7 @@ import {
     '</div>' +
     '</md-step>' +
     '<md-step label="Review">' +
-    '<div style="display: grid; gap: 8px; padding-block: 12px 4px;">' +
+    '<div style="display: grid; gap: 8px; padding: 12px 20px 4px;">' +
     '<strong>Review your order</strong>' +
     '<span>Deliver to: {{ ship.name }}, {{ ship.street }}, {{ ship.postal }}' +
     ' {{ ship.city }}, {{ countryName(ship.country) }}</span>' +
@@ -604,7 +604,7 @@ function placeOrder() {
       :loading="loading" @md-before-change="gate" @md-complete="placeOrder">
       <MdStep label="Shipping" description="Address and destination" :editable="true"
         :error="stepErrors[0]" error-text="Complete the highlighted fields">
-        <div style="display: grid; gap: 16px; padding-block: 12px 4px;">
+        <div style="display: grid; gap: 16px; padding: 12px 20px 4px;">
           <MdTextField v-for="f in shipFields" :key="f.key" variant="outlined" :required="true"
             :reserve-supporting-space="true" :label="f.label" :error-text="f.errorText"
             :value="ship[f.key]" :error="shipErrors[f.key]"
@@ -618,7 +618,7 @@ function placeOrder() {
       </MdStep>
       <MdStep label="Payment" description="Method and order" :editable="true"
         :error="stepErrors[1]" error-text="Accept the terms of sale to continue">
-        <div style="display: grid; gap: 20px; padding-block: 12px 4px;">
+        <div style="display: grid; gap: 20px; padding: 12px 20px 4px;">
           <div role="radiogroup" aria-label="Payment method" style="display: grid; gap: 4px;">
             <label v-for="m in payMethods" :key="m.value"
               style="display: flex; align-items: center; gap: 10px;">
@@ -647,7 +647,7 @@ function placeOrder() {
         </div>
       </MdStep>
       <MdStep label="Review">
-        <div style="display: grid; gap: 8px; padding-block: 12px 4px;">
+        <div style="display: grid; gap: 8px; padding: 12px 20px 4px;">
           <strong>Review your order</strong>
           <span>Deliver to: {{ ship.name }}, {{ ship.street }}, {{ ship.postal }} {{ ship.city }}, {{ countryName }}</span>
           <span>Payment: {{ payLabel }}</span>
@@ -740,7 +740,7 @@ function placeOrder() {
     on:mdBeforeChange={gate} on:mdComplete={placeOrder}>
     <md-step label="Shipping" description="Address and destination" editable
       error={stepErrors[0]} error-text="Complete the highlighted fields">
-      <div style="display: grid; gap: 16px; padding-block: 12px 4px;">
+      <div style="display: grid; gap: 16px; padding: 12px 20px 4px;">
         {#each shipFields as f (f.key)}
           <md-text-field variant="outlined" required reserve-supporting-space
             label={f.label} error-text={f.errorText} value={ship[f.key]} error={shipErrors[f.key]}
@@ -757,7 +757,7 @@ function placeOrder() {
     </md-step>
     <md-step label="Payment" description="Method and order" editable
       error={stepErrors[1]} error-text="Accept the terms of sale to continue">
-      <div style="display: grid; gap: 20px; padding-block: 12px 4px;">
+      <div style="display: grid; gap: 20px; padding: 12px 20px 4px;">
         <div role="radiogroup" aria-label="Payment method" style="display: grid; gap: 4px;">
           {#each payMethods as m (m.value)}
             <label style="display: flex; align-items: center; gap: 10px;">
@@ -789,7 +789,7 @@ function placeOrder() {
       </div>
     </md-step>
     <md-step label="Review">
-      <div style="display: grid; gap: 8px; padding-block: 12px 4px;">
+      <div style="display: grid; gap: 8px; padding: 12px 20px 4px;">
         <strong>Review your order</strong>
         <span>Deliver to: {ship.name}, {ship.street}, {ship.postal} {ship.city}, {countryName(ship.country)}</span>
         <span>Payment: {payLabel(payMethod)}</span>
