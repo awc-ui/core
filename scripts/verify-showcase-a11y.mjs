@@ -9,17 +9,71 @@
  * telling assistive tech "row 1 of 10" on every page. None of those change a
  * pixel, so the only honest check is what the accessibility tree contains.
  *
- * Covers BOTH framework builds, because the two are supposed to be the same
- * application and a11y is exactly where they are most likely to drift.
+ * COVERS ALL SIX FRAMEWORK BUILDS, and that is the point of running it at this
+ * level rather than inside one app. Each build fixed these defects in its own
+ * idiom — a defaulted prop in one, an attribute binding in another, a component
+ * with no label in a third — and "the same application in six frameworks" is a
+ * claim about the accessibility tree as much as about the pixels. Four of the
+ * assertions apply to every build and are run against each; the rest are
+ * specific to the locale-routed Astro tree.
  *
- * Usage — needs the docs preview serving the built apps:
- *   pnpm --filter @awc-ui/docs exec astro preview --port 4350
+ * Serves the staged builds itself, so it needs nothing running:
+ *   pnpm showcase:build        # -> apps/docs/public/showcase/
  *   pnpm verify:showcase-a11y
  */
+import { createReadStream, existsSync, statSync } from 'node:fs';
+import { createServer } from 'node:http';
+import { dirname, extname, join, normalize, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
 
-const A = 'http://localhost:4350/showcase/credit-risk/astro';
-const R = 'http://localhost:4350/showcase/credit-risk/react';
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const PUBLIC = join(root, 'apps/docs/public');
+const PORT = 4351;
+
+if (!existsSync(join(PUBLIC, 'showcase/credit-risk/react/index.html'))) {
+  console.error(
+    '[a11y] apps/docs/public/showcase is not staged — build it first:\n' +
+      '       pnpm showcase:build',
+  );
+  process.exit(1);
+}
+
+const TYPES = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.woff2': 'font/woff2',
+  '.txt': 'text/plain; charset=utf-8',
+};
+
+// The staged tree already sits at the paths the builds were compiled against,
+// so serving `apps/docs/public` at `/` puts every one of them exactly where its
+// own absolute URLs expect to find it.
+const server = createServer((req, res) => {
+  const url = new URL(req.url, 'http://localhost');
+  let file = join(PUBLIC, normalize(decodeURIComponent(url.pathname)));
+  if (existsSync(file) && statSync(file).isDirectory()) file = join(file, 'index.html');
+  if (!existsSync(file) || statSync(file).isDirectory()) {
+    res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+    res.end('not found');
+    return;
+  }
+  res.writeHead(200, { 'content-type': TYPES[extname(file)] || 'application/octet-stream' });
+  createReadStream(file).pipe(res);
+});
+await new Promise((done) => server.listen(PORT, done));
+
+const url = (framework) => `http://localhost:${PORT}/showcase/credit-risk/${framework}`;
+
+const A = url('astro');
+const R = url('react');
+/** The builds that keep the language in client state and page their tables. */
+const HYDRATING = ['react', 'vue', 'angular', 'svelte'];
+
 const b = await puppeteer.launch({ headless: 'shell' });
 const results = [];
 const ok = (l, p, d = '') => { results.push(p); console.log(`  ${p ? 'ok  ' : 'FAIL'} ${l}${d ? `  ${d}` : ''}`); };
@@ -88,8 +142,15 @@ const load = async (url, wait = 2500) => {
 }
 
 /* ---- badge no longer clipped by the button ---- */
-{
-  const p = await load(`${A}/`);
+/*
+ * Run against EVERY build. `md-badge` anchors absolutely and translates itself
+ * past its host's corner, and `md-button` sets `overflow: hidden` with no
+ * accommodation — so a slotted badge is sliced in half. Each build had to solve
+ * it the same way (badge outside the button, count moved into the button's
+ * accessible name) and each could have missed it independently.
+ */
+for (const framework of ['astro', ...HYDRATING, 'html']) {
+  const p = await load(`${url(framework)}/`);
   const probe = await p.evaluate(() => {
     const badge = document.querySelector('md-badge');
     const button = document.querySelector('.badge-anchor md-button');
@@ -100,57 +161,82 @@ const load = async (url, wait = 2500) => {
       slotted: badge.getAttribute('slot'),
       inButton: button.contains(badge),
       badgeVisible: bo.width > 0 && bo.height > 0,
-      // Clipped means the badge's box extends past the button but is hidden.
       badgeRight: Math.round(bo.right),
       buttonRight: Math.round(bu.right),
       buttonAria: button.getAttribute('aria-label'),
     };
   });
-  console.log('\n[overview] watchlist badge');
-  ok('badge is no longer slotted into the button', !probe.slotted && !probe.inButton);
-  ok('badge renders with a real box', probe.badgeVisible, `${probe.badgeRight} vs button ${probe.buttonRight}`);
-  ok('button carries the count in its accessible name', /\d/.test(probe.buttonAria ?? ''), probe.buttonAria ?? '(none)');
+  console.log(`\n[${framework} overview] watchlist badge`);
+  if (probe.missing) {
+    ok('badge and button both present', false, 'one of them is missing');
+  } else {
+    ok('badge is not slotted into the button', !probe.slotted && !probe.inButton);
+    ok('badge renders with a real box', probe.badgeVisible, `${probe.badgeRight} vs button ${probe.buttonRight}`);
+    ok('button carries the count in its accessible name', /\d/.test(probe.buttonAria ?? ''), probe.buttonAria ?? '(none)');
+  }
   await p.close();
 }
 
-/* ---- severity announced once, not twice ---- */
-{
-  const p = await load(`${A}/watchlist/`);
+/* ---- the severity marker leads the row, and is named ---- */
+/*
+ * THIS INVARIANT CHANGED, and the change is the interesting part.
+ *
+ * The dot used to sit inside the severity cell, immediately beside a chip
+ * carrying the same word, and was deliberately UNLABELLED: naming both made a
+ * screen reader announce the severity twice on every row, and an unlabelled
+ * `md-status-dot` correctly falls back to `role="presentation"` + `aria-hidden`.
+ *
+ * It now leads the row beside the obligor's name, at the other end of a
+ * nine-column table. Nothing next to it says "high" any more, so the same
+ * unlabelled dot would leave COLOUR as the only carrier of that meaning — the
+ * exact defect the old arrangement was avoiding, arrived at from the opposite
+ * direction. So the assertion is inverted: the dot must now be named, and the
+ * chip in the severity cell must still carry the word too.
+ */
+for (const framework of ['astro', ...HYDRATING, 'html']) {
+  const p = await load(`${url(framework)}/watchlist/`);
   const probe = await p.evaluate(() => {
-    const row = document.querySelector('md-table-row[data-severity]');
-    const dot = row?.querySelector('md-status-dot');
-    // The severity chip is the dot's SIBLING; row.querySelector('md-chip')
-    // would return the rating chip in an earlier cell and pass for the wrong
-    // reason, which it did.
-    const chip = dot?.parentElement?.querySelector('md-chip');
+    const row = document.querySelector('md-table-body md-table-row');
+    const cells = [...(row?.children ?? [])];
+    const dot = cells[0]?.querySelector('md-status-dot');
+    const link = cells[0]?.querySelector('a.drill');
+    // The severity cell is the fifth column; it should hold a chip and no dot.
+    const severityCell = cells[4];
     return {
-      dotAria: dot?.getAttribute('aria-hidden'),
-      dotRole: dot?.getAttribute('role'),
-      dotLabel: dot?.getAttribute('label'),
-      chipLabel: chip?.getAttribute('label'),
+      dotInFirstCell: !!dot,
+      dotLabel: dot?.getAttribute('label') ?? null,
+      dotHidden: dot?.getAttribute('aria-hidden'),
+      dotBeforeLink:
+        !!dot && !!link && !!(dot.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING),
+      severityCellHasChip: !!severityCell?.querySelector('md-chip'),
+      severityCellHasDot: !!severityCell?.querySelector('md-status-dot'),
+      chipLabel: severityCell?.querySelector('md-chip')?.getAttribute('label') ?? null,
     };
   });
-  console.log('\n[watchlist] severity dot beside its chip');
-  ok('dot is decorative (no label)', !probe.dotLabel, `label=${probe.dotLabel ?? 'none'}`);
-  ok('dot is hidden from AT', probe.dotAria === 'true' || probe.dotRole === 'presentation', `aria-hidden=${probe.dotAria} role=${probe.dotRole}`);
+  const WORDS = ['High', 'Medium', 'Low', 'Ridicat', 'Mediu', 'Scăzut'];
+  console.log(`\n[${framework} watchlist] severity marker`);
+  ok('the dot leads the counterparty cell', probe.dotInFirstCell && probe.dotBeforeLink);
   ok(
-    'the chip beside it still carries the severity',
-    ['High', 'Medium', 'Low', 'Ridicat', 'Mediu', 'Scăzut'].includes(probe.chipLabel ?? ''),
-    probe.chipLabel ?? '(none)',
+    'it is NAMED, now that nothing beside it says the severity',
+    WORDS.includes(probe.dotLabel ?? ''),
+    `label=${probe.dotLabel ?? 'none'}`,
   );
+  ok('and is therefore not hidden from AT', probe.dotHidden !== 'true', `aria-hidden=${probe.dotHidden}`);
+  ok('the severity cell keeps its chip, and gains no second dot', probe.severityCellHasChip && !probe.severityCellHasDot);
+  ok('the chip still carries the severity', WORDS.includes(probe.chipLabel ?? ''), probe.chipLabel ?? '(none)');
   await p.close();
 }
 
 /* ---- collateral footer total is a row header ---- */
-{
-  const p = await load(`${A}/facilities/fac-057/`);
+for (const framework of ['astro', ...HYDRATING, 'html']) {
+  const p = await load(`${url(framework)}/facilities/fac-057/`);
   const probe = await p.evaluate(() => {
     const foot = document.querySelector('md-table-foot md-table-row');
     if (!foot) return { noFooter: true };
     const first = foot.children[0];
     return { role: first?.getAttribute('role'), scope: first?.getAttribute('scope'), text: first?.textContent?.trim() };
   });
-  console.log('\n[facility] collateral footer');
+  console.log(`\n[${framework} facility] collateral footer`);
   if (probe.noFooter) {
     ok('(this facility has no collateral table — skipped)', true);
   } else {
@@ -160,21 +246,26 @@ const load = async (url, wait = 2500) => {
 }
 
 /* ---- paginated table reports its true row positions ---- */
-{
-  const p = await load(`${R}/`);
+/*
+ * Only the four hydrating builds page. Astro and HTML render the whole
+ * twenty-four-row book — deliberately, because hiding twenty rows behind a
+ * control that needs JavaScript would make those two pages worse without it —
+ * so there is no offset to report and nothing here to check.
+ */
+for (const framework of HYDRATING) {
+  const p = await load(`${url(framework)}/`);
   const probe = await p.evaluate(() => {
     const table = document.querySelector('md-table');
-    const rows = [...(table?.querySelectorAll('md-table-body md-table-row') ?? [])];
     return {
       rowCount: table?.getAttribute('row-count'),
       rowOffset: table?.getAttribute('row-offset'),
-      ariaRowCount: table?.shadowRoot?.querySelector('[role="grid"],[role="table"]')?.getAttribute('aria-rowcount'),
-      firstRowIndex: rows[0]?.getAttribute('aria-rowindex'),
+      rendered: table?.querySelectorAll('md-table-body md-table-row').length ?? 0,
     };
   });
-  console.log('\n[react overview] paginated table row positions');
+  console.log(`\n[${framework} overview] paginated table row positions`);
   ok('row-count is the whole book, not the page', probe.rowCount === '24', `row-count=${probe.rowCount}`);
   ok('row-offset is set', probe.rowOffset !== null, `row-offset=${probe.rowOffset}`);
+  ok('only one page is rendered', probe.rendered === 10, `${probe.rendered} rows`);
   await p.close();
 }
 
@@ -193,6 +284,8 @@ const load = async (url, wait = 2500) => {
 }
 
 await b.close();
+server.close();
+
 const failed = results.filter((r) => !r).length;
 console.log(`\n${failed === 0 ? 'PASS' : 'FAIL'} — ${results.length - failed}/${results.length}`);
 process.exit(failed ? 1 : 0);
