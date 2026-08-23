@@ -168,8 +168,7 @@ export function Screen({ title, subtitle, crumbs, aside, children }: ScreenProps
           </div>
         </header>
 
-        {/* The trail sits OPPOSITE the heading it describes, not on a row of
-            its own above it.
+        {/* The trail has its own row above the heading.
 
             It appears on the drill path (sector → counterparty → facility),
             where it is the only thing showing where you are and the only way
@@ -177,21 +176,19 @@ export function Screen({ title, subtitle, crumbs, aside, children }: ScreenProps
             highlights the section, so a trail reading "Overview / Watchlist"
             would only say it twice.
 
-            Putting it here rather than in its own row is also what keeps the
-            geometry still. `.screen-head` exists on every screen and is taller
-            than the trail, so a trail appearing or disappearing cannot change
-            the row's height — whereas a row that came and went was moving the
-            whole page by 52px on every navigation. */}
+            The ROW is always rendered even when empty, because a row that comes
+            and goes is what was moving the heading and every panel under it by
+            52px on each navigation. Its height is reserved in
+            `.shell__trail`. */}
+        <div className="shell__trail">
+          {crumbs && crumbs.length > 1 ? <Breadcrumbs crumbs={crumbs} /> : null}
+        </div>
+
         <div className="screen-head">
           <div className="screen-head__text">
             <h1>{title}</h1>
             {subtitle ? <p>{subtitle}</p> : null}
           </div>
-          {crumbs && crumbs.length > 1 ? (
-            <div className="screen-head__trail">
-              <Breadcrumbs crumbs={crumbs} />
-            </div>
-          ) : null}
           {aside ? <div className="screen-head__aside">{aside}</div> : null}
         </div>
 

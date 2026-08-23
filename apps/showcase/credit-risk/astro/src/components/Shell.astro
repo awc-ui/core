@@ -100,42 +100,40 @@ const isCurrent = (path: string) => (path === '/' ? here === '/' : here.startsWi
     </div>
   </header>
 
-  {/* The trail sits OPPOSITE the heading it describes, not on a row of its own
-      above it.
+  {/* The trail has its own row above the heading.
 
       It appears on the drill path (sector → counterparty → facility), where it
       is the only thing showing where you are and the only way back up it. Not
       on the three section screens: the nav already highlights the section, so a
       trail reading "Overview / Watchlist" would only say it twice.
 
-      Putting it here rather than in its own row is also what keeps the geometry
-      still. `.screen-head` exists on every screen and is taller than the trail,
-      so a trail appearing or disappearing cannot change the row's height —
-      whereas a row that came and went was moving the whole page by 52px on
-      every navigation. */}
+      The ROW is always rendered even when empty, because a row that comes and
+      goes is what was moving the heading and every panel under it by 52px on
+      each navigation. Its height is reserved in `.shell__trail`. */}
+  <div class="shell__trail">
+    {
+      crumbs.length > 1 && (
+        <md-breadcrumbs
+          label={t('nav.breadcrumb')}
+          max-items="4"
+          items-before-collapse="1"
+          items-after-collapse="2"
+        >
+          {crumbs.map((crumb) => (
+            <md-breadcrumb-item href={crumb.href ? href(crumb.href) : undefined}>
+              {crumb.label}
+            </md-breadcrumb-item>
+          ))}
+        </md-breadcrumbs>
+      )
+    }
+  </div>
+
   <div class="screen-head">
     <div class="screen-head__text">
       <h1>{title}</h1>
       {subtitle && <p>{subtitle}</p>}
     </div>
-    {
-      crumbs.length > 1 && (
-        <div class="screen-head__trail">
-          <md-breadcrumbs
-            label={t('nav.breadcrumb')}
-            max-items="4"
-            items-before-collapse="1"
-            items-after-collapse="2"
-          >
-            {crumbs.map((crumb) => (
-              <md-breadcrumb-item href={crumb.href ? href(crumb.href) : undefined}>
-                {crumb.label}
-              </md-breadcrumb-item>
-            ))}
-          </md-breadcrumbs>
-        </div>
-      )
-    }
     {
       Astro.slots.has('aside') && (
         <div class="screen-head__aside">
