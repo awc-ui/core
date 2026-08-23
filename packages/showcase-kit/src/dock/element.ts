@@ -69,7 +69,16 @@ const ElementBase: typeof HTMLElement =
 
 export class AwcShowcaseDock extends ElementBase {
   static get observedAttributes(): string[] {
-    return ['frameworks', 'framework', 'base-path', 'label', 'controls', 'collapsed', 'position'];
+    return [
+      'frameworks',
+      'framework',
+      'base-path',
+      'label',
+      'controls',
+      'collapsed',
+      'position',
+      'locale-route',
+    ];
   }
 
   #root: ShadowRoot;
@@ -123,6 +132,58 @@ export class AwcShowcaseDock extends ElementBase {
 
   get #currentFramework(): string {
     return this.getAttribute('framework') ?? this.#frameworks[0] ?? '';
+  }
+
+  /**
+   * Set by a build whose language lives in the URL rather than in client state.
+   *
+   * The value is the DEFAULT locale — the one served without a path segment.
+   * Presence of the attribute is what switches the behaviour; the value only
+   * says which locale owns the bare path. See `#localeHref`.
+   */
+  get #localeRoute(): string | null {
+    return this.getAttribute('locale-route');
+  }
+
+  /**
+   * On a locale-routed page the document's own `lang` is authoritative — the
+   * strings around it were rendered in that language at build time — so the
+   * picker must show it, not whatever locale is left in localStorage.
+   */
+  get #displayLocale(): string {
+    if (this.#localeRoute === null) return this.#state.locale;
+    const lang = typeof document === 'undefined' ? '' : document.documentElement.lang;
+    return LOCALES.some((l) => l.code === lang) ? lang : this.#state.locale;
+  }
+
+  /**
+   * The current URL with its locale segment swapped for `target`.
+   *
+   * The default locale is served unprefixed, so switching to it removes the
+   * segment and switching away inserts one, immediately after `base-path`.
+   * Everything after the locale — the screen path, the query, the hash — is
+   * preserved, so changing language keeps the reader on the facility they were
+   * looking at rather than dropping them at the overview.
+   */
+  #localeHref(target: string): string {
+    const fallback = this.#localeRoute ?? 'en';
+    const base = (this.getAttribute('base-path') ?? '').replace(/\/+$/, '');
+    const url = new URL(
+      typeof location === 'undefined' ? 'http://localhost/' : location.href,
+    );
+
+    let rest = url.pathname.startsWith(base) ? url.pathname.slice(base.length) : url.pathname;
+    for (const { code } of LOCALES) {
+      if (code === fallback) continue;
+      if (rest === `/${code}` || rest.startsWith(`/${code}/`)) {
+        rest = rest.slice(code.length + 1) || '/';
+        break;
+      }
+    }
+    if (!rest.startsWith('/')) rest = `/${rest}`;
+
+    url.pathname = target === fallback ? `${base}${rest}` : `${base}/${target}${rest}`;
+    return url.href;
   }
 
   get #controls(): DockControl[] {
@@ -310,12 +371,20 @@ export class AwcShowcaseDock extends ElementBase {
       // Endonyms: a language picker names each language in that language.
       option.textContent = locale.nativeName;
       option.lang = locale.code;
-      option.selected = locale.code === this.#state.locale;
+      option.selected = locale.code === this.#displayLocale;
       select.append(option);
     }
     select.addEventListener('change', () => {
       // Direction is intentionally left unset so it re-derives from the locale.
-      setShowcaseState({ locale: select.value as ShowcaseState['locale'], dir: undefined });
+      const locale = select.value as ShowcaseState['locale'];
+      setShowcaseState({ locale, dir: undefined });
+      // A locale-routed build has no client-side rendering to re-run: its
+      // strings are baked into the HTML. Writing the state above still keeps
+      // the choice sticky for the other five builds; the navigation is what
+      // actually changes the language here.
+      if (this.#localeRoute !== null && typeof location !== 'undefined') {
+        location.assign(this.#localeHref(locale));
+      }
     });
 
     wrap.append(label, select);

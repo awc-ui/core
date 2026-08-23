@@ -12,10 +12,20 @@
  * on import, which still runs before the app renders its own markup.
  *
  * Contract, matching main-llm.md §2.1:
- *   - `lang`         always written
- *   - `dir`          always written, "ltr" or "rtl"
+ *   - `lang`         always written, UNLESS the page opts out (see below)
+ *   - `dir`          always written, "ltr" or "rtl", same exception
  *   - `data-theme`   written as "dark", or REMOVED. Never "light".
  *   - `data-density` written as "-1".."-4", or REMOVED. Never "0".
+ *
+ * LOCALE-ROUTED PAGES OPT OUT of the first two. A statically rendered site puts
+ * the language in the URL (`/astro/ro/…`) and writes the strings into the HTML
+ * at build time, so the document's own `lang` is the truth and a stale value in
+ * localStorage must not overwrite it — otherwise a reader who last chose
+ * Romanian visits the English URL and gets `lang="ro"` stamped over English
+ * text, which is wrong for screen readers, for hyphenation and for the browser's
+ * own translation offer. Such a page marks `<html data-locale-route>` and this
+ * script leaves `lang` and `dir` exactly as the server wrote them, while still
+ * applying theme and density, which are pure CSS and carry no server content.
  */
 
 /**
@@ -32,7 +42,7 @@ export const PREBOOT_SCRIPT =
   "var t=g('theme','theme');if(['light','dark','system'].indexOf(t)<0)t='system';" +
   "var r=g('dir','dir');if(r!=='ltr'&&r!=='rtl')r=l==='ar'?'rtl':'ltr';" +
   "var n=parseInt(g('density','density'),10);n=n>=-4&&n<0?n:0;" +
-  'd.lang=l;d.dir=r;' +
+  "if(!d.hasAttribute('data-locale-route')){d.lang=l;d.dir=r}" +
   "if(t==='dark'||(t==='system'&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches))" +
   "d.setAttribute('data-theme','dark');else d.removeAttribute('data-theme');" +
   "if(n)d.setAttribute('data-density',''+n);else d.removeAttribute('data-density');" +

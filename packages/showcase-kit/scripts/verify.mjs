@@ -6,6 +6,7 @@
  */
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
+import vm from 'node:vm';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const dist = resolve(here, '..', 'dist');
@@ -380,6 +381,71 @@ ok('uses the one namespaced storage key', P.PREBOOT_SCRIPT.includes("'awc:showca
 ok('never writes data-theme="light"', !P.PREBOOT_SCRIPT.includes("'data-theme','light'"));
 ok('removes data-density rather than writing 0', P.PREBOOT_SCRIPT.includes("removeAttribute('data-density')"));
 ok('script tag helper wraps it', P.prebootScriptTag() === `<script>${P.PREBOOT_SCRIPT}</script>`);
+
+/*
+ * The checks above only grep the source. These RUN it, because the script's
+ * whole job is a side effect on <html> and a string match cannot tell you
+ * whether it fired. The IIFE swallows its own exceptions by design, so a
+ * throwing stub would look exactly like a passing run — every stub here is
+ * therefore complete enough that the script takes its real path.
+ */
+function runPreboot({ search = '', stored = null, lang = 'en', dir = 'ltr', localeRoute = false, prefersDark = false } = {}) {
+  const attrs = new Map();
+  if (localeRoute) attrs.set('data-locale-route', '');
+  const documentElement = {
+    lang,
+    dir,
+    hasAttribute: (k) => attrs.has(k),
+    setAttribute: (k, v) => attrs.set(k, String(v)),
+    removeAttribute: (k) => attrs.delete(k),
+  };
+  const sandbox = {
+    document: { documentElement },
+    location: { search },
+    localStorage: { getItem: () => (stored === null ? null : JSON.stringify(stored)) },
+    URLSearchParams,
+    JSON,
+    parseInt,
+    window: { matchMedia: () => ({ matches: prefersDark }) },
+  };
+  sandbox.matchMedia = sandbox.window.matchMedia;
+  vm.createContext(sandbox);
+  vm.runInContext(P.PREBOOT_SCRIPT, sandbox);
+  return { lang: documentElement.lang, dir: documentElement.dir, attrs };
+}
+
+let r = runPreboot({ stored: { locale: 'ar', theme: 'dark', density: -2 } });
+ok('applies a stored locale, direction, theme and density', r.lang === 'ar' && r.dir === 'rtl' && r.attrs.get('data-theme') === 'dark' && r.attrs.get('data-density') === '-2', `${r.lang}/${r.dir}`);
+
+r = runPreboot({ search: '?lang=ro&density=-4', stored: { locale: 'ar', density: -1 } });
+ok('the URL beats localStorage', r.lang === 'ro' && r.attrs.get('data-density') === '-4', `${r.lang}/${r.attrs.get('data-density')}`);
+
+r = runPreboot({ stored: { locale: 'en', theme: 'light', density: 0 } });
+ok('light theme and rung 0 REMOVE their attributes', !r.attrs.has('data-theme') && !r.attrs.has('data-density'));
+
+r = runPreboot({ stored: { theme: 'system' }, prefersDark: true });
+ok('system theme follows prefers-color-scheme', r.attrs.get('data-theme') === 'dark');
+
+r = runPreboot({ stored: { locale: 'zz', density: 99, theme: 'neon' } });
+ok('junk state falls back to en/ltr/light/0', r.lang === 'en' && r.dir === 'ltr' && !r.attrs.has('data-theme') && !r.attrs.has('data-density'));
+
+/*
+ * The locale-route opt-out. A statically rendered build writes the language
+ * into the HTML at build time, so a stale locale in localStorage must not be
+ * stamped over it — that would put lang="ro" on English text, which misleads
+ * screen readers, hyphenation and the browser's own translate offer. Theme and
+ * density are pure CSS and must still apply.
+ */
+r = runPreboot({ lang: 'en', dir: 'ltr', localeRoute: true, stored: { locale: 'ar', theme: 'dark', density: -3 } });
+ok('data-locale-route leaves the server-rendered lang alone', r.lang === 'en', r.lang);
+ok('…and the server-rendered dir alone', r.dir === 'ltr', r.dir);
+ok('…while still applying theme and density', r.attrs.get('data-theme') === 'dark' && r.attrs.get('data-density') === '-3');
+
+r = runPreboot({ lang: 'ar', dir: 'rtl', localeRoute: true, stored: { locale: 'en' } });
+ok('an RTL page stays RTL despite an LTR locale in storage', r.lang === 'ar' && r.dir === 'rtl', `${r.lang}/${r.dir}`);
+
+r = runPreboot({ lang: 'ar', dir: 'rtl', localeRoute: true, search: '?lang=en' });
+ok('and a stale ?lang in the URL cannot override the route either', r.lang === 'ar' && r.dir === 'rtl', `${r.lang}/${r.dir}`);
 
 /* -------------------------------------------------------------------- dock */
 
