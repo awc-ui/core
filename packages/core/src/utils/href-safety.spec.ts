@@ -35,13 +35,58 @@ async function renderWithOpenSpy(tag: string, component: unknown, attrs: string)
   return { page, openSpy };
 }
 
+/* Components that still navigate imperatively. md-button left this group when
+   it started rendering a real <a> — see the anchor contract below. The other
+   two have the same defect and should follow; until they do, their security
+   contract is still the window.open one. */
 const NAVIGATING_COMPONENTS: Array<[string, unknown]> = [
-  ['md-button', MdButton],
   ['md-icon-button', MdIconButton],
   ['md-navigation-tab', MdNavigationTab],
 ];
 
 describe('href safety contract', () => {
+  /* md-button renders a REAL <a> rather than calling window.open, so its half
+     of this contract is asserted on the rendered anchor. The security
+     properties are identical and must both hold: an unsafe URL produces no
+     link at all, and a link opening a new browsing context severs the opener.
+     Asserting on markup rather than a spy is also stronger here — it is what
+     the browser actually acts on for middle-click and cmd-click, which never
+     reach a JS handler. */
+  describe('md-button renders a real anchor', () => {
+    async function renderButton(attrs: string) {
+      const page = await newSpecPage({
+        components: [MdButton as never],
+        html: `<md-button ${attrs}>Go</md-button>`,
+      });
+      return page.root?.shadowRoot?.querySelector('a.md-button__anchor') ?? null;
+    }
+
+    it('renders NO anchor for a javascript: URL', async () => {
+      expect(await renderButton(`href="${HOSTILE}"`)).toBeNull();
+    });
+
+    it('renders an anchor for a safe URL', async () => {
+      const a = await renderButton(`href="${SAFE}"`);
+      expect(a?.getAttribute('href')).toBe(SAFE);
+      expect(a?.getAttribute('role')).toBe('link');
+    });
+
+    it('severs the opener when the target opens a new browsing context', async () => {
+      const a = await renderButton(`href="${SAFE}" target="_blank"`);
+      expect(a?.getAttribute('rel')).toBe('noopener noreferrer');
+    });
+
+    it('severs the opener for a named target too', async () => {
+      const a = await renderButton(`href="${SAFE}" target="preview"`);
+      expect(a?.getAttribute('rel')).toBe('noopener noreferrer');
+    });
+
+    it('does NOT set rel for same-tab navigation, which would strip the referrer', async () => {
+      const a = await renderButton(`href="${SAFE}" target="_self"`);
+      expect(a?.getAttribute('rel')).toBeNull();
+    });
+  });
+
   describe('components that navigate via window.open', () => {
     it.each(NAVIGATING_COMPONENTS)('%s refuses a javascript: URL', async (tag, component) => {
       const { page, openSpy } = await renderWithOpenSpy(tag, component, `href="${HOSTILE}"`);

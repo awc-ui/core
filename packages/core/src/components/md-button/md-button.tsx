@@ -1,7 +1,7 @@
-import { Component, Host, h, Prop, State, Event, EventEmitter, Element, AttachInternals } from '@stencil/core';
+import { Component, Fragment, Host, h, Prop, State, Event, EventEmitter, Element, AttachInternals } from '@stencil/core';
 import { LazyLoadingIndicator } from '../../utils/lazy-loading-indicator';
 import { triggerRipple } from '../../utils/ripple';
-import { sanitizeHref, SAFE_WINDOW_FEATURES } from '../../utils/url';
+import { sanitizeHref, SAFE_LINK_REL, SAFE_WINDOW_FEATURES } from '../../utils/url';
 
 /**
  * Detail payload emitted by `md-button`'s `mdClick` event when the user
@@ -244,8 +244,21 @@ export class MdButton {
        branch is taken on the raw prop — an unsafe URL must not silently fall
        through to submitting the form. Only the navigation itself is refused. */
     if (this.href) {
+      /* A safe href renders a REAL <a> in the shadow root, and the browser
+         owns activation from there — so do nothing here. That is what makes
+         middle-click, cmd/ctrl-click and "copy link address" work, and it is
+         why cancelling mdClick above (which calls preventDefault on this very
+         event) still vetoes navigation.
+
+         The fallback below covers only the case where NO anchor exists: an
+         href that failed sanitising renders none, so there is nothing to
+         navigate and nothing to fall back to — the navigation is refused, as
+         before. window.open remains for a programmatic click() on a button
+         whose href is safe but whose anchor has not rendered yet. */
       const href = sanitizeHref(this.href);
-      if (href) window.open(href, this.target, SAFE_WINDOW_FEATURES);
+      if (href && !this.el.shadowRoot?.querySelector('.md-button__anchor')) {
+        window.open(href, this.target, SAFE_WINDOW_FEATURES);
+      }
       return;
     }
 
@@ -284,6 +297,17 @@ export class MdButton {
     const isEffectivelyDisabled = this.isDisabled;
     const hasLeadingIcon = !!this.icon;
     const hasTrailingIcon = !!this.trailingIcon;
+    /* A component that accepts `href` must produce a real link. Sanitising
+       here (not just at click time) means an unsafe URL renders NO anchor at
+       all rather than an inert one. Disabled link-buttons also drop the
+       anchor: there is no disabled state for <a>, and a focusable link that
+       refuses to navigate is worse than no link. */
+    const linkHref =
+      this.href && !isEffectivelyDisabled ? sanitizeHref(this.href) : '';
+    /* rel only where it means something: a target that opens a NEW browsing
+       context. Blanket noreferrer would also strip the Referer on ordinary
+       same-tab navigation, quietly breaking referrer-based analytics. */
+    const opensNewContext = !!this.target && this.target !== '_self';
 
     return (
       <Host
@@ -304,13 +328,19 @@ export class MdButton {
           'md-button--connected-right': this.connectedRight,
           'md-button--full-width': this.fullWidth,
         }}
-        role={this.roleOverride || 'button'}
+        role={this.roleOverride || (linkHref ? null : 'button')}
         aria-disabled={isEffectivelyDisabled ? 'true' : 'false'}
         aria-pressed={this.toggle ? String(this.selected) : undefined}
         tabindex={
-          this.disabled
-            ? '-1'
-            : (this.groupTabindex !== null ? String(this.groupTabindex) : '0')
+          /* When a real anchor is rendered IT is the focusable element, so the
+             host must not be a tab stop as well — otherwise every link button
+             costs two presses of Tab and screen readers meet a button wrapping
+             a link. */
+          linkHref
+            ? null
+            : this.disabled
+              ? '-1'
+              : (this.groupTabindex !== null ? String(this.groupTabindex) : '0')
         }
         onClick={this.handleClick}
         onKeyDown={this.handleKeyDown}
@@ -319,6 +349,35 @@ export class MdButton {
         onPointerLeave={this.handlePointerUp}
         onPointerCancel={this.handlePointerUp}
       >
+        {linkHref ? (
+          <a
+            class="md-button__anchor"
+            part="anchor"
+            role="link"
+            href={linkHref}
+            target={this.target || undefined}
+            rel={opensNewContext ? SAFE_LINK_REL : undefined}
+            tabindex={this.groupTabindex !== null ? String(this.groupTabindex) : '0'}
+            aria-disabled={isEffectivelyDisabled ? 'true' : null}
+          >
+            {this.renderContent(isEffectivelyDisabled, hasLeadingIcon, hasTrailingIcon)}
+          </a>
+        ) : (
+          this.renderContent(isEffectivelyDisabled, hasLeadingIcon, hasTrailingIcon)
+        )}
+      </Host>
+    );
+  }
+
+  /** Button innards, rendered either directly in the host or inside the
+   *  anchor when `href` makes this a link. */
+  private renderContent(
+    isEffectivelyDisabled: boolean,
+    hasLeadingIcon: boolean,
+    hasTrailingIcon: boolean,
+  ) {
+    return (
+      <Fragment>
         {this.ripple && <md-ripple disabled={isEffectivelyDisabled}></md-ripple>}
         <span class="md-button__state-layer" part="state-layer" aria-hidden="true"></span>
         <slot name="leading-icon">
@@ -345,7 +404,7 @@ export class MdButton {
             </slot>
           </span>
         )}
-      </Host>
+      </Fragment>
     );
   }
 }

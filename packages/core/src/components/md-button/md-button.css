@@ -738,6 +738,51 @@ slot[name="trailing-icon"] {
 :host([density='-4']) { --md-sys-density-scale: -4; }
 
 /* ==========================================================
+   LINK MODE — the anchor rendered when `href` is set
+
+   The anchor wraps the button's innards so the LABEL gives it its accessible
+   name, and it carries the tab stop (the host drops role/tabindex in this
+   mode). It reproduces the host's own flex row rather than sitting inside it,
+   so a link button lays out identically to a plain one.
+
+   `::after` stretches the hit area over the host's padding: the anchor itself
+   only fills the CONTENT box, so without it a click on the padding — a good
+   third of a large button — would miss the link and lose native activation.
+   The host is already `position: relative`, so the inset resolves to it.
+   ========================================================== */
+.md-button__anchor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Not inherited by default; picking up the host's computed value keeps the
+     icon/label spacing identical to a non-link button at every density. */
+  gap: inherit;
+  inline-size: 100%;
+  block-size: 100%;
+  min-inline-size: 0;
+  /* A button is not underlined blue text. */
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  outline: none;
+}
+
+.md-button__anchor::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Behind the state layer and ripple so neither is occluded. */
+  z-index: 0;
+}
+
+/* The focus ring belongs to the whole button, not the inner content box. */
+:host(:has(.md-button__anchor:focus-visible)) {
+  outline: var(--md-sys-state-focus-ring-width, 3px) solid
+    var(--md-button-focus-ring-color, var(--md-sys-color-secondary, #625B71));
+  outline-offset: var(--md-sys-state-focus-ring-offset, 2px);
+}
+
+/* ==========================================================
    HIDDEN
    `[hidden]` is a UA-stylesheet rule, and every `:host` display
    declaration above is an AUTHOR rule — author origin beats UA, so without
