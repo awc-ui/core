@@ -64,6 +64,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      # Lets the runner mint the OIDC token npm exchanges for a signed
+      # provenance attestation. Without it npm silently publishes WITHOUT
+      # provenance rather than failing, so this line is load-bearing for the
+      # "Built and signed on GitHub Actions" badge.
+      id-token: write
     steps:
       - name: beta/prod release only from main
         if: inputs.channel != 'snapshot' && github.ref != 'refs/heads/main'
@@ -186,6 +191,17 @@ jobs:
       - name: Publish to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # Publish with a sigstore provenance attestation, which npm surfaces
+          # on the package page as "Built and signed on GitHub Actions" with
+          # the commit and workflow that produced the tarball.
+          #
+          # Set as npm CONFIG rather than a `--provenance` flag on purpose:
+          # `pnpm publish` shells out to `npm publish` and this reaches npm
+          # regardless of how pnpm forwards argv (pnpm's own --help does not
+          # even list the flag). Requires id-token: write above, a public
+          # package, and a `repository` field matching this repo — all seven
+          # packages already carry one.
+          NPM_CONFIG_PROVENANCE: 'true'
         run: >-
           pnpm -r ${{ env.PUBLISH_FILTERS }} publish
           --access public
