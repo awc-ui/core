@@ -328,19 +328,3 @@ md-organization-chart {
   display: block;
   min-block-size: 200px;
 }
-
-/* Chips inside a table with a sticky header.
- *
- * md-chip's label carries `z-index: 2` inside the component, and the chip host
- * is `position: relative; z-index: auto` — which does NOT open a stacking
- * context, so that internal z-index escapes into md-table's context. The sticky
- * header row is also `z-index: 2`, so the two tie and tree order decides: the
- * body is after the head, and the chip's LABEL paints over the pinned header
- * (its background does not, which is why the text appeared to float there).
- *
- * Isolating the chip keeps its internal layering internal. Remove this once the
- * component isolates itself — reported upstream with this repro.
- */
-md-chip {
-  isolation: isolate;
-}

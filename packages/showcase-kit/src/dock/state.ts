@@ -216,7 +216,41 @@ export function applySeedPreset(seedId: string, doc?: Document): void {
     // Appended last so it beats the token sheet, per main-llm.md §4.2.
     d.head.appendChild(style);
   }
-  if (style.textContent !== css) style.textContent = css;
+  if (style.textContent !== css) {
+    style.textContent = css;
+    refreshChartTheme(d);
+  }
+}
+
+/**
+ * Charts watch their ancestor chain for theme changes, which covers everything
+ * the dock stamps onto `<html>` — `data-theme`, `dir`, `data-density`. It
+ * cannot cover THIS: the accent presets arrive as a stylesheet appended to
+ * `<head>`, so no attribute on any ancestor mutates and no observer fires. That
+ * is the documented case for the components' public `refreshTheme()`, which
+ * re-reads the tokens and repaints without rebuilding the engine.
+ */
+function refreshChartTheme(d: Document): void {
+  // Tolerate a partial document (the verifier's stub, a server-side shim).
+  if (typeof d.querySelectorAll !== 'function') return;
+
+  const charts = d.querySelectorAll<HTMLElement & { refreshTheme?: () => Promise<void> }>(
+    'md-bar-chart, md-line-chart, md-area-chart, md-pie-chart, md-sparkline',
+  );
+  if (!charts.length) return;
+
+  // One frame later, so the new sheet has been applied before the re-read.
+  const raf =
+    typeof requestAnimationFrame === 'function'
+      ? requestAnimationFrame
+      : (cb: FrameRequestCallback) => setTimeout(() => cb(0), 16) as unknown as number;
+
+  raf(() => {
+    charts.forEach((chart) => {
+      // Older builds of the library predate refreshTheme(); skip rather than throw.
+      void chart.refreshTheme?.();
+    });
+  });
 }
 
 /** `true` when the OS is asking for a dark palette. */
@@ -257,58 +291,7 @@ export function applyShowcaseState(state: ShowcaseState, doc?: Document): void {
   else html.setAttribute('data-density', String(state.density));
 
   applySeedPreset(state.seed, d);
-  repaintCharts(d);
 }
-
-/**
- * Charts draw to a canvas, so their colours are pixels — not live CSS. The
- * components resolve `--md-sys-color-*` once when the engine initialises and
- * refresh only on a `prefers-color-scheme` change, which means an in-page
- * theme swap (our accent presets, or the explicit light/dark toggle) leaves
- * every chart painted in the previous palette while the rest of the page
- * retints. Measured: swapping the accent moves `--md-sys-color-primary` from
- * #6750a4 to #01629E while the canvas pixels stay byte-identical, and neither
- * `resize()` nor `replay()` re-resolves them.
- *
- * Reassigning the data prop is the public lever that does: it trips the
- * component's own `@Watch`, which rebuilds the engine and re-reads the tokens.
- * The array is copied so the identity actually changes — assigning the same
- * reference is a no-op.
- *
- * Delete this the day the chart components observe theme changes themselves;
- * nothing else here depends on it.
- */
-function repaintCharts(d: Document): void {
-  // Callers may hand us a partial document — a jsdom stub in the verifier, or a
-  // server-side shim — so feature-detect rather than assume a live DOM.
-  if (typeof d.querySelectorAll !== 'function') return;
-
-  const charts = d.querySelectorAll<HTMLElement & { series?: unknown; data?: unknown }>(
-    'md-bar-chart, md-line-chart, md-area-chart, md-pie-chart, md-sparkline',
-  );
-  if (!charts.length) return;
-
-  // One frame after the token sheet lands, so the engine re-reads the NEW values.
-  const raf =
-    typeof requestAnimationFrame === 'function'
-      ? requestAnimationFrame
-      : (cb: FrameRequestCallback) => setTimeout(() => cb(0), 16) as unknown as number;
-
-  raf(() => {
-    charts.forEach((chart) => {
-      // `series` on the cartesian charts, `data` on pie and sparkline.
-      for (const prop of ['series', 'data'] as const) {
-        const value = chart[prop];
-        if (Array.isArray(value)) {
-          chart[prop] = value.map((entry) =>
-            entry && typeof entry === 'object' ? { ...(entry as object) } : entry,
-          );
-        }
-      }
-    });
-  });
-}
-
 /* ------------------------------------------------------------- the store */
 
 export interface ShowcaseChangeDetail {
