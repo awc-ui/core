@@ -62,6 +62,7 @@ declare global {
       'md-table-row': CE;
       'md-table-cell': CE;
       'md-table-sort-label': CE;
+      'md-table-pagination': CE;
 
       /* inputs */
       'md-segmented-button-set': CE;

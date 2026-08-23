@@ -73,12 +73,16 @@ export interface ChartSeries {
   label: string;
   data?: (number | null)[];
   id?: string;
+  /** Which entry of `yAxes` measures this series. Omit for the first axis. */
+  yAxisIndex?: number;
 }
 
 interface ChartProps {
   series: ChartSeries[];
   xAxis?: Record<string, unknown>;
   yAxis?: Record<string, unknown>;
+  /** Multiple value axes. Supersedes `yAxis`; series pick one via `yAxisIndex`. */
+  yAxes?: Record<string, unknown>[];
   valueFormatter?: (value: number | null) => string;
   /** Locale, for the effect deps — see `chartDeps`. Also a real chart attribute. */
   locale?: string;
@@ -94,11 +98,15 @@ interface ChartProps {
  * formatting in the previous language.
  */
 function useChart(props: ChartProps) {
-  const { series, xAxis, yAxis, valueFormatter, elementRef, ...attributes } = props;
-  const internal = useElementProps({ series, xAxis, yAxis, valueFormatter }, [
+  const { series, xAxis, yAxis, yAxes, valueFormatter, elementRef, ...attributes } = props;
+  // `yAxes` carries an array of axis objects and per-axis valueFormatter
+  // functions, so like the others it has to be assigned as a JS property —
+  // an attribute would stringify it to "[object Object]".
+  const internal = useElementProps({ series, xAxis, yAxis, yAxes, valueFormatter }, [
     JSON.stringify(series),
     JSON.stringify(xAxis),
     JSON.stringify(yAxis),
+    JSON.stringify(yAxes?.map(({ valueFormatter: _fn, ...rest }) => rest)),
     props.locale,
   ]);
 

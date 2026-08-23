@@ -120,7 +120,7 @@ export function SeverityChip({ severity }: { severity: SignalSeverity }) {
   const t = useT();
   return (
     <span className="row" style={{ gap: 'var(--md-sys-spacing-gap-xs, 4px)' }}>
-      <md-status-dot state={severityDot[severity]} size="small" label={t(`severity.${severity}`)} />
+      <md-status-dot inline state={severityDot[severity]} size="small" label={t(`severity.${severity}`)} />
       <md-chip variant="assist" appearance="filled" color={severityColor[severity]} label={t(`severity.${severity}`)} />
     </span>
   );
@@ -129,7 +129,7 @@ export function SeverityChip({ severity }: { severity: SignalSeverity }) {
 /** The watchlist marker: a live dot plus its accessible name. */
 export function WatchDot({ on }: { on: boolean }) {
   const t = useT();
-  return <md-status-dot state={watchlistDot(on)} size="medium" label={on ? t('kpi.watchlist') : t('facilityStatus.performing')} />;
+  return <md-status-dot inline state={watchlistDot(on)} size="medium" label={on ? t('kpi.watchlist') : t('facilityStatus.performing')} />;
 }
 
 /* ------------------------------------------------------------------- meters */
@@ -227,5 +227,5 @@ export function Fact({ label, children }: { label: string; children: ReactNode }
 /** Also known as the covenant status dot, reused in the covenants table. */
 export function CovenantDot({ status }: { status: CovenantStatus }) {
   const t = useT();
-  return <md-status-dot state={covenantDot[status]} size="small" label={t(`covenantStatus.${status}`)} />;
+  return <md-status-dot inline state={covenantDot[status]} size="small" label={t(`covenantStatus.${status}`)} />;
 }

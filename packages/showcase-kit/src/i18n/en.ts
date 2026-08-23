@@ -135,6 +135,13 @@ export const en = {
   'table.lgdUplift': 'LGD uplift',
   'table.elDelta': 'Δ Expected loss',
   'table.rwaDelta': 'Δ RWA',
+  'table.rowsPerPage': "Rows per page:",
+  'table.displayedRows': "%from%–%to% of %count%",
+  'table.firstPage': "First page",
+  'table.previousPage': "Previous page",
+  'table.nextPage': "Next page",
+  'table.lastPage': "Last page",
+  'table.all': "All",
 
   /* ------------------------------------------------------------- sectors */
   'sector.real-estate': 'Real estate',

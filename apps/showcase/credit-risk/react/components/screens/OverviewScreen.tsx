@@ -180,12 +180,16 @@ export function OverviewScreen() {
         />
       </Panel>
 
+      {/* The whole book, paged — not a top-10 cap. A truncated list with a
+          pagination bar underneath would read "1-10 of 10", which tells the
+          reader nothing and hides the other 14 counterparties; the pagination
+          readout is now the honest count. Sorting by EAD desc still puts the
+          largest exposures first, which is what the panel is for. */}
       <Panel
         title={t('screen.counterparties.title')}
-        subtitle={t('common.showing', { shown: 10, total: totals.counterpartyCount })}
         actions={<Drill href={route.watchlist()}>{t('nav.watchlist')}</Drill>}
       >
-        <CounterpartyTable limit={10} />
+        <CounterpartyTable />
       </Panel>
     </Screen>
   );

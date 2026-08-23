@@ -135,6 +135,13 @@ export const ar: Dictionary = {
   'table.lgdUplift': 'زيادة الخسارة عند التعثر',
   'table.elDelta': 'Δ الخسارة المتوقعة',
   'table.rwaDelta': 'Δ الأصول المرجحة',
+  'table.rowsPerPage': "الصفوف لكل صفحة:",
+  'table.displayedRows': "%from%–%to% من %count%",
+  'table.firstPage': "الصفحة الأولى",
+  'table.previousPage': "الصفحة السابقة",
+  'table.nextPage': "الصفحة التالية",
+  'table.lastPage': "الصفحة الأخيرة",
+  'table.all': "الكل",
 
   /* ------------------------------------------------------------- sectors */
   'sector.real-estate': 'العقارات',

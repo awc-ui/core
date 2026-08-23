@@ -101,13 +101,23 @@ export function SectorScreen({ sectorId }: { sectorId: string }) {
         {/* No panel title: the chart carries its own header, which is also its
             accessible name. */}
         <Panel>
+          {/* TWO SCALES, NOT ONE. Expected loss runs in single-digit millions
+              while RWA runs in hundreds of millions, so on a shared axis the EL
+              line flattens onto the baseline and reads as zero. Each series gets
+              its own axis (`yAxes` + `series[].yAxisIndex`) — EL on the left,
+              RWA on the right — so both curves are legible at their own scale.
+              A broken axis would have been the other option, but it distorts
+              slope, and slope is the whole point of a trend chart. */}
           <LineChart
             series={[
               { label: t('kpi.expectedLoss'), data: quarters.map((q) => q.expectedLoss) },
-              { label: t('kpi.rwa'), data: quarters.map((q) => q.rwa) },
+              { label: t('kpi.rwa'), data: quarters.map((q) => q.rwa), yAxisIndex: 1 },
             ]}
             xAxis={{ data: quarterLabels, scale: 'category' }}
-            yAxis={{ label: t('app.baseCurrency', { currency: 'EUR' }), min: 0 }}
+            yAxes={[
+              { label: t('kpi.expectedLoss'), min: 0, valueFormatter: money },
+              { label: t('kpi.rwa'), min: 0, position: 'right', valueFormatter: money },
+            ]}
             valueFormatter={money}
             locale={state.locale}
             curve="monotone"

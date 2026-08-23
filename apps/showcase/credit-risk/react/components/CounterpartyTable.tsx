@@ -62,9 +62,38 @@ export function CounterpartyTable({
     },
   );
 
-  const rows = useMemo<Counterparty[]>(
+  // PAGING. `limit` is the "top N" cap the overview asks for (largest exposures);
+  // paging applies to whatever survives it. md-table-pagination is display state
+  // plus a REQUEST, exactly like the sort header: it renders the readout and the
+  // controls, and this component owns which slice is actually rendered.
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const allRows = useMemo<Counterparty[]>(
     () => getCounterparties({ sectorId, sortBy: sort.column, sortDir: sort.order, limit }),
     [sectorId, sort.column, sort.order, limit],
+  );
+
+  // A sort or filter change can leave the reader stranded past the last page.
+  const lastPage = Math.max(0, Math.ceil(allRows.length / rowsPerPage) - 1);
+  const safePage = Math.min(page, lastPage);
+
+  const rows = useMemo<Counterparty[]>(
+    () => allRows.slice(safePage * rowsPerPage, safePage * rowsPerPage + rowsPerPage),
+    [allRows, safePage, rowsPerPage],
+  );
+
+  const paginationRef = useRef<HTMLElement | null>(null);
+  useCustomEvent<CustomEvent<{ page: number }>>(paginationRef, 'mdPageChange', (event) => {
+    setPage(event.detail.page);
+  });
+  useCustomEvent<CustomEvent<{ rowsPerPage: number }>>(
+    paginationRef,
+    'mdRowsPerPageChange',
+    (event) => {
+      setRowsPerPage(event.detail.rowsPerPage);
+      setPage(0);
+    },
   );
 
   const columns: { key: CounterpartySortKey | null; label: string; numeric?: boolean }[] = [
@@ -148,6 +177,22 @@ export function CounterpartyTable({
           ))}
         </md-table-body>
       </md-table>
+      <md-table-pagination
+        ref={paginationRef}
+        slot="bottom"
+        count={allRows.length}
+        page={safePage}
+        rows-per-page={rowsPerPage}
+        rows-per-page-options="10,25,all"
+        show-first-last
+        label-rows-per-page={t('table.rowsPerPage')}
+        label-displayed-rows={t('table.displayedRows')}
+        label-first-page={t('table.firstPage')}
+        label-previous-page={t('table.previousPage')}
+        label-next-page={t('table.nextPage')}
+        label-last-page={t('table.lastPage')}
+        label-all={t('table.all')}
+      ></md-table-pagination>
     </md-table-container>
   );
 }

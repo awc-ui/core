@@ -130,6 +130,13 @@ export const ro: Dictionary = {
   'table.lgdUplift': 'Majorare LGD',
   'table.elDelta': 'Δ Pierdere așteptată',
   'table.rwaDelta': 'Δ RWA',
+  'table.rowsPerPage': "Rânduri pe pagină:",
+  'table.displayedRows': "%from%–%to% din %count%",
+  'table.firstPage': "Prima pagină",
+  'table.previousPage': "Pagina anterioară",
+  'table.nextPage': "Pagina următoare",
+  'table.lastPage': "Ultima pagină",
+  'table.all': "Toate",
 
   /* ------------------------------------------------------------- sectors */
   'sector.real-estate': 'Imobiliare',

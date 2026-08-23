@@ -257,6 +257,56 @@ export function applyShowcaseState(state: ShowcaseState, doc?: Document): void {
   else html.setAttribute('data-density', String(state.density));
 
   applySeedPreset(state.seed, d);
+  repaintCharts(d);
+}
+
+/**
+ * Charts draw to a canvas, so their colours are pixels — not live CSS. The
+ * components resolve `--md-sys-color-*` once when the engine initialises and
+ * refresh only on a `prefers-color-scheme` change, which means an in-page
+ * theme swap (our accent presets, or the explicit light/dark toggle) leaves
+ * every chart painted in the previous palette while the rest of the page
+ * retints. Measured: swapping the accent moves `--md-sys-color-primary` from
+ * #6750a4 to #01629E while the canvas pixels stay byte-identical, and neither
+ * `resize()` nor `replay()` re-resolves them.
+ *
+ * Reassigning the data prop is the public lever that does: it trips the
+ * component's own `@Watch`, which rebuilds the engine and re-reads the tokens.
+ * The array is copied so the identity actually changes — assigning the same
+ * reference is a no-op.
+ *
+ * Delete this the day the chart components observe theme changes themselves;
+ * nothing else here depends on it.
+ */
+function repaintCharts(d: Document): void {
+  // Callers may hand us a partial document — a jsdom stub in the verifier, or a
+  // server-side shim — so feature-detect rather than assume a live DOM.
+  if (typeof d.querySelectorAll !== 'function') return;
+
+  const charts = d.querySelectorAll<HTMLElement & { series?: unknown; data?: unknown }>(
+    'md-bar-chart, md-line-chart, md-area-chart, md-pie-chart, md-sparkline',
+  );
+  if (!charts.length) return;
+
+  // One frame after the token sheet lands, so the engine re-reads the NEW values.
+  const raf =
+    typeof requestAnimationFrame === 'function'
+      ? requestAnimationFrame
+      : (cb: FrameRequestCallback) => setTimeout(() => cb(0), 16) as unknown as number;
+
+  raf(() => {
+    charts.forEach((chart) => {
+      // `series` on the cartesian charts, `data` on pie and sparkline.
+      for (const prop of ['series', 'data'] as const) {
+        const value = chart[prop];
+        if (Array.isArray(value)) {
+          chart[prop] = value.map((entry) =>
+            entry && typeof entry === 'object' ? { ...(entry as object) } : entry,
+          );
+        }
+      }
+    });
+  });
 }
 
 /* ------------------------------------------------------------- the store */
