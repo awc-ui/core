@@ -32,6 +32,12 @@ export function FacilityTable({ counterpartyId }: { counterpartyId: string }) {
         column-template="132px minmax(150px, 1fr) 96px minmax(150px, 1.2fr) 128px 120px 104px 108px 116px"
         min-width="1120px"
         sticky-header
+        // md-table ratchets its height by default (keep-height) so paging cannot make
+        // the page jump. That baseline is measured once and never recomputed, so a
+        // density change strands the taller height and leaves dead space below the
+        // rows — 176px at rung -4. Pagination already holds the row count steady
+        // here, so the ratchet earns little; live density switching matters more.
+        keep-height="false"
         striped
       >
         <md-table-head>

@@ -121,6 +121,12 @@ export function CounterpartyTable({
         column-template={`minmax(200px, 2fr) ${showSector ? 'minmax(120px, 1fr)' : ''} minmax(120px, 1fr) 108px 88px 76px 132px 132px 132px 104px`}
         min-width="1180px"
         sticky-header
+        // md-table ratchets its height by default (keep-height) so paging cannot make
+        // the page jump. That baseline is measured once and never recomputed, so a
+        // density change strands the taller height and leaves dead space below the
+        // rows — 176px at rung -4. Pagination already holds the row count steady
+        // here, so the ratchet earns little; live density switching matters more.
+        keep-height="false"
         striped
         sort-by={sort.column}
         sort-order={sort.order}
