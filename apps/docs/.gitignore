@@ -1,5 +1,13 @@
 dist/
 node_modules/
 .astro/
+
+# All three are build output copied into public/ before `astro build`:
+# Storybook by build-docs.sh, the showcase apps by their own builds, and the
+# Stencil runtime by scripts/sync-docs-runtime.mjs. The runtime's chunk hashes
+# rotate on every core build, so tracking it meant ~90 files churning in every
+# diff — and a committed copy can silently go stale against core, which 404s a
+# shared chunk and renders the whole site at zero height.
 public/storybook/
 public/showcase/
+public/awc-runtime/

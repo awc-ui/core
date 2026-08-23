@@ -36,6 +36,15 @@ echo "==> Generating component documentation pages..."
 node scripts/generate-docs.mjs
 
 echo ""
+echo "==> Syncing the Stencil runtime into apps/docs/public/..."
+# Must run AFTER the core build above and BEFORE astro build: the chunk hashes
+# rotate every time core is rebuilt, and a stale copy 404s on a shared chunk,
+# which fails every lazy element at once and renders the site at zero height.
+# `astro build` is invoked directly below rather than through the package's
+# `build` script, so this copy does not happen on its own.
+node scripts/sync-docs-runtime.mjs
+
+echo ""
 echo "==> Building Astro docs site..."
 pnpm --filter @awc-ui/docs exec astro build
 
