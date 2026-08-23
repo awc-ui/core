@@ -328,24 +328,6 @@ md-organization-chart {
   display: block;
   min-block-size: 200px;
 }
-
-/* Let vertical scrolling escape a horizontally-scrolling table.
- *
- * md-table-container's scroll viewport sets `overscroll-behavior: contain`,
- * which applies to BOTH axes — but that element only scrolls horizontally
- * (overflow-y is hidden). Containment on an axis the element cannot scroll
- * still blocks chaining, so a wheel over any wide table trapped the page: you
- * could not scroll back up with the pointer over the rows. Containing only the
- * axis that actually scrolls keeps the horizontal isolation and returns the
- * vertical gesture to the page.
- *
- * Reported upstream; remove once the component scopes it to the x axis.
- */
-md-table-container::part(scroll) {
-  overscroll-behavior-x: contain;
-  overscroll-behavior-y: auto;
-}
-
 /* Pin the rows-per-page select's width.
  *
  * md-table-pagination derives it from the density scale —
