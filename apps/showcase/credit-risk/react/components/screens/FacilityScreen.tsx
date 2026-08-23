@@ -20,6 +20,7 @@
 
 import { useMemo } from 'react';
 import {
+  BASE_CURRENCY,
   getCollateralFor,
   getCounterpartyById,
   getCovenantsFor,
@@ -163,7 +164,7 @@ export function FacilityScreen({ facilityId }: { facilityId: string }) {
                     {t('table.valuation')}
                   </md-table-cell>
                   <md-table-cell head scope="col" numeric>
-                    {t('app.baseCurrency', { currency: 'EUR' })}
+                    {`${t('table.valuation')} (${BASE_CURRENCY})`}
                   </md-table-cell>
                   <md-table-cell head scope="col" numeric>
                     {t('table.haircut')}

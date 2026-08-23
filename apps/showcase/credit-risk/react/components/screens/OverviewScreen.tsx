@@ -65,6 +65,7 @@ export function OverviewScreen() {
     <Screen
       title={t('screen.overview.title')}
       subtitle={t('screen.overview.subtitle', { date: t.formatDate(REPORTING_DATE, 'long') })}
+      crumbs={[{ label: t('nav.overview') }]}
       aside={
         <>
           <md-chip
@@ -153,8 +154,12 @@ export function OverviewScreen() {
             locale={state.locale}
             layout="horizontal"
             legend="none"
+            // `clickable` without `chevron`: the chevron end cap was signalling
+            // that the bars drill, but it turns each bar into an arrowhead.
+            // Rounded caps read better, and the pointer cursor plus the hover
+            // state still say the bar is a control.
             clickable
-            chevron
+            corner-radius="8"
             axis-ticks
             height="320px"
             label={t('kpi.ead')}

@@ -14,6 +14,7 @@
  * the table is a projection of the data rather than an invention on top of it.
  */
 import {
+  BASE_CURRENCY,
   getCollateralFor,
   getCovenantsFor,
   type Facility,
@@ -134,7 +135,7 @@ const facts: [string, string][] = [
               <md-table-cell head scope="col">{t('table.currency')}</md-table-cell>
               <md-table-cell head scope="col" numeric>{t('table.valuation')}</md-table-cell>
               <md-table-cell head scope="col" numeric>
-                {t('app.baseCurrency', { currency: 'EUR' })}
+                {`${t('table.valuation')} (${BASE_CURRENCY})`}
               </md-table-cell>
               <md-table-cell head scope="col" numeric>{t('table.haircut')}</md-table-cell>
               <md-table-cell head scope="col" numeric>{t('table.netValue')}</md-table-cell>

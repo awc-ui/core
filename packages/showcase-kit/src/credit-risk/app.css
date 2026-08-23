@@ -226,18 +226,30 @@ a {
 
 /* ------------------------------------------------------------------ layout */
 
+/*
+ * Cards in a row share a height — `stretch`, not `start`.
+ *
+ * With `start` each card is only as tall as its own content, so two panels side
+ * by side end at different heights and the row reads as ragged rather than as a
+ * pair. Stretching costs a little whitespace inside the shorter card and buys
+ * an aligned bottom edge, which is what makes them look like one row.
+ *
+ * `.panel` is `display: block` and its inner is a flex column, so the extra
+ * height lands as card background under the content rather than stretching the
+ * content itself.
+ */
 .grid-2 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
   gap: var(--md-sys-spacing-gap-md, 12px);
-  align-items: start;
+  align-items: stretch;
 }
 
 .grid-3 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: var(--md-sys-spacing-gap-md, 12px);
-  align-items: start;
+  align-items: stretch;
 }
 
 .stack {

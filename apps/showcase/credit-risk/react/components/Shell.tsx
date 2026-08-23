@@ -113,7 +113,14 @@ export function Screen({ title, subtitle, crumbs, aside, children }: ScreenProps
           </div>
         </header>
 
-        {crumbs && crumbs.length > 1 ? <Breadcrumbs crumbs={crumbs} /> : null}
+        {/* Rendered on EVERY screen, including the overview, where the trail is
+            a single current-page crumb. It used to be hidden below two crumbs,
+            on the reasoning that a trail of one says nothing — true in
+            isolation, but it meant the row existed on five screens and not on
+            the sixth, so every navigation to or from the overview moved the
+            heading and everything under it by 52px. A redundant crumb is a much
+            smaller cost than the whole page lurching on each drill. */}
+        {crumbs && crumbs.length > 0 ? <Breadcrumbs crumbs={crumbs} /> : null}
 
         <div className="screen-head">
           <div className="screen-head__text">

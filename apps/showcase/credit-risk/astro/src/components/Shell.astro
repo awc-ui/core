@@ -67,8 +67,14 @@ const href = (path: string) => localeHref(locale, path);
     </div>
   </header>
 
+  {/* Rendered on EVERY screen, including the overview, where the trail is a
+      single current-page crumb. It used to be hidden below two crumbs, on the
+      reasoning that a trail of one says nothing — true in isolation, but it
+      meant the row existed on five screens and not on the sixth, so every
+      navigation to or from the overview moved the heading and everything under
+      it by 52px. A redundant crumb is a much smaller cost than that. */}
   {
-    crumbs.length > 1 && (
+    crumbs.length > 0 && (
       <md-breadcrumbs
         label={t('nav.breadcrumb')}
         max-items="4"
