@@ -129,7 +129,14 @@
      space-taking bar into the card and shift the content. */
   overflow-x: auto;
   overflow-y: hidden;
-  overscroll-behavior: contain;
+  /* X ONLY. `overscroll-behavior: contain` sets both axes, and containment on
+     an axis this element cannot scroll still blocks scroll CHAINING on it — so
+     a vertical wheel anywhere over a wide table stopped the page dead, trapping
+     the reader (they could not scroll back up). Horizontal containment is the
+     part worth keeping: it stops a sideways flick at the end of the table from
+     triggering back-navigation. The vertical half is re-added below, where
+     max-height genuinely makes this a vertical scroll port. */
+  overscroll-behavior-x: contain;
   /* NB: no `scrollbar-width` — modern Chrome ignores the styled
      ::-webkit-scrollbar below when it's set, which would leave a 0-height macOS
      overlay bar (invisible) for the horizontal scroll. Omitting it lets the
@@ -141,6 +148,9 @@
 :host(.md-table-container--scrollable) .md-table-container__scroll {
   max-block-size: var(--_max-h);
   overflow-y: auto;
+  /* Now it really is a vertical scroll port, so containing the vertical axis
+     is correct: reaching the last row must not start scrolling the page. */
+  overscroll-behavior-y: contain;
 }
 
 /* Frozen header: the md-table owns its own body scroll, so the container's
