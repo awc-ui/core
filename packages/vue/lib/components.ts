@@ -1376,6 +1376,7 @@ export const MdSplitButton = /*@__PURE__*/ defineContainer<JSX.MdSplitButton>('m
 export const MdStatusDot = /*@__PURE__*/ defineContainer<JSX.MdStatusDot>('md-status-dot', defineMdStatusDot, [
   'state',
   'size',
+  'inline',
   'live',
   'label',
   'density'

@@ -1766,6 +1766,7 @@ export const MdStatusDot: StencilReactComponent<MdStatusDotElement, MdStatusDotE
     properties: {
         state: 'state',
         size: 'size',
+        inline: 'inline',
         live: 'live',
         label: 'label',
         density: 'density'

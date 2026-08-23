@@ -53,3 +53,9 @@ packages/core/.v8-coverage-ssr/
 # so the tarball always has it.
 packages/core/main-llm.md
 
+
+# Git worktrees created by Claude Code sessions (`.claude/worktrees/<branch>`).
+# These are working copies of THIS repo — committing one would nest the repo
+# inside itself. Only the worktrees dir is ignored, so shared .claude config
+# (settings, agents) can still be committed deliberately.
+.claude/worktrees/
