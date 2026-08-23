@@ -14,6 +14,7 @@
 import { getFacilitiesFor, type Facility } from '@awc-ui/showcase-kit/data';
 import { useT } from '@/lib/showcase';
 import { route } from '@/lib/routes';
+import { TABLES } from '@awc-ui/showcase-kit/credit-risk';
 import { Drill, EmptyState } from './Shell';
 import { FacilityStatusChip } from './bits';
 
@@ -29,9 +30,8 @@ export function FacilityTable({ counterpartyId }: { counterpartyId: string }) {
     <md-table-container variant="outlined">
       <md-table
         label={t('screen.facilities.title')}
-        column-template="132px minmax(150px, 1fr) 96px minmax(150px, 1.2fr) 128px 120px 104px 108px 116px"
-        min-width="1120px"
-        sticky-header
+        column-template={TABLES.facilities.columns}
+        min-width={TABLES.facilities.minWidth}
         // md-table ratchets its height by default (keep-height) so paging cannot make
         // the page jump. That baseline is measured once and never recomputed, so a
         // density change strands the taller height and leaves dead space below the

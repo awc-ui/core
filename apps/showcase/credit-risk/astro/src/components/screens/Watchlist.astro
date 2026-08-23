@@ -10,9 +10,18 @@
  * that do not match (see `lib/filters.ts`). With JavaScript off the reader gets
  * the complete watchlist rather than an empty table under three dead controls,
  * which is the right way round for a static page.
+ *
+ * `frozen-header`, NOT `sticky-header`. This is the only table here inside a
+ * bounded container, so it is the only one that scrolls vertically, and the two
+ * props give different architectures for that. `sticky-header` pins the header
+ * inside the scroll port, which means the scroll port — and therefore the
+ * scrollbar — spans the header too. `frozen-header` renders the header OUTSIDE
+ * the scrolling area so the bar runs beside the rows only. md-table's readme:
+ * "the header is rendered OUTSIDE the vertical scroll area, so the scrollbar
+ * spans only the body and runs UNDER the head."
  */
 import { getRatingGrade, getSectors, getWatchlist, type SignalSeverity } from '@awc-ui/showcase-kit/data';
-import { route } from '@awc-ui/showcase-kit/credit-risk';
+import { route, TABLES } from '@awc-ui/showcase-kit/credit-risk';
 import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
 import { localeHref, useT } from '../../lib/i18n';
 import { ratingChip, severityChip, severityDotProps } from '../../lib/bits';
@@ -94,9 +103,9 @@ const countTemplate = t('common.showing', { shown: '%shown%', total: signals.len
     <md-table-container variant="outlined" max-height="60vh">
       <md-table
         label={t('screen.watchlist.title')}
-        column-template="minmax(200px, 1.6fr) minmax(140px, 1fr) 100px minmax(170px, 1.2fr) 156px 132px 120px 120px minmax(150px, 1fr)"
-        min-width="1280px"
-        sticky-header
+        column-template={TABLES.watchlist.columns}
+        min-width={TABLES.watchlist.minWidth}
+        frozen-header
         striped
       >
         <md-table-head>

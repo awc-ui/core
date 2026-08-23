@@ -10,7 +10,7 @@
  * the two would quietly report a RON line as if it were euros.
  */
 import { getFacilitiesFor } from '@awc-ui/showcase-kit/data';
-import { route } from '@awc-ui/showcase-kit/credit-risk';
+import { route, TABLES } from '@awc-ui/showcase-kit/credit-risk';
 import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
 import { localeHref, useT } from '../lib/i18n';
 import { facilityStatusChip } from '../lib/bits';
@@ -35,9 +35,8 @@ const rows = getFacilitiesFor(counterpartyId);
     <md-table-container variant="outlined">
       <md-table
         label={t('screen.facilities.title')}
-        column-template="132px minmax(150px, 1fr) 96px minmax(150px, 1.2fr) 128px 120px 104px 108px 116px"
-        min-width="1120px"
-        sticky-header
+        column-template={TABLES.facilities.columns}
+        min-width={TABLES.facilities.minWidth}
         keep-height="false"
         striped
       >

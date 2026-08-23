@@ -27,7 +27,7 @@ import {
   type Facility,
 } from '@awc-ui/showcase-kit/data';
 import { useT } from '@/lib/showcase';
-import { drawdownSchedule, utilisationColor } from '@awc-ui/showcase-kit/credit-risk';
+import { drawdownSchedule, TABLES, utilisationColor } from '@awc-ui/showcase-kit/credit-risk';
 import { route } from '@/lib/routes';
 import { EmptyState, Panel, Screen } from '../Shell';
 import { CovenantMeter, Fact, FacilityStatusChip, RatioMeter } from '../bits';
@@ -147,8 +147,8 @@ export function FacilityScreen({ facilityId }: { facilityId: string }) {
           <md-table-container variant="outlined">
             <md-table
               label={t('screen.collateral.title')}
-              column-template="minmax(150px, 1.2fr) 88px minmax(130px, 1fr) minmax(130px, 1fr) 96px minmax(130px, 1fr) 128px minmax(150px, 1fr)"
-              min-width="1060px"
+              column-template={TABLES.collateral.columns}
+              min-width={TABLES.collateral.minWidth}
               striped
             >
               <md-table-head>
@@ -223,8 +223,8 @@ export function FacilityScreen({ facilityId }: { facilityId: string }) {
         <md-table-container variant="outlined">
           <md-table
             label={t('table.tenor')}
-            column-template="110px minmax(130px, 1fr) minmax(130px, 1fr) minmax(130px, 1fr) minmax(130px, 1fr) 108px"
-            min-width="820px"
+            column-template={TABLES.schedule.columns}
+            min-width={TABLES.schedule.minWidth}
             striped
           >
             <md-table-head>

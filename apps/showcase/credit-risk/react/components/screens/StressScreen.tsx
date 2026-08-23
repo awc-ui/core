@@ -23,6 +23,7 @@ import {
 } from '@awc-ui/showcase-kit/data';
 import { useShowcase, useT } from '@/lib/showcase';
 import { route } from '@/lib/routes';
+import { TABLES } from '@awc-ui/showcase-kit/credit-risk';
 import { BarChart, useCustomEvent } from '../elements';
 import { Drill, Panel, Screen } from '../Shell';
 import { Fact } from '../bits';
@@ -153,8 +154,8 @@ export function StressScreen() {
         <md-table-container variant="outlined">
           <md-table
             label={t('screen.stress.title')}
-            column-template="minmax(150px, 1.4fr) minmax(120px, 1fr) 104px 104px minmax(130px, 1fr) minmax(130px, 1fr) minmax(130px, 1fr) minmax(130px, 1fr)"
-            min-width="1120px"
+            column-template={TABLES.stress.columns}
+            min-width={TABLES.stress.minWidth}
             striped
           >
             <md-table-head>

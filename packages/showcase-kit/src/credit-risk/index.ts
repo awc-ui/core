@@ -41,3 +41,7 @@ export type { MdColor, MdDotState } from './status';
 export { createRoutes, FRAMEWORKS, route, SHOWCASE_BASE } from './routes';
 
 export type { CreditRiskRoutes, Framework, RouteName } from './routes';
+
+export { TABLES } from './tables';
+
+export type { TableLayout } from './tables';

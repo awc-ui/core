@@ -20,7 +20,7 @@
  * formatted `+0`, which would look like a rounded-away number.
  */
 import { getSectors, getStressScenarios, type ScenarioId } from '@awc-ui/showcase-kit/data';
-import { route } from '@awc-ui/showcase-kit/credit-risk';
+import { route, TABLES } from '@awc-ui/showcase-kit/credit-risk';
 import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
 import { localeHref, useT } from '../../lib/i18n';
 import { props } from '../../lib/props';
@@ -171,8 +171,8 @@ const delta = (v: number) => (v === 0 ? t('common.na') : money(v));
           <md-table-container variant="outlined">
             <md-table
               label={t('screen.stress.title')}
-              column-template="minmax(150px, 1.4fr) minmax(120px, 1fr) 104px 104px minmax(130px, 1fr) minmax(130px, 1fr) minmax(130px, 1fr) minmax(130px, 1fr)"
-              min-width="1120px"
+              column-template={TABLES.stress.columns}
+              min-width={TABLES.stress.minWidth}
               striped
             >
               <md-table-head>

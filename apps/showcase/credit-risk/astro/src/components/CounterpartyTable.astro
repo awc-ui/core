@@ -27,7 +27,7 @@ import {
   type CounterpartySortKey,
   type SectorId,
 } from '@awc-ui/showcase-kit/data';
-import { route, utilisationColor } from '@awc-ui/showcase-kit/credit-risk';
+import { route, TABLES, utilisationColor } from '@awc-ui/showcase-kit/credit-risk';
 import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
 import { localeHref, useT } from '../lib/i18n';
 import { ratingChip, watchDotProps } from '../lib/bits';
@@ -66,20 +66,7 @@ const columns: { key: CounterpartySortKey | null; label: string; numeric?: boole
   { key: 'utilisation', label: t('table.utilisation'), numeric: true },
 ];
 
-const columnTemplate = [
-  'minmax(200px, 2fr)',
-  showSector ? 'minmax(120px, 1fr)' : '',
-  'minmax(120px, 1fr)',
-  '108px',
-  '88px',
-  '76px',
-  '132px',
-  '132px',
-  '132px',
-  '104px',
-]
-  .filter(Boolean)
-  .join(' ');
+const layout = TABLES.counterparties(showSector);
 ---
 
 {
@@ -93,9 +80,8 @@ const columnTemplate = [
       <md-table
         data-sortable
         label={t('screen.counterparties.title')}
-        column-template={columnTemplate}
-        min-width="1180px"
-        sticky-header
+        column-template={layout.columns}
+        min-width={layout.minWidth}
         keep-height="false"
         striped
         sort-by="ead"

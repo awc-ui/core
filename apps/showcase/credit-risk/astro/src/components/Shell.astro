@@ -38,27 +38,34 @@ const href = (path: string) => localeHref(locale, path);
 ---
 
 <div class="shell">
+  {/*
+    Identity, sections and reporting context share one bar. The nav is INSIDE
+    the masthead rather than on its own row beneath it — it is still a real
+    <nav> with its own accessible name, so nothing is lost to assistive tech by
+    the two being visually joined.
+  */}
   <header class="shell__masthead">
     <p class="shell__brand">{t('app.brand')}</p>
     <span class="muted">{t('app.title')}</span>
+
+    <nav class="shell__nav" aria-label={t('nav.label')}>
+      <md-button variant="text" size="sm" icon="dashboard" href={href(route.overview())}>
+        {t('nav.overview')}
+      </md-button>
+      <md-button variant="text" size="sm" icon="warning" href={href(route.watchlist())}>
+        {t('nav.watchlist')}
+      </md-button>
+      <md-button variant="text" size="sm" icon="stacked_line_chart" href={href(route.stress())}>
+        {t('nav.stress')}
+      </md-button>
+    </nav>
+
     <div class="shell__meta">
       <span>{t('app.reportingDate', { date: t.formatDate(REPORTING_DATE, 'medium') })}</span>
       <span>{t('app.reportingQuarter', { quarter: REPORTING_QUARTER })}</span>
       <span>{t('app.baseCurrency', { currency: BASE_CURRENCY })}</span>
     </div>
   </header>
-
-  <nav class="shell__nav" aria-label={t('nav.label')}>
-    <md-button variant="text" size="sm" icon="dashboard" href={href(route.overview())}>
-      {t('nav.overview')}
-    </md-button>
-    <md-button variant="text" size="sm" icon="warning" href={href(route.watchlist())}>
-      {t('nav.watchlist')}
-    </md-button>
-    <md-button variant="text" size="sm" icon="stacked_line_chart" href={href(route.stress())}>
-      {t('nav.stress')}
-    </md-button>
-  </nav>
 
   {
     crumbs.length > 1 && (

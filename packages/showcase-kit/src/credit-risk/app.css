@@ -56,10 +56,18 @@ a {
   gap: var(--md-sys-spacing-gap-lg, 16px);
 }
 
+/*
+ * One bar: identity, section nav, and the reporting context, on a single row.
+ *
+ * `align-items: center` rather than `baseline`, because the nav's buttons sit
+ * in here now. Baseline alignment lines up the text inside a button with the
+ * text beside it, which pushes the button's own box visibly low — fine for a
+ * row of pure text, wrong the moment a control joins it.
+ */
 .shell__masthead {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: var(--md-sys-spacing-gap-sm, 8px) var(--md-sys-spacing-gap-md, 12px);
   padding-block-end: var(--md-sys-spacing-inset-sm, 8px);
   border-block-end: 1px solid var(--md-sys-color-outline-variant);
@@ -71,6 +79,14 @@ a {
   margin: 0;
 }
 
+/*
+ * Pushed to the far end, and it is the ONLY thing with an auto margin — so
+ * whatever sits between the brand and it (today the nav) stays left-aligned
+ * beside the identity, and the reporting context stays anchored opposite.
+ * When the row wraps on a narrow viewport the auto margin applies per line,
+ * so the meta drops to its own line and stays end-aligned rather than
+ * colliding with the nav.
+ */
 .shell__meta {
   margin-inline-start: auto;
   display: flex;
@@ -83,7 +99,10 @@ a {
 .shell__nav {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--md-sys-spacing-gap-sm, 8px);
+  /* Separates the sections from the product name without a divider glyph. */
+  margin-inline-start: var(--md-sys-spacing-gap-sm, 8px);
 }
 
 /* ------------------------------------------------------------- screen head */

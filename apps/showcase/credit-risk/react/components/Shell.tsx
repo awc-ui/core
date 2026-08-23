@@ -68,27 +68,32 @@ export function Screen({ title, subtitle, crumbs, aside, children }: ScreenProps
   return (
     <>
       <div className="shell">
+        {/* Identity, sections and reporting context share one bar. The nav is
+            INSIDE the masthead rather than on its own row beneath it — it is
+            still a real <nav> with its own accessible name, so nothing is lost
+            to assistive tech by the two being visually joined. */}
         <header className="shell__masthead">
           <p className="shell__brand">{t('app.brand')}</p>
           <span className="muted">{t('app.title')}</span>
+
+          <nav className="shell__nav" aria-label={t('nav.label')}>
+            <md-button variant="text" size="sm" icon="dashboard" href={withBase(route.overview())}>
+              {t('nav.overview')}
+            </md-button>
+            <md-button variant="text" size="sm" icon="warning" href={withBase(route.watchlist())}>
+              {t('nav.watchlist')}
+            </md-button>
+            <md-button variant="text" size="sm" icon="stacked_line_chart" href={withBase(route.stress())}>
+              {t('nav.stress')}
+            </md-button>
+          </nav>
+
           <div className="shell__meta">
             <span>{t('app.reportingDate', { date: t.formatDate(REPORTING_DATE, 'medium') })}</span>
             <span>{t('app.reportingQuarter', { quarter: REPORTING_QUARTER })}</span>
             <span>{t('app.baseCurrency', { currency: BASE_CURRENCY })}</span>
           </div>
         </header>
-
-        <nav className="shell__nav" aria-label={t('nav.label')}>
-          <md-button variant="text" size="sm" icon="dashboard" href={withBase(route.overview())}>
-            {t('nav.overview')}
-          </md-button>
-          <md-button variant="text" size="sm" icon="warning" href={withBase(route.watchlist())}>
-            {t('nav.watchlist')}
-          </md-button>
-          <md-button variant="text" size="sm" icon="stacked_line_chart" href={withBase(route.stress())}>
-            {t('nav.stress')}
-          </md-button>
-        </nav>
 
         {crumbs && crumbs.length > 1 ? <Breadcrumbs crumbs={crumbs} /> : null}
 

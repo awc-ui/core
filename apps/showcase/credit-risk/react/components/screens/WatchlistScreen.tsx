@@ -14,6 +14,15 @@
  * empty severity selection means "all", which is the same thing the set reports
  * when the user clears the last segment — so no separate "all" segment is
  * needed, and the reset button restores exactly that state.
+ *
+ * `frozen-header`, NOT `sticky-header`. This is the only table in the app inside
+ * a bounded container, so the only one that scrolls vertically, and the two
+ * props give different architectures for that. `sticky-header` pins the header
+ * inside the scroll port, which means the scroll port — and therefore the
+ * scrollbar — spans the header too. `frozen-header` renders the header OUTSIDE
+ * the scrolling area so the bar runs beside the rows only. md-table's readme:
+ * "the header is rendered OUTSIDE the vertical scroll area, so the scrollbar
+ * spans only the body and runs UNDER the head."
  */
 
 import { useMemo, useRef, useState } from 'react';
@@ -26,6 +35,7 @@ import {
 } from '@awc-ui/showcase-kit/data';
 import { useT } from '@/lib/showcase';
 import { route } from '@/lib/routes';
+import { TABLES } from '@awc-ui/showcase-kit/credit-risk';
 import { useCustomEvent } from '../elements';
 import { Drill, EmptyState, Panel, Screen } from '../Shell';
 import { RatingChip, SeverityChip } from '../bits';
@@ -129,9 +139,9 @@ export function WatchlistScreen() {
           <md-table-container variant="outlined" max-height="60vh">
             <md-table
               label={t('screen.watchlist.title')}
-              column-template="minmax(200px, 1.6fr) minmax(140px, 1fr) 100px minmax(170px, 1.2fr) 156px 132px 120px 120px minmax(150px, 1fr)"
-              min-width="1280px"
-              sticky-header
+              column-template={TABLES.watchlist.columns}
+              min-width={TABLES.watchlist.minWidth}
+              frozen-header
               striped
             >
               <md-table-head>

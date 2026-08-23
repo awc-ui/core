@@ -25,7 +25,7 @@ import {
 } from '@awc-ui/showcase-kit/data';
 import { useT } from '@/lib/showcase';
 import { route } from '@/lib/routes';
-import { utilisationColor } from '@awc-ui/showcase-kit/credit-risk';
+import { TABLES, utilisationColor } from '@awc-ui/showcase-kit/credit-risk';
 import { useCustomEvent } from './elements';
 import { Drill, EmptyState } from './Shell';
 import { RatingChip, WatchDot } from './bits';
@@ -46,6 +46,7 @@ export function CounterpartyTable({
   initialSort?: SortState;
 }) {
   const t = useT();
+  const layout = TABLES.counterparties(showSector);
   const [sort, setSort] = useState<SortState>(initialSort);
   const tableRef = useRef<HTMLElement | null>(null);
 
@@ -118,9 +119,8 @@ export function CounterpartyTable({
       <md-table
         ref={tableRef}
         label={t('screen.counterparties.title')}
-        column-template={`minmax(200px, 2fr) ${showSector ? 'minmax(120px, 1fr)' : ''} minmax(120px, 1fr) 108px 88px 76px 132px 132px 132px 104px`}
-        min-width="1180px"
-        sticky-header
+        column-template={layout.columns}
+        min-width={layout.minWidth}
         // md-table ratchets its height by default (keep-height) so paging cannot make
         // the page jump. That baseline is measured once and never recomputed, so a
         // density change strands the taller height and leaves dead space below the
