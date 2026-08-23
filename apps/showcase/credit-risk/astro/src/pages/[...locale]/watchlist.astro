@@ -13,6 +13,13 @@ export function getStaticPaths() {
 const locale = resolveLocale(Astro.params.locale);
 const t = useT(locale);
 const signals = getWatchlist();
+
+/**
+ * The count chip's text is rebuilt client-side as filters change, so the
+ * template travels with it rather than being reassembled from a translated
+ * string the script would have to parse back apart.
+ */
+const countTemplate = t('common.showing', { shown: '%shown%', total: signals.length });
 ---
 
 <Base locale={locale}>
@@ -24,6 +31,17 @@ const signals = getWatchlist();
       counterparties: new Set(signals.map((s) => s.counterpartyId)).size,
     })}
   >
+    <Fragment slot="aside">
+      <md-chip
+        data-count
+        data-count-template={countTemplate}
+        variant="assist"
+        appearance="filled"
+        color="error"
+        icon="crisis_alert"
+        label={t('common.showing', { shown: signals.length, total: signals.length })}></md-chip>
+    </Fragment>
+
     <WatchlistScreen locale={locale} />
   </Shell>
 </Base>

@@ -10,7 +10,8 @@
     "build": "pnpm sync-runtime && astro build",
     "preview": "astro preview",
     "lint": "astro check",
-    "verify": "node scripts/verify-browser.mjs"
+    "verify": "node scripts/verify-browser.mjs",
+    "serve": "node scripts/serve-dist.mjs"
   },
   "dependencies": {
     "@awc-ui/core": "workspace:*",

@@ -1,0 +1,62 @@
+---
+/**
+ * One stress scenario's headline figures, as a titled panel.
+ *
+ * Its own component because the stress screen renders it three times — once
+ * live, and once inside a `<template>` per scenario so the selector can swap it
+ * in. Writing the markup once is the only way those three stay identical.
+ */
+import type { StressScenario } from '@awc-ui/showcase-kit/data';
+import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
+import { useT } from '../lib/i18n';
+import Panel from './Panel.astro';
+
+interface Props {
+  locale: LocaleCode;
+  scenario: StressScenario;
+  /** Marks the copy that is in the document, as opposed to the template copies. */
+  live?: boolean;
+}
+
+const { locale, scenario, live = false } = Astro.props;
+const t = useT(locale);
+
+const money = (v: number) => t.formatCurrency(v, { notation: 'compact' });
+/** Zero delta is structural for the baseline, not a rounded-away number. */
+const delta = (v: number) => (v === 0 ? t('common.na') : money(v));
+
+const describe = t(scenario.descriptionKey, {
+  pd: t.formatNumber(scenario.pdMultiplier, { maximumFractionDigits: 2 }),
+  lgd: t.formatPercent(scenario.lgdUplift, { maximumFractionDigits: 0 }),
+});
+---
+
+<Panel title={t(scenario.nameKey)} subtitle={describe} data-stress-facts={live ? '' : undefined}>
+  <dl class="dl dl--numeric">
+    <div>
+      <dt>{t('table.pdMultiplier')}</dt>
+      <dd>
+        {t('unit.times', { value: t.formatNumber(scenario.pdMultiplier, { maximumFractionDigits: 2 }) })}
+      </dd>
+    </div>
+    <div>
+      <dt>{t('table.lgdUplift')}</dt>
+      <dd>
+        {t.formatPercent(scenario.lgdUplift, { maximumFractionDigits: 0, signDisplay: 'exceptZero' })}
+      </dd>
+    </div>
+    <div><dt>{t('kpi.ead')}</dt><dd>{money(scenario.totals.ead)}</dd></div>
+    <div><dt>{t('kpi.expectedLoss')}</dt><dd>{money(scenario.totals.expectedLoss)}</dd></div>
+    <div><dt>{t('table.elDelta')}</dt><dd>{delta(scenario.totals.expectedLossDelta)}</dd></div>
+    <div><dt>{t('kpi.rwa')}</dt><dd>{money(scenario.totals.rwa)}</dd></div>
+    <div><dt>{t('table.rwaDelta')}</dt><dd>{delta(scenario.totals.rwaDelta)}</dd></div>
+    <div>
+      <dt>{t('kpi.weightedAvgPd')}</dt>
+      <dd>{t.formatPercent(scenario.totals.weightedAvgPd, { maximumFractionDigits: 2 })}</dd>
+    </div>
+    <div>
+      <dt>{t('kpi.rwaDensity')}</dt>
+      <dd>{t.formatPercent(scenario.totals.rwaDensity, { maximumFractionDigits: 1 })}</dd>
+    </div>
+  </dl>
+</Panel>

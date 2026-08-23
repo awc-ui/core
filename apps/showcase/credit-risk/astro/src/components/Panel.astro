@@ -1,15 +1,24 @@
 ---
-/** A titled surface. Everything on every screen lives in one of these. */
+/**
+ * A titled surface. Everything on every screen lives in one of these.
+ *
+ * Extra props land on the card itself rather than on a wrapper. The stress
+ * screen relies on that to mark the two panels it swaps: a wrapping div would
+ * become the flex item and put a box between the screen's column and the card,
+ * which none of the other five builds has.
+ */
 interface Props {
   title?: string;
   subtitle?: string;
   variant?: 'elevated' | 'filled' | 'outlined';
+  /** Anything else lands on the card. The stress screen marks the two it swaps. */
+  [attribute: string]: unknown;
 }
 
-const { title, subtitle, variant = 'outlined' } = Astro.props;
+const { title, subtitle, variant = 'outlined', ...rest } = Astro.props;
 ---
 
-<md-card variant={variant} class="panel" full-width>
+<md-card variant={variant} class="panel" full-width {...rest}>
   <div class="panel__inner">
     {
       title && (

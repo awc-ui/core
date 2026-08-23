@@ -13,13 +13,53 @@
  * were still broken in a real browser, because the bug was in the interaction
  * between two pieces that were individually correct. Hence this file.
  *
- * Usage — needs the docs preview serving the built app:
- *   pnpm --filter @awc-ui/docs exec astro preview --port 4350
+ * Starts its own server, so it needs nothing running:
+ *   pnpm --filter @awc-ui/showcase-credit-risk-astro build
  *   pnpm --filter @awc-ui/showcase-credit-risk-astro verify
+ *
+ * It used to require the docs preview on port 4350, which meant the check could
+ * only be run as part of a two-command sequence and was quietly skipped as
+ * often as not. Serving `dist/` directly checks the same bytes.
  */
+import { spawn } from 'node:child_process';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
+import { createRoutes } from '@awc-ui/showcase-kit/credit-risk';
 
-const BASE = 'http://localhost:4350/showcase/credit-risk/astro';
+const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const PORT = 4346;
+const BASE = `http://localhost:${PORT}${createRoutes('astro').basePath}`;
+
+const server = spawn(process.execPath, [join(appRoot, 'scripts/serve-dist.mjs'), String(PORT)], {
+  stdio: ['ignore', 'pipe', 'inherit'],
+});
+await new Promise((done) => server.stdout.once('data', done));
+
+/*
+ * Kill the server whatever happens.
+ *
+ * The teardown at the bottom of this file only runs on the happy path, so any
+ * failed assertion or timeout used to leave the server holding its port — and
+ * the NEXT run then died on EADDRINUSE, reporting a port clash instead of the
+ * failure that actually caused it. Twice.
+ */
+const stopServer = () => {
+  if (!server.killed) server.kill();
+};
+process.on('exit', stopServer);
+process.on('uncaughtException', (error) => {
+  stopServer();
+  console.error(error);
+  process.exit(1);
+});
+process.on('unhandledRejection', (error) => {
+  stopServer();
+  console.error(error);
+  process.exit(1);
+});
+
+
 const browser = await puppeteer.launch({ headless: 'shell' });
 const results = [];
 const ok = (label, pass, detail = '') => {
@@ -237,6 +277,7 @@ const ok = (label, pass, detail = '') => {
 }
 
 await browser.close();
+server.kill();
 
 const KNOWN = ['no surplus canvases'];
 const failed = results.filter((r) => !r.pass);

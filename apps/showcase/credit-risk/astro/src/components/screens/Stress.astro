@@ -7,25 +7,29 @@
  * than only the selected one: the point of the screen is the SHAPE of the
  * deterioration, and a single-scenario chart hides it.
  *
- * ALL THREE DETAIL SECTIONS ARE RENDERED, two of them hidden, and the segmented
- * selector toggles between them. That is a different mechanism from the React
- * build — which re-renders one — but not a worse one here, because the control
- * itself needs JavaScript to be operable in ANY build. Making its BEHAVIOUR
- * JavaScript-dependent therefore costs nothing that was not already conditional
- * on the same thing, and it keeps the interface identical between the two
- * builds, which is what makes them worth comparing.
+ * ONE SCENARIO IS LIVE, exactly like the React build — the same two panels in
+ * the same two places. The other two ride along in `<template>` elements, whose
+ * contents the parser keeps out of the document tree, and the selector swaps a
+ * panel by cloning one in.
+ *
+ * An earlier version rendered all three and hid two with the `hidden`
+ * attribute. Hiding is not the same as not rendering: a hidden panel is still
+ * in `querySelectorAll`, still in the accessibility tree, and still three
+ * copies of every table. The six builds are supposed to render the same
+ * document, so "the same" has to mean the same elements.
  *
  * Baseline's `expectedLossDelta` is exactly zero by construction — its EL
  * equals the portfolio EL — so the delta column reads `n/a` there rather than a
  * formatted `+0`, which would look like a rounded-away number.
  */
 import { getSectors, getStressScenarios, type ScenarioId } from '@awc-ui/showcase-kit/data';
-import { route, TABLES } from '@awc-ui/showcase-kit/credit-risk';
 import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
-import { localeHref, useT } from '../../lib/i18n';
+import { useT } from '../../lib/i18n';
 import { props } from '../../lib/props';
 import { chartConfig } from '../../lib/charts';
 import Panel from '../Panel.astro';
+import ScenarioFacts from '../ScenarioFacts.astro';
+import ScenarioTable from '../ScenarioTable.astro';
 
 interface Props {
   locale: LocaleCode;
@@ -35,83 +39,15 @@ const DEFAULT_SCENARIO: ScenarioId = 'adverse';
 
 const { locale } = Astro.props;
 const t = useT(locale);
-const href = (p: string) => localeHref(locale, p);
 
 const scenarios = getStressScenarios();
 const sectors = getSectors();
 const sectorLabels = sectors.map((s) => t(s.nameKey));
 
-
-const describe = (id: ScenarioId) => {
-  const s = scenarios.find((x) => x.id === id);
-  if (!s) return '';
-  return t(s.descriptionKey, {
-    pd: t.formatNumber(s.pdMultiplier, { maximumFractionDigits: 2 }),
-    lgd: t.formatPercent(s.lgdUplift, { maximumFractionDigits: 0 }),
-  });
-};
-
-const money = (v: number) => t.formatCurrency(v, { notation: 'compact' });
-/** Zero delta is structural for the baseline, not a rounded-away number. */
-const delta = (v: number) => (v === 0 ? t('common.na') : money(v));
+const initial = scenarios.find((s) => s.id === DEFAULT_SCENARIO) ?? scenarios[0];
 ---
 
-<div data-stress>
-  {
-    scenarios.map((scenario) => (
-      <section data-scenario={scenario.id} hidden={scenario.id !== DEFAULT_SCENARIO}>
-        <Panel title={t(scenario.nameKey)} subtitle={describe(scenario.id)}>
-          <dl class="dl dl--numeric">
-            <div>
-              <dt>{t('table.pdMultiplier')}</dt>
-              <dd>
-                {t('unit.times', {
-                  value: t.formatNumber(scenario.pdMultiplier, { maximumFractionDigits: 2 }),
-                })}
-              </dd>
-            </div>
-            <div>
-              <dt>{t('table.lgdUplift')}</dt>
-              <dd>
-                {t.formatPercent(scenario.lgdUplift, {
-                  maximumFractionDigits: 0,
-                  signDisplay: 'exceptZero',
-                })}
-              </dd>
-            </div>
-            <div>
-              <dt>{t('kpi.ead')}</dt>
-              <dd>{money(scenario.totals.ead)}</dd>
-            </div>
-            <div>
-              <dt>{t('kpi.expectedLoss')}</dt>
-              <dd>{money(scenario.totals.expectedLoss)}</dd>
-            </div>
-            <div>
-              <dt>{t('table.elDelta')}</dt>
-              <dd>{delta(scenario.totals.expectedLossDelta)}</dd>
-            </div>
-            <div>
-              <dt>{t('kpi.rwa')}</dt>
-              <dd>{money(scenario.totals.rwa)}</dd>
-            </div>
-            <div>
-              <dt>{t('table.rwaDelta')}</dt>
-              <dd>{delta(scenario.totals.rwaDelta)}</dd>
-            </div>
-            <div>
-              <dt>{t('kpi.weightedAvgPd')}</dt>
-              <dd>{t.formatPercent(scenario.totals.weightedAvgPd, { maximumFractionDigits: 2 })}</dd>
-            </div>
-            <div>
-              <dt>{t('kpi.rwaDensity')}</dt>
-              <dd>{t.formatPercent(scenario.totals.rwaDensity, { maximumFractionDigits: 1 })}</dd>
-            </div>
-          </dl>
-        </Panel>
-      </section>
-    ))
-  }
+<ScenarioFacts locale={locale} scenario={initial} live />
 
   {/* Both charts carry their own header; the panels stay untitled so the
       heading is not printed twice. */}
@@ -161,75 +97,25 @@ const delta = (v: number) => (v === 0 ? t('common.na') : money(v));
     </Panel>
   </section>
 
+  <ScenarioTable locale={locale} scenario={initial} live />
+
+  {/* Every scenario's two panels, parked where the document tree cannot see
+      them. A template's content is inert, so these add no cards, no tables and
+      no rows to the page — the live DOM matches the React build exactly. The
+      initial scenario is here too, so switching away and back is the same
+      operation in both directions. */}
   {
     scenarios.map((scenario) => (
-      <section data-scenario={scenario.id} hidden={scenario.id !== DEFAULT_SCENARIO}>
-        <Panel
-          title={t('table.sector')}
-          subtitle={`${t(scenario.nameKey)} · ${t('scenario.vsBaseline')}`}
-        >
-          <md-table-container variant="outlined">
-            <md-table
-              label={t('screen.stress.title')}
-              column-template={TABLES.stress.columns}
-              min-width={TABLES.stress.minWidth}
-              striped
-            >
-              <md-table-head>
-                <md-table-row rowgroup="head">
-                  <md-table-cell head scope="col">{t('table.sector')}</md-table-cell>
-                  <md-table-cell head scope="col" numeric>{t('table.ead')}</md-table-cell>
-                  <md-table-cell head scope="col" numeric>{t('table.pd')}</md-table-cell>
-                  <md-table-cell head scope="col" numeric>{t('table.lgd')}</md-table-cell>
-                  <md-table-cell head scope="col" numeric>{t('table.expectedLoss')}</md-table-cell>
-                  <md-table-cell head scope="col" numeric>{t('table.elDelta')}</md-table-cell>
-                  <md-table-cell head scope="col" numeric>{t('table.rwa')}</md-table-cell>
-                  <md-table-cell head scope="col" numeric>{t('table.rwaDelta')}</md-table-cell>
-                </md-table-row>
-              </md-table-head>
-              <md-table-body>
-                {scenario.bySector.map((row) => (
-                  <md-table-row value={row.sectorId}>
-                    <md-table-cell>
-                      <a class="drill" href={href(route.sector(row.sectorId))}>
-                        {t(`sector.${row.sectorId}`)}
-                      </a>
-                    </md-table-cell>
-                    <md-table-cell numeric>{money(row.ead)}</md-table-cell>
-                    <md-table-cell numeric>
-                      {t.formatPercent(row.weightedAvgPd, { maximumFractionDigits: 2 })}
-                    </md-table-cell>
-                    <md-table-cell numeric>
-                      {t.formatPercent(row.weightedAvgLgd, { maximumFractionDigits: 1 })}
-                    </md-table-cell>
-                    <md-table-cell numeric>{money(row.expectedLoss)}</md-table-cell>
-                    <md-table-cell numeric>
-                      <span
-                        style={
-                          row.expectedLossDelta > 0 ? 'color: var(--md-sys-color-error)' : undefined
-                        }
-                      >
-                        {delta(row.expectedLossDelta)}
-                      </span>
-                    </md-table-cell>
-                    <md-table-cell numeric>{money(row.rwa)}</md-table-cell>
-                    <md-table-cell numeric>
-                      <span
-                        style={row.rwaDelta > 0 ? 'color: var(--md-sys-color-warning)' : undefined}
-                      >
-                        {delta(row.rwaDelta)}
-                      </span>
-                    </md-table-cell>
-                  </md-table-row>
-                ))}
-              </md-table-body>
-            </md-table>
-          </md-table-container>
-        </Panel>
-      </section>
+      <Fragment>
+        <template data-scenario={scenario.id} data-slot="facts">
+          <ScenarioFacts locale={locale} scenario={scenario} />
+        </template>
+        <template data-scenario={scenario.id} data-slot="table">
+          <ScenarioTable locale={locale} scenario={scenario} />
+        </template>
+      </Fragment>
     ))
   }
-</div>
 
 <script>
   import { enhanceScenarioSelector } from '../../lib/scenario';

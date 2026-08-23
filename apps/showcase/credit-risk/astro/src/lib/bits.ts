@@ -79,18 +79,20 @@ export function severityChip(t: T, severity: SignalSeverity) {
  * `inline` on every dot. Without it `md-status-dot` is a block, and a dot set
  * beside a word sits on its own baseline a few pixels low — which is exactly
  * the misalignment this app was reported for once already.
+ *
+ * The severity dot CARRIES A LABEL. It used to sit inside the severity cell,
+ * immediately beside a chip holding the same word, and was deliberately
+ * unlabelled so a screen reader did not announce the severity twice per row.
+ * It now leads the row beside the obligor's name, at the other end of a
+ * nine-column table, so an unlabelled one would leave its colour as the only
+ * carrier of meaning.
  */
-export function severityDotProps(_t: T, severity: SignalSeverity) {
+export function severityDotProps(t: T, severity: SignalSeverity) {
   return {
     inline: true,
     state: severityDot[severity],
     size: 'small',
-    // NO label. This dot is rendered immediately beside a chip carrying the
-    // same word, so naming it too makes every watchlist row announce the
-    // severity twice. Unlabelled, md-status-dot falls back to
-    // role="presentation" + aria-hidden, which is what a decorative dot
-    // beside its own label should be. Contrast `watchDotProps` below, which
-    // stands alone and whose label is the only word available.
+    label: t(`severity.${severity}`),
   };
 }
 

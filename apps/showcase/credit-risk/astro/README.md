@@ -28,19 +28,29 @@ which makes it indexable and readable with JavaScript off — and it means
 those attributes alone, or a stale locale in localStorage stamps `lang="ro"`
 over English text.
 
-**Tables are complete, and paginate nothing.** React pages the counterparty
-table because paging is cheap when you re-render. Server-rendering all
-twenty-four rows and then hiding twenty behind a control that needs JavaScript
-would make the page *worse* with JavaScript off. Sorting is layered on top
-instead: rows arrive ordered by exposure, and `mdSortChange` reorders the ones
-already there, comparing `data-sort-*` values rather than the localised cell
-text.
+**The rendered document is identical to the React build's, and `<template>` is
+how.** Same page of ten counterparties, same pagination control, same single
+stress scenario, same filtered rows. Six builds that render different documents
+are not one application, and that is the only thing this showcase is for.
 
-**Filters and the scenario selector hide rather than re-render.** Same shape:
-everything is rendered, the control changes what is visible. Both of those
-controls need JavaScript to be operable in *any* build, so making their
-behaviour JavaScript-dependent costs nothing that was not already conditional
-on the same thing.
+What is off screen ships in `<template>` elements, whose contents the parser
+keeps out of the document tree — not rendered, not matched by
+`querySelectorAll`, not in the accessibility tree. So the live page has exactly
+React's elements while the file still holds the whole book, and the client
+script pages, sorts and swaps scenarios by cloning from it rather than
+refetching. With JavaScript off you get page one and the adverse scenario,
+which is precisely what React's static export gives you with it off.
+
+Sorting compares the `data-sort-*` values rather than the localised cell text:
+"€1.2 md" and "٤٫٩٪" sort into an order that is wrong in a different way in each
+of the three languages.
+
+**Filters detach rows; they do not hide them.** A hidden row is still a row —
+still in `querySelectorAll`, still in the accessibility tree, still counted. The
+React build re-renders a shorter array, so this one removes the elements and
+puts them back, in their original order, when the filter widens.
+`pnpm verify:showcase-parity` at the repo root is what keeps all of this
+honest: it diffs every screen's text and `md-*` census against React.
 
 **Charts get their axes from a script.** Two reasons, in `src/lib/charts.ts`.
 `valueFormatter` is a closure and could never travel in an attribute; and

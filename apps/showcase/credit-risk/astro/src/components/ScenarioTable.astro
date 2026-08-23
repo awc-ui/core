@@ -1,0 +1,87 @@
+---
+/**
+ * One stress scenario's per-sector impact, as a titled panel.
+ *
+ * Its own component for the same reason as `ScenarioFacts.astro`: the screen
+ * renders it live once and into a `<template>` per scenario, and the three
+ * copies have to be the same markup.
+ */
+import type { StressScenario } from '@awc-ui/showcase-kit/data';
+import { route, TABLES } from '@awc-ui/showcase-kit/credit-risk';
+import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
+import { localeHref, useT } from '../lib/i18n';
+import Panel from './Panel.astro';
+
+interface Props {
+  locale: LocaleCode;
+  scenario: StressScenario;
+  live?: boolean;
+}
+
+const { locale, scenario, live = false } = Astro.props;
+const t = useT(locale);
+const href = (p: string) => localeHref(locale, p);
+
+const money = (v: number) => t.formatCurrency(v, { notation: 'compact' });
+const delta = (v: number) => (v === 0 ? t('common.na') : money(v));
+---
+
+<Panel
+  title={t('table.sector')}
+  subtitle={`${t(scenario.nameKey)} · ${t('scenario.vsBaseline')}`}
+  data-stress-table={live ? '' : undefined}
+>
+  <md-table-container variant="outlined">
+    <md-table
+      label={t('screen.stress.title')}
+      column-template={TABLES.stress.columns}
+      min-width={TABLES.stress.minWidth}
+      striped
+    >
+      <md-table-head>
+        <md-table-row rowgroup="head">
+          <md-table-cell head scope="col">{t('table.sector')}</md-table-cell>
+          <md-table-cell head scope="col" numeric>{t('table.ead')}</md-table-cell>
+          <md-table-cell head scope="col" numeric>{t('table.pd')}</md-table-cell>
+          <md-table-cell head scope="col" numeric>{t('table.lgd')}</md-table-cell>
+          <md-table-cell head scope="col" numeric>{t('table.expectedLoss')}</md-table-cell>
+          <md-table-cell head scope="col" numeric>{t('table.elDelta')}</md-table-cell>
+          <md-table-cell head scope="col" numeric>{t('table.rwa')}</md-table-cell>
+          <md-table-cell head scope="col" numeric>{t('table.rwaDelta')}</md-table-cell>
+        </md-table-row>
+      </md-table-head>
+      <md-table-body>
+        {
+          scenario.bySector.map((row) => (
+            <md-table-row value={row.sectorId}>
+              <md-table-cell>
+                <a class="drill" href={href(route.sector(row.sectorId))}>
+                  {t(`sector.${row.sectorId}`)}
+                </a>
+              </md-table-cell>
+              <md-table-cell numeric>{money(row.ead)}</md-table-cell>
+              <md-table-cell numeric>
+                {t.formatPercent(row.weightedAvgPd, { maximumFractionDigits: 2 })}
+              </md-table-cell>
+              <md-table-cell numeric>
+                {t.formatPercent(row.weightedAvgLgd, { maximumFractionDigits: 1 })}
+              </md-table-cell>
+              <md-table-cell numeric>{money(row.expectedLoss)}</md-table-cell>
+              <md-table-cell numeric>
+                <span style={row.expectedLossDelta > 0 ? 'color: var(--md-sys-color-error)' : undefined}>
+                  {delta(row.expectedLossDelta)}
+                </span>
+              </md-table-cell>
+              <md-table-cell numeric>{money(row.rwa)}</md-table-cell>
+              <md-table-cell numeric>
+                <span style={row.rwaDelta > 0 ? 'color: var(--md-sys-color-warning)' : undefined}>
+                  {delta(row.rwaDelta)}
+                </span>
+              </md-table-cell>
+            </md-table-row>
+          ))
+        }
+      </md-table-body>
+    </md-table>
+  </md-table-container>
+</Panel>

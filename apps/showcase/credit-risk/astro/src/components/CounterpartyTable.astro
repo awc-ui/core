@@ -2,21 +2,23 @@
 /**
  * The counterparty table — the overview's book, and every sector screen's.
  *
- * NO PAGINATION HERE, unlike the React build, and that is a decision rather
- * than a gap. React pages because paging is cheap when you re-render: it keeps
- * the DOM small and the readout honest. This build renders once, on the server,
- * and the whole book is twenty-four rows. Server-rendering all of them and then
- * hiding twenty behind a control that needs JavaScript to work would make the
- * page WORSE with JavaScript off, which is backwards for a static build. The
- * table scrolls; every row is in the HTML; every row is findable with the
- * browser's own text search.
+ * PAGED, exactly like the React build — same ten rows, same
+ * `md-table-pagination`, same `row-offset` / `row-count`. The six builds are
+ * meant to be one application, so a screen that renders twenty-four rows here
+ * and ten there is a difference in the APP, not in the framework, and that is
+ * the one kind of difference this showcase must not have.
  *
- * SORTING IS PROGRESSIVE. Rows arrive sorted by exposure descending — the order
- * a credit officer wants first — and that survives with JavaScript off. When
- * the runtime lands, `mdSortChange` reorders the rows that are already there.
- * The comparison uses the `data-sort-*` attributes rather than the cell text,
- * because the text is localised and compacted ("€1.2 md" in Romanian) and
- * sorting that lexically would produce nonsense.
+ * The other rows still ship in the HTML, inside a `<template>` the parser keeps
+ * out of the document tree — so the live page holds exactly the ten rows
+ * React's does, while the client script has the whole book to page and sort
+ * through without refetching anything. With JavaScript off you get page one,
+ * which is precisely what React's static export gives you with JavaScript off.
+ *
+ * SORTING AND PAGING ARE BOTH PROGRESSIVE. Rows arrive sorted by exposure
+ * descending — the order a credit officer wants first. The comparison uses the
+ * `data-sort-*` attributes rather than the cell text, because the text is
+ * localised and compacted ("€1.2 md" in Romanian) and sorting that lexically
+ * would produce nonsense.
  *
  * DRILLING. The legal name is a real anchor, not a row click: reachable by
  * keyboard, has a URL you can copy, works before JavaScript arrives. Legal
@@ -30,7 +32,7 @@ import {
 import { route, TABLES, utilisationColor } from '@awc-ui/showcase-kit/credit-risk';
 import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
 import { localeHref, useT } from '../lib/i18n';
-import { ratingChip, watchDotProps } from '../lib/bits';
+import CounterpartyRow from './CounterpartyRow.astro';
 
 interface Props {
   locale: LocaleCode;
@@ -40,9 +42,11 @@ interface Props {
 
 const { locale, sectorId, showSector = true } = Astro.props;
 const t = useT(locale);
-const href = (p: string) => localeHref(locale, p);
 
 const rows = getCounterparties({ sectorId, sortBy: 'ead', sortDir: 'desc' });
+
+/** Rows shown per page before the reader changes it. Matches the React build. */
+const PAGE_SIZE = 10;
 
 const NUMERIC_KEYS: CounterpartySortKey[] = [
   'ead',
@@ -76,92 +80,80 @@ const layout = TABLES.counterparties(showSector);
       <p>{t('empty.hint')}</p>
     </div>
   ) : (
-    <md-table-container variant="outlined">
-      <md-table
-        data-sortable
-        label={t('screen.counterparties.title')}
-        column-template={layout.columns}
-        min-width={layout.minWidth}
-        keep-height="false"
-        striped
-        sort-by="ead"
-        sort-order="desc"
-      >
-        <md-table-head>
-          {/* The sort labels carry no `active` / `order`: md-table already
-              declares sort-by / sort-order above and pushes both down into
-              every label on sync, so anything written here could only ever
-              disagree with it. */}
-          <md-table-row rowgroup="head">
-            {columns.map((column) => (
-              <md-table-cell head scope="col" numeric={column.numeric || undefined}>
-                {column.key ? (
-                  <md-table-sort-label
-                    column={column.key}
-                    default-order={NUMERIC_KEYS.includes(column.key) ? 'desc' : 'asc'}
-                    icon-position={column.numeric ? 'start' : 'end'}
-                  >
-                    {column.label}
-                  </md-table-sort-label>
-                ) : (
-                  column.label
-                )}
-              </md-table-cell>
-            ))}
-          </md-table-row>
-        </md-table-head>
-        <md-table-body>
-          {rows.map((cp) => (
-            <md-table-row
-              value={cp.id}
-              data-sort-legalname={cp.legalName}
-              data-sort-grade={cp.grade}
-              data-sort-pd={cp.pd}
-              data-sort-ead={cp.ead}
-              data-sort-expectedloss={cp.expectedLoss}
-              data-sort-rwa={cp.rwa}
-              data-sort-utilisation={cp.utilisation}
-            >
-              <md-table-cell>
-                <span class="row" style="gap: var(--md-sys-spacing-gap-xs, 4px)">
-                  <md-status-dot {...watchDotProps(t, cp.watchlist)} />
-                  <a class="drill" href={href(route.counterparty(cp.id))}>
-                    {cp.legalName}
-                  </a>
-                </span>
-              </md-table-cell>
-              {showSector && (
-                <md-table-cell>
-                  <a class="drill" href={href(route.sector(cp.sectorId))}>
-                    {t(`sector.${cp.sectorId}`)}
-                  </a>
+    <Fragment>
+      <md-table-container variant="outlined">
+        <md-table
+          data-paged
+          label={t('screen.counterparties.title')}
+          column-template={layout.columns}
+          min-width={layout.minWidth}
+          keep-height="false"
+          striped
+          sort-by="ead"
+          sort-order="desc"
+          row-offset="0"
+          row-count={rows.length}
+        >
+          <md-table-head>
+            {/* The sort labels carry no active / order: md-table already
+                declares sort-by / sort-order above and pushes both down into
+                every label on sync, so anything written here could only ever
+                disagree with it. */}
+            <md-table-row rowgroup="head">
+              {columns.map((column) => (
+                <md-table-cell head scope="col" numeric={column.numeric || undefined}>
+                  {column.key ? (
+                    <md-table-sort-label
+                      column={column.key}
+                      default-order={NUMERIC_KEYS.includes(column.key) ? 'desc' : 'asc'}
+                      icon-position={column.numeric ? 'start' : 'end'}
+                    >
+                      {column.label}
+                    </md-table-sort-label>
+                  ) : (
+                    column.label
+                  )}
                 </md-table-cell>
-              )}
-              <md-table-cell>{t(`country.${cp.country}`)}</md-table-cell>
-              <md-table-cell>
-                <md-chip {...ratingChip(t, cp.ratingLabel, cp.ratingBand, cp.grade)} />
-              </md-table-cell>
-              <md-table-cell numeric>{t.formatPercent(cp.pd, { maximumFractionDigits: 2 })}</md-table-cell>
-              <md-table-cell numeric>{t.formatPercent(cp.lgd, { maximumFractionDigits: 0 })}</md-table-cell>
-              <md-table-cell numeric>{t.formatCurrency(cp.ead, { notation: 'compact' })}</md-table-cell>
-              <md-table-cell numeric>
-                {t.formatCurrency(cp.expectedLoss, { notation: 'compact' })}
-              </md-table-cell>
-              <md-table-cell numeric>{t.formatCurrency(cp.rwa, { notation: 'compact' })}</md-table-cell>
-              <md-table-cell numeric>
-                <span style={`color: var(--md-sys-color-${utilisationColor(cp.utilisation)})`}>
-                  {t.formatPercent(cp.utilisation, { maximumFractionDigits: 0 })}
-                </span>
-              </md-table-cell>
+              ))}
             </md-table-row>
-          ))}
-        </md-table-body>
-      </md-table>
-    </md-table-container>
+          </md-table-head>
+          <md-table-body>
+            {rows.slice(0, PAGE_SIZE).map((cp) => (
+              <CounterpartyRow locale={locale} cp={cp} showSector={showSector} />
+            ))}
+          </md-table-body>
+        </md-table>
+        <md-table-pagination
+          slot="bottom"
+          count={rows.length}
+          page="0"
+          rows-per-page={PAGE_SIZE}
+          rows-per-page-options="10,25,all"
+          show-first-last
+          label-rows-per-page={t('table.rowsPerPage')}
+          label-displayed-rows={t('table.displayedRows')}
+          label-first-page={t('table.firstPage')}
+          label-previous-page={t('table.previousPage')}
+          label-next-page={t('table.nextPage')}
+          label-last-page={t('table.lastPage')}
+          label-all={t('table.all')}
+        />
+      </md-table-container>
+      {/* The whole book, parked where the document tree cannot see it. A
+          template's content is inert — not rendered, not matched by
+          querySelectorAll, no upgraded custom elements — so this page holds
+          exactly the ten live rows React's does, and the client script still
+          has all of them to page and sort through. */}
+      <template data-rows>
+        {rows.map((cp) => (
+          <CounterpartyRow locale={locale} cp={cp} showSector={showSector} />
+        ))}
+      </template>
+    </Fragment>
   )
 }
 
 <script>
-  import { enhanceSortableTables } from '../lib/sortable';
-  enhanceSortableTables();
+  import { enhancePagedTables } from '../lib/table';
+  enhancePagedTables();
 </script>

@@ -1,0 +1,75 @@
+---
+/**
+ * One counterparty row.
+ *
+ * Its own component because the table renders every row twice — once into the
+ * live page (the first ten) and once into the `<template>` that carries the
+ * whole book for the client script to page and sort through. Writing the markup
+ * once is the only way the two copies cannot drift.
+ *
+ * The `data-sort-*` attributes carry the RAW values. The visible text is
+ * localised and compacted — "€1.2 md" in Romanian, "٤٫٩٪" in Arabic — and
+ * sorting that lexically produces an order that is wrong in a different way in
+ * each of the three languages.
+ *
+ * DRILLING. The legal name is a real anchor, not a row click: reachable by
+ * keyboard, has a URL you can copy, works before JavaScript arrives. Legal
+ * names are proper nouns and are never translated.
+ */
+import type { Counterparty } from '@awc-ui/showcase-kit/data';
+import { route, utilisationColor } from '@awc-ui/showcase-kit/credit-risk';
+import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
+import { localeHref, useT } from '../lib/i18n';
+import { ratingChip, watchDotProps } from '../lib/bits';
+
+interface Props {
+  locale: LocaleCode;
+  cp: Counterparty;
+  showSector?: boolean;
+}
+
+const { locale, cp, showSector = true } = Astro.props;
+const t = useT(locale);
+const href = (p: string) => localeHref(locale, p);
+---
+
+<md-table-row
+  value={cp.id}
+  data-sort-legalname={cp.legalName}
+  data-sort-grade={cp.grade}
+  data-sort-pd={cp.pd}
+  data-sort-ead={cp.ead}
+  data-sort-expectedloss={cp.expectedLoss}
+  data-sort-rwa={cp.rwa}
+  data-sort-utilisation={cp.utilisation}
+>
+  <md-table-cell>
+    <span class="row" style="gap: var(--md-sys-spacing-gap-xs, 4px)">
+      <md-status-dot {...watchDotProps(t, cp.watchlist)} />
+      <a class="drill" href={href(route.counterparty(cp.id))}>{cp.legalName}</a>
+    </span>
+  </md-table-cell>
+  {
+    showSector && (
+      <md-table-cell>
+        <a class="drill" href={href(route.sector(cp.sectorId))}>
+          {t(`sector.${cp.sectorId}`)}
+        </a>
+      </md-table-cell>
+    )
+  }
+  <md-table-cell>{t(`country.${cp.country}`)}</md-table-cell>
+  <md-table-cell>
+    <md-chip {...ratingChip(t, cp.ratingLabel, cp.ratingBand, cp.grade)} />
+  </md-table-cell>
+  <md-table-cell numeric>{t.formatPercent(cp.pd, { maximumFractionDigits: 2 })}</md-table-cell>
+  <md-table-cell numeric>{t.formatPercent(cp.lgd, { maximumFractionDigits: 0 })}</md-table-cell>
+  <md-table-cell numeric>{t.formatCurrency(cp.ead, { notation: 'compact' })}</md-table-cell>
+  <md-table-cell numeric>{t.formatCurrency(cp.expectedLoss, { notation: 'compact' })}</md-table-cell>
+  <md-table-cell numeric>{t.formatCurrency(cp.rwa, { notation: 'compact' })}</md-table-cell>
+  <md-table-cell numeric>
+    <span style={`color: var(--md-sys-color-${utilisationColor(cp.utilisation)})`}>
+      {t.formatPercent(cp.utilisation, { maximumFractionDigits: 0 })}
+    </span>
+  </md-table-cell>
+</md-table-row>
