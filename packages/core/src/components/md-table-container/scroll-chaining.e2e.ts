@@ -10,9 +10,17 @@ import { newE2EPage } from '@stencil/core/testing';
  * stopped the page dead — a reader who scrolled onto a table could not
  * scroll back off it.
  *
- * Vertical containment is still correct in the capped case, where
- * `max-height` makes the viewport a real vertical scroll port: reaching the
- * last row must not start scrolling the page.
+ * Vertical containment is wrong in the CAPPED case too, which was the second
+ * half of this bug. A capped table is a real vertical scroll port, but it is
+ * still inline page content: a reader who scrolls up through it and reaches
+ * the first row expects the page to keep going, and containment strands them
+ * mid-document. Containment belongs to surfaces that float ABOVE the page —
+ * md-menu and md-search's results panel keep it, because scrolling those must
+ * not move the page behind them.
+ *
+ * Horizontal containment stays on the container, which genuinely does scroll
+ * horizontally: a sideways flick at the end of a wide table must not trigger
+ * back-navigation.
  */
 const WIDE_TABLE = `
   <md-table-container id="tc" style="inline-size: 300px;">
@@ -81,7 +89,50 @@ describe('md-table-container · does not trap page scroll', () => {
     expect(behavior.y).toBe('auto');
   }, 60000);
 
-  it('re-contains the vertical axis when max-height makes it a scroll port', async () => {
+  // A capped table scrolls vertically itself. Reaching its FIRST row must
+  // hand the gesture back to the page: containment there strands the reader
+  // inside the table with no way to scroll back up short of moving the
+  // pointer off it. Containment is for surfaces that float above the page
+  // (md-menu, md-search results), not for inline page content.
+  it('chains to the page once a capped table is scrolled to its top', async () => {
+    const page = await newE2EPage();
+    await page.setContent(
+      `<div style="block-size: 600px;">spacer above</div>
+       ${WIDE_TABLE.replace('id="tc"', 'id="tc" max-height="150px"')}
+       <div style="block-size: 1600px;">spacer below</div>`,
+    );
+    await page.waitForChanges();
+    await new Promise(r => setTimeout(r, 300));
+
+    // Get the page down so there is somewhere to scroll back up to.
+    await page.evaluate(() => window.scrollTo(0, 500));
+    await new Promise(r => setTimeout(r, 200));
+    expect(await page.evaluate(() => window.scrollY)).toBe(500);
+
+    const box = await page.evaluate(() => {
+      const r = document.getElementById('tc')!.getBoundingClientRect();
+      return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
+    });
+    await page.mouse.move(box.x, box.y);
+
+    // Drive the inner scroller to its own top first.
+    await page.mouse.wheel({ deltaY: -200 });
+    await new Promise(r => setTimeout(r, 300));
+    const innerTop = await page.evaluate(() => {
+      const el = document
+        .getElementById('tc')!
+        .shadowRoot!.querySelector('.md-table-container__scroll') as HTMLElement;
+      return el.scrollTop;
+    });
+    expect(innerTop).toBe(0);
+
+    // Now keep going: the page must take over instead of stopping dead.
+    await page.mouse.wheel({ deltaY: -300 });
+    await new Promise(r => setTimeout(r, 400));
+    expect(await page.evaluate(() => window.scrollY)).toBeLessThan(500);
+  }, 60000);
+
+  it('leaves the vertical axis chaining even when max-height makes it a scroll port', async () => {
     const page = await newE2EPage();
     // Via the max-height PROP: that is what adds the --scrollable class and
     // turns the viewport into a real vertical scroll port. Inline CSS alone
@@ -99,7 +150,10 @@ describe('md-table-container · does not trap page scroll', () => {
     });
 
     expect(behavior.overflowY).toBe('auto');
+    // Horizontal containment stays: the container really does scroll
+    // horizontally, and a sideways flick at the end must not trigger
+    // back-navigation. Vertical must chain — see the wheel test above.
     expect(behavior.x).toBe('contain');
-    expect(behavior.y).toBe('contain');
+    expect(behavior.y).toBe('auto');
   }, 60000);
 });
