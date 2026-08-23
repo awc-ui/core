@@ -370,11 +370,19 @@
   --_state-layer-color: var(--md-sys-color-primary);
   border: var(--md-button-outline-width, 1px) solid var(--md-button-outline-color, var(--md-sys-color-outline));
 }
-:host(.md-button--outlined.md-button--xs) { padding: 0 max(3px, calc(11px + var(--md-sys-density-scale, 0) * 2px)); }
-:host(.md-button--outlined.md-button--sm) { padding: 0 max(7px, calc(23px + var(--md-sys-density-scale, 0) * 4px)); }
-:host(.md-button--outlined.md-button--md) { padding: 0 max(9px, calc(27px + var(--md-sys-density-scale, 0) * 4px)); }
-:host(.md-button--outlined.md-button--lg) { padding: 0 max(10px, calc(31px + var(--md-sys-density-scale, 0) * 4px)); }
-:host(.md-button--outlined.md-button--xl) { padding: 0 max(15px, calc(47px + var(--md-sys-density-scale, 0) * 2px)); }
+/* Variant padding follows the SAME density rule as the base size rules above:
+   slope = base/16 (25% shrink across the four rungs) and a floor of base/2.
+   These overrides previously decayed at 52-133% per the old tuning — text sm
+   lost 133% of its inset and pinned to its floor by rung -2 — so outlined and
+   text shrank far faster than the button did. Past rung -2 that INVERTED the
+   variants: an outlined button, wider than filled at density 0, became
+   narrower than it, and a row of mixed-variant buttons went visibly ragged.
+   Density-0 values are unchanged; only the decay was corrected. */
+:host(.md-button--outlined.md-button--xs) { padding: 0 max(5.5px, calc(11px + var(--md-sys-density-scale, 0) * 0.6875px)); }
+:host(.md-button--outlined.md-button--sm) { padding: 0 max(11.5px, calc(23px + var(--md-sys-density-scale, 0) * 1.4375px)); }
+:host(.md-button--outlined.md-button--md) { padding: 0 max(13.5px, calc(27px + var(--md-sys-density-scale, 0) * 1.6875px)); }
+:host(.md-button--outlined.md-button--lg) { padding: 0 max(15.5px, calc(31px + var(--md-sys-density-scale, 0) * 1.9375px)); }
+:host(.md-button--outlined.md-button--xl) { padding: 0 max(23.5px, calc(47px + var(--md-sys-density-scale, 0) * 2.9375px)); }
 :host(.md-button--outlined:hover:not(.md-button--disabled)) {
   border-color: var(--md-button-outline-color, var(--md-sys-color-primary));
 }
@@ -388,11 +396,11 @@
   --_label-color: var(--md-button-label-color, var(--md-sys-color-primary));
   --_state-layer-color: var(--md-sys-color-primary);
 }
-:host(.md-button--text.md-button--xs) { padding: 0 max(3px, calc(8px + var(--md-sys-density-scale, 0) * 2px)); }
-:host(.md-button--text.md-button--sm) { padding: 0 max(4px, calc(12px + var(--md-sys-density-scale, 0) * 4px)); }
-:host(.md-button--text.md-button--md) { padding: 0 max(5px, calc(16px + var(--md-sys-density-scale, 0) * 4px)); }
-:host(.md-button--text.md-button--lg) { padding: 0 max(6px, calc(20px + var(--md-sys-density-scale, 0) * 4px)); }
-:host(.md-button--text.md-button--xl) { padding: 0 max(10px, calc(32px + var(--md-sys-density-scale, 0) * 2px)); }
+:host(.md-button--text.md-button--xs) { padding: 0 max(4px, calc(8px + var(--md-sys-density-scale, 0) * 0.5px)); }
+:host(.md-button--text.md-button--sm) { padding: 0 max(6px, calc(12px + var(--md-sys-density-scale, 0) * 0.75px)); }
+:host(.md-button--text.md-button--md) { padding: 0 max(8px, calc(16px + var(--md-sys-density-scale, 0) * 1px)); }
+:host(.md-button--text.md-button--lg) { padding: 0 max(10px, calc(20px + var(--md-sys-density-scale, 0) * 1.25px)); }
+:host(.md-button--text.md-button--xl) { padding: 0 max(16px, calc(32px + var(--md-sys-density-scale, 0) * 2px)); }
 
 /* Elevated */
 :host(.md-button--elevated) {
