@@ -481,28 +481,67 @@ export function watchMdChartTheme(host: HTMLElement, onChange: () => void): () =
     onChange();
   };
 
-  // The media query fires BEFORE styles settle in some engines, so re-check on
-  // the next frame rather than reading synchronously.
-  const mql = window.matchMedia?.('(prefers-color-scheme: dark)');
-  const onMedia = () => requestAnimationFrame(check);
-  mql?.addEventListener?.('change', onMedia);
+  // Every trigger below is coalesced onto one frame. Two reasons: a media
+  // query fires BEFORE styles settle in some engines, so a synchronous read
+  // returns the OLD palette; and a single theme switch typically produces a
+  // burst of mutations (attribute + stylesheet + reflow), which would
+  // otherwise fingerprint the host once per mutation.
+  let frame = 0;
+  const schedule = () => {
+    if (frame) return;
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      check();
+    });
+  };
 
-  const observer = new MutationObserver(check);
-  const opts: MutationObserverInit = {
+  const mql = window.matchMedia?.('(prefers-color-scheme: dark)');
+  mql?.addEventListener?.('change', schedule);
+
+  const observer = new MutationObserver(schedule);
+
+  // 1. The host's ancestor chain — where `data-theme`, `class` and inline
+  //    custom properties land. Ancestors only; never `subtree: true` on the
+  //    document, which would fire for every unrelated attribute write.
+  const attrOpts: MutationObserverInit = {
     attributes: true,
     attributeFilter: ['data-theme', 'class', 'style'],
   };
-  // Ancestor chain only — never `subtree: true` on the document, which would
-  // fire for every unrelated attribute write on a busy page.
   for (let node: HTMLElement | null = host; node; node = node.parentElement) {
-    observer.observe(node, opts);
+    observer.observe(node, attrOpts);
   }
   if (typeof document !== 'undefined' && document.documentElement) {
-    observer.observe(document.documentElement, opts);
+    observer.observe(document.documentElement, attrOpts);
   }
 
+  // 2. document.head — the STYLESHEET path, which mutates nothing on the
+  //    ancestor chain and so was previously invisible. This is not an exotic
+  //    case: it is exactly what @awc-ui/theme's `applyThemeStylesheet` does
+  //    (it appends a <style> and rewrites its textContent), and what the theme
+  //    generator page uses. Without this a seed/accent swap left every canvas
+  //    on the page painted in the old palette. childList+characterData catch
+  //    both the first insertion and later content rewrites; the attribute
+  //    filter catches a <link> being repointed or disabled.
+  //    Bursty in dev (HMR injects <style> constantly), which is precisely why
+  //    the checks are frame-coalesced and fingerprint-guarded: the cost of a
+  //    theme-irrelevant head mutation is one getComputedStyle per frame.
+  if (typeof document !== 'undefined' && document.head) {
+    observer.observe(document.head, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ['href', 'media', 'disabled'],
+    });
+  }
+
+  // NOT covered: `document.adoptedStyleSheets` and CSSOM edits to an existing
+  // sheet (insertRule) — neither is observable by any browser API. That is
+  // what the charts' public `refreshTheme()` is for.
+
   return () => {
-    mql?.removeEventListener?.('change', onMedia);
+    mql?.removeEventListener?.('change', schedule);
     observer.disconnect();
+    if (frame) cancelAnimationFrame(frame);
   };
 }

@@ -96,6 +96,56 @@ describe('md-area-chart · theme changes repaint the canvas', () => {
     expect(await snapshot(page)).toBe(before);
   }, 60000);
 
+  // The @awc-ui/theme path: applyThemeStylesheet() appends a <style> to head
+  // and rewrites its textContent on every reapply. Nothing on the chart's
+  // ancestor chain mutates, so this was invisible to the watcher — a seed or
+  // accent swap left every canvas on the page in the old palette. Measured in
+  // a real showcase as 0 of 7 charts repainting.
+  it('repaints when a theme stylesheet is appended to head', async () => {
+    const page = await newE2EPage();
+    await page.setContent(MARKUP);
+    await seed(page);
+
+    const before = await snapshot(page);
+    await page.evaluate(() => {
+      const s = document.createElement('style');
+      s.id = 'awc-ui-dynamic-theme';
+      s.textContent = ':root { --md-sys-color-primary: #01629E; }';
+      document.head.appendChild(s);
+    });
+    await page.waitForChanges();
+    await new Promise(r => setTimeout(r, 700));
+
+    expect(await snapshot(page)).not.toBe(before);
+  }, 60000);
+
+  it('repaints when an existing theme stylesheet is rewritten', async () => {
+    const page = await newE2EPage();
+    await page.setContent(MARKUP);
+    // In HEAD, not body: setContent puts its markup in the body, and the
+    // watcher deliberately observes only head — observing the body subtree
+    // for childList/characterData would fire on every DOM change on the page.
+    // applyThemeStylesheet appends to head, so head is the case that matters.
+    await page.evaluate(() => {
+      const s = document.createElement('style');
+      s.id = 'awc-ui-dynamic-theme';
+      s.textContent = ':root { --md-sys-color-primary: #01629E; }';
+      document.head.appendChild(s);
+    });
+    await seed(page);
+
+    const before = await snapshot(page);
+    // Reapplying a different seed rewrites textContent in place.
+    await page.evaluate(() => {
+      document.getElementById('awc-ui-dynamic-theme')!.textContent =
+        ':root { --md-sys-color-primary: #B3261E; }';
+    });
+    await page.waitForChanges();
+    await new Promise(r => setTimeout(r, 700));
+
+    expect(await snapshot(page)).not.toBe(before);
+  }, 60000);
+
   it('refreshTheme() repaints on demand', async () => {
     const page = await newE2EPage();
     await page.setContent(MARKUP);

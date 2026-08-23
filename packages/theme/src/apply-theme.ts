@@ -16,7 +16,16 @@ export function clearThemeRoles(element: HTMLElement): void {
   }
 }
 
-/** Inject or update a stylesheet with light (:root) and dark ([data-theme="dark"]) role tokens. */
+/**
+ * Inject or update a stylesheet with light (:root) and dark ([data-theme="dark"]) role tokens.
+ *
+ * Charts pick this up automatically: they watch `document.head` for the
+ * `<style>` this appends and for later rewrites of its content, so a seed or
+ * accent swap repaints every canvas on the page. The one path no browser API
+ * can observe is a sheet applied through `document.adoptedStyleSheets` or
+ * edited via CSSOM `insertRule` — if you theme that way with charts on
+ * screen, call each chart's `refreshTheme()` afterwards.
+ */
 export function applyThemeStylesheet(
   theme: ThemeComputeResult,
   styleId = 'awc-ui-dynamic-theme',
