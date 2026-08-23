@@ -216,43 +216,8 @@ export function applySeedPreset(seedId: string, doc?: Document): void {
     // Appended last so it beats the token sheet, per main-llm.md §4.2.
     d.head.appendChild(style);
   }
-  if (style.textContent !== css) {
-    style.textContent = css;
-    refreshChartTheme(d);
-  }
+  if (style.textContent !== css) style.textContent = css;
 }
-
-/**
- * Charts watch their ancestor chain for theme changes, which covers everything
- * the dock stamps onto `<html>` — `data-theme`, `dir`, `data-density`. It
- * cannot cover THIS: the accent presets arrive as a stylesheet appended to
- * `<head>`, so no attribute on any ancestor mutates and no observer fires. That
- * is the documented case for the components' public `refreshTheme()`, which
- * re-reads the tokens and repaints without rebuilding the engine.
- */
-function refreshChartTheme(d: Document): void {
-  // Tolerate a partial document (the verifier's stub, a server-side shim).
-  if (typeof d.querySelectorAll !== 'function') return;
-
-  const charts = d.querySelectorAll<HTMLElement & { refreshTheme?: () => Promise<void> }>(
-    'md-bar-chart, md-line-chart, md-area-chart, md-pie-chart, md-sparkline',
-  );
-  if (!charts.length) return;
-
-  // One frame later, so the new sheet has been applied before the re-read.
-  const raf =
-    typeof requestAnimationFrame === 'function'
-      ? requestAnimationFrame
-      : (cb: FrameRequestCallback) => setTimeout(() => cb(0), 16) as unknown as number;
-
-  raf(() => {
-    charts.forEach((chart) => {
-      // Older builds of the library predate refreshTheme(); skip rather than throw.
-      void chart.refreshTheme?.();
-    });
-  });
-}
-
 /** `true` when the OS is asking for a dark palette. */
 export function prefersDark(): boolean {
   return (
