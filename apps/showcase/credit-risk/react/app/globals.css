@@ -34,10 +34,14 @@ a {
 
 /* ------------------------------------------------------------------- shell */
 
+/* Full width on purpose. A risk console is read across, not down: the
+   counterparty table alone carries ten columns, and capping the shell at a
+   reading measure only forced horizontal scrolling inside the tables while
+   leaving the screen empty on both sides. Wide viewports get the columns; the
+   inline padding keeps content off the edges. */
 .shell {
-  max-width: 1360px;
-  margin-inline: auto;
-  padding-inline: var(--md-sys-spacing-inset-lg, 16px);
+  width: 100%;
+  padding-inline: var(--md-sys-spacing-inset-xl, 24px);
   padding-block: var(--md-sys-spacing-inset-lg, 16px) var(--md-sys-spacing-inset-xl, 24px);
   display: flex;
   flex-direction: column;
@@ -323,4 +327,20 @@ md-pie-chart {
 md-organization-chart {
   display: block;
   min-block-size: 200px;
+}
+
+/* Chips inside a table with a sticky header.
+ *
+ * md-chip's label carries `z-index: 2` inside the component, and the chip host
+ * is `position: relative; z-index: auto` — which does NOT open a stacking
+ * context, so that internal z-index escapes into md-table's context. The sticky
+ * header row is also `z-index: 2`, so the two tie and tree order decides: the
+ * body is after the head, and the chip's LABEL paints over the pinned header
+ * (its background does not, which is why the text appeared to float there).
+ *
+ * Isolating the chip keeps its internal layering internal. Remove this once the
+ * component isolates itself — reported upstream with this repro.
+ */
+md-chip {
+  isolation: isolate;
 }

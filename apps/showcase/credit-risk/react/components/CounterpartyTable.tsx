@@ -114,7 +114,7 @@ export function CounterpartyTable({
   }
 
   return (
-    <md-table-container variant="outlined" max-height="60vh">
+    <md-table-container variant="outlined">
       <md-table
         ref={tableRef}
         label={t('screen.counterparties.title')}

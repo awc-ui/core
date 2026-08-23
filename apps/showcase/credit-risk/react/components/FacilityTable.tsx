@@ -26,7 +26,7 @@ export function FacilityTable({ counterpartyId }: { counterpartyId: string }) {
   }
 
   return (
-    <md-table-container variant="outlined" max-height="56vh">
+    <md-table-container variant="outlined">
       <md-table
         label={t('screen.facilities.title')}
         column-template="132px minmax(150px, 1fr) 96px minmax(150px, 1.2fr) 128px 120px 104px 108px 116px"
