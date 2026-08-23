@@ -256,7 +256,21 @@ export class MdButton {
          before. window.open remains for a programmatic click() on a button
          whose href is safe but whose anchor has not rendered yet. */
       const href = sanitizeHref(this.href);
-      if (href && !this.el.shadowRoot?.querySelector('.md-button__anchor')) {
+      if (!href) return;
+      const anchor = this.el.shadowRoot?.querySelector('.md-button__anchor');
+      /* Did this click actually pass THROUGH the anchor? composedPath sees
+         across the shadow boundary, so a real pointer click — on the label, an
+         icon, or the anchor's stretched ::after over the padding — is
+         recognised and left alone: the browser is already navigating.
+
+         A PROGRAMMATIC el.click() targets the host and never reaches the
+         anchor, so nothing would happen at all. A native <a>.click() does
+         navigate, and this component behaved that way before it grew a real
+         anchor — including keyboard activation, which routes through
+         el.click() in handleKeyDown. Falling back to window.open keeps both
+         working, and the composedPath check is what stops a real click from
+         navigating twice. */
+      if (!anchor || !e.composedPath().includes(anchor)) {
         window.open(href, this.target, SAFE_WINDOW_FEATURES);
       }
       return;

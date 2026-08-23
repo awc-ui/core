@@ -142,3 +142,47 @@ describe('md-button · href renders a real link', () => {
     expect(info.hostTabindex).toBe('0');
   }, 60000);
 });
+
+/**
+ * A native <a>.click() navigates. md-button behaved that way before it grew a
+ * real anchor, and keyboard activation routes through el.click() too — so a
+ * programmatic click must still navigate even though it never reaches the
+ * anchor. Caught by a Storybook play function, not by the tests above.
+ */
+describe('md-button · programmatic and keyboard activation still navigate', () => {
+  it('el.click() navigates even though it never reaches the anchor', async () => {
+    const page = await newE2EPage();
+    await page.setContent(`<md-button id="b" href="https://example.com/x" target="_blank">Go</md-button>`);
+    await page.waitForChanges();
+
+    const opened = await page.evaluate(() => {
+      const calls: string[] = [];
+      const orig = window.open;
+      window.open = ((url?: string | URL) => { calls.push(String(url)); return null; }) as typeof window.open;
+      (document.getElementById('b') as HTMLElement).click();
+      window.open = orig;
+      return calls;
+    });
+    expect(opened).toEqual(['https://example.com/x']);
+  }, 60000);
+
+  it('a real pointer click does NOT also navigate programmatically', async () => {
+    const page = await newE2EPage();
+    await page.setContent(`<md-button id="b" href="#target">Go</md-button>`);
+    await page.waitForChanges();
+    await new Promise(r => setTimeout(r, 200));
+
+    await page.evaluate(() => {
+      (window as unknown as { __opens: number }).__opens = 0;
+      const orig = window.open;
+      window.open = ((...a: unknown[]) => { (window as unknown as { __opens: number }).__opens++; return orig.apply(window, a as never); }) as typeof window.open;
+    });
+    await page.click('#b');
+    await new Promise(r => setTimeout(r, 300));
+
+    // The anchor handled it; window.open must not fire as well or the user
+    // gets two navigations.
+    expect(await page.evaluate(() => (window as unknown as { __opens: number }).__opens)).toBe(0);
+    expect(await page.evaluate(() => location.hash)).toBe('#target');
+  }, 60000);
+});
