@@ -60,7 +60,6 @@ export function StressScreen() {
     <Screen
       title={t('screen.stress.title')}
       subtitle={t('screen.stress.subtitle')}
-      crumbs={[{ label: t('nav.overview'), href: route.overview() }, { label: t('nav.stress') }]}
       aside={
         <md-segmented-button-set ref={selectorRef} aria-label={t('table.scenario')}>
           {scenarios.map((s) => (
@@ -75,7 +74,7 @@ export function StressScreen() {
       }
     >
       <Panel title={t(scenario.nameKey)} subtitle={describe(scenario.id)}>
-        <dl className="dl">
+        <dl className="dl dl--numeric">
           <Fact label={t('table.pdMultiplier')}>
             {t('unit.times', { value: t.formatNumber(scenario.pdMultiplier, { maximumFractionDigits: 2 }) })}
           </Fact>

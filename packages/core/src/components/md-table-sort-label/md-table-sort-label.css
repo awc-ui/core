@@ -25,6 +25,9 @@
     var(--md-sys-motion-spring-effects-fast-easing, cubic-bezier(0.31, 0.94, 0.34, 1));
   /* Opacity of the arrow when previewed on hover/focus of an unsorted column. */
   --_hover-opacity: 0.6;
+  /* Present but clearly subordinate to the active column's arrow, so a
+     glance still reads which column the table is actually sorted by. */
+  --_rest-opacity: var(--md-table-sort-label-rest-opacity, 0.38);
 
   display: inline-flex;
   align-items: center;
@@ -60,22 +63,33 @@
   opacity: 0.6;
 }
 
-/* The sort arrow — hidden at rest, revealed on hover/focus of a sortable
-   column, and kept visible + highlighted once the column is the active sort.
-   Descending rotates the arrow 180° to point down (animated on the spatial
-   spring); colour/opacity run on the effects spring. */
+/* The sort arrow.
+   At rest it is DIMMED but present, because the arrow is the only thing that
+   distinguishes a sortable column from a fixed one — hiding it until hover
+   makes the affordance undiscoverable without hovering every header, and
+   undiscoverable entirely on a touch device, which has no hover to give.
+   `inactive-icon="hover"` restores the hidden-at-rest behaviour for tables
+   where nearly every column sorts and the arrows would be noise.
+   Hover/focus lifts it, and the active column's arrow is fully opaque under
+   either setting. Descending rotates the arrow 180° to point down (animated on
+   the spatial spring); colour/opacity run on the effects spring. */
 .md-table-sort-label__icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   inline-size: var(--_icon-size);
   block-size: var(--_icon-size);
-  opacity: 0;
+  opacity: var(--_rest-opacity);
   transform: rotate(0deg);
   transition:
     transform var(--_spring-spatial),
     opacity var(--_spring-effects);
   flex: 0 0 auto;
+}
+
+/* Opt back out: invisible until hovered or focused. */
+:host([inactive-icon='hover']) .md-table-sort-label__icon {
+  opacity: 0;
 }
 
 /* Descending rotates the arrow to point down (kept animated). */

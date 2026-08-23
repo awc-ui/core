@@ -16,7 +16,7 @@
  */
 import { BASE_CURRENCY, REPORTING_DATE, REPORTING_QUARTER } from '@awc-ui/showcase-kit/data';
 import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
-import { route, localeHref, useT } from '../lib/i18n';
+import { BASE_PATH, LOCALE_CODES, route, localeHref, useT } from '../lib/i18n';
 import Dock from './Dock.astro';
 
 export interface Crumb {
@@ -35,6 +35,35 @@ interface Props {
 const { locale, title, subtitle, crumbs = [] } = Astro.props;
 const t = useT(locale);
 const href = (path: string) => localeHref(locale, path);
+
+/**
+ * The section nav, with the current section marked.
+ *
+ * No client-routing interception is needed here, unlike the React build: this
+ * IS a document per route, so a nav click is supposed to be a page load. And
+ * the active section is known at build time from the URL being rendered, so it
+ * costs nothing — no effect, no hook, no hydration.
+ */
+const SECTIONS = [
+  { path: route.overview(), icon: 'dashboard', label: t('nav.overview') },
+  { path: route.watchlist(), icon: 'warning', label: t('nav.watchlist') },
+  { path: route.stress(), icon: 'stacked_line_chart', label: t('nav.stress') },
+];
+
+/** The screen path, with base and locale segment stripped back off. */
+const here = (() => {
+  const full = Astro.url.pathname;
+  const rest = full.startsWith(BASE_PATH) ? full.slice(BASE_PATH.length) : full;
+  for (const code of LOCALE_CODES) {
+    if (rest === `/${code}` || rest.startsWith(`/${code}/`)) {
+      return rest.slice(code.length + 1) || '/';
+    }
+  }
+  return rest || '/';
+})();
+
+// The overview owns `/` and would otherwise match every path.
+const isCurrent = (path: string) => (path === '/' ? here === '/' : here.startsWith(path));
 ---
 
 <div class="shell">
@@ -49,15 +78,19 @@ const href = (path: string) => localeHref(locale, path);
     <span class="muted">{t('app.title')}</span>
 
     <nav class="shell__nav" aria-label={t('nav.label')}>
-      <md-button variant="text" size="sm" icon="dashboard" href={href(route.overview())}>
-        {t('nav.overview')}
-      </md-button>
-      <md-button variant="text" size="sm" icon="warning" href={href(route.watchlist())}>
-        {t('nav.watchlist')}
-      </md-button>
-      <md-button variant="text" size="sm" icon="stacked_line_chart" href={href(route.stress())}>
-        {t('nav.stress')}
-      </md-button>
+      {
+        SECTIONS.map((section) => (
+          <md-button
+            variant={isCurrent(section.path) ? 'tonal' : 'text'}
+            size="sm"
+            icon={section.icon}
+            href={href(section.path)}
+            aria-current={isCurrent(section.path) ? 'page' : undefined}
+          >
+            {section.label}
+          </md-button>
+        ))
+      }
     </nav>
 
     <div class="shell__meta">
@@ -67,34 +100,42 @@ const href = (path: string) => localeHref(locale, path);
     </div>
   </header>
 
-  {/* Rendered on EVERY screen, including the overview, where the trail is a
-      single current-page crumb. It used to be hidden below two crumbs, on the
-      reasoning that a trail of one says nothing — true in isolation, but it
-      meant the row existed on five screens and not on the sixth, so every
-      navigation to or from the overview moved the heading and everything under
-      it by 52px. A redundant crumb is a much smaller cost than that. */}
-  {
-    crumbs.length > 0 && (
-      <md-breadcrumbs
-        label={t('nav.breadcrumb')}
-        max-items="4"
-        items-before-collapse="1"
-        items-after-collapse="2"
-      >
-        {crumbs.map((crumb) => (
-          <md-breadcrumb-item href={crumb.href ? href(crumb.href) : undefined}>
-            {crumb.label}
-          </md-breadcrumb-item>
-        ))}
-      </md-breadcrumbs>
-    )
-  }
+  {/* The trail sits OPPOSITE the heading it describes, not on a row of its own
+      above it.
 
+      It appears on the drill path (sector → counterparty → facility), where it
+      is the only thing showing where you are and the only way back up it. Not
+      on the three section screens: the nav already highlights the section, so a
+      trail reading "Overview / Watchlist" would only say it twice.
+
+      Putting it here rather than in its own row is also what keeps the geometry
+      still. `.screen-head` exists on every screen and is taller than the trail,
+      so a trail appearing or disappearing cannot change the row's height —
+      whereas a row that came and went was moving the whole page by 52px on
+      every navigation. */}
   <div class="screen-head">
     <div class="screen-head__text">
       <h1>{title}</h1>
       {subtitle && <p>{subtitle}</p>}
     </div>
+    {
+      crumbs.length > 1 && (
+        <div class="screen-head__trail">
+          <md-breadcrumbs
+            label={t('nav.breadcrumb')}
+            max-items="4"
+            items-before-collapse="1"
+            items-after-collapse="2"
+          >
+            {crumbs.map((crumb) => (
+              <md-breadcrumb-item href={crumb.href ? href(crumb.href) : undefined}>
+                {crumb.label}
+              </md-breadcrumb-item>
+            ))}
+          </md-breadcrumbs>
+        </div>
+      )
+    }
     {
       Astro.slots.has('aside') && (
         <div class="screen-head__aside">

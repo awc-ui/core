@@ -90,7 +90,6 @@ export function WatchlistScreen() {
         signals: signals.length,
         counterparties: new Set(signals.map((s) => s.counterpartyId)).size,
       })}
-      crumbs={[{ label: t('nav.overview'), href: route.overview() }, { label: t('nav.watchlist') }]}
       aside={
         <md-chip
           variant="assist"

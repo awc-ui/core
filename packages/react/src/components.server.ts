@@ -1766,6 +1766,7 @@ export const MdStatusDot: StencilReactComponent<MdStatusDotElement, MdStatusDotE
     properties: {
         state: 'state',
         size: 'size',
+        inline: 'inline',
         live: 'live',
         label: 'label',
         density: 'density'
@@ -2120,6 +2121,7 @@ export const MdTableSortLabel: StencilReactComponent<MdTableSortLabelElement, Md
         defaultOrder: 'default-order',
         iconPosition: 'icon-position',
         icon: 'icon',
+        inactiveIcon: 'inactive-icon',
         active: 'active',
         order: 'order',
         density: 'density'
@@ -2154,6 +2156,7 @@ export const MdTabs: StencilReactComponent<MdTabsElement, MdTabsEvents, Componen
     properties: {
         activeTabIndex: 'active-tab-index',
         variant: 'variant',
+        divider: 'divider',
         ariaLabelProp: 'aria-label',
         tabWidth: 'tab-width',
         width: 'width'

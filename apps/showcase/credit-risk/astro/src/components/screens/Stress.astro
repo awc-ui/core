@@ -61,7 +61,7 @@ const delta = (v: number) => (v === 0 ? t('common.na') : money(v));
     scenarios.map((scenario) => (
       <section data-scenario={scenario.id} hidden={scenario.id !== DEFAULT_SCENARIO}>
         <Panel title={t(scenario.nameKey)} subtitle={describe(scenario.id)}>
-          <dl class="dl">
+          <dl class="dl dl--numeric">
             <div>
               <dt>{t('table.pdMultiplier')}</dt>
               <dd>

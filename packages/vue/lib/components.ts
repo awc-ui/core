@@ -1376,6 +1376,7 @@ export const MdSplitButton = /*@__PURE__*/ defineContainer<JSX.MdSplitButton>('m
 export const MdStatusDot = /*@__PURE__*/ defineContainer<JSX.MdStatusDot>('md-status-dot', defineMdStatusDot, [
   'state',
   'size',
+  'inline',
   'live',
   'label',
   'density'
@@ -1613,6 +1614,7 @@ export const MdTableSortLabel = /*@__PURE__*/ defineContainer<JSX.MdTableSortLab
   'defaultOrder',
   'iconPosition',
   'icon',
+  'inactiveIcon',
   'active',
   'order',
   'density',
@@ -1634,6 +1636,7 @@ export const MdTableToolbar = /*@__PURE__*/ defineContainer<JSX.MdTableToolbar>(
 export const MdTabs = /*@__PURE__*/ defineContainer<JSX.MdTabs>('md-tabs', defineMdTabs, [
   'activeTabIndex',
   'variant',
+  'divider',
   'ariaLabelProp',
   'tabWidth',
   'width',

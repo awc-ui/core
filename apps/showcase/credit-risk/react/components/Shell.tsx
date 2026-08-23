@@ -12,7 +12,7 @@
  */
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useRef, type ReactNode } from 'react';
 import { BASE_CURRENCY, REPORTING_DATE, REPORTING_QUARTER } from '@awc-ui/showcase-kit/data';
 import { useT } from '@/lib/showcase';
@@ -80,6 +80,71 @@ export interface ScreenProps {
   children: ReactNode;
 }
 
+/**
+ * The section nav.
+ *
+ * TWO THINGS, both about `href` on a custom element.
+ *
+ * It is a real anchor, which is why it works with JavaScript off and honours
+ * ⌘-click — but left alone it also means every nav click was a FULL PAGE
+ * RELOAD in a client-routed app: measured as `performance.navigation.type ===
+ * 'navigate'` on each click, tearing down and rebuilding the whole document,
+ * re-registering every component. That is what made the top row lurch. The
+ * `mdClick` listener below vetoes the navigation and routes in place instead;
+ * `preventDefault()` on `mdClick` is what gates it, not on the native click.
+ *
+ * And the current section is marked `tonal` rather than `text`, so the nav says
+ * where you are. Without it three identical buttons give no feedback at all
+ * when one of them is the page you are already on.
+ */
+function SectionNav() {
+  const t = useT();
+  const router = useRouter();
+  const pathname = usePathname();
+  const ref = useRef<HTMLElement | null>(null);
+
+  useCustomEvent<CustomEvent<{ href: string; originalEvent?: MouseEvent | KeyboardEvent }>>(
+    ref,
+    'mdClick',
+    (event) => {
+      const { href, originalEvent } = event.detail ?? {};
+      if (!href) return;
+      if (originalEvent?.metaKey || originalEvent?.ctrlKey || originalEvent?.shiftKey) return;
+      event.preventDefault();
+      router.push(href.replace(withBase(''), '') || '/');
+    },
+  );
+
+  const sections = [
+    { path: route.overview(), icon: 'dashboard', label: t('nav.overview') },
+    { path: route.watchlist(), icon: 'warning', label: t('nav.watchlist') },
+    { path: route.stress(), icon: 'stacked_line_chart', label: t('nav.stress') },
+  ];
+
+  // The overview owns `/` and would otherwise match every path.
+  const current = (path: string) => (path === '/' ? pathname === '/' : pathname.startsWith(path));
+
+  return (
+    <nav className="shell__nav" ref={ref} aria-label={t('nav.label')}>
+      {sections.map((section) => {
+        const active = current(section.path);
+        return (
+          <md-button
+            key={section.path}
+            variant={active ? 'tonal' : 'text'}
+            size="sm"
+            icon={section.icon}
+            href={withBase(section.path)}
+            aria-current={active ? 'page' : undefined}
+          >
+            {section.label}
+          </md-button>
+        );
+      })}
+    </nav>
+  );
+}
+
 export function Screen({ title, subtitle, crumbs, aside, children }: ScreenProps) {
   const t = useT();
 
@@ -94,17 +159,7 @@ export function Screen({ title, subtitle, crumbs, aside, children }: ScreenProps
           <p className="shell__brand">{t('app.brand')}</p>
           <span className="muted">{t('app.title')}</span>
 
-          <nav className="shell__nav" aria-label={t('nav.label')}>
-            <md-button variant="text" size="sm" icon="dashboard" href={withBase(route.overview())}>
-              {t('nav.overview')}
-            </md-button>
-            <md-button variant="text" size="sm" icon="warning" href={withBase(route.watchlist())}>
-              {t('nav.watchlist')}
-            </md-button>
-            <md-button variant="text" size="sm" icon="stacked_line_chart" href={withBase(route.stress())}>
-              {t('nav.stress')}
-            </md-button>
-          </nav>
+          <SectionNav />
 
           <div className="shell__meta">
             <span>{t('app.reportingDate', { date: t.formatDate(REPORTING_DATE, 'medium') })}</span>
@@ -113,20 +168,30 @@ export function Screen({ title, subtitle, crumbs, aside, children }: ScreenProps
           </div>
         </header>
 
-        {/* Rendered on EVERY screen, including the overview, where the trail is
-            a single current-page crumb. It used to be hidden below two crumbs,
-            on the reasoning that a trail of one says nothing — true in
-            isolation, but it meant the row existed on five screens and not on
-            the sixth, so every navigation to or from the overview moved the
-            heading and everything under it by 52px. A redundant crumb is a much
-            smaller cost than the whole page lurching on each drill. */}
-        {crumbs && crumbs.length > 0 ? <Breadcrumbs crumbs={crumbs} /> : null}
+        {/* The trail sits OPPOSITE the heading it describes, not on a row of
+            its own above it.
 
+            It appears on the drill path (sector → counterparty → facility),
+            where it is the only thing showing where you are and the only way
+            back up. Not on the three section screens: the nav already
+            highlights the section, so a trail reading "Overview / Watchlist"
+            would only say it twice.
+
+            Putting it here rather than in its own row is also what keeps the
+            geometry still. `.screen-head` exists on every screen and is taller
+            than the trail, so a trail appearing or disappearing cannot change
+            the row's height — whereas a row that came and went was moving the
+            whole page by 52px on every navigation. */}
         <div className="screen-head">
           <div className="screen-head__text">
             <h1>{title}</h1>
             {subtitle ? <p>{subtitle}</p> : null}
           </div>
+          {crumbs && crumbs.length > 1 ? (
+            <div className="screen-head__trail">
+              <Breadcrumbs crumbs={crumbs} />
+            </div>
+          ) : null}
           {aside ? <div className="screen-head__aside">{aside}</div> : null}
         </div>
 

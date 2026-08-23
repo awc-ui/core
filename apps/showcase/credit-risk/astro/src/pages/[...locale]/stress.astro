@@ -20,7 +20,6 @@ const scenarios = getStressScenarios();
     locale={locale}
     title={t('screen.stress.title')}
     subtitle={t('screen.stress.subtitle')}
-    crumbs={[{ label: t('nav.overview'), href: route.overview() }, { label: t('nav.stress') }]}
   >
     <Fragment slot="aside">
       <md-segmented-button-set data-scenario-selector aria-label={t('table.scenario')}>

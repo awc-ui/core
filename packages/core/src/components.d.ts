@@ -209,15 +209,15 @@ export namespace Components {
      * `md-app-bar` — Material Design 3 App Bar.
      * Implements the current (M3 Expressive) app-bars specification:
      *   https://m3.material.io/components/app-bars/specs
-     * Size variants: `small` (64dp), `medium` (112/136dp expanded), `large`
-     * (120/152dp expanded), and `search` (inline search field in the 64dp row).
+     * Size variants: `small` (64px), `medium` (112/136px expanded), `large`
+     * (120/152px expanded), and `search` (inline search field in the 64px row).
      * Flexible `medium` / `large` bars always render the expanded headline block.
      * Title alignment (`title-alignment`) is configuration, not a variant.
      * Selecting the search field should open an `md-search` view via `mdSearchActivate`.
      */
     interface MdAppBar {
         /**
-          * Density scale: 0 (default 64dp row), -1 (60dp), -2 (56dp), -3 (52dp), -4 (48dp). Tightens the action row, icon targets, search field, and expanded heights.
+          * Density scale: 0 (default 64px row), -1 (60px), -2 (56px), -3 (52px), -4 (48px). Tightens the action row, icon targets, search field, and expanded heights.
           * @default 0
          */
         "density": 0 | -1 | -2 | -3 | -4;
@@ -272,7 +272,7 @@ export namespace Components {
          */
         "titleAlignment": 'start' | 'center';
         /**
-          * App bar size variant.  - `small` — 64dp action row with inline title-large headline. - `medium` — flexible 112dp (136dp with subtitle) expanded headline block. - `large` — flexible 120dp (152dp with subtitle) expanded headline block. - `search` — 64dp row with inline search field (M3 search app bar).
+          * App bar size variant.  - `small` — 64px action row with inline title-large headline. - `medium` — flexible 112px (136px with subtitle) expanded headline block. - `large` — flexible 120px (152px with subtitle) expanded headline block. - `search` — 64px row with inline search field (M3 search app bar).
           * @default 'small'
          */
         "variant": 'small' | 'medium' | 'large' | 'search';
@@ -785,7 +785,7 @@ export namespace Components {
          */
         "name": string;
         /**
-          * Container shape. - `circle`  — fully rounded (`50%`)             [default] - `rounded` — `--md-sys-shape-corner-medium` (12dp) - `square`  — sharp corners (`0`)
+          * Container shape. - `circle`  — fully rounded (`50%`)             [default] - `rounded` — `--md-sys-shape-corner-medium` (12px) - `square`  — sharp corners (`0`)
           * @default 'circle'
          */
         "shape": MdAvatarShape;
@@ -1494,7 +1494,7 @@ export namespace Components {
     }
     interface MdChip {
         /**
-          * Surface style of the chip. Distinct from `variant`, which selects the M3 chip TYPE (assist / filter / input / suggestion); a chip has both.  - `outlined` (default) — transparent container with a 1dp outline. - `filled` — tonal container, no outline. - `elevated` — tonal container with elevation and no outline.
+          * Surface style of the chip. Distinct from `variant`, which selects the M3 chip TYPE (assist / filter / input / suggestion); a chip has both.  - `outlined` (default) — transparent container with a 1px outline. - `filled` — tonal container, no outline. - `elevated` — tonal container with elevation and no outline.
           * @default 'outlined'
          */
         "appearance": 'outlined' | 'filled' | 'elevated';
@@ -2881,7 +2881,7 @@ export namespace Components {
      * the visuals change shape without touching what is announced.
      * Deliberately NOT a progress indicator: a meter shows a *state* ("how full"),
      * a progress indicator shows an *activity* ("how far along"). It is therefore
-     * a plain track + fill — no 4dp gap, no stop dot, no indeterminate mode, no
+     * a plain track + fill — no 4px gap, no stop dot, no indeterminate mode, no
      * completion animation. Nothing here is focusable or interactive and no events
      * are emitted.
      * Two shapes, one contract: `variant="linear"` (default) is the bar;
@@ -3299,7 +3299,7 @@ export namespace Components {
          */
         "alignment": 'top' | 'middle' | 'bottom';
         /**
-          * Programmatically collapse the rail (standard 80dp width).
+          * Programmatically collapse the rail (standard 80px width).
          */
         "collapse": () => Promise<void>;
         /**
@@ -3374,7 +3374,7 @@ export namespace Components {
          */
         "toggleLabel": string;
         /**
-          * Visual variant — `standard` (the spec's *collapsed* rail: 80dp wide, stacked icon + label) or `expanded` (icons + label inline, 220–360dp wide).
+          * Visual variant — `standard` (the spec's *collapsed* rail: 80px wide, stacked icon + label) or `expanded` (icons + label inline, 220–360px wide).
           * @default 'standard'
          */
         "variant": 'standard' | 'expanded';
@@ -4131,7 +4131,7 @@ export namespace Components {
          */
         "max": number;
         /**
-          * Circular indicator outer size in dp. `0` = auto (non-wavy 40dp, wavy 48dp per the M3 expressive spec). Clamped to the M3 range 24–240dp.
+          * Circular indicator outer size in dp. `0` = auto (non-wavy 40px, wavy 48px per the M3 expressive spec). Clamped to the M3 range 24–240px.
           * @default 0
          */
         "size": number;
@@ -4156,12 +4156,12 @@ export namespace Components {
          */
         "wave": boolean;
         /**
-          * Wave amplitude (center-to-peak) in dp. `0` = auto per M3 spec (linear 3dp, circular 1.6dp).
+          * Wave amplitude (center-to-peak) in dp. `0` = auto per M3 spec (linear 3px, circular 1.6px).
           * @default 0
          */
         "waveAmplitude": number;
         /**
-          * Wavelength (peak-to-peak) in dp. `0` = auto (linear 40dp for both determinate + indeterminate, circular 15dp).
+          * Wavelength (peak-to-peak) in dp. `0` = auto (linear 40px for both determinate + indeterminate, circular 15px).
           * @default 0
          */
         "waveLength": number;
@@ -4413,7 +4413,7 @@ export namespace Components {
          */
         "focusInput": () => Promise<void>;
         /**
-          * Make the docked / inline bar span its container's full inline width with NO side gutters. This zeroes both expand insets for the instance (resting + focused = 0), so there is no 24 → 12dp margin animation and the aligned results drawer fills the same full width. Purely an ergonomic switch over the CSS vars — the identical effect is available by setting `--md-search-expand-inset: 0` and `--md-search-expand-focused-inset: 0`. Has no effect on `full-screen` layout (already edge-to-edge).
+          * Make the docked / inline bar span its container's full inline width with NO side gutters. This zeroes both expand insets for the instance (resting + focused = 0), so there is no 24 → 12px margin animation and the aligned results drawer fills the same full width. Purely an ergonomic switch over the CSS vars — the identical effect is available by setting `--md-search-expand-inset: 0` and `--md-search-expand-focused-inset: 0`. Has no effect on `full-screen` layout (already edge-to-edge).
           * @default false
          */
         "fullWidth": boolean;
@@ -4428,7 +4428,7 @@ export namespace Components {
          */
         "inputAriaLabel": string;
         /**
-          * How the focused panel appears. `full-screen` fills the viewport edge-to-edge with an opaque results surface and a focus trap (no scrim — open/close uses the same translateY + opacity motion as md-dialog fullscreen); `docked` anchors a popup beneath the bar (min 360dp / max 720dp wide; results drawer shrinks to content up to max ⅔ vh).
+          * How the focused panel appears. `full-screen` fills the viewport edge-to-edge with an opaque results surface and a focus trap (no scrim — open/close uses the same translateY + opacity motion as md-dialog fullscreen); `docked` anchors a popup beneath the bar (min 360px / max 720px wide; results drawer shrinks to content up to max ⅔ vh).
           * @default 'full-screen'
          */
         "layout": 'full-screen' | 'docked';
@@ -6495,6 +6495,11 @@ export namespace Components {
          */
         "iconPosition": 'start' | 'end';
         /**
+          * When the arrow is visible on a column that is NOT the active sort.  - `always` — dimmed but present at rest (default). The arrow is the only   thing distinguishing a sortable column from a fixed one, so hiding it   until hover means the affordance cannot be discovered without hovering   every header — and cannot be discovered at all on a touch device, which   has no hover state to give. - `hover`  — invisible until the header is hovered or focused. Quieter in a   table where nearly every column sorts and the arrows become noise.  The ACTIVE column's arrow is always fully opaque under either setting.
+          * @default 'always'
+         */
+        "inactiveIcon": 'always' | 'hover';
+        /**
           * Active sort direction. Pushed by the parent `<md-table>`.
           * @default 'none'
          */
@@ -6562,6 +6567,11 @@ export namespace Components {
           * @default ''
          */
         "ariaLabelProp": string;
+        /**
+          * How far the bottom rule under the strip runs.  - `auto` — each tab draws its own 1px segment, so the rule is exactly as   wide as the tabs collectively are (default; unchanged behaviour). - `full` — one rule across the whole container, drawn by md-tabs itself   and running past the last tab to the container's edge.  `auto` is right when the strip fills its container, which it does at `tab-width="equal"`. It reads as a bug at `tab-width="auto"` in a wide panel, where three content-sized tabs leave the rule stopping a third of the way across and the panel below appearing to hang off the end of it.  In `full` mode the per-tab segments are suppressed by setting `--md-tab-divider-color: transparent` on the host — custom properties inherit through the slotted tabs' shadow roots, so there is no second source of truth about which mode is active.
+          * @default 'auto'
+         */
+        "divider": 'auto' | 'full';
         /**
           * Programmatically select a tab by index
          */
@@ -6896,7 +6906,7 @@ export namespace Components {
          */
         "open": boolean;
         /**
-          * Dialog orientation for the dial variant.  - `vertical` (default) — single-column portrait layout (~328dp wide). - `horizontal` — two-column landscape layout (~572dp wide in both   12h and 24h modes since the HH/MM input tiles are 96dp in either   format). Forces the AM/PM pill into the 216×38dp horizontal   variant since the 52×72dp vertical pill cannot share the left   column cleanly. Has no effect when `variant="input"`.
+          * Dialog orientation for the dial variant.  - `vertical` (default) — single-column portrait layout (~328px wide). - `horizontal` — two-column landscape layout (~572px wide in both   12h and 24h modes since the HH/MM input tiles are 96px in either   format). Forces the AM/PM pill into the 216×38px horizontal   variant since the 52×72px vertical pill cannot share the left   column cleanly. Has no effect when `variant="input"`.
           * @default 'vertical'
          */
         "orientation": MdTimePickerOrientation;
@@ -6906,7 +6916,7 @@ export namespace Components {
          */
         "periodLabel": string;
         /**
-          * Layout for the AM/PM period selector. Has no effect when `format="24h"` (the toggle is not rendered).  - `vertical` — 52×72dp stack next to the minute tile (default). - `horizontal` — 216×38dp segmented button below HH:MM.
+          * Layout for the AM/PM period selector. Has no effect when `format="24h"` (the toggle is not rendered).  - `vertical` — 52×72px stack next to the minute tile (default). - `horizontal` — 216×38px segmented button below HH:MM.
           * @default 'vertical'
          */
         "periodLayout": MdTimePickerPeriodLayout;
@@ -6940,7 +6950,7 @@ export namespace Components {
          */
         "required": boolean;
         /**
-          * Adaptive layout policy. Per the MD3 spec the picker should swap orientation or variant based on the viewport so the dial never has to scroll. When `responsive` is enabled the dialog automatically:    • Falls back to `variant="input"` when the viewport height is     too short to fit the 256dp dial (default threshold: 460px),     matching the spec line "Time pickers can fallback to the     input time picker when there isn't enough vertical real     estate to present the landscape orientation without     scrolling".   • Promotes the dial variant to `orientation="horizontal"`     when the viewport is wide enough for the 572/608dp landscape     dialog (default threshold: width ≥ 720px AND width > height),     matching "the time picker can change to landscape orientation     on larger breakpoints or when viewport height is limited".  The `variant` / `orientation` props remain the *preference* the picker tries to honor — adaptive overrides only kick in when the viewport literally cannot fit them. Default `false` for backward compatibility; flip to `true` on new integrations to get the canonical MD3 adaptive layout.
+          * Adaptive layout policy. Per the MD3 spec the picker should swap orientation or variant based on the viewport so the dial never has to scroll. When `responsive` is enabled the dialog automatically:    • Falls back to `variant="input"` when the viewport height is     too short to fit the 256px dial (default threshold: 460px),     matching the spec line "Time pickers can fallback to the     input time picker when there isn't enough vertical real     estate to present the landscape orientation without     scrolling".   • Promotes the dial variant to `orientation="horizontal"`     when the viewport is wide enough for the 572/608px landscape     dialog (default threshold: width ≥ 720px AND width > height),     matching "the time picker can change to landscape orientation     on larger breakpoints or when viewport height is limited".  The `variant` / `orientation` props remain the *preference* the picker tries to honor — adaptive overrides only kick in when the viewport literally cannot fit them. Default `false` for backward compatibility; flip to `true` on new integrations to get the canonical MD3 adaptive layout.
           * @default false
          */
         "responsive": boolean;
@@ -7563,8 +7573,8 @@ declare global {
      * `md-app-bar` — Material Design 3 App Bar.
      * Implements the current (M3 Expressive) app-bars specification:
      *   https://m3.material.io/components/app-bars/specs
-     * Size variants: `small` (64dp), `medium` (112/136dp expanded), `large`
-     * (120/152dp expanded), and `search` (inline search field in the 64dp row).
+     * Size variants: `small` (64px), `medium` (112/136px expanded), `large`
+     * (120/152px expanded), and `search` (inline search field in the 64px row).
      * Flexible `medium` / `large` bars always render the expanded headline block.
      * Title alignment (`title-alignment`) is configuration, not a variant.
      * Selecting the search field should open an `md-search` view via `mdSearchActivate`.
@@ -8216,7 +8226,7 @@ declare global {
      * the visuals change shape without touching what is announced.
      * Deliberately NOT a progress indicator: a meter shows a *state* ("how full"),
      * a progress indicator shows an *activity* ("how far along"). It is therefore
-     * a plain track + fill — no 4dp gap, no stop dot, no indeterminate mode, no
+     * a plain track + fill — no 4px gap, no stop dot, no indeterminate mode, no
      * completion animation. Nothing here is focusable or interactive and no events
      * are emitted.
      * Two shapes, one contract: `variant="linear"` (default) is the bar;
@@ -9734,15 +9744,15 @@ declare namespace LocalJSX {
      * `md-app-bar` — Material Design 3 App Bar.
      * Implements the current (M3 Expressive) app-bars specification:
      *   https://m3.material.io/components/app-bars/specs
-     * Size variants: `small` (64dp), `medium` (112/136dp expanded), `large`
-     * (120/152dp expanded), and `search` (inline search field in the 64dp row).
+     * Size variants: `small` (64px), `medium` (112/136px expanded), `large`
+     * (120/152px expanded), and `search` (inline search field in the 64px row).
      * Flexible `medium` / `large` bars always render the expanded headline block.
      * Title alignment (`title-alignment`) is configuration, not a variant.
      * Selecting the search field should open an `md-search` view via `mdSearchActivate`.
      */
     interface MdAppBar {
         /**
-          * Density scale: 0 (default 64dp row), -1 (60dp), -2 (56dp), -3 (52dp), -4 (48dp). Tightens the action row, icon targets, search field, and expanded heights.
+          * Density scale: 0 (default 64px row), -1 (60px), -2 (56px), -3 (52px), -4 (48px). Tightens the action row, icon targets, search field, and expanded heights.
           * @default 0
          */
         "density"?: 0 | -1 | -2 | -3 | -4;
@@ -9809,7 +9819,7 @@ declare namespace LocalJSX {
          */
         "titleAlignment"?: 'start' | 'center';
         /**
-          * App bar size variant.  - `small` — 64dp action row with inline title-large headline. - `medium` — flexible 112dp (136dp with subtitle) expanded headline block. - `large` — flexible 120dp (152dp with subtitle) expanded headline block. - `search` — 64dp row with inline search field (M3 search app bar).
+          * App bar size variant.  - `small` — 64px action row with inline title-large headline. - `medium` — flexible 112px (136px with subtitle) expanded headline block. - `large` — flexible 120px (152px with subtitle) expanded headline block. - `search` — 64px row with inline search field (M3 search app bar).
           * @default 'small'
          */
         "variant"?: 'small' | 'medium' | 'large' | 'search';
@@ -10333,7 +10343,7 @@ declare namespace LocalJSX {
          */
         "onMdLoad"?: (event: MdAvatarCustomEvent<{ src: string }>) => void;
         /**
-          * Container shape. - `circle`  — fully rounded (`50%`)             [default] - `rounded` — `--md-sys-shape-corner-medium` (12dp) - `square`  — sharp corners (`0`)
+          * Container shape. - `circle`  — fully rounded (`50%`)             [default] - `rounded` — `--md-sys-shape-corner-medium` (12px) - `square`  — sharp corners (`0`)
           * @default 'circle'
          */
         "shape"?: MdAvatarShape;
@@ -11074,7 +11084,7 @@ declare namespace LocalJSX {
     }
     interface MdChip {
         /**
-          * Surface style of the chip. Distinct from `variant`, which selects the M3 chip TYPE (assist / filter / input / suggestion); a chip has both.  - `outlined` (default) — transparent container with a 1dp outline. - `filled` — tonal container, no outline. - `elevated` — tonal container with elevation and no outline.
+          * Surface style of the chip. Distinct from `variant`, which selects the M3 chip TYPE (assist / filter / input / suggestion); a chip has both.  - `outlined` (default) — transparent container with a 1px outline. - `filled` — tonal container, no outline. - `elevated` — tonal container with elevation and no outline.
           * @default 'outlined'
          */
         "appearance"?: 'outlined' | 'filled' | 'elevated';
@@ -12525,7 +12535,7 @@ declare namespace LocalJSX {
      * the visuals change shape without touching what is announced.
      * Deliberately NOT a progress indicator: a meter shows a *state* ("how full"),
      * a progress indicator shows an *activity* ("how far along"). It is therefore
-     * a plain track + fill — no 4dp gap, no stop dot, no indeterminate mode, no
+     * a plain track + fill — no 4px gap, no stop dot, no indeterminate mode, no
      * completion animation. Nothing here is focusable or interactive and no events
      * are emitted.
      * Two shapes, one contract: `variant="linear"` (default) is the bar;
@@ -13004,7 +13014,7 @@ declare namespace LocalJSX {
          */
         "toggleLabel"?: string;
         /**
-          * Visual variant — `standard` (the spec's *collapsed* rail: 80dp wide, stacked icon + label) or `expanded` (icons + label inline, 220–360dp wide).
+          * Visual variant — `standard` (the spec's *collapsed* rail: 80px wide, stacked icon + label) or `expanded` (icons + label inline, 220–360px wide).
           * @default 'standard'
          */
         "variant"?: 'standard' | 'expanded';
@@ -13756,7 +13766,7 @@ declare namespace LocalJSX {
          */
         "onMdComplete"?: (event: MdProgressIndicatorCustomEvent<void>) => void;
         /**
-          * Circular indicator outer size in dp. `0` = auto (non-wavy 40dp, wavy 48dp per the M3 expressive spec). Clamped to the M3 range 24–240dp.
+          * Circular indicator outer size in dp. `0` = auto (non-wavy 40px, wavy 48px per the M3 expressive spec). Clamped to the M3 range 24–240px.
           * @default 0
          */
         "size"?: number;
@@ -13781,12 +13791,12 @@ declare namespace LocalJSX {
          */
         "wave"?: boolean;
         /**
-          * Wave amplitude (center-to-peak) in dp. `0` = auto per M3 spec (linear 3dp, circular 1.6dp).
+          * Wave amplitude (center-to-peak) in dp. `0` = auto per M3 spec (linear 3px, circular 1.6px).
           * @default 0
          */
         "waveAmplitude"?: number;
         /**
-          * Wavelength (peak-to-peak) in dp. `0` = auto (linear 40dp for both determinate + indeterminate, circular 15dp).
+          * Wavelength (peak-to-peak) in dp. `0` = auto (linear 40px for both determinate + indeterminate, circular 15px).
           * @default 0
          */
         "waveLength"?: number;
@@ -14027,7 +14037,7 @@ declare namespace LocalJSX {
          */
         "escapeCloses"?: boolean;
         /**
-          * Make the docked / inline bar span its container's full inline width with NO side gutters. This zeroes both expand insets for the instance (resting + focused = 0), so there is no 24 → 12dp margin animation and the aligned results drawer fills the same full width. Purely an ergonomic switch over the CSS vars — the identical effect is available by setting `--md-search-expand-inset: 0` and `--md-search-expand-focused-inset: 0`. Has no effect on `full-screen` layout (already edge-to-edge).
+          * Make the docked / inline bar span its container's full inline width with NO side gutters. This zeroes both expand insets for the instance (resting + focused = 0), so there is no 24 → 12px margin animation and the aligned results drawer fills the same full width. Purely an ergonomic switch over the CSS vars — the identical effect is available by setting `--md-search-expand-inset: 0` and `--md-search-expand-focused-inset: 0`. Has no effect on `full-screen` layout (already edge-to-edge).
           * @default false
          */
         "fullWidth"?: boolean;
@@ -14042,7 +14052,7 @@ declare namespace LocalJSX {
          */
         "inputAriaLabel"?: string;
         /**
-          * How the focused panel appears. `full-screen` fills the viewport edge-to-edge with an opaque results surface and a focus trap (no scrim — open/close uses the same translateY + opacity motion as md-dialog fullscreen); `docked` anchors a popup beneath the bar (min 360dp / max 720dp wide; results drawer shrinks to content up to max ⅔ vh).
+          * How the focused panel appears. `full-screen` fills the viewport edge-to-edge with an opaque results surface and a focus trap (no scrim — open/close uses the same translateY + opacity motion as md-dialog fullscreen); `docked` anchors a popup beneath the bar (min 360px / max 720px wide; results drawer shrinks to content up to max ⅔ vh).
           * @default 'full-screen'
          */
         "layout"?: 'full-screen' | 'docked';
@@ -16183,6 +16193,11 @@ declare namespace LocalJSX {
          */
         "iconPosition"?: 'start' | 'end';
         /**
+          * When the arrow is visible on a column that is NOT the active sort.  - `always` — dimmed but present at rest (default). The arrow is the only   thing distinguishing a sortable column from a fixed one, so hiding it   until hover means the affordance cannot be discovered without hovering   every header — and cannot be discovered at all on a touch device, which   has no hover state to give. - `hover`  — invisible until the header is hovered or focused. Quieter in a   table where nearly every column sorts and the arrows become noise.  The ACTIVE column's arrow is always fully opaque under either setting.
+          * @default 'always'
+         */
+        "inactiveIcon"?: 'always' | 'hover';
+        /**
           * Fired when the user requests to sort by this column.
          */
         "onMdSortRequest"?: (event: MdTableSortLabelCustomEvent<{ column: string; defaultOrder: 'asc' | 'desc' }>) => void;
@@ -16254,6 +16269,11 @@ declare namespace LocalJSX {
           * @default ''
          */
         "ariaLabelProp"?: string;
+        /**
+          * How far the bottom rule under the strip runs.  - `auto` — each tab draws its own 1px segment, so the rule is exactly as   wide as the tabs collectively are (default; unchanged behaviour). - `full` — one rule across the whole container, drawn by md-tabs itself   and running past the last tab to the container's edge.  `auto` is right when the strip fills its container, which it does at `tab-width="equal"`. It reads as a bug at `tab-width="auto"` in a wide panel, where three content-sized tabs leave the rule stopping a third of the way across and the panel below appearing to hang off the end of it.  In `full` mode the per-tab segments are suppressed by setting `--md-tab-divider-color: transparent` on the host — custom properties inherit through the slotted tabs' shadow roots, so there is no second source of truth about which mode is active.
+          * @default 'auto'
+         */
+        "divider"?: 'auto' | 'full';
         /**
           * Emits when the active tab changes
          */
@@ -16608,7 +16628,7 @@ declare namespace LocalJSX {
          */
         "open"?: boolean;
         /**
-          * Dialog orientation for the dial variant.  - `vertical` (default) — single-column portrait layout (~328dp wide). - `horizontal` — two-column landscape layout (~572dp wide in both   12h and 24h modes since the HH/MM input tiles are 96dp in either   format). Forces the AM/PM pill into the 216×38dp horizontal   variant since the 52×72dp vertical pill cannot share the left   column cleanly. Has no effect when `variant="input"`.
+          * Dialog orientation for the dial variant.  - `vertical` (default) — single-column portrait layout (~328px wide). - `horizontal` — two-column landscape layout (~572px wide in both   12h and 24h modes since the HH/MM input tiles are 96px in either   format). Forces the AM/PM pill into the 216×38px horizontal   variant since the 52×72px vertical pill cannot share the left   column cleanly. Has no effect when `variant="input"`.
           * @default 'vertical'
          */
         "orientation"?: MdTimePickerOrientation;
@@ -16618,7 +16638,7 @@ declare namespace LocalJSX {
          */
         "periodLabel"?: string;
         /**
-          * Layout for the AM/PM period selector. Has no effect when `format="24h"` (the toggle is not rendered).  - `vertical` — 52×72dp stack next to the minute tile (default). - `horizontal` — 216×38dp segmented button below HH:MM.
+          * Layout for the AM/PM period selector. Has no effect when `format="24h"` (the toggle is not rendered).  - `vertical` — 52×72px stack next to the minute tile (default). - `horizontal` — 216×38px segmented button below HH:MM.
           * @default 'vertical'
          */
         "periodLayout"?: MdTimePickerPeriodLayout;
@@ -16648,7 +16668,7 @@ declare namespace LocalJSX {
          */
         "required"?: boolean;
         /**
-          * Adaptive layout policy. Per the MD3 spec the picker should swap orientation or variant based on the viewport so the dial never has to scroll. When `responsive` is enabled the dialog automatically:    • Falls back to `variant="input"` when the viewport height is     too short to fit the 256dp dial (default threshold: 460px),     matching the spec line "Time pickers can fallback to the     input time picker when there isn't enough vertical real     estate to present the landscape orientation without     scrolling".   • Promotes the dial variant to `orientation="horizontal"`     when the viewport is wide enough for the 572/608dp landscape     dialog (default threshold: width ≥ 720px AND width > height),     matching "the time picker can change to landscape orientation     on larger breakpoints or when viewport height is limited".  The `variant` / `orientation` props remain the *preference* the picker tries to honor — adaptive overrides only kick in when the viewport literally cannot fit them. Default `false` for backward compatibility; flip to `true` on new integrations to get the canonical MD3 adaptive layout.
+          * Adaptive layout policy. Per the MD3 spec the picker should swap orientation or variant based on the viewport so the dial never has to scroll. When `responsive` is enabled the dialog automatically:    • Falls back to `variant="input"` when the viewport height is     too short to fit the 256px dial (default threshold: 460px),     matching the spec line "Time pickers can fallback to the     input time picker when there isn't enough vertical real     estate to present the landscape orientation without     scrolling".   • Promotes the dial variant to `orientation="horizontal"`     when the viewport is wide enough for the 572/608px landscape     dialog (default threshold: width ≥ 720px AND width > height),     matching "the time picker can change to landscape orientation     on larger breakpoints or when viewport height is limited".  The `variant` / `orientation` props remain the *preference* the picker tries to honor — adaptive overrides only kick in when the viewport literally cannot fit them. Default `false` for backward compatibility; flip to `true` on new integrations to get the canonical MD3 adaptive layout.
           * @default false
          */
         "responsive"?: boolean;
@@ -18139,6 +18159,7 @@ declare namespace LocalJSX {
         "defaultOrder": 'asc' | 'desc';
         "iconPosition": 'start' | 'end';
         "icon": string;
+        "inactiveIcon": 'always' | 'hover';
         "active": boolean;
         "order": 'asc' | 'desc' | 'none';
         "density": 0 | -1 | -2 | -3 | -4;
@@ -18155,6 +18176,7 @@ declare namespace LocalJSX {
     interface MdTabsAttributes {
         "activeTabIndex": number;
         "variant": 'primary' | 'secondary';
+        "divider": 'auto' | 'full';
         "ariaLabelProp": string;
         "tabWidth": string;
         "width": string;
@@ -18381,8 +18403,8 @@ declare module "@stencil/core" {
              * `md-app-bar` — Material Design 3 App Bar.
              * Implements the current (M3 Expressive) app-bars specification:
              *   https://m3.material.io/components/app-bars/specs
-             * Size variants: `small` (64dp), `medium` (112/136dp expanded), `large`
-             * (120/152dp expanded), and `search` (inline search field in the 64dp row).
+             * Size variants: `small` (64px), `medium` (112/136px expanded), `large`
+             * (120/152px expanded), and `search` (inline search field in the 64px row).
              * Flexible `medium` / `large` bars always render the expanded headline block.
              * Title alignment (`title-alignment`) is configuration, not a variant.
              * Selecting the search field should open an `md-search` view via `mdSearchActivate`.
@@ -18541,7 +18563,7 @@ declare module "@stencil/core" {
              * the visuals change shape without touching what is announced.
              * Deliberately NOT a progress indicator: a meter shows a *state* ("how full"),
              * a progress indicator shows an *activity* ("how far along"). It is therefore
-             * a plain track + fill — no 4dp gap, no stop dot, no indeterminate mode, no
+             * a plain track + fill — no 4px gap, no stop dot, no indeterminate mode, no
              * completion animation. Nothing here is focusable or interactive and no events
              * are emitted.
              * Two shapes, one contract: `variant="linear"` (default) is the bar;

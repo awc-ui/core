@@ -10,6 +10,19 @@
  */
 import { LOCALES } from '../i18n/locales';
 import { createTranslator, type Translator } from '../i18n/translator';
+
+/**
+ * The dock's own labels are FROZEN to English, whatever language the app is
+ * showing.
+ *
+ * It is the evaluator's remote control, not part of the demo. Translating it
+ * with the app actively works against the person using it: switch the app to
+ * Arabic and the control that switches it back becomes Arabic too, so someone
+ * who does not read Arabic has just locked themselves out of their own
+ * controls. The language names in the picker stay endonyms — English,
+ * Română, العربية — because a language should name itself.
+ */
+const DOCK_LOCALE = 'en' as const;
 import { DOCK_STYLES } from './styles';
 import {
   DENSITY_RUNGS,
@@ -94,7 +107,7 @@ export class AwcShowcaseDock extends ElementBase {
     super();
     this.#root = this.attachShadow({ mode: 'open' });
     this.#state = getShowcaseState();
-    this.#t = createTranslator(this.#state.locale);
+    this.#t = createTranslator(DOCK_LOCALE);
   }
 
   /* --------------------------------------------------------- public API */
@@ -223,6 +236,13 @@ export class AwcShowcaseDock extends ElementBase {
   /* ------------------------------------------------------- lifecycle */
 
   connectedCallback(): void {
+    // The labels are frozen to English (see DOCK_LOCALE), so the direction has
+    // to be pinned with them. `dir` inherits from <html>, which the dock itself
+    // flips to rtl for the Arabic preview — leaving English controls laid out
+    // right-to-left, with the reset button and the pickers in mirrored order.
+    // The app under it still mirrors; that is the thing being demonstrated.
+    this.setAttribute('dir', 'ltr');
+
     if (!this.#built) {
       this.#build();
       this.#built = true;
@@ -254,7 +274,7 @@ export class AwcShowcaseDock extends ElementBase {
 
   #onStateChange(detail: ShowcaseChangeDetail): void {
     this.#state = detail.state;
-    this.#t = createTranslator(detail.state.locale);
+    // Deliberately NOT re-created for the new locale — see DOCK_LOCALE.
     this.#render();
     if (detail.reason !== 'init') {
       // Element-scoped and non-bubbling on purpose: the state module already

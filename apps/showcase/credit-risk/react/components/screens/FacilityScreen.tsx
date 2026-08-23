@@ -83,7 +83,7 @@ export function FacilityScreen({ facilityId }: { facilityId: string }) {
     >
       <section className="grid-2">
         <Panel title={t('table.facility')} subtitle={t(facility.typeKey)}>
-          <dl className="dl">
+          <dl className="dl dl--numeric">
             <Fact label={t('table.currency')}>{facility.currency}</Fact>
             <Fact label={t('table.commitment')}>
               {t.formatCurrency(facility.commitment, { ...localCurrency, notation: 'compact' })}

@@ -57,6 +57,21 @@ export class MdTableSortLabel {
    */
   @Prop() icon: string = '';
 
+  /**
+   * When the arrow is visible on a column that is NOT the active sort.
+   *
+   * - `always` — dimmed but present at rest (default). The arrow is the only
+   *   thing distinguishing a sortable column from a fixed one, so hiding it
+   *   until hover means the affordance cannot be discovered without hovering
+   *   every header — and cannot be discovered at all on a touch device, which
+   *   has no hover state to give.
+   * - `hover`  — invisible until the header is hovered or focused. Quieter in a
+   *   table where nearly every column sorts and the arrows become noise.
+   *
+   * The ACTIVE column's arrow is always fully opaque under either setting.
+   */
+  @Prop({ reflect: true }) inactiveIcon: 'always' | 'hover' = 'always';
+
   /** Whether this column is the active sort. Pushed by the parent `<md-table>`. */
   @Prop({ mutable: true, reflect: true }) active: boolean = false;
 

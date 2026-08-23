@@ -150,6 +150,7 @@ export function CounterpartyTable({
                   <md-table-sort-label
                     column={column.key}
                     default-order={NUMERIC_KEYS.includes(column.key) ? 'desc' : 'asc'}
+                    icon-position={column.numeric ? 'start' : 'end'}
                   >
                     {column.label}
                   </md-table-sort-label>

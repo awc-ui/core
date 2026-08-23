@@ -117,6 +117,39 @@ a {
   display: inline-flex;
 }
 
+/*
+ * Pull the badge back onto the button so it overlaps the edge.
+ *
+ * md-badge anchors at its parent's top/right corner and translates itself by
+ * (50%, -50%), which centres it exactly ON that corner. That is right for a
+ * rectangular host, but this host is a PILL: the bounding-box corner sits
+ * outside the visible shape, so the default offsets leave the badge floating
+ * clear of it with a visible gap. Smaller offsets put it back on the arc.
+ */
+.badge-anchor md-badge {
+  --md-badge-offset-x: 8%;
+  --md-badge-offset-y: -35%;
+}
+
+/*
+ * The breadcrumb row, whose HEIGHT is reserved whether or not it has a trail
+ * in it.
+ *
+ * The trail only appears on the drill path; the three section screens get their
+ * "where am I" from the highlighted nav button instead, so a trail there would
+ * only repeat it. But an empty row still has to occupy the same space as a full
+ * one, because a row that comes and goes moved the heading and every panel
+ * under it by 52px on each navigation — which is exactly what "jumpy" was.
+ *
+ * `min-block-size` rather than a fixed height, so a trail that wraps on a
+ * narrow viewport can still grow.
+ */
+.shell__trail {
+  display: flex;
+  align-items: center;
+  min-block-size: 36px;
+}
+
 /* ------------------------------------------------------------- screen head */
 
 .screen-head {
@@ -316,6 +349,26 @@ a {
   font: var(--md-sys-typescale-body-large-font);
   margin: 0;
   font-variant-numeric: tabular-nums;
+}
+
+/*
+ * A fact grid whose values are all figures — money, percentages, counts.
+ *
+ * Right-aligned, label and value together, for the same reason the tables are:
+ * digits compare by place value, so a column of them is only readable when the
+ * units line up under the units. `tabular-nums` above already gives every digit
+ * the same width; this is what makes that pay off.
+ *
+ * The label moves with the value rather than staying left, so each pair still
+ * reads as one unit instead of splitting to opposite edges of its cell.
+ *
+ * Applied per grid, NOT to `.dl` as a whole: the relationship-manager and group
+ * panels are dates and proper nouns, and right-aligning prose only makes it
+ * harder to scan.
+ */
+.dl--numeric dt,
+.dl--numeric dd {
+  text-align: end;
 }
 
 .covenant {

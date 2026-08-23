@@ -225,7 +225,7 @@ the full-screen search view per the MD3 spec.
 @ProxyCmp({
   defineCustomElementFn: defineMdAreaChart,
   inputs: ['animation', 'animationDuration', 'axisTicks', 'connectNulls', 'curve', 'density', 'fillOpacity', 'grid', 'heightProp', 'inverted', 'label', 'labelEmpty', 'labelPlot', 'labelPoint', 'labelZoomEnd', 'labelZoomStart', 'legend', 'lineWidth', 'loading', 'loadingLabel', 'locale', 'markSize', 'noAnimation', 'series', 'seriesLabels', 'showLabels', 'showLine', 'showMarks', 'stack', 'subtitle', 'summary', 'tableLabels', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter', 'xAxis', 'yAxis', 'zoom'],
-  methods: ['resize', 'replay', 'toDataURL', 'getInstance', 'setZoom', 'resetZoom']
+  methods: ['refreshTheme', 'resize', 'replay', 'toDataURL', 'getInstance', 'setZoom', 'resetZoom']
 })
 @Component({
   selector: 'md-area-chart',
@@ -401,7 +401,7 @@ export declare interface MdBadge extends Components.MdBadge {}
 @ProxyCmp({
   defineCustomElementFn: defineMdBarChart,
   inputs: ['animation', 'animationDuration', 'axisTicks', 'barGap', 'barWidth', 'categoryGap', 'chevron', 'clickable', 'cornerRadius', 'density', 'heightProp', 'label', 'labelPlot', 'labelPoint', 'labelZoomEnd', 'labelZoomStart', 'layout', 'legend', 'loading', 'loadingLabel', 'locale', 'noAnimation', 'polar', 'polarHole', 'polarSweep', 'series', 'showLabels', 'showTotals', 'stack', 'subtitle', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter', 'xAxis', 'yAxis', 'yAxis2', 'zoom'],
-  methods: ['resize', 'replay', 'drill', 'toDataURL', 'getInstance', 'setZoom', 'resetZoom']
+  methods: ['refreshTheme', 'resize', 'replay', 'drill', 'toDataURL', 'getInstance', 'setZoom', 'resetZoom']
 })
 @Component({
   selector: 'md-bar-chart',
@@ -1137,7 +1137,7 @@ export declare interface MdIconButton extends Components.MdIconButton {
 @ProxyCmp({
   defineCustomElementFn: defineMdLineChart,
   inputs: ['animation', 'animationDuration', 'area', 'axisTicks', 'connectNulls', 'curve', 'density', 'grid', 'heightProp', 'inverted', 'label', 'labelEmpty', 'labelPlot', 'labelPoint', 'labelZoomEnd', 'labelZoomStart', 'legend', 'lineWidth', 'loading', 'loadingLabel', 'locale', 'markLines', 'markSize', 'noAnimation', 'series', 'seriesLabels', 'showLabels', 'showLine', 'showMarks', 'stack', 'subtitle', 'summary', 'tableLabels', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter', 'xAxis', 'yAxes', 'yAxis', 'zoom'],
-  methods: ['resize', 'replay', 'toDataURL', 'getInstance', 'setZoom', 'resetZoom']
+  methods: ['refreshTheme', 'resize', 'replay', 'toDataURL', 'getInstance', 'setZoom', 'resetZoom']
 })
 @Component({
   selector: 'md-line-chart',
@@ -1799,7 +1799,7 @@ reaches `<form>`-level listeners in the same DOM tree.
 @ProxyCmp({
   defineCustomElementFn: defineMdPieChart,
   inputs: ['animation', 'animationDuration', 'cornerRadius', 'data', 'density', 'endAngle', 'gradient', 'heightProp', 'highlight', 'innerRadius', 'label', 'labelEmpty', 'labelMode', 'labelPlot', 'labelPoint', 'legend', 'loading', 'loadingLabel', 'locale', 'monochrome', 'noAnimation', 'outerRadius', 'paddingAngle', 'ringWidths', 'showLabels', 'startAngle', 'subtitle', 'summary', 'tableLabels', 'titleAlign', 'tooltip', 'tooltipRenderer', 'valueFormatter'],
-  methods: ['resize', 'replay', 'drill', 'toDataURL', 'getInstance']
+  methods: ['refreshTheme', 'resize', 'replay', 'drill', 'toDataURL', 'getInstance']
 })
 @Component({
   selector: 'md-pie-chart',
@@ -2364,7 +2364,7 @@ export declare interface MdSnackbar extends Components.MdSnackbar {
 @ProxyCmp({
   defineCustomElementFn: defineMdSparkline,
   inputs: ['barWidth', 'color', 'cornerRadius', 'curve', 'data', 'heightProp', 'labels', 'lineWidth', 'markSize', 'max', 'min', 'noAnimation', 'referenceAreas', 'showMarks', 'showTooltip', 'valueFormatter', 'variant'],
-  methods: ['resize', 'getInstance']
+  methods: ['refreshTheme', 'resize', 'getInstance']
 })
 @Component({
   selector: 'md-sparkline',
@@ -2428,14 +2428,14 @@ export declare interface MdSplitButton extends Components.MdSplitButton {
 
 @ProxyCmp({
   defineCustomElementFn: defineMdStatusDot,
-  inputs: ['density', 'label', 'live', 'size', 'state']
+  inputs: ['density', 'inline', 'label', 'live', 'size', 'state']
 })
 @Component({
   selector: 'md-status-dot',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['density', 'label', 'live', 'size', 'state'],
+  inputs: ['density', 'inline', 'label', 'live', 'size', 'state'],
   standalone: true
 })
 export class MdStatusDot {
@@ -2973,14 +2973,14 @@ selection coordination).
 
 @ProxyCmp({
   defineCustomElementFn: defineMdTableSortLabel,
-  inputs: ['active', 'column', 'defaultOrder', 'density', 'disabled', 'icon', 'iconPosition', 'order']
+  inputs: ['active', 'column', 'defaultOrder', 'density', 'disabled', 'icon', 'iconPosition', 'inactiveIcon', 'order']
 })
 @Component({
   selector: 'md-table-sort-label',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['active', 'column', 'defaultOrder', 'density', 'disabled', 'icon', 'iconPosition', 'order'],
+  inputs: ['active', 'column', 'defaultOrder', 'density', 'disabled', 'icon', 'iconPosition', 'inactiveIcon', 'order'],
   standalone: true
 })
 export class MdTableSortLabel {
@@ -3027,7 +3027,7 @@ export declare interface MdTableToolbar extends Components.MdTableToolbar {}
 
 @ProxyCmp({
   defineCustomElementFn: defineMdTabs,
-  inputs: ['activeTabIndex', 'ariaLabelProp', 'tabWidth', 'variant', 'width'],
+  inputs: ['activeTabIndex', 'ariaLabelProp', 'divider', 'tabWidth', 'variant', 'width'],
   methods: ['selectTab']
 })
 @Component({
@@ -3035,7 +3035,7 @@ export declare interface MdTableToolbar extends Components.MdTableToolbar {}
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['activeTabIndex', 'ariaLabelProp', 'tabWidth', 'variant', 'width'],
+  inputs: ['activeTabIndex', 'ariaLabelProp', 'divider', 'tabWidth', 'variant', 'width'],
   standalone: true
 })
 export class MdTabs {

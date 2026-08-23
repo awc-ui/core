@@ -81,7 +81,7 @@ const pdSeries = history.map((o) => o.pd);
 
 <section class="grid-2">
   <Panel title={t('kpi.ead')} subtitle={t('app.reportingQuarter', { quarter: REPORTING_QUARTER })}>
-    <dl class="dl">
+    <dl class="dl dl--numeric">
       {
         exposure.map(([label, value]) => (
           <div>
@@ -114,7 +114,7 @@ const pdSeries = history.map((o) => o.pd);
 </section>
 
 <Panel>
-  <md-tabs id={tabsId} aria-label={t('nav.label')} variant="primary" tab-width="auto">
+  <md-tabs id={tabsId} aria-label={t('nav.label')} variant="primary" tab-width="auto" divider="full">
     <md-tab label={t('nav.facilities')} icon="account_balance_wallet" inline-icon></md-tab>
     <md-tab label={t('rating.history')} icon="timeline" inline-icon></md-tab>
     <md-tab label={t('nav.groups')} icon="account_tree" inline-icon></md-tab>

@@ -101,7 +101,7 @@ export function CounterpartyScreen({ counterpartyId }: { counterpartyId: string 
     >
       <section className="grid-2">
         <Panel title={t('kpi.ead')} subtitle={t('app.reportingQuarter', { quarter: REPORTING_QUARTER })}>
-          <dl className="dl">
+          <dl className="dl dl--numeric">
             <Fact label={t('kpi.ead')}>{t.formatCurrency(cp.ead, { notation: 'compact' })}</Fact>
             <Fact label={t('kpi.limit')}>{t.formatCurrency(cp.limit, { notation: 'compact' })}</Fact>
             <Fact label={t('kpi.drawn')}>{t.formatCurrency(cp.drawn, { notation: 'compact' })}</Fact>
@@ -136,7 +136,7 @@ export function CounterpartyScreen({ counterpartyId }: { counterpartyId: string 
       </section>
 
       <Panel>
-        <md-tabs id={tabsId} aria-label={t('nav.label')} variant="primary" tab-width="auto">
+        <md-tabs id={tabsId} aria-label={t('nav.label')} variant="primary" tab-width="auto" divider="full">
           <md-tab label={t('nav.facilities')} icon="account_balance_wallet" inline-icon />
           <md-tab label={t('rating.history')} icon="timeline" inline-icon />
           <md-tab label={t('nav.groups')} icon="account_tree" inline-icon />

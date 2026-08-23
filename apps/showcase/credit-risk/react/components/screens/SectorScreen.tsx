@@ -78,7 +78,7 @@ export function SectorScreen({ sectorId }: { sectorId: string }) {
             fraction={sector.utilisation}
             color={utilisationColor(sector.utilisation)}
           />
-          <dl className="dl">
+          <dl className="dl dl--numeric">
             <Fact label={t('kpi.ead')}>{t.formatCurrency(sector.ead, { notation: 'compact' })}</Fact>
             <Fact label={t('kpi.limit')}>{t.formatCurrency(sector.limit, { notation: 'compact' })}</Fact>
             <Fact label={t('kpi.drawn')}>{t.formatCurrency(sector.drawn, { notation: 'compact' })}</Fact>

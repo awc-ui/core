@@ -65,7 +65,6 @@ export function OverviewScreen() {
     <Screen
       title={t('screen.overview.title')}
       subtitle={t('screen.overview.subtitle', { date: t.formatDate(REPORTING_DATE, 'long') })}
-      crumbs={[{ label: t('nav.overview') }]}
       aside={
         <>
           <md-chip
