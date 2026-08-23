@@ -93,7 +93,12 @@ test.describe('md-button', () => {
   /* ==============================================================
      HREF NAVIGATION
      ============================================================== */
-  test('button with href calls window.open on click', async ({ mount, page }) => {
+  /* md-button used to fake links: no anchor, role="button" on the host, and
+     navigation performed in JS via window.open. It now renders a real <a>, so
+     the browser owns activation — which is what makes middle-click, cmd-click
+     and "copy link address" work, none of which ever reach a JS handler.
+     Asserted on the rendered markup because that is what the browser acts on. */
+  test('button with href renders a real anchor the browser can act on', async ({ mount, page }) => {
     const component = await mount(
       <md-button variant="filled" href="https://example.com" target="_blank">
         Link
@@ -101,16 +106,22 @@ test.describe('md-button', () => {
     );
     await waitForComponent(page);
 
-    const openedUrl = await component.evaluate((el) => {
-      let capturedUrl = '';
-      const origOpen = window.open;
-      window.open = ((url: string) => { capturedUrl = url; return null; }) as typeof window.open;
-      (el as HTMLElement).click();
-      window.open = origOpen;
-      return capturedUrl;
+    const link = await component.evaluate((el) => {
+      const a = (el as HTMLElement).shadowRoot?.querySelector('a.md-button__anchor');
+      return {
+        href: a?.getAttribute('href') ?? null,
+        role: a?.getAttribute('role') ?? null,
+        rel: a?.getAttribute('rel') ?? null,
+        hostRole: (el as HTMLElement).getAttribute('role'),
+      };
     });
 
-    expect(openedUrl).toBe('https://example.com');
+    expect(link.href).toBe('https://example.com');
+    expect(link.role).toBe('link');
+    // target="_blank" opens a new browsing context, so the opener is severed.
+    expect(link.rel).toBe('noopener noreferrer');
+    // A link must not also announce as a button.
+    expect(link.hostRole).toBeNull();
   });
 
   /* ==============================================================
