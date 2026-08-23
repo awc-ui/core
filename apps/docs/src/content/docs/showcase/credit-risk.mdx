@@ -14,10 +14,28 @@ answer it — and it is built entirely from AWC UI components.
   >
     Open the application
   </a>
+  <a
+    href="/showcase/credit-risk/astro/"
+    style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border-radius: 999px; border: 1px solid var(--md-sys-color-outline); color: var(--md-sys-color-primary); font: var(--md-sys-typescale-label-large); text-decoration: none;"
+  >
+    Open the server-rendered build
+  </a>
   <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">
-    Opens in React — switch framework, theme, density, direction and language from inside the app.
+    Switch framework, theme, density, direction and language from inside the app.
   </span>
 </div>
+
+:::note[Two builds are live so far]
+**React** is the client-rendered one. **Astro** renders every component into
+declarative shadow DOM at build time, so the page arrives styled with no
+unstyled-tag flash — and stays readable with JavaScript switched off, apart
+from the charts, which draw into a `<canvas>` and cannot be painted without
+one. It also puts the language in the URL (`/astro/ro/`) rather than in client
+state, which is what a static site should do.
+
+Angular, Vue, Svelte and plain HTML are still being built; picking them in the
+control bar will 404 until they land.
+:::
 
 ## What you can drill into
 

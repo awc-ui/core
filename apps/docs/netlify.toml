@@ -22,3 +22,18 @@
   from = "/showcase/:app/:framework"
   to = "/showcase/:app/:framework/index.html"
   status = 200
+
+# The same thing for every screen BELOW a framework's root, which the rule above
+# does not reach: /showcase/credit-risk/astro/counterparties/cp-01 is four
+# segments deep, and the locale-routed builds add another
+# (/showcase/credit-risk/astro/ro/watchlist).
+#
+# Safe as a catch-all because a rewrite without `force` only applies when no
+# static file matches the path, so real assets — the runtime chunks under
+# awc-runtime/, Astro's hashed bundles under _astro/ — are served directly and
+# never reach this rule. Every route the apps link to internally already ends in
+# a slash; this is for hand-typed and shared URLs.
+[[redirects]]
+  from = "/showcase/:app/:framework/*"
+  to = "/showcase/:app/:framework/:splat/index.html"
+  status = 200
