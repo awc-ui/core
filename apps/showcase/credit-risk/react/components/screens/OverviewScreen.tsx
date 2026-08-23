@@ -8,8 +8,9 @@
  * largest exposures. Both the sector bars and the table rows are doors: sector
  * bars drill on click, counterparty names are anchors.
  *
- * Every trend on this screen is computed in `lib/derive.ts` from the fixture's
- * rating history, calibrated so the last point equals the KPI above it.
+ * Every trend on this screen is computed by `@awc-ui/showcase-kit/credit-risk`
+ * from the fixture's rating history, calibrated so the last point of a series
+ * equals the KPI above it.
  */
 
 import { useMemo, useRef } from 'react';
@@ -23,7 +24,7 @@ import {
   REPORTING_QUARTER,
 } from '@awc-ui/showcase-kit/data';
 import { useShowcase, useT } from '@/lib/showcase';
-import { monthlyEadSeries, quarterlySeries } from '@/lib/derive';
+import { monthlyEadSeries, quarterlySeries } from '@awc-ui/showcase-kit/credit-risk';
 import { route, withBase } from '@/lib/routes';
 import { AreaChart, BarChart, useCustomEvent } from '../elements';
 import { Drill, Panel, Screen } from '../Shell';

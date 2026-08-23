@@ -16,7 +16,7 @@ import type {
   FacilityStatus,
   RatingBand,
   SignalSeverity,
-} from '@awc-ui/showcase-kit/data';
+} from '../data/index';
 
 /** The `color` enumeration shared by md-chip, md-meter and md-badge. */
 export type MdColor = 'primary' | 'secondary' | 'tertiary' | 'error' | 'success' | 'warning' | 'info';

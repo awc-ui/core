@@ -14,6 +14,7 @@ const load = (p) => import(pathToFileURL(join(dist, p)).href);
 const D = await load('data/index.mjs');
 const I = await load('i18n/index.mjs');
 const P = await load('preboot/index.mjs');
+const C = await load('credit-risk/index.mjs');
 
 let failures = 0;
 let checks = 0;
@@ -474,6 +475,181 @@ const trailing = new URL(
   }),
 );
 ok('trailing slash preserved', trailing.pathname === '/showcase/credit-risk/angular/', trailing.pathname);
+
+/* ------------------------------------------------------- credit-risk logic */
+
+/*
+ * These are shared by all six framework builds. A regression here is not one
+ * broken screen, it is the same wrong number rendered six times and no
+ * disagreement between the ports to reveal it — so the arithmetic is pinned
+ * against the fixture rather than against a snapshot of its own output.
+ */
+
+section('credit-risk — derived series');
+
+const qs = C.quarterlySeries();
+ok('eight quarterly points', qs.length === 8, String(qs.length));
+ok('oldest first, ending at the reporting quarter', qs[qs.length - 1].date === totals.reportingDate, qs[qs.length - 1].quarter);
+ok(
+  'quarters strictly ascending',
+  qs.every((p, i) => i === 0 || p.date > qs[i - 1].date),
+);
+ok(
+  'final EAD === portfolio total',
+  near(qs[qs.length - 1].ead, totals.ead),
+  `${m(qs[qs.length - 1].ead)} vs ${m(totals.ead)}`,
+);
+ok(
+  'final weighted PD === headline weighted PD (the calibration holds)',
+  near(qs[qs.length - 1].weightedAvgPd, totals.weightedAvgPd, 1e-6),
+  `${(qs[qs.length - 1].weightedAvgPd * 100).toFixed(3)}%`,
+);
+ok(
+  'final expected loss === portfolio total',
+  near(qs[qs.length - 1].expectedLoss, totals.expectedLoss, 1),
+  m(qs[qs.length - 1].expectedLoss),
+);
+ok(
+  'every band split sums back to that quarter EAD',
+  qs.every((p) => near(p.byBand.investment + p.byBand.speculative + p.byBand.default, p.ead, 1)),
+);
+ok('PD is always a fraction, never a percentage', qs.every((p) => p.weightedAvgPd > 0 && p.weightedAvgPd < 1));
+
+/*
+ * Pinned on purpose, both halves. The fixture holds one exposure per
+ * counterparty, so the quarterly total CANNOT move — the overview's stacked
+ * area is rating migration at constant exposure, and its level top is the data
+ * telling the truth. If someone ever makes EAD drift to "fix" that chart, the
+ * first check fails and says why. The second guards the opposite mistake:
+ * migration itself must stay visible, or the chart says nothing at all.
+ */
+ok(
+  'quarterly EAD is FLAT by construction — see the header in derive.ts',
+  new Set(qs.map((p) => Math.round(p.ead))).size === 1,
+);
+ok(
+  'but the band mix genuinely migrates',
+  new Set(qs.map((p) => Math.round(p.byBand.investment))).size >= 4,
+  `${new Set(qs.map((p) => Math.round(p.byBand.investment))).size} distinct investment-band levels`,
+);
+ok(
+  'and credit quality deteriorates over the window, as the fixture intends',
+  qs[qs.length - 1].weightedAvgPd > qs[0].weightedAvgPd,
+  `${(qs[0].weightedAvgPd * 100).toFixed(2)}% → ${(qs[qs.length - 1].weightedAvgPd * 100).toFixed(2)}%`,
+);
+
+const energy = C.quarterlySeries('energy');
+ok(
+  'a sector series is a strict subset of the portfolio',
+  energy.length === 8 && energy[7].ead < qs[7].ead && energy[7].ead > 0,
+  `${m(energy[7].ead)} of ${m(qs[7].ead)}`,
+);
+ok(
+  'sector series === that sector\'s fixture EAD',
+  near(energy[7].ead, sectors.find((x) => x.id === 'energy').ead),
+);
+
+section('credit-risk — monthly EAD');
+
+const monthly = C.monthlyEadSeries();
+ok('twelve month ends', monthly.length === 12, String(monthly.length));
+ok('ends on the reporting date', monthly[11].date === totals.reportingDate, monthly[11].date);
+ok('every point is a real month end', monthly.every((p) => {
+  const d = new Date(`${p.date}T00:00:00Z`);
+  const next = new Date(d.getTime() + 86400000);
+  return next.getUTCDate() === 1;
+}));
+ok('facility count never negative and always ≤ the book', monthly.every((p) => p.facilities >= 0 && p.facilities <= facilities.length));
+ok('EAD tracks the live-facility count', monthly.every((p) => (p.facilities === 0 ? p.ead === 0 : p.ead > 0)));
+
+section('credit-risk — drawdown schedule');
+
+const term = facilities.find((f) => f.type === 'term-loan' && f.monthsToMaturity > 36);
+const revolver = facilities.find((f) => f.type === 'revolving-credit' && f.monthsToMaturity > 36);
+
+const termRows = C.drawdownSchedule(term);
+ok('a long term loan is abridged to the row cap', termRows.length <= 8, `${termRows.length} rows`);
+ok('opens at the facility\'s current drawn balance', near(termRows[0].drawn, term.drawn, 1));
+ok('a term loan amortises to zero at maturity', near(termRows[termRows.length - 1].drawn, 0, 1));
+ok('first row has no movement to compare against', termRows[0].movement === 0);
+ok(
+  'term repayments are all negative movements after the first row',
+  termRows.slice(1).every((r) => r.movement <= 0),
+);
+
+const revRows = C.drawdownSchedule(revolver);
+ok('a committed revolver holds its balance until maturity', revRows.slice(0, -1).every((r) => near(r.drawn, revolver.drawn, 1)));
+ok('and retires in one step', near(revRows[revRows.length - 1].drawn, 0, 1));
+
+ok(
+  'undrawn === commitment − drawn on every row of both shapes',
+  [...termRows, ...revRows].every((r) => near(r.undrawn, Math.max(0, r.commitment - r.drawn), 1)),
+);
+ok(
+  'utilisation is a fraction, and 0 when the line is retired',
+  [...termRows, ...revRows].every((r) => r.utilisation >= 0 && r.utilisation <= 1 && (r.commitment > 0 || r.utilisation === 0)),
+);
+
+const short = facilities.find((f) => f.monthsToMaturity <= 12);
+if (short) {
+  const shortRows = C.drawdownSchedule(short);
+  ok('a short facility is listed in full rather than abridged', shortRows.length <= 8 && shortRows.length >= 2, `${shortRows.length} rows`);
+}
+
+section('credit-risk — status mapping');
+
+const COLORS = ['primary', 'secondary', 'tertiary', 'error', 'success', 'warning', 'info'];
+const DOTS = ['online', 'away', 'busy', 'offline', 'invisible', 'neutral'];
+const maps = { covenantColor: COLORS, facilityColor: COLORS, severityColor: COLORS, bandColor: COLORS, covenantDot: DOTS, facilityDot: DOTS, severityDot: DOTS };
+
+for (const [name, allowed] of Object.entries(maps)) {
+  const values = Object.values(C[name]);
+  ok(`${name} only emits documented component values`, values.every((v) => allowed.includes(v)), values.join(','));
+}
+
+ok('every covenant status is mapped', Object.keys(C.covenantColor).length === 3 && Object.keys(C.covenantDot).length === 3);
+ok('every facility status is mapped', Object.keys(C.facilityColor).length === 3);
+ok('every severity is mapped', Object.keys(C.severityColor).length === 3);
+ok('every rating band is mapped', Object.keys(C.bandColor).length === 3);
+ok('utilisation escalates primary → warning → error', C.utilisationColor(0.5) === 'primary' && C.utilisationColor(0.9) === 'warning' && C.utilisationColor(0.99) === 'error');
+ok('utilisation thresholds are inclusive at the boundary', C.utilisationColor(0.85) === 'warning' && C.utilisationColor(0.95) === 'error');
+ok('watchlistDot flags only the watchlisted', C.watchlistDot(true) === 'busy' && C.watchlistDot(false) === 'online');
+
+section('credit-risk — routes');
+
+ok('six frameworks, in dock order', C.FRAMEWORKS.length === 6 && C.FRAMEWORKS[0] === 'html', C.FRAMEWORKS.join(','));
+ok('every route ends in a slash', Object.values(C.route).every((f) => f('x').endsWith('/')));
+ok('every route is root-relative and unprefixed', Object.values(C.route).every((f) => f('x').startsWith('/') && !f('x').startsWith(C.SHOWCASE_BASE)));
+
+for (const fw of C.FRAMEWORKS) {
+  const r = C.createRoutes(fw);
+  ok(
+    `createRoutes('${fw}') agrees with the deployed path`,
+    r.basePath === `/showcase/credit-risk/${fw}` && r.withBase(r.route.watchlist()) === `/showcase/credit-risk/${fw}/watchlist/`,
+    r.withBase(r.route.watchlist()),
+  );
+}
+
+const reactRoutes = C.createRoutes('react');
+ok(
+  'withBase is idempotent-safe: it never double-prefixes a bare route',
+  reactRoutes.withBase(reactRoutes.route.sector('energy')) === '/showcase/credit-risk/react/sectors/energy/',
+);
+ok(
+  'the dock can swap any framework segment for any other',
+  C.FRAMEWORKS.every((fw) =>
+    new URL(
+      K.buildFrameworkUrl(fw, {
+        current: 'react',
+        basePath: C.SHOWCASE_BASE,
+        pathname: '/showcase/credit-risk/react/watchlist/',
+        origin: 'https://awc-ui.dev',
+        state: carried,
+      }),
+    ).pathname === `/showcase/credit-risk/${fw}/watchlist/`,
+  ),
+);
+
 
 /* ------------------------------------------------------------------ report */
 

@@ -25,7 +25,7 @@ import {
 } from '@awc-ui/showcase-kit/data';
 import { useT } from '@/lib/showcase';
 import { route } from '@/lib/routes';
-import { utilisationColor } from '@/lib/status';
+import { utilisationColor } from '@awc-ui/showcase-kit/credit-risk';
 import { useCustomEvent } from './elements';
 import { Drill, EmptyState } from './Shell';
 import { RatingChip, WatchDot } from './bits';

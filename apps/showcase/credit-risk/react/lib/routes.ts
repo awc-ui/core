@@ -1,44 +1,22 @@
 /**
- * Route construction for a base-path'd static export.
+ * This build's binding of the shared route table.
  *
- * Two audiences, two helpers:
+ * The screen map itself lives in `@awc-ui/showcase-kit/credit-risk` and is
+ * identical across all six framework builds. The only thing that is local is
+ * WHICH framework this build is, and that single fact has to agree with
+ * `basePath` / `assetPrefix` in `next.config.mjs` — so it is declared once,
+ * here, and everything else is derived.
  *
- * - `<Link href={route.sector('energy')}>` — Next prefixes `basePath` itself,
- *   so these paths are ROOT-RELATIVE WITHOUT the prefix.
- * - `withBase(...)` — for anything that ends up in a raw `href` on a custom
- *   element (`md-breadcrumb-item`) or in `location.assign`, where nothing
- *   prefixes anything for us.
- *
- * Every path ends in `/` because `trailingSlash: true` exports each route as a
- * directory with an `index.html`; a link without the slash costs a redirect the
- * static server cannot perform.
+ * Use `route.*` with Next's `<Link>`: it prefixes `basePath` itself, and
+ * passing an already-prefixed path would double the segment. Use `withBase()`
+ * for raw `href`s on custom elements (`md-breadcrumb-item`) and for
+ * `location.assign`, where nothing prefixes anything for us.
  */
 
-/** Must match `basePath` / `assetPrefix` in next.config.mjs. */
-export const BASE_PATH = '/showcase/credit-risk/react';
+import { createRoutes } from '@awc-ui/showcase-kit/credit-risk';
 
-/** This build's framework id — the path segment the dock swaps. */
-export const FRAMEWORK = 'react';
+const routes = createRoutes('react');
 
-/** Prefix that precedes the framework segment. */
-export const SHOWCASE_BASE = '/showcase/credit-risk';
+export const { framework: FRAMEWORK, basePath: BASE_PATH, route, withBase } = routes;
 
-/**
- * Every framework this vertical is built for, in dock display order. Six
- * builds of the same screens; the dock hides its switcher below two.
- */
-export const FRAMEWORKS = ['html', 'astro', 'react', 'vue', 'angular', 'svelte'] as const;
-
-export const route = {
-  overview: () => '/',
-  sector: (id: string) => `/sectors/${id}/`,
-  counterparty: (id: string) => `/counterparties/${id}/`,
-  facility: (id: string) => `/facilities/${id}/`,
-  watchlist: () => '/watchlist/',
-  stress: () => '/stress/',
-};
-
-/** Absolute, deployable URL for a route the framework will not prefix for us. */
-export function withBase(path: string): string {
-  return `${BASE_PATH}${path}`;
-}
+export { FRAMEWORKS, SHOWCASE_BASE } from '@awc-ui/showcase-kit/credit-risk';

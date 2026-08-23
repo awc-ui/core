@@ -17,6 +17,16 @@
  * formula so a stressed or historical PD can be turned back into RWA. It is a
  * monotone stand-in that makes the charts behave — it is not an IRB calculation
  * and is never labelled as one in the UI.
+ *
+ * FLAT EAD IS DELIBERATE, NOT A BUG. The fixture gives each counterparty one
+ * exposure, not an exposure per quarter, so `quarterlySeries().ead` is the SAME
+ * number in all eight points. That is why the overview's stacked area has a
+ * perfectly level top: it shows rating MIGRATION at constant exposure — money
+ * moving from the investment band into speculative — which is the honest thing
+ * this fixture can say. Do not "fix" the flat line by scaling EAD over time;
+ * that would invent a balance sheet the data does not have. The series that
+ * legitimately moves is `monthlyEadSeries()`, which counts facilities actually
+ * live at each month end, and that is what the exposure KPI's sparkline plots.
  */
 
 import {
@@ -29,7 +39,7 @@ import {
   type Facility,
   type RatingBand,
   type SectorId,
-} from '@awc-ui/showcase-kit/data';
+} from '../data/index';
 
 /** The fixture's illustrative risk weight. Monotone in PD and LGD. NOT Basel IRB. */
 export function riskWeight(pd: number, lgd: number): number {

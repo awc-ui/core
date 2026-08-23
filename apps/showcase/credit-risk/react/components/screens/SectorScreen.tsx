@@ -14,9 +14,8 @@
 import { useMemo } from 'react';
 import { getSectorById, REPORTING_QUARTER, type Sector } from '@awc-ui/showcase-kit/data';
 import { useShowcase, useT } from '@/lib/showcase';
-import { quarterlySeries } from '@/lib/derive';
+import { quarterlySeries, utilisationColor } from '@awc-ui/showcase-kit/credit-risk';
 import { route } from '@/lib/routes';
-import { utilisationColor } from '@/lib/status';
 import { LineChart } from '../elements';
 import { Panel, Screen } from '../Shell';
 import { Fact, RatioMeter } from '../bits';

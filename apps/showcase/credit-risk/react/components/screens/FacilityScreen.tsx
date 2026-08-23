@@ -12,10 +12,10 @@
  * visible rather than implied, and the panel footer compares total net value
  * against the facility's EAD, which is the coverage ratio that actually matters.
  *
- * SCHEDULE. See `drawdownSchedule()` in `lib/derive.ts` — term loans amortise
- * straight-line to maturity, committed revolving lines hold and retire in one
- * step. Both shapes come out of the fixture's own dates, so the table is a
- * projection of the data rather than an invention on top of it.
+ * SCHEDULE. See `drawdownSchedule()` in `@awc-ui/showcase-kit/credit-risk`:
+ * term loans amortise straight-line to maturity, committed revolving lines hold
+ * and retire in one step. Both shapes come out of the fixture's own dates, so
+ * the table is a projection of the data rather than an invention on top of it.
  */
 
 import { useMemo } from 'react';
@@ -27,9 +27,8 @@ import {
   type Facility,
 } from '@awc-ui/showcase-kit/data';
 import { useT } from '@/lib/showcase';
-import { drawdownSchedule } from '@/lib/derive';
+import { drawdownSchedule, utilisationColor } from '@awc-ui/showcase-kit/credit-risk';
 import { route } from '@/lib/routes';
-import { utilisationColor } from '@/lib/status';
 import { EmptyState, Panel, Screen } from '../Shell';
 import { CovenantMeter, Fact, FacilityStatusChip, RatioMeter } from '../bits';
 

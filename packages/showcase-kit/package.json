@@ -14,6 +14,10 @@
       "types": "./dist/data/index.d.ts",
       "import": "./dist/data/index.mjs"
     },
+    "./credit-risk": {
+      "types": "./dist/credit-risk/index.d.ts",
+      "import": "./dist/credit-risk/index.mjs"
+    },
     "./i18n": {
       "types": "./dist/i18n/index.d.ts",
       "import": "./dist/i18n/index.mjs"
@@ -35,7 +39,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.json --emitDeclarationOnly && esbuild src/index.ts src/data/index.ts src/i18n/index.ts src/dock/index.ts src/preboot/index.ts --bundle --splitting --format=esm --target=es2020 --sourcemap --outdir=dist --out-extension:.js=.mjs --chunk-names=chunks/[name]-[hash] && node scripts/emit-preboot.mjs",
+    "build": "rm -rf dist && tsc -p tsconfig.json --emitDeclarationOnly && esbuild src/index.ts src/data/index.ts src/credit-risk/index.ts src/i18n/index.ts src/dock/index.ts src/preboot/index.ts --bundle --splitting --format=esm --target=es2020 --sourcemap --outdir=dist --out-extension:.js=.mjs --chunk-names=chunks/[name]-[hash] && node scripts/emit-preboot.mjs",
     "generate:fixture": "node scripts/generate-fixture.mjs",
     "generate:seeds": "node scripts/generate-seeds.mjs",
     "verify": "node scripts/verify.mjs",

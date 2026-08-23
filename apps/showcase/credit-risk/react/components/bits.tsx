@@ -5,10 +5,11 @@
  * and the covenant meter.
  *
  * Every one of them takes a domain value and resolves BOTH halves of it through
- * the kit — the colour through `lib/status.ts`, the label through the dictionary
- * key that travels beside the value (`covenantStatus.${status}`,
- * `rating.${label}`, `severity.${severity}`). Nothing here can render English
- * into a Romanian page, because nothing here contains English.
+ * the kit: the colour through the status maps in
+ * `@awc-ui/showcase-kit/credit-risk`, the label through the dictionary key that
+ * travels beside the value (`covenantStatus.${status}`, `rating.${label}`,
+ * `severity.${severity}`). Nothing here can render English into a Romanian
+ * page, because nothing here contains English.
  */
 
 import type { ReactNode } from 'react';
@@ -29,7 +30,7 @@ import {
   severityColor,
   severityDot,
   watchlistDot,
-} from '@/lib/status';
+} from '@awc-ui/showcase-kit/credit-risk';
 import { Sparkline } from './elements';
 
 /* ----------------------------------------------------------------- KPI tile */
