@@ -542,6 +542,91 @@ const trailing = new URL(
 );
 ok('trailing slash preserved', trailing.pathname === '/showcase/credit-risk/angular/', trailing.pathname);
 
+section('dock — locale routing');
+
+/*
+ * This arithmetic is fiddly enough that a first pass at it shipped a real bug:
+ * it sliced off `base-path`, which stops BEFORE the framework segment, and so
+ * produced /showcase/credit-risk/ro/astro/… — a path that exists in no build.
+ * Hence the explicit appBase here, and hence these checks: the helpers are
+ * pure so that this case can be pinned rather than eyeballed.
+ */
+const APP = { appBase: '/showcase/credit-risk/astro', defaultLocale: 'en' };
+const at = (p) => `https://awc-ui.dev${p}`;
+
+let sp = K.splitLocalePath('/showcase/credit-risk/astro/', APP);
+ok('an unprefixed path is the DEFAULT locale, not "no locale"', sp.locale === 'en' && sp.rest === '/', `${sp.locale} ${sp.rest}`);
+
+sp = K.splitLocalePath('/showcase/credit-risk/astro/ro/counterparties/cp-01/', APP);
+ok('a prefixed path yields its locale and the screen beneath it', sp.locale === 'ro' && sp.rest === '/counterparties/cp-01/', `${sp.locale} ${sp.rest}`);
+
+sp = K.splitLocalePath('/showcase/credit-risk/astro/ar', APP);
+ok('a bare locale segment with no trailing slash still splits', sp.locale === 'ar' && sp.rest === '/', `${sp.locale} ${sp.rest}`);
+
+sp = K.splitLocalePath('/showcase/credit-risk/astro/sectors/energy/', APP);
+ok('a screen whose name is not a locale is left alone', sp.locale === 'en' && sp.rest === '/sectors/energy/', sp.rest);
+
+ok(
+  'switching away from the default INSERTS a segment',
+  new URL(K.buildLocaleUrl('ro', { ...APP, href: at('/showcase/credit-risk/astro/watchlist/') })).pathname ===
+    '/showcase/credit-risk/astro/ro/watchlist/',
+);
+ok(
+  'switching TO the default REMOVES it',
+  new URL(K.buildLocaleUrl('en', { ...APP, href: at('/showcase/credit-risk/astro/ro/watchlist/') })).pathname ===
+    '/showcase/credit-risk/astro/watchlist/',
+);
+ok(
+  'switching between two prefixed locales replaces rather than stacks',
+  new URL(K.buildLocaleUrl('ar', { ...APP, href: at('/showcase/credit-risk/astro/ro/stress/') })).pathname ===
+    '/showcase/credit-risk/astro/ar/stress/',
+);
+ok(
+  'the locale never lands before the framework segment',
+  K.FRAMEWORKS === undefined ||
+    ['ro', 'ar'].every((l) =>
+      !new URL(K.buildLocaleUrl(l, { ...APP, href: at('/showcase/credit-risk/astro/') })).pathname.includes(
+        `/credit-risk/${l}/`,
+      ),
+    ),
+);
+
+const deep = new URL(
+  K.buildLocaleUrl('ro', {
+    ...APP,
+    href: at('/showcase/credit-risk/astro/facilities/fac-008/?theme=dark#collateral'),
+  }),
+);
+ok('query and hash survive a language change', deep.search === '?theme=dark' && deep.hash === '#collateral', `${deep.search}${deep.hash}`);
+ok('…and so does the screen', deep.pathname === '/showcase/credit-risk/astro/ro/facilities/fac-008/', deep.pathname);
+
+ok(
+  'round trip: every locale returns to the same screen',
+  ['en', 'ro', 'ar'].every((l) => {
+    const there = K.buildLocaleUrl(l, { ...APP, href: at('/showcase/credit-risk/astro/sectors/energy/') });
+    const back = K.buildLocaleUrl('en', { ...APP, href: there });
+    return new URL(back).pathname === '/showcase/credit-risk/astro/sectors/energy/';
+  }),
+);
+
+/*
+ * The other direction: leaving a locale-routed build for one that has no
+ * locale routes. The SEGMENT must not survive — /react/ro/watchlist/ is a 404 —
+ * but the language must, as the ?lang= param every build reads.
+ */
+const leaving = K.splitLocalePath('/showcase/credit-risk/astro/ro/watchlist/', APP);
+const crossed = new URL(
+  K.buildFrameworkUrl('react', {
+    current: 'astro',
+    basePath: '/showcase/credit-risk',
+    pathname: `${APP.appBase}${leaving.rest}`,
+    origin: 'https://awc-ui.dev',
+    state: K.normalizeState({ locale: leaving.locale }),
+  }),
+);
+ok('leaving a locale-routed build drops the locale SEGMENT', crossed.pathname === '/showcase/credit-risk/react/watchlist/', crossed.pathname);
+ok('…and carries the language in the query instead', crossed.searchParams.get('lang') === 'ro');
+
 /* ------------------------------------------------------- credit-risk logic */
 
 /*

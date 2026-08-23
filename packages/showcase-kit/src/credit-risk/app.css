@@ -1,8 +1,16 @@
 /*
- * Page furniture only. Every component on every screen is an `md-*` element
- * that styles itself; what is left is the grid the screens sit on, and that is
- * written entirely in `--md-sys-*` tokens so it themes, densifies and mirrors
- * with the library rather than beside it.
+ * `@awc-ui/showcase-kit/credit-risk/app.css`
+ *
+ * Page furniture only, shared by all six framework builds of the Credit Risk
+ * Console. Every component on every screen is an `md-*` element that styles
+ * itself; what is left is the grid the screens sit on, and that is written
+ * entirely in `--md-sys-*` tokens so it themes, densifies and mirrors with the
+ * library rather than beside it.
+ *
+ * It lives in the kit for the same reason the derived series do: six copies of
+ * a grid drift, and the first spacing fix would land in one build and quietly
+ * make the screenshots incomparable. Nothing here is framework-specific — it is
+ * class selectors over plain elements, which is all any of the six emit.
  *
  * There is not one hard-coded colour, radius, shadow or font stack in this file.
  * All spacing is logical (`inline-start`, `block-end`), so `dir="rtl"` — which

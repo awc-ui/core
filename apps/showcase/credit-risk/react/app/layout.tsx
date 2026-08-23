@@ -25,9 +25,11 @@
  *    post-mortem. `md3.esm.js` self-registers on import and needs no
  *    `defineCustomElements` call.
  *
- * The token sheet is the one thing that DOES go through the bundler — it is
- * 14 kB of custom properties with no runtime, and letting Next emit it as a
- * `<link>` in head is exactly what we want.
+ * The two stylesheets are the one thing that DOES go through the bundler.
+ * They are custom properties and page furniture with no runtime, and letting
+ * Next emit them as `<link>`s in head is exactly what we want. The app sheet
+ * lives in the kit because all six framework builds share the same grid —
+ * see `@awc-ui/showcase-kit/credit-risk/app.css`.
  */
 
 import type { ReactNode } from 'react';
@@ -37,7 +39,7 @@ import { en } from '@awc-ui/showcase-kit/i18n';
 import { ShowcaseProvider } from '@/lib/showcase';
 import { BASE_PATH } from '@/lib/routes';
 import '@awc-ui/core/css/tokens.css';
-import './globals.css';
+import '@awc-ui/showcase-kit/credit-risk/app.css';
 
 const RUNTIME_URL = `${BASE_PATH}/awc-runtime/md3/md3.esm.js`;
 

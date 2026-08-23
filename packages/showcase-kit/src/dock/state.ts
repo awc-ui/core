@@ -15,6 +15,7 @@
  */
 import {
   DEFAULT_LOCALE,
+  LOCALES,
   getDirection,
   isLocaleCode,
   type Direction,
@@ -397,4 +398,77 @@ export function buildFrameworkUrl(target: string, options: FrameworkUrlOptions):
 
   const url = new URL(nextPath, origin);
   return withShowcaseParams(url, state).href;
+}
+
+/* ---------------------------------------------------------- locale routing */
+
+export interface LocalePathOptions {
+  /**
+   * The path this build is served under, INCLUDING its framework segment —
+   * e.g. `/showcase/credit-risk/astro`. Note this is one segment LONGER than
+   * `FrameworkUrlOptions.basePath`, which deliberately stops before the
+   * framework because swapping that segment is its whole job. The locale sits
+   * one level deeper still, and confusing the two yields
+   * `/showcase/credit-risk/ro/astro/…`, a path that exists in no build.
+   */
+  appBase: string;
+  /** The locale served WITHOUT a segment. Defaults to `en`. */
+  defaultLocale?: string;
+  /** Locale codes that own a segment. Defaults to every known locale. */
+  locales?: readonly string[];
+}
+
+/**
+ * Split a locale-routed path into the locale it carries and the screen path
+ * beneath it.
+ *
+ * An unprefixed path is not "no locale" — it is the DEFAULT locale, which is
+ * precisely what being served without a segment means. `rest` always begins
+ * with `/`, so it concatenates onto a base without further guarding.
+ */
+export function splitLocalePath(
+  pathname: string,
+  options: LocalePathOptions,
+): { locale: string; rest: string } {
+  const fallback = options.defaultLocale ?? 'en';
+  const codes = options.locales ?? LOCALES.map((l) => l.code);
+  const base = options.appBase.replace(/\/+$/, '');
+
+  let rest = pathname.startsWith(base) ? pathname.slice(base.length) : pathname;
+  let locale = fallback;
+
+  for (const code of codes) {
+    if (code === fallback) continue;
+    if (rest === `/${code}` || rest.startsWith(`/${code}/`)) {
+      locale = code;
+      rest = rest.slice(code.length + 1) || '/';
+      break;
+    }
+  }
+
+  if (!rest.startsWith('/')) rest = `/${rest}`;
+  return { locale, rest };
+}
+
+/**
+ * The same screen in another language, on a locale-routed build.
+ *
+ * The default locale is served unprefixed, so switching TO it removes the
+ * segment and switching away inserts one. Query and hash survive, so changing
+ * language keeps the reader on the facility they were reading rather than
+ * dropping them back at the overview.
+ */
+export function buildLocaleUrl(
+  target: string,
+  options: LocalePathOptions & { href?: string },
+): string {
+  const fallback = options.defaultLocale ?? 'en';
+  const base = options.appBase.replace(/\/+$/, '');
+  const url = new URL(
+    options.href ?? (typeof location === 'undefined' ? 'http://localhost/' : location.href),
+  );
+
+  const { rest } = splitLocalePath(url.pathname, options);
+  url.pathname = target === fallback ? `${base}${rest}` : `${base}/${target}${rest}`;
+  return url.href;
 }

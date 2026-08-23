@@ -16,9 +16,11 @@ import {
   SEED_PRESETS,
   SHOWCASE_EVENT,
   buildFrameworkUrl,
+  buildLocaleUrl,
   getShowcaseState,
   resetShowcaseState,
   setShowcaseState,
+  splitLocalePath,
   subscribeShowcaseState,
   THEME_MODES,
   type DensityRung,
@@ -112,12 +114,36 @@ export class AwcShowcaseDock extends ElementBase {
     return resetShowcaseState();
   }
 
-  /** Build the URL this dock would navigate to for a given framework. */
+  /**
+   * Build the URL this dock would navigate to for a given framework.
+   *
+   * A locale-routed build carries its language as a PATH segment, and no other
+   * build has a route for it — leaving it in place would send someone from
+   * `/astro/ro/watchlist/` to `/react/ro/watchlist/`, which is a 404. The
+   * segment is therefore stripped here, and the language travels as the
+   * `?lang=` param that every build reads instead, so switching framework does
+   * not silently switch the reader back to English.
+   */
   urlForFramework(framework: string): string {
+    const basePath = this.getAttribute('base-path') ?? '';
+
+    if (this.#localeRoute === null || typeof location === 'undefined') {
+      return buildFrameworkUrl(framework, {
+        current: this.#currentFramework,
+        basePath,
+        state: this.#state,
+      });
+    }
+
+    const { locale, rest } = splitLocalePath(location.pathname, {
+      appBase: this.#appBase,
+      defaultLocale: this.#localeRoute ?? 'en',
+    });
     return buildFrameworkUrl(framework, {
       current: this.#currentFramework,
-      basePath: this.getAttribute('base-path') ?? '',
-      state: this.#state,
+      basePath,
+      pathname: `${this.#appBase}${rest}`,
+      state: { ...this.#state, locale: locale as ShowcaseState['locale'] },
     });
   }
 
@@ -157,33 +183,34 @@ export class AwcShowcaseDock extends ElementBase {
   }
 
   /**
+   * The path this build is served under, INCLUDING its framework segment.
+   *
+   * `base-path` deliberately stops before the framework, because the framework
+   * switcher's whole job is to replace that segment. The locale segment sits
+   * one level deeper — `/showcase/credit-risk/astro/ro/` — so locale routing
+   * needs the longer prefix, and getting these two mixed up produces
+   * `/showcase/credit-risk/ro/astro/…`, which exists in no build.
+   */
+  get #appBase(): string {
+    const base = (this.getAttribute('base-path') ?? '').replace(/\/+$/, '');
+    const framework = this.#currentFramework;
+    return framework ? `${base}/${framework}` : base;
+  }
+
+  /**
    * The current URL with its locale segment swapped for `target`.
    *
    * The default locale is served unprefixed, so switching to it removes the
-   * segment and switching away inserts one, immediately after `base-path`.
-   * Everything after the locale — the screen path, the query, the hash — is
-   * preserved, so changing language keeps the reader on the facility they were
-   * looking at rather than dropping them at the overview.
+   * segment and switching away inserts one. Everything after the locale — the
+   * screen path, the query, the hash — is preserved, so changing language keeps
+   * the reader on the facility they were reading rather than dropping them back
+   * at the overview.
    */
   #localeHref(target: string): string {
-    const fallback = this.#localeRoute ?? 'en';
-    const base = (this.getAttribute('base-path') ?? '').replace(/\/+$/, '');
-    const url = new URL(
-      typeof location === 'undefined' ? 'http://localhost/' : location.href,
-    );
-
-    let rest = url.pathname.startsWith(base) ? url.pathname.slice(base.length) : url.pathname;
-    for (const { code } of LOCALES) {
-      if (code === fallback) continue;
-      if (rest === `/${code}` || rest.startsWith(`/${code}/`)) {
-        rest = rest.slice(code.length + 1) || '/';
-        break;
-      }
-    }
-    if (!rest.startsWith('/')) rest = `/${rest}`;
-
-    url.pathname = target === fallback ? `${base}${rest}` : `${base}/${target}${rest}`;
-    return url.href;
+    return buildLocaleUrl(target, {
+      appBase: this.#appBase,
+      defaultLocale: this.#localeRoute ?? 'en',
+    });
   }
 
   get #controls(): DockControl[] {

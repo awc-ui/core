@@ -22,6 +22,8 @@ export {
   applySeedPreset,
   applyShowcaseState,
   buildFrameworkUrl,
+  buildLocaleUrl,
+  splitLocalePath,
   getShowcaseState,
   normalizeState,
   prefersDark,
@@ -39,6 +41,7 @@ export {
 export type {
   DensityRung,
   FrameworkUrlOptions,
+  LocalePathOptions,
   SeedPreset,
   ShowcaseChangeDetail,
   ShowcaseListener,
