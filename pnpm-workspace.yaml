@@ -1,3 +1,7 @@
 packages:
   - 'packages/*'
   - 'apps/*'
+  # One showcase vertical per directory, one build per framework underneath:
+  # apps/showcase/<vertical>/<framework>. The `apps/*` glob above does not
+  # descend, so the showcase builds need their own entry.
+  - 'apps/showcase/*/*'
