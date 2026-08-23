@@ -22,7 +22,8 @@
                                              0 keeps MD3 top-only radius + bottom indicator
      --md-text-field-cursor               Cursor over the field (default: text)
      --md-text-field-focus-border-width      Border thickness on focus (1, 2, or 3 px)
-     --md-text-field-focus-inset             Negative inset that compensates for the focus border
+     --md-text-field-focus-inset             Inset of the focus ring (default 0 — it
+                                             thickens inward, keeping the outer box fixed)
 
    SLOTS:
      leading-icon            Custom leading icon (overrides nothing — pure decoration)
@@ -943,7 +944,17 @@
 :host(.md-text-field--focused) .md-text-field__fieldset {
   border-color: var(--_active-indicator-color);
   border-width: var(--md-text-field-focus-border-width, 3px);
-  inset: var(--md-text-field-focus-inset, -2px);
+  /* Stays at inset 0 — the focused ring thickens INWARD, so the field's outer
+     box is identical focused and unfocused. It used to expand to -2px, which
+     made a focused field 4px taller and wider than its neighbours: in a form
+     the focused row visibly grew and broke alignment with the fields around
+     it. The reason given for growing outward was to hold the inner edge still
+     so the text could not shift — but this fieldset is
+     `position: absolute; pointer-events: none`, a decorative overlay only.
+     The input and label are laid out by the container, so no border width here
+     can move them, and there was nothing to protect. The hook remains for
+     anyone who wants the old outward ring. */
+  inset: var(--md-text-field-focus-inset, 0);
   /* Primary colour is IMMEDIATE (no border-color transition here) so a
      mouse-focus — sitting on the near-black hover `on-surface` outline — never
      morphs through black ("black ring, then primary"). The smooth part of focus
@@ -958,7 +969,17 @@
 :host(.md-text-field--error.md-text-field--focused) .md-text-field__fieldset {
   border-color: var(--_error-color);
   border-width: var(--md-text-field-focus-border-width, 3px);
-  inset: var(--md-text-field-focus-inset, -2px);
+  /* Stays at inset 0 — the focused ring thickens INWARD, so the field's outer
+     box is identical focused and unfocused. It used to expand to -2px, which
+     made a focused field 4px taller and wider than its neighbours: in a form
+     the focused row visibly grew and broke alignment with the fields around
+     it. The reason given for growing outward was to hold the inner edge still
+     so the text could not shift — but this fieldset is
+     `position: absolute; pointer-events: none`, a decorative overlay only.
+     The input and label are laid out by the container, so no border width here
+     can move them, and there was nothing to protect. The hook remains for
+     anyone who wants the old outward ring. */
+  inset: var(--md-text-field-focus-inset, 0);
   transition: none; /* immediate colour — see the non-error rule above */
 }
 
