@@ -117,18 +117,28 @@ export function FacilityStatusChip({ status }: { status: FacilityStatus }) {
   );
 }
 
+/** The severity, as a chip. The dot that goes with it lives in the first column. */
 export function SeverityChip({ severity }: { severity: SignalSeverity }) {
   const t = useT();
   return (
-    <span className="row" style={{ gap: 'var(--md-sys-spacing-gap-xs, 4px)' }}>
-      {/* No label: the chip beside it carries the same word, and naming both
-          announces the severity twice per row. Unlabelled, the dot falls back
-          to role="presentation" + aria-hidden — correct for a decorative mark
-          sitting next to its own label. */}
-      <md-status-dot inline state={severityDot[severity]} size="small" />
-      <md-chip variant="assist" appearance="filled" color={severityColor[severity]} label={t(`severity.${severity}`)} />
-    </span>
+    <md-chip variant="assist" appearance="filled" color={severityColor[severity]} label={t(`severity.${severity}`)} />
   );
+}
+
+/**
+ * The severity marker beside the counterparty's name, at the head of the row.
+ *
+ * IT CARRIES A LABEL, and that is the whole difference from the dot that used
+ * to sit inside the severity cell. That one was decorative on purpose: the chip
+ * immediately beside it held the same word, so naming both announced the
+ * severity twice per row. Here the dot stands alone at the other end of the
+ * row, so an unlabelled one would leave its colour as the only carrier of
+ * meaning — which is exactly the failure `md-status-dot`'s `label` exists to
+ * prevent.
+ */
+export function SeverityDot({ severity }: { severity: SignalSeverity }) {
+  const t = useT();
+  return <md-status-dot inline state={severityDot[severity]} size="small" label={t(`severity.${severity}`)} />;
 }
 
 /** The watchlist marker: a live dot plus its accessible name. */

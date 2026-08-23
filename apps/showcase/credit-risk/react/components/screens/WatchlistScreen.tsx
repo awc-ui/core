@@ -38,7 +38,7 @@ import { route } from '@/lib/routes';
 import { TABLES } from '@awc-ui/showcase-kit/credit-risk';
 import { useCustomEvent } from '../elements';
 import { Drill, EmptyState, Panel, Screen } from '../Shell';
-import { RatingChip, SeverityChip } from '../bits';
+import { RatingChip, SeverityChip, SeverityDot } from '../bits';
 
 const SEVERITIES: SignalSeverity[] = ['high', 'medium', 'low'];
 
@@ -178,7 +178,15 @@ export function WatchlistScreen() {
                 {rows.map((signal) => (
                   <md-table-row key={signal.id} value={signal.id}>
                     <md-table-cell>
-                      <Drill href={route.counterparty(signal.counterpartyId)}>{signal.counterpartyName}</Drill>
+                      {/* The severity marker leads the row, beside the obligor's
+                          name — the same shape the counterparty table uses for
+                          its watchlist dot, so a reader scanning the first
+                          column sees the severity without crossing to the far
+                          side of a nine-column table. */}
+                      <span className="row" style={{ gap: 'var(--md-sys-spacing-gap-xs, 4px)' }}>
+                        <SeverityDot severity={signal.severity} />
+                        <Drill href={route.counterparty(signal.counterpartyId)}>{signal.counterpartyName}</Drill>
+                      </span>
                     </md-table-cell>
                     <md-table-cell>
                       <Drill href={route.sector(signal.sectorId)}>{t(`sector.${signal.sectorId}`)}</Drill>

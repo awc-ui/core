@@ -2,10 +2,10 @@
 
 The Next.js build of the `credit-risk` showcase vertical. Six framework builds
 render the same six screens from the same fixture; this one exports to static
-HTML and is served at `awc-ui.dev/showcase/credit-risk/next/`.
+HTML and is served at `awc-ui.dev/showcase/credit-risk/react/`.
 
 ```bash
-pnpm --filter @awc-ui/showcase-credit-risk-next build   # -> out/
+pnpm --filter @awc-ui/showcase-credit-risk-react build   # -> out/
 node scripts/serve-out.mjs 4399                          # serve out/ at the real mount path
 ```
 

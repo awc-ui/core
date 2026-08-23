@@ -213,8 +213,19 @@ export function Panel({
   children: ReactNode;
   variant?: 'elevated' | 'filled' | 'outlined';
 }) {
+  /*
+   * `class`, NOT `className`.
+   *
+   * React 18 maps `className` to the `class` attribute for HOST elements only.
+   * On a custom element it passes the prop through under the name it was given,
+   * so `className="panel"` emits a literal `className="panel"` attribute and the
+   * `.panel` rule never matches. It went unnoticed because `.panel` only sets
+   * `display: block`, which `md-card` already is — but the other five builds all
+   * emit `class`, and this is the reference build the parity check measures them
+   * against, so the odd one out has to be the one that is fixed.
+   */
   return (
-    <md-card variant={variant} className="panel" full-width>
+    <md-card variant={variant} class="panel" full-width>
       <div className="panel__inner">
         {title ? (
           <div className="panel__head">

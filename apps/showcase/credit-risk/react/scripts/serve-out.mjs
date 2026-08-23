@@ -1,20 +1,27 @@
 #!/usr/bin/env node
 /**
- * Serve `out/` at the real mount path — `/showcase/credit-risk/next/` — so the
+ * Serve `out/` at the real mount path — `/showcase/credit-risk/react/` — so the
  * exported build can be checked exactly as it will be deployed. `next start`
  * cannot do this: it refuses to run against `output: 'export'`.
  *
  *   node scripts/serve-out.mjs [port]
+ *
+ * The mount is read from the kit rather than written down again here, which is
+ * the whole reason `createRoutes()` exists: one fact, one place. It used to be
+ * a literal, and it was wrong — `/showcase/credit-risk/next`, left over from
+ * when this build was called `next` — so every request fell outside the mount
+ * and this script served nothing but "outside mount path".
  */
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve } from 'node:path';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createRoutes } from '@awc-ui/showcase-kit/credit-risk';
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const root = join(appRoot, 'out');
-const MOUNT = '/showcase/credit-risk/next';
+const MOUNT = createRoutes('react').basePath;
 const port = Number(process.argv[2] || 4321);
 
 const TYPES = {
