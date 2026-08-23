@@ -1,0 +1,41 @@
+---
+import { getStressScenarios } from '@awc-ui/showcase-kit/data';
+import { route } from '@awc-ui/showcase-kit/credit-risk';
+import { localeParams, resolveLocale, useT } from '../../lib/i18n';
+import Base from '../../layouts/Base.astro';
+import Shell from '../../components/Shell.astro';
+import StressScreen from '../../components/screens/Stress.astro';
+
+export function getStaticPaths() {
+  return localeParams();
+}
+
+const locale = resolveLocale(Astro.params.locale);
+const t = useT(locale);
+const scenarios = getStressScenarios();
+---
+
+<Base locale={locale}>
+  <Shell
+    locale={locale}
+    title={t('screen.stress.title')}
+    subtitle={t('screen.stress.subtitle')}
+    crumbs={[{ label: t('nav.overview'), href: route.overview() }, { label: t('nav.stress') }]}
+  >
+    <Fragment slot="aside">
+      <md-segmented-button-set data-scenario-selector aria-label={t('table.scenario')}>
+        {
+          scenarios.map((s) => (
+            <md-segmented-button
+              value={s.id}
+              label={t(s.nameKey)}
+              selected={s.id === 'adverse' || undefined}
+            />
+          ))
+        }
+      </md-segmented-button-set>
+    </Fragment>
+
+    <StressScreen locale={locale} />
+  </Shell>
+</Base>

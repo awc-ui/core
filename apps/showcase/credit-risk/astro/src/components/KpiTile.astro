@@ -1,0 +1,62 @@
+---
+/**
+ * A KPI tile: label, headline figure, sparkline, footnote.
+ *
+ * `data` and `labels` are object props with no attribute form, so they go
+ * through `props()` and arrive as `serialized:` payloads the component parses
+ * itself. The tooltip's `valueFormatter` is a closure and cannot make that
+ * trip, so it is installed from the client script alongside the charts' — see
+ * `lib/charts.ts`. Values therefore stay raw here.
+ */
+import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
+import { props } from '../lib/props';
+import { chartConfig } from '../lib/charts';
+
+interface Props {
+  locale: LocaleCode;
+  label: string;
+  value: string;
+  hint?: string;
+  /** Historical values, oldest first, in their natural units. */
+  trend?: (number | null)[];
+  /** How the tooltip should read them. */
+  format?: 'currency' | 'percent' | 'number';
+  /** Tooltip x labels — quarters or month-ends, already formatted. */
+  trendLabels?: string[];
+  color?: string;
+}
+
+const { locale, label, value, hint, trend, trendLabels, color = 'primary', format = 'currency' } = Astro.props;
+const showTrend = Array.isArray(trend) && trend.length > 1;
+---
+
+<md-card variant="filled" full-width>
+  <div class="kpi">
+    <p class="kpi__label">{label}</p>
+    <p class="kpi__value">{value}</p>
+    {
+      showTrend && (
+        <div class="kpi__spark">
+          <md-sparkline
+            {...props({ data: trend, labels: trendLabels })}
+            data-chart={chartConfig({ format })}
+            locale={locale}
+            variant="area"
+            color={color}
+            curve="monotone"
+            show-marks="extremes"
+            height="34px"
+          />
+        </div>
+      )
+    }
+    {
+      (hint || Astro.slots.has('badge')) && (
+        <div class="kpi__foot">
+          <span>{hint}</span>
+          <slot name="badge" />
+        </div>
+      )
+    }
+  </div>
+</md-card>

@@ -1,0 +1,207 @@
+---
+/**
+ * Screen 3 — counterparty detail. Two rungs down.
+ *
+ * Facilities, rating history and the group tree, behind tabs. `md-tabs` and
+ * `md-tab-panels` handle their own selection entirely inside the components —
+ * no host state, in any framework — so this is one of the places where the
+ * Astro build and the React build are line-for-line the same idea.
+ */
+import {
+  getGroupTree,
+  getRatingHistory,
+  REPORTING_QUARTER,
+  type Counterparty,
+  type GroupTreeNode,
+} from '@awc-ui/showcase-kit/data';
+import { utilisationColor } from '@awc-ui/showcase-kit/credit-risk';
+import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
+import { useT } from '../../lib/i18n';
+import { props } from '../../lib/props';
+import { chartConfig } from '../../lib/charts';
+import Panel from '../Panel.astro';
+import RatioMeter from '../RatioMeter.astro';
+import FacilityTable from '../FacilityTable.astro';
+
+interface Props {
+  locale: LocaleCode;
+  counterparty: Counterparty;
+}
+
+const { locale, counterparty: cp } = Astro.props;
+const t = useT(locale);
+
+const history = getRatingHistory(cp.id);
+const tree = cp.groupId ? getGroupTree(cp.groupId) : null;
+const tabsId = `cp-tabs-${cp.id}`;
+
+interface OrgNode {
+  id: string;
+  name: string;
+  title?: string;
+  avatarInitials?: string;
+  children?: OrgNode[];
+}
+
+const toNode = (node: GroupTreeNode): OrgNode => ({
+  id: node.counterparty.id,
+  name: node.counterparty.legalName,
+  title: `${t.formatCurrency(node.counterparty.ead, { notation: 'compact' })} · ${t(`rating.${node.counterparty.ratingLabel}`)}`,
+  avatarInitials: node.counterparty.legalName.slice(0, 2).toUpperCase(),
+  children: node.children.map(toNode),
+});
+
+const orgNodes: OrgNode[] = tree ? [toNode(tree.root)] : [];
+const money = (v: number) => t.formatCurrency(v, { notation: 'compact' });
+
+const exposure: [string, string][] = [
+  [t('kpi.ead'), money(cp.ead)],
+  [t('kpi.limit'), money(cp.limit)],
+  [t('kpi.drawn'), money(cp.drawn)],
+  [t('kpi.undrawn'), money(cp.undrawn)],
+  [t('table.pd'), t.formatPercent(cp.pd, { maximumFractionDigits: 2 })],
+  [t('table.lgd'), t.formatPercent(cp.lgd, { maximumFractionDigits: 0 })],
+  [t('kpi.expectedLoss'), money(cp.expectedLoss)],
+  [t('kpi.rwa'), money(cp.rwa)],
+  [t('table.rwaDensity'), t.formatPercent(cp.rwaDensity, { maximumFractionDigits: 0 })],
+];
+
+const relationship: [string, string][] = [
+  [t('table.onboarded'), t.formatDate(cp.onboardedDate, 'medium')],
+  [t('table.lastReview'), t.formatDate(cp.lastReviewDate, 'medium')],
+  [t('table.nextReview'), t.formatDate(cp.nextReviewDate, 'medium')],
+  [t('table.band'), t(`ratingBand.${cp.ratingBand}`)],
+  [t('table.facilities'), t.formatNumber(cp.facilityCount)],
+  [t('table.group'), tree ? tree.name : t('common.none')],
+];
+
+/** PD stays a fraction; the client-side formatter renders it as a percentage. */
+const pdSeries = history.map((o) => o.pd);
+---
+
+<section class="grid-2">
+  <Panel title={t('kpi.ead')} subtitle={t('app.reportingQuarter', { quarter: REPORTING_QUARTER })}>
+    <dl class="dl">
+      {
+        exposure.map(([label, value]) => (
+          <div>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <RatioMeter
+      locale={locale}
+      label={t('kpi.utilisation')}
+      fraction={cp.utilisation}
+      color={utilisationColor(cp.utilisation)}
+    />
+  </Panel>
+
+  <Panel title={t('table.manager')} subtitle={cp.relationshipManager}>
+    <dl class="dl">
+      {
+        relationship.map(([label, value]) => (
+          <div>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </Panel>
+</section>
+
+<Panel>
+  <md-tabs id={tabsId} aria-label={t('nav.label')} variant="primary" tab-width="auto">
+    <md-tab label={t('nav.facilities')} icon="account_balance_wallet" inline-icon></md-tab>
+    <md-tab label={t('rating.history')} icon="timeline" inline-icon></md-tab>
+    <md-tab label={t('nav.groups')} icon="account_tree" inline-icon></md-tab>
+  </md-tabs>
+
+  <md-tab-panels for={tabsId} sizing="stable">
+    <md-tab-panel>
+      <FacilityTable locale={locale} counterpartyId={cp.id} />
+    </md-tab-panel>
+
+    <md-tab-panel>
+      <div class="stack">
+        <md-line-chart
+          {...props({ series: [{ label: t('table.pd'), data: pdSeries }] })}
+          data-chart={chartConfig({
+            xAxis: { data: history.map((o) => o.quarter), scale: 'category' },
+            yAxis: { label: t('table.pd'), min: 0 },
+            format: 'percent',
+          })}
+          locale={locale}
+          curve="monotone"
+          show-marks
+          grid="horizontal"
+          axis-ticks
+          legend="none"
+          height="300px"
+          label={t('rating.history')}
+          subtitle={t('rating.historyHint', { quarter: REPORTING_QUARTER })}></md-line-chart>
+        <div class="row">
+          {
+            history.map((observation) => (
+              <md-chip
+                variant="assist"
+                appearance="outlined"
+                label={`${observation.quarter} · ${t(`rating.${observation.label}`)}`}
+                title={t('rating.gradeLabel', { grade: observation.grade })}
+              />
+            ))
+          }
+        </div>
+      </div>
+    </md-tab-panel>
+
+    <md-tab-panel>
+      {
+        tree ? (
+          <div class="stack">
+            <dl class="dl">
+              <div>
+                <dt>{t('table.group')}</dt>
+                <dd>{tree.name}</dd>
+              </div>
+              <div>
+                <dt>{t('kpi.counterparties')}</dt>
+                <dd>{t.formatNumber(tree.memberCount)}</dd>
+              </div>
+              <div>
+                <dt>{t('kpi.ead')}</dt>
+                <dd>{money(tree.totals.ead)}</dd>
+              </div>
+              <div>
+                <dt>{t('kpi.expectedLoss')}</dt>
+                <dd>{money(tree.totals.expectedLoss)}</dd>
+              </div>
+              <div>
+                <dt>{t('kpi.rwa')}</dt>
+                <dd>{money(tree.totals.rwa)}</dd>
+              </div>
+              <div>
+                <dt>{t('kpi.weightedAvgPd')}</dt>
+                <dd>{t.formatPercent(tree.totals.weightedAvgPd, { maximumFractionDigits: 2 })}</dd>
+              </div>
+            </dl>
+            <md-organization-chart
+              {...props({ nodes: orgNodes })}
+              label={t('screen.groups.title')}
+              expand-label={t('action.expand')}
+              collapse-label={t('action.collapse')}
+              orientation="vertical"
+            />
+          </div>
+        ) : (
+          <div class="empty">
+            <p>{t('screen.groups.subtitle')}</p>
+          </div>
+        )
+      }
+    </md-tab-panel>
+  </md-tab-panels>
+</Panel>

@@ -1,0 +1,30 @@
+---
+import { getWatchlist } from '@awc-ui/showcase-kit/data';
+import { route } from '@awc-ui/showcase-kit/credit-risk';
+import { localeParams, resolveLocale, useT } from '../../lib/i18n';
+import Base from '../../layouts/Base.astro';
+import Shell from '../../components/Shell.astro';
+import WatchlistScreen from '../../components/screens/Watchlist.astro';
+
+export function getStaticPaths() {
+  return localeParams();
+}
+
+const locale = resolveLocale(Astro.params.locale);
+const t = useT(locale);
+const signals = getWatchlist();
+---
+
+<Base locale={locale}>
+  <Shell
+    locale={locale}
+    title={t('screen.watchlist.title')}
+    subtitle={t('screen.watchlist.subtitle', {
+      signals: signals.length,
+      counterparties: new Set(signals.map((s) => s.counterpartyId)).size,
+    })}
+    crumbs={[{ label: t('nav.overview'), href: route.overview() }, { label: t('nav.watchlist') }]}
+  >
+    <WatchlistScreen locale={locale} />
+  </Shell>
+</Base>

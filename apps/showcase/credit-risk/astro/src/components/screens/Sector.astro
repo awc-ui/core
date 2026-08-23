@@ -1,0 +1,119 @@
+---
+/**
+ * Screen 2 — sector detail. One rung down the drill path.
+ *
+ * The concentration meter compares this sector's share of portfolio EAD against
+ * a 20% single-sector guideline, which is why it is drawn on a 0–20% scale
+ * rather than 0–100%: on a 0–100% scale every sector looks safe and the meter
+ * says nothing. Beside it, utilisation of the committed limit on its own 0–100%
+ * scale. Both take their colour from the same thresholds the table uses.
+ *
+ * TWO SCALES ON THE TREND, NOT ONE. Expected loss runs in single-digit millions
+ * while RWA runs in hundreds of millions, so on a shared axis the EL line
+ * flattens onto the baseline and reads as zero. Each series gets its own axis
+ * (`yAxes` + `series[].yAxisIndex`) — EL left, RWA right — so both curves are
+ * legible at their own scale. A broken axis was the other option, but it
+ * distorts slope, and slope is the whole point of a trend chart.
+ */
+import { REPORTING_QUARTER, type Sector } from '@awc-ui/showcase-kit/data';
+import { quarterlySeries, utilisationColor } from '@awc-ui/showcase-kit/credit-risk';
+import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
+import { useT } from '../../lib/i18n';
+import { props } from '../../lib/props';
+import { chartConfig } from '../../lib/charts';
+import Panel from '../Panel.astro';
+import RatioMeter from '../RatioMeter.astro';
+import CounterpartyTable from '../CounterpartyTable.astro';
+
+interface Props {
+  locale: LocaleCode;
+  sector: Sector;
+}
+
+/** House single-sector concentration guideline, as a share of portfolio EAD. */
+const CONCENTRATION_CAP = 0.2;
+
+const { locale, sector } = Astro.props;
+const t = useT(locale);
+
+const quarters = quarterlySeries(sector.id);
+const quarterLabels = quarters.map((q) => q.quarter);
+const share = sector.portfolioShare;
+
+
+const facts: [string, string][] = [
+  [t('kpi.ead'), t.formatCurrency(sector.ead, { notation: 'compact' })],
+  [t('kpi.limit'), t.formatCurrency(sector.limit, { notation: 'compact' })],
+  [t('kpi.drawn'), t.formatCurrency(sector.drawn, { notation: 'compact' })],
+  [t('kpi.undrawn'), t.formatCurrency(sector.undrawn, { notation: 'compact' })],
+  [t('kpi.expectedLoss'), t.formatCurrency(sector.expectedLoss, { notation: 'compact' })],
+  [t('kpi.rwa'), t.formatCurrency(sector.rwa, { notation: 'compact' })],
+  [t('kpi.weightedAvgPd'), t.formatPercent(sector.weightedAvgPd, { maximumFractionDigits: 2 })],
+  [t('kpi.weightedAvgLgd'), t.formatPercent(sector.weightedAvgLgd, { maximumFractionDigits: 1 })],
+  [t('kpi.facilities'), t.formatNumber(sector.facilityCount)],
+];
+---
+
+<section class="grid-2">
+  <Panel title={t('table.share')} subtitle={t('kpi.ead')}>
+    <RatioMeter
+      locale={locale}
+      label={t('table.share')}
+      fraction={share}
+      max={CONCENTRATION_CAP}
+      color={share > CONCENTRATION_CAP ? 'error' : 'primary'}
+    />
+    <RatioMeter
+      locale={locale}
+      label={t('kpi.utilisation')}
+      fraction={sector.utilisation}
+      color={utilisationColor(sector.utilisation)}
+    />
+    <dl class="dl">
+      {
+        facts.map(([label, value]) => (
+          <div>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </Panel>
+
+  {/* No panel title: the chart carries its own header, which is also its
+      accessible name. */}
+  <Panel>
+    <md-line-chart
+      {...props({
+        series: [
+          { label: t('kpi.expectedLoss'), data: quarters.map((q) => q.expectedLoss) },
+          { label: t('kpi.rwa'), data: quarters.map((q) => q.rwa), yAxisIndex: 1 },
+        ],
+      })}
+      data-chart={chartConfig({
+        xAxis: { data: quarterLabels, scale: 'category' },
+        yAxes: [
+          { label: t('kpi.expectedLoss'), min: 0 },
+          { label: t('kpi.rwa'), min: 0, position: 'right' },
+        ],
+        format: 'currency',
+      })}
+      locale={locale}
+      curve="monotone"
+      show-marks
+      grid="horizontal"
+      axis-ticks
+      legend="top-end"
+      height="340px"
+      label={`${t('kpi.expectedLoss')} · ${t('kpi.rwa')}`}
+      subtitle={t('rating.historyHint', { quarter: REPORTING_QUARTER })}></md-line-chart>
+  </Panel>
+</section>
+
+<Panel
+  title={t('screen.counterparties.title')}
+  subtitle={t('screen.counterparties.subtitle', { count: sector.counterpartyCount })}
+>
+  <CounterpartyTable locale={locale} sectorId={sector.id} showSector={false} />
+</Panel>

@@ -1,0 +1,92 @@
+---
+/**
+ * The frame every screen sits in: masthead, section nav, breadcrumb trail,
+ * screen heading, and the dock.
+ *
+ * Not a single visible string is written here — `useT(locale)` resolves all of
+ * them, including the ones that look like constants (the brand name, the
+ * base-currency note). The reporting date goes through the translator's
+ * `formatDate`, which is pinned to `timeZone: 'UTC'`, so 2026-03-31 is 31 March
+ * in every locale and on every machine that builds this.
+ *
+ * Every link is built with `localeHref`, so a reader in Romanian stays in
+ * Romanian as they drill down. That is the whole reason the locale is in the
+ * URL, and forgetting it on one link is how a locale-routed site quietly
+ * dumps people back into English three clicks in.
+ */
+import { BASE_CURRENCY, REPORTING_DATE, REPORTING_QUARTER } from '@awc-ui/showcase-kit/data';
+import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
+import { route, localeHref, useT } from '../lib/i18n';
+import Dock from './Dock.astro';
+
+export interface Crumb {
+  label: string;
+  /** Root-relative path WITHOUT base or locale. Omit on the final crumb. */
+  href?: string;
+}
+
+interface Props {
+  locale: LocaleCode;
+  title: string;
+  subtitle?: string;
+  crumbs?: Crumb[];
+}
+
+const { locale, title, subtitle, crumbs = [] } = Astro.props;
+const t = useT(locale);
+const href = (path: string) => localeHref(locale, path);
+---
+
+<div class="shell">
+  <header class="shell__masthead">
+    <p class="shell__brand">{t('app.brand')}</p>
+    <span class="muted">{t('app.title')}</span>
+    <div class="shell__meta">
+      <span>{t('app.reportingDate', { date: t.formatDate(REPORTING_DATE, 'medium') })}</span>
+      <span>{t('app.reportingQuarter', { quarter: REPORTING_QUARTER })}</span>
+      <span>{t('app.baseCurrency', { currency: BASE_CURRENCY })}</span>
+    </div>
+  </header>
+
+  <nav class="shell__nav" aria-label={t('nav.label')}>
+    <md-button variant="text" size="sm" icon="dashboard" href={href(route.overview())}>
+      {t('nav.overview')}
+    </md-button>
+    <md-button variant="text" size="sm" icon="warning" href={href(route.watchlist())}>
+      {t('nav.watchlist')}
+    </md-button>
+    <md-button variant="text" size="sm" icon="stacked_line_chart" href={href(route.stress())}>
+      {t('nav.stress')}
+    </md-button>
+  </nav>
+
+  {
+    crumbs.length > 1 && (
+      <md-breadcrumbs max-items="4" items-before-collapse="1" items-after-collapse="2">
+        {crumbs.map((crumb) => (
+          <md-breadcrumb-item href={crumb.href ? href(crumb.href) : undefined}>
+            {crumb.label}
+          </md-breadcrumb-item>
+        ))}
+      </md-breadcrumbs>
+    )
+  }
+
+  <div class="screen-head">
+    <div class="screen-head__text">
+      <h1>{title}</h1>
+      {subtitle && <p>{subtitle}</p>}
+    </div>
+    {
+      Astro.slots.has('aside') && (
+        <div class="screen-head__aside">
+          <slot name="aside" />
+        </div>
+      )
+    }
+  </div>
+
+  <slot />
+</div>
+
+<Dock locale={locale} />

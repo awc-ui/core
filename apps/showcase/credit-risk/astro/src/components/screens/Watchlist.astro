@@ -1,0 +1,174 @@
+---
+/**
+ * Screen 5 — early-warning signals.
+ *
+ * `getWatchlist()` returns rows already denormalised with the counterparty
+ * name, sector, grade and EAD, and already sorted highest severity first then
+ * largest exposure — so the table needs no join and no comparator.
+ *
+ * FILTERS ARE PROGRESSIVE. Every signal is rendered; the controls hide rows
+ * that do not match (see `lib/filters.ts`). With JavaScript off the reader gets
+ * the complete watchlist rather than an empty table under three dead controls,
+ * which is the right way round for a static page.
+ */
+import { getRatingGrade, getSectors, getWatchlist, type SignalSeverity } from '@awc-ui/showcase-kit/data';
+import { route } from '@awc-ui/showcase-kit/credit-risk';
+import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
+import { localeHref, useT } from '../../lib/i18n';
+import { ratingChip, severityChip, severityDotProps } from '../../lib/bits';
+import Panel from '../Panel.astro';
+
+interface Props {
+  locale: LocaleCode;
+}
+
+const SEVERITIES: SignalSeverity[] = ['high', 'medium', 'low'];
+
+const { locale } = Astro.props;
+const t = useT(locale);
+const href = (p: string) => localeHref(locale, p);
+
+const sectors = getSectors();
+const signals = getWatchlist();
+const counterpartyCount = new Set(signals.map((s) => s.counterpartyId)).size;
+
+/**
+ * The count chip's text is rebuilt client-side as filters change, so the
+ * template travels with it rather than being reassembled from a translated
+ * string that the script would have to parse back apart.
+ */
+const countTemplate = t('common.showing', { shown: '%shown%', total: signals.length });
+---
+
+<div data-watchlist>
+  <Panel title={t('action.filter')} subtitle={t('table.severity')}>
+    <div class="row">
+      <md-segmented-button-set data-filter-severity multiselect aria-label={t('table.severity')}>
+        {
+          SEVERITIES.map((severity) => (
+            <md-segmented-button value={severity} label={t(`severity.${severity}`)} />
+          ))
+        }
+      </md-segmented-button-set>
+
+      <md-select
+        data-filter-sector
+        label={t('table.sector')}
+        placeholder={t('common.all')}
+        clearable
+        clear-label={t('action.clearFilters')}
+      >
+        {
+          sectors.map((sector) => (
+            <md-select-option value={sector.id} label={t(sector.nameKey)}>
+              {t(sector.nameKey)}
+            </md-select-option>
+          ))
+        }
+      </md-select>
+
+      <md-button data-filter-clear variant="text" size="sm" icon="filter_alt_off">
+        {t('action.clearFilters')}
+      </md-button>
+
+      <md-chip
+        data-count
+        data-count-template={countTemplate}
+        variant="assist"
+        appearance="filled"
+        color="error"
+        icon="crisis_alert"
+        label={t('common.showing', { shown: signals.length, total: signals.length })}></md-chip>
+    </div>
+  </Panel>
+
+  <Panel
+    title={t('table.signal')}
+    subtitle={t('common.of', { count: counterpartyCount, total: signals.length })}
+  >
+    <div data-empty hidden class="empty">
+      <p>{t('empty.signals')}</p>
+      <p>{t('empty.hint')}</p>
+    </div>
+
+    <md-table-container variant="outlined" max-height="60vh">
+      <md-table
+        label={t('screen.watchlist.title')}
+        column-template="minmax(200px, 1.6fr) minmax(140px, 1fr) 100px minmax(170px, 1.2fr) 156px 132px 120px 120px minmax(150px, 1fr)"
+        min-width="1280px"
+        sticky-header
+        striped
+      >
+        <md-table-head>
+          <md-table-row rowgroup="head">
+            <md-table-cell head scope="col">{t('table.counterparty')}</md-table-cell>
+            <md-table-cell head scope="col">{t('table.sector')}</md-table-cell>
+            <md-table-cell head scope="col">{t('table.rating')}</md-table-cell>
+            <md-table-cell head scope="col">{t('table.signal')}</md-table-cell>
+            <md-table-cell head scope="col">{t('table.severity')}</md-table-cell>
+            <md-table-cell head scope="col" numeric>{t('table.ead')}</md-table-cell>
+            <md-table-cell head scope="col">{t('table.opened')}</md-table-cell>
+            <md-table-cell head scope="col" numeric>{t('table.daysOpen')}</md-table-cell>
+            <md-table-cell head scope="col">{t('table.owner')}</md-table-cell>
+          </md-table-row>
+        </md-table-head>
+        <md-table-body>
+          {
+            signals.map((signal) => (
+              <md-table-row
+                value={signal.id}
+                data-severity={signal.severity}
+                data-sector={signal.sectorId}
+              >
+                <md-table-cell>
+                  <a class="drill" href={href(route.counterparty(signal.counterpartyId))}>
+                    {signal.counterpartyName}
+                  </a>
+                </md-table-cell>
+                <md-table-cell>
+                  <a class="drill" href={href(route.sector(signal.sectorId))}>
+                    {t(`sector.${signal.sectorId}`)}
+                  </a>
+                </md-table-cell>
+                <md-table-cell>
+                  {/* The signal row carries the grade but not the band, so the
+                      band comes from the rating scale rather than from a second
+                      set of thresholds invented here. */}
+                  <md-chip
+                    {...ratingChip(
+                      t,
+                      signal.ratingLabel,
+                      getRatingGrade(signal.grade)?.band ?? 'speculative',
+                    )}
+                  />
+                </md-table-cell>
+                <md-table-cell>{t(signal.typeKey)}</md-table-cell>
+                <md-table-cell>
+                  <span class="row" style="gap: var(--md-sys-spacing-gap-xs, 4px)">
+                    <md-status-dot {...severityDotProps(t, signal.severity)} />
+                    <md-chip {...severityChip(t, signal.severity)} />
+                  </span>
+                </md-table-cell>
+                <md-table-cell numeric>
+                  {t.formatCurrency(signal.ead, { notation: 'compact' })}
+                </md-table-cell>
+                <md-table-cell>{t.formatDate(signal.openedDate, 'medium')}</md-table-cell>
+                <md-table-cell numeric>
+                  <span title={t('signal.openFor', { days: signal.daysOpen })}>
+                    {t.formatNumber(signal.daysOpen)}
+                  </span>
+                </md-table-cell>
+                <md-table-cell>{signal.owner}</md-table-cell>
+              </md-table-row>
+            ))
+          }
+        </md-table-body>
+      </md-table>
+    </md-table-container>
+  </Panel>
+</div>
+
+<script>
+  import { enhanceWatchlistFilters } from '../../lib/filters';
+  enhanceWatchlistFilters();
+</script>

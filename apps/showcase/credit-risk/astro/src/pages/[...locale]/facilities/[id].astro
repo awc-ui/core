@@ -1,0 +1,54 @@
+---
+import { getCounterpartyById, getFacilities, getFacilityById } from '@awc-ui/showcase-kit/data';
+import { route } from '@awc-ui/showcase-kit/credit-risk';
+import { localeParams, resolveLocale, useT } from '../../../lib/i18n';
+import { facilityStatusChip } from '../../../lib/bits';
+import Base from '../../../layouts/Base.astro';
+import Shell from '../../../components/Shell.astro';
+import FacilityScreen from '../../../components/screens/Facility.astro';
+import type { Crumb } from '../../../components/Shell.astro';
+
+export function getStaticPaths() {
+  return localeParams().flatMap(({ params }) =>
+    getFacilities().map((facility) => ({ params: { ...params, id: facility.id } })),
+  );
+}
+
+const locale = resolveLocale(Astro.params.locale);
+const t = useT(locale);
+
+const facility = getFacilityById(Astro.params.id!)!;
+const counterparty = getCounterpartyById(facility.counterpartyId);
+
+const crumbs: Crumb[] = [
+  { label: t('nav.overview'), href: route.overview() },
+  ...(counterparty
+    ? [
+        { label: t(`sector.${counterparty.sectorId}`), href: route.sector(counterparty.sectorId) },
+        { label: counterparty.legalName, href: route.counterparty(counterparty.id) },
+      ]
+    : []),
+  { label: facility.id },
+];
+---
+
+<Base locale={locale}>
+  <Shell
+    locale={locale}
+    title={`${facility.id} · ${t(facility.typeKey)}`}
+    subtitle={facility.counterpartyName}
+    crumbs={crumbs}
+  >
+    <Fragment slot="aside">
+      <md-chip {...facilityStatusChip(t, facility.status)} />
+      <md-chip
+        variant="assist"
+        appearance="outlined"
+        icon={facility.secured ? 'lock' : 'lock_open'}
+        label={facility.secured ? t('common.secured') : t('common.unsecured')}
+      ></md-chip>
+    </Fragment>
+
+    <FacilityScreen locale={locale} facility={facility} />
+  </Shell>
+</Base>

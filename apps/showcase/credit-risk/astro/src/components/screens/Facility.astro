@@ -1,0 +1,243 @@
+---
+/**
+ * Screen 4 — facility detail. The bottom of the drill path.
+ *
+ * COLLATERAL. `valuation` is in the collateral's own currency, `valuationEur`
+ * the converted twin, and `netValue` — always EUR — is already
+ * `valuationEur × (1 − haircut)`. The table shows all three so the haircut is
+ * visible rather than implied, and the footer compares total net value against
+ * the facility's EAD, which is the coverage ratio that actually matters.
+ *
+ * SCHEDULE. See `drawdownSchedule()` in `@awc-ui/showcase-kit/credit-risk`:
+ * term loans amortise straight-line to maturity, committed revolving lines hold
+ * and retire in one step. Both shapes come out of the fixture's own dates, so
+ * the table is a projection of the data rather than an invention on top of it.
+ */
+import {
+  getCollateralFor,
+  getCovenantsFor,
+  type Facility,
+} from '@awc-ui/showcase-kit/data';
+import { drawdownSchedule, utilisationColor } from '@awc-ui/showcase-kit/credit-risk';
+import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
+import { useT } from '../../lib/i18n';
+import Panel from '../Panel.astro';
+import RatioMeter from '../RatioMeter.astro';
+import CovenantMeter from '../CovenantMeter.astro';
+
+interface Props {
+  locale: LocaleCode;
+  facility: Facility;
+}
+
+const { locale, facility } = Astro.props;
+const t = useT(locale);
+
+const covenants = getCovenantsFor(facility.id);
+const collateral = getCollateralFor(facility.id);
+const schedule = drawdownSchedule(facility);
+
+const netCollateral = collateral.reduce((sum, item) => sum + item.netValue, 0);
+const coverage = facility.ead > 0 ? netCollateral / facility.ead : 0;
+
+/** Money in the facility's OWN currency. Never use this for `ead`. */
+const local = (v: number) =>
+  t.formatCurrency(v, { currency: facility.currency, notation: 'compact' });
+/** Money in the base currency. */
+const eur = (v: number) => t.formatCurrency(v, { notation: 'compact' });
+
+const facts: [string, string][] = [
+  [t('table.currency'), facility.currency],
+  [t('table.commitment'), local(facility.commitment)],
+  [t('table.drawn'), local(facility.drawn)],
+  [t('table.undrawn'), local(facility.undrawn)],
+  [t('table.ead'), eur(facility.ead)],
+  [t('table.ccf'), t.formatPercent(facility.ccf, { maximumFractionDigits: 0 })],
+  [t('table.margin'), t('unit.bps', { value: t.formatNumber(facility.marginBps) })],
+  [t('table.maturity'), t.formatDate(facility.maturityDate, 'long')],
+  [t('table.tenor'), t('unit.months', { value: t.formatNumber(facility.monthsToMaturity) })],
+];
+---
+
+<section class="grid-2">
+  <Panel title={t('table.facility')} subtitle={t(facility.typeKey)}>
+    <dl class="dl">
+      {
+        facts.map(([label, value]) => (
+          <div>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <RatioMeter
+      locale={locale}
+      label={t('kpi.utilisation')}
+      fraction={facility.utilisation}
+      color={utilisationColor(facility.utilisation)}
+    />
+  </Panel>
+
+  <Panel
+    title={t('screen.covenants.title')}
+    subtitle={t('screen.covenants.subtitle', {
+      breaches: covenants.filter((c) => c.status === 'breach').length,
+      watch: covenants.filter((c) => c.status === 'watch').length,
+    })}
+  >
+    {
+      covenants.length === 0 ? (
+        <div class="empty">
+          <p>{t('empty.covenants')}</p>
+        </div>
+      ) : (
+        <div class="stack">
+          {covenants.map((covenant) => (
+            <CovenantMeter locale={locale} covenant={covenant} />
+          ))}
+        </div>
+      )
+    }
+  </Panel>
+</section>
+
+<Panel title={t('screen.collateral.title')} subtitle={t('screen.collateral.subtitle')}>
+  {
+    collateral.length > 0 && (
+      <md-chip
+        slot="actions"
+        variant="assist"
+        appearance="filled"
+        color={coverage >= 1 ? 'success' : coverage >= 0.5 ? 'warning' : 'error'}
+        label={`${t('kpi.collateralCoverage')} ${t.formatPercent(coverage, { maximumFractionDigits: 0 })}`}
+      />
+    )
+  }
+
+  {
+    collateral.length === 0 ? (
+      <div class="empty">
+        <p>{t('empty.collateral')}</p>
+      </div>
+    ) : (
+      <md-table-container variant="outlined">
+        <md-table
+          label={t('screen.collateral.title')}
+          column-template="minmax(150px, 1.2fr) 88px minmax(130px, 1fr) minmax(130px, 1fr) 96px minmax(130px, 1fr) 128px minmax(150px, 1fr)"
+          min-width="1060px"
+          striped
+        >
+          <md-table-head>
+            <md-table-row rowgroup="head">
+              <md-table-cell head scope="col">{t('table.collateral')}</md-table-cell>
+              <md-table-cell head scope="col">{t('table.currency')}</md-table-cell>
+              <md-table-cell head scope="col" numeric>{t('table.valuation')}</md-table-cell>
+              <md-table-cell head scope="col" numeric>
+                {t('app.baseCurrency', { currency: 'EUR' })}
+              </md-table-cell>
+              <md-table-cell head scope="col" numeric>{t('table.haircut')}</md-table-cell>
+              <md-table-cell head scope="col" numeric>{t('table.netValue')}</md-table-cell>
+              <md-table-cell head scope="col">{t('table.lastValuation')}</md-table-cell>
+              <md-table-cell head scope="col">{t('table.basis')}</md-table-cell>
+            </md-table-row>
+          </md-table-head>
+          <md-table-body>
+            {collateral.map((item) => (
+              <md-table-row value={item.id}>
+                <md-table-cell>{t(item.typeKey)}</md-table-cell>
+                <md-table-cell>{item.currency}</md-table-cell>
+                <md-table-cell numeric>
+                  {t.formatCurrency(item.valuation, {
+                    currency: item.currency,
+                    notation: 'compact',
+                  })}
+                </md-table-cell>
+                <md-table-cell numeric>{eur(item.valuationEur)}</md-table-cell>
+                <md-table-cell numeric>
+                  {t.formatPercent(item.haircutPct, { maximumFractionDigits: 0 })}
+                </md-table-cell>
+                <md-table-cell numeric>{eur(item.netValue)}</md-table-cell>
+                <md-table-cell>{t.formatDate(item.lastValuationDate, 'medium')}</md-table-cell>
+                <md-table-cell>{t(item.valuationBasisKey)}</md-table-cell>
+              </md-table-row>
+            ))}
+          </md-table-body>
+          <md-table-foot>
+            <md-table-row rowgroup="foot">
+              <md-table-cell>{t('common.total')}</md-table-cell>
+              <md-table-cell />
+              <md-table-cell />
+              <md-table-cell />
+              <md-table-cell />
+              <md-table-cell numeric>{eur(netCollateral)}</md-table-cell>
+              <md-table-cell />
+              <md-table-cell />
+            </md-table-row>
+          </md-table-foot>
+        </md-table>
+      </md-table-container>
+    )
+  }
+</Panel>
+
+<Panel
+  title={t('table.tenor')}
+  subtitle={t('unit.months', { value: t.formatNumber(facility.monthsToMaturity) })}
+>
+  <md-table-container variant="outlined">
+    <md-table
+      label={t('table.tenor')}
+      column-template="110px minmax(130px, 1fr) minmax(130px, 1fr) minmax(130px, 1fr) minmax(130px, 1fr) 108px"
+      min-width="820px"
+      striped
+    >
+      <md-table-head>
+        <md-table-row rowgroup="head">
+          <md-table-cell head scope="col">{t('table.quarter')}</md-table-cell>
+          <md-table-cell head scope="col" numeric>{t('table.commitment')}</md-table-cell>
+          <md-table-cell head scope="col" numeric>{t('table.drawn')}</md-table-cell>
+          <md-table-cell head scope="col" numeric>{t('table.undrawn')}</md-table-cell>
+          {/* No dictionary key for "movement in the drawn balance"; the delta
+              sign is composed onto the translated noun the same way
+              `table.elDelta` composes it in the dictionary itself. */}
+          <md-table-cell head scope="col" numeric>{`Δ ${t('table.drawn')}`}</md-table-cell>
+          <md-table-cell head scope="col" numeric>{t('table.utilisation')}</md-table-cell>
+        </md-table-row>
+      </md-table-head>
+      <md-table-body>
+        {
+          schedule.map((row, index) => (
+            <md-table-row value={row.quarter}>
+              <md-table-cell>{row.quarter}</md-table-cell>
+              <md-table-cell numeric>{local(row.commitment)}</md-table-cell>
+              <md-table-cell numeric>{local(row.drawn)}</md-table-cell>
+              <md-table-cell numeric>{local(row.undrawn)}</md-table-cell>
+              <md-table-cell numeric>
+                <span
+                  style={
+                    row.movement < 0
+                      ? 'color: var(--md-sys-color-success)'
+                      : row.movement > 0
+                        ? 'color: var(--md-sys-color-error)'
+                        : undefined
+                  }
+                >
+                  {/* The opening row has nothing to move against, so it reads
+                      n/a. A genuine zero movement in a later quarter is a real
+                      number and is printed as one. Movements are money in the
+                      facility's own currency, like the columns beside them — a
+                      bare number here would read as euros. */}
+                  {index === 0 ? t('common.na') : local(row.movement)}
+                </span>
+              </md-table-cell>
+              <md-table-cell numeric>
+                {t.formatPercent(row.utilisation, { maximumFractionDigits: 0 })}
+              </md-table-cell>
+            </md-table-row>
+          ))
+        }
+      </md-table-body>
+    </md-table>
+  </md-table-container>
+</Panel>

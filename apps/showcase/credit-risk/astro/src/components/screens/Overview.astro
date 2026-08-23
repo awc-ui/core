@@ -1,0 +1,179 @@
+---
+/**
+ * Screen 1 — portfolio overview, and the head of the drill path.
+ *
+ * Four KPI tiles each with their own sparkline; exposure by sector; the rating
+ * distribution; the exposure trend split by rating band; and the counterparty
+ * book. Sector names and counterparty names are doors.
+ *
+ * TWO DIFFERENCES FROM THE REACT BUILD, both consequences of rendering on the
+ * server rather than shortcomings to apologise for.
+ *
+ * The sector bar chart is not clickable here. React attaches an `mdBarClick`
+ * listener and pushes a route; there is no client component to hang that on,
+ * and adding one would mean shipping a framework to this page to make a chart
+ * navigable. Every sector in that chart is also a link in the table below, so
+ * no drill path is lost — it is reached by an anchor, which a static page is
+ * better at anyway.
+ *
+ * Chart data goes in as a `series` attribute, but the axes and the value
+ * formatter arrive from a small module script — `xAxis` does not deserialise
+ * from markup the way `series` does, and a formatter is a closure that never
+ * could. That costs this build nothing, because a canvas cannot be
+ * server-painted in any framework. See `lib/charts.ts`.
+ */
+import {
+  getCounterparties,
+  getPortfolioTotals,
+  getRatingScale,
+  getSectors,
+  REPORTING_QUARTER,
+} from '@awc-ui/showcase-kit/data';
+import { monthlyEadSeries, quarterlySeries, route } from '@awc-ui/showcase-kit/credit-risk';
+import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
+import { localeHref, useT } from '../../lib/i18n';
+import { props } from '../../lib/props';
+import { chartConfig } from '../../lib/charts';
+import Panel from '../Panel.astro';
+import KpiTile from '../KpiTile.astro';
+import CounterpartyTable from '../CounterpartyTable.astro';
+
+interface Props {
+  locale: LocaleCode;
+}
+
+const { locale } = Astro.props;
+const t = useT(locale);
+
+const totals = getPortfolioTotals();
+const sectors = getSectors();
+const scale = getRatingScale();
+const quarters = quarterlySeries();
+const months = monthlyEadSeries();
+const quarterLabels = quarters.map((q) => q.quarter);
+
+/** EAD by rating grade — the concentration a credit committee reads first. */
+const counterparties = getCounterparties();
+const byGrade = scale.map((grade) =>
+  counterparties.filter((cp) => cp.grade === grade.grade).reduce((sum, cp) => sum + cp.ead, 0),
+);
+
+---
+
+<section class="kpi-grid">
+  <KpiTile
+    locale={locale}
+    label={t('kpi.ead')}
+    value={t.formatCurrency(totals.ead, { notation: 'compact' })}
+    hint={t('kpi.ead.help')}
+    trend={months.map((m) => m.ead)}
+    trendLabels={months.map((m) => t.formatDate(m.date, 'monthYear'))}
+    color="primary"
+  />
+  <KpiTile
+    locale={locale}
+    label={t('kpi.expectedLoss')}
+    value={t.formatCurrency(totals.expectedLoss, { notation: 'compact' })}
+    hint={`${t('kpi.expectedLossRatio')} ${t.formatPercent(totals.expectedLossRatio, { maximumFractionDigits: 2 })}`}
+    trend={quarters.map((q) => q.expectedLoss)}
+    trendLabels={quarterLabels}
+    color="error"
+  />
+  <KpiTile
+    locale={locale}
+    label={t('kpi.rwa')}
+    value={t.formatCurrency(totals.rwa, { notation: 'compact' })}
+    hint={`${t('kpi.rwaDensity')} ${t.formatPercent(totals.rwaDensity, { maximumFractionDigits: 1 })}`}
+    trend={quarters.map((q) => q.rwa)}
+    trendLabels={quarterLabels}
+    color="tertiary"
+  />
+  <KpiTile
+    locale={locale}
+    label={t('kpi.weightedAvgPd')}
+    value={t.formatPercent(totals.weightedAvgPd, { maximumFractionDigits: 2 })}
+    hint={`${t('kpi.weightedAvgLgd')} ${t.formatPercent(totals.weightedAvgLgd, { maximumFractionDigits: 1 })}`}
+    trend={quarters.map((q) => q.weightedAvgPd)}
+    trendLabels={quarterLabels}
+    format="percent"
+    color="warning"
+  />
+</section>
+
+{/*
+  The chart components render their own label/subtitle header, which is also
+  their accessible name — so these panels deliberately carry no title of their
+  own. Two headings saying the same thing is worse than one, and dropping the
+  chart's would cost the accessible name.
+*/}
+<section class="grid-2">
+  <Panel>
+    <md-bar-chart
+      {...props({ series: [{ label: t('kpi.ead'), data: sectors.map((s) => s.ead) }] })}
+      data-chart={chartConfig({
+        xAxis: { data: sectors.map((s) => t(s.nameKey)) },
+        yAxis: { label: t('kpi.ead') },
+        format: 'currency',
+      })}
+      locale={locale}
+      layout="horizontal"
+      legend="none"
+      axis-ticks
+      height="320px"
+      label={t('kpi.ead')}
+      subtitle={t('table.sector')}></md-bar-chart>
+  </Panel>
+
+  <Panel>
+    <md-bar-chart
+      {...props({ series: [{ label: t('kpi.ead'), data: byGrade }] })}
+      data-chart={chartConfig({
+        xAxis: { data: scale.map((g) => t(`rating.${g.label}`)) },
+        yAxis: { label: t('kpi.ead') },
+        format: 'currency',
+      })}
+      locale={locale}
+      legend="none"
+      axis-ticks
+      height="320px"
+      label={t('screen.ratings.title')}
+      subtitle={t('screen.ratings.subtitle')}></md-bar-chart>
+  </Panel>
+</section>
+
+<Panel>
+  <md-area-chart
+    {...props({
+      series: [
+        { label: t('ratingBand.investment'), data: quarters.map((q) => q.byBand.investment) },
+        { label: t('ratingBand.speculative'), data: quarters.map((q) => q.byBand.speculative) },
+        { label: t('ratingBand.default'), data: quarters.map((q) => q.byBand.default) },
+      ],
+    })}
+    data-chart={chartConfig({
+      xAxis: { data: quarterLabels, scale: 'category' },
+      yAxis: { label: t('kpi.ead'), min: 0 },
+      format: 'currency',
+    })}
+    locale={locale}
+    stack="normal"
+    curve="monotone"
+    legend="top-end"
+    axis-ticks
+    height="300px"
+    label={`${t('kpi.ead')} · ${t('table.band')}`}
+    subtitle={t('rating.historyHint', { quarter: REPORTING_QUARTER })}></md-area-chart>
+</Panel>
+
+{/*
+  The whole book, not a top-10 cap — the same call the React build makes. A
+  truncated list under a pagination bar reads "1-10 of 10", which tells the
+  reader nothing and hides the other fourteen counterparties. Sorted by EAD
+  descending, so the largest exposures are still what the panel opens on.
+*/}
+<Panel title={t('screen.counterparties.title')}>
+  <a slot="actions" class="drill" href={localeHref(locale, route.watchlist())}>
+    {t('nav.watchlist')}
+  </a>
+  <CounterpartyTable locale={locale} />
+</Panel>

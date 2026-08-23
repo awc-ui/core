@@ -1,0 +1,53 @@
+---
+/**
+ * The overview, at `/astro/` and `/astro/{ro,ar}/`.
+ *
+ * `[...locale]` is a REST parameter, which is how Astro expresses "this segment
+ * may be absent". `localeParams()` returns one entry with `locale: undefined` —
+ * the unprefixed default — plus one per prefixed locale, so the same file
+ * produces all three trees.
+ */
+import { getPortfolioTotals, REPORTING_DATE } from '@awc-ui/showcase-kit/data';
+import { localeParams, resolveLocale, useT } from '../../lib/i18n';
+import { route } from '@awc-ui/showcase-kit/credit-risk';
+import { localeHref } from '../../lib/i18n';
+import Base from '../../layouts/Base.astro';
+import Shell from '../../components/Shell.astro';
+import Overview from '../../components/screens/Overview.astro';
+
+export function getStaticPaths() {
+  return localeParams();
+}
+
+const locale = resolveLocale(Astro.params.locale);
+const t = useT(locale);
+const totals = getPortfolioTotals();
+---
+
+<Base locale={locale}>
+  <Shell
+    locale={locale}
+    title={t('screen.overview.title')}
+    subtitle={t('screen.overview.subtitle', { date: t.formatDate(REPORTING_DATE, 'long') })}
+  >
+    <Fragment slot="aside">
+      <md-chip
+        variant="assist"
+        appearance="outlined"
+        icon="account_balance"
+        label={t('common.of', { count: totals.counterpartyCount, total: totals.facilityCount })}
+        title={`${t('kpi.counterparties')} / ${t('kpi.facilities')}`}></md-chip>
+      <md-button
+        variant="tonal"
+        size="sm"
+        icon="warning"
+        href={localeHref(locale, route.watchlist())}
+      >
+        {t('kpi.watchlist')}
+        <md-badge slot="trailing-icon" variant="large" value={String(totals.watchlistCount)}></md-badge>
+      </md-button>
+    </Fragment>
+
+    <Overview locale={locale} />
+  </Shell>
+</Base>

@@ -1,0 +1,55 @@
+---
+import { getCounterparties, getCounterpartyById } from '@awc-ui/showcase-kit/data';
+import { route } from '@awc-ui/showcase-kit/credit-risk';
+import { localeParams, resolveLocale, useT } from '../../../lib/i18n';
+import { ratingChip, watchDotProps } from '../../../lib/bits';
+import Base from '../../../layouts/Base.astro';
+import Shell from '../../../components/Shell.astro';
+import CounterpartyScreen from '../../../components/screens/Counterparty.astro';
+
+export function getStaticPaths() {
+  return localeParams().flatMap(({ params }) =>
+    getCounterparties().map((cp) => ({ params: { ...params, id: cp.id } })),
+  );
+}
+
+const locale = resolveLocale(Astro.params.locale);
+const t = useT(locale);
+const cp = getCounterpartyById(Astro.params.id!)!;
+---
+
+<Base locale={locale}>
+  <Shell
+    locale={locale}
+    title={cp.legalName}
+    subtitle={t('screen.counterparty.subtitle', {
+      id: cp.id,
+      sector: t(`sector.${cp.sectorId}`),
+      country: t(`country.${cp.country}`),
+    })}
+    crumbs={[
+      { label: t('nav.overview'), href: route.overview() },
+      { label: t(`sector.${cp.sectorId}`), href: route.sector(cp.sectorId) },
+      { label: cp.legalName },
+    ]}
+  >
+    <Fragment slot="aside">
+      <md-status-dot {...watchDotProps(t, cp.watchlist)} />
+      <md-chip {...ratingChip(t, cp.ratingLabel, cp.ratingBand, cp.grade)} />
+      {
+        cp.watchlist && (
+          <md-chip
+            variant="assist"
+            appearance="filled"
+            color="error"
+            icon="warning"
+            label={t('common.of', { count: cp.signalCount, total: cp.signalCount })}
+            title={t('screen.watchlist.title')}
+          />
+        )
+      }
+    </Fragment>
+
+    <CounterpartyScreen locale={locale} counterparty={cp} />
+  </Shell>
+</Base>

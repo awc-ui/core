@@ -53,3 +53,9 @@ packages/core/.v8-coverage-ssr/
 # so the tarball always has it.
 packages/core/main-llm.md
 
+
+# Throwaway diagnostic scripts. The convention is a leading dot — `.probe.mjs`,
+# `.verify.mjs` — so a one-off written to chase a bug cannot be swept into a
+# commit by a broad `git add <dir>`. Two of them were, once.
+.*.mjs
+!.eslintrc.mjs

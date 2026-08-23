@@ -1,0 +1,27 @@
+---
+/** Concentration or utilisation against a cap, as a labelled linear meter. */
+import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
+import { useT } from '../lib/i18n';
+
+interface Props {
+  locale: LocaleCode;
+  label: string;
+  fraction: number;
+  color: string;
+  max?: number;
+}
+
+const { locale, label, fraction, color, max = 1 } = Astro.props;
+const t = useT(locale);
+---
+
+<md-meter
+  value={Math.max(0, Math.min(max, fraction)) * 100}
+  min="0"
+  max={max * 100}
+  color={color}
+  thickness="10"
+  label={label}
+  show-label
+  show-value
+  value-text={t.formatPercent(fraction, { maximumFractionDigits: 1 })}></md-meter>

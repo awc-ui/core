@@ -247,8 +247,19 @@ export function applyShowcaseState(state: ShowcaseState, doc?: Document): void {
   if (!d) return;
   const html = d.documentElement;
 
-  html.setAttribute('lang', state.locale);
-  html.setAttribute('dir', state.dir);
+  // The runtime twin of the preboot script's `data-locale-route` guard, and it
+  // has to agree with it or the two fight: preboot leaves the server-rendered
+  // language alone and this would immediately stamp the stored one back over
+  // it, which is worse than never having guarded at all — the page would flash
+  // the right language and settle on the wrong one.
+  //
+  // On a locale-routed build the document's own lang/dir are authoritative,
+  // because the strings around them were rendered in that language at build
+  // time. Theme, density and accent are pure CSS and still apply.
+  if (!html.hasAttribute('data-locale-route')) {
+    html.setAttribute('lang', state.locale);
+    html.setAttribute('dir', state.dir);
+  }
 
   if (resolveTheme(state.theme) === 'dark') html.setAttribute('data-theme', 'dark');
   else html.removeAttribute('data-theme');

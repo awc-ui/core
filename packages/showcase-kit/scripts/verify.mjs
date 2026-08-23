@@ -460,6 +460,7 @@ const fakeDoc = {
     setAttribute: (k, v) => attrs.set(k, v),
     removeAttribute: (k) => attrs.delete(k),
     getAttribute: (k) => (attrs.has(k) ? attrs.get(k) : null),
+    hasAttribute: (k) => attrs.has(k),
     style: { setProperty: (k, v) => styleProps.set(k, v), removeProperty: (k) => styleProps.delete(k) },
   },
   head: { appendChild: (el) => headChildren.push(el) },
@@ -503,6 +504,65 @@ ok('data-density REMOVED at rung 0, never written as "0"', !attrs.has('data-dens
 ok('dir flips back to ltr', attrs.get('dir') === 'ltr');
 ok('seed stylesheet removed for the default preset', headChildren.length === 0);
 ok('only the four documented attributes were ever written', [...attrs.keys()].every((k) => ['lang', 'dir', 'data-theme', 'data-density'].includes(k)), [...attrs.keys()].join(','));
+
+/*
+ * applyShowcaseState is the RUNTIME TWIN of the preboot script, and the two must
+ * agree about data-locale-route or they fight. Shipping the guard in only one of
+ * them is worse than shipping it in neither: preboot leaves the server-rendered
+ * language alone, then this stamps the stored one back over it a moment later,
+ * so the page flashes the right language and settles on the wrong one.
+ *
+ * That is exactly what happened — the guard went into preboot, the unit checks
+ * for preboot passed, and the bug only surfaced in a real browser. Hence these.
+ */
+const routedAttrs = new Map([['data-locale-route', '']]);
+const routedDoc = {
+  documentElement: {
+    lang: 'en',
+    dir: 'ltr',
+    setAttribute: (k, v) => routedAttrs.set(k, String(v)),
+    getAttribute: (k) => routedAttrs.get(k) ?? null,
+    removeAttribute: (k) => routedAttrs.delete(k),
+    hasAttribute: (k) => routedAttrs.has(k),
+  },
+  head: { appendChild: () => {}, querySelector: () => null },
+  getElementById: () => null,
+  createElement: () => ({ setAttribute() {}, appendChild() {}, remove() {}, style: {} }),
+};
+
+K.applyShowcaseState(K.normalizeState({ locale: 'ar', theme: 'dark', density: -3 }), routedDoc);
+ok(
+  'applyShowcaseState honours data-locale-route: lang is NOT overwritten',
+  !routedAttrs.has('lang') && routedDoc.documentElement.lang === 'en',
+  routedDoc.documentElement.lang,
+);
+ok('…nor is dir', !routedAttrs.has('dir') && routedDoc.documentElement.dir === 'ltr', routedDoc.documentElement.dir);
+ok(
+  '…while theme and density still apply',
+  routedAttrs.get('data-theme') === 'dark' && routedAttrs.get('data-density') === '-3',
+  `${routedAttrs.get('data-theme')}/${routedAttrs.get('data-density')}`,
+);
+
+const freeAttrs = new Map();
+const freeDoc = {
+  documentElement: {
+    lang: 'en',
+    dir: 'ltr',
+    setAttribute: (k, v) => freeAttrs.set(k, String(v)),
+    getAttribute: (k) => freeAttrs.get(k) ?? null,
+    removeAttribute: (k) => freeAttrs.delete(k),
+    hasAttribute: (k) => freeAttrs.has(k),
+  },
+  head: { appendChild: () => {}, querySelector: () => null },
+  getElementById: () => null,
+  createElement: () => ({ setAttribute() {}, appendChild() {}, remove() {}, style: {} }),
+};
+K.applyShowcaseState(K.normalizeState({ locale: 'ar', theme: 'light', density: 0 }), freeDoc);
+ok(
+  'without the marker it still writes lang and dir, as every other build needs',
+  freeAttrs.get('lang') === 'ar' && freeAttrs.get('dir') === 'rtl',
+  `${freeAttrs.get('lang')}/${freeAttrs.get('dir')}`,
+);
 
 section('dock — framework routing');
 

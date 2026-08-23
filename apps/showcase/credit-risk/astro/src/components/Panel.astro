@@ -1,0 +1,27 @@
+---
+/** A titled surface. Everything on every screen lives in one of these. */
+interface Props {
+  title?: string;
+  subtitle?: string;
+  variant?: 'elevated' | 'filled' | 'outlined';
+}
+
+const { title, subtitle, variant = 'outlined' } = Astro.props;
+---
+
+<md-card variant={variant} class="panel" full-width>
+  <div class="panel__inner">
+    {
+      title && (
+        <div class="panel__head">
+          <div>
+            <h2 class="panel__title">{title}</h2>
+            {subtitle && <p class="panel__sub">{subtitle}</p>}
+          </div>
+          <slot name="actions" />
+        </div>
+      )
+    }
+    <slot />
+  </div>
+</md-card>

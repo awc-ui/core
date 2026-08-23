@@ -1,0 +1,43 @@
+---
+/**
+ * `<awc-showcase-dock>` — the same bar on every screen, in every framework.
+ *
+ * Two things differ from the other builds.
+ *
+ * `locale-route` is set, which tells the dock that this build's language lives
+ * in the URL: the picker reflects the DOCUMENT's `lang` rather than whatever is
+ * in localStorage, and changing it navigates to the same screen in the new
+ * language instead of firing a state change that nothing here would re-render
+ * for. The value names the locale served WITHOUT a path segment.
+ *
+ * The registration is a client-side `<script>` rather than a frontmatter
+ * import, because frontmatter runs on the server, where defining a custom
+ * element does nothing. The module is a side-effect import: it defines the
+ * element and stamps the persisted state onto <html>. Astro bundles and hashes
+ * it, so it is a real module in the output, not an inline blob.
+ *
+ * `base-path` is the prefix BEFORE the framework segment — the dock swaps
+ * `astro` for `react` inside the path it finds and only falls back to this when
+ * the current segment is absent from the URL.
+ */
+import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
+import { FRAMEWORKS, SHOWCASE_BASE } from '@awc-ui/showcase-kit/credit-risk';
+import { BASE_PATH, DEFAULT_LOCALE, FRAMEWORK } from '../lib/i18n';
+
+interface Props {
+  locale: LocaleCode;
+}
+---
+
+<awc-showcase-dock
+  frameworks={FRAMEWORKS.join(',')}
+  framework={FRAMEWORK}
+  base-path={SHOWCASE_BASE}
+  locale-route={DEFAULT_LOCALE}
+  position="bottom"
+  data-app-base={BASE_PATH}
+></awc-showcase-dock>
+
+<script>
+  import '@awc-ui/showcase-kit/dock';
+</script>

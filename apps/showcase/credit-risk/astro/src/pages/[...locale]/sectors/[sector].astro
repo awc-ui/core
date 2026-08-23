@@ -1,0 +1,56 @@
+---
+/**
+ * Sector detail. Seven sectors × three locales = twenty-one pages.
+ *
+ * `getStaticPaths` is the cross product, built explicitly rather than by
+ * nesting: Astro flattens every param into one params object, so the locale and
+ * the sector are simply two keys on the same entry.
+ */
+import { getSectorById, getSectors } from '@awc-ui/showcase-kit/data';
+import { route } from '@awc-ui/showcase-kit/credit-risk';
+import { localeParams, resolveLocale, useT } from '../../../lib/i18n';
+import Base from '../../../layouts/Base.astro';
+import Shell from '../../../components/Shell.astro';
+import SectorScreen from '../../../components/screens/Sector.astro';
+
+/** House single-sector concentration guideline — kept in step with the screen. */
+const CONCENTRATION_CAP = 0.2;
+
+export function getStaticPaths() {
+  return localeParams().flatMap(({ params }) =>
+    getSectors().map((sector) => ({
+      params: { ...params, sector: sector.id },
+    })),
+  );
+}
+
+const locale = resolveLocale(Astro.params.locale);
+const t = useT(locale);
+
+// getStaticPaths only ever emits the seven real ids, so this cannot be missing
+// in the export — the non-null assertion documents that rather than hiding a
+// case the build could actually reach.
+const sector = getSectorById(Astro.params.sector!)!;
+const share = sector.portfolioShare;
+---
+
+<Base locale={locale}>
+  <Shell
+    locale={locale}
+    title={t(sector.nameKey)}
+    subtitle={t('screen.counterparties.subtitle', { count: sector.counterpartyCount })}
+    crumbs={[{ label: t('nav.overview'), href: route.overview() }, { label: t(sector.nameKey) }]}
+  >
+    <Fragment slot="aside">
+      <md-chip
+        variant="assist"
+        appearance="filled"
+        color={share > CONCENTRATION_CAP ? 'error' : 'secondary'}
+        icon="donut_large"
+        label={`${t('table.share')} ${t.formatPercent(share, { maximumFractionDigits: 1 })}`}
+      ></md-chip>
+    </Fragment>
+
+    <SectorScreen locale={locale} sector={sector} />
+  </Shell>
+</Base>

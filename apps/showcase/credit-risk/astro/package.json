@@ -1,0 +1,25 @@
+{
+  "name": "@awc-ui/showcase-credit-risk-astro",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Credit Risk Console \u2014 Astro build (static, server-rendered shadow DOM, locale-routed)",
+  "scripts": {
+    "sync-runtime": "node scripts/sync-runtime.mjs",
+    "dev": "pnpm sync-runtime && astro dev",
+    "build": "pnpm sync-runtime && astro build",
+    "preview": "astro preview",
+    "lint": "astro check",
+    "verify": "node scripts/verify-browser.mjs"
+  },
+  "dependencies": {
+    "@awc-ui/core": "workspace:*",
+    "@awc-ui/showcase-kit": "workspace:*",
+    "astro": "^5.7.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "typescript": "^5.4.0",
+    "puppeteer": "^24.0.0"
+  }
+}
