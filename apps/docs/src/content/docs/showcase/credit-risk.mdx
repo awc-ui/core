@@ -7,34 +7,70 @@ description: "A wholesale-banking credit risk workbench for the fictional Aureli
 is the risk concentrated, and what is moving?** This application is how they
 answer it — and it is built entirely from AWC UI components.
 
+{/*
+  ONE LINE, and that is the fix.
+
+  This was unreadable in dark mode, and the cause is a sharp edge in MDX rather
+  than in the styling. MDX treats the content of a multi-line JSX element as
+  markdown BLOCK content, so a label written on its own line is wrapped in a
+  `<p>` — inside the anchor. `.sl-markdown-content p` then recoloured that
+  paragraph to `--md-sys-color-on-surface-variant`, giving light grey text on
+  the light-violet `--md-sys-color-primary` fill. The anchor's own `color` was
+  correct and painted nothing, which is exactly why it looked fine in dev
+  tools: the element carrying the text was not the element carrying the colour.
+
+  Kept as an `<a>` rather than swapped for `md-button`. The component navigates
+  on click, but it renders no anchor and exposes `role="button"`, so
+  middle-click, ⌘-click and "copy link address" all stop working — the wrong
+  trade for the one call to action on the page.
+
+  `--md-sys-typescale-label-large-font`, with the suffix: the unsuffixed name
+  does not exist, and a `font:` shorthand naming a missing custom property is
+  invalid at computed-value time, so the whole declaration is dropped.
+*/}
+
 <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 28px 0;">
-  <a
-    href="/showcase/credit-risk/react/"
-    style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border-radius: 999px; background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); font: var(--md-sys-typescale-label-large); text-decoration: none;"
-  >
-    Open the application
-  </a>
-  <a
-    href="/showcase/credit-risk/astro/"
-    style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border-radius: 999px; border: 1px solid var(--md-sys-color-outline); color: var(--md-sys-color-primary); font: var(--md-sys-typescale-label-large); text-decoration: none;"
-  >
-    Open the server-rendered build
-  </a>
-  <span style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);">
-    Switch framework, theme, density, direction and language from inside the app.
-  </span>
+  <a href="/showcase/credit-risk/react/" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border-radius: 999px; background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); font: var(--md-sys-typescale-label-large-font); text-decoration: none;">Open the application</a>
+  <span style="font: var(--md-sys-typescale-body-small-font); color: var(--md-sys-color-on-surface-variant);">Switch framework, theme, density, direction and language from inside the app.</span>
 </div>
 
-:::note[Two builds are live so far]
-**React** is the client-rendered one. **Astro** renders every component into
-declarative shadow DOM at build time, so the page arrives styled with no
-unstyled-tag flash — and stays readable with JavaScript switched off, apart
-from the charts, which draw into a `<canvas>` and cannot be painted without
-one. It also puts the language in the URL (`/astro/ro/`) rather than in client
-state, which is what a static site should do.
+## The six builds
 
-Angular, Vue, Svelte and plain HTML are still being built; picking them in the
-control bar will 404 until they land.
+All six are live, and the control bar switches between them without losing your
+place. They are not six copies of the same code: every number, date, string,
+derived series and table layout comes from `@awc-ui/showcase-kit`, so the only
+thing that differs between them is the view layer — which is exactly what makes
+two screenshots comparable evidence.
+
+| Build | Open | How it renders | Where the language lives |
+|---|---|---|---|
+| **React** | [/react/](/showcase/credit-risk/react/) | Next.js static export, hydrates | Client state — switches in place |
+| **Vue** | [/vue/](/showcase/credit-risk/vue/) | Nuxt, prerendered, hydrates | Client state — switches in place |
+| **Angular** | [/angular/](/showcase/credit-risk/angular/) | Angular, prerendered, hydrates | Client state — switches in place |
+| **Svelte** | [/svelte/](/showcase/credit-risk/svelte/) | SvelteKit, prerendered, hydrates | Client state — switches in place |
+| **Astro** | [/astro/](/showcase/credit-risk/astro/) | Server-rendered into declarative shadow DOM | In the URL (`/astro/ro/`) |
+| **HTML** | [/html/](/showcase/credit-risk/html/) | Static files, no framework at all | In the URL (`/html/ro/`) |
+
+:::note[Two of them make a different trade, on purpose]
+**Astro** renders every component into declarative shadow DOM at build time, so
+the page arrives styled with no unstyled-tag flash — and stays readable with
+JavaScript switched off, apart from the charts, which draw into a `<canvas>` and
+cannot be painted without one.
+
+**HTML** has no framework and no bundler in the page's critical path: 285 static
+files, plus one small script carrying the control bar and four progressive
+enhancements (sorting and paging, the watchlist filters, the scenario switch,
+the sector-bar drill). Every figure on every screen is already in the markup.
+
+Both still render the same document as the other four — the same ten rows, the
+same single stress scenario, the same components. Whatever is off screen rides
+in a `<template>`, which the parser keeps out of the document tree, so those two
+builds have the elements React has and the data React would have fetched.
+
+Because neither has client-side rendering to re-run, both put the language in
+the URL rather than in client state, and switching it is a navigation. That is
+the honest thing for a document to do, and it is why those two are worth having
+as separate entries rather than as one "static" build.
 :::
 
 ## What you can drill into
@@ -61,10 +97,10 @@ stay legible at compact density.
 
 Three things the control bar lets you verify directly:
 
-- **Framework** — the same screens in React, Angular, Vue, Svelte, Astro, and
+- **Framework** — the same screens in React, Vue, Angular, Svelte, Astro and
   plain HTML. The URL carries the framework, so
   `/showcase/credit-risk/react/` and `/showcase/credit-risk/svelte/` are the
-  same application.
+  same application, and the control bar swaps that one segment.
 - **Direction and language** — English, Romanian and Arabic. Switching to Arabic
   flips the whole application right-to-left with real translated content, not
   mirrored Latin text.

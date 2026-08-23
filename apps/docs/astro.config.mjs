@@ -1,6 +1,54 @@
+import { existsSync, statSync } from 'node:fs';
+import { join, normalize } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import componentsManifest from './src/data/components.json';
+
+/**
+ * Serve the staged showcase builds in DEV the way a static host serves them.
+ *
+ * The six framework builds are staged into `public/showcase/` by
+ * `scripts/build-showcase.mjs`, and every link inside them — and the dock's own
+ * framework switcher — is a DIRECTORY url: `/showcase/credit-risk/svelte/`.
+ * Astro's dev server serves files out of `public/`, but it does not resolve a
+ * directory to its `index.html`, so those URLs fall through to Astro's router,
+ * miss every route, and render the docs 404 page. The file is right there and
+ * `…/svelte/index.html` returns it; only the directory form fails.
+ *
+ * Production is unaffected — `astro build` copies `public/` into `dist/`, and
+ * both Netlify and `scripts/serve-docs-prod.mjs` do directory-index resolution
+ * — which is exactly why this is easy to miss until someone opens the app
+ * locally.
+ *
+ * `apply: 'serve'` keeps it out of the build entirely. It only ever rewrites a
+ * request when the corresponding `index.html` genuinely exists on disk, so a
+ * genuinely missing page still 404s rather than being masked.
+ */
+function showcaseDirectoryIndex(publicDir) {
+  return {
+    name: 'awc:showcase-directory-index',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        const [path = '/', query = ''] = (req.url ?? '/').split('?');
+        if (!path.startsWith('/showcase/')) return next();
+
+        // normalize() collapses any `..` before the join, so a traversal
+        // attempt resolves inside public/ rather than above it.
+        const onDisk = join(publicDir, normalize(decodeURIComponent(path)));
+        if (!existsSync(onDisk) || !statSync(onDisk).isDirectory()) return next();
+        if (!existsSync(join(onDisk, 'index.html'))) return next();
+
+        const slashed = path.endsWith('/') ? path : `${path}/`;
+        req.url = `${slashed}index.html${query ? `?${query}` : ''}`;
+        return next();
+      });
+    },
+  };
+}
+
+const PUBLIC_DIR = fileURLToPath(new URL('./public', import.meta.url));
 
 // Components grouped by Storybook's category taxonomy.
 //
@@ -155,9 +203,6 @@ export default defineConfig({
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/awc-ui/core' },
       ],
-      editLink: {
-        baseUrl: 'https://github.com/awc-ui/core/edit/main/',
-      },
       // Override Starlight's <Head> so every page registers the AWC UI custom
       // elements. Without this nothing upgrades and all component previews
       // render as empty boxes — see src/components/Head.astro.
@@ -447,6 +492,7 @@ export default defineConfig({
     }),
   ],
   vite: {
+    plugins: [showcaseDirectoryIndex(PUBLIC_DIR)],
     optimizeDeps: {
       exclude: ['@awc-ui/core'],
       // Pre-bundle the theme generator's color engine at startup instead of
