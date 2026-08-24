@@ -61,6 +61,25 @@ export class MdSegmentedButtonSet {
     return Array.from(this.el.querySelectorAll('md-segmented-button')) as unknown as SegmentElement[];
   }
 
+  /**
+   * Re-assign positions whenever the slotted segments change.
+   *
+   * `componentDidLoad` alone is not enough, and the gap is visible rather than
+   * theoretical. A segment defaults to `segmentIndex: 0` of `segmentTotal: 1`,
+   * which makes it BOTH first and last — so an unsynced segment renders fully
+   * rounded on every edge. Replace a set's children after it has loaded and
+   * every segment in it becomes a lone pill: the joined bar visibly falls apart,
+   * and nothing about it looks like a stale index.
+   *
+   * Any consumer that renders segments dynamically hits this — a set whose
+   * options come from state, a framework re-render, or `replaceChildren()`. The
+   * showcase dock rebuilds its controls that way and shows the bug on the first
+   * re-render after navigation.
+   */
+  private handleSlotChange = () => {
+    this.syncSegments();
+  };
+
   private syncSegments() {
     const segments = this.getSegments();
     const total = segments.length;
@@ -83,7 +102,7 @@ export class MdSegmentedButtonSet {
         }}
         role={this.multiselect ? 'group' : 'radiogroup'}
       >
-        <slot></slot>
+        <slot onSlotchange={this.handleSlotChange}></slot>
       </Host>
     );
   }
