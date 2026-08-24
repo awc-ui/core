@@ -67,6 +67,80 @@ const ok = (label, pass, detail = '') => {
   console.log(`  ${pass ? 'ok  ' : 'FAIL'} ${label}${detail ? `  ${detail}` : ''}`);
 };
 
+/*
+ * DRIVING THE DOCK, which is no longer built from native controls.
+ *
+ * The bar is made of `@awc-ui/core` components now, so its language picker is
+ * an `md-select`, not an `HTMLSelectElement`: assigning `.value` and firing a
+ * native `change` does nothing at all. The dock hangs its state write off
+ * `mdChange`, which md-select emits only from its own `selectValue()` — so the
+ * picker has to be driven by opening the menu and clicking a row, which is also
+ * what a reader does.
+ */
+
+/**
+ * Choose `value` in a dock picker: open the menu, click the row.
+ *
+ * Four short steps rather than one `page.evaluate(async …)` that does the whole
+ * dance in the page. The waiting has to happen on THIS side of the protocol: an
+ * evaluate whose promise stays pending for seconds is liable to come back
+ * "Promise was collected" instead of a result, which is a flake that looks
+ * exactly like a broken dock. Every evaluate below returns synchronously.
+ */
+const pickInDock = async (page, id, value) => {
+  // Collapsed on a first visit. The panel keeps its controls in the DOM while
+  // hidden, so this asks the disclosure — an md-icon-button now, not the
+  // `querySelector('button')` that used to find it — rather than inferring from
+  // a missing element, and it drives a control a reader could have clicked.
+  const present = await page.evaluate(() => {
+    const root = document.querySelector('awc-showcase-dock')?.shadowRoot;
+    if (!root) return false;
+    if (root.getElementById('awc-dock-panel')?.hidden) {
+      root.querySelector('md-icon-button.toggle')?.click();
+    }
+    return true;
+  });
+  if (!present) return false;
+  await new Promise((r) => setTimeout(r, 250));
+
+  const opened = await page.evaluate((pickerId) => {
+    const select = document.querySelector('awc-showcase-dock')?.shadowRoot?.getElementById(pickerId);
+    if (!select?.shadowRoot) return false;
+    void select.show();
+    return true;
+  }, id);
+  if (!opened) return false;
+
+  // A closed md-menu stays in the DOM but `inert`, and Stencil clears that on
+  // its own schedule — so wait for the menu to actually be open rather than for
+  // a fixed number of milliseconds.
+  await page
+    .waitForFunction(
+      (pickerId) =>
+        document
+          .querySelector('awc-showcase-dock')
+          ?.shadowRoot?.getElementById(pickerId)
+          ?.shadowRoot?.querySelector('md-menu')?.inert === false,
+      { timeout: 5000 },
+      id,
+    )
+    .catch(() => {});
+
+  return page.evaluate(
+    (pickerId, wanted) => {
+      const select = document.querySelector('awc-showcase-dock')?.shadowRoot?.getElementById(pickerId);
+      const row = [...(select?.shadowRoot?.querySelectorAll('md-menu-item') ?? [])].find((item) =>
+        item.id.endsWith('-opt-' + wanted),
+      );
+      if (!row) return false;
+      row.click();
+      return true;
+    },
+    id,
+    value,
+  );
+};
+
 /* ---------------- 1. content without JavaScript ---------------- */
 {
   const page = await browser.newPage();
@@ -162,7 +236,18 @@ const ok = (label, pass, detail = '') => {
       chartCount: charts.length,
       chartsWithAPaintedPlot: perChart.filter((c) => c.painted >= 1).length,
       chartsWithSurplusCanvases: perChart.filter((c) => c.total > 1).length,
-      dock: !!document.querySelector('awc-showcase-dock')?.shadowRoot?.querySelector('select'),
+      // The dock's controls are md-* components now, so "did it build them?"
+      // can no longer be answered by looking for a `<select>`. Counting them
+      // against the ones that upgraded is the stronger question anyway: the
+      // dock creates its controls by TAG NAME, without importing the library,
+      // so an unregistered runtime leaves a bar full of zero-size unknown
+      // elements that a bare presence check would happily accept.
+      dock: (() => {
+        const root = document.querySelector('awc-showcase-dock')?.shadowRoot;
+        if (!root) return null;
+        const controls = [...root.querySelectorAll('md-select,md-segmented-button-set,md-switch,md-button,md-icon-button')];
+        return { total: controls.length, upgraded: controls.filter((el) => el.shadowRoot).length };
+      })(),
     };
   });
 
@@ -194,7 +279,11 @@ const ok = (label, pass, detail = '') => {
     probe.chartsWithSurplusCanvases === 0,
     `${probe.chartsWithSurplusCanvases}/${probe.chartCount} charts carry a stale server-rendered canvas`,
   );
-  ok('the dock built its controls', probe.dock);
+  ok(
+    'the dock built its controls, and every one of them upgraded',
+    probe.dock !== null && probe.dock.total > 0 && probe.dock.upgraded === probe.dock.total,
+    probe.dock ? `${probe.dock.upgraded}/${probe.dock.total}` : '(no dock)',
+  );
   ok('no page errors', errors.length === 0, errors.slice(0, 2).join(' | '));
   await page.close();
 }
@@ -246,17 +335,17 @@ const ok = (label, pass, detail = '') => {
 {
   const page = await browser.newPage();
   await page.goto(`${BASE}/watchlist/`, { waitUntil: 'networkidle0', timeout: 90000 });
-  await page.waitForFunction(() => document.querySelector('awc-showcase-dock')?.shadowRoot?.querySelector('#awc-dock-locale'), { timeout: 30000 });
+  // Waiting for the picker to be UPGRADED, not merely present: an
+  // `<md-select>` the runtime has not reached yet is in the DOM from the
+  // moment the dock renders, and has no menu to open.
+  await page.waitForFunction(() => document.querySelector('awc-showcase-dock')?.shadowRoot?.querySelector('#awc-dock-locale')?.shadowRoot, { timeout: 30000 });
 
-  await page.evaluate(() => {
-    const sel = document.querySelector('awc-showcase-dock').shadowRoot.querySelector('#awc-dock-locale');
-    sel.value = 'ro';
-    sel.dispatchEvent(new Event('change', { bubbles: true }));
-  });
+  const drove = await pickInDock(page, 'awc-dock-locale', 'ro');
   await page.waitForFunction(() => location.pathname.includes('/ro/'), { timeout: 15000 }).catch(() => {});
   const after = page.url();
 
   console.log('\n[5] dock language switch');
+  ok('the dock offers a reachable Romanian row', drove);
   ok('navigates into the locale tree', after.includes('/astro/ro/watchlist'), after.replace('http://localhost:4350', ''));
   const lang = await page.evaluate(() => document.documentElement.lang);
   ok('and lands on a page in that language', lang === 'ro', lang);

@@ -3,19 +3,57 @@
  * literal fallback, so the bar still reads correctly on a page that has not
  * loaded the token sheet yet. All box properties are logical, so the bar mirrors
  * itself under `dir="rtl"` with no extra rules.
+ *
+ * RESERVING SPACE BEFORE UPGRADE — the rule that keeps the page still.
+ *
+ * The controls are `md-*` custom elements, and an un-upgraded custom element is
+ * `display: inline` with no box: zero width, zero height. The dock publishes its
+ * own height as `--awc-dock-height` and the page reserves its bottom padding
+ * from that, so a bar that started short and grew when the runtime registered
+ * would shift the entire page under the reader.
+ *
+ * Height alone is not enough, because the bar wraps: if the controls are
+ * zero-WIDTH they fit on one line, and the same controls at their real width
+ * take two — a one-line-to-two-line jump is a height change however carefully
+ * the height is reserved. So both axes are reserved here:
+ *
+ *   - `--_row` is the height of a control row, and every cluster carries it as
+ *     `min-block-size`. It is 48px because that is where the dock's pinned
+ *     density (-2) puts `md-select`, and where `md-switch`'s touch-target floor
+ *     puts it at every density.
+ *   - each control declares an explicit `inline-size` (or `min-inline-size` for
+ *     the ones whose text sets their width). The dock's labels are frozen to
+ *     English and its density is pinned, so these widths are constants, not
+ *     guesses about content.
+ *
+ * The reservation lives on the dock's own elements, so it holds whether the
+ * runtime arrives late, early, or never.
  */
 export const DOCK_STYLES = /* css */ `
 :host {
+  /* Height of one control row — see "reserving space before upgrade" above. */
+  --_row: 48px;
+
   --_bg: var(--md-sys-color-surface-container-high, #ECE6F0);
   --_fg: var(--md-sys-color-on-surface, #1C1B1F);
   --_muted: var(--md-sys-color-on-surface-variant, #49454F);
   --_line: var(--md-sys-color-outline-variant, #CAC4D0);
-  --_accent: var(--md-sys-color-primary, #6750A4);
-  --_on-accent: var(--md-sys-color-on-primary, #FFFFFF);
-  --_sel: var(--md-sys-color-secondary-container, #E8DEF8);
-  --_on-sel: var(--md-sys-color-on-secondary-container, #1D192B);
-  --_radius: var(--md-sys-shape-corner-full, 9999px);
-  --_gap: var(--md-sys-spacing-gap-sm, 8px);
+  /* Selection, accent and radius tokens used to live here for the hand-styled
+     select/button rules. The md-* controls bring their own, from the same token
+     sheet, so the dock no longer restates them. */
+
+  /*
+   * Pinned, and the only measurement here NOT read from the token sheet.
+   *
+   * --md-sys-spacing-gap-sm is density-responsive — 8px at rung 0, 4px at -4 —
+   * so reading it meant the bar quietly lost 4px the moment you demonstrated a
+   * compact rung: it republished --awc-dock-height and reflowed the page under
+   * the reader, on top of the reflow they had actually asked for. The dock pins
+   * its controls' density for exactly this reason; this is the same decision one
+   * layer down. The colour, type and elevation tokens above and below are
+   * density-independent and stay live.
+   */
+  --_gap: 8px;
 
   position: fixed;
   inset-inline: 0;
@@ -64,12 +102,22 @@ export const DOCK_STYLES = /* css */ `
   max-inline-size: 22ch;
 }
 
+/*
+ * The controls always take a row of their own, with the brand and the chevron
+ * sharing the row above.
+ *
+ * This is a layout choice in service of the height contract, not just taste.
+ * When the panel competed for row 1 the bar's row COUNT depended on how wide
+ * the controls happened to be — which is zero until the md-* runtime registers,
+ * so the bar would have started one row short and grown. Giving the panel its
+ * own row takes the control widths out of the question entirely.
+ */
 .panel {
   display: flex;
   align-items: center;
   gap: var(--_gap);
   flex-wrap: wrap;
-  flex: 1 1 auto;
+  flex: 1 1 100%;
   min-inline-size: 0;
 }
 
@@ -79,8 +127,10 @@ export const DOCK_STYLES = /* css */ `
   display: flex;
   align-items: center;
   gap: 4px;
-  padding-inline: 6px;
+  padding-inline: 5px;
   border-inline-start: 1px solid var(--_line);
+  /* Holds the row open while the md-* controls inside are still un-upgraded. */
+  min-block-size: var(--_row);
 }
 
 .group:first-child { border-inline-start: none; padding-inline-start: 0; }
@@ -93,118 +143,103 @@ export const DOCK_STYLES = /* css */ `
   letter-spacing: 0.05em;
 }
 
-/* Native controls, so keyboard and screen-reader behaviour is the platform's. */
-select,
-button {
+/* ------------------------------------------------------- library controls */
+
+/*
+ * Placement only. Size, shape, state layer, focus ring and internal layout are
+ * each component's own.
+ *
+ * Nothing here declares display, and that is deliberate: a rule in this (outer)
+ * tree beats a component's :host rule at equal specificity, so a stray
+ * display would silently REPLACE the component's. md-segmented-button-set is
+ * the cautionary case — its :host is inline-grid with grid-auto-columns:
+ * 1fr, which is precisely what makes its segments equal width, and overriding
+ * it to flex leaves them ragged. The pre-upgrade reservations below do need a
+ * display, so they are scoped to :not(:defined) where there is no component
+ * rule to contradict.
+ */
+.picker {
+  /* A constraint, not a reservation, and it applies at every moment: md-select
+     sizes to its longest option (219px, set by "Angular (SSR)"), which is more
+     of the bar than a picker showing four characters deserves.
+
+     KNOWN COST, recorded rather than papered over. md-select renders its value
+     in an <input> inside md-text-field, and an <input> clips — text-overflow
+     does not apply to it — so past this width the value is cut mid-glyph with
+     no ellipsis. At 132px the input's content box is 69px, which is enough for
+     every framework name except "Angular (SSR)" (99px), so the angular-ssr
+     build alone shows "Angular (S". Neither half of that is reachable from
+     here: md-select exports only container:field-container, so ::part cannot
+     style the input, and the width cannot grow — at 1280px the control row
+     fits with 0.5px to spare and one more pixel wraps the bar from 101px to
+     157px. It needs md-select to ellipsize its own field. */
+  inline-size: 132px;
+}
+
+.segmented,
+.swatch,
+.switch,
+.reset {
+  flex: 0 0 auto;
+}
+
+/* The visible name of the direction switch, and its accessible name too. */
+.switch-label {
   font: var(--md-sys-typescale-label-medium-font, 500 12px/16px Roboto, sans-serif);
-  color: inherit;
-  background: transparent;
-  border: 1px solid var(--_line);
-  border-radius: var(--md-sys-shape-corner-small, 8px);
-  padding: 4px 8px;
-  min-block-size: 28px;
-  cursor: pointer;
-  margin: 0;
+  color: var(--_fg);
+  white-space: nowrap;
 }
 
-select {
-  background: var(--md-sys-color-surface-container-lowest, #FFFFFF);
-  padding-inline-end: 22px;
-  max-inline-size: 16ch;
-}
-
-button:hover,
-select:hover {
-  background: color-mix(in srgb, var(--_fg) 8%, transparent);
-}
-
-button:active {
-  background: color-mix(in srgb, var(--_fg) 12%, transparent);
-}
-
-:is(button, select):focus-visible {
-  outline: 2px solid var(--_accent);
-  outline-offset: 2px;
-}
-
-button[aria-pressed='true'],
-button[aria-checked='true'] {
-  background: var(--_sel);
-  color: var(--_on-sel);
-  border-color: transparent;
-  font-weight: 600;
-}
-
-.segmented {
-  display: inline-flex;
-  border: 1px solid var(--_line);
-  border-radius: var(--md-sys-shape-corner-small, 8px);
-  overflow: hidden;
-}
-
-.segmented > button {
-  border: none;
-  border-radius: 0;
-  border-inline-start: 1px solid var(--_line);
-  min-inline-size: 32px;
-  text-align: center;
-}
-
-.segmented > button:first-child { border-inline-start: none; }
-
-.swatch {
-  inline-size: 22px;
-  block-size: 22px;
-  min-block-size: 22px;
-  padding: 0;
-  border-radius: var(--_radius);
-  border: 2px solid transparent;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--_fg) 25%, transparent);
-}
-
-.swatch[aria-pressed='true'] {
-  border-color: var(--_fg);
-  background: var(--_swatch);
-}
-
+/* The collapse chevron, pushed to the far end of the brand row. */
 .toggle {
-  border-radius: var(--_radius);
-  min-inline-size: 28px;
-  padding: 4px 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   flex: 0 0 auto;
   margin-inline-start: auto;
 }
 
-.toggle svg {
-  inline-size: 16px;
-  block-size: 16px;
-  fill: currentColor;
-  transition: transform var(--md-sys-motion-duration-short2, 100ms)
-    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+/* ------------------------------------ reserving space before upgrade */
+
+/*
+ * Until @awc-ui/core registers, every one of these is an unknown element:
+ * display: inline, no box, zero by zero. The bar would start short and narrow
+ * and jump to full size the moment the runtime landed — republishing
+ * --awc-dock-height and shifting the whole page under the reader.
+ *
+ * So each control is given, up front, the box it will have once it upgrades.
+ * The numbers are MEASURED from the upgraded components at the dock's pinned
+ * density, not estimated; the dock's labels are frozen to English and its
+ * density is pinned, so they are constants rather than guesses about content.
+ *
+ * :not(:defined) makes these rules evaporate at the instant the component
+ * exists, handing its box back to its own :host rules. That is what keeps a
+ * reservation from turning into an override. Every built-in element is always
+ * :defined, so the bare selector below reaches the un-upgraded md-* elements
+ * and nothing else.
+ */
+:not(:defined) {
+  display: inline-block;
 }
 
-:host([collapsed]) .toggle svg { transform: rotate(180deg); }
+/* md-select: width comes from .picker, which applies in both states. */
+md-select:not(:defined) { block-size: var(--_row); }
 
-/* A visually hidden label still read by assistive tech. */
-.sr {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
+/* The two sets, at the dock's pinned density. The density set is reserved at
+   its rung-0 size, the widest and the default; at tighter rungs it renders
+   smaller than its reservation, which can only ever leave slack in a row, never
+   overflow one. */
+.segmented-theme:not(:defined) { inline-size: 201px; block-size: 32px; }
+.segmented-density:not(:defined) { inline-size: 185px; block-size: 40px; }
+
+.swatch:not(:defined) { inline-size: 32px; block-size: 32px; }
+.switch:not(:defined) { inline-size: 40px; block-size: var(--_row); }
+.reset:not(:defined) { inline-size: 76px; block-size: 32px; }
+.toggle:not(:defined) { inline-size: 32px; block-size: 32px; }
 
 @media (max-width: 720px) {
-  .brand { display: none; }
+  /* The brand no longer competes with the controls for row 1, so it stays —
+     what it costs is a share of a row that exists anyway. */
+  .brand { max-inline-size: 14ch; }
   .group { border-inline-start: none; padding-inline: 2px; }
   .group > .caption { display: none; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .toggle svg { transition: none; }
-}
 `;

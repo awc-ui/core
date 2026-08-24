@@ -828,7 +828,24 @@ ok('watchlistDot flags only the watchlisted', C.watchlistDot(true) === 'busy' &&
 
 section('credit-risk — routes');
 
-ok('six frameworks, in dock order', C.FRAMEWORKS.length === 6 && C.FRAMEWORKS[0] === 'html', C.FRAMEWORKS.join(','));
+/*
+ * No count here, deliberately. This asserted `length === 6` and went red the
+ * moment the vertical grew past six — silently, because a failing gate nobody
+ * runs is indistinguishable from a passing one. A count only ever reports that
+ * the list changed, which is never the bug.
+ *
+ * What would actually break: a duplicate id makes two builds fight over one
+ * path segment, and the dock's switcher rewrites to whichever it matches first.
+ * An empty list leaves the dock nothing to offer. `html` leads because this list
+ * is in dock display order.
+ */
+ok(
+  'frameworks are unique, non-empty, and in dock order',
+  C.FRAMEWORKS.length > 0 &&
+    new Set(C.FRAMEWORKS).size === C.FRAMEWORKS.length &&
+    C.FRAMEWORKS[0] === 'html',
+  C.FRAMEWORKS.join(','),
+);
 ok('every route ends in a slash', Object.values(C.route).every((f) => f('x').endsWith('/')));
 ok('every route is root-relative and unprefixed', Object.values(C.route).every((f) => f('x').startsWith('/') && !f('x').startsWith(C.SHOWCASE_BASE)));
 

@@ -147,9 +147,30 @@ async function describe(framework, route) {
     // pixels, but the elements must have finished arriving.
     await new Promise((r) => setTimeout(r, 2500));
     return await page.evaluate(() => {
-      /* Every element in document order, descending into shadow roots. */
+      /*
+       * Every element in document order, descending into shadow roots — except
+       * the dock's.
+       *
+       * `<awc-showcase-dock>` is the showcase's CHROME, not the application
+       * being compared, and it used to be invisible here for a reason that no
+       * longer holds: built from plain `<select>` and `<button>`, it
+       * contributed no `md-*` element to either the census or the fingerprint.
+       * Rebuilt out of the library, its shadow root now contributes twenty-odd
+       * — and one of them is a permanent, deliberate difference, because the
+       * framework picker reads `value="react"` in the React build and
+       * `value="vue"` in the Vue one. That is the control doing its job;
+       * comparing it would be demanding that every build claim to be React.
+       *
+       * The whole subtree goes rather than that one attribute: everything in
+       * there comes from ONE shared element in `@awc-ui/showcase-kit`,
+       * identical in all six builds by construction, so there is no per-build
+       * divergence here for this script to catch. That the dock rendered, and
+       * offered every build as a selectable row, is checked where it can be
+       * checked properly — in each app's own `scripts/verify-browser.mjs`.
+       */
       const walkAll = (root, out = []) => {
         for (const el of root.querySelectorAll('*')) {
+          if (el.tagName === 'AWC-SHOWCASE-DOCK') continue;
           out.push(el);
           if (el.shadowRoot) walkAll(el.shadowRoot, out);
         }

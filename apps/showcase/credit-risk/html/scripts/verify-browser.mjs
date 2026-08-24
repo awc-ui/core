@@ -123,7 +123,9 @@ const DEEP_CANVAS = `(() => {
 
   const probe = await page.evaluate(`(() => {
     // Stencil components only. awc-showcase-dock is hand-written and never
-    // carries a hydrated class; its own check is the shadow root below.
+    // carries a hydrated class; its own check is the one below. (The md-*
+    // controls it builds are Stencil, but they live in its shadow root, which
+    // this query does not reach — hence the separate walk.)
     const els = [...document.querySelectorAll('md-card,md-chip,md-table,md-bar-chart,md-area-chart,md-sparkline,md-button,md-status-dot,md-meter')];
     const isPainted = (c) => {
       if (!c.width || !c.height) return false;
@@ -142,7 +144,17 @@ const DEEP_CANVAS = `(() => {
       chartsPainted: charts.filter((ch) => [...(ch.shadowRoot?.querySelectorAll('canvas') ?? [])].some(isPainted)).length,
       charts: charts.length,
       canvases: canvases.length,
-      dock: !!document.querySelector('awc-showcase-dock')?.shadowRoot,
+      // The dock's controls are md-* components now, so a shadow root on its
+      // own no longer says they work. It creates them by TAG NAME, without
+      // importing the library, so a runtime that never registered leaves a bar
+      // full of zero-size unknown elements — and the bar reserves its height in
+      // CSS, so it would not even be caught by the zero-height check above.
+      dock: (() => {
+        const dockRoot = document.querySelector('awc-showcase-dock')?.shadowRoot;
+        if (!dockRoot) return null;
+        const controls = [...dockRoot.querySelectorAll('md-select,md-segmented-button-set,md-switch,md-button,md-icon-button')];
+        return { total: controls.length, upgraded: controls.filter((el) => el.shadowRoot).length };
+      })(),
       // The axes could not travel in an attribute; the client script had to
       // assign them. If it did not, the category names never reach the chart.
       axesApplied: [...document.querySelectorAll('[data-chart]')].every((c) => c.hasAttribute('data-chart-applied')),
@@ -154,7 +166,11 @@ const DEEP_CANVAS = `(() => {
   ok('nothing renders at zero height', probe.zeroHeight.length === 0, probe.zeroHeight.join(',') || '');
   ok('every chart painted its plot', probe.chartsPainted === probe.charts, `${probe.chartsPainted}/${probe.charts}`);
   ok('the axes reached the charts', probe.axesApplied);
-  ok('the dock is present', probe.dock);
+  ok(
+    'the dock is present, and every control it built upgraded',
+    probe.dock !== null && probe.dock.total > 0 && probe.dock.upgraded === probe.dock.total,
+    probe.dock ? `${probe.dock.upgraded}/${probe.dock.total}` : '(no dock)',
+  );
   ok('no console or page errors', errors.length === 0, errors.slice(0, 2).join(' | '));
   await page.close();
 }

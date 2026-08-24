@@ -81,6 +81,107 @@ const load = async (url, wait = 2500) => {
   return page;
 };
 
+/*
+ * READING AND DRIVING THE DOCK, which is no longer built from native controls.
+ *
+ * The bar is made of `@awc-ui/core` components now, so its framework and
+ * language pickers are `md-select`s, not `HTMLSelectElement`s. Two things that
+ * used to be one-liners here are not:
+ *
+ *   - There is no `.options`. The `<md-select-option>` elements the dock writes
+ *     are data carriers with `display: none`; the rows a reader can actually
+ *     reach are `md-menu-item`s that md-select renders in its OWN shadow root,
+ *     one per option, with the id `<trigger>-opt-<value>` and the visible text
+ *     in `part="headline"`. Reading those is what keeps "every build is
+ *     selectable" an assertion about something selectable — the same reason the
+ *     old check read the rendered `<option>`s rather than the `frameworks`
+ *     attribute.
+ *   - Assigning `.value` and firing a native `change` does nothing at all. The
+ *     dock hangs its state write off `mdChange`, which md-select emits only from
+ *     its own `selectValue()` — so the picker has to be driven by opening the
+ *     menu and clicking a row, which is also what a reader does.
+ */
+
+/** The rendered rows of a dock picker, and the value it currently holds. */
+const readDockPicker = (page, id) =>
+  page.evaluate((pickerId) => {
+    const select = document.querySelector('awc-showcase-dock')?.shadowRoot?.getElementById(pickerId);
+    if (!select?.shadowRoot) return null;
+    return {
+      value: select.value,
+      options: [...select.shadowRoot.querySelectorAll('[role="listbox"] md-menu-item')].map(
+        (row) => ({
+          value: row.id.slice(row.id.indexOf('-opt-') + '-opt-'.length),
+          label: row.shadowRoot?.querySelector('[part="headline"]')?.textContent?.trim() ?? '',
+          selected: row.getAttribute('aria-selected') === 'true',
+        }),
+      ),
+    };
+  }, id);
+
+/**
+ * Choose `value` in a dock picker: open the menu, click the row.
+ *
+ * Four short steps rather than one `page.evaluate(async …)` that does the whole
+ * dance in the page. The waiting has to happen on THIS side of the protocol: an
+ * evaluate whose promise stays pending for seconds is liable to come back
+ * "Promise was collected" instead of a result, which is a flake that looks
+ * exactly like a broken dock. Every evaluate below returns synchronously.
+ */
+const pickInDock = async (page, id, value) => {
+  // Collapsed on a first visit. The panel keeps its controls in the DOM while
+  // hidden, so this asks the disclosure — an md-icon-button now, not the
+  // `querySelector('button')` that used to find it — rather than inferring from
+  // a missing element, and it drives a control a reader could have clicked.
+  const present = await page.evaluate(() => {
+    const root = document.querySelector('awc-showcase-dock')?.shadowRoot;
+    if (!root) return false;
+    if (root.getElementById('awc-dock-panel')?.hidden) {
+      root.querySelector('md-icon-button.toggle')?.click();
+    }
+    return true;
+  });
+  if (!present) return false;
+  await new Promise((r) => setTimeout(r, 250));
+
+  const opened = await page.evaluate((pickerId) => {
+    const select = document.querySelector('awc-showcase-dock')?.shadowRoot?.getElementById(pickerId);
+    if (!select?.shadowRoot) return false;
+    void select.show();
+    return true;
+  }, id);
+  if (!opened) return false;
+
+  // A closed md-menu stays in the DOM but `inert`, and Stencil clears that on
+  // its own schedule — so wait for the menu to actually be open rather than for
+  // a fixed number of milliseconds.
+  await page
+    .waitForFunction(
+      (pickerId) =>
+        document
+          .querySelector('awc-showcase-dock')
+          ?.shadowRoot?.getElementById(pickerId)
+          ?.shadowRoot?.querySelector('md-menu')?.inert === false,
+      { timeout: 5000 },
+      id,
+    )
+    .catch(() => {});
+
+  return page.evaluate(
+    (pickerId, wanted) => {
+      const select = document.querySelector('awc-showcase-dock')?.shadowRoot?.getElementById(pickerId);
+      const row = [...(select?.shadowRoot?.querySelectorAll('md-menu-item') ?? [])].find((item) =>
+        item.id.endsWith('-opt-' + wanted),
+      );
+      if (!row) return false;
+      row.click();
+      return true;
+    },
+    id,
+    value,
+  );
+};
+
 /**
  * A marker on `window` that only a full document load can clear.
  *
@@ -443,16 +544,11 @@ const readStamp = (page) =>
   ok('and the screen is actually in Romanian', /Expunere|Prezentare|Contrapart/i.test(probe.text), probe.text.slice(0, 48).replace(/\s+/g, ' '));
 
   await page.evaluate(STAMP);
-  // Arabic, through the dock's own <select>, which is what a reader clicks.
-  // `#awc-dock-locale` by id, not "the first select in the shadow root" — the
-  // framework switcher is the first one, and picking it navigates to another
-  // build instead of changing the language.
-  await page.evaluate(() => {
-    const dock = document.querySelector('awc-showcase-dock');
-    const select = dock.shadowRoot.getElementById('awc-dock-locale');
-    select.value = 'ar';
-    select.dispatchEvent(new Event('change', { bubbles: true }));
-  });
+  // Arabic, through the dock's own picker, which is what a reader clicks.
+  // `#awc-dock-locale` by id, not "the first md-select in the shadow root" —
+  // the framework switcher is the first one, and picking it navigates to
+  // another build instead of changing the language.
+  const drove = await pickInDock(page, 'awc-dock-locale', 'ar');
   await new Promise((r) => setTimeout(r, 1500));
   probe = await readStamp(page);
   const after = await page.evaluate(() => ({
@@ -461,6 +557,7 @@ const readStamp = (page) =>
     path: location.pathname,
     text: document.querySelector('.shell')?.innerText ?? '',
   }));
+  ok('the dock offers a reachable Arabic row', drove);
   ok('the dock switches locale without a reload', probe.stamp === 'alive' && probe.navigations === 1, `${probe.stamp}, ${probe.navigations} navigation(s)`);
   ok('<html> follows to ar / rtl', after.lang === 'ar' && after.dir === 'rtl', `lang=${after.lang} dir=${after.dir}`);
   ok('the path is untouched — no /ar/ segment', after.path === `${basePath}/`, after.path);
@@ -493,7 +590,6 @@ const readStamp = (page) =>
   const probe = await page.evaluate(() => {
     const docks = document.querySelectorAll('awc-showcase-dock');
     const dock = docks[0];
-    const select = dock?.shadowRoot?.getElementById('awc-dock-framework');
     return {
       // Property-or-attribute for the same reason the nav lookup above uses it:
       // these are declared Stencil props, and which side holds the value
@@ -506,11 +602,9 @@ const readStamp = (page) =>
       frameworks: dock?.frameworks ?? dock?.getAttribute('frameworks'),
       position: dock?.position ?? dock?.getAttribute('position'),
       dockHeight: getComputedStyle(document.documentElement).getPropertyValue('--awc-dock-height').trim(),
-      options: select
-        ? [...select.options].map((o) => ({ value: o.value, label: o.textContent, selected: o.selected }))
-        : null,
     };
   });
+  const picker = await readDockPicker(page, 'awc-dock-framework');
   ok('the dock is rendered exactly once', probe.count === 1, `${probe.count}`);
   ok('it identifies this build as vue', probe.framework === 'vue', probe.framework ?? '(none)');
   // Derived from the kit, not spelled out here. The list grows every time a
@@ -522,20 +616,26 @@ const readStamp = (page) =>
     probe.frameworks ?? '(none)',
   );
   // The attribute is only plumbing; what a reader can actually reach is the
-  // rendered <option> list. A dock that receives the list and fails to render
-  // it passes the check above and is still broken.
-  const values = probe.options?.map((o) => o.value).join(',') ?? '(no select)';
+  // list of rows md-select rendered from it. A dock that receives the list and
+  // fails to render it passes the check above and is still broken — and so does
+  // one whose picker never upgraded, which is the new way to be broken.
+  const values = picker?.options.map((o) => o.value).join(',') ?? '(no picker)';
   ok('every build is selectable', values === FRAMEWORKS.join(','), values);
   ok(
     'this build is the one selected',
-    probe.options?.find((o) => o.selected)?.value === 'vue',
-    probe.options?.find((o) => o.selected)?.value ?? '(nothing selected)',
+    picker?.value === 'vue' && picker.options.find((o) => o.selected)?.value === 'vue',
+    `value=${picker?.value ?? '(none)'} marked=${picker?.options.find((o) => o.selected)?.value ?? '(nothing)'}`,
   );
   // A framework id with no entry in the dock's label map falls back to its own
   // id with the first letter capitalised, so `angular-ssr` would appear in the
-  // menu as "Angular-ssr". No real display name contains a hyphen.
-  const raw = probe.options?.filter((o) => o.label.includes('-')).map((o) => o.label) ?? [];
-  ok('every option has a display name, not a raw id', raw.length === 0, raw.join(', ') || 'all named');
+  // menu as "Angular-ssr". No real display name contains a hyphen. A blank one
+  // counts too: the row's text is rendered by md-select from the option's
+  // label, so "no text at all" is now a way for the name to go missing.
+  const unnamed =
+    picker?.options
+      .filter((o) => !o.label || o.label.includes('-'))
+      .map((o) => o.label || `(blank: ${o.value})`) ?? [];
+  ok('every option has a display name, not a raw id', unnamed.length === 0, unnamed.join(', ') || 'all named');
   ok('it is pinned to the bottom and publishes its height', probe.position === 'bottom' && probe.dockHeight !== '', `position=${probe.position} --awc-dock-height=${probe.dockHeight || '(unset)'}`);
   await page.close();
 }

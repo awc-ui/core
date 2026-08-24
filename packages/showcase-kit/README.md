@@ -6,7 +6,19 @@ The kit exists so that **seven framework builds of the same app render byte-iden
 whether that render happens at build time, in the browser, or on a server per request.
 Every number, date and string comes from here; the apps only decide how to lay them out.
 
-- **Zero runtime dependencies.** No `@awc-ui/core`, no framework, no `@material/material-color-utilities`.
+- **No dependencies, no framework — and one runtime requirement, in one place.**
+  `package.json` declares no runtime dependencies, and no module here imports
+  `@awc-ui/core`, a framework, or `@material/material-color-utilities`.
+  `./data`, `./i18n` and `./preboot` are self-contained: they need nothing but
+  the platform, on a server or in a browser, with no component library present.
+  **`./dock` is the exception.** `<awc-showcase-dock>` builds its controls out of
+  `md-select`, `md-segmented-button-set`, `md-switch`, `md-button` and
+  `md-icon-button`, so the page it renders on must have the `@awc-ui/core`
+  runtime registered (and Material Symbols loaded, for the icons). It reaches
+  them by tag name rather than by import — which is why the package still ships
+  no dependency — but the requirement is real, not a technicality: with no
+  runtime on the page the bar renders its labels and empty space where the
+  controls should be. See [`./dock`](#dock--awc-showcase-dock).
 - **Deterministic by construction.** No `Date.now()`, no `Math.random()`, no ambient time zone.
   The reporting date is frozen at **2026-03-31**; every relative date derives from it.
   The fixture is generated once by a seeded PRNG and baked into `src/data/generated.ts`.
@@ -21,14 +33,14 @@ node packages/showcase-kit/scripts/verify.mjs   # 127 round-trip assertions
 
 ## Entry points
 
-| Specifier | Contents | Safe on the server |
-|---|---|---|
-| `@awc-ui/showcase-kit/data` | The credit-risk fixture and its pure selectors | yes |
-| `@awc-ui/showcase-kit/i18n` | Dictionaries, translator, Intl formatters | yes |
-| `@awc-ui/showcase-kit/dock` | `<awc-showcase-dock>` + the state store | importable, but has a client side effect |
-| `@awc-ui/showcase-kit/preboot` | The inline `<head>` script, as a string | yes |
-| `@awc-ui/showcase-kit/preboot.js` | The same script as a raw `.js` file | — |
-| `@awc-ui/showcase-kit` | Barrel: `data` + `i18n` + `preboot` + the dock **state** (not the element) | yes |
+| Specifier | Contents | Safe on the server | Needs `@awc-ui/core` on the page |
+|---|---|---|---|
+| `@awc-ui/showcase-kit/data` | The credit-risk fixture and its pure selectors | yes | no |
+| `@awc-ui/showcase-kit/i18n` | Dictionaries, translator, Intl formatters | yes | no |
+| `@awc-ui/showcase-kit/dock` | `<awc-showcase-dock>` + the state store | importable, but has a client side effect | **the element does**; the state functions do not |
+| `@awc-ui/showcase-kit/preboot` | The inline `<head>` script, as a string | yes | no |
+| `@awc-ui/showcase-kit/preboot.js` | The same script as a raw `.js` file | — | no |
+| `@awc-ui/showcase-kit` | Barrel: `data` + `i18n` + `preboot` + the dock **state** (not the element) | yes | no |
 
 Import the subpaths. The root barrel deliberately omits the custom element so a
 server bundle can never pull DOM code in.
@@ -197,9 +209,35 @@ formatDate(isoOrDate, locale, 'short' | 'medium' | 'long' | 'iso' | 'monthYear')
 
 ## `./dock` — `<awc-showcase-dock>`
 
-One vanilla custom element. Plain DOM in a shadow root, styled entirely from
-`--md-sys-*` tokens, so it themes, densifies and mirrors with the page but never
-races the component registration of the library it is demonstrating.
+One vanilla custom element, whose controls are `@awc-ui/core` components. It
+dogfoods the library it is a remote control for: the pickers are `md-select`,
+theme and density are `md-segmented-button-set`, the accent swatches and the
+collapse chevron are `md-icon-button`, direction is `md-switch`, reset is
+`md-button`. Everything around them is styled from `--md-sys-*` tokens, so the
+bar themes and mirrors with the page.
+
+### What the dock needs from the page
+
+**The `@awc-ui/core` runtime must be registered**, and Material Symbols loaded
+for the icons. Nothing here imports the library — custom elements resolve by tag
+name, so this package still declares no dependency — but the elements have to
+come from somewhere, and that somewhere is the host page. Every showcase build
+already loads it. If it is missing, the dock still renders, still reads and
+writes state, and still publishes its height; the controls are simply empty
+boxes.
+
+The gap between the dock upgrading and the runtime registering is handled rather
+than avoided: `DOCK_STYLES` reserves the size of every control, so the bar is
+already its final height while the controls are still empty, and
+`--awc-dock-height` does not change when they fill in. Verified at 1280, 1024,
+800 and 390px wide, with the runtime blocked and loaded.
+
+The dock does **not** densify or mirror with the page, deliberately. Its
+controls are pinned to their own density and its `dir` to `ltr`, for the same
+reason its labels are frozen to English: it is the evaluator's remote control,
+not part of the demo, and it should not become harder to operate as you
+demonstrate compact, right-to-left Arabic. The one exception is the density set,
+which renders at the rung it selects, as a preview of what that rung does.
 
 ```html
 <awc-showcase-dock
@@ -322,8 +360,25 @@ The accent preset is applied as a `<style id="awc-showcase-seed">` appended to
 
 The dock is `position: fixed` on the block-end edge, at
 `z-index: var(--md-sys-z-index-tooltip, 1500)`, with `env(safe-area-inset-*)`
-padding. It does not trap focus and every control is a real `<button>` or
-`<select>`.
+padding. The brand and the collapse chevron share the first row and the controls
+take a row of their own — a fixed row count is what lets the bar reserve its own
+height before its controls exist.
+
+It does not trap focus: Tab walks the seventeen stops in order and leaves at the
+end. Roles come from the components rather than from hand-written ARIA — the
+theme and density clusters are real `radiogroup`s of `radio`s, direction is a
+`switch`, the accent swatches are toggle buttons with `aria-pressed`, and the
+chevron is a disclosure button with `aria-expanded`/`aria-controls` that
+precedes the region it controls. Density rungs are labelled ("Default density",
+"Rung -3"), not left as the bare numbers they display.
+
+A state change rebuilds the bar, so the dock remembers which control the
+keyboard was on and hands focus back afterwards — without it, arrowing along a
+segmented group would drop focus to `<body>` on the first press.
+
+`md-select` menus open away from the edge the dock is docked to (`placement` is
+`top-start` at the bottom, `bottom-start` at the top), and `md-menu` flips and
+clamps from there.
 
 It publishes its own height as a CSS custom property on `<html>` — a *style*, not
 one of the four contract attributes. Reserve room for it:

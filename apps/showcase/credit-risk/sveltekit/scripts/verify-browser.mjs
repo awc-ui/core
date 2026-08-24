@@ -94,6 +94,80 @@ const ok = (label, pass, detail = '') => {
 const browser = await puppeteer.launch({ headless: 'shell' });
 const settled = () => new Promise((r) => setTimeout(r, 2500));
 
+/*
+ * DRIVING THE DOCK, which is no longer built from native controls.
+ *
+ * The bar is made of `@awc-ui/core` components now, so its language picker is
+ * an `md-select`, not an `HTMLSelectElement`: assigning `.value` and firing a
+ * native `change` does nothing at all. The dock hangs its state write off
+ * `mdChange`, which md-select emits only from its own `selectValue()` — so the
+ * picker has to be driven by opening the menu and clicking a row, which is also
+ * what a reader does.
+ */
+
+/**
+ * Choose `value` in a dock picker: open the menu, click the row.
+ *
+ * Four short steps rather than one `page.evaluate(async …)` that does the whole
+ * dance in the page. The waiting has to happen on THIS side of the protocol: an
+ * evaluate whose promise stays pending for seconds is liable to come back
+ * "Promise was collected" instead of a result, which is a flake that looks
+ * exactly like a broken dock. Every evaluate below returns synchronously.
+ */
+const pickInDock = async (page, id, value) => {
+  // Collapsed on a first visit. The panel keeps its controls in the DOM while
+  // hidden, so this asks the disclosure — an md-icon-button now, not the
+  // `querySelector('button')` that used to find it — rather than inferring from
+  // a missing element, and it drives a control a reader could have clicked.
+  const present = await page.evaluate(() => {
+    const root = document.querySelector('awc-showcase-dock')?.shadowRoot;
+    if (!root) return false;
+    if (root.getElementById('awc-dock-panel')?.hidden) {
+      root.querySelector('md-icon-button.toggle')?.click();
+    }
+    return true;
+  });
+  if (!present) return false;
+  await new Promise((r) => setTimeout(r, 250));
+
+  const opened = await page.evaluate((pickerId) => {
+    const select = document.querySelector('awc-showcase-dock')?.shadowRoot?.getElementById(pickerId);
+    if (!select?.shadowRoot) return false;
+    void select.show();
+    return true;
+  }, id);
+  if (!opened) return false;
+
+  // A closed md-menu stays in the DOM but `inert`, and Stencil clears that on
+  // its own schedule — so wait for the menu to actually be open rather than for
+  // a fixed number of milliseconds.
+  await page
+    .waitForFunction(
+      (pickerId) =>
+        document
+          .querySelector('awc-showcase-dock')
+          ?.shadowRoot?.getElementById(pickerId)
+          ?.shadowRoot?.querySelector('md-menu')?.inert === false,
+      { timeout: 5000 },
+      id,
+    )
+    .catch(() => {});
+
+  return page.evaluate(
+    (pickerId, wanted) => {
+      const select = document.querySelector('awc-showcase-dock')?.shadowRoot?.getElementById(pickerId);
+      const row = [...(select?.shadowRoot?.querySelectorAll('md-menu-item') ?? [])].find((item) =>
+        item.id.endsWith('-opt-' + wanted),
+      );
+      if (!row) return false;
+      row.click();
+      return true;
+    },
+    id,
+    value,
+  );
+};
+
 /* --------------- 1. the server render carries real content ----------------- */
 {
   const page = await browser.newPage();
@@ -156,7 +230,17 @@ const settled = () => new Promise((r) => setTimeout(r, 2500));
         .map((e) => e.tagName.toLowerCase()),
       charts: charts.length,
       painted: charts.filter((ch) => [...(ch.shadowRoot?.querySelectorAll('canvas') ?? [])].some(isPainted)).length,
-      dock: !!document.querySelector('awc-showcase-dock')?.shadowRoot,
+      // The dock's controls are md-* components now, so a shadow root on its
+      // own no longer says they work. It creates them by TAG NAME, without
+      // importing the library, so a runtime that never registered leaves a bar
+      // full of zero-size unknown elements — and the bar reserves its height in
+      // CSS, so it would not even be caught by the zero-height check above.
+      dock: (() => {
+        const dockRoot = document.querySelector('awc-showcase-dock')?.shadowRoot;
+        if (!dockRoot) return null;
+        const controls = [...dockRoot.querySelectorAll('md-select,md-segmented-button-set,md-switch,md-button,md-icon-button')];
+        return { total: controls.length, upgraded: controls.filter((el) => el.shadowRoot).length };
+      })(),
     };
   })()`);
 
@@ -164,7 +248,11 @@ const settled = () => new Promise((r) => setTimeout(r, 2500));
   ok('every component upgraded', probe.hydrated === probe.total, `${probe.hydrated}/${probe.total}`);
   ok('nothing renders at zero height', probe.zeroHeight.length === 0, probe.zeroHeight.join(','));
   ok('every chart painted its plot', probe.painted === probe.charts, `${probe.painted}/${probe.charts}`);
-  ok('the dock is present', probe.dock);
+  ok(
+    'the dock is present, and every control it built upgraded',
+    probe.dock !== null && probe.dock.total > 0 && probe.dock.upgraded === probe.dock.total,
+    probe.dock ? `${probe.dock.upgraded}/${probe.dock.total}` : '(no dock)',
+  );
   ok('no console or page errors', errors.length === 0, errors.slice(0, 2).join(' | '));
   await page.close();
 }
@@ -185,22 +273,10 @@ const settled = () => new Promise((r) => setTimeout(r, 2500));
     window.__stillHere = true;
   });
 
-  // Drive the dock's own locale picker, the same control a human uses. It sits
-  // inside the dock's shadow root, behind the collapse toggle on a first visit.
-  const drove = await page.evaluate(() => {
-    const dock = document.querySelector('awc-showcase-dock');
-    const root = dock?.shadowRoot;
-    if (!root) return false;
-    let select = root.querySelector('#awc-dock-locale');
-    if (!select) {
-      root.querySelector('button')?.click();
-      select = root.querySelector('#awc-dock-locale');
-    }
-    if (!select) return false;
-    select.value = 'ro';
-    select.dispatchEvent(new Event('change', { bubbles: true }));
-    return true;
-  });
+  // Drive the dock's own locale picker, the same control a human uses: open the
+  // menu, click the row. It sits inside the dock's shadow root, behind the
+  // collapse toggle on a first visit — `pickInDock` handles both.
+  const drove = await pickInDock(page, 'awc-dock-locale', 'ro');
   await settled();
 
   const after = await page.evaluate(() => ({
