@@ -131,9 +131,12 @@ jobs:
           pnpm --filter @awc-ui/core build
           pnpm ci:wrappers
 
-      # Full core test suite before anything reaches npm. Storybook a11y and
-      # Playwright CT are deliberately NOT repeated here — they gate every
-      # push on main, and releases are dispatched from a green main.
+      # Full test suite before anything reaches npm — including the
+      # Playwright CT and Storybook gates further down. Those two used to be
+      # left to the push-triggered CI on main, on the reasoning that releases
+      # are dispatched from a green main. 1.0.0-beta.5 disproved it: it was
+      # dispatched from a main whose CI had not finished, and shipped a
+      # regression neither the spec nor e2e suites can see.
       - name: SSR gate (renderToString every component + DSD)
         run: pnpm --filter @awc-ui/core test:ssr
 
@@ -147,6 +150,29 @@ jobs:
 
       - name: E2E tests
         run: pnpm --filter @awc-ui/core exec stencil test --e2e --ci --max-workers=2
+
+      # WHY THESE ARE HERE: 1.0.0-beta.5 shipped a real regression — a
+      # link-button stopped responding to Enter, Space and el.click() — with
+      # every gate above green. The Stencil spec and e2e suites test the
+      # components in isolation; they cannot see a framework wrapper breaking,
+      # and they do not run the Storybook play functions. The bug was caught
+      # by the Link Button story, hours after publishing. These two steps are
+      # the ones that would have stopped it.
+      - name: Install chromium for component tests
+        run: pnpm --filter @awc-ui/test-react exec playwright install chromium --with-deps
+
+      - name: Component tests (Playwright CT, React wrappers)
+        # test:ct rebuilds @awc-ui/core itself first, so it runs against the
+        # same source this release is publishing.
+        run: pnpm --filter @awc-ui/test-react test:ct
+
+      - name: Story behaviour + accessibility (Storybook play functions + axe)
+        # build-storybook first: test:a11y drives the stories through vitest
+        # browser mode and needs the built storybook, which CI gets from a
+        # separate job's artifact and this single-job workflow must build.
+        run: |
+          pnpm --filter @awc-ui/storybook build-storybook
+          pnpm --filter @awc-ui/storybook test:a11y
 
       # `stencil test --e2e` runs its own DEV build and re-emits every output
       # target into dist/ — unminified, unhashed, lazy runtime, global
