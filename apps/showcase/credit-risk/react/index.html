@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <!-- charset and viewport first, and inside the first 1024 bytes, which is
+         all the encoding sniffer reads. The build it was ported from emitted
+         them in this position too. -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- THE PREBOOT SCRIPT, before any stylesheet.
+
+         ~800 bytes of synchronous IIFE that reads the showcase state from the
+         URL (or localStorage) and stamps lang / dir / data-theme / data-density
+         onto <html> before the first paint. Placed after a stylesheet it still
+         runs before paint, but the browser blocks it on the CSS download first
+         — so it goes ahead of the two font sheets and ahead of the app sheet
+         Vite injects at the end of this head.
+
+         It deliberately does NOT apply the accent preset: that is ~2.8 kB of
+         palette per seed and would blow the preboot budget. The dock module
+         injects it a moment later, so a non-default accent has a brief
+         default-violet frame on a cold load. Documented trade, made in the kit.
+
+         The body is interpolated from @awc-ui/showcase-kit/preboot at build
+         time — see the `awc-showcase-head` plugin in vite.config.ts. There is
+         no second copy of it here. -->
+    <script>
+      __AWC_PREBOOT__
+    </script>
+
+    <meta name="awc-reporting-date" content="__AWC_REPORTING_DATE__" />
+    <!-- Evidence, in the same place the sibling builds put theirs: this one is
+         a single-page application. The Next build next door writes
+         `content="ssr"` plus a per-request `awc-rendered-at`, which is what
+         `scripts/verify-ssr.mjs` reads. Nothing in `.shell` sees either, so the
+         visible text, the md-* fingerprint and every measured gap are
+         untouched. -->
+    <meta name="awc-render-mode" content="spa" />
+
+    <!-- English, and it stays English. The locale lives in a query parameter
+         that only client JS reads, so the document that leaves the static host
+         has no authoritative language; the preboot script swaps lang/dir on
+         <html> and every visible string re-renders through the translator, but
+         the title cannot follow. Same limitation, same reason, as the build
+         this was ported from. -->
+    <title>__AWC_TITLE__</title>
+    <meta name="description" content="__AWC_DESCRIPTION__" />
+
+    <!-- THE FONTS, at document level. The components render Material Symbols
+         glyphs inside their own shadow roots; font registration crosses shadow
+         boundaries, class rules do not — so the faces must be registered here
+         or every `icon=` prop renders its ligature text. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap"
+    />
+
+    <!-- THE COMPONENT RUNTIME, as a module script pointing at an absolute URL
+         under `public/`. Stencil's lazy build resolves its sibling chunks
+         relative to its OWN location, so putting it through the bundler makes
+         it hunt for entry chunks under `/assets/`, where nothing was written.
+         `scripts/sync-runtime.mjs` has the full post-mortem. `md3.esm.js`
+         self-registers and needs no `defineCustomElements` call.
+
+         WHY THIS IS A CLASSIC SCRIPT THAT INJECTS A MODULE ONE, rather than
+         the `<script type="module">import(…)</script>` the Next build used.
+         Vite treats an inline module script as a module of its OWN and follows
+         the imports inside it. A literal specifier there fails the build
+         outright ("Rollup failed to resolve import"); marking it
+         `@vite-ignore` gets past that, but the surviving statement is then
+         bundled into the app's entry chunk, so the runtime is not requested
+         until 367 kB of application JavaScript has downloaded and parsed — the
+         components arrive late and every screen paints empty first. Measured,
+         not assumed.
+
+         Vite does not touch a NON-module inline script, so this one is emitted
+         byte for byte and runs while the head is still parsing, which is the
+         earliest the request can be made. `__AWC_BASE__` is interpolated from
+         the same `base` vite.config.ts passes to Vite, so the URL and the
+         mount cannot drift. -->
+    <script>
+      (function () {
+        var runtime = document.createElement('script');
+        runtime.type = 'module';
+        runtime.src = '__AWC_BASE__/awc-runtime/md3/md3.esm.js';
+        runtime.onerror = function () {
+          console.error('[awc-ui] component registration failed', runtime.src);
+        };
+        document.head.appendChild(runtime);
+      })();
+    </script>
+  </head>
+  <body>
+    <!-- `display: contents` — the mount point has no box.
+
+         React needs a container element; the parity check measures the vertical
+         gaps between `.shell`'s children and the height of the document, and
+         the build every other build is compared against renders `.shell` and
+         `<awc-showcase-dock>` as direct children of <body>. A `display: contents`
+         host is transparent to layout, so those two are laid out exactly as if
+         this div were not here. Written inline rather than in a stylesheet so
+         it holds from the first byte, before any CSS has loaded. -->
+    <div id="root" style="display: contents"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

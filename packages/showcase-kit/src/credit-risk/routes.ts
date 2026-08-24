@@ -1,5 +1,5 @@
 /**
- * The screen map, shared by all six framework builds.
+ * The screen map, shared by every framework build.
  *
  * Every build serves the same six screens under its own path segment
  * (`/showcase/credit-risk/react/`, `/…/svelte/`, …), so the route SHAPES are
@@ -18,9 +18,11 @@
  *   For anywhere nothing prefixes for us: a raw `href` on `md-breadcrumb-item`,
  *   an `<a>` in an Astro page, `location.assign`.
  *
- * Every path ends in `/`. All six builds export directories with an
+ * Every path ends in `/`. The static builds export directories with an
  * `index.html`, and a static host cannot issue the redirect that a missing
- * slash would need.
+ * slash would need. The server builds keep the same trailing slash even though
+ * they could redirect, so that a path is spelled one way everywhere and the
+ * dock can swap the framework segment without knowing which kind it landed on.
  */
 
 /** Path that precedes the framework segment, on every deployment. */
@@ -28,9 +30,21 @@ export const SHOWCASE_BASE = '/showcase/credit-risk';
 
 /**
  * Every framework this vertical is built for, in dock display order.
- * `html` and `astro` are server-rendered; the rest hydrate.
+ *
+ * Three kinds, and the difference is WHEN the HTML is produced:
+ *
+ * - `html`, `astro` — rendered once, at build time, and shipped as files.
+ * - `react` — a single-page application. The server sends an empty shell and
+ *   the browser renders everything.
+ * - `next` — rendered on the server, per request, by a process that is running
+ *   while you read the page.
+ *
+ * The SSR build sits directly after the SPA it mirrors, because that adjacency
+ * is the point: the same screens, the same components, the same kit, differing
+ * only in where the first render happened. `vue`, `angular` and `svelte` are
+ * still prerendered and will each grow the same pair.
  */
-export const FRAMEWORKS = ['html', 'astro', 'react', 'vue', 'angular', 'svelte'] as const;
+export const FRAMEWORKS = ['html', 'astro', 'react', 'next', 'vue', 'angular', 'svelte'] as const;
 
 export type Framework = (typeof FRAMEWORKS)[number];
 

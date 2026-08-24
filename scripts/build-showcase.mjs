@@ -3,13 +3,16 @@
  * Build every framework build of every showcase vertical, and stage the output
  * where the docs site serves it from.
  *
- * WHY THIS EXISTS. Each build emits into a different directory — Next writes
- * `out/`, SvelteKit `build/`, Nuxt `.output/public/`, Angular `dist/browser/`,
- * Astro and the plain-HTML build `dist/` — and each is compiled against an
- * absolute base path of `/showcase/credit-risk/<framework>/`. So every asset
- * URL, every link and every runtime import in the output already carries that
- * prefix, which means the output only works when it is sitting at exactly that
- * path. Copying it there is the whole job.
+ * WHY THIS EXISTS. Each build emits into a different directory — SvelteKit
+ * writes `build/`, Nuxt `.output/public/`, Angular `dist/browser/`, Vite and
+ * the plain-HTML build `dist/` — and each is compiled against an absolute base
+ * path of `/showcase/credit-risk/<framework>/`. So every asset URL, every link
+ * and every runtime import in the output already carries that prefix, which
+ * means the output only works when it is sitting at exactly that path. Copying
+ * it there is the whole job.
+ *
+ * The server-rendered builds are the exception, and the reason the loop below
+ * has two shapes: they produce no servable directory at all. See BUILDS.
  *
  * `apps/docs/public/showcase/` is gitignored for the same reason the Storybook
  * output and the Stencil runtime are: it is build output, it churns on every
@@ -30,14 +33,23 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /**
  * One entry per framework build. `output` is where that toolchain writes, and
- * it is the only thing that differs between them — the mount path is derived
- * from the framework id, exactly as `createRoutes()` does inside each app.
+ * for the static builds it is the only thing that differs between them — the
+ * mount path is derived from the framework id, exactly as `createRoutes()` does
+ * inside each app.
+ *
+ * `server: true` marks a build that renders per request. It has no `output`
+ * because there is nothing to stage: `.next/` is not a servable directory, it
+ * is the input to a Node process. Those builds are deployed as their own site
+ * and reverse-proxied onto their path segment (see `apps/docs/netlify.toml`),
+ * so what this script owes them is a compile — it must fail here, in one place,
+ * rather than at deploy time in four.
  */
 const VERTICAL = 'credit-risk';
 const BUILDS = [
   { framework: 'html', pkg: '@awc-ui/showcase-credit-risk-html', output: 'dist' },
   { framework: 'astro', pkg: '@awc-ui/showcase-credit-risk-astro', output: 'dist' },
-  { framework: 'react', pkg: '@awc-ui/showcase-credit-risk-react', output: 'out' },
+  { framework: 'react', pkg: '@awc-ui/showcase-credit-risk-react', output: 'dist' },
+  { framework: 'next', pkg: '@awc-ui/showcase-credit-risk-next', server: true },
   { framework: 'vue', pkg: '@awc-ui/showcase-credit-risk-vue', output: '.output/public' },
   { framework: 'angular', pkg: '@awc-ui/showcase-credit-risk-angular', output: 'dist/browser' },
   { framework: 'svelte', pkg: '@awc-ui/showcase-credit-risk-svelte', output: 'build' },
@@ -115,6 +127,21 @@ for (const build of builds) {
     process.exit(result.status ?? 1);
   }
 
+  if (build.server) {
+    /* Staging a server build would be worse than skipping it: copying `.next/`
+       under `public/` would put a directory at the path the proxy is supposed
+       to claim, and Netlify serves a matching file in preference to a redirect
+       — so the showcase would quietly serve build artifacts instead of the
+       rendered app, and look like it worked. Leave the path empty. */
+    const stale = join(staging, build.framework);
+    if (existsSync(stale)) rmSync(stale, { recursive: true });
+    console.log(
+      `    -> not staged — renders per request; deployed separately and ` +
+        `proxied onto /showcase/${VERTICAL}/${build.framework}/`,
+    );
+    continue;
+  }
+
   const from = join(root, 'apps/showcase', VERTICAL, build.framework, build.output);
   if (!existsSync(from)) {
     console.error(`[build-showcase] ${build.pkg} built but ${build.output}/ is missing`);
@@ -131,4 +158,9 @@ for (const build of builds) {
   );
 }
 
-console.log(`\n[build-showcase] ${builds.length} build(s) staged under apps/docs/public/showcase/`);
+const staged = builds.filter((b) => !b.server).length;
+const servers = builds.length - staged;
+console.log(
+  `\n[build-showcase] ${staged} build(s) staged under apps/docs/public/showcase/` +
+    (servers ? `, ${servers} server build(s) compiled but not staged` : ''),
+);

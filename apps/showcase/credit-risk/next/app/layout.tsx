@@ -21,14 +21,17 @@
  *    under `public/`. This is the only approach that works: Stencil's lazy build
  *    resolves its sibling chunks relative to its OWN location, so putting it
  *    through a bundler makes it hunt for entry chunks in `/_next/static/`, where
- *    the export never wrote them. `scripts/sync-runtime.mjs` has the full
+ *    nothing was ever written. `scripts/sync-runtime.mjs` has the full
  *    post-mortem. `md3.esm.js` self-registers on import and needs no
- *    `defineCustomElements` call.
+ *    `defineCustomElements` call. It still matters on a server-rendered build:
+ *    `server.mjs` paints the components' Declarative Shadow DOM into the
+ *    response, but the runtime is what makes them INTERACTIVE — it adopts the
+ *    server's shadow roots rather than rebuilding them.
  *
  * The two stylesheets are the one thing that DOES go through the bundler.
  * They are custom properties and page furniture with no runtime, and letting
  * Next emit them as `<link>`s in head is exactly what we want. The app sheet
- * lives in the kit because all six framework builds share the same grid —
+ * lives in the kit because every framework build shares the same grid —
  * see `@awc-ui/showcase-kit/credit-risk/app.css`.
  */
 
@@ -44,10 +47,12 @@ import '@awc-ui/showcase-kit/credit-risk/app.css';
 const RUNTIME_URL = `${BASE_PATH}/awc-runtime/md3/md3.esm.js`;
 
 /**
- * The export is a static file: it has one `<title>` and one `lang`, and both
- * are English. The client swaps `lang`/`dir` on <html> through the preboot
- * script, and every visible string re-renders through the translator — but the
- * document metadata cannot follow, so it stays in the default locale.
+ * `<title>` and `lang` are English and stay English, server render or not.
+ * Locale lives in a query param that only client JS reads (`URL_PARAMS` in the
+ * kit's dock state), so the server has no authoritative language for the
+ * request — moving this to `generateMetadata()` would not change that. The
+ * preboot script swaps `lang`/`dir` on <html> and every visible string
+ * re-renders through the translator; the document metadata cannot follow.
  */
 export const metadata = {
   title: `${en['app.brand']} — ${en['app.title']}`,
@@ -55,11 +60,35 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  /**
+   * The render stamp — evidence, not decoration.
+   *
+   * The fixture is frozen at `REPORTING_DATE` with no clock and no randomness
+   * anywhere, which is exactly what makes a static export and a live render
+   * produce byte-identical screens. That is good for parity and useless as
+   * proof: you cannot tell which one served you. This one value is read at
+   * render time, so two requests to the same URL disagree — and they can only
+   * disagree if the HTML was built for each of them.
+   *
+   * `scripts/verify-ssr.mjs` is the consumer: it fetches a page twice and fails
+   * the build if the two markers match, and fails it just as hard if there is
+   * no marker at all, on the grounds that silence is not evidence. The names
+   * are the harness's, not ours.
+   *
+   * Both are `<meta>` on purpose. Nothing in `.shell` sees them, so the visible
+   * text, the `md-*` fingerprint, the row counts and every measured gap are
+   * untouched; they sit beside `awc-reporting-date`, which is already read the
+   * same way.
+   */
+  const renderedAt = new Date().toISOString();
+
   return (
     <html lang="en" dir="ltr">
       <head>
         <script dangerouslySetInnerHTML={{ __html: PREBOOT_SCRIPT }} />
         <meta name="awc-reporting-date" content={REPORTING_DATE} />
+        <meta name="awc-render-mode" content="ssr" />
+        <meta name="awc-rendered-at" content={renderedAt} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link

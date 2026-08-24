@@ -46,12 +46,26 @@ jobs:
           test -f apps/docs/dist/pagefind/pagefind.js || (echo "::error::Missing apps/docs/dist/pagefind/pagefind.js (Pagefind index not built)" && exit 1)
           test -f apps/docs/dist/storybook/index.html || (echo "::error::Missing apps/docs/dist/storybook/index.html (Storybook not embedded)" && exit 1)
           # Every framework build the showcase page links to. Without this the
-          # site can deploy with the page advertising six applications and the
+          # site can deploy with the page advertising seven applications and the
           # URLs behind all of them returning 404 — which is exactly what
           # happened before build-docs.sh learned to build them.
           for fw in html astro react vue angular svelte; do
             test -f "apps/docs/dist/showcase/credit-risk/$fw/index.html" \
               || (echo "::error::Missing apps/docs/dist/showcase/credit-risk/$fw/index.html (showcase build not embedded)" && exit 1)
+          done
+          # The server-rendered builds fail the same way for the opposite
+          # reason: there is deliberately no file to test for, so the only thing
+          # between the dock's "Next.js" option and a 404 is a proxy rule in
+          # apps/docs/netlify.toml — which is not in dist/, it is handed to the
+          # deploy step below as netlify-config-path. And a file appearing at
+          # that path would mean build-showcase.mjs staged a server build it was
+          # supposed to skip — Netlify serves a matching file in preference to a
+          # redirect, so the showcase would quietly serve build artifacts.
+          for fw in next; do
+            grep -q "from = \"/showcase/credit-risk/$fw/\*\"" apps/docs/netlify.toml \
+              || (echo "::error::apps/docs/netlify.toml has no proxy for /showcase/credit-risk/$fw/ — the showcase page links to it and it renders on a server, so every route under it would 404" && exit 1)
+            test ! -e "apps/docs/dist/showcase/credit-risk/$fw" \
+              || (echo "::error::apps/docs/dist/showcase/credit-risk/$fw exists — a server build was staged as static files, which shadows the proxy" && exit 1)
           done
 
       - uses: actions/upload-artifact@v4

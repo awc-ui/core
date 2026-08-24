@@ -1,13 +1,13 @@
 {
-  "name": "@awc-ui/showcase-credit-risk-react",
+  "name": "@awc-ui/showcase-credit-risk-next",
   "version": "0.1.0",
   "private": true,
-  "description": "Aurelia Bank — Credit Risk Console, the Next.js flavour of the AWC UI showcase vertical",
+  "description": "Aurelia Bank — Credit Risk Console, the runtime server-rendered Next.js flavour of the AWC UI showcase vertical",
   "scripts": {
     "sync-runtime": "node scripts/sync-runtime.mjs",
-    "dev": "pnpm sync-runtime && next dev",
+    "dev": "pnpm sync-runtime && node server.mjs --dev",
     "build": "pnpm sync-runtime && next build",
-    "serve": "node scripts/serve-out.mjs",
+    "start": "node server.mjs",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

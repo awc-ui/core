@@ -5,15 +5,16 @@
  * WHY THE COMPONENTS ARE NOT BUNDLED
  *
  * `apps/docs/src/components/Head.astro` records three failed attempts at
- * getting the components to load through a bundler. They applied verbatim to
- * the Next static export this build used to be, and they still apply now that
- * it renders at runtime — the failure is in the BROWSER graph, and a server
- * render does not change what the browser has to load:
+ * getting the components to load through a bundler. They applied to the docs
+ * site, then to the Next build this app was ported from, and they apply here
+ * unchanged — the failure is in the BROWSER graph, so which bundler produced it
+ * makes no difference:
  *
  *   1. `@awc-ui/core/loader` (and `/define`, which wraps it) resolves each
  *      component's chunk at RUNTIME by URL, relative to the module's own
- *      location. Bundle it and the chunks are looked for in `/_next/static/…`,
- *      where nothing was ever written — every element 404s and renders at zero
+ *      location. Bundle it and the chunks are looked for beside the app bundle
+ *      — `/showcase/credit-risk/react/assets/…` here, `/_next/static/…` there —
+ *      where nothing was ever written. Every element 404s and renders at zero
  *      height.
  *   2. `@awc-ui/core/dist/components/index.js` looks like the fix (it is the
  *      `dist-custom-elements` output) but exports only utilities; it defines
@@ -22,12 +23,14 @@
  *   3. `@awc-ui/react` wrappers pull `@awc-ui/core` into the module graph, so
  *      they land back in case 1 or case 2. This app therefore renders plain
  *      `md-*` JSX elements and sets object props through refs — see
- *      `components/charts.tsx`.
+ *      `src/components/elements.tsx`.
  *
  * What works is what the docs site does: serve Stencil's own minified lazy
  * build from a STATIC url and let it resolve its siblings relative to itself.
- * A `<script type="module">` with an absolute URL in `app/layout.tsx` does that.
- * Lazy loading survives — a screen only fetches the elements it renders.
+ * A `<script type="module">` with an absolute URL in `index.html` does that.
+ * Vite copies `public/` into `dist/` verbatim and never rewrites it, so the
+ * runtime lands where that URL points. Lazy loading survives — a screen only
+ * fetches the elements it renders.
  *
  * `md3/` is the MINIFIED lazy build meant for browsers. `esm/` is the
  * unminified bundler output and is deliberately not copied. Source maps are

@@ -1,14 +1,16 @@
-/** `/facilities/[id]/` — 61 pages, one per committed line. */
+/**
+ * `/facilities/[id]/` — one screen per committed line (61 in the fixture),
+ * rendered on demand. See `app/sectors/[sector]/page.tsx` for why the fixture
+ * lookup moved from `generateStaticParams` into a `notFound()` guard.
+ */
 
-import { getFacilities } from '@awc-ui/showcase-kit/data';
+export const dynamic = 'force-dynamic';
+
+import { notFound } from 'next/navigation';
+import { getFacilityById } from '@awc-ui/showcase-kit/data';
 import { FacilityScreen } from '@/components/screens/FacilityScreen';
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return getFacilities().map((facility) => ({ id: facility.id }));
-}
-
 export default function Page({ params }: { params: { id: string } }) {
+  if (!getFacilityById(params.id)) notFound();
   return <FacilityScreen facilityId={params.id} />;
 }

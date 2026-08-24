@@ -1,4 +1,8 @@
-# This file ships in the publish dir; only [[headers]] and [[redirects]] apply at runtime.
+# This file is NOT copied into the publish dir. It reaches Netlify because
+# .github/workflows/deploy.yml passes it as `netlify-config-path`, so a rule
+# added here takes effect on the next deploy and nowhere else — editing the
+# copy under dist/ would do nothing, because there isn't one.
+# Only [[headers]] and [[redirects]] apply at runtime.
 # The build is orchestrated by .github/workflows/deploy.yml (see Story 4.7).
 # If you ever re-enable Netlify Git integration as a fallback, add a [build] section
 # here pointing to `bash scripts/build-docs.sh` and disable the deploy workflow.
@@ -13,6 +17,40 @@
   to = "/storybook/index.html"
   status = 200
 
+# ---------------------------------------------------------------------------
+# Server-rendered showcase builds.
+#
+# These MUST come before the two static rules below, because first match wins
+# and `/showcase/:app/:framework/*` would otherwise rewrite them to an
+# index.html that deliberately does not exist — a 404 on every SSR route.
+#
+# `force = true` because there is nothing on disk at this path and there must
+# not be: build-showcase.mjs stages nothing for a server build, and actively
+# deletes anything stale it finds there. Without `force`, a file appearing at
+# that path later would silently win over the proxy and serve build artifacts
+# instead of the rendered app.
+#
+# The base path is preserved through the proxy: the Next app is compiled with
+# `basePath: '/showcase/credit-risk/next'`, so it expects to receive the prefix
+# and emits it in every asset URL it renders.
+#
+# THE ORIGIN BELOW MUST MATCH THE NETLIFY SITE NAME. It is a plain hostname on
+# purpose — netlify.toml does not interpolate environment variables, so the
+# alternative is generating this file at build time, which hides the routing
+# somewhere less obvious than the file that implements it.
+[[redirects]]
+  from = "/showcase/credit-risk/next/*"
+  to = "https://awc-credit-risk-next.netlify.app/showcase/credit-risk/next/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/showcase/credit-risk/next"
+  to = "https://awc-credit-risk-next.netlify.app/showcase/credit-risk/next/"
+  status = 200
+  force = true
+
+# ---------------------------------------------------------------------------
 # Showcase applications are built separately and copied into public/showcase/
 # <app>/<framework>/ before the Astro build, the same way Storybook is. Netlify
 # resolves a directory request to its index.html on its own, but the extension-

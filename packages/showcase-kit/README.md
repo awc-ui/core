@@ -2,7 +2,8 @@
 
 Framework-free data, i18n, control dock and preboot script for the AWC UI showcase verticals.
 
-The kit exists so that **six framework builds of the same app render byte-identical output**.
+The kit exists so that **seven framework builds of the same app render byte-identical output** —
+whether that render happens at build time, in the browser, or on a server per request.
 Every number, date and string comes from here; the apps only decide how to lay them out.
 
 - **Zero runtime dependencies.** No `@awc-ui/core`, no framework, no `@material/material-color-utilities`.

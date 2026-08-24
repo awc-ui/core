@@ -34,7 +34,17 @@
         "^build"
       ],
       "outputs": [
-        "out/**",
+        "dist/**",
+        "public/awc-runtime/**"
+      ]
+    },
+    "@awc-ui/showcase-credit-risk-next#build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
         "public/awc-runtime/**"
       ]
     },

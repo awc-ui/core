@@ -1,5 +1,3 @@
-'use client';
-
 /**
  * Screen 2 — sector detail. One rung down the drill path.
  *
@@ -33,10 +31,13 @@ export function SectorScreen({ sectorId }: { sectorId: string }) {
   const money = useMemo(() => (v: number | null) => t.formatCurrency(v ?? 0, { notation: 'compact' }), [t]);
 
   if (!sector) {
-    // The page wrapper calls `notFound()` for an id the fixture does not know,
-    // so this branch is unreachable through the router. It stays as the
-    // component's own guard: `SectorScreen` takes a plain string and must not
-    // depend on its caller having checked.
+    // THE 404, and in this build it is the live path rather than a guard
+    // against nothing. The Next flavour of this app checked the id in the page
+    // wrapper and called `notFound()`; there is no wrapper here — `App.tsx`
+    // hands the captured segment straight down — so the lookup that decides
+    // whether the screen exists is this one. Rendering it inside `Screen`
+    // rather than as a bare message keeps the masthead, the nav and the dock,
+    // so an unknown sector is still somewhere you can leave from.
     return (
       <Screen title={t('empty.generic')} subtitle={t('empty.hint')}>
         <Panel>
