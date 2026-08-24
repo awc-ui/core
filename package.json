@@ -34,6 +34,7 @@
     "showcase:build": "node scripts/build-showcase.mjs",
     "showcase:lint": "pnpm --filter \"@awc-ui/showcase-credit-risk-*\" lint",
     "showcase:verify": "pnpm --filter \"@awc-ui/showcase-credit-risk-*\" verify",
+    "showcase:preview": "node scripts/showcase-preview.mjs",
     "dev:showcase-html": "pnpm --filter @awc-ui/showcase-credit-risk-html dev",
     "dev:showcase-astro": "pnpm --filter @awc-ui/showcase-credit-risk-astro dev",
     "dev:showcase-react": "pnpm --filter @awc-ui/showcase-credit-risk-react dev",
