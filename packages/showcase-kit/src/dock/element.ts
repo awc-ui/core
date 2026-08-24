@@ -64,6 +64,10 @@ const FRAMEWORK_LABELS: Record<string, string> = {
   vue: 'Vue',
   nuxt: 'Nuxt',
   angular: 'Angular',
+  // Angular is the only pair whose two halves share a name — Next.js, Nuxt and
+  // SvelteKit are already distinct from React, Vue and Svelte — so it is the
+  // only one that needs the rendering strategy said out loud.
+  'angular-ssr': 'Angular (SSR)',
   svelte: 'Svelte',
   sveltekit: 'SvelteKit',
 };

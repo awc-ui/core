@@ -27,7 +27,7 @@ import { spawn } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
-import { createRoutes } from '@awc-ui/showcase-kit/credit-risk';
+import { createRoutes, FRAMEWORKS } from '@awc-ui/showcase-kit/credit-risk';
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 4347;
@@ -256,22 +256,48 @@ const readStamp = (page) =>
 
 /* ------------------------------------------------------------------- the dock */
 {
-  console.log('\n[dock] one bar, seven frameworks, this one marked');
+  console.log(`\n[dock] one bar, ${FRAMEWORKS.length} frameworks, this one marked`);
   const page = await load(`${BASE}/`);
   const probe = await page.evaluate(() => {
     const docks = document.querySelectorAll('awc-showcase-dock');
     const dock = docks[0];
+    const select = dock?.shadowRoot?.getElementById('awc-dock-framework');
     return {
       count: docks.length,
       framework: dock?.getAttribute('framework'),
       frameworks: dock?.getAttribute('frameworks'),
       position: dock?.getAttribute('position'),
       dockHeight: getComputedStyle(document.documentElement).getPropertyValue('--awc-dock-height').trim(),
+      options: select
+        ? [...select.options].map((o) => ({ value: o.value, label: o.textContent, selected: o.selected }))
+        : null,
     };
   });
   ok('the dock is rendered exactly once', probe.count === 1, `${probe.count}`);
   ok('it identifies this build as react', probe.framework === 'react', probe.framework ?? '(none)');
-  ok('it offers all seven builds', probe.frameworks === 'html,astro,react,next,vue,angular,svelte', probe.frameworks ?? '(none)');
+  // Derived from the kit, not spelled out here. The list grows every time a
+  // build is added, and a hardcoded copy would then fail in every app at once
+  // while telling us nothing except that the list changed.
+  ok(
+    `it offers all ${FRAMEWORKS.length} builds`,
+    probe.frameworks === FRAMEWORKS.join(','),
+    probe.frameworks ?? '(none)',
+  );
+  // The attribute is only plumbing; what a reader can actually reach is the
+  // rendered <option> list. A dock that receives the list and fails to render
+  // it passes the check above and is still broken.
+  const values = probe.options?.map((o) => o.value).join(',') ?? '(no select)';
+  ok('every build is selectable', values === FRAMEWORKS.join(','), values);
+  ok(
+    'this build is the one selected',
+    probe.options?.find((o) => o.selected)?.value === 'react',
+    probe.options?.find((o) => o.selected)?.value ?? '(nothing selected)',
+  );
+  // A framework id with no entry in the dock's label map falls back to its own
+  // id with the first letter capitalised, so `angular-ssr` would appear in the
+  // menu as "Angular-ssr". No real display name contains a hyphen.
+  const raw = probe.options?.filter((o) => o.label.includes('-')).map((o) => o.label) ?? [];
+  ok('every option has a display name, not a raw id', raw.length === 0, raw.join(', ') || 'all named');
   ok('it is pinned to the bottom and publishes its height', probe.position === 'bottom' && probe.dockHeight !== '', `position=${probe.position} --awc-dock-height=${probe.dockHeight || '(unset)'}`);
   await page.close();
 }
