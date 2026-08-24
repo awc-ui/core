@@ -40,7 +40,8 @@
     "dev:showcase-angular": "pnpm --filter @awc-ui/showcase-credit-risk-angular dev",
     "dev:showcase-svelte": "pnpm --filter @awc-ui/showcase-credit-risk-svelte dev",
     "dev:showcase-astro": "pnpm --filter @awc-ui/showcase-credit-risk-astro dev",
-    "coverage:merge": "node scripts/merge-coverage.mjs"
+    "coverage:merge": "node scripts/merge-coverage.mjs",
+    "verify:ssr": "node scripts/verify-ssr.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.4",
