@@ -4,7 +4,7 @@
  * Runs `@awc-ui/theme`'s own `computeTheme` + `generateCss` at authoring time and
  * writes the resulting CSS into `src/dock/seeds.generated.ts`. Doing it here
  * rather than at runtime keeps the dock free of `@material/material-color-utilities`
- * (~50 kB) and guarantees all six framework builds get byte-identical palettes.
+ * (~50 kB) and guarantees every framework build gets byte-identical palettes.
  *
  * Run: pnpm --filter @awc-ui/showcase-kit generate:seeds
  * (requires `pnpm --filter @awc-ui/theme build` to have run first)

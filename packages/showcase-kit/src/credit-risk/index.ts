@@ -5,7 +5,7 @@
  * series behind every chart, the domain-value → component-vocabulary mapping,
  * and the shared route table.
  *
- * This exists so the six framework builds are genuinely only view layers. A
+ * This exists so the framework builds are genuinely only view layers. A
  * quarterly aggregate or a covenant's colour computed once here cannot drift
  * between ports, which means a screenshot of the React build and a screenshot
  * of the Svelte build are comparable evidence: any difference is the framework,

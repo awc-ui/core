@@ -690,7 +690,7 @@ ok('…and carries the language in the query instead', crossed.searchParams.get(
 /* ------------------------------------------------------- credit-risk logic */
 
 /*
- * These are shared by all six framework builds. A regression here is not one
+ * These are shared by every framework build. A regression here is not one
  * broken screen, it is the same wrong number rendered six times and no
  * disagreement between the ports to reveal it — so the arithmetic is pinned
  * against the fixture rather than against a snapshot of its own output.

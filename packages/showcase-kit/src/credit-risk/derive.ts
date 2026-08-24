@@ -4,7 +4,7 @@
  * The fixture is frozen at 2026-03-31 and carries exactly one time dimension:
  * `getRatingHistory()`, eight quarterly grade observations per counterparty. Every
  * trend on every screen is computed from those observations plus the static
- * balance-sheet fields, so all six framework builds draw identical lines.
+ * balance-sheet fields, so every framework build draws identical lines.
  *
  * CALIBRATION. A history observation carries the GRADE's through-the-cycle PD,
  * while `Counterparty.pd` carries the same grade with an idiosyncratic tilt. Left

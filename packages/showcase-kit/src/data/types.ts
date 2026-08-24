@@ -3,7 +3,7 @@
  *
  * Everything here is a plain, serialisable value. There is no runtime clock and
  * no randomness: the fixture is generated once at authoring time from a seeded
- * PRNG and baked into `generated.ts`, so all six framework builds render byte
+ * PRNG and baked into `generated.ts`, so every framework build renders byte
  * identical numbers.
  */
 
