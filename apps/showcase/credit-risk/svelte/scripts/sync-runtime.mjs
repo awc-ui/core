@@ -1,22 +1,43 @@
 #!/usr/bin/env node
 /**
- * Copy Stencil's lazy browser build into this app's `static/awc-runtime/`.
+ * Copy Stencil's lazy browser build into this app's `public/awc-runtime/`.
  *
  * WHY THE COMPONENTS ARE NOT BUNDLED
  *
- * `@awc-ui/core/loader` (and `/define`, which wraps it) resolves each
- * component's chunk at RUNTIME by URL, relative to the module's own location.
- * Let Vite bundle it and those URLs are rewritten to paths that only exist in
- * the dev server's module graph, so every element 404s in the export and
- * renders at zero height. `vite.config.js` therefore excludes the package
- * from pre-bundling, and the runtime is served as a plain static file from an
- * absolute URL — the same thing the docs site does.
+ * `apps/docs/src/components/Head.astro` records three failed attempts at
+ * getting the components to load through a bundler. They applied to the docs
+ * site, then to every framework build in this vertical, and they apply here
+ * unchanged — the failure is in the BROWSER graph, so which bundler produced it
+ * makes no difference:
  *
- * This build prerenders the MARKUP but not the shadow roots, so the runtime is
- * what fills every element in. Until it lands the page is a column of unstyled
- * tags — the trade this build makes in exchange for switching language, theme
- * and density in place, without a navigation. The Astro build next door makes
- * the opposite trade and explains it in its own `src/middleware.ts`.
+ *   1. `@awc-ui/core/loader` (and `/define`, which wraps it) resolves each
+ *      component's chunk at RUNTIME by URL, relative to the module's own
+ *      location. Bundle it and the chunks are looked for beside the app bundle
+ *      — `/showcase/credit-risk/svelte/assets/…` here, `_app/immutable/…` in
+ *      the SvelteKit twin — where nothing was ever written. Every element 404s
+ *      and renders at zero height.
+ *   2. `@awc-ui/core/dist/components/index.js` looks like the fix (it is the
+ *      `dist-custom-elements` output) but exports only utilities; it defines
+ *      no elements. Importing all 79 `md-*.js` modules by hand rots instantly
+ *      and drags every component into this app's bundle.
+ *   3. A wrapper package pulls `@awc-ui/core` into the module graph, so it
+ *      lands back in case 1 or case 2. This app therefore renders plain `md-*`
+ *      tags and assigns object props through a Svelte action — see
+ *      `src/lib/elements.ts`.
+ *
+ * What works is what the docs site does: serve Stencil's own minified lazy
+ * build from a STATIC url and let it resolve its siblings relative to itself.
+ * A module `<script>` with an absolute URL in `index.html` does that.
+ * Vite copies `public/` into `dist/` verbatim and never rewrites it, so the
+ * runtime lands where that URL points. Lazy loading survives — a screen only
+ * fetches the elements it renders.
+ *
+ * THE RUNTIME MATTERS MORE HERE THAN IN THE SSR TWIN. There, the hook painted
+ * every component's shadow DOM into the response, so a page was readable before
+ * any script ran and the runtime only added behaviour. In this build nothing is
+ * rendered until JavaScript runs at all, and the components are rendered by the
+ * runtime itself — if this copy is missing, every screen is a tree of unknown
+ * tags at zero height.
  *
  * `md3/` is the MINIFIED lazy build meant for browsers. `esm/` is the
  * unminified bundler output and is deliberately not copied. Source maps are
@@ -30,7 +51,7 @@ import { fileURLToPath } from 'node:url';
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = resolve(appRoot, '../../../..');
 const distDir = resolve(repoRoot, 'packages/core/dist');
-const target = resolve(appRoot, 'static/awc-runtime');
+const target = resolve(appRoot, 'public/awc-runtime');
 
 if (!existsSync(join(distDir, 'md3'))) {
   console.error(
@@ -94,6 +115,6 @@ function bytes(dir) {
 
 const stripped = stripMapRefs(target);
 console.log(
-  `[sync-runtime] static/awc-runtime — ${(bytes(target) / 1024 / 1024).toFixed(1)} MB, ` +
+  `[sync-runtime] public/awc-runtime — ${(bytes(target) / 1024 / 1024).toFixed(1)} MB, ` +
     `${stripped} sourceMappingURL comments stripped`,
 );

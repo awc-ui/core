@@ -7,14 +7,25 @@
  * `awc-showcase-change` event — the dock dispatches it on `window` AND on the
  * element, and listening to both would update the store twice per change.
  *
- * HYDRATION: the first client render must produce the same markup the prerender
- * produced, so the store's initial value is `DEFAULT_STATE` (en / ltr) on both
- * sides. The subscription only starts in the browser, and the re-render with
- * the real locale from the URL or localStorage happens after hydration.
+ * THE INITIAL VALUE IS `DEFAULT_STATE` (en / ltr) and is replaced within the
+ * same tick. There is no server render in this build, so nothing has to match
+ * across a hydration boundary — but the dock module is imported lazily (see
+ * `components/Dock.svelte`), so the first frame is drawn before it has
+ * published, and the store needs a value that is not `undefined`. What keeps
+ * that frame from being visibly English on a Romanian page is the preboot
+ * script, which stamps lang / dir / theme onto `<html>` before the first paint;
+ * the strings follow a moment later, through this store. Same bargain as every
+ * other build in the vertical.
+ *
+ * THE `if (!browser) return` GUARD IS GONE, and its absence is the point. In
+ * the SvelteKit twin this store was constructed during the server render, where
+ * `subscribeShowcaseState` has no `window` to subscribe to. Nothing renders
+ * outside a browser here, so a start function that only runs on the first
+ * subscribe cannot run anywhere else — the branch would be unreachable, and an
+ * unreachable branch invites a reader to work out what triggers it.
  */
 
 import { derived, readable, type Readable } from 'svelte/store';
-import { browser } from '$app/environment';
 import { DEFAULT_STATE, subscribeShowcaseState, type ShowcaseState } from '@awc-ui/showcase-kit/dock';
 import {
   createTranslator,
@@ -47,11 +58,10 @@ function callable(translator: Translator): T {
   });
 }
 
-/** The raw dock state. `DEFAULT_STATE` until the dock publishes, and on the server. */
-export const state: Readable<ShowcaseState> = readable(DEFAULT_STATE, (set) => {
-  if (!browser) return;
-  return subscribeShowcaseState((detail) => set(detail.state));
-});
+/** The raw dock state. `DEFAULT_STATE` until the dock publishes. */
+export const state: Readable<ShowcaseState> = readable(DEFAULT_STATE, (set) =>
+  subscribeShowcaseState((detail) => set(detail.state)),
+);
 
 /** Locale-bound translator + Intl formatters. Every visible string goes through it. */
 export const t: Readable<T> = derived(state, ($state) => callable(createTranslator($state.locale)));

@@ -1,10 +1,65 @@
 <!doctype html>
 <html lang="en" dir="ltr">
   <head>
+    <!-- charset and viewport first, and inside the first 1024 bytes, which is
+         all the encoding sniffer reads. -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Aurelia Bank — Credit Risk Console</title>
+
+    <!-- THE MOUNT. Every asset this document references is written by the
+         builder as a bare filename — `main.js`, `styles.css` — and the same
+         document is served at 95 different paths (see
+         `scripts/fan-out-routes.mjs`). Without an absolute <base> those names
+         would resolve against whichever directory the reader landed in and 404
+         on every screen but the overview.
+
+         It must agree with `baseHref` in angular.json and with `APP_BASE_HREF`
+         in src/app/app.config.ts. The builder rewrites the href here to the
+         `baseHref` option, so angular.json is the one that wins — this is
+         written out anyway so `ng serve` and a reader of this file both see the
+         real value. -->
     <base href="/showcase/credit-risk/angular/" />
+
+    <!-- THE PREBOOT SCRIPT goes here, and it is written in at build time.
+
+         ~800 bytes of synchronous IIFE from `@awc-ui/showcase-kit/preboot` that
+         reads the showcase state from the URL (or localStorage) and stamps
+         lang / dir / data-theme / data-density onto <html> before the first
+         paint. It has to be ahead of the stylesheet the builder appends to the
+         end of this head, or the browser blocks it on that download first.
+
+         The body of it lives in the kit — one copy, shared by every build — so
+         it cannot be pasted here without forking it on the first edit. Angular's
+         application builder has no `transformIndexHtml` hook, so
+         `scripts/inject-head.mjs` substitutes this marker after `ng build`,
+         reading the same constant `src/app/app.config.ts` imports.
+
+         Under `ng serve` there is no such step and the marker stays a comment;
+         the APP_INITIALIZER in app.config.ts appends the script instead, which
+         is late but correct. Its `[data-awc-preboot]` guard is what stops the
+         two from both firing in a real build. -->
+    <!-- __AWC_HEAD__ -->
+
+    <!-- Evidence, in the same place the sibling builds put theirs: this one is
+         a single-page application. The Angular build next door at
+         `/showcase/credit-risk/angular-ssr/` writes `content="ssr"` plus a
+         per-request `awc-rendered-at`, which is what `scripts/verify-ssr.mjs`
+         reads. Nothing in `.shell` sees either, so the visible text, the md-*
+         fingerprint and every measured gap are untouched. -->
+    <meta name="awc-render-mode" content="spa" />
+
+    <!-- English, and it stays English. The locale lives in a query parameter
+         that only client JS reads, so the document that leaves the static host
+         has no authoritative language; the preboot script swaps lang/dir on
+         <html> and every visible string re-renders through the translator, but
+         the title cannot follow. Same limitation, same reason, as the two builds
+         either side of this one. -->
+    <title>Aurelia Bank — Credit Risk Console</title>
+
+    <!-- THE FONTS, at document level. The components render Material Symbols
+         glyphs inside their own shadow roots; font registration crosses shadow
+         boundaries, class rules do not — so the faces must be registered here or
+         every `icon=` prop renders its ligature text. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -15,8 +70,42 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap"
     />
+
+    <!-- THE COMPONENT RUNTIME, as a module script resolved against <base>.
+
+         Stencil's lazy build resolves its sibling chunks relative to its OWN
+         location, so it must never go through a bundler — put it in the module
+         graph and it hunts for entry chunks beside `main.js`, where nothing was
+         written, and every element renders at zero height.
+         `scripts/sync-runtime.mjs` carries the full post-mortem; the copy it
+         makes lands in `public/`, which the builder copies to the output root.
+
+         Angular's index generator only APPENDS to this document — it never
+         rewrites a src that was already here — so this tag reaches the browser
+         verbatim, and the request goes out while the head is still parsing,
+         in parallel with `main.js` rather than after it.
+
+         It is a module script in `<head>`, so it is DEFERRED: the fetch starts
+         at once, execution waits for the parser, and module scripts run in
+         document order — this one ahead of the `polyfills.js` and `main.js` tags
+         the builder appends to `<body>`. So the elements are defined before
+         Angular creates its first one. `md3.esm.js` self-registers; there is no
+         `defineCustomElements` call to make. `data-awc-runtime` is the same
+         marker the server-rendered twin stamps on its copy, so a check that
+         looks for "the runtime tag" finds it in either build. -->
+    <script
+      type="module"
+      data-awc-runtime
+      src="awc-runtime/md3/md3.esm.js"
+      onerror="console.error('[awc-ui] component registration failed', this.src)"
+    ></script>
   </head>
   <body>
+    <!-- Empty, and it stays empty until `main.js` runs. That is the claim this
+         build exists to make: with JavaScript disabled there is nothing here.
+         The 95 documents `scripts/fan-out-routes.mjs` writes are byte-identical
+         copies of this one — the router reads `location.pathname`, so one shell
+         serves every route. -->
     <awc-root></awc-root>
   </body>
 </html>

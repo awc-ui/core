@@ -1,0 +1,26 @@
+{
+  "name": "@awc-ui/showcase-credit-risk-nuxt",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aurelia Bank — Credit Risk Console, the runtime server-rendered Nuxt flavour of the AWC UI showcase vertical",
+  "scripts": {
+    "sync-runtime": "node scripts/sync-runtime.mjs",
+    "dev": "pnpm sync-runtime && nuxi dev",
+    "build": "pnpm sync-runtime && nuxi build",
+    "start": "node server.mjs",
+    "verify": "node scripts/verify-browser.mjs",
+    "lint": "node scripts/typecheck.mjs"
+  },
+  "dependencies": {
+    "@awc-ui/core": "workspace:*",
+    "@awc-ui/showcase-kit": "workspace:*"
+  },
+  "devDependencies": {
+    "nuxt": "^3.14.1592",
+    "puppeteer": "^24.0.0",
+    "typescript": "^5.4.0",
+    "vue": "^3.5.0",
+    "vue-tsc": "^2.0.0"
+  }
+}

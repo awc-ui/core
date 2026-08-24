@@ -11,7 +11,7 @@
   equals the KPI above it.
 -->
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { navigate } from '$lib/router';
   import {
     getCounterparties,
     getPortfolioTotals,
@@ -49,7 +49,8 @@
   function onBarClick(event: Event) {
     const index = (event as CustomEvent<{ dataIndex: number }>).detail?.dataIndex ?? -1;
     const sector = sectors[index];
-    if (sector) goto(withBase(route.sector(sector.id)));
+    // Unprefixed — `navigate()` adds the mount, the way SvelteKit's `base` did.
+    if (sector) navigate(route.sector(sector.id));
   }
 </script>
 

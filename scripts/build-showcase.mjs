@@ -50,9 +50,12 @@ const BUILDS = [
   { framework: 'astro', pkg: '@awc-ui/showcase-credit-risk-astro', output: 'dist' },
   { framework: 'react', pkg: '@awc-ui/showcase-credit-risk-react', output: 'dist' },
   { framework: 'next', pkg: '@awc-ui/showcase-credit-risk-next', server: true },
-  { framework: 'vue', pkg: '@awc-ui/showcase-credit-risk-vue', output: '.output/public' },
+  { framework: 'vue', pkg: '@awc-ui/showcase-credit-risk-vue', output: 'dist' },
+  { framework: 'nuxt', pkg: '@awc-ui/showcase-credit-risk-nuxt', server: true },
   { framework: 'angular', pkg: '@awc-ui/showcase-credit-risk-angular', output: 'dist/browser' },
-  { framework: 'svelte', pkg: '@awc-ui/showcase-credit-risk-svelte', output: 'build' },
+  { framework: 'angular-ssr', pkg: '@awc-ui/showcase-credit-risk-angular-ssr', server: true },
+  { framework: 'svelte', pkg: '@awc-ui/showcase-credit-risk-svelte', output: 'dist' },
+  { framework: 'sveltekit', pkg: '@awc-ui/showcase-credit-risk-sveltekit', server: true },
 ];
 
 /** Only build the frameworks named on the command line, if any are. */

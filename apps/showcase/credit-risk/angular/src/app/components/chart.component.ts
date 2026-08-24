@@ -16,7 +16,7 @@ export interface ChartSeries {
  * `md-line-chart` and `md-area-chart` take the same props and would otherwise be
  * three files that drift. `series`, the axes and `valueFormatter` are PROPERTY
  * bindings because they have no attribute form; everything else is an attribute
- * binding so it survives the prerender. See `element.md`.
+ * binding, which is the house rule. See `element.md`.
  *
  * `label-plot` is defaulted here rather than at each call site. A chart's plot is
  * a focusable `role="application"` region whose accessible name comes from that

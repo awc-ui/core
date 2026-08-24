@@ -1,0 +1,13 @@
+/dist/
+/.angular/
+/node_modules/
+*.tsbuildinfo
+
+# Left over from when this build prerendered. Nothing writes or reads it any
+# more — see the header of scripts/prerender-routes.mjs. Ignored so a stale copy
+# from before the conversion cannot be committed by accident.
+/prerender-routes.txt
+
+# Copied verbatim from packages/core/dist by `pnpm sync-runtime`. Never edit,
+# never commit — the chunk hashes rotate on every core build.
+/public/awc-runtime/

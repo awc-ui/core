@@ -53,6 +53,15 @@
         "^build"
       ],
       "outputs": [
+        "dist/**",
+        "public/awc-runtime/**"
+      ]
+    },
+    "@awc-ui/showcase-credit-risk-nuxt#build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
         ".output/**",
         "public/awc-runtime/**"
       ]
@@ -63,8 +72,16 @@
       ],
       "outputs": [
         "dist/**",
-        "public/awc-runtime/**",
-        "prerender-routes.txt"
+        "public/awc-runtime/**"
+      ]
+    },
+    "@awc-ui/showcase-credit-risk-angular-ssr#build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        "public/awc-runtime/**"
       ]
     },
     "@awc-ui/showcase-credit-risk-svelte#build": {
@@ -72,7 +89,18 @@
         "^build"
       ],
       "outputs": [
+        "dist/**",
+        "public/awc-runtime/**"
+      ]
+    },
+    "@awc-ui/showcase-credit-risk-sveltekit#build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
         "build/**",
+        ".svelte-kit/**",
+        "!.svelte-kit/cache/**",
         "static/awc-runtime/**"
       ]
     },

@@ -2,12 +2,11 @@
   "name": "@awc-ui/showcase-credit-risk-angular",
   "version": "0.1.0",
   "private": true,
-  "description": "Credit Risk Console \u2014 Angular build (prerendered, hydrating, locale switched in place)",
+  "description": "Credit Risk Console — Angular build (single-page application: no server, no prerender, routing and every render in the browser)",
   "scripts": {
     "sync-runtime": "node scripts/sync-runtime.mjs",
-    "prerender-routes": "node scripts/prerender-routes.mjs",
     "dev": "pnpm sync-runtime && ng serve",
-    "build": "pnpm sync-runtime && pnpm prerender-routes && ng build",
+    "build": "pnpm sync-runtime && ng build && node scripts/inject-head.mjs && node scripts/fan-out-routes.mjs",
     "serve": "node scripts/serve-dist.mjs",
     "verify": "node scripts/verify-browser.mjs",
     "lint": "tsc -p tsconfig.app.json --noEmit"
@@ -17,7 +16,6 @@
     "@angular/compiler": "~17.3.0",
     "@angular/core": "~17.3.0",
     "@angular/platform-browser": "~17.3.0",
-    "@angular/platform-server": "~17.3.0",
     "@angular/router": "~17.3.0",
     "@awc-ui/core": "workspace:*",
     "@awc-ui/showcase-kit": "workspace:*",
@@ -28,8 +26,8 @@
     "@angular-devkit/build-angular": "~17.3.0",
     "@angular/cli": "~17.3.0",
     "@angular/compiler-cli": "~17.3.0",
+    "@types/node": "^20.14.0",
     "puppeteer": "^24.0.0",
-    "typescript": "~5.4.0",
-    "@types/node": "^20.14.0"
+    "typescript": "~5.4.0"
   }
 }

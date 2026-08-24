@@ -45,10 +45,18 @@ function callable(translator: Translator): T {
  * ONE SUBSCRIPTION FOR THE WHOLE APP, because the service is a root singleton:
  * twenty components reading `t` on one screen share one listener.
  *
- * PRERENDER: `DEFAULT_STATE` (en / ltr), the same starting point every other
- * hydrating build uses, so the emitted HTML is in the default locale. The
- * subscription only starts in the browser and the real locale arrives from the
- * URL or localStorage a moment later.
+ * THE STARTING POINT IS `DEFAULT_STATE` (en / ltr), the same one every other
+ * build begins from, and in this build it is briefly visible: the dock is a
+ * DYNAMIC import in the `APP_INITIALIZER`, so the first render happens in
+ * English and the real locale arrives a tick later, when the module has loaded
+ * and `subscribeShowcaseState` fires. What the reader does not see is the wrong
+ * THEME or the wrong DIRECTION — those are stamped onto `<html>` by the preboot
+ * script in `<head>`, before any of this runs.
+ *
+ * The `document` guard below is what makes this file safe to share verbatim with
+ * the server-rendered twin next door, where the same constructor runs in a
+ * DOM-less Node context. Here there is always a document, and the guard costs a
+ * branch.
  */
 @Injectable({ providedIn: 'root' })
 export class ShowcaseService {
@@ -62,8 +70,9 @@ export class ShowcaseService {
   private readonly zone = inject(NgZone);
 
   constructor() {
-    // `document` rather than `window`: the prerender runs in a DOM-less Node
-    // context, and this is the check that keeps the subscription out of it.
+    // `document` rather than `window`: the twin's server render runs in a
+    // DOM-less Node context, and this is the check that keeps the subscription
+    // out of it. In this build it is always true.
     if (typeof document === 'undefined') return;
 
     /*

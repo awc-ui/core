@@ -9,9 +9,7 @@
   every machine that builds this.
 -->
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
-  import { base } from '$app/paths';
+  import { isPlainClick, navigate, pathname } from '$lib/router';
   import { BASE_CURRENCY, REPORTING_DATE, REPORTING_QUARTER } from '@awc-ui/showcase-kit/data';
   import { t } from '$lib/showcase';
   import { route, withBase } from '$lib/routes';
@@ -28,10 +26,12 @@
     { path: route.stress(), icon: 'stacked_line_chart', label: $t('nav.stress') },
   ];
 
-  /** The screen path, with the base prefix stripped back off. */
-  $: here = $page.url.pathname.startsWith(base)
-    ? $page.url.pathname.slice(base.length) || '/'
-    : $page.url.pathname;
+  /**
+   * The screen path. Already unprefixed — the router strips the mount on the
+   * way in from `location`, which is the same thing this component used to do
+   * by hand against SvelteKit's `base`.
+   */
+  $: here = $pathname;
 
   // The overview owns `/` and would otherwise match every path.
   const isCurrent = (path: string, at: string) => (path === '/' ? at === '/' : at.startsWith(path));
@@ -47,17 +47,19 @@
    * ⌘-click in place instead of opening a new tab — the link would look like a
    * link, carry a real href, and then quietly refuse to behave like one.
    * `originalEvent` is the MouseEvent or KeyboardEvent that produced the
-   * selection, so one check covers the Enter path too.
+   * selection, so `isPlainClick` covers the Enter path too.
+   *
+   * The `href` in the detail is the anchor's own, so it is PREFIXED with the
+   * mount. `navigate()` normalises either flavour — see `$lib/router`.
    */
   function intercept(event: Event) {
     const detail = (event as CustomEvent<{ href?: string; originalEvent?: MouseEvent | KeyboardEvent }>)
       .detail;
     const href = detail?.href;
     if (!href) return;
-    const original = detail?.originalEvent;
-    if (original?.metaKey || original?.ctrlKey || original?.shiftKey) return;
+    if (!isPlainClick(detail?.originalEvent)) return;
     event.preventDefault();
-    goto(href);
+    navigate(href);
   }
 </script>
 

@@ -30,14 +30,20 @@
 # that path later would silently win over the proxy and serve build artifacts
 # instead of the rendered app.
 #
-# The base path is preserved through the proxy: the Next app is compiled with
-# `basePath: '/showcase/credit-risk/next'`, so it expects to receive the prefix
-# and emits it in every asset URL it renders.
+# The base path is preserved through the proxy. Each app is compiled against
+# its own prefix — Next's `basePath`, Nuxt's `app.baseURL`, SvelteKit's
+# `paths.base`, Angular's `baseHref` — so it expects to RECEIVE that prefix and
+# emits it in every asset URL it renders. Stripping it here would break every
+# link and every asset on the page.
 #
-# THE ORIGIN BELOW MUST MATCH THE NETLIFY SITE NAME. It is a plain hostname on
-# purpose — netlify.toml does not interpolate environment variables, so the
-# alternative is generating this file at build time, which hides the routing
-# somewhere less obvious than the file that implements it.
+# EACH ORIGIN BELOW MUST MATCH THE NAME OF THE NETLIFY SITE THAT BUILD IS
+# DEPLOYED TO. They are plain hostnames on purpose: netlify.toml does not
+# interpolate environment variables, so the alternative is generating this file
+# at build time, which hides the routing somewhere less obvious than the file
+# that implements it. `.github/workflows/deploy.yml` asserts a rule exists for
+# every server-rendered build, so a build added without one fails CI rather
+# than 404ing in production — but nothing can check that a hostname is the
+# RIGHT one until the site exists.
 [[redirects]]
   from = "/showcase/credit-risk/next/*"
   to = "https://awc-credit-risk-next.netlify.app/showcase/credit-risk/next/:splat"
@@ -47,6 +53,42 @@
 [[redirects]]
   from = "/showcase/credit-risk/next"
   to = "https://awc-credit-risk-next.netlify.app/showcase/credit-risk/next/"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/showcase/credit-risk/nuxt/*"
+  to = "https://awc-credit-risk-nuxt.netlify.app/showcase/credit-risk/nuxt/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/showcase/credit-risk/nuxt"
+  to = "https://awc-credit-risk-nuxt.netlify.app/showcase/credit-risk/nuxt/"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/showcase/credit-risk/angular-ssr/*"
+  to = "https://awc-credit-risk-angular-ssr.netlify.app/showcase/credit-risk/angular-ssr/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/showcase/credit-risk/angular-ssr"
+  to = "https://awc-credit-risk-angular-ssr.netlify.app/showcase/credit-risk/angular-ssr/"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/showcase/credit-risk/sveltekit/*"
+  to = "https://awc-credit-risk-sveltekit.netlify.app/showcase/credit-risk/sveltekit/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/showcase/credit-risk/sveltekit"
+  to = "https://awc-credit-risk-sveltekit.netlify.app/showcase/credit-risk/sveltekit/"
   status = 200
   force = true
 

@@ -15,8 +15,7 @@
             "outputPath": "dist",
             "index": "src/index.html",
             "browser": "src/main.ts",
-            "server": "src/main.server.ts",
-            "prerender": { "routesFile": "prerender-routes.txt" },
+            "prerender": false,
             "ssr": false,
             "baseHref": "/showcase/credit-risk/angular/",
             "polyfills": ["zone.js"],
@@ -26,14 +25,18 @@
               "node_modules/@awc-ui/core/dist/md3/md3.css",
               "node_modules/@awc-ui/showcase-kit/src/credit-risk/app.css"
             ],
-            "optimization": true,
+            "optimization": {
+              "scripts": true,
+              "styles": { "minify": true, "inlineCritical": false },
+              "fonts": true
+            },
             "sourceMap": false,
             "extractLicenses": false
           }
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": { "buildTarget": "credit-risk-angular:build" }
+          "options": { "buildTarget": "credit-risk-angular:build", "port": 4324 }
         }
       }
     }

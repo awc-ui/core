@@ -73,7 +73,15 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = join(root, 'apps/docs/public');
 const PORT = 4352;
 
-/** The reference, and the builds measured against it. */
+/**
+ * The reference, and the builds measured against it.
+ *
+ * These are the builds in the static tree. The four server-rendered ones —
+ * next, nuxt, angular-ssr, sveltekit — cannot be here: this script serves
+ * `apps/docs/public`, and a build that renders per request stages nothing
+ * there. Each of them shares its screens with the SPA beside it in this list,
+ * so what goes unmeasured is the server render, not the screens.
+ */
 const REFERENCE = 'react';
 const BUILDS = ['vue', 'angular', 'svelte', 'html', 'astro'];
 

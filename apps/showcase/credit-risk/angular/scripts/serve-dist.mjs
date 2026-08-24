@@ -1,12 +1,28 @@
 #!/usr/bin/env node
 /**
- * Serve `dist/browser/` at the real mount path —
- * `/showcase/credit-risk/angular/` — so the prerendered build can be checked
- * exactly as it will be deployed. `ng serve` rebuilds from source and never
- * prerenders, so it cannot answer the question this needs answering: whether
- * the files the builder actually emitted are correct.
+ * Serve `dist/browser/` at the real mount path — `/showcase/credit-risk/angular/`
+ * — so the build can be checked exactly as it will be deployed.
  *
  *   node scripts/serve-dist.mjs [port]
+ *
+ * `ng serve` cannot answer the question this needs answering. It rebuilds from
+ * source, serves one document from memory and never runs the fan-out, so it is
+ * the one configuration in which a deep link works whether or not the files
+ * exist. This serves the bytes the builder actually emitted.
+ *
+ * DELIBERATELY WITHOUT A HISTORY FALLBACK. It would be one line, and it would
+ * make this the only server in the pipeline that has one: the parity and a11y
+ * verifiers at the repo root are dumb file servers, and so is the docs host in
+ * the configuration that matters. A fallback here would quietly cover for a
+ * missing `scripts/fan-out-routes.mjs` run and let a build that 404s on every
+ * deep link pass its own verification. An unknown path 404s, exactly as it would
+ * in production.
+ *
+ * DIRECTORIES RESOLVE TO THEIR `index.html`, which is not a fallback but the
+ * behaviour every static host has, and this build needs it: Angular drops the
+ * trailing slash from the address bar on its first navigation (`Location`
+ * normalises `…/watchlist/` to `/watchlist`), so a reader who reloads asks for
+ * `…/angular/watchlist`, and the file is at `…/angular/watchlist/index.html`.
  *
  * The mount is read from the kit rather than written down again here, which is
  * the whole reason `createRoutes()` exists: one fact, one place.
@@ -21,6 +37,14 @@ const { basePath: BASE_PATH } = createRoutes('angular');
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const root = join(appRoot, 'dist/browser');
 const port = Number(process.argv[2] || 4325);
+
+if (!existsSync(join(root, 'index.html'))) {
+  console.error(
+    `[serve] ${join(root, 'index.html')} does not exist — build first:\n` +
+      '        pnpm --filter @awc-ui/showcase-credit-risk-angular build',
+  );
+  process.exit(1);
+}
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',

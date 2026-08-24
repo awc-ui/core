@@ -1,26 +1,20 @@
-import adapter from '@sveltejs/adapter-static';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /**
- * Static export, mounted under a sub-path.
+ * Svelte on its own — no SvelteKit, no `kit` block, no adapter.
  *
- * `paths.base` must agree with `createRoutes('svelte').basePath` in the kit —
- * that is the single fact this build declares about itself, and every link is
- * derived from it. SvelteKit prefixes `base` onto its own asset URLs and onto
- * anything written as `{base}/…`, which is why `lib/routes.ts` exports the
- * UNPREFIXED paths for use with `<a href="{base}{path}">` and a prefixed
- * `withBase()` for raw attributes on custom elements.
+ * `@sveltejs/vite-plugin-svelte` reads this file directly when it is used as a
+ * plain Vite plugin, so `preprocess` and `onwarn` still apply. What is gone,
+ * deliberately, is everything the meta-framework contributed: `paths.base` (the
+ * mount is Vite's `base` now, and `src/lib/routes.ts` derives it from the kit),
+ * `trailingSlash` (the kit's route table has always spelled every path with
+ * one), the adapter, and the file-system router (`src/App.svelte` is six `{#if}`
+ * branches over `location.pathname`).
  *
- * `trailingSlash: 'always'` matches the other five builds: every route becomes
- * a directory with an `index.html`, which is the only shape a static host can
- * serve without a redirect it cannot perform.
- *
- * `fallback` is deliberately UNSET. A fallback page is for a host that can
- * route unknown paths back to the app; this build prerenders all 95 routes, so
- * an unknown path should be a real 404, not a shell that renders the overview
- * under the wrong URL.
+ * `vitePreprocess()` is what lets the components keep `<script lang="ts">`. It
+ * is the only preprocessor here — no SCSS, no PostCSS beyond what Vite already
+ * does for the two imported stylesheets.
  */
-const BASE_PATH = '/showcase/credit-risk/svelte';
 
 /**
  * Silence three a11y warnings, and ONLY on the library's own elements.
@@ -38,8 +32,8 @@ const BASE_PATH = '/showcase/credit-risk/svelte';
  *   the accessibility tree a second, competing control.
  *
  * The frame check is what keeps this honest: the same warning on a real `<td>`
- * or a real `<div on:click>` still fails the build, because those would be
- * genuine. Nothing is suppressed globally.
+ * or a real `<div on:click>` is still reported, because those would be genuine.
+ * Nothing is suppressed globally.
  */
 const SHADOWED = new Set([
   'a11y-misplaced-scope',
@@ -53,10 +47,5 @@ export default {
   onwarn(warning, handler) {
     if (SHADOWED.has(warning.code) && /<(md|awc)-/.test(warning.frame ?? '')) return;
     handler(warning);
-  },
-  kit: {
-    adapter: adapter({ pages: 'build', assets: 'build', strict: true }),
-    paths: { base: BASE_PATH, relative: false },
-    prerender: { handleHttpError: 'fail' },
   },
 };

@@ -9,13 +9,22 @@
  * telling assistive tech "row 1 of 10" on every page. None of those change a
  * pixel, so the only honest check is what the accessibility tree contains.
  *
- * COVERS ALL SIX FRAMEWORK BUILDS, and that is the point of running it at this
- * level rather than inside one app. Each build fixed these defects in its own
- * idiom — a defaulted prop in one, an attribute binding in another, a component
- * with no label in a third — and "the same application in six frameworks" is a
- * claim about the accessibility tree as much as about the pixels. Four of the
- * assertions apply to every build and are run against each; the rest are
- * specific to the locale-routed Astro tree.
+ * COVERS THE SIX BUILDS IN THE STATIC TREE, and that is the point of running it
+ * at this level rather than inside one app. Each build fixed these defects in
+ * its own idiom — a defaulted prop in one, an attribute binding in another, a
+ * component with no label in a third — and "the same application in many
+ * frameworks" is a claim about the accessibility tree as much as about the
+ * pixels. Four of the assertions apply to every build and are run against each;
+ * the rest are specific to the locale-routed Astro tree.
+ *
+ * WHAT IT DOES NOT COVER, said plainly so a pass is not read as more than it
+ * is: the four server-rendered builds — next, nuxt, angular-ssr, sveltekit —
+ * are absent. This script serves `apps/docs/public`, and a build that renders
+ * per request has nothing staged there by design; reaching one would mean
+ * starting a server, which is `scripts/verify-ssr.mjs`'s job. So an
+ * accessibility regression present ONLY in a server-rendered build passes here.
+ * Each SSR build shares its screens with the SPA beside it, which narrows that
+ * gap to the server render itself, but does not close it.
  *
  * Serves the staged builds itself, so it needs nothing running:
  *   pnpm showcase:build        # -> apps/docs/public/showcase/

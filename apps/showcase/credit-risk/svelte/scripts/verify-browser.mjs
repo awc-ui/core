@@ -1,246 +1,472 @@
+#!/usr/bin/env node
 /**
- * Does the SvelteKit build actually work in a browser?
+ * Does this build actually behave like a single-page application?
  *
- * The claims here are the ones that separate a hydrating build from the two
- * server-rendered ones, and none of them survives a type-check alone: the
- * prerendered HTML carries real rows and real numbers rather than a loading
- * state, the components upgrade and the charts paint, the dock's language
- * switch re-renders every string IN PLACE with no navigation, the tables sort
- * and page through the selector that owns the data, and client routing keeps
- * the page rather than reloading the document.
+ * The claims being tested are the ones this build EXISTS to make, and every one
+ * of them is invisible to a type-check and to `vite build` finishing cleanly:
+ * nothing is rendered until the browser renders it, the routes resolve in the
+ * browser rather than at a server, a cold deep link still lands on the right
+ * screen, the components upgrade from a runtime the bundler never touched, and
+ * the locale switches in place rather than navigating.
+ *
+ * IT IS THE MIRROR OF THE SVELTEKIT TWIN'S CHECK. That one asserts declarative
+ * shadow DOM in the response and two different render stamps a second apart.
+ * This one asserts the opposite of both — an empty document, identical for
+ * every route and every visitor — because a build labelled "SPA" that quietly
+ * prerendered its screens would pass every other check in the pipeline while
+ * being a different thing than the label claims.
+ *
+ * `scripts/verify-showcase-parity.mjs` at the repo root already proves this
+ * build renders the same DOM as its siblings. It cannot prove any of the above:
+ * it measures one screen at a time, from a cold load with JavaScript on, which
+ * is exactly the case where an SPA and a static export are indistinguishable.
+ * That is the gap this file fills.
  *
  * Starts its own server, so it needs nothing running:
  *   pnpm --filter @awc-ui/showcase-credit-risk-svelte build
  *   pnpm --filter @awc-ui/showcase-credit-risk-svelte verify
+ *
+ * The server it starts is `scripts/serve-dist.mjs`, which has NO history
+ * fallback — so "the deep link works" here means the files are really on disk,
+ * not that a dev server papered over it.
  */
 import { spawn } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
-import { createRoutes } from '@awc-ui/showcase-kit/credit-risk';
+import { createRoutes, FRAMEWORKS } from '@awc-ui/showcase-kit/credit-risk';
 
-const { basePath: BASE_PATH } = createRoutes('svelte');
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const PORT = 4341;
-const BASE = `http://localhost:${PORT}${BASE_PATH}`;
+const PORT = 4348;
+const { basePath, route } = createRoutes('svelte');
+const BASE = `http://localhost:${PORT}${basePath}`;
 
-const server = spawn(process.execPath, [join(appRoot, 'scripts/serve-build.mjs'), String(PORT)], {
+const server = spawn(process.execPath, [join(appRoot, 'scripts/serve-dist.mjs'), String(PORT)], {
   stdio: ['ignore', 'pipe', 'inherit'],
 });
-await new Promise((done) => server.stdout.once('data', done));
 
-/*
- * Kill the server whatever happens.
- *
- * The teardown at the bottom of this file only runs on the happy path, so any
- * failed assertion or timeout used to leave the server holding its port — and
- * the NEXT run then died on EADDRINUSE, reporting a port clash instead of the
- * failure that actually caused it. Twice.
- */
+// Kill the server whatever happens. The teardown at the bottom only runs on the
+// happy path, so a failed assertion would otherwise leave the port held and the
+// NEXT run would die on EADDRINUSE, reporting a port clash instead of the
+// failure that caused it.
 const stopServer = () => {
   if (!server.killed) server.kill();
 };
 process.on('exit', stopServer);
-process.on('uncaughtException', (error) => {
-  stopServer();
-  console.error(error);
-  process.exit(1);
-});
-process.on('unhandledRejection', (error) => {
-  stopServer();
-  console.error(error);
-  process.exit(1);
+for (const signal of ['uncaughtException', 'unhandledRejection']) {
+  process.on(signal, (error) => {
+    stopServer();
+    console.error(error);
+    process.exit(1);
+  });
+}
+
+// Wait for the listen line, but not forever: if the server exits instead of
+// listening (a missing `dist/`, a port already held), `once('data')` never
+// settles and the run hangs with no output at all.
+await new Promise((done, fail) => {
+  server.stdout.once('data', done);
+  server.once('exit', (code) => fail(new Error(`serve-dist.mjs exited with code ${code} before listening`)));
 });
 
-
+const browser = await puppeteer.launch({ headless: 'shell' });
 const results = [];
 const ok = (label, pass, detail = '') => {
   results.push(pass);
   console.log(`  ${pass ? 'ok  ' : 'FAIL'} ${label}${detail ? `  ${detail}` : ''}`);
 };
 
-const browser = await puppeteer.launch({ headless: 'shell' });
-const settled = () => new Promise((r) => setTimeout(r, 2500));
+/** Load a URL and give the lazy component runtime time to upgrade the elements. */
+const load = async (url, wait = 2500) => {
+  const page = await browser.newPage();
+  await page.setViewport({ width: 1500, height: 950 });
+  await page.goto(url, { waitUntil: 'networkidle0', timeout: 90000 });
+  await new Promise((r) => setTimeout(r, wait));
+  return page;
+};
 
-/* ------------------- 1. the prerender carries real content ----------------- */
+/**
+ * A marker on `window` that only a full document load can clear.
+ *
+ * This is the whole test for "routing happened in the browser". Counting
+ * navigation performance entries says the same thing, and both are checked —
+ * but the marker is the one that cannot be argued with: if the variable is
+ * still there, the JavaScript context was never torn down.
+ */
+const STAMP = () => {
+  window.__awcSpaStamp = 'alive';
+};
+const readStamp = (page) =>
+  page.evaluate(() => ({
+    stamp: window.__awcSpaStamp ?? '(gone — the document reloaded)',
+    navigations: performance.getEntriesByType('navigation').length,
+  }));
+
+/* ------------------------------------- the response carries no rendered page */
+/*
+ * The claim, stated as the SvelteKit twin's negative. There, the response
+ * already contains `.shell`, every `md-*` element and a `<template shadowrootmode>`
+ * inside each one, plus a per-request timestamp. Here the response is a shell:
+ * an empty mount point, the same bytes at every route.
+ *
+ * This is checked against the RAW response text rather than the rendered DOM,
+ * because by the time a browser has a DOM the question has already been
+ * answered by whichever side ran first.
+ */
 {
+  console.log('\n[shell] the document that leaves the host is empty');
+  const home = await (await fetch(`${BASE}/`)).text();
+  const deep = await (await fetch(`${BASE}${route.facility('fac-001')}`)).text();
+
+  ok('no shell markup in the response', !home.includes('class="shell"'), `${home.length} bytes`);
+  ok('no md-* element in the response', !/<md-[a-z-]+/.test(home), 'none');
+  ok(
+    'no declarative shadow DOM in the response',
+    !home.includes('shadowrootmode'),
+    'none — the twin next door has ~200 per page',
+  );
+  ok('the mount point is empty', /<div id="root"[^>]*>\s*<\/div>/.test(home), 'div#root has no children');
+  ok('it declares itself a single-page application', /name="awc-render-mode"\s+content="spa"/.test(home), 'awc-render-mode=spa');
+  ok('and carries no render timestamp — there is no render to stamp', !home.includes('awc-rendered-at'), 'absent');
+  // The fan-out copies ONE file. If a route's document differed, something
+  // per-route had been baked in and this would be a prerender wearing an SPA's
+  // label.
+  ok('a deep route serves byte-identical HTML', home === deep, `${deep.length} bytes, identical`);
+
+  // Fetched twice, a second apart: a static file cannot answer differently, and
+  // the twin next door must.
+  await new Promise((r) => setTimeout(r, 1100));
+  const again = await (await fetch(`${BASE}/`)).text();
+  ok('two requests a second apart are identical', home === again, 'no per-request content');
+
+  // And with scripting off, nothing appears. This is the same assertion from
+  // the browser's side — the one a reader can reproduce by hand.
   const page = await browser.newPage();
   await page.setJavaScriptEnabled(false);
-  await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
+  await page.goto(`${BASE}${route.watchlist()}`, { waitUntil: 'domcontentloaded' });
+  const dark = await page.evaluate(() => ({
+    text: document.body.innerText.trim(),
+    children: document.getElementById('root')?.childElementCount ?? -1,
+  }));
+  ok('with JavaScript disabled the page is blank', dark.children === 0 && dark.text === '', `#root has ${dark.children} children`);
+  await page.close();
+}
+
+/* ------------------------------------------- cold deep links resolve on disk */
+/*
+ * The fan-out is the SPA fallback for this build, and it is the thing most
+ * likely to be silently skipped: `vite build` on its own emits ONE index.html
+ * and the app still works perfectly from `/`. Every other route 404s.
+ */
+{
+  console.log('\n[deep links] every route is a real file');
+  const routes = [route.overview(), route.watchlist(), route.stress(), route.sector('energy'), route.counterparty('cp-01'), route.facility('fac-057')];
+  for (const path of routes) {
+    const page = await load(`${BASE}${path}`, 1200);
+    const probe = await page.evaluate(() => ({
+      status: document.querySelector('.shell') ? 'rendered' : 'no shell',
+      heading: document.querySelector('.screen-head h1')?.textContent ?? '(none)',
+    }));
+    ok(`${path} renders on a cold load`, probe.status === 'rendered', probe.heading);
+    await page.close();
+  }
+
+  // And a path that is NOT a route still reaches the app rather than the host's
+  // 404 — but only where the host rewrites. On this deliberately dumb server it
+  // must 404, which is what proves the server is not quietly helping.
+  const page = await browser.newPage();
+  const response = await page.goto(`${BASE}/no-such-screen/`, { waitUntil: 'domcontentloaded' });
+  ok('an unknown path 404s on a server with no rewrite', response.status() === 404, `HTTP ${response.status()}`);
+  await page.close();
+}
+
+/* --------------------------------------------- an unknown id is the app's 404 */
+/*
+ * The SvelteKit twin answered this with `throw error(404)` in `+page.ts`, and
+ * before that by simply having no file. Neither exists here, so `App.svelte`
+ * looks the id up. Getting this wrong is not cosmetic: the three drill screens
+ * do `getXById(id) as X` and would throw on `undefined`, leaving a blank page
+ * and a console trace.
+ *
+ * THE SHELL HAS TO BE SERVED FOR THE APP TO GET THE CHANCE. `/sectors/banana/`
+ * is not one of the 95 routes the fan-out writes, so on `serve-dist.mjs` — which
+ * has no history fallback, deliberately, and the assertion directly above proves
+ * it — the request 404s and no JavaScript ever runs. Loading that URL and then
+ * asking what the app rendered therefore tests the file server, not the app: it
+ * fails against a build whose not-found handling is perfect.
+ *
+ * So the host rewrite is supplied here, for this one page, by fulfilling the
+ * navigation request with the built shell. That is exactly the rule the docs
+ * host carries (`/showcase/credit-risk/svelte/* → …/index.html 200`) and the
+ * only condition under which a typo'd URL is the app's problem at all. Every
+ * other request — the entry chunk, the stylesheet, the component runtime —
+ * continues to the real server, so what is being exercised is the real build.
+ *
+ * IT CANNOT BE DONE BY ROUTING THERE FROM INSIDE THE APP EITHER: nothing in the
+ * UI links to a bogus id, and a synthetic `PopStateEvent` dispatched from
+ * `page.evaluate` does not reach the listener `$lib/router` registered (a real
+ * `goBack`/`goForward` does, which is what the routing section below uses).
+ */
+{
+  console.log('\n[404] a route that exists with an id that does not');
+  const shell = await (await fetch(`${BASE}/`)).text();
+
+  const page = await browser.newPage();
+  await page.setViewport({ width: 1500, height: 950 });
+  await page.setRequestInterception(true);
+  page.on('request', (request) => {
+    const isRewrite =
+      request.isNavigationRequest() &&
+      request.frame() === page.mainFrame() &&
+      new URL(request.url()).pathname === `${basePath}/sectors/banana/`;
+    if (isRewrite) request.respond({ status: 200, contentType: 'text/html; charset=utf-8', body: shell });
+    else request.continue();
+  });
+
+  await page.goto(`${BASE}/sectors/banana/`, { waitUntil: 'networkidle0', timeout: 90000 });
+  await new Promise((r) => setTimeout(r, 2000));
+
   const probe = await page.evaluate(() => ({
-    rows: document.querySelectorAll('md-table-body md-table-row').length,
-    figures: /€|EUR/.test(document.body.textContent),
-    named: document.body.textContent.includes('Aurelia'),
+    shell: Boolean(document.querySelector('.shell')),
+    nav: document.querySelectorAll('.shell__nav md-button').length,
+    heading: document.querySelector('.screen-head h1')?.textContent ?? '(none)',
+    // The overview owns `/`; if the lookup guard were missing this would either
+    // throw or fall through to a screen that is not the empty state.
+    isOverview: document.querySelector('.screen-head h1')?.textContent === 'Portfolio overview',
   }));
-  console.log('\n[1] the prerendered HTML, with JavaScript disabled');
-  ok('the counterparty page is in the HTML', probe.rows === 10, `${probe.rows} rows (page 1 of 24)`);
-  ok('the figures are in the HTML', probe.figures);
-  ok('the headline content is there', probe.named);
+  ok('it renders the empty state rather than throwing', probe.shell && !probe.isOverview, probe.heading);
+  ok('and keeps the nav, so the reader can leave', probe.nav === 3, `${probe.nav} section button(s)`);
   await page.close();
 }
 
-/* ------------------- 2. components upgrade, charts paint ------------------- */
+/* ------------------------------------------------ the components are upgraded */
+/*
+ * The runtime is loaded from `public/awc-runtime/` by a classic inline script
+ * that the bundler never sees. If that URL is wrong, every `md-*` element is an
+ * unknown tag: still in the DOM, still in the parity fingerprint, rendering at
+ * zero height with no shadow root. Checking for shadow roots is what tells the
+ * two apart.
+ */
 {
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1400, height: 900 });
-  const errors = [];
-  page.on('pageerror', (e) => errors.push(String(e)));
-  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
-
-  await page.goto(`${BASE}/`, { waitUntil: 'networkidle0', timeout: 90000 });
-  await page.waitForFunction(
-    () => document.querySelector('md-table-container')?.classList.contains('hydrated'),
-    { timeout: 60000 },
-  );
-  await settled();
-
-  const probe = await page.evaluate(`(() => {
-    const els = [...document.querySelectorAll('md-card,md-chip,md-table,md-bar-chart,md-area-chart,md-sparkline,md-button,md-status-dot,md-meter')];
-    const isPainted = (c) => {
-      if (!c.width || !c.height) return false;
-      const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
-      for (let i = 3; i < d.length; i += 400) if (d[i] !== 0) return true;
-      return false;
-    };
-    const charts = [...document.querySelectorAll('md-bar-chart,md-line-chart,md-area-chart,md-sparkline')];
+  console.log('\n[runtime] md-* elements upgraded from public/awc-runtime');
+  const page = await load(`${BASE}/`);
+  const probe = await page.evaluate(() => {
+    const elements = [...document.querySelectorAll('md-card, md-chip, md-button, md-bar-chart')];
     return {
-      total: els.length,
-      hydrated: els.filter((e) => e.classList.contains('hydrated')).length,
-      zeroHeight: [...els, document.querySelector('awc-showcase-dock')]
-        .filter((e) => e && e.getBoundingClientRect().height === 0)
-        .map((e) => e.tagName.toLowerCase()),
-      charts: charts.length,
-      painted: charts.filter((ch) => [...(ch.shadowRoot?.querySelectorAll('canvas') ?? [])].some(isPainted)).length,
-      dock: !!document.querySelector('awc-showcase-dock')?.shadowRoot,
+      total: elements.length,
+      upgraded: elements.filter((el) => el.shadowRoot).length,
+      runtimeSrc: [...document.querySelectorAll('script[type="module"]')]
+        .map((s) => s.src)
+        .find((src) => src.includes('awc-runtime')) ?? '(none)',
     };
-  })()`);
-
-  console.log('\n[2] with JavaScript enabled');
-  ok('every component upgraded', probe.hydrated === probe.total, `${probe.hydrated}/${probe.total}`);
-  ok('nothing renders at zero height', probe.zeroHeight.length === 0, probe.zeroHeight.join(','));
-  ok('every chart painted its plot', probe.painted === probe.charts, `${probe.painted}/${probe.charts}`);
-  ok('the dock is present', probe.dock);
-  ok('no console or page errors', errors.length === 0, errors.slice(0, 2).join(' | '));
+  });
+  ok('every sampled md-* element has a shadow root', probe.total > 0 && probe.upgraded === probe.total, `${probe.upgraded}/${probe.total}`);
+  ok('the runtime came from the mounted public directory', probe.runtimeSrc.includes(`${basePath}/awc-runtime/md3/md3.esm.js`), probe.runtimeSrc);
   await page.close();
 }
 
-/* -------------- 3. the language changes in place, without a load ----------- */
+/* ---------------------------------------------------- routing in the browser */
 {
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1400, height: 900 });
-  await page.goto(`${BASE}/`, { waitUntil: 'networkidle0', timeout: 90000 });
-  await settled();
+  console.log('\n[routing] the document is never reloaded');
+  const page = await load(`${BASE}/`);
+  await page.evaluate(STAMP);
 
-  const before = await page.evaluate(() => document.body.innerText.slice(0, 400));
+  // The section nav is `md-button[href]` — a real anchor inside a shadow root.
+  // Clicking it is the case that used to be a full page load, and the reason
+  // `Shell.svelte` vetoes `mdClick`.
+  //
+  // The button is found by PROPERTY first, attribute second, for the reason
+  // spelled out below the click: once the runtime has defined `md-button`,
+  // Svelte writes `href` to the element rather than to the markup, and the
+  // attribute is gone. Matching on the attribute alone found the button only
+  // when nothing had re-rendered the nav yet — so this threw `undefined` or
+  // passed depending on whether the dock had published its state first.
+  await page.evaluate((href) => {
+    const nav = document.querySelector('.shell__nav');
+    const button = [...nav.querySelectorAll('md-button')].find(
+      (b) => (b.href ?? b.getAttribute('href')) === href,
+    );
+    if (!button) throw new Error(`no nav button for ${href}`);
+    button.shadowRoot.querySelector('a, button').click();
+  }, `${basePath}${route.watchlist()}`);
+  await new Promise((r) => setTimeout(r, 1500));
 
-  // Mark the document. If switching language reloaded it the mark is gone —
-  // which is exactly the difference between this build and the two
-  // server-rendered ones, so it is worth asserting rather than assuming.
-  await page.evaluate(() => {
-    window.__stillHere = true;
-  });
-
-  // Drive the dock's own locale picker, the same control a human uses. It sits
-  // inside the dock's shadow root, behind the collapse toggle on a first visit.
-  const drove = await page.evaluate(() => {
-    const dock = document.querySelector('awc-showcase-dock');
-    const root = dock?.shadowRoot;
-    if (!root) return false;
-    let select = root.querySelector('#awc-dock-locale');
-    if (!select) {
-      root.querySelector('button')?.click();
-      select = root.querySelector('#awc-dock-locale');
-    }
-    if (!select) return false;
-    select.value = 'ro';
-    select.dispatchEvent(new Event('change', { bubbles: true }));
-    return true;
-  });
-  await settled();
-
-  const after = await page.evaluate(() => ({
-    text: document.body.innerText.slice(0, 400),
-    lang: document.documentElement.lang,
-    sameDocument: window.__stillHere === true,
-  }));
-
-  console.log('\n[3] switching language from the dock');
-  ok('the dock exposes a locale picker', drove);
-  ok('the document was not reloaded', after.sameDocument);
-  ok('<html lang> follows', after.lang === 'ro', after.lang);
-  ok('every string re-rendered in place', after.text !== before);
-  await page.close();
-}
-
-/* ------------------ 4. sorting, paging and client routing ------------------ */
-{
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1400, height: 900 });
-  await page.goto(`${BASE}/`, { waitUntil: 'networkidle0', timeout: 90000 });
-  await settled();
-
+  let probe = await readStamp(page);
   /*
-   * Row identity is read as a PROPERTY, with the attribute only as a fallback.
+   * THE MARK IS READ AS A PROPERTY, with the attribute only as a fallback.
    *
-   * Svelte sets data on an upgraded custom element through its property when
-   * one exists — so a row rendered during the prerender carries
-   * `value="cp-01"` in the markup, while a row created on the client after a
-   * sort or a page change carries only the property. Both reach the component
-   * identically. An attribute-only assertion cannot tell them apart: it reports
-   * a perfectly working table as `cp-21 → null`, which looks like a pass and
-   * proves nothing.
+   * Svelte sets data on an upgraded custom element through its property when one
+   * exists (`set_custom_element_data` in svelte/internal), so `variant` is an
+   * attribute only until the runtime defines `md-button` — after the first
+   * update it lives on the element and the attribute is gone. An
+   * attribute-only assertion reports a nav that is marked correctly, and
+   * visibly, as `(none marked)`. The SvelteKit twin's check carries the same
+   * note about `md-table-row`'s `value`.
+   *
+   * `aria-current` is asserted alongside it, and it is the one that matters:
+   * `variant` is what the section LOOKS like, `aria-current="page"` is what a
+   * screen reader is told. It stays a plain attribute (there is no
+   * `aria-current` property on the element for Svelte to prefer), so the two
+   * together also catch the case where only one of them is updated.
    */
-  const READ_IDS = `[...document.querySelectorAll('md-table-body md-table-row')].map((row) => row.value ?? row.getAttribute('value'))`;
-
-  const sorted = await page.evaluate(`(async () => {
-    const before = ${READ_IDS};
-    document.querySelector('md-table').dispatchEvent(
-      new CustomEvent('mdSortChange', { detail: { column: 'legalName', order: 'asc' }, bubbles: true }),
-    );
-    await new Promise((r) => setTimeout(r, 400));
-    return { before, after: ${READ_IDS} };
-  })()`);
-
-  const paged = await page.evaluate(`(async () => {
-    const before = ${READ_IDS};
-    document.querySelector('md-table-pagination').dispatchEvent(
-      new CustomEvent('mdPageChange', { detail: { page: 1 }, bubbles: true }),
-    );
-    await new Promise((r) => setTimeout(r, 400));
-    return { before, after: ${READ_IDS} };
-  })()`);
-
-  console.log('\n[4] the table');
-  ok(
-    'sorting re-reads the selector',
-    sorted.after.length === 10 && sorted.after.join() !== sorted.before.join() && sorted.after.every(Boolean),
-    `${sorted.before[0]} → ${sorted.after[0]}`,
-  );
-  ok(
-    'paging moves the slice',
-    paged.after.length === 10 &&
-      paged.after.every(Boolean) &&
-      paged.after.every((id) => !paged.before.includes(id)),
-    `${paged.before[0]} → ${paged.after[0]}`,
-  );
-
-  const routed = await page.evaluate(async () => {
-    window.__stillHere = true;
-    document.querySelector('a.drill').click();
-    await new Promise((r) => setTimeout(r, 900));
-    return { path: location.pathname, sameDocument: window.__stillHere === true };
+  let where = await page.evaluate(() => {
+    const buttons = [...document.querySelectorAll('.shell__nav md-button')];
+    return {
+      path: location.pathname,
+      heading: document.querySelector('.screen-head h1')?.textContent ?? '(none)',
+      active: buttons
+        .filter((b) => (b.variant ?? b.getAttribute('variant')) === 'tonal')
+        .map((b) => b.textContent.trim()),
+      current: buttons
+        .filter((b) => b.getAttribute('aria-current') === 'page')
+        .map((b) => b.textContent.trim()),
+    };
   });
+  ok('the section nav routes without a reload', probe.stamp === 'alive', probe.stamp);
+  ok('exactly one document load so far', probe.navigations === 1, `${probe.navigations}`);
+  ok('the URL moved to the watchlist', where.path === `${basePath}${route.watchlist()}`, where.path);
+  ok('the watchlist screen is on screen', where.heading.length > 0 && where.heading !== 'Portfolio overview', where.heading);
+  ok('the nav marks the section it is on', where.active.length === 1, where.active.join(', ') || '(none marked)');
   ok(
-    'a drill link routes in place',
-    routed.sameDocument && routed.path !== `${BASE_PATH}/`,
-    routed.path,
+    'and says so to assistive tech, on the same one',
+    where.current.length === 1 && where.current[0] === where.active[0],
+    where.current.join(', ') || '(no aria-current)',
   );
+
+  // A drill anchor — the `<a class="drill">` this build's own Drill renders.
+  await page.evaluate(() => document.querySelector('a.drill').click());
+  await new Promise((r) => setTimeout(r, 1500));
+  probe = await readStamp(page);
+  where = await page.evaluate(() => ({ path: location.pathname, crumbs: document.querySelectorAll('md-breadcrumb-item').length }));
+  ok('a drill anchor routes without a reload', probe.stamp === 'alive' && probe.navigations === 1, `${probe.stamp}, ${probe.navigations} navigation(s)`);
+  ok('it drilled into a counterparty', /\/counterparties\/cp-\d+\/$/.test(where.path), where.path);
+  ok('and the trail appeared', where.crumbs > 1, `${where.crumbs} crumb(s)`);
+
+  // Back, twice, all the way to the overview.
+  await page.goBack();
+  await new Promise((r) => setTimeout(r, 1000));
+  await page.goBack();
+  await new Promise((r) => setTimeout(r, 1500));
+  probe = await readStamp(page);
+  where = await page.evaluate(() => ({ path: location.pathname, heading: document.querySelector('.screen-head h1')?.textContent ?? '(none)' }));
+  ok('the back button restores the previous screens', where.path === `${basePath}/`, `${where.path} — ${where.heading}`);
+  ok('and it did not reload either', probe.stamp === 'alive' && probe.navigations === 1, `${probe.stamp}, ${probe.navigations} navigation(s)`);
+  await page.close();
+}
+
+/* ------------------------------------------------------------ locale in place */
+/*
+ * The locale is client state in this build, not a path segment — the same split
+ * the docs record for the client-rendered builds against html/astro. Two things
+ * have to hold: the URL's `lang` wins on a cold load, and changing it through
+ * the dock re-renders rather than navigating.
+ */
+{
+  console.log('\n[locale] switched in place, never routed');
+  const page = await load(`${BASE}/?lang=ro`);
+  let probe = await page.evaluate(() => ({
+    lang: document.documentElement.lang,
+    dir: document.documentElement.dir,
+    text: document.querySelector('.shell')?.innerText ?? '',
+  }));
+  ok('a cold load honours ?lang=ro', probe.lang === 'ro', `lang=${probe.lang} dir=${probe.dir}`);
+  ok('and the screen is actually in Romanian', /Expunere|Prezentare|Contrapart/i.test(probe.text), probe.text.slice(0, 48).replace(/\s+/g, ' '));
+
+  await page.evaluate(STAMP);
+  // Arabic, through the dock's own <select>, which is what a reader clicks.
+  // `#awc-dock-locale` by id, not "the first select in the shadow root" — the
+  // framework switcher is the first one, and picking it navigates to another
+  // build instead of changing the language.
+  await page.evaluate(() => {
+    const dock = document.querySelector('awc-showcase-dock');
+    const select = dock.shadowRoot.getElementById('awc-dock-locale');
+    select.value = 'ar';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await new Promise((r) => setTimeout(r, 1500));
+  probe = await readStamp(page);
+  const after = await page.evaluate(() => ({
+    lang: document.documentElement.lang,
+    dir: document.documentElement.dir,
+    path: location.pathname,
+    text: document.querySelector('.shell')?.innerText ?? '',
+  }));
+  ok('the dock switches locale without a reload', probe.stamp === 'alive' && probe.navigations === 1, `${probe.stamp}, ${probe.navigations} navigation(s)`);
+  ok('<html> follows to ar / rtl', after.lang === 'ar' && after.dir === 'rtl', `lang=${after.lang} dir=${after.dir}`);
+  ok('the path is untouched — no /ar/ segment', after.path === `${basePath}/`, after.path);
+  ok('and the strings re-rendered in Arabic', /[؀-ۿ]/.test(after.text), after.text.slice(0, 40).replace(/\s+/g, ' '));
+  await page.close();
+}
+
+/* --------------------------------------------- the state query survives a hop */
+/*
+ * The dock keeps theme, locale, dir, density and accent in the URL so the state
+ * can travel — including to whoever a link is sent to. `navigate()` carries the
+ * query across an in-app hop for exactly that reason.
+ */
+{
+  console.log('\n[state] the dock query survives an in-app navigation');
+  const page = await load(`${BASE}/?lang=ro&theme=dark`);
+  await page.evaluate(() => document.querySelector('a.drill').click());
+  await new Promise((r) => setTimeout(r, 1200));
+  const probe = await page.evaluate(() => ({ url: location.pathname + location.search, lang: document.documentElement.lang }));
+  const params = new URLSearchParams(probe.url.split('?')[1] ?? '');
+  ok('lang and theme are still in the URL after a drill', params.get('lang') === 'ro' && params.get('theme') === 'dark', probe.url);
+  ok('and the new screen is still Romanian', probe.lang === 'ro', `lang=${probe.lang}`);
+  await page.close();
+}
+
+/* ------------------------------------------------------------------- the dock */
+{
+  console.log(`\n[dock] one bar, ${FRAMEWORKS.length} frameworks, this one marked`);
+  const page = await load(`${BASE}/`);
+  const probe = await page.evaluate(() => {
+    const docks = document.querySelectorAll('awc-showcase-dock');
+    const dock = docks[0];
+    const select = dock?.shadowRoot?.getElementById('awc-dock-framework');
+    return {
+      count: docks.length,
+      framework: dock?.getAttribute('framework'),
+      frameworks: dock?.getAttribute('frameworks'),
+      position: dock?.getAttribute('position'),
+      dockHeight: getComputedStyle(document.documentElement).getPropertyValue('--awc-dock-height').trim(),
+      options: select
+        ? [...select.options].map((o) => ({ value: o.value, label: o.textContent, selected: o.selected }))
+        : null,
+    };
+  });
+  ok('the dock is rendered exactly once', probe.count === 1, `${probe.count}`);
+  ok('it identifies this build as svelte', probe.framework === 'svelte', probe.framework ?? '(none)');
+  // Derived from the kit, not spelled out here. The list grows every time a
+  // build is added, and a hardcoded copy would then fail in every app at once
+  // while telling us nothing except that the list changed.
+  ok(
+    `it offers all ${FRAMEWORKS.length} builds`,
+    probe.frameworks === FRAMEWORKS.join(','),
+    probe.frameworks ?? '(none)',
+  );
+  // The attribute is only plumbing; what a reader can actually reach is the
+  // rendered <option> list. A dock that receives the list and fails to render
+  // it passes the check above and is still broken.
+  const values = probe.options?.map((o) => o.value).join(',') ?? '(no select)';
+  ok('every build is selectable', values === FRAMEWORKS.join(','), values);
+  ok(
+    'this build is the one selected',
+    probe.options?.find((o) => o.selected)?.value === 'svelte',
+    probe.options?.find((o) => o.selected)?.value ?? '(nothing selected)',
+  );
+  // A framework id with no entry in the dock's label map falls back to its own
+  // id with the first letter capitalised, so `angular-ssr` would appear in the
+  // menu as "Angular-ssr". No real display name contains a hyphen.
+  const raw = probe.options?.filter((o) => o.label.includes('-')).map((o) => o.label) ?? [];
+  ok('every option has a display name, not a raw id', raw.length === 0, raw.join(', ') || 'all named');
+  ok('it is pinned to the bottom and publishes its height', probe.position === 'bottom' && probe.dockHeight !== '', `position=${probe.position} --awc-dock-height=${probe.dockHeight || '(unset)'}`);
   await page.close();
 }
 
 await browser.close();
-server.kill();
+stopServer();
 
 const failed = results.filter((r) => !r).length;
-console.log(`\n${results.length - failed}/${results.length} checks passed`);
+console.log(`\n${failed === 0 ? 'PASS' : 'FAIL'} — ${results.length} assertions${failed ? `, ${failed} failed` : ''}`);
 process.exit(failed ? 1 : 0);

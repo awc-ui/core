@@ -1,14 +1,20 @@
 #!/usr/bin/env node
 /**
- * Serve `.output/public/` at the real mount path —
- * `/showcase/credit-risk/vue/` — so the generated build can be checked exactly
- * as it will be deployed. `nuxi preview` runs a server at `/` and every asset
- * URL in the output carries the base path, so it 404s on all of them.
+ * Serve `dist/` at the real mount path — `/showcase/credit-risk/vue/` — so
+ * the build can be checked exactly as it will be deployed. `vite preview`
+ * serves at the configured base too, but this needs no Vite process: `pnpm
+ * verify` starts it itself, which is what makes `pnpm showcase:verify` at the
+ * repo root a single command rather than a sequence with a server to remember.
  *
  *   node scripts/serve-dist.mjs [port]
  *
- * The mount is read from the kit rather than written down again here, which is
- * the whole reason `createRoutes()` exists: one fact, one place.
+ * DELIBERATELY WITHOUT A HISTORY FALLBACK. It would be one line, and it would
+ * make this the only server in the pipeline that has one: the parity and a11y
+ * verifiers at the repo root are dumb file servers, and so is the docs host in
+ * the configuration that matters. A fallback here would quietly cover for a
+ * missing `scripts/fan-out-routes.mjs` run and let a build that 404s on every
+ * deep link pass its own verification. An unknown path 404s, exactly as it
+ * would in production.
  */
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
@@ -17,9 +23,10 @@ import { fileURLToPath } from 'node:url';
 import { createRoutes } from '@awc-ui/showcase-kit/credit-risk';
 
 const { basePath: BASE_PATH } = createRoutes('vue');
+
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const root = join(appRoot, '.output/public');
-const port = Number(process.argv[2] || 4324);
+const root = join(appRoot, 'dist');
+const port = Number(process.argv[2] || 4328);
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -44,7 +51,7 @@ createServer((req, res) => {
   path = path.slice(BASE_PATH.length);
 
   // normalize() collapses any `..` before the join, so a traversal attempt
-  // resolves inside `.output/public/` rather than above it.
+  // resolves inside `dist/` rather than above it.
   let file = join(root, normalize(path));
   if (existsSync(file) && statSync(file).isDirectory()) file = join(file, 'index.html');
 

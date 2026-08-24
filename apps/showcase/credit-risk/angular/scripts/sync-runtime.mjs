@@ -6,17 +6,23 @@
  *
  * `@awc-ui/core/loader` (and `/define`, which wraps it) resolves each
  * component's chunk at RUNTIME by URL, relative to the module's own location.
- * Let Vite bundle it and those URLs are rewritten to paths that only exist in
- * the dev server's module graph, so every element 404s in the export and
- * renders at zero height. The runtime is therefore never imported by the app at
- * all; it is copied here and served as a plain static file from an absolute
- * URL — the same thing the docs site does.
+ * Let the app's bundler see it and those URLs are rewritten to paths under the
+ * build's own hashed output, where nothing wrote them, so every element 404s
+ * and renders at zero height. The runtime is therefore never imported by the
+ * app at all; it is copied here and served as a plain static file — `public/` is
+ * copied to the output root by the builder's `assets` glob, and `src/index.html`
+ * points a `<script type="module">` at it. The same thing the docs site does.
  *
- * This build prerenders the MARKUP but not the shadow roots, so the runtime is
- * what fills every element in. Until it lands the page is a column of unstyled
- * tags — the trade this build makes in exchange for switching language, theme
- * and density in place, without a navigation. The Astro build next door makes
- * the opposite trade and explains it in its own `src/middleware.ts`.
+ * WHAT IT IS FOR IN THIS BUILD: EVERYTHING VISIBLE. Nothing renders this page
+ * ahead of the browser — no server, no prerender — so the document that arrives
+ * is an empty shell, Angular fills it with inert `md-*` tags, and this runtime
+ * is what turns those tags into components: it attaches every shadow root, draws
+ * the charts into their canvases, and answers the dock when the language, theme
+ * or density changes in place. The server-rendered twin at
+ * `../angular-ssr/` paints its first frame without it and needs it only for
+ * interactivity; here it is on the critical path for the first frame too, which
+ * is why `src/index.html` requests it from `<head>` rather than leaving it to
+ * an APP_INITIALIZER that could not run until `main.js` had.
  *
  * `md3/` is the MINIFIED lazy build meant for browsers. `esm/` is the
  * unminified bundler output and is deliberately not copied. Source maps are

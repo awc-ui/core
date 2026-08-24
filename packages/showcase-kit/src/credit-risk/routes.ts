@@ -34,17 +34,31 @@ export const SHOWCASE_BASE = '/showcase/credit-risk';
  * Three kinds, and the difference is WHEN the HTML is produced:
  *
  * - `html`, `astro` — rendered once, at build time, and shipped as files.
- * - `react` — a single-page application. The server sends an empty shell and
- *   the browser renders everything.
- * - `next` — rendered on the server, per request, by a process that is running
- *   while you read the page.
+ * - `react`, `vue`, `angular`, `svelte` — single-page applications. The server
+ *   sends an empty shell and the browser renders everything. With JavaScript
+ *   off there is nothing to read, which is the honest depiction of an SPA and
+ *   is why these are not prerendered.
+ * - `next`, `nuxt`, `angular-ssr`, `sveltekit` — rendered on the server, per
+ *   request, by a process that is running while you read the page.
  *
- * The SSR build sits directly after the SPA it mirrors, because that adjacency
+ * Each SSR build sits directly after the SPA it mirrors, because that adjacency
  * is the point: the same screens, the same components, the same kit, differing
- * only in where the first render happened. `vue`, `angular` and `svelte` are
- * still prerendered and will each grow the same pair.
+ * only in where the first render happened. A reader switching between two
+ * neighbours in this list is holding the comparison still and changing exactly
+ * one variable.
  */
-export const FRAMEWORKS = ['html', 'astro', 'react', 'next', 'vue', 'angular', 'svelte'] as const;
+export const FRAMEWORKS = [
+  'html',
+  'astro',
+  'react',
+  'next',
+  'vue',
+  'nuxt',
+  'angular',
+  'angular-ssr',
+  'svelte',
+  'sveltekit',
+] as const;
 
 export type Framework = (typeof FRAMEWORKS)[number];
 

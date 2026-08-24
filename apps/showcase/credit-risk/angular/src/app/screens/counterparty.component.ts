@@ -29,9 +29,10 @@ import {
  * TABS. `md-tabs` owns the strip and `md-tab-panels` follows it by `for`; the
  * panels are matched to the tabs by DOM order, so the two lists must stay the
  * same length and the same order. All three panels are rendered — the panel
- * component hides the inactive ones — which is what we want: the prerendered
- * HTML carries the rating history and the group tree even if the visitor never
- * opens those tabs.
+ * component hides the inactive ones — which is what we want: switching tab is
+ * then a style change rather than a render, the rating history and the group
+ * tree are in the DOM for anything reading the page rather than clicking it, and
+ * find-in-page reaches all three.
  *
  * GROUP STRUCTURE. `getGroupTree()` genuinely nests (grp-nordwerk is three deep:
  * cp-04 → cp-05 → cp-07), so the org chart is a real hierarchy rather than a

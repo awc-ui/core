@@ -1,3 +1,4 @@
+import { APP_BASE_HREF, LocationStrategy, PathLocationStrategy } from '@angular/common';
 import {
   APP_INITIALIZER,
   type ApplicationConfig,
@@ -6,58 +7,55 @@ import {
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { PREBOOT_SCRIPT } from '@awc-ui/showcase-kit/preboot';
 import { routes } from './app.routes';
+import { BASE_PATH } from './lib/routes';
 
 /**
- * The preboot script and the component runtime, both injected at bootstrap.
+ * The whole application configuration. There is no server half of this file —
+ * this build renders in the browser and nowhere else.
  *
- * WHY NOT IN `index.html`. The preboot IIFE lives in the kit — one copy, shared
- * by all six builds — and pasting it into the template would fork it on the
- * first edit. The runtime URL needs the base href. So both are written here,
- * from the same values every other part of the app reads.
+ * WHERE THE MOUNT IS DECLARED. `APP_BASE_HREF` is the router's copy of it, and
+ * it is derived from `lib/routes.ts` rather than read out of the `<base>` tag,
+ * so the router cannot end up on a different base from the one every link is
+ * built with. The `<base href>` in `src/index.html` is still needed and still
+ * has to match — it is what makes `main.js`, `styles.css` and the runtime
+ * resolve from a document served at `…/angular/facilities/fac-001/index.html`
+ * rather than from that directory. `PathLocationStrategy` is Angular's default,
+ * named here because a hash strategy would put every route behind a `#` and the
+ * 95 files `scripts/fan-out-routes.mjs` writes would then address nothing.
  *
- * WHY AN APP_INITIALIZER RATHER THAN AN IMPORT. Stencil's lazy build resolves
- * its sibling chunks relative to its OWN location. Let Angular's esbuild bundle
- * it and it hunts for entry chunks under the build's hashed output, where
- * nothing wrote them, and every element renders at zero height. So it is never
- * imported: it is fetched as a plain static file from `public/awc-runtime/` by
- * a `<script type="module">` this adds to `<head>`.
- * `scripts/sync-runtime.mjs` carries the full post-mortem.
+ * THE PREBOOT SCRIPT, and why it is here twice.
  *
- * The preboot script is appended to the END of head at runtime rather than the
- * start, which is the one thing this build cannot match in the others: Angular
- * owns `index.html` and prerendering inlines the stylesheet before anything
- * user-supplied. It still runs before the first paint of the app's own markup,
- * which is what it is for.
+ * ~800 bytes of synchronous IIFE from the kit that reads the showcase state out
+ * of the URL (or localStorage) and stamps `lang` / `dir` / `data-theme` /
+ * `data-density` onto `<html>`. It has to run BEFORE the stylesheet paints, or a
+ * reader who chose the dark theme gets a white page — and one who chose Arabic
+ * gets an LTR one — for as long as `main.js` takes to arrive.
  *
- * NO `provideClientHydration()`, deliberately. Angular's hydration walks the
- * prerendered DOM and asserts it matches what the client renders; these
- * components attach shadow roots and rewrite their own internals the moment the
- * runtime lands, which is exactly the kind of third-party mutation hydration is
- * documented not to tolerate. Without it Angular re-renders the app on
- * bootstrap, which costs a frame and buys certainty. The prerendered HTML still
- * does its job: real rows and real figures for a reader with JavaScript off, and
- * for anything reading the page without running it.
+ * That is too early for anything Angular does, so the shipped copy is written
+ * into `<head>` at BUILD time by `scripts/inject-head.mjs`, which reads the same
+ * `PREBOOT_SCRIPT` constant this file imports. What is left for the initializer
+ * below is the one case that build step cannot cover: `ng serve`, which composes
+ * the document from `src/index.html` in memory and never goes through it. The
+ * `[data-awc-preboot]` guard is what makes the two composable — in a real build
+ * the tag is already in the head the browser parsed, so this adds nothing.
+ *
+ * THE COMPONENT RUNTIME IS NOT HERE AT ALL. It is a plain
+ * `<script type="module">` in `src/index.html`, pointing at `public/`, for the
+ * reason `scripts/sync-runtime.mjs` sets out at length: Stencil's lazy build
+ * resolves its sibling chunks relative to its own URL, so it must not go through
+ * a bundler. Having it in the document rather than in an initializer also means
+ * the browser requests it while it is still parsing `<head>`, in parallel with
+ * `main.js`, instead of after Angular has booted.
  */
 function bootScripts() {
   return () => {
-    if (typeof document === 'undefined') return;
-    const base = document.querySelector('base')?.getAttribute('href') ?? '/';
-
+    // No `typeof document` guard, unlike the twin's copy of this file: there is
+    // no render here that does not happen in a browser.
     if (!document.querySelector('[data-awc-preboot]')) {
       const preboot = document.createElement('script');
       preboot.dataset['awcPreboot'] = '';
       preboot.textContent = PREBOOT_SCRIPT;
       document.head.appendChild(preboot);
-    }
-
-    if (!document.querySelector('[data-awc-runtime]')) {
-      const runtime = document.createElement('script');
-      runtime.type = 'module';
-      runtime.dataset['awcRuntime'] = '';
-      runtime.textContent =
-        `import(${JSON.stringify(`${base}awc-runtime/md3/md3.esm.js`)})` +
-        `.catch((e)=>console.error('[awc-ui] component registration failed',e));`;
-      document.head.appendChild(runtime);
     }
 
     // The dock, unlike the component runtime, IS safe to bundle: it is plain
@@ -73,6 +71,8 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withInMemoryScrolling({ scrollPositionRestoration: 'top' })),
+    { provide: LocationStrategy, useClass: PathLocationStrategy },
+    { provide: APP_BASE_HREF, useValue: `${BASE_PATH}/` },
     { provide: APP_INITIALIZER, useFactory: bootScripts, multi: true },
   ],
 };

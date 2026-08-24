@@ -34,36 +34,52 @@ answer it — and it is built entirely from AWC UI components.
   <span style="font: var(--md-sys-typescale-body-small-font); color: var(--md-sys-color-on-surface-variant);">Switch framework, theme, density, direction and language from inside the app.</span>
 </div>
 
-## The seven builds
+## The ten builds
 
-All seven are live, and the control bar switches between them without losing your
-place. They are not seven copies of the same code: every number, date, string,
+All ten are live, and the control bar switches between them without losing your
+place. They are not ten copies of the same code: every number, date, string,
 derived series and table layout comes from `@awc-ui/showcase-kit`, so the only
 thing that differs between them is the view layer — which is exactly what makes
 two screenshots comparable evidence.
 
+They come in pairs. Each framework appears twice: once as a **single-page
+application**, where the server sends an empty shell and the browser renders
+everything, and once **server-rendered per request**, where the HTML arrives
+complete and the components are already inside declarative shadow DOM. Same
+screens, same components, same kit. The only variable is where the first render
+happened, which is what makes the pair worth looking at.
+
 | Build | Open | How it renders | Where the language lives |
 |---|---|---|---|
-| **React** | [/react/](/showcase/credit-risk/react/) | Single-page app — the server sends an empty shell, the browser renders everything | Client state — switches in place |
+| **React** | [/react/](/showcase/credit-risk/react/) | Single-page app — empty shell, the browser renders everything | Client state — switches in place |
 | **Next.js** | [/next/](/showcase/credit-risk/next/) | Server-rendered **per request**, into declarative shadow DOM | Client state — switches in place |
-| **Vue** | [/vue/](/showcase/credit-risk/vue/) | Nuxt, prerendered, hydrates | Client state — switches in place |
-| **Angular** | [/angular/](/showcase/credit-risk/angular/) | Angular, prerendered, hydrates | Client state — switches in place |
-| **Svelte** | [/svelte/](/showcase/credit-risk/svelte/) | SvelteKit, prerendered, hydrates | Client state — switches in place |
-| **Astro** | [/astro/](/showcase/credit-risk/astro/) | Server-rendered into declarative shadow DOM | In the URL (`/astro/ro/`) |
+| **Vue** | [/vue/](/showcase/credit-risk/vue/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+| **Nuxt** | [/nuxt/](/showcase/credit-risk/nuxt/) | Server-rendered **per request**, into declarative shadow DOM | Client state — switches in place |
+| **Angular** | [/angular/](/showcase/credit-risk/angular/) | Single-page app — client-rendered only | Client state — switches in place |
+| **Angular (SSR)** | [/angular-ssr/](/showcase/credit-risk/angular-ssr/) | Server-rendered **per request**, into declarative shadow DOM | Client state — switches in place |
+| **Svelte** | [/svelte/](/showcase/credit-risk/svelte/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+| **SvelteKit** | [/sveltekit/](/showcase/credit-risk/sveltekit/) | Server-rendered **per request**, into declarative shadow DOM | Client state — switches in place |
+| **Astro** | [/astro/](/showcase/credit-risk/astro/) | Server-rendered into declarative shadow DOM, once, at build time | In the URL (`/astro/ro/`) |
 | **HTML** | [/html/](/showcase/credit-risk/html/) | Static files, no framework at all | In the URL (`/html/ro/`) |
 
-:::tip[React and Next.js are the same application, rendered in two places]
-This pair is the experiment. Both builds import the same six screens, the same
-components and the same kit — the source that differs between them is three
-call sites for routing. What changes is *where the first render happens*.
+:::tip[Each pair is the same application, rendered in two places]
+The pairs are the experiment. React and Next.js, Vue and Nuxt, Angular and
+Angular (SSR), Svelte and SvelteKit: within each, both builds import the same
+six screens, the same components and the same kit. What differs is a handful of
+routing call sites — and *where the first render happens*.
 
 Open `/react/` with JavaScript disabled and you get an empty shell, because
 that is what a single-page application is. Open `/next/` the same way and the
 document already contains every row, every heading and every component, each
 one inside a `<template shadowrootmode="open">` the browser attaches before it
-runs a line of script. That is the part worth seeing: **web components server-render**,
-shadow DOM and all, and they do it through a framework's own SSR pipeline
-rather than around it.
+runs a line of script. The same is true of `/vue/` against `/nuxt/`,
+`/angular/` against `/angular-ssr/`, `/svelte/` against `/sveltekit/`.
+
+That is the part worth seeing: **web components server-render**, shadow DOM and
+all, through four different frameworks' own SSR pipelines rather than around
+them. Each one renders its markup its own way and then hands the HTML to the
+same `renderToString` from `@awc-ui/core/hydrate` — the components do not know
+or care which framework produced the page.
 
 "Server-rendered" is easy to claim and easy to fake — a page prerendered at
 build time looks identical to one rendered live, because by then it is just a

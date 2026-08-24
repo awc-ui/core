@@ -4,19 +4,34 @@
  *
  * WHY THE COMPONENTS ARE NOT BUNDLED
  *
- * `@awc-ui/core/loader` (and `/define`, which wraps it) resolves each
- * component's chunk at RUNTIME by URL, relative to the module's own location.
- * Let Vite bundle it and those URLs are rewritten to paths that only exist in
- * the dev server's module graph, so every element 404s in the export and
- * renders at zero height. `nuxt.config.ts` therefore excludes the package
- * from pre-bundling, and the runtime is served as a plain static file from an
- * absolute URL — the same thing the docs site does.
+ * `apps/docs/src/components/Head.astro` records three failed attempts at
+ * getting the components to load through a bundler. They applied to the docs
+ * site, then to the Nuxt build in this pair, and they apply here unchanged —
+ * the failure is in the BROWSER graph, so which bundler produced it makes no
+ * difference:
  *
- * This build prerenders the MARKUP but not the shadow roots, so the runtime is
- * what fills every element in. Until it lands the page is a column of unstyled
- * tags — the trade this build makes in exchange for switching language, theme
- * and density in place, without a navigation. The Astro build next door makes
- * the opposite trade and explains it in its own `src/middleware.ts`.
+ *   1. `@awc-ui/core/loader` (and `/define`, which wraps it) resolves each
+ *      component's chunk at RUNTIME by URL, relative to the module's own
+ *      location. Bundle it and the chunks are looked for beside the app bundle
+ *      — `/showcase/credit-risk/vue/assets/…` here, `/_nuxt/…` in the twin —
+ *      where nothing was ever written. Every element 404s and renders at zero
+ *      height.
+ *   2. `@awc-ui/core/dist/components/index.js` looks like the fix (it is the
+ *      `dist-custom-elements` output) but exports only utilities; it defines
+ *      no elements. Importing all 79 `md-*.js` modules by hand rots instantly
+ *      and drags every component into this app's bundle.
+ *   3. `@awc-ui/vue` wrappers pull `@awc-ui/core` into the module graph, so
+ *      they land back in case 1 or case 2. This app therefore writes plain
+ *      `md-*` tags in its templates and sets object props and camelCase event
+ *      listeners on the instances directly — see the `v-awc` directive in
+ *      `src/lib/awc.ts`.
+ *
+ * What works is what the docs site does: serve Stencil's own minified lazy
+ * build from a STATIC url and let it resolve its siblings relative to itself.
+ * A `<script type="module">` with an absolute URL in `index.html` does that.
+ * Vite copies `public/` into `dist/` verbatim and never rewrites it, so the
+ * runtime lands where that URL points. Lazy loading survives — a screen only
+ * fetches the elements it renders.
  *
  * `md3/` is the MINIFIED lazy build meant for browsers. `esm/` is the
  * unminified bundler output and is deliberately not copied. Source maps are

@@ -1,17 +1,19 @@
 <!--
   `<awc-showcase-dock>` — the same bar on every screen.
 
-  The registration is a client-only dynamic import rather than a top-level one:
-  the module defines the element and, in the browser, immediately stamps the
-  persisted/URL state onto <html>. It is a no-op in Node, so importing it at the
-  top would be harmless — but keeping it in `onMount` says out loud that nothing
-  about the prerendered HTML depends on it. Nothing here listens for
-  `awc-showcase-change`; `$lib/showcase` owns the single subscription, and a
-  second listener would update every screen twice per change.
+  The registration is a dynamic import in `onMount` rather than a top-level one.
+  The module defines the element and immediately stamps the persisted/URL state
+  onto <html>, and it is not on the critical path for the first paint — the
+  preboot script in `index.html` has already applied lang / dir / theme /
+  density by then. Deferring it keeps ~30 kB out of the entry chunk that the
+  screens are waiting on. Nothing here listens for `awc-showcase-change`;
+  `$lib/showcase` owns the single subscription, and a second listener would
+  update every screen twice per change.
 
-  `base-path` is the prefix BEFORE the framework segment, not this app's
-  SvelteKit `base` — the dock swaps `svelte` for `vue` inside the path it finds,
-  and only falls back to `base-path` when the current segment is not in the URL.
+  `base-path` is the prefix BEFORE the framework segment, not this app's own
+  `BASE_PATH` — the dock swaps this build's segment for another inside the path
+  it finds, and only falls back to `base-path` when the current segment is not
+  in the URL.
 -->
 <script lang="ts">
   import { onMount } from 'svelte';
