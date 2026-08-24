@@ -30,15 +30,29 @@
  * class rules do not — so the faces must be registered at document level or
  * every `icon=` prop renders its ligature text.
  *
- * THE COMPONENT RUNTIME (`%awc.runtime%`), as a module script pointing at an
- * absolute URL under `static/`. This is the only approach that works: Stencil's
- * lazy build resolves its sibling chunks relative to its OWN location, so
- * putting it through Vite makes it hunt for entry chunks under `_app/`, where
- * the build never wrote them. It needs `base`, which `app.html` has no access
- * to — one of the reasons this file exists. `scripts/sync-runtime.mjs` carries
- * the full post-mortem. It still matters on a server-rendered build: the shadow
- * roots below arrive in the HTML, but the runtime is what makes them
- * INTERACTIVE.
+ * THE COMPONENT RUNTIME (`%awc.runtime%`), as a PRELOAD of an absolute URL
+ * under `static/`. The absolute static URL is the only thing that works:
+ * Stencil's lazy build resolves its sibling chunks relative to its OWN
+ * location, so putting it through Vite makes it hunt for entry chunks under
+ * `_app/`, where the build never wrote them. It needs `base`, which `app.html`
+ * has no access to — one of the reasons this file exists.
+ * `scripts/sync-runtime.mjs` carries the full post-mortem. It still matters on
+ * a server-rendered build: the shadow roots below arrive in the HTML, but the
+ * runtime is what makes them INTERACTIVE.
+ *
+ * A PRELOAD RATHER THAN AN IMPORT, and the difference is the whole fix in
+ * `src/lib/adopt.ts`. `<link rel="modulepreload">` fetches and compiles the
+ * module with the document but does not EXECUTE it; executing it is what calls
+ * `customElements.define`, and that has to happen after Svelte has finished
+ * hydrating. Svelte 4 hydrates by claiming the server's nodes, and a claimed
+ * element loses every attribute its `.svelte` template does not declare —
+ * including `s-id`, the marker Stencil's runtime reads in `connectedCallback`
+ * to decide between adopting the server's shadow root and rendering a second
+ * copy into it. When the runtime went in as `<script type="module">` here,
+ * which of the two happened first was a race between two dynamic imports, and
+ * the losing outcome was every component on every screen drawn twice inside its
+ * own shadow root. The root layout's `onMount` runs the import now. Read
+ * `src/lib/adopt.ts` for the measurements.
  *
  * ── 2. THE RENDER STAMP (`%awc.render%`) ─────────────────────────────────────
  *
@@ -74,18 +88,25 @@
  *
  * AND ONE MORE THING WORTH KNOWING, WHICH IS SVELTE-SPECIFIC. Alongside the
  * shadow roots, the hydrate app annotates the LIGHT DOM — an `s-id` attribute
- * and an `<!--r.N-->` marker on each element — which is how its client runtime
+ * and an `<!--r.N-->` marker on each host — which is how its client runtime
  * recognises a server-rendered tree and adopts it instead of re-rendering it.
  * Svelte 4 hydrates by CLAIMING existing nodes, and `claim_element` removes
  * every attribute the component's own template does not declare (see
  * `claim_element_base` in svelte/internal). So on the elements this app writes
- * itself, those annotations are stripped a moment after they arrive, and the
- * runtime treats them as fresh components. The end state is identical — the
- * shadow root is still there, the component renders into it — and the cost is
- * one re-render of work already done, which is exactly what this build did on
- * every element before it rendered on the server. The first paint, which is the
- * point of all this, is unaffected: it happens before any of that JavaScript
- * runs.
+ * itself, those annotations are stripped a moment after they arrive.
+ *
+ * THIS COMMENT USED TO SAY THAT THE END STATE WAS IDENTICAL AND THE COST WAS
+ * ONE WASTED RE-RENDER. IT WAS WRONG, AND EXPENSIVELY SO. Stripped of `s-id`
+ * the runtime does not re-render the component, it renders an ADDITIONAL copy
+ * into the shadow root the parser has already filled from the server's
+ * `<template shadowrootmode>` — it never clears a shadow root it does not think
+ * it owns. The overview carried 239 shadow-hosting elements against 207 in the
+ * `next` and `nuxt` builds; every nav item drew its icon twice and the
+ * watchlist badge read "77" where the figure is 7. `src/lib/adopt.ts` is the
+ * fix and the write-up: the annotations are photographed before hydration,
+ * restored after it, and the runtime is not started until both have happened.
+ * The first paint, which is the point of all this, was never affected either
+ * way: it happens before any of that JavaScript runs.
  *
  * ── WHY THE BUFFER ───────────────────────────────────────────────────────────
  *
@@ -105,9 +126,20 @@ import { base } from '$app/paths';
 import { PREBOOT_SCRIPT } from '@awc-ui/showcase-kit/preboot';
 
 const preboot = `<script>${PREBOOT_SCRIPT}</script>`;
-const runtime =
-  `<script type="module">import(${JSON.stringify(`${base}/awc-runtime/md3/md3.esm.js`)})` +
-  `.catch((e)=>console.error('[awc-ui] component registration failed',e));</script>`;
+
+/**
+ * Warm the runtime without running it.
+ *
+ * The URL is written down in two places — here and in `src/lib/adopt.ts`, which
+ * is what actually imports it — and that is deliberate rather than shared
+ * through a constant: this string is assembled on the SERVER and that one is
+ * bundled for the BROWSER, and importing an app module into `hooks.server.ts`
+ * to save a template literal would drag `$app/paths` and the client graph
+ * across the seam. `scripts/sync-runtime.mjs` is what guarantees the path
+ * exists; if the two ever disagree the preload simply misses and the import
+ * pays for the fetch itself, which is a slow page rather than a broken one.
+ */
+const runtime = `<link rel="modulepreload" href="${base}/awc-runtime/md3/md3.esm.js">`;
 
 /**
  * Options shared with the sibling SSR builds, plus two that were learned the

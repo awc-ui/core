@@ -3,6 +3,7 @@ import {
   type ApplicationConfig,
   provideZoneChangeDetection,
 } from '@angular/core';
+import { provideClientHydration } from '@angular/platform-browser';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { PREBOOT_SCRIPT } from '@awc-ui/showcase-kit/preboot';
 import { routes } from './app.routes';
@@ -32,16 +33,6 @@ import { routes } from './app.routes';
  * initializer is the case the server cannot cover — `ng serve`, which renders
  * from memory and never goes through `server.ts` — and the dock import below,
  * which is a browser concern in every case.
- *
- * NO `provideClientHydration()`, deliberately. Angular's hydration walks the
- * server-rendered DOM and asserts it matches what the client renders; these
- * components attach shadow roots and rewrite their own internals the moment the
- * runtime lands, which is exactly the kind of third-party mutation hydration is
- * documented not to tolerate. Without it Angular re-renders the app on
- * bootstrap — the server's shadow roots are discarded and Stencil builds them
- * again — which costs a frame and buys certainty. The delivered HTML still does
- * its job: real rows and real figures, painted, for a reader with JavaScript
- * off and for anything reading the page without running it.
  */
 function bootScripts() {
   return () => {
@@ -74,9 +65,58 @@ function bootScripts() {
   };
 }
 
+/**
+ * HYDRATION, AND WHY THIS ONE LINE IS THE WHOLE POINT OF THE BUILD.
+ *
+ * This was absent for a long time, with a comment saying it was absent on
+ * purpose because Stencil's components "rewrite their own internals" and
+ * hydration is documented not to tolerate third-party mutation. That reasoning
+ * was wrong in a way that cost the build everything it advertises.
+ *
+ * WHAT NOT HAVING IT ACTUALLY DID. Without `provideClientHydration()` Angular
+ * does not adopt anything: `bootstrapApplication` empties `<awc-root>` and
+ * renders the app from scratch. The server's 206 `<template shadowrootmode>`
+ * shadow roots are torn out of the document along with the elements holding
+ * them, and Stencil then builds all 206 again in the browser. Nothing LOOKED
+ * wrong — that is exactly why it survived: the replacement render is correct,
+ * so no screenshot, no text assertion and no element count could see it. What
+ * it cost was the claim. Measured with the runtime request blocked, so only
+ * Angular's own hydration is observed, `md-badge` came back carrying one
+ * attribute — `value`, the one Angular's own template sets — with `class`,
+ * `role`, `aria-label`, `variant`, `density` and `s-id` gone and no shadow root
+ * at all. `s-id` is the marker Stencil writes on every host it server-rendered
+ * and the only thing its client runtime uses to ADOPT that render instead of
+ * repeating it. Zero hosts kept it. The server render was real for one paint
+ * and then thrown away.
+ *
+ * WITH IT, Angular locates the existing elements instead of creating them. It
+ * never enumerates and clears attributes it does not know about — unlike
+ * Svelte 4's `claim_element`, which is what breaks the sibling build — so
+ * `s-id` and the rest survive untouched, the declarative shadow roots stay
+ * attached to the elements that own them, and Stencil adopts all 174 hosts.
+ * That is the same outcome the `next` and `nuxt` builds reach, by the same
+ * route: leave the server-rendered custom element alone.
+ *
+ * THE ONE THING THAT HAD TO CHANGE FOR THIS TO BE SAFE is in `src/server.ts`,
+ * not here. Stencil's hydrate pass writes positional marker comments, and one
+ * of them — `<!--r.N-->`, a content reference — lands as the FIRST CHILD of
+ * every host, in the LIGHT DOM, which is the tree Angular hydrates. Angular
+ * locates a first child with `parent.firstChild` and, in a production build,
+ * does not validate what it finds: it would claim that comment as the text node
+ * the template says is there and write the label into it, leaving the real text
+ * beside it as an orphan no binding ever updates again. So `server.ts` strips
+ * those markers from the light DOM only, leaving every annotation inside the
+ * shadow roots exactly as written. See `stripLightDomAnnotations` there.
+ *
+ * The third-party mutation the old comment feared is real but lands elsewhere:
+ * Stencil mutates the SHADOW roots, which Angular never walks, and sets
+ * attributes on the hosts, which Angular ignores. Neither is a structural
+ * change to Angular's tree.
+ */
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
+    provideClientHydration(),
     provideRouter(routes, withInMemoryScrolling({ scrollPositionRestoration: 'top' })),
     { provide: APP_INITIALIZER, useFactory: bootScripts, multi: true },
   ],

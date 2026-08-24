@@ -82,12 +82,25 @@ const host = process.env['HOST'] ?? 'localhost';
  * `removeScripts` would strip the preboot IIFE and the runtime import that
  * `injectHead` just added, leaving a page that paints once and then never
  * themes, never switches language and never gains a dock.
+ * `removeHtmlComments` now has a second job as well: Angular's hydration
+ * anchors ARE comments — `<!--container-->`, `<!--ngetn-->`, `<!--ngtns-->` —
+ * and stripping them would leave the client walking a tree it cannot map.
+ *
+ * `clientHydrateAnnotations` is Stencil's default and is written out here
+ * because everything below depends on it. It is what puts `s-id` on each host
+ * and `c-id` on the shadow children, and `s-id` is the only signal Stencil's
+ * client runtime has that this shadow root was already rendered. Turn it off
+ * and the runtime does not rebuild the shadow root — it APPENDS a second copy
+ * to it, and every component on every screen renders twice. It also emits
+ * marker COMMENTS, one of which lands in Angular's tree; `injectShadowRoots`
+ * takes those back out again, and only there. See `stripLightDomAnnotations`.
  */
 const HYDRATE_OPTIONS = {
   serializeShadowRoot: 'declarative-shadow-dom',
   removeScripts: false,
   removeHtmlComments: false,
   removeUnusedStyles: false,
+  clientHydrateAnnotations: true,
   maxHydrateCount: 10_000,
 } as const;
 
@@ -141,7 +154,108 @@ function stampRenderMarkers(html: string, renderedAt: string): string {
   );
 }
 
-/** Give every `md-*` element in a rendered page its declarative shadow root. */
+const TEMPLATE_OPEN = '<template';
+const TEMPLATE_CLOSE = '</template>';
+
+/**
+ * Stencil's positional marker comments: `<!--r.6133-->` for a host's content
+ * reference, `<!--t.6133.0.1-->` before a slotted text node. Matched by their
+ * shape — a short lowercase tag, a dot, then digits and dots — which nothing
+ * else in this document has. Angular's own bookkeeping comments are words:
+ * `<!--container-->`, `<!--ngetn-->`, `<!--ngtns-->`, `<!--ng-container-->`.
+ * None of them match, and none of them MUST: they are the anchors Angular
+ * hydrates against, and removing one would break the very thing this protects.
+ *
+ * Today only `r.` actually reaches the light DOM — every component here is
+ * shadow, so there is no slot relocation and no light-DOM `c-id`. The pattern
+ * covers the family anyway: a marker Angular does not expect is SILENT damage
+ * in a production build, and widening a regex is the cheap end of that trade.
+ */
+const STENCIL_MARKER = /<!--[a-z]+\.[\d.]+-->/g;
+
+/**
+ * The shadow DOM is Stencil's. The light DOM is Angular's. Keep each one's
+ * bookkeeping out of the other's tree.
+ *
+ * WHY THIS EXISTS. `clientHydrateAnnotations` — on by default, and the reason
+ * `s-id` reaches the browser at all — makes Stencil write marker COMMENTS as
+ * well as `s-id`/`c-id` attributes. The attributes are harmless: Angular's
+ * hydration never enumerates attributes it did not put there, which is exactly
+ * why `s-id` survives and the runtime can adopt the server's shadow roots. The
+ * comments are not. The content reference is written as the first child of
+ * every host:
+ *
+ *     <md-button … s-id="6133"><!--r.6133--> Overview </md-button>
+ *
+ * and the light DOM is the tree `provideClientHydration()` walks. Angular
+ * resolves a first child as `parent.firstChild` and validates the result only
+ * under `ngDevMode` — in the production build shipped here there is no check at
+ * all. It would claim that comment as the text node its template says is there,
+ * write " Overview " into the comment on the first change-detection pass, and
+ * leave the real text beside it as an orphan no binding ever touches again: a
+ * label that looks right and then never changes language. Every following
+ * sibling in that view is off by one node for the same reason.
+ *
+ * So the annotations stay ON, which is what buys the adoption, and the markers
+ * are removed FROM THE LIGHT DOM ONLY. Inside a shadow root every annotation is
+ * left exactly as written — Angular never walks in there, and Stencil's runtime
+ * needs `s-id`, `c-id` and the marker comments intact to take the server's vdom
+ * instead of rebuilding it.
+ *
+ * WHY A NESTING WALK AND NOT A REGEX OVER THE WHOLE STRING: the same marker
+ * text appears in both trees, so the only thing telling them apart is position.
+ * This tracks `<template>` depth and rewrites a run of HTML only at depth zero —
+ * Angular's side of the boundary.
+ *
+ * `apps/showcase/credit-risk/nuxt/server/plugins/awc-ssr-dsd.ts` carries the
+ * same walk for the same reason. Vue's hydration fails loudly (a logged
+ * mismatch and a re-created subtree) and Angular's fails silently, but the
+ * boundary being crossed is the same one.
+ */
+function stripLightDomAnnotations(html: string): string {
+  /*
+   * Depth of `<template>` nesting. Depth 0 is the light DOM — the only place
+   * anything is rewritten. Every `<template>` counts, not only the shadow
+   * roots: a plain one is inert content Angular does not hydrate either, so the
+   * markers inside it are equally none of our business.
+   */
+  let depth = 0;
+  let out = '';
+  let i = 0;
+
+  /** Append `chunk`, dropping Stencil's markers only when this is Angular's tree. */
+  const emit = (chunk: string) => {
+    out += depth === 0 ? chunk.replace(STENCIL_MARKER, '') : chunk;
+  };
+
+  for (;;) {
+    const open = html.indexOf(TEMPLATE_OPEN, i);
+    const close = html.indexOf(TEMPLATE_CLOSE, i);
+    if (close < 0) {
+      emit(html.slice(i));
+      return out;
+    }
+
+    if (open >= 0 && open < close) {
+      // Everything up to and including `<template` is still at the OUTER depth.
+      emit(html.slice(i, open + TEMPLATE_OPEN.length));
+      i = open + TEMPLATE_OPEN.length;
+      depth++;
+      continue;
+    }
+
+    // …and everything up to and including `</template>` is at the INNER depth,
+    // so it is emitted before the depth drops rather than after.
+    emit(html.slice(i, close + TEMPLATE_CLOSE.length));
+    i = close + TEMPLATE_CLOSE.length;
+    depth = Math.max(0, depth - 1);
+  }
+}
+
+/**
+ * Give every `md-*` element in a rendered page its declarative shadow root,
+ * then hand the light DOM back to Angular unannotated.
+ */
 async function injectShadowRoots(html: string): Promise<string> {
   const { html: hydrated, diagnostics } = await renderToString(html, {
     ...HYDRATE_OPTIONS,
@@ -153,7 +267,7 @@ async function injectShadowRoots(html: string): Promise<string> {
   // reports itself this way rather than by throwing. Treat it as the failure it
   // is; the caller serves the untransformed HTML.
   if (hydrated === null) throw new Error('hydrate produced no document');
-  return hydrated;
+  return stripLightDomAnnotations(hydrated);
 }
 
 const commonEngine = new CommonEngine();

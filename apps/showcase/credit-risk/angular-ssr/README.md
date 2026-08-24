@@ -138,15 +138,63 @@ bundle downloads is worse than one that arrives unpainted. The server's tags
 carry the same `data-awc-preboot` / `data-awc-runtime` markers `bootScripts()`
 looks for, which is what stops the client adding a second copy.
 
-**No `provideClientHydration()`, deliberately.** Angular's hydration walks the
-server-rendered DOM and asserts it matches what the client renders; these
-components attach shadow roots and rewrite their own internals the moment the
-runtime lands, which is exactly the kind of third-party mutation hydration is
-documented not to tolerate. Without it Angular re-renders on bootstrap — the
-server's shadow roots are discarded and Stencil builds them again — which costs
-a frame and buys certainty. The delivered HTML still does its job: real rows and
-real figures, painted, for a reader with JavaScript off and for anything reading
-the page without running it.
+**`provideClientHydration()` is on, and the browser ADOPTS the server's render.**
+This was absent for a long time, with a note saying it was absent on purpose:
+Stencil's components attach shadow roots and rewrite their own internals when
+the runtime lands, and that was read as the third-party mutation Angular's
+hydration is documented not to tolerate. The reasoning was wrong, and it cost
+this build the thing it advertises.
+
+Without `provideClientHydration()`, Angular adopts nothing.
+`bootstrapApplication` empties `<awc-root>` and renders the app from scratch, so
+the 206 `<template shadowrootmode>` shadow roots the server sent are torn out of
+the document along with the elements holding them, and Stencil builds all 206
+again in the browser. Nothing *looked* wrong — which is exactly why it lasted:
+the replacement render is correct, so no screenshot, no text assertion and no
+element count could see it. What it cost was the claim. Measured with the
+runtime request blocked, so only Angular's own hydration is observed, `md-badge`
+came back carrying one attribute — `value`, the one Angular's template sets —
+with `class`, `role`, `aria-label`, `variant`, `density` and `s-id` gone and no
+shadow root at all. `s-id` is the marker Stencil writes on every host it
+server-rendered, and the only signal its client runtime has that a shadow root
+is already there. Zero of 174 hosts kept it. The server render was real for one
+paint and then thrown away.
+
+With it, Angular locates the existing elements instead of creating them, and it
+never enumerates and clears attributes it did not put there — unlike Svelte 4's
+`claim_element`, which is what broke the sibling build. `s-id` survives on all
+174 hosts, the declarative shadow roots stay attached to the elements that own
+them, and Stencil adopts every one of them. `node scripts/verify-ssr-adoption.mjs
+angular-ssr` reports `server render is ADOPTED — 174 of 174 hosts keep their
+marker through hydration`, the same line `next` and `nuxt` get, and no screen
+renders anything twice.
+
+The third-party mutation the old note feared is real, but it lands where Angular
+is not looking: Stencil mutates the **shadow** roots, which Angular never walks,
+and sets attributes on the hosts, which Angular ignores. Neither is a structural
+change to Angular's tree.
+
+**One thing had to change in `src/server.ts` for that to be safe.** Stencil's
+hydrate pass writes positional marker comments as well as `s-id`/`c-id`, and one
+of them — `<!--r.N-->`, a content reference — lands as the first child of every
+host, in the **light** DOM, which is the tree Angular hydrates:
+
+```html
+<md-button … s-id="6133"><!--r.6133--> Overview </md-button>
+```
+
+Angular resolves a first child as `parent.firstChild` and validates what it
+finds only under `ngDevMode` — in the production build shipped here there is no
+check at all. It would claim that comment as the text node its template says is
+there, write `" Overview "` into the comment on the first change-detection pass,
+and leave the real text beside it as an orphan no binding ever touches again: a
+label that looks right and then never changes language, with every following
+sibling in that view off by one node. So the annotations stay on, which is what
+buys the adoption, and `stripLightDomAnnotations` in `src/server.ts` removes the
+markers from the light DOM **only** — every annotation inside a shadow root is
+left exactly as written, because Angular never walks in there and Stencil needs
+them intact. `nuxt/server/plugins/awc-ssr-dsd.ts` carries the same walk for the
+same boundary; Vue's hydration fails loudly where Angular's fails silently.
 
 **Trailing slashes differ on the way in, not on the way out.** Every other build
 links to `/watchlist/`; Angular's router treats that as a different path from
@@ -167,8 +215,19 @@ JavaScript disabled; every component upgrades; every chart paints; the dock's
 language picker re-renders every string without reloading the document; and
 sorting, paging and drill links all work.
 
-`node scripts/verify-ssr.mjs angular-ssr`, from the repo root, is the other half
-— it runs no JavaScript, and answers the two questions above.
+`node scripts/verify-ssr.mjs angular-ssr`, from the repo root, runs no
+JavaScript and answers the two questions above — did the markup arrive without a
+browser, and was it built for this request.
+
+`node scripts/verify-ssr-adoption.mjs angular-ssr` asks the question neither of
+those can, because both are answered by `fetch`: does the **browser keep** what
+the server sent. It loads each screen twice — once with the Stencil runtime
+request blocked, so only Angular's hydration is observed, and once whole — and
+reports whether `s-id` survived and whether the page ended up with more shadow
+hosts than the server sent templates. This build must report `ADOPTED`, `174 of
+174`, and no duplication on any of the six screens. Every text-based check in
+this repo was blind to the failure it catches: `innerText` does not cross a
+shadow boundary, and the light DOM was identical either way.
 
 `pnpm dev` (`ng serve`) does **not** go through `src/server.ts`: the dev server
 renders from memory with its own SSR middleware, so there is no shadow-DOM

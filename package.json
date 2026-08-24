@@ -45,7 +45,8 @@
     "dev:showcase-svelte": "pnpm --filter @awc-ui/showcase-credit-risk-svelte dev",
     "dev:showcase-sveltekit": "pnpm --filter @awc-ui/showcase-credit-risk-sveltekit dev",
     "coverage:merge": "node scripts/merge-coverage.mjs",
-    "verify:ssr": "node scripts/verify-ssr.mjs"
+    "verify:ssr": "node scripts/verify-ssr.mjs",
+    "verify:ssr-adoption": "node scripts/verify-ssr-adoption.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.4",
