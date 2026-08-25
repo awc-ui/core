@@ -38,9 +38,11 @@ node scripts/generate-docs.mjs
 
 echo ""
 echo "==> Building the showcase applications..."
-# Six framework builds of the credit-risk vertical, staged into
-# apps/docs/public/showcase/. Must run AFTER the core build — each one copies
-# Stencil's lazy runtime out of packages/core/dist — and BEFORE astro build,
+# Every static build of every showcase vertical, staged into
+# apps/docs/public/showcase/<vertical>/<framework>/. The set comes from
+# scripts/lib/showcase-verticals.mjs, so adding a vertical needs no edit here.
+# Must run AFTER the core build — each one copies Stencil's lazy runtime out of
+# packages/core/dist — and BEFORE astro build,
 # which is when public/ is read. Without this the site deploys with every
 # /showcase/credit-risk/<framework>/ URL returning a 404, while the docs page
 # linking to them says otherwise.

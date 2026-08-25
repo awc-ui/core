@@ -118,6 +118,42 @@ and will 404 on every asset.
 `scripts/build-docs.sh` calls it, so a deployed site and a local
 `bash scripts/build-docs.sh` produce the same thing.
 
+## Adding a vertical
+
+A vertical is a whole application, built five ways. **New verticals ship
+`html`, `react`, `vue`, `angular` and `svelte` — the plain-HTML build and the
+four single-page applications. No SSR, and no Astro.**
+
+That limit is about cost, not taste. A static build is free to host: it is
+staged into `apps/docs/public/showcase/<vertical>/<framework>/` and served by
+the site that already exists, and the redirect rules in `apps/docs/netlify.toml`
+are already generic (`/showcase/:app/:framework/*`), so a five-build vertical
+needs no deployment change at all. A server-rendered build needs its own Netlify
+site, its own function, its own deploy and its own proxy rule — four moving
+parts, permanently, per build. `credit-risk` keeps its four SPA/SSR pairs
+because they are the evidence that these components server-render, and that
+evidence only needs to exist once.
+
+1. `packages/showcase-kit/src/<vertical>/` — the fixture, selectors, route table
+   and `FRAMEWORKS` for the new vertical, beside the shared `data/` and `i18n/`.
+   Each vertical folder is self-contained; nothing in `credit-risk/` is shared
+   with another vertical except by being copied deliberately.
+2. `apps/showcase/<vertical>/<framework>/` for each of the five. The workspace
+   glob `apps/showcase/*/*` picks them up with no further registration.
+3. One entry in `VERTICALS` in `scripts/lib/showcase-verticals.mjs`, spreading
+   `SPA_BUILDS` for the five. Set `reference` (the build the others are compared
+   against) and `localeRouted` (the builds that carry locale in the URL rather
+   than in client state — for a five-build vertical that is `['html']`).
+4. Add the five `index.html` paths to the loop in
+   `.github/workflows/deploy.yml`, so a build that silently stops emitting fails
+   the deploy rather than shipping a 404 behind a link that promises otherwise.
+5. A row in the docs table, `apps/docs/src/content/docs/showcase/`.
+
+Nothing else. `build-showcase.mjs`, `verify-showcase-parity.mjs`,
+`verify-showcase-a11y.mjs` and the SSR harnesses all read the registry, and
+`pnpm showcase:lint` / `showcase:verify` filter on `@awc-ui/showcase-*-*`, which
+matches every vertical's builds and no other package.
+
 ## Adding a framework
 
 1. Add `apps/showcase/<vertical>/<framework>/` — the workspace glob
@@ -126,8 +162,11 @@ and will 404 on every asset.
    path from it rather than writing the literal twice.
 3. Add the id to `FRAMEWORKS` in `packages/showcase-kit/src/credit-risk/routes.ts`
    so the dock offers it.
-4. Add an entry to `BUILDS` in `scripts/build-showcase.mjs` with the directory
-   that toolchain writes to.
+4. Add an entry to the vertical's `builds` in
+   `scripts/lib/showcase-verticals.mjs` with the directory that toolchain writes
+   to. That registry is the single source of truth — `build-showcase.mjs`, both
+   verification scripts and the SSR harnesses all read it, so this is the only
+   place a build is declared.
 5. Add its `index.html` to the loop in `.github/workflows/deploy.yml`, so a
    build that silently stops emitting fails the deploy instead of shipping a
    404 behind a link that promises otherwise.

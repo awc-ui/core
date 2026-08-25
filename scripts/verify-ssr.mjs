@@ -39,19 +39,22 @@ import { spawn, spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { SSR_APPS } from './lib/ssr-apps.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 /**
- * The SSR builds. `start` must run a REAL server — not a static file server,
- * which would pass question 1 and fail question 2, correctly.
+ * The SSR builds — every one the registry marks `server: true`, whichever
+ * vertical it belongs to, rather than a list typed out here. This script used to
+ * carry its own copy of that list, identical to the one in `lib/ssr-apps.mjs`
+ * down to the ports, which is the arrangement that put three different framework
+ * lists out of step with each other in the first place.
+ *
+ * Today that resolves to credit-risk's four and nothing else, because a new
+ * vertical ships static builds only. Should one ever add a server build, it is
+ * checked here from the moment it is registered.
  */
-const APPS = [
-  { id: 'next', dir: 'apps/showcase/credit-risk/next', port: 4610, start: ['start', '--', '-p', '4610'] },
-  { id: 'nuxt', dir: 'apps/showcase/credit-risk/nuxt', port: 4611, start: ['start'] },
-  { id: 'sveltekit', dir: 'apps/showcase/credit-risk/sveltekit', port: 4612, start: ['start'] },
-  { id: 'angular-ssr', dir: 'apps/showcase/credit-risk/angular-ssr', port: 4613, start: ['start'] },
-];
+const APPS = SSR_APPS;
 
 const wanted = process.argv.slice(2);
 const apps = wanted.length ? APPS.filter((a) => wanted.includes(a.id)) : APPS;
@@ -131,7 +134,9 @@ for (const app of apps) {
     continue;
   }
 
-  const build = spawnSync('pnpm', ['--filter', `@awc-ui/showcase-credit-risk-${app.id}`, 'build'], {
+  /* The package name comes off the app rather than being rebuilt from its id,
+     so the vertical is whatever the registry says it is. */
+  const build = spawnSync('pnpm', ['--filter', app.pkg, 'build'], {
     cwd: root,
     stdio: 'inherit',
     shell: false,

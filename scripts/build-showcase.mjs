@@ -6,13 +6,14 @@
  * WHY THIS EXISTS. Each build emits into a different directory — SvelteKit
  * writes `build/`, Nuxt `.output/public/`, Angular `dist/browser/`, Vite and
  * the plain-HTML build `dist/` — and each is compiled against an absolute base
- * path of `/showcase/credit-risk/<framework>/`. So every asset URL, every link
+ * path of `/showcase/<vertical>/<framework>/`. So every asset URL, every link
  * and every runtime import in the output already carries that prefix, which
  * means the output only works when it is sitting at exactly that path. Copying
  * it there is the whole job.
  *
  * The server-rendered builds are the exception, and the reason the loop below
- * has two shapes: they produce no servable directory at all. See BUILDS.
+ * has two shapes: they produce no servable directory at all. See the `server`
+ * branch, and `scripts/lib/showcase-verticals.mjs`.
  *
  * `apps/docs/public/showcase/` is gitignored for the same reason the Storybook
  * output and the Stencil runtime are: it is build output, it churns on every
@@ -23,19 +24,71 @@
  * Stencil's lazy runtime out of it — so `scripts/build-docs.sh` calls this
  * AFTER the core build and BEFORE `astro build`, which is the point at which
  * `public/` is read.
+ *
+ * WHAT GETS BUILT is not spelled here. It comes from the registry in
+ * `scripts/lib/showcase-verticals.mjs`, which both verification scripts and the
+ * SSR harness also read. This script used to carry its own copy of the list,
+ * pinned to a single vertical, and the cost of that was not the duplication —
+ * it was that adding a vertical meant editing four files and the failure mode
+ * of forgetting one was silence, not an error.
+ *
+ * ── SELECTING WHAT TO BUILD ─────────────────────────────────────────────────
+ *
+ * With no arguments: every build of every vertical. That is what the deploy
+ * pipeline calls (`scripts/build-docs.sh`, `pnpm showcase:build`) and it is the
+ * only invocation that has to be right; the rest is for working by hand.
+ *
+ * There are two axes to filter on now — vertical and framework — so there are
+ * three selector forms:
+ *
+ *     html astro                  frameworks, in EVERY vertical
+ *     --vertical credit-risk      every build of that vertical
+ *     credit-risk:react           one build, one vertical
+ *
+ * Selectors ACCUMULATE: the result is the union of everything they match,
+ * which is what two framework names have always meant here (`html astro`
+ * builds both). `--vertical credit-risk html` therefore means all of
+ * credit-risk PLUS html everywhere, not html-within-credit-risk — that
+ * intersection is what the colon form is for.
+ *
+ * WHY A FLAG FOR THE VERTICAL rather than a bare name. A bare argument has
+ * meant "framework" since this script was written, and it has to keep meaning
+ * that. If a bare name could also be a vertical id, then every vertical added
+ * from now on would be a chance for the two namespaces to collide — a vertical
+ * called `react` would silently change what `build-showcase.mjs react` builds,
+ * and nothing would report it. A leading `--` cannot collide with a framework
+ * id no matter what gets added later, so the old CLI's meaning is fixed for
+ * good rather than fixed until someone picks an unlucky name. The colon form is
+ * safe for the same reason: no framework id contains a `:`.
+ *
+ * An unknown name is an error, always — including when it arrives alongside
+ * names that are fine. This is stricter than the script used to be: it filtered
+ * the list and only complained when NOTHING matched, so `html bogus` quietly
+ * built html and said nothing about `bogus`. A typo that builds a subset and
+ * exits 0 is exactly the quiet failure this file is supposed to stop making.
  */
 import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  VERTICALS,
+  allBuilds,
+  stagedPathFor,
+  verticalById,
+} from './lib/showcase-verticals.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /**
- * One entry per framework build. `output` is where that toolchain writes, and
- * for the static builds it is the only thing that differs between them — the
- * mount path is derived from the framework id, exactly as `createRoutes()` does
- * inside each app.
+ * Every build, flattened across verticals, each carrying its own `vertical` and
+ * `pkg`. Order is the registry's order: verticals in declaration order, and
+ * within a vertical the dock display order, which for credit-risk puts each SSR
+ * build directly after the SPA it mirrors.
+ *
+ * `output` is where that toolchain writes, and for the static builds it is the
+ * only thing that differs between them — the mount path is derived from the
+ * vertical and framework ids, exactly as `createRoutes()` does inside each app.
  *
  * `server: true` marks a build that renders per request. It has no `output`
  * because there is nothing to stage: `.next/` is not a servable directory, it
@@ -44,31 +97,104 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
  * so what this script owes them is a compile — it must fail here, in one place,
  * rather than at deploy time in four.
  */
-const VERTICAL = 'credit-risk';
-const BUILDS = [
-  { framework: 'html', pkg: '@awc-ui/showcase-credit-risk-html', output: 'dist' },
-  { framework: 'astro', pkg: '@awc-ui/showcase-credit-risk-astro', output: 'dist' },
-  { framework: 'react', pkg: '@awc-ui/showcase-credit-risk-react', output: 'dist' },
-  { framework: 'next', pkg: '@awc-ui/showcase-credit-risk-next', server: true },
-  { framework: 'vue', pkg: '@awc-ui/showcase-credit-risk-vue', output: 'dist' },
-  { framework: 'nuxt', pkg: '@awc-ui/showcase-credit-risk-nuxt', server: true },
-  { framework: 'angular', pkg: '@awc-ui/showcase-credit-risk-angular', output: 'dist/browser' },
-  { framework: 'angular-ssr', pkg: '@awc-ui/showcase-credit-risk-angular-ssr', server: true },
-  { framework: 'svelte', pkg: '@awc-ui/showcase-credit-risk-svelte', output: 'dist' },
-  { framework: 'sveltekit', pkg: '@awc-ui/showcase-credit-risk-sveltekit', server: true },
-];
+const BUILDS = allBuilds();
 
-/** Only build the frameworks named on the command line, if any are. */
-const wanted = process.argv.slice(2);
-const builds = wanted.length ? BUILDS.filter((b) => wanted.includes(b.framework)) : BUILDS;
+const KNOWN_VERTICALS = VERTICALS.map((v) => v.id);
+const KNOWN_FRAMEWORKS = [...new Set(BUILDS.map((b) => b.framework))];
 
-if (!builds.length) {
-  console.error(
-    `[build-showcase] no such framework: ${wanted.join(', ')}\n` +
-      `                known: ${BUILDS.map((b) => b.framework).join(', ')}`,
-  );
+const USAGE =
+  'usage: node scripts/build-showcase.mjs [selector...]\n' +
+  '\n' +
+  '  (none)                      every build of every vertical\n' +
+  '  <framework>...              those frameworks, in every vertical\n' +
+  '  --vertical <id>             every build of that vertical\n' +
+  '  <vertical>:<framework>      one build of one vertical\n' +
+  '\n' +
+  '  Selectors accumulate — the result is the union of what they match.\n' +
+  '\n' +
+  `  verticals:  ${KNOWN_VERTICALS.join(', ')}\n` +
+  `  frameworks: ${KNOWN_FRAMEWORKS.join(', ')}`;
+
+function fail(message) {
+  console.error(`[build-showcase] ${message}\n\n${USAGE}`);
   process.exit(1);
 }
+
+/**
+ * Turn the argument list into a set of selected builds.
+ *
+ * Each selector is resolved against the registry the moment it is read, so an
+ * unknown vertical, an unknown framework, or a pair naming a framework that
+ * this particular vertical does not ship all fail here — before `pnpm build`
+ * has been spawned for anything — and each says what IS known.
+ */
+function select(argv) {
+  const selected = new Set();
+  const add = (predicate) => {
+    for (const build of BUILDS) if (predicate(build)) selected.add(build);
+  };
+
+  for (let i = 0; i < argv.length; i += 1) {
+    const arg = argv[i];
+
+    if (arg === '--help' || arg === '-h') {
+      console.log(USAGE);
+      process.exit(0);
+    }
+
+    if (arg === '--vertical' || arg.startsWith('--vertical=')) {
+      /* Both spellings, because both get typed. */
+      const id = arg.startsWith('--vertical=') ? arg.slice('--vertical='.length) : argv[++i];
+      if (!id) fail('--vertical needs a vertical id');
+      if (!verticalById(id)) fail(`no such vertical: ${id}\n                known: ${KNOWN_VERTICALS.join(', ')}`);
+      add((b) => b.vertical === id);
+      continue;
+    }
+
+    /* Anything else beginning with `-` is a typo, not a framework. Treating it
+       as one would produce "no such framework: --verticals", which points at
+       the wrong half of the mistake. */
+    if (arg.startsWith('-')) fail(`unknown option: ${arg}`);
+
+    if (arg.includes(':')) {
+      const parts = arg.split(':');
+      if (parts.length !== 2) fail(`not a <vertical>:<framework> pair: ${arg}`);
+      const [id, framework] = parts;
+      const vertical = verticalById(id);
+      if (!vertical) fail(`no such vertical: ${id}\n                known: ${KNOWN_VERTICALS.join(', ')}`);
+      /* Deliberately checked against THIS vertical's builds, not the union of
+         all of them. Only credit-risk ships astro and the SSR builds, so
+         `some-other-vertical:next` is a real mistake even though `next` is a
+         name this script knows. */
+      const frameworks = vertical.builds.map((b) => b.framework);
+      if (!frameworks.includes(framework)) {
+        fail(
+          `${id} has no ${framework || '<framework>'} build\n` +
+            `                known: ${frameworks.join(', ')}`,
+        );
+      }
+      add((b) => b.vertical === id && b.framework === framework);
+      continue;
+    }
+
+    if (!KNOWN_FRAMEWORKS.includes(arg)) {
+      fail(`no such framework: ${arg}\n                known: ${KNOWN_FRAMEWORKS.join(', ')}`);
+    }
+    add((b) => b.framework === arg);
+  }
+
+  /* No selectors at all is the pipeline's invocation: build everything. */
+  if (!argv.length) return BUILDS;
+  /* Registry order, not selection order — see BUILDS. */
+  return BUILDS.filter((b) => selected.has(b));
+}
+
+const builds = select(process.argv.slice(2));
+
+/* Unreachable while every selector is validated above, and kept anyway: it is
+   the last line of defence against a selector form that matches nothing, which
+   would otherwise be a silent no-op exiting 0. */
+if (!builds.length) fail(`no builds selected: ${process.argv.slice(2).join(' ')}`);
 
 if (!existsSync(join(root, 'packages/core/dist/md3'))) {
   console.error(
@@ -97,8 +223,17 @@ if (kit.status !== 0) {
   process.exit(1);
 }
 
-const staging = join(root, 'apps/docs/public/showcase', VERTICAL);
-mkdirSync(staging, { recursive: true });
+/** Where a build is staged. `stagedPathFor()` owns the layout; this adds the root. */
+const stagedPath = (vertical, framework) =>
+  join(root, 'apps/docs/public', stagedPathFor(vertical, framework));
+
+/* Create the staging directory of every selected vertical up front, before
+   anything is built — including a vertical whose only selected builds are
+   server ones, which stage nothing but still delete stale directories under
+   this path. Derived from `stagedPathFor()` rather than spelled out again, so
+   `showcase/<vertical>/<framework>` has exactly one definition; a vertical's
+   directory is that path's parent. */
+for (const build of builds) mkdirSync(dirname(stagedPath(build.vertical, build.framework)), { recursive: true });
 
 function bytes(dir) {
   let total = 0;
@@ -119,7 +254,7 @@ function pages(dir) {
 }
 
 for (const build of builds) {
-  console.log(`\n==> ${VERTICAL} / ${build.framework}`);
+  console.log(`\n==> ${build.vertical} / ${build.framework}`);
   const result = spawnSync('pnpm', ['--filter', build.pkg, 'build'], {
     cwd: root,
     stdio: 'inherit',
@@ -130,33 +265,33 @@ for (const build of builds) {
     process.exit(result.status ?? 1);
   }
 
+  const to = stagedPath(build.vertical, build.framework);
+
   if (build.server) {
     /* Staging a server build would be worse than skipping it: copying `.next/`
        under `public/` would put a directory at the path the proxy is supposed
        to claim, and Netlify serves a matching file in preference to a redirect
        — so the showcase would quietly serve build artifacts instead of the
        rendered app, and look like it worked. Leave the path empty. */
-    const stale = join(staging, build.framework);
-    if (existsSync(stale)) rmSync(stale, { recursive: true });
+    if (existsSync(to)) rmSync(to, { recursive: true });
     console.log(
       `    -> not staged — renders per request; deployed separately and ` +
-        `proxied onto /showcase/${VERTICAL}/${build.framework}/`,
+        `proxied onto /showcase/${build.vertical}/${build.framework}/`,
     );
     continue;
   }
 
-  const from = join(root, 'apps/showcase', VERTICAL, build.framework, build.output);
+  const from = join(root, 'apps/showcase', build.vertical, build.framework, build.output);
   if (!existsSync(from)) {
     console.error(`[build-showcase] ${build.pkg} built but ${build.output}/ is missing`);
     process.exit(1);
   }
 
-  const to = join(staging, build.framework);
   if (existsSync(to)) rmSync(to, { recursive: true });
   cpSync(from, to, { recursive: true });
 
   console.log(
-    `    -> apps/docs/public/showcase/${VERTICAL}/${build.framework} — ` +
+    `    -> apps/docs/public/${stagedPathFor(build.vertical, build.framework)} — ` +
       `${pages(to)} pages, ${(bytes(to) / 1024 / 1024).toFixed(1)} MB`,
   );
 }

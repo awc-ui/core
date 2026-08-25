@@ -59,17 +59,30 @@ import { createRequire } from 'node:module';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SSR_APPS, SCREENS, REFERENCE, basePathFor } from './lib/ssr-apps.mjs';
+import { SSR_APPS, SCREENS, REFERENCE } from './lib/ssr-apps.mjs';
+import { allBuilds } from './lib/showcase-verticals.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 /* puppeteer is a devDependency of the showcase apps rather than the root, so it
-   is resolved from one of them rather than added to the root just for this. */
-const require = createRequire(join(root, 'apps/showcase/credit-risk/react/package.json'));
+   is resolved from one of them rather than added to the root just for this.
+   WHICH one is not worth naming: the apps are asked in registry order and the
+   first that can resolve it wins, because not every app carries it — the Next
+   build does not — and a single hardcoded path would break the day that app is
+   renamed or its dependency dropped. */
+const anchors = allBuilds().map((b) =>
+  join(root, `apps/showcase/${b.vertical}/${b.framework}/package.json`),
+);
 let puppeteer;
-try {
-  puppeteer = require('puppeteer');
-} catch {
+for (const anchor of anchors) {
+  try {
+    puppeteer = createRequire(anchor)('puppeteer');
+    break;
+  } catch {
+    /* not this one */
+  }
+}
+if (!puppeteer) {
   console.error(
     '[verify-ssr-adoption] puppeteer is not resolvable — run `pnpm install` first',
   );
@@ -201,7 +214,10 @@ for (const app of apps) {
   };
 
   try {
-    const base = `http://localhost:${app.port}${basePathFor(app.id)}`;
+    /* The public path is the registry's, not a string built here: a build
+       answers on the path it was compiled against, and there is one place that
+       decides what that is. */
+    const base = `http://localhost:${app.port}${app.base}`;
     if (!(await waitForServer(`${base}/`))) {
       console.error(`    FAIL — server did not answer on :${app.port}`);
       failed++;

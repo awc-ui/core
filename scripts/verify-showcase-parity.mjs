@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * The six builds must be ONE application.
+ * Every build of a vertical must be ONE application.
  *
  * That is the whole premise of the showcase: the same screens, the same
  * numbers, the same components, so a screenshot of the React build and a
@@ -9,8 +9,10 @@
  * idiom and a divergence looks like a design decision right up until someone
  * puts the two side by side.
  *
- * So this puts them side by side. React is the reference — it was first — and
- * every other build is compared against it on every screen, for:
+ * So this puts them side by side. Each vertical nominates a REFERENCE build —
+ * `VERTICALS[].reference` in `scripts/lib/showcase-verticals.mjs`, which is
+ * `react` for credit-risk because React was written first — and every other
+ * static build in that vertical is compared against it on every screen, for:
  *
  *   - the visible text of the screen, normalised for whitespace;
  *   - an ordered fingerprint of the `md-*` elements: tag plus the attributes
@@ -19,6 +21,14 @@
  *   - the number of live table rows, and whether a pagination control exists;
  *   - the LAYOUT: the height of the document, and the vertical gap between each
  *     pair of adjacent rendered blocks.
+ *
+ * RUNS PER VERTICAL. It used to have `credit-risk` and `react` spelled into it,
+ * which is why a second vertical could not be added without editing this file.
+ * Both now come from the registry, and every vertical it lists is measured. Name
+ * one on the command line to measure only that one:
+ *
+ *   node scripts/verify-showcase-parity.mjs               # every vertical
+ *   node scripts/verify-showcase-parity.mjs credit-risk   # just this one
  *
  * WHAT THIS CAUGHT. The `html` and `astro` builds used to render the whole
  * twenty-four-row book instead of a page of ten, and all three stress scenarios
@@ -68,36 +78,103 @@ import { createServer } from 'node:http';
 import { dirname, extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
+import { VERTICALS, basePathFor, stagedPathFor, staticBuilds } from './lib/showcase-verticals.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = join(root, 'apps/docs/public');
 const PORT = 4352;
 
 /**
- * The reference, and the builds measured against it.
+ * The screens each vertical is compared on — one of each kind, including the
+ * three that page, filter or switch.
  *
- * These are the builds in the static tree. The four server-rendered ones —
- * next, nuxt, angular-ssr, sveltekit — cannot be here: this script serves
- * `apps/docs/public`, and a build that renders per request stages nothing
- * there. Each of them shares its screens with the SPA beside it in this list,
- * so what goes unmeasured is the server render, not the screens.
+ * WHY THIS LIVES HERE AND NOT IN THE REGISTRY. `showcase-verticals.mjs`
+ * describes the BUILD MATRIX — which frameworks a vertical ships, where each
+ * one is staged, which one is the reference. These are routes into a
+ * vertical's CONTENT, and `/counterparties/cp-01/` means nothing outside
+ * credit-risk. Keyed by vertical id so the next vertical adds an entry rather
+ * than editing a list, and a vertical with NO entry is a hard error below
+ * rather than a run that quietly measures nothing.
  */
-const REFERENCE = 'react';
-const BUILDS = ['vue', 'angular', 'svelte', 'html', 'astro'];
+const SCREENS = {
+  'credit-risk': [
+    '/',
+    '/watchlist/',
+    '/stress/',
+    '/sectors/energy/',
+    '/counterparties/cp-01/',
+    '/facilities/fac-001/',
+  ],
+};
 
-/** One screen of each kind, including the three that page, filter or switch. */
-const ROUTES = [
-  '/',
-  '/watchlist/',
-  '/stress/',
-  '/sectors/energy/',
-  '/counterparties/cp-01/',
-  '/facilities/fac-001/',
-];
+/**
+ * Only measure the vertical named on the command line, if one is.
+ *
+ * No argument means every vertical in the registry, which is what CI wants: the
+ * failure this whole file exists to prevent is a check that still passes while
+ * silently covering only the first vertical.
+ */
+const wanted = process.argv.slice(2);
+const verticals = wanted.length ? VERTICALS.filter((v) => wanted.includes(v.id)) : VERTICALS;
 
-if (!existsSync(join(PUBLIC, `showcase/credit-risk/${REFERENCE}/index.html`))) {
+const unknown = wanted.filter((id) => !VERTICALS.some((v) => v.id === id));
+if (unknown.length) {
   console.error(
-    '[parity] apps/docs/public/showcase is not staged — build it first:\n' +
+    `[parity] no such vertical: ${unknown.join(', ')}\n` +
+      `         known: ${VERTICALS.map((v) => v.id).join(', ')}`,
+  );
+  process.exit(1);
+}
+
+/*
+ * NOTHING IS SKIPPED QUIETLY. A vertical with no screen list, or one that has
+ * not been staged, stops the run instead of being passed over — a verification
+ * that measures nothing while reporting PASS is worse than one that errors, and
+ * with more verticals coming this is exactly how it would rot.
+ *
+ * The staged check covers EVERY static build, not just the reference: a partial
+ * `pnpm showcase:build react vue` used to get as far as the browser and then
+ * report the missing builds as parity differences, which described the symptom
+ * and not the cause.
+ */
+const missingScreens = verticals.filter((v) => !SCREENS[v.id]?.length);
+if (missingScreens.length) {
+  console.error(
+    `[parity] no screen list for: ${missingScreens.map((v) => v.id).join(', ')}\n` +
+      "         add one to SCREENS in this file — a vertical with no screens would " +
+      'report PASS having compared nothing.',
+  );
+  process.exit(1);
+}
+
+/*
+ * The reference has to be a build this script can actually reach. A vertical
+ * naming a server-rendered build as its reference — or misspelling one — would
+ * otherwise leave every screen comparing the other builds against a 404, which
+ * the guard further down turns into a failure but describes badly.
+ */
+const badReference = verticals.filter(
+  (v) => !staticBuilds(v.id).some((b) => b.framework === v.reference),
+);
+if (badReference.length) {
+  console.error(
+    '[parity] reference is not a static build of its own vertical: ' +
+      `${badReference.map((v) => `${v.id} -> ${v.reference}`).join(', ')}\n` +
+      "         fix `reference` in scripts/lib/showcase-verticals.mjs — it must name one of\n" +
+      "         that vertical's staged builds, because a server-rendered one has nothing to serve.",
+  );
+  process.exit(1);
+}
+
+const unstaged = verticals.flatMap((v) =>
+  staticBuilds(v.id)
+    .filter((b) => !existsSync(join(PUBLIC, stagedPathFor(v.id, b.framework), 'index.html')))
+    .map((b) => `${v.id}/${b.framework}`),
+);
+if (unstaged.length) {
+  console.error(
+    `[parity] not staged under apps/docs/public/showcase: ${unstaged.join(', ')}\n` +
+      '         build it first:\n' +
       '         pnpm showcase:build',
   );
   process.exit(1);
@@ -134,12 +211,12 @@ await new Promise((done) => server.listen(PORT, done));
 const browser = await puppeteer.launch({ headless: 'shell' });
 
 /** Load one screen and describe what is actually in the document. */
-async function describe(framework, route) {
+async function describe(vertical, framework, route) {
   const page = await browser.newPage();
   await page.setViewport({ width: 1600, height: 1000 });
   await page.setCacheEnabled(false);
   try {
-    await page.goto(`http://localhost:${PORT}/showcase/credit-risk/${framework}${route}`, {
+    await page.goto(`http://localhost:${PORT}${basePathFor(vertical, framework)}${route}`, {
       waitUntil: 'networkidle0',
       timeout: 90000,
     });
@@ -163,10 +240,11 @@ async function describe(framework, route) {
        *
        * The whole subtree goes rather than that one attribute: everything in
        * there comes from ONE shared element in `@awc-ui/showcase-kit`,
-       * identical in all six builds by construction, so there is no per-build
-       * divergence here for this script to catch. That the dock rendered, and
-       * offered every build as a selectable row, is checked where it can be
-       * checked properly — in each app's own `scripts/verify-browser.mjs`.
+       * identical across a vertical's builds by construction, so there is no
+       * per-build divergence here for this script to catch. That the dock
+       * rendered, and offered every build as a selectable row, is checked where
+       * it can be checked properly — in each app's own
+       * `scripts/verify-browser.mjs`.
        */
       const walkAll = (root, out = []) => {
         for (const el of root.querySelectorAll('*')) {
@@ -223,7 +301,7 @@ async function describe(framework, route) {
        *
        * Reading through shadow roots was tried and is too noisy to be useful
        * here: Astro server-renders its shadow content into declarative shadow
-       * DOM while the other five have theirs built by the runtime, so the two
+       * DOM while the SPA builds have theirs built by the runtime, so the two
        * legitimately differ in whitespace and in what a half-upgraded component
        * leaves behind. Every label those shadow roots display arrives through a
        * prop, and the fingerprint above compares those props — so the coverage
@@ -285,70 +363,116 @@ async function describe(framework, route) {
 }
 
 const failures = [];
+const summaries = [];
 
-for (const route of ROUTES) {
-  console.log(`\n${route}`);
-  const reference = await describe(REFERENCE, route);
-  if (reference.error) {
-    console.log(`  ${REFERENCE.padEnd(8)} ERROR ${reference.error}`);
-    failures.push(`${REFERENCE} ${route}: ${reference.error}`);
-    continue;
-  }
-  console.log(
-    `  ${REFERENCE.padEnd(8)} rows=${String(reference.rows).padStart(3)} ` +
-      `pagination=${reference.pagination} text=${String(reference.text.length).padStart(5)} ` +
-      `height=${reference.docHeight} gaps=[${reference.blockGaps}]  (reference)`,
-  );
+for (const vertical of verticals) {
+  /*
+   * The builds measured, and the one they are measured against.
+   *
+   * These are the builds in the STATIC tree. A vertical's server-rendered
+   * builds — credit-risk's next, nuxt, angular-ssr and sveltekit — cannot be
+   * here: this script serves `apps/docs/public`, and a build that renders per
+   * request stages nothing there. Each of them shares its screens with the SPA
+   * beside it in the registry's build list, so what goes unmeasured is the
+   * server render, not the screens. `staticBuilds()` is what draws that line,
+   * and it draws it from the same `server: true` flag `build-showcase.mjs`
+   * uses to decide what to stage — so the two can never disagree.
+   */
+  const reference = vertical.reference;
+  const builds = staticBuilds(vertical.id)
+    .map((b) => b.framework)
+    .filter((framework) => framework !== reference);
+  const routes = SCREENS[vertical.id];
 
-  for (const framework of BUILDS) {
-    const actual = await describe(framework, route);
-    if (actual.error) {
-      console.log(`  ${framework.padEnd(8)} ERROR ${actual.error}`);
-      failures.push(`${framework} ${route}: ${actual.error}`);
+  if (verticals.length > 1) console.log(`\n======== ${vertical.id} ========`);
+
+  for (const route of routes) {
+    console.log(`\n${route}`);
+    const expected = await describe(vertical.id, reference, route);
+    if (expected.error) {
+      console.log(`  ${reference.padEnd(8)} ERROR ${expected.error}`);
+      failures.push(`${vertical.id} ${reference} ${route}: ${expected.error}`);
       continue;
     }
 
-    const problems = [];
-    if (actual.text !== reference.text) problems.push('visible text differs');
-    if (String(actual.fingerprint) !== String(reference.fingerprint)) {
-      // Report the FIRST divergence rather than the whole sequence: the rest is
-      // almost always a knock-on of it, and 200 lines of diff helps nobody.
-      const at = actual.fingerprint.findIndex((entry, i) => entry !== reference.fingerprint[i]);
-      problems.push(
-        `element order/attributes differ at #${at}: ` +
-          `${reference.fingerprint[at] ?? '(none)'} -> ${actual.fingerprint[at] ?? '(none)'}`,
+    /*
+     * A reference render with no `md-*` element in it is not a screen, it is a
+     * 404 body — and the file server answers one with the same short text for
+     * every build, so reference and build would agree and the screen would
+     * report `identical` having compared two error pages. That is the exact
+     * silent pass this script is meant to be immune to, and the way a vertical
+     * would hit it is a SCREENS entry that does not match its routes.
+     */
+    if (expected.fingerprint.length === 0) {
+      console.log(`  ${reference.padEnd(8)} ERROR no md-* elements — is this route real?`);
+      failures.push(
+        `${vertical.id} ${reference} ${route}: rendered no md-* elements — ` +
+          `either the screen is broken or SCREENS['${vertical.id}'] names a route this vertical does not have`,
       );
-    }
-    if (actual.docHeight !== reference.docHeight) {
-      problems.push(`document height ${reference.docHeight} -> ${actual.docHeight}`);
-    }
-    if (String(actual.blockGaps) !== String(reference.blockGaps)) {
-      problems.push(`gaps between blocks [${reference.blockGaps}] -> [${actual.blockGaps}]`);
-    }
-    if (String(actual.cardGaps) !== String(reference.cardGaps)) {
-      problems.push(`gaps between cards [${reference.cardGaps}] -> [${actual.cardGaps}]`);
-    }
-    if (actual.rows !== reference.rows) problems.push(`rows ${reference.rows} -> ${actual.rows}`);
-    if (actual.pagination !== reference.pagination) {
-      problems.push(`pagination ${reference.pagination} -> ${actual.pagination}`);
-    }
-    for (const tag of [...new Set([...Object.keys(reference.census), ...Object.keys(actual.census)])].sort()) {
-      const a = reference.census[tag] ?? 0;
-      const b = actual.census[tag] ?? 0;
-      if (a !== b) problems.push(`${tag} ${a} -> ${b}`);
+      continue;
     }
 
     console.log(
-      `  ${framework.padEnd(8)} rows=${String(actual.rows).padStart(3)} ` +
-        `pagination=${actual.pagination} text=${String(actual.text.length).padStart(5)} ` +
-        `height=${actual.docHeight} gaps=[${actual.blockGaps}]` +
-        (problems.length ? `  DIFFERS` : '  identical'),
+      `  ${reference.padEnd(8)} rows=${String(expected.rows).padStart(3)} ` +
+        `pagination=${expected.pagination} text=${String(expected.text.length).padStart(5)} ` +
+        `height=${expected.docHeight} gaps=[${expected.blockGaps}]  (reference)`,
     );
-    for (const problem of problems) {
-      console.log(`           ${problem}`);
-      failures.push(`${framework} ${route}: ${problem}`);
+
+    for (const framework of builds) {
+      const actual = await describe(vertical.id, framework, route);
+      if (actual.error) {
+        console.log(`  ${framework.padEnd(8)} ERROR ${actual.error}`);
+        failures.push(`${vertical.id} ${framework} ${route}: ${actual.error}`);
+        continue;
+      }
+
+      const problems = [];
+      if (actual.text !== expected.text) problems.push('visible text differs');
+      if (String(actual.fingerprint) !== String(expected.fingerprint)) {
+        // Report the FIRST divergence rather than the whole sequence: the rest is
+        // almost always a knock-on of it, and 200 lines of diff helps nobody.
+        const at = actual.fingerprint.findIndex((entry, i) => entry !== expected.fingerprint[i]);
+        problems.push(
+          `element order/attributes differ at #${at}: ` +
+            `${expected.fingerprint[at] ?? '(none)'} -> ${actual.fingerprint[at] ?? '(none)'}`,
+        );
+      }
+      if (actual.docHeight !== expected.docHeight) {
+        problems.push(`document height ${expected.docHeight} -> ${actual.docHeight}`);
+      }
+      if (String(actual.blockGaps) !== String(expected.blockGaps)) {
+        problems.push(`gaps between blocks [${expected.blockGaps}] -> [${actual.blockGaps}]`);
+      }
+      if (String(actual.cardGaps) !== String(expected.cardGaps)) {
+        problems.push(`gaps between cards [${expected.cardGaps}] -> [${actual.cardGaps}]`);
+      }
+      if (actual.rows !== expected.rows) problems.push(`rows ${expected.rows} -> ${actual.rows}`);
+      if (actual.pagination !== expected.pagination) {
+        problems.push(`pagination ${expected.pagination} -> ${actual.pagination}`);
+      }
+      for (const tag of [...new Set([...Object.keys(expected.census), ...Object.keys(actual.census)])].sort()) {
+        const a = expected.census[tag] ?? 0;
+        const b = actual.census[tag] ?? 0;
+        if (a !== b) problems.push(`${tag} ${a} -> ${b}`);
+      }
+
+      console.log(
+        `  ${framework.padEnd(8)} rows=${String(actual.rows).padStart(3)} ` +
+          `pagination=${actual.pagination} text=${String(actual.text.length).padStart(5)} ` +
+          `height=${actual.docHeight} gaps=[${actual.blockGaps}]` +
+          (problems.length ? `  DIFFERS` : '  identical'),
+      );
+      for (const problem of problems) {
+        console.log(`           ${problem}`);
+        failures.push(`${vertical.id} ${framework} ${route}: ${problem}`);
+      }
     }
   }
+
+  summaries.push(
+    (verticals.length > 1 ? `${vertical.id}: ` : '') +
+      `${builds.length} builds × ${routes.length} screens against ${reference}`,
+  );
 }
 
 await browser.close();
@@ -356,7 +480,7 @@ server.close();
 
 console.log(
   `\n${failures.length === 0 ? 'PASS' : 'FAIL'} — ` +
-    `${BUILDS.length} builds × ${ROUTES.length} screens against ${REFERENCE}` +
+    summaries.join('; ') +
     (failures.length ? `, ${failures.length} difference(s)` : ', all identical'),
 );
 process.exit(failures.length ? 1 : 0);
