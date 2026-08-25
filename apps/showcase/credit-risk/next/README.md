@@ -28,6 +28,46 @@ without a browser, and a per-request marker that differs across two requests.
 HTML. `.next/` is a build artifact that only `server.mjs` can serve, and `next
 start` alone is not enough — see below.
 
+## Two targets, one seam
+
+Netlify runs static assets plus serverless functions. It has no long-lived
+process to hold a port, so `server.mjs` — the thing that makes `next start`
+enough — cannot be deployed there. Rather than replace it, this app has a
+**second build target** that reaches the same transform another way.
+
+```bash
+pnpm --filter @awc-ui/showcase-credit-risk-next build          # Node target: server.mjs, port 4610
+pnpm --filter @awc-ui/showcase-credit-risk-next build:netlify  # Netlify target: AWC_TARGET=netlify
+pnpm --filter @awc-ui/showcase-credit-risk-next verify:netlify # proves the second seam locally
+```
+
+Both targets are the same `next build` from the same `next.config.mjs`, so the
+base path, `trailingSlash` and the per-request `<meta>` in `app/layout.tsx` are
+physically the same code. `AWC_TARGET=netlify` changes three things: it emits
+`output: 'standalone'` for Netlify's Next runtime, points
+`experimental.outputFileTracingRoot` at the workspace root, and arms
+`middleware.ts`.
+
+| | Node target | Netlify target |
+| --- | --- | --- |
+| serves | `server.mjs` on :4610 | `@netlify/plugin-nextjs`, i.e. `next start` in a function |
+| DSD injected by | `server.mjs` buffering each response | `middleware.ts` → `app/awc-dsd/route.ts` |
+| calls | `lib/dsd-transform.mjs` | `lib/dsd-transform.mjs` |
+| proved by | `node scripts/verify-ssr.mjs next` | `pnpm verify:netlify` |
+
+The middleware only **rewrites**. Next 14 compiles it for the Edge runtime,
+where the hydrate app's `import { Readable } from 'stream'` does not build, and
+on Netlify it becomes a Deno edge function with a 50 ms CPU budget against a
+~140 ms hydrate pass; the Node route handler it points at has neither problem.
+The cost is one extra request per document — the handler fetches the page from
+this same app, marked so the middleware lets it through.
+`app/awc-dsd/route.ts` carries the full reasoning, including what was tried
+instead.
+
+`netlify.toml` in this directory is only read when the site's **base directory
+is this directory**, which is also where `@netlify/plugin-nextjs` looks for
+`.next`.
+
 ## Screens
 
 | Route | Screen |

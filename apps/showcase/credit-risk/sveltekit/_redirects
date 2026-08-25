@@ -1,0 +1,48 @@
+# NO RULES HERE, AND THAT IS THE POINT. Read this before adding one.
+#
+# `@sveltejs/adapter-netlify` copies this file verbatim into the publish
+# directory (`build-netlify/_redirects`) when it sits next to `netlify.toml`.
+# `adapter-node` has never heard of it, so the Node target is untouched either
+# way. It must NOT live in `static/` — the adapter throws if it finds it there,
+# because `static/` is served under `paths.base` and a redirect file has to sit
+# at the site root.
+#
+# THIS FILE USED TO CARRY A BARE-ROOT FRONT DOOR:
+#
+#     /    /showcase/credit-risk/sveltekit/    308
+#
+# the same 308 `server.mjs` performs locally, so that opening the Netlify site
+# URL itself lands on the mount instead of a 404. IT NEVER FIRED, and it cannot:
+#
+#   Netlify's request chain evaluates SERVERLESS FUNCTIONS BEFORE REDIRECTS
+#   (https://docs.netlify.com/platform/request-chain/). This adapter emits ONE
+#   function registered on `path: ["/*"]` — see `netlify.toml` for why that is
+#   the only routing that preserves `kit.paths.base` — so `/` matches the
+#   function first and the redirect step is never reached. `preferStatic: true`
+#   is the sole escape hatch, and it yields only to a STATIC FILE, never to a
+#   rule in this file. Forcing the rule (`308!`) changes nothing either: `force`
+#   orders a redirect against static files, not against functions.
+#
+# MEASURED, not reasoned about. With the rule present, `netlify dev` serving the
+# real build (`--dir build-netlify --functions .netlify/functions-internal`)
+# answers `/` with SvelteKit's own plain-text `Not found`, 404, and never logs
+# the redirect. Drop the identical file into a static-only site with no function
+# and the rule 308s correctly — so the file parses and the rule is well formed;
+# it is simply shadowed.
+#
+# WHAT `/` DOES INSTEAD. The function receives it, SvelteKit sees a path outside
+# `kit.paths.base`, and returns `Not found` with status 404 before any hook runs.
+# That is cosmetic: every real request arrives through the docs-site proxy
+# already carrying `/showcase/credit-risk/sveltekit/`, and every page, asset and
+# in-app 404 under that prefix is served correctly. It only bites someone who
+# opens the raw Netlify URL to eyeball a deploy.
+#
+# IF A FRONT DOOR IS WANTED, `preferStatic: true` is the seam, and a static file
+# is the only thing it yields to — confirmed by dropping an `index.html` at the
+# publish root and watching it win over the function. That means a post-build
+# step writing `build-netlify/index.html` (a `<meta http-equiv="refresh">` plus
+# a real link), because the adapter rimrafs the publish directory on every
+# build. It would be an HTML hop rather than a 308, and it would put the first
+# and only `.html` file into a publish directory that is otherwise pure assets.
+# Not worth it for a URL nothing routes through, so it is written down here
+# rather than built.

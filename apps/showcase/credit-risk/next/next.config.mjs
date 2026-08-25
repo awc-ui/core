@@ -34,12 +34,38 @@
  * NOTE: `@awc-ui/core` is deliberately NOT in `transpilePackages`. Only the
  * token stylesheet is imported from it in the browser graph; the components
  * arrive through Stencil's own lazy runtime, loaded from a static URL so no
- * bundler ever sees it. The SERVER additionally loads `@awc-ui/core/hydrate`
- * in `server.mjs`, outside the bundle entirely. See `app/layout.tsx`.
+ * bundler ever sees it. The SERVER additionally loads `@awc-ui/core/hydrate` —
+ * in `server.mjs` on the Node target, and in `app/awc-dsd/route.ts` on the
+ * Netlify one. See `app/layout.tsx`.
+ *
+ * TWO TARGETS, ONE CONFIG
+ *
+ * `AWC_TARGET=netlify` selects the second build. It is an environment variable
+ * read here rather than a `next.config.netlify.mjs`, because everything the two
+ * targets MUST agree on — the base path, `trailingSlash`, and the per-request
+ * `<meta>` stamped in `app/layout.tsx` — is then physically the same code, and
+ * the only difference is the three lines below that genuinely differ:
+ *
+ *  - `AWC_DSD_MIDDLEWARE` arms `middleware.ts`, which rewrites document
+ *    requests into the Node route handler that runs the hydrate pass. The Node
+ *    target leaves it disarmed because `server.mjs` already does that job.
+ *  - `output: 'standalone'` is what Netlify's Next runtime consumes. The plugin
+ *    sets `NEXT_PRIVATE_STANDALONE` for itself, so this is belt and braces —
+ *    and it is what makes `pnpm build:netlify` reproduce the deployed artefact
+ *    locally.
+ *  - `outputFileTracingRoot` because this is a pnpm workspace. Left unset, the
+ *    trace root is inferred from the app directory and the traced copy misses
+ *    everything resolved through the root `node_modules/.pnpm` store.
  */
+
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /** Keep in sync with BASE_PATH in lib/routes.ts. */
 const BASE_PATH = '/showcase/credit-risk/next';
+
+const NETLIFY_TARGET = process.env.AWC_TARGET === 'netlify';
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -48,7 +74,14 @@ const nextConfig = {
   reactStrictMode: true,
   env: {
     NEXT_PUBLIC_AWC_BASE_PATH: BASE_PATH,
+    AWC_DSD_MIDDLEWARE: NETLIFY_TARGET ? '1' : '0',
   },
+  ...(NETLIFY_TARGET
+    ? {
+        output: 'standalone',
+        experimental: { outputFileTracingRoot: REPO_ROOT },
+      }
+    : {}),
 };
 
 export default nextConfig;

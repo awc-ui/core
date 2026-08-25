@@ -41,6 +41,29 @@
  * legend, accessible name and the data-table description a screen reader reads
  * — with the plot appearing when the runtime draws it. Every other figure on
  * every screen, tables and meters and chips included, is in the HTML.
+ *
+ * THIS FILE HAS TWO CALLERS, AND THAT IS THE POINT
+ *
+ * `pnpm start` runs it: `node dist/server/server.mjs` holds port 4613 for as
+ * long as the process lives, and `scripts/verify-ssr.mjs` and
+ * `scripts/verify-ssr-adoption.mjs` drive that server to prove the two claims
+ * this build exists to make. Netlify has no long-lived process to hold a port,
+ * so it cannot run that. `netlify/functions/ssr.mjs` therefore IMPORTS `app()`
+ * from the compiled bundle and hands it to `serverless-http`, one invocation
+ * per request.
+ *
+ * Both callers get the same express app, built by the same code, so the render
+ * path — the per-request `CommonEngine.render()`, `injectShadowRoots`,
+ * `stampRenderMarkers`, the preboot script, `APP_BASE_HREF` — cannot differ
+ * between them. There are exactly two seams, both below and both named:
+ *
+ *   - `AppOptions.document`, because a Lambda has no `dist/server/` on disk to
+ *     read `index.server.html` out of, so the function inlines it instead;
+ *   - `AWC_SSR_EMBEDDED`, because importing this module must not also start
+ *     listening on a port nothing will ever connect to.
+ *
+ * Anything else that needs to differ between the two targets is a bug. See
+ * `scripts/build-netlify.mjs` and the README section "Two build targets".
  */
 
 import { APP_BASE_HREF } from '@angular/common';
@@ -272,7 +295,32 @@ async function injectShadowRoots(html: string): Promise<string> {
 
 const commonEngine = new CommonEngine();
 
-export function app(): express.Express {
+/**
+ * The only thing the Netlify target is allowed to change about this app.
+ *
+ * Deliberately not an env var, and deliberately not a second `angular.json`
+ * target: the value is seventeen kilobytes of HTML, and every OTHER fact about
+ * this server — the base path, the hydrate options, the meta markers, the
+ * preboot script — has to stay identical between the two callers or the
+ * function serves a page the Node server would not have.
+ */
+export interface AppOptions {
+  /**
+   * `index.server.html`, as a string, for a caller that cannot read it off
+   * disk.
+   *
+   * `CommonEngine` reads `documentFilePath` with `fs` and caches the result.
+   * That is right for `pnpm start`, where the file sits next to the bundle. In
+   * a Netlify Function there is no `dist/server/` — the handler is bundled to a
+   * single file — so `scripts/build-netlify.mjs` emits the document as a JS
+   * module and the function passes it here. `CommonEngine` prefers `document`
+   * over `documentFilePath` when both are given, so the Node target, which
+   * leaves this `undefined`, still reads the file exactly as it did before.
+   */
+  document?: string;
+}
+
+export function app(options: AppOptions = {}): express.Express {
   const server = express();
   server.disable('x-powered-by');
   // Every rendered document is `no-store` and carries a timestamp that differs
@@ -315,6 +363,12 @@ export function app(): express.Express {
       .render({
         bootstrap,
         documentFilePath: indexHtml,
+        /**
+         * `undefined` for `pnpm start`, which leaves `documentFilePath` above
+         * as the only source and the behaviour byte-for-byte what it was. The
+         * Netlify function passes the inlined document; see `AppOptions`.
+         */
+        document: options.document,
         url: `${protocol}://${headers.host}${originalUrl}`,
         /**
          * NO `publicPath`, DELIBERATELY, and it is the strongest guarantee in
@@ -400,7 +454,26 @@ export function app(): express.Express {
   return server;
 }
 
-const server = app();
-server.listen(port, () => {
-  console.log(`[awc-ssr] http://${host}:${port}${BASE_HREF}`);
-});
+/**
+ * Start listening — unless somebody imported this file instead of running it.
+ *
+ * The Angular builder emits ONE server entry, so `app()` and the `listen()`
+ * that makes it a process cannot live in separate modules; the export and the
+ * side effect are in the same file whether you want them or not.
+ * `netlify/functions/ssr.mjs` wants the export and not the side effect: a
+ * Lambda has no port to hold, and binding one at module scope would be a socket
+ * opened on every cold start for a connection that never arrives.
+ *
+ * The flag is set by `netlify/functions/lib/embedded.mjs`, which that handler
+ * imports on the line ABOVE its import of this bundle — ES module
+ * initialisation runs in import order, so the assignment has already happened
+ * by the time this line is reached. Nothing sets it for `pnpm start`, so the
+ * server starts on 4613 exactly as it always has, which is what
+ * `scripts/verify-ssr.mjs` and `scripts/verify-ssr-adoption.mjs` connect to.
+ */
+if (!process.env['AWC_SSR_EMBEDDED']) {
+  const server = app();
+  server.listen(port, () => {
+    console.log(`[awc-ssr] http://${host}:${port}${BASE_HREF}`);
+  });
+}

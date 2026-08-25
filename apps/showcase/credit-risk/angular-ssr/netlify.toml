@@ -1,0 +1,74 @@
+# Netlify configuration for the `angular-ssr` credit-risk showcase build.
+#
+# PATHS HERE ARE RELATIVE TO THIS DIRECTORY, which is the site's base — the
+# same convention as the sibling `nuxt` and `sveltekit` builds, and the reason
+# is that it is the only one that survives a CLI deploy. `netlify deploy` run
+# from this directory resolves the config against it, so repo-root-relative
+# paths get the prefix applied TWICE
+# (`…/angular-ssr/apps/showcase/credit-risk/angular-ssr/dist/…`) and the deploy
+# fails on a path that does not exist. That is not hypothetical; it is how the
+# first attempt failed.
+#
+# THE BUILD COMMAND IS CWD-INDEPENDENT so this choice costs nothing. `pnpm
+# --filter` resolves against the workspace root from any directory inside it,
+# and the `^...` form builds this app's DEPENDENCIES — @awc-ui/tokens,
+# @awc-ui/core, @awc-ui/showcase-kit — which is what a bare `--filter` from a
+# package directory would skip. `sync-runtime` hard-fails without
+# `packages/core/dist/md3`, so that is load-bearing rather than tidy.
+#
+# ONE HAZARD COMES WITH THIS BASE, and it is silent. Netlify auto-installs
+# `@netlify/angular-runtime` for sites it DETECTS as Angular, and detection
+# looks at the base directory — which now contains `angular.json`. That
+# plugin's edge function claims `/*` and runs BEFORE serverless functions, so
+# it would replace the function below with a render that has no declarative
+# shadow DOM, no per-request markers and no base href, on a page that still
+# looks correct in a browser. It cannot fire on a prebuilt CLI deploy
+# (`netlify deploy --no-build` runs no plugins), which is how this site is
+# deployed. IF THIS SITE IS EVER CONNECTED TO GIT so Netlify runs the build
+# itself, grep the build log for "Writing Angular SSR Edge Function" and remove
+# the plugin if it appears.
+#
+# THIS FILE DOES NOT PROXY ANYTHING. `apps/docs/netlify.toml` owns the
+# [[redirects]] that send awc-ui.dev/showcase/credit-risk/angular-ssr/* here,
+# and it forwards the prefixed path whole. That is why the site answers on
+# https://<site>.netlify.app/showcase/credit-risk/angular-ssr/ and not at its
+# own root: the app is compiled against that prefix (`baseHref` and `deployUrl`
+# in angular.json) and every asset URL it emits begins with it.
+
+[build]
+  # Two commands, because they are two different things. `turbo run build`
+  # builds @awc-ui/core and @awc-ui/showcase-kit and then this app, exactly as
+  # `pnpm build` does anywhere else and exactly as `scripts/verify-ssr.mjs`
+  # does before it starts the Node server. `netlify:package` then stages that
+  # SAME output — it does not rebuild, so there is no second compilation that
+  # could disagree with the first. See scripts/build-netlify.mjs.
+  command = "pnpm --filter \"@awc-ui/showcase-credit-risk-angular-ssr^...\" build && pnpm --filter @awc-ui/showcase-credit-risk-angular-ssr build:netlify"
+
+  # `dist/browser` restaged under the app's own base path, minus the one
+  # `index.html` Angular emits — see scripts/build-netlify.mjs for why that file
+  # must never be deployed.
+  publish = "dist/netlify/static"
+
+[build.environment]
+  # Matches .github/workflows/*.yml. Angular 17.3's builder and the Stencil
+  # hydrate app are both tested on 20 in this repo; letting Netlify pick its
+  # current default is how a build starts differing from CI.
+  NODE_VERSION = "20"
+
+[functions]
+  directory = "netlify/functions"
+
+  # esbuild, and everything in one file. `netlify/functions/ssr.mjs` imports
+  # `dist/server/server.mjs` (the compiled `src/server.ts`, with express and the
+  # Angular server bundle already inside it), the inlined `index.server.html`,
+  # and `@awc-ui/core/hydrate` — a 3.9 MB ES module whose only import is
+  # `node:stream`. Bundling all of it is roughly 6 MB of JavaScript, well inside
+  # the limit, and it is the reason the function needs no `included_files`: it
+  # reads nothing off disk at runtime.
+  node_bundler = "esbuild"
+
+# There is no [[redirects]] rule sending requests to the function, deliberately.
+# `netlify/functions/ssr.mjs` declares `config.path = "/*"` with
+# `preferStatic: true` instead, so the function receives the reader's original
+# URL rather than a rewritten one, and the staged assets are served from the CDN
+# without invoking it. The reasoning is written out at the bottom of that file.

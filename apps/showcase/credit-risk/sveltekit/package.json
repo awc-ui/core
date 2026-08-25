@@ -8,6 +8,7 @@
     "sync-runtime": "node scripts/sync-runtime.mjs",
     "dev": "pnpm sync-runtime && vite dev",
     "build": "pnpm sync-runtime && vite build",
+    "build:netlify": "AWC_TARGET=netlify pnpm build",
     "start": "node server.mjs",
     "lint": "svelte-check --tsconfig ./tsconfig.json --threshold error",
     "verify": "node scripts/verify-browser.mjs"
@@ -17,6 +18,7 @@
     "@awc-ui/showcase-kit": "workspace:*"
   },
   "devDependencies": {
+    "@sveltejs/adapter-netlify": "^6.0.4",
     "@sveltejs/adapter-node": "^5.5.7",
     "@sveltejs/kit": "^2.8.5",
     "@sveltejs/vite-plugin-svelte": "^3.1.2",

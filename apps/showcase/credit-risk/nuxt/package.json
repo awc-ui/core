@@ -8,6 +8,7 @@
     "sync-runtime": "node scripts/sync-runtime.mjs",
     "dev": "pnpm sync-runtime && nuxi dev",
     "build": "pnpm sync-runtime && nuxi build",
+    "build:netlify": "NITRO_PRESET=netlify pnpm build",
     "start": "node server.mjs",
     "verify": "node scripts/verify-browser.mjs",
     "lint": "node scripts/typecheck.mjs"

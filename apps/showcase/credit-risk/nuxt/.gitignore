@@ -1,5 +1,9 @@
 /.nuxt/
 /.output/
+# `NITRO_PRESET=netlify` writes the function to /.netlify/functions-internal/
+# and the static half to /dist/showcase/credit-risk/nuxt/. Both are build
+# output; /.output/ above is the same thing for the Node target.
+/.netlify/
 /dist/
 /node_modules/
 *.tsbuildinfo

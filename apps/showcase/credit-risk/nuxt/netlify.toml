@@ -1,0 +1,96 @@
+# The `nuxt` credit-risk showcase build, as Netlify runs it.
+#
+# THIS IS THE SECOND TARGET, NOT A REPLACEMENT. `pnpm --filter
+# @awc-ui/showcase-credit-risk-nuxt build` and `start` still produce and run a
+# real Node process on :4611 out of `.output/server/` — that is what
+# `scripts/verify-ssr.mjs` and `scripts/verify-ssr-adoption.mjs` drive, and it
+# is the claim this whole vertical exists to make. Netlify cannot hold a port
+# open, so `NITRO_PRESET=netlify` asks Nitro for the same application packaged
+# as a Netlify Function instead. One config, one set of server plugins, two
+# entry points. See the `NITRO_PRESET` block in nuxt.config.ts.
+#
+# WHERE THE TWO TARGETS PUT THEIR OUTPUT — they never collide, so the tree can
+# hold both at once and building one does not invalidate the other:
+#
+#   node-server   .output/server/index.mjs          <- `pnpm start`
+#   netlify       .netlify/functions-internal/      <- the SSR function
+#                 dist/showcase/credit-risk/nuxt/   <- the static half
+#
+# THIS FILE ONLY TAKES EFFECT IF NETLIFY TREATS THIS DIRECTORY AS THE SITE'S
+# ROOT. Netlify reads netlify.toml from the base directory (or, in monorepo
+# mode, the package directory), and it resolves BOTH `publish` and the
+# `.netlify/functions-internal` convention from that same place. If the site is
+# configured with the repository root as its root, Netlify will look for the
+# function at <repo>/.netlify/functions-internal, find nothing, deploy a
+# directory of static assets with no index.html in it, and 404 every route
+# while reporting a green build. Set the site's base (or package) directory to
+# `apps/showcase/credit-risk/nuxt`.
+
+[build]
+  # Deliberately written with `pnpm --filter`, which resolves against the
+  # workspace root from ANY cwd inside it — so this one line is correct whether
+  # Netlify runs it from the repository root or from this directory.
+  #
+  # First clause: the workspace packages this app consumes, in topological
+  # order — @awc-ui/tokens, @awc-ui/core, @awc-ui/showcase-kit. `^...` means
+  # "the dependencies of, but not" the app itself, so it cannot go stale when a
+  # dependency is added. `scripts/sync-runtime.mjs` hard-fails if
+  # packages/core/dist/md3 is missing, so this is not optional.
+  #
+  # Second clause: this app, with NITRO_PRESET=netlify (see below).
+  command = "pnpm --filter \"@awc-ui/showcase-credit-risk-nuxt^...\" build && pnpm --filter @awc-ui/showcase-credit-risk-nuxt build:netlify"
+
+  # Nitro's `netlify` preset writes static assets to `dist/{{ baseURL }}`, so
+  # the files land at dist/showcase/credit-risk/nuxt/ and the publish root is
+  # `dist`. THAT NESTING IS THE POINT AND MUST NOT BE FLATTENED. The app is
+  # compiled against `/showcase/credit-risk/nuxt/` (app.baseURL in
+  # nuxt.config.ts), apps/docs/netlify.toml proxies the whole prefixed path
+  # through, and every asset URL in every rendered document carries it.
+  # Publishing `dist/showcase/credit-risk/nuxt` instead would serve the site at
+  # the root and 404 on every asset.
+  publish = "dist"
+
+[build.environment]
+  # The one value that differs between the two targets. Setting it here as well
+  # as in the `build:netlify` script means the netlify target is still selected
+  # if the build command is ever overridden in the UI — and, equally, that a
+  # local `pnpm build` in a shell without it still gets the Node server.
+  NITRO_PRESET = "netlify"
+
+  # Nuxt 3.21 / Nitro 2.13 want a current LTS. The repo's root package.json
+  # only floors at >=18.
+  NODE_VERSION = "22"
+
+# Netlify's post-processing rewrites HTML in the deploy pipeline. The bytes of
+# these documents are the product: `<template shadowrootmode="open">` is what
+# makes the components arrive as declarative shadow DOM, and Stencil's `s-id` /
+# `c-id` attributes and `<!--r.N-->` markers are what let its client runtime
+# ADOPT that render instead of building a second copy over the top. An HTML
+# minifier that dropped comments would break adoption silently — the page would
+# still look right in a screenshot. Nothing is left to chance.
+[build.processing]
+  skip_processing = true
+
+# NO [[redirects]], NO [[headers]], AND NO [functions] BLOCK — all three would
+# be wrong here rather than merely unnecessary.
+#
+# - Routing is the function's own. Nitro's preset writes the Netlify Functions
+#   v2 config inline in .netlify/functions-internal/server/server.mjs:
+#   `path = "/*"` with `preferStatic = true`, so hashed assets under
+#   /showcase/credit-risk/nuxt/_nuxt/ and the Stencil runtime under
+#   .../awc-runtime/ are served from the CDN and everything else is rendered.
+#   The bare mount and the bare root are handled inside the app, by
+#   server/plugins/front-door.ts, so they behave identically on both targets.
+#
+# - Caching is the app's own, and must stay that way. Every screen renders per
+#   request and server/plugins/awc-ssr-dsd.ts stamps `cache-control: no-store`
+#   on the rendered document precisely so nothing downstream keeps one. A `/*`
+#   header rule here would also land on the content-hashed assets, which want
+#   the opposite; and any Netlify-CDN-Cache-Control or ISR route rule would
+#   make the second request return the first request's document, which is the
+#   one thing this build exists not to do.
+#
+# - A [functions] block would fight the inline config above. In particular do
+#   not point `directory` at .netlify/functions-internal: Netlify already scans
+#   that path as its internal-functions convention, and naming it again
+#   registers the same handler twice.

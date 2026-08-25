@@ -3,6 +3,13 @@
 /node_modules/
 *.tsbuildinfo
 
+# The Netlify target's two halves (`AWC_TARGET=netlify pnpm build`). `build-netlify/`
+# is the static publish directory, `.netlify/` holds the render function and the
+# server bundle it imports. Both are build output; neither is `build/`, which is
+# the point — see netlify.toml.
+/build-netlify/
+/.netlify/
+
 # Copied verbatim from packages/core/dist by `pnpm sync-runtime`. Never edit,
 # never commit — the chunk hashes rotate on every core build.
 /static/awc-runtime/

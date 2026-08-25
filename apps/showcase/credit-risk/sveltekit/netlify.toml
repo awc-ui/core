@@ -1,0 +1,85 @@
+# Netlify configuration for the SECOND build target of this app.
+#
+# This file does not exist for the Node target. `pnpm build` and `pnpm start`
+# never read it, `adapter-node` never reads it, and nothing in `src/` knows it
+# is here. It is read by `@sveltejs/adapter-netlify`, which looks for
+# `netlify.toml` in the CURRENT WORKING DIRECTORY when `AWC_TARGET=netlify vite
+# build` runs — and cwd is this directory, because `pnpm --filter <pkg> …` runs
+# a package script from the package.
+#
+# THE ONE LINE THAT MATTERS IS `publish`.
+#
+# The adapter's default publish directory is `build`, and `build` is where
+# `adapter-node` writes `index.js`, `handler.js` and `client/`. The adapter
+# EMPTIES its publish directory before writing to it (`builder.rimraf(publish)`),
+# so leaving the default would mean a Netlify build silently deletes the Node
+# server, `server.mjs` exits with "build first", and `scripts/verify-ssr.mjs`
+# fails on an app that was working ten seconds earlier. Two targets, two
+# directories, no interference — that is the whole reason this file exists.
+#
+# WHAT THE NETLIFY BUILD PRODUCES, and where:
+#
+#   build-netlify/showcase/credit-risk/sveltekit/
+#       The static half — `_app/immutable/**` and everything under `static/`,
+#       including the 12 MB Stencil runtime that `pnpm sync-runtime` copies in.
+#       NOTE THE PREFIX. The adapter writes the client to
+#       `<publish><kit.paths.base>`, so these files are already at the path the
+#       app compiled against and the docs-site proxy forwards. There is no
+#       index.html here: nothing prerenders, so nothing static can shadow a page.
+#
+#   .netlify/functions-internal/sveltekit-render.mjs
+#       The dynamic half — ONE function, on `path: ["/*"]` with
+#       `preferStatic: true`, which is what serves every one of the 95 screens.
+#       It receives the full prefixed path and lets SvelteKit strip `paths.base`
+#       itself. It imports `.netlify/serverless.js` and `.netlify/server/`
+#       (the Vite server output, copied verbatim), which is where
+#       `src/hooks.server.ts` — the render stamp and the `renderToString` pass —
+#       ends up. THIS IS NOT UNDER `publish`. Netlify resolves the internal
+#       functions directory against the site's BASE DIRECTORY, not the publish
+#       directory, so a site whose base is the repo root has to be pointed at
+#       `apps/showcase/credit-risk/sveltekit/.netlify/functions-internal`
+#       explicitly.
+#
+#   build-netlify/_headers
+#       Written by the adapter: immutable caching for `_app/immutable/*` only.
+#       Nothing here caches a PAGE, and nothing may — every response has to
+#       carry a freshly stamped `<meta name="awc-rendered-at">` or the claim
+#       this build exists to make is false. Netlify does not CDN-cache function
+#       responses that set no `Cache-Control`, and neither target sets one.
+#
+#   build-netlify/_redirects
+#       Copied verbatim from `_redirects` next to this file, and it declares NO
+#       RULES. It carried a bare-root 308 onto the mount — the same front door
+#       `server.mjs` provides locally — until that was measured and found never
+#       to fire: Netlify evaluates serverless functions BEFORE redirects, and
+#       the function below is registered on `/*`, so `/` reaches it first and
+#       the redirect step never runs. `/` therefore answers 404 `Not found`,
+#       which is cosmetic — every real request arrives through the docs-site
+#       proxy already prefixed. The file is kept for the explanation; read it
+#       before adding a rule here or a `[[redirects]]` block below, because
+#       neither can win against the function.
+#
+# NO `[build] command` HERE, DELIBERATELY. This app cannot be built from this
+# directory alone: `pnpm sync-runtime` copies out of `packages/core/dist`, and
+# `src/hooks.server.ts` imports `@awc-ui/core/hydrate`, so the core library and
+# `@awc-ui/showcase-kit` have to be built first, from the workspace root.
+# Writing a command here that only works when the base directory is set to this
+# folder would be a trap; the deploy pipeline owns that command. It is:
+#
+#   pnpm --filter @awc-ui/core build \
+#     && pnpm --filter @awc-ui/showcase-kit build \
+#     && pnpm --filter @awc-ui/showcase-credit-risk-sveltekit build:netlify
+#
+# run from the repository root.
+#
+# `AWC_TARGET` is set by the `build:netlify` script in package.json, so the line
+# below is redundant when that script is used. It is here for the case where
+# Netlify reads this file and runs `vite build` some other way — the wrong value
+# there does not fail, it quietly produces a Node server and deploys nothing
+# that Netlify can run.
+
+[build]
+  publish = "build-netlify"
+
+[build.environment]
+  AWC_TARGET = "netlify"

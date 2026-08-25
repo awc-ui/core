@@ -109,6 +109,65 @@ server that is not mounted behind a router — and an empty base means the route
 tries to match `/showcase/credit-risk/angular-ssr/watchlist` as a route and
 matches nothing.
 
+## Two build targets
+
+`pnpm build` produces one output. Two things run it.
+
+**The Node server** is the one this build exists to be. `pnpm start` runs
+`dist/server/server.mjs`, it holds port 4613 for as long as the process lives,
+and `scripts/verify-ssr.mjs` and `scripts/verify-ssr-adoption.mjs` start it and
+drive it. Nothing about it changed to accommodate the second target, and that is
+the constraint the second target was designed around: the claim this vertical
+makes is that the components render on the server per request and that the
+browser adopts that render, and the only proof of it is a real server being
+asked.
+
+**The Netlify target** exists because Netlify has no long-lived process to hold
+a port. `pnpm netlify:package` (`scripts/build-netlify.mjs`) stages the *same*
+`dist/` two ways:
+
+| output | what it is |
+| --- | --- |
+| `dist/netlify/static/showcase/credit-risk/angular-ssr/` | everything in `dist/browser/` **except `index.html`**, under the prefix this build is compiled against, as the publish directory |
+| `dist/netlify/document.mjs` | `index.server.html` as an ES module, because a bundled Lambda has no `dist/server/` to read it from |
+
+and `netlify/functions/ssr.mjs` imports `app()` out of the compiled
+`dist/server/server.mjs` and hands it to `serverless-http`, one invocation per
+request. It does not reimplement the server — the `renderToString` pass, the
+render markers, the preboot script and `APP_BASE_HREF` are all the same code
+running, so a change to any of them lands on both targets or on neither. There
+are exactly two seams: `AppOptions.document`, and the `AWC_SSR_EMBEDDED` flag
+that stops the imported bundle binding a port. Both are named in `src/server.ts`.
+
+**`@netlify/angular-runtime` does not fit this build**, and it is worth knowing
+why before reaching for it. It does not run your server; it writes its own. For
+Angular < 19 — this is 17.3 — it emits a Deno edge function that calls
+`renderApplication(bootstrap, …)` against `main.server.mjs` and never imports
+`src/server.ts` at all, which drops the shadow-DOM injection, the render
+markers, the preboot script and `APP_BASE_HREF` in one go. The page still looks
+right in a browser, because the components build their own shadow roots once the
+runtime loads. That is exactly why the check has to be on the response body. On
+Angular ≥ 19 it instead swaps `src/server.ts` for its own template, after
+hashing the file against a list of known Angular scaffolds — and fails the build
+for a customised one, which this is.
+
+**The base path is the thing most likely to be wrong here.** The proxy in
+`apps/docs/netlify.toml` forwards `/showcase/credit-risk/angular-ssr/*` whole,
+so the deployed site must answer under that prefix and not at its own root.
+That is why the browser build is staged under the prefix rather than at the
+publish root, and why `netlify/functions/ssr.mjs` routes with a function
+`config.path` instead of a `[[redirects]]` rule: `config.path` matches the
+reader's original URL, so express receives the path it was compiled to answer.
+
+**And `dist/browser/index.html` must never be deployed.** With SSR on and
+prerendering off the builder still writes one — the empty client-side-render
+shell. Netlify resolves a directory request to `index.html` before any function
+runs, so deploying it would answer `/showcase/credit-risk/angular-ssr/` with a
+document containing no components and no render markers, and every check in
+`verify-ssr.mjs` would fail against a page that paints correctly a moment later.
+`src/server.ts` excludes it with `index: false`; `scripts/build-netlify.mjs`
+excludes it from the copy and then asserts no HTML file survived.
+
 ## The decisions worth knowing
 
 **Every string prop is an ATTRIBUTE binding.** `[attr.label]="x"`, never
@@ -228,6 +287,17 @@ hosts than the server sent templates. This build must report `ADOPTED`, `174 of
 174`, and no duplication on any of the six screens. Every text-based check in
 this repo was blind to the failure it catches: `innerText` does not cross a
 shadow boundary, and the light DOM was identical either way.
+
+`pnpm build:netlify && pnpm verify:netlify` asks the first two of those
+questions of the **Netlify target** instead of the port:
+`scripts/verify-netlify-function.mjs` imports the handler, drives it with real
+`Request` objects and reads the response body — 206 shadow roots on the
+overview, a render marker that differs between two invocations, `no-store`, the
+`<base href>` and asset URLs still carrying `/showcase/credit-risk/angular-ssr/`,
+and the same 308s and 404 the Node server gives. It cannot tell you how Netlify
+bundles or routes the function; that needs a deploy. It can tell you the moment
+the render path stops running, which is the failure that is invisible in a
+browser.
 
 `pnpm dev` (`ng serve`) does **not** go through `src/server.ts`: the dev server
 renders from memory with its own SSR middleware, so there is no shadow-DOM

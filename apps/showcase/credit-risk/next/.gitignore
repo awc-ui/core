@@ -3,6 +3,11 @@
 next-env.d.ts
 *.tsbuildinfo
 
+# Written by @netlify/plugin-nextjs during a Netlify build (the server handler
+# function, the static assets it publishes, the local `netlify dev` state).
+# Derived from `.next/`, regenerated every deploy.
+/.netlify/
+
 # Copied verbatim from packages/core/dist by `pnpm sync-runtime`. Never edit,
 # never commit — the chunk hashes rotate on every core build.
 /public/awc-runtime/

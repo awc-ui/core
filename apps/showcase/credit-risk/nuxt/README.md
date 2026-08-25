@@ -7,10 +7,12 @@ the components' shadow DOM already in the response, and is served at
 `awc-ui.dev/showcase/credit-risk/nuxt/`.
 
 ```bash
-pnpm --filter @awc-ui/showcase-credit-risk-nuxt build    # -> .output/
-pnpm --filter @awc-ui/showcase-credit-risk-nuxt start    # a real server on :4611
-pnpm --filter @awc-ui/showcase-credit-risk-nuxt verify   # 16 checks in a real browser
-node scripts/verify-ssr.mjs nuxt                         # from the repo root
+pnpm --filter @awc-ui/showcase-credit-risk-nuxt build          # -> .output/
+pnpm --filter @awc-ui/showcase-credit-risk-nuxt start          # a real server on :4611
+pnpm --filter @awc-ui/showcase-credit-risk-nuxt verify         # 16 checks in a real browser
+node scripts/verify-ssr.mjs nuxt                               # from the repo root
+
+pnpm --filter @awc-ui/showcase-credit-risk-nuxt build:netlify  # -> .netlify/ + dist/
 ```
 
 `build` runs `sync-runtime` first, which needs `packages/core/dist` to exist
@@ -157,3 +159,47 @@ upgraded custom element through its property when one exists, so a row that came
 from the server carries `value="cp-01"` in the markup while a row created after
 a sort may carry only the property. Both reach the component identically — an
 attribute-only assertion would report a working table as broken.
+
+## Deploying it
+
+Everything above depends on a persistent Node process, and Netlify does not
+have one: it serves static assets plus serverless functions, so
+`.output/server/index.mjs` has nowhere to listen. This build therefore has a
+**second target**, and the word is second — the Node server is what the two SSR
+harnesses drive and what proves the claim, so it does not move.
+
+```bash
+pnpm --filter @awc-ui/showcase-credit-risk-nuxt build          # node-server (default)
+pnpm --filter @awc-ui/showcase-credit-risk-nuxt build:netlify  # NITRO_PRESET=netlify
+```
+
+`build:netlify` is one environment variable in front of the same `build`, and
+`nuxt.config.ts` reads it into `nitro.preset`. Nothing else forks: `app.baseURL`,
+the three `server/plugins/`, and the absence of any route rule that could cache
+a page are the same lines for both. The variable has to be read in the config
+rather than left to Nitro, because Nuxt passes `nuxt.options.nitro` to
+`createNitro()` as config *overrides* and Nitro resolves
+`configOverrides.preset || process.env.NITRO_PRESET` — a literal `'node-server'`
+would win and the Netlify build would quietly emit a Node server.
+
+The two targets write to different directories and never collide:
+
+| Target | Server | Static |
+|---|---|---|
+| `node-server` | `.output/server/index.mjs` | `.output/public/` |
+| `netlify` | `.netlify/functions-internal/server/` | `dist/showcase/credit-risk/nuxt/` |
+
+That nesting under `dist/` is Nitro's `dist/{{ baseURL }}`, and it is what keeps
+the deployed site answering on `/showcase/credit-risk/nuxt/` rather than at the
+root — which is what `apps/docs/netlify.toml` proxies to and what every asset
+URL in every rendered document already says. The publish directory is `dist`.
+
+The Netlify Function runs the request through `nitroApp.localCall`, i.e. the
+same h3 stack, so `render:html` still fires and the components still arrive as
+declarative shadow DOM. That is checkable without deploying: import
+`.netlify/functions-internal/server/main.mjs`, call the default export with a
+`Request`, and read the body. Normalising the per-request stamp, Stencil's
+per-process id counter and Nuxt's per-build id, the two targets emit **identical
+HTML on all six screens** — 206 shadow roots on `/`, 297 on `/watchlist/`, and
+so on. `netlify.toml` in this directory carries the rest, including why there is
+no `[[redirects]]`, no `[[headers]]` and no `[functions]` block in it.

@@ -11,15 +11,67 @@ written once and served by anything that can read a directory. It is now
 framework switcher moved from `svelte` to `sveltekit` with it.
 
 ```bash
-pnpm --filter @awc-ui/showcase-credit-risk-sveltekit build   # -> build/
-pnpm --filter @awc-ui/showcase-credit-risk-sveltekit start   # the real server, :4612
-pnpm --filter @awc-ui/showcase-credit-risk-sveltekit verify  # 19 checks in a real browser
-node scripts/verify-ssr.mjs sveltekit                        # from the repo root
+pnpm --filter @awc-ui/showcase-credit-risk-sveltekit build          # -> build/
+pnpm --filter @awc-ui/showcase-credit-risk-sveltekit start          # the real server, :4612
+pnpm --filter @awc-ui/showcase-credit-risk-sveltekit build:netlify  # -> build-netlify/ + .netlify/
+pnpm --filter @awc-ui/showcase-credit-risk-sveltekit verify         # 19 checks in a real browser
+node scripts/verify-ssr.mjs sveltekit                               # from the repo root
 ```
 
 `build` runs `sync-runtime` first, which needs `packages/core/dist` to exist
 (`pnpm --filter @awc-ui/core build`). `start` honours `$PORT` and defaults to
 4612, which is the port the SSR harness expects.
+
+## Two deploy targets
+
+The Node server is the thing being demonstrated. `scripts/verify-ssr.mjs` and
+`scripts/verify-ssr-adoption.mjs` both start it with `pnpm start` and drive it,
+and that is the only evidence that these components really render per request
+and are then adopted rather than redrawn. Netlify has no long-lived process to
+hold a port, so the deployed copy cannot be that server — and replacing it would
+leave both harnesses nothing to run.
+
+So there are two targets and one config. `AWC_TARGET=netlify` selects
+`@sveltejs/adapter-netlify` inside `svelte.config.js`; unset, it is
+`@sveltejs/adapter-node` exactly as before, writing `build/` on port 4612. The
+adapter is the last step of the build — everything that constitutes the claim
+happens before it:
+
+| | Node (default) | Netlify (`AWC_TARGET=netlify`) |
+|---|---|---|
+| routes | `src/routes/`, `prerender = false` | same |
+| base path | `paths.base` → `build/client/showcase/credit-risk/sveltekit/` | `paths.base` → `build-netlify/showcase/credit-risk/sveltekit/` |
+| DSD + render stamp | `src/hooks.server.ts` | the same file, unchanged |
+| server | `build/handler.js` behind `server.mjs` | `.netlify/functions-internal/sveltekit-render.mjs` on `path: ["/*"]` |
+
+`hooks.server.ts` is adapter-independent by construction: `transformPageChunk` is
+called by SvelteKit while it renders, long before an adapter's runtime sees a
+`Response`. Driving the generated function in process and diffing its output
+against the running Node server confirms it — the two documents are identical
+apart from the render stamp, Stencil's per-process build id, its per-render node
+counter, and SvelteKit's per-build hydration variable, all four of which also
+differ between two runs of the *same* target.
+
+Two adapter options are load-bearing rather than restated defaults. `edge: false`
+because an edge function is Deno and `@awc-ui/core/hydrate` is a 3.8 MB Node
+build — the one import the shadow DOM depends on. `split: false` because split
+functions get their URL patterns from route segments, which do not include
+`paths.base`, so every prefixed request would match no function at all.
+
+`netlify.toml` next to this file exists for one line: the publish directory is
+`build-netlify`, not the adapter's default of `build`, because `build` is where
+`adapter-node` writes and the Netlify adapter empties its publish directory
+before using it.
+
+The bare root is the one thing that does *not* carry over. `server.mjs`
+redirects `/` onto the mount; the Netlify target cannot, because Netlify
+[evaluates serverless functions before
+redirects](https://docs.netlify.com/platform/request-chain/) and this build has
+one function on `path: ["/*"]`, so `/` reaches it before any rule in
+`_redirects` is considered and SvelteKit answers `Not found` for a path outside
+`paths.base`. That file now holds the explanation and no rules. It is cosmetic —
+every real request arrives through the docs-site proxy already prefixed — and
+`_redirects` records what a working front door would take.
 
 ## Screens
 
@@ -111,7 +163,9 @@ port the server just printed — and `scripts/verify-ssr.mjs` probes `/` as its
 readiness check. So the bare root, and only the bare root, is redirected onto the
 mount; everything else keeps SvelteKit's own 404. The rest of the request goes
 straight to `build/handler.js`, which is `adapter-node`'s own server as a
-middleware.
+middleware. The Netlify target has no equivalent and cannot have one in
+`_redirects` — see "Two deploy targets" above — so `/` 404s there. Only
+`verify-ssr.mjs` and curious humans ever ask for it, and both do so locally.
 
 ## Checking it
 

@@ -44,9 +44,51 @@
 # every server-rendered build, so a build added without one fails CI rather
 # than 404ing in production — but nothing can check that a hostname is the
 # RIGHT one until the site exists.
+# NEXT IS ROUTED DIFFERENTLY FROM THE OTHER THREE, and the reason is a real
+# constraint rather than a preference: A NETLIFY-TO-NETLIFY PROXY REACHES THE
+# TARGET'S SERVERLESS FUNCTIONS BUT SKIPS ITS EDGE FUNCTIONS.
+#
+# Nuxt, SvelteKit and Angular all inject declarative shadow DOM inside their
+# serverless function, so proxying them works untouched — measured at 95 shadow
+# roots on /stress/ both direct and through here. Next cannot: its transform
+# needs Node (the hydrate pass is ~140 ms, far past the 50 ms CPU budget of
+# Netlify's Deno edge), so the app uses edge middleware to REWRITE document
+# requests to a Node route handler. That middleware never runs on a proxied
+# request, so this path served bare custom elements — a page that looks
+# plausible and carries zero shadow roots.
+#
+# So the rewrite the middleware would have done is done HERE instead, by asking
+# the route handler for the document directly. It takes the wanted path as `?p=`,
+# a parameter that exists precisely because it survives a proxy that rewrites
+# headers. Verified through this proxy: 206 on the overview, 297 on the
+# watchlist, 95 on stress — identical to the local Node server.
+#
+# THE ASSET RULES MUST COME FIRST. Without them every hashed chunk and every
+# runtime file would be handed to the renderer, which would try to render a
+# JavaScript URL as a page.
+[[redirects]]
+  from = "/showcase/credit-risk/next/_next/*"
+  to = "https://awc-credit-risk-next.netlify.app/showcase/credit-risk/next/_next/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/showcase/credit-risk/next/awc-runtime/*"
+  to = "https://awc-credit-risk-next.netlify.app/showcase/credit-risk/next/awc-runtime/:splat"
+  status = 200
+  force = true
+
+# The handler itself, so it stays reachable for debugging and so the rule below
+# cannot recurse into it.
+[[redirects]]
+  from = "/showcase/credit-risk/next/awc-dsd/*"
+  to = "https://awc-credit-risk-next.netlify.app/showcase/credit-risk/next/awc-dsd/:splat"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/showcase/credit-risk/next/*"
-  to = "https://awc-credit-risk-next.netlify.app/showcase/credit-risk/next/:splat"
+  to = "https://awc-credit-risk-next.netlify.app/showcase/credit-risk/next/awc-dsd/?p=/showcase/credit-risk/next/:splat"
   status = 200
   force = true
 

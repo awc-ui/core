@@ -1,0 +1,111 @@
+# The Netlify target for the `next` credit-risk build.
+#
+# THIS FILE IS READ ONLY IF THE SITE'S BASE DIRECTORY IS THIS DIRECTORY.
+# Netlify loads `netlify.toml` from the base directory, and `@netlify/plugin-
+# nextjs` looks for `.next` in the same place. Set the site's base directory
+# (Site configuration → Build & deploy → Base directory, or the monorepo
+# "package directory") to `apps/showcase/credit-risk/next`. With the base left
+# at the repository root, the plugin finds no Next app and the deploy publishes
+# an empty site rather than failing loudly.
+#
+# THE PROXY OWNS THE ADDRESS. `apps/docs/netlify.toml` forwards
+# `awc-ui.dev/showcase/credit-risk/next/*` here WITH the prefix intact, and
+# `basePath` in `next.config.mjs` is that same prefix, so this site answers at
+# `https://<site>.netlify.app/showcase/credit-risk/next/` and 404s at the root.
+# That is correct, not broken — see the redirect at the bottom.
+
+[build]
+  # Two workspace packages have to exist before this app can build:
+  # `@awc-ui/core` (whose `dist/md3` is copied into `public/awc-runtime` by
+  # `pnpm sync-runtime`, and whose `hydrate/` the DSD pass imports) and
+  # `@awc-ui/showcase-kit` (the fixture data, i18n and dock, consumed from
+  # `dist/`). Turbo would resolve that order itself, but Turbo 2 filters the
+  # environment it passes to tasks and `AWC_TARGET` — the whole switch — is not
+  # in `turbo.json`, which this app may not edit. So the order is spelled out.
+  #
+  # EVERY STEP IS `--filter`ed, INCLUDING THIS APP'S OWN. `pnpm run
+  # build:netlify` would be shorter and works only when the command's working
+  # directory is this one — which is exactly the thing that is configured
+  # elsewhere and can be wrong. With the base directory left at the repository
+  # root the command then dies on `ERR_PNPM_NO_SCRIPT Missing script:
+  # build:netlify` (verified with `netlify serve`), which is a confusing way to
+  # discover a misconfigured base. `pnpm --filter <pkg>` resolves the workspace
+  # from anywhere inside it, so the app builds either way and a wrong base fails
+  # on the publish directory instead, where the message names the real problem.
+  command = "pnpm --filter @awc-ui/core build && pnpm --filter @awc-ui/showcase-kit build && pnpm --filter @awc-ui/showcase-credit-risk-next build:netlify"
+  publish = ".next"
+
+[build.environment]
+  # Selects the second target inside `next.config.mjs`: arms `middleware.ts`,
+  # which rewrites document requests into the Node route handler that runs the
+  # `@awc-ui/core/hydrate` pass. Without it the deploy succeeds, the pages look
+  # right in a browser, and every response body ships bare custom elements.
+  AWC_TARGET = "netlify"
+  NODE_VERSION = "20"
+
+[[plugins]]
+  # Pinned through the devDependency in this app's package.json.
+  package = "@netlify/plugin-nextjs"
+
+# `basePath` means Next answers 404 at `/`, which is right for the proxied
+# deployment and useless when someone opens the Netlify URL itself. Only the
+# bare root moves; anything else outside the mount keeps Next's 404 rather than
+# being quietly rewritten. Mirrors the front door in `server.mjs`.
+[[redirects]]
+  from = "/"
+  to = "/showcase/credit-risk/next/"
+  status = 308
+  force = true
+
+# BUILD METADATA IS NOT PART OF THE SITE. Publishing `.next` is what
+# @netlify/plugin-nextjs expects, but the directory also contains the build's
+# own bookkeeping, and at the site root it is world-readable: /BUILD_ID,
+# /build-manifest.json, /trace, /required-server-files.json, the server
+# manifests. None of it holds a credential — checked — but
+# required-server-files.json embeds `appDir`, the ABSOLUTE PATH OF THE MACHINE
+# THAT BUILT IT, which on this project means a developer's home directory and
+# username on a public URL.
+#
+# These rules are deliberately a short explicit list rather than a `/*`
+# catch-all. The plugin owns this site's routing; a broad rule risks shadowing
+# the server handler and breaking the app, which would be a far worse outcome
+# than the disclosure it prevents.
+#
+# Note this is only reachable on the netlify.app origin. awc-ui.dev proxies
+# `/showcase/credit-risk/next/*` and nothing else, so none of these paths were
+# ever exposed there.
+[[redirects]]
+  from = "/required-server-files.json"
+  to = "/showcase/credit-risk/next/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/build-manifest.json"
+  to = "/showcase/credit-risk/next/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/BUILD_ID"
+  to = "/showcase/credit-risk/next/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/trace"
+  to = "/showcase/credit-risk/next/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/next-server.js.nft.json"
+  to = "/showcase/credit-risk/next/"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/server/*"
+  to = "/showcase/credit-risk/next/"
+  status = 404
+  force = true

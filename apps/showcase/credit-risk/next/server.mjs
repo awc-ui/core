@@ -40,6 +40,13 @@
  * WHAT IT COSTS: streaming. Everything is buffered so the transform can see a
  * whole document. Nothing here streams anyway — no `loading.tsx`, no Suspense,
  * and every fixture selector is synchronous — so there is no first-byte to lose.
+ *
+ * THIS IS ONE OF TWO TARGETS. Netlify has no long-lived process to hold a port
+ * and never loads this file, so the same transform is reached a second way
+ * there — `middleware.ts` rewrites documents into `app/awc-dsd/route.ts`. The
+ * transform itself, and the hydrate options that decide what its output looks
+ * like, live in `lib/dsd-transform.mjs` so that both callers share one copy.
+ * See the header of the route handler for why the seam is split.
  */
 
 import { createServer } from 'node:http';
@@ -47,7 +54,7 @@ import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzip } from 'node:zlib';
 import next from 'next';
-import { renderToString } from '@awc-ui/core/hydrate';
+import { DSD_HEADER, DSD_HEADER_VALUE, injectShadowRoots, needsShadowRoots } from './lib/dsd-transform.mjs';
 import nextConfig from './next.config.mjs';
 
 const appRoot = dirname(fileURLToPath(import.meta.url));
@@ -58,37 +65,8 @@ const portArg = process.argv.slice(2).find((arg) => /^\d+$/.test(arg));
 const port = Number(process.env.PORT ?? portArg ?? 4610);
 const hostname = process.env.HOSTNAME ?? 'localhost';
 
-/**
- * Options copied from the sibling starters, plus one.
- *
- * `maxHydrateCount` defaults to 300. These screens go well past that — the
- * facility and counterparty tables alone are hundreds of `md-table-cell`s — and
- * the limit is silent: components past it are left as inert tags, so the page
- * looks half server-rendered and nothing says why.
- */
-const HYDRATE_OPTIONS = {
-  serializeShadowRoot: 'declarative-shadow-dom',
-  removeScripts: false,
-  removeHtmlComments: false,
-  removeUnusedStyles: false,
-  maxHydrateCount: 10_000,
-};
-
 const GZIP_OK = /\bgzip\b/i;
 const COMPRESSIBLE = /^(text\/|application\/(javascript|json|xml)|image\/svg)/i;
-
-/** Inject Declarative Shadow DOM for every `md-*` element in a rendered page. */
-async function injectShadowRoots(html) {
-  const { html: hydrated, diagnostics } = await renderToString(html, {
-    ...HYDRATE_OPTIONS,
-    fullDocument: html.includes('<html'),
-  });
-  const errors = (diagnostics ?? []).filter((d) => d.level === 'error');
-  if (errors.length) {
-    throw new Error(errors.map((d) => d.messageText).join(' | '));
-  }
-  return hydrated;
-}
 
 /**
  * Buffer an HTML response so it can be rewritten before the head is flushed.
@@ -186,7 +164,13 @@ function captureHtml(res, acceptEncoding) {
 
     const contentType = String(res.getHeader('content-type') ?? '');
     const html = contentType.includes('text/html') ? body.toString('utf8') : null;
-    if (html === null || !html.includes('<md-')) {
+    // The DSD header means the body came out of `app/awc-dsd/route.ts`, which
+    // has already hydrated it. That only happens on a build made with
+    // `AWC_TARGET=netlify` and then run under this server, which is exactly what
+    // `scripts/verify-netlify-target.mjs` does — and an already-hydrated
+    // document still contains `<md-` tags, so without this check it would be
+    // handed to Stencil a second time and come back with nested shadow roots.
+    if (html === null || !needsShadowRoots(html) || res.getHeader(DSD_HEADER)) {
       send(body);
       return res;
     }
@@ -195,7 +179,7 @@ function captureHtml(res, acceptEncoding) {
       (hydrated) => {
         // Say so in a header as well: it makes "did the transform run?" a
         // question curl can answer without reading the body.
-        res.setHeader('x-awc-ssr', 'declarative-shadow-dom');
+        res.setHeader(DSD_HEADER, DSD_HEADER_VALUE);
         send(Buffer.from(hydrated, 'utf8'));
       },
       (error) => {

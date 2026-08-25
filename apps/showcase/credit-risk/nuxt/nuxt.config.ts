@@ -14,6 +14,46 @@ const FRAMEWORK = 'nuxt';
 const { basePath } = createRoutes(FRAMEWORK);
 
 /**
+ * WHICH SERVER THIS BUILD EMITS — the only difference between the two targets.
+ *
+ * `node-server` is the default and the one everything local depends on: it
+ * writes `.output/server/index.mjs`, which `server.mjs` starts on :4611 and
+ * which `scripts/verify-ssr.mjs` and `scripts/verify-ssr-adoption.mjs` drive.
+ * That target is the product claim — components rendered on the server, per
+ * request, adopted rather than re-rendered in the browser — and it does not
+ * move.
+ *
+ * `NITRO_PRESET=netlify` swaps the ENTRY and the OUTPUT DIRECTORIES and nothing
+ * else. Nitro's `netlify` preset emits a Netlify Function at
+ * `.netlify/functions-internal/server/` whose handler pipes the request through
+ * `nitroApp.localCall` — the same h3 stack, so the same `server/plugins/` run,
+ * with the same hooks in the same order — and copies the static assets to
+ * `dist/{{ baseURL }}`, i.e. `dist/showcase/credit-risk/nuxt/`. Netlify can run
+ * that; it cannot hold a port open for `.output/server/index.mjs`.
+ *
+ * WHY AN ENVIRONMENT VARIABLE READ HERE, RATHER THAN A SECOND CONFIG FILE. The
+ * things that must be identical across both targets — `app.baseURL`, the
+ * `render:html` transform in `server/plugins/awc-ssr-dsd.ts`, the per-request
+ * meta stamps, the absence of any route rule that could cache a page — are then
+ * physically the same lines, not two copies that drift. One value differs, and
+ * it is the one named here.
+ *
+ * WHY NOT LET NITRO READ IT ITSELF. It would, but not here: Nuxt hands
+ * `nuxt.options.nitro` to `createNitro()` as config OVERRIDES, and nitro
+ * resolves `configOverrides.preset || process.env.NITRO_PRESET`. A literal
+ * `preset: 'node-server'` therefore BEATS the environment variable and the
+ * netlify build would silently produce a Node server. Reading it into the
+ * literal is what restores nitro's own precedence.
+ *
+ * NOT `netlify-edge`. Nitro has that preset too and it would be smaller, but it
+ * targets Deno: `@awc-ui/core/hydrate` is a ~4 MB Node-oriented bundle carrying
+ * a whole DOM implementation, and it is what makes rule 2 — declarative shadow
+ * DOM in the response body — true. A preset that cannot load it produces a page
+ * that looks right in a browser and is wrong in the bytes.
+ */
+const NITRO_PRESET = process.env.NITRO_PRESET || 'node-server';
+
+/**
  * A RUNTIME SERVER, mounted under a sub-path.
  *
  * This build used to be `nuxi generate`: `ssr: true`, but with a
@@ -97,12 +137,17 @@ export default defineNuxtConfig({
 
   nitro: {
     /**
-     * A real Node process. `.output/server/index.mjs` listens on
+     * DEFAULT: a real Node process. `.output/server/index.mjs` listens on
      * `NITRO_PORT || PORT || 3000`; `server.mjs` at the app root is the thin
      * wrapper that defaults that to 4611 — the port `scripts/verify-ssr.mjs`
      * expects — while still honouring `$PORT`.
+     *
+     * `NITRO_PRESET=netlify` (what `pnpm build:netlify` sets) emits a Netlify
+     * Function instead, into a DIFFERENT directory — `.netlify/` and `dist/`,
+     * never `.output/` — so the two targets can be built in either order in the
+     * same working tree and neither erases the other. See the block above.
      */
-    preset: 'node-server',
+    preset: NITRO_PRESET,
 
     /*
      * NO `externals` BLOCK, and that is deliberate rather than forgotten.
