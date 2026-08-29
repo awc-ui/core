@@ -47,6 +47,8 @@ optional pulse, absolutely positioned onto an avatar, a row, or any tile.
 | Presence semantics | `state="online\|away\|busy\|offline\|invisible\|neutral"` |
 | No semantic meaning (the parent already says it) | `state="neutral"` (default) |
 | Attention-drawing animation | `live` |
+| On a ROUND host (an avatar) | `shape="circle"` |
+| On a rect host (tile, cell, card) | `shape="rect"` (default) |
 | Size in a dense table | `size="small"` |
 | Default | `size="medium"` |
 | Prominent, standalone | `size="large"` |
@@ -86,6 +88,12 @@ dot).
 - **It positions itself absolutely** at the bottom-inline-end corner, so the
   parent needs `position: relative` (or any other containing block). Nudge it
   with `--md-status-dot-inset-end` / `--md-status-dot-inset-block-end`.
+- **On a round host, set `shape="circle"`.** A circle bounding box has its
+  corner OUTSIDE the visible shape, so the default corner anchor leaves the dot
+  floating clear of the rim — measured at 5.5px past the edge on a 40px avatar.
+  `shape="circle"` moves it onto the arc at 45°, using percentage insets, so it
+  is correct at every avatar size without being told the size. The custom
+  properties above still override it.
 - It is `pointer-events: none` and never focusable — it cannot be clicked and
   will not steal a hit from the avatar underneath.
 - **The ARIA role depends on `label` and `live`:**

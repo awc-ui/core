@@ -162,6 +162,36 @@ export class MdTimePicker {
   /** Trigger field label (acts as the floating label of the text-field-shaped trigger). */
   @Prop() label: string = 'Select time';
 
+  /*
+   * Supporting text and error state — the same four props `md-date-picker`
+   * carries, for the same reason.
+   *
+   * The two are a matched pair and get used side by side in a form. Without
+   * these, only one of them could hold its own validation message: a date could
+   * paint itself red and say why, while a time had to be told off by a
+   * paragraph the app rendered underneath it. That paragraph sits outside the
+   * component, so it has no supporting-text line to reserve either, and every
+   * appearance of it shoved the rest of the form down. The trigger below is
+   * already a real `md-text-field`, which does all of this properly — so this
+   * is plumbing, not new behaviour.
+   */
+
+  /** Helper text shown below the trigger. Hidden while an error is displayed. */
+  @Prop({ attribute: 'supporting-text' }) supportingText: string = '';
+
+  /** Error state — paints the trigger with the error colour and shows `error-text`. */
+  @Prop({ mutable: true, reflect: true }) error: boolean = false;
+
+  /** Error message shown below the trigger when `error` is true. */
+  @Prop({ mutable: true, attribute: 'error-text' }) errorText: string = '';
+
+  /**
+   * Always occupy the supporting-text line, even when there is no message, so a
+   * validation error does not push the content below it down. Forwarded to the
+   * embedded md-text-field. See that component for why it is opt-in.
+   */
+  @Prop({ attribute: 'reserve-supporting-space' }) reserveSupportingSpace: boolean = false;
+
   /** Headline copy shown above the dial / inputs. Overrides the
    *  mode-specific defaults (`headline-input-label` / `headline-dial-label`)
    *  when set. */
@@ -1771,6 +1801,13 @@ export class MdTimePicker {
         readOnly
         label={this.label}
         value={display}
+        /* An error message replaces the helper rather than stacking under it —
+           the same rule md-text-field applies to its own two, and what
+           md-date-picker does one line for one line. */
+        supportingText={this.error && this.errorText ? '' : this.supportingText}
+        error={this.error}
+        errorText={this.errorText}
+        reserveSupportingSpace={this.reserveSupportingSpace}
         disabled={this.isDisabled}
         required={this.required}
         part="trigger"

@@ -360,7 +360,11 @@
      Raise `--md-search-panel-max-block-size` or `--md-search-max-block-size`
      for a taller drawer. */
   --_panel-min-block-size: var(--md-search-panel-min-block-size, 0px);
-  --_panel-max-block-size: var(--md-search-panel-max-block-size, min(400px, 60vh));
+  /* 250px, matching --md-menu-max-block-size, so a search panel and a select's
+     option list are the same height in the same form. Was min(400px, 60vh),
+     which on a desktop showed a whole filtered list at once — a panel long
+     enough to cover the content it was filtering. */
+  --_panel-max-block-size: var(--md-search-panel-max-block-size, 250px);
   /* Optional cap on the open surface — full-screen host or docked panel.
      Deliberately NO fallback value: when `--md-search-max-block-size` is unset
      this resolves to the guaranteed-invalid value, so consumers fall through to

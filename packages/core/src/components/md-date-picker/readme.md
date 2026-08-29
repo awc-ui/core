@@ -414,6 +414,7 @@ is not what you want; it changes display and parsing only, never `value`.
 | `--md-date-picker-scrim-color` | Modal scrim | `--md-sys-color-scrim` |
 | `--md-date-picker-icon-color` | Trailing / nav icon color | `--md-sys-color-on-surface-variant` |
 | `--md-date-picker-icon-size` | Icon box | 24px, tapering 1px per density rung (18px floor) |
+| `--md-date-picker-trigger-max-width` | Trigger field's maximum inline size — set `none` to let it fill a wide form column like `md-time-picker` does | `360px` |
 | `--md-date-picker-panel-width` | Modal / docked panel inline size | 380px, tapering 20px per rung (288px floor) |
 | `--md-date-picker-panel-max-block-size` | Panel max block size | `524px` |
 | `--md-date-picker-docked-panel-width` | Docked panel inline size (wins over `panel-width`) | 360px, tapering 10px per rung |

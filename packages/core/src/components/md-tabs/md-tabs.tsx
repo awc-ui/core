@@ -22,22 +22,24 @@ export class MdTabs {
   /**
    * How far the bottom rule under the strip runs.
    *
-   * - `auto` — each tab draws its own 1px segment, so the rule is exactly as
-   *   wide as the tabs collectively are (default; unchanged behaviour).
    * - `full` — one rule across the whole container, drawn by md-tabs itself
-   *   and running past the last tab to the container's edge.
+   *   and running past the last tab to the container's edge. **The default.**
+   * - `auto` — each tab draws its own 1px segment, so the rule is exactly as
+   *   wide as the tabs collectively are.
    *
-   * `auto` is right when the strip fills its container, which it does at
-   * `tab-width="equal"`. It reads as a bug at `tab-width="auto"` in a wide
-   * panel, where three content-sized tabs leave the rule stopping a third of
-   * the way across and the panel below appearing to hang off the end of it.
+   * `full` IS THE DEFAULT because `auto` only looks right in the one case
+   * where the strip happens to fill its container — `tab-width="equal"`. In a
+   * wide panel at `tab-width="auto"`, a few content-sized tabs leave the rule
+   * stopping partway across and the panel below appears to hang off the end of
+   * it, which reads as a bug rather than a choice. `auto` remains available for
+   * a strip that genuinely should be bounded by its tabs.
    *
    * In `full` mode the per-tab segments are suppressed by setting
    * `--md-tab-divider-color: transparent` on the host — custom properties
    * inherit through the slotted tabs' shadow roots, so there is no second
    * source of truth about which mode is active.
    */
-  @Prop({ reflect: true }) divider: 'auto' | 'full' = 'auto';
+  @Prop({ reflect: true }) divider: 'auto' | 'full' = 'full';
 
   /** Accessible label for the tablist */
   @Prop({ attribute: 'aria-label' }) ariaLabelProp: string = '';

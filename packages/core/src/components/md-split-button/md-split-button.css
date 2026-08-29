@@ -472,13 +472,30 @@
    11. DISABLED
    ========================================================== */
 
+/* One disabled content colour, applied once, for every glyph in the control.
+
+   The leading icon is the reason this is a custom property rather than a plain
+   `color` on the buttons: `.md-split-button__icon` carries its own
+   `color: var(--_icon-color)`, which beats anything inherited, so a disabled
+   rule that only set `color` on the button left the icon at full `on-primary`
+   while the label went to on-surface/38% — two different treatments side by
+   side. Re-pointing `--_icon-color` here (`:host(.sel)` outspecifies the `:host`
+   default, and an author's `--md-split-button-icon-color` is deliberately
+   dropped too, as M3 disabled overrides the enabled palette) puts the icon,
+   the label and the trailing chevron on the SAME token. The trailing icon has
+   no colour of its own and simply inherits it. */
+:host(.md-split-button--disabled) {
+  --_disabled-content-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  --_icon-color: var(--_disabled-content-color);
+}
+
 :host(.md-split-button--disabled) .md-split-button__leading,
 :host(.md-split-button--disabled) .md-split-button__trailing {
   cursor: default;
   pointer-events: none;
   box-shadow: var(--md-sys-elevation-0, none) !important;
   background-color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-container-opacity, 0.12) * 100%), transparent);
-  color: color-mix(in srgb, var(--md-sys-color-on-surface) calc(var(--md-sys-state-disabled-content-opacity, 0.38) * 100%), transparent);
+  color: var(--_disabled-content-color);
 }
 
 :host(.md-split-button--disabled) .md-split-button__leading-state-layer,
@@ -554,6 +571,13 @@
   :host(.md-split-button--disabled) .md-split-button__trailing {
     color: GrayText;
     border-color: GrayText;
+  }
+
+  /* `forced-color-adjust: none` above means the icon's own `--_icon-color`
+     survives here, so it needs the same GrayText the label gets — otherwise
+     high contrast reproduces the very mismatch this file just fixed. */
+  :host(.md-split-button--disabled) .md-split-button__icon {
+    color: GrayText;
   }
 
   .md-split-button__leading-state-layer,

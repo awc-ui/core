@@ -182,6 +182,28 @@ export class MdNavigationRail {
 
   componentWillLoad() {
     this.tabsExpanded = this.variant === 'expanded';
+    /*
+     * Seed the slot-presence flags from the light DOM BEFORE the first render —
+     * the same technique the active-tab adoption below already uses. They used
+     * to be written only by each slot's `slotchange`, which fires after first
+     * render, so every rail's first painted frame had no `--with-fab` host
+     * class, a `hidden` FAB wrapper, and no header-space padding on the
+     * destinations. Measured on a cold load: the destinations painted at y=114
+     * and dropped to y=213 one frame later when the band opened — a 99px shift
+     * on every load, which a consumer could only pre-pad from outside with
+     * hand copies of this component's internal expressions. Whether a slot is
+     * filled is a fact of the light DOM and is readable here; `slotchange`
+     * still owns every later change.
+     */
+    // Direct-children iteration rather than `:scope >` — same pattern as the
+    // active-tab adoption below, and mock-doc's selector engine has no :scope.
+    const slotted = (name: string) =>
+      Array.from(this.el.children).some((child) => child.getAttribute('slot') === name);
+    this.hasLogo = slotted('logo');
+    this.hasLogoExpanded = slotted('logo-expanded');
+    this.hasHeader = slotted('header');
+    this.hasFab = slotted('fab');
+    this.hasFooter = slotted('footer');
     // Adopt a pre-marked destination: authors can write `active` directly on a
     // child tab instead of `active-index` on the rail. This MUST run before the
     // first slotchange-driven syncTabs(), which (with activeIndex still -1)

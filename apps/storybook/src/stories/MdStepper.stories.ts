@@ -68,13 +68,14 @@ const meta: Meta = {
     active: { control: { type: 'number', min: 0, max: 3, step: 1 } },
     autoComplete: { control: 'boolean', description: 'Advancing marks the left step completed.' },
     nav: { control: 'boolean', description: 'Built-in Back / Continue navigation.' },
+    readonly: { control: 'boolean', description: 'Status trail: headers are text, not buttons.' },
     label: { control: 'text' },
     stepWord: { control: 'text' },
     ofWord: { control: 'text' },
   },
   args: {
     orientation: 'horizontal', indicator: 'numbered', mode: 'linear',
-    active: 1, autoComplete: true, nav: true, label: 'Progress', stepWord: 'Step', ofWord: 'of',
+    active: 1, autoComplete: true, nav: true, readonly: false, label: 'Progress', stepWord: 'Step', ofWord: 'of',
   },
 };
 export default meta;
@@ -129,6 +130,7 @@ export const Playground: Story = {
         active=${args.active}
         auto-complete=${args.autoComplete}
         nav=${args.nav}
+        ?readonly=${args.readonly}
         label=${args.label}
         step-word=${args.stepWord}
         of-word=${args.ofWord}
@@ -392,6 +394,47 @@ const SURVEY_PANELS = (loc?: string) => [
   panelHtml(t(loc, 'stepper.review'), t(loc, 'stepper.surveyReviewBody')),
   panelHtml(t(loc, 'stepper.pay'), t(loc, 'stepper.surveyPayBody')),
 ];
+
+/* ─── Read-only status trail ───────────────────────────────── */
+/**
+ * `readonly` turns the stepper into something to READ rather than something to
+ * drive: a review trail, an order's progress, a pipeline stage. Every header
+ * stops being a button — no click, no keyboard activation, no ripple, no hover
+ * state layer, no tab stop, no `role="button"` — while `aria-current` still
+ * tells a screen reader which stage is live.
+ *
+ * It is not `nav="false"`, which only hides the Back / Continue bar and leaves
+ * every header clickable; and it is not `disabled`, which refuses and dims. A
+ * stage that has not happened yet is a fact being reported, so it stays at full
+ * contrast. `readonly` also makes `mode` irrelevant: nothing navigates, so
+ * linear gating no longer greys out the stages ahead.
+ */
+export const ReadonlyTrail: Story = {
+  render: (_args, { globals }) => html`
+    <div style="width: 760px; max-width: 100%;">
+      <div style=${labelStyle}>Nothing here is clickable — hover a step and see</div>
+      <md-stepper readonly nav="false" active="1" auto-complete="false">
+        <md-step
+          label=${t(globals.locale, 'stepper.personal')}
+          description=${t(globals.locale, 'stepper.statusComplete')}
+          completed
+        ></md-step>
+        <md-step
+          label=${t(globals.locale, 'stepper.address')}
+          description=${t(globals.locale, 'stepper.statusInProgress')}
+        ></md-step>
+        <md-step
+          label=${t(globals.locale, 'stepper.review')}
+          description=${t(globals.locale, 'stepper.statusNotStarted')}
+        ></md-step>
+        <md-step
+          label=${t(globals.locale, 'stepper.pay')}
+          description=${t(globals.locale, 'stepper.statusNotStarted')}
+        ></md-step>
+      </md-stepper>
+    </div>
+  `,
+};
 
 /* ─── Non-linear ──────────────────────────────────────────── */
 export const NonLinear: Story = {

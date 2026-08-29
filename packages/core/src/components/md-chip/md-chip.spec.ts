@@ -700,6 +700,34 @@ describe('md-chip', () => {
     });
   });
 
+  // ─── Content alignment ────────────────────────────────────
+  describe('content alignment', () => {
+    it('defaults to center', async () => {
+      const page = await create('<md-chip>Content</md-chip>');
+      expect(page.root?.getAttribute('content-align')).toBe('center');
+    });
+
+    it('reflects content-align on the host', async () => {
+      const page = await create('<md-chip content-align="start">Content</md-chip>');
+      expect(page.root?.getAttribute('content-align')).toBe('start');
+    });
+
+    it('reflects a property write back to the attribute', async () => {
+      const page = await create('<md-chip>Content</md-chip>');
+      (page.root as HTMLMdChipElement).contentAlign = 'end';
+      await page.waitForChanges();
+      expect(page.root?.getAttribute('content-align')).toBe('end');
+    });
+
+    // The CSS keys off the reflected attribute rather than a host class, so
+    // there is deliberately no `md-chip--content-align-*` to assert. Guard that
+    // the choice stayed a no-op for the class map.
+    it('adds no host class', async () => {
+      const page = await create('<md-chip content-align="end">Content</md-chip>');
+      expect(page.root?.className).not.toContain('content-align');
+    });
+  });
+
   // ─── Custom CSS API ───────────────────────────────────────
   describe('custom CSS API', () => {
     it('accepts CSS custom property overrides', async () => {

@@ -126,6 +126,21 @@ export class MdTabPanels {
         panel.setAttribute('inert', '');
       }
     });
+    /*
+     * Only now may the stylesheet hide the inactive panels.
+     *
+     * `sizing="active"` hides every panel without `active`, and nothing carries
+     * `active` until the loop above runs — which is first reached from
+     * componentDidLoad, one frame AFTER the region has been painted and
+     * measured. For that frame the rule matched ALL of them, the host collapsed
+     * to zero, and the document below it jumped by the whole height of the
+     * panel region. This attribute is the signal that "which panel is active"
+     * finally has an answer; until it is set, the region falls back to the
+     * size-stable grid and keeps a real height. Setting it here rather than in
+     * componentDidLoad also covers the `for`-rebinding path, which calls show()
+     * without going through load again.
+     */
+    this.el.setAttribute('data-active-resolved', '');
   }
 
   render() {

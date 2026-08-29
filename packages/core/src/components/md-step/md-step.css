@@ -33,6 +33,10 @@
      --md-step-state-layer-color        Hover / focus / press overlay
      --md-step-expand-duration          Vertical panel expand duration
      --md-step-collapse-duration        Vertical panel collapse duration
+     --md-step-panel-padding-block-start
+                                        Head room above a HORIZONTAL panel-mode
+                                        panel, between the step header row and
+                                        the panel's first row (16px)
 
    PARTS: inner · indicator · bubble · dot · state-layer · text · label ·
           optional · description · connector · connector-leading ·
@@ -140,6 +144,19 @@
      content box half the indent to the inline-end (content centered inside
      the panel rendered ~34px off the stepper's center). Zero it. */
   margin-inline-start: 0;
+}
+
+/* The panel's own head room, which this mode has to set for itself.
+   `.md-step__content-inner` carries 4px, sized for a VERTICAL step: there the
+   panel is indented under one label, so its first row starts to the side of the
+   text above it and 4px is only a hairline of relief. Here the panel is a
+   full-width band directly beneath a row of headers, and its first field sits
+   squarely under a description line at the same inline position — measured 4px
+   between "Who the advice is for" and the field below it, which reads as the
+   two colliding. Bound it like the foot already is, and expose the value so a
+   denser layout can pull it back. */
+:host(.md-step--horizontal.md-step--panel-step) .md-step__content-inner {
+  padding-block-start: var(--md-step-panel-padding-block-start, var(--md-sys-spacing-inset-lg, 16px));
 }
 
 :host(.md-step--vertical) {
@@ -252,6 +269,25 @@
 :host(.md-step--disabled) .md-step__indicator { opacity: 0.38; }
 :host(.md-step--disabled) md-ripple,
 :host(.md-step--disabled) .md-step__state-layer { display: none; }
+
+/*
+ * `readonly` — a status trail, not a control.
+ *
+ * `cursor: default`, NOT `not-allowed`. The two look similar in a screenshot and
+ * mean opposite things: `not-allowed` is what `disabled` above uses, and it says
+ * "there is an action here and you may not have it". A readonly step is not
+ * refusing anything; there was never an action. `default` says so.
+ *
+ * The state layer goes rather than being dimmed. Dimming would still light up on
+ * hover, which is the whole tell that something is pressable — and the ripple
+ * and the tab stop are already gone in the TSX, so leaving the hover glow behind
+ * would be the one remaining thing promising a click that never comes. The
+ * indicator keeps its full opacity: unlike a disabled step, this content is
+ * perfectly available to read.
+ */
+:host(.md-step--readonly) .md-step__inner { cursor: default; }
+:host(.md-step--readonly) md-ripple,
+:host(.md-step--readonly) .md-step__state-layer { display: none; }
 
 /* ==========================================================
    3. BUBBLE + DOT
@@ -505,10 +541,28 @@
     opacity var(--_collapse-duration) var(--_collapse-easing),
     visibility 0s linear var(--_collapse-duration);
 }
+/*
+ * `inherit`, NOT `visible` — the panel holds SLOTTED content.
+ *
+ * Light-DOM children inherit visibility from their flattened-tree parent, which
+ * is this wrapper, not the `md-step` host. `visible` therefore re-shows a
+ * step's content even when an ancestor OUTSIDE the component hid the whole
+ * subtree, and there is no way for that ancestor to win: it is being overruled
+ * from inside a shadow root it cannot select into. Seen as a date picker's
+ * clear and calendar glyphs painting on top of a loading placeholder that had
+ * hidden its whole screen — they escaped because the field's icons carry a
+ * z-index, so the ones that escaped were the ones that also outranked the
+ * cover.
+ *
+ * `inherit` still reveals the panel whenever the step itself is visible (the
+ * closed rule is an explicit `hidden`, so there is something real to inherit
+ * back from), and keeps it hidden when something above has a reason to hide it.
+ * Same choice Stencil makes for its own hydrated flag, for the same reason.
+ */
 .md-step__content--open {
   grid-template-rows: 1fr;
   opacity: 1;
-  visibility: visible;
+  visibility: inherit;
   transition:
     grid-template-rows var(--_expand-duration) var(--_expand-easing),
     opacity var(--_state-duration) var(--_state-easing),
@@ -532,7 +586,9 @@
   display: block;
   grid-template-rows: none;
   opacity: 1;
-  visibility: visible;
+  /* Same reason as `--open` above: this wrapper is a slotted panel's
+     flattened-tree parent, so it must not out-rank an ancestor's hide. */
+  visibility: inherit;
   transition: none;
   animation: md-step-content-enter var(--_expand-duration) var(--_expand-easing) both;
 }

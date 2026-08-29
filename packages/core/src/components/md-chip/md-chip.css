@@ -47,6 +47,12 @@
      --md-chip-state-layer-color         State layer color override
      --md-chip-elevation                 Box-shadow override
 
+   ATTRIBUTES (drive layout):
+     content-align     center (default) | start | end — inline-axis position of
+                       the content row when a layout makes the chip wider than
+                       its content. A no-op on a shrink-wrapped chip. Logical:
+                       `start` is the leading edge under dir="rtl" too.
+
    CSS PARTS:
      state-layer   Hover/press overlay
      outline       Border element
@@ -144,6 +150,35 @@
 
 :host(.md-chip--with-trailing-icon) {
   padding-inline-end: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+/*
+ * `content-align` — where the content row sits when the chip is WIDER than it.
+ *
+ * The `justify-content: center` above is the default and stays the default: a
+ * chip normally shrink-wraps its label, so the content box and the container
+ * are the same size and there is nothing to align. It only starts to matter
+ * once a layout gives the chip a width — a grid column, `align-self: stretch`
+ * in a flex column, an explicit `inline-size` — and then centre is often the
+ * wrong answer: a stretched chip with its label adrift in the middle reads as
+ * an empty input, and if it is labelling a field beneath it, its text no longer
+ * shares a left edge with the thing it names.
+ *
+ * `flex-start` / `flex-end` rather than `start` / `end`: the two are equivalent
+ * for a row flex container, but the flex-relative keywords have the wider
+ * support, and this is a value consumers will read in DevTools. The keywords
+ * are still writing-mode relative, so `start` follows `dir` and mirrors under
+ * RTL without a second rule.
+ *
+ * Attribute selectors, not classes — the prop reflects, so there is nothing for
+ * the class map to carry.
+ */
+:host([content-align='start']) {
+  justify-content: flex-start;
+}
+
+:host([content-align='end']) {
+  justify-content: flex-end;
 }
 
 /* ==========================================================

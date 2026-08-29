@@ -141,6 +141,13 @@ export class MdStep {
     return (this.el.getAttribute('data-indicator') as 'numbered' | 'dot') ?? 'numbered';
   }
   private get linearMode(): boolean { return this.el.getAttribute('data-mode') === 'linear'; }
+  /**
+   * The parent stepper is a status trail (`readonly`), so this header is text
+   * rather than a control. Distinct from `disabled`, which is still a control —
+   * one that refuses. A readonly step does not refuse anything, because it never
+   * offered.
+   */
+  private get readonlyMode(): boolean { return this.el.getAttribute('data-readonly') === 'true'; }
 
   connectedCallback() {
     this.computeSlottedContent();
@@ -190,6 +197,13 @@ export class MdStep {
 
   /** Can the user navigate to this step right now? */
   private get reachable(): boolean {
+    // A status trail has no navigation, so there is nothing to gate. Without
+    // this, linear mode would dim every stage after the current one to 0.38 and
+    // call it unreachable — but "Not started" is a fact being reported, not a
+    // door being held shut, and it has to stay as legible as the rest of the
+    // trail. An explicitly `disabled` step is still disabled: that is the author
+    // saying this stage does not apply, which readonly has no business undoing.
+    if (this.readonlyMode) return true;
     if (!this.linearMode) return true;
     return this.index <= this.activeIndex || this.completed || this.allPriorPassable();
   }
@@ -200,13 +214,13 @@ export class MdStep {
 
   // ─── Handlers ─────────────────────────────────────────────────────────────
   private handleClick = (e: Event) => {
-    if (this.effectivelyDisabled) return;
+    if (this.readonlyMode || this.effectivelyDisabled) return;
     e.preventDefault();
     this.mdStepClick.emit({ index: this.index });
   };
 
   private handleKeyDown = (e: KeyboardEvent) => {
-    if (this.effectivelyDisabled) return;
+    if (this.readonlyMode || this.effectivelyDisabled) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       // Shared library helper — md-ripple only listens to pointerdown, so
@@ -269,6 +283,7 @@ export class MdStep {
     const isLast = this.position === 'last';
     const isVertical = this.orientation === 'vertical';
     const disabled = this.effectivelyDisabled;
+    const readonly = this.readonlyMode;
     const supporting = this.error && this.errorText ? this.errorText : this.description;
     const optionalCaption = this.optional ? this.attr('data-optional-word', 'Optional') : '';
     // Built-in Back/Continue: on unless the stepper disabled nav (data-nav)
@@ -306,13 +321,26 @@ export class MdStep {
           aria-hidden="true"
         ></span>
       ),
+      /*
+       * In `readonly` the header stops being a control, and that has to be true
+       * in the accessibility tree as well as under the pointer. A `role="button"`
+       * that ignores its own click is worse than no button: it is announced as
+       * pressable, it takes a tab stop on the way to something that matters, and
+       * `aria-disabled` would be a lie in the other direction — nothing here is
+       * unavailable. So the roles, the tab stop, the composed button label and
+       * the ripple all come off, and what remains is the visible text, which the
+       * step already renders and a reader can already read.
+       *
+       * `aria-current` STAYS. "Which one is it on" is the entire point of a
+       * status trail, and it is the one thing the visible text does not carry.
+       */
       <div
         class="md-step__inner"
         part="inner"
-        tabindex={disabled ? -1 : 0}
-        role="button"
-        aria-label={this.composeA11yLabel()}
-        aria-disabled={disabled ? 'true' : undefined}
+        tabindex={readonly ? undefined : disabled ? -1 : 0}
+        role={readonly ? undefined : 'button'}
+        aria-label={readonly ? undefined : this.composeA11yLabel()}
+        aria-disabled={!readonly && disabled ? 'true' : undefined}
         aria-current={this.active ? 'step' : undefined}
         aria-expanded={hasPanel ? (this.active ? 'true' : 'false') : undefined}
         aria-controls={renderPanel ? 'md-step-panel' : undefined}
@@ -320,7 +348,7 @@ export class MdStep {
         onKeyDown={this.handleKeyDown}
       >
         <span class="md-step__indicator" part="indicator">
-          <md-ripple disabled={disabled}></md-ripple>
+          {!readonly && <md-ripple disabled={disabled}></md-ripple>}
           <span class="md-step__state-layer" part="state-layer" aria-hidden="true"></span>
           {this.renderIndicator()}
         </span>
@@ -363,6 +391,7 @@ export class MdStep {
           'md-step--optional': this.optional,
           'md-step--editable': this.editable,
           'md-step--disabled': disabled,
+          'md-step--readonly': readonly,
           'md-step--first': isFirst,
           'md-step--last': isLast,
           'md-step--panel-step': !isVertical && hasPanel,

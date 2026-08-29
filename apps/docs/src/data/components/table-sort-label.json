@@ -47,6 +47,14 @@
       "mutable": false
     },
     {
+      "name": "inactiveIcon",
+      "attribute": "inactive-icon",
+      "type": "'always' | 'hover'",
+      "default": "'always'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
       "name": "active",
       "attribute": "active",
       "type": "boolean",
@@ -110,6 +118,10 @@
     {
       "name": "--md-table-sort-label-gap",
       "description": "Gap between text and icon"
+    },
+    {
+      "name": "--md-table-sort-label-rest-opacity",
+      "description": ""
     }
   ],
   "dependencies": [

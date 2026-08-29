@@ -205,10 +205,17 @@
       var(--md-sys-motion-easing-emphasized-accelerate, cubic-bezier(0.3, 0, 0.8, 0.15)),
     visibility 0s linear var(--md-sys-motion-duration-short4, 200ms);
 }
+/* `inherit`, not `visible` — same reasoning as md-step's content panel. This
+   wrapper is the flattened-tree parent of the row's SLOTTED expansion content,
+   so `visible` would let an open row go on painting through an ancestor that
+   hid the whole subtree (a loading placeholder, a closed tab panel), and that
+   ancestor has no way to win — it is being overruled from inside a shadow root
+   it cannot select into. The closed rule is an explicit `hidden`, so there is
+   always something real to inherit back from. */
 .md-table-row__expanded--open {
   grid-template-rows: 1fr;
   opacity: 1;
-  visibility: visible;
+  visibility: inherit;
   transition:
     grid-template-rows var(--md-sys-motion-spring-spatial-default-duration, 500ms)
       var(--md-sys-motion-spring-spatial-default-easing, cubic-bezier(0.38, 1.21, 0.22, 1)),

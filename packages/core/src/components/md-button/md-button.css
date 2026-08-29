@@ -757,6 +757,12 @@ slot[name="trailing-icon"] {
   /* Not inherited by default; picking up the host's computed value keeps the
      icon/label spacing identical to a non-link button at every density. */
   gap: inherit;
+  /* Same reason, one property over, and a sharper consequence: the ripple is
+     rendered INSIDE this anchor in link mode, and it clips its wave with
+     `border-radius: inherit`, which walks the PARENT chain. Left at the initial
+     0, a link button's wave is a square on a stadium-shaped button, while the
+     identical non-link button — whose ripple's parent is the host — is round. */
+  border-radius: inherit;
   inline-size: 100%;
   block-size: 100%;
   min-inline-size: 0;

@@ -63,6 +63,11 @@ const meta: Meta = {
       control: 'text',
       description: 'Label text (alternative to slot)',
     },
+    contentAlign: {
+      control: 'select',
+      options: ['start', 'center', 'end'],
+      description: 'Where the content row sits when a layout makes the chip wider than it',
+    },
   },
   args: {
     variant: 'assist',
@@ -73,6 +78,7 @@ const meta: Meta = {
     selected: false,
     disabled: false,
     label: 'Chip',
+    contentAlign: 'center',
   },
 };
 export default meta;
@@ -88,6 +94,7 @@ export const Playground: Story = {
       trailing-icon=${args.trailingIcon}
       ?selected=${args.selected}
       ?disabled=${args.disabled}
+      content-align=${args.contentAlign}
     >${args.label}</md-chip>
   `,
 };
@@ -414,6 +421,32 @@ export const Elevated: Story = {
       <md-chip variant="filter" elevated>Filter Elevated</md-chip>
       <md-chip variant="filter" elevated selected>Filter Elevated Selected</md-chip>
       <md-chip variant="suggestion" elevated>Suggestion Elevated</md-chip>
+    </div>
+  `,
+};
+
+/**
+ * `content-align` decides where the content row sits when the chip is WIDER
+ * than its content. It is a no-op on a normal chip — `:host` is
+ * `display: inline-flex`, so a chip shrink-wraps its label and there is no
+ * spare width to align within. Give it a width, as the grid below does, and the
+ * default `center` leaves the label adrift in the middle of the box.
+ *
+ * Reach for `start` when a stretched chip is labelling something underneath it:
+ * the two then share a leading edge and read as one unit instead of two.
+ *
+ * The values are logical — `start` is the leading edge in both directions.
+ */
+export const ContentAlignment: Story = {
+  parameters: { layout: 'padded' },
+  render: () => html`
+    <div style="display: grid; grid-template-columns: repeat(3, 240px); gap: 12px;">
+      <md-chip appearance="filled" color="primary" content-align="start">start</md-chip>
+      <md-chip appearance="filled" color="primary">center (default)</md-chip>
+      <md-chip appearance="filled" color="primary" content-align="end">end</md-chip>
+      <md-chip icon="event" content-align="start">start, with icon</md-chip>
+      <md-chip icon="event">center, with icon</md-chip>
+      <md-chip icon="event" content-align="end">end, with icon</md-chip>
     </div>
   `,
 };

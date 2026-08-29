@@ -101,6 +101,37 @@
 }
 
 /* ==========================================================
+   2a. CIRCULAR HOST — sit on the rim, not on the bounding box
+
+   A corner anchor is right for a rect host and wrong for a round one: a
+   circle's bounding-box corner is OUTSIDE the shape, so the dot floats clear
+   of it with nothing behind it. Measured on a 40px round avatar with the
+   default anchor, the dot's centre sat 5.5px past the rim.
+
+   The 45° point on a circle of diameter d is d/2 + (d/2)/√2 from the leading
+   edge, i.e. (1 − 1/√2)/2 ≈ 14.6447% of d in from the trailing edge. Half the
+   dot's own size comes back off so the dot is CENTRED on that point rather
+   than hung from its corner.
+
+   Percentages resolve against the containing block, so this is correct at
+   every avatar size with nothing having to know what that size is — 40px
+   gives 1.86px, 24px gives -0.49px, and both put the dot exactly on the arc.
+   Logical insets, so it still mirrors in RTL. The author-facing custom
+   properties keep winning, so a one-off nudge is still available.
+
+   NO `:not()` AFTER `:host()`, and that is not a style preference. Chrome does
+   not match `:host(.a):not(.b)` — the rule is parsed, lands in the sheet, and
+   silently never applies, which cost an hour of looking at a correct-looking
+   rule that did nothing. The inline case needs no exclusion here anyway: the
+   `:host([inline])` block below comes LATER and sets the `inset` shorthand to
+   `auto`, so it overrides these two longhands on order.
+   ========================================================== */
+:host(.md-status-dot--circle) {
+  inset-inline-end: var(--md-status-dot-inset-end, calc(14.6447% - var(--_size) / 2));
+  inset-block-end: var(--md-status-dot-inset-block-end, calc(14.6447% - var(--_size) / 2));
+}
+
+/* ==========================================================
    2b. INLINE MODE — dot in normal flow, beside text
 
    The default host is an avatar corner badge: absolutely positioned 2-3px

@@ -147,6 +147,33 @@ describe('md-navigation-rail', () => {
       expect(shadow?.querySelector('slot[name="fab"]')).toBeTruthy();
       expect(shadow?.querySelector('slot[name="footer"]')).toBeTruthy();
     });
+
+    /*
+     * The FIRST render must already know its slots are filled. These flags used
+     * to be written only by `slotchange`, which fires after first render — so
+     * frame one had a `hidden` FAB wrapper and no `--with-fab` class, the FAB
+     * band opened a frame later, and everything below it dropped 99px on every
+     * cold load. `newSpecPage` resolves after the initial render, so asserting
+     * here is asserting the first frame.
+     */
+    it('knows a slotted FAB on the first render, not one slotchange later', async () => {
+      const page = await create(`
+        <md-navigation-rail label="Primary">
+          <button slot="fab">New</button>
+          <md-navigation-rail-tab icon="home" label="Home"></md-navigation-rail-tab>
+        </md-navigation-rail>
+      `);
+      expect(page.root).toHaveClass('md-navigation-rail--with-fab');
+      const wrap = page.root?.shadowRoot?.querySelector('.md-navigation-rail__fab');
+      expect(wrap?.hasAttribute('hidden')).toBe(false);
+    });
+
+    it('still hides the FAB region on the first render when nothing is slotted', async () => {
+      const page = await create(basicHtml);
+      expect(page.root).not.toHaveClass('md-navigation-rail--with-fab');
+      const wrap = page.root?.shadowRoot?.querySelector('.md-navigation-rail__fab');
+      expect(wrap?.hasAttribute('hidden')).toBe(true);
+    });
   });
 
   // ----------------------------------------------------------------

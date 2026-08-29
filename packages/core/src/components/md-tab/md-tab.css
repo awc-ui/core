@@ -270,10 +270,38 @@
    10. BADGE
    ========================================================== */
 
+/*
+ * CENTRED ON THE ICON'S TOP-TRAILING CORNER, not hung off it.
+ *
+ * `-4px / -8px` put a 12x14 badge 8px CLEAR of a 24px icon's right edge with
+ * only 4px of overlap, so it read as a bubble parked in the icon-to-label gap
+ * rather than as something attached to the icon — and its right edge landed
+ * exactly on the label's left edge, measured at 0px of clearance.
+ *
+ * Anchoring at the corner and translating by half the badge's OWN size centres
+ * it there: half on the icon, half off, at any badge width. That last part
+ * matters, because a fixed negative inset is only ever right for one badge
+ * width — "1" and "12" are different sizes and were being offset identically.
+ */
 .md-tab__badge {
   position: absolute;
-  inset-block-start: -4px;
-  inset-inline-end: -8px;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  /*
+   * HALF OUT SIDEWAYS, A QUARTER OUT UPWARDS — and the asymmetry is the point.
+   *
+   * A tab does not have the room above its icon that a rail tab or an avatar
+   * does: `.md-tabs__container` is `overflow: auto` so it can scroll a long
+   * strip, which means anything rising past the tab's top edge is CLIPPED, not
+   * overflowed. At a full -50% the badge cleared the container top by 2.5px —
+   * uncut, but close enough that a taller badge or a denser rung would shave
+   * it, and close enough to READ as cut.
+   *
+   * -25% keeps the badge visibly attached to the icon's corner while leaving
+   * roughly its own height of clearance. The inline axis keeps the full -50%
+   * because nothing clips it there.
+   */
+  transform: translate(50%, -25%);
   min-inline-size: 6px;
   min-block-size: 6px;
   padding-inline: 3px;
@@ -297,17 +325,20 @@
   block-size: 6px;
 }
 
+/* Back into normal flow, so the corner anchoring and its translate both have
+   to be undone — a leftover translate would shift an in-flow badge by half its
+   own width for no reason. */
 .md-tab__badge--inline {
   position: relative;
   inset-block-start: auto;
   inset-inline-end: auto;
+  transform: none;
 }
 
-/* Stacked icon badge overlap: 6px */
-:host(.md-tab--stacked) .md-tab__badge {
-  inset-block-start: -2px;
-  inset-inline-end: -6px;
-}
+/* Stacked tabs need no override any more: the corner anchor above is relative
+   to the icon wrapper, which is the same box in both layouts, so the badge is
+   centred on the icon corner either way. The old -2px/-6px was a second guess
+   at the same geometry and disagreed with the first. */
 
 /* ==========================================================
    11. ACTIVE INDICATOR

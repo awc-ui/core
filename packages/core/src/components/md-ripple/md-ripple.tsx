@@ -139,9 +139,51 @@ export class MdRipple {
     this.finishSettle();
   }
 
+  /**
+   * An ancestor with `display: contents` generates NO BOX, and a box is the
+   * whole of what this element needs from its host.
+   *
+   * Two things break when the wave is anchored to one. Its client rect is an
+   * empty 0×0 at the viewport origin, so the farthest-corner radius and the
+   * wave's offset are computed in the wrong coordinate space entirely — a
+   * 56px destination produced a 520px wave centred 200px below itself. And it
+   * can never be a hit target, so `pointerdown` only reaches a listener bound
+   * there when the press lands on a painted DESCENDANT; a press on the
+   * surface's own padding (or on any `pointer-events: none` child, which is
+   * what an active-indicator pill and an icon wrapper are) targets the shadow
+   * host instead, whose event path does not include this element at all, and
+   * no wave is created.
+   *
+   * `md-navigation-rail-tab` is exactly this shape: with `href` set it wraps
+   * its whole shadow tree — ripple included — in a `display: contents` anchor,
+   * because the host is the flex container and a real box there would collapse
+   * the layout.
+   */
+  private generatesNoBox(node: HTMLElement): boolean {
+    if (typeof getComputedStyle !== 'function') return false;
+    try {
+      return getComputedStyle(node).display === 'contents';
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * The surface this ripple decorates.
+   *
+   * `parentElement` stays the starting point rather than jumping straight to
+   * the shadow host: a component may render more than one ripple, and each
+   * must ripple its OWN half (md-split-button's leading and trailing buttons).
+   * Those wrappers are real boxes, so the walk below stops on the first step
+   * and their behaviour is unchanged. Only a box-less ancestor is skipped —
+   * see {@link generatesNoBox} — and when the chain runs out of elements it
+   * has left the shadow tree, so the shadow host is the surface.
+   */
   private resolveHost(): HTMLElement | null {
     const root = this.el.getRootNode();
-    return this.el.parentElement ??
+    let node: HTMLElement | null = this.el.parentElement;
+    while (node && this.generatesNoBox(node)) node = node.parentElement;
+    return node ??
       (root instanceof ShadowRoot ? (root.host as HTMLElement) : null);
   }
 

@@ -14,8 +14,27 @@
   grid-area: 1 / 1;
 }
 
-/* Opt-out: size to the active panel only. */
-:host([sizing='active']) ::slotted(md-tab-panel:not([active])) {
+/*
+ * Opt-out: size to the active panel only.
+ *
+ * GUARDED ON `data-active-resolved`, AND THAT GUARD IS THE WHOLE POINT.
+ *
+ * `active` is set by `show()`, which first runs from `componentDidLoad` — after
+ * the first paint. Unguarded, this rule therefore matched EVERY panel on that
+ * first frame, because none of them carried `active` yet: every panel became
+ * `display: none`, the host measured 0, and everything below it in the document
+ * jumped up by the height of the whole panel region and back down one frame
+ * later. On a screen with an 840px table in a tab, that is a 906px lurch — on
+ * first render, and again on the first activation of a lazily-mounted panel.
+ *
+ * Until activation resolves, the panels keep the `stable` behaviour the shared
+ * grid cell above already gives them: the region is as tall as its tallest
+ * panel, which is a height that exists. Only then does it narrow to the active
+ * one. The component sets the attribute immediately after its first `show()`,
+ * so the unguarded window is exactly the frames in which the answer is not yet
+ * known.
+ */
+:host([sizing='active'][data-active-resolved]) ::slotted(md-tab-panel:not([active])) {
   display: none;
 }
 

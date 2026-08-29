@@ -80,7 +80,8 @@
       "types": "./dist/components/*.d.ts",
       "import": "./dist/components-csr/*.js"
     },
-    "./css/tokens.css": "./dist/md3/md3.css"
+    "./css/tokens.css": "./dist/md3/md3.css",
+    "./css/pre-upgrade.css": "./dist/md3/pre-upgrade.css"
   },
   "files": [
     "dist/",
@@ -94,7 +95,7 @@
     "src/components/*/readme.md"
   ],
   "scripts": {
-    "build": "node ../../scripts/build-package-docs.mjs && rm -rf dist && stencil build && stencil build --config stencil.config.csr.ts && node ../../scripts/fix-module-types.mjs && node ../../scripts/split-react-components.mjs && node ../../scripts/emit-tokens-css.mjs",
+    "build": "node ../../scripts/build-package-docs.mjs && rm -rf dist && stencil build && stencil build --config stencil.config.csr.ts && node ../../scripts/fix-module-types.mjs && node ../../scripts/split-react-components.mjs && node ../../scripts/emit-tokens-css.mjs && node ../../scripts/emit-pre-upgrade-css.mjs",
     "build:watch": "stencil build --watch",
     "build:dev": "stencil build --config stencil.config.dev.ts",
     "build:watch:dev": "stencil build --config stencil.config.dev.ts --watch",

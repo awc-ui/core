@@ -90,6 +90,24 @@ export class MdChip {
   @Prop() label: string = '';
 
   /**
+   * Inline-axis alignment of the chip's content row — leading icon, label and
+   * trailing icon together.
+   *
+   * `center` (the default) is a no-op on a normal chip, which shrink-wraps its
+   * label: the content box and the container are the same size, so there is
+   * nothing to align. It matters only once a layout gives the chip a width — a
+   * grid column, `align-self: stretch`, an explicit `inline-size` — and then
+   * centre is usually wrong. The label floats in the middle of a wide outlined
+   * box and reads as an empty input rather than a chip, and a chip labelling
+   * something beneath it no longer shares a left edge with what it names.
+   *
+   * `start` reads left in LTR / right in RTL, `end` the reverse, `center` is
+   * direction-agnostic. Use `::part(label)` for finer control.
+   */
+  @Prop({ reflect: true, attribute: 'content-align' })
+  contentAlign: 'start' | 'center' | 'end' = 'center';
+
+  /**
    * Local density rung. Drives the same `--md-sys-density-scale` signal that a
    * global `data-density` ancestor sets, so a local value simply overrides the
    * inherited one. 0 = default, -4 = ultra-compact.

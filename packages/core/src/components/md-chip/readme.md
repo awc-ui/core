@@ -60,6 +60,7 @@ optional selection and optional removal.
 | Suppress the input chip's ✕ | `removable="false"` |
 | A display-only token whose ✕ is the only action | `selectable="false"` + `removable` |
 | Turn off toggling on a filter chip | `selectable="false"` |
+| A chip stretched by its layout, label flush to the edge | `content-align="start"` |
 
 ## API contract
 
@@ -76,6 +77,7 @@ optional selection and optional removal.
   removable="true|false"                      <!-- default: derived from variant -->
   disabled                                    <!-- default: false -->
   soft-disabled                               <!-- default: false -->
+  content-align="start|center|end"            <!-- default: center -->
   density="-1|-2|-3|-4"                       <!-- default: 0 (uncompacted) -->
 ></md-chip>
 ```
@@ -138,6 +140,11 @@ trailing glyph — and on a **removable** chip it replaces the ✕ artwork
 - The accessible name for the ✕ button is generated as `Remove {label}`, where
   the label is `label` or the chip's own text content — you do not need to
   supply one.
+- `content-align` does nothing until something stretches the chip. `:host` is
+  `display: inline-flex`, so a chip normally shrink-wraps its label and there is
+  no spare width to align within. Give it a width — a grid column, `align-self:
+  stretch`, an explicit `inline-size` — and the default `center` leaves the label
+  adrift in the middle of the box; `start` puts it back on the leading edge.
 - The chip does not manage a set: wrapping, scrolling and overflow are yours.
 
 ---
@@ -264,6 +271,7 @@ Sourced from [M3 · Chips · Guidelines](https://m3.material.io/components/chips
 **RTL** — the leading/trailing regions use logical properties and mirror under
 `dir="rtl"`. Directional glyphs passed to `icon` / `trailing-icon` still need
 swapping by you.
+`content-align` is logical too — `start` is the leading edge in both directions.
 
 **Density** — `density="-1…-4"` (or an inherited `data-density` rung) reduces
 height, label size and icon size via `--md-sys-density-scale`; height floors at
@@ -319,6 +327,7 @@ md-chip.brand {
 | -------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- | ------------ |
 | `appearance`   | `appearance`    | Surface style of the chip. Distinct from `variant`, which selects the M3 chip TYPE (assist / filter / input / suggestion); a chip has both.  - `outlined` (default) — transparent container with a 1px outline. - `filled` — tonal container, no outline. - `elevated` — tonal container with elevation and no outline.                                                                                                                                                                                                                                                                                                                                                                                                                                                              | `"elevated" \| "filled" \| "outlined"`                                                                              | `'outlined'` |
 | `color`        | `color`         | Colour role applied to the chip's outline / label / container, depending on `appearance`. Omit for the neutral surface treatment.  Any role name the THEME defines is accepted, not just a fixed list — the chip resolves `<name>` to the `--md-sys-color-<name>` / `-<name>-container` / `-on-<name>-container` family at runtime. So `color="brand"` works as soon as a theme ships those tokens, and a name the theme does not define degrades to the neutral treatment rather than rendering broken.  `primary` \| `secondary` \| `tertiary` \| `error` are the baseline M3 roles; `success` \| `warning` \| `info` ship in packages/tokens on the same tonal recipe. The union below is a hint for editor autocomplete only — the `string` arm is what makes custom roles work. | `"error" \| "info" \| "primary" \| "secondary" \| "success" \| "tertiary" \| "warning" \| string & {} \| undefined` | `undefined`  |
+| `contentAlign` | `content-align` | Inline-axis alignment of the chip's content row — leading icon, label and trailing icon together.  `center` (the default) is a no-op on a normal chip, which shrink-wraps its label: the content box and the container are the same size, so there is nothing to align. It matters only once a layout gives the chip a width — a grid column, `align-self: stretch`, an explicit `inline-size` — and then centre is usually wrong. The label floats in the middle of a wide outlined box and reads as an empty input rather than a chip, and a chip labelling something beneath it no longer shares a left edge with what it names.  `start` reads left in LTR / right in RTL, `end` the reverse, `center` is direction-agnostic. Use `::part(label)` for finer control.             | `"center" \| "end" \| "start"`                                                                                      | `'center'`   |
 | `density`      | `density`       | Local density rung. Drives the same `--md-sys-density-scale` signal that a global `data-density` ancestor sets, so a local value simply overrides the inherited one. 0 = default, -4 = ultra-compact.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | `-1 \| -2 \| -3 \| -4 \| 0`                                                                                         | `0`          |
 | `disabled`     | `disabled`      | Disables the chip                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | `boolean`                                                                                                           | `false`      |
 | `elevated`     | `elevated`      | <span style="color:red">**[DEPRECATED]**</span> Use `appearance="elevated"`. Kept as an alias so existing markup keeps working: when true it forces the elevated appearance and wins over `appearance`, since a consumer setting it is being explicit.<br/><br/>Whether the chip is elevated (adds shadow instead of outline).                                                                                                                                                                                                                                                                                                                                                                                                                                                       | `boolean`                                                                                                           | `false`      |

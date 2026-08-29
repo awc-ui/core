@@ -202,7 +202,18 @@ export function resolveSeriesColor(
     );
     return fallback;
   }
-  return color;
+  /*
+   * `var()` and `color-mix()` pass the guard above — `CSS.supports('color',
+   * 'var(--x)')` is true because substitution is deferred — and then FAIL on
+   * canvas: `fillStyle = 'var(--md-sys-color-primary)'` is rejected silently
+   * and the context keeps its last colour, so a token-coloured series painted
+   * nothing with an empty console. That is the one input a token-first design
+   * system tells consumers to use ("feed them to a chart's `colors` prop;
+   * never inline a hex"). Resolve it against the host the way `resolveAxisBands`
+   * already does — this helper existed twelve lines below and was only ever
+   * called on the axis-band path. Hex / rgb / named colours return unchanged.
+   */
+  return resolveComputedColor(host, color);
 }
 
 /** `CSS.supports` is the cheapest parser available and is safe in every

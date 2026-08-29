@@ -230,6 +230,10 @@
   ],
   "cssParts": [
     {
+      "name": "anchor",
+      "description": ""
+    },
+    {
       "name": "state-layer",
       "description": "State-layer overlay"
     },
@@ -302,11 +306,14 @@
     {
       "name": "--md-button-loading-size",
       "description": ""
+    },
+    {
+      "name": "--md-button-focus-ring-color",
+      "description": ""
     }
   ],
   "dependencies": [
-    "md-ripple",
-    "md-loading-indicator"
+    "md-ripple"
   ],
   "dataTypes": [],
   "callableProps": [],

@@ -1444,7 +1444,11 @@ export class MdMultiSelect {
       !this.loading && ((virtual && this.vc.filteredLength === 0) || (!virtual && !!q && listOptions.length === 0));
     const showNoOptions = !this.loading && !virtual && !q && this.optionsData.length === 0;
     // Virtualization needs a bounded viewport to scroll within.
-    const menuMaxHeight = virtual ? (this.maxHeight ?? 320) : this.maxHeight;
+    // A virtualized list must be bounded to compute its window, so it needs a
+    // number even when the author has not given one. 250 matches
+    // `--md-menu-max-block-size`, the cap a NON-virtual menu gets from CSS —
+    // otherwise turning virtualization on would silently make the list taller.
+    const menuMaxHeight = virtual ? (this.maxHeight ?? 250) : this.maxHeight;
 
     return (
       <md-menu

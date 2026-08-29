@@ -513,4 +513,67 @@ describe('md-stepper', () => {
       expect(p.root!.shadowRoot!.querySelector('.md-stepper__live[role="alert"][aria-live="assertive"]')).not.toBeNull();
     });
   });
+
+  describe('readonly (status trail)', () => {
+    const inner = (step: HTMLElement) => step.shadowRoot!.querySelector('.md-step__inner')!;
+
+    it('pushes data-readonly down to every step', async () => {
+      const p = await create(`<md-stepper readonly active="1">${STEPS}</md-stepper>`);
+      for (const s of steps(p.root!)) expect(s.getAttribute('data-readonly')).toBe('true');
+    });
+
+    it('drops the button role, the tab stop and the composed label', async () => {
+      const p = await create(`<md-stepper readonly active="1">${STEPS}</md-stepper>`);
+      for (const s of steps(p.root!)) {
+        const el = inner(s);
+        expect(el.getAttribute('role')).toBeNull();
+        expect(el.getAttribute('tabindex')).toBeNull();
+        expect(el.getAttribute('aria-label')).toBeNull();
+        expect(el.getAttribute('aria-disabled')).toBeNull();
+      }
+    });
+
+    it('keeps aria-current on the active step — the point of a trail', async () => {
+      const p = await create(`<md-stepper readonly active="1">${STEPS}</md-stepper>`);
+      const all = steps(p.root!);
+      expect(inner(all[1]).getAttribute('aria-current')).toBe('step');
+      expect(inner(all[0]).getAttribute('aria-current')).toBeNull();
+    });
+
+    it('renders no ripple', async () => {
+      const p = await create(`<md-stepper readonly active="0">${STEPS}</md-stepper>`);
+      for (const s of steps(p.root!)) {
+        expect(s.shadowRoot!.querySelector('md-ripple')).toBeNull();
+      }
+    });
+
+    it('marks the host so CSS can drop the cursor and state layer', async () => {
+      const p = await create(`<md-stepper readonly active="0">${STEPS}</md-stepper>`);
+      for (const s of steps(p.root!)) expect(s).toHaveClass('md-step--readonly');
+    });
+
+    it('a header click does not move the stepper, even in non-linear', async () => {
+      const p = await create(`<md-stepper readonly mode="non-linear" active="0">${STEPS}</md-stepper>`);
+      const target = steps(p.root!)[2];
+      inner(target).dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
+      await p.waitForChanges();
+      expect(p.root!.active).toBe(0);
+    });
+
+    it('is not disabled — the steps stay fully legible', async () => {
+      const p = await create(`<md-stepper readonly active="0">${STEPS}</md-stepper>`);
+      for (const s of steps(p.root!)) expect(s).not.toHaveClass('md-step--disabled');
+    });
+
+    it('leaves an interactive stepper exactly as it was', async () => {
+      const p = await create(`<md-stepper mode="non-linear" active="0">${STEPS}</md-stepper>`);
+      for (const s of steps(p.root!)) {
+        const el = inner(s);
+        expect(s.getAttribute('data-readonly')).toBe('false');
+        expect(el.getAttribute('role')).toBe('button');
+        expect(el.getAttribute('tabindex')).toBe('0');
+        expect(s.shadowRoot!.querySelector('md-ripple')).not.toBeNull();
+      }
+    });
+  });
 });

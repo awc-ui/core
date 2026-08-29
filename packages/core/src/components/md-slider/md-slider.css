@@ -652,6 +652,40 @@
   transform: translateY(50%);
 }
 
+/*
+ * Head room for a PERSISTENT value bubble.
+ *
+ * The bubble is absolutely positioned at `calc(100% + 4px)` — entirely outside
+ * the host's box — and with `value-indicator` (or the deprecated `labeled`) it
+ * is painted all the time, not only while dragging: the render has no press or
+ * hover gate on it. So the component permanently draws ~48px beyond a box that
+ * measures `--_surface-min-block`, and every consumer that stacks anything
+ * above a slider wears it. Seen as the bubble sitting on top of the field's own
+ * group label with a 12px gap between them.
+ *
+ * A transient indicator can afford to overflow — an overlap during a drag is
+ * fine, and reserving for it would leave a permanent hole. A persistent one
+ * cannot, so the host reserves exactly what it draws: the bubble's own
+ * min-block-size plus the 4px offset, on the axis it actually grows along, and
+ * tracking density by the same expression. `min-block-size` is a floor rather
+ * than a fixed height, so this grows the box instead of squashing the track.
+ */
+:host([value-indicator].md-slider--horizontal),
+:host([labeled].md-slider--horizontal) {
+  padding-block-start: var(
+    --md-slider-value-indicator-reserve,
+    calc(max(24px, calc(44px + var(--md-sys-density-scale, 0) * 4px)) + 4px)
+  );
+}
+
+:host([value-indicator].md-slider--vertical),
+:host([labeled].md-slider--vertical) {
+  padding-inline-end: var(
+    --md-slider-value-indicator-reserve,
+    calc(max(28px, calc(48px + var(--md-sys-density-scale, 0) * 4px)) + 4px)
+  );
+}
+
 /* ----- Native inputs ----- */
 .md-slider__input-shell {
   position: absolute;

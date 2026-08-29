@@ -1397,7 +1397,12 @@ describe('md-menu', () => {
       expect(page.root?.classList.contains('md-menu--scroll')).toBe(true);
     });
 
-    it('does not scroll-cap (flyouts must not clip) when the menu has submenus', async () => {
+    // A menu with submenus used to opt OUT of the cap, and this test asserted
+    // that. The flyout was an absolutely-positioned child of its row laid out
+    // entirely outside the surface's box, so any overflow above it clipped the
+    // flyout away completely. It is `position: fixed` now and escapes the scroll
+    // viewport, so a submenu menu caps and scrolls like every other one.
+    it('scroll-caps like any other menu when the menu has submenus', async () => {
       const page = await createMenu(
         `<md-menu open max-height="240">
           <md-sub-menu-item headline="More">
@@ -1412,8 +1417,33 @@ describe('md-menu', () => {
       page.rootInstance.handleSlotChange();
       await page.waitForChanges();
       expect(page.rootInstance.hasSubmenu).toBe(true);
-      expect(page.rootInstance.scrollCapped).toBe(false);
-      expect(page.root?.classList.contains('md-menu--scroll')).toBe(false);
+      expect(page.rootInstance.scrollCapped).toBe(true);
+      expect(page.root?.classList.contains('md-menu--scroll')).toBe(true);
+
+      const viewport = page.root?.shadowRoot?.querySelector(
+        '.md-menu__scroll-shadow',
+      ) as HTMLElement;
+      expect(viewport).toBeTruthy();
+      // The explicit prop still wins over the custom property.
+      expect(viewport.style.maxBlockSize).toContain('240px');
+    });
+
+    it('caps a submenu menu at --md-menu-max-block-size when max-height is unset', async () => {
+      const page = await createMenu(
+        `<md-menu open>
+          <md-sub-menu-item headline="More">
+            <md-menu slot="submenu">
+              <md-menu-item headline="Nested"></md-menu-item>
+            </md-menu>
+          </md-sub-menu-item>
+        </md-menu>`,
+      );
+      page.rootInstance.handleSlotChange();
+      await page.waitForChanges();
+      const viewport = page.root?.shadowRoot?.querySelector(
+        '.md-menu__scroll-shadow',
+      ) as HTMLElement;
+      expect(viewport.style.maxBlockSize).toContain('var(--md-menu-max-block-size, 250px)');
     });
   });
 

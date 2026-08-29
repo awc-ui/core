@@ -60,6 +60,9 @@ export const messages: Record<string, Entry> = {
   'stepper.configureBuild': { 'en-US': 'Configure the build', 'ar-SA': 'تهيئة عملية البناء', 'he-IL': 'הגדרת הבנייה', 'ja-JP': 'ビルドを構成', 'de-DE': 'Build konfigurieren', 'fr-FR': 'Configurer la build', 'zh-CN': '配置构建' },
   'stepper.addonsOptional': { 'en-US': 'Add-ons (optional)', 'ar-SA': 'الإضافات (اختياري)', 'he-IL': 'תוספות (אופציונלי)', 'ja-JP': 'アドオン（任意）', 'de-DE': 'Add-ons (optional)', 'fr-FR': 'Extras (facultatif)', 'zh-CN': '附加项（可选）' },
   'stepper.paymentActionNeeded': { 'en-US': 'Payment — action needed', 'ar-SA': 'الدفع — مطلوب إجراء', 'he-IL': 'תשלום — נדרשת פעולה', 'ja-JP': '支払い — 対応が必要です', 'de-DE': 'Zahlung — Aktion erforderlich', 'fr-FR': 'Paiement — action requise', 'zh-CN': '付款 — 需要处理' },
+  'stepper.statusComplete': { 'en-US': 'Complete', 'ar-SA': 'مكتملة', 'he-IL': 'הושלם', 'ja-JP': '完了', 'de-DE': 'Abgeschlossen', 'fr-FR': 'Terminé', 'zh-CN': '已完成' },
+  'stepper.statusInProgress': { 'en-US': 'In progress', 'ar-SA': 'قيد التنفيذ', 'he-IL': 'בתהליך', 'ja-JP': '進行中', 'de-DE': 'In Bearbeitung', 'fr-FR': 'En cours', 'zh-CN': '进行中' },
+  'stepper.statusNotStarted': { 'en-US': 'Not started', 'ar-SA': 'لم تبدأ', 'he-IL': 'טרם החל', 'ja-JP': '未開始', 'de-DE': 'Nicht begonnen', 'fr-FR': 'Non commencé', 'zh-CN': '未开始' },
 
   // ── Status / completion messages ─────────────────────────────────
   'stepper.statusAllComplete': { 'en-US': '✓ All steps completed — mdComplete fired', 'ar-SA': '✓ اكتملت جميع الخطوات — تم إطلاق mdComplete', 'he-IL': '✓ כל השלבים הושלמו — mdComplete הופעל', 'ja-JP': '✓ すべてのステップが完了しました — mdComplete が発火', 'de-DE': '✓ Alle Schritte abgeschlossen — mdComplete ausgelöst', 'fr-FR': '✓ Toutes les étapes terminées — mdComplete déclenché', 'zh-CN': '✓ 所有步骤已完成 — mdComplete 已触发' },

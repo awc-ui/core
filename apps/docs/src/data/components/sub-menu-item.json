@@ -55,6 +55,22 @@
       "mutable": false
     },
     {
+      "name": "openDelay",
+      "attribute": "open-delay",
+      "type": "number",
+      "default": "DEFAULT_OPEN_DELAY",
+      "reflect": false,
+      "mutable": false
+    },
+    {
+      "name": "closeDelay",
+      "attribute": "close-delay",
+      "type": "number",
+      "default": "DEFAULT_CLOSE_DELAY",
+      "reflect": false,
+      "mutable": false
+    },
+    {
       "name": "density",
       "attribute": "density",
       "type": "0 | -1 | -2 | -3 | -4",

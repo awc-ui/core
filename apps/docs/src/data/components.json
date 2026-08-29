@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T13:59:32.482Z",
+  "generatedAt": "2026-08-29T06:05:58.985Z",
   "componentCount": 55,
   "documentedCount": 56,
   "subComponentCount": 1,
@@ -521,31 +521,31 @@
         },
         {
           "name": "--md-app-bar-row-height",
-          "description": "Action row height (64dp)"
+          "description": "Action row height (64px)"
         },
         {
           "name": "--md-app-bar-padding-inline-start",
-          "description": "Action row inline-start padding (4dp)"
+          "description": "Action row inline-start padding (4px)"
         },
         {
           "name": "--md-app-bar-padding-inline-end",
-          "description": "Action row inline-end padding (4dp)"
+          "description": "Action row inline-end padding (4px)"
         },
         {
           "name": "--md-app-bar-row-padding-inline",
-          "description": "Deprecated alias for both paddings (4dp)"
+          "description": "Deprecated alias for both paddings (4px)"
         },
         {
           "name": "--md-app-bar-row-padding-block-start",
-          "description": "Action row block-start padding (20dp large expanded)"
+          "description": "Action row block-start padding (20px large expanded)"
         },
         {
           "name": "--md-app-bar-trailing-gap",
-          "description": "Gap between trailing action icons (2dp)"
+          "description": "Gap between trailing action icons (2px)"
         },
         {
           "name": "--md-app-bar-trailing-icon-touch-size",
-          "description": "Trailing icon touch target (48dp; matches leading)"
+          "description": "Trailing icon touch target (48px; matches leading)"
         },
         {
           "name": "--md-app-bar-icon-gap",
@@ -553,7 +553,7 @@
         },
         {
           "name": "--md-app-bar-icon-size",
-          "description": "Icon glyph size in action row (24dp,"
+          "description": "Icon glyph size in action row (24px,"
         },
         {
           "name": "--md-app-bar-icon-button-size",
@@ -994,6 +994,10 @@
         }
       ],
       "methods": [
+        {
+          "name": "refreshTheme",
+          "params": ""
+        },
         {
           "name": "resize",
           "params": ""
@@ -1790,7 +1794,6 @@
         "md-chip",
         "md-icon-button",
         "md-text-field",
-        "md-loading-indicator",
         "md-menu-item",
         "md-menu",
         "md-progress-indicator"
@@ -2071,6 +2074,14 @@
           "type": "string",
           "default": "''",
           "reflect": false,
+          "mutable": false
+        },
+        {
+          "name": "shape",
+          "attribute": "shape",
+          "type": "'rect' | 'circle'",
+          "default": "'rect'",
+          "reflect": true,
           "mutable": false
         },
         {
@@ -2484,6 +2495,10 @@
         }
       ],
       "methods": [
+        {
+          "name": "refreshTheme",
+          "params": ""
+        },
         {
           "name": "resize",
           "params": ""
@@ -3421,6 +3436,10 @@
       ],
       "cssParts": [
         {
+          "name": "anchor",
+          "description": ""
+        },
+        {
           "name": "state-layer",
           "description": "State-layer overlay"
         },
@@ -3493,11 +3512,14 @@
         {
           "name": "--md-button-loading-size",
           "description": ""
+        },
+        {
+          "name": "--md-button-focus-ring-color",
+          "description": ""
         }
       ],
       "dependencies": [
-        "md-ripple",
-        "md-loading-indicator"
+        "md-ripple"
       ],
       "dataTypes": [],
       "callableProps": [],
@@ -4196,6 +4218,14 @@
           "type": "string",
           "default": "''",
           "reflect": false,
+          "mutable": false
+        },
+        {
+          "name": "contentAlign",
+          "attribute": "content-align",
+          "type": "'start' | 'center' | 'end'",
+          "default": "'center'",
+          "reflect": true,
           "mutable": false
         },
         {
@@ -5278,6 +5308,10 @@
         {
           "name": "--md-date-picker-field-text-color",
           "description": "Text-field input text color"
+        },
+        {
+          "name": "--md-date-picker-trigger-max-width",
+          "description": "Trigger field max inline size (360px; `none` lifts it)"
         },
         {
           "name": "--md-date-picker-field-filled-pill",
@@ -6747,6 +6781,10 @@
       ],
       "methods": [
         {
+          "name": "refreshTheme",
+          "params": ""
+        },
+        {
           "name": "resize",
           "params": ""
         },
@@ -7175,7 +7213,7 @@
         },
         {
           "name": "--md-list-drop-placeholder-shape",
-          "description": "Drop-target ghost corner radius (default corner-large / 16dp)"
+          "description": "Drop-target ghost corner radius (default corner-large / 16px)"
         },
         {
           "name": "--md-list-drop-placeholder-opacity",
@@ -7492,6 +7530,10 @@
         {
           "name": "--md-menu-max-width",
           "description": "Max container width (default 280px)"
+        },
+        {
+          "name": "--md-menu-max-block-size",
+          "description": "Max height before the list scrolls (default 250px);"
         },
         {
           "name": "--md-menu-inline-surface-color",
@@ -8467,7 +8509,6 @@
       "dependencies": [
         "md-select-option",
         "md-text-field",
-        "md-loading-indicator",
         "md-button",
         "md-chip",
         "md-menu-item",
@@ -8918,6 +8959,10 @@
         {
           "name": "--md-navigation-rail-logo-icon-size",
           "description": "Brand glyph footprint in the logo"
+        },
+        {
+          "name": "--md-navigation-rail-fab-size",
+          "description": ""
         },
         {
           "name": "--md-navigation-rail-horizontal-padding-block",
@@ -10080,6 +10125,10 @@
         }
       ],
       "methods": [
+        {
+          "name": "refreshTheme",
+          "params": ""
+        },
         {
           "name": "resize",
           "params": ""
@@ -11417,23 +11466,23 @@
         },
         {
           "name": "--md-search-container-height",
-          "description": "Bar block-size — docked / contained (56dp)"
+          "description": "Bar block-size — docked / contained (56px)"
         },
         {
           "name": "--md-search-icon-button-size",
-          "description": "Leading / trailing icon tap target (48dp)"
+          "description": "Leading / trailing icon tap target (48px)"
         },
         {
           "name": "--md-search-leading-icon-label-gap",
-          "description": "Tap target → label gap (4dp)"
+          "description": "Tap target → label gap (4px)"
         },
         {
           "name": "--md-search-trailing-icon-label-gap",
-          "description": "Label → tap target gap (4dp)"
+          "description": "Label → tap target gap (4px)"
         },
         {
           "name": "--md-search-container-padding-inline",
-          "description": "Extra inline padding on the bar  (0dp)"
+          "description": "Extra inline padding on the bar  (0px)"
         },
         {
           "name": "--md-search-container-padding-inline-focused",
@@ -11457,11 +11506,11 @@
         },
         {
           "name": "--md-search-input-font-size",
-          "description": "Input typescale size (16dp)"
+          "description": "Input typescale size (16px)"
         },
         {
           "name": "--md-search-input-line-height",
-          "description": "Input typescale line height (24dp)"
+          "description": "Input typescale line height (24px)"
         },
         {
           "name": "--md-search-input-font-weight",
@@ -11469,7 +11518,7 @@
         },
         {
           "name": "--md-search-input-letter-spacing",
-          "description": "Input typescale tracking (0.5dp)"
+          "description": "Input typescale tracking (0.5px)"
         },
         {
           "name": "--md-search-placeholder-color",
@@ -11485,11 +11534,11 @@
         },
         {
           "name": "--md-search-focus-indicator-offset",
-          "description": "Focus ring offset (2dp)"
+          "description": "Focus ring offset (2px)"
         },
         {
           "name": "--md-search-avatar-size",
-          "description": "Avatar diameter when slotted   (40dp)"
+          "description": "Avatar diameter when slotted   (40px)"
         },
         {
           "name": "--md-search-panel-min-block-size",
@@ -11509,7 +11558,7 @@
         },
         {
           "name": "--md-search-panel-offset",
-          "description": "Docked panel gap fallback (divided / generic 4dp)"
+          "description": "Docked panel gap fallback (divided / generic 4px)"
         },
         {
           "name": "--md-search-bar-fullscreen-color",
@@ -11602,7 +11651,6 @@
       ],
       "dependencies": [
         "md-icon-button",
-        "md-loading-indicator",
         "md-ripple"
       ],
       "dataTypes": [],
@@ -12297,7 +12345,6 @@
       "dependencies": [
         "md-select-option",
         "md-text-field",
-        "md-loading-indicator",
         "md-icon-button",
         "md-menu-item",
         "md-menu",
@@ -13548,6 +13595,10 @@
       ],
       "methods": [
         {
+          "name": "refreshTheme",
+          "params": ""
+        },
+        {
           "name": "resize",
           "params": ""
         },
@@ -13846,6 +13897,22 @@
           "mutable": false
         },
         {
+          "name": "inline",
+          "attribute": "inline",
+          "type": "boolean",
+          "default": "false",
+          "reflect": true,
+          "mutable": false
+        },
+        {
+          "name": "shape",
+          "attribute": "shape",
+          "type": "'rect' | 'circle'",
+          "default": "'rect'",
+          "reflect": true,
+          "mutable": false
+        },
+        {
           "name": "live",
           "attribute": "live",
           "type": "boolean",
@@ -13978,6 +14045,14 @@
           "type": "boolean",
           "default": "true",
           "reflect": false,
+          "mutable": false
+        },
+        {
+          "name": "readonly",
+          "attribute": "readonly",
+          "type": "boolean",
+          "default": "false",
+          "reflect": true,
           "mutable": false
         },
         {
@@ -14923,6 +14998,14 @@
           "mutable": false
         },
         {
+          "name": "divider",
+          "attribute": "divider",
+          "type": "'auto' | 'full'",
+          "default": "'full'",
+          "reflect": true,
+          "mutable": false
+        },
+        {
           "name": "ariaLabelProp",
           "attribute": "aria-label",
           "type": "string",
@@ -15512,7 +15595,7 @@
         },
         {
           "name": "--md-text-field-icon-size",
-          "description": "All glyph sizes (24dp; tapers with"
+          "description": "All glyph sizes (24px; tapers with"
         },
         {
           "name": "--md-text-field-optical-nudge",
@@ -15536,7 +15619,7 @@
         },
         {
           "name": "--md-text-field-focus-inset",
-          "description": "Negative inset that compensates for the focus border"
+          "description": "Inset of the focus ring (default 0 — it"
         },
         {
           "name": "--md-text-field-padding-inline-start",
@@ -15662,6 +15745,38 @@
           "attribute": "label",
           "type": "string",
           "default": "'Select time'",
+          "reflect": false,
+          "mutable": false
+        },
+        {
+          "name": "supportingText",
+          "attribute": "supporting-text",
+          "type": "string",
+          "default": "''",
+          "reflect": false,
+          "mutable": false
+        },
+        {
+          "name": "error",
+          "attribute": "error",
+          "type": "boolean",
+          "default": "false",
+          "reflect": true,
+          "mutable": true
+        },
+        {
+          "name": "errorText",
+          "attribute": "error-text",
+          "type": "string",
+          "default": "''",
+          "reflect": false,
+          "mutable": true
+        },
+        {
+          "name": "reserveSupportingSpace",
+          "attribute": "reserve-supporting-space",
+          "type": "boolean",
+          "default": "false",
           "reflect": false,
           "mutable": false
         },

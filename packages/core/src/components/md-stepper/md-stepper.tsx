@@ -96,6 +96,15 @@ export class MdStepper {
   @Prop() nav: boolean = true;
 
   /**
+   * Render the stepper as a **status trail**: something to read, not to drive.
+   * Every step header stops being a button — no click, no keyboard activation,
+   * no ripple, no hover state layer, no tab stop, no `role="button"` — while
+   * `aria-current` still says which stage it is on. Not the same as
+   * `nav="false"`, which only hides the Back / Continue bar.
+   */
+  @Prop({ reflect: true }) readonly: boolean = false;
+
+  /**
    * Disable the built-in **Continue / Finish** button without disabling Back or
    * the whole step. Bind this to your current step's form validity to gate
    * advancement declaratively (the most common wizard need). Step clicks and the
@@ -252,6 +261,7 @@ export class MdStepper {
   @Watch('indicator')
   @Watch('mode')
   @Watch('nav')
+  @Watch('readonly')
   @Watch('variant')
   @Watch('lazy')
   @Watch('loading')
@@ -526,6 +536,7 @@ export class MdStepper {
       set('data-back-label', this.backLabel);
       set('data-finish-label', this.finishLabel);
       set('data-nav', String(this.nav));
+      set('data-readonly', String(this.readonly));
       set('data-loading', String(this.loading));
       set('data-next-disabled', String(this.nextDisabled));
       set('data-lazy', String(this.lazy));

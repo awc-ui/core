@@ -106,6 +106,28 @@ export class MdStatusDot {
   @Prop({ reflect: true }) inline: boolean = false;
 
   /**
+   * The SHAPE of the thing the dot is anchored to.
+   *
+   * The dot anchors to the bottom-inline-end corner of its containing block,
+   * which is right for a `rect` host — a tile, a table cell, a rounded avatar
+   * square. It is wrong for a `circle`, because a circle's bounding-box corner
+   * lies outside the visible shape: measured on a 40px round avatar, the
+   * default anchor left the dot's centre 5.5px clear of the rim, floating in
+   * the gap with nothing behind it.
+   *
+   * `circle` puts the dot ON the rim, at the 45° point where a presence dot
+   * belongs. The maths is percentage-based, so it holds at every avatar size
+   * without the dot having to be told what that size is: the rim at 45° sits
+   * `(1 − 1/√2) / 2 ≈ 14.6447%` of the diameter in from each edge, and half the
+   * dot's own size comes back off to centre it there.
+   *
+   * `rect` stays the default deliberately — it is what a dot on a tile, a card
+   * or a table cell wants, and changing the default would move every dot that
+   * already exists.
+   */
+  @Prop({ reflect: true }) shape: 'rect' | 'circle' = 'rect';
+
+  /**
    * Pulse the dot outward in its own colour. Useful for "live now",
    * "in a call", "recording" affordances. Respects
    * `prefers-reduced-motion: reduce` automatically.
@@ -148,6 +170,10 @@ export class MdStatusDot {
           'md-status-dot': true,
           [`md-status-dot--${this.state}`]: true,
           [`md-status-dot--${this.size}`]: true,
+          // Only the circular case gets a class: `rect` is the default anchor
+          // the base rule already implements, so a `--rect` class would be a
+          // second name for "nothing".
+          'md-status-dot--circle': this.shape === 'circle',
           'md-status-dot--live': this.live,
           'md-status-dot--labelled': labelled,
         }}

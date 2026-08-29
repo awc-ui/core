@@ -52,6 +52,8 @@ a `submenu` slot that you fill with a second `md-menu`.
     gap                                  <!-- default: false; space below the row -->
     disabled                             <!-- default: false -->
     density="-1|-2|-3|-4"                <!-- default: 0 (uncompacted; there is no density="0" rule) -->
+    open-delay="100"                     <!-- default: 100 (ms of hover before the flyout opens) -->
+    close-delay="400"                    <!-- default: 400 (ms the flyout survives the pointer leaving) -->
   >
     <span slot="leading-icon" class="material-symbols-outlined">download</span>
 
@@ -92,12 +94,38 @@ not a selectable option.
   row.
 - Hover-open does not move focus; keyboard-open does, and hands the visible
   focus ring to the first item of the nested menu.
-- `mouseleave` on the row or its flyout closes the submenu after a ~100 ms grace
-  period, so the pointer can travel across the gap.
+- **Hover intent, both ways.** The pointer must rest on the row for
+  `open-delay` (**default 100 ms**) before the flyout opens, and an open flyout
+  survives the pointer leaving for `close-delay` (**default 400 ms**) before it
+  closes. A flyout sits BESIDE its row and is taller than it, so the natural
+  path to anything below its first item is a diagonal that crosses the rows
+  underneath — the close delay is what stops those crossings switching the
+  flyout out from under the pointer, and the open delay is what stops the rows
+  being crossed from opening. A pending open is dropped the moment the pointer
+  leaves; a pending close is dropped the moment it comes back — including when
+  it comes back into the **flyout** rather than the row, which is what a
+  corner-cutting diagonal actually does. Set either to `0` for the old
+  open-on-contact behaviour.
+- **The keyboard never waits.** `ArrowRight` / `Enter` / `Space` open on the
+  keystroke and `ArrowLeft` / `Escape` close on it, whatever the two delays are
+  set to. A keystroke also cancels a hover open still counting down, so the two
+  models can't queue up behind each other.
+- **A pointer walking into an open flyout keeps it.** While a flyout is open the
+  row watches pointer movement across the parent menu; a move aimed into the
+  flyout's near edge briefly holds the sibling rows off, so even a slow,
+  deliberate diagonal does not lose the flyout halfway. It can only ever delay a
+  sibling's open, never prevent it — stop moving, or turn away, and the sibling
+  opens on its own delay.
+- **One flyout per menu.** Opening a row collapses every sibling row of the same
+  menu, so the close delay can never leave two branches expanded at once.
 - The flyout opens toward the inline end and flips to the inline start when that
   would leave the viewport; it also drops to bottom-aligned when it would
   overflow the bottom edge. Both flips are computed in logical terms, so RTL
   mirrors for free.
+- **The flyout is measured before it is painted, never after.** It is laid out
+  invisibly for the frame it takes to measure it, so the side it flips to is
+  decided from its real width and the first frame you see is the final position
+  — no one-frame paint at the unflipped edge.
 - The row is `role="menuitem"` with `aria-haspopup="menu"` and a live
   `aria-expanded` — you do not add those yourself.
 - **A menu containing a `md-sub-menu-item` does not scroll.** The parent
@@ -166,6 +194,21 @@ Sourced from [M3 · Menus · Guidelines](https://m3.material.io/components/menus
 </script>
 ```
 
+```html
+<!--
+  Retuning hover intent. The defaults (100 / 400) suit a menu whose flyouts are
+  taller than one row — the case where the pointer has to travel diagonally past
+  siblings. A branch whose flyout is only two or three rows tall needs less
+  patience, because there is barely a diagonal to protect.
+-->
+<md-sub-menu-item headline="Move to" open-delay="80" close-delay="250">
+  <md-menu slot="submenu">
+    <md-menu-item headline="Inbox"></md-menu-item>
+    <md-menu-item headline="Archive"></md-menu-item>
+  </md-menu>
+</md-sub-menu-item>
+```
+
 ## Anti-patterns
 
 | ❌ Wrong | ✅ Right | Why |
@@ -173,6 +216,8 @@ Sourced from [M3 · Menus · Guidelines](https://m3.material.io/components/menus
 | Expecting the row to create its submenu | Slot a `md-menu` into `submenu` | You own the nested content. |
 | `anchor` on the nested `md-menu` | Slot it with no `anchor` | The row positions the flyout itself. |
 | Expecting a click on the row to open the branch | Hover, or `ArrowRight`/`Enter`/`Space` | A click only emits `mdClick`. |
+| `open-delay="0" close-delay="0"` to feel "snappier" | Leave the defaults | Zero is the behaviour the delays exist to fix: every row the pointer crosses on its way to a flyout opens, and the flyout it was heading for closes. |
+| A `setTimeout` in your own `mouseenter` to debounce the branch | `open-delay` / `close-delay` | The row already owns both timers and cancels them against each other; a second one outside it cannot see the flyout being entered. |
 | Looking for `selected` / `type` / `keep-open` | Use `md-menu-item` for options | A submenu row is a branch. |
 | `max-height` on the parent menu | Shorten the menu | A submenu-bearing menu keeps `overflow: visible` and ignores the cap. |
 | Three levels of nesting | Flatten, or use a dialog | Unusable, especially with a keyboard. |
@@ -186,7 +231,10 @@ Sourced from [M3 · Menus · Guidelines](https://m3.material.io/components/menus
 `aria-expanded` tracking the flyout, and `aria-disabled` when disabled. The
 parent `md-menu` supplies the roving-focus model; `ArrowRight`/`Enter`/`Space`
 step into the branch and `ArrowLeft`/`Escape` step back out with focus and the
-focus ring restored to this row. `headline` is the accessible name — keep it
+focus ring restored to this row — **none of which waits on `open-delay` or
+`close-delay`**, which are pointer-only. A keyboard user never sits through a
+hover delay, and `aria-expanded` flips on the keystroke, not after it.
+`headline` is the accessible name — keep it
 categorical. The leading icon and the arrow glyph are `aria-hidden`. Because
 submenus are a pointer-and-keyboard affordance, **never make a submenu the only
 route** to an action.
@@ -239,11 +287,13 @@ md-sub-menu-item::part(badge) {
 | Property         | Attribute         | Description                                                                                                                                                                                           | Type                        | Default |
 | ---------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- | ------- |
 | `badge`          | `badge`           | Small badge label (e.g. "New") displayed before the trailing arrow.                                                                                                                                   | `string`                    | `''`    |
+| `closeDelay`     | `close-delay`     | Hover intent — milliseconds an open flyout survives the pointer leaving the row, so a diagonal from the row to the flyout can cross the sibling rows in between without the flyout switching. Cancelled the moment the pointer re-enters the row OR the flyout. `0` closes on exit. Escape and ArrowLeft never wait. | `number`                    | `400`   |
 | `density`        | `density`         | Local density rung. Drives the same `--md-sys-density-scale` signal that a global `data-density` ancestor sets, so a local value simply overrides the inherited one. 0 = default, -4 = ultra-compact. | `-1 \| -2 \| -3 \| -4 \| 0` | `0`     |
 | `disabled`       | `disabled`        | Whether the item is disabled.                                                                                                                                                                         | `boolean`                   | `false` |
 | `divider`        | `divider`         | Render a divider line below this item.                                                                                                                                                                | `boolean`                   | `false` |
 | `gap`            | `gap`             | Render a gap (extra space) below this item — an alternative separator to divider.                                                                                                                     | `boolean`                   | `false` |
 | `headline`       | `headline`        | Primary label text.                                                                                                                                                                                   | `string`                    | `''`    |
+| `openDelay`      | `open-delay`      | Hover intent — milliseconds the pointer must rest on the row before the flyout opens. Keeps a pointer that is merely passing over the row on its way elsewhere from opening it. `0` opens on contact. The KEYBOARD never waits: ArrowRight / Enter / Space open immediately whatever this is set to. | `number`                    | `100`   |
 | `supportingText` | `supporting-text` | Secondary descriptive text below the headline.                                                                                                                                                        | `string`                    | `''`    |
 
 

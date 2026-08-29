@@ -54,6 +54,10 @@
   );
   /* Spec: collapsed container = 80px (the collapsed-rail maximum width). */
   --_container-width: var(--md-navigation-rail-container-width, max(56px, calc(80px + var(--md-sys-density-scale, 0) * 4px)));
+  /* The collapsed footprint of the slotted FAB, used to centre it on the rail's
+     icon axis. 56px is the M3 FAB and what an extended FAB collapses to; raise
+     it for a `size="medium"` / `size="large"` icon-only FAB. */
+  --_fab-size: var(--md-navigation-rail-fab-size, 56px);
   /* Spec: expanded container = 220px minimum, 360px maximum. */
   --_expanded-width: var(--md-navigation-rail-expanded-width, max(140px, calc(220px + var(--md-sys-density-scale, 0) * 20px)));
   --_expanded-max-width: var(--md-navigation-rail-expanded-max-width, 360px);
@@ -382,18 +386,66 @@
   display: none;
 }
 
-/* ---------- FAB region ---------- */
+/* ---------- FAB region ----------
+   LEADING-ANCHORED IN BOTH STATES, so the FAB's leading edge — and with it its
+   icon — never moves. This is the same idiom the logo and the toggle above use,
+   and it is here for the same reason plus a sharper one.
+
+   Centring was the problem. `justify-content: center` resolves against the
+   ANIMATING host width, and on collapse the state flips instantly while the rail
+   narrows 220→80 over 200ms and the FAB runs its own 500ms morph spring. The
+   three timelines are unrelated, so the centred FAB was dragged past its target:
+   measured, the icon left x=28, dipped to 16.67 — about 11px BELOW its resting
+   27.5 — and sprang back. A visible rubber-band on every collapse.
+
+   Anchoring removes the moving target entirely. Collapsed, the leading inset is
+   whatever centres the FAB, `(rail - fab) / 2` = (80 - 56) / 2 = 12px; expanded,
+   the host's own `--_padding-inline` is already 12px and the wrapper adds
+   nothing. Both put the leading edge at 12 and the icon at 28 — the rail's
+   documented axis — so across the whole transition the FAB only CHANGES WIDTH.
+   Nothing translates, in either direction.
+
+   The `- var(--_fab-size)` term is the one assumption, and it is exposed rather
+   than hidden: 56px is the M3 FAB and what an extended FAB collapses to, so it
+   is right for `size="standard"`, for a labelled FAB, and for every FAB in this
+   component's own stories. A consumer slotting a `size="medium"` or
+   `size="large"` icon-only FAB must set `--md-navigation-rail-fab-size` to that
+   width, or its icon lands off the axis by half the difference. `max(0px, …)`
+   keeps a FAB wider than the rail from producing a negative inset. */
 .md-navigation-rail__fab {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   inline-size: 100%;
+  padding-inline-start: max(0px, calc((var(--_container-width) - var(--_fab-size)) / 2));
   padding-block-end: var(--md-sys-spacing-inset-sm, 8px);
 }
 
+/*
+ * NO extra leading padding here — the host's `--_padding-inline` has already
+ * applied it, and a second copy double-counted it.
+ *
+ * The rail's whole expand promise is the x=28 icon axis documented at the top
+ * of this file: a 24px icon centred in the 80px collapsed rail sits at 28, and
+ * the 12px expanded inset is chosen so every expanded control lands back on 28
+ * too — "ZERO horizontal icon movement". Every other control keeps that
+ * promise; measured, a destination tab's glyph is at x=28.00 in BOTH states.
+ * The FAB was the sole violator: host inset 12 + this padding 12 put its
+ * leading edge at 24, and with the FAB's own 16px icon inset the "+" landed at
+ * x=40 expanded against x=27.5 collapsed. It did not even glide — it jumped the
+ * full 12.5px in one frame and then held while only the width animated, which
+ * is what made it read as a jerk rather than a movement.
+ *
+ * `justify-content: flex-start` still earns its place: it anchors the FAB to
+ * the leading edge instead of centring it, the same idiom the logo and toggle
+ * above already use, and for the reason recorded there — centring resolves
+ * against the ANIMATING host width and drifts.
+ */
 :host(.md-navigation-rail--expanded) .md-navigation-rail__fab {
-  justify-content: flex-start;
-  padding-inline-start: var(--md-sys-spacing-inset-md, 12px);
+  /* The host's `--_padding-inline` already puts the content box at 12px, so the
+     wrapper contributes nothing — adding its own copy on top is what used to
+     double-count it and shove the icon from x=28 to x=40. */
+  padding-inline-start: 0;
 }
 
 .md-navigation-rail__fab[hidden] {

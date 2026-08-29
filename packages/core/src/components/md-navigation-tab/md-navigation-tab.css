@@ -352,10 +352,14 @@
   block-size: 6px;
 }
 
+/* Centred on the icon corner, like md-tab and md-navigation-rail-tab. The old
+   `inset-inline-start: 50%` + 4px margin anchored the badge to the middle of the
+   icon box and shoved it right by a fixed amount, so a wider badge grew to the
+   right instead of straddling the corner. */
 .md-navigation-tab__badge--large {
-  inset-block-start: -2px;
-  inset-inline-start: 50%;
-  margin-inline-start: 4px;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  transform: translate(50%, -50%);
   min-inline-size: 16px;
   block-size: 16px;
   padding-inline: 4px;

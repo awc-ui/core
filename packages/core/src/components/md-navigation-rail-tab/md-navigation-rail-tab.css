@@ -441,16 +441,28 @@ md-ripple {
 .md-navigation-rail-tab__badge--dot {
   inline-size: 6px;
   block-size: 6px;
-  inset-block-start: -2px;
-  inset-inline-end: -2px;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  transform: translate(50%, -50%);
 }
 
+/* CENTRED ON THE ICON CORNER — half on, half off.
+
+   This has now been wrong in both directions. At -6px a 16px badge cleared the
+   24px icon by most of its own radius and read as a detached bubble; the fix for
+   that was -2px, which measured 2px past the icon's right edge with 14 of the
+   badge's 16px lying ON the glyph, hiding it. Both were single values guessing
+   at a geometry that depends on the badge's own width.
+
+   Anchoring at the corner and translating by half the badge centres it there at
+   any width, which is the M3 placement and matches md-badge shape="circle". */
 .md-navigation-rail-tab__badge--large {
   min-inline-size: 16px;
   block-size: 16px;
   padding-inline: 4px;
-  inset-block-start: -6px;
-  inset-inline-end: -6px;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  transform: translate(50%, -50%);
   font-family: var(--md-sys-typescale-label-small-font-family, Roboto, sans-serif);
   font-size: 11px;
   font-weight: 500;
@@ -464,6 +476,26 @@ md-ripple {
   display: contents;
   color: inherit;
   text-decoration: none;
+  /*
+   * `border-radius: inherit` — without it, a tab with an `href` ripples SQUARE.
+   *
+   * The ripple clips its wave with `border-radius: inherit`, and `inherit` walks
+   * the PARENT chain, not the host chain. On a plain tab that parent is the
+   * host, so the wave picks up the expanded pill's 9999px and clips to the
+   * stadium. Give the tab an `href` and this anchor appears between the two;
+   * `border-radius` is not an inherited property, so the anchor sat at the
+   * initial 0 and the ripple inherited 0 THROUGH it.
+   *
+   * `display: contents` is what makes this easy to miss: the anchor paints
+   * nothing and occupies no space, so it looks like it cannot affect rendering.
+   * It still takes part in inheritance, and that is the whole of its effect
+   * here. Same reasoning as `md-button__anchor` re-inheriting `gap`.
+   *
+   * It is also why this only ever showed in an app: the rail's own Storybook
+   * stories render tabs with no `href`, so there is no anchor to inherit
+   * through and the ripple was always correctly round there.
+   */
+  border-radius: inherit;
 }
 
 /* ---------- Reduced motion ---------- */

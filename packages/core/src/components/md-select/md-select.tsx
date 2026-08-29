@@ -900,11 +900,19 @@ export class MdSelect {
             ? this.noResultsText
             : '';
     // Virtualization needs a bounded viewport to scroll within.
-    const menuMaxHeight = virtual ? (this.maxHeight ?? 320) : this.maxHeight;
+    // A virtualized list must be bounded to compute its window, so it needs a
+    // number even when the author has not given one. 250 matches
+    // `--md-menu-max-block-size`, the cap a NON-virtual menu gets from CSS —
+    // otherwise turning virtualization on would silently make the list taller.
+    const menuMaxHeight = virtual ? (this.maxHeight ?? 250) : this.maxHeight;
 
     return (
       <md-menu
         ref={(el) => (this.menuEl = el as VirtualMenuEl)}
+        // The md-text-field HOST, whose box includes the supporting row. md-menu
+        // positions against the field box instead while that row is blank (see
+        // its getAnchorRectEl), so `reserve-supporting-space` with no message
+        // does not push the menu a line below the field's border.
         anchor={this.triggerId}
         placement={this.placement}
         match-anchor-width={this.matchTriggerWidth || this.fullWidth}

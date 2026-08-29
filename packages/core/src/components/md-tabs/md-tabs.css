@@ -34,20 +34,25 @@
    1b. FULL-WIDTH DIVIDER — `divider="full"`
    ========================================================== */
 
-/* One rule across the whole container instead of a segment per tab.
-   `auto` (the default) is right when the strip fills its container; it reads
-   as a bug at `tab-width="auto"` in a wide panel, where the rule stops a third
-   of the way across and the panel below appears to hang off the end of it.
+/* One rule across the whole container instead of a segment per tab — THE
+   DEFAULT. `auto` only looks right when the strip fills its container, which it
+   does at `tab-width="equal"`; at `tab-width="auto"` in a wide panel the rule
+   stops partway across and the panel below appears to hang off the end of it.
+
+   MATCHED AS `:not([divider='auto'])` RATHER THAN `[divider='full']`, so the
+   full rule is what an element gets before Stencil has reflected the prop —
+   keyed on the positive value, a server-rendered or not-yet-hydrated strip
+   would paint the segmented variant first and snap to full on hydration.
 
    The per-tab segments are switched off by making their colour transparent.
    Custom properties inherit through the slotted tabs' shadow roots, so md-tab
    needs no knowledge of the mode and there is no second source of truth about
    which one is active — see the --_divider-color chain in md-tab.css. */
-:host([divider='full']) {
+:host(:not([divider='auto'])) {
   --md-tab-divider-color: transparent;
 }
 
-:host([divider='full'])::after {
+:host(:not([divider='auto']))::after {
   content: '';
   position: absolute;
   inset-inline: 0;
@@ -61,7 +66,7 @@
 /* The active indicator sits at the same bottom edge and is only 3px tall, so
    it has to paint OVER the rule — a pseudo-element otherwise paints after the
    slotted content and would clip a third of it. */
-:host([divider='full']) ::slotted(md-tab) {
+:host(:not([divider='auto'])) ::slotted(md-tab) {
   position: relative;
   z-index: 1;
 }

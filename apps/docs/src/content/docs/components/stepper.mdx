@@ -879,6 +879,38 @@ the user edits in place).
   storyId="navigation-stepper--non-linear"
 />
 
+## Read-only: a status trail
+
+A stepper is not always something to drive. Sometimes it is reporting where
+something already **is** — a review trail, an order's progress, a pipeline
+stage — and every header that looks pressable is a promise the page cannot keep.
+
+`readonly` removes the offer. Each header drops `role="button"`, its tab stop,
+its ripple and its hover state layer, and clicks and Enter/Space stop firing
+`mdStepChange`. `aria-current` stays, because "which stage is it on" is the one
+thing the visible text does not carry.
+
+| | What it does | What it says |
+|---|---|---|
+| `nav="false"` | Hides the Back / Continue bar; **headers stay clickable** | "Use your own buttons" |
+| `disabled` (on a step) | Refuses the step and dims it to 38% | "You may not" |
+| `readonly` | Headers become text; every step stays at full contrast | "There was never an action" |
+
+`readonly` also makes `mode` irrelevant — nothing navigates, so linear gating no
+longer dims the stages ahead of the current one. A step you explicitly mark
+`disabled` stays disabled.
+
+<ComponentDemo
+  html={`<md-stepper readonly nav="false" auto-complete="false" active="1" label="Review trail" style="inline-size: 100%;">
+  <md-step label="Drafting" description="Complete" completed></md-step>
+  <md-step label="Suitability" description="In progress"></md-step>
+  <md-step label="Compliance" description="Not started"></md-step>
+  <md-step label="Execution" description="Not started"></md-step>
+</md-stepper>`}
+  label="Nothing here is clickable — hover a step and see"
+  storyId="navigation-stepper--readonly-trail"
+/>
+
 ## Orientation, indicator & variant
 
 `orientation="horizontal"` (default) keeps the step row clean — put the active

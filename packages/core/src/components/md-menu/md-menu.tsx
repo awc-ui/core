@@ -1,5 +1,7 @@
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element, Method, Watch, Listen } from '@stencil/core';
 import { MenuElement, VirtualMenuProvider } from '../../utils/types';
+import { fixedContainingBlockOrigin } from '../../utils/fixed-position';
+import { releaseIsolatingAncestors } from '../../utils/isolation-escape';
 
 const CLOSE_ANIMATION_MS = 150;
 const TYPEAHEAD_TIMEOUT_MS = 500;
@@ -82,9 +84,10 @@ export class MdMenu {
   /**
    * Cap the menu surface block-size. When the items exceed it the list
    * scrolls vertically inside a plain scroll viewport. A number is treated
-   * as pixels; any CSS length is passed through (e.g. `'50vh'`). Ignored
-   * when the menu has submenus — their flyouts must not be clipped by an
-   * overflow container.
+   * as pixels; any CSS length is passed through (e.g. `'50vh'`). Unset, the
+   * cap falls back to `--md-menu-max-block-size` (250px). Applies to menus
+   * with submenus too: their flyouts are `position: fixed` and escape the
+   * scroll viewport rather than being clipped by it.
    */
   @Prop({ attribute: 'max-height' }) maxHeight?: number | string;
 
@@ -260,9 +263,10 @@ export class MdMenu {
 
   /**
    * The scrollable viewport element (the menu's `.md-menu__scroll-shadow`
-   * scroll div), or null when the menu isn't capped/scrollable. A virtualized
-   * host attaches its scroll listener and reads `scrollTop`/`clientHeight`
-   * from this.
+   * scroll div). Present on every menu, including submenu menus and the
+   * inline-fill embed. A virtualized host attaches its scroll listener and
+   * reads `scrollTop`/`clientHeight` from this. Null only before the shadow
+   * root exists.
    */
   @Method()
   async getScrollViewport(): Promise<HTMLElement | null> {
@@ -351,6 +355,9 @@ export class MdMenu {
       }
       this.skipAutoFocus = false;
     } else {
+      // After the close animation (`open` flips only when it finishes), so the
+      // menu stays on top while it fades out.
+      this.releaseAncestorIsolation();
       this.mdClose.emit();
       this.focusedIndex = -1;
       this.updateAnchorAria(false);
@@ -420,8 +427,10 @@ export class MdMenu {
         return;
       }
       // Re-resolved every frame on purpose: wrappers can re-render the
-      // trigger, and a cached element would track a detached node.
-      const anchorEl = this.getAnchorEl();
+      // trigger, and a cached element would track a detached node. Watches the
+      // same box positionMenu measures, so a supporting message appearing or
+      // clearing (which moves that box) is itself a trigger to reposition.
+      const anchorEl = this.getAnchorRectEl();
       if (anchorEl) {
         const r = anchorEl.getBoundingClientRect();
         const key = `${Math.round(r.x)},${Math.round(r.y)},${Math.round(r.width)},${Math.round(r.height)}`;
@@ -834,6 +843,37 @@ export class MdMenu {
     );
   }
 
+  /**
+   * The element whose BOX the menu is positioned against. Normally the anchor
+   * itself, but an anchor whose host box is bigger than the box the menu should
+   * align to may nominate an inner element with `data-md-anchor-box`, and that
+   * box wins.
+   *
+   * The case this exists for is a field trigger. `md-select`, `md-multi-select`
+   * and `md-autocomplete` all point `anchor` at their `md-text-field` HOST,
+   * whose box includes the supporting-text row. With `reserve-supporting-space`
+   * and no message that row is a blank line, so the host's bottom edge sits a
+   * full line below the field's bottom border and the menu hung off it with a
+   * visible gap. md-text-field marks its field box only while that row is
+   * empty, so a field WITH supporting or error text still measures the host and
+   * the menu clears the text rather than covering it.
+   *
+   * Deliberately separate from `getAnchorEl`: the nominated box is a piece of
+   * another component's internals with no role and no tabindex, so it may carry
+   * geometry but must never receive the popup ARIA or focus on close. Those
+   * stay on the anchor.
+   *
+   * Re-queried per call rather than cached — the marker appears and disappears
+   * as the supporting message clears and returns, and the anchor may re-render
+   * between measurements.
+   */
+  private getAnchorRectEl(): HTMLElement | null {
+    const anchorEl = this.getAnchorEl();
+    return (
+      anchorEl?.shadowRoot?.querySelector<HTMLElement>('[data-md-anchor-box]') ?? anchorEl
+    );
+  }
+
   private updateAnchorAria(open: boolean) {
     if (!this.anchor) return;
     const anchorEl = this.getAnchorEl();
@@ -865,90 +905,39 @@ export class MdMenu {
     else anchorEl.removeAttribute('aria-expanded');
   }
 
+  /** Restores the ancestor `isolation` this menu relaxed for the current open. */
+  private isolationRelease?: () => void;
+
   private applyDepthZIndex() {
     if (!this.anchor) return;
     this.el.style.zIndex = 'var(--md-sys-z-index-popup, 1000)';
+    // That z-index only ranks this menu inside its OWN stacking context. An
+    // ancestor with `isolation: isolate` — md-table-toolbar, md-table-container,
+    // md-table, md-navigation-rail, or any consumer wrapper — caps it at the
+    // ancestor's rung, so the menu paints (and therefore hit-tests) behind
+    // whatever follows that ancestor in tree order. Suspend the isolate for as
+    // long as the menu is open; see utils/isolation-escape.
+    // Anchorless menus returned above: embedded/inline-fill menus (md-date-picker's
+    // docked month/year lists) are in flow and must not disturb their surroundings.
+    if (!this.isolationRelease) this.isolationRelease = releaseIsolatingAncestors(this.el);
   }
 
-  /**
-   * Origin of the containing block this `position: fixed` host actually
-   * resolves against.
-   *
-   * `fixed` normally means "relative to the viewport", which is what every
-   * measurement here assumes — anchor rects and the viewport clamp are all in
-   * viewport coordinates. But an ancestor with a transform, filter,
-   * perspective, backdrop-filter, contain: paint/layout, or a will-change on
-   * any of those becomes the containing block for its fixed descendants, and
-   * the offsets are then interpreted relative to ITS padding box instead.
-   *
-   * That is not exotic: md-bottom-sheet keeps `transform: translateY(0)` while
-   * open (translateY(0) still counts), and a menu on a select inside an open
-   * sheet landed a full sheet-height below its field. Dialogs, side sheets and
-   * any app-level animated wrapper do the same.
-   *
-   * Walks up through shadow boundaries, since the menu usually lives inside
-   * another component's shadow root. Returns {0,0} when the viewport really is
-   * the containing block, making the correction a no-op in the common case.
-   */
-  private fixedContainingBlockOrigin(): { x: number; y: number } {
-    if (typeof getComputedStyle !== 'function') return { x: 0, y: 0 };
-    let node: Element | null = this.stepUp(this.el);
-
-    while (node) {
-      const cs = getComputedStyle(node as HTMLElement);
-      const willChange = cs.willChange || '';
-      const contain = cs.contain || '';
-      const backdrop =
-        (cs as CSSStyleDeclaration & { backdropFilter?: string }).backdropFilter || 'none';
-      if (
-        cs.transform !== 'none' ||
-        cs.perspective !== 'none' ||
-        cs.filter !== 'none' ||
-        backdrop !== 'none' ||
-        /\b(transform|perspective|filter)\b/.test(willChange) ||
-        /\b(paint|layout|strict|content)\b/.test(contain)
-      ) {
-        const r = (node as HTMLElement).getBoundingClientRect();
-        // The containing block is the PADDING box, so step inside the border.
-        return {
-          x: r.left + (parseFloat(cs.borderLeftWidth) || 0),
-          y: r.top + (parseFloat(cs.borderTopWidth) || 0),
-        };
-      }
-      node = this.stepUp(node);
-    }
-    return { x: 0, y: 0 };
-  }
-
-  /**
-   * One step up the FLATTENED tree — the tree that actually determines layout.
-   *
-   * `parentElement` alone is wrong here: slotted content keeps its light-DOM
-   * parent chain, so walking it from a menu inside a select inside a bottom
-   * sheet goes select -> sheet host -> body and never visits the sheet's
-   * shadow container, which is the transformed element doing the damage.
-   * Following `assignedSlot` first crosses into the shadow tree where the
-   * element is really rendered.
-   */
-  private stepUp(node: Element): Element | null {
-    const slot = (node as HTMLElement).assignedSlot;
-    if (slot) return slot;
-    if (node.parentElement) return node.parentElement;
-    const root = node.getRootNode();
-    return root instanceof ShadowRoot ? root.host : null;
+  private releaseAncestorIsolation() {
+    this.isolationRelease?.();
+    this.isolationRelease = undefined;
   }
 
   /** Apply a VIEWPORT-space position, converted to whatever containing block
-   *  this host resolves against. */
+   *  this host resolves against (see utils/fixed-position). */
   private applyPosition(top: number, left: number) {
-    const origin = this.fixedContainingBlockOrigin();
+    const origin = fixedContainingBlockOrigin(this.el);
     this.el.style.top = `${top - origin.y}px`;
     this.el.style.left = `${left - origin.x}px`;
   }
 
   private positionMenu() {
     if (!this.anchor) return;
-    const anchorEl = this.getAnchorEl();
+    const anchorEl = this.getAnchorRectEl();
     if (!anchorEl) return;
 
     const anchorRect = anchorEl.getBoundingClientRect();
@@ -1283,6 +1272,8 @@ export class MdMenu {
     this.stopAnchorWatch();
     this.unobserveSurfaceResize();
     this.updateAnchorAria(false);
+    // A menu torn down while open must not leave an ancestor un-isolated.
+    this.releaseAncestorIsolation();
   }
 
   /** Embedded flex menus (e.g. md-date-picker docked month/year lists). */
@@ -1302,13 +1293,21 @@ export class MdMenu {
     return /^\d+(\.\d+)?$/.test(raw) ? `${raw}px` : raw;
   }
 
-  /** Every regular menu (not a submenu whose flyouts must not clip, not an inline-
-   *  fill embed) is bounded by the viewport and scrolls inside its scroll viewport
-   *  when it would overflow — with OR without an explicit max-height. This keeps a
-   *  pinned header and plain scrolling for every overflowing menu, not just capped
-   *  ones. */
+  /** EVERY menu except an inline-fill embed is bounded by the viewport and scrolls
+   *  inside its scroll viewport when it would overflow — with OR without an
+   *  explicit max-height. This keeps a pinned header and plain scrolling for every
+   *  overflowing menu, not just capped ones.
+   *
+   *  Submenu menus used to be excluded here, because the flyout was an ordinary
+   *  `position: absolute` child of its row and any overflow on an ancestor clipped
+   *  it out of existence — laid out at `inset-inline-start: 100%` it sits entirely
+   *  OUTSIDE the box that clips, so the overlap was zero and the flyout read as
+   *  "absent" rather than "cut off". The flyout container is now `position: fixed`
+   *  and placed in viewport coordinates by md-sub-menu-item, and overflow never
+   *  captures a fixed descendant — so a submenu menu caps and scrolls exactly like
+   *  the ones md-select, md-multi-select and md-autocomplete render. */
   private get scrollCapped(): boolean {
-    return !this.hasSubmenu && !this.inlineFill;
+    return !this.inlineFill;
   }
 
   /** Inline-fill and every capped menu wrap their body in a scroll viewport. */
@@ -1393,13 +1392,21 @@ export class MdMenu {
                 this.inlineFill
                   ? undefined // flexes to fill its parent; no fixed cap
                   : {
-                      // Bound the scroll region to the smaller of any explicit
-                      // max-height, the space on the chosen side (--md-menu-avail-block,
-                      // set by positionMenu), and the viewport — so it scrolls
-                      // instead of overflowing, with or without max-height.
+                      // Bound the scroll region to the smallest of: any explicit
+                      // max-height, the default cap, the space on the chosen side
+                      // (--md-menu-avail-block, set by positionMenu), and the
+                      // viewport — so it scrolls instead of overflowing.
+                      //
+                      // `--md-menu-max-block-size` is in the fallback branch and
+                      // NOT the first, because this is where a capped menu is
+                      // actually sized: the CSS rule on `.md-menu__surface` never
+                      // applies to `md-menu--scroll`, which is the variant
+                      // md-select, md-multi-select and md-autocomplete all use.
+                      // A default set only in the stylesheet therefore reached
+                      // every menu except the three that most needed it.
                       maxBlockSize: this.maxHeightValue
                         ? `min(${this.maxHeightValue}, var(--md-menu-avail-block, 100dvh), calc(100dvh - 2 * var(--md-menu-viewport-margin, 8px)))`
-                        : `min(var(--md-menu-avail-block, 100dvh), calc(100dvh - 2 * var(--md-menu-viewport-margin, 8px)))`,
+                        : `min(var(--md-menu-max-block-size, 250px), var(--md-menu-avail-block, 100dvh), calc(100dvh - 2 * var(--md-menu-viewport-margin, 8px)))`,
                     }
               }
             >

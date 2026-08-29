@@ -39,7 +39,8 @@ every localized word down to its slotted `md-step` children.
 | Peer views the user switches between freely | `md-tabs` |
 | Independent collapsible sections | `md-accordion` |
 | Top-level destinations | `md-navigation-bar` / `md-navigation-rail` |
-| Simple progress reporting | `md-progress-indicator` |
+| Simple progress reporting (one bar, no stages) | `md-progress-indicator` |
+| Reporting stages nobody navigates | This, with `readonly` |
 | A two-field form | Just show the form |
 | Hierarchy, not sequence | `md-breadcrumbs` |
 
@@ -59,6 +60,7 @@ every localized word down to its slotted `md-step` children.
 | Gate Continue on the current form's validity | `next-disabled` |
 | Async work behind Continue | `loading` |
 | Supply your own buttons | `nav="false"` |
+| Show where something already is, with nothing to press | `readonly` |
 | Block a specific transition | Cancel `mdBeforeChange` |
 
 ## API contract
@@ -72,6 +74,7 @@ every localized word down to its slotted `md-step` children.
   active="0"                           <!-- default: 0, out-of-range clamps -->
   auto-complete="true"                 <!-- default: true -->
   nav="true"                           <!-- default: true -->
+  readonly="false"                     <!-- default: false -->
   next-disabled="false"                <!-- default: false -->
   loading="false"                      <!-- default: false -->
   lazy="false"                         <!-- default: false -->
@@ -122,6 +125,16 @@ attributes plus `--md-step-idx` that the stepper stamps on each `md-step`.
 - **Steps must be direct children.** The stepper collects `md-step` elements
   from its own child list only — wrap them in a `<div>` and the step count is
   0, no nav bar renders and nothing is navigable.
+- **`readonly` is a different thing from `nav="false"` and from `disabled`.**
+  `nav="false"` only hides the Back / Continue bar; every header stays a button,
+  so a trail built that way still invites a click that does nothing. `disabled`
+  says "you may not", which is a refusal, and it dims the step to 0.38 —
+  wrong for a stage that simply has not happened yet. `readonly` says there was
+  never an action: the header drops `role="button"`, its tab stop, its ripple
+  and its state layer, keeps `aria-current` so a reader still learns which stage
+  is live, and keeps every step at full contrast. It also makes `mode`
+  irrelevant, because nothing is navigating: linear gating no longer dims the
+  stages ahead. A step you explicitly mark `disabled` stays disabled.
 - `active` clamps into `0 … count - 1` (and to `0` when there are no steps),
   including the initial attribute value.
 - **`mdBeforeChange` is the validation hook.** It fires for step clicks, the
@@ -458,6 +471,7 @@ so the progress line + checks "just work" — no manual wiring. Set
 | `ofWord`        | `of-word`        | Localized word for "of" in each step's announced name ("Step 2 of 4").                                                                                                                                                                                                                                                                                                               | `string`                     | `'of'`         |
 | `optionalWord`  | `optional-word`  | Caption + announced word for optional steps.                                                                                                                                                                                                                                                                                                                                         | `string`                     | `'Optional'`   |
 | `orientation`   | `orientation`    | Layout orientation.                                                                                                                                                                                                                                                                                                                                                                  | `"horizontal" \| "vertical"` | `'horizontal'` |
+| `readonly`      | `readonly`       | Render the stepper as a **status trail**: something to read, not to drive. Every step header stops being a button — no click, no keyboard activation, no ripple, no hover state layer, no tab stop, no `role="button"` — while `aria-current` still says which stage it is on. Not the same as `nav="false"`, which only hides the Back / Continue bar.                              | `boolean`                    | `false`        |
 | `stepWord`      | `step-word`      | Localized word for "Step" in each step's announced name ("Step 2 of 4").                                                                                                                                                                                                                                                                                                             | `string`                     | `'Step'`       |
 | `variant`       | `variant`        | Layout variant: - `default` — the full step row (headers + connectors). - `mobile` — a compact MUI-style bar for narrow screens: **Back**, a centered   progress (dots for `indicator="dot"`, else a "Step N of M" caption), and   **Continue / Finish**. The step headers are hidden; put the active step's   panel in the `content` slot and swap it on `mdStepChange`.            | `"default" \| "mobile"`      | `'default'`    |
 

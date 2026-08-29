@@ -11,6 +11,7 @@
      --md-date-picker-field-text-color      Text-field input text color
      --md-date-picker-field-container-color Filled-field container background
      --md-date-picker-field-container-shape Text-field corner radius (filled + outlined)
+     --md-date-picker-trigger-max-width     Trigger field max inline size (360px; `none` lifts it)
      --md-date-picker-field-filled-pill     Filled field: 1 for capsule/pill (all corners)
      --md-date-picker-field-supporting-color  Supporting text below the field
      --md-date-picker-label-color           Floating label color
@@ -207,7 +208,14 @@
 
   display: inline-block;
   inline-size: 100%;
-  max-inline-size: 360px;
+  /* The TRIGGER's width ceiling — behind a public property like every other
+     dimension in this block. It was the one bare literal here, which meant a
+     picker dropped into a wide form column stopped at 360px beside full-width
+     neighbours (md-time-picker imposes no maximum) and the only way out was
+     overriding the host from the light DOM. The panel is unaffected either
+     way: it sizes from --_panel-width / --_docked-panel-width, never from the
+     host. */
+  max-inline-size: var(--md-date-picker-trigger-max-width, 360px);
   font-family: var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif);
   color: var(--_field-text-color);
   position: relative;

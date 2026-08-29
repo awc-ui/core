@@ -64,6 +64,7 @@ is a design error: if there is only one, you wanted a button.
 | Status meaning (success, warning…) | `color` |
 | Unavailable but still discoverable | `soft-disabled` |
 | Shorter chips | `density="-1…-4"` |
+| A chip a layout has stretched, label flush left | `content-align="start"` |
 
 ## Variants
 
@@ -172,6 +173,29 @@ its matching slot cover the trailing side.
 </md-chip>`}
   label="Prop icons and slotted icons"
   storyId="selection-chip--slotted-icons"
+/>
+
+## Content alignment
+
+`content-align` decides where the content row sits when the chip is **wider than
+its content**. It does nothing to a normal chip: `:host` is `display: inline-flex`,
+so a chip shrink-wraps its label and there is no spare width to align within. It
+starts to matter the moment a layout gives the chip a width — a grid column,
+`align-self: stretch`, an explicit `inline-size` — and then the default `center`
+leaves the label adrift in the middle of the box, which reads as an empty input
+rather than a chip.
+
+Reach for `start` when a stretched chip is labelling something beneath it: the
+two then share a leading edge and read as one unit.
+
+<ComponentDemo
+  html={`<div style="display:grid;grid-template-columns:repeat(3,220px);gap:12px;">
+  <md-chip appearance="filled" color="primary" content-align="start">start</md-chip>
+  <md-chip appearance="filled" color="primary">center (default)</md-chip>
+  <md-chip appearance="filled" color="primary" content-align="end">end</md-chip>
+</div>`}
+  label="Three alignments, each in a 220px grid column"
+  storyId="selection-chip--content-alignment"
 />
 
 ## States
@@ -294,7 +318,8 @@ the element; `preventDefault()` on `mdSelect` does nothing.
 
 **RTL** — leading and trailing icon sides mirror automatically. Directional
 glyphs still need swapping for their meaning to survive. See
-[RTL](/behaviour/rtl/).
+[RTL](/behaviour/rtl/). `content-align` is logical too — `start` is the
+leading edge in both directions.
 
 <ComponentDemo
   html={`<div style="display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;">

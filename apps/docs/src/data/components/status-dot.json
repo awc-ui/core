@@ -23,6 +23,22 @@
       "mutable": false
     },
     {
+      "name": "inline",
+      "attribute": "inline",
+      "type": "boolean",
+      "default": "false",
+      "reflect": true,
+      "mutable": false
+    },
+    {
+      "name": "shape",
+      "attribute": "shape",
+      "type": "'rect' | 'circle'",
+      "default": "'rect'",
+      "reflect": true,
+      "mutable": false
+    },
+    {
       "name": "live",
       "attribute": "live",
       "type": "boolean",

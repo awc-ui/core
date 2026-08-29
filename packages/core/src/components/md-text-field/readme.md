@@ -148,8 +148,10 @@ The host also re-dispatches a bubbling native `change` event, so form-level
   is a message or a counter, so the first error pushes everything below it down.
 - `clearable`, `password-toggle` and `speech-to-text` are **three-way enums**,
   not booleans. Writing them as a bare attribute (`clearable`) is read as
-  `"internal"`. Any other string value (`clearable="true"`) shows the button but
-  behaves as `"external"` — it emits `mdClear` and never empties the field.
+  `"internal"`, and so is the boolean `true` a framework binding writes for that
+  same bare form (`<md-text-field clearable />` in JSX). Any other string value
+  (`clearable="true"` as an *attribute*) shows the button but behaves as
+  `"external"` — it emits `mdClear` and never empties the field.
 - `value` is **not reflected** to an attribute, deliberately: typed values
   including passwords must not appear in the DOM.
 - In single-line mode newlines are stripped from `value`, on initial render and
@@ -312,7 +314,7 @@ Sourced from [M3 · Text fields · Guidelines](https://m3.material.io/components
 | `placeholder` used instead of `label` | Set `label` | The placeholder is only rendered once the label has floated, and it is not an accessible name. |
 | `error-text` set without `error` | Set both | `error-text` alone leaves the field in its normal state. |
 | Showing supporting **and** error text | Swap one for the other | `error-text` replaces `supporting-text` — you cannot render both. |
-| `clearable="true"` | `clearable="internal"` or bare `clearable` | Any value other than `internal` behaves as `external`: the button shows but never empties the field. |
+| `clearable="true"` **as an attribute** | `clearable="internal"` or bare `clearable` | Any *string* other than `internal` behaves as `external`: the button shows but never empties the field. The boolean `true` a framework writes for bare `clearable` is fine — it normalises to `internal`. |
 | `formatter="..."` as an attribute | `el.formatter = fn` in JS | Function props do not cross the attribute boundary. |
 | `format-on="input"` with only a `formatter` | Supply a `parser` too | Without a parser the component silently falls back to `format-on="blur"`. |
 | Reading `value` expecting the formatted string | `value` is the **parsed** value | `formatter` affects display only. |

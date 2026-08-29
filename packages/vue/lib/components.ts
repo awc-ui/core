@@ -270,6 +270,7 @@ export const MdBadge = /*@__PURE__*/ defineContainer<JSX.MdBadge>('md-badge', de
   'value',
   'max',
   'icon',
+  'shape',
   'density'
 ]);
 
@@ -458,6 +459,7 @@ export const MdChip = /*@__PURE__*/ defineContainer<JSX.MdChip>('md-chip', defin
   'softDisabled',
   'removable',
   'label',
+  'contentAlign',
   'density',
   'mdClick',
   'mdSelect',
@@ -1377,6 +1379,7 @@ export const MdStatusDot = /*@__PURE__*/ defineContainer<JSX.MdStatusDot>('md-st
   'state',
   'size',
   'inline',
+  'shape',
   'live',
   'label',
   'density'
@@ -1413,6 +1416,7 @@ export const MdStepper = /*@__PURE__*/ defineContainer<JSX.MdStepper>('md-steppe
   'active',
   'autoComplete',
   'nav',
+  'readonly',
   'nextDisabled',
   'loading',
   'lazy',
@@ -1440,6 +1444,8 @@ export const MdSubMenuItem = /*@__PURE__*/ defineContainer<JSX.MdSubMenuItem>('m
   'divider',
   'gap',
   'badge',
+  'openDelay',
+  'closeDelay',
   'density',
   'mdClick'
 ]);
@@ -1709,6 +1715,10 @@ export const MdTimePicker = /*@__PURE__*/ defineContainer<JSX.MdTimePicker>('md-
   'max',
   'required',
   'label',
+  'supportingText',
+  'error',
+  'errorText',
+  'reserveSupportingSpace',
   'headline',
   'headlineInputLabel',
   'headlineDialLabel',

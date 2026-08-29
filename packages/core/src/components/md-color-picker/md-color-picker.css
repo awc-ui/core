@@ -63,6 +63,16 @@
 
 :host(.md-color-picker--inline) {
   inline-size: var(--_width);
+  /* Cap to the parent so a narrow layout never forces overflow — the same
+     house rule md-side-sheet ships for its fixed-width host. Without it, the
+     296px picker in a narrower column (a sidebar, a phone, an accordion panel)
+     overflowed, and no property could express "the designed width, but never
+     wider than my container". `--md-color-picker-width` still sets the designed
+     width; this only stops it winning against a smaller parent. A cap rather
+     than `inline-size: min(var(--_width), 100%)`, because in a shrink-to-fit
+     parent the percentage resolves against an indefinite containing block and
+     the `min()` form would under-size the picker there. */
+  max-inline-size: 100%;
 }
 
 /* ==========================================================

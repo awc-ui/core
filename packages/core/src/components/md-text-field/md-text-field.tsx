@@ -261,10 +261,49 @@ export class MdTextField {
     this.hasTrailingIconButton = !!trailing && MdTextField.isInteractive(trailing);
   }
 
+  /**
+   * `true` means the same thing the bare attribute does: `'internal'`.
+   *
+   * `clearable`, `password-toggle` and `speech-to-text` are three-way enums,
+   * and the check below covers the HTML spelling — a bare attribute parses as
+   * `''`, which is falsy, so it is promoted to `'internal'`. A FRAMEWORK never
+   * takes that path: `<md-text-field clearable />` in JSX/Vue/Angular/Svelte
+   * writes the PROPERTY as boolean `true`, and `hasAttribute` sees nothing.
+   *
+   * `true` is truthy, so it survived to the render — `showClear = !!clearable`
+   * drew the button — but every behaviour branch tests `=== 'internal'`, so it
+   * fell through to the external contract: the icon appeared, emitted
+   * `mdClear`, and left the value exactly where it was. Identical markup in
+   * HTML cleared the field and in React did nothing.
+   *
+   * So `true` collapses onto `'internal'`. `false` stays off and an explicit
+   * `'external'` is untouched — a consumer who asked for the external contract
+   * still gets it.
+   */
+  private static normaliseMode<T extends 'internal' | 'external' | false>(value: T | boolean): T | 'internal' | false {
+    return value === true ? 'internal' : (value as T | false);
+  }
+
+  private normaliseModes() {
+    this.clearable = MdTextField.normaliseMode(this.clearable);
+    this.passwordToggle = MdTextField.normaliseMode(this.passwordToggle);
+    this.speechToText = MdTextField.normaliseMode(this.speechToText);
+  }
+
+  /* A property written after load — a framework re-render, a direct assignment
+     — must land on the same rails as one written before it. */
+  @Watch('clearable')
+  @Watch('passwordToggle')
+  @Watch('speechToText')
+  handleModeChange() {
+    this.normaliseModes();
+  }
+
   componentWillLoad() {
     this.bridgeFormatterProps();
     // bare attribute forms (`clearable`, `password-toggle`, `speech-to-text`)
     // parse as '' — treat as the internal mode instead of silently off
+    this.normaliseModes();
     if (this.el.hasAttribute('clearable') && !this.clearable) this.clearable = 'internal';
     if (this.el.hasAttribute('password-toggle') && !this.passwordToggle) this.passwordToggle = 'internal';
     if (this.el.hasAttribute('speech-to-text') && !this.speechToText) this.speechToText = 'internal';
@@ -1139,6 +1178,21 @@ export class MdTextField {
     const charCount = this.maxLength != null && !isNaN(this.maxLength) ? `${contentLength}/${this.maxLength}` : '';
     const clearDisabled = this.isDisabled || this.readOnly || !this.value;
 
+    // A popup owned by a wrapper (md-select, md-multi-select, md-autocomplete)
+    // anchors to this HOST, so it hangs off wherever the host's box ends. With
+    // `reserve-supporting-space` and nothing to say, that box ends a blank line
+    // below the field's bottom border and the popup visibly detaches from the
+    // field. Nominate the field box as the thing to position against whenever
+    // the supporting row would be EMPTY — the same `supportText || charCount`
+    // test that fills the row below, so this stays the one place that decides.
+    // When the row does carry a message the marker is withheld and the popup
+    // keeps anchoring to the host, clearing the text instead of covering it.
+    //
+    // A data attribute rather than a shadow part: this is an internal
+    // positioning hook for md-menu (see its `getAnchorRectEl`), not styling
+    // surface we want to support in `::part()` forever.
+    const supportRowIsBlank = !supportText && !charCount;
+
     const isPasswordRevealed = this.passwordToggle === 'internal'
       ? this.passwordVisible
       : this.type !== 'password';
@@ -1154,6 +1208,9 @@ export class MdTextField {
           'md-text-field--disabled': this.isDisabled,
           'md-text-field--with-leading': hasLeading,
           'md-text-field--with-trailing': hasTrailing,
+          // Only so the stylesheet can suppress the UA's own `type=search`
+          // cross when this field already draws one of its own.
+          'md-text-field--clearable': showClear,
           'md-text-field--with-chips': this.hasSlottedChips,
           'md-text-field--floating': this.isFloating,
           [`md-text-field--density${this.density}`]: this.density !== 0,
@@ -1169,7 +1226,12 @@ export class MdTextField {
           '--md-text-field-focus-inset': `${-(Number(this.focusBorderWidth) - 1)}px`,
         } : undefined}
       >
-        <div class="md-text-field__container" part="container" onClick={this.handleContainerClick}>
+        <div
+          class="md-text-field__container"
+          part="container"
+          data-md-anchor-box={supportRowIsBlank ? '' : null}
+          onClick={this.handleContainerClick}
+        >
           <div class="md-text-field__state-layer" aria-hidden="true"></div>
 
           <span

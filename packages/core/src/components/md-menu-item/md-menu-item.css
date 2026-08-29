@@ -150,6 +150,32 @@
   border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)));
 }
 
+/*
+ * A SOLE item — both the first child and the last one.
+ *
+ * The two rules above each set all four corners, and they have equal
+ * specificity, so on a one-item menu the last-child rule simply wins on source
+ * order: the item hovers with 16px at the bottom and 4px at the top, looking
+ * square-cornered against a surface that is round on all four. At REST the same
+ * item is correctly round everywhere, because the resting rules set only the
+ * two corners they own (first-child the start pair, last-child the end pair)
+ * and therefore compose instead of competing. Only hover breaks.
+ *
+ * The morph exists to bulge a hovered item toward the container edge it touches
+ * and tuck it away from its neighbours. An only child has no neighbours, so
+ * there is nothing to tuck away from and every corner is an outer corner.
+ *
+ * `:first-child:last-child` rather than `:only-child`: it is one selector unit
+ * heavier, so it beats both rules above on specificity rather than relying on
+ * staying below them in the file.
+ */
+:host([data-variant="standard"]:first-child:last-child:hover) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)));
+}
+
 :host([data-variant="standard"][data-after-gap]:hover) {
   border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)));
   border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)));
@@ -205,6 +231,15 @@
 :host([data-variant="vibrant"]:last-child:hover) {
   border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-ss)));
   border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-extra-small, 4px) - var(--_rest-se)));
+  border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)));
+  border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)));
+}
+
+/* Same only-child correction for the vibrant variant — see the note on the
+   standard one above for why the two hover rules cannot compose. */
+:host([data-variant="vibrant"]:first-child:last-child:hover) {
+  border-start-start-radius: calc(var(--_rest-ss) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ss)));
+  border-start-end-radius: calc(var(--_rest-se) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-se)));
   border-end-start-radius: calc(var(--_rest-es) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-es)));
   border-end-end-radius: calc(var(--_rest-ee) + var(--md-sys-shape-morph-enabled, 1) * (var(--md-sys-shape-corner-large, 16px) - var(--_rest-ee)));
 }
@@ -362,7 +397,17 @@
   display: none;
 }
 
-:host(.md-menu-item--selected) .md-menu-item__trailing {
+/*
+ * The whole trailing/supporting run follows the selected on-colour, not just
+ * the container. `__trailing` alone was flipped to `inherit`, but the COUNT is
+ * `__trailing-text`, which carries its own `color` — and a child's own colour
+ * beats anything its parent inherits. So a selected item's headline took the
+ * on-selected colour while the number beside it stayed on-surface-variant,
+ * unreadable on the selected container.
+ */
+:host(.md-menu-item--selected) .md-menu-item__trailing,
+:host(.md-menu-item--selected) .md-menu-item__trailing-text,
+:host(.md-menu-item--selected) .md-menu-item__supporting {
   color: inherit;
 }
 
@@ -472,7 +517,9 @@
 }
 
 :host([data-variant="standard"].md-menu-item--selected) .md-menu-item__leading,
-:host([data-variant="standard"].md-menu-item--selected) .md-menu-item__trailing {
+:host([data-variant="standard"].md-menu-item--selected) .md-menu-item__trailing,
+:host([data-variant="standard"].md-menu-item--selected) .md-menu-item__trailing-text,
+:host([data-variant="standard"].md-menu-item--selected) .md-menu-item__supporting {
   color: inherit;
 }
 
@@ -520,7 +567,9 @@
 }
 
 :host([data-variant="vibrant"].md-menu-item--selected) .md-menu-item__leading,
-:host([data-variant="vibrant"].md-menu-item--selected) .md-menu-item__trailing {
+:host([data-variant="vibrant"].md-menu-item--selected) .md-menu-item__trailing,
+:host([data-variant="vibrant"].md-menu-item--selected) .md-menu-item__trailing-text,
+:host([data-variant="vibrant"].md-menu-item--selected) .md-menu-item__supporting {
   color: inherit;
 }
 

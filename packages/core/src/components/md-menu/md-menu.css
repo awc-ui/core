@@ -11,6 +11,9 @@
    CSS custom properties:
      --md-menu-min-width     Min container width (default 112px)
      --md-menu-max-width     Max container width (default 280px)
+     --md-menu-max-block-size  Max height before the list scrolls (default 250px);
+                             clamped to the viewport, and overridden by the
+                             `max-height` prop
      --md-menu-inline-surface-color  Background for md-menu--inline-fill only (default transparent)
      --md-menu-inline-fill-radius-end  Bottom corner radius for inline-fill embed (default 0)
      --md-sys-z-index-popup    Stack order (default 1000)
@@ -137,13 +140,19 @@
 }
 
 /* --- Capped height: long lists scroll inside md-scroll-shadow (edge fades) --- */
-/* The scroll-shadow (display:flex column, bounded by the inline max-block-size)
-   owns the vertical scroll; the surface only clips so it never double-scrolls.
-   The viewport-safe rule below opts capped menus out (:not(.md-menu--scroll))
-   so its `overflow-y: auto` can't compete with this. */
-:host(.md-menu--scroll):not(.md-menu--has-submenu) .md-menu__surface {
-  overflow: hidden;
-}
+/* The scroll-shadow (bounded by the inline max-block-size written in render())
+   owns the vertical scroll. The SURFACE deliberately keeps `overflow: visible`
+   — it has nothing to clip, since the only child that can exceed it is the
+   scroll region, which bounds itself. Leaving it visible also keeps exactly one
+   clip box in a submenu flyout's ancestry instead of two: the flyout escapes by
+   being `position: fixed`, and the fewer boxes that could ever capture it (via a
+   transform or `contain` arriving from a consumer's stylesheet), the better.
+   There used to be an `overflow: hidden` rule here guarded by
+   `:host(.md-menu--scroll):not(.md-menu--has-submenu)`. It never matched — a
+   `:not()` compounded AFTER `:host()` can't match the featureless host — so the
+   surface has always been visible and nothing depended on the hidden it claimed
+   to apply. Removed rather than "fixed", because fixing it would have switched
+   on a clip box that has never existed. */
 
 :host(.md-menu--scroll) .md-menu__scroll-shadow {
   min-block-size: 0;
@@ -170,15 +179,42 @@
    2b. RESPONSIVE / VIEWPORT-SAFE SIZING
    ========================================================== */
 
-/* Tall menus scroll instead of running off the bottom of the screen. Skipped
-   when the menu has submenus — their flyouts are positioned children that
-   would be clipped by an overflow on the surface — and when capped, where
-   md-scroll-shadow owns the scroll instead (see the capped-height block above). */
-:host(:not(.md-menu--has-submenu):not(.md-menu--inline-fill):not(.md-menu--scroll)) .md-menu__surface {
-  max-height: calc(100dvh - 2 * var(--md-menu-viewport-margin, 8px));
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
+/*
+ * THE DEFAULT CAP LIVES IN JS, NOT HERE — and this note is the signpost.
+ *
+ * `--md-menu-max-block-size` (250px) bounds every menu, which also bounds
+ * md-select, md-multi-select and md-autocomplete, since all three render their
+ * options through this component. Before it existed, a menu was limited only by
+ * the viewport, so forty options produced a list most of the screen tall — long
+ * enough to cover the field it belongs to.
+ *
+ * Three ways to change it, in ascending precedence:
+ *   - set `--md-menu-max-block-size` on any ancestor, to retune a whole app;
+ *   - set it on one element, for one menu;
+ *   - set the `max-height` PROP, which writes an inline style and wins outright.
+ *
+ * All three are resolved in ONE place: the `max-block-size` render() writes on
+ * `.md-menu__scroll-shadow`, min()-ed with the space on the chosen side
+ * (`--md-menu-avail-block`) and the viewport, so a deliberately tall cap can
+ * still never run off the bottom of the screen. A stylesheet rule could not do
+ * that job anyway — it loses to that inline style — and there is no menu left
+ * for one to serve: `md-menu--scroll` is on every menu that isn't
+ * `md-menu--inline-fill`, and each owns its own scrolling.
+ *
+ * WHAT USED TO BE HERE, and why capping a submenu menu is now safe. A
+ * `max-height: … ; overflow-y: auto` rule on `.md-menu__surface` sat here,
+ * excluded from menus with submenus, because a cap destroyed their flyouts. The
+ * exclusion was right about the symptom and wrong about the cause: overflow does
+ * not create a containing block for `position: fixed`, but the flyout was never
+ * fixed — md-sub-menu-item rendered it `position: absolute` at
+ * `inset-inline-start: 100%`, i.e. entirely OUTSIDE the box that was about to
+ * start clipping. Zero overlap, so the flyout didn't clip to a sliver, it
+ * vanished, and on the flipped side it wasn't even in the scrollable overflow
+ * region to be scrolled to. Moving the overflow to an inner region only moved
+ * the clipper. The fix was to give the flyout a real escape: it is now
+ * `position: fixed`, placed in viewport coordinates (see
+ * md-sub-menu-item.css §8), and no overflow on this component can reach it.
+ */
 
 /* `responsive` on a compact viewport: near-full-width sheet below the trigger.
    Positioning (left edge + vertical flip/clamp) is handled in positionMenu(). */
@@ -340,9 +376,30 @@
      `.md-menu__scroll-shadow`, so that container repeats the gap below. */
   gap: var(--md-menu-group-gap, 4px);
   padding: 0;
+}
+
+/* The cards' elevation is a FILTER on the surface, so one pair of shadows traces
+   the outline of every card at once instead of each card painting its own.
+   `filter` also makes the surface the containing block for `position: fixed`
+   descendants — which would drag a submenu flyout back inside the scroll
+   region's clip chain, the exact failure this component just stopped having. So
+   a submenu-bearing grouped+gap menu gets the same elevation as box-shadows on
+   the cards themselves (identical geometry: drop-shadow and box-shadow read
+   their blur the same way) and the surface stays filter-free.
+   `:not()` goes INSIDE `:host()`: compounded after it, it can never match the
+   featureless host, and the rule would silently never apply. */
+:host(.md-menu--grouped.md-menu--gap.md-menu--standard:not(.md-menu--has-submenu)) .md-menu__surface,
+:host(.md-menu--grouped.md-menu--gap.md-menu--vibrant:not(.md-menu--has-submenu)) .md-menu__surface {
   filter:
     drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15))
     drop-shadow(0 2px 6px rgba(0, 0, 0, 0.1));
+}
+
+:host(.md-menu--grouped.md-menu--gap.md-menu--standard.md-menu--has-submenu) ::slotted(md-menu-item-group),
+:host(.md-menu--grouped.md-menu--gap.md-menu--vibrant.md-menu--has-submenu) ::slotted(md-menu-item-group) {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* The gap needs a flex container, and flex items shrink by default — in a short

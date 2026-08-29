@@ -26,7 +26,20 @@
   /* Follow a global `data-density` ancestor (padding + height tighten with the
      scale; unchanged at density 0). The `compact` boolean still force-overrides. */
   --_pad-block: var(--md-table-toolbar-padding-block, var(--md-sys-spacing-inset-md, 12px));
-  --_pad-inline: var(--md-table-toolbar-padding-inline, 24px);
+  /*
+   * The default carries the density expression, and the `padding-inline` below
+   * actually USES it — both halves were wrong before. `--_pad-inline` was
+   * declared here and then never referenced: `padding-inline` inlined the
+   * density expression directly, so `--md-table-toolbar-padding-inline` (a
+   * PUBLIC property, documented at the top of this file) silently did nothing,
+   * and anything trying to line up with the toolbar's left edge had to guess.
+   * Folding the expression into the default fixes the property and keeps the
+   * rendered value identical at every rung: 24 / 22 / 20 / 18 / 16px.
+   */
+  --_pad-inline: var(
+    --md-table-toolbar-padding-inline,
+    max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px))
+  );
   --_min-h: var(--md-table-toolbar-min-height, calc(64px + var(--md-sys-density-scale, 0) * 4px));
 
   /* Effects spring for the selection-mode color swap (house pairing rule). */
@@ -37,7 +50,7 @@
   align-items: center;
   gap: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px));
   padding-block: var(--_pad-block);
-  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  padding-inline: var(--_pad-inline);
   min-block-size: var(--_min-h);
   background-color: var(--_bg);
   color: var(--_color);
@@ -81,6 +94,26 @@
   --md-icon-button-container-width: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
   --md-icon-button-container-height: max(32px, calc(40px + var(--md-sys-density-scale, 0) * 4px));
   --md-icon-button-icon-size: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
+  /*
+   * An actions row is a row of CONTROLS, and each one sizes to itself.
+   *
+   * `md-select`'s host is `inline-size: var(--md-select-width, 100%)` — the
+   * right default in a form column, and a claim on the whole line when it is
+   * one control among several. Here that claim made the select's flex basis the
+   * entire actions box, so the flex algorithm had to shrink something — and the
+   * thing it shrank was the filter chip beside it. `md-chip`'s label sets
+   * `overflow: hidden`, which drops the chip's automatic minimum size to zero,
+   * so it collapsed silently instead of pushing back: measured 95px of chip
+   * squeezed into 79, rendering "Open only" as "Open ...".
+   *
+   * Sizing the select by its content makes the row add up on its own —
+   * 211 + 4 + 95 = 310 — and nothing has to shrink at all. This is exactly what
+   * the three `--md-icon-button-*` declarations above already do: the container
+   * tells its slotted controls what size means in here, through their own
+   * public properties. A consumer who genuinely wants a full-bleed select in a
+   * toolbar can set `--md-select-width` back, or pass `full-width`.
+   */
+  --md-select-width: auto;
 }
 
 /* ----------- Titles ----------- */

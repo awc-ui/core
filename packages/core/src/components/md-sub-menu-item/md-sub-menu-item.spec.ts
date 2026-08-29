@@ -432,6 +432,11 @@ describe('md-sub-menu-item', () => {
 
   // ── autoPositionSubmenu ──
 
+  // The flyout container is `position: fixed` so no ancestor overflow can clip
+  // it — that is what lets a menu with submenus cap and scroll like every other
+  // menu. Fixed insets resolve against the VIEWPORT, so these assertions read
+  // physical `left`/`top` in viewport pixels. The SIDE is still decided in
+  // logical terms, which is what the two dir="rtl" cases pin down.
   describe('autoPositionSubmenu', () => {
     function mockRects(page: SpecPage, hostRect: Partial<DOMRect>, containerRect: Partial<DOMRect>) {
       page.root!.getBoundingClientRect = () => ({
@@ -465,11 +470,13 @@ describe('md-sub-menu-item', () => {
 
       page.rootInstance.autoPositionSubmenu();
 
-      expect(container.style.insetInlineStart).toBe('auto');
-      expect(container.style.insetInlineEnd).toBe('100%');
+      // The inline-end side would start at 1000 and need 1200 — off-screen — so
+      // it opens on the inline start instead: the row's left edge minus its width.
+      expect(container.style.left).toBe('650px');
+      expect(container.style.top).toBe('100px');
     });
 
-    it('flips submenu back to right when left edge overflows', async () => {
+    it('stays on the inline-end side when only the flipped side would overflow', async () => {
       const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
       Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
       Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true });
@@ -481,11 +488,15 @@ describe('md-sub-menu-item', () => {
 
       page.rootInstance.autoPositionSubmenu();
 
-      expect(container.style.insetInlineStart).toBe('100%');
-      expect(container.style.insetInlineEnd).toBe('auto');
+      // Inline start would start at 50 - 200 = -150, off the left edge; the
+      // inline-end side fits, so it wins. Both candidates are compared up front
+      // now — the old "…and flip back" branch re-read a rect captured BEFORE the
+      // flip was written, so it could never actually fire.
+      expect(container.style.left).toBe('200px');
+      expect(container.style.top).toBe('100px');
     });
 
-    it('flips submenu upward when bottom overflows', async () => {
+    it('bottom-aligns to the row when a top-aligned flyout would overflow', async () => {
       const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
       Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
       Object.defineProperty(window, 'innerHeight', { value: 400, configurable: true });
@@ -497,11 +508,13 @@ describe('md-sub-menu-item', () => {
 
       page.rootInstance.autoPositionSubmenu();
 
-      expect(container.style.top).toBe('auto');
-      expect(container.style.bottom).toBe('0');
+      expect(container.style.left).toBe('250px');
+      // 300 + 200 runs past a 400px viewport, so the flyout's BOTTOM meets the
+      // row's bottom instead: 348 - 200.
+      expect(container.style.top).toBe('148px');
     });
 
-    it('does not flip when everything fits', async () => {
+    it('opens on the inline end, top-aligned, when everything fits', async () => {
       const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
       Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
       Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true });
@@ -513,10 +526,8 @@ describe('md-sub-menu-item', () => {
 
       page.rootInstance.autoPositionSubmenu();
 
-      expect(container.style.insetInlineStart).toBe('');
-      expect(container.style.insetInlineEnd).toBe('');
-      expect(container.style.top).toBe('');
-      expect(container.style.bottom).toBe('');
+      expect(container.style.left).toBe('250px');
+      expect(container.style.top).toBe('100px');
     });
 
     it('uses fallback size when container dimensions are zero', async () => {
@@ -531,13 +542,34 @@ describe('md-sub-menu-item', () => {
 
       page.rootInstance.autoPositionSubmenu();
 
-      expect(container.style.insetInlineStart).toBe('auto');
-      expect(container.style.insetInlineEnd).toBe('100%');
-      expect(container.style.top).toBe('auto');
-      expect(container.style.bottom).toBe('0');
+      // 200×200 stand-in: inline end needs 500…700 in a 500px viewport, so it
+      // flips to 350 - 200, and bottom-aligns to 348 - 200.
+      expect(container.style.left).toBe('150px');
+      expect(container.style.top).toBe('148px');
     });
 
-    it('clears all inline styles before measuring', async () => {
+    it('clamps into the viewport when the flyout fits on neither side', async () => {
+      const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
+      Object.defineProperty(window, 'innerWidth', { value: 260, configurable: true });
+      Object.defineProperty(window, 'innerHeight', { value: 220, configurable: true });
+
+      const container = mockRects(page,
+        { top: 90, bottom: 138, left: 60, right: 210, width: 150, height: 48 },
+        { top: 0, bottom: 200, left: 0, right: 200, width: 200, height: 200 }
+      );
+
+      page.rootInstance.autoPositionSubmenu();
+
+      // Inline end starts at 210 (needs 410), inline start at -140: neither fits.
+      // It keeps the preferred side and pins to the edge minus the 8px margin,
+      // rather than bleeding off-screen — the same clamp positionMenu() applies.
+      expect(container.style.left).toBe('52px'); // 260 - 200 - 8
+      // Bottom-aligning to the row would put it at 138 - 200 = -62, above the
+      // screen; the clamp pins it to the top margin instead.
+      expect(container.style.top).toBe('8px');
+    });
+
+    it('overwrites stale placement instead of inheriting it', async () => {
       const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
       Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
       Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true });
@@ -546,15 +578,19 @@ describe('md-sub-menu-item', () => {
         { top: 100, bottom: 148, left: 100, right: 250, width: 150, height: 48 },
         { top: 100, bottom: 300, left: 250, right: 450, width: 200, height: 200 }
       );
-      container.style.insetInlineStart = '999px';
-      container.style.insetInlineEnd = '999px';
+      container.style.left = '999px';
       container.style.top = '999px';
+      container.style.right = '999px';
       container.style.bottom = '999px';
 
       page.rootInstance.autoPositionSubmenu();
 
-      expect(container.style.insetInlineStart).toBe('');
-      expect(container.style.insetInlineEnd).toBe('');
+      expect(container.style.left).toBe('250px');
+      expect(container.style.top).toBe('100px');
+      // right/bottom must be released, or the box would be stretched between
+      // two opposing insets instead of shrink-wrapping its menu.
+      expect(container.style.right).toBe('auto');
+      expect(container.style.bottom).toBe('auto');
     });
 
     // RTL was the bug this logical rewrite fixed: the flyout used to open to the
@@ -573,11 +609,12 @@ describe('md-sub-menu-item', () => {
 
       page.rootInstance.autoPositionSubmenu();
 
-      expect(container.style.insetInlineStart).toBe('');
-      expect(container.style.insetInlineEnd).toBe('');
+      // Inline end is the LEFT under rtl: the row's left edge minus its width.
+      expect(container.style.left).toBe('400px');
+      expect(container.style.top).toBe('100px');
     });
 
-    it('flips to the inline end under dir=rtl when the start side overflows', async () => {
+    it('flips to the inline start under dir=rtl when the end side overflows', async () => {
       const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
       Object.defineProperty(window, 'innerWidth', { value: 1024, configurable: true });
       Object.defineProperty(window, 'innerHeight', { value: 768, configurable: true });
@@ -590,8 +627,42 @@ describe('md-sub-menu-item', () => {
 
       page.rootInstance.autoPositionSubmenu();
 
-      expect(container.style.insetInlineStart).toBe('auto');
-      expect(container.style.insetInlineEnd).toBe('100%');
+      // Inline end (leftward, under rtl) would start at 80 - 200 = -120, so it
+      // opens on the inline start instead: rightward, from the row's right edge.
+      expect(container.style.left).toBe('230px');
+      expect(container.style.top).toBe('100px');
+    });
+  });
+
+  // ── keeping the flyout glued to its row while an ancestor scrolls ──
+
+  describe('position watch', () => {
+    it('binds scroll/resize on open and releases them on close', async () => {
+      const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
+      const addSpy = jest.spyOn(window, 'addEventListener');
+      const removeSpy = jest.spyOn(window, 'removeEventListener');
+
+      page.rootInstance.openSubmenu(false);
+      await page.waitForChanges();
+      expect(addSpy.mock.calls.some(([type]) => type === 'scroll')).toBe(true);
+      expect(addSpy.mock.calls.some(([type]) => type === 'resize')).toBe(true);
+
+      page.rootInstance.closeSubmenu();
+      expect(removeSpy.mock.calls.some(([type]) => type === 'scroll')).toBe(true);
+      expect(removeSpy.mock.calls.some(([type]) => type === 'resize')).toBe(true);
+
+      addSpy.mockRestore();
+      removeSpy.mockRestore();
+    });
+
+    it('collapse releases the watch even without a close animation', async () => {
+      const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
+      page.rootInstance.openSubmenu(false);
+      await page.waitForChanges();
+      expect(page.rootInstance.positionWatchTargets.length).toBeGreaterThan(0);
+
+      await page.rootInstance.collapse();
+      expect(page.rootInstance.positionWatchTargets.length).toBe(0);
     });
   });
 
@@ -669,34 +740,264 @@ describe('md-sub-menu-item', () => {
     spy.mockRestore();
   });
 
-  it('submenu container mouseleave closes submenu', async () => {
+  it('submenu container mouseleave closes submenu after closeDelay', async () => {
     const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
     const container = page.root!.shadowRoot!.querySelector('.md-sub-menu-item__submenu') as HTMLElement;
+    page.rootInstance.submenuOpen = true;
+    await page.waitForChanges();
     const spy = jest.spyOn(page.rootInstance, 'closeSubmenu');
 
+    jest.useFakeTimers();
     container.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+    // Leaving the FLYOUT waits exactly as long as leaving the row: the pointer
+    // may be cutting back across a sibling towards the row it came from.
+    jest.advanceTimersByTime(399);
+    expect(spy).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(1);
     expect(spy).toHaveBeenCalled();
     spy.mockRestore();
   });
 
-  // ── host mouseenter / mouseleave ──
+  // ── host mouseenter / mouseleave — hover intent ──
 
-  it('host mouseenter opens submenu', async () => {
+  it('host mouseenter opens the submenu after openDelay, not on contact', async () => {
     const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
     const spy = jest.spyOn(page.rootInstance, 'openSubmenu');
 
+    jest.useFakeTimers();
     page.root!.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    expect(spy).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(99);
+    expect(spy).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(1);
+    expect(spy).toHaveBeenCalledWith(false);
+    spy.mockRestore();
+  });
+
+  it('a pointer that crosses the row and leaves never opens it', async () => {
+    const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
+    const spy = jest.spyOn(page.rootInstance, 'openSubmenu');
+
+    jest.useFakeTimers();
+    page.root!.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    jest.advanceTimersByTime(40);
+    page.root!.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+    jest.advanceTimersByTime(1000);
+    expect(spy).not.toHaveBeenCalled();
+    expect(page.rootInstance.submenuOpen).toBe(false);
+    spy.mockRestore();
+  });
+
+  it('host mouseleave closes the submenu after closeDelay, not on exit', async () => {
+    const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
+    page.rootInstance.submenuOpen = true;
+    await page.waitForChanges();
+    const spy = jest.spyOn(page.rootInstance, 'closeSubmenu');
+
+    jest.useFakeTimers();
+    page.root!.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+    jest.advanceTimersByTime(399);
+    expect(spy).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(1);
     expect(spy).toHaveBeenCalled();
     spy.mockRestore();
   });
 
-  it('host mouseleave closes submenu', async () => {
+  it('a pending close is cancelled by re-entering the row', async () => {
     const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
+    page.rootInstance.submenuOpen = true;
+    await page.waitForChanges();
     const spy = jest.spyOn(page.rootInstance, 'closeSubmenu');
 
+    jest.useFakeTimers();
     page.root!.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+    jest.advanceTimersByTime(200);
+    page.root!.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    jest.advanceTimersByTime(1000);
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  it('a pending close is cancelled by entering the FLYOUT rather than the row', async () => {
+    // The diagonal from a row to its own flyout can miss the row on the way
+    // back, so arriving anywhere inside the branch has to call the close off.
+    const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
+    const container = page.root!.shadowRoot!.querySelector('.md-sub-menu-item__submenu') as HTMLElement;
+    page.rootInstance.submenuOpen = true;
+    await page.waitForChanges();
+    const spy = jest.spyOn(page.rootInstance, 'closeSubmenu');
+
+    jest.useFakeTimers();
+    page.root!.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+    jest.advanceTimersByTime(200);
+    container.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    jest.advanceTimersByTime(1000);
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  it('open-delay and close-delay override the defaults', async () => {
+    const page = await createItem(
+      `<md-sub-menu-item headline="More" open-delay="0" close-delay="20"></md-sub-menu-item>`,
+    );
+    expect(page.rootInstance.openDelay).toBe(0);
+    expect(page.rootInstance.closeDelay).toBe(20);
+
+    jest.useFakeTimers();
+    page.root!.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    jest.advanceTimersByTime(0);
+    expect(page.rootInstance.submenuOpen).toBe(true);
+
+    const spy = jest.spyOn(page.rootInstance, 'closeSubmenu');
+    page.root!.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+    jest.advanceTimersByTime(20);
     expect(spy).toHaveBeenCalled();
     spy.mockRestore();
+  });
+
+  // ── the keyboard never waits ──
+
+  it('ArrowRight opens with no hover-intent delay', async () => {
+    const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
+
+    jest.useFakeTimers();
+    page.root!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    // Not one tick advanced.
+    expect(page.rootInstance.submenuOpen).toBe(true);
+  });
+
+  it('Escape closes without waiting for closeDelay', async () => {
+    const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
+    const nestedMenu = document.createElement('md-menu');
+    nestedMenu.setAttribute('slot', 'submenu');
+    (nestedMenu as any).close = jest.fn();
+    page.root!.appendChild(nestedMenu);
+    page.rootInstance.submenuOpen = true;
+    await page.waitForChanges();
+
+    jest.useFakeTimers();
+    page.root!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect((nestedMenu as any).close).toHaveBeenCalled();
+  });
+
+  it('a keyboard open cancels a pending hover open rather than queueing a second one', async () => {
+    const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
+
+    jest.useFakeTimers();
+    page.root!.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    page.root!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    expect(page.rootInstance.submenuOpen).toBe(true);
+
+    const spy = jest.spyOn(page.rootInstance, 'openSubmenu');
+    jest.advanceTimersByTime(1000);
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
+  });
+
+  // ── measure before reveal ──
+
+  it('gates the flyout invisible until it has been measured', async () => {
+    const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
+    const container = page.root!.shadowRoot!.querySelector('.md-sub-menu-item__submenu') as HTMLElement;
+
+    page.rootInstance.openSubmenu(false);
+    // The gate has to be on BEFORE the patch that flips the container to
+    // display: block — that patch and the placement are the same frame.
+    expect(container.hasAttribute('data-md-placing')).toBe(true);
+
+    await page.waitForChanges();
+    expect(container.hasAttribute('data-md-placing')).toBe(false);
+    expect(page.rootInstance.placing).toBe(false);
+  });
+
+  it('does not re-arm the placement gate for an already-open flyout', async () => {
+    // Re-entering an open flyout calls openSubmenu again. Nothing re-renders, so
+    // a gate armed here would never be cleared and the flyout would stay
+    // invisible for as long as it was open.
+    const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
+    const container = page.root!.shadowRoot!.querySelector('.md-sub-menu-item__submenu') as HTMLElement;
+
+    page.rootInstance.openSubmenu(false);
+    await page.waitForChanges();
+
+    page.rootInstance.openSubmenu(false);
+    expect(container.hasAttribute('data-md-placing')).toBe(false);
+    expect(page.rootInstance.placing).toBe(false);
+  });
+
+  /*
+   * This used to assert the opposite, and the opposite was the bug.
+   *
+   * `resetSubmenuStyles` clears the inline placement, which snaps the flyout
+   * back to an unplaced `position: fixed` while it is still hit-testable — the
+   * render that applies `display: none` has not landed yet. A stray flyout that
+   * comes to rest under a stationary pointer gets hit-tested, and because its
+   * rows are in this host's light DOM the hit re-opens this row: measured at 50
+   * enter/leave pairs in 1.5s with the pointer completely still, which starved
+   * the sibling of its open delay so it never opened at all.
+   *
+   * So the teardown now ARMS the gate rather than clearing it. The invariant
+   * that matters was never "the gate ends up off" — it is "the gate is never
+   * off while the position is untrue", and that a later open still clears it.
+   * Both are asserted, here and in the test below.
+   */
+  it('resetSubmenuStyles arms the gate, so a torn-down flyout cannot be hit-tested', async () => {
+    const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
+    const container = page.root!.shadowRoot!.querySelector('.md-sub-menu-item__submenu') as HTMLElement;
+
+    page.rootInstance.beginPlacement();
+    expect(container.hasAttribute('data-md-placing')).toBe(true);
+
+    page.rootInstance.resetSubmenuStyles();
+    expect(container.hasAttribute('data-md-placing')).toBe(true);
+    expect(page.rootInstance.placing).toBe(true);
+  });
+
+  it('a placement after a teardown still clears the gate', async () => {
+    const page = await createItem(`<md-sub-menu-item headline="More"></md-sub-menu-item>`);
+    const container = page.root!.shadowRoot!.querySelector('.md-sub-menu-item__submenu') as HTMLElement;
+
+    page.rootInstance.resetSubmenuStyles();
+    expect(container.hasAttribute('data-md-placing')).toBe(true);
+
+    // The next open re-arms and then places, which is the only thing allowed to
+    // take the gate off — so a torn-down flyout is never left permanently
+    // invisible either, which is what the old assertion was really guarding.
+    page.rootInstance.beginPlacement();
+    page.rootInstance.finishPlacement();
+    expect(container.hasAttribute('data-md-placing')).toBe(false);
+    expect(page.rootInstance.placing).toBe(false);
+  });
+
+  // ── one flyout per menu ──
+
+  it('opening a row collapses its sibling rows in the same menu', async () => {
+    const page = await newSpecPage({
+      components: [MdSubMenuItem],
+      html: `<md-menu>
+        <md-sub-menu-item headline="Region"></md-sub-menu-item>
+        <md-sub-menu-item headline="Currency"></md-sub-menu-item>
+      </md-menu>`,
+    });
+    const rows = Array.from(page.body.querySelectorAll('md-sub-menu-item'));
+
+    jest.useFakeTimers();
+    rows[1].dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    jest.advanceTimersByTime(100);
+    jest.useRealTimers();
+    await page.waitForChanges();
+    expect(rows[1].classList.contains('md-sub-menu-item--open')).toBe(true);
+
+    jest.useFakeTimers();
+    rows[0].dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+    jest.advanceTimersByTime(100);
+    jest.useRealTimers();
+    await page.waitForChanges();
+
+    expect(rows[0].classList.contains('md-sub-menu-item--open')).toBe(true);
+    // With a close delay in play the sibling would otherwise sit there expanded,
+    // arrow rotated, beside a flyout that is not its own.
+    expect(rows[1].classList.contains('md-sub-menu-item--open')).toBe(false);
   });
 
   // ── handleClick disabled ──

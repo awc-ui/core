@@ -297,6 +297,7 @@ touch.
 | `--md-slider-value-shape` | Value bubble radius | `--md-sys-shape-corner-full` |
 | `--md-slider-value-font-family` / `-size` / `-weight` / `-line-height` | Value bubble type | `label-medium` typescale |
 | `--md-slider-value-padding-block` / `--md-slider-value-padding-inline` | Value bubble padding | `12px` / `16px` |
+| `--md-slider-value-indicator-reserve` | Space the host reserves for a **persistent** value bubble — block-start when horizontal, inline-end when vertical. `value-indicator` (and the deprecated `labeled`) paint the bubble at all times, outside the host's box, so without this it would overlap whatever sits above the slider. Set `0px` to reclaim the space when nothing sits there. | bubble min-size + `4px` (density-tracked) |
 | `--md-slider-inset-icon-color` | Inset icon over the unfilled track | `--md-slider-tick-inactive-color` |
 | `--md-slider-inset-icon-active-color` | Inset icon over the filled track | `--md-slider-tick-filled-color` |
 

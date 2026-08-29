@@ -309,6 +309,7 @@ so never put load-bearing information only there.
 | `--md-step-state-layer-color` | Hover / focus / press overlay | `--md-sys-color-on-surface` |
 | `--md-step-expand-duration` | Content panel expand duration | spatial spring (500ms) |
 | `--md-step-collapse-duration` | Content panel collapse duration | `--md-sys-motion-duration-short4` (200ms) |
+| `--md-step-panel-padding-block-start` | Head room above a **horizontal panel-mode** panel — between the step header row and the panel's first row. No effect on a vertical step, whose panel is indented beside its own label rather than stacked under a row of them. | `--md-sys-spacing-inset-lg` (16px) |
 
 **CSS parts** — `inner`, `indicator`, `bubble`, `dot`, `state-layer`, `text`,
 `label`, `optional`, `description`, `connector`, `connector-leading`,

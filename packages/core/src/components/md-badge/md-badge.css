@@ -42,6 +42,37 @@
 }
 
 /* ==========================================================
+   1a. CIRCULAR HOST — sit on the rim, not on the bounding box
+
+   The corner anchor above is right for a rect host and wrong for a round one:
+   a circle's bounding-box corner is OUTSIDE the shape, so a badge translated
+   onto it floats clear of the avatar with nothing behind it.
+
+   The 45° point on a circle of diameter d is (d/2)/√2 from centre on each
+   axis — i.e. (1 − 1/√2)/2 ≈ 14.6447% of d in from the top and trailing edges.
+   Pinning the badge's edges there and keeping the existing translate, which
+   moves it by half its OWN size, lands its centre exactly on that point:
+     right edge at 0.8536d, then +50% of itself  ->  centre 0.8536d
+     top edge   at 0.1464d, then -50% of itself  ->  centre 0.1464d
+
+   Percentages resolve against the containing block, so this holds at every
+   avatar size with nothing having to know what that size is — and it replaces
+   the hand-tuned per-call-site offsets this used to need.
+
+   `top`/`right` rather than logical insets ONLY because the base rule above
+   uses them; if that is ever made logical, make this logical with it.
+
+   NO `:not()` AFTER `:host()`. Chrome parses `:host(.a):not(.b)`, puts it in
+   the sheet, and silently matches nothing — the trap that cost an hour in
+   md-status-dot.css. The variant rules below re-declare `transform` only, so
+   they cannot fight these insets anyway.
+   ========================================================== */
+:host(.md-badge--circle) {
+  top: 14.6447%;
+  right: 14.6447%;
+}
+
+/* ==========================================================
    2. SMALL VARIANT — 6×6 dot
    Spec: small badge is 6px circle, no label
    ========================================================== */

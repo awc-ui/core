@@ -376,14 +376,14 @@ export declare interface MdAvatar extends Components.MdAvatar {
 
 @ProxyCmp({
   defineCustomElementFn: defineMdBadge,
-  inputs: ['density', 'icon', 'max', 'value', 'variant']
+  inputs: ['density', 'icon', 'max', 'shape', 'value', 'variant']
 })
 @Component({
   selector: 'md-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['density', 'icon', 'max', 'value', 'variant'],
+  inputs: ['density', 'icon', 'max', 'shape', 'value', 'variant'],
   standalone: true
 })
 export class MdBadge {
@@ -768,14 +768,14 @@ it uncomposed means each component reports only for itself, while
 
 @ProxyCmp({
   defineCustomElementFn: defineMdChip,
-  inputs: ['appearance', 'color', 'density', 'disabled', 'elevated', 'icon', 'label', 'removable', 'selectable', 'selected', 'softDisabled', 'trailingIcon', 'variant']
+  inputs: ['appearance', 'color', 'contentAlign', 'density', 'disabled', 'elevated', 'icon', 'label', 'removable', 'selectable', 'selected', 'softDisabled', 'trailingIcon', 'variant']
 })
 @Component({
   selector: 'md-chip',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['appearance', 'color', 'density', 'disabled', 'elevated', 'icon', 'label', 'removable', 'selectable', 'selected', 'softDisabled', 'trailingIcon', 'variant'],
+  inputs: ['appearance', 'color', 'contentAlign', 'density', 'disabled', 'elevated', 'icon', 'label', 'removable', 'selectable', 'selected', 'softDisabled', 'trailingIcon', 'variant'],
   standalone: true
 })
 export class MdChip {
@@ -2428,14 +2428,14 @@ export declare interface MdSplitButton extends Components.MdSplitButton {
 
 @ProxyCmp({
   defineCustomElementFn: defineMdStatusDot,
-  inputs: ['density', 'inline', 'label', 'live', 'size', 'state']
+  inputs: ['density', 'inline', 'label', 'live', 'shape', 'size', 'state']
 })
 @Component({
   selector: 'md-status-dot',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['density', 'inline', 'label', 'live', 'size', 'state'],
+  inputs: ['density', 'inline', 'label', 'live', 'shape', 'size', 'state'],
   standalone: true
 })
 export class MdStatusDot {
@@ -2491,7 +2491,7 @@ Internal coordination event — consumed (and stopped) by `md-stepper`.
 
 @ProxyCmp({
   defineCustomElementFn: defineMdStepper,
-  inputs: ['active', 'autoComplete', 'backLabel', 'completedWord', 'currentWord', 'density', 'errorWord', 'finishLabel', 'indicator', 'label', 'lazy', 'loading', 'mode', 'nav', 'nextDisabled', 'nextLabel', 'ofWord', 'optionalWord', 'orientation', 'stepWord', 'variant'],
+  inputs: ['active', 'autoComplete', 'backLabel', 'completedWord', 'currentWord', 'density', 'errorWord', 'finishLabel', 'indicator', 'label', 'lazy', 'loading', 'mode', 'nav', 'nextDisabled', 'nextLabel', 'ofWord', 'optionalWord', 'orientation', 'readonly', 'stepWord', 'variant'],
   methods: ['next', 'prev', 'goTo', 'reset']
 })
 @Component({
@@ -2499,7 +2499,7 @@ Internal coordination event — consumed (and stopped) by `md-stepper`.
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['active', 'autoComplete', 'backLabel', 'completedWord', 'currentWord', 'density', 'errorWord', 'finishLabel', 'indicator', 'label', 'lazy', 'loading', 'mode', 'nav', 'nextDisabled', 'nextLabel', 'ofWord', 'optionalWord', 'orientation', 'stepWord', 'variant'],
+  inputs: ['active', 'autoComplete', 'backLabel', 'completedWord', 'currentWord', 'density', 'errorWord', 'finishLabel', 'indicator', 'label', 'lazy', 'loading', 'mode', 'nav', 'nextDisabled', 'nextLabel', 'ofWord', 'optionalWord', 'orientation', 'readonly', 'stepWord', 'variant'],
   standalone: true
 })
 export class MdStepper {
@@ -2535,7 +2535,7 @@ yourself to commit authoritatively (e.g. after async validation).
 
 @ProxyCmp({
   defineCustomElementFn: defineMdSubMenuItem,
-  inputs: ['badge', 'density', 'disabled', 'divider', 'gap', 'headline', 'supportingText'],
+  inputs: ['badge', 'closeDelay', 'density', 'disabled', 'divider', 'gap', 'headline', 'openDelay', 'supportingText'],
   methods: ['collapse']
 })
 @Component({
@@ -2543,7 +2543,7 @@ yourself to commit authoritatively (e.g. after async validation).
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['badge', 'density', 'disabled', 'divider', 'gap', 'headline', 'supportingText'],
+  inputs: ['badge', 'closeDelay', 'density', 'disabled', 'divider', 'gap', 'headline', 'openDelay', 'supportingText'],
   standalone: true
 })
 export class MdSubMenuItem {
@@ -3111,7 +3111,7 @@ it uncomposed means each component reports only for itself, while
 
 @ProxyCmp({
   defineCustomElementFn: defineMdTimePicker,
-  inputs: ['amLabel', 'cancelLabel', 'density', 'disabled', 'format', 'headline', 'headlineDialLabel', 'headlineInputLabel', 'hideTrigger', 'hourLabel', 'label', 'max', 'min', 'minuteLabel', 'minuteStep', 'name', 'okLabel', 'open', 'orientation', 'periodLabel', 'periodLayout', 'pmLabel', 'rangeOutsideLabel', 'rangeOverflowLabel', 'rangeUnderflowLabel', 'required', 'responsive', 'toggleDialLabel', 'toggleInputLabel', 'value', 'valueMissingLabel', 'variant'],
+  inputs: ['amLabel', 'cancelLabel', 'density', 'disabled', 'error', 'errorText', 'format', 'headline', 'headlineDialLabel', 'headlineInputLabel', 'hideTrigger', 'hourLabel', 'label', 'max', 'min', 'minuteLabel', 'minuteStep', 'name', 'okLabel', 'open', 'orientation', 'periodLabel', 'periodLayout', 'pmLabel', 'rangeOutsideLabel', 'rangeOverflowLabel', 'rangeUnderflowLabel', 'required', 'reserveSupportingSpace', 'responsive', 'supportingText', 'toggleDialLabel', 'toggleInputLabel', 'value', 'valueMissingLabel', 'variant'],
   methods: ['show', 'hide', 'checkValidity', 'reportValidity', 'getValidity']
 })
 @Component({
@@ -3119,7 +3119,7 @@ it uncomposed means each component reports only for itself, while
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['amLabel', 'cancelLabel', 'density', 'disabled', 'format', 'headline', 'headlineDialLabel', 'headlineInputLabel', 'hideTrigger', 'hourLabel', 'label', 'max', 'min', 'minuteLabel', 'minuteStep', 'name', 'okLabel', 'open', 'orientation', 'periodLabel', 'periodLayout', 'pmLabel', 'rangeOutsideLabel', 'rangeOverflowLabel', 'rangeUnderflowLabel', 'required', 'responsive', 'toggleDialLabel', 'toggleInputLabel', 'value', 'valueMissingLabel', 'variant'],
+  inputs: ['amLabel', 'cancelLabel', 'density', 'disabled', 'error', 'errorText', 'format', 'headline', 'headlineDialLabel', 'headlineInputLabel', 'hideTrigger', 'hourLabel', 'label', 'max', 'min', 'minuteLabel', 'minuteStep', 'name', 'okLabel', 'open', 'orientation', 'periodLabel', 'periodLayout', 'pmLabel', 'rangeOutsideLabel', 'rangeOverflowLabel', 'rangeUnderflowLabel', 'required', 'reserveSupportingSpace', 'responsive', 'supportingText', 'toggleDialLabel', 'toggleInputLabel', 'value', 'valueMissingLabel', 'variant'],
   standalone: true
 })
 export class MdTimePicker {

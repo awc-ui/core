@@ -373,7 +373,20 @@ function positionTooltip(
   // cursor but kept mostly over the host so it never wanders off on either side.
   if (th + 8 > scene.height) {
     layer.style.overflow = 'visible';
-    const l = Math.max(24 - tw, Math.min(cursor.x - tw / 2, scene.width - 24));
+    /*
+     * Horizontal clamp, in two regimes. When the HOST CAN HOLD THE CARD, hold
+     * it fully inside — the vertical escape is what this branch is for, and a
+     * sideways overhang buys nothing while costing everything in a clipping
+     * ancestor: a KPI tile's `md-card` is `overflow: hidden`, so an overhanging
+     * card was truncated at the tile's edge mid-reading. Only when the host is
+     * genuinely narrower than the card (a lone sparkline in a tight cell) is
+     * the overhang allowed, centred so it splits both sides; there is no
+     * position inside such a host that does not clip somewhere.
+     */
+    const fits = tw + 8 <= scene.width;
+    const l = fits
+      ? Math.max(4, Math.min(cursor.x - tw / 2, scene.width - tw - 4))
+      : Math.max(24 - tw, Math.min(cursor.x - tw / 2, scene.width - 24));
     tip.style.left = `${Math.round(l)}px`;
     // Escaping ALWAYS upward is what a sparkline wants, but a short chart near
     // the top of the page then floats its card off the screen entirely — the

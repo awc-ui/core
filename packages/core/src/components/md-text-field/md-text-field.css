@@ -180,6 +180,20 @@
   inset-block-start: var(--md-text-field-optical-nudge, 0px);
 }
 
+/* `type="search"` + `clearable` drew TWO crosses in WebKit/Blink: the UA's own
+   `::-webkit-search-cancel-button`, and ours. They sat 20px apart inside one
+   field, looked nothing alike, and the plain UA one is unstyleable — it ignores
+   every token, appears in no other engine, and has no keyboard affordance. Ours
+   is the one that carries `aria-label`, the ripple and the focus ring, so the
+   UA's is hidden wherever ours is rendered. A `type="search"` field with no
+   `clearable` keeps the native cross: taking it away would leave no clear at
+   all. `md-search` suppresses the same pair unconditionally, for the same
+   reason — it always draws its own. */
+:host(.md-text-field--clearable) .md-text-field__input::-webkit-search-cancel-button,
+:host(.md-text-field--clearable) .md-text-field__input::-webkit-search-decoration {
+  display: none;
+}
+
 /* The local `density` prop drives the SAME --md-sys-density-scale signal as a
    global `data-density` ancestor — set on the host so it overrides any inherited
    global value (local wins). This unifies both paths: the container height,

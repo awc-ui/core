@@ -22,6 +22,25 @@ export class MdBadge {
   @Prop() icon: string = '';
 
   /**
+   * The SHAPE of the thing the badge is anchored to.
+   *
+   * The badge pins to its containing block's top-inline-end CORNER and
+   * translates itself onto it, which is right for a `rect` host — a button, a
+   * tab, a tile. On a `circle` it is wrong for the same reason it is wrong for
+   * `md-status-dot`: a circle's bounding-box corner lies outside the visible
+   * shape, so the badge floats clear of the avatar with nothing behind it.
+   *
+   * `circle` anchors it to the 45° point on the rim instead — the top-trailing
+   * arc, where a count badge on an avatar belongs. Percentage insets, so it is
+   * correct at every avatar size without being told the size, and it needs no
+   * hand-tuned offsets at the call site.
+   *
+   * `rect` stays the default: changing it would move every badge already
+   * sitting on a button or a tab.
+   */
+  @Prop({ reflect: true }) shape: 'rect' | 'circle' = 'rect';
+
+  /**
    * Local density rung. Drives the same `--md-sys-density-scale` signal that a
    * global `data-density` ancestor sets, so a local value simply overrides the
    * inherited one. 0 = default, -4 = ultra-compact.
@@ -80,6 +99,9 @@ export class MdBadge {
           'md-badge': true,
           'md-badge--small': isSmall,
           'md-badge--large': !isSmall,
+          // Only the circular case gets a class — `rect` is the corner anchor
+          // the base rule already is, so a `--rect` class would name nothing.
+          'md-badge--circle': this.shape === 'circle',
           'md-badge--has-content': hasContent,
         }}
         role="status"

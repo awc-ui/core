@@ -120,11 +120,26 @@
   min-width: 0;
 }
 
+/*
+ * THE TYPE CONDENSES WITH THE ROW, and it did not used to.
+ *
+ * The `min-height` above already mirrors `md-menu-item` — every `data-density`
+ * rung trims 4px off the row — but these two rules read the typescale token
+ * flat, so the row shrank while the text stayed at 16px/24px. A submenu parent
+ * therefore sat in a 32px row at density -4 carrying 16px text, beside plain
+ * `md-menu-item` siblings that had condensed to 14px/20px. In one menu, the row
+ * that opens a flyout read a size larger than every row around it.
+ *
+ * The expressions are `md-menu-item`'s, character for character, so the two
+ * cannot drift again: half a pixel of size and a whole pixel of line-height per
+ * rung, with a `max()` floor so the deepest rung stays legible rather than
+ * scaling to nothing.
+ */
 .md-sub-menu-item__headline {
   font-family: var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif);
-  font-size: var(--md-sys-typescale-body-large-size, 16px);
+  font-size: max(13px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
   font-weight: var(--md-sys-typescale-body-large-weight, 400);
-  line-height: var(--md-sys-typescale-body-large-line-height, 24px);
+  line-height: max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -132,8 +147,8 @@
 
 .md-sub-menu-item__supporting {
   font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif);
-  font-size: var(--md-sys-typescale-body-medium-size, 14px);
-  line-height: var(--md-sys-typescale-body-medium-line-height, 20px);
+  font-size: max(11px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
+  line-height: max(16px, calc(20px + var(--md-sys-density-scale, 0) * 1px));
   color: var(--md-sys-color-on-surface-variant, #49454F);
   white-space: nowrap;
   overflow: hidden;
@@ -202,19 +217,65 @@
    8. SUBMENU CONTAINER
    ========================================================== */
 .md-sub-menu-item__submenu {
-  position: absolute;
-  /* LOGICAL, not `left: 100%`: a physical offset opened the flyout to the right
-     even under dir="rtl", where it must open toward the inline start (the left).
-     autoPositionSubmenu() flips these same logical properties on overflow. */
-  inset-inline-start: 100%;
-  inset-inline-end: auto;
-  top: 0;
+  /* FIXED, NOT ABSOLUTE, AND THIS IS THE WHOLE REASON THE PARENT MENU CAN CAP.
+     A menu with submenus now scrolls inside a 250px viewport like every other
+     overlay drawer (md-menu.css §2b). As an absolutely-positioned child of this
+     row the flyout was laid out at `inset-inline-start: 100%` — entirely OUTSIDE
+     the box that clips — so the moment that ancestor gained an overflow the
+     overlap was zero: the flyout didn't clip to a sliver, it disappeared, and on
+     the flipped side it wasn't even inside the scrollable overflow region to be
+     scrolled to. Overflow never captures a `position: fixed` descendant, so the
+     flyout now escapes the scroll region outright.
+
+     The price is that placement is no longer free: fixed insets resolve against
+     the VIEWPORT, not this row, so autoPositionSubmenu() writes physical
+     `left`/`top` in viewport coordinates (still choosing the SIDE in logical
+     terms, so RTL still mirrors) and re-runs whenever an ancestor scrolls.
+     `inset: auto` is the pre-JS fallback: a fixed box with no insets stays at
+     its static position — right where this row ends — so the frame before the
+     first placement is never a jump from the corner of the screen. */
+  position: fixed;
+  inset: auto;
   z-index: 1001;
   display: none;
+
+  /* Stop the PARENT's remaining-space cap from inheriting down. positionMenu()
+     sets `--md-menu-avail-block` on the parent menu host to the room left on the
+     side it chose; custom properties inherit through the flat tree, so a flyout
+     that is no longer bounded by that side at all — it escaped to the viewport —
+     would still shrink to whatever the parent had left. `initial` on a custom
+     property is the guaranteed-invalid value, so the flyout's own
+     `var(--md-menu-avail-block, 100dvh)` falls back to the viewport, which is
+     the bound that actually applies to it. */
+  --md-menu-avail-block: initial;
 }
 
 :host(.md-sub-menu-item--open) .md-sub-menu-item__submenu {
   display: block;
+}
+
+/* MEASURED, NOT YET PAINTED.
+   The one frame between "display: block" and "we know which side it goes on".
+   The flyout has to be laid out to be measured — while it is `display: none`
+   its rect is all zeros and the side decision falls back to a 200px guess, so
+   it painted at the guessed edge and jumped to the measured one on the next
+   frame (x=1207 then 1213.09 on the wealth holdings menu at 1600px, and the
+   error is the whole difference between the guess and the real width, so a
+   wider flyout jumps further — far enough to change SIDES).
+   `visibility` rather than `opacity`, because it also takes the container out of
+   hit-testing: the frame it spends being measured can never swallow a pointer
+   event. md-sub-menu-item.tsx writes the attribute before the reveal render and
+   removes it in componentDidRender, which is still before the browser paints —
+   so the first frame the reader sees is the placed one. */
+.md-sub-menu-item__submenu[data-md-placing] {
+  visibility: hidden;
+  /* Belt and braces on the hit-testing the comment above relies on. The gate is
+     also worn during TEARDOWN, when the inline placement has been cleared and
+     the flyout has snapped back to an unplaced `position: fixed` — a state in
+     which it once came to rest under a stationary pointer and re-opened its own
+     row in a loop. `visibility: hidden` already removes it from hit-testing;
+     this makes that immune to anyone later swapping the gate for an opacity. */
+  pointer-events: none;
 }
 
 /* ==========================================================

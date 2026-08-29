@@ -817,6 +817,11 @@ export namespace Components {
          */
         "max": number;
         /**
+          * The SHAPE of the thing the badge is anchored to.  The badge pins to its containing block's top-inline-end CORNER and translates itself onto it, which is right for a `rect` host — a button, a tab, a tile. On a `circle` it is wrong for the same reason it is wrong for `md-status-dot`: a circle's bounding-box corner lies outside the visible shape, so the badge floats clear of the avatar with nothing behind it.  `circle` anchors it to the 45° point on the rim instead — the top-trailing arc, where a count badge on an avatar belongs. Percentage insets, so it is correct at every avatar size without being told the size, and it needs no hand-tuned offsets at the call site.  `rect` stays the default: changing it would move every badge already sitting on a button or a tab.
+          * @default 'rect'
+         */
+        "shape": 'rect' | 'circle';
+        /**
           * Text or number to display (large variant only, max 4 visible characters)
           * @default ''
          */
@@ -1509,6 +1514,11 @@ export namespace Components {
     | 'warning'
     | 'info'
     | (string & {});
+        /**
+          * Inline-axis alignment of the chip's content row — leading icon, label and trailing icon together.  `center` (the default) is a no-op on a normal chip, which shrink-wraps its label: the content box and the container are the same size, so there is nothing to align. It matters only once a layout gives the chip a width — a grid column, `align-self: stretch`, an explicit `inline-size` — and then centre is usually wrong. The label floats in the middle of a wide outlined box and reads as an empty input rather than a chip, and a chip labelling something beneath it no longer shares a left edge with what it names.  `start` reads left in LTR / right in RTL, `end` the reverse, `center` is direction-agnostic. Use `::part(label)` for finer control.
+          * @default 'center'
+         */
+        "contentAlign": 'start' | 'center' | 'end';
         /**
           * Local density rung. Drives the same `--md-sys-density-scale` signal that a global `data-density` ancestor sets, so a local value simply overrides the inherited one. 0 = default, -4 = ultra-compact.
           * @default 0
@@ -2706,7 +2716,7 @@ export namespace Components {
          */
         "emptyText": string;
         /**
-          * The scrollable viewport element (the menu's `.md-menu__scroll-shadow` scroll div), or null when the menu isn't capped/scrollable. A virtualized host attaches its scroll listener and reads `scrollTop`/`clientHeight` from this.
+          * The scrollable viewport element (the menu's `.md-menu__scroll-shadow` scroll div). Present on every menu, including submenu menus and the inline-fill embed. A virtualized host attaches its scroll listener and reads `scrollTop`/`clientHeight` from this. Null only before the shadow root exists.
          */
         "getScrollViewport": () => Promise<HTMLElement | null>;
         /**
@@ -2726,7 +2736,7 @@ export namespace Components {
          */
         "matchAnchorWidth": boolean;
         /**
-          * Cap the menu surface block-size. When the items exceed it the list scrolls vertically inside a plain scroll viewport. A number is treated as pixels; any CSS length is passed through (e.g. `'50vh'`). Ignored when the menu has submenus — their flyouts must not be clipped by an overflow container.
+          * Cap the menu surface block-size. When the items exceed it the list scrolls vertically inside a plain scroll viewport. A number is treated as pixels; any CSS length is passed through (e.g. `'50vh'`). Unset, the cap falls back to `--md-menu-max-block-size` (250px). Applies to menus with submenus too: their flyouts are `position: fixed` and escape the scroll viewport rather than being clipped by it.
          */
         "maxHeight"?: number | string;
         /**
@@ -5445,6 +5455,11 @@ export namespace Components {
          */
         "live": boolean;
         /**
+          * The SHAPE of the thing the dot is anchored to.  The dot anchors to the bottom-inline-end corner of its containing block, which is right for a `rect` host — a tile, a table cell, a rounded avatar square. It is wrong for a `circle`, because a circle's bounding-box corner lies outside the visible shape: measured on a 40px round avatar, the default anchor left the dot's centre 5.5px clear of the rim, floating in the gap with nothing behind it.  `circle` puts the dot ON the rim, at the 45° point where a presence dot belongs. The maths is percentage-based, so it holds at every avatar size without the dot having to be told what that size is: the rim at 45° sits `(1 − 1/√2) / 2 ≈ 14.6447%` of the diameter in from each edge, and half the dot's own size comes back off to centre it there.  `rect` stays the default deliberately — it is what a dot on a tile, a card or a table cell wants, and changing the default would move every dot that already exists.
+          * @default 'rect'
+         */
+        "shape": 'rect' | 'circle';
+        /**
           * Diameter preset: - `small`  — 8 px (pairs with `md-avatar size="small"`) - `medium` — 12 px (pairs with `md-avatar size="medium"` — default) - `large`  — 16 px (pairs with `md-avatar size="large"`)  Custom diameters are exposed via the `--md-status-dot-size` CSS custom property on the host.
           * @default 'medium'
          */
@@ -5669,6 +5684,11 @@ export namespace Components {
          */
         "prev": () => Promise<void>;
         /**
+          * Render the stepper as a **status trail**: something to read, not to drive. Every step header stops being a button — no click, no keyboard activation, no ripple, no hover state layer, no tab stop, no `role="button"` — while `aria-current` still says which stage it is on. Not the same as `nav="false"`, which only hides the Back / Continue bar.
+          * @default false
+         */
+        "readonly": boolean;
+        /**
           * Reset to the first step and clear completed / error state.
          */
         "reset": () => Promise<void>;
@@ -5689,6 +5709,11 @@ export namespace Components {
           * @default ''
          */
         "badge": string;
+        /**
+          * Hover intent — milliseconds an open flyout survives the pointer leaving the row, so a diagonal from the row to the flyout can cross the sibling rows in between without the flyout switching. Cancelled the moment the pointer re-enters the row OR the flyout. `0` closes on exit. Escape and ArrowLeft never wait.
+          * @default 400
+         */
+        "closeDelay": number;
         /**
           * Collapse this row's submenu and reset its visual state. Called by an ancestor menu when it closes, so reopening the menu tree always starts fresh instead of restoring the previously-open submenu and focus ring.
          */
@@ -5718,6 +5743,11 @@ export namespace Components {
           * @default ''
          */
         "headline": string;
+        /**
+          * Hover intent — milliseconds the pointer must rest on the row before the flyout opens. Keeps a pointer that is merely passing over the row on its way elsewhere from opening it. `0` opens on contact. The KEYBOARD never waits: ArrowRight / Enter / Space open immediately whatever this is set to.
+          * @default 100
+         */
+        "openDelay": number;
         /**
           * Secondary descriptive text below the headline.
           * @default ''
@@ -6568,8 +6598,8 @@ export namespace Components {
          */
         "ariaLabelProp": string;
         /**
-          * How far the bottom rule under the strip runs.  - `auto` — each tab draws its own 1px segment, so the rule is exactly as   wide as the tabs collectively are (default; unchanged behaviour). - `full` — one rule across the whole container, drawn by md-tabs itself   and running past the last tab to the container's edge.  `auto` is right when the strip fills its container, which it does at `tab-width="equal"`. It reads as a bug at `tab-width="auto"` in a wide panel, where three content-sized tabs leave the rule stopping a third of the way across and the panel below appearing to hang off the end of it.  In `full` mode the per-tab segments are suppressed by setting `--md-tab-divider-color: transparent` on the host — custom properties inherit through the slotted tabs' shadow roots, so there is no second source of truth about which mode is active.
-          * @default 'auto'
+          * How far the bottom rule under the strip runs.  - `full` — one rule across the whole container, drawn by md-tabs itself   and running past the last tab to the container's edge. **The default.** - `auto` — each tab draws its own 1px segment, so the rule is exactly as   wide as the tabs collectively are.  `full` IS THE DEFAULT because `auto` only looks right in the one case where the strip happens to fill its container — `tab-width="equal"`. In a wide panel at `tab-width="auto"`, a few content-sized tabs leave the rule stopping partway across and the panel below appears to hang off the end of it, which reads as a bug rather than a choice. `auto` remains available for a strip that genuinely should be bounded by its tabs.  In `full` mode the per-tab segments are suppressed by setting `--md-tab-divider-color: transparent` on the host — custom properties inherit through the slotted tabs' shadow roots, so there is no second source of truth about which mode is active.
+          * @default 'full'
          */
         "divider": 'auto' | 'full';
         /**
@@ -6828,6 +6858,16 @@ export namespace Components {
          */
         "disabled": boolean;
         /**
+          * Error state — paints the trigger with the error colour and shows `error-text`.
+          * @default false
+         */
+        "error": boolean;
+        /**
+          * Error message shown below the trigger when `error` is true.
+          * @default ''
+         */
+        "errorText": string;
+        /**
           * 12-hour (with AM/PM) or 24-hour clock.
           * @default '12h'
          */
@@ -6950,11 +6990,21 @@ export namespace Components {
          */
         "required": boolean;
         /**
+          * Always occupy the supporting-text line, even when there is no message, so a validation error does not push the content below it down. Forwarded to the embedded md-text-field. See that component for why it is opt-in.
+          * @default false
+         */
+        "reserveSupportingSpace": boolean;
+        /**
           * Adaptive layout policy. Per the MD3 spec the picker should swap orientation or variant based on the viewport so the dial never has to scroll. When `responsive` is enabled the dialog automatically:    • Falls back to `variant="input"` when the viewport height is     too short to fit the 256px dial (default threshold: 460px),     matching the spec line "Time pickers can fallback to the     input time picker when there isn't enough vertical real     estate to present the landscape orientation without     scrolling".   • Promotes the dial variant to `orientation="horizontal"`     when the viewport is wide enough for the 572/608px landscape     dialog (default threshold: width ≥ 720px AND width > height),     matching "the time picker can change to landscape orientation     on larger breakpoints or when viewport height is limited".  The `variant` / `orientation` props remain the *preference* the picker tries to honor — adaptive overrides only kick in when the viewport literally cannot fit them. Default `false` for backward compatibility; flip to `true` on new integrations to get the canonical MD3 adaptive layout.
           * @default false
          */
         "responsive": boolean;
         "show": () => Promise<void>;
+        /**
+          * Helper text shown below the trigger. Hidden while an error is displayed.
+          * @default ''
+         */
+        "supportingText": string;
         /**
           * Localized accessible label for the mode-toggle icon button when the picker is currently in the *input* variant (clock icon shown — click to switch to the dial). Matches the MD3 accessibility spec entry "Clock button → Toggle dial picker".
           * @default 'Toggle dial picker'
@@ -10375,6 +10425,11 @@ declare namespace LocalJSX {
          */
         "max"?: number;
         /**
+          * The SHAPE of the thing the badge is anchored to.  The badge pins to its containing block's top-inline-end CORNER and translates itself onto it, which is right for a `rect` host — a button, a tab, a tile. On a `circle` it is wrong for the same reason it is wrong for `md-status-dot`: a circle's bounding-box corner lies outside the visible shape, so the badge floats clear of the avatar with nothing behind it.  `circle` anchors it to the 45° point on the rim instead — the top-trailing arc, where a count badge on an avatar belongs. Percentage insets, so it is correct at every avatar size without being told the size, and it needs no hand-tuned offsets at the call site.  `rect` stays the default: changing it would move every badge already sitting on a button or a tab.
+          * @default 'rect'
+         */
+        "shape"?: 'rect' | 'circle';
+        /**
           * Text or number to display (large variant only, max 4 visible characters)
           * @default ''
          */
@@ -11099,6 +11154,11 @@ declare namespace LocalJSX {
     | 'warning'
     | 'info'
     | (string & {});
+        /**
+          * Inline-axis alignment of the chip's content row — leading icon, label and trailing icon together.  `center` (the default) is a no-op on a normal chip, which shrink-wraps its label: the content box and the container are the same size, so there is nothing to align. It matters only once a layout gives the chip a width — a grid column, `align-self: stretch`, an explicit `inline-size` — and then centre is usually wrong. The label floats in the middle of a wide outlined box and reads as an empty input rather than a chip, and a chip labelling something beneath it no longer shares a left edge with what it names.  `start` reads left in LTR / right in RTL, `end` the reverse, `center` is direction-agnostic. Use `::part(label)` for finer control.
+          * @default 'center'
+         */
+        "contentAlign"?: 'start' | 'center' | 'end';
         /**
           * Local density rung. Drives the same `--md-sys-density-scale` signal that a global `data-density` ancestor sets, so a local value simply overrides the inherited one. 0 = default, -4 = ultra-compact.
           * @default 0
@@ -12384,7 +12444,7 @@ declare namespace LocalJSX {
          */
         "matchAnchorWidth"?: boolean;
         /**
-          * Cap the menu surface block-size. When the items exceed it the list scrolls vertically inside a plain scroll viewport. A number is treated as pixels; any CSS length is passed through (e.g. `'50vh'`). Ignored when the menu has submenus — their flyouts must not be clipped by an overflow container.
+          * Cap the menu surface block-size. When the items exceed it the list scrolls vertically inside a plain scroll viewport. A number is treated as pixels; any CSS length is passed through (e.g. `'50vh'`). Unset, the cap falls back to `--md-menu-max-block-size` (250px). Applies to menus with submenus too: their flyouts are `position: fixed` and escape the scroll viewport rather than being clipped by it.
          */
         "maxHeight"?: number | string;
         /**
@@ -15135,6 +15195,11 @@ declare namespace LocalJSX {
          */
         "live"?: boolean;
         /**
+          * The SHAPE of the thing the dot is anchored to.  The dot anchors to the bottom-inline-end corner of its containing block, which is right for a `rect` host — a tile, a table cell, a rounded avatar square. It is wrong for a `circle`, because a circle's bounding-box corner lies outside the visible shape: measured on a 40px round avatar, the default anchor left the dot's centre 5.5px clear of the rim, floating in the gap with nothing behind it.  `circle` puts the dot ON the rim, at the 45° point where a presence dot belongs. The maths is percentage-based, so it holds at every avatar size without the dot having to be told what that size is: the rim at 45° sits `(1 − 1/√2) / 2 ≈ 14.6447%` of the diameter in from each edge, and half the dot's own size comes back off to centre it there.  `rect` stays the default deliberately — it is what a dot on a tile, a card or a table cell wants, and changing the default would move every dot that already exists.
+          * @default 'rect'
+         */
+        "shape"?: 'rect' | 'circle';
+        /**
           * Diameter preset: - `small`  — 8 px (pairs with `md-avatar size="small"`) - `medium` — 12 px (pairs with `md-avatar size="medium"` — default) - `large`  — 16 px (pairs with `md-avatar size="large"`)  Custom diameters are exposed via the `--md-status-dot-size` CSS custom property on the host.
           * @default 'medium'
          */
@@ -15371,6 +15436,11 @@ declare namespace LocalJSX {
          */
         "orientation"?: 'horizontal' | 'vertical';
         /**
+          * Render the stepper as a **status trail**: something to read, not to drive. Every step header stops being a button — no click, no keyboard activation, no ripple, no hover state layer, no tab stop, no `role="button"` — while `aria-current` still says which stage it is on. Not the same as `nav="false"`, which only hides the Back / Continue bar.
+          * @default false
+         */
+        "readonly"?: boolean;
+        /**
           * Localized word for "Step" in each step's announced name ("Step 2 of 4").
           * @default 'Step'
          */
@@ -15387,6 +15457,11 @@ declare namespace LocalJSX {
           * @default ''
          */
         "badge"?: string;
+        /**
+          * Hover intent — milliseconds an open flyout survives the pointer leaving the row, so a diagonal from the row to the flyout can cross the sibling rows in between without the flyout switching. Cancelled the moment the pointer re-enters the row OR the flyout. `0` closes on exit. Escape and ArrowLeft never wait.
+          * @default 400
+         */
+        "closeDelay"?: number;
         /**
           * Local density rung. Drives the same `--md-sys-density-scale` signal that a global `data-density` ancestor sets, so a local value simply overrides the inherited one. 0 = default, -4 = ultra-compact.
           * @default 0
@@ -15416,6 +15491,11 @@ declare namespace LocalJSX {
           * Fires when the item row itself is clicked (not the submenu).
          */
         "onMdClick"?: (event: MdSubMenuItemCustomEvent<void>) => void;
+        /**
+          * Hover intent — milliseconds the pointer must rest on the row before the flyout opens. Keeps a pointer that is merely passing over the row on its way elsewhere from opening it. `0` opens on contact. The KEYBOARD never waits: ArrowRight / Enter / Space open immediately whatever this is set to.
+          * @default 100
+         */
+        "openDelay"?: number;
         /**
           * Secondary descriptive text below the headline.
           * @default ''
@@ -16270,8 +16350,8 @@ declare namespace LocalJSX {
          */
         "ariaLabelProp"?: string;
         /**
-          * How far the bottom rule under the strip runs.  - `auto` — each tab draws its own 1px segment, so the rule is exactly as   wide as the tabs collectively are (default; unchanged behaviour). - `full` — one rule across the whole container, drawn by md-tabs itself   and running past the last tab to the container's edge.  `auto` is right when the strip fills its container, which it does at `tab-width="equal"`. It reads as a bug at `tab-width="auto"` in a wide panel, where three content-sized tabs leave the rule stopping a third of the way across and the panel below appearing to hang off the end of it.  In `full` mode the per-tab segments are suppressed by setting `--md-tab-divider-color: transparent` on the host — custom properties inherit through the slotted tabs' shadow roots, so there is no second source of truth about which mode is active.
-          * @default 'auto'
+          * How far the bottom rule under the strip runs.  - `full` — one rule across the whole container, drawn by md-tabs itself   and running past the last tab to the container's edge. **The default.** - `auto` — each tab draws its own 1px segment, so the rule is exactly as   wide as the tabs collectively are.  `full` IS THE DEFAULT because `auto` only looks right in the one case where the strip happens to fill its container — `tab-width="equal"`. In a wide panel at `tab-width="auto"`, a few content-sized tabs leave the rule stopping partway across and the panel below appears to hang off the end of it, which reads as a bug rather than a choice. `auto` remains available for a strip that genuinely should be bounded by its tabs.  In `full` mode the per-tab segments are suppressed by setting `--md-tab-divider-color: transparent` on the host — custom properties inherit through the slotted tabs' shadow roots, so there is no second source of truth about which mode is active.
+          * @default 'full'
          */
         "divider"?: 'auto' | 'full';
         /**
@@ -16522,6 +16602,16 @@ declare namespace LocalJSX {
          */
         "disabled"?: boolean;
         /**
+          * Error state — paints the trigger with the error colour and shows `error-text`.
+          * @default false
+         */
+        "error"?: boolean;
+        /**
+          * Error message shown below the trigger when `error` is true.
+          * @default ''
+         */
+        "errorText"?: string;
+        /**
           * The `id` of a `<form>` element to associate this element with.
          */
         "form"?: string;
@@ -16668,10 +16758,20 @@ declare namespace LocalJSX {
          */
         "required"?: boolean;
         /**
+          * Always occupy the supporting-text line, even when there is no message, so a validation error does not push the content below it down. Forwarded to the embedded md-text-field. See that component for why it is opt-in.
+          * @default false
+         */
+        "reserveSupportingSpace"?: boolean;
+        /**
           * Adaptive layout policy. Per the MD3 spec the picker should swap orientation or variant based on the viewport so the dial never has to scroll. When `responsive` is enabled the dialog automatically:    • Falls back to `variant="input"` when the viewport height is     too short to fit the 256px dial (default threshold: 460px),     matching the spec line "Time pickers can fallback to the     input time picker when there isn't enough vertical real     estate to present the landscape orientation without     scrolling".   • Promotes the dial variant to `orientation="horizontal"`     when the viewport is wide enough for the 572/608px landscape     dialog (default threshold: width ≥ 720px AND width > height),     matching "the time picker can change to landscape orientation     on larger breakpoints or when viewport height is limited".  The `variant` / `orientation` props remain the *preference* the picker tries to honor — adaptive overrides only kick in when the viewport literally cannot fit them. Default `false` for backward compatibility; flip to `true` on new integrations to get the canonical MD3 adaptive layout.
           * @default false
          */
         "responsive"?: boolean;
+        /**
+          * Helper text shown below the trigger. Hidden while an error is displayed.
+          * @default ''
+         */
+        "supportingText"?: string;
         /**
           * Localized accessible label for the mode-toggle icon button when the picker is currently in the *input* variant (clock icon shown — click to switch to the dial). Matches the MD3 accessibility spec entry "Clock button → Toggle dial picker".
           * @default 'Toggle dial picker'
@@ -17116,6 +17216,7 @@ declare namespace LocalJSX {
         "value": string;
         "max": number;
         "icon": string;
+        "shape": 'rect' | 'circle';
         "density": 0 | -1 | -2 | -3 | -4;
     }
     interface MdBarChartAttributes {
@@ -17268,6 +17369,7 @@ declare namespace LocalJSX {
         "softDisabled": boolean;
         "removable": boolean;
         "label": string;
+        "contentAlign": 'start' | 'center' | 'end';
         "density": 0 | -1 | -2 | -3 | -4;
     }
     interface MdColorPickerAttributes {
@@ -17978,6 +18080,7 @@ declare namespace LocalJSX {
         "state": MdStatusDotState;
         "size": MdStatusDotSize;
         "inline": boolean;
+        "shape": 'rect' | 'circle';
         "live": boolean;
         "label": string;
         "density": 0 | -1 | -2 | -3 | -4;
@@ -18007,6 +18110,7 @@ declare namespace LocalJSX {
         "active": number;
         "autoComplete": boolean;
         "nav": boolean;
+        "readonly": boolean;
         "nextDisabled": boolean;
         "loading": boolean;
         "lazy": boolean;
@@ -18029,6 +18133,8 @@ declare namespace LocalJSX {
         "divider": boolean;
         "gap": boolean;
         "badge": string;
+        "openDelay": number;
+        "closeDelay": number;
         "density": 0 | -1 | -2 | -3 | -4;
     }
     interface MdSwitchAttributes {
@@ -18235,6 +18341,10 @@ declare namespace LocalJSX {
         "max": string;
         "required": boolean;
         "label": string;
+        "supportingText": string;
+        "error": boolean;
+        "errorText": string;
+        "reserveSupportingSpace": boolean;
         "headline": string;
         "headlineInputLabel": string;
         "headlineDialLabel": string;
