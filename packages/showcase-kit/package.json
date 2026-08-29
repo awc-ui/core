@@ -19,6 +19,11 @@
       "import": "./dist/credit-risk/index.mjs"
     },
     "./credit-risk/app.css": "./src/credit-risk/app.css",
+    "./wealth": {
+      "types": "./dist/wealth/index.d.ts",
+      "import": "./dist/wealth/index.mjs"
+    },
+    "./wealth/app.css": "./src/wealth/app.css",
     "./i18n": {
       "types": "./dist/i18n/index.d.ts",
       "import": "./dist/i18n/index.mjs"
@@ -40,8 +45,9 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.json --emitDeclarationOnly && esbuild src/index.ts src/data/index.ts src/credit-risk/index.ts src/i18n/index.ts src/dock/index.ts src/preboot/index.ts --bundle --splitting --format=esm --target=es2020 --sourcemap --outdir=dist --out-extension:.js=.mjs --chunk-names=chunks/[name]-[hash] && node scripts/emit-preboot.mjs",
+    "build": "rm -rf dist && tsc -p tsconfig.json --emitDeclarationOnly && esbuild src/index.ts src/data/index.ts src/credit-risk/index.ts src/wealth/index.ts src/i18n/index.ts src/dock/index.ts src/preboot/index.ts --bundle --splitting --format=esm --target=es2020 --sourcemap --outdir=dist --out-extension:.js=.mjs --chunk-names=chunks/[name]-[hash] && node scripts/emit-preboot.mjs",
     "generate:fixture": "node scripts/generate-fixture.mjs",
+    "generate:wealth": "node scripts/generate-wealth-fixture.mjs",
     "generate:seeds": "node scripts/generate-seeds.mjs",
     "verify": "node scripts/verify.mjs",
     "lint": "tsc --noEmit"

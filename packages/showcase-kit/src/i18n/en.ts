@@ -1,12 +1,30 @@
 /**
  * English dictionary — the source of truth for the message-key contract.
  *
- * `MessageKey` is derived from this object, so `ro` and `ar` fail to compile if
- * they drift. Every visible string in the showcase, including the dock's own
- * controls, resolves through here. Proper nouns (counterparty legal names,
- * corporate group names) live in the fixture, not in the dictionaries.
+ * `RequiredMessageKey` is derived from `core` below, so `ro` and `ar` fail to
+ * compile if they drift from it. Every visible string in the showcase,
+ * including the dock's own controls, resolves through here. Proper nouns
+ * (counterparty legal names, corporate group names, household names, security
+ * names) live in the fixtures, not in the dictionaries.
+ *
+ * TWO BLOCKS, ONE DICTIONARY.
+ *
+ * `core` is the credit-risk vertical plus the shared chrome — the dock, the
+ * formatters' units, the table pagination. Every locale must translate all of
+ * it, and `Dictionary` enforces that.
+ *
+ * `wealth` is the second vertical, and every one of its keys is namespaced
+ * `wealth.…`, so it cannot collide with the first — which matters, because both
+ * verticals have an `app.brand`, a `table.status` and a `nav.overview` that
+ * mean different things.
+ *
+ * The block was once English-only and `Dictionary` made its keys optional, so
+ * `ro` and `ar` fell through to English for all of them. They are translated
+ * now, and `RequiredMessageKey` covers both blocks: a locale that drifts from
+ * this file fails to compile, which is the check you want. Adding a key here
+ * means adding it in `ro.ts` and `ar.ts` in the same change.
  */
-export const en = {
+const core = {
   /* ------------------------------------------------------------- product */
   'app.brand': 'Aurelia Bank',
   'app.title': 'Credit Risk Console',
@@ -313,10 +331,722 @@ export const en = {
   'dock.reset': 'Reset controls',
 } as const;
 
-/** Every message key the showcase may ask for. */
+/**
+ * Kestrel Private Bank — Wealth Management Console.
+ *
+ * Every key is namespaced `wealth.…`, without exception, including the ones
+ * that look generic. The fixture's `…Key` twins point straight at the enum
+ * blocks below (`wealth.strategy.balanced`, `wealth.kycStatus.expired`), so a
+ * screen renders `t(household.strategyKey)` and never composes a key by hand.
+ *
+ * Sentence case throughout, per §9.2 — including the ones a bank would
+ * conventionally capitalise.
+ */
+const wealth = {
+  /* ------------------------------------------------------------- product */
+  'wealth.app.brand': 'Kestrel Private Bank',
+  'wealth.app.title': 'Wealth Management Console',
+  'wealth.app.subtitle': 'Advisor book, mandates and client objectives',
+  'wealth.app.reportingDate': 'Valued {date}',
+  'wealth.app.reportingQuarter': 'Quarter {quarter}',
+  'wealth.app.baseCurrency': 'All amounts in {currency} unless stated',
+  'wealth.app.advisor': 'Signed in as {name}',
+  'wealth.app.demo': 'Demo — not a real bank',
+  'wealth.app.demoNotice':
+    'Kestrel Private Bank is fictional. This is a component showcase built on invented data, with no affiliation to any real institution, person or security.',
+
+  /* ---------------------------------------------------------- navigation */
+  'wealth.nav.label': 'Main navigation',
+  'wealth.nav.breadcrumb': 'Breadcrumb',
+  'wealth.nav.overview': 'Overview',
+  'wealth.nav.holdings': 'Holdings',
+  'wealth.nav.household': 'Household',
+  'wealth.nav.proposals': 'Proposals',
+  'wealth.nav.trade': 'Trade',
+  'wealth.nav.planning': 'Planning',
+  'wealth.nav.menu': 'Show navigation labels',
+  'wealth.nav.toolbar': 'Screen actions',
+  'wealth.nav.notifications': 'Notifications',
+  'wealth.nav.account': 'Account',
+  'wealth.nav.help': 'Help',
+
+  /* ------------------------------------------------------------- screens */
+  'wealth.screen.overview.title': 'Book overview',
+  'wealth.screen.overview.subtitle': 'Assets, performance and attention items at {date}',
+  'wealth.screen.holdings.title': 'Holdings',
+  'wealth.screen.holdings.subtitle': '{positions} positions across {instruments} instruments',
+  'wealth.screen.household.title': '{name}',
+  'wealth.screen.household.subtitle': '{segment} · {mandate} · {members} members',
+  'wealth.screen.household.missing': 'No household with that reference',
+  'wealth.screen.proposals.title': 'Proposals',
+  'wealth.screen.proposals.subtitle': '{open} of {total} still in review',
+  'wealth.screen.trade.title': 'Trade',
+  'wealth.screen.trade.subtitle': '{working} working orders on the blotter',
+  'wealth.screen.planning.title': 'Planning',
+  'wealth.screen.planning.subtitle': '{onTrack} of {total} objectives on track',
+  'wealth.screen.notFound.title': 'Screen not found',
+  'wealth.screen.notFound.subtitle': 'Nothing is served at this address',
+  'wealth.screen.placeholder': 'This screen is not built yet.',
+
+  /* ---------------------------------------------------------------- KPIs */
+  'wealth.kpi.aum': 'Assets under management',
+  'wealth.kpi.aum.short': 'AUM',
+  'wealth.kpi.aum.help': 'Market value of every mandate, including uninvested cash',
+  'wealth.kpi.cash': 'Cash',
+  'wealth.kpi.securities': 'Securities',
+  'wealth.kpi.costBasis': 'Cost basis',
+  'wealth.kpi.unrealisedPl': 'Unrealised P/L',
+  'wealth.kpi.ytdReturn': 'Return year to date',
+  'wealth.kpi.ytdReturn.short': 'YTD',
+  'wealth.kpi.oneYearReturn': 'Return, 1 year',
+  'wealth.kpi.twoYearReturn': 'Return, 2 years',
+  'wealth.kpi.benchmark': 'Benchmark',
+  'wealth.kpi.excessReturn': 'Against benchmark',
+  'wealth.kpi.netNewMoney': 'Net new money',
+  'wealth.kpi.households': 'Households',
+  'wealth.kpi.clients': 'Clients',
+  'wealth.kpi.portfolios': 'Mandates',
+  'wealth.kpi.positions': 'Positions',
+  'wealth.kpi.instruments': 'Instruments',
+  'wealth.kpi.goals': 'Objectives',
+  'wealth.kpi.goalsOnTrack': 'Objectives on track',
+  'wealth.kpi.goalsAtRisk': 'Objectives at risk',
+  'wealth.kpi.proposals': 'Proposals',
+  'wealth.kpi.openProposals': 'Open proposals',
+  'wealth.kpi.workingOrders': 'Working orders',
+  'wealth.kpi.driftBreaches': 'Allocation breaches',
+  'wealth.kpi.kycReviewDue': 'KYC attention',
+  'wealth.kpi.reviewsDue': 'Reviews due',
+  'wealth.kpi.largestHousehold': 'Largest household',
+  'wealth.kpi.topThree': 'Top three households',
+  'wealth.kpi.topHolding': 'Largest holding',
+  'wealth.kpi.nonBaseCurrency': 'Non-euro exposure',
+  'wealth.kpi.maxDrawdown': 'Maximum drawdown',
+  'wealth.kpi.dayChange': 'Move today',
+
+  /* ------------------------------------------------------- table headers */
+  'wealth.table.id': 'Reference',
+  'wealth.table.household': 'Household',
+  'wealth.table.client': 'Client',
+  'wealth.table.role': 'Role',
+  'wealth.table.age': 'Age',
+  'wealth.table.domicile': 'Domicile',
+  'wealth.table.contact': 'Contact',
+  'wealth.table.kyc': 'KYC',
+  'wealth.table.kycReview': 'KYC review',
+  'wealth.table.riskTolerance': 'Risk tolerance',
+  'wealth.table.riskProfile': 'Risk profile',
+  'wealth.table.segment': 'Segment',
+  'wealth.table.mandate': 'Mandate',
+  'wealth.table.strategy': 'Strategy',
+  'wealth.table.benchmark': 'Benchmark',
+  'wealth.table.advisor': 'Advisor',
+  'wealth.table.members': 'Members',
+  'wealth.table.aum': 'AUM',
+  'wealth.table.ytd': 'YTD',
+  'wealth.table.unrealisedPl': 'Unrealised P/L',
+  'wealth.table.plPct': 'P/L %',
+  'wealth.table.nextReview': 'Next review',
+  'wealth.table.lastReview': 'Last review',
+  'wealth.table.lastContact': 'Last contact',
+  'wealth.table.onboarded': 'Onboarded',
+  'wealth.table.inception': 'Inception',
+  'wealth.table.lastRebalance': 'Last rebalanced',
+  'wealth.table.fee': 'Fee',
+  'wealth.table.ticker': 'Ticker',
+  'wealth.table.instrument': 'Instrument',
+  'wealth.table.type': 'Type',
+  'wealth.table.assetClass': 'Asset class',
+  'wealth.table.sector': 'Sector',
+  'wealth.table.region': 'Region',
+  'wealth.table.currency': 'Currency',
+  'wealth.table.quantity': 'Quantity',
+  'wealth.table.price': 'Price',
+  'wealth.table.costPerUnit': 'Average cost',
+  'wealth.table.marketValue': 'Market value',
+  'wealth.table.costBasis': 'Cost basis',
+  'wealth.table.weight': 'Weight',
+  'wealth.table.bookWeight': 'Share of book',
+  'wealth.table.dayChange': 'Today',
+  'wealth.table.twelveMonth': '12 months',
+  'wealth.table.trend': 'Trend',
+  'wealth.table.opened': 'Opened',
+  'wealth.table.target': 'Target',
+  'wealth.table.actual': 'Actual',
+  'wealth.table.drift': 'Drift',
+  'wealth.table.driftBps': 'Drift (bps)',
+  'wealth.table.rebalance': 'To trade',
+  'wealth.table.status': 'Status',
+  'wealth.table.priority': 'Priority',
+  'wealth.table.goal': 'Objective',
+  'wealth.table.beneficiary': 'For',
+  'wealth.table.targetAmount': 'Target',
+  'wealth.table.targetDate': 'Target date',
+  'wealth.table.current': 'Current',
+  'wealth.table.funded': 'Funded',
+  'wealth.table.projected': 'Projected',
+  'wealth.table.shortfall': 'Shortfall',
+  'wealth.table.contribution': 'Monthly',
+  'wealth.table.progress': 'Progress',
+  'wealth.table.estimatedValue': 'Estimated value',
+  'wealth.table.created': 'Created',
+  'wealth.table.updated': 'Updated',
+  'wealth.table.daysOpen': 'Days open',
+  'wealth.table.side': 'Side',
+  'wealth.table.orderType': 'Order type',
+  'wealth.table.limitPrice': 'Limit',
+  'wealth.table.timeInForce': 'Time in force',
+  'wealth.table.filled': 'Filled',
+  'wealth.table.averageFill': 'Average fill',
+  'wealth.table.when': 'When',
+  'wealth.table.category': 'Category',
+  'wealth.table.action': 'Action',
+  'wealth.table.actor': 'By',
+  'wealth.table.subject': 'Subject',
+  'wealth.table.rowsPerPage': 'Rows per page:',
+  'wealth.table.displayedRows': '%from%–%to% of %count%',
+  'wealth.table.firstPage': 'First page',
+  'wealth.table.previousPage': 'Previous page',
+  'wealth.table.nextPage': 'Next page',
+  'wealth.table.lastPage': 'Last page',
+  'wealth.table.all': 'All',
+
+  /* ------------------------------------------------------------- panels */
+  'wealth.panel.book': 'The book',
+  'wealth.panel.bookHint': '{count} households, largest first',
+  'wealth.panel.performance': 'Performance',
+  'wealth.panel.performanceHint': 'Growth of {base} over {months} months, against the benchmark',
+  'wealth.panel.allocation': 'Allocation',
+  'wealth.panel.allocationHint': 'Target against actual, by asset class',
+  'wealth.panel.rebalance': 'Rebalancing',
+  'wealth.panel.rebalanceHint': 'Mandates with a class outside its band',
+  'wealth.panel.activity': 'Recent activity',
+  'wealth.panel.activityHint': 'Newest first',
+  'wealth.panel.members': 'Members',
+  'wealth.panel.holdings': 'Holdings',
+  'wealth.panel.movers': 'Biggest moves today',
+  'wealth.panel.universe': 'Instrument universe',
+  'wealth.panel.currency': 'Currency exposure',
+  'wealth.panel.regions': 'By region',
+  'wealth.panel.concentration': 'Concentration',
+  'wealth.panel.objectives': 'Objectives',
+  'wealth.panel.projection': 'Funding projection',
+  'wealth.panel.blotter': 'Order blotter',
+  'wealth.panel.ticket': 'New order',
+  'wealth.panel.mandate': 'Mandate',
+  'wealth.panel.review': 'Proposal review',
+  'wealth.panel.returns': 'Return windows',
+
+  /* --------------------------------------------------------- advisor */
+  'wealth.advisor.title.senior': 'Senior relationship manager',
+  'wealth.advisor.title.advisor': 'Relationship manager',
+  'wealth.advisor.title.associate': 'Associate advisor',
+  'wealth.advisor.desk': 'Booking centre',
+
+  /* ------------------------------------------------------- household */
+  'wealth.riskProfile.defensive': 'Defensive',
+  'wealth.riskProfile.balanced': 'Balanced',
+  'wealth.riskProfile.growth': 'Growth',
+  'wealth.riskProfile.dynamic': 'Dynamic',
+  'wealth.mandate.discretionary': 'Discretionary',
+  'wealth.mandate.advisory': 'Advisory',
+  'wealth.mandate.execution-only': 'Execution only',
+  'wealth.segment.affluent': 'Affluent',
+  'wealth.segment.private-wealth': 'Private wealth',
+  'wealth.segment.family-office': 'Family office',
+  'wealth.strategy.conservative': 'Conservative',
+  'wealth.strategy.balanced': 'Balanced',
+  'wealth.strategy.growth': 'Growth',
+  'wealth.strategy.aggressive': 'Aggressive',
+
+  /* ---------------------------------------------------------- clients */
+  'wealth.clientRole.primary': 'Primary',
+  'wealth.clientRole.spouse': 'Spouse',
+  'wealth.clientRole.beneficiary': 'Beneficiary',
+  'wealth.clientRole.trustee': 'Trustee',
+  'wealth.riskTolerance.low': 'Low',
+  'wealth.riskTolerance.medium': 'Medium',
+  'wealth.riskTolerance.high': 'High',
+  'wealth.kycStatus.verified': 'Verified',
+  'wealth.kycStatus.review-due': 'Review due',
+  'wealth.kycStatus.pending': 'Pending',
+  'wealth.kycStatus.expired': 'Expired',
+
+  /* ------------------------------------------------------ instruments */
+  'wealth.instrumentType.equity': 'Equity',
+  'wealth.instrumentType.bond': 'Bond',
+  'wealth.instrumentType.fund': 'Fund',
+  'wealth.instrumentType.etf': 'ETF',
+  'wealth.instrumentType.alternative': 'Alternative',
+  'wealth.assetClass.equity': 'Equity',
+  'wealth.assetClass.fixed-income': 'Fixed income',
+  'wealth.assetClass.real-assets': 'Real assets',
+  'wealth.assetClass.alternatives': 'Alternatives',
+  'wealth.assetClass.cash': 'Cash',
+  'wealth.instrumentSector.technology': 'Technology',
+  'wealth.instrumentSector.healthcare': 'Healthcare',
+  'wealth.instrumentSector.industrials': 'Industrials',
+  'wealth.instrumentSector.consumer': 'Consumer',
+  'wealth.instrumentSector.energy': 'Energy',
+  'wealth.instrumentSector.utilities': 'Utilities',
+  'wealth.instrumentSector.real-estate': 'Real estate',
+  'wealth.instrumentSector.government': 'Government',
+  'wealth.instrumentSector.corporate': 'Corporate',
+  'wealth.instrumentSector.diversified': 'Diversified',
+  'wealth.instrumentSector.infrastructure': 'Infrastructure',
+  'wealth.instrumentSector.private-credit': 'Private credit',
+  'wealth.instrumentSector.private-equity': 'Private equity',
+  'wealth.instrumentSector.hedge-fund': 'Hedge fund',
+  'wealth.instrumentSector.commodities': 'Commodities',
+  'wealth.region.europe': 'Europe',
+  'wealth.region.north-america': 'North America',
+  'wealth.region.asia-pacific': 'Asia Pacific',
+  'wealth.region.emerging': 'Emerging markets',
+  'wealth.region.global': 'Global',
+
+  /* ------------------------------------------------------- allocation */
+  'wealth.allocationStatus.in-band': 'In band',
+  'wealth.allocationStatus.drifted': 'Drifted',
+  'wealth.allocationStatus.breach': 'Outside band',
+  'wealth.allocation.overweight': 'Overweight by {value}',
+  'wealth.allocation.underweight': 'Underweight by {value}',
+  'wealth.allocation.onTarget': 'On target',
+  'wealth.allocation.buy': 'Buy {value}',
+  'wealth.allocation.sell': 'Sell {value}',
+
+  /* ------------------------------------------------------------ goals */
+  'wealth.goalType.retirement': 'Retirement',
+  'wealth.goalType.education': 'Education',
+  'wealth.goalType.property': 'Property',
+  'wealth.goalType.legacy': 'Legacy',
+  'wealth.goalType.liquidity': 'Liquidity reserve',
+  'wealth.goalStatus.funded': 'Funded',
+  'wealth.goalStatus.on-track': 'On track',
+  'wealth.goalStatus.at-risk': 'At risk',
+  'wealth.goalStatus.behind': 'Behind',
+  'wealth.priority.high': 'High',
+  'wealth.priority.medium': 'Medium',
+  'wealth.priority.low': 'Low',
+  'wealth.goal.fundedOf': '{current} of {target}',
+  'wealth.goal.monthsRemaining': '{count} months remaining',
+  'wealth.goal.assumedGrowth': 'Assumes {value} a year',
+  'wealth.goal.projectedAt': 'Projected {value} at the target date',
+
+  /* -------------------------------------------------------- proposals */
+  'wealth.proposalType.rebalance': 'Rebalance',
+  'wealth.proposalType.new-mandate': 'New mandate',
+  'wealth.proposalType.cash-raise': 'Cash raise',
+  'wealth.proposalType.tax-harvest': 'Tax harvesting',
+  'wealth.proposalType.goal-funding': 'Objective funding',
+  'wealth.proposalStatus.draft': 'Draft',
+  'wealth.proposalStatus.in-review': 'In review',
+  'wealth.proposalStatus.compliance': 'With compliance',
+  'wealth.proposalStatus.client-review': 'With client',
+  'wealth.proposalStatus.approved': 'Approved',
+  'wealth.proposalStatus.rejected': 'Rejected',
+  'wealth.proposalStep.drafting': 'Drafting',
+  'wealth.proposalStep.suitability': 'Suitability',
+  'wealth.proposalStep.compliance': 'Compliance',
+  'wealth.proposalStep.client-review': 'Client review',
+  'wealth.proposalStep.execution': 'Execution',
+  'wealth.stepState.complete': 'Complete',
+  'wealth.stepState.current': 'In progress',
+  'wealth.stepState.pending': 'Not started',
+  'wealth.stepState.blocked': 'Blocked',
+  'wealth.proposal.stepProgress': 'Step {current} of {total}',
+  'wealth.proposal.feeImpact': 'Estimated quarterly fee {value}',
+
+  /* ----------------------------------------------------------- orders */
+  'wealth.orderSide.buy': 'Buy',
+  'wealth.orderSide.sell': 'Sell',
+  'wealth.orderType.market': 'Market',
+  'wealth.orderType.limit': 'Limit',
+  'wealth.orderType.stop-limit': 'Stop limit',
+  'wealth.timeInForce.day': 'Day',
+  'wealth.timeInForce.gtc': 'Good till cancelled',
+  'wealth.timeInForce.ioc': 'Immediate or cancel',
+  'wealth.timeInForce.fok': 'Fill or kill',
+  'wealth.orderStatus.draft': 'Draft',
+  'wealth.orderStatus.staged': 'Staged',
+  'wealth.orderStatus.submitted': 'Submitted',
+  'wealth.orderStatus.partially-filled': 'Partially filled',
+  'wealth.orderStatus.filled': 'Filled',
+  'wealth.orderStatus.cancelled': 'Cancelled',
+  'wealth.orderStatus.rejected': 'Rejected',
+  'wealth.order.filledOf': '{filled} of {quantity}',
+  'wealth.order.estimate': 'About {value}',
+  'wealth.order.exceedsCash': 'More than the mandate holds in cash',
+  'wealth.order.lotHint': 'Trades in multiples of {size}',
+  'wealth.order.raisedUnder': 'Raised under {id}',
+
+  /* --------------------------------------------------------- activity */
+  'wealth.activity.order-placed': 'Placed an order',
+  'wealth.activity.order-filled': 'An order filled',
+  'wealth.activity.proposal-created': 'Created a proposal',
+  'wealth.activity.proposal-approved': 'Approved a proposal',
+  'wealth.activity.rebalance-executed': 'Executed a rebalance',
+  'wealth.activity.kyc-updated': 'Updated KYC',
+  'wealth.activity.goal-created': 'Created an objective',
+  'wealth.activity.client-contacted': 'Contacted the client',
+  'wealth.activity.document-signed': 'A document was signed',
+  'wealth.activity.review-completed': 'Completed a review',
+  'wealth.activity.cash-received': 'Cash received',
+  'wealth.activity.mandate-changed': 'Changed the mandate',
+  'wealth.activityCategory.trading': 'Trading',
+  'wealth.activityCategory.advice': 'Advice',
+  'wealth.activityCategory.compliance': 'Compliance',
+  'wealth.activityCategory.planning': 'Planning',
+  'wealth.activityCategory.relationship': 'Relationship',
+  'wealth.activityCategory.operations': 'Operations',
+  'wealth.entity.household': 'Household',
+  'wealth.entity.client': 'Client',
+  'wealth.entity.portfolio': 'Mandate',
+  'wealth.entity.order': 'Order',
+  'wealth.entity.proposal': 'Proposal',
+  'wealth.entity.goal': 'Objective',
+
+  /* -------------------------------------------------------- countries */
+  'wealth.country.AE': 'United Arab Emirates',
+  'wealth.country.CH': 'Switzerland',
+  'wealth.country.DE': 'Germany',
+  'wealth.country.FR': 'France',
+  'wealth.country.GB': 'United Kingdom',
+  'wealth.country.IT': 'Italy',
+  'wealth.country.SE': 'Sweden',
+
+  /* ------------------------------------------------------------- verbs */
+  'wealth.action.search': 'Search',
+  'wealth.action.searchHouseholds': 'Search households',
+  'wealth.action.searchHoldings': 'Search holdings',
+  'wealth.action.filter': 'Filter',
+  'wealth.action.clearFilters': 'Clear filters',
+  'wealth.action.newProposal': 'New proposal',
+  'wealth.action.newOrder': 'New order',
+  'wealth.action.newGoal': 'New objective',
+  'wealth.action.rebalance': 'Rebalance',
+  'wealth.action.review': 'Review',
+  'wealth.action.approve': 'Approve',
+  'wealth.action.reject': 'Reject',
+  'wealth.action.submit': 'Submit',
+  'wealth.action.cancel': 'Cancel',
+  'wealth.action.back': 'Back',
+  'wealth.action.next': 'Next',
+  'wealth.action.close': 'Close',
+  'wealth.action.export': 'Export',
+  'wealth.action.openHousehold': 'Open household',
+  'wealth.action.contact': 'Contact',
+  'wealth.action.viewAll': 'View all',
+  'wealth.action.sortBy': 'Sort by',
+
+  /* -------------------------------------------------------- empty state */
+  'wealth.empty.households': 'No households match these filters',
+  'wealth.empty.holdings': 'No holdings match these filters',
+  'wealth.empty.clients': 'This household has no recorded members',
+  'wealth.empty.goals': 'No objectives recorded for this household',
+  'wealth.empty.proposals': 'No proposals in flight',
+  'wealth.empty.orders': 'Nothing on the blotter',
+  'wealth.empty.activity': 'No recorded activity',
+  'wealth.empty.rebalance': 'Every mandate is within its bands',
+  'wealth.empty.search': 'Nothing found for “{query}”',
+  'wealth.empty.generic': 'Nothing to show',
+  'wealth.empty.hint': 'Try widening the filters or clearing the search.',
+
+  /* -------------------------------------------------------------- common */
+  'wealth.common.total': 'Total',
+  'wealth.common.all': 'All',
+  'wealth.common.none': 'None',
+  'wealth.common.na': 'n/a',
+  'wealth.common.yes': 'Yes',
+  'wealth.common.no': 'No',
+  'wealth.common.household': 'Household level',
+  'wealth.common.showing': 'Showing {shown} of {total}',
+  'wealth.common.of': '{count} of {total}',
+  'wealth.common.more': '{count} more',
+  'wealth.common.entries': '{count} entries',
+  'wealth.common.since': 'Since {date}',
+  'wealth.common.vsBenchmark': 'vs. benchmark',
+  'wealth.unit.bps': '{value} bps',
+  'wealth.unit.months': '{value} months',
+  'wealth.unit.days': '{value} days',
+  'wealth.unit.units': '{value} units',
+
+  /* ============================================================
+     PROPOSAL BUILDER — folded in from the app-local shim that used
+     to carry these. Every key kept its exact name, so no call site
+     changed; the shim was written to disappear the moment they
+     landed here.
+     ============================================================ */
+  /* ----------------------------------------------------------- the builder */
+
+  'wealth.proposal.builder.title': 'New proposal',
+  'wealth.proposal.builder.hint': 'Four steps from the client to a signed instruction',
+  'wealth.proposal.builder.label': 'Proposal progress',
+  'wealth.proposal.builder.done': 'Sent to compliance',
+  'wealth.proposal.builder.doneHint':
+    'The document is locked while compliance holds it. You will be notified when it comes back.',
+  'wealth.proposal.builder.restart': 'Start another proposal',
+
+  /* ------------------------------------------------------------- the steps */
+
+  'wealth.proposal.step.client': 'Client',
+  'wealth.proposal.step.clientHint': 'Who the advice is for',
+  'wealth.proposal.step.risk': 'Suitability',
+  'wealth.proposal.step.riskHint': 'Horizon, conviction and constraints',
+  'wealth.proposal.step.allocation': 'Allocation',
+  'wealth.proposal.step.allocationHint': 'Target weights and the instrument list',
+  'wealth.proposal.step.sign': 'Review',
+  'wealth.proposal.step.signHint': 'Check the summary and sign',
+
+  /* ------------------------------------------------------------- the fields */
+
+  'wealth.proposal.field.title': 'Proposal title',
+  'wealth.proposal.field.titleHint': 'Appears at the head of the advice document',
+  'wealth.proposal.field.household': 'Household',
+  'wealth.proposal.field.householdHint': 'The mandate the advice applies to',
+  'wealth.proposal.field.client': 'Signing client',
+  'wealth.proposal.field.clientHint': 'The member who signs the instruction',
+  'wealth.proposal.field.objective': 'Objective funded',
+  'wealth.proposal.field.objectiveHint': 'Optional. Ties the horizon to a target date',
+  'wealth.proposal.field.objectiveNone': 'No objective',
+  'wealth.proposal.field.type': 'Proposal type',
+  'wealth.proposal.field.reviewDate': 'Review meeting',
+  'wealth.proposal.field.reviewDateHint': 'On or after the reporting date',
+  'wealth.proposal.field.reviewTime': 'Meeting time',
+  'wealth.proposal.field.reviewTimeHint': 'Between 08:00 and 19:00, in quarter hours',
+  'wealth.proposal.field.horizon': 'Investment horizon',
+  'wealth.proposal.field.horizonHint': 'How long the money stays invested',
+  'wealth.proposal.field.conviction': 'Advisor conviction',
+  'wealth.proposal.field.convictionHint': 'Your confidence in this recommendation',
+  'wealth.proposal.field.constraints': 'Excluded instrument types',
+  'wealth.proposal.field.constraintsHint':
+    'An excluded type cannot be proposed, and leaves the list if it is already there',
+  'wealth.proposal.field.esg': 'ESG screening',
+  'wealth.proposal.field.esgHint': 'Removes energy-sector instruments from the proposed list',
+  'wealth.proposal.field.weight': 'Proposed weight',
+  'wealth.proposal.field.code': 'Confirmation code',
+  'wealth.proposal.field.codeHint': 'Six digits from your authenticator',
+  // `{index}` / `{length}` belong to md-otp-field, which substitutes them.
+  'wealth.proposal.field.codeCell': 'Digit {index} of {length}',
+
+  /* --------------------------------------------------------- the allocation */
+
+  'wealth.proposal.alloc.title': 'Target weights',
+  'wealth.proposal.alloc.hint': 'The proposed target beside what the mandate holds today',
+  'wealth.proposal.alloc.total': 'Proposed total',
+  'wealth.proposal.alloc.mandateTarget': 'Mandate target',
+  'wealth.proposal.alloc.zeroed': 'Zeroed classes cannot be proposed',
+  'wealth.proposal.instruments.title': 'Instruments',
+  'wealth.proposal.instruments.hint': 'Move what the proposal should hold into the right column',
+  'wealth.proposal.instruments.meta': '{ticker} · {assetClass} · {currency}',
+  'wealth.proposal.transfer.source': 'Instrument universe',
+  'wealth.proposal.transfer.target': 'Proposed holdings',
+  'wealth.proposal.transfer.searchSource': 'Search the universe',
+  'wealth.proposal.transfer.searchTarget': 'Search the proposal',
+  // `{checked}` / `{total}` belong to md-transfer-list, which substitutes them
+  // itself. Passed through with no params so `interpolate` leaves them alone.
+  'wealth.proposal.transfer.count': '{checked}/{total} selected',
+  'wealth.proposal.transfer.empty': 'Nothing here',
+  'wealth.proposal.transfer.moveRight': 'Add the selected instruments to the proposal',
+  'wealth.proposal.transfer.moveLeft': 'Remove the selected instruments from the proposal',
+  'wealth.proposal.transfer.moveAllRight': 'Add every instrument to the proposal',
+  'wealth.proposal.transfer.moveAllLeft': 'Empty the proposal',
+
+  /* ------------------------------------------------------------- the review */
+
+  'wealth.proposal.summary.title': 'Summary',
+  'wealth.proposal.summary.hint': 'What compliance will read',
+  'wealth.proposal.summary.instruments': 'Proposed instruments',
+  'wealth.proposal.summary.excluded': 'Excluded types',
+  'wealth.proposal.summary.meeting': 'Review meeting',
+  'wealth.proposal.summary.esgOn': 'Screened',
+  'wealth.proposal.summary.esgOff': 'Not screened',
+  'wealth.proposal.summary.horizon': 'Horizon',
+  'wealth.proposal.summary.conviction': '{value} of {max}',
+  'wealth.proposal.summary.mandateValue': 'Mandate value',
+
+  /* ------------------------------------------------------ confirm and toast */
+
+  'wealth.proposal.confirm.headline': 'Send this proposal to compliance?',
+  'wealth.proposal.confirm.body':
+    'Once it is sent the document is locked until compliance returns it.',
+  'wealth.proposal.confirm.submit': 'Send for review',
+  'wealth.proposal.submitting': 'Sending the proposal',
+  'wealth.proposal.submitted': 'Proposal sent for review',
+  'wealth.proposal.undo': 'Undo',
+
+  /* ------------------------------------------------------ validation errors */
+
+  'wealth.proposal.error.step1': 'Complete the client and meeting details',
+  'wealth.proposal.error.title': 'Give the proposal a title of at least six characters',
+  'wealth.proposal.error.household': 'Choose the household this advice is for',
+  'wealth.proposal.error.client': 'Choose the member who signs',
+  'wealth.proposal.error.date': 'Choose a date for the review meeting',
+  'wealth.proposal.error.time': 'Choose a time for the review meeting',
+  'wealth.proposal.error.step2': 'Complete the suitability assessment',
+  'wealth.proposal.error.conviction': 'Record your conviction before continuing',
+  'wealth.proposal.error.horizon': 'The horizon must reach the objective target date',
+  'wealth.proposal.error.constraints': 'At least one instrument type has to stay available',
+  'wealth.proposal.error.step3': 'The allocation does not add up yet',
+  'wealth.proposal.error.weights': 'The proposed weights have to total 100%',
+  'wealth.proposal.error.instruments': 'Propose at least one instrument',
+  'wealth.proposal.error.step4': 'Confirm with your code to send',
+  'wealth.proposal.error.code': 'Enter all six digits',
+  'wealth.proposal.error.codeRepeat': 'Six identical digits is not a confirmation code',
+
+  /* ------------------------------------------------- stepper i18n prop words */
+
+  'wealth.proposal.stepper.step': 'Step',
+  'wealth.proposal.stepper.of': 'of',
+  'wealth.proposal.stepper.completed': 'completed',
+  'wealth.proposal.stepper.current': 'current',
+  'wealth.proposal.stepper.error': 'error',
+  'wealth.proposal.stepper.optional': 'Optional',
+
+  /* ------------------------------------------------- the table and the trail */
+
+  'wealth.proposal.table.title': 'Advice documents',
+  'wealth.proposal.table.hint': 'Attention first, then largest',
+  'wealth.proposal.table.label': 'Proposals',
+  'wealth.proposal.filter.status': 'Status',
+  'wealth.proposal.filter.anyStatus': 'Any status',
+  'wealth.proposal.filter.openOnly': 'Open only',
+  'wealth.proposal.filter.mine': 'Mine',
+  'wealth.proposal.filter.ageing': 'Ageing',
+  'wealth.proposal.filter.highValue': 'High value',
+  'wealth.proposal.filter.group': 'Filter proposals',
+  'wealth.proposal.filter.clearHint': 'Clears the status and every filter chip',
+  'wealth.proposal.filter.noneActive': 'Nothing is filtered, so there is nothing to clear',
+  'wealth.proposal.trail.title': 'Review trail',
+  'wealth.proposal.trail.hint': 'The five stages every advice document moves through',
+  'wealth.proposal.trail.pick': 'Choose a row above to follow its review',
+  'wealth.proposal.trail.label': 'Review stages of {id}',
+  'wealth.proposal.trail.raised': 'Raised {date} by {advisor}',
+  'wealth.proposal.trail.updated': 'Last moved {date}',
+  'wealth.proposal.trail.value': 'Moves {value}, quarterly fee {fee}',
+  'wealth.proposal.currentStep': 'At {name}',
+
+  /* ------------------------------------------------------ md-date-picker i18n */
+
+  'wealth.proposal.date.headline': 'Choose the meeting date',
+  'wealth.proposal.date.selectDate': 'Choose a date',
+  'wealth.proposal.date.enterDate': 'Type a date',
+  'wealth.proposal.date.invalid': 'That is not a date we can use',
+  'wealth.proposal.date.missing': 'Choose a date for the review meeting',
+  'wealth.proposal.date.clear': 'Clear the date',
+  'wealth.proposal.date.previousMonth': 'Previous month',
+  'wealth.proposal.date.nextMonth': 'Next month',
+  'wealth.proposal.date.previousYear': 'Previous year',
+  'wealth.proposal.date.nextYear': 'Next year',
+  'wealth.proposal.date.chooseMonth': 'Choose the month',
+  'wealth.proposal.date.chooseYear': 'Choose the year',
+  'wealth.proposal.date.chooseMonthYear': 'Choose a different month and year',
+  'wealth.proposal.date.openCalendar': 'Open the calendar',
+  'wealth.proposal.date.closeCalendar': 'Close the calendar',
+  'wealth.proposal.date.toggleCalendar': 'Switch to the calendar',
+  'wealth.proposal.date.toggleText': 'Switch to typing',
+  'wealth.proposal.date.yearGrid': 'Year',
+
+  /* ------------------------------------------------------ md-time-picker i18n */
+
+  'wealth.proposal.time.headlineInput': 'Type the meeting time',
+  'wealth.proposal.time.headlineDial': 'Choose the meeting time',
+  'wealth.proposal.time.hour': 'Hour',
+  'wealth.proposal.time.minute': 'Minute',
+  'wealth.proposal.time.period': 'Before or after noon',
+  'wealth.proposal.time.am': 'AM',
+  'wealth.proposal.time.pm': 'PM',
+  'wealth.proposal.time.toggleDial': 'Switch to the clock face',
+  'wealth.proposal.time.toggleInput': 'Switch to typing',
+  'wealth.proposal.time.missing': 'Choose a time for the review meeting',
+  'wealth.proposal.time.underflow': 'The meeting cannot start before {min}',
+  'wealth.proposal.time.overflow': 'The meeting cannot start after {max}',
+  'wealth.proposal.time.outside': 'Meetings run between {min} and {max}',
+
+  /* ------------------------------------------------------------ misc labels */
+
+  'wealth.proposal.ok': 'OK',
+  'wealth.proposal.cancel': 'Cancel',
+
+  /* ============================================================
+     TRADE — folded in from the app-local shim that used to carry
+     these. Same names, so no call site changed.
+     ============================================================ */
+  /* the ticket */
+  'wealth.trade.ticketHint': 'Priced at the close on {date}',
+  'wealth.trade.clear': 'Clear ticket',
+  'wealth.trade.book': 'Order book',
+  'wealth.trade.actions': 'Ticket actions',
+
+  /* the submit control */
+  'wealth.trade.submitOptions': 'More ways to submit',
+  'wealth.trade.submitDuplicate': 'Submit and keep the ticket',
+
+  /* why submit is unavailable — the soft-disabled tooltip */
+  'wealth.trade.needInstrument': 'Choose an instrument before this ticket can be priced',
+  'wealth.trade.needPortfolio': 'Choose the mandate this order books to',
+  'wealth.trade.needQuantity': 'Enter a quantity of at least one lot',
+  'wealth.trade.needLimit': 'Enter a limit price for this order type',
+
+  /* confirmation and completion */
+  'wealth.trade.confirm': 'Send this order to the desk?',
+  'wealth.trade.confirmBody':
+    'The desk receives the ticket exactly as it reads below. Nothing is sent until you confirm.',
+  'wealth.trade.submitting': 'Sending the ticket to the desk',
+  'wealth.trade.submitted': '{side} {quantity} {ticker} sent to the desk',
+  'wealth.trade.submittedKept': '{side} {quantity} {ticker} sent — the ticket is still loaded',
+
+  /* the estimate readout */
+  'wealth.trade.estimate': 'What this ticket is worth',
+  'wealth.trade.estimateEmpty': 'Choose an instrument and a quantity to price the ticket',
+  'wealth.trade.lots': '{lots} lots of {size}',
+  'wealth.trade.weightImpact': 'Weight after this trade',
+  'wealth.trade.snapped': 'Rounded down from {typed} to a whole number of lots',
+
+  /* the order book sheet */
+  'wealth.trade.bookFor': 'Recent orders in {ticker}',
+  'wealth.trade.bookRecent': 'Most recent orders on the book',
+  'wealth.trade.bookEmpty': 'No orders recorded for this instrument',
+
+  /* the blotter filters */
+  'wealth.trade.workingOnly': 'Working only',
+  'wealth.trade.filter.mine': 'Mine',
+  'wealth.trade.filter.fromAdvice': 'From advice',
+  'wealth.trade.filter.group': 'Filter orders',
+  'wealth.trade.searchOrders': 'Search the blotter',
+  'wealth.chart.plotHint':
+    'Chart data. Use the arrow keys to move between points, Home and End for the first and last, Escape to leave.',
+} as const;
+
+/**
+ * The whole dictionary. `core` first so a namespaced key can never shadow a
+ * shared one by accident — the two key sets are disjoint by construction, and
+ * this ordering means a future collision fails loudly in review rather than
+ * quietly at runtime.
+ */
+export const en = { ...core, ...wealth };
+
+/** Every message key the showcase may ask for, both verticals. */
 export type MessageKey = keyof typeof en;
 
-/** A complete dictionary for one locale. */
-export type Dictionary = Record<MessageKey, string>;
+/**
+ * The keys every locale MUST carry — now BOTH verticals.
+ *
+ * This used to be `keyof typeof core`, because the wealth block shipped English
+ * only and a locale that omitted it fell through to English. Both `ro` and `ar`
+ * now carry all of it, so the exemption is gone and the compiler is back to
+ * being the thing that notices when a new key lands in one locale and not the
+ * others. That is the whole point of deriving this from a real object rather
+ * than maintaining a list.
+ */
+export type RequiredMessageKey = MessageKey;
+
+/**
+ * A dictionary for one locale: complete, or it does not compile.
+ *
+ * `createTranslator` still falls back to English for a key no locale knows —
+ * that is a runtime safety net for a bad key, not a licence to skip a
+ * translation.
+ */
+export type Dictionary = Record<RequiredMessageKey, string>;
 
 export default en;

@@ -7,7 +7,7 @@
 export { en } from './en';
 export { ro } from './ro';
 export { ar } from './ar';
-export type { Dictionary, MessageKey } from './en';
+export type { Dictionary, MessageKey, RequiredMessageKey } from './en';
 
 export {
   DEFAULT_LOCALE,

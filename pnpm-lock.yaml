@@ -574,6 +574,40 @@ importers:
         specifier: ^2.0.0
         version: 2.2.12(typescript@5.4.5)
 
+  apps/showcase/wealth/react:
+    dependencies:
+      '@awc-ui/core':
+        specifier: workspace:*
+        version: link:../../../../packages/core
+      '@awc-ui/showcase-kit':
+        specifier: workspace:*
+        version: link:../../../../packages/showcase-kit
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@types/node':
+        specifier: ^20.14.0
+        version: 20.19.43
+      '@types/react':
+        specifier: ^18.3.0
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.7(@types/react@18.3.31)
+      '@vitejs/plugin-react':
+        specifier: ^4.7.0
+        version: 4.7.0(vite@5.4.21(@types/node@20.19.43)(less@4.9.0)(lightningcss@1.33.0)(sass@1.103.0)(terser@5.50.0))
+      typescript:
+        specifier: ^5.4.0
+        version: 5.4.5
+      vite:
+        specifier: ^5.4.11
+        version: 5.4.21(@types/node@20.19.43)(less@4.9.0)(lightningcss@1.33.0)(sass@1.103.0)(terser@5.50.0)
+
   apps/storybook:
     dependencies:
       '@awc-ui/core':
@@ -19046,7 +19080,7 @@ snapshots:
       dom-serializer: 2.0.0
       domhandler: 5.0.3
       htmlparser2: 8.0.2
-      postcss: 8.4.35
+      postcss: 8.5.26
       postcss-media-query-parser: 0.2.3
 
   croner@10.0.1: {}
@@ -19073,12 +19107,12 @@ snapshots:
 
   css-loader@6.10.0(webpack@5.94.0(esbuild@0.20.1)(lightningcss@1.33.0)(postcss@8.4.35)):
     dependencies:
-      icss-utils: 5.1.0(postcss@8.4.35)
-      postcss: 8.4.35
-      postcss-modules-extract-imports: 3.1.0(postcss@8.4.35)
-      postcss-modules-local-by-default: 4.2.0(postcss@8.4.35)
-      postcss-modules-scope: 3.2.1(postcss@8.4.35)
-      postcss-modules-values: 4.0.0(postcss@8.4.35)
+      icss-utils: 5.1.0(postcss@8.5.26)
+      postcss: 8.5.26
+      postcss-modules-extract-imports: 3.1.0(postcss@8.5.26)
+      postcss-modules-local-by-default: 4.2.0(postcss@8.5.26)
+      postcss-modules-scope: 3.2.1(postcss@8.5.26)
+      postcss-modules-values: 4.0.0(postcss@8.5.26)
       postcss-value-parser: 4.2.0
       semver: 7.8.5
     optionalDependencies:
@@ -20658,9 +20692,9 @@ snapshots:
     dependencies:
       safer-buffer: 2.1.2
 
-  icss-utils@5.1.0(postcss@8.4.35):
+  icss-utils@5.1.0(postcss@8.5.26):
     dependencies:
-      postcss: 8.4.35
+      postcss: 8.5.26
 
   ieee754@1.2.1: {}
 
@@ -23629,26 +23663,26 @@ snapshots:
       postcss: 8.5.26
       postcss-selector-parser: 7.1.5
 
-  postcss-modules-extract-imports@3.1.0(postcss@8.4.35):
+  postcss-modules-extract-imports@3.1.0(postcss@8.5.26):
     dependencies:
-      postcss: 8.4.35
+      postcss: 8.5.26
 
-  postcss-modules-local-by-default@4.2.0(postcss@8.4.35):
+  postcss-modules-local-by-default@4.2.0(postcss@8.5.26):
     dependencies:
-      icss-utils: 5.1.0(postcss@8.4.35)
-      postcss: 8.4.35
+      icss-utils: 5.1.0(postcss@8.5.26)
+      postcss: 8.5.26
       postcss-selector-parser: 7.1.5
       postcss-value-parser: 4.2.0
 
-  postcss-modules-scope@3.2.1(postcss@8.4.35):
+  postcss-modules-scope@3.2.1(postcss@8.5.26):
     dependencies:
-      postcss: 8.4.35
+      postcss: 8.5.26
       postcss-selector-parser: 7.1.5
 
-  postcss-modules-values@4.0.0(postcss@8.4.35):
+  postcss-modules-values@4.0.0(postcss@8.5.26):
     dependencies:
-      icss-utils: 5.1.0(postcss@8.4.35)
-      postcss: 8.4.35
+      icss-utils: 5.1.0(postcss@8.5.26)
+      postcss: 8.5.26
 
   postcss-nested@6.2.0(postcss@8.5.26):
     dependencies:
@@ -24227,7 +24261,7 @@ snapshots:
       adjust-sourcemap-loader: 4.0.0
       convert-source-map: 1.9.0
       loader-utils: 2.0.4
-      postcss: 8.4.35
+      postcss: 8.5.26
       source-map: 0.6.1
 
   resolve.exports@2.0.3: {}

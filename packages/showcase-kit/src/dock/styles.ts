@@ -155,7 +155,7 @@ export const DOCK_STYLES = /* css */ `
  * the cautionary case — its :host is inline-grid with grid-auto-columns:
  * 1fr, which is precisely what makes its segments equal width, and overriding
  * it to flex leaves them ragged. The pre-upgrade reservations below do need a
- * display, so they are scoped to :not(:defined) where there is no component
+ * display, so they are scoped to :not(.hydrated) where there is no component
  * rule to contradict.
  */
 .picker {
@@ -209,30 +209,56 @@ export const DOCK_STYLES = /* css */ `
  * density, not estimated; the dock's labels are frozen to English and its
  * density is pinned, so they are constants rather than guesses about content.
  *
- * :not(:defined) makes these rules evaporate at the instant the component
- * exists, handing its box back to its own :host rules. That is what keeps a
- * reservation from turning into an override. Every built-in element is always
- * :defined, so the bare selector below reaches the un-upgraded md-* elements
- * and nothing else.
+ * The reservation has to evaporate at the instant the component takes over,
+ * handing its box back to its own :host rules — that is what keeps a
+ * reservation from turning into an override. The gate for that is
+ * :not(.hydrated), and NOT :not(:defined), which is what these rules used
+ * to say and why none of them ever ran.
+ *
+ * :defined IS THE WRONG CLOCK FOR A LAZY BUILD. @awc-ui/core ships Stencil's
+ * lazy output: the runtime calls customElements.define() for every tag in one
+ * pass at bootstrap, and only THEN fetches each component's chunk. So :defined
+ * flips while the element is still an empty box with none of its shadow CSS —
+ * measured on a cold load at 720px, every control in this panel reported
+ * def=true, hydrated=false and 0x0 in the same frame. The reservations had
+ * already evaporated, the panel laid out as one 48px row instead of two, and
+ * the dock published --awc-dock-height: 89px before jumping to 157px. The
+ * navigation bar docks against that value, so it was drawn 68px low and rose
+ * into place — precisely the shift these rules exist to prevent.
+ *
+ * hydrated is the class Stencil's own hydratedFlag adds when a component has
+ * rendered, which is the moment its box becomes real. It is per-element, so a
+ * control whose chunk lands late keeps its reservation until it personally
+ * needs it.
+ *
+ * The trade-off is that a class cannot be a bare selector the way :defined
+ * could: every built-in element is permanently :defined but NOTHING is
+ * .hydrated until Stencil says so, so :not(.hydrated) alone would also catch
+ * .dock, .panel and every .group and hand each of them display: inline-block.
+ * The tags are therefore listed.
  */
-:not(:defined) {
+md-select:not(.hydrated),
+md-segmented-button-set:not(.hydrated),
+md-icon-button:not(.hydrated),
+md-switch:not(.hydrated),
+md-button:not(.hydrated) {
   display: inline-block;
 }
 
 /* md-select: width comes from .picker, which applies in both states. */
-md-select:not(:defined) { block-size: var(--_row); }
+md-select:not(.hydrated) { block-size: var(--_row); }
 
 /* The two sets, at the dock's pinned density. The density set is reserved at
    its rung-0 size, the widest and the default; at tighter rungs it renders
    smaller than its reservation, which can only ever leave slack in a row, never
    overflow one. */
-.segmented-theme:not(:defined) { inline-size: 201px; block-size: 32px; }
-.segmented-density:not(:defined) { inline-size: 185px; block-size: 40px; }
+.segmented-theme:not(.hydrated) { inline-size: 201.5px; block-size: 32px; }
+.segmented-density:not(.hydrated) { inline-size: 184.6px; block-size: 40px; }
 
-.swatch:not(:defined) { inline-size: 32px; block-size: 32px; }
-.switch:not(:defined) { inline-size: 40px; block-size: var(--_row); }
-.reset:not(:defined) { inline-size: 76px; block-size: 32px; }
-.toggle:not(:defined) { inline-size: 32px; block-size: 32px; }
+.swatch:not(.hydrated) { inline-size: 32px; block-size: 32px; }
+.switch:not(.hydrated) { inline-size: 40px; block-size: var(--_row); }
+.reset:not(.hydrated) { inline-size: 75.9px; block-size: 32px; }
+.toggle:not(.hydrated) { inline-size: 32px; block-size: 32px; }
 
 @media (max-width: 720px) {
   /* The brand no longer competes with the controls for row 1, so it stays —

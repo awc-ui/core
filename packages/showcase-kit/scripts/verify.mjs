@@ -276,14 +276,31 @@ ok('unknown sector returns undefined', D.getSectorById('mining') === undefined);
 
 section('i18n — dictionaries');
 
+/*
+ * Every key, both verticals.
+ *
+ * The `wealth.` namespace used to be filtered out here because it shipped
+ * English only. It is translated now, `Dictionary` requires it, and `ro.ts` /
+ * `ar.ts` fail to COMPILE if they drift — so this compares the whole key set
+ * again, which is what it was always meant to do.
+ */
 const keys = Object.keys(I.en);
-ok('en has a dictionary', keys.length > 200, `${keys.length} keys`);
+ok('en has a dictionary', keys.length > 200, `${keys.length} translated keys`);
 ok('ro has exactly the same keys', Object.keys(I.ro).length === keys.length && keys.every((k) => k in I.ro));
 ok('ar has exactly the same keys', Object.keys(I.ar).length === keys.length && keys.every((k) => k in I.ar));
-// Identical strings are legitimate for acronyms (RWA, PD, DSCR), rating glyphs
-// and pure placeholders — everything else must actually be translated.
+/*
+ * Identical strings are legitimate for acronyms (RWA, PD, DSCR, KYC, AUM, YTD,
+ * ETF), rating glyphs, pure placeholders, and the handful of words Romanian
+ * spells exactly as English does — `client`, `contact`, `segment`, `instrument`,
+ * `sector`, `global`, `total`. Everything else must actually be translated.
+ *
+ * The wealth arm is spelled out rather than folded into the credit-risk one:
+ * the two verticals have same-named keys that mean different things, and a
+ * pattern loose enough to cover both would stop catching an untranslated string
+ * in either.
+ */
 const IDENTICAL_OK =
-  /^(rating\.|table\.(id|pd|lgd|ead|rwa|rwaDelta|ccf|rating|sector|margin|type)$|kpi\.(expectedLossRatio|.*\.short)$|covenant\..*\.abbr$|dock\.(framework|accent)$|unit\.times$|common\.(na|total)$|screen\.counterparty\.title$)/;
+  /^(rating\.|table\.(id|pd|lgd|ead|rwa|rwaDelta|ccf|rating|sector|margin|type)$|kpi\.(expectedLossRatio|.*\.short)$|covenant\..*\.abbr$|dock\.(framework|accent)$|unit\.times$|common\.(na|total)$|screen\.counterparty\.title$|wealth\.(screen\.household\.title|kpi\..*\.short|table\.(client|contact|kyc|segment|aum|ytd|instrument|sector)|segment\.family-office|instrumentType\.etf|region\.global|entity\.client|common\.(na|total)|proposal\.(step\.client|instruments\.meta|time\.(am|pm)|ok))$)/;
 const roSame = keys.filter((k) => I.ro[k] === I.en[k] && !IDENTICAL_OK.test(k));
 const arSame = keys.filter((k) => I.ar[k] === I.en[k] && !IDENTICAL_OK.test(k));
 ok('every ro string that should differ from en does', roSame.length === 0, roSame.join(',') || 'none');
