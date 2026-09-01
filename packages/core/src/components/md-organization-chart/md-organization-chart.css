@@ -189,7 +189,7 @@
  * purpose — a descendant one would light every group beneath the root.
  */
 .md-org-chart__group[data-trail]::before,
-.md-org-chart__branch--on-path:not([data-trail-drawn])::after {
+.md-org-chart__branch--on-path::after {
   border-inline-start-color: var(--_selected-color);
 }
 
@@ -199,7 +199,7 @@
  * `::before`'s `border-inline-end`, so tinting `::after` alone left the last
  * child on a trail with a grey riser under a coloured run.
  */
-.md-org-chart__branch--on-path:last-child:not([data-trail-drawn])::before {
+.md-org-chart__branch--on-path:last-child::before {
   border-inline-end-color: var(--_selected-color);
 }
 
@@ -214,13 +214,6 @@
  * inline-start for a first or middle child, and `::before`'s inline-end for a
  * last child, whose `::after` the rules above zero out entirely.
  */
-.md-org-chart__branch[data-trail-drawn]::after {
-  border-inline-start-color: transparent;
-}
-
-.md-org-chart__branch[data-trail-drawn]:last-child::before {
-  border-inline-end-color: transparent;
-}
 
 /*
  * Where the run covers this branch's inner half entirely, the half goes too.
@@ -232,10 +225,6 @@
  * run, so nothing that should stay grey is lost; where it is not, the flag is
  * absent and both curves square off instead (see the elbow rules above).
  */
-.md-org-chart__branch[data-trail-hide]:not(:last-child)::after,
-.md-org-chart__branch[data-trail-hide]:last-child::before {
-  border-block-start-color: transparent;
-}
 
 /*
  * THE RUN: one L-shaped box from the drop to the riser, drawn exactly the way
@@ -369,8 +358,26 @@
    Growing the border would move the padding box and shift the edge-hung toggler,
    so width + padding stay constant and nothing in the card moves on select. */
 .md-org-chart__node--selected {
+  /*
+   * ONE RING, not a border plus a shadow of the same colour.
+   *
+   * The emphasis used to be a 1px border with `box-shadow: 0 0 0 1px` outside
+   * it — two rings that happen to touch. They are rasterised separately, so at
+   * a fractional device pixel ratio (browser zoom at 110% or 125%, a
+   * fractional-DPI display) each rounds on its own and a lighter seam appears
+   * between them: the outline reads as two thin rings with a gap rather than one
+   * 2px ring. It cannot show at a whole-number ratio, which is why it survived
+   * screenshot checks.
+   *
+   * Doubling the border alone would grow the border box and shift the toggler
+   * hung on the node's bottom edge — the reason the shadow was there. Taking the
+   * extra pixel back out of the padding keeps the border box exactly as it was,
+   * so nothing moves on select and the ring is a single painted edge.
+   */
   border-color: var(--_selected-color);
-  box-shadow: 0 0 0 1px var(--_selected-color);
+  border-width: calc(var(--_node-outline-width) + 1px);
+  padding-block: calc(max(6px, calc(10px + var(--md-sys-density-scale, 0) * 1px)) - 1px);
+  padding-inline: calc(max(8px, calc(14px + var(--md-sys-density-scale, 0) * 1.5px)) - 1px);
 }
 
 .md-org-chart__node--selected.md-org-chart__node--selectable:hover {

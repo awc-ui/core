@@ -507,13 +507,22 @@ export class MdOrganizationChart {
       );
 
       /*
-       * Cleared for EVERY branch before anything is set, not just for the ones
-       * on the trail. Clearing it from `risers` alone leaves it behind on
-       * deselection, when that list is empty — and the branch it was left on
-       * keeps hiding its own riser, so the connector into a node that is no
-       * longer selected simply vanishes.
+       * BOTH marks are cleared for EVERY branch before anything is set, not just
+       * for the ones currently on the trail.
+       *
+       * Each one makes part of a branch's own connector invisible so the trail
+       * can draw it instead — `-drawn` its riser, `-hide` its bus half. Clearing
+       * them only for `risers` leaves them behind the moment the selection moves
+       * off a branch or is dropped entirely, and the branch they were left on
+       * goes on hiding a piece of the GREY connector: a riser that vanishes
+       * under an unselected node, or a gap in the middle of the bus.
        */
-      for (const li of branches) li.removeAttribute('data-trail-drawn');
+      // Nothing of the branches' own connectors is hidden any more — see the
+      // note on the run below. These are cleared for trees rendered before.
+      for (const li of branches) {
+        li.removeAttribute('data-trail-drawn');
+        li.removeAttribute('data-trail-hide');
+      }
 
       const risers = branches.filter((li) =>
         li.classList.contains('md-org-chart__branch--on-path'),
@@ -607,8 +616,25 @@ export class MdOrganizationChart {
        * same pixels an unselected riser would occupy, so selecting a node moves
        * nothing.
        */
-      if (dirEnd) to += cw;
-      else from -= cw;
+      /*
+       * LAND ON THE RISER'S ACTUAL PIXELS — which side of centre it occupies
+       * depends on which pseudo-element draws it.
+       *
+       *   ::after (first or middle child)  inset-inline-start: 50%
+       *                                    border-inline-start -> [centre, centre+cw]
+       *   ::before (last child)            spans [left, centre]
+       *                                    border-inline-end   -> [centre-cw, centre]
+       *
+       * The box covers the grey by overlapping it exactly, so being one width
+       * out does not hide anything — it paints a second line beside it, and at
+       * the elbow a second curve beside the first. Assuming `centre + cw` for
+       * every branch is right for the common case and wrong for the last child,
+       * which is why only that one doubled.
+       */
+      const landingBranch = dirEnd ? risers[risers.length - 1] : risers[0];
+      const landingIsLast = landingBranch === branches[branches.length - 1];
+      if (dirEnd) to += landingIsLast ? 0 : cw;
+      else from -= landingIsLast ? cw : 0;
       // And past the drop when the run arrives from the far side — that corner
       // belongs to neither border. A run starting at the drop already covers it.
       if (!dirEnd) to += cw;
@@ -639,38 +665,6 @@ export class MdOrganizationChart {
          * side and the line reads twice as thick. Any OTHER selection in the
          * same group is not reached by the box and keeps its own.
          */
-        const landing = dirEnd ? Math.max(...centres) : Math.min(...centres);
-        for (const li of risers) {
-          const r = li.getBoundingClientRect();
-          const isDrawn = Math.abs(r.left + r.width / 2 - landing) < eps;
-          if (isDrawn) li.setAttribute('data-trail-drawn', '');
-          else li.removeAttribute('data-trail-drawn');
-          if (!isDrawn) {
-            li.removeAttribute('data-trail-hide');
-            continue;
-          }
-          /*
-           * CAN THE BOX SWALLOW THIS BRANCH'S ELBOW WHOLE?
-           *
-           * The drawn branch draws its riser AND the bus half beside it from one
-           * pseudo-element, and on an outermost child the radius curves BOTH.
-           * Making only the riser transparent leaves that curved grey half
-           * showing inside the box's own curve — the hairline arc.
-           *
-           * If the half lies entirely inside the run, the box covers every pixel
-           * of it and it can be hidden outright. If the drop falls INSIDE it —
-           * which happens when this branch is wider than its sibling, so the
-           * group's centre lands within its own half — part of that half is
-           * legitimately grey bus and hiding it would punch a gap. There the box
-           * and the branch both drop their radius instead: two straight lines
-           * that coincide exactly, no curve for grey to peek out of.
-           */
-          const inner = dirEnd ? r.left : r.right;
-          const swallowed = dirEnd ? inner >= from - eps : inner <= to + eps;
-          if (swallowed) li.setAttribute('data-trail-hide', '');
-          else li.removeAttribute('data-trail-hide');
-          if (!swallowed) el.removeAttribute('data-trail-elbow');
-        }
         // Which end turns down into a node. The other end is the drop, whose own
         // vertical already closes that corner.
         el.setAttribute('data-trail-dir', dirEnd ? 'end' : 'start');
