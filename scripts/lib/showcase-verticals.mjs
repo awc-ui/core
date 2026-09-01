@@ -106,6 +106,15 @@ export const VERTICALS = Object.freeze([
        per locale at build time. The four SPAs hold locale in client state. */
     localeRouted: Object.freeze(['html']),
   },
+  {
+    id: 'banking',
+    title: 'Vela — Money & Investing',
+    /* Five builds, no SSR. This one is behind a login by premise, so there is
+       no anonymous first paint a server render would improve. */
+    builds: Object.freeze([...SPA_BUILDS]),
+    reference: 'react',
+    localeRouted: Object.freeze(['html']),
+  },
 ]);
 
 export const verticalById = (id) => VERTICALS.find((v) => v.id === id);
