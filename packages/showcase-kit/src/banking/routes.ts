@@ -150,7 +150,7 @@ export interface CrumbSpec {
   /** The proper noun, when `labelKey` is null. */
   label: string | null;
   /** Unprefixed path, or `null` for the current page. */
-  path: string | null;
+  href: string | null;
 }
 
 /**
@@ -166,15 +166,44 @@ export function crumbsFor(pathname: string, label: string | null): CrumbSpec[] {
 
   if (path.startsWith('/accounts/')) {
     return [
-      { labelKey: 'banking.nav.home', label: null, path: route.home() },
-      { labelKey: null, label, path: null },
+      { labelKey: 'banking.nav.home', label: null, href: route.home() },
+      { labelKey: null, label, href: null },
     ];
   }
   if (path.startsWith('/invest/') && path !== route.invest()) {
     return [
-      { labelKey: 'banking.nav.invest', label: null, path: route.invest() },
-      { labelKey: null, label, path: null },
+      { labelKey: 'banking.nav.invest', label: null, href: route.invest() },
+      { labelKey: null, label, href: null },
     ];
   }
   return [];
+}
+
+/* --------------------------------------------------------------- binding */
+
+export interface BankingRoutes {
+  /** This build's framework id — the segment the dock swaps. */
+  framework: Framework;
+  /** e.g. `/showcase/banking/react`. No trailing slash. */
+  basePath: string;
+  route: typeof route;
+  /** Prefix a route with this build's base path. */
+  withBase(path: string): string;
+}
+
+/**
+ * Bind the shared route table to one framework's base path.
+ *
+ * Each port calls this once and exports the result, so the base path is written
+ * in exactly one place per build and always agrees with that build's own
+ * bundler config.
+ */
+export function createRoutes(framework: Framework): BankingRoutes {
+  const basePath = `${SHOWCASE_BASE}/${framework}`;
+  return {
+    framework,
+    basePath,
+    route,
+    withBase: (path: string) => `${basePath}${path}`,
+  };
 }

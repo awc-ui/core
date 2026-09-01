@@ -192,8 +192,8 @@ export function flowColor(amount: number): MdColor | null {
  * Used by the invest screen and nowhere else. Dead-banded around zero so a
  * holding that has not moved is not painted as a tiny gain.
  */
-export function plColor(value: number): MdColor | null {
-  if (value > 0.00005) return 'success';
-  if (value < -0.00005) return 'error';
+export function plColor(value: number, deadband = 0.00005): MdColor | null {
+  if (value > deadband) return 'success';
+  if (value < -deadband) return 'error';
   return null;
 }

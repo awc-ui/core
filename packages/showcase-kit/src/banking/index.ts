@@ -178,13 +178,20 @@ export {
   DESTINATIONS,
   FRAMEWORKS,
   SHOWCASE_BASE,
+  createRoutes,
   crumbsFor,
   destinationFor,
   destinationIndex,
   route,
 } from './routes';
 
-export type { CrumbSpec, Destination, Framework, RouteName } from './routes';
+export type {
+  BankingRoutes,
+  CrumbSpec,
+  Destination,
+  Framework,
+  RouteName,
+} from './routes';
 
 export { TABLES } from './tables';
 export type { TableLayout } from './tables';

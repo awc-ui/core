@@ -1,0 +1,45 @@
+/* ==========================================================
+   Snackbars — one bottom offset, shared by every screen
+   ==========================================================
+
+   Imported by the one screen that raises a toast: CardsScreen. It uses
+   `position="bottom"`, the
+   component default and the only placement M3 gives a snackbar on a page whose
+   content is centred, so the only thing left for a HOST to decide is how far
+   off the bottom edge the surface lands.
+
+   WHY THERE IS ANYTHING TO DECIDE. `md-snackbar`'s host is a fixed,
+   full-viewport overlay with `inset: 0`; the surface is laid out inside the
+   host's own padding, so the host's block-end padding — not the surface — is
+   what lifts the toast. Its z-index (2000) is above both the showcase dock's
+   (1500) and the navigation bar's (200), so left alone a bottom snackbar lands
+   ON TOP of the dock, and below 900px on top of the navigation bar as well. M3
+   is explicit that a snackbar must not sit in front of navigation.
+
+   The fix is to move the bottom, not the snackbar. `<awc-showcase-dock>`
+   publishes its measured height as `--awc-dock-height` — the same variable
+   `.shell__bar` offsets itself by in the kit's `app.css` — and below 900px the
+   navigation bar is what occupies the strip above the dock, so its own height
+   token is added on top. 899px is the breakpoint `app.css` swaps the rail for
+   the bar at; the two must agree or the toast clears a bar that is not there.
+
+   A class rather than the component's default: the dock is this showcase's
+   furniture, not something `md-snackbar` should know about. Document-origin
+   rules beat a shadow tree's `:host`, so this simply wins over the component's
+   24px padding without `!important`. Only the block-end edge is set, which
+   leaves the component's own inline padding — and the 16px it drops to below
+   600px — intact.
+   ========================================================== */
+
+.app-snackbar {
+  padding-block-end: calc(var(--awc-dock-height, 0px) + var(--md-sys-spacing-inset-xl, 24px));
+}
+
+@media (max-width: 899px) {
+  .app-snackbar {
+    padding-block-end: calc(
+      var(--awc-dock-height, 0px) + var(--md-navigation-bar-container-height, 64px) +
+        var(--md-sys-spacing-inset-xl, 24px)
+    );
+  }
+}
