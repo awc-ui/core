@@ -196,7 +196,7 @@ export function AccountScreen({ accountId }: { accountId: string }) {
                 list-style="segmented"
               >
                 {day.rows.map((txn) => (
-                  <TransactionRow key={txn.id} txn={txn} />
+                  <TransactionRow key={txn.id} txn={txn} showDate={false} />
                 ))}
               </md-list>
             </div>

@@ -25,6 +25,7 @@ import {
   type TransactionStatus,
 } from '@awc-ui/showcase-kit/banking';
 import { useT } from '@/lib/showcase';
+import { PHONE, useMediaQuery } from '@/lib/media';
 import { useCustomEvent } from '../elements';
 import { EmptyState, Panel, Screen } from '../Shell';
 import { Count, Money } from '../bits';
@@ -47,6 +48,7 @@ const ALL_MONTHS = 'all';
 
 export function TransactionsScreen() {
   const t = useT();
+  const phone = useMediaQuery(PHONE);
 
   const [month, setMonth] = useState<string>(REPORTING_MONTH);
   const [accountId, setAccountId] = useState<string | null>(null);
@@ -120,6 +122,15 @@ export function TransactionsScreen() {
     setStatus(event.detail.selected ? value : null);
   });
 
+  /* What the collapsed phone header says, so a reader knows the list is
+     filtered without opening the panel. */
+  const activeCount =
+    (month === REPORTING_MONTH ? 0 : 1) +
+    (accountId ? 1 : 0) +
+    (category ? 1 : 0) +
+    (status ? 1 : 0) +
+    (search ? 1 : 0);
+
   const clear = () => {
     setMonth(REPORTING_MONTH);
     setAccountId(null);
@@ -134,10 +145,74 @@ export function TransactionsScreen() {
       subtitle={t('banking.screen.transactions.subtitle')}
       aside={<Count value={rows.length} />}
     >
-      <Panel title={t('banking.action.filter')}>
+      {/*
+        THE FILTERS COLLAPSE ON A PHONE.
+        Open, they are four chip rows and a search bar — the whole first screen,
+        with no transaction visible until the reader scrolls past the controls
+        for a list they have not seen yet. Behind a disclosure, the statement is
+        what the screen opens on, and the header carries the count so a filtered
+        list never looks like the whole one.
+      */}
+      {phone ? (
+        <md-accordion variant="outlined" heading-level="2">
+          <md-accordion-item
+            headline={t('banking.action.filter')}
+            icon="filter_list"
+            supporting-text={
+              activeCount > 0
+                ? t('banking.common.showing', { shown: rows.length, total })
+                : undefined
+            }
+          >
+            <FilterBody />
+          </md-accordion-item>
+        </md-accordion>
+      ) : (
+        <Panel title={t('banking.action.filter')}>
+          <FilterBody />
+        </Panel>
+      )}
+
+      {days.length === 0 ? (
+        <EmptyState message={t('banking.empty.transactions')} hint />
+      ) : (
+        <Panel>
+          {days.map((day) => (
+            <div key={day.date} className="stack">
+              <StatementDayHeading date={day.date} netEur={day.netEur} />
+              <md-list
+                label={t.formatDate(day.date, 'long')}
+                interaction-mode="multi-action"
+                list-style="segmented"
+              >
+                {day.rows.map((txn) => (
+                  <TransactionRow key={txn.id} txn={txn} showDate={false} />
+                ))}
+              </md-list>
+            </div>
+          ))}
+        </Panel>
+      )}
+    </Screen>
+  );
+
+  /* Declared after the return it is used in, which is legal for a function
+     declaration and keeps the screen's shape readable — the filter body is
+     eighty lines of chips and would otherwise sit between the heading and the
+     statement. */
+  function FilterBody() {
+    return (
         <div className="stack">
+          {/* `trigger="bar"` and `full-width`: the default trigger is an icon
+              that opens the field, which in a filter panel renders as a lone
+              magnifying glass and reads as broken. */}
           <md-search
             ref={searchRef}
+            layout="docked"
+            trigger="bar"
+            variant="contained"
+            full-width
+            debounce="250"
             label={t('banking.action.search')}
             placeholder={t('banking.table.merchant')}
             value={search}
@@ -217,28 +292,6 @@ export function TransactionsScreen() {
             ) : null}
           </div>
         </div>
-      </Panel>
-
-      {days.length === 0 ? (
-        <EmptyState message={t('banking.empty.transactions')} hint />
-      ) : (
-        <Panel>
-          {days.map((day) => (
-            <div key={day.date} className="stack">
-              <StatementDayHeading date={day.date} netEur={day.netEur} />
-              <md-list
-                label={t.formatDate(day.date, 'long')}
-                interaction-mode="multi-action"
-                list-style="segmented"
-              >
-                {day.rows.map((txn) => (
-                  <TransactionRow key={txn.id} txn={txn} showAccount />
-                ))}
-              </md-list>
-            </div>
-          ))}
-        </Panel>
-      )}
-    </Screen>
-  );
+    );
+  }
 }

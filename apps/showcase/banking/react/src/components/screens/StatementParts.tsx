@@ -31,7 +31,22 @@ import { DateText, Flow, TxnStatusDot } from '../bits';
  * fact. The amount never left the account; showing it plain would have it read
  * as spent.
  */
-export function TransactionRow({ txn, showAccount = false }: { txn: Transaction; showAccount?: boolean }) {
+export function TransactionRow({
+  txn,
+  /**
+   * Whether the row states its own date.
+   *
+   * FALSE INSIDE A DAY GROUP, which is where most of these render. The group
+   * already has a date heading above it, so an overline repeating it puts the
+   * same date on screen seven times under one header — measured on the 31st of
+   * August, which has seven rows. The home screen's preview is not grouped, so
+   * there the date is the only thing placing the row in time and it stays.
+   */
+  showDate = true,
+}: {
+  txn: Transaction;
+  showDate?: boolean;
+}) {
   const t = useT();
 
   const meta = [t(txn.typeKey), t(txn.categoryKey)];
@@ -40,9 +55,9 @@ export function TransactionRow({ txn, showAccount = false }: { txn: Transaction;
   return (
     <md-list-item
       headline={txn.counterparty}
-      overline={t.formatDate(txn.date, 'medium')}
+      overline={showDate ? t.formatDate(txn.date, 'medium') : undefined}
       supporting-text={meta.join(' · ')}
-      lines="3"
+      lines={showDate ? '3' : '2'}
       data-status={txn.status}
       /* THE LEADING GLYPH IS THE CATEGORY, via the row's own `leading-icon`
          prop. There is no `md-icon` element in this library — a list item
@@ -51,11 +66,15 @@ export function TransactionRow({ txn, showAccount = false }: { txn: Transaction;
       leading-icon={categoryIcon[txn.category] ?? txnTypeIcon[txn.type]}
     >
       <span slot="trailing" className="account-row__figures">
-        {/* Only an unsettled row earns a dot. A dot on every completed row is
-            a column of green nobody reads. */}
-        {txn.status === 'completed' ? null : <TxnStatusDot status={txn.status} />}
-        <span className="txn-row__amount">
-          <Flow value={txn.amount} currency={txn.currency} />
+        {/* The dot sits BESIDE the amount, not above it. In the figures column
+            it read as a third figure floating under the number rather than as
+            a mark on the row. Only an unsettled row earns one — a dot on every
+            completed row is a column of green nobody reads. */}
+        <span className="row">
+          {txn.status === 'completed' ? null : <TxnStatusDot status={txn.status} />}
+          <span className="txn-row__amount">
+            <Flow value={txn.amount} currency={txn.currency} />
+          </span>
         </span>
         {/* The EUR twin only on a foreign-currency row, and only when it says
             something the local amount does not. */}

@@ -513,6 +513,24 @@ a {
   min-block-size: 36px;
 }
 
+/**
+ * DON'T RESERVE THE TRAIL BAND ON A PHONE.
+ *
+ * The reservation exists so the heading does not jump between a screen with
+ * breadcrumbs and one without. That is worth 36px on a desktop and it is not
+ * worth 36px of an 844px phone — especially here, where only the two drill
+ * screens have a trail at all and you reach one by tapping a row, so the whole
+ * page changes anyway and there is no jump left to prevent.
+ *
+ * The band still takes its natural height where it has crumbs; only the empty
+ * reservation goes.
+ */
+@media (max-width: 719px) {
+  .shell__trail {
+    min-block-size: 0;
+  }
+}
+
 /* ------------------------------------------------------------- screen head */
 
 .screen-head {
@@ -675,34 +693,6 @@ a {
 }
 
 /*
- * Grouping, which is the whole job of this grid.
- *
- * Each cell is three things that are ONE thing — the class name, the weight,
- * and the note comparing it to today — and the grid puts five of those cells
- * next to each other. If the space inside a cell equals the space between
- * cells, nothing groups: the eye reads fifteen evenly-spaced items instead of
- * five items of three parts, and the note under a field looks as much like the
- * heading of the next one. So the inside is pulled in and the outside pushed
- * out: 8px between a cell's own parts, 24px between rows, 16px between
- * columns. All three track density.
- */
-
-.grid-3.weight-grid {
-  /*
-   * Five columns when there is room, because there are exactly five asset
-   * classes and they have to add up to 100% — a reader compares them in one
-   * pass or not at all. `.grid-3`'s 260px floor fits only four across the
-   * card's 1360px of content ((1360 + 16) / (260 + 16) = 4.98), so Cash dropped
-   * to a second row on its own. 240px fits five at 259px each, which is wider
-   * than the three-column layout this replaced. Still `auto-fit`, so it steps
-   * down to four, three, two and one as the panel narrows.
-   */
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  row-gap: var(--md-sys-spacing-inset-xl, 24px);
-  column-gap: var(--md-sys-spacing-gap-lg, 16px);
-}
-
-/*
  * The signed proposal's allocation, as five things to COMPARE.
  *
  * This was a flat `.row` of `.row`s: a chip, its percentage, the next chip, its
@@ -788,10 +778,38 @@ a {
 
 /* --------------------------------------------------------------- kpi tiles */
 
+/*
+ * `min(210px, 100%)`, NOT a bare `210px`, and this is a real bug rather than
+ * belt-and-braces.
+ *
+ * A bare floor in `minmax()` is a MINIMUM the track must honour, so in any
+ * container narrower than the floor the track overflows instead of shrinking.
+ * Measured on the analytics screen at 360px: the budget cards sit inside a
+ * panel whose content box is 272px, the `.grid-2` floor is 340px, and the card
+ * hung 68px past its panel. `min(floor, 100%)` caps the floor at the container,
+ * so a narrow container gets one full-width track instead of an overflowing
+ * one. Every auto-fit grid in this file needs it.
+ */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
   gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+/*
+ * TWO TILES ACROSS ON A PHONE, not one.
+ *
+ * At 360px the 210px floor resolves to a single column, so the four headline
+ * figures became four full-width rows and pushed everything else a screen and
+ * a half down — measured: the home screen was 5.1 phone screens tall. A KPI
+ * tile is a label, a number and a hint; at ~160px it still holds a compact
+ * currency figure without wrapping, and the block halves in height.
+ */
+@media (max-width: 599px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--md-sys-spacing-gap-sm, 8px);
+  }
 }
 
 .kpi {
@@ -828,6 +846,35 @@ a {
   margin-block-start: var(--md-sys-spacing-gap-xs, 4px);
 }
 
+/**
+ * A TIGHTER KPI TILE ON A PHONE.
+ *
+ * Measured at 390px: four tiles at ~155px each, two rows, 310px — 37% of the
+ * viewport spent on four numbers before the reader has seen an account. The
+ * headline typescale and 16px of inset are right on a desktop tile that is
+ * 300px wide; on a 185px one they are most of the box.
+ *
+ * The value drops one step to title-large and the inset to 12px, which brings
+ * a tile to about 100px without shrinking the number below the thing a reader
+ * is actually here to read. The sparkline is dropped rather than squeezed: at
+ * 185px wide it is a 12-month curve in 160px, which is a texture rather than a
+ * trend, and the tile beside it is not the place to read one.
+ */
+@media (max-width: 599px) {
+  .kpi {
+    gap: 2px;
+    padding: var(--md-sys-spacing-inset-md, 12px);
+  }
+
+  .kpi__value {
+    font: var(--md-sys-typescale-title-large-font);
+  }
+
+  .kpi__spark {
+    display: none;
+  }
+}
+
 /* ------------------------------------------------------------------ layout */
 
 /*
@@ -841,14 +888,14 @@ a {
  */
 .grid-2 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
   gap: var(--md-sys-spacing-gap-md, 12px);
   align-items: stretch;
 }
 
 .grid-3 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
   gap: var(--md-sys-spacing-gap-md, 12px);
   align-items: stretch;
 }
@@ -857,7 +904,7 @@ a {
    summary. Collapses to one column below the same 900px the rail does. */
 .grid-wide {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  grid-template-columns: minmax(0, 2fr) minmax(min(280px, 100%), 1fr);
   gap: var(--md-sys-spacing-gap-md, 12px);
   align-items: stretch;
 }
@@ -1099,6 +1146,64 @@ a {
   padding-block-end: var(--md-sys-spacing-inset-md, 12px);
 }
 
+/**
+ * ONE SCROLLING LINE PER FACET ON A PHONE, not a wrapped block.
+ *
+ * The statement has four facet rows — month, account, category, status — and
+ * with 48px touch targets they wrapped into six lines of chips, about a third
+ * of a screen of filters above the thing being filtered. A horizontally
+ * scrollable chip row is the Material pattern for exactly this, and it keeps
+ * each facet to one line whatever the locale does to the label lengths.
+ *
+ * `scroll-snap` so a swipe lands on a chip rather than halfway through one, and
+ * the scrollbar is hidden because the chips are self-evidently a row that
+ * continues — a visible bar under each of four rows is four bars of noise.
+ * Scrolling stays reachable by keyboard: the row is focusable-by-content, and
+ * tabbing to a chip scrolls it into view.
+ */
+/**
+ * `md-search` CANNOT FIT A 360px PHONE at its defaults, and this is the fix.
+ *
+ * The component sets `min-inline-size: var(--md-search-container-min-inline-size, 360px)`.
+ * On the most common small phone width that minimum is the entire viewport, so
+ * the bar overflows its container by whatever padding sits around it —
+ * measured at 37px inside this screen's filter panel. Nothing the host lays out
+ * can shrink it, because a min-inline-size wins over the parent's width.
+ *
+ * Zeroing the floor through the component's own custom property is the
+ * supported way out; the bar still fills its container through the
+ * `inline-size: 100%` beside it. Worth raising upstream — a 360px floor makes
+ * the component unusable at 360px in any app — but the default is not this
+ * vertical's to change.
+ */
+@media (max-width: 719px) {
+  md-search {
+    --md-search-container-min-inline-size: 0;
+  }
+}
+
+@media (max-width: 719px) {
+  .facet-row {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    /* The inline padding must survive the scroll port, or the first and last
+       chip sit flush against the edges. */
+    scroll-padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+    scrollbar-width: none;
+  }
+
+  .facet-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .facet-row > * {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+}
+
 .strong {
   font-weight: 500;
 }
@@ -1121,7 +1226,7 @@ a {
 
 .dl {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
   gap: var(--md-sys-spacing-gap-md, 12px);
   margin: 0;
 }
@@ -1428,6 +1533,40 @@ a {
   align-items: flex-end;
   margin-inline-start: auto;
   white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ touch targets */
+
+/**
+ * Finger-sized controls where a finger is what is being used.
+ *
+ * `pointer: coarse` and NOT a width query: a touch laptop is wide and coarse
+ * and wants this; a narrow desktop window is neither. Scoping it to the pointer
+ * means the mouse layout is untouched at every width.
+ *
+ * ONLY THE CONTROLS THAT ARE ACTUALLY TAPPED. `md-switch` already reserves a
+ * 48px target behind a smaller track, and `md-list-item` is 56px, so neither
+ * needs anything. `md-chip` does not — its host is its 32px visual box — but
+ * most chips in this app are ASSIST chips used as labels (a category, a status)
+ * and are not tap targets at all. Enlarging those would add height for nothing
+ * and make a statement row look like a row of buttons. So this reaches only the
+ * chips in a facet row, which are the filter chips, plus the small buttons that
+ * sit at 40px.
+ *
+ * Both components expose the height as a custom property, so this is a
+ * documented theming hook rather than a reach into a shadow root.
+ */
+@media (pointer: coarse) {
+  .facet-row md-chip {
+    --md-chip-container-height: 48px;
+  }
+
+  /* Every button, not just the small ones: the invest screen's Buy and Sell
+     carry no `size` and sit at the 40px default, and they are the two most
+     important tap targets in the app. */
+  md-button {
+    --md-button-height: 48px;
+  }
 }
 
 /* -------------------------------------------------------------- empty state */

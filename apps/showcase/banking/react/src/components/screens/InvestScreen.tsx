@@ -26,6 +26,7 @@ import {
   watchlistRows,
 } from '@awc-ui/showcase-kit/banking';
 import { useT } from '@/lib/showcase';
+import { PHONE, useMediaQuery } from '@/lib/media';
 import { AreaChart, PieChart, useCustomEvent } from '../elements';
 import { EmptyState, Panel, Screen } from '../Shell';
 import { route, withBase } from '@/lib/routes';
@@ -52,6 +53,7 @@ export function InvestScreen() {
   const ring = portfolioRing();
   const curve = portfolioSeries();
   const layout = TABLES.holdings();
+  const phone = useMediaQuery(PHONE);
 
   /* The ticket's instrument defaults to the largest holding — the one a reader
      is most likely to act on, and never an empty select. */
@@ -199,6 +201,48 @@ export function InvestScreen() {
       <Panel title={t('banking.panel.holdings')} actions={<Count value={holdings.length} />}>
         {holdings.length === 0 ? (
           <EmptyState message={t('banking.empty.holdings')} />
+        ) : phone ? (
+          /*
+           * A LIST ON A PHONE, NOT THE TABLE.
+           *
+           * The table needs 1040px for its nine columns and does the honest
+           * thing below that — it scrolls inside its own port. But scrolling a
+           * nine-column grid sideways on a 390px screen is not reading a
+           * portfolio, and the three figures that matter (value, P/L, weight)
+           * are the ones that end up off-screen.
+           *
+           * The two layouts are different MARKUP, not the same markup
+           * rearranged, which is why this is a media-query hook rather than
+           * CSS: rendering both and hiding one would leave a 1040px table in
+           * every phone's accessibility tree.
+           */
+          <md-list
+            label={t('banking.panel.holdings')}
+            interaction-mode="navigation"
+            list-style="segmented"
+          >
+            {holdings.map((h) => (
+              <md-list-item
+                key={h.instrument.id}
+                type="link"
+                href={withBase(route.instrument(h.instrument.id))}
+                headline={h.instrument.name}
+                overline={h.instrument.ticker}
+                supporting-text={`${t(h.instrument.kindKey)} · ${t.formatPercent(h.allocation, {
+                  maximumFractionDigits: 1,
+                })}`}
+                lines="3"
+              >
+                <span slot="leading">
+                  <md-avatar initials={h.instrument.initials} size="small" />
+                </span>
+                <span slot="trailing" className="account-row__figures">
+                  <Money value={h.marketValueEur} />
+                  <Signed value={h.unrealisedPlPct} kind="percent" />
+                </span>
+              </md-list-item>
+            ))}
+          </md-list>
         ) : (
           <md-table-container variant="outlined" class="table-host">
             <md-table
