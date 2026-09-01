@@ -28,6 +28,8 @@
      viewport      Scroll/pan container
      tree          The role="tree" root list
      group         A role="group" child list
+     branch        A role="treeitem" list item (the node and its subtree)
+     branch-on-path A branch on the path from a selection up to its root
      node          A node card
      node-selected A selected node card
      state-layer   Hover / selected overlay
@@ -169,6 +171,111 @@
   border-inline-start: var(--_line);
 }
 
+/*
+ * THE TRAIL FROM A SELECTION BACK TO ITS ROOT.
+ *
+ * A selected node is outlined, which says WHICH node without saying WHERE it
+ * sits: in a wide tree every connector is the same grey, so placing the node in
+ * the hierarchy means tracing lines by eye. `--on-path` is set on the selected
+ * branch and on every ancestor of it, so the connectors carry the answer.
+ *
+ * The drop and the riser belong to one node each, so those are tinted directly.
+ * The horizontal run between them is DRAWN — see `measureTrail()` for the four
+ * shapes that were tried and why each failed against a shared, tiled bus.
+ *
+ * `border-inline-start` alone on the riser, not `border-color`: `::after` draws
+ * the riser AND that branch's bus half from the same box, and the half is not
+ * this rule's to claim. `> .md-org-chart__group` is a direct-child selector on
+ * purpose — a descendant one would light every group beneath the root.
+ */
+.md-org-chart__group[data-trail]::before,
+.md-org-chart__branch--on-path:not([data-trail-drawn])::after {
+  border-inline-start-color: var(--_selected-color);
+}
+
+/*
+ * The last child's riser is on the OTHER pseudo-element: the rules above zero
+ * `::after` there (it would overhang the end of the bus) and move the riser onto
+ * `::before`'s `border-inline-end`, so tinting `::after` alone left the last
+ * child on a trail with a grey riser under a coloured run.
+ */
+.md-org-chart__branch--on-path:last-child:not([data-trail-drawn])::before {
+  border-inline-end-color: var(--_selected-color);
+}
+
+/*
+ * The branch whose riser the box draws hides its OWN, rather than merely leaving
+ * it untinted. Untinting only turned it grey: the branch still painted a border
+ * a hair away from the box's, so the two sat side by side and the line read as a
+ * green rail with a grey one beside it. Transparent, not zero-width — the border
+ * still occupies its place in the pseudo-element's box, so nothing shifts.
+ *
+ * Which border is the riser depends on where the branch sits: `::after`'s
+ * inline-start for a first or middle child, and `::before`'s inline-end for a
+ * last child, whose `::after` the rules above zero out entirely.
+ */
+.md-org-chart__branch[data-trail-drawn]::after {
+  border-inline-start-color: transparent;
+}
+
+.md-org-chart__branch[data-trail-drawn]:last-child::before {
+  border-inline-end-color: transparent;
+}
+
+/*
+ * Where the run covers this branch's inner half entirely, the half goes too.
+ *
+ * That pseudo-element draws the riser AND the bus half from one box, and on an
+ * outermost child the elbow radius curves both — so hiding only the riser left
+ * the curved grey half showing through the inside of the trail's own curve.
+ * `measureTrail()` sets this only when every pixel of the half is inside the
+ * run, so nothing that should stay grey is lost; where it is not, the flag is
+ * absent and both curves square off instead (see the elbow rules above).
+ */
+.md-org-chart__branch[data-trail-hide]:not(:last-child)::after,
+.md-org-chart__branch[data-trail-hide]:last-child::before {
+  border-block-start-color: transparent;
+}
+
+/*
+ * THE RUN: one L-shaped box from the drop to the riser, drawn exactly the way
+ * the grey connectors are — a top border for the horizontal, a side border for
+ * the vertical, and a radius joining them — so it owns its own corner instead of
+ * overlaying somebody else's. `measureTrail()` sizes it and says which end turns
+ * down; the other end is the drop, whose vertical already closes that corner.
+ */
+.md-org-chart__group[data-trail-run]::after {
+  content: '';
+  position: absolute;
+  /* The bus is not at the group's top edge — the group pads `--_level-gap` above
+     it for the drop to fall through. */
+  top: var(--_level-gap);
+  left: var(--_trail-x);
+  width: var(--_trail-w);
+  height: var(--_level-gap);
+  border-top: var(--_connector-width) solid var(--_selected-color);
+  box-sizing: border-box;
+}
+
+.md-org-chart__group[data-trail-dir='end']::after {
+  border-right: var(--_connector-width) solid var(--_selected-color);
+}
+
+.md-org-chart__group[data-trail-dir='start']::after {
+  border-left: var(--_connector-width) solid var(--_selected-color);
+}
+
+/* Rounded only at the outermost child, where the bus itself ends and turns
+   down. In between it is a square T, and a curve there pulls away from the
+   straight grey bus and lets it show through the corner. */
+.md-org-chart__group[data-trail-elbow][data-trail-dir='end']::after {
+  border-start-end-radius: var(--_elbow);
+}
+
+.md-org-chart__group[data-trail-elbow][data-trail-dir='start']::after {
+  border-start-start-radius: var(--_elbow);
+}
+
 /* Roots have no incoming connector. */
 .md-org-chart__tree > .md-org-chart__branch {
   padding-block-start: 0;
@@ -199,9 +306,55 @@
   color: var(--md-sys-color-on-surface, #1d1b20);
   transition:
     border-color var(--_duration) var(--_easing),
-    box-shadow var(--_duration) var(--_easing);
+    box-shadow var(--_duration) var(--_easing),
+    /* z-index has no in-between value, so a 0s duration with a delay is purely
+       a HOLD — see the lift rule below for why it has to outlast the pointer.
+       `md-tooltip` defers its own `visibility` exactly this way, and reading the
+       same token keeps the two in step if it ever changes. */
+    z-index 0s linear var(--md-sys-motion-duration-short2, 100ms);
   /* No transform / will-change here: either would make the node a containing
      block for the toggler tooltip's position:fixed popup, cutting it off. */
+}
+
+/*
+ * THE NODE BEING POINTED AT COMES FORWARD, so its toggler's tooltip can be seen.
+ *
+ * `position: relative` + the `z-index: 2` above make this node a STACKING
+ * CONTEXT — which is the point for the connector lines, and a trap for the
+ * tooltip. `md-tooltip`'s popup is `position: fixed; z-index: 1500`, high enough
+ * to clear anything on the page, but a z-index only ranks an element among its
+ * siblings INSIDE the nearest stacking context: 1500 resolves within this node,
+ * and the node itself still ranks 2 against its siblings. A node painted later
+ * in the DOM — the next sibling in the tree, or any node in the group below —
+ * therefore covered the tooltip completely. Measured on the household org chart:
+ * the popup rendered at its correct position with z-index 1500 and was painted
+ * under the child node beneath it.
+ *
+ * The containing-block hazard the note above guards against is the same defect
+ * one step earlier; a stacking context is not a containing block, so it does not
+ * cut the popup off or misplace it — it only loses the paint order.
+ *
+ * Lifting on hover / focus-within rather than raising `z-index` outright keeps
+ * the resting paint order exactly as it was (every node above every connector
+ * line, siblings in DOM order) and only re-ranks the one node the pointer or the
+ * keyboard is actually in — which is the only one that can have a tooltip open.
+ */
+.md-org-chart__node:hover,
+.md-org-chart__node:focus-within {
+  z-index: 4;
+  /*
+   * Up immediately, down late.
+   *
+   * The lift has to OUTLAST the pointer: `md-tooltip` fades its popup out over
+   * `duration-short2` rather than hiding it at once, so dropping back the
+   * instant :hover is lost re-traps the popup mid-fade and it disappears under
+   * the node below instead of fading in place. The hold on the base rule covers
+   * exactly that fade; this resets the delay so entering is still instant.
+   *
+   * A single `transition-delay` covers the whole list, which is safe here
+   * because the other two entries already run at no delay.
+   */
+  transition-delay: 0s;
 }
 
 .md-org-chart__node--selectable {

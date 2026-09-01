@@ -347,6 +347,30 @@
   border-end-end-radius: var(--md-sys-shape-corner-large, 16px);
 }
 
+/*
+ * A SOLE ITEM IS BOTH ENDS AT ONCE, so it keeps every corner.
+ *
+ * The two rules above shape a hovered item against the menu's outer edge: the
+ * first item keeps its top corners and tucks its bottom ones in, the last does
+ * the reverse. An only child matches BOTH, they carry the same specificity, and
+ * the last-child rule is written second — so it won the top corners and a menu
+ * of one hovered with a 4px top and a 16px bottom.
+ *
+ * `md-menu-item` already carries this correction for its own `:host()` rules,
+ * and it does not help here: a `::slotted()` selector adds the element to the
+ * specificity (0,5,2 against the item's 0,5,0), so the MENU's opinion wins and
+ * the correction has to live beside the rules it corrects.
+ */
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-menu-item:first-child:last-child:hover),
+:host(.md-menu--standard) .md-menu__surface ::slotted(md-sub-menu-item:first-child:last-child:hover),
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-menu-item:first-child:last-child:hover),
+:host(.md-menu--vibrant) .md-menu__surface ::slotted(md-sub-menu-item:first-child:last-child:hover) {
+  border-start-start-radius: var(--md-sys-shape-corner-large, 16px);
+  border-start-end-radius: var(--md-sys-shape-corner-large, 16px);
+  border-end-start-radius: var(--md-sys-shape-corner-large, 16px);
+  border-end-end-radius: var(--md-sys-shape-corner-large, 16px);
+}
+
 /* ==========================================================
    6. GAP LAYOUT — uniform gap between all items
    ========================================================== */

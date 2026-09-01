@@ -187,3 +187,38 @@ describe('hit-testing a mirrored scene', () => {
     expect(hitTestScene(b, b.plot.x + b.plot.width + 6, b.plot.y + b.plot.height / 2)).toBeNull();
   });
 });
+
+describe('mirrorScene — bar corners', () => {
+  /*
+   * A bar is rounded on the end its value grows towards. Mirroring the box
+   * without the corners left every RTL bar square at the value and rounded
+   * against the axis, so the shape read backwards.
+   *
+   * Built from a real layout so the scene carries every field `mirrorScene`
+   * touches, with the bars swapped in — a hand-rolled literal drifts the day
+   * the scene grows a field.
+   */
+  const withBars = (radius: [number, number, number, number]) => {
+    const base = ltr();
+    return {
+      ...base,
+      bars: [{ x: 10, y: 5, w: 40, h: 10, horizontal: true, radius, color: '#000' }],
+    } as typeof base;
+  };
+
+  it('swaps the horizontal corner pairs with the box', () => {
+    // [top-start, top-end, bottom-end, bottom-start] — the two ends trade.
+    expect(mirrorScene(withBars([0, 8, 8, 0])).bars[0].radius).toEqual([8, 0, 0, 8]);
+  });
+
+  it('carries the rounded end along with the mirrored box', () => {
+    const out = mirrorScene(withBars([0, 8, 8, 0]));
+    // x mirrors to width - (x + w), and the rounding follows it to the start.
+    expect(out.bars[0].x).toBe(out.width - 50);
+    expect(out.bars[0].radius[0]).toBe(8);
+  });
+
+  it('leaves a uniformly rounded bar unchanged', () => {
+    expect(mirrorScene(withBars([4, 4, 4, 4])).bars[0].radius).toEqual([4, 4, 4, 4]);
+  });
+});

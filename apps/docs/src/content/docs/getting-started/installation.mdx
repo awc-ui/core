@@ -124,6 +124,45 @@ import '@awc-ui/tokens/tokens.css';
 
 This provides all the `--md-sys-*` CSS custom properties for colors, typography, shape, elevation, and motion.
 
+## Preventing Layout Shift
+
+Components register before their code arrives. With Option A or B the runtime
+defines every tag at bootstrap and then fetches each component's chunk on
+demand — so for a moment a layout-critical element like `md-navigation-rail`
+exists in the DOM with none of its own CSS, occupying no space. When the chunk
+lands, everything around it moves.
+
+Opt in to size floors that hold the space in advance:
+
+```ts
+import '@awc-ui/core/css/tokens.css';
+import '@awc-ui/core/css/pre-upgrade.css';
+```
+
+The sheet reserves the settled box of the components that carry page
+layout — `md-navigation-rail`, `md-app-bar`, `md-toolbar`, `md-navigation-bar`
+and `md-fab` — using each component's own public custom property and default, so
+a reservation cannot drift from the thing it reserves for. They are minimums, so
+a component that settles at its floor does not move at all, and one that settles
+larger simply overrides it.
+
+Every rule is gated on `:not(.hydrated)` and stops applying the moment that
+element renders.
+
+### `:defined` is the wrong gate
+
+If you write reservations of your own, gate them on `.hydrated` — not
+`:not(:defined)`. The lazy runtime calls `customElements.define()` for every tag
+in one pass at bootstrap and only then fetches the chunks, so `:defined` flips
+while the element is still an empty box: the reservation evaporates before the
+styles it was standing in for arrive. `.hydrated` is the per-element flag the
+runtime sets when a component has rendered, which is the moment its box becomes
+real.
+
+This is a floor, not a measurement: it cannot know how wide a button's label
+will make it, or how tall a table will be once its data loads. It removes the
+shift that comes from a component having no size at all.
+
 ## Next Steps
 
 - [Quick Start](/getting-started/quick-start/) — build your first page with AWC UI components

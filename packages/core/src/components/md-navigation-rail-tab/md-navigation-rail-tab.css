@@ -498,6 +498,34 @@ md-ripple {
   border-radius: inherit;
 }
 
+/*
+ * THE LINK NEEDS A BOX TO BE CLICKED, and `display: contents` gives it none.
+ *
+ * With an `href` the tab renders this anchor around its content, but the anchor
+ * generates no box of its own and every visual layer inside it — the indicator,
+ * the state layer, the icon wrapper — sets `pointer-events: none` so it cannot
+ * steal hover from the host. That left the 60x16 LABEL as the only hittable
+ * thing inside the link: on an 80x56 tab, a click anywhere else fell through to
+ * the host, which is outside the anchor, and the browser had no link to follow.
+ *
+ * It went unnoticed because every hydrating build intercepts the click on the
+ * HOST and routes programmatically, which works wherever you click. A static
+ * build has nothing to intercept with and relies on the anchor — measured on the
+ * showcase's plain-HTML build, its entire rail was dead except for the labels.
+ *
+ * A pseudo-element of a `display: contents` element still generates a box, so
+ * this fills the tab, sits INSIDE the anchor, and is out of flow — the link
+ * becomes clickable edge to edge and no layout moves. It is behind everything
+ * (`z-index: 0` against the indicator's own stacking) and transparent, so it
+ * changes nothing visually.
+ */
+.md-navigation-rail-tab__anchor::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   :host,

@@ -176,3 +176,149 @@ describe('md-organization-chart', () => {
     });
   });
 });
+
+
+describe('selection trail', () => {
+  /*
+   * A selected node is outlined, which says WHICH node without saying WHERE it
+   * hangs. `--on-path` marks the selected branch and every ancestor of it so the
+   * connectors can carry that answer; these pin the marking, not the colour.
+   */
+  const tree = `
+    <md-organization-chart selection-mode="single"></md-organization-chart>
+  `;
+  const nodes = [
+    {
+      id: 'root',
+      name: 'Root',
+      children: [
+        { id: 'a', name: 'A', children: [{ id: 'a1', name: 'A1' }] },
+        { id: 'b', name: 'B' },
+      ],
+    },
+  ];
+
+  const onPath = (page: { root?: Element | null }) =>
+    [...(page.root?.shadowRoot?.querySelectorAll('.md-org-chart__branch--on-path') ?? [])].map(
+      (li) => li.getAttribute('data-id'),
+    );
+
+  it('marks the selected branch and every ancestor, and nothing else', async () => {
+    const page = await newSpecPage({ components: [MdOrganizationChart], html: tree });
+    const el = page.root as HTMLElement & { nodes: unknown; selectedIds: string[] };
+    el.nodes = nodes;
+    el.selectedIds = ['a1'];
+    await page.waitForChanges();
+    // root -> a -> a1 is the trail; b is a sibling and stays off it.
+    expect(onPath(page).sort()).toEqual(['a', 'a1', 'root']);
+  });
+
+  it('keeps both trails when two branches are selected', async () => {
+    // `.map(walk)` before `.some()` exists for exactly this: a short-circuit
+    // would mark the first hit's ancestors and leave the second's untraced.
+    const page = await newSpecPage({ components: [MdOrganizationChart], html: tree });
+    const el = page.root as HTMLElement & { nodes: unknown; selectedIds: string[] };
+    el.nodes = nodes;
+    el.selectedIds = ['a1', 'b'];
+    await page.waitForChanges();
+    expect(onPath(page).sort()).toEqual(['a', 'a1', 'b', 'root']);
+  });
+
+  it('marks nothing when the selection is empty', async () => {
+    const page = await newSpecPage({ components: [MdOrganizationChart], html: tree });
+    const el = page.root as HTMLElement & { nodes: unknown; selectedIds: string[] };
+    el.nodes = nodes;
+    el.selectedIds = [];
+    await page.waitForChanges();
+    expect(onPath(page)).toEqual([]);
+  });
+});
+
+describe('trail geometry hooks', () => {
+  /*
+   * The run's LENGTH is measured from real boxes, which mock-doc does not have —
+   * every rect here is zero — so these pin the hooks the measurement writes
+   * through, not the numbers. The pixel geometry is covered in the browser.
+   */
+  const nodes = [
+    {
+      id: 'root',
+      name: 'Root',
+      children: [
+        { id: 'a', name: 'A' },
+        { id: 'b', name: 'B' },
+      ],
+    },
+  ];
+
+  const groups = async (selected: string[]) => {
+    const page = await newSpecPage({
+      components: [MdOrganizationChart],
+      html: '<md-organization-chart selection-mode="multiple"></md-organization-chart>',
+    });
+    const el = page.root as HTMLElement & { nodes: unknown; selectedIds: string[] };
+    el.nodes = nodes;
+    el.selectedIds = selected;
+    await page.waitForChanges();
+    return [...(page.root?.shadowRoot?.querySelectorAll('.md-org-chart__group') ?? [])];
+  };
+
+  it('marks the group holding a selected child so the run is drawn', async () => {
+    const [group] = await groups(['a']);
+    expect(group.hasAttribute('data-trail')).toBe(true);
+  });
+
+  it('leaves a group with nothing selected under it unmarked', async () => {
+    // The root is on the path, but its GROUP only draws a run when a child of
+    // that group is on it — which is what `data-trail` has to distinguish.
+    const [group] = await groups([]);
+    expect(group.hasAttribute('data-trail')).toBe(false);
+  });
+
+  it('leaves the selection\'s OWN drop alone', async () => {
+    /*
+     * The trail climbs to the root. Keying the drop on "this node is on the
+     * path" coloured the selected node's own drop as well, running the line on
+     * down into children nobody had selected — so the test is whether something
+     * BELOW this group is on the trail.
+     */
+    const deep = [
+      {
+        id: 'root',
+        name: 'Root',
+        children: [
+          { id: 'a', name: 'A', children: [{ id: 'a1', name: 'A1' }, { id: 'a2', name: 'A2' }] },
+          { id: 'b', name: 'B' },
+        ],
+      },
+    ];
+    const page = await newSpecPage({
+      components: [MdOrganizationChart],
+      html: '<md-organization-chart selection-mode="multiple"></md-organization-chart>',
+    });
+    const el = page.root as HTMLElement & { nodes: unknown; selectedIds: string[] };
+    el.nodes = deep;
+    el.selectedIds = ['a'];
+    await page.waitForChanges();
+    const own = page.root?.shadowRoot?.querySelector(
+      '[data-id="a"] > .md-org-chart__group',
+    );
+    expect(own?.hasAttribute('data-trail')).toBe(false);
+  });
+
+  it('clears the mark when the selection is withdrawn', async () => {
+    const page = await newSpecPage({
+      components: [MdOrganizationChart],
+      html: '<md-organization-chart selection-mode="multiple"></md-organization-chart>',
+    });
+    const el = page.root as HTMLElement & { nodes: unknown; selectedIds: string[] };
+    el.nodes = nodes;
+    el.selectedIds = ['a'];
+    await page.waitForChanges();
+    el.selectedIds = [];
+    await page.waitForChanges();
+    const group = page.root?.shadowRoot?.querySelector('.md-org-chart__group');
+    // Stale inline geometry would leave a coloured stub behind on a cleared tree.
+    expect(group?.hasAttribute('data-trail')).toBe(false);
+  });
+});

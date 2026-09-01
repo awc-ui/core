@@ -101,7 +101,9 @@ shadow boundaries.
 **Slots** — `empty` (replaces the default "No data" message; shown when `nodes`
 resolves to an empty list).
 
-**Parts** — `viewport`, `tree`, `group`, `node`, `node-selected` (present on a
+**Parts** — `viewport`, `tree`, `group`, `branch`, `branch-on-path` (present on
+the selected branch and every ancestor of it, so the connectors can trace a
+selection back to its root), `node`, `node-selected` (present on a
 node only while it is selected), `state-layer`, `avatar`, `avatar-image`
 (forwarded from the inner `md-avatar`), `name`, `title`, `toggle`, `empty`.
 
@@ -304,7 +306,7 @@ widen nodes — `--md-org-chart-node-max-width` caps them.
 A single node's tint is its `accent` field, not a custom property — it colours
 that node's avatar ring and selected state only.
 
-**CSS parts** — `viewport`, `tree`, `group`, `node`, `node-selected`,
+**CSS parts** — `viewport`, `tree`, `group`, `branch`, `branch-on-path`, `node`, `node-selected`,
 `state-layer`, `avatar`, `avatar-image`, `name`, `title`, `toggle`, `empty`.
 
 ```css

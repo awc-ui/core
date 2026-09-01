@@ -79,7 +79,26 @@ export function mirrorScene(scene: RenderScene): RenderScene {
     areas: scene.areas.map(
       (a): SceneArea => ({ ...a, points: mPts(a.points), basePoints: a.basePoints ? mPts(a.basePoints) : undefined }),
     ),
-    bars: scene.bars.map((b): SceneBar => ({ ...b, x: mx(b.x + b.w) })),
+    /*
+     * A bar's BOX mirrors, and so must its CORNERS.
+     *
+     * `radius` is `[top-start, top-end, bottom-end, bottom-start]` in physical
+     * order, and a bar is rounded on the end the value grows towards — the right
+     * of a horizontal bar in LTR. Mirroring only `x` flips the bar to grow
+     * leftward while leaving the rounding on the right, so under `dir="rtl"`
+     * every bar had square ends at the value and rounded ones against the axis:
+     * the shape read backwards.
+     *
+     * Swapping the two horizontal pairs mirrors the corners with the box. A
+     * VERTICAL bar grows along y, which this function does not mirror, so its
+     * rounding is already on the right end and the swap is a no-op for it —
+     * left/right on a vertical bar are symmetric.
+     */
+    bars: scene.bars.map((b): SceneBar => ({
+      ...b,
+      x: mx(b.x + b.w),
+      radius: [b.radius[1], b.radius[0], b.radius[3], b.radius[2]],
+    })),
     // The value baseline the intro grows a bar from. For a HORIZONTAL chart it is
     // an x (the value axis) and mirrors; for a vertical one it is a y and stays.
     // (barLabels aren't mirrored here — they're re-derived from the bars above.)

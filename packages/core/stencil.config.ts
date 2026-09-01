@@ -17,6 +17,24 @@ export const config: Config = {
   // was redundant. dist/md3/md3.css (the "./css/tokens.css" export target) is
   // now produced by scripts/emit-tokens-css.mjs in the build chain, and the
   // www dev server gets the sheet via the copy task on the www target below.
+  /*
+   * STENCIL DOES NOT INJECT THE PRE-HYDRATION STYLE; the token sheet carries it.
+   *
+   * By default `bootstrapLazy` prepends a `<style>` to <head> holding the
+   * `visibility: hidden` / `.hydrated { visibility: inherit }` pair that keeps a
+   * component from flashing unstyled before its chunk lands. An enterprise
+   * Content-Security-Policy refuses an inline `<style>` under `style-src 'self'`,
+   * so on such a deployment that rule never applied and every component flashed —
+   * measured as a `style-src-elem` violation from the runtime chunk on all five
+   * showcase builds.
+   *
+   * The identical rule is emitted into `dist/md3/md3.css` by
+   * `scripts/emit-tokens-css.mjs`, which `@awc-ui/core/define` already imports.
+   * Nothing changes for a consumer who does nothing: the rule arrives in a file
+   * they were loading anyway, as a file, which CSP allows.
+   */
+  invisiblePrehydration: false,
+
   outputTargets: [
     reactOutputTarget({
       // react-output-target 1.x: SSR-capable wrappers. `hydrateModule` turns on
