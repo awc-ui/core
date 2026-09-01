@@ -206,6 +206,31 @@ export function applySeedPreset(seedId: string, doc?: Document): void {
   if (!d) return;
   const preset = SEED_PRESETS.find((p) => p.id === seedId);
   const css = preset?.css ?? '';
+  /*
+   * The accent preset rides in a CONSTRUCTABLE stylesheet where the engine has
+   * them, because an inline `<style>` is refused under an enterprise
+   * `style-src 'self'` and this one is injected on every accent change.
+   * `adoptedStyleSheets` is applied after the document's own sheets, so it still
+   * beats the token sheet — the ordering main-llm.md §4.2 asks for, kept.
+   */
+  const constructable =
+    typeof CSSStyleSheet !== 'undefined' && 'replaceSync' in CSSStyleSheet.prototype;
+  if (constructable) {
+    const existing = SEED_SHEETS.get(d);
+    if (!css) {
+      if (existing) d.adoptedStyleSheets = d.adoptedStyleSheets.filter((s) => s !== existing);
+      SEED_SHEETS.delete(d);
+      return;
+    }
+    const sheet = existing ?? new CSSStyleSheet();
+    sheet.replaceSync(css);
+    if (!existing) {
+      SEED_SHEETS.set(d, sheet);
+      d.adoptedStyleSheets = [...d.adoptedStyleSheets, sheet];
+    }
+    return;
+  }
+
   let style = d.getElementById(SEED_STYLE_ID) as HTMLStyleElement | null;
   if (!css) {
     style?.remove();
@@ -219,6 +244,9 @@ export function applySeedPreset(seedId: string, doc?: Document): void {
   }
   if (style.textContent !== css) style.textContent = css;
 }
+
+/** One adopted sheet per document, so an accent change replaces rather than stacks. */
+const SEED_SHEETS = new WeakMap<Document, CSSStyleSheet>();
 /** `true` when the OS is asking for a dark palette. */
 export function prefersDark(): boolean {
   return (

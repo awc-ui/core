@@ -370,9 +370,33 @@ export class AwcShowcaseDock extends ElementBase {
   /* ----------------------------------------------------------- render */
 
   #build(): void {
-    const style = document.createElement('style');
-    style.textContent = DOCK_STYLES;
-    this.#root.append(style, document.createElement('div'));
+    /*
+     * A CONSTRUCTABLE STYLESHEET, not a `<style>` element.
+     *
+     * An enterprise Content-Security-Policy with `style-src 'self'` refuses an
+     * inline `<style>` — including one inside a shadow root, which is where this
+     * one lived. Measured on the wealth builds under such a policy: the dock's
+     * sheet was blocked on every screen and the whole control rendered unstyled.
+     *
+     * CSSOM is exempt from CSP by design: a sheet built with `new CSSStyleSheet()`
+     * and adopted carries the same rules with no inline content for a policy to
+     * refuse. Verified rather than assumed — `replaceSync` + `adoptedStyleSheets`
+     * applies under `style-src 'self'` where a `<style>` element does not.
+     *
+     * The `<style>` path is kept for engines without constructable sheets, where
+     * there is no CSP-safe alternative anyway and unstyled is the worse outcome.
+     */
+    const div = document.createElement('div');
+    if (typeof CSSStyleSheet !== 'undefined' && 'replaceSync' in CSSStyleSheet.prototype) {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(DOCK_STYLES);
+      this.#root.adoptedStyleSheets = [sheet];
+      this.#root.append(div);
+    } else {
+      const style = document.createElement('style');
+      style.textContent = DOCK_STYLES;
+      this.#root.append(style, div);
+    }
     this.#render();
   }
 

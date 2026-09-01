@@ -84,6 +84,64 @@ const EXPECTATIONS = {
     /** The whole book, and one page of it. */
     bookRows: '24',
     pageRows: 10,
+    /*
+     * WHICH SCREEN CARRIES EACH SHAPE. These were implicit while credit-risk
+     * was the only vertical — the badge, the paginated table and the dead
+     * attributes all happened to live on its overview, and the severity chip
+     * happened to be the fifth column. None of that is universal, so each is
+     * named here rather than hardcoded in the assertion.
+     */
+    badgeScreen: '/',
+    paginatedScreen: '/',
+    /** The chart whose generated summary the locale check reads. */
+    summaryChart: 'md-area-chart',
+    /** Column that repeats the row marker as a word. `null` = this vertical
+     *  does not duplicate it, so only the marker itself is checked. */
+    markerChipCell: 4,
+  },
+  wealth: {
+    arabicLocale: 'ar',
+    /** The advisor's book — its rows lead with a KYC dot beside the name. */
+    listScreen: '/',
+    /** A household is the drill target, and renders breadcrumbs. */
+    detailScreen: '/households/hh-01/',
+    /** The household's holdings table is the one with a totals row. */
+    footerScreen: '/households/hh-01/',
+    /**
+     * Every KYC word the dot may carry, in all three locales — the assertion
+     * tests that the label IS one of these, so a missing locale reads as a
+     * failure rather than as a skipped check.
+     */
+    severityWords: [
+      'Verified', 'Review due', 'Pending', 'Expired',
+      'Verificat', 'Revizuire scadentă', 'În așteptare', 'Expirat',
+      'موثَّق', 'مراجعة مستحقة', 'قيد الانتظار', 'منتهي الصلاحية',
+    ],
+    /*
+     * Holdings, not the overview: this vertical's book is eight households and
+     * is shown whole, while the 66-position holdings table is the one that
+     * pages. Pointing the assertion at the overview would have it compare 8
+     * against 8 and pass having tested nothing.
+     */
+    paginatedScreen: '/holdings/',
+    bookRows: '66',
+    pageRows: 25,
+    /*
+     * No badge-in-button anywhere in this vertical: the one badge sits on an
+     * `md-avatar` in the household header, and an avatar does not clip its
+     * corners the way `md-button` does. See the note on that block.
+     */
+    badgeScreen: null,
+    /** The overview's performance curve is a line chart, not an area chart. */
+    summaryChart: 'md-line-chart',
+    /*
+     * No second carrier to check. Credit-risk names the severity twice per row
+     * — a dot leading the row and a chip in the severity column — so it
+     * asserts the chip still says the word. A household row names its KYC
+     * state once, on the dot, which is why the dot MUST be labelled; there is
+     * no chip repeating it and nothing here to assert.
+     */
+    markerChipCell: null,
   },
 };
 
@@ -241,8 +299,8 @@ for (const vertical of verticals) {
   if (L) {
     {
       const p = await load(`${L}/${expect.arabicLocale}/`);
-      const probe = await p.evaluate(() => {
-        const area = document.querySelector('md-area-chart');
+      const probe = await p.evaluate((summaryChart) => {
+        const area = document.querySelector(summaryChart);
         const charts = [...document.querySelectorAll('md-bar-chart,md-line-chart,md-area-chart')];
         const plotRegions = charts.map((c) => {
           const region = c.shadowRoot?.querySelector('[role="application"]');
@@ -254,7 +312,7 @@ for (const vertical of verticals) {
           plotRegions,
           crumbLabel: crumbs?.getAttribute('aria-label') ?? '(no breadcrumbs on this screen)',
         };
-      });
+      }, expect.summaryChart);
 
       console.log('\n[Arabic overview] accessible names');
       /*
@@ -268,7 +326,7 @@ for (const vertical of verticals) {
       const ENGLISH_SUMMARY_TAIL = /\b(Area|Line|Bar) chart\b/;
 
       ok(
-        'area chart summary is Arabic, not the generated English',
+        `${expect.summaryChart} summary is Arabic, not the generated English`,
         arabic.test(probe.areaLabel) && !ENGLISH_SUMMARY_TAIL.test(probe.areaLabel),
         probe.areaLabel.slice(0, 60),
       );
@@ -296,14 +354,23 @@ for (const vertical of verticals) {
 
   /* ---- badge no longer clipped by the button ---- */
   /*
+   * Skipped entirely where `badgeScreen` is null, and that is not a hole: this
+   * tests one component INTERACTION — `md-badge` anchoring past the corner of an
+   * `md-button` that sets `overflow: hidden` — so a vertical that never puts a
+   * badge on a button has nothing here to get wrong. Wealth anchors its badge to
+   * an `md-avatar`, which does not clip, so it says null rather than pointing
+   * this at a screen where the selector would simply find nothing and report a
+   * missing element as a defect.
+   */
+  /*
    * Run against EVERY build. `md-badge` anchors absolutely and translates itself
    * past its host's corner, and `md-button` sets `overflow: hidden` with no
    * accommodation — so a slotted badge is sliced in half. Each build had to solve
    * it the same way (badge outside the button, count moved into the button's
    * accessible name) and each could have missed it independently.
    */
-  for (const framework of builds) {
-    const p = await load(`${url(framework)}/`);
+  for (const framework of expect.badgeScreen ? builds : []) {
+    const p = await load(`${url(framework)}${expect.badgeScreen}`);
     const probe = await p.evaluate(() => {
       const badge = document.querySelector('md-badge');
       const button = document.querySelector('.badge-anchor md-button');
@@ -348,24 +415,39 @@ for (const vertical of verticals) {
    */
   for (const framework of builds) {
     const p = await load(`${url(framework)}${expect.listScreen}`);
-    const probe = await p.evaluate(() => {
+    const probe = await p.evaluate((markerChipCell) => {
       const row = document.querySelector('md-table-body md-table-row');
       const cells = [...(row?.children ?? [])];
       const dot = cells[0]?.querySelector('md-status-dot');
       const link = cells[0]?.querySelector('a.drill');
       // The severity cell is the fifth column; it should hold a chip and no dot.
-      const severityCell = cells[4];
+      const severityCell = markerChipCell == null ? null : cells[markerChipCell];
       return {
         dotInFirstCell: !!dot,
-        dotLabel: dot?.getAttribute('label') ?? null,
+        /*
+         * The COMPUTED accessible name, not the `label` input.
+         *
+         * `label` is a prop declared without `reflect`, so whether an attribute
+         * exists says only how the framework delivered it — Svelte binds it as a
+         * property and writes none, and this read used to fail that build alone
+         * while its dot carried a perfectly good name. `md-status-dot` puts
+         * `role` and `aria-label` on its HOST from `this.label`, so the host's
+         * `aria-label` is what a screen reader actually announces and is the
+         * same in every build. The input is kept as a fallback for a dot that
+         * has not upgraded yet.
+         */
+        dotLabel: dot?.getAttribute('aria-label') ?? dot?.getAttribute('label') ?? dot?.label ?? null,
         dotHidden: dot?.getAttribute('aria-hidden'),
         dotBeforeLink:
           !!dot && !!link && !!(dot.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING),
         severityCellHasChip: !!severityCell?.querySelector('md-chip'),
         severityCellHasDot: !!severityCell?.querySelector('md-status-dot'),
-        chipLabel: severityCell?.querySelector('md-chip')?.getAttribute('label') ?? null,
+        chipLabel: (() => {
+          const chip = severityCell?.querySelector('md-chip');
+          return chip?.getAttribute('aria-label') ?? chip?.getAttribute('label') ?? chip?.label ?? null;
+        })(),
       };
-    });
+    }, expect.markerChipCell);
     const WORDS = expect.severityWords;
     console.log(`\n[${framework} watchlist] severity marker`);
     ok('the dot leads the counterparty cell', probe.dotInFirstCell && probe.dotBeforeLink);
@@ -375,8 +457,10 @@ for (const vertical of verticals) {
       `label=${probe.dotLabel ?? 'none'}`,
     );
     ok('and is therefore not hidden from AT', probe.dotHidden !== 'true', `aria-hidden=${probe.dotHidden}`);
-    ok('the severity cell keeps its chip, and gains no second dot', probe.severityCellHasChip && !probe.severityCellHasDot);
-    ok('the chip still carries the severity', WORDS.includes(probe.chipLabel ?? ''), probe.chipLabel ?? '(none)');
+    if (expect.markerChipCell != null) {
+      ok('the severity cell keeps its chip, and gains no second dot', probe.severityCellHasChip && !probe.severityCellHasDot);
+      ok('the chip still carries the severity', WORDS.includes(probe.chipLabel ?? ''), probe.chipLabel ?? '(none)');
+    }
     await p.close();
   }
 
@@ -407,7 +491,7 @@ for (const vertical of verticals) {
    * here to check.
    */
   for (const framework of hydrating) {
-    const p = await load(`${url(framework)}/`);
+    const p = await load(`${url(framework)}${expect.paginatedScreen}`);
     const probe = await p.evaluate(() => {
       const table = document.querySelector('md-table');
       return {

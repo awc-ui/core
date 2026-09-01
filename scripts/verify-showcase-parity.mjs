@@ -105,6 +105,16 @@ const SCREENS = {
     '/counterparties/cp-01/',
     '/facilities/fac-001/',
   ],
+  /* One route per screen. `/households/hh-01/` stands in for the eight drill
+     pages the fixture generates — they render through the same screen. */
+  wealth: [
+    '/',
+    '/holdings/',
+    '/households/hh-01/',
+    '/proposals/',
+    '/trade/',
+    '/planning/',
+  ],
 };
 
 /**
@@ -289,10 +299,39 @@ async function describe(vertical, framework, route) {
         .filter((el) => el.tagName.toLowerCase().startsWith('md-'))
         .map((el) => {
           const tag = el.tagName.toLowerCase();
-          const bits = [
-            ...VALUED.filter((n) => el.hasAttribute(n)).map((n) => `${n}=${el.getAttribute(n)}`),
-            ...PRESENCE.filter((n) => el.hasAttribute(n)),
-          ];
+          /*
+           * READ THE PROPERTY, NOT THE ATTRIBUTE — which is what the note below
+           * always claimed this did.
+           *
+           * A prop declared without `reflect` produces no attribute, so whether
+           * one exists says only how the framework chose to deliver the value.
+           * Measured on the wealth household screen, all four builds carried
+           * `label = "Proposals"` while React and Angular ALSO wrote the
+           * attribute, Svelte wrote none, and Vue wrote it for two of four
+           * lists and not the other two — Vue picks per binding with `key in
+           * el`. Comparing attributes reported three of those as divergences
+           * when every build had the identical value, which is exactly the
+           * "demanding one implementation" this file warns against elsewhere.
+           *
+           * The attribute is still the fallback: it is all there is before a
+           * component upgrades, and it is where a non-primitive prop (a select's
+           * array value) is legible. An empty resolved value is omitted rather
+           * than recorded as `x=`, so a default-empty prop does not enter the
+           * fingerprint for every element that declares one.
+           */
+          const bits = [];
+          for (const n of VALUED) {
+            const camel = n.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+            const pv = camel in el ? el[camel] : undefined;
+            const v =
+              typeof pv === 'string' || typeof pv === 'number' || typeof pv === 'boolean'
+                ? String(pv)
+                : el.hasAttribute(n)
+                  ? el.getAttribute(n)
+                  : null;
+            if (v != null && v !== '') bits.push(`${n}=${v}`);
+          }
+          bits.push(...PRESENCE.filter((n) => el.hasAttribute(n)));
           return bits.length ? `${tag}[${bits.join(',')}]` : tag;
         });
 

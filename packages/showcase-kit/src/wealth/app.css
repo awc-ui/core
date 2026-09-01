@@ -26,6 +26,22 @@
  * five destinations, so only one of them is ever visible.
  */
 
+/*
+ * The application's mount node.
+ *
+ * `display: contents` so the framework's root element is transparent to layout
+ * and `.shell` below behaves as though it were a child of <body> — every build
+ * mounts into a div, and without this each one would introduce a block box the
+ * others do not have, which the parity check reads as a layout difference.
+ *
+ * A CLASS, not the `style="display: contents"` attribute this used to be: an
+ * enterprise Content-Security-Policy with `style-src-attr 'none'` refuses inline
+ * style attributes, and that one was in the shipped HTML of every build.
+ */
+.awc-root {
+  display: contents;
+}
+
 * {
   box-sizing: border-box;
 }

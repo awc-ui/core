@@ -36,11 +36,10 @@ export const SHOWCASE_BASE = '/showcase/wealth';
  * authenticated internal tool, which is the case where an SPA is the honest
  * shape rather than a compromise.
  *
- * Only `react` exists today. The other four are listed because the dock's
- * switcher renders this array and the route table has to be the one place that
- * knows the roster — the credit-risk build learned that the hard way when a
- * local copy of the list and the kit's copy agreed only until the next port
- * landed.
+ * All five are built. The route table stays the one place that knows the
+ * roster — the dock's switcher renders this array — because the credit-risk
+ * build learned that the hard way when a local copy of the list and the kit's
+ * copy agreed only until the next port landed.
  */
 export const FRAMEWORKS = ['html', 'react', 'vue', 'angular', 'svelte'] as const;
 

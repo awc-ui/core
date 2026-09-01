@@ -94,6 +94,18 @@ export const VERTICALS = Object.freeze([
        comparison has to look one path segment deeper. */
     localeRouted: Object.freeze(['html', 'astro']),
   },
+  {
+    id: 'wealth',
+    title: 'Kestrel Private Bank — Wealth Management Console',
+    /* Five builds, no SSR — the decision at the top of this file. The order is
+       the dock's, and it matches FRAMEWORKS in the kit's wealth routes. */
+    builds: Object.freeze([...SPA_BUILDS]),
+    /* The build the other four are compared against, same as credit-risk. */
+    reference: 'react',
+    /* Only the plain-HTML build puts the locale in the path — it writes a page
+       per locale at build time. The four SPAs hold locale in client state. */
+    localeRouted: Object.freeze(['html']),
+  },
 ]);
 
 export const verticalById = (id) => VERTICALS.find((v) => v.id === id);
