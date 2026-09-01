@@ -247,7 +247,13 @@ export function HouseholdHoldings({
             {totals ? (
               <md-table-foot>
                 <md-table-row rowgroup="foot">
-                  <md-table-cell colspan="6">{t('wealth.common.total')}</md-table-cell>
+                  {/* `head` + `scope="row"` makes this a rowheader, which is
+                      what associates the two figures beside it with the word
+                      "Total" — without it a screen reader reads them as bare
+                      numbers in an unnamed row. `scope` without `head` is
+                      inert. Same idiom the credit-risk facility table uses,
+                      and what `verify-showcase-a11y.mjs` asserts. */}
+                  <md-table-cell head scope="row" colspan="6">{t('wealth.common.total')}</md-table-cell>
                   <md-table-cell numeric>
                     <Money value={totals.marketValue} compact />
                   </md-table-cell>

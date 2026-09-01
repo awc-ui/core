@@ -1,0 +1,124 @@
+/*
+ * Layout that belongs to the trade screen and to nothing else.
+ *
+ * Everything shared — `.grid-2`, `.grid-wide`, `.stack`, `.row`, `.dl`,
+ * `.table-host`, `.num`, `.muted` — comes from the kit's `wealth/app.css` and is
+ * NOT restated here. What is left is four things a form-shaped screen needs that
+ * a dashboard-shaped one does not, plus one fix for a fixed-position overlay
+ * colliding with the two fixed surfaces this app already parks at the bottom
+ * edge.
+ *
+ * Every value is a token with a literal fallback, in the same style as
+ * `app.css`, so a density or theme change moves this with the rest of the page.
+ */
+
+/* ------------------------------------------------------------------ ticket */
+
+/*
+ * The ticket's field grid.
+ *
+ * `auto-fit` rather than a fixed two-column rule: the ticket sits in the wide
+ * half of a `.grid-wide` above 900px and full width below it, and at the narrow
+ * end an `md-select` with a floating label needs ~230px before its label starts
+ * truncating. `align-items: start` keeps a field with supporting text from
+ * stretching its neighbour's outline to match.
+ *
+ * THREE ACROSS AT MOST, so the five fields break 3 + 2 rather than 4 + 1.
+ *
+ * The break then lands where it should without any ordering work, because the
+ * DOM order already groups them: Instrument, Mandate and Quantity are WHAT is
+ * being traded; Order type and Time in force are HOW it executes. At four
+ * across the split fell between those last two, which put the two halves of one
+ * decision on separate rows and left a lone dropdown under three empty columns.
+ *
+ * `max(230px, (100% - 2 * gap) / 3)` is what caps it: every track is at least a
+ * third of the row, so a fourth can never fit, and once a third of the row
+ * drops below 230px the floor takes over and `auto-fit` falls to two and then
+ * one. Measured across the widths this panel sees: 3 / 3 / 2 / 2 / 1. A hard
+ * `repeat(3, 1fr)` would give the same desktop result and then crush three
+ * 230px controls into a 400px panel.
+ */
+.ticket__fields {
+  --_field-gap: var(--md-sys-spacing-gap-md, 12px);
+
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(max(230px, calc((100% - 2 * var(--_field-gap)) / 3)), 1fr)
+  );
+  gap: var(--_field-gap);
+  align-items: start;
+}
+
+/*
+ * The action row: the button group on the leading side, the submit split button
+ * on the trailing one, wrapping to two rows rather than overflowing.
+ */
+.ticket__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+/* ---------------------------------------------------------------- estimate */
+
+/*
+ * The headline figure in the estimate panel.
+ *
+ * `tabular-nums` because this number changes under the reader's hands as the
+ * quantity steps — proportional digits make it jitter sideways on every tick.
+ */
+.estimate__value {
+  font: var(--md-sys-typescale-headline-small-font);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+.estimate__sub {
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+  margin: 0;
+}
+
+/* The instrument's twelve month-end closes, above the estimate facts. */
+.estimate__spark {
+  block-size: 56px;
+}
+
+/* ------------------------------------------------------------------ filters */
+
+/*
+ * The blotter's filter bar.
+ *
+ * The fields are given a flex basis and a floor so the bar wraps instead of
+ * pushing the table container past the viewport — which on a page whose table
+ * already has its own horizontal scroll port would produce a SECOND scrollbar,
+ * on the document.
+ */
+.trade-filters md-text-field,
+.trade-filters md-select {
+  flex: 1 1 200px;
+  min-inline-size: 170px;
+  max-inline-size: 280px;
+}
+
+/* ------------------------------------------------------------------- sheet */
+
+/*
+ * The order-book sheet's facts row. `md-bottom-sheet` scrolls its own content,
+ * so nothing here needs a height.
+ */
+.trade-sheet__facts {
+  margin-block-end: var(--md-sys-spacing-gap-md, 12px);
+}
+
+/* ---------------------------------------------------------------- snackbar */
+
+/*
+ * The ticket's snackbar is `.wealth-snackbar` — the rule that lifts a bottom
+ * toast clear of the dock and the navigation bar moved to `snackbar.css`, which
+ * all three toasting screens import, so the ticket, the household and the
+ * proposal builder cannot drift apart on where a toast lands.
+ */

@@ -1,0 +1,148 @@
+/*
+ * Planning screen only.
+ *
+ * Everything reusable — `.grid-3`, `.stack`, `.row`, `.dl`, `.goal-row`,
+ * `.muted`, `.num` — already lives in the kit's `app.css`, which this screen
+ * must not touch (five other screens share it). What is left is the handful of
+ * rules that exist for the what-if controls and nothing else, and every class
+ * here is prefixed `plan-` so it cannot collide with another screen's file.
+ *
+ * No colours are invented: every value is an MD3 system token, so this sheet
+ * follows the dock's theme, accent preset and density like the rest of the app.
+ */
+
+/* The filter row above the objective grid. Selects keep their own tab stop, so
+   this is a plain flex row rather than a toolbar. */
+.plan-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  margin-block-end: var(--md-sys-spacing-gap-md, 12px);
+}
+
+.plan-filters > * {
+  flex: 1 1 180px;
+  min-inline-size: 150px;
+}
+
+/* The selected objective. The card variant already swaps filled/outlined; this
+   adds the ring, because a tonal fill alone is a weak signal at density -2. The
+   projection panel also names the objective in words, so the ring is never the
+   only carrier. */
+/* The selected objective. Keyed on a DATA ATTRIBUTE and scoped to the grid,
+   because this card must not carry a React-managed `class` — see the note in
+   planning-parts.tsx for what happened when it did. */
+.plan-goals md-card[data-selected] {
+  box-shadow: 0 0 0 2px var(--md-sys-color-primary);
+}
+
+/* One what-if control: a label/value row above the slider. */
+.plan-control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+}
+
+.plan-control__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+.plan-control__label {
+  font: var(--md-sys-typescale-label-large-font);
+  color: var(--md-sys-color-on-surface);
+}
+
+/*
+ * The live value beside a slider's label.
+ *
+ * `tabular-nums` keeps the DIGITS equal width, which is why "€5,100" and
+ * "€5,200" do not jitter. It cannot help when the string gains a CHARACTER:
+ * "€5,000" -> "€10,500" is one more digit and one more group separator, 44px
+ * to 52px, and since the value is right-aligned in a `space-between` row its
+ * left edge walks backwards while you drag.
+ *
+ * So the space is reserved rather than measured. `min-inline-size` in `ch`
+ * units is sized off the widest value these controls produce — a currency in
+ * the hundreds of thousands, "€834.4k", plus a date, "31 Dec 2026" — and `ch`
+ * tracks the font, so it stays right when the dock changes density or the
+ * reader changes text size. The row is then stable from the first frame,
+ * before any value has changed, which is the point: nothing has to move and
+ * then settle.
+ */
+.plan-control__value {
+  font-variant-numeric: tabular-nums;
+  color: var(--md-sys-color-on-surface-variant);
+  min-inline-size: 11ch;
+  text-align: end;
+}
+
+/*
+ * The slider's thumb draws OUTSIDE the track box at 0% and 100% (md-slider's
+ * readme is explicit about it), so the rail needs room on both sides or the
+ * handle is visually clipped at the ends.
+ */
+.plan-control__rail {
+  padding-inline: 14px;
+}
+
+/* The colour swatch beside a category name. Bordered, because a light swatch on
+   a light surface has no edge of its own. */
+.plan-swatch {
+  display: inline-block;
+  inline-size: 12px;
+  block-size: 12px;
+  border-radius: 50%;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  flex: 0 0 auto;
+}
+
+/* The recompute indicator, sized down and given a fixed box so its arrival and
+   departure cannot shift the panel heading beside it. */
+/*
+ * The slot the projection spinner lives in.
+ *
+ * It is rendered whether or not anything is spinning, and holds its 24px
+ * whichever it is — the indicator appearing must not move the controls next to
+ * it. `flex: 0 0 auto` so the row never negotiates this box away, and the
+ * `aria-hidden` on the empty state keeps a permanently-present element out of
+ * the accessibility tree when there is nothing to report.
+ */
+.plan-busy {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  inline-size: 24px;
+  block-size: 24px;
+  --md-loading-indicator-size: 24px;
+}
+
+/* The inline colour picker fills the accordion panel's column. The overflow
+   guard that used to sit beside this (`max-inline-size: 100%`) now ships in the
+   component itself, so all that is left here is the product choice. */
+.plan-picker {
+  --md-color-picker-width: 100%;
+}
+
+/* One proposal's review progress. */
+.plan-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+}
+
+.plan-progress + .plan-progress {
+  margin-block-start: var(--md-sys-spacing-gap-md, 12px);
+}
+
+/* The sheet's body: the same control stack the desktop panel renders inline. */
+.plan-sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+  padding-block: var(--md-sys-spacing-gap-sm, 8px);
+}

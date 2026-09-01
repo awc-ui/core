@@ -1,0 +1,25 @@
+{
+  "name": "@awc-ui/showcase-wealth-html",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Kestrel Private Bank — Wealth Management Console, plain HTML build (no framework, pre-rendered, locale-routed)",
+  "scripts": {
+    "sync-runtime": "node scripts/sync-runtime.mjs",
+    "build": "pnpm sync-runtime && node scripts/build.mjs",
+    "dev": "pnpm build && node scripts/serve.mjs",
+    "serve": "node scripts/serve.mjs",
+    "lint": "node scripts/lint.mjs",
+    "verify": "node scripts/verify-browser.mjs"
+  },
+  "dependencies": {
+    "@awc-ui/core": "workspace:*",
+    "@awc-ui/showcase-kit": "workspace:*",
+    "@fontsource/roboto": "^5.3.0",
+    "material-symbols": "^0.40.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12",
+    "puppeteer": "^24.0.0"
+  }
+}

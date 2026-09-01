@@ -23,9 +23,7 @@
          The body is interpolated from @awc-ui/showcase-kit/preboot at build
          time — see the `awc-showcase-head` plugin in vite.config.ts. There is
          no second copy of it here. -->
-    <script>
-      __AWC_PREBOOT__
-    </script>
+    <!--__AWC_PREBOOT_SCRIPT__-->
 
     <meta name="awc-reporting-date" content="__AWC_REPORTING_DATE__" />
     <meta name="awc-render-mode" content="spa" />
@@ -38,41 +36,15 @@
     <title>__AWC_TITLE__</title>
     <meta name="description" content="__AWC_DESCRIPTION__" />
 
-    <!-- THE FONTS, at document level. The components render Material Symbols
-         glyphs inside their own shadow roots; font registration crosses shadow
-         boundaries, class rules do not — so the faces must be registered here
-         or every `icon=` prop renders its ligature text. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
-    />
-    <!-- THE AXES ARE NOT OPTIONAL, AND THIS IS THE ONE LINE THAT DECIDES IT.
-
-         Requested without an axis list, Google Fonts serves the STATIC instance
-         of Material Symbols pinned at its defaults — FILL 0 among them. Every
-         component that fills a glyph does so through
-         `font-variation-settings: 'FILL' 1`, and against a static face that
-         declaration is inert: the glyph stays an outline and only its colour
-         changes. `md-rating` was the visible casualty — clicking three stars set
-         `value` to 3 and the label to "3 of 5" while the stars stayed hollow,
-         which reads exactly like a broken control.
-
-         `FILL@0..1` (with wght, GRAD and opsz, which the components also drive)
-         serves the variable face, so a filled star is actually filled. -->
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
-    />
-    <!-- The ROUNDED cut, which is the one this console actually renders — see
-         `--md-sys-icon-font-family` in the kit's app.css. Storybook loads both
-         faces too, which is why a glyph could look softer there than here.
-         Outlined stays loaded as the fallback in that stack. -->
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
-    />
+    <!-- THE FONTS ARE NOT LOADED HERE. Three stylesheet links used to sit at
+         this point, pointing at fonts.googleapis.com; an enterprise
+         Content-Security-Policy refuses them under `style-src 'self'`, and a
+         blocked font sheet is not a cosmetic loss — every icon degrades to its
+         ligature text. They are npm dependencies now, imported from
+         `src/main.tsx`, so the woff2 files are emitted beside the app's own
+         assets and served from this origin. The axis note that lived here is
+         there too: the FILL axis is what makes a filled star filled, and the
+         self-hosted face was checked for it rather than assumed. -->
 
     <!-- THE COMPONENT RUNTIME, as a module script pointing at an absolute URL
          under `public/`. Stencil's lazy build resolves its sibling chunks
@@ -93,17 +65,7 @@
          earliest the request can be made. `__AWC_BASE__` is interpolated from
          the same `base` vite.config.ts passes to Vite, so the URL and the mount
          cannot drift. -->
-    <script>
-      (function () {
-        var runtime = document.createElement('script');
-        runtime.type = 'module';
-        runtime.src = '__AWC_BASE__/awc-runtime/md3/md3.esm.js';
-        runtime.onerror = function () {
-          console.error('[awc-ui] component registration failed', runtime.src);
-        };
-        document.head.appendChild(runtime);
-      })();
-    </script>
+    <!--__AWC_RUNTIME_SCRIPT__-->
   </head>
   <body>
     <!-- `display: contents` — the mount point has no box.
@@ -115,7 +77,7 @@
          `display: contents` host is transparent to layout. Written inline
          rather than in a stylesheet so it holds from the first byte, before any
          CSS has loaded. -->
-    <div id="root" style="display: contents"></div>
+    <div id="root" class="awc-root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -107,8 +107,33 @@ function bytes(dir) {
   return total;
 }
 
+/*
+ * The preboot script, as a FILE.
+ *
+ * It used to be interpolated into `index.html` as an inline `<script>`, which an
+ * enterprise Content-Security-Policy refuses outright — `script-src 'self'`
+ * without `'unsafe-inline'` blocks an inline script whatever it contains. The
+ * kit already builds it as a standalone file for exactly this reason; copying it
+ * beside the runtime means the document can reference it by URL and carry no
+ * executable text of its own.
+ *
+ * It stays a BLOCKING classic script in the head, because its whole job is to
+ * stamp theme, density and direction onto <html> before the first paint. An
+ * external one still does that: the parser waits for it.
+ */
+const prebootSource = resolve(repoRoot, 'packages/showcase-kit/dist/preboot.js');
+if (!existsSync(prebootSource)) {
+  console.error(
+    `[sync-runtime] ${prebootSource} is missing — build the kit first:\n` +
+      '               pnpm --filter @awc-ui/showcase-kit build',
+  );
+  process.exit(1);
+}
+const prebootTarget = resolve(appRoot, 'public/preboot.js');
+cpSync(prebootSource, prebootTarget);
+
 const stripped = stripMapRefs(target);
 console.log(
   `[sync-runtime] public/awc-runtime — ${(bytes(target) / 1024 / 1024).toFixed(1)} MB, ` +
-    `${stripped} sourceMappingURL comments stripped`,
+    `${stripped} sourceMappingURL comments stripped, preboot.js copied`,
 );

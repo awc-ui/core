@@ -17,9 +17,9 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
-import { PREBOOT_SCRIPT } from '@awc-ui/showcase-kit/preboot';
 import { en } from '@awc-ui/showcase-kit/i18n';
-import { REPORTING_DATE, SHOWCASE_BASE } from '@awc-ui/showcase-kit/wealth';
+import { FRAMEWORKS, REPORTING_DATE, SHOWCASE_BASE } from '@awc-ui/showcase-kit/wealth';
+import { serveSiblingFrameworks } from '../../../../scripts/lib/serve-sibling-frameworks.mjs';
 
 /** Keep in sync with FRAMEWORK in src/lib/routes.ts. */
 const FRAMEWORK = 'react';
@@ -41,7 +41,6 @@ const BASE_PATH = `${SHOWCASE_BASE}/${FRAMEWORK}`;
  */
 function showcaseHead(): Plugin {
   const tokens: Record<string, string> = {
-    __AWC_PREBOOT__: PREBOOT_SCRIPT,
     __AWC_REPORTING_DATE__: REPORTING_DATE,
     __AWC_TITLE__: `${en['wealth.app.brand']} — ${en['wealth.app.title']}`,
     __AWC_DESCRIPTION__: en['wealth.app.subtitle'],
@@ -54,6 +53,45 @@ function showcaseHead(): Plugin {
       // A function replacer, so nothing in the substituted text is read as a
       // `$1`-style backreference.
       handler: (html) => html.replace(/__AWC_[A-Z_]+__/g, (match) => tokens[match] ?? match),
+    },
+  };
+}
+
+/**
+ * Emit the two head scripts as EXTERNAL files, after Vite has finished with the
+ * document.
+ *
+ * Both used to be inline, and both are refused outright by an enterprise
+ * Content-Security-Policy: `script-src 'self'` without `'unsafe-inline'` blocks
+ * an inline `<script>` whatever it contains. Measured under that policy before
+ * this change, the blocked script was the one that loads the component runtime,
+ * so nothing upgraded at all — the build was not merely non-compliant, it did
+ * not run.
+ *
+ * WHY A POST TRANSFORM AND A COMMENT PLACEHOLDER. The runtime tag is the whole
+ * reason the injector existed: Vite treats a `<script type="module" src>` in
+ * `index.html` as an entry to resolve and bundle, which sends Stencil's lazy
+ * loader hunting for its sibling chunks under `/assets/` where nothing was
+ * written. Running at `order: 'post'` puts the tag into the document after
+ * Vite's own HTML pass has been and gone, so it is emitted verbatim and the
+ * runtime is fetched from `public/` exactly as it always was — the earlier
+ * comment's reasoning, satisfied without an inline script.
+ *
+ * A comment is the placeholder because Vite does not read inside one, and
+ * `stripHtmlComments()` below runs after this and clears the rest.
+ */
+function externalHeadScripts(): Plugin {
+  return {
+    name: 'awc-external-head-scripts',
+    transformIndexHtml: {
+      order: 'post',
+      handler: (html) =>
+        html
+          .replace('<!--__AWC_PREBOOT_SCRIPT__-->', `<script src="${BASE_PATH}/preboot.js"></script>`)
+          .replace(
+            '<!--__AWC_RUNTIME_SCRIPT__-->',
+            `<script type="module" src="${BASE_PATH}/awc-runtime/md3/md3.esm.js"></script>`,
+          ),
     },
   };
 }
@@ -84,9 +122,23 @@ function stripHtmlComments(): Plugin {
   };
 }
 
+/**
+ * Serve the vertical's OTHER builds from their staged output, so the dock's
+ * framework switcher works from this dev server instead of dead-ending on
+ * Vite's "public base URL" page. Only `react` live-reloads here; see the
+ * plugin's own header for why that trade is the right way round.
+ */
+const siblings = () =>
+  serveSiblingFrameworks({
+    repoRoot: fileURLToPath(new URL('../../../../', import.meta.url)),
+    vertical: 'wealth',
+    framework: FRAMEWORK,
+    siblings: FRAMEWORKS,
+  });
+
 export default defineConfig({
   base: `${BASE_PATH}/`,
-  plugins: [showcaseHead(), stripHtmlComments(), react()],
+  plugins: [showcaseHead(), externalHeadScripts(), stripHtmlComments(), react(), siblings()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
@@ -96,6 +148,16 @@ export default defineConfig({
     port: 4337,
   },
   build: {
+    /*
+     * NO ASSET IS INLINED AS A `data:` URI.
+     *
+     * Vite inlines anything under 4 kB by default, which turned the smaller
+     * self-hosted font subsets into `data:` URLs inside the stylesheet — and an
+     * enterprise Content-Security-Policy that grants `font-src 'self'` refuses
+     * them, 36 violations on a single screen. Emitting every asset as a file
+     * costs a handful of requests and keeps the policy free of `data:`.
+     */
+    assetsInlineLimit: 0,
     // One entry, one chunk — Vite's default, and left alone deliberately. The
     // six screens share almost every import (the kit's fixture and selectors,
     // the shell, the tables, the chart wrappers), so splitting them per route

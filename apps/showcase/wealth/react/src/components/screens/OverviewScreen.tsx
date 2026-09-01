@@ -758,7 +758,7 @@ function ActivityPanel() {
          * the row gets the ripple, focus ring and roving focus that a bare
          * `<li>` had none of.
          */
-        <md-list ref={listRef} label={t('wealth.panel.activity')} density="-2">
+        <md-list ref={listRef} label={t('wealth.panel.activity')}>
           <md-list-item
             expandable
             expanded

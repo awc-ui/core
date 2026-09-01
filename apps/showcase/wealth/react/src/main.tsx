@@ -22,6 +22,33 @@
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+/*
+ * THE FONTS, SELF-HOSTED.
+ *
+ * They used to be three `<link>` elements pointing at fonts.googleapis.com, which
+ * an enterprise Content-Security-Policy refuses under `style-src 'self'` — a
+ * blocked stylesheet means no `@font-face` at all, so every icon renders as its
+ * ligature text ("chevron_right" spelled out) and the whole console falls back to
+ * a system sans. Measured under the policy: three `style-src-elem` violations,
+ * one per sheet.
+ *
+ * `material-symbols` ships the SAME variable font Google serves, axes intact —
+ * verified rather than assumed, because the icons here depend on the FILL axis:
+ * rendering `star` at `FILL 0` and `FILL 1` from this package changes the glyph's
+ * ink from 13.1% to 20.4%, and `wght 100` to `wght 700` from 4.2% to 20.8%.
+ *
+ * ONLY THE OUTLINED CUT IS SELF-HOSTED, and that is a decision worth recording.
+ * The kit's `app.css` asks for Rounded first, but never gets it: `tokens.css`
+ * sets the same custom property on `:root` (0,1,0) and `app.css` sets it on
+ * `html` (0,0,1), so the token wins on specificity no matter the load order.
+ * Measured against the CDN, the Rounded sheet's woff2 was never fetched. Adding
+ * it here would emit 4.9 MB of font nobody renders. If Rounded is wanted, the
+ * fix is the selector in `app.css`, and this import follows it.
+ */
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+import 'material-symbols/outlined.css';
 import '@awc-ui/core/css/tokens.css';
 // The library's pre-upgrade size floors: every layout-critical `md-*` holds its
 // settled box from the FIRST frame, before its lazy chunk arrives, and each

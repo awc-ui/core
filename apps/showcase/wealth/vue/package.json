@@ -1,0 +1,31 @@
+{
+  "name": "@awc-ui/showcase-wealth-vue",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Kestrel Private Bank — Wealth Management Console, the Vue flavour of the AWC UI wealth showcase vertical: Vite, Vue 3, a client-side router, no meta-framework",
+  "scripts": {
+    "sync-runtime": "node scripts/sync-runtime.mjs",
+    "dev": "pnpm sync-runtime && vite",
+    "build": "pnpm sync-runtime && vite build && node scripts/fan-out-routes.mjs",
+    "preview": "vite preview",
+    "serve": "node scripts/serve-dist.mjs",
+    "lint": "vue-tsc --noEmit",
+    "verify": "node scripts/verify-browser.mjs"
+  },
+  "dependencies": {
+    "@awc-ui/core": "workspace:*",
+    "@awc-ui/showcase-kit": "workspace:*",
+    "@fontsource/roboto": "^5.3.0",
+    "material-symbols": "^0.40.2",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "puppeteer": "^24.0.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.4.11",
+    "vue-tsc": "^2.0.0"
+  }
+}

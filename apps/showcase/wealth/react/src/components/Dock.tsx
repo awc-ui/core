@@ -9,9 +9,9 @@
  * subscription, and a second listener would double-render every screen.
  *
  * `frameworks` is the kit's list for THIS vertical, which is five ids, not the
- * credit-risk console's ten. Only `react` is built today; the switcher renders
- * the rest because the roster belongs to the route table, not to whichever
- * ports happen to exist this week.
+ * credit-risk console's ten, and all five are built. The switcher renders the
+ * roster because it belongs to the route table, not to whichever ports happen
+ * to exist this week.
  *
  * `base-path` is the prefix BEFORE the framework segment, not this build's own
  * mount — the dock swaps the segment inside the path it finds, and only falls
