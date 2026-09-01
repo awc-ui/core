@@ -318,6 +318,24 @@ a {
   visibility: hidden;
 }
 
+/*
+ * The members list's action cluster, hidden while nothing is ticked.
+ *
+ * Same reasoning as the placeholder above — `visibility` keeps the space the
+ * cluster occupies, so the list below does not jump down the moment a row is
+ * selected, and takes the button out of the tab order and the accessibility
+ * tree while it is inert, which `opacity: 0` would not.
+ *
+ * DRIVEN BY `aria-hidden`, which the row already carries: one attribute keeps
+ * what is seen and what is announced in step, and it is a class rather than a
+ * `style="…"` attribute because the plain-HTML build ships this state in the
+ * document and a strict `style-src` refuses inline styles. (React and Vue
+ * write the same state through CSSOM, which is exempt.)
+ */
+[data-cluster][aria-hidden='true'] {
+  visibility: hidden;
+}
+
 /* Same reason as `.shell__main > *`: in a bounded flex column, children
    compress to fit instead of overflowing unless they are told not to. */
 .screen-body > * {

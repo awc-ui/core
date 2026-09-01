@@ -41,6 +41,8 @@
 
 /* --------------------------------------------------------------- utilities */
 
+import { fillCount, readKey, sorted } from './rows.mjs';
+
 /** Same colours and shape as `highlight()` in `lib/bits.mjs`. */
 const HIGHLIGHT_STYLE =
   'background:var(--md-sys-color-tertiary-container);' +
@@ -57,54 +59,6 @@ const escapeHtml = (value) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
-
-/** `text` with the query's matches marked. Built only from escaped pieces. */
-function highlight(text, needle) {
-  if (!needle) return escapeHtml(text);
-  const parts = String(text).split(
-    new RegExp(`(${needle.replace(REGEX_METACHARACTERS, '\\$&')})`, 'gi'),
-  );
-  // One capture group makes the result alternate: odd indices are the matches.
-  return parts
-    .map((part, index) =>
-      index % 2 === 1 ? `<mark style="${HIGHLIGHT_STYLE}">${escapeHtml(part)}</mark>` : escapeHtml(part),
-    )
-    .join('');
-}
-
-function readKey(row, column) {
-  // Attribute names are lowercased by the parser, so `marketValueEur` was
-  // written as `data-sort-marketvalueeur` and has to be looked up that way.
-  const raw = row.getAttribute(`data-sort-${column.toLowerCase()}`);
-  if (raw === null) return '';
-  const n = Number(raw);
-  return raw !== '' && Number.isFinite(n) ? n : raw;
-}
-
-/**
- * The kit's `by()` comparator, mirrored rather than approximated: numbers
- * compare numerically, strings with `localeCompare('en')` over the UNTRANSLATED
- * value, and ties break on the row's `value` (the record id) so two rows with
- * the same figure come out in the same order in every framework build.
- */
-function sorted(rows, { column, order }) {
-  const direction = order === 'asc' ? 1 : -1;
-  return rows.slice().sort((a, b) => {
-    const av = readKey(a, column);
-    const bv = readKey(b, column);
-    const tie = () =>
-      String(a.getAttribute('value')).localeCompare(String(b.getAttribute('value')), 'en');
-    if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * direction || tie();
-    return String(av).localeCompare(String(bv), 'en') * direction || tie();
-  });
-}
-
-/** `{shown} of {total}` — written by the build, refilled in place from here. */
-function fillCount(el, attribute, target, shown, total) {
-  const template = el?.getAttribute(attribute);
-  if (!template) return;
-  el.setAttribute(target, template.replace('%shown%', String(shown)).replace('%total%', String(total)));
-}
 
 /**
  * The kit's `matches()` haystack, for the search box.

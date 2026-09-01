@@ -27,6 +27,7 @@ import { enhanceHoldings } from './holdings.mjs';
 import { enhancePlanning } from './planning.mjs';
 import { enhanceProposals } from './proposals.mjs';
 import { enhanceRatings } from './ratings.mjs';
+import { enhanceHousehold } from './household.mjs';
 
 configureCharts();
 enhanceShell();
@@ -49,6 +50,12 @@ enhancePlanning();
 // attribute form, so without this the control falls back to the component's
 // English defaults — on the Romanian and Arabic pages too.
 enhanceRatings();
+
+// Household screen: the settings sheet's four switches and everything they
+// change, the org chart's selection and its detail pane, the member
+// checkboxes, the holdings tab's facet and sort, the documents drill-down and
+// the mandate review gate — plus the snackbar all three of them raise.
+enhanceHousehold();
 
 // Proposals screen: the builder's instrument universe. `md-transfer-list` takes
 // it as a JS property, so unlike the enhancements above this one is not an

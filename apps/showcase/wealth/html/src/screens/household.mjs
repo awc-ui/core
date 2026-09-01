@@ -889,8 +889,10 @@ function membersPanel(t, { household, portfolio, members, goals }) {
            list below does not jump down the moment a row is ticked.
            visibility: hidden rather than a reserved min-block-size: the space
            reserved is exactly what the real cluster occupies, and the button
-           is out of the tab order and the accessibility tree while inert. -->
-      <span class="row" data-cluster aria-hidden="true" style="visibility:hidden">
+           is out of the tab order and the accessibility tree while inert.
+           The hiding is aria-hidden-driven in app.css, not a style
+           attribute — this build has to survive a strict style-src. -->
+      <span class="row" data-cluster aria-hidden="true">
         ${count(t, 0)}
         ${actionButton(t, {
           icon: 'mail',
