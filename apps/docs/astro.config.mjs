@@ -8,9 +8,11 @@ import componentsManifest from './src/data/components.json';
 /**
  * Serve the staged showcase builds in DEV the way a static host serves them.
  *
- * The six framework builds are staged into `public/showcase/` by
+ * Every vertical's framework builds are staged into `public/showcase/` by
  * `scripts/build-showcase.mjs`, and every link inside them — and the dock's own
- * framework switcher — is a DIRECTORY url: `/showcase/credit-risk/svelte/`.
+ * framework switcher — is a DIRECTORY url: `/showcase/credit-risk/svelte/`,
+ * `/showcase/wealth/html/`. The handling below is per-path, not per-vertical, so
+ * a new one needs nothing here.
  * Astro's dev server serves files out of `public/`, but it does not resolve a
  * directory to its `index.html`, so those URLs fall through to Astro's router,
  * miss every route, and render the docs 404 page. The file is right there and
@@ -463,6 +465,7 @@ export default defineConfig({
           items: [
             { label: 'Overview', link: '/showcase/' },
             { label: 'Credit Risk Console', link: '/showcase/credit-risk/' },
+            { label: 'Wealth Management Console', link: '/showcase/wealth/' },
           ],
         },
         {

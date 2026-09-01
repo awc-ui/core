@@ -1,0 +1,96 @@
+---
+title: Wealth Management Console
+description: "A private-bank advisory workbench for the fictional Kestrel Private Bank — from a book of households down to a single order ticket, in the framework of your choice."
+---
+
+**An advisor at Kestrel Private Bank starts the day with one question: what needs
+me today?** This application is how they answer it — and it is built entirely
+from AWC UI components.
+
+{/*
+  The call to action is an `<a>`, not `md-button`: the component navigates on
+  click but renders no anchor and exposes `role="button"`, so middle-click,
+  ⌘-click and "copy link address" all stop working. Same reasoning as the
+  credit-risk page — see the longer note there, including why the label must
+  stay on one line inside the anchor.
+*/}
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 28px 0;">
+  <a href="/showcase/wealth/react/" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border-radius: 999px; background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); font: var(--md-sys-typescale-label-large-font); text-decoration: none;">Open the application</a>
+  <span style="font: var(--md-sys-typescale-body-small-font); color: var(--md-sys-color-on-surface-variant);">Switch framework, theme, density, direction and language from inside the app.</span>
+</div>
+
+## The five builds
+
+All five are live, and the control bar switches between them without losing your
+place. Every number, date, string, derived series and table layout comes from
+`@awc-ui/showcase-kit`, so the only thing that differs between them is the view
+layer — which is what makes two screenshots comparable evidence.
+
+| Build | Open | How it renders | Where the language lives |
+|---|---|---|---|
+| **HTML** | [/html/](/showcase/wealth/html/) | Static pages, written at build time — no framework at all | **In the URL** — a page per locale |
+| **React** | [/react/](/showcase/wealth/react/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+| **Vue** | [/vue/](/showcase/wealth/vue/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+| **Angular** | [/angular/](/showcase/wealth/angular/) | Single-page app — client-rendered only | Client state — switches in place |
+| **Svelte** | [/svelte/](/showcase/wealth/svelte/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+
+:::note[Five builds here, ten next door]
+The credit-risk console ships each framework twice — once as a single-page app
+and once server-rendered per request — because that pair is the evidence that
+these components server-render at all. That claim only needs proving once. This
+vertical is SPA-only by decision, so the five builds here differ in framework
+and nothing else.
+
+The plain-HTML build is the interesting one to compare against. It has no
+framework and no hydration of its own: the pages are written at build time, one
+per locale, and the only JavaScript is the component runtime plus a handful of
+progressive enhancements. Anything the other four do with state, it has to do
+with markup — or admit it cannot.
+:::
+
+## What you can drill into
+
+A book of {/* kit: getBookTotals().householdCount */}eight households is not a
+single screen with a chart on it. Every figure is a way in:
+
+| Screen | What it shows | Where it leads |
+|---|---|---|
+| **Overview** | AUM, year-to-date return against benchmark, net new money and the households needing attention, with the allocation ring and the performance curve behind them | A household, or straight to the work queue |
+| **Holdings** | Every position across the book — 66 of them over 40 instruments — sortable and paged, with a second tab for the instrument universe | A position's detail, or an instrument |
+| **Household** | One family's portfolios, members and corporate structure, its mandate and drift against target, proposals in flight and the activity trail | A proposal, an objective, or a member |
+| **Proposals** | Rebalancing proposals by stage, with a four-step builder — client, risk, allocation, sign-off — that vetoes its own step changes until each is valid | The proposal builder |
+| **Trade** | An order ticket with live estimate, and the blotter beside it | A working order |
+| **Planning** | Twelve objectives with funded progress and target dates, and a what-if that reprojects a goal as you move the inputs | An objective's projection |
+
+## What it is really demonstrating
+
+Wealth management was chosen because it asks for the things a dashboard never
+does: a **form that argues back**, long-running **client state**, and figures
+that have to reconcile across six screens.
+
+- **The proposal builder is a real form.** Four steps, a linear stepper that
+  refuses to advance while a step is invalid, uncontrolled fields that keep what
+  you typed across a re-render, a transfer list whose universe prunes itself as
+  the constraints above it change, and a submit sequence with an undo.
+- **The order ticket estimates as you type.** Number fields that listen for both
+  input and change, an autocomplete over the instrument universe, and a submit
+  that stays soft-disabled with a single stated reason rather than silently
+  doing nothing.
+- **The organisation chart draws structure.** A household's corporate hierarchy,
+  where selecting a member traces the connector path back to the root.
+- **Three languages including a right-to-left one.** English, Romanian and
+  Arabic, with real translated content — and in the HTML build, a separate page
+  per locale rather than a runtime switch.
+
+## Fictional data
+
+Kestrel Private Bank, its advisor, households, instruments and prices are
+invented. The figures are internally consistent — positions sum to portfolio
+value, portfolios sum to household AUM, household AUM sums to the book's
+€151.6m, and goal funding is computed from the stated contributions — so the
+drill-downs reconcile the way a real book would, but no real institution,
+person or security is represented.
+
+Every date is measured from a fixed reporting date of **30 June 2026**, not from
+the clock, so the screens say the same thing today as they will next year.

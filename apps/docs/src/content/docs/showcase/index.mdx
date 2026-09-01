@@ -7,13 +7,14 @@ A component gallery shows you parts. These are whole applications: real
 navigation, real drill-downs, real data density — the conditions a component
 library actually has to survive.
 
-Each one is built once and shipped in **every supported framework** — React,
-Vue, Angular, Svelte, Astro and plain HTML with no framework at all. Open it in
-React, switch to Angular or Svelte from inside the app, and you are looking at
-the same screens and the same data rendered by a different stack. Not a port
-each time: the data, the translations, the derived series and the table layouts
-all come from one shared package, so the only thing that differs between the six
-is the view layer.
+Each one is built once and shipped in **every framework it targets** — React,
+Vue, Angular, Svelte and plain HTML with no framework at all, plus Astro and the
+four server-rendered builds on the credit-risk console. Open one in React,
+switch to Angular or Svelte from inside the app, and you are looking at the same
+screens and the same data rendered by a different stack. Not a port each time:
+the data, the translations, the derived series and the table layouts all come
+from one shared package, so the only thing that differs between the builds is
+the view layer.
 
 The control bar in each app also flips **theme, density, text direction and
 language** at runtime, so you can see how the components behave under conditions
@@ -31,3 +32,21 @@ Built to stress the parts of a library that dashboards usually avoid: dense
 sortable tables, deep breadcrumb trails, charts fed from the same data, corporate
 group hierarchies, and a full translation layer including a right-to-left
 language.
+
+Ten builds: each framework twice, once as a single-page app and once
+server-rendered per request.
+
+### [Wealth Management Console](/showcase/wealth/)
+
+A private-bank advisory workbench for the fictional **Kestrel Private Bank** — a
+book of households that opens out into portfolios, positions, rebalancing
+proposals, an order ticket and a goal planner.
+
+Built to stress what a dashboard never asks for: a four-step form that vetoes
+its own step changes until each is valid, an order ticket that re-estimates as
+you type, a transfer list whose universe prunes itself as the constraints above
+it change, and an organisation chart that traces a selection back to its root.
+
+Five builds, all single-page or static — no SSR. The plain-HTML one is the
+comparison worth making: no framework, no hydration of its own, a page per
+locale written at build time.
