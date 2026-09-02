@@ -1462,6 +1462,24 @@ a {
   justify-content: space-between;
   gap: var(--md-sys-spacing-gap-lg, 16px);
   padding-block: var(--md-sys-spacing-gap-sm, 8px);
+  /*
+   * THE DAY'S NET HAS TO LAND IN THE SAME COLUMN AS THE ROW AMOUNTS UNDER IT.
+   *
+   * They are the same kind of thing — money, right-aligned — and a reader
+   * scans them as one column. The header's box and the list item's box already
+   * share an edge, but `md-list-item` insets its trailing slot by its own
+   * `--_trailing-space`, so the net sat 16px further out than every amount
+   * below it and the column zigzagged. Measured: net at 386, amounts at 370.
+   *
+   * Matching that with the component's OWN token rather than a literal 16, so
+   * the two stay together if the token is themed or the density rung moves —
+   * a hardcoded 16 would be right today and silently wrong at density -2.
+   *
+   * The leading edge is deliberately NOT matched: the date is outdented past
+   * the row text because it brackets the group, which is the ordinary reading
+   * of a group header.
+   */
+  padding-inline-end: var(--md-list-item-trailing-space, var(--md-sys-spacing-inset-lg, 16px));
   background: var(--md-sys-color-surface);
   font: var(--md-sys-typescale-label-large-font);
   color: var(--md-sys-color-on-surface-variant);
