@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Serve `dist/` at the real mount path — `/showcase/banking/react/` — so
- * the build can be checked exactly as it will be deployed. `vite preview`
- * serves at the configured base too, but this needs no Vite process: `pnpm
- * verify` starts it itself, which is what makes `pnpm showcase:verify` at the
- * repo root a single command rather than a sequence with a server to remember.
+ * Serve `dist/` at the real mount path — `/showcase/banking/vue/` — so the
+ * build can be checked exactly as it will be deployed. `vite preview` serves
+ * at the configured base too, but this needs no Vite process: `pnpm verify`
+ * starts it itself, which is what makes `pnpm showcase:verify` at the repo
+ * root a single command rather than a sequence with a server to remember.
  *
  *   node scripts/serve-dist.mjs [port]
  *
@@ -22,11 +22,11 @@ import { dirname, extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRoutes } from '@awc-ui/showcase-kit/banking';
 
-const { basePath: BASE_PATH } = createRoutes('react');
+const { basePath: BASE_PATH } = createRoutes('vue');
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const root = join(appRoot, 'dist');
-const port = Number(process.argv[2] || 4447);
+const port = Number(process.argv[2] || 4448);
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',

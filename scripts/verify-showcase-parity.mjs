@@ -115,6 +115,19 @@ const SCREENS = {
     '/trade/',
     '/planning/',
   ],
+  /* Six destinations plus the two drills. `/accounts/acc-eur/` is the primary
+     account and `/invest/ins-01/` a held instrument — both stand in for the
+     other pages their screen renders. */
+  banking: [
+    '/',
+    '/transactions/',
+    '/exchange/',
+    '/invest/',
+    '/analytics/',
+    '/cards/',
+    '/accounts/acc-eur/',
+    '/invest/ins-01/',
+  ],
 };
 
 /**

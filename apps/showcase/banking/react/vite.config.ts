@@ -145,7 +145,7 @@ export default defineConfig({
   server: {
     // The credit-risk React build owns 4327; this one sits beside it so both
     // verticals can run at once during a comparison.
-    port: 4337,
+    port: 4347,
   },
   build: {
     /*
