@@ -1141,11 +1141,6 @@ a {
  * write. There is no padding-block-start: the toolbar's own block padding is
  * already the gap between them.
  */
-.facet-row {
-  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
-  padding-block-end: var(--md-sys-spacing-inset-md, 12px);
-}
-
 /**
  * ONE SCROLLING LINE PER FACET ON A PHONE, not a wrapped block.
  *
@@ -1182,25 +1177,101 @@ a {
   }
 }
 
-@media (max-width: 719px) {
+/**
+ * A labelled facet: a caption over its chips.
+ *
+ * Four rows of outlined chips with nothing above them are four identical grey
+ * bands, and a reader cannot tell the months from the accounts from the
+ * categories without reading every chip. The caption is one line of
+ * label-medium and it is what makes the panel scannable.
+ */
+.facet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  min-inline-size: 0;
+}
+
+.facet__label {
+  margin: 0;
+  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* The count and the reset, on their own line under the facets. */
+.facet-foot {
+  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  padding-block-start: var(--md-sys-spacing-gap-xs, 4px);
+}
+
+/**
+ * SCROLLING CHIP ROWS, AND THE FADE THAT SAYS SO.
+ *
+ * A row that simply stops at the container edge reads as clipped, not as
+ * scrollable — the category row ended mid-word on "Entertainment" and looked
+ * broken. `mask-image` fades the last 24px of a row that overflows, which is
+ * the conventional signal that there is more in that direction.
+ *
+ * The fade is applied unconditionally rather than only when the row overflows,
+ * because CSS cannot ask whether an element scrolls. On a row that FITS the
+ * gradient still exists, so a last chip ending inside the final 24px would be
+ * faded for no reason — checked across 640/700/719px in all three locales, and
+ * the smallest margin on a fitting row is 40px, so it does not happen with this
+ * content. It is a content-dependent assumption rather than a guarantee; if a
+ * future facet lands a chip in that band, the fix is a `data-scrollable`
+ * attribute set from a ResizeObserver, not a wider guess here.
+ *
+ * It is `mask-image` and not an overlay pseudo-element so it works on any
+ * background — an overlay would have to guess the surface colour and would be
+ * wrong inside a card.
+ *
+ * Logical properties throughout (`inline-end`, not `right`), so the fade is on
+ * the correct side under `dir="rtl"`.
+ */
+.facet-row {
+  --_fade: 24px;
+
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  /* Both, and they do different jobs: `padding` keeps the chips off the port's
+     edges, `scroll-padding` keeps a snapped chip off them too. */
+  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  scroll-padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  scrollbar-width: none;
+  mask-image: linear-gradient(
+    to var(--_fade-dir, right),
+    #000 calc(100% - var(--_fade)),
+    transparent 100%
+  );
+}
+
+[dir='rtl'] .facet-row {
+  --_fade-dir: left;
+}
+
+.facet-row::-webkit-scrollbar {
+  display: none;
+}
+
+.facet-row > * {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/*
+ * The wrapped layout comes back where there is room for it. Above the phone
+ * breakpoint a facet has space for its chips on one or two lines, and wrapping
+ * beats scrolling with a mouse — there is no swipe.
+ */
+@media (min-width: 720px) {
   .facet-row {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    /* The inline padding must survive the scroll port, or the first and last
-       chip sit flush against the edges. */
-    scroll-padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
-    scrollbar-width: none;
-  }
-
-  .facet-row::-webkit-scrollbar {
-    display: none;
-  }
-
-  .facet-row > * {
-    flex: 0 0 auto;
-    scroll-snap-align: start;
+    flex-wrap: wrap;
+    overflow-x: visible;
+    mask-image: none;
   }
 }
 

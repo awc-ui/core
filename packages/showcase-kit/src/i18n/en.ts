@@ -1065,6 +1065,10 @@ const banking = {
   /* --------------------------------------------------------------- kpi */
   'banking.kpi.netWorth': 'Net worth',
   'banking.kpi.watchlist': 'Watching',
+  'banking.facet.month': 'Month',
+  'banking.facet.account': 'Account',
+  'banking.facet.category': 'Category',
+  'banking.facet.status': 'Status',
   'banking.kpi.balance': 'Total balance',
   'banking.kpi.available': 'Available',
   'banking.kpi.spentThisMonth': 'Spent this month',

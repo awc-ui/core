@@ -200,98 +200,139 @@ export function TransactionsScreen() {
      declaration and keeps the screen's shape readable — the filter body is
      eighty lines of chips and would otherwise sit between the heading and the
      statement. */
+  /**
+   * One labelled facet: a caption, then its chips.
+   *
+   * THE CAPTION IS THE FIX FOR "WHICH ROW IS WHICH". Four rows of outlined
+   * chips with nothing above them are four identical grey bands — a reader
+   * cannot tell the months from the accounts from the categories without
+   * reading every chip. The caption costs one line of label-medium and makes
+   * the panel scannable.
+   *
+   * `.facet` owns the scroll on a phone (see `app.css`), so the caption stays
+   * put while the chips move under it, rather than scrolling away with them.
+   */
+  function Facet({
+    label,
+    rowRef,
+    children,
+  }: {
+    label: string;
+    rowRef: React.RefObject<HTMLDivElement>;
+    children: React.ReactNode;
+  }) {
+    return (
+      <div className="facet">
+        <p className="facet__label">{label}</p>
+        <div className="facet-row" ref={rowRef}>
+          {children}
+        </div>
+      </div>
+    );
+  }
+
   function FilterBody() {
     return (
-        <div className="stack">
-          {/* `trigger="bar"` and `full-width`: the default trigger is an icon
-              that opens the field, which in a filter panel renders as a lone
-              magnifying glass and reads as broken. */}
-          <md-search
-            ref={searchRef}
-            layout="docked"
-            trigger="bar"
-            variant="contained"
-            full-width
-            debounce="250"
-            label={t('banking.action.search')}
-            placeholder={t('banking.table.merchant')}
-            value={search}
-          />
+      <div className="stack">
+        {/* `trigger="bar"` and `full-width`: the default trigger is an icon
+            that opens the field, which in a filter panel renders as a lone
+            magnifying glass and reads as broken. */}
+        <md-search
+          ref={searchRef}
+          layout="docked"
+          trigger="bar"
+          variant="contained"
+          full-width
+          debounce="250"
+          label={t('banking.action.search')}
+          placeholder={t('banking.table.merchant')}
+          value={search}
+        />
 
-          {/* Four facet rows. The three below are single-select and a chip
-              that is already on deselects when pressed again — `mdSelect`
-              reports the new state, so the null branch is the deselect. The
-              month row is different: it is a CHOICE, not a filter, so one is
-              always on and pressing the current one does nothing. */}
-          <div className="facet-row" ref={monthRef}>
-            {months.map((value) => (
-              <md-chip
-                key={value}
-                data-month={value}
-                variant="filter"
-                appearance="outlined"
-                selected={month === value}
-                label={t.formatDate(`${value}-01`, 'monthYear')}
-              />
-            ))}
+        {/* The three facets below the month are single-select, and a chip that
+            is already on deselects when pressed again — `mdSelect` reports the
+            new state, so the null branch is the deselect. The month is
+            different: it is a CHOICE, not a filter, so one is always on and
+            pressing the current one does nothing. */}
+        <Facet label={t('banking.facet.month')} rowRef={monthRef}>
+          {months.map((value) => (
             <md-chip
-              data-month={ALL_MONTHS}
+              key={value}
+              data-month={value}
               variant="filter"
               appearance="outlined"
-              selected={month === ALL_MONTHS}
-              label={t('banking.common.all')}
+              selected={month === value}
+              label={t.formatDate(`${value}-01`, 'monthYear')}
             />
-          </div>
+          ))}
+          <md-chip
+            data-month={ALL_MONTHS}
+            variant="filter"
+            appearance="outlined"
+            selected={month === ALL_MONTHS}
+            label={t('banking.common.all')}
+          />
+        </Facet>
 
-          <div className="facet-row" ref={accountRef}>
-            {accounts.map((account) => (
-              <md-chip
-                key={account.id}
-                data-account={account.id}
-                variant="filter"
-                appearance="outlined"
-                selected={accountId === account.id}
-                label={account.nickname}
-              />
-            ))}
-          </div>
+        <Facet label={t('banking.facet.account')} rowRef={accountRef}>
+          {accounts.map((account) => (
+            <md-chip
+              key={account.id}
+              data-account={account.id}
+              variant="filter"
+              appearance="outlined"
+              selected={accountId === account.id}
+              label={account.nickname}
+            />
+          ))}
+        </Facet>
 
-          <div className="facet-row" ref={categoryRef}>
-            {categories.map((row) => (
-              <md-chip
-                key={row.category}
-                data-category={row.category}
-                variant="filter"
-                appearance="outlined"
-                selected={category === row.category}
-                label={t(row.categoryKey)}
-              />
-            ))}
-          </div>
+        <Facet label={t('banking.facet.category')} rowRef={categoryRef}>
+          {categories.map((row) => (
+            <md-chip
+              key={row.category}
+              data-category={row.category}
+              variant="filter"
+              appearance="outlined"
+              selected={category === row.category}
+              label={t(row.categoryKey)}
+            />
+          ))}
+        </Facet>
 
-          <div className="facet-row" ref={statusRef}>
-            {STATUSES.map((value) => (
-              <md-chip
-                key={value}
-                data-status={value}
-                variant="filter"
-                appearance="outlined"
-                selected={status === value}
-                label={t(`banking.txnStatus.${value}`)}
-              />
-            ))}
-            <span className="muted">
-              {t('banking.common.showing', { shown: rows.length, total })}
-            </span>
-            {/* The clear button exists only while there is something to clear;
-                a permanently-inert control in a filter bar is furniture. */}
-            {filtered ? (
-              <md-button variant="text" size="sm" icon="restart_alt" onClick={clear}>
-                {t('banking.action.clearFilters')}
-              </md-button>
-            ) : null}
-          </div>
+        <Facet label={t('banking.facet.status')} rowRef={statusRef}>
+          {STATUSES.map((value) => (
+            <md-chip
+              key={value}
+              data-status={value}
+              variant="filter"
+              appearance="outlined"
+              selected={status === value}
+              label={t(`banking.txnStatus.${value}`)}
+            />
+          ))}
+        </Facet>
+
+        {/*
+          THE COUNT AND THE RESET GET THEIR OWN ROW.
+          They used to sit inside the status facet, which put a sentence and a
+          button in a scrolling chip row — the sentence collided with the last
+          chip and both scrolled out of reach together. They belong to the
+          panel, not to one facet.
+        */}
+        <div className="row row--between facet-foot">
+          <span className="muted">
+            {t('banking.common.showing', { shown: rows.length, total })}
+          </span>
+          {/* The reset exists only while there is something to reset; a
+              permanently-inert control in a filter bar is furniture. */}
+          {filtered ? (
+            <md-button variant="text" size="sm" icon="restart_alt" onClick={clear}>
+              {t('banking.action.clearFilters')}
+            </md-button>
+          ) : null}
         </div>
+      </div>
     );
   }
 }
