@@ -274,10 +274,25 @@ export function ExchangeScreen() {
                     {t('banking.unit.bps', { value: t.formatNumber(priced.spreadBps) })}
                   </span>
                 </div>
+                {/*
+                  A ZERO FEE IS SAID IN WORDS, NOT AS A ZERO.
+                  Three of the six pairs are free, and "Fee €0.00" reads as a
+                  charge that happens to round to nothing — a reader checks it
+                  twice. The row stays rather than disappearing: its absence
+                  would be the one thing a reader could not tell apart from
+                  having missed it.
+
+                  The word is "Free" and not "No fee" because the label beside
+                  it already says Fee, and "Fee — No fee" is the label twice.
+                */}
                 <div className="quote-line">
                   <span>{t('banking.table.fee')}</span>
                   <span className="num">
-                    <Money value={priced.feeFrom} currency={from} />
+                    {priced.feeFrom === 0 ? (
+                      t('banking.common.free')
+                    ) : (
+                      <Money value={priced.feeFrom} currency={from} />
+                    )}
                   </span>
                 </div>
                 <div className="quote-line quote-line--total">
@@ -363,8 +378,10 @@ export function ExchangeScreen() {
                 </div>
                 <div>
                   <dt>{t('banking.table.fee')}</dt>
+                  {/* Same rule as the ticket above: "0%" is a rate, "No fee" is
+                      the fact. */}
                   <dd className="num">
-                    <Percent value={pair.feePct} />
+                    {pair.feePct === 0 ? t('banking.common.free') : <Percent value={pair.feePct} />}
                   </dd>
                 </div>
               </dl>

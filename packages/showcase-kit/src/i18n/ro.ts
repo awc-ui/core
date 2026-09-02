@@ -1193,6 +1193,7 @@ export const ro: Dictionary = {
   'banking.country.NL': 'Țările de Jos',
   'banking.country.RO': 'România',
   'banking.country.US': 'Statele Unite',
+  'banking.common.free': 'Gratuit',
   'banking.common.of': '{count} din {total}',
   'banking.common.vsLastMonth': 'față de luna trecută',
   'banking.common.thisMonth': 'Luna aceasta',

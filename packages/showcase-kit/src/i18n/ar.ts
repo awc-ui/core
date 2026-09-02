@@ -1195,6 +1195,7 @@ export const ar: Dictionary = {
   'banking.country.NL': 'هولندا',
   'banking.country.RO': 'رومانيا',
   'banking.country.US': 'الولايات المتحدة',
+  'banking.common.free': 'مجاناً',
   'banking.common.of': '{count} من {total}',
   'banking.common.vsLastMonth': 'مقارنة بالشهر الماضي',
   'banking.common.thisMonth': 'هذا الشهر',

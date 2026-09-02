@@ -1254,6 +1254,7 @@ const banking = {
   'banking.country.RO': 'Romania',
   'banking.country.US': 'United States',
   /* ------------------------------------------------------------ common */
+  'banking.common.free': 'Free',
   'banking.common.of': '{count} of {total}',
   'banking.common.vsLastMonth': 'vs last month',
   'banking.common.thisMonth': 'This month',
