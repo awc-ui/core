@@ -24,7 +24,7 @@ import {
   rateSeries,
   type Currency,
 } from '@awc-ui/showcase-kit/banking';
-import { useT } from '@/lib/showcase';
+import { useShowcase, useT } from '@/lib/showcase';
 import { useCustomEvent } from '../elements';
 import { LineChart } from '../elements';
 import { Panel, Screen } from '../Shell';
@@ -32,23 +32,29 @@ import { CurrencyChip, Money, Percent, Signed } from '../bits';
 
 export function ExchangeScreen() {
   const t = useT();
+  const { state } = useShowcase();
   const accounts = getSpendingAccounts();
   const pairs = getFxPairs();
 
   const [from, setFrom] = useState<Currency>('EUR');
   const [to, setTo] = useState<Currency>('GBP');
-  /* The amount is held as the STRING the field reported, not as a number.
-     Parsing on every keystroke turns "1." into 1 and puts the cursor behind the
-     dot the reader just typed. It is parsed once, below, where it is used. */
-  const [amount, setAmount] = useState('250');
+  /*
+   * A NUMBER, because `md-number-field` deals in numbers.
+   *
+   * This was an `md-text-field type="number"` holding a string, which meant the
+   * browser's own spinner arrows and a parse on every keystroke. The component
+   * owns both: it emits `{ value: number | null }` already parsed, and renders
+   * its own steppers. `null` is empty — distinct from 0, which is a real amount
+   * a reader can type and which must not be treated as "nothing entered".
+   */
+  const [amount, setAmount] = useState<number | null>(250);
   const [done, setDone] = useState(false);
 
-  const parsed = Number(amount.replace(',', '.'));
-  const valid = Number.isFinite(parsed) && parsed > 0;
+  const valid = amount !== null && amount > 0;
 
   const priced = useMemo(
-    () => (valid && from !== to ? quote(from, to, parsed) : null),
-    [from, to, parsed, valid],
+    () => (valid && from !== to ? quote(from, to, amount) : null),
+    [from, to, amount, valid],
   );
 
   /* The pair whose history is charted follows the ticket, either way round —
@@ -61,14 +67,15 @@ export function ExchangeScreen() {
 
   const amountRef = useRef<HTMLElement | null>(null);
   /* Both events: `mdInput` for typing and `mdChange` for a commit (blur, the
-     stepper buttons). Listening to only one leaves either the live estimate or
-     the arrow keys dead. */
-  useCustomEvent<CustomEvent<{ value: string }>>(amountRef, 'mdInput', (event) => {
-    setAmount(event.detail?.value ?? '');
+     steppers, the wheel). Listening to only one leaves either the live quote or
+     the steppers dead. The detail is `{ value, formattedValue, reason }` and
+     `value` is already a number — no parsing here. */
+  useCustomEvent<CustomEvent<{ value: number | null }>>(amountRef, 'mdInput', (event) => {
+    setAmount(event.detail.value);
     setDone(false);
   });
-  useCustomEvent<CustomEvent<{ value: string }>>(amountRef, 'mdChange', (event) =>
-    setAmount(event.detail?.value ?? ''),
+  useCustomEvent<CustomEvent<{ value: number | null }>>(amountRef, 'mdChange', (event) =>
+    setAmount(event.detail.value),
   );
 
   const fromRef = useRef<HTMLElement | null>(null);
@@ -138,16 +145,25 @@ export function ExchangeScreen() {
               </md-select>
             </div>
 
-            <md-text-field
+            {/* `format-options` renders the figure as currency in the page's
+                locale, so the field shows what it means rather than a bare
+                number with the code bolted on. `locale` is passed explicitly:
+                the component would otherwise format in the browser's locale
+                while every other figure on the screen uses the dock's. */}
+            <md-number-field
               ref={amountRef}
               label={t('banking.table.amount')}
-              type="number"
-              inputmode="decimal"
-              min="0"
-              step="10"
               value={amount}
-              suffix={from}
-              error={valid || amount === '' ? undefined : true}
+              min={0}
+              step={10}
+              small-step={1}
+              large-step={100}
+              locale={state.locale}
+              format-options={JSON.stringify({
+                style: 'currency',
+                currency: from,
+                maximumFractionDigits: 2,
+              })}
             />
 
             {priced ? (

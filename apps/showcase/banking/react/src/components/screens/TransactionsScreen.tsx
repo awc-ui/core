@@ -87,8 +87,19 @@ export function TransactionsScreen() {
     search !== '';
 
   const searchRef = useRef<HTMLElement | null>(null);
+  /*
+   * `md-search` carries `{ value }` on every one of its events — unlike
+   * `md-text-field`, whose `mdInput` detail IS the bare string. The two are
+   * different components and the shapes do not match; assuming one from the
+   * other set the query to an object here and to `undefined` on the amount
+   * field, and neither failed loudly.
+   *
+   * `mdSearch` rather than `mdInput`: it is debounced and
+   * distinct-until-changed, which is what a filter over 652 rows wants, and
+   * clearing the field flushes it immediately so the list comes straight back.
+   */
   useCustomEvent<CustomEvent<{ value: string }>>(searchRef, 'mdSearch', (event) =>
-    setSearch(event.detail?.value ?? ''),
+    setSearch(event.detail.value ?? ''),
   );
 
   const monthRef = useRef<HTMLDivElement | null>(null);
@@ -139,6 +150,141 @@ export function TransactionsScreen() {
     setSearch('');
   };
 
+  /**
+   * One labelled facet: a caption, then its chips.
+   *
+   * THE CAPTION IS THE FIX FOR "WHICH ROW IS WHICH". Four rows of outlined
+   * chips with nothing above them are four identical grey bands — a reader
+   * cannot tell the months from the accounts from the categories without
+   * reading every chip. The caption costs one line of label-medium and makes
+   * the panel scannable.
+   *
+   * A PLAIN FUNCTION CALLED AS `{facet(...)}`, NOT A COMPONENT RENDERED AS
+   * `<Facet/>`, and the distinction is the whole reason the filters worked and
+   * then stopped.
+   *
+   * A component declared inside another component is a NEW FUNCTION IDENTITY on
+   * every render, so React sees a different element type each time and unmounts
+   * the entire subtree rather than updating it. The chips were rebuilt from
+   * scratch on every keystroke, and the `mdSelect` / `mdSearch` listeners this
+   * screen attaches through refs were left holding nodes that had been thrown
+   * away — every facet silently stopped filtering. Calling the function inlines
+   * the JSX into this component's own tree, where it belongs.
+   */
+  const facet = (label: string, rowRef: React.RefObject<HTMLDivElement>, children: React.ReactNode) => (
+    <div className="facet" key={label}>
+      <p className="facet__label">{label}</p>
+      <div className="facet-row" ref={rowRef}>
+        {children}
+      </div>
+    </div>
+  );
+
+  const filterBody = () => {
+    return (
+      <div className="stack">
+        {/* `trigger="bar"` and `full-width`: the default trigger is an icon
+            that opens the field, which in a filter panel renders as a lone
+            magnifying glass and reads as broken. */}
+        <md-search
+          ref={searchRef}
+          layout="docked"
+          trigger="bar"
+          variant="contained"
+          full-width
+          debounce="250"
+          label={t('banking.action.search')}
+          placeholder={t('banking.table.merchant')}
+          value={search}
+        />
+
+        {/* The three facets below the month are single-select, and a chip that
+            is already on deselects when pressed again — `mdSelect` reports the
+            new state, so the null branch is the deselect. The month is
+            different: it is a CHOICE, not a filter, so one is always on and
+            pressing the current one does nothing. */}
+        {facet(t('banking.facet.month'), monthRef, (<>
+          {months.map((value) => (
+            <md-chip
+              key={value}
+              data-month={value}
+              variant="filter"
+              appearance="outlined"
+              selected={month === value}
+              label={t.formatDate(`${value}-01`, 'monthYear')}
+            />
+          ))}
+          <md-chip
+            data-month={ALL_MONTHS}
+            variant="filter"
+            appearance="outlined"
+            selected={month === ALL_MONTHS}
+            label={t('banking.common.all')}
+          />
+        </>))}
+
+        {facet(t('banking.facet.account'), accountRef, (<>
+          {accounts.map((account) => (
+            <md-chip
+              key={account.id}
+              data-account={account.id}
+              variant="filter"
+              appearance="outlined"
+              selected={accountId === account.id}
+              label={account.nickname}
+            />
+          ))}
+        </>))}
+
+        {facet(t('banking.facet.category'), categoryRef, (<>
+          {categories.map((row) => (
+            <md-chip
+              key={row.category}
+              data-category={row.category}
+              variant="filter"
+              appearance="outlined"
+              selected={category === row.category}
+              label={t(row.categoryKey)}
+            />
+          ))}
+        </>))}
+
+        {facet(t('banking.facet.status'), statusRef, (<>
+          {STATUSES.map((value) => (
+            <md-chip
+              key={value}
+              data-status={value}
+              variant="filter"
+              appearance="outlined"
+              selected={status === value}
+              label={t(`banking.txnStatus.${value}`)}
+            />
+          ))}
+        </>))}
+
+        {/*
+          THE COUNT AND THE RESET GET THEIR OWN ROW.
+          They used to sit inside the status facet, which put a sentence and a
+          button in a scrolling chip row — the sentence collided with the last
+          chip and both scrolled out of reach together. They belong to the
+          panel, not to one facet.
+        */}
+        <div className="row row--between facet-foot">
+          <span className="muted">
+            {t('banking.common.showing', { shown: rows.length, total })}
+          </span>
+          {/* The reset exists only while there is something to reset; a
+              permanently-inert control in a filter bar is furniture. */}
+          {filtered ? (
+            <md-button variant="text" size="sm" icon="restart_alt" onClick={clear}>
+              {t('banking.action.clearFilters')}
+            </md-button>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Screen
       title={t('banking.screen.transactions.title')}
@@ -164,12 +310,12 @@ export function TransactionsScreen() {
                 : undefined
             }
           >
-            <FilterBody />
+            {filterBody()}
           </md-accordion-item>
         </md-accordion>
       ) : (
         <Panel title={t('banking.action.filter')}>
-          <FilterBody />
+          {filterBody()}
         </Panel>
       )}
 
@@ -195,144 +341,4 @@ export function TransactionsScreen() {
       )}
     </Screen>
   );
-
-  /* Declared after the return it is used in, which is legal for a function
-     declaration and keeps the screen's shape readable — the filter body is
-     eighty lines of chips and would otherwise sit between the heading and the
-     statement. */
-  /**
-   * One labelled facet: a caption, then its chips.
-   *
-   * THE CAPTION IS THE FIX FOR "WHICH ROW IS WHICH". Four rows of outlined
-   * chips with nothing above them are four identical grey bands — a reader
-   * cannot tell the months from the accounts from the categories without
-   * reading every chip. The caption costs one line of label-medium and makes
-   * the panel scannable.
-   *
-   * `.facet` owns the scroll on a phone (see `app.css`), so the caption stays
-   * put while the chips move under it, rather than scrolling away with them.
-   */
-  function Facet({
-    label,
-    rowRef,
-    children,
-  }: {
-    label: string;
-    rowRef: React.RefObject<HTMLDivElement>;
-    children: React.ReactNode;
-  }) {
-    return (
-      <div className="facet">
-        <p className="facet__label">{label}</p>
-        <div className="facet-row" ref={rowRef}>
-          {children}
-        </div>
-      </div>
-    );
-  }
-
-  function FilterBody() {
-    return (
-      <div className="stack">
-        {/* `trigger="bar"` and `full-width`: the default trigger is an icon
-            that opens the field, which in a filter panel renders as a lone
-            magnifying glass and reads as broken. */}
-        <md-search
-          ref={searchRef}
-          layout="docked"
-          trigger="bar"
-          variant="contained"
-          full-width
-          debounce="250"
-          label={t('banking.action.search')}
-          placeholder={t('banking.table.merchant')}
-          value={search}
-        />
-
-        {/* The three facets below the month are single-select, and a chip that
-            is already on deselects when pressed again — `mdSelect` reports the
-            new state, so the null branch is the deselect. The month is
-            different: it is a CHOICE, not a filter, so one is always on and
-            pressing the current one does nothing. */}
-        <Facet label={t('banking.facet.month')} rowRef={monthRef}>
-          {months.map((value) => (
-            <md-chip
-              key={value}
-              data-month={value}
-              variant="filter"
-              appearance="outlined"
-              selected={month === value}
-              label={t.formatDate(`${value}-01`, 'monthYear')}
-            />
-          ))}
-          <md-chip
-            data-month={ALL_MONTHS}
-            variant="filter"
-            appearance="outlined"
-            selected={month === ALL_MONTHS}
-            label={t('banking.common.all')}
-          />
-        </Facet>
-
-        <Facet label={t('banking.facet.account')} rowRef={accountRef}>
-          {accounts.map((account) => (
-            <md-chip
-              key={account.id}
-              data-account={account.id}
-              variant="filter"
-              appearance="outlined"
-              selected={accountId === account.id}
-              label={account.nickname}
-            />
-          ))}
-        </Facet>
-
-        <Facet label={t('banking.facet.category')} rowRef={categoryRef}>
-          {categories.map((row) => (
-            <md-chip
-              key={row.category}
-              data-category={row.category}
-              variant="filter"
-              appearance="outlined"
-              selected={category === row.category}
-              label={t(row.categoryKey)}
-            />
-          ))}
-        </Facet>
-
-        <Facet label={t('banking.facet.status')} rowRef={statusRef}>
-          {STATUSES.map((value) => (
-            <md-chip
-              key={value}
-              data-status={value}
-              variant="filter"
-              appearance="outlined"
-              selected={status === value}
-              label={t(`banking.txnStatus.${value}`)}
-            />
-          ))}
-        </Facet>
-
-        {/*
-          THE COUNT AND THE RESET GET THEIR OWN ROW.
-          They used to sit inside the status facet, which put a sentence and a
-          button in a scrolling chip row — the sentence collided with the last
-          chip and both scrolled out of reach together. They belong to the
-          panel, not to one facet.
-        */}
-        <div className="row row--between facet-foot">
-          <span className="muted">
-            {t('banking.common.showing', { shown: rows.length, total })}
-          </span>
-          {/* The reset exists only while there is something to reset; a
-              permanently-inert control in a filter bar is furniture. */}
-          {filtered ? (
-            <md-button variant="text" size="sm" icon="restart_alt" onClick={clear}>
-              {t('banking.action.clearFilters')}
-            </md-button>
-          ) : null}
-        </div>
-      </div>
-    );
-  }
 }

@@ -25,7 +25,7 @@ import {
   tradeEstimate,
   watchlistRows,
 } from '@awc-ui/showcase-kit/banking';
-import { useT } from '@/lib/showcase';
+import { useShowcase, useT } from '@/lib/showcase';
 import { PHONE, useMediaQuery } from '@/lib/media';
 import { AreaChart, PieChart, useCustomEvent } from '../elements';
 import { EmptyState, Panel, Screen } from '../Shell';
@@ -46,6 +46,7 @@ import {
 
 export function InvestScreen() {
   const t = useT();
+  const { state } = useShowcase();
   const totals = getTotals();
   const holdings = holdingRows();
   const watchlist = watchlistRows();
@@ -58,19 +59,23 @@ export function InvestScreen() {
   /* The ticket's instrument defaults to the largest holding — the one a reader
      is most likely to act on, and never an empty select. */
   const [instrumentId, setInstrumentId] = useState(holdings[0]?.instrument.id ?? '');
-  const [quantity, setQuantity] = useState('1');
+  /* A number, for the same reason as the exchange amount: `md-number-field`
+     emits one already parsed, and `null` is empty rather than zero. */
+  const [quantity, setQuantity] = useState<number | null>(1);
   const [placed, setPlaced] = useState(false);
 
-  const parsed = Number(quantity.replace(',', '.'));
-  const estimate = useMemo(() => tradeEstimate(instrumentId, parsed), [instrumentId, parsed]);
+  const estimate = useMemo(
+    () => (quantity === null ? null : tradeEstimate(instrumentId, quantity)),
+    [instrumentId, quantity],
+  );
 
   const quantityRef = useRef<HTMLElement | null>(null);
-  useCustomEvent<CustomEvent<{ value: string }>>(quantityRef, 'mdInput', (event) => {
-    setQuantity(event.detail?.value ?? '');
+  useCustomEvent<CustomEvent<{ value: number | null }>>(quantityRef, 'mdInput', (event) => {
+    setQuantity(event.detail.value);
     setPlaced(false);
   });
-  useCustomEvent<CustomEvent<{ value: string }>>(quantityRef, 'mdChange', (event) =>
-    setQuantity(event.detail?.value ?? ''),
+  useCustomEvent<CustomEvent<{ value: number | null }>>(quantityRef, 'mdChange', (event) =>
+    setQuantity(event.detail.value),
   );
 
   const pickerRef = useRef<HTMLElement | null>(null);
@@ -141,14 +146,18 @@ export function InvestScreen() {
             ))}
           </md-select>
 
-          <md-text-field
+          {/* No `format-options` here: a quantity is a bare count of units,
+              and a crypto holding is fractional to four places, so the field
+              formats as a plain number rather than as money. */}
+          <md-number-field
             ref={quantityRef}
             label={t('banking.table.quantity')}
-            type="number"
-            inputmode="decimal"
-            min="0"
-            step="0.1"
             value={quantity}
+            min={0}
+            step={1}
+            small-step={0.1}
+            large-step={10}
+            locale={state.locale}
           />
 
           {estimate ? (
