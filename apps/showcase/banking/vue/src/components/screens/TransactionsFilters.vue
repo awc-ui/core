@@ -108,14 +108,14 @@ const statusListeners = pick<TransactionStatus>('status', status);
           :data-month="value"
           variant="filter"
           appearance="outlined"
-          :selected="month === value"
+          :selected="month === value || undefined"
           :label="t.formatDate(`${value}-01`, 'monthYear')"
         ></md-chip>
         <md-chip
           :data-month="props.allMonths"
           variant="filter"
           appearance="outlined"
-          :selected="month === props.allMonths"
+          :selected="month === props.allMonths || undefined"
           :label="t('banking.common.all')"
         ></md-chip>
       </div>
@@ -130,7 +130,7 @@ const statusListeners = pick<TransactionStatus>('status', status);
           :data-account="account.id"
           variant="filter"
           appearance="outlined"
-          :selected="accountId === account.id"
+          :selected="accountId === account.id || undefined"
           :label="account.nickname"
         ></md-chip>
       </div>
@@ -145,7 +145,7 @@ const statusListeners = pick<TransactionStatus>('status', status);
           :data-category="row.category"
           variant="filter"
           appearance="outlined"
-          :selected="category === row.category"
+          :selected="category === row.category || undefined"
           :label="t(row.categoryKey)"
         ></md-chip>
       </div>
@@ -160,7 +160,7 @@ const statusListeners = pick<TransactionStatus>('status', status);
           :data-status="value"
           variant="filter"
           appearance="outlined"
-          :selected="status === value"
+          :selected="status === value || undefined"
           :label="t(`banking.txnStatus.${value}`)"
         ></md-chip>
       </div>

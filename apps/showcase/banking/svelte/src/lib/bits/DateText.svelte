@@ -9,7 +9,12 @@
   import { t } from '$lib/showcase';
 
   export let value: string;
-  export let style: 'short' | 'medium' | 'long' | 'monthYear' = 'medium';
+  /*
+   * `format`, not `style`. Svelte does not reserve `style` on a component the
+   * way Vue does, but the Vue port had to rename it and the four ports are
+   * easier to read against each other when the prop is called the same thing.
+   */
+  export let format: 'short' | 'medium' | 'long' | 'monthYear' = 'medium';
 </script>
 
-<time datetime={value}>{$t.formatDate(value, style)}</time>
+<time datetime={value}>{$t.formatDate(value, format)}</time>

@@ -45,7 +45,7 @@
 import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { getHouseholds, route } from '@awc-ui/showcase-kit/banking';
+import { getAccounts, getInstruments, route } from '@awc-ui/showcase-kit/banking';
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = join(appRoot, 'dist');
@@ -61,11 +61,13 @@ if (!existsSync(source)) {
 
 /** Every route this app serves. `/` is already `dist/index.html`. */
 const routes = [
-  route.holdings(),
-  route.proposals(),
-  route.trade(),
-  route.planning(),
-  ...getHouseholds().map((household) => route.household(household.id)),
+  route.transactions(),
+  route.exchange(),
+  route.invest(),
+  route.analytics(),
+  route.cards(),
+  ...getAccounts().map((account) => route.account(account.id)),
+  ...getInstruments().map((instrument) => route.instrument(instrument.id)),
 ];
 
 for (const path of routes) {

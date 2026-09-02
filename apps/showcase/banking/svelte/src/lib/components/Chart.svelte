@@ -38,7 +38,22 @@
 </script>
 
 <svelte:element this={tag} use:objectProps={props} {...attributes} on:mdBarClick>
-  <!-- Forwarded so a donut can fill its `center` slot. A self-closing element
-       renders no children, and the centre figure would silently vanish. -->
   <slot />
+  <!--
+    THE DONUT'S CENTRE, and it has to be wrapped HERE rather than by the caller.
+
+    `slot="center"` written on a child of a Svelte COMPONENT is Svelte's own
+    slot syntax: it is consumed at compile time and never reaches the DOM, so
+    the custom element's shadow `<slot name="center">` finds nothing and the
+    centre figure vanishes without an error. Measured: the pie had zero
+    children in this port while React's had one.
+
+    Emitting the wrapper here puts a real `slot="center"` attribute in the DOM
+    and keeps the markup identical to the React build's — `div.ring-centre`
+    holding the caller's two spans. The Vue port needs none of this: Vue 3
+    dropped the `slot="x"` syntax, so there it stays a plain attribute.
+  -->
+  {#if $$slots.center}
+    <div slot="center" class="ring-centre"><slot name="center" /></div>
+  {/if}
 </svelte:element>

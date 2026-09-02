@@ -210,7 +210,13 @@ export function TransactionsScreen() {
               data-month={value}
               variant="filter"
               appearance="outlined"
-              selected={month === value}
+              /* `|| undefined` so a false value emits NO ATTRIBUTE.
+                 `selected` is a boolean attribute — presence means true — and
+                 React writes `selected="false"` for a literal false, which the
+                 Svelte port omits entirely. Two builds then disagree on the DOM
+                 for a chip that is simply not chosen. Every other boolean in
+                 this app already uses the idiom; the facet chips did not. */
+              selected={month === value || undefined}
               label={t.formatDate(`${value}-01`, 'monthYear')}
             />
           ))}
@@ -218,7 +224,7 @@ export function TransactionsScreen() {
             data-month={ALL_MONTHS}
             variant="filter"
             appearance="outlined"
-            selected={month === ALL_MONTHS}
+            selected={month === ALL_MONTHS || undefined}
             label={t('banking.common.all')}
           />
         </>))}
@@ -230,7 +236,7 @@ export function TransactionsScreen() {
               data-account={account.id}
               variant="filter"
               appearance="outlined"
-              selected={accountId === account.id}
+              selected={accountId === account.id || undefined}
               label={account.nickname}
             />
           ))}
@@ -243,7 +249,7 @@ export function TransactionsScreen() {
               data-category={row.category}
               variant="filter"
               appearance="outlined"
-              selected={category === row.category}
+              selected={category === row.category || undefined}
               label={t(row.categoryKey)}
             />
           ))}
@@ -256,7 +262,7 @@ export function TransactionsScreen() {
               data-status={value}
               variant="filter"
               appearance="outlined"
-              selected={status === value}
+              selected={status === value || undefined}
               label={t(`banking.txnStatus.${value}`)}
             />
           ))}
