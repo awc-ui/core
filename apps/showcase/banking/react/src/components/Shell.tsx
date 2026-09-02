@@ -46,6 +46,7 @@ import {
 import { isPlainActivation, usePathname, useRouter } from '@/lib/router';
 import { destinationIndex, route, withBase } from '@/lib/routes';
 import { useT } from '@/lib/showcase';
+import { COMPACT_NAV, useMediaQuery } from '@/lib/media';
 import { ScreenSkeleton, SKELETON_MS } from './skeletons';
 import { useCustomEvent, useDomEvent } from './elements';
 import { Dock } from './Dock';
@@ -90,10 +91,16 @@ export function ShellProvider({ children }: { children: ReactNode }) {
  *
  * The leading affordance toggles the rail between its collapsed and expanded
  * variants. It lives HERE rather than in the rail's own `expandable` toggle for
- * one reason: at compact width the rail is not rendered at all, and a control
- * that vanishes with the surface it controls is fine, whereas two toggles for
- * one thing is not. `mdLeadingClick` fires only for the prop-based button,
- * which is exactly the one being used.
+ * one reason: two toggles for one thing is worse than one toggle that comes and
+ * goes. `mdLeadingClick` fires only for the prop-based button, which is exactly
+ * the one being used.
+ *
+ * AND IT IS NOT RENDERED BELOW 900px, where `app.css` swaps the rail for the
+ * navigation bar. The rail does not exist there, so the button toggled nothing:
+ * a dead control in the masthead, focusable, named "Menu", and doing nothing
+ * when pressed. Omitting the PROP rather than hiding the button in CSS is what
+ * takes it out of the tab order and the accessibility tree too — a hidden
+ * control that a screen reader still announces is the same bug wearing a coat.
  *
  * The trailing slot is CAPPED AT THREE elements by the component (the fourth is
  * hidden and warned about), and M3 wants it sparse. Two are used: the reporting
@@ -106,6 +113,7 @@ function AppBar() {
   const profile = getProfile();
   const { toggleRail } = useContext(ShellContext);
   const ref = useRef<HTMLElement | null>(null);
+  const compactNav = useMediaQuery(COMPACT_NAV);
 
   useCustomEvent<CustomEvent>(ref, 'mdLeadingClick', () => toggleRail());
 
@@ -115,8 +123,8 @@ function AppBar() {
       class="shell__appbar"
       variant="small"
       subtitle={t('banking.app.title')}
-      leading-icon="menu"
-      leading-icon-label={t('banking.nav.menu')}
+      leading-icon={compactNav ? undefined : 'menu'}
+      leading-icon-label={compactNav ? undefined : t('banking.nav.menu')}
     >
       {/*
         THE DISCLAIMER IS PART OF THE CHROME, not a footnote.

@@ -86,6 +86,9 @@ export function AnalyticsScreen() {
 
       <div className="grid-2">
         <Panel title={t('banking.panel.byCategory')} subtitle={t('banking.common.thisMonth')}>
+          {/* Same three fixes as the portfolio ring on the invest screen —
+              see the note there. Eight categories here, the smallest under 5%,
+              so the slice labels collided just as badly. */}
           <PieChart
             class="chart-md"
             data={ring.map((slice) => ({
@@ -97,9 +100,17 @@ export function AnalyticsScreen() {
               t.formatCurrency(value ?? 0, { notation: 'compact' })
             }
             summary={t('banking.panel.byCategory')}
-            variant="donut"
-            legend="end"
-          />
+            inner-radius="62%"
+            show-labels="false"
+            legend="bottom"
+          >
+            <div slot="center" className="ring-centre">
+              <span className="ring-centre__value">
+                <Money value={totals.spentThisMonthEur} compact />
+              </span>
+              <span className="ring-centre__label">{t('banking.common.thisMonth')}</span>
+            </div>
+          </PieChart>
         </Panel>
 
         <Panel title={t('banking.panel.flow')}>

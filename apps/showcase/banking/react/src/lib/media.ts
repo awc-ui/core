@@ -40,6 +40,16 @@ export function useMediaQuery(query: string): boolean {
 export const PHONE = '(max-width: 719px)';
 
 /**
+ * The width below which the navigation RAIL is replaced by the navigation BAR.
+ *
+ * Quoted from `app.css`'s own `@media (max-width: 899px)` for the same reason
+ * as `PHONE`: it is a CSS fact and the two are checked together in the browser.
+ * Distinct from `PHONE` — that one is about markup that cannot survive a narrow
+ * column; this one is about which navigation surface exists.
+ */
+export const COMPACT_NAV = '(max-width: 899px)';
+
+/**
  * Whether the pointer is coarse — a finger rather than a mouse.
  *
  * Separate from width on purpose: a touch laptop is wide AND coarse, and it

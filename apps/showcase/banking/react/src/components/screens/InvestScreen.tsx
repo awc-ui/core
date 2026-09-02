@@ -117,6 +117,29 @@ export function InvestScreen() {
         </Panel>
 
         <Panel title={t('banking.panel.allocation')}>
+            {/*
+              THREE THINGS WERE WRONG WITH THIS RING.
+
+              `variant="donut"` is not a prop — I invented it, so it was
+              silently ignored and the chart drew a full pie. The hole is
+              `inner-radius`.
+
+              `legend="end"` is not a valid position either: the component takes
+              top / bottom / left / right and the four corners. An invalid value
+              is not a bottom-end legend, it is an unhandled one.
+
+              And `show-labels` defaults ON, which is what made the numbers
+              unreadable: seven slices, two of them under 6%, each printing a
+              currency figure in white on a mid-tone fill, with the two smallest
+              labels overlapping each other outright. Labels around a ring only
+              work when every slice is wide enough to hold one, which is a
+              property of the data and cannot be assumed. They are off; the
+              legend names the slices, the tooltip gives a value on hover, the
+              generated data table carries the full set for a screen reader —
+              and every figure is listed in full in the panel below anyway.
+
+              The total goes in the hole, which is what the hole is for.
+            */}
           <PieChart
             class="chart-md"
             data={ring.map((slice) => ({ id: slice.id, label: slice.labelKey, value: slice.value }))}
@@ -124,9 +147,17 @@ export function InvestScreen() {
               t.formatCurrency(value ?? 0, { notation: 'compact' })
             }
             summary={t('banking.panel.allocation')}
-            variant="donut"
-            legend="end"
-          />
+            inner-radius="62%"
+            show-labels="false"
+            legend="bottom"
+          >
+            <div slot="center" className="ring-centre">
+              <span className="ring-centre__value">
+                <Money value={totals.portfolioValueEur} compact />
+              </span>
+              <span className="ring-centre__label">{t('banking.kpi.portfolio')}</span>
+            </div>
+          </PieChart>
         </Panel>
       </div>
 

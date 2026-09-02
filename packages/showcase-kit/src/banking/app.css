@@ -1707,6 +1707,37 @@ md-list-item[data-status='declined'] .txn-row__amount {
   margin: 0;
 }
 
+/**
+ * The figure in a donut's hole.
+ *
+ * The hole exists to hold the total the ring is OF, which is also what pays for
+ * turning the slice labels off — the number a reader wants first is in the
+ * middle at full size instead of scattered around the rim in six-point white.
+ *
+ * `text-align: center` and not a flex centre: the slot is already centred by
+ * the component, and a nested flex box here would fight it.
+ */
+.ring-centre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+  /* Never let a long compact figure push the hole wider than the ring. */
+  max-inline-size: 8ch;
+}
+
+.ring-centre__value {
+  font: var(--md-sys-typescale-title-medium-font);
+  color: var(--md-sys-color-on-surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.ring-centre__label {
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
 /* ------------------------------------------------------------------ charts */
 
 /*
