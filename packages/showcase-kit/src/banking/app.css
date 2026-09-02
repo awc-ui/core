@@ -1429,9 +1429,41 @@ a {
   color: var(--md-sys-color-on-surface-variant);
 }
 
-/* A declined row is struck through — the amount never left the account, and
-   showing it plain would have it read as spent. */
-.txn-row[data-status='declined'] .txn-row__amount {
+/**
+ * UNSETTLED AMOUNTS, marked on the figure rather than beside it.
+ *
+ * Selected off `[data-status]` on the ROW, which is an `md-list-item`. An
+ * earlier version scoped this to `.txn-row[data-status=…]` and the class was
+ * never applied to anything, so the rule had never once matched — the declined
+ * row rendered exactly like a settled one.
+ *
+ * WHY NOT A STATUS DOT. `md-status-dot` is the obvious component and it is the
+ * wrong one here: it is absolutely positioned against the bottom-end corner of
+ * a positioned parent with a -2px inset, which is right on an avatar rim and
+ * lands on the last two digits of a currency amount. Giving it a padded anchor
+ * to sit in would be building a second component out of the first. The state is
+ * already in the row's supporting text; what the figure needs is to stop
+ * reading as final, and muting it does that with no geometry to get wrong.
+ *
+ * Declined additionally gets a strike: the money never left the account, and
+ * showing it plain would have it read as spent.
+ */
+/*
+ * The amount is the row's PRIMARY figure, so it is stated at full strength
+ * here. It was inheriting the trailing slot's on-surface-variant, which meant
+ * the mute below had nothing to mute — pending and settled rendered the same
+ * colour, measured. A credit still overrides this: `.pl-up` sits on the `bdi`
+ * inside, which is more specific than this rule on the wrapper.
+ */
+.txn-row__amount {
+  color: var(--md-sys-color-on-surface);
+}
+
+md-list-item[data-status='pending'] .txn-row__amount {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+md-list-item[data-status='declined'] .txn-row__amount {
   text-decoration: line-through;
   color: var(--md-sys-color-on-surface-variant);
 }

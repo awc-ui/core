@@ -15,7 +15,7 @@ import {
   type Transaction,
 } from '@awc-ui/showcase-kit/banking';
 import { useT } from '@/lib/showcase';
-import { DateText, Flow, TxnStatusDot } from '../bits';
+import { DateText, Flow } from '../bits';
 
 /**
  * One movement, as a list row.
@@ -66,15 +66,16 @@ export function TransactionRow({
       leading-icon={categoryIcon[txn.category] ?? txnTypeIcon[txn.type]}
     >
       <span slot="trailing" className="account-row__figures">
-        {/* The dot sits BESIDE the amount, not above it. In the figures column
-            it read as a third figure floating under the number rather than as
-            a mark on the row. Only an unsettled row earns one — a dot on every
-            completed row is a column of green nobody reads. */}
-        <span className="row">
-          {txn.status === 'completed' ? null : <TxnStatusDot status={txn.status} />}
-          <span className="txn-row__amount">
-            <Flow value={txn.amount} currency={txn.currency} />
-          </span>
+        {/*
+          NO STATUS DOT ON THE AMOUNT. `md-status-dot` anchors absolutely to a
+          positioned parent's bottom-end corner — right for an avatar rim, and
+          on a currency figure it lands across the last two digits. `data-status`
+          on the row drives the treatment from `app.css` instead: a pending
+          amount is muted, a declined one muted and struck. The row's supporting
+          text already names the state in words.
+        */}
+        <span className="txn-row__amount">
+          <Flow value={txn.amount} currency={txn.currency} />
         </span>
         {/* The EUR twin only on a foreign-currency row, and only when it says
             something the local amount does not. */}

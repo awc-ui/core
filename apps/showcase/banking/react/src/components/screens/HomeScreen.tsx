@@ -34,7 +34,6 @@ import { AreaChart } from '../elements';
 import {
   AccountKindChip,
   CardStateChip,
-  CardStateDot,
   BudgetMeter,
   Count,
   CurrencyChip,
@@ -316,8 +315,14 @@ export function HomeScreen() {
                 lines="3"
                 leading-icon="credit_card"
               >
-                <span slot="trailing" className="row">
-                  <CardStateDot state={card.state} />
+                {/* NO STATUS DOT HERE. `md-status-dot` is absolutely
+                    positioned and anchors to the bottom-end corner of a
+                    positioned parent — it is built to sit on an avatar's rim,
+                    not to stand in a row. Dropped in beside the chip it had no
+                    anchor and floated off under it. It would also have been
+                    saying nothing: the chip an inch away already reads
+                    "Active" / "Frozen" / "Blocked" in the same colour. */}
+                <span slot="trailing">
                   <CardStateChip state={card.state} />
                 </span>
               </md-list-item>
