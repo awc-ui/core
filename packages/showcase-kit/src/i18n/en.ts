@@ -1287,11 +1287,12 @@ const banking = {
   'banking.msg.controlSaved': 'Setting saved',
   'banking.msg.watchAdded': 'Added to watchlist',
   /* -------------------------------------------------------------- hint */
+  'banking.hint.noAccount': 'No account',
+  'banking.hint.cannotSwap': 'You have no account in that currency to send from.',
   'banking.hint.frozen': 'This card is frozen. Unfreeze it to spend.',
   'banking.hint.blocked': 'This card was blocked and cannot be used again.',
   'banking.hint.amountNeeded': 'Enter an amount to see the rate.',
   'banking.hint.quantityNeeded': 'Enter a quantity to see the estimate.',
-  'banking.hint.samePair': 'Choose two different currencies.',
   'banking.hint.noPair': 'This pair is not quoted.',
   'banking.hint.portfolioSeries': 'Today’s holdings priced back over 90 days.',
   'banking.hint.vault': '{pct} of {target}',

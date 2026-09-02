@@ -91,31 +91,68 @@ export function ExchangeScreen() {
     setDone(false);
   });
 
+  /**
+   * Swap the two sides.
+   *
+   * ONLY WHEN THE RECEIVE CURRENCY IS ONE YOU HOLD. Narrowing the send list to
+   * held currencies made this reachable: with RON on the receive side, swapping
+   * would have set the send currency to RON — a value that is deliberately not
+   * in that select's own option list, leaving the field showing something it
+   * cannot offer. The button is disabled instead, which says the same thing
+   * without producing the state.
+   */
+  const canSwap = accounts.some((a) => a.currency === to);
+
   const swap = () => {
+    if (!canSwap) return;
     setFrom(to);
     setTo(from);
     setDone(false);
   };
 
-  /* One reason, chosen in the order a reader would hit them. */
-  const reason =
-    from === to
-      ? t('banking.hint.samePair')
-      : !valid
-        ? t('banking.hint.amountNeeded')
-        : !priced
-          ? t('banking.hint.noPair')
-          : null;
+  /*
+   * One reason, chosen in the order a reader would hit them.
+   *
+   * There is no same-currency branch any more: the option lists make that state
+   * unreachable, and a guard against a state that cannot occur is a branch
+   * nobody will ever see and nobody can test.
+   */
+  const reason = !valid
+    ? t('banking.hint.amountNeeded')
+    : !priced
+      ? t('banking.hint.noPair')
+      : null;
 
-  const currencies: Currency[] = ['EUR', 'USD', 'GBP', 'RON'];
+  /**
+   * Every currency the desk quotes.
+   *
+   * The two selects offer DIFFERENT SUBSETS of it, and neither offers the
+   * other's current value.
+   *
+   * YOU CANNOT SEND WHAT YOU DO NOT HOLD, so the send side is limited to
+   * currencies with an account behind them. RON is quotable and not held, so it
+   * can be received and not sent — which is also why the send field can never
+   * show "no account".
+   *
+   * AND YOU CANNOT EXCHANGE A CURRENCY FOR ITSELF. Each list drops the other's
+   * current value, so `from === to` is unreachable rather than merely refused:
+   * the receive list used to offer EUR while EUR was being sent, and picking it
+   * produced a ticket that priced nothing and a Confirm that explained why it
+   * was off. A control that cannot be got wrong beats one that says no.
+   */
+  const QUOTED: Currency[] = ['EUR', 'USD', 'GBP', 'RON'];
+
+  const heldCurrencies = QUOTED.filter((code) => accounts.some((a) => a.currency === code));
+  const sendOptions = heldCurrencies.filter((code) => code !== to);
+  const receiveOptions = QUOTED.filter((code) => code !== from);
 
   /**
    * What is held in a currency, as the field's supporting text.
    *
-   * Always returns a string. A currency the desk quotes but the holder has no
-   * account in — RON — would otherwise leave one field without supporting text
-   * and knock the row out of alignment, so it gets an em dash rather than
-   * nothing.
+   * Always returns a string, so both boxes keep the same height and the row
+   * cannot drift out of alignment. A currency with no account behind it says so
+   * in words — an em dash was tried and read as a stray minus sign floating
+   * under the field rather than as "nothing here".
    */
   const balanceIn = (currency: Currency) => {
     const account = accounts.find((a) => a.currency === currency);
@@ -128,7 +165,7 @@ export function ExchangeScreen() {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })
-      : t('banking.common.na');
+      : t('banking.hint.noAccount');
   };
 
   return (
@@ -152,10 +189,9 @@ export function ExchangeScreen() {
               Both now show the balance held in that currency, which is the
               thing a reader actually wants while pricing an exchange — whether
               there is enough to send, and what the other side already holds.
-              `balanceIn` returns a placeholder rather than nothing for a
-              currency with no account (RON is quotable but not held), so the
-              two boxes are always the same height and the row cannot drift
-              apart again.
+              `balanceIn` always returns a string — a currency with no account
+              behind it says so in words — so the two boxes are always the same
+              height and the row cannot drift apart again.
             */}
             <div className="ticket">
               <md-select
@@ -164,19 +200,32 @@ export function ExchangeScreen() {
                 value={from}
                 supporting-text={balanceIn(from)}
               >
-                {currencies.map((code) => (
+                {sendOptions.map((code) => (
                   <md-select-option key={code} value={code} label={code} />
                 ))}
               </md-select>
 
               {/* An icon button, not a text one: the control has no label to
                   translate and the arrows say what it does in every locale. */}
-              <md-icon-button
-                className="ticket__swap"
-                icon="swap_horiz"
-                aria-label={t('banking.action.swap')}
-                onClick={swap}
-              />
+              <md-tooltip
+                text={t('banking.hint.cannotSwap')}
+                disabled={canSwap || undefined}
+              >
+                {/* `class`, NOT `className`. React maps `className` to the
+                    `class` attribute for HOST elements only; on a custom
+                    element it passes the prop through under the name it was
+                    given, so this emitted a literal `className="ticket__swap"`
+                    attribute and the `.ticket__swap` rule — the one that
+                    centres the button when the ticket stacks on a phone — has
+                    never matched. */}
+                <md-icon-button
+                  class="ticket__swap"
+                  icon="swap_horiz"
+                  aria-label={t('banking.action.swap')}
+                  soft-disabled={!canSwap || undefined}
+                  onClick={swap}
+                />
+              </md-tooltip>
 
               <md-select
                 ref={toRef}
@@ -184,7 +233,7 @@ export function ExchangeScreen() {
                 value={to}
                 supporting-text={balanceIn(to)}
               >
-                {currencies.map((code) => (
+                {receiveOptions.map((code) => (
                   <md-select-option key={code} value={code} label={code} />
                 ))}
               </md-select>
