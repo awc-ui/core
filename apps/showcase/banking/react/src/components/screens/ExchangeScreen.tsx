@@ -109,6 +109,28 @@ export function ExchangeScreen() {
 
   const currencies: Currency[] = ['EUR', 'USD', 'GBP', 'RON'];
 
+  /**
+   * What is held in a currency, as the field's supporting text.
+   *
+   * Always returns a string. A currency the desk quotes but the holder has no
+   * account in — RON — would otherwise leave one field without supporting text
+   * and knock the row out of alignment, so it gets an em dash rather than
+   * nothing.
+   */
+  const balanceIn = (currency: Currency) => {
+    const account = accounts.find((a) => a.currency === currency);
+    // BOTH digit bounds, not just the maximum: the kit's `formatCurrency`
+    // defaults the minimum to 0, so a balance of 1164.20 came out "£1,164.2".
+    // Same two-decimal rule the `Money` component applies for this vertical.
+    return account
+      ? t.formatCurrency(account.balance, {
+          currency,
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
+      : t('banking.common.na');
+  };
+
   return (
     <Screen
       title={t('banking.screen.exchange.title')}
@@ -117,12 +139,30 @@ export function ExchangeScreen() {
       <div className="grid-2">
         <Panel title={t('banking.panel.ticket')}>
           <div className="stack">
+            {/*
+              BOTH SELECTS CARRY SUPPORTING TEXT, and that is an alignment fix
+              as much as a content one.
+
+              Only the left one had any — a bare "Account", which under a
+              CURRENCY picker read as though the field chose one. The row is
+              `align-items: end`, so two boxes of different heights bottom-align
+              and the taller one's top sits higher: the receive field hung
+              visibly lower than the send field.
+
+              Both now show the balance held in that currency, which is the
+              thing a reader actually wants while pricing an exchange — whether
+              there is enough to send, and what the other side already holds.
+              `balanceIn` returns a placeholder rather than nothing for a
+              currency with no account (RON is quotable but not held), so the
+              two boxes are always the same height and the row cannot drift
+              apart again.
+            */}
             <div className="ticket">
               <md-select
                 ref={fromRef}
                 label={t('banking.table.send')}
                 value={from}
-                supporting-text={t('banking.table.account')}
+                supporting-text={balanceIn(from)}
               >
                 {currencies.map((code) => (
                   <md-select-option key={code} value={code} label={code} />
@@ -138,7 +178,12 @@ export function ExchangeScreen() {
                 onClick={swap}
               />
 
-              <md-select ref={toRef} label={t('banking.table.receive')} value={to}>
+              <md-select
+                ref={toRef}
+                label={t('banking.table.receive')}
+                value={to}
+                supporting-text={balanceIn(to)}
+              >
                 {currencies.map((code) => (
                   <md-select-option key={code} value={code} label={code} />
                 ))}
