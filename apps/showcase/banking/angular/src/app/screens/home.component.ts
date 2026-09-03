@@ -85,6 +85,7 @@ import {
       <section class="kpi-grid">
         @for (h of headlines; track h.labelKey) {
           <awc-kpi-tile
+          [hasFoot]="true"
             [label]="t(h.labelKey)"
             [trend]="h.labelKey === 'banking.kpi.balance' ? balanceTrend : undefined"
             [trendLabels]="trendLabels"
@@ -259,7 +260,7 @@ import {
             list-style="segmented"
           >
             @for (txn of recent; track txn.id) {
-              <awc-statement-row [txn]="txn" />
+              <md-list-item awcStatementRow [txn]="txn"></md-list-item>
             }
           </md-list>
         </awc-panel>
@@ -316,16 +317,32 @@ export class HomeScreen extends ShowcaseComponent {
   protected readonly budgetStatus =
     this.totals.budgetOverCount > 0 ? 'over' : this.totals.budgetNearCount > 0 ? 'near' : 'under';
 
+
+  /*
+   * MEMOISED, and this is not an optimisation — it is what stops the page
+   * hanging. `series`, `data`, `xAxis` and `labels` are PROPERTY bindings, and
+   * Angular dirty-checks those by reference: a getter that builds a fresh array
+   * every call is a new reference on every change-detection pass, so the chart
+   * re-assigns and Stencil redraws, which schedules another pass. On the
+   * analytics screen — five sparklines plus two charts — that thrashed hard
+   * enough that the page never became interactive and even an evaluate() call
+   * timed out. The base class's `memo` returns the same object until the
+   * LOCALE changes, which is the only thing these actually depend on.
+   */
   protected get trendLabels(): string[] {
-    return this.curve.map((p) => this.t.formatDate(`${p.month}-01`, 'monthYear'));
+    return this.memo('trendLabels', () =>
+      this.curve.map((p) => this.t.formatDate(`${p.month}-01`, 'monthYear')),
+    );
   }
 
   protected get balanceSeriesProp() {
-    return [{ id: 'balance', label: this.t('banking.kpi.balance'), data: this.balanceTrend }];
+    return this.memo('balanceSeries', () => [
+      { id: 'balance', label: this.t('banking.kpi.balance'), data: this.balanceTrend },
+    ]);
   }
 
   protected get balanceAxis() {
-    return { data: this.trendLabels, scale: 'category' };
+    return this.memo('balanceAxis', () => ({ data: this.trendLabels, scale: 'category' }));
   }
 
   protected readonly formatCompact = (value: number | null): string =>

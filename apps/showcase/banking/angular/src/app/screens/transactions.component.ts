@@ -132,7 +132,7 @@ import { TransactionsFiltersComponent } from './transactions-filters.component';
                 list-style="segmented"
               >
                 @for (txn of day.rows; track txn.id) {
-                  <awc-statement-row [txn]="txn" [showDate]="false" />
+                  <md-list-item awcStatementRow [txn]="txn" [showDate]="false"></md-list-item>
                 }
               </md-list>
             </div>

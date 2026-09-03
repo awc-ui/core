@@ -88,7 +88,12 @@ export interface ChartSeries {
           [attr.height]="height"
           [attr.legend]="legend"
           [attr.animation]="animation"
-        ></md-pie-chart>
+          [attr.inner-radius]="innerRadius"
+          [attr.show-labels]="showLabels"
+        >
+          <!-- Forwarded so a donut can fill its center slot. -->
+          <ng-content />
+        </md-pie-chart>
       }
       @default {
         <md-bar-chart
@@ -138,6 +143,15 @@ export class ChartComponent extends ShowcaseComponent {
   @Input() animation?: string;
   @Input() cornerRadius?: string;
   @Input() showMarks?: string;
+  /*
+   * Pie-only, and they have to be declared inputs rather than left as loose
+   * attributes: an attribute written on `<awc-chart>` stays on THAT host
+   * element and never reaches the `md-pie-chart` inside it. Measured — the
+   * donut rendered at `inner-radius=0%` with `show-labels=true`, which is a
+   * full pie with the overlapping slice labels this vertical turns off.
+   */
+  @Input() innerRadius?: string;
+  @Input() showLabels?: string;
   @Input() axisTicks = false;
   @Input() clickable = false;
 

@@ -162,11 +162,13 @@ export class SignedComponent extends ShowcaseComponent {
         signDisplay: 'exceptZero',
       });
     }
+    // The same two-decimal default as `MoneyComponent`, for the same reason.
+    const places = this.digits ?? (this.compact ? undefined : 2);
     return `${this.value > 0 ? '+' : ''}${this.t.formatCurrency(this.value, {
       currency: this.currency,
       notation: this.compact ? 'compact' : 'standard',
-      maximumFractionDigits: this.digits,
-      minimumFractionDigits: this.digits,
+      maximumFractionDigits: places,
+      minimumFractionDigits: places,
     })}`;
   }
 }
@@ -234,10 +236,12 @@ export class CountComponent extends ShowcaseComponent {
 })
 export class DateTextComponent extends ShowcaseComponent {
   @Input({ required: true }) value!: string;
-  @Input() dateStyle: 'short' | 'medium' | 'long' | 'monthYear' = 'medium';
+  /* `format`, matching the Vue and Svelte ports — the four are easier to read
+     against each other when the prop is called the same thing. */
+  @Input() format: 'short' | 'medium' | 'long' | 'monthYear' = 'medium';
 
   protected get text(): string {
-    return this.t.formatDate(this.value, this.dateStyle);
+    return this.t.formatDate(this.value, this.format);
   }
 }
 
@@ -579,29 +583,37 @@ export class VaultMeterComponent {
  * figure. `data-status` on the row drives the treatment from `app.css`.
  */
 @Component({
-  selector: 'awc-statement-row',
+  /*
+   * AN ATTRIBUTE SELECTOR ON `md-list-item`, not a wrapper element — and that
+   * is behavioural, not cosmetic. A wrapping `<awc-statement-row>` sits between
+   * the `md-list` and the `md-list-item` in the DOM, so the list no longer sees
+   * the row as its own child and cannot push its interaction mode down:
+   * measured, every row resolved to `single-action` where React's resolved to
+   * `multi-action`. `display: contents` does not help — it changes layout, not
+   * the tree. The other bits in this file take attribute selectors for the same
+   * reason.
+   */
+  selector: 'md-list-item[awcStatementRow]',
   standalone: true,
   imports: [FlowComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  styles: ':host { display: contents; }',
+  host: {
+    '[attr.headline]': 'txn.counterparty',
+    '[attr.overline]': "showDate ? t.formatDate(txn.date, 'medium') : null",
+    '[attr.supporting-text]': 'meta',
+    '[attr.lines]': "showDate ? '3' : '2'",
+    '[attr.data-status]': 'txn.status',
+    '[attr.leading-icon]': 'glyph',
+  },
   template: `
-    <md-list-item
-      [attr.headline]="txn.counterparty"
-      [attr.overline]="showDate ? t.formatDate(txn.date, 'medium') : null"
-      [attr.supporting-text]="meta"
-      [attr.lines]="showDate ? '3' : '2'"
-      [attr.data-status]="txn.status"
-      [attr.leading-icon]="glyph"
-    >
-      <span slot="trailing" class="account-row__figures">
-        <span class="txn-row__amount">
-          <bdi awcFlow [value]="txn.amount" [currency]="txn.currency"></bdi>
-        </span>
-        @if (txn.currency !== 'EUR') {
-          <span class="muted"><bdi awcFlow [value]="txn.amountEur"></bdi></span>
-        }
+    <span slot="trailing" class="account-row__figures">
+      <span class="txn-row__amount">
+        <bdi awcFlow [value]="txn.amount" [currency]="txn.currency"></bdi>
       </span>
-    </md-list-item>
+      @if (txn.currency !== 'EUR') {
+        <span class="muted"><bdi awcFlow [value]="txn.amountEur"></bdi></span>
+      }
+    </span>
   `,
 })
 export class StatementRowComponent extends ShowcaseComponent {

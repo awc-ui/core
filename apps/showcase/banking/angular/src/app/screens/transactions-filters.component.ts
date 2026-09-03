@@ -30,7 +30,7 @@ import { ShowcaseComponent } from '../lib/screen.base';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <div class="stack">
-      <!-- `trigger="bar"` and `full-width`: the default trigger is an icon that
+      <!-- trigger="bar" and full-width: the default trigger is an icon that
            opens the field, which in a filter panel reads as broken. -->
       <md-search
         layout="docked"
