@@ -95,7 +95,7 @@ import {
           @if (curve.length > 0) {
             <awc-chart
               tag="md-area-chart"
-              class="chart-md"
+              chartClass="chart-md"
               [series]="curveSeries"
               [xAxis]="curveAxis"
               [valueFormatter]="formatCompact"
@@ -109,7 +109,7 @@ import {
         <awc-panel [title]="t('banking.panel.allocation')">
           <awc-chart
             tag="md-pie-chart"
-            class="chart-md"
+            chartClass="chart-md"
             [data]="ringData"
             [valueFormatter]="formatCompact"
             [summary]="t('banking.panel.allocation')"

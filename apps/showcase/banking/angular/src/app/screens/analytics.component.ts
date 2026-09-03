@@ -110,7 +110,7 @@ import {
           -->
           <awc-chart
             tag="md-pie-chart"
-            class="chart-md"
+            chartClass="chart-md"
             [data]="ringData"
             [valueFormatter]="formatCompact"
             [summary]="t('banking.panel.byCategory')"
@@ -133,7 +133,7 @@ import {
                doubled. -->
           <awc-chart
             tag="md-bar-chart"
-            class="chart-md"
+            chartClass="chart-md"
             [series]="flowSeriesProp"
             [xAxis]="flowAxis"
             [yAxis]="{ min: 0 }"

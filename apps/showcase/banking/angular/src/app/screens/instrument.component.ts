@@ -113,7 +113,7 @@ import {
         <awc-panel [title]="t('banking.panel.performance')">
           <awc-chart
             tag="md-area-chart"
-            class="chart-lg"
+            chartClass="chart-lg"
             [series]="priceSeries()"
             [xAxis]="priceAxis()"
             [valueFormatter]="formatPrice"

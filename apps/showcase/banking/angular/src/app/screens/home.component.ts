@@ -168,7 +168,7 @@ import {
         >
           <awc-chart
             tag="md-area-chart"
-            class="chart-md"
+            chartClass="chart-md"
             [series]="balanceSeriesProp"
             [xAxis]="balanceAxis"
             [valueFormatter]="formatCompact"

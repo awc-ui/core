@@ -165,7 +165,7 @@ import { MoneyComponent, PercentComponent, SignedComponent } from '../components
           @if (history().length > 0) {
             <awc-chart
               tag="md-line-chart"
-              class="chart-md"
+              chartClass="chart-md"
               [series]="rateSeriesProp()"
               [xAxis]="rateAxis()"
               [valueFormatter]="formatRate"

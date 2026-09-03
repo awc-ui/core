@@ -40,6 +40,7 @@ export interface ChartSeries {
     @switch (tag) {
       @case ('md-line-chart') {
         <md-line-chart
+          [class]="chartClass"
           [series]="series"
           [xAxis]="xAxis"
           [yAxis]="yAxis"
@@ -60,6 +61,7 @@ export interface ChartSeries {
       }
       @case ('md-area-chart') {
         <md-area-chart
+          [class]="chartClass"
           [series]="series"
           [xAxis]="xAxis"
           [yAxis]="yAxis"
@@ -79,6 +81,7 @@ export interface ChartSeries {
       }
       @case ('md-pie-chart') {
         <md-pie-chart
+          [class]="chartClass"
           [data]="data"
           [valueFormatter]="valueFormatter"
           [attr.label]="label"
@@ -97,6 +100,7 @@ export interface ChartSeries {
       }
       @default {
         <md-bar-chart
+          [class]="chartClass"
           [series]="series"
           [xAxis]="xAxis"
           [yAxis]="yAxis"
@@ -152,6 +156,16 @@ export class ChartComponent extends ShowcaseComponent {
    */
   @Input() innerRadius?: string;
   @Input() showLabels?: string;
+  /*
+   * THE SIZE CLASS, and it is an input for exactly the reason above.
+   *
+   * A `class` written on `<awc-chart>` stays on THAT host, which is
+   * `display: contents` — so it contributes no box, `.chart-md` matches
+   * nothing that lays out, and the chart inside falls back to its intrinsic
+   * height. Measured: 762px where React draws 260. The class has to be bound
+   * onto the element that actually draws.
+   */
+  @Input() chartClass?: string;
   @Input() axisTicks = false;
   @Input() clickable = false;
 
