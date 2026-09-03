@@ -55,6 +55,11 @@ const PORT = 4356;
 const SCREENS = {
   wealth: ['/', '/holdings/', '/households/hh-01/', '/proposals/', '/trade/', '/planning/'],
   'credit-risk': ['/', '/watchlist/', '/counterparties/cp-01/'],
+  /* The six destinations plus one drill. Every screen that runs a client
+     enhancement is here — the statement, the exchange desk, the trade ticket
+     and the cards — because an enhancement is the thing most likely to reach
+     for an inline style or an eval that a policy then refuses. */
+  banking: ['/', '/transactions/', '/exchange/', '/invest/', '/cards/', '/accounts/acc-eur/'],
 };
 
 const POLICY = [

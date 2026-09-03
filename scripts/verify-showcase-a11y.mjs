@@ -95,6 +95,8 @@ const EXPECTATIONS = {
     paginatedScreen: '/',
     /** The chart whose generated summary the locale check reads. */
     summaryChart: 'md-area-chart',
+    /** This vertical's tables sort, so their labels take state from the table. */
+    sortLabels: true,
     /** Column that repeats the row marker as a word. `null` = this vertical
      *  does not duplicate it, so only the marker itself is checked. */
     markerChipCell: 4,
@@ -126,6 +128,7 @@ const EXPECTATIONS = {
     paginatedScreen: '/holdings/',
     bookRows: '66',
     pageRows: 25,
+    sortLabels: true,
     /*
      * No badge-in-button anywhere in this vertical: the one badge sits on an
      * `md-avatar` in the household header, and an avatar does not clip its
@@ -142,6 +145,48 @@ const EXPECTATIONS = {
      * no chip repeating it and nothing here to assert.
      */
     markerChipCell: null,
+  },
+  banking: {
+    arabicLocale: 'ar',
+    /*
+     * NO SEVERITY MARKER IN THIS VERTICAL, and that is a decision rather than
+     * an omission.
+     *
+     * `md-status-dot` is positioned absolutely against its nearest positioned
+     * ancestor's bottom-end corner. In a statement row it landed across the
+     * last two digits of the amount, and on a card row it had nothing to anchor
+     * to at all. A transaction's state is carried by a word — the status chip
+     * on the card list, the status line under a statement row — plus the
+     * strike-through and the muted amount that `app.css` drives off
+     * `data-status`. There is no dot to name, so there is no list screen for
+     * this assertion to read and it is skipped rather than pointed at a screen
+     * where it would report a missing element as a defect.
+     */
+    listScreen: null,
+    severityWords: [],
+    markerChipCell: null,
+    /** An account is the drill target, and renders breadcrumbs. */
+    detailScreen: '/accounts/acc-eur/',
+    /** No table in this vertical carries a totals row; the assertion skips. */
+    footerScreen: '/invest/',
+    /*
+     * NOTHING PAGES HERE EITHER. A statement is grouped by day and cutting a
+     * day in half across a page boundary is the one break a statement must not
+     * make, so the period is the filter instead. The holdings table is twelve
+     * rows and is shown whole.
+     */
+    paginatedScreen: null,
+    bookRows: null,
+    pageRows: null,
+    /** The home screen's balance curve. */
+    summaryChart: 'md-area-chart',
+    /** And no sortable table, so no sort label takes state from one. */
+    sortLabels: false,
+    /*
+     * No badge-in-button: this vertical's one badge is `badge-value` on a
+     * navigation tab, which the component places itself.
+     */
+    badgeScreen: null,
   },
 };
 
@@ -413,7 +458,7 @@ for (const vertical of verticals) {
    * direction. So the assertion is inverted: the dot must now be named, and the
    * chip in the severity cell must still carry the word too.
    */
-  for (const framework of builds) {
+  for (const framework of expect.listScreen ? builds : []) {
     const p = await load(`${url(framework)}${expect.listScreen}`);
     const probe = await p.evaluate((markerChipCell) => {
       const row = document.querySelector('md-table-body md-table-row');
@@ -490,7 +535,7 @@ for (const vertical of verticals) {
    * two pages worse without it, so there is no offset to report and nothing
    * here to check.
    */
-  for (const framework of hydrating) {
+  for (const framework of expect.paginatedScreen ? hydrating : []) {
     const p = await load(`${url(framework)}${expect.paginatedScreen}`);
     const probe = await p.evaluate(() => {
       const table = document.querySelector('md-table');
@@ -523,7 +568,11 @@ for (const vertical of verticals) {
     console.log('\n[overview] dead markup');
     ok('md-sparkline no longer ships a locale attribute', probe.sparklineLocale === false);
     // The table pushes active back in after hydration — that is the point.
-    ok('sort labels get their state FROM the table', probe.sortLabelActive >= 1, `${probe.sortLabelActive} label(s) marked active by md-table`);
+    // Skipped where a vertical sorts nothing: an assertion that a screen with no
+    // sortable table has no active sort label passes having tested nothing.
+    if (expect.sortLabels) {
+      ok('sort labels get their state FROM the table', probe.sortLabelActive >= 1, `${probe.sortLabelActive} label(s) marked active by md-table`);
+    }
     await p.close();
   }
 }
