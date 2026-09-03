@@ -132,8 +132,9 @@ export function signed(t, value, { kind = 'money', currency = 'EUR', compact = f
  * is a standalone element that takes its own space, which is what a count in a
  * row of facts actually is.
  */
-export function count(t, value, { color = 'primary' } = {}) {
+export function count(t, value, { color = 'primary', attributes = {} } = {}) {
   return html`<md-chip${attrs({
+    ...attributes,
     variant: 'assist',
     appearance: 'outlined',
     color,
@@ -357,7 +358,7 @@ export function currencyChip(currency) {
  * `CurrencyOptions` has no `signDisplay`, and a leading `+` is a bidi-NEUTRAL
  * character that RTL would move to the other end of the number.
  */
-export function flow(t, value, { currency = 'EUR', compact = false } = {}) {
+export function flow(t, value, { currency = 'EUR', compact = false, attributes = {} } = {}) {
   const up = flowColor(value) === 'success';
   const text = `${value > 0 ? '+' : ''}${t.formatCurrency(value, {
     currency,
@@ -365,7 +366,7 @@ export function flow(t, value, { currency = 'EUR', compact = false } = {}) {
     maximumFractionDigits: compact ? undefined : 2,
     minimumFractionDigits: compact ? undefined : 2,
   })}`;
-  return html`<bdi${attrs({ class: up ? 'num pl-up' : 'num' })}>${text}</bdi>`;
+  return html`<bdi${attrs({ ...attributes, class: up ? 'num pl-up' : 'num' })}>${text}</bdi>`;
 }
 
 /**
@@ -386,6 +387,10 @@ export function statementRow(t, txn, { showDate = true } = {}) {
   if (txn.status !== 'completed') meta.push(t(txn.statusKey));
 
   return html`<md-list-item${attrs({
+    /* The record id, for the client enhancements. Not `value`: that is a
+       component prop the parity fingerprint compares, and the four SPA builds
+       set it on no statement row. */
+    'data-id': txn.id,
     headline: txn.counterparty,
     overline: showDate ? t.formatDate(txn.date, 'medium') : undefined,
     'supporting-text': meta.join(' · '),

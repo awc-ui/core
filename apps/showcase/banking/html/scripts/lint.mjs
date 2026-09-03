@@ -17,21 +17,15 @@
  *    them throws.
  */
 
-import { getHouseholds } from '@awc-ui/showcase-kit/banking';
 import { LOCALE_CODES, useT } from '../src/lib/i18n.mjs';
-import { overviewScreen } from '../src/screens/overview.mjs';
-import { holdingsScreen } from '../src/screens/holdings.mjs';
-import { householdScreen } from '../src/screens/household.mjs';
-import { proposalsScreen } from '../src/screens/proposals.mjs';
-import { tradeScreen } from '../src/screens/trade.mjs';
-import { planningScreen } from '../src/screens/planning.mjs';
+import { routes } from '../src/routes.mjs';
 
 /** What a rendering mistake looks like once it is already in the HTML. */
 const SMELLS = [
   { pattern: /undefined/, label: 'the string "undefined"' },
   { pattern: /\[object Object\]/, label: '"[object Object]" (an object where a string was wanted)' },
   // A key that never resolved comes back as the key itself, which always has a
-  // dot and never a space — `banking.table.drift` rather than "Drift".
+  // dot and never a space — `banking.table.rate` rather than "Rate".
   { pattern: />\s*[a-z]+\.[a-zA-Z.]+\s*</, label: 'an unresolved dictionary key' },
 ];
 
@@ -45,24 +39,12 @@ function check(name, markup) {
   }
 }
 
-let screens = 0;
+const screens = routes();
 for (const locale of LOCALE_CODES) {
   const t = useT(locale);
-  screens = 0;
-  check(`${locale} overview`, overviewScreen(t, locale));
-  screens += 1;
-  check(`${locale} holdings`, holdingsScreen(t, locale));
-  screens += 1;
-  for (const household of getHouseholds()) {
-    check(`${locale} household/${household.id}`, householdScreen(t, locale, household.id));
-    screens += 1;
+  for (const screen of screens) {
+    check(`${locale} ${screen.path}`, screen.render(t, locale));
   }
-  check(`${locale} proposals`, proposalsScreen(t, locale));
-  screens += 1;
-  check(`${locale} trade`, tradeScreen(t, locale));
-  screens += 1;
-  check(`${locale} planning`, planningScreen(t, locale));
-  screens += 1;
 }
 
 if (failures.length) {
@@ -70,4 +52,4 @@ if (failures.length) {
   for (const failure of failures.slice(0, 20)) console.error(`  - ${failure}`);
   process.exit(1);
 }
-console.log(`[lint] ${LOCALE_CODES.length} locales × ${screens} screens render clean`);
+console.log(`[lint] ${LOCALE_CODES.length} locales × ${screens.length} screens render clean`);

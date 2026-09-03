@@ -2,8 +2,8 @@
    Snackbars — one bottom offset, shared by every screen
    ==========================================================
 
-   Imported by the three screens that raise a toast: HouseholdScreen,
-   ProposalBuilder and TradeTicket. They all use `position="bottom"`, the
+   Imported by the one screen that raises a toast: CardsScreen. It uses
+   `position="bottom"`, the
    component default and the only placement M3 gives a snackbar on a page whose
    content is centred, so the only thing left for a HOST to decide is how far
    off the bottom edge the surface lands.

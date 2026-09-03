@@ -12,20 +12,22 @@
  * statement, complete and readable, which is exactly what React's first paint
  * is.
  *
- * WHAT THE CLIENT SCRIPT ADDS (`client/transactions.mjs`), all progressive:
+ * WHAT THE CLIENT SCRIPT ADDS (client/transactions.mjs), all progressive: the
+ * month facet, which swaps the live day-groups for a template's; the account,
+ * category and status facets; the search box; the count and the reset; and the
+ * phone placement of the filter panel.
  *
- *   - the month facet, swapping the live day-groups for a template's;
- *   - the account, category and status facets, which hide rows by
- *     `data-account` / `data-category` / `data-status` rather than re-deriving
- *     anything;
- *   - the search box, matching on `data-search` — a lower-cased haystack the
- *     build writes onto each row, never the localised cell text;
- *   - the count and the reset.
+ * IT ASKS THE KIT WHICH ROWS SURVIVE — the same getTransactions() call the
+ * React screen makes, with the same five arguments — and then MOVES the rows
+ * the build already wrote. It never decides what matches and never adds up a
+ * day. That division matters here more than anywhere else in this build: a day
+ * heading carries the day's net, so a client that filtered rows by itself would
+ * leave every heading stating the unfiltered day's total.
  *
- * Filtering by hiding rather than by re-rendering is what keeps the live DOM
- * census equal to React's: React renders the filtered set, so a hidden row
- * would be an extra element. The client DETACHES a filtered-out row instead,
- * the same rule the rest of this build follows.
+ * DETACHED, NEVER HIDDEN. A hidden row is still a row — to querySelectorAll, to
+ * the accessibility tree, and to the parity census — while React renders a
+ * shorter list. Rows that fall out of a filter are held in memory and come back
+ * in the kit's order.
  */
 
 import {
@@ -47,10 +49,10 @@ const ALL_MONTHS = 'all';
 
 /** One day group: the sticky heading, its net, and the rows under it. */
 function dayGroup(t, day) {
-  return html`<div class="stack">
+  return html`<div class="stack"${attrs({ 'data-day': day.date })}>
     <div class="statement-day">
       <span>${dateText(t, day.date, 'long')}</span>
-      ${flow(t, day.netEur)}
+      ${flow(t, day.netEur, { attributes: { 'data-day-net': true } })}
     </div>
     <md-list${attrs({
       label: t.formatDate(day.date, 'long'),
@@ -91,7 +93,7 @@ export function transactionsScreen(t, locale) {
     <div class="facet-row"${attrs(rowAttrs)}>${chips}</div>
   </div>`;
 
-  const filterBody = html`<div class="stack">
+  const filterBody = html`<div class="stack" data-filter-body>
     <!-- trigger="bar" and full-width: the default trigger is an icon that
          opens the field, which in a filter panel is a lone magnifying glass and
          reads as broken. -->
@@ -173,16 +175,18 @@ export function transactionsScreen(t, locale) {
         'data-count': true,
         'data-count-template': t('banking.common.showing', { shown: '%shown%', total: '%total%' }),
       })} class="muted">${t('banking.common.showing', { shown, total })}</span>
-      <!-- The reset ships hidden: with nothing filtered there is nothing to
-           reset, and a permanently-inert control in a filter bar is furniture.
-           hidden rather than absent so the client has something to reveal. -->
-      <md-button${attrs({
-        'data-clear': true,
-        variant: 'text',
-        size: 'sm',
-        icon: 'restart_alt',
-        hidden: true,
-      })}>${t('banking.action.clearFilters')}</md-button>
+      <!-- The reset exists only while there is something to reset, so it ships
+           in a template rather than hidden: a permanently-inert control in a
+           filter bar is furniture, and a HIDDEN one is still an element — in
+           querySelectorAll, in the accessibility tree, and in the parity
+           census, where React renders none. -->
+      <template data-clear>
+        <md-button${attrs({
+          variant: 'text',
+          size: 'sm',
+          icon: 'restart_alt',
+        })}>${t('banking.action.clearFilters')}</md-button>
+      </template>
     </div>
   </div>`;
 
@@ -191,25 +195,36 @@ export function transactionsScreen(t, locale) {
     here: path,
     title: t('banking.screen.transactions.title'),
     subtitle: t('banking.screen.transactions.subtitle'),
-    aside: count(t, shown),
+    aside: count(t, shown, { attributes: { 'data-result-count': true } }),
     children: html`<!--
-        THE FILTERS COLLAPSE ON A PHONE. Both placements ship: the panel is the
-        desktop one and the disclosure the phone one, and app.css shows
-        exactly one of them. Rendering both is what lets a static page match a
-        media query with no script — and the disclosure's content is a clone of
-        the panel's, so the two cannot drift.
-      -->
-      <md-accordion${attrs({ 'data-filter-sheet': true, variant: 'outlined', 'heading-level': '2' })}>
-        <md-accordion-item${attrs({ headline: t('banking.action.filter'), icon: 'filter_list' })}>
-          ${filterBody}
-        </md-accordion-item>
-      </md-accordion>
+        THE FILTERS COLLAPSE ON A PHONE, and both placements ship — but only
+        one of them is LIVE.
 
+        The desktop panel is in the document; the phone disclosure rides in a
+        template and the client moves the panel's own body into it below 720px.
+        Shipping both live and hiding one with CSS was the first shape of this
+        and it is wrong twice over: a hidden accordion is still four chip rows
+        in the accessibility tree, and the parity census counts elements, not
+        pixels — the React build renders ONE placement, so a second one is a
+        divergence however invisible it looks.
+
+        The body is MOVED, never copied, so the two cannot drift and no chip
+        exists twice.
+
+        With JavaScript off a phone gets the desktop panel: taller than it
+        should be, entirely usable, and honest about what a static page can do.
+      -->
       ${panel({
         attributes: { 'data-filter-panel': true },
         title: t('banking.action.filter'),
         children: filterBody,
       })}
+
+      <template data-filter-sheet>
+        <md-accordion${attrs({ variant: 'outlined', 'heading-level': '2' })}>
+          <md-accordion-item${attrs({ headline: t('banking.action.filter'), icon: 'filter_list' })}></md-accordion-item>
+        </md-accordion>
+      </template>
 
       ${panel({
         attributes: { 'data-statement': true },

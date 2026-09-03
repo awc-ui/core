@@ -25,12 +25,12 @@
  *    as the fallback in that stack.
  *
  * 3. THE STYLESHEETS — the library's tokens, its pre-upgrade size floors (each
- *    rule self-retires on `.hydrated`), the shared page furniture, and the
- *    per-screen sheets the React build imports from its screens (trade,
- *    planning, snackbar — framework-free, linked on every page here because
- *    Vite would have bundled them into one sheet anyway). All copied into
- *    `dist/styles/` by the build. No bundler is involved anywhere in this app,
- *    so they are plain `<link>`s at absolute URLs.
+ *    rule self-retires on `.hydrated`), the shared page furniture, and the one
+ *    per-screen sheet the React build imports from a screen (snackbar —
+ *    framework-free, linked on every page here because Vite would have bundled
+ *    it into one sheet anyway). All copied into `dist/styles/` by the build. No
+ *    bundler is involved anywhere in this app, so they are plain `<link>`s at
+ *    absolute URLs.
  *
  * 4. THE COMPONENT RUNTIME and this build's own client script, as module
  *    scripts at absolute URLs. Stencil's lazy build resolves its sibling chunks
@@ -48,14 +48,7 @@ const CLIENT_URL = `${BASE_PATH}/client.js`;
 
 const SYMBOL_AXES = 'opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200';
 
-const STYLESHEETS = [
-  'tokens.css',
-  'pre-upgrade.css',
-  'app.css',
-  'trade.css',
-  'planning.css',
-  'snackbar.css',
-];
+const STYLESHEETS = ['tokens.css', 'pre-upgrade.css', 'app.css', 'snackbar.css'];
 
 export function document_({ locale, path, body }) {
   const t = useT(locale);

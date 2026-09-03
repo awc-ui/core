@@ -118,7 +118,7 @@ function rail(t, locale, here) {
     'label-visibility': 'all',
   })}>
     <md-fab slot="fab"${attrs({
-      icon: 'add',
+      icon: 'currency_exchange',
       label: t('banking.action.exchange'),
       'data-fab-href': localeHref(locale, route.exchange()),
     })}></md-fab>
