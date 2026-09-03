@@ -50,3 +50,18 @@ it change, and an organisation chart that traces a selection back to its root.
 Five builds, all single-page or static — no SSR. The plain-HTML one is the
 comparison worth making: no framework, no hydration of its own, a page per
 locale written at build time.
+
+### [Money & Investing App](/showcase/banking/)
+
+A consumer banking and investing app for the fictional **Vela** — five accounts,
+a year of statement, an exchange desk, a small portfolio and the cards that
+spend it.
+
+The two consoles above are workstation software. This one is a phone app that
+also has to work on a desktop screen, which is a different set of demands: two
+screens swap their markup rather than their styling below 720px, every touch
+target grows under `pointer: coarse`, and a statement grouped by day has to
+re-derive each day's total whenever a filter changes what is under the heading.
+
+Five builds, all single-page or static. The plain-HTML one answers the same
+media queries with no framework to re-render it.

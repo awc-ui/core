@@ -466,6 +466,7 @@ export default defineConfig({
             { label: 'Overview', link: '/showcase/' },
             { label: 'Credit Risk Console', link: '/showcase/credit-risk/' },
             { label: 'Wealth Management Console', link: '/showcase/wealth/' },
+            { label: 'Money & Investing App', link: '/showcase/banking/' },
           ],
         },
         {

@@ -1,0 +1,94 @@
+---
+title: Money & Investing App
+description: "A consumer banking and investing app for the fictional Vela — accounts, a year of statement, an exchange desk, a portfolio and the cards that spend it, in the framework of your choice."
+---
+
+**Vela is the app you open to answer one question: can I afford this?** Balances,
+what went out this month, what is due next, and what the portfolio did while you
+were not looking — and it is built entirely from AWC UI components.
+
+{/*
+  The call to action is an `<a>`, not `md-button`: the component navigates on
+  click but renders no anchor and exposes `role="button"`, so middle-click,
+  ⌘-click and "copy link address" all stop working. Same reasoning as the
+  credit-risk page — see the longer note there.
+*/}
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 28px 0;">
+  <a href="/showcase/banking/react/" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border-radius: 999px; background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); font: var(--md-sys-typescale-label-large-font); text-decoration: none;">Open the application</a>
+  <span style="font: var(--md-sys-typescale-body-small-font); color: var(--md-sys-color-on-surface-variant);">Switch framework, theme, density, direction and language from inside the app.</span>
+</div>
+
+## The five builds
+
+All five are live, and the control bar switches between them without losing your
+place. Every number, date, string, derived series and table layout comes from
+`@awc-ui/showcase-kit`, so the only thing that differs between them is the view
+layer — which is what makes two screenshots comparable evidence.
+
+| Build | Open | How it renders | Where the language lives |
+|---|---|---|---|
+| **HTML** | [/html/](/showcase/banking/html/) | Static pages, written at build time — no framework at all | **In the URL** — a page per locale |
+| **React** | [/react/](/showcase/banking/react/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+| **Vue** | [/vue/](/showcase/banking/vue/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+| **Angular** | [/angular/](/showcase/banking/angular/) | Single-page app — client-rendered only | Client state — switches in place |
+| **Svelte** | [/svelte/](/showcase/banking/svelte/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+
+:::note[This one is a phone app on a desktop screen]
+The other two consoles are workstation software: a nine-column table is the
+right shape for both of them, and neither has to survive a 390px viewport. This
+one does, and that is the reason it is here.
+
+Two screens change their MARKUP rather than their styling below 720px — the
+statement's filters collapse into a disclosure, and the holdings table becomes a
+list — because rendering both and hiding one would leave a 1040px table in every
+phone's accessibility tree. Every touch target grows to 48px under
+`pointer: coarse`. The plain-HTML build has to answer the same media query with
+no framework to re-render it, which it does by keeping the phone layout in a
+`<template>` and moving the live nodes into it.
+:::
+
+## What you can drill into
+
+| Screen | What it shows | Where it leads |
+|---|---|---|
+| **Home** | Net worth, balance and this month's spend against last, the five accounts with the vault's progress, the balance curve, the budget, and what is due next | An account, or the statement |
+| **Transactions** | A year of statement — 652 movements grouped by day, each day carrying its own net, behind a period and three filters and a search | Nothing: the statement is the leaf |
+| **Exchange** | An order ticket that prices EUR, USD, GBP and RON against each other — mid rate, the spread, the fee, the net — with the pair's 30-day history beside it | Nothing: the ticket is the leaf |
+| **Invest** | A portfolio of 7 holdings over 10 instruments, its allocation ring and its curve, a buy/sell ticket, the watchlist and the trade history | An instrument |
+| **Analytics** | Where the month went: the category ring, income against spend across twelve months, five budgets with their trends, and the merchants behind them | Nothing |
+| **Cards** | Five cards, one detail at a time — freeze, three spending controls, the monthly limit and what that card spent | Nothing |
+
+## What it is really demonstrating
+
+Consumer banking was chosen because it asks for the things the two consoles next
+door do not: a **phone-first layout**, a **statement** rather than a table, and
+**state that changes the fixture's own values**.
+
+- **The statement is grouped, not paged.** A day heading carries that day's net,
+  so a filter cannot just hide rows — every heading has to be re-derived from
+  what survived, which is a different problem from re-sorting a table.
+- **Four filters and a search over 652 rows.** Account, category, status and a
+  debounced search, all of them the kit's own `getTransactions()` call, so the
+  five builds cannot each filter slightly differently.
+- **Two tickets that re-price as you type.** The exchange desk and the trade
+  ticket both hold a number field, both estimate through the kit, and both gate
+  their submit with a single stated reason rather than silently doing nothing.
+- **The cards screen changes things.** Freezing a card, flipping a control — held
+  as overrides over the frozen fixture, so a reload is a reset, and a frozen
+  card's spending controls go moot rather than staying live and inert.
+- **Three languages including a right-to-left one.** English, Romanian and
+  Arabic, with real translated content — and every signed figure wrapped in
+  `<bdi>`, because a leading `+` is bidi-neutral and RTL moves it to the other
+  end of the number.
+
+## Fictional data
+
+Vela, its account holder, merchants, instruments and prices are invented. The
+figures are internally consistent — the statement is the source of truth and
+every balance is back-solved from it, so the accounts, the monthly flows, the
+budgets and the category ring all reconcile to the same 652 movements — but no
+real institution, person or security is represented.
+
+Every date is measured from a fixed reporting date of **31 August 2026**, not
+from the clock, so the screens say the same thing today as they will next year.
