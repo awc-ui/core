@@ -2218,6 +2218,23 @@ a {
  * rather than by measurement — a comment that wraps, or a narrower column, both
  * change the row's height and neither moves the stroke off the avatars.
  *
+ * THE STROKE IS CENTRED ON EACH AVATAR'S CENTRE LINE, and getting that right
+ * takes a pixel of correction on both axes that is easy to miss and shows up
+ * the moment anyone looks at this at 2x.
+ *
+ * A stroke has WIDTH, so an offset that names where it STARTS puts its centre
+ * half a stroke further on. The vertical is 2px wide at `inset-inline-start:
+ * 27px`, which occupies 27–29 and centres on 28 — the avatar's centre. Written
+ * as 28 it occupied 28–30 and centred on 29, a pixel to the right of the circle
+ * it is supposed to hang from. The horizontal has the same problem one axis
+ * over, and a subtler cause: it is the box's `border-block-end`, and a border
+ * sits INSIDE its box, so a box of exactly 50% puts the border's centre a pixel
+ * ABOVE the avatar's. Hence `calc(50% + 1px)`, and the extra pixel of
+ * `inline-size` that keeps the arm ending where it did.
+ *
+ * The two errors pointed opposite ways — right at the top, up at the bottom —
+ * which is why the shape read as lopsided rather than simply misplaced.
+ *
  * IT TOUCHES BOTH CIRCLES, and 2px of that is deliberate overlap at each end.
  * It first stopped 4px clear of each avatar — symmetric, measured, and still
  * read as a mark that happened to sit near two circles rather than as one
@@ -2259,21 +2276,27 @@ md-list-item:has(+ md-list-item[data-reply])::after {
      avatar and +10px is 2px INSIDE it — see the overlap note above. */
   inset-block-start: calc(50% + 10px);
   inset-block-end: -2px;
-  inset-inline-start: 28px;
+  /* 27, NOT 28 — see the centring note above. The avatar's centre is 28 and
+     the stroke is 2px wide, so it has to START a pixel before it to sit ON it. */
+  inset-inline-start: 27px;
   inline-size: 2px;
   background: var(--md-sys-color-outline-variant);
   pointer-events: none;
 }
 
 /* And the elbow: down to this row's avatar centre, then in to meet it. The arm
-   runs 28 → 58 and the avatar starts at 56, so it finishes 2px inside. */
+   ends at 58 and the avatar starts at 56, so it finishes 2px inside.
+
+   The box is a pixel WIDER and a pixel TALLER than the run it draws, because
+   what draws is its two borders and a border sits INSIDE the box — see the
+   centring note above. */
 md-list-item[data-reply]::before {
   content: '';
   position: absolute;
   inset-block-start: 0;
-  inset-inline-start: 28px;
-  inline-size: 30px;
-  block-size: 50%;
+  inset-inline-start: 27px;
+  inline-size: 31px;
+  block-size: calc(50% + 1px);
   border-inline-start: 2px solid var(--md-sys-color-outline-variant);
   border-block-end: 2px solid var(--md-sys-color-outline-variant);
   border-end-start-radius: 10px;
