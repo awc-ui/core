@@ -65,3 +65,19 @@ re-derive each day's total whenever a filter changes what is under the heading.
 
 Five builds, all single-page or static. The plain-HTML one answers the same
 media queries with no framework to re-render it.
+
+### [Photos & People](/showcase/social/)
+
+A social photo app for the fictional **Lyra** — a feed of pictures from the
+people you follow, an explore grid over everything else, a four-step composer,
+notifications and the profiles behind all of it.
+
+The other three are figures. This one is content: pictures with aspect ratios
+that must not reflow, captions and comments that are themselves translated
+rather than being fixture strings, timestamps in "3h ago" measured against a
+fixed instant, and a carousel whose pager sits inside a card whose picture is a
+link. Every image is SVG artwork generated from the seed and inlined — not one
+photograph, no CDN, and every one of them carries a written description.
+
+Five builds, all single-page or static. The plain-HTML one keeps its state
+swaps in `<template>` elements, because a hidden element is still an element.

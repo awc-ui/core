@@ -1,0 +1,116 @@
+---
+title: Photos & People
+description: "A social photo app for the fictional Lyra — a feed, an explore grid, a composer, notifications and profiles, in the framework of your choice."
+---
+
+**Lyra is the app the other three are not: content rather than figures.** A feed
+of pictures from people you follow, a grid of everything else, a composer that
+argues back, and the profiles behind all of it — built entirely from AWC UI
+components.
+
+{/*
+  The call to action is an `<a>`, not `md-button`: the component navigates on
+  click but renders no anchor and exposes `role="button"`, so middle-click,
+  ⌘-click and "copy link address" all stop working. Same reasoning as the
+  credit-risk page — see the longer note there.
+*/}
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 28px 0;">
+  <a href="/showcase/social/react/" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border-radius: 999px; background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); font: var(--md-sys-typescale-label-large-font); text-decoration: none;">Open the application</a>
+  <span style="font: var(--md-sys-typescale-body-small-font); color: var(--md-sys-color-on-surface-variant);">Switch framework, theme, density, direction and language from inside the app.</span>
+</div>
+
+## The five builds
+
+All five are live, and the control bar switches between them without losing your
+place. Every person, caption, comment, timestamp and picture comes from
+`@awc-ui/showcase-kit`, so the only thing that differs between them is the view
+layer — which is what makes two screenshots comparable evidence.
+
+| Build | Open | How it renders | Where the language lives |
+|---|---|---|---|
+| **HTML** | [/html/](/showcase/social/html/) | Static pages, written at build time — no framework at all | **In the URL** — a page per locale |
+| **React** | [/react/](/showcase/social/react/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+| **Vue** | [/vue/](/showcase/social/vue/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+| **Angular** | [/angular/](/showcase/social/angular/) | Single-page app — client-rendered only | Client state — switches in place |
+| **Svelte** | [/svelte/](/showcase/social/svelte/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+
+:::note[Every picture is generated, and that is the interesting constraint]
+There is not one photograph in this app. All 66 images and all 24 portraits are
+SVG artwork generated from a single seed at fixture time and inlined as data
+URIs — ten families of them (arcs, dunes, orbits, prism, bloom, ridge, halo,
+tide, facet, strata), each scaled by its own hue and saturation.
+
+That is partly honesty: a showcase that shipped stock photography would be
+demonstrating a photo library, not a component library. But it is mostly what
+makes the thing testable. Nothing is fetched, so there is no network in the
+critical path and no CDN to go down; the artwork is byte-identical in every
+build, so the parity check compares pictures rather than placeholders; and every
+image is 128 kB of markup rather than a megabyte of JPEG.
+
+The consequence the app has to live with is that **every image needs a written
+description** — a generated abstract is not self-explanatory the way a
+photograph of a harbour is. So `altKey` is mandatory on the media record, and
+`verify-browser.mjs` fails the build if any picture in the feed carries an alt
+shorter than ten characters.
+:::
+
+## What you can drill into
+
+| Screen | What it shows | Where it leads |
+|---|---|---|
+| **Feed** | The story rail, then posts from the people you follow — newest first, twelve at a time, each with its pictures, its actions, its caption and the first comments | A post, or a person |
+| **Explore** | Everything on Lyra as a square-cropped grid, one tile in seven spanning two columns, behind ten topic facets and a search over people | A post |
+| **Create** | A four-step composer — pick a picture, write a caption, choose an audience, check it — with the preview live beside it the whole way | Nothing: nothing is ever posted |
+| **Activity** | Twenty notifications grouped by age, unread ones marked, each naming who did what to which post | A post, or a person |
+| **Profile** | Your own: the header, four counts, and three tabs over posts, saved and tagged | A post |
+| **Post** | One picture at full ratio with its thread beside it — comments in reading order, replies indented under what they answer, and a box to add one | A person |
+| **Person** | Somebody else's profile — the same header and grid, plus a follow button, minus the tabs that are yours rather than theirs | A post |
+
+## What it is really demonstrating
+
+A social app was chosen because it asks for the things the three consoles do
+not: **content instead of figures**, **pictures instead of tables**, and **a
+timeline measured in "3h ago" rather than in dates**.
+
+- **Relative time, against an instant rather than a clock.** Every timestamp is
+  rendered through `formatRelativeTime(at, REPORTING_INSTANT)`, so the feed says
+  the same thing today as it will next year — and the `<time datetime>` keeps the
+  real ISO instant, because "3h ago" is useless to anything parsing the page.
+- **A carousel that must not navigate.** The pager buttons sit inside a card
+  whose picture is a link to the post. Wrapping the frame put the buttons inside
+  the anchor, so paging to the next picture opened the post instead — a control
+  inside a link is broken twice over, and it is invisible to every check that
+  does not press it.
+- **Layout that cannot reflow.** Each image's aspect ratio travels on the record
+  and is applied before the picture decodes, because a feed that lets images size
+  themselves reflows every post below the one that just arrived.
+- **A stepper that refuses.** The composer vetoes its own step change on
+  `mdBeforeChange` — the cancelable one — so an empty step says why at the step
+  that is actually invalid, rather than at the end of four clicks.
+- **Overlays that carry their own contrast.** A duration badge or a pinned mark
+  sits on a picture, not on a surface, so it cannot borrow the page's colours.
+  Every one of them pairs `inverse-surface` with `inverse-on-surface`, and the
+  browser test asserts the pairing rather than a hex value.
+- **Three languages including a right-to-left one, and the CONTENT is
+  translated** — which is the claim this vertical makes and the three consoles
+  do not. Captions, bios and comments are dictionary entries, not fixture
+  strings, so an Arabic reader gets an Arabic feed rather than Arabic chrome
+  around English prose.
+
+## Fictional people
+
+Lyra, its twenty-four people, their captions, bios and comments are invented,
+and this is the vertical where that warning is load-bearing: the three consoles
+invent a bank, this one invents PEOPLE, with faces and opinions. That is why the
+disclaimer sits in the app bar on every screen rather than at the bottom of one.
+No real person, place or account is represented, and none of the artwork depicts
+anyone.
+
+The fixture holds 42 posts over 66 pictures, 115 comments, 20 notifications and
+10 topics, all generated from one seed and internally consistent — a reply
+always answers a comment on the same post, every comment's author exists, and
+the counts on a profile reconcile with the posts under it.
+
+Every timestamp is measured from a fixed reporting instant of **30 September
+2026, 18:20 UTC**, not from the clock.
