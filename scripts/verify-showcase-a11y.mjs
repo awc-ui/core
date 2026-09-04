@@ -188,6 +188,37 @@ const EXPECTATIONS = {
      */
     badgeScreen: null,
   },
+  social: {
+    arabicLocale: 'ar',
+    /*
+     * NO SEVERITY MARKER, NO PAGED TABLE, NO SORTABLE TABLE — and no TABLE at
+     * all. This vertical has none of the shapes the three consoles share: it is
+     * pictures, names and times. Each assertion that names one of those shapes
+     * is switched off here rather than pointed at a screen where it would
+     * report a missing element as a defect.
+     */
+    listScreen: null,
+    severityWords: [],
+    markerChipCell: null,
+    paginatedScreen: null,
+    bookRows: null,
+    pageRows: null,
+    sortLabels: false,
+    footerScreen: '/profile/',
+    /** A post is the drill, and it renders the back affordance. */
+    detailScreen: '/p/post-02/',
+    /*
+     * NO CHART EITHER — and `null` rather than a selector that matches nothing,
+     * which is what this was at first and was wrong in the way this whole table
+     * exists to avoid. The check reads a chart's generated summary to prove the
+     * Arabic build is not falling through to an English default; pointed at a
+     * selector with nothing behind it, it reported "(none)" and "0/0" as two
+     * failures. A vertical with no chart has nothing to assert here, and the
+     * ordinary Arabic content checks beside it already cover the same claim.
+     */
+    summaryChart: null,
+    badgeScreen: null,
+  },
 };
 
 /**
@@ -345,7 +376,7 @@ for (const vertical of verticals) {
     {
       const p = await load(`${L}/${expect.arabicLocale}/`);
       const probe = await p.evaluate((summaryChart) => {
-        const area = document.querySelector(summaryChart);
+        const area = summaryChart ? document.querySelector(summaryChart) : null;
         const charts = [...document.querySelectorAll('md-bar-chart,md-line-chart,md-area-chart')];
         const plotRegions = charts.map((c) => {
           const region = c.shadowRoot?.querySelector('[role="application"]');
@@ -370,19 +401,23 @@ for (const vertical of verticals) {
       const ENGLISH_PLOT_DEFAULT = 'Use the arrow keys to move between points';
       const ENGLISH_SUMMARY_TAIL = /\b(Area|Line|Bar) chart\b/;
 
-      ok(
-        `${expect.summaryChart} summary is Arabic, not the generated English`,
-        arabic.test(probe.areaLabel) && !ENGLISH_SUMMARY_TAIL.test(probe.areaLabel),
-        probe.areaLabel.slice(0, 60),
-      );
-      const named = probe.plotRegions.filter(
-        (l) => arabic.test(l) && !l.includes(ENGLISH_PLOT_DEFAULT),
-      );
-      ok(
-        'every chart plot region is named in Arabic',
-        probe.plotRegions.length > 0 && named.length === probe.plotRegions.length,
-        `${named.length}/${probe.plotRegions.length}`,
-      );
+      if (expect.summaryChart) {
+        ok(
+          `${expect.summaryChart} summary is Arabic, not the generated English`,
+          arabic.test(probe.areaLabel) && !ENGLISH_SUMMARY_TAIL.test(probe.areaLabel),
+          probe.areaLabel.slice(0, 60),
+        );
+        const named = probe.plotRegions.filter(
+          (l) => arabic.test(l) && !l.includes(ENGLISH_PLOT_DEFAULT),
+        );
+        ok(
+          'every chart plot region is named in Arabic',
+          probe.plotRegions.length > 0 && named.length === probe.plotRegions.length,
+          `${named.length}/${probe.plotRegions.length}`,
+        );
+      } else {
+        ok('(this vertical draws no charts — skipped)', true);
+      }
       await p.close();
     }
     {
@@ -566,7 +601,17 @@ for (const vertical of verticals) {
       sortLabelActive: [...document.querySelectorAll('md-table-sort-label')].filter((l) => l.hasAttribute('active')).length,
     }));
     console.log('\n[overview] dead markup');
-    ok('md-sparkline no longer ships a locale attribute', probe.sparklineLocale === false);
+    /*
+     * `!== true`, not `=== false`. `querySelector(...)?.hasAttribute()` is
+     * `undefined` when there is no sparkline on the screen, and a vertical that
+     * draws none cannot be shipping a dead attribute on one. Testing for the
+     * literal `false` turned "this app has no sparklines" into a failure.
+     */
+    ok(
+      'md-sparkline no longer ships a locale attribute',
+      probe.sparklineLocale !== true,
+      probe.sparklineLocale === undefined ? '(no sparkline on this screen)' : '',
+    );
     // The table pushes active back in after hydration — that is the point.
     // Skipped where a vertical sorts nothing: an assertion that a screen with no
     // sortable table has no active sort label passes having tested nothing.

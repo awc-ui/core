@@ -128,6 +128,21 @@ const SCREENS = {
     '/accounts/acc-eur/',
     '/invest/ins-01/',
   ],
+  /*
+   * Five destinations plus the two drills. `/p/post-02/` is a carousel (the
+   * kind with the most moving parts) and `/people/ada.lind/` is somebody the
+   * viewer does not follow, so the follow button's un-pressed state is the one
+   * measured.
+   */
+  social: [
+    '/',
+    '/explore/',
+    '/create/',
+    '/activity/',
+    '/profile/',
+    '/p/post-02/',
+    '/people/ada.lind/',
+  ],
 };
 
 /**

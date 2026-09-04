@@ -60,6 +60,10 @@ const SCREENS = {
      and the cards — because an enhancement is the thing most likely to reach
      for an inline style or an eval that a policy then refuses. */
   banking: ['/', '/transactions/', '/exchange/', '/invest/', '/cards/', '/accounts/acc-eur/'],
+  /* Every screen that draws an image, which here is every screen: the whole
+     vertical rides on `data:image/svg+xml` URIs, and `img-src 'self' data:` is
+     the clause that either permits that or does not. */
+  social: ['/', '/explore/', '/create/', '/activity/', '/profile/', '/p/post-02/'],
 };
 
 const POLICY = [

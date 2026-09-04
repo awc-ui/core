@@ -115,6 +115,37 @@ export const VERTICALS = Object.freeze([
     reference: 'react',
     localeRouted: Object.freeze(['html']),
   },
+  {
+    id: 'social',
+    title: 'Lyra — Photos & People',
+    /*
+     * ONE BUILD SO FAR, and this list says so rather than promising five.
+     *
+     * The vertical is headed for the same five as the two above — no SSR, for
+     * the same reason: a personal feed has no anonymous first paint to
+     * server-render. `builds` is what the deploy's pre-flight, the parity check
+     * and the a11y check all read, so an entry was added here only as each port
+     * landed — listing one that does not exist yet turns every one of those
+     * red on a build that is simply not written. All five are here now.
+     */
+    builds: Object.freeze([
+      { framework: 'react', output: 'dist' },
+      { framework: 'vue', output: 'dist' },
+      { framework: 'angular', output: 'dist/browser' },
+      { framework: 'svelte', output: 'dist' },
+      { framework: 'html', output: 'dist' },
+    ]),
+    reference: 'react',
+    /*
+     * `localeRouted` MUST NEVER NAME A FRAMEWORK `builds` DOES NOT, and that
+     * had to be learned rather than reasoned: naming `html` here while `builds`
+     * still held only `react` sent verify-showcase-a11y at
+     * `/showcase/social/html/ar/`, which 404s — and three assertions then
+     * failed against the "not found" page rather than skipping. The two moved
+     * together when the HTML port landed.
+     */
+    localeRouted: Object.freeze(['html']),
+  },
 ]);
 
 export const verticalById = (id) => VERTICALS.find((v) => v.id === id);

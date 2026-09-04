@@ -290,17 +290,28 @@ ok('ro has exactly the same keys', Object.keys(I.ro).length === keys.length && k
 ok('ar has exactly the same keys', Object.keys(I.ar).length === keys.length && keys.every((k) => k in I.ar));
 /*
  * Identical strings are legitimate for acronyms (RWA, PD, DSCR, KYC, AUM, YTD,
- * ETF), rating glyphs, pure placeholders, and the handful of words Romanian
- * spells exactly as English does — `client`, `contact`, `segment`, `instrument`,
- * `sector`, `global`, `total`. Everything else must actually be translated.
+ * ETF, IBAN), rating glyphs, brand names, pure placeholders, and the handful of
+ * words Romanian spells exactly as English does — `client`, `contact`,
+ * `segment`, `instrument`, `sector`, `global`, `total`, `card`, `plan`,
+ * `transport`, `transfer`, `dividend`, `standard`, `personal`, `creator`,
+ * `business`, `video`, `film`, `design`, `sport`. Everything else must actually
+ * be translated.
  *
- * The wealth arm is spelled out rather than folded into the credit-risk one:
- * the two verticals have same-named keys that mean different things, and a
- * pattern loose enough to cover both would stop catching an untranslated string
- * in either.
+ * EACH VERTICAL'S ARM IS SPELLED OUT rather than folded into the others': they
+ * have same-named keys that mean different things (`table.total`,
+ * `common.na`), and a pattern loose enough to cover all four would stop
+ * catching an untranslated string in any of them. It is a long regex on
+ * purpose.
+ *
+ * Note which locale each entry is for. Romanian shares most of these with
+ * English because the two languages genuinely share the word; Arabic shares
+ * only `common.na` (an em-dash) and `social.common.characters` (a
+ * placeholder-only string), and everything else in the banking and social arms
+ * below IS translated into Arabic — they are listed here for the ro comparison
+ * and the ar one simply never reaches them.
  */
 const IDENTICAL_OK =
-  /^(rating\.|table\.(id|pd|lgd|ead|rwa|rwaDelta|ccf|rating|sector|margin|type)$|kpi\.(expectedLossRatio|.*\.short)$|covenant\..*\.abbr$|dock\.(framework|accent)$|unit\.times$|common\.(na|total)$|screen\.counterparty\.title$|wealth\.(screen\.household\.title|kpi\..*\.short|table\.(client|contact|kyc|segment|aum|ytd|instrument|sector)|segment\.family-office|instrumentType\.etf|region\.global|entity\.client|common\.(na|total)|proposal\.(step\.client|instruments\.meta|time\.(am|pm)|ok))$)/;
+  /^(rating\.|table\.(id|pd|lgd|ead|rwa|rwaDelta|ccf|rating|sector|margin|type)$|kpi\.(expectedLossRatio|.*\.short)$|covenant\..*\.abbr$|dock\.(framework|accent)$|unit\.times$|common\.(na|total)$|screen\.counterparty\.title$|wealth\.(screen\.household\.title|kpi\..*\.short|table\.(client|contact|kyc|segment|aum|ytd|instrument|sector)|segment\.family-office|instrumentType\.etf|region\.global|entity\.client|common\.(na|total)|proposal\.(step\.client|instruments\.meta|time\.(am|pm)|ok))$|banking\.(app\.brand|table\.(card|iban|spread|plan|costBasis|total)|category\.transport|cardKind\.virtual|txnType\.(card|transfer|dividend)|instrumentKind\.etf|plan\.(standard|plus|metal)|control\.contactless|common\.na|unit\.endingIn)$|social\.(app\.(brand|demo)|accountKind\.(personal|creator|business)|postKind\.video|common\.(na|characters)|topic\.(film|design|sport))$)/;
 const roSame = keys.filter((k) => I.ro[k] === I.en[k] && !IDENTICAL_OK.test(k));
 const arSame = keys.filter((k) => I.ar[k] === I.en[k] && !IDENTICAL_OK.test(k));
 ok('every ro string that should differ from en does', roSame.length === 0, roSame.join(',') || 'none');
