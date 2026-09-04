@@ -7,7 +7,7 @@
  *
  *   node scripts/serve.mjs [port]
  *
- * The default port is 4332 — the credit-risk HTML build's 4322 plus the +10
+ * The default port is 4342 — the credit-risk HTML build's 4322 plus the +10
  * this vertical adds throughout, so both can serve at once.
  *
  * The mount is read from the kit rather than written down again here, which is
@@ -21,7 +21,7 @@ import { BASE_PATH } from '../src/lib/i18n.mjs';
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const root = join(appRoot, 'dist');
-const port = Number(process.argv[2] || 4332);
+const port = Number(process.argv[2] || 4342);
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
