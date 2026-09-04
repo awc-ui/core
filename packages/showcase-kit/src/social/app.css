@@ -2202,33 +2202,6 @@ a {
  * is why the row also carries the word "Reply" as visually-hidden text in its
  * trailing slot. The line is for the eye; the word is for everything else.
  */
-md-list-item[data-reply] {
-  position: relative;
-  padding-inline-start: var(--md-sys-spacing-inset-2xl, 40px);
-}
-
-/*
- * ONE ELEMENT, TWO BORDERS AND A CORNER RADIUS — an elbow, not two bars.
- *
- * EVERY NUMBER HERE WAS MEASURED, not guessed, and the first attempt shows why
- * it had to be: at 16px in with a 10px arm the line stopped 24px short of the
- * avatar and read as an unrelated mark in the margin rather than as a
- * connector.
- *
- * Taken off the rendered rows at 1400px, relative to a row's own inline start:
- *   · the PARENT's avatar centre sits at 28px — where the vertical belongs, so
- *     the stroke appears to drop out of the comment it answers;
- *   · this row's avatar starts at 56px, so the arm runs 28 → 54 and stops just
- *     shy of touching it;
- *   · this row's avatar centre is 36px down, which is where the turn happens.
- *
- * It starts 2px above the row to cover the gap between adjacent list items, so
- * the stroke looks continuous with the row above rather than beginning in mid
- * air.
- *
- * Both borders and the radius are LOGICAL, so the whole elbow mirrors itself in
- * Arabic with no second rule — verified in the RTL build.
- */
 /*
  * THE REPLY CONNECTOR — an elbow out of the parent's avatar into the reply's.
  *
@@ -2240,9 +2213,19 @@ md-list-item[data-reply] {
  * stroke then started inside the parent's avatar and turned above the reply's.
  *
  * An avatar is vertically centred in its row whatever the row's height, so 50%
- * IS the avatar's centre line and `calc(50% + 16px)` is 4px below its bottom
- * edge (12px radius + 4px of air). Expressed that way the connector is correct
- * at every row height by construction rather than by measurement.
+ * IS the avatar's centre line, and every offset here is expressed from it.
+ * That is what makes the connector correct at every row height by construction
+ * rather than by measurement — a comment that wraps, or a narrower column, both
+ * change the row's height and neither moves the stroke off the avatars.
+ *
+ * IT TOUCHES BOTH CIRCLES, and 2px of that is deliberate overlap at each end.
+ * It first stopped 4px clear of each avatar — symmetric, measured, and still
+ * read as a mark that happened to sit near two circles rather than as one
+ * stroke joining them. Ending exactly on the rim is not enough either: an
+ * avatar is a circle and the stroke meets it at a single tangent point, so a
+ * fractional device-pixel ratio leaves a hairline of background showing. Two
+ * pixels under the rim, with the avatar painting over them, joins cleanly at
+ * any zoom and any DPR.
  *
  * IT TAKES TWO HALVES because `md-list-item` sets `overflow: clip` on its host,
  * so neither row can draw into the other. Both are released to `visible` here;
@@ -2268,11 +2251,13 @@ md-list-item[data-reply] {
   padding-inline-start: var(--md-sys-spacing-inset-2xl, 40px);
 }
 
-/* The tail: from 4px under the parent's avatar to just past the row's bottom. */
+/* The tail: out of the parent's avatar, down to just past the row's bottom. */
 md-list-item:has(+ md-list-item[data-reply])::after {
   content: '';
   position: absolute;
-  inset-block-start: calc(50% + 16px);
+  /* 50% is the avatar's centre line, so +12px is its bottom edge on a 24px
+     avatar and +10px is 2px INSIDE it — see the overlap note above. */
+  inset-block-start: calc(50% + 10px);
   inset-block-end: -2px;
   inset-inline-start: 28px;
   inline-size: 2px;
@@ -2280,19 +2265,37 @@ md-list-item:has(+ md-list-item[data-reply])::after {
   pointer-events: none;
 }
 
-/* And the elbow: down to this row's avatar centre, then in towards it. The arm
-   stops 4px short of the avatar, matching the 4px above. */
+/* And the elbow: down to this row's avatar centre, then in to meet it. The arm
+   runs 28 → 58 and the avatar starts at 56, so it finishes 2px inside. */
 md-list-item[data-reply]::before {
   content: '';
   position: absolute;
   inset-block-start: 0;
   inset-inline-start: 28px;
-  inline-size: 24px;
+  inline-size: 30px;
   block-size: 50%;
   border-inline-start: 2px solid var(--md-sys-color-outline-variant);
   border-block-end: 2px solid var(--md-sys-color-outline-variant);
   border-end-start-radius: 10px;
   pointer-events: none;
+}
+
+/*
+ * AND THE AVATARS PAINT OVER THE OVERLAP.
+ *
+ * Both ends of the stroke run 2px under a circle, so the avatar has to be above
+ * it or those 2px show as a stub crossing the rim. `.avatar` is already
+ * `position: relative` for its story ring, which puts it after the pseudo
+ * elements in paint order — but only by tree order, which is too fragile a
+ * thing to leave a visible artefact resting on. `z-index` states it.
+ *
+ * Scoped to the two rows that draw a connector rather than set on `.avatar`
+ * globally: `z-index` on a positioned element opens a stacking context, and
+ * there is no reason to open one under every avatar in the app to fix two.
+ */
+md-list-item[data-reply] .avatar,
+md-list-item:has(+ md-list-item[data-reply]) .avatar {
+  z-index: 1;
 }
 
 md-list-item[data-mine] {
