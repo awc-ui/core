@@ -16,10 +16,12 @@ import {
   formatDate,
   formatNumber,
   formatPercent,
+  formatRelativeTime,
   type CurrencyOptions,
   type DateStyle,
   type NumberOptions,
   type PercentOptions,
+  type RelativeTimeOptions,
 } from './format';
 
 /** All three dictionaries, keyed by locale code. */
@@ -68,6 +70,19 @@ export interface Translator {
   formatNumber(value: number, options?: NumberOptions): string;
   formatPercent(value: number, options?: PercentOptions): string;
   formatDate(value: string | Date, style?: DateStyle): string;
+  /**
+   * How long before `now` an instant was, in words.
+   *
+   * `now` IS AN ARGUMENT and has no default. A feed timestamp that read the
+   * clock would make every screenshot, every parity comparison and every test
+   * disagree with itself a minute later — so the caller passes its vertical's
+   * frozen reporting instant, and the answer is the same forever.
+   */
+  formatRelativeTime(
+    value: string | Date,
+    now: string | Date,
+    options?: RelativeTimeOptions,
+  ): string;
 }
 
 const cache = new Map<LocaleCode, Translator>();
@@ -108,6 +123,9 @@ export function createTranslator(locale: string): Translator {
     },
     formatDate(value, style) {
       return formatDate(value, code, style);
+    },
+    formatRelativeTime(value, now, options) {
+      return formatRelativeTime(value, now, code, options);
     },
   };
 

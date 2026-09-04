@@ -179,6 +179,110 @@ export function formatDate(
   return dateFormatter(locale, options).format(new Date(ms));
 }
 
+/* ------------------------------------------------------- relative time */
+
+/**
+ * Cached like the other two, and keyed the same way.
+ *
+ * `Intl.RelativeTimeFormat` takes no `timeZone` — it formats a DIFFERENCE, and
+ * a difference has no zone. What has to be deterministic is the pair of
+ * instants it is given, which is why `formatRelativeTime` refuses to read the
+ * clock and takes the reference instant as an argument.
+ */
+const relativeCache = new Map<string, Intl.RelativeTimeFormat>();
+
+function relativeFormatter(
+  locale: string,
+  options: Intl.RelativeTimeFormatOptions,
+): Intl.RelativeTimeFormat {
+  const tag = intlTag(locale);
+  const key = `${tag}|${JSON.stringify(options)}`;
+  let formatter = relativeCache.get(key);
+  if (!formatter) {
+    formatter = new Intl.RelativeTimeFormat(tag, options);
+    relativeCache.set(key, formatter);
+  }
+  return formatter;
+}
+
+/**
+ * The thresholds, largest unit first. A difference is reported in the largest
+ * unit that fits, which is what "3 weeks ago" rather than "21 days ago" means.
+ *
+ * WEEKS ARE IN THE LADDER AND MONTHS ARE APPROXIMATE, deliberately. A feed
+ * timestamp is a reading aid, not an accounting figure: nobody checks whether
+ * "2 months ago" is 61 days or 59. Anything that needs the exact day has the
+ * ISO instant beside it — every timestamp this renders is inside a `<time>`
+ * whose `datetime` carries it.
+ */
+const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
+  ['year', 365 * 24 * 3600],
+  ['month', 30 * 24 * 3600],
+  ['week', 7 * 24 * 3600],
+  ['day', 24 * 3600],
+  ['hour', 3600],
+  ['minute', 60],
+  ['second', 1],
+];
+
+export interface RelativeTimeOptions {
+  /**
+   * `'narrow'` gives the feed form — "3h ago" in English, and whatever the
+   * locale's own narrow form is elsewhere. It is NOT an abbreviation rule this
+   * code applies: Arabic has no "3h", and `Intl` knows that and Romanian's
+   * "acum 3 ore" too. Defaults to `'narrow'`.
+   */
+  style?: Intl.RelativeTimeFormatStyle;
+  /**
+   * `'auto'` lets the locale say "yesterday" instead of "1 day ago", which is
+   * what a reader expects and what every locale in this showcase has a word
+   * for. Defaults to `'auto'`.
+   */
+  numeric?: Intl.RelativeTimeFormatNumeric;
+}
+
+/**
+ * How long before `now` an instant was, in words.
+ *
+ * BOTH INSTANTS ARE ARGUMENTS. There is no `Date.now()` here and there must not
+ * be: the showcase is a frozen fixture measured from a frozen reporting
+ * instant, and a formatter that read the clock would make every screenshot,
+ * every parity comparison and every test disagree with itself a minute later.
+ *
+ * A future instant formats as a future — `Intl` handles the sign — but nothing
+ * in the fixtures is dated after the reporting instant, so that path exists for
+ * correctness rather than for use.
+ */
+export function formatRelativeTime(
+  value: string | Date,
+  now: string | Date,
+  locale: string,
+  options: RelativeTimeOptions = {},
+): string {
+  const then = typeof value === 'string' ? Date.parse(value) : value.getTime();
+  const reference = typeof now === 'string' ? Date.parse(now) : now.getTime();
+  if (Number.isNaN(then) || Number.isNaN(reference)) {
+    return typeof value === 'string' ? value : value.toISOString();
+  }
+
+  const seconds = Math.round((then - reference) / 1000);
+  const magnitude = Math.abs(seconds);
+  const formatter = relativeFormatter(locale, {
+    numeric: options.numeric ?? 'auto',
+    style: options.style ?? 'narrow',
+  });
+
+  for (const [unit, size] of RELATIVE_UNITS) {
+    if (magnitude >= size) {
+      // Truncate rather than round: 89 minutes is "1h ago", not "2h ago". A
+      // rounded-up timestamp claims a post is older than it is, and on a feed
+      // sorted by recency that reads as the order being wrong.
+      return formatter.format(Math.trunc(seconds / size), unit);
+    }
+  }
+  return formatter.format(0, 'second');
+}
+
 /* ------------------------------------------------------------ convenience */
 
 /** Format basis points: `formatBps(275, 'en')` → `275`. Pair with `unit.bps`. */
@@ -198,4 +302,5 @@ export function formatRatio(value: number, locale: string, digits = 2): string {
 export function clearFormatterCache(): void {
   numberCache.clear();
   dateCache.clear();
+  relativeCache.clear();
 }

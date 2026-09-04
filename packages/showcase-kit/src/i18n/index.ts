@@ -30,6 +30,13 @@ export {
   formatNumber,
   formatPercent,
   formatRatio,
+  formatRelativeTime,
   intlTag,
 } from './format';
-export type { CurrencyOptions, DateStyle, NumberOptions, PercentOptions } from './format';
+export type {
+  CurrencyOptions,
+  DateStyle,
+  NumberOptions,
+  PercentOptions,
+  RelativeTimeOptions,
+} from './format';

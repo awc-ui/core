@@ -1305,9 +1305,368 @@ const banking = {
  * this ordering means a future collision fails loudly in review rather than
  * quietly at runtime.
  */
-export const en = { ...core, ...wealth, ...banking };
+/**
+ * The fourth vertical: "Lyra — Photos & People".
+ *
+ * Namespaced `social.…`, so it cannot collide with the other three — all four
+ * have an `app.brand`, a `nav.label` and an `action.share` that mean different
+ * things.
+ *
+ * WHY SO MUCH OF THIS IS CONTENT RATHER THAN CHROME. The other verticals
+ * translate labels and let the fixture carry the nouns: a counterparty's legal
+ * name is the same string in every locale. This app's content IS prose — a
+ * caption, a bio, a comment — and prose that stayed English in the Arabic build
+ * would make the whole locale look like a veneer over an English product. So
+ * thirty captions, twenty-six comments, twenty-four bios and fourteen place
+ * names are all here, in all three languages.
+ *
+ * The generator picks these by NUMBER (`social.caption.07`), and the counts in
+ * `scripts/generate-social-fixture.mjs` must match what exists here. Adding a
+ * caption means raising `CAPTIONS` there and adding the string to all three
+ * dictionaries in the same change.
+ */
+const social = {
+  /* ------------------------------------------------------------- product */
+  'social.app.brand': 'Lyra',
+  'social.app.title': 'Photos & People',
+  'social.app.demo': 'Demo',
+  'social.app.demoNotice':
+    'Lyra, everyone in it and every picture are invented. No real person, account or photograph is represented.',
+  'social.app.viewer': 'Signed in as {name}',
+  'social.app.asOf': 'As of {date}',
 
-/** Every message key the showcase may ask for, both verticals. */
+  /* ---------------------------------------------------------- navigation */
+  'social.nav.label': 'Sections',
+  'social.nav.menu': 'Menu',
+  'social.nav.toolbar': 'Screen actions',
+  'social.nav.feed': 'Feed',
+  'social.nav.explore': 'Explore',
+  'social.nav.create': 'Create',
+  'social.nav.activity': 'Activity',
+  'social.nav.profile': 'Profile',
+  'social.nav.breadcrumb': 'Breadcrumb',
+
+  /* ------------------------------------------------------------- screens */
+  'social.screen.feed.title': 'Feed',
+  'social.screen.feed.subtitle': 'From the people you follow',
+  'social.screen.explore.title': 'Explore',
+  'social.screen.explore.subtitle': 'Everything on Lyra, by topic',
+  'social.screen.create.title': 'New post',
+  'social.screen.create.subtitle': 'Pick a picture, write a caption, choose who sees it',
+  'social.screen.activity.title': 'Activity',
+  'social.screen.activity.subtitle': 'Likes, comments and new followers',
+  'social.screen.profile.title': 'Your profile',
+  'social.screen.profile.subtitle': 'Your posts, and what they did',
+  'social.screen.post.title': 'Post',
+  'social.screen.post.subtitle': 'By {name}',
+  'social.screen.person.subtitle': 'Their posts, and what you have in common',
+  'social.screen.notFound.title': 'Not here',
+  'social.screen.notFound.subtitle': 'That post or person does not exist.',
+
+  /* -------------------------------------------------------------- panels */
+  'social.panel.stories': 'Stories',
+  'social.panel.suggested': 'People to follow',
+  'social.panel.comments': 'Comments',
+  'social.panel.topics': 'Topics',
+  'social.panel.media': 'Choose a picture',
+  'social.panel.caption': 'Caption',
+  'social.panel.audience': 'Who can see this',
+  'social.panel.tagged': 'Tag people',
+  'social.panel.preview': 'Preview',
+  'social.panel.posts': 'Posts',
+  'social.panel.saved': 'Saved',
+  'social.panel.tagged.short': 'Tagged',
+  'social.panel.about': 'About',
+  'social.panel.details': 'Details',
+
+  /* ------------------------------------------------------------- actions */
+  'social.action.follow': 'Follow',
+  'social.action.followBack': 'Follow back',
+  'social.action.following': 'Following',
+  'social.action.friends': 'Friends',
+  'social.action.message': 'Message',
+  'social.action.like': 'Like',
+  'social.action.unlike': 'Unlike',
+  'social.action.comment': 'Comment',
+  'social.action.reply': 'Reply',
+  'social.action.share': 'Share',
+  'social.action.save': 'Save',
+  'social.action.unsave': 'Remove from saved',
+  'social.action.viewAll': 'View all',
+  'social.action.viewComments': 'View all {count} comments',
+  'social.action.viewProfile': 'View profile',
+  'social.action.openPost': 'Open post',
+  'social.action.search': 'Search people and topics',
+  'social.action.clearFilters': 'Clear',
+  'social.action.markAllRead': 'Mark all as read',
+  'social.action.more': 'More',
+  'social.action.copyLink': 'Copy link',
+  'social.action.report': 'Report',
+  'social.action.close': 'Close',
+  'social.action.cancel': 'Cancel',
+  'social.action.post': 'Post',
+  'social.action.addStory': 'Add to your story',
+  'social.action.previous': 'Previous picture',
+  'social.action.next': 'Next picture',
+
+  /* -------------------------------------------------------- relationship */
+  'social.relationship.self': 'You',
+  'social.relationship.none': 'Not following',
+  'social.relationship.follower': 'Follows you',
+  'social.relationship.following': 'You follow them',
+  'social.relationship.mutual': 'You follow each other',
+
+  'social.accountKind.personal': 'Personal',
+  'social.accountKind.creator': 'Creator',
+  'social.accountKind.business': 'Business',
+  'social.verified': 'Verified',
+
+  /* ------------------------------------------------------------ post kind */
+  'social.postKind.photo': 'Photo',
+  'social.postKind.carousel': 'Multiple pictures',
+  'social.postKind.video': 'Video',
+  'social.postKind.carouselCount': '{index} of {total}',
+
+  /* ------------------------------------------------------------- activity */
+  'social.activityKind.like': 'Like',
+  'social.activityKind.comment': 'Comment',
+  'social.activityKind.follow': 'New follower',
+  'social.activityKind.mention': 'Mention',
+  'social.activityKind.tag': 'Tag',
+  'social.activity.like': '{name} liked your post',
+  'social.activity.comment': '{name} commented on your post',
+  'social.activity.follow': '{name} started following you',
+  'social.activity.mention': '{name} mentioned you in a comment',
+  'social.activity.tag': '{name} tagged you in a post',
+  'social.activity.unread': '{count} unread',
+
+  /* ----------------------------------------------------------------- when */
+  'social.when.today': 'Today',
+  'social.when.thisWeek': 'This week',
+  'social.when.thisMonth': 'This month',
+  'social.when.earlier': 'Earlier',
+
+  /* ------------------------------------------------------------- audience */
+  'social.audience.public': 'Everyone',
+  'social.audience.publicHint': 'Anyone on Lyra, including people who do not follow you',
+  'social.audience.followers': 'Followers',
+  'social.audience.followersHint': 'The {count} people who follow you',
+  'social.audience.close': 'Close friends',
+  'social.audience.closeHint': 'The short list you keep for the people you actually know',
+  'social.audience.private': 'Only you',
+  'social.audience.privateHint': 'Saved to your profile, visible to nobody else',
+
+  /* --------------------------------------------------------------- counts */
+  'social.count.posts': 'Posts',
+  'social.count.followers': 'Followers',
+  'social.count.following': 'Following',
+  'social.count.likes': 'Likes',
+  'social.count.comments': 'Comments',
+  'social.count.shares': 'Shares',
+  'social.count.saves': 'Saves',
+  'social.count.averageLikes': 'Average likes',
+  'social.count.people': 'People',
+  'social.count.results': '{count} results',
+
+  /* --------------------------------------------------------------- common */
+  'social.common.all': 'All',
+  'social.common.na': '—',
+  'social.common.showing': 'Showing {shown} of {total}',
+  'social.common.and': 'and',
+  'social.common.characters': '{count} / {max}',
+  'social.common.caughtUp': "You're all caught up",
+  'social.common.caughtUpHint': 'You have seen every new post from the people you follow.',
+  'social.common.edited': 'Edited',
+  'social.common.you': 'You',
+
+  /* ---------------------------------------------------------------- hints */
+  'social.hint.commentsOff': 'Comments are turned off for this post.',
+  'social.hint.needMedia': 'Choose a picture first.',
+  'social.hint.needCaption': 'Write a caption first.',
+  'social.hint.storyUnseen': 'New story',
+  'social.hint.storySeen': 'Story',
+  'social.hint.yourStory': 'Your story',
+  'social.hint.tapToTag': 'Tag anyone who is in the picture, or who should see it.',
+  'social.hint.captionLimit': 'Up to {max} characters.',
+  'social.hint.videoDuration': '{seconds} seconds',
+  'social.hint.postedRelative': 'Posted {when}',
+  'social.hint.gridSpan': 'Featured',
+
+  /* THE STEPPER'S OWN WORDS. `md-stepper` defaults every one of these to
+     English — "Continue", "Back", "Step", "of" — and they are rendered inside
+     its shadow root, so an untranslated stepper shows English buttons under a
+     Romanian heading. Same trap as a chart's `label-plot`. */
+  'social.stepper.step': 'Step',
+  'social.stepper.of': 'of',
+  'social.stepper.completed': 'completed',
+  'social.stepper.current': 'current',
+  'social.stepper.error': 'error',
+  'social.stepper.optional': 'Optional',
+  'social.stepper.next': 'Continue',
+  'social.stepper.back': 'Back',
+  'social.stepper.finish': 'Post it',
+  'social.hint.pickPicture': 'Twelve to choose from. There is no upload here — see the note on the panel.',
+
+  /* -------------------------------------------------------------- empties */
+  'social.empty.feed': 'Nothing new',
+  'social.empty.feedHint': 'Follow a few more people and their posts will show up here.',
+  'social.empty.explore': 'Nothing matches',
+  'social.empty.exploreHint': 'Try a different topic, or clear the search.',
+  'social.empty.activity': 'No activity yet',
+  'social.empty.posts': 'No posts yet',
+  'social.empty.saved': 'Nothing saved',
+  'social.empty.savedHint': 'Save a post and it will be here.',
+  'social.empty.comments': 'No comments yet',
+  'social.empty.commentsHint': 'Be the first to say something.',
+  'social.empty.tagged': 'Not tagged in anything',
+
+  /* ------------------------------------------------------------- messages */
+  'social.msg.posted': 'Posted',
+  'social.msg.liked': 'Liked',
+  'social.msg.saved': 'Saved',
+  'social.msg.unsaved': 'Removed from saved',
+  'social.msg.followed': 'Following {name}',
+  'social.msg.unfollowed': 'Unfollowed {name}',
+  'social.msg.linkCopied': 'Link copied',
+  'social.msg.allRead': 'All caught up',
+  'social.msg.reported': 'Thanks — we will take a look',
+
+  /* --------------------------------------------------------------- topics */
+  'social.topic.architecture': 'Architecture',
+  'social.topic.film': 'Film',
+  'social.topic.nature': 'Nature',
+  'social.topic.design': 'Design',
+  'social.topic.food': 'Food',
+  'social.topic.travel': 'Travel',
+  'social.topic.music': 'Music',
+  'social.topic.sport': 'Sport',
+  'social.topic.craft': 'Making',
+  'social.topic.city': 'City',
+
+  /* ------------------------------------------------------------ alt text */
+  /*
+   * These describe the GENERATED ARTWORK, which is what is actually on screen.
+   * They are not stand-ins for a photograph nobody uploaded: each names the
+   * shape family the fixture drew, so a screen-reader user is told the same
+   * thing a sighted one sees, and two posts sound different from each other.
+   */
+  'social.alt.arcs': 'Abstract artwork: concentric arcs over a two-tone gradient',
+  'social.alt.dunes': 'Abstract artwork: layered dunes in deepening bands',
+  'social.alt.orbits': 'Abstract artwork: small circles spaced around a thin ring',
+  'social.alt.prism': 'Abstract artwork: overlapping translucent triangles',
+  'social.alt.bloom': 'Abstract artwork: soft overlapping circles, like light through cloud',
+  'social.alt.ridge': 'Abstract artwork: leaning stripes, lightening left to right',
+  'social.alt.halo': 'Abstract artwork: a bright disc inside two soft rings',
+  'social.alt.tide': 'Abstract artwork: five drawn waves crossing the frame',
+  'social.alt.facet': 'Abstract artwork: scattered angular shards',
+  'social.alt.strata': 'Abstract artwork: horizontal bands, dark at the top',
+
+  /* --------------------------------------------------------------- places */
+  'social.place.01': 'Lisbon, Portugal',
+  'social.place.02': 'Bucharest, Romania',
+  'social.place.03': 'Dubai, United Arab Emirates',
+  'social.place.04': 'Copenhagen, Denmark',
+  'social.place.05': 'Marseille, France',
+  'social.place.06': 'Kraków, Poland',
+  'social.place.07': 'Tangier, Morocco',
+  'social.place.08': 'Rotterdam, Netherlands',
+  'social.place.09': 'Cluj-Napoca, Romania',
+  'social.place.10': 'Beirut, Lebanon',
+  'social.place.11': 'Helsinki, Finland',
+  'social.place.12': 'Naples, Italy',
+  'social.place.13': 'Cádiz, Spain',
+  'social.place.14': 'Thessaloniki, Greece',
+
+  /* ----------------------------------------------------------------- bios */
+  'social.bio.01': 'Photographs of buildings that are nearly finished.',
+  'social.bio.02': 'Cooking badly, in public.',
+  'social.bio.03': 'Sound engineer. Mostly rooms, sometimes music.',
+  'social.bio.04': 'I walk the same route and it is different every time.',
+  'social.bio.05': 'Ceramics. Two kilns, no patience.',
+  'social.bio.06': 'Cyclist. Slow, but consistently.',
+  'social.bio.07': 'Type design and long lunches.',
+  'social.bio.08': 'Documenting my grandmother’s recipes before they go.',
+  'social.bio.09': 'Landscape, mostly. Weather permitting.',
+  'social.bio.10': 'Bookbinder. Ask me about glue.',
+  'social.bio.11': 'Trying to notice things.',
+  'social.bio.12': 'Runs a very small print studio.',
+  'social.bio.13': 'Film photography. Yes, it is more expensive.',
+  'social.bio.14': 'Gardener. The balcony counts.',
+  'social.bio.15': 'Furniture, badly joined, well loved.',
+  'social.bio.16': 'I take pictures of doors. It got out of hand.',
+  'social.bio.17': 'Mountains at the weekend, spreadsheets in the week.',
+  'social.bio.18': 'Making a record. Slowly.',
+  'social.bio.19': 'Textiles, dye, and a lot of ruined shirts.',
+  'social.bio.20': 'Architect. Off duty here.',
+  'social.bio.21': 'Coffee, bread, and the walk between them.',
+  'social.bio.22': 'Illustrator. Deadlines are a suggestion.',
+  'social.bio.23': 'Swimming outdoors all year. It is fine.',
+  'social.bio.24': 'Here for the light.',
+
+  /* ------------------------------------------------------------- captions */
+  'social.caption.01': 'Golden hour lasted about four minutes and I used all of them.',
+  'social.caption.02': 'Third attempt. The first two are not for public consumption.',
+  'social.caption.03': 'Found this on a wall behind a bus stop.',
+  'social.caption.04': 'The light does this for maybe a week in September and then stops.',
+  'social.caption.05': 'Everything in this frame is older than the country it is in.',
+  'social.caption.06': 'Kiln opened. Two survived.',
+  'social.caption.07': 'Walked eleven kilometres for a sandwich. Worth it.',
+  'social.caption.08': 'Someone painted over it. Glad I got here first.',
+  'social.caption.09': 'Rain all week, then this for an hour.',
+  'social.caption.10': 'New print run. Ink still tacky.',
+  'social.caption.11': 'I have photographed this staircase eight times and I will do it again.',
+  'social.caption.12': 'My grandmother made this every Sunday. Mine is close.',
+  'social.caption.13': 'Six months of Saturdays.',
+  'social.caption.14': 'Shot on a camera older than me, with film older than that.',
+  'social.caption.15': 'Off the main road, which is the whole point.',
+  'social.caption.16': 'Fixed the wobble. Only took a year.',
+  'social.caption.17': 'It is not a good photograph but it was a very good morning.',
+  'social.caption.18': 'The sea was 11 degrees and I have never felt better.',
+  'social.caption.19': 'This colour does not exist indoors.',
+  'social.caption.20': 'Last one from the trip, I promise.',
+  'social.caption.21': 'Half of these went in the bin. The other half are here.',
+  'social.caption.22': 'Nothing happened all day and it was excellent.',
+  'social.caption.23': 'Borrowed lens. Now I want the lens.',
+  'social.caption.24': 'Every building on this street is a different century.',
+  'social.caption.25': 'Cut, dyed, ruined, started again.',
+  'social.caption.26': 'The neighbours think I am strange. The neighbours are correct.',
+  'social.caption.27': 'Up at five for this. Would do it again, reluctantly.',
+  'social.caption.28': 'A market, an argument, and the best tomatoes of my life.',
+  'social.caption.29': 'Finished the record. Now the hard part.',
+  'social.caption.30': 'Same bench, one year apart.',
+
+  /* ------------------------------------------------------------- comments */
+  'social.comment.01': 'This is beautiful.',
+  'social.comment.02': 'Where is this?',
+  'social.comment.03': 'The colours here are unreal.',
+  'social.comment.04': 'Okay this one is going on my wall.',
+  'social.comment.05': 'I know exactly which corner this is.',
+  'social.comment.06': 'What did you shoot this on?',
+  'social.comment.07': 'Stop it, this is too good.',
+  'social.comment.08': 'The composition though.',
+  'social.comment.09': 'Been waiting for you to post again.',
+  'social.comment.10': 'I walked past here last week and saw nothing.',
+  'social.comment.11': 'Recipe or it did not happen.',
+  'social.comment.12': 'This made my morning.',
+  'social.comment.13': 'How long did that take?',
+  'social.comment.14': 'Genuinely one of your best.',
+  'social.comment.15': 'The light in the top left. Perfect.',
+  'social.comment.16': 'Taking notes.',
+  'social.comment.17': 'Absolutely not fair.',
+  'social.comment.18': 'Adding this to the list.',
+  'social.comment.19': 'You have a real eye for this.',
+  'social.comment.20': 'I would like to live inside this photograph.',
+  'social.comment.21': 'Please tell me there are more from this roll.',
+  'social.comment.22': 'This is the one.',
+  'social.comment.23': 'Every time.',
+  'social.comment.24': 'Ohhh the texture.',
+  'social.comment.25': 'Saved, obviously.',
+  'social.comment.26': 'Come back and shoot the other side.',
+} as const;
+
+export const en = { ...core, ...wealth, ...banking, ...social };
+
+/** Every message key the showcase may ask for, across all four verticals. */
 export type MessageKey = keyof typeof en;
 
 /**
