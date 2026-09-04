@@ -1590,11 +1590,41 @@ md-list-item[data-status='declined'] .txn-row__amount {
  * sits between the columns; below the breakpoint the whole thing stacks and the
  * control moves to the end of the first field, which is where a thumb is.
  */
+/*
+ * THE SWAP BUTTON ALIGNS TO THE FIELD BOXES, NOT TO THE ROW.
+ *
+ * `align-items: end` was right when only one select carried supporting text —
+ * it bottom-aligned two boxes of different heights. Both carry it now, so they
+ * are always the same height and that reason is gone; what `end` still did was
+ * align the BUTTON to the bottom of the row, which is below the supporting
+ * text. Measured at 1440px: the select is 76px (a 56px box with 20px of
+ * supporting text under it), so the box centre is 28px above the row's bottom
+ * and the button sat 28px low.
+ *
+ * Start-aligned and nudged by half the difference puts it on the box's own
+ * centre line. The two lengths are read through custom properties so that if
+ * the components ever expose them the rule follows — an unknown property name
+ * in `calc` falls back rather than breaking, which is why this is safe where an
+ * invented ATTRIBUTE would not be.
+ */
 .ticket {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  align-items: end;
+  align-items: start;
   gap: var(--md-sys-spacing-gap-lg, 16px);
+}
+
+/*
+ * THE CHILD COMBINATOR IS LOAD-BEARING. The button is wrapped in `md-tooltip`,
+ * so a descendant selector applies the nudge to the wrapper AND to the button
+ * inside it — 16px instead of 8, measured, and the button ends up as far below
+ * the box centre as it started. Only the grid item may be moved.
+ */
+.ticket > md-tooltip,
+.ticket > .ticket__swap {
+  margin-block-start: calc(
+    (var(--md-select-container-height, 56px) - var(--md-icon-button-container-size, 40px)) / 2
+  );
 }
 
 @media (max-width: 719px) {
@@ -1603,8 +1633,21 @@ md-list-item[data-status='declined'] .txn-row__amount {
     justify-items: stretch;
   }
 
-  .ticket__swap {
+  /*
+   * CENTRED ON THE GRID ITEM, WHICH IS THE TOOLTIP.
+   *
+   * `justify-self` on `.ticket__swap` did nothing visible: the button is
+   * wrapped in `md-tooltip`, so the tooltip is the grid item and it stretched
+   * to the full column while the button sat at its start — the arrow ended up
+   * hard against the left edge of a stacked ticket. Same wrapper trap as the
+   * margin above, in the other axis.
+   */
+  .ticket > md-tooltip,
+  .ticket > .ticket__swap {
     justify-self: center;
+    /* Stacked, the swap sits between the two fields rather than beside them,
+       so the box-centring nudge would just add a gap. */
+    margin-block-start: 0;
   }
 }
 
