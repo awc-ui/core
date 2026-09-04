@@ -1,0 +1,31 @@
+{
+  "name": "@awc-ui/showcase-social-svelte",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Lyra \u2014 Photos & People, the Svelte flavour of the AWC UI social showcase vertical: Vite, Svelte 4, a hand-rolled router, no meta-framework",
+  "scripts": {
+    "sync-runtime": "node scripts/sync-runtime.mjs",
+    "dev": "pnpm sync-runtime && vite",
+    "build": "pnpm sync-runtime && vite build && node scripts/fan-out-routes.mjs",
+    "preview": "vite preview",
+    "serve": "node scripts/serve-dist.mjs",
+    "lint": "svelte-check --tsconfig ./tsconfig.json --threshold error",
+    "verify": "node scripts/verify-browser.mjs"
+  },
+  "dependencies": {
+    "@awc-ui/core": "workspace:*",
+    "@awc-ui/showcase-kit": "workspace:*",
+    "@fontsource/roboto": "^5.3.0",
+    "material-symbols": "^0.40.2"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^3.1.2",
+    "@types/node": "^20.14.0",
+    "puppeteer": "^24.0.0",
+    "svelte": "^4.2.19",
+    "svelte-check": "^3.8.6",
+    "typescript": "^5.4.0",
+    "vite": "^5.4.11"
+  }
+}
