@@ -352,13 +352,26 @@
   block-size: 6px;
 }
 
-/* Centred on the icon corner, like md-tab and md-navigation-rail-tab. The old
-   `inset-inline-start: 50%` + 4px margin anchored the badge to the middle of the
-   icon box and shoved it right by a fixed amount, so a wider badge grew to the
-   right instead of straddling the corner. */
+/* Centred on the icon corner. The old `inset-inline-start: 50%` + 4px margin
+   anchored the badge to the middle of the icon box and shoved it right by a
+   fixed amount, so a wider badge grew to the right instead of straddling the
+   corner.
+
+   THE CORNER IS THE GLYPH'S, NOT THE CONTAINER'S — which is what `inset: 0`
+   still got wrong. The badge's positioning parent is the icon CONTAINER, and
+   that is the active-indicator pill: `--_indicator-w` is 56px against a 24px
+   glyph, so a badge pinned to its right edge floats 16px clear of the icon and
+   reads as a separate object beside it rather than as a mark on it. Measured
+   on a real bar: icon right edge at 285px, badge starting at 290px, a visible
+   gap between them.
+
+   Insetting by half the difference on each axis puts the badge's anchor exactly
+   on the glyph's top-right corner, which `translate(50%, -50%)` then straddles.
+   Both lengths are the component's own resolved variables, so this follows the
+   density scale rather than pinning a number that is only right at density 0. */
 .md-navigation-tab__badge--large {
-  inset-block-start: 0;
-  inset-inline-end: 0;
+  inset-block-start: calc((var(--_indicator-h) - var(--_icon-size)) / 2);
+  inset-inline-end: calc((var(--_indicator-w) - var(--_icon-size)) / 2);
   transform: translate(50%, -50%);
   min-inline-size: 16px;
   block-size: 16px;
