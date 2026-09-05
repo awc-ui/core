@@ -79,7 +79,11 @@ export const Playground: Story = {
       sw.click();
       await waitFor(() => expect(sw.selected).toBe(true));
       await waitFor(() => expect(sw.getAttribute('aria-checked')).toBe('true'));
-      expect(sw.classList.contains('md-switch--selected')).toBe(true);
+      // The class comes from the RENDER (md-switch.tsx sets it in the class
+      // object), so it lands a tick after the property and the attribute — both
+      // of which are written synchronously by the click handler. Asserting it
+      // bare passed locally and failed roughly one CI run in ten.
+      await waitFor(() => expect(sw.classList.contains('md-switch--selected')).toBe(true));
     });
 
     await step('Space toggles it back off (WAI-ARIA switch pattern)', async () => {
