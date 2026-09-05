@@ -285,7 +285,14 @@ jobs:
             echo "versions already at v$VERSION on main; skipping bump commit"
           else
             git commit -m "chore(release): v$VERSION"
-            git pull --rebase origin main
+            # --autostash because the tree is DIRTY at this point and a plain
+            # rebase refuses to start: the rebuild step regenerates dist/ and
+            # ng-packagr restamps packages/angular/dist/package.json. Without
+            # it the step dies with "cannot pull with rebase: You have unstaged
+            # changes" AFTER npm publish has already succeeded, leaving the
+            # registry ahead of the repo with no bump commit, tag or release —
+            # which is exactly what happened on v1.0.0-beta.9.
+            git pull --rebase --autostash origin main
             git push origin HEAD:main
           fi
           # A re-run of an already-tagged version (e.g. to publish packages
