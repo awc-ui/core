@@ -1,6 +1,6 @@
-# @awc-ui/vue
+# Vue Web Components and Nuxt SSR — @awc-ui/vue
 
-Vue 3 bindings for [AWC UI](https://www.npmjs.com/package/@awc-ui/core) — Material Design 3 web components.
+Typed Vue 3 components for [AWC UI](https://www.npmjs.com/package/@awc-ui/core) — accessible Material Design 3 Web Components with automatic registration and Nuxt SSR support.
 
 ## Install
 
@@ -16,18 +16,18 @@ Register the plugin once (it loads the custom elements and teaches Vue's compile
 
 ```ts
 // main.ts
-import { createApp } from 'vue';
-import { AwcUiVue } from '@awc-ui/vue';
-import App from './App.vue';
+import { createApp } from "vue";
+import { AwcUiVue } from "@awc-ui/vue";
+import App from "./App.vue";
 
-createApp(App).use(AwcUiVue).mount('#app');
+createApp(App).use(AwcUiVue).mount("#app");
 ```
 
 Then use the typed component wrappers:
 
 ```vue
 <script setup lang="ts">
-import { MdButton } from '@awc-ui/vue';
+import { MdButton } from "@awc-ui/vue";
 </script>
 
 <template>
@@ -37,4 +37,6 @@ import { MdButton } from '@awc-ui/vue';
 
 ## Documentation
 
-Component docs, theming, and per-component manuals ship with [`@awc-ui/core`](https://www.npmjs.com/package/@awc-ui/core).
+[Vue and Nuxt SSR guide](https://awc-ui.dev/frameworks/vue/) · [All component docs](https://awc-ui.dev/components/)
+
+Component manuals and AI-readable documentation also ship with [`@awc-ui/core`](https://www.npmjs.com/package/@awc-ui/core).

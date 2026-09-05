@@ -18,16 +18,20 @@ import stats from "../data/stats.json";
       </div>
 
       <h1 class="awc-hero__title" data-awc-reveal>
-        The Material Design 3 library
-        <span class="awc-hero__title-accent">for the modern web.</span>
+        Material Design 3 Web Components
+        <span class="awc-hero__title-accent">for every framework.</span>
       </h1>
 
       <p class="awc-hero__lede" data-awc-reveal>
         AWC UI &mdash; Advanced Web Components UI &mdash; is an open-source
         Material&nbsp;Design&nbsp;3 component library, currently in beta, built
-        with Stencil.js on standard web components. Use
-        the same components in React, Angular, Vue, Svelte, or plain HTML, with
-        typed wrappers and server-side rendering support for each.
+        with Stencil.js on standard Web Components. Use the same components in
+        <a class="awc-hero__lede-link" href="/frameworks/react/">React</a>,
+        <a class="awc-hero__lede-link" href="/frameworks/angular/">Angular</a>,
+        <a class="awc-hero__lede-link" href="/frameworks/vue/">Vue</a>,
+        <a class="awc-hero__lede-link" href="/frameworks/svelte/">Svelte</a>,
+        or plain HTML, with typed wrappers and
+        <a class="awc-hero__lede-link" href="/frameworks/ssr/">SSR for Next.js, Nuxt, SvelteKit, and Angular</a>.
       </p>
 
       <div class="awc-hero__actions" data-awc-reveal>
@@ -638,6 +642,17 @@ import stats from "../data/stats.json";
     margin: 0 0 2.25rem;
     max-inline-size: 580px;
     text-wrap: pretty;
+  }
+
+  .awc-hero__lede-link {
+    color: var(--md-sys-color-primary);
+    font-weight: 600;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
+
+  .awc-hero__lede-link:hover {
+    color: var(--md-sys-color-tertiary);
   }
 
   /* ============================================================

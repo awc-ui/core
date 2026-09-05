@@ -48,6 +48,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Generate documentation and package discovery metadata
+        run: pnpm generate:docs
+
       - name: Build @awc-ui/core
         # The build script chains scripts/fix-module-types.mjs, which stamps
         # dist/{esm,components}/package.json ("type": "module") and

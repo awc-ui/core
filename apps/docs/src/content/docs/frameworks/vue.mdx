@@ -1,0 +1,67 @@
+---
+title: Vue Components and Nuxt SSR
+description: Typed Vue 3 Material Design 3 Web Components with plugin registration, custom-element support, and server-side rendering for Nuxt 3.
+sidebar:
+  label: Vue + Nuxt SSR
+  order: 3
+---
+
+`@awc-ui/vue` provides typed **Vue 3 components** over AWC UI's accessible
+Material Design 3 Web Components. The plugin registers the custom elements and
+configures a straightforward Vue developer experience, while the core hydrate
+module enables **Nuxt SSR**.
+
+## Install Vue components
+
+```bash
+npm install @awc-ui/vue @awc-ui/core
+```
+
+Register the plugin once:
+
+```ts
+import { createApp } from "vue";
+import { AwcUiVue } from "@awc-ui/vue";
+import App from "./App.vue";
+
+createApp(App).use(AwcUiVue).mount("#app");
+```
+
+Use the typed wrappers in Vue templates:
+
+```vue
+<script setup lang="ts">
+import { MdButton, MdTextField } from "@awc-ui/vue";
+</script>
+
+<template>
+  <MdTextField label="Project name" required />
+  <MdButton variant="filled">Create project</MdButton>
+</template>
+```
+
+## Nuxt 3 server-side rendering
+
+For Nuxt, configure both Vue compilers to accept `md-*` custom elements and
+load the global tokens:
+
+```ts
+export default defineNuxtConfig({
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => tag.startsWith("md-"),
+    },
+  },
+  css: ["@awc-ui/core/css/tokens.css"],
+});
+```
+
+A client-only Nuxt plugin registers the elements. A Nitro render hook uses
+`@awc-ui/core/hydrate` to inject Declarative Shadow DOM into the server HTML.
+The complete pattern is implemented in the validated
+[Nuxt SSR reference app](https://github.com/awc-ui/core/tree/main/apps/example-nuxt)
+and the production-shaped
+[Nuxt showcase](https://github.com/awc-ui/core/tree/main/apps/showcase/credit-risk/nuxt).
+
+See the [Web Components SSR guide](/frameworks/ssr/) for the server transform
+and client hydration lifecycle.

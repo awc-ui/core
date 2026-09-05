@@ -1,0 +1,54 @@
+---
+title: Svelte Components and SvelteKit SSR
+description: Svelte 4 and 5 Material Design 3 Web Components with native custom-element support, client registration, and SvelteKit server rendering.
+sidebar:
+  label: Svelte + SvelteKit SSR
+  order: 4
+---
+
+`@awc-ui/svelte` connects Svelte 4 and Svelte 5 to AWC UI's accessible
+Material Design 3 Web Components. Svelte already understands custom elements,
+so the integration stays small, while `@awc-ui/core/hydrate` provides
+**SvelteKit SSR** with Declarative Shadow DOM.
+
+## Install Svelte components
+
+```bash
+npm install @awc-ui/svelte @awc-ui/core @awc-ui/tokens
+```
+
+Register the custom elements in a client-rendered Svelte application:
+
+```ts
+import { defineCustomElements } from "@awc-ui/svelte";
+
+defineCustomElements(window);
+```
+
+Then use native `md-*` elements in a Svelte component:
+
+```svelte
+<md-text-field label="Project name" required></md-text-field>
+<md-button variant="filled">Create project</md-button>
+```
+
+## SvelteKit server-side rendering
+
+Register components only in the browser:
+
+```ts
+import { browser } from "$app/environment";
+import { defineCustomElements } from "@awc-ui/svelte";
+
+if (browser) defineCustomElements(window);
+```
+
+In a SvelteKit server handle, post-process HTML containing `md-*` tags with
+`renderToString` from `@awc-ui/core/hydrate`. The result contains Declarative
+Shadow DOM and component styles before it reaches the browser.
+
+The repository includes a validated
+[SvelteKit SSR reference app](https://github.com/awc-ui/core/tree/main/apps/example-sveltekit)
+and a multi-route
+[SvelteKit showcase](https://github.com/awc-ui/core/tree/main/apps/showcase/credit-risk/sveltekit).
+See the [shared SSR guide](/frameworks/ssr/) for the complete transform.

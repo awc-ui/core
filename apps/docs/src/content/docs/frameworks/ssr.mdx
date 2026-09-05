@@ -1,0 +1,54 @@
+---
+title: Server-Side Rendering (SSR)
+description: Server-render AWC UI Web Components with Declarative Shadow DOM in Next.js, Angular SSR, Nuxt, SvelteKit, Astro, and Node.js.
+sidebar:
+  label: SSR overview
+  order: 5
+---
+
+AWC UI supports **server-side rendering (SSR)** for Web Components through
+`@awc-ui/core/hydrate`. The server emits Declarative Shadow DOM (DSD), including
+each component's shadow markup and styles, and the browser hydrates the same
+custom elements instead of replacing the first render.
+
+## SSR framework support
+
+| Framework          | Integration                                                           | Validated path                                                            |
+| ------------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| React / Next.js    | Import React components from `@awc-ui/react/server`                   | [React and Next.js SSR](/frameworks/react/)                               |
+| Angular            | Transform Angular SSR or prerendered HTML with `@awc-ui/core/hydrate` | [Angular SSR](/frameworks/angular/)                                       |
+| Vue / Nuxt         | Run the hydrate transform from a Nitro `render:html` hook             | [Vue and Nuxt SSR](/frameworks/vue/)                                      |
+| Svelte / SvelteKit | Run the hydrate transform from a SvelteKit server handle              | [SvelteKit SSR](/frameworks/svelte/)                                      |
+| Astro or Node.js   | Transform generated HTML with the framework-agnostic hydrate module   | [reference apps on GitHub](https://github.com/awc-ui/core/tree/main/apps) |
+
+## Framework-agnostic server transform
+
+For integrations without a dedicated server entry, transform the framework's
+rendered HTML before returning it:
+
+```ts
+import { renderToString } from "@awc-ui/core/hydrate";
+
+const { html: hydrated } = await renderToString(renderedHtml, {
+  fullDocument: renderedHtml.includes("<html"),
+  serializeShadowRoot: "declarative-shadow-dom",
+  removeScripts: false,
+  removeHtmlComments: false,
+});
+```
+
+Run this only when the response contains an `md-*` element. On the client,
+register AWC UI once with `@awc-ui/core/loader`, the framework package, or the
+React server wrapper. Load `@awc-ui/core/css/tokens.css` globally so system
+tokens are available outside every shadow root.
+
+## What SSR improves
+
+- Component structure and styles arrive in the initial HTML response.
+- Search engines and AI retrieval systems can inspect meaningful rendered markup.
+- Users avoid an unstyled custom-element flash while JavaScript loads.
+- Declarative Shadow DOM preserves encapsulation across the server/client boundary.
+
+The CI suite exercises SSR for every component, and the repository contains
+working Next.js, Nuxt, SvelteKit, Astro, and Angular SSR examples. For
+client-only applications, use the smaller `components-csr/*` build instead.

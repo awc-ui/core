@@ -1,0 +1,58 @@
+---
+title: Angular Components and Angular SSR
+description: Angular 17+ Material Design 3 Web Components with typed directives, ngModel, reactive forms, standalone setup, and Angular SSR support.
+sidebar:
+  label: Angular + SSR
+  order: 2
+---
+
+`@awc-ui/angular` provides **Angular components** and directives for AWC UI's
+accessible Material Design 3 Web Components. It supports Angular 17+,
+standalone applications, NgModules, `ngModel`, reactive forms, and **Angular
+SSR** or prerendered output.
+
+## Install Angular components
+
+```bash
+npm install @awc-ui/angular @awc-ui/core
+```
+
+For a standalone Angular application, register AWC UI during bootstrap:
+
+```ts
+import { importProvidersFrom } from "@angular/core";
+import { bootstrapApplication } from "@angular/platform-browser";
+import { AwcUiModule, provideAwcUi } from "@awc-ui/angular";
+
+bootstrapApplication(AppComponent, {
+  providers: [provideAwcUi(), importProvidersFrom(AwcUiModule)],
+});
+```
+
+The elements then work in Angular templates while the directives bridge
+properties, events, and Angular forms:
+
+```html
+<md-text-field
+  label="Email"
+  type="email"
+  required
+  [(ngModel)]="email"
+></md-text-field>
+<md-button variant="filled" type="submit">Continue</md-button>
+```
+
+## Angular SSR and prerendering
+
+Angular can server-render the surrounding application normally. AWC UI's
+`@awc-ui/core/hydrate` module then transforms the rendered `md-*` markup into
+Declarative Shadow DOM, preserving styles and content in the server response.
+On the client, `provideAwcUi()` registers the custom elements and hydrates that
+server-rendered output.
+
+The repository includes a validated
+[Angular SSR reference app](https://github.com/awc-ui/core/tree/main/apps/example-angular-ssr)
+and a multi-route
+[Angular SSR showcase](https://github.com/awc-ui/core/tree/main/apps/showcase/credit-risk/angular-ssr).
+Read the [shared SSR guide](/frameworks/ssr/) for the transform options and
+framework support matrix.

@@ -1,0 +1,74 @@
+---
+title: React Components and Next.js SSR
+description: Typed React 18+ Material Design 3 Web Components with tree-shaking, Declarative Shadow DOM, and a dedicated Next.js server-rendering entry.
+sidebar:
+  label: React + Next.js SSR
+  order: 1
+---
+
+`@awc-ui/react` provides typed **React components** over AWC UI's accessible
+Material Design 3 Web Components. It supports React 18+, per-component
+tree-shaking, client rendering, React server rendering, and **Next.js SSR**.
+
+## Install React components
+
+```bash
+npm install @awc-ui/react @awc-ui/core
+```
+
+For a client-rendered React application, import the typed wrapper:
+
+```tsx
+import { MdButton, MdTextField } from "@awc-ui/react";
+
+export function ProjectForm() {
+  return (
+    <form>
+      <MdTextField label="Project name" required />
+      <MdButton variant="filled" type="submit">
+        Create project
+      </MdButton>
+    </form>
+  );
+}
+```
+
+## Next.js SSR and React Server Components
+
+Use the server entry in a Next.js Server Component. It renders Declarative
+Shadow DOM on the server, so component styles are present in the first HTML
+response and the custom elements hydrate on the client.
+
+```tsx
+import { MdButton, MdCard } from "@awc-ui/react/server";
+
+export default function Page() {
+  return (
+    <MdCard variant="elevated">
+      <MdButton variant="filled">Server rendered</MdButton>
+    </MdCard>
+  );
+}
+```
+
+Load the global design tokens in the root layout:
+
+```tsx
+import "@awc-ui/core/css/tokens.css";
+```
+
+Allow Next.js to process the workspace packages:
+
+```js
+// next.config.mjs
+export default {
+  transpilePackages: ["@awc-ui/react", "@awc-ui/core"],
+};
+```
+
+The repository includes a validated
+[Next.js SSR reference app](https://github.com/awc-ui/core/tree/main/apps/example-next)
+and a production-shaped
+[Next.js showcase](https://github.com/awc-ui/core/tree/main/apps/showcase/credit-risk/next).
+See the shared [Web Components SSR guide](/frameworks/ssr/) for the rendering
+model and hydration contract.

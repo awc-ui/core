@@ -196,7 +196,8 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'AWC UI',
-      description: 'Advanced Web Components UI — Material Design 3 Web Components built with Stencil.js',
+      description:
+        'Material Design 3 Web Components for React, Angular, Vue, Svelte, Next.js SSR, Nuxt, SvelteKit, and Angular SSR',
       logo: {
         light: './src/assets/md3-logo-light.svg',
         dark: './src/assets/md3-logo-dark.svg',
@@ -410,6 +411,10 @@ export default defineConfig({
         {
           label: 'Getting Started',
           autogenerate: { directory: 'getting-started' },
+        },
+        {
+          label: 'Frameworks & SSR',
+          autogenerate: { directory: 'frameworks' },
         },
         {
           label: 'Theming',

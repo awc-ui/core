@@ -15,12 +15,10 @@
  */
 
 import type { APIRoute } from "astro";
-
-// @ts-ignore — Vite resolves ?raw at build time.
-import mainLlmRaw from "../../../../../main-llm.md?raw";
+import { mainLlmWeb } from "../../lib/llm-web";
 
 export const GET: APIRoute = () => {
-  return new Response(mainLlmRaw, {
+  return new Response(mainLlmWeb, {
     status: 200,
     headers: {
       "Content-Type": "text/markdown; charset=utf-8",

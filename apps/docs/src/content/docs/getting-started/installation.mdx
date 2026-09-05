@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: How to install AWC UI web components in your project
+description: Install AWC UI Web Components for HTML, React, Angular, Vue, or Svelte, with framework packages and SSR support for Next.js, Nuxt, and SvelteKit.
 sidebar:
   order: 1
 ---
@@ -46,12 +46,16 @@ Add these to your HTML `<head>` for icons and typography:
 <!-- Material Symbols Outlined — the icon font the library is built around.
      The four axis ranges are required: a default request returns a static
      instance and the FILL transition silently stops working. -->
-<link rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap">
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+/>
 
 <!-- Roboto (default MD3 body font) -->
-<link rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap">
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+/>
 ```
 
 :::caution[Subset the icon font for production]
@@ -62,8 +66,10 @@ you actually use with `icon_names` — Google Fonts then serves a subset font
 of a few kB with the same variable axes, so `FILL` transitions keep working:
 
 ```html
-<link rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,delete,menu,search&display=block">
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,delete,menu,search&display=block"
+/>
 ```
 
 Two rules: the `icon_names` list must be **alphabetically sorted** (the API
@@ -80,8 +86,8 @@ npm install material-icons material-symbols
 ```
 
 ```ts
-import 'material-icons/iconfont/material-icons.css';
-import 'material-symbols/outlined.css';
+import "material-icons/iconfont/material-icons.css";
+import "material-symbols/outlined.css";
 ```
 
 ## Component Registration
@@ -91,7 +97,7 @@ There are three ways to register components:
 ### Option A: Auto-register all (recommended)
 
 ```ts
-import '@awc-ui/core/define';
+import "@awc-ui/core/define";
 ```
 
 This registers every component and loads the AWC UI design-token stylesheet.
@@ -99,7 +105,7 @@ This registers every component and loads the AWC UI design-token stylesheet.
 ### Option B: Lazy-load via the loader
 
 ```ts
-import { defineCustomElements } from '@awc-ui/core/loader';
+import { defineCustomElements } from "@awc-ui/core/loader";
 defineCustomElements(window);
 ```
 
@@ -108,8 +114,8 @@ Components are registered on-demand when first encountered in the DOM.
 ### Option C: Per-component tree-shaking
 
 ```ts
-import '@awc-ui/core/components/md-button';
-import '@awc-ui/core/components/md-text-field';
+import "@awc-ui/core/components/md-button";
+import "@awc-ui/core/components/md-text-field";
 ```
 
 Only the imported components are included in your bundle.
@@ -119,7 +125,7 @@ Only the imported components are included in your bundle.
 The tokens CSS is automatically loaded with Option A. For Options B and C, import the tokens separately:
 
 ```ts
-import '@awc-ui/tokens/tokens.css';
+import "@awc-ui/tokens/tokens.css";
 ```
 
 This provides all the `--md-sys-*` CSS custom properties for colors, typography, shape, elevation, and motion.
@@ -135,8 +141,8 @@ lands, everything around it moves.
 Opt in to size floors that hold the space in advance:
 
 ```ts
-import '@awc-ui/core/css/tokens.css';
-import '@awc-ui/core/css/pre-upgrade.css';
+import "@awc-ui/core/css/tokens.css";
+import "@awc-ui/core/css/pre-upgrade.css";
 ```
 
 The sheet reserves the settled box of the components that carry page
@@ -166,5 +172,7 @@ shift that comes from a component having no size at all.
 ## Next Steps
 
 - [Quick Start](/getting-started/quick-start/) — build your first page with AWC UI components
-- [Components](/components/) — browse all 48 MD3 components, each with HTML, React, Angular, Vue, and Svelte tabs in-page
+- [Web Components](/frameworks/web-components/) — use custom elements in plain HTML or any framework
+- [React](/frameworks/react/), [Angular](/frameworks/angular/), [Vue](/frameworks/vue/), or [Svelte](/frameworks/svelte/) — framework-specific setup and SSR
+- [Components](/components/) — browse all 56 MD3 components, each with HTML, React, Angular, Vue, and Svelte tabs in-page
 - [Theming](/theming/overview/) — customize colors, shapes, and typography

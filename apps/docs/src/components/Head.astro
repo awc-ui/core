@@ -35,9 +35,83 @@
  *     pulls the components it uses.
  */
 import Default from '@astrojs/starlight/components/Head.astro';
+
+const { entry, head, lang } = Astro.locals.starlightRoute;
+const pathname = Astro.url.pathname;
+const isHome = pathname === '/';
+const isNotFound = pathname === '/404/';
+const componentMatch = pathname.match(/^\/components\/([^/]+)\/$/);
+const canonical = String(
+  head.find(({ tag, attrs }) => tag === 'link' && attrs?.rel === 'canonical')?.attrs?.href ??
+    new URL(pathname, 'https://awc-ui.dev'),
+);
+const description =
+  entry.data.description ??
+  'Accessible Material Design 3 Web Components for React, Angular, Vue, Svelte, and plain HTML.';
+const markdownAlternate = componentMatch
+  ? `${canonical}readme.md`
+  : 'https://awc-ui.dev/llm/awc-ui.main-llm.md';
+const markdownTitle = componentMatch
+  ? `${entry.data.title} component reference in Markdown`
+  : 'AWC UI LLM specification in Markdown';
+const frameworkKeywords = pathname.startsWith('/frameworks/react/')
+  ? ['React components', 'React Web Components', 'Next.js SSR', 'React SSR']
+  : pathname.startsWith('/frameworks/angular/')
+    ? ['Angular components', 'Angular Web Components', 'Angular SSR', 'Angular forms']
+    : pathname.startsWith('/frameworks/vue/')
+      ? ['Vue components', 'Vue Web Components', 'Nuxt SSR', 'Vue SSR']
+      : pathname.startsWith('/frameworks/svelte/')
+        ? ['Svelte components', 'Svelte Web Components', 'SvelteKit SSR', 'Svelte 5']
+        : pathname.startsWith('/frameworks/ssr/')
+          ? ['Web Components SSR', 'server-side rendering', 'Declarative Shadow DOM', 'Next.js', 'Nuxt', 'SvelteKit', 'Angular SSR']
+          : pathname.startsWith('/frameworks/web-components/')
+            ? ['Web Components', 'custom elements', 'Web Components library', 'Material Design 3']
+            : [];
+const articleKeywords = [
+  ...new Set(['AWC UI', 'Material Design 3', 'Web Components', ...frameworkKeywords]),
+];
+
+// Each Starlight content route is a first-class technical article. The home
+// page already carries its richer WebSite + SoftwareApplication graph in its
+// frontmatter, and the 404 must never advertise itself as indexable content.
+const articleJsonLd = !isHome && !isNotFound
+  ? JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'TechArticle',
+      '@id': `${canonical}#article`,
+      headline: entry.data.title,
+      description,
+      url: canonical,
+      mainEntityOfPage: canonical,
+      inLanguage: lang,
+      isPartOf: { '@id': 'https://awc-ui.dev/#website' },
+      about: { '@id': 'https://awc-ui.dev/#software' },
+      keywords: articleKeywords.join(', '),
+      publisher: {
+        '@type': 'Organization',
+        name: 'AWC UI',
+        url: 'https://awc-ui.dev/',
+      },
+    }).replace(/</g, '\\u003c')
+  : null;
 ---
 
 <Default><slot /></Default>
+
+<meta
+  name="robots"
+  content={isNotFound
+    ? 'noindex, follow'
+    : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'}
+/>
+<link rel="alternate" type="text/markdown" href={markdownAlternate} title={markdownTitle} />
+<link
+  rel="alternate"
+  type="text/plain"
+  href="https://awc-ui.dev/llms.txt"
+  title="AWC UI machine-readable documentation map"
+/>
+{articleJsonLd && <script type="application/ld+json" set:html={articleJsonLd} />}
 
 {/* is:inline + an absolute URL keeps Vite's hands off it. loader.js then
     resolves its sibling chunks relative to its OWN location under

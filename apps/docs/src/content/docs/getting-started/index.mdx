@@ -1,6 +1,6 @@
 ---
 title: Documentation
-description: Start here — install AWC UI, render your first Material Design 3 component, theme it with design tokens, and browse the full component set.
+description: Install AWC UI Web Components for React, Angular, Vue, Svelte, or HTML, then configure Next.js, Nuxt, SvelteKit, or Angular SSR.
 sidebar:
   label: Overview
   order: 0
@@ -31,7 +31,7 @@ npm install @awc-ui/core @awc-ui/tokens
 
 ```ts
 // Register every component + load the design tokens
-import '@awc-ui/core/define';
+import "@awc-ui/core/define";
 ```
 
 ```html
@@ -47,17 +47,27 @@ That's a real, accessible, themeable MD3 button — no build step, no wrapper re
   cards={[
     {
       title: "Installation",
-      description: "Add the packages, register components, and load the fonts. Covers HTML, React, Angular, Vue, and Svelte.",
+      description:
+        "Add the packages, register components, and load the fonts. Covers HTML, React, Angular, Vue, and Svelte.",
       href: "/getting-started/installation/",
       icon: "download",
       tone: "primary",
     },
     {
       title: "Quick Start",
-      description: "Render your first component, build a form, lay out cards, and flip on dark mode — in under five minutes.",
+      description:
+        "Render your first component, build a form, lay out cards, and flip on dark mode — in under five minutes.",
       href: "/getting-started/quick-start/",
       icon: "rocket_launch",
       tone: "tertiary",
+    },
+    {
+      title: "Frameworks & SSR",
+      description:
+        "Use Web Components with React, Angular, Vue, or Svelte, including Next.js, Nuxt, SvelteKit, and Angular SSR.",
+      href: "/frameworks/web-components/",
+      icon: "deployed_code",
+      tone: "secondary",
     },
   ]}
 />
@@ -69,21 +79,24 @@ That's a real, accessible, themeable MD3 button — no build step, no wrapper re
   cards={[
     {
       title: "Components",
-      description: "Browse all 56 components by category, each with live demos and per-framework code.",
+      description:
+        "Browse all 56 components by category, each with live demos and per-framework code.",
       href: "/components/",
       icon: "widgets",
       tone: "primary",
     },
     {
       title: "Theming",
-      description: "Recolor and reshape everything with 200+ MD3 design tokens and CSS parts.",
+      description:
+        "Recolor and reshape everything with 200+ MD3 design tokens and CSS parts.",
       href: "/theming/overview/",
       icon: "palette",
       tone: "tertiary",
     },
     {
       title: "Theme Generator",
-      description: "Generate a complete MD3 palette from a single seed color and export the tokens.",
+      description:
+        "Generate a complete MD3 palette from a single seed color and export the tokens.",
       href: "/theme-generator/",
       icon: "format_paint",
       tone: "secondary",
@@ -91,21 +104,24 @@ That's a real, accessible, themeable MD3 button — no build step, no wrapper re
     },
     {
       title: "Accessibility",
-      description: "WAI-ARIA roles, keyboard navigation, and focus management built into every component.",
+      description:
+        "WAI-ARIA roles, keyboard navigation, and focus management built into every component.",
       href: "/guides/accessibility/",
       icon: "accessibility_new",
       tone: "secondary",
     },
     {
       title: "RTL & i18n",
-      description: "CSS logical properties throughout. Drop components into any dir=\"rtl\" context.",
+      description:
+        'CSS logical properties throughout. Drop components into any dir="rtl" context.',
       href: "/guides/rtl/",
       icon: "format_textdirection_r_to_l",
       tone: "tertiary",
     },
     {
       title: "For AI Agents",
-      description: "An LLM manifest any coding assistant can consume to generate correct MD3 component code.",
+      description:
+        "An LLM manifest any coding assistant can consume to generate correct MD3 component code.",
       href: "/llm/",
       icon: "smart_toy",
       tone: "primary",

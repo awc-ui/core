@@ -1,0 +1,62 @@
+---
+title: Web Components UI Library
+description: Accessible Material Design 3 Web Components and custom elements for plain HTML, React, Angular, Vue, Svelte, and server-side rendering.
+sidebar:
+  label: Web Components
+  order: 0
+---
+
+AWC UI is an open-source **Web Components UI library** built with Stencil and
+the browser's Custom Elements, Shadow DOM, and form-associated element APIs.
+The same `md-*` elements work in plain HTML and in React, Angular, Vue, or
+Svelte without rebuilding the component implementation for each framework.
+
+## Install the Web Components
+
+```bash
+npm install @awc-ui/core @awc-ui/tokens
+```
+
+Register every custom element and load the Material Design 3 tokens:
+
+```ts
+import "@awc-ui/core/define";
+```
+
+Then use standards-based HTML:
+
+```html
+<md-button variant="filled" icon="add">Create project</md-button>
+<md-text-field label="Project name" required></md-text-field>
+```
+
+For smaller bundles, import only the Web Components you use:
+
+```ts
+import "@awc-ui/core/css/tokens.css";
+import { defineCustomElement as defineButton } from "@awc-ui/core/components/md-button";
+import { defineCustomElement as defineTextField } from "@awc-ui/core/components/md-text-field";
+
+defineButton();
+defineTextField();
+```
+
+## Web Components in every framework
+
+AWC UI publishes focused integrations while keeping the DOM API portable:
+
+- [React components and Next.js SSR](/frameworks/react/) with typed React 18+ wrappers.
+- [Angular components and Angular SSR](/frameworks/angular/) with directives for templates and forms.
+- [Vue components and Nuxt SSR](/frameworks/vue/) with typed Vue 3 components and plugin registration.
+- [Svelte components and SvelteKit SSR](/frameworks/svelte/) using Svelte's custom-element support.
+- [Server-side rendering](/frameworks/ssr/) through Declarative Shadow DOM and `@awc-ui/core/hydrate`.
+
+## Discoverable custom elements
+
+The npm package includes `custom-elements.json`, a standard Custom Elements
+Manifest describing every tag, property, event, method, slot, CSS part, and CSS
+custom property. Editors and Web Component catalogs can consume it directly
+from `@awc-ui/core/customElements`.
+
+Browse the [complete component library](/components/) or start with the
+[installation guide](/getting-started/installation/).

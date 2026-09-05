@@ -1,6 +1,6 @@
-# @awc-ui/svelte
+# Svelte Web Components and SvelteKit SSR — @awc-ui/svelte
 
-Svelte bindings for [AWC UI](https://www.npmjs.com/package/@awc-ui/core) — Material Design 3 web components.
+Svelte 4 and 5 components for [AWC UI](https://www.npmjs.com/package/@awc-ui/core) — accessible Material Design 3 Web Components with SvelteKit SSR support.
 
 ## Install
 
@@ -16,7 +16,7 @@ Register the custom elements once on the client, then use `md-*` tags directly i
 
 ```ts
 // main.ts (plain Vite/SPA app)
-import { defineCustomElements } from '@awc-ui/svelte';
+import { defineCustomElements } from "@awc-ui/svelte";
 defineCustomElements(window);
 ```
 
@@ -30,8 +30,8 @@ defineCustomElements(window);
 Registration is client-only — guard it so it runs in the browser:
 
 ```ts
-import { browser } from '$app/environment';
-import { defineCustomElements } from '@awc-ui/svelte';
+import { browser } from "$app/environment";
+import { defineCustomElements } from "@awc-ui/svelte";
 
 if (browser) defineCustomElements(window);
 ```
@@ -43,12 +43,14 @@ For server-rendered markup use `@awc-ui/core/hydrate` (`renderToString`).
 Load the design tokens once (they carry the whole MD3 theme):
 
 ```ts
-import '@awc-ui/tokens/tokens.css';
+import "@awc-ui/tokens/tokens.css";
 ```
 
 ## Docs
 
-Full component reference, theming, and framework setup: **[awc-ui.dev](https://awc-ui.dev)** — see [Installation](https://awc-ui.dev/getting-started/installation/) for the Svelte section.
+[Svelte and SvelteKit SSR guide](https://awc-ui.dev/frameworks/svelte/) · [All component docs](https://awc-ui.dev/components/)
+
+Component manuals and AI-readable documentation also ship with [`@awc-ui/core`](https://www.npmjs.com/package/@awc-ui/core).
 
 ## License
 

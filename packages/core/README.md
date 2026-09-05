@@ -1,13 +1,26 @@
 # @awc-ui/core
 
-![Material Design 3](https://img.shields.io/badge/Material%20Design-3-6750A4?style=flat-square&logo=material-design&logoColor=white)
-![StencilJS](https://img.shields.io/badge/StencilJS-4-16161D?style=flat-square&logo=stencil&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
+[![npm version](https://img.shields.io/npm/v/%40awc-ui%2Fcore?style=flat-square&label=npm)](https://www.npmjs.com/package/@awc-ui/core)
+[![npm downloads](https://img.shields.io/npm/dm/%40awc-ui%2Fcore?style=flat-square&label=downloads)](https://www.npmjs.com/package/@awc-ui/core)
+[![Material Design 3](https://img.shields.io/badge/Material%20Design-3-6750A4?style=flat-square&logo=material-design&logoColor=white)](https://m3.material.io/)
+[![Web Components](https://img.shields.io/badge/Web%20Components-standard-29ABE2?style=flat-square&logo=webcomponents.org&logoColor=white)](https://awc-ui.dev/frameworks/web-components/)
+[![StencilJS](https://img.shields.io/badge/StencilJS-4-16161D?style=flat-square&logo=stencil&logoColor=white)](https://stenciljs.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-typed-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![WCAG](https://img.shields.io/badge/accessibility-WCAG%20AA-0B7A53?style=flat-square)](https://awc-ui.dev/guides/accessibility/)
+[![Zero dependencies](https://img.shields.io/badge/runtime%20dependencies-0-2E7D32?style=flat-square)](https://www.npmjs.com/package/@awc-ui/core?activeTab=dependencies)
+
+[![React components](https://img.shields.io/badge/React-components-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://awc-ui.dev/frameworks/react/)
+[![Angular components](https://img.shields.io/badge/Angular-components-DD0031?style=flat-square&logo=angular&logoColor=white)](https://awc-ui.dev/frameworks/angular/)
+[![Vue components](https://img.shields.io/badge/Vue-components-35495E?style=flat-square&logo=vuedotjs&logoColor=4FC08D)](https://awc-ui.dev/frameworks/vue/)
+[![Svelte components](https://img.shields.io/badge/Svelte-components-FF3E00?style=flat-square&logo=svelte&logoColor=white)](https://awc-ui.dev/frameworks/svelte/)
+[![SSR](https://img.shields.io/badge/SSR-Declarative%20Shadow%20DOM-5C6BC0?style=flat-square)](https://awc-ui.dev/frameworks/ssr/)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 ![Beta](https://img.shields.io/badge/status-beta-F2B8B5?style=flat-square)
 
-**Material Design 3 web components, built with [Stencil](https://stenciljs.com/).**
+**Material Design 3 Web Components, built with [Stencil](https://stenciljs.com/).**
 56 components that ship as standard custom elements, so they work in React,
-Angular, Vue, Svelte or a plain HTML page.
+Angular, Vue, Svelte, or plain HTML, with SSR for Next.js, Nuxt, SvelteKit,
+Astro, and Angular.
 
 > **Beta.** The API is stable enough to build with, but it is not frozen —
 > expect occasional breaking changes before 1.0.
@@ -27,10 +40,10 @@ own instructions in them untouched. Nothing is fetched from the network.
 
 The documentation itself:
 
-| File | What it gives you |
-|---|---|
-| [`main-llm.md`](./main-llm.md) | **Start here.** Interview, decision matrix, token reference, page recipes, ship checklist |
-| `src/components/<tag>/readme.md` | Full manual for one component — API, accessibility contract, anti-patterns |
+| File                             | What it gives you                                                                         |
+| -------------------------------- | ----------------------------------------------------------------------------------------- |
+| [`main-llm.md`](./main-llm.md)   | **Start here.** Interview, decision matrix, token reference, page recipes, ship checklist |
+| `src/components/<tag>/readme.md` | Full manual for one component — API, accessibility contract, anti-patterns                |
 
 Each component's manual has a **When NOT to use** and an **Anti-patterns**
 section. Read them: they describe the mistakes assistants actually make with
@@ -47,7 +60,7 @@ npm install @awc-ui/core
 One import registers every element **and** loads the design tokens:
 
 ```js
-import '@awc-ui/core/define';
+import "@awc-ui/core/define";
 ```
 
 ```html
@@ -57,11 +70,11 @@ import '@awc-ui/core/define';
 `define` imports `tokens.css`, so it is a **bundler-only** entry. Two cases need
 something else:
 
-| Situation | Entry |
-|---|---|
-| Bundler (Vite, webpack, Next, Nuxt…) | `import '@awc-ui/core/define'` |
-| CDN / no bundler | load the loader, plus `<link rel="stylesheet" href="…/@awc-ui/tokens/src/tokens.css">` |
-| Server-side rendering | `@awc-ui/core/hydrate` — reference apps for Next, Nuxt, SvelteKit, Astro and Angular live under `apps/` in the repo |
+| Situation                            | Entry                                                                                                                       |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| Bundler (Vite, webpack, Next, Nuxt…) | `import '@awc-ui/core/define'`                                                                                              |
+| CDN / no bundler                     | load the loader, plus `<link rel="stylesheet" href="…/@awc-ui/tokens/src/tokens.css">`                                      |
+| Server-side rendering                | `@awc-ui/core/hydrate` — reference apps for Next.js, Nuxt, SvelteKit, Astro, and Angular SSR live under `apps/` in the repo |
 
 ### Smallest bundles: per-component imports
 
@@ -69,8 +82,8 @@ something else:
 import per component instead (the tokens then need one explicit CSS import):
 
 ```js
-import '@awc-ui/core/css/tokens.css';
-import { defineCustomElement } from '@awc-ui/core/components/md-button';
+import "@awc-ui/core/css/tokens.css";
+import { defineCustomElement } from "@awc-ui/core/components/md-button";
 defineCustomElement();
 ```
 
@@ -86,12 +99,12 @@ bundler to switch a whole app (framework wrappers included) in one line.
 The elements work untouched anywhere, but typed wrappers give you props, events
 and JSX types:
 
-| Framework | Package |
-|---|---|
-| React | [`@awc-ui/react`](https://www.npmjs.com/package/@awc-ui/react) |
-| Angular | [`@awc-ui/angular`](https://www.npmjs.com/package/@awc-ui/angular) |
-| Vue | [`@awc-ui/vue`](https://www.npmjs.com/package/@awc-ui/vue) |
-| Svelte | [`@awc-ui/svelte`](https://www.npmjs.com/package/@awc-ui/svelte) |
+| Framework | Package                                                            |
+| --------- | ------------------------------------------------------------------ |
+| React     | [`@awc-ui/react`](https://www.npmjs.com/package/@awc-ui/react)     |
+| Angular   | [`@awc-ui/angular`](https://www.npmjs.com/package/@awc-ui/angular) |
+| Vue       | [`@awc-ui/vue`](https://www.npmjs.com/package/@awc-ui/vue)         |
+| Svelte    | [`@awc-ui/svelte`](https://www.npmjs.com/package/@awc-ui/svelte)   |
 
 ## What's in the box
 

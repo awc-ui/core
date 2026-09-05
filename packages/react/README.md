@@ -1,6 +1,6 @@
-# @awc-ui/react
+# React Web Components and Next.js SSR — @awc-ui/react
 
-React bindings for [AWC UI](https://www.npmjs.com/package/@awc-ui/core) — Material Design 3 web components.
+Typed React 18+ components for [AWC UI](https://www.npmjs.com/package/@awc-ui/core) — accessible Material Design 3 Web Components with a dedicated Next.js and React SSR entry.
 
 ## Install
 
@@ -13,7 +13,7 @@ Requires React 18+.
 ## Usage
 
 ```tsx
-import { MdButton } from '@awc-ui/react';
+import { MdButton } from "@awc-ui/react";
 
 export function Demo() {
   return <MdButton variant="filled">Click me</MdButton>;
@@ -27,7 +27,7 @@ The components register their underlying custom elements automatically on first 
 For styled markup on first paint (Next.js App Router and other SSR setups), import the same components from the server entry — they render each component's Declarative Shadow DOM on the server and hydrate on the client:
 
 ```tsx
-import { MdButton } from '@awc-ui/react/server';
+import { MdButton } from "@awc-ui/react/server";
 ```
 
 ## Smaller bundles
@@ -64,4 +64,6 @@ Caveats: no React DevTools/concurrent features, and libraries that touch React i
 
 ## Documentation
 
-Component docs, theming, and per-component manuals ship with [`@awc-ui/core`](https://www.npmjs.com/package/@awc-ui/core).
+[React and Next.js SSR guide](https://awc-ui.dev/frameworks/react/) · [All component docs](https://awc-ui.dev/components/)
+
+Component manuals and AI-readable documentation also ship with [`@awc-ui/core`](https://www.npmjs.com/package/@awc-ui/core).

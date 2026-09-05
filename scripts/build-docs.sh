@@ -34,7 +34,7 @@ pnpm --filter @awc-ui/storybook exec storybook build -o "$ROOT/apps/docs/public/
 
 echo ""
 echo "==> Generating component documentation pages..."
-node scripts/generate-docs.mjs
+pnpm generate:docs
 
 echo ""
 echo "==> Building the showcase applications..."

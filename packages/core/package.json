@@ -1,20 +1,45 @@
 {
   "name": "@awc-ui/core",
   "version": "1.0.0-beta.8",
-  "description": "Material Design 3 Web Components built with StencilJS",
+  "description": "Accessible Material Design 3 Web Components for React, Angular, Vue, and Svelte, with SSR, theming, RTL, forms, and custom elements",
   "keywords": [
     "material-design",
     "material-design-3",
     "md3",
+    "web-component",
     "web-components",
+    "custom-element",
     "custom-elements",
+    "component",
+    "components",
     "stencil",
     "ui-components",
     "component-library",
     "design-system",
     "accessibility",
     "wcag",
-    "ssr"
+    "ssr",
+    "material-3",
+    "ui-library",
+    "typescript",
+    "design-tokens",
+    "rtl",
+    "dark-mode",
+    "forms",
+    "charts",
+    "react-component",
+    "react-components",
+    "angular-component",
+    "angular-components",
+    "vue-component",
+    "vue-components",
+    "svelte-component",
+    "svelte-components",
+    "server-side-rendering",
+    "nextjs",
+    "nuxt",
+    "sveltekit",
+    "angular-ssr"
   ],
   "publishConfig": {
     "access": "public"
@@ -81,8 +106,10 @@
       "import": "./dist/components-csr/*.js"
     },
     "./css/tokens.css": "./dist/md3/md3.css",
-    "./css/pre-upgrade.css": "./dist/md3/pre-upgrade.css"
+    "./css/pre-upgrade.css": "./dist/md3/pre-upgrade.css",
+    "./customElements": "./custom-elements.json"
   },
+  "customElements": "./custom-elements.json",
   "files": [
     "dist/",
     "loader/",
@@ -92,6 +119,7 @@
     "README.md",
     "bin/",
     "main-llm.md",
+    "custom-elements.json",
     "src/components/*/readme.md"
   ],
   "scripts": {
@@ -114,7 +142,7 @@
     "dev": "stencil build --dev --watch --serve",
     "size": "size-limit",
     "size:why": "size-limit --why",
-    "prepack": "node ../../scripts/build-package-docs.mjs"
+    "prepack": "node ../../scripts/generate-custom-elements-manifest.mjs && node ../../scripts/build-package-docs.mjs"
   },
   "devDependencies": {
     "@awc-ui/tokens": "workspace:*",

@@ -1,6 +1,6 @@
 ---
-title: Material Design 3 components for any technology
-description: AWC UI (Advanced Web Components UI) is a Material Design 3 web component library built with Stencil.js. Drop-in components for React, Angular, Vue, Svelte, or plain HTML — zero config, full MD3 spec coverage.
+title: Web Components for React, Angular, Vue, Svelte & SSR
+description: Accessible Material Design 3 Web Components for React, Angular, Vue, Svelte, Next.js SSR, Nuxt, SvelteKit, Angular SSR, or plain HTML.
 template: splash
 hero:
   title: ""
@@ -21,7 +21,16 @@ head:
             "@id": "https://awc-ui.dev/#website",
             "url": "https://awc-ui.dev/",
             "name": "AWC UI",
-            "description": "Material Design 3 Web Components built with Stencil — for React, Angular, Vue, Svelte, or plain HTML."
+            "description": "Material Design 3 Web Components for React, Angular, Vue, Svelte, Next.js SSR, Nuxt, SvelteKit, Angular SSR, or plain HTML.",
+            "publisher": { "@id": "https://awc-ui.dev/#organization" }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://awc-ui.dev/#organization",
+            "name": "AWC UI",
+            "url": "https://awc-ui.dev/",
+            "logo": "https://awc-ui.dev/favicon.svg",
+            "sameAs": ["https://github.com/awc-ui"]
           },
           {
             "@type": "SoftwareApplication",
@@ -31,13 +40,41 @@ head:
             "url": "https://awc-ui.dev/",
             "image": "https://awc-ui.dev/og.png",
             "applicationCategory": "DeveloperApplication",
+            "applicationSubCategory": "Web component library and design system",
             "operatingSystem": "Any",
+            "softwareRequirements": "A modern browser; framework integrations are available for React, Angular, Vue, and Svelte.",
+            "keywords": "Web Components, custom elements, React components, Angular components, Vue components, Svelte components, Next.js SSR, Angular SSR, Nuxt SSR, SvelteKit SSR, Material Design 3",
+            "downloadUrl": "https://www.npmjs.com/package/@awc-ui/core",
             "license": "https://opensource.org/license/mit",
+            "isAccessibleForFree": true,
+            "featureList": [
+              "56 accessible Material Design 3 components",
+              "Typed React components and Next.js SSR",
+              "Angular components, forms, and Angular SSR",
+              "Typed Vue components and Nuxt SSR",
+              "Svelte components and SvelteKit SSR",
+              "Server-side rendering with Declarative Shadow DOM",
+              "Light and dark design tokens",
+              "Right-to-left layout support",
+              "Framework-agnostic Web Components"
+            ],
+            "publisher": { "@id": "https://awc-ui.dev/#organization" },
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
             "sameAs": [
               "https://github.com/awc-ui/core",
               "https://www.npmjs.com/package/@awc-ui/core"
             ]
+          },
+          {
+            "@type": "SoftwareSourceCode",
+            "@id": "https://github.com/awc-ui/core#source",
+            "name": "AWC UI source code",
+            "codeRepository": "https://github.com/awc-ui/core",
+            "programmingLanguage": ["TypeScript", "JavaScript", "CSS", "HTML"],
+            "runtimePlatform": "Web Components",
+            "license": "https://opensource.org/license/mit",
+            "author": { "@id": "https://awc-ui.dev/#organization" },
+            "targetProduct": { "@id": "https://awc-ui.dev/#software" }
           }
         ]
       }
