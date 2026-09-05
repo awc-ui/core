@@ -1,0 +1,139 @@
+---
+title: Friends & Groups
+description: "A social network for the fictional Corvus — a feed, friends, groups, events and profiles, with reactions and nested comment threads, in the framework of your choice."
+---
+
+**Corvus is the app about people rather than pictures.** A three-column feed of
+what your friends are saying, the friendships behind it, the groups they meet
+in, the events they turn up to — and threaded arguments underneath all of it,
+built entirely from AWC UI components.
+
+{/*
+  The call to action is an `<a>`, not `md-button`: the component navigates on
+  click but renders no anchor and exposes `role="button"`, so middle-click,
+  ⌘-click and "copy link address" all stop working. Same reasoning as the
+  credit-risk page — see the longer note there.
+*/}
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 28px 0;">
+  <a href="/showcase/community/react/" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border-radius: 999px; background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); font: var(--md-sys-typescale-label-large-font); text-decoration: none;">Open the application</a>
+  <span style="font: var(--md-sys-typescale-body-small-font); color: var(--md-sys-color-on-surface-variant);">Switch framework, theme, density, direction and language from inside the app.</span>
+</div>
+
+## The five builds
+
+All five are live, and the control bar switches between them without losing your
+place. Every person, post, comment, group and timestamp comes from
+`@awc-ui/showcase-kit`, so the only thing that differs between them is the view
+layer — which is what makes two screenshots comparable evidence.
+
+| Build | Open | How it renders | Where the language lives |
+|---|---|---|---|
+| **HTML** | [/html/](/showcase/community/html/) | Static pages, written at build time — no framework at all | **In the URL** — a page per locale |
+| **React** | [/react/](/showcase/community/react/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+| **Vue** | [/vue/](/showcase/community/vue/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+| **Angular** | [/angular/](/showcase/community/angular/) | Single-page app — client-rendered only | Client state — switches in place |
+| **Svelte** | [/svelte/](/showcase/community/svelte/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+
+:::note[Seven states where a "like" would have been two]
+The reaction is the smallest thing on the screen and the one that justifies the
+whole data model. A like is a boolean. Six reactions plus "none" is seven
+states, and the case that gets written wrong is not picking one — it is the
+**switch**: a reader moving from Like to Love has not reacted twice, so two
+counts move at once and the total must not budge.
+
+That arithmetic lives in `reactionSummary()` in the kit, once, so five builds
+cannot each get it slightly different. Every build's browser test presses the
+same sequence — pick, switch, take back — and asserts the total returns to
+exactly where it started.
+
+The same shape recurs everywhere in this vertical. A friendship is not a
+boolean either: it is five states with a gap between asking and being answered,
+and the two ends of that gap need opposite verbs, or you can accept your own
+request. Group membership adds **pending**, which is the entire reason privacy
+is data rather than a lock icon — pressing Join on a private group must leave
+you asking, not joined.
+:::
+
+## What you can drill into
+
+| Screen | What it shows | Where it leads |
+|---|---|---|
+| **Feed** | Posts from friends and groups in a three-column shell — ten at a time, each with its reactions, its first comments and its audience mark; a composer that is a trigger until you press it | A post, a person, or a group |
+| **Friends** | The graph in four sections ordered by who is blocked: requests waiting on you, requests you sent, suggestions, then everyone | A person |
+| **Groups** | The six you are in and the four you are not, each carrying its privacy, your role and its weekly traffic | A group |
+| **Events** | Twelve events bucketed by when — this week, later, past — each with a scannable date block and three answers | An event |
+| **Profile** | Your own: cover, counts, and a grid of what you have posted | A post |
+| **Post** | One post with its whole thread — comments in reading order, replies nested two deep, and a box to add one | A person |
+| **Person** | Somebody else's profile, plus the one button that moves the friendship along | A post |
+| **Group** | A group's cover, members, roles and posts — with Join, or Cancel request if you already asked | A post, or a person |
+| **Event** | An event's cover, host, place, who is going, and your answer | A group, or a person |
+
+## What it is really demonstrating
+
+A social network was chosen because it asks for what a photo feed does not:
+**depth instead of breadth**. Lyra's data is wide and shallow — many posts, one
+level of comments. Corvus is the opposite.
+
+- **Comments that nest, and a thread that knows when to stop.** Replies go two
+  levels deep in reading order, and "Replying to X" appears at depth 2 only:
+  at depth 1 the indent is unambiguous, one possible parent directly above, so
+  a label on every reply would be noise on most of them.
+- **A post inside a post.** A share renders the original in full, with its
+  author — and deliberately without its actions, because pressing a reaction on
+  the inner post would react to something the reader is not looking at. It is
+  also not wrapped in a link, which would put an anchor inside an anchor.
+- **Text-first, so the card cannot be built around a picture.** Twenty-seven of
+  forty-eight posts carry no image at all; six are link previews and four are
+  shares. A card designed around a photograph gets all three of those wrong.
+- **`-webkit-line-clamp` and a "see more" that is real.** A long body clamps at
+  a line boundary rather than a character count, and un-clamps in place.
+- **A three-column shell that drops a column before it drops the layout.** The
+  right rail — contacts, birthdays, upcoming events — goes at 1200px; the shell
+  itself swaps at 900. Two breakpoints because they answer different questions.
+- **Three languages including a right-to-left one, and the CONTENT is
+  translated.** Post bodies, comments, bios and group descriptions are
+  dictionary entries, not fixture strings, so an Arabic reader gets an Arabic
+  network rather than Arabic chrome around English prose.
+
+:::tip[What the plain-HTML build had to solve twice]
+The static build has no router and no state, so anything that appears on a press
+has to already be in the page — and a hidden `<div>` is still an element the
+parity census counts. Comment threads, the rest of the feed and the open
+composer therefore live in `<template>` elements, whose contents are an inert
+fragment outside the document, and are cloned in on demand.
+
+That single decision produced both of the bugs found after this vertical was
+otherwise finished. A clone arrives with no `hidden` attribute, so a toggle that
+read the attribute and inverted it **hid the thread the reader had just asked
+for**. And every binder shared one `data-bound` flag, so the like binder claimed
+the aggregate "View all N comments" button — which wears the same class for its
+styling — and the thread binder skipped it as already bound. Both looked
+identical from outside: press for comments, get no comments.
+
+Each binder now claims its own key, and anything that opens a thread states the
+state it wants rather than flipping whatever it finds. The lesson generalises:
+an element that appears **later** needs its own assertion, because a listener
+that was never attached looks exactly like a reader who has not pressed
+anything.
+:::
+
+## Fictional people
+
+Corvus, its twenty-six people, their posts, comments, groups and events are
+invented, and the warning is load-bearing here for the same reason it is on
+Lyra: this vertical invents PEOPLE, with opinions and arguments. That is why the
+disclaimer sits in the app bar on every screen rather than at the bottom of one.
+No real person, place, group or event is represented, and none of the artwork
+depicts anyone.
+
+The fixture holds 26 people, 10 groups, 12 events, 48 posts and 286 comments
+over 65 generated images, all from one seed and internally consistent — a reply
+always answers a comment on the same post, every group's member count reconciles
+with its roster, and roughly seventy invariants are asserted at generation time
+rather than hoped for. Every state in every union is populated, including the
+awkward ones: a private group you are not in, so join-becomes-pending is
+reachable; requests pending in both directions; and an event that is online.
+
+Every timestamp is measured from a fixed reporting instant of **14 October
+2026, 17:40 UTC**, not from the clock.

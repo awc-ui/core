@@ -1664,9 +1664,485 @@ const social = {
   'social.comment.26': 'Come back and shoot the other side.',
 } as const;
 
-export const en = { ...core, ...wealth, ...banking, ...social };
 
-/** Every message key the showcase may ask for, across all four verticals. */
+/* ======================================================= COMMUNITY (Corvus) */
+/*
+ * The fifth vertical's dictionary.
+ *
+ * TWO POOLS OF PROSE, and the split matters. Everything above `bio.01` is
+ * CHROME — labels, actions, headings — and reads like a product. Everything
+ * below it is CONTENT: bios, post bodies, comments, group and event
+ * descriptions, link headlines. Those are the sentences the app is made of, and
+ * translating them is what lets the Arabic build be an Arabic network rather
+ * than Arabic furniture around English writing.
+ *
+ * THE BODIES ARE WRITTEN AS PEOPLE WRITE, which is the part that took the
+ * longest and is the easiest to get wrong. A fixture of well-formed sentences
+ * of even length reads as generated the moment you see three in a row. Real
+ * posts are uneven: some are four words, some run to a paragraph, some open
+ * mid-thought. The set below is deliberately ragged for that reason, and the
+ * long ones exist to exercise the card's "see more" truncation, which nothing
+ * short would.
+ */
+const community = {
+  /* ------------------------------------------------------------- product */
+  'community.app.brand': 'Corvus',
+  'community.app.title': 'Friends & Groups',
+  'community.app.demo': 'Demo',
+  'community.app.demoNotice':
+    'Every person, group and event in this application is invented. No real person is represented, and none of the artwork depicts anyone.',
+  'community.app.viewer': 'Signed in as {name}',
+  'community.verified': 'Verified account',
+
+  /* ---------------------------------------------------------- navigation */
+  'community.nav.label': 'Sections',
+  'community.nav.menu': 'Menu',
+  'community.nav.breadcrumb': 'Breadcrumb',
+  'community.nav.toolbar': 'Screen actions',
+  'community.nav.feed': 'Home',
+  'community.nav.friends': 'Friends',
+  'community.nav.groups': 'Groups',
+  'community.nav.events': 'Events',
+  'community.nav.profile': 'Profile',
+
+  /* -------------------------------------------------------------- screens */
+  'community.screen.feed.title': 'Home',
+  'community.screen.feed.subtitle': 'From your friends and your groups',
+  'community.screen.friends.title': 'Friends',
+  'community.screen.friends.subtitle': 'Requests, suggestions and everyone you know',
+  'community.screen.groups.title': 'Groups',
+  'community.screen.groups.subtitle': 'The ones you are in, and the ones you might be',
+  'community.screen.events.title': 'Events',
+  'community.screen.events.subtitle': 'What is coming up, and what you have answered',
+  'community.screen.profile.title': 'Your profile',
+  'community.screen.profile.subtitle': 'Your timeline, your friends and your photos',
+  'community.screen.post.title': 'Post',
+  'community.screen.post.subtitle': 'Posted by {name}',
+  'community.screen.person.subtitle': 'Their timeline and what you have in common',
+  'community.screen.group.subtitle': 'Posts, members and what the group is for',
+  'community.screen.event.subtitle': 'When it is, where it is and who is going',
+  'community.screen.notFound.title': 'Not found',
+  'community.screen.notFound.subtitle': 'That page does not exist, or it has been taken down.',
+
+  /* -------------------------------------------------------------- actions */
+  'community.action.addFriend': 'Add friend',
+  'community.action.cancelRequest': 'Cancel request',
+  'community.action.respond': 'Respond',
+  'community.action.friends': 'Friends',
+  'community.action.accept': 'Accept',
+  'community.action.decline': 'Decline',
+  'community.action.removeFriend': 'Remove friend',
+  'community.action.message': 'Message',
+  'community.action.joinGroup': 'Join group',
+  'community.action.leaveGroup': 'Leave group',
+  'community.action.viewGroup': 'View group',
+  'community.action.viewEvent': 'View event',
+  'community.action.invite': 'Invite',
+  'community.action.share': 'Share',
+  'community.action.comment': 'Comment',
+  'community.action.reply': 'Reply',
+  'community.action.post': 'Post',
+  'community.action.cancel': 'Cancel',
+  'community.action.close': 'Dismiss',
+  'community.action.search': 'Search',
+  'community.action.clearFilters': 'Clear filters',
+  'community.action.viewAll': 'See all',
+  'community.action.seeMore': 'See more',
+  'community.action.seeLess': 'See less',
+  'community.action.viewComments': 'View all {count} comments',
+  'community.action.viewReplies': 'View {count} more replies',
+  'community.action.viewRepliesOne': 'View 1 more reply',
+  'community.action.hideReplies': 'Hide replies',
+  'community.action.react': 'React',
+  'community.action.previous': 'Previous',
+  'community.action.next': 'Next',
+  'community.action.writeSomething': 'What is on your mind, {name}?',
+
+  /* ------------------------------------------------------------ reactions */
+  'community.reaction.like': 'Like',
+  'community.reaction.love': 'Love',
+  'community.reaction.care': 'Care',
+  'community.reaction.haha': 'Haha',
+  'community.reaction.wow': 'Wow',
+  'community.reaction.sad': 'Sad',
+  'community.reaction.pick': 'Pick a reaction',
+  'community.reaction.none': 'React to this post',
+  'community.reaction.summary': '{count} reactions',
+
+  /* ----------------------------------------------------------- friendship */
+  'community.friendship.self': 'You',
+  'community.friendship.friend': 'Friends',
+  'community.friendship.incoming': 'Sent you a request',
+  'community.friendship.outgoing': 'Request sent',
+  'community.friendship.none': 'Not connected',
+
+  /* --------------------------------------------------------------- groups */
+  'community.privacy.public': 'Public',
+  'community.privacy.private': 'Private',
+  'community.role.admin': 'Admin',
+  'community.role.moderator': 'Moderator',
+  'community.role.member': 'Member',
+  'community.role.pending': 'Request pending',
+  'community.role.none': 'Not a member',
+
+  /* --------------------------------------------------------------- events */
+  'community.rsvp.going': 'Going',
+  'community.rsvp.interested': 'Interested',
+  'community.rsvp.invited': 'Invited',
+  'community.rsvp.declined': 'Not going',
+  'community.rsvp.none': 'Respond',
+
+  /* ---------------------------------------------------------------- posts */
+  'community.postKind.text': 'Post',
+  'community.postKind.photo': 'Photos',
+  'community.postKind.link': 'Link',
+  'community.postKind.share': 'Shared post',
+
+  /* ------------------------------------------------------------- audience */
+  'community.audience.public': 'Public',
+  'community.audience.publicHint': 'Anyone on Corvus can see this',
+  'community.audience.friends': 'Friends',
+  'community.audience.friendsHint': 'Your {count} friends can see this',
+  'community.audience.fof': 'Friends of friends',
+  'community.audience.fofHint': 'Your friends and theirs',
+  'community.audience.onlyMe': 'Only me',
+  'community.audience.onlyMeHint': 'Nobody else can see this',
+
+  /* --------------------------------------------------------------- topics */
+  'community.topic.film': 'Film',
+  'community.topic.sport': 'Sport',
+  'community.topic.photography': 'Photography',
+  'community.topic.food': 'Food',
+  'community.topic.travel': 'Travel',
+  'community.topic.design': 'Design',
+  'community.topic.nature': 'Nature',
+  'community.topic.music': 'Music',
+  'community.topic.craft': 'Craft',
+
+  /* ----------------------------------------------------------- date groups */
+  'community.when.today': 'Today',
+  'community.when.thisWeek': 'This week',
+  'community.when.thisMonth': 'This month',
+  'community.when.later': 'Later',
+  'community.when.past': 'Past events',
+
+  /* --------------------------------------------------------------- counts */
+  'community.count.friends': 'Friends',
+  'community.count.members': 'Members',
+  'community.count.posts': 'Posts',
+  'community.count.comments': 'Comments',
+  'community.count.shares': 'Shares',
+  'community.count.reactions': 'Reactions',
+  'community.count.going': 'Going',
+  'community.count.interested': 'Interested',
+  'community.count.mutual': '{count} mutual friends',
+  'community.count.mutualOne': '1 mutual friend',
+  'community.count.mutualLabel': 'Mutual friends',
+  'community.count.people': 'People',
+  'community.count.groups': 'Groups',
+  'community.count.events': 'Events',
+  'community.count.requests': 'Requests',
+  'community.count.weeklyPosts': '{count} posts this week',
+  'community.count.weeklyPostsOne': '1 post this week',
+
+  /* --------------------------------------------------------------- panels */
+  'community.panel.requests': 'Friend requests',
+  'community.panel.outgoing': 'Sent requests',
+  'community.panel.suggested': 'People you may know',
+  'community.panel.allFriends': 'All friends',
+  'community.panel.yourGroups': 'Your groups',
+  'community.panel.discover': 'Discover groups',
+  'community.panel.birthdays': 'Birthdays',
+  'community.panel.upcoming': 'This week',
+  'community.panel.contacts': 'Contacts',
+  'community.panel.about': 'About',
+  'community.panel.photos': 'Photos',
+  'community.panel.members': 'Active members',
+  'community.panel.comments': 'Comments',
+  'community.panel.timeline': 'Timeline',
+  'community.panel.sharedGroups': 'Groups you are both in',
+  'community.panel.attendance': 'Who is going',
+  'community.panel.hostedBy': 'Hosted by',
+  'community.panel.groupEvents': 'Group events',
+  'community.panel.compose': 'Write a post',
+
+  /* --------------------------------------------------------------- empties */
+  'community.empty.feed': 'Nothing here yet',
+  'community.empty.feedHint': 'Add a few friends or join a group and this fills up.',
+  'community.empty.requests': 'No requests waiting',
+  'community.empty.outgoing': 'You have not asked anyone',
+  'community.empty.friends': 'No friends yet',
+  'community.empty.friendsHint': 'The suggestions above are a place to start.',
+  'community.empty.groups': 'You are not in any groups',
+  'community.empty.groupsHint': 'Have a look at what is below.',
+  'community.empty.events': 'Nothing coming up',
+  'community.empty.comments': 'No comments yet',
+  'community.empty.commentsHint': 'Be the first to say something.',
+  'community.empty.posts': 'No posts yet',
+  'community.empty.photos': 'No photos yet',
+  'community.empty.members': 'Nobody has posted here yet',
+
+  /* ----------------------------------------------------------------- hints */
+  'community.hint.postedIn': 'in {group}',
+  'community.hint.sharedPost': '{name} shared a post',
+  'community.hint.sharedGroupPost': '{name} shared a post from {group}',
+  'community.hint.commentsOff': 'Comments are turned off on this post.',
+  'community.hint.needBody': 'Write something first.',
+  'community.hint.online': 'Online event',
+  'community.hint.birthdayToday': 'Birthday today',
+  'community.hint.joinedGroup': 'Joined {date}',
+  'community.hint.joinedCorvus': 'On Corvus since {date}',
+  'community.hint.replyingTo': 'Replying to {name}',
+  'community.hint.privateGroup': 'This group is private. Join to see what is posted in it.',
+  'community.hint.friendsGoing': '{count} of your friends are going',
+  'community.hint.friendsGoingOne': '1 of your friends is going',
+  'community.hint.pinned': 'Pinned',
+  'community.hint.eventOver': 'This event has finished.',
+  'community.hint.linkNotReal': 'This link is part of the demo and does not open.',
+
+  /* ---------------------------------------------------------------- common */
+  'community.common.you': 'You',
+  'community.common.and': 'and',
+  'community.common.na': '—',
+  'community.common.others': '{count} others',
+  'community.common.showing': 'Showing {shown} of {total}',
+  'community.common.caughtUp': 'You are all caught up',
+  'community.common.caughtUpHint': 'You have seen everything from the last month.',
+  'community.common.characters': '{count} / {max}',
+  'community.common.edited': 'Edited',
+  'community.common.to': 'to',
+
+  /* -------------------------------------------------------------- messages */
+  'community.msg.friendRequested': 'Friend request sent to {name}',
+  'community.msg.requestCancelled': 'Request to {name} cancelled',
+  'community.msg.friendAccepted': 'You and {name} are now friends',
+  'community.msg.friendDeclined': 'Request from {name} declined',
+  'community.msg.friendRemoved': '{name} removed from your friends',
+  'community.msg.joined': 'You joined {name}',
+  'community.msg.left': 'You left {name}',
+  'community.msg.requested': 'Request to join {name} sent',
+  'community.msg.rsvpGoing': 'You are going to {name}',
+  'community.msg.rsvpInterested': 'Marked interested in {name}',
+  'community.msg.rsvpDeclined': 'You are not going to {name}',
+  'community.msg.posted': 'Posted',
+  'community.msg.commentPosted': 'Comment added',
+  'community.msg.linkCopied': 'Link copied',
+  'community.msg.shared': 'Post shared',
+
+  /* ============================== CONTENT ============================== */
+
+  /* Bios. One line each — a bio is what fits under a name, not a paragraph. */
+  'community.bio.01': 'Cartography, mostly. Occasionally bread.',
+  'community.bio.02': 'Trying to run further than last week.',
+  'community.bio.03': 'I fix old windows. Ask me about putty.',
+  'community.bio.04': 'Darkroom on Thursdays, nowhere on Fridays.',
+  'community.bio.05': 'Sound engineer. Two cats, both loud.',
+  'community.bio.06': 'Growing more tomatoes than anyone needs.',
+  'community.bio.07': 'Sailing when the wind allows and complaining when it does not.',
+  'community.bio.08': 'Letterpress, slowly.',
+  'community.bio.09': 'Librarian. Will find it for you.',
+  'community.bio.10': 'Swims in the sea all year. It is fine, honestly.',
+  'community.bio.11': 'Draws buildings that already exist.',
+  'community.bio.12': 'Teacher. Reader. Bad at chess.',
+  'community.bio.13': 'Making a documentary nobody asked for.',
+  'community.bio.14': 'Bakes on Sundays, regrets on Mondays.',
+  'community.bio.15': 'Furniture restorer. Sawdust everywhere.',
+  'community.bio.16': 'Birdwatching, badly, since 2019.',
+  'community.bio.17': 'I take photographs of doors.',
+  'community.bio.18': 'Trombone. Do not ask me to play it.',
+  'community.bio.19': 'Long walks and short opinions.',
+  'community.bio.20': 'Archivist. Everything is somewhere.',
+  'community.bio.21': 'Cycling to the sea, one weekend at a time.',
+  'community.bio.22': 'Learning to sail. Currently learning to fall in.',
+  'community.bio.23': 'Ceramics studio share, third floor, come up.',
+  'community.bio.24': 'Writes about maps for a living, somehow.',
+  'community.bio.25': 'Beekeeper. Ask about the hive, not the honey.',
+  'community.bio.26': 'Retired, busier than ever.',
+
+  /*
+   * Post bodies.
+   *
+   * DELIBERATELY UNEVEN. Four of these run long enough to be truncated by the
+   * card's "see more", which is the only way that control gets exercised;
+   * several are one line, because most posts are. A pool of similar-length
+   * sentences reads as generated within three cards.
+   */
+  'community.body.01': 'The ferry was cancelled so we walked the long way round the headland instead. Took four hours, saw two seals and a heron, and got back exactly as the light went. Genuinely one of the better accidents of the year.',
+  'community.body.02': 'Anyone got a spare ticket for Thursday?',
+  'community.body.03': 'Finally finished the back gate. Six weekends. Six.',
+  'community.body.04': 'Reminder that the library book sale is this Saturday and last year people were queueing before it opened, so.',
+  'community.body.05': 'Tomatoes: 11kg. Freezer: full. Neighbours: increasingly wary of me.',
+  'community.body.06': 'It rained the entire way and I have never enjoyed a ride less or felt better afterwards.',
+  'community.body.07': 'Does anyone actually know how to get paint off brick without wrecking the brick? Asking for a wall.',
+  'community.body.08': 'New print drying. It has taken four attempts to get the sky to behave and I am not certain it has.',
+  'community.body.09': 'Sea was 9 degrees this morning. Two of us went in. One of us regretted it and it was not me.',
+  'community.body.10': 'Thank you to everyone who came on Sunday. We counted forty-one, which is more than the hall is technically supposed to hold, and nobody told us off.',
+  'community.body.11': 'Good morning to the man who let his dog eat my sandwich.',
+  'community.body.12': 'Spent the afternoon in the archive looking for one photograph and came out with a folder of things I was not looking for, which is how it always goes and why it takes so long.',
+  'community.body.13': 'Sourdough, attempt nine. Attempt nine is edible.',
+  'community.body.14': 'If anyone is driving up on Friday I will happily chip in for fuel.',
+  'community.body.15': 'The trombone has been moved to the shed by popular demand.',
+  'community.body.16': 'Been thinking about how much of a city you only see when something breaks — a road closed, a bridge out — and you are pushed down a street you would never have chosen. Half of what I know about this place I learned during roadworks.',
+  'community.body.17': 'Blue door, green frame, brass letterbox. Number 14. I have been looking for this door for a year.',
+  'community.body.18': 'Update: the bees are fine. I am the one who got stung.',
+  'community.body.19': 'Twelve kilometres, no stopping, no walking. Small thing. Big for me.',
+  'community.body.20': 'Does this count as a chair yet or is it still four legs and hope?',
+  'community.body.21': 'Someone has left a very good pair of boots outside the studio and they have been there three days. Speak now.',
+  'community.body.22': 'Watched it again last night and it is better than I remembered, which almost never happens.',
+  'community.body.23': 'The allotment shed roof did not survive the wind. The shed did. We are calling that a draw.',
+  'community.body.24': 'Learned today that the street I have lived on for eleven years is named after a ship that sank two miles offshore in 1873, and that there is a plaque about it forty metres from my front door that I have walked past roughly eight thousand times.',
+  'community.body.25': 'Rehearsal moved to Wednesday. Same room, same time, bring the new charts.',
+  'community.body.26': 'I have been told my photographs are all of the same three things. In my defence, they are good things.',
+  'community.body.27': 'Fog so thick this morning the harbour lights looked like they were floating.',
+  'community.body.28': 'Second-hand lens arrived, front element scratched, seller says it was like that. It was not like that.',
+  'community.body.29': 'Made the mistake of counting how many books are still in boxes. The answer is not going to be shared.',
+  'community.body.30': 'Cold, bright, empty beach, nobody about. Best hour of the week.',
+  'community.body.31': 'Whoever organised the signage on the coast path deserves something. I did not get lost once, which for me is unprecedented.',
+  'community.body.32': 'Trying to write about a place I have only been to once and it is going about as well as you would expect.',
+  'community.body.33': 'Two hours of sanding for four minutes of oiling and honestly the four minutes are worth it.',
+  'community.body.34': 'Anyone want half a very large pumpkin? Serious enquiries only. It is genuinely enormous.',
+  'community.body.35': 'The film has been at the lab for three weeks and I have decided to treat it as a surprise for later rather than a problem for now.',
+  'community.body.36': 'Went out for milk, came back four hours later having agreed to help paint a boat. This is how it starts.',
+
+  /* Comments. Shorter than posts, and several are replies by construction. */
+  'community.comment.01': 'This is excellent.',
+  'community.comment.02': 'Where is this?',
+  'community.comment.03': 'Been meaning to go for months.',
+  'community.comment.04': 'Count me in for Friday.',
+  'community.comment.05': 'Absolutely not, it is far too cold.',
+  'community.comment.06': 'How long did that take you?',
+  'community.comment.07': 'Beautiful light on this one.',
+  'community.comment.08': 'I have the same lens and it does that too.',
+  'community.comment.09': 'Saving this for later.',
+  'community.comment.10': 'Genuinely impressive.',
+  'community.comment.11': 'Which way did you go round?',
+  'community.comment.12': 'You have sold it to me.',
+  'community.comment.13': 'I will bring the flask.',
+  'community.comment.14': 'That is not a chair.',
+  'community.comment.15': 'It is very much a chair.',
+  'community.comment.16': 'Ha. Yes. Fair.',
+  'community.comment.17': 'Was it the one by the bridge?',
+  'community.comment.18': 'Ours came down too. Third year running.',
+  'community.comment.19': 'Send the address and I will come and look.',
+  'community.comment.20': 'This is the correct amount of pumpkin for one person.',
+  'community.comment.21': 'Try white vinegar and a stiff brush before anything harsher.',
+  'community.comment.22': 'Seconded, and do a test patch somewhere nobody looks.',
+  'community.comment.23': 'Nine degrees is not swimming, it is a medical event.',
+  'community.comment.24': 'Same time next week?',
+  'community.comment.25': 'I was there twenty minutes after you by the look of it.',
+  'community.comment.26': 'Missed this, gutted.',
+  'community.comment.27': 'Please post the recipe.',
+  'community.comment.28': 'There is a plaque about that near the old customs house too.',
+  'community.comment.29': 'Right, that settles it, I am going.',
+  'community.comment.30': 'Not the sandwich.',
+
+  /* Group descriptions. */
+  'community.groupAbout.01': 'We watch one film a month and argue about it afterwards in the bar next door. Newcomers welcome, no film knowledge required.',
+  'community.groupAbout.02': 'Trail running every Tuesday evening, all paces. We wait at the top. Head torches from October.',
+  'community.groupAbout.03': 'Film photography, darkroom sharing and the occasional group developing session. Bring your rolls.',
+  'community.groupAbout.04': 'Swapping seeds, seedlings and surplus. Nothing is sold here, everything is traded or given away.',
+  'community.groupAbout.05': 'Crew-finding, weather-arguing and passage-planning for anyone sailing this coast.',
+  'community.groupAbout.06': 'Type, lettering and signwriting. Post what you are working on and what is going wrong with it.',
+  'community.groupAbout.07': 'For plot holders on the riverside allotments. Work parties, tool sharing and the water rota.',
+  'community.groupAbout.08': 'Where the late sets get posted. Mostly jazz, occasionally not, always after ten.',
+  'community.groupAbout.09': 'Documenting and restoring the old town, one facade at a time. Photographers and joiners equally welcome.',
+  'community.groupAbout.10': 'Sea swimming through the winter. We go in whatever the temperature. There is always tea.',
+
+  /* Event descriptions. */
+  'community.eventAbout.01': 'An outdoor screening on the harbour wall. Bring something to sit on and something warm; it gets cold fast once the sun goes.',
+  'community.eventAbout.02': 'The long one. Twenty kilometres at a conversational pace, coffee at the end for anyone still standing.',
+  'community.eventAbout.03': 'The darkroom is open to anyone who wants to see how it works. Bring a roll and we will develop it with you.',
+  'community.eventAbout.04': 'Bring what you have too much of and take what you need. Coffee and cake from ten.',
+  'community.eventAbout.05': 'A day crossing with two boats and room for six. No experience needed, but you will get wet.',
+  'community.eventAbout.06': 'Hands-on with the presses. We will set a line each and print it. Limited to twelve people.',
+  'community.eventAbout.07': 'Clearing the top beds before the frost. Bring gloves. Lunch provided by whoever gets there first.',
+  'community.eventAbout.08': 'Trio Nord, one set, no support. Doors at nine, music at ten, out by one.',
+  'community.eventAbout.09': 'A slow walk along the north side recording what has changed since the last survey. Cameras welcome.',
+  'community.eventAbout.10': 'The first properly cold swim of the year. Two minutes in is plenty. Tea and blankets on the beach.',
+  'community.eventAbout.11': 'What we are showing between November and February, and why. Followed by questions we may not answer.',
+  'community.eventAbout.12': 'Six hours, four films, one interval. Bring a cushion; the seats are original and it shows.',
+
+  /* Link-preview headlines and their one-line descriptions. */
+  'community.linkTitle.01': 'The last lighthouse keeper on this coast',
+  'community.linkTitle.02': 'Why so many harbour towns face the wrong way',
+  'community.linkTitle.03': 'A short history of the municipal swimming pool',
+  'community.linkTitle.04': 'Forty years of the same photograph',
+  'community.linkTitle.05': 'The bridge that was never meant to stay',
+  'community.linkTitle.06': 'How to read a nautical chart badly',
+  'community.linkTitle.07': 'The allotment that outlived three councils',
+  'community.linkTitle.08': 'What the archive found under the floor',
+  'community.linkTitle.09': 'In defence of the ugly building',
+  'community.linkTitle.10': 'Where the ferries used to go',
+  'community.linkTitle.11': 'A field guide to municipal typography',
+  'community.linkTitle.12': 'The winter the harbour froze',
+  'community.linkAbout.01': 'He worked the light for thirty-one years and left the day it was automated.',
+  'community.linkAbout.02': 'Prevailing winds, silt and one very stubborn engineer.',
+  'community.linkAbout.03': 'Opened 1908, closed twice, still colder than it should be.',
+  'community.linkAbout.04': 'One street corner, one camera, one week every February.',
+  'community.linkAbout.05': 'A temporary structure that has now stood for sixty years.',
+  'community.linkAbout.06': 'Everything the author got wrong, in order.',
+  'community.linkAbout.07': 'Three attempts to build on it, three failures.',
+  'community.linkAbout.08': 'Ledgers, a boot, and a letter nobody sent.',
+  'community.linkAbout.09': 'It is not ugly, it is just honest about what it does.',
+  'community.linkAbout.10': 'Twelve routes, two remain, and the timetable that explains why.',
+  'community.linkAbout.11': 'The signs are all the same and nobody agrees who made them.',
+  'community.linkAbout.12': 'Photographs from the six weeks the boats could not move.',
+
+  /* Places. Invented, and used for both people and venues. */
+  'community.place.01': 'Harbour Road',
+  'community.place.02': 'Old Customs House',
+  'community.place.03': 'Riverside Allotments',
+  'community.place.04': 'The North Quay',
+  'community.place.05': 'Mill Lane Studios',
+  'community.place.06': 'Kastellet Park',
+  'community.place.07': 'The Assembly Rooms',
+  'community.place.08': 'Vinter Beach',
+  'community.place.09': 'Sør Harbour',
+  'community.place.10': 'The Old Library',
+  'community.place.11': 'Brick Yard Works',
+  'community.place.12': 'Sundby Bridge',
+  'community.place.13': 'The Long Pier',
+  'community.place.14': 'Grønn Market Hall',
+  'community.place.15': 'Fisher Street',
+  'community.place.16': 'The Boathouse',
+
+  /* What people do. A line under a name, not a job title. */
+  'community.work.01': 'Cartographer',
+  'community.work.02': 'Joiner',
+  'community.work.03': 'Sound engineer',
+  'community.work.04': 'Librarian',
+  'community.work.05': 'Teacher',
+  'community.work.06': 'Archivist',
+  'community.work.07': 'Ceramicist',
+  'community.work.08': 'Boatbuilder',
+  'community.work.09': 'Illustrator',
+  'community.work.10': 'Beekeeper',
+  'community.work.11': 'Printer',
+  'community.work.12': 'Gardener',
+
+  /*
+   * Alt text, one per artwork family.
+   *
+   * Convention 5: every image carries one. These describe the GENERATED
+   * ARTWORK, which is what is actually on screen — not a photograph that does
+   * not exist. The family name is the distinguishing part, which is why there
+   * are ten of them rather than one repeated.
+   */
+  'community.alt.arcs': 'Abstract artwork: nested arcs over a gradient',
+  'community.alt.dunes': 'Abstract artwork: layered dunes',
+  'community.alt.orbits': 'Abstract artwork: circles on an orbit ring',
+  'community.alt.prism': 'Abstract artwork: overlapping triangles',
+  'community.alt.bloom': 'Abstract artwork: soft overlapping discs',
+  'community.alt.ridge': 'Abstract artwork: a jagged ridge line',
+  'community.alt.halo': 'Abstract artwork: concentric halos',
+  'community.alt.tide': 'Abstract artwork: banded tidal curves',
+  'community.alt.facet': 'Abstract artwork: faceted planes',
+  'community.alt.strata': 'Abstract artwork: horizontal strata',
+} as const;
+
+export const en = { ...core, ...wealth, ...banking, ...social, ...community };
+
+/** Every message key the showcase may ask for, across all five verticals. */
 export type MessageKey = keyof typeof en;
 
 /**

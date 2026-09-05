@@ -219,6 +219,41 @@ const EXPECTATIONS = {
     summaryChart: null,
     badgeScreen: null,
   },
+  community: {
+    arabicLocale: 'ar',
+    /*
+     * THE SAME SHAPES LYRA LACKS, LACKED AGAIN — no table, no severity, no
+     * pager, no chart. What this vertical adds over Lyra is depth rather than a
+     * new widget: nested comments, a friendship that has two directions and a
+     * membership that can be pending. None of that is a shape this file knows
+     * how to assert, and all of it is asserted properly in the five builds' own
+     * `verify-browser.mjs`.
+     */
+    listScreen: null,
+    severityWords: [],
+    markerChipCell: null,
+    paginatedScreen: null,
+    bookRows: null,
+    pageRows: null,
+    sortLabels: false,
+    footerScreen: '/profile/',
+    /** A post is the drill, and it renders the back affordance. */
+    detailScreen: '/p/pst-04/',
+    /* No chart — `null` rather than a selector that matches nothing, for the
+       reason spelled out under `social` above. */
+    summaryChart: null,
+    /*
+     * NO BADGE-ON-A-BUTTON, so null — and this was `'/'` first, on the
+     * assumption that the friend-request count was one. It is not: it rides on
+     * the Friends destination as `badge-value`, which `md-navigation-bar` and
+     * `md-navigation-rail-tab` place inside their own shadow roots. There is no
+     * `md-badge` slotted into an `md-button` anywhere in this vertical, which
+     * is the single interaction this check exists to catch, and pointing it at
+     * a screen without one reported a missing element as a defect — the exact
+     * mistake the note above `social` warns about.
+     */
+    badgeScreen: null,
+  },
 };
 
 /**

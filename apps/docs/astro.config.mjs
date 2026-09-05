@@ -473,6 +473,7 @@ export default defineConfig({
             { label: 'Wealth Management Console', link: '/showcase/wealth/' },
             { label: 'Money & Investing App', link: '/showcase/banking/' },
             { label: 'Photos & People', link: '/showcase/social/' },
+            { label: 'Friends & Groups', link: '/showcase/community/' },
           ],
         },
         {

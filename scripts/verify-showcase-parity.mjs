@@ -143,6 +143,23 @@ const SCREENS = {
     '/p/post-02/',
     '/people/ada.lind/',
   ],
+  /*
+   * Nine screens — every destination and all four drills. The drills are named
+   * with real fixture keys rather than the first of each kind, so a re-generate
+   * that reshuffled the ids would fail loudly here rather than quietly compare
+   * a not-found page against a not-found page.
+   */
+  community: [
+    '/',
+    '/friends/',
+    '/groups/',
+    '/events/',
+    '/profile/',
+    '/p/pst-04/',
+    '/people/camille.farrow/',
+    '/g/nordic-film-club/',
+    '/e/harbour-night-screening/',
+  ],
 };
 
 /**

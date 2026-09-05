@@ -64,6 +64,22 @@ const SCREENS = {
      vertical rides on `data:image/svg+xml` URIs, and `img-src 'self' data:` is
      the clause that either permits that or does not. */
   social: ['/', '/explore/', '/create/', '/activity/', '/profile/', '/p/post-02/'],
+  /* The five destinations and all four drills. Same reason as Lyra — every
+     screen draws generated artwork through a `data:` URI — plus this vertical's
+     own: the composer, the reaction picker and the comment box are the three
+     places a build is most tempted to write an inline style, and all three are
+     on `/` or on the post drill. */
+  community: [
+    '/',
+    '/friends/',
+    '/groups/',
+    '/events/',
+    '/profile/',
+    '/p/pst-04/',
+    '/people/camille.farrow/',
+    '/g/nordic-film-club/',
+    '/e/harbour-night-screening/',
+  ],
 };
 
 const POLICY = [

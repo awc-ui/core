@@ -1,0 +1,35 @@
+{
+  "name": "@awc-ui/showcase-community-angular",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lyra \u2014 Photos & People, the Angular flavour of the AWC UI social showcase vertical: standalone components, lazy routes, client-rendered only",
+  "scripts": {
+    "sync-runtime": "node scripts/sync-runtime.mjs",
+    "dev": "pnpm sync-runtime && ng serve",
+    "build": "pnpm sync-runtime && ng build && node scripts/inject-head.mjs && node scripts/fan-out-routes.mjs",
+    "serve": "node scripts/serve-dist.mjs",
+    "verify": "node scripts/verify-browser.mjs",
+    "lint": "tsc -p tsconfig.app.json --noEmit"
+  },
+  "dependencies": {
+    "@angular/common": "~17.3.0",
+    "@angular/compiler": "~17.3.0",
+    "@angular/core": "~17.3.0",
+    "@angular/platform-browser": "~17.3.0",
+    "@angular/router": "~17.3.0",
+    "@awc-ui/core": "workspace:*",
+    "@awc-ui/showcase-kit": "workspace:*",
+    "@fontsource/roboto": "^5.3.0",
+    "material-symbols": "^0.40.2",
+    "rxjs": "^7.8.0",
+    "zone.js": "~0.14.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "~17.3.0",
+    "@angular/cli": "~17.3.0",
+    "@angular/compiler-cli": "~17.3.0",
+    "@types/node": "^20.14.0",
+    "puppeteer": "^24.0.0",
+    "typescript": "~5.4.0"
+  }
+}

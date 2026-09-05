@@ -1,0 +1,2750 @@
+/**
+ * The Corvus app's own stylesheet — the shell, the layout primitives and the
+ * named blocks this vertical draws.
+ *
+ * Shared by all five framework builds, which is the point: the shell that holds
+ * a screen must be pixel-identical across ports or two screenshots of the same
+ * screen stop being comparable evidence. Everything here is either structure
+ * (the rail, the app bar, the screen body) or a primitive the screens compose
+ * (`.panel`, `.row`, `.stack`), and every colour, radius and spacing value is
+ * an M3 token — there is no literal hex in this file.
+ *
+ * WHAT IS NOT HERE: anything a component already does. If a card needs a
+ * surface, it is an `md-card`; if a figure needs a colour, it comes from
+ * `status.ts`. These rules lay things out and nothing more.
+ *
+ * THE SHELL AND LAYOUT SECTIONS ARE THE SAME SHAPE AS THE OTHER FOUR
+ * VERTICALS' — that duplication is deliberate and matches the existing
+ * convention: one stylesheet per vertical, so a change to Lyra cannot silently
+ * reflow this app. What is genuinely different begins at "named blocks", and
+ * the biggest of those differences is the three-column shell, which none of the
+ * other four has.
+ */
+
+/*
+ * `hidden` MEANS HIDDEN, whatever a class underneath it says.
+ *
+ * The user-agent's `[hidden] { display: none }` is a plain type-less rule, so
+ * ANY class rule in this file outranks it: `.post-grid { display: grid }` and
+ * `.feed__end { display: flex }` both win, and an element written with `hidden`
+ * stays on the screen. The plain-HTML build leans on the attribute for every
+ * one of its state swaps — the profile's three grids, the composer's twelve
+ * preview pictures, the explore grid when a filter empties it — so this is
+ * load-bearing there rather than defensive. It was found by the parity check:
+ * the profile screen rendered its saved and tagged grids underneath its posts
+ * grid, 89 characters of text the other four builds did not have.
+ *
+ * `!important` because the alternative is remembering to out-specify it in
+ * every rule that sets `display`, which is the same bug waiting on the next
+ * block anyone adds.
+ */
+[hidden] {
+  display: none !important;
+}
+
+/*
+ * The application's mount node.
+ *
+ * `display: contents` so the framework's root element is transparent to layout
+ * and `.shell` below behaves as though it were a child of <body> — every build
+ * mounts into a div, and without this each one would introduce a block box the
+ * others do not have, which the parity check reads as a layout difference.
+ *
+ * A CLASS, not the `style="display: contents"` attribute this used to be: an
+ * enterprise Content-Security-Policy with `style-src-attr 'none'` refuses inline
+ * style attributes, and that one was in the shipped HTML of every build.
+ */
+.awc-root {
+  display: contents;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* The dock also writes lang/dir/data-theme/data-density here. */
+  color-scheme: light dark;
+
+  /*
+   * THE ROUNDED CUT OF MATERIAL SYMBOLS, library-wide, from one line.
+   *
+   * `packages/tokens` defaults this to the Outlined cut and documents exactly
+   * this swap. Outlined draws square terminals and sharp points — a FILLED star
+   * comes out spiky — while Rounded softens them, which is the shape the chips,
+   * meters and rating on these screens read best against, and the one Storybook
+   * shows because it loads both faces. Every component reads the token, so this
+   * is not a per-component decision and cannot drift into one.
+   *
+   * Outlined stays behind it in the stack: each build's `index.html` decides
+   * which faces it actually loads, and one that has only Outlined falls back to
+   * it rather than to a serif.
+   */
+  --md-sys-icon-font-family: 'Material Symbols Rounded', 'Material Symbols Outlined', 'Material Icons';
+}
+
+body {
+  margin: 0;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-sys-typescale-body-medium-font);
+  /* <awc-showcase-dock> is position: fixed and publishes its measured height
+     here. Without this the last row of every screen sits under the bar — and
+     so does the navigation bar, which docks immediately above the dock. */
+  padding-block-end: var(--awc-dock-height, 0px);
+}
+
+a {
+  color: inherit;
+}
+
+/* ------------------------------------------------------------------- shell */
+
+/*
+ * The app frame: app bar across the top, then rail beside content.
+ *
+ * THE FRAME DOES NOT SCROLL — ONLY `.shell__main` DOES, and that is the whole
+ * point of a fixed block-size here rather than a minimum. When the DOCUMENT
+ * scrolled, two things went wrong at once: the content slid underneath the
+ * sticky app bar, clipping the breadcrumb row against it, and the navigation
+ * rail scrolled away with the page even though a destination list is supposed
+ * to stay put. Both are the same bug — there was no scroll port other than the
+ * viewport, so everything moved together.
+ *
+ * The height subtracts the dock, because <awc-showcase-dock> is fixed to the
+ * bottom and `body` already reserves its measured height as padding. A frame of
+ * a full `100dvh` inside that padded body would overflow by exactly the dock's
+ * height and put the document scrollbar straight back.
+ */
+.shell {
+  display: flex;
+  flex-direction: column;
+  block-size: calc(100dvh - var(--awc-dock-height, 0px));
+  overflow: hidden;
+  /* The rail's `modal` overlay and scrim position against the nearest
+     positioned ancestor. This build does not use modal, but the rail's manual
+     is explicit that a static ancestor is where that breaks, and the cost of
+     being right in advance is one declaration. */
+  position: relative;
+}
+
+/*
+ * Rail and content, side by side.
+ *
+ * `min-inline-size: 0` on the main column is load-bearing: without it a grid
+ * item refuses to shrink below the intrinsic width of its widest child, so one
+ * wide table would push the whole layout past the viewport and produce a
+ * horizontal scrollbar on the DOCUMENT instead of inside the table's own
+ * scroll port.
+ */
+.shell__body {
+  display: flex;
+  flex: 1 1 auto;
+  /* `min-block-size: 0` lets this row shrink inside the fixed frame; without
+     it a flex item floors at its content height and pushes the overflow back
+     out to the document. */
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+/*
+ * The rail is a destination list, so it stays where it is.
+ *
+ * It sits outside `.shell__main`'s scroll port, so it no longer moves with the
+ * content. `overflow: hidden` is the guard for the other direction: a rail with
+ * more destinations than fit would otherwise grow the row and hand the frame
+ * its scrollbar back.
+ */
+.shell__rail {
+  flex: 0 0 auto;
+  overflow: hidden;
+  /* The rail fills the row, and the row is what bounds it. It used to carry
+     `full-height`, which sizes against the VIEWPORT — taller than this row now
+     that the app bar sits above it in a fixed frame, so the rail overflowed
+     `.shell__body` by exactly the bar's height and its last destination was
+     clipped. The attribute is gone; this is the correct bound. */
+  block-size: 100%;
+  border-inline-end: 1px solid var(--md-sys-color-outline-variant);
+  /* The rail's pre-upgrade width floor used to be hand-copied here; it now
+     ships with the library (`@awc-ui/core/css/pre-upgrade.css`, imported in
+     main.tsx), generated from the component's own :host at build time. */
+}
+
+/*
+ * The FAB band needs no reservation any more. `md-navigation-rail` now seeds
+ * `hasFab` from the light DOM in `componentWillLoad`, so the band is open from
+ * the rail's very first painted frame — the repair the 40-line comment that
+ * used to sit here asked for by name. The two `::part()` rules it justified
+ * (and their coupling to the rail's internal `--with-fab` class) went with it.
+ */
+
+/*
+ * The one scroll port in the app.
+ *
+ * `overscroll-behavior: contain` stops a scroll that reaches the end of this
+ * column from chaining out to the document and bouncing the whole frame.
+ */
+.shell__main {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+  /* Full width on purpose. A statement is read ACROSS — the transaction
+     table alone carries twelve columns — and capping the content at a reading
+     measure only forces horizontal scrolling inside the tables while leaving
+     the screen empty on both sides. */
+  padding-inline: var(--md-sys-spacing-inset-xl, 24px);
+  padding-block: var(--md-sys-spacing-inset-lg, 16px) var(--md-sys-spacing-inset-xl, 24px);
+}
+
+/*
+ * Keep every row of the screen at its natural height.
+ *
+ * `.shell__main` is a flex column with a bounded height, and a flex item's
+ * default `flex-shrink: 1` means the screen is COMPRESSED to fit rather than
+ * overflowing — so the column never gains anything to scroll, and the content
+ * is quietly squashed instead. Pinning the children to their content height is
+ * what turns the bounded column into a real scroll port.
+ */
+.shell__main > * {
+  flex-shrink: 0;
+}
+
+/*
+ * The bottom bar sits ABOVE the dock, not under it.
+ *
+ * `--awc-dock-height` is published by <awc-showcase-dock> once it has measured
+ * itself; the fallback of 0 is what a first frame (or a dismissed dock) gets,
+ * and the bar simply sits on the viewport edge then.
+ */
+.shell__bar {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: var(--awc-dock-height, 0px);
+  z-index: var(--md-sys-z-index-navigation, 200);
+  /* This box is anchored by its BOTTOM edge, so a 0-height first frame put the
+     bar's top at the very bottom of the viewport and the surface climbed into
+     place. The height floor that prevented it used to be hand-copied here; the
+     slotted `md-navigation-bar` now floors itself via the library's
+     pre-upgrade sheet, and this wrapper takes its height from that. */
+}
+
+/*
+ * ONE navigation surface at a time.
+ *
+ * M3 is explicit in both directions: a bar is for compact, a rail is for
+ * medium and expanded, and shipping both at once means two active indicators
+ * claiming to be the current destination. `display: none` rather than
+ * `visibility` so the hidden one is out of the accessibility tree too — a
+ * screen reader finding two "Main navigation" landmarks with the same five
+ * destinations is the audible version of the same bug.
+ *
+ * 900px is where the twelve-column holdings table stops fitting beside an 80px
+ * rail. Below it the rail's width is worth more to the table than the labels
+ * are to the reader.
+ */
+.shell__bar {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .shell__rail {
+    display: none;
+  }
+
+  .shell__bar {
+    display: block;
+  }
+
+  .shell__main {
+    padding-inline: var(--md-sys-spacing-inset-md, 12px);
+    /* Clear the docked bar, which is out of flow. 80px is its own height at
+       density 0; it tightens with the density rungs, and the extra few pixels
+       at a compact rung are harmless whitespace under the last panel. */
+    padding-block-end: calc(80px + var(--md-sys-spacing-inset-xl, 24px));
+  }
+}
+
+/* --------------------------------------------------------------- app bar */
+
+/*
+ * The masthead is `role="banner"` and `position: sticky` on its own — the
+ * component does both. What is set here is only what a HOST decides: the tone
+ * that separates it from the content beneath, and the rule that replaces the
+ * elevation M3 does not give a small bar.
+ */
+.shell__appbar {
+  --md-app-bar-container-color: var(--md-sys-color-surface-container-low);
+  border-block-end: 1px solid var(--md-sys-color-outline-variant);
+  /* The library's pre-upgrade sheet floors `md-app-bar` at its own row height;
+     what it cannot know about is the 1px border THIS app draws two lines up,
+     which `border-box` counts inside the box. This rule exists for that pixel:
+     without it the floor is one short of the settled 65px and the frame nudges
+     1px on hydration. The base expression must match the component's — the
+     sheet is generated against it, so drift shows up there first. */
+  min-block-size: calc(
+    var(--md-app-bar-row-height, max(48px, calc(64px + var(--md-sys-density-scale, 0) * 4px))) + 1px
+  );
+}
+
+/*
+ * The screen's body and the placeholder painted over it.
+ *
+ * THE STAGE IS THE POSITIONING CONTEXT, AND THAT IS ITS WHOLE JOB. The real
+ * content keeps its box for the entire life of the screen; the placeholder is
+ * taken out of flow and laid over the top. Revealing is a `visibility` flip, so
+ * there is no reflow to get wrong — 0px of movement at every width, density and
+ * locale, by construction rather than by arithmetic.
+ *
+ * The arithmetic is what this replaced, and it could not have worked: measured
+ * on holdings, `.grid-3` is 268 tall at 1600 and 464 at 1024, the concentration
+ * panel 498 at 1600 and 1384 at 720, and the KPI grid's second row is shorter
+ * than its first because those two tiles hold less. A placeholder that occupies
+ * layout has to predict all of that; hard-coded heights matched at the single
+ * width they were measured at and drifted up to 1102px elsewhere.
+ *
+ * `.screen-body` still restates the column and the gap, because it sits between
+ * `.shell__main` and the sections that used to be its direct children.
+ */
+.screen-stage {
+  position: relative;
+  min-inline-size: 0;
+}
+
+.screen-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+  min-inline-size: 0;
+}
+
+/*
+ * `visibility`, never `display: none`.
+ *
+ * `display: none` would take the box away and hand back the collapse this whole
+ * arrangement exists to prevent. `visibility: hidden` keeps the layout and — the
+ * part that matters for a screen reader — takes the content out of the
+ * accessibility tree, so the placeholder is the only thing announcing.
+ */
+.screen-body[data-placeholder] {
+  visibility: hidden;
+}
+
+/*
+ * The members list's action cluster, hidden while nothing is ticked.
+ *
+ * Same reasoning as the placeholder above — `visibility` keeps the space the
+ * cluster occupies, so the list below does not jump down the moment a row is
+ * selected, and takes the button out of the tab order and the accessibility
+ * tree while it is inert, which `opacity: 0` would not.
+ *
+ * DRIVEN BY `aria-hidden`, which the row already carries: one attribute keeps
+ * what is seen and what is announced in step, and it is a class rather than a
+ * `style="…"` attribute because the plain-HTML build ships this state in the
+ * document and a strict `style-src` refuses inline styles. (React and Vue
+ * write the same state through CSSOM, which is exempt.)
+ */
+[data-cluster][aria-hidden='true'] {
+  visibility: hidden;
+}
+
+/* Same reason as `.shell__main > *`: in a bounded flex column, children
+   compress to fit instead of overflowing unless they are told not to. */
+.screen-body > * {
+  flex-shrink: 0;
+}
+
+/*
+ * Out of flow, over the content — and sized by ITSELF, not by the stage.
+ *
+ * `inset: 0` was the obvious way to write this and it is wrong. The stage takes
+ * its height from the real content, and the real content spends its first
+ * frames un-upgraded and short: measured on holdings, the stage was 148px for
+ * three frames before the components hydrated and it became 1996. A placeholder
+ * stretched to `inset: 0` is clipped to that 148px and then snaps open — the
+ * same flicker as before, moved from the content onto the thing covering it.
+ *
+ * So only the top and the inline edges are pinned, and the block size is the
+ * placeholder's own. It paints at full height from its first frame no matter
+ * what the stage is doing underneath, and because it is out of flow it still
+ * cannot move anything.
+ */
+.screen-stage__placeholder {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  display: flex;
+  flex-direction: column;
+  /*
+   * TIGHTER THAN THE CONTENT IT COVERS, ON PURPOSE.
+   *
+   * The real body uses the 16px section gap because those sections are separate
+   * pieces of furniture a reader has to tell apart. A placeholder has nothing to
+   * tell apart — it is one object suggesting a shape — and at 16px its bars read
+   * as scattered slabs with holes between them. This is only affordable because
+   * the placeholder no longer occupies layout: its spacing is appearance now,
+   * not structure, so it can be set by how it looks rather than by what it has
+   * to match.
+   */
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  min-inline-size: 0;
+}
+
+/* Same reasoning one level down: rows inside a placeholder sit tight to each
+   other rather than at the content's own rhythm. */
+.screen-stage__placeholder .stack {
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+}
+
+.screen-stage__placeholder > * {
+  flex-shrink: 0;
+}
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────
+ * PLACEHOLDER PRIMITIVES — plain DOM, and that is the entire point.
+ *
+ * The placeholder used to be built out of `md-skeleton` and `md-card`. Those
+ * are lazily-hydrated custom elements exactly like the content they stand in
+ * for, so the placeholder had the same disease as the thing it was treating:
+ * measured on holdings, it was 172px for three frames, 228px for one, and only
+ * then 1986px. A loading state that pops open cannot hide a loading state that
+ * pops open.
+ *
+ * Divs have their size from the first paint, before a single chunk has loaded.
+ * They cost nothing, they cannot fail to upgrade, and a placeholder needs none
+ * of what a component gives you — no slots, no a11y semantics of its own, no
+ * variants. It is a grey rectangle with a shimmer.
+ *
+ * Everything below is tokens only, so the placeholder themes, densifies and
+ * mirrors with the rest of the sheet.
+ * ─────────────────────────────────────────────────────────────────────────
+ */
+.skel {
+  display: block;
+  background: var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-extra-small, 4px);
+  flex-shrink: 0;
+  /* The shimmer travels across a gradient wider than the box. `background-size`
+     and the keyframes are the only pair that has to agree here. */
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--md-sys-color-surface-bright) 55%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: skel-shimmer 1.4s var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)) infinite;
+}
+
+@keyframes skel-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* A skeleton is decoration. Honour the reader's setting: hold the surface, drop
+   the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .skel {
+    animation: none;
+  }
+}
+
+.skel--pill {
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+}
+
+.skel--circle {
+  border-radius: 50%;
+}
+
+/*
+ * A card-shaped placeholder surface: the outlined card's own tokens, without
+ * the component. `md-card` publishes these, so the two cannot drift apart
+ * without the tokens changing for both.
+ */
+.skel-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  padding: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px));
+  border-radius: var(--md-sys-shape-corner-medium, 12px);
+  background: var(--md-sys-color-surface-container-low);
+  box-sizing: border-box;
+}
+
+.skel-card--filled {
+  background: var(--md-sys-color-surface-container-highest);
+}
+
+/*
+ * The brand and the demo chip, sharing the app bar's title line.
+ *
+ * `inline-flex` so the pair sits on the baseline row the bar already lays out
+ * — the span is slotted into `part="title"`, so a block here would take the
+ * chip out of the title's own line box. The chip brings its own typescale, so
+ * it does not inherit the headline's size.
+ */
+.shell__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  min-inline-size: 0;
+}
+
+/* The reporting context, in the app bar's trailing cluster. */
+.shell__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+  padding-inline-end: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+/* Below the rail breakpoint the reporting context is the first thing to go —
+   the app bar has three trailing children at most, and on a phone the date
+   matters less than the actions do. */
+@media (max-width: 719px) {
+  .shell__meta {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------ breadcrumbs */
+
+/*
+ * The trail row, whose HEIGHT is reserved whether or not it has a trail in it.
+ *
+ * The trail only appears on the drill into a household; the five destination
+ * screens get their "where am I" from the rail's active indicator, so a trail
+ * there would only repeat it. But an empty row still has to occupy the same
+ * space as a full one, because a row that comes and goes moves the heading and
+ * every panel under it on each navigation — which is exactly what "jumpy"
+ * means. `min-block-size` rather than a fixed height, so a trail that wraps on
+ * a narrow viewport can still grow.
+ */
+.shell__trail {
+  display: flex;
+  align-items: center;
+  min-block-size: 36px;
+}
+
+/**
+ * DON'T RESERVE THE TRAIL BAND ON A PHONE.
+ *
+ * The reservation exists so the heading does not jump between a screen with
+ * breadcrumbs and one without. That is worth 36px on a desktop and it is not
+ * worth 36px of an 844px phone — especially here, where only the two drill
+ * screens have a trail at all and you reach one by tapping a row, so the whole
+ * page changes anyway and there is no jump left to prevent.
+ *
+ * The band still takes its natural height where it has crumbs; only the empty
+ * reservation goes.
+ */
+@media (max-width: 719px) {
+  .shell__trail {
+    min-block-size: 0;
+  }
+}
+
+/* ------------------------------------------------------------- screen head */
+
+.screen-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+.screen-head__text {
+  min-inline-size: 0;
+  flex: 1 1 260px;
+}
+
+.screen-head h1 {
+  font: var(--md-sys-typescale-headline-medium-font);
+  margin: 0;
+}
+
+.screen-head p {
+  font: var(--md-sys-typescale-body-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+  margin: var(--md-sys-spacing-gap-xs, 4px) 0 0;
+}
+
+.screen-head__aside {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  flex-wrap: wrap;
+}
+
+/*
+ * The screen's own action strip.
+ *
+ * `md-toolbar variant="floating"` is an inline pill, which is why it can live
+ * here at all — the docked variant is `position: sticky` against the BOTTOM
+ * edge, where the navigation bar and the dock already are. Aligned to the end
+ * so the actions sit opposite the heading rather than under it.
+ */
+.screen-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  /* The 64px height floor that stopped this row collapsing pre-upgrade used to
+     be hand-copied here; the floating `md-toolbar` inside it now floors itself
+     via the library's pre-upgrade sheet, and this row takes its height from
+     that. */
+}
+
+/*
+ * NO OUTER MARGIN ON THE PILL.
+ *
+ * `md-toolbar` gives its floating variant `margin-inline: 16px` — right for a
+ * toolbar floating free over a canvas, where that margin is what keeps it off
+ * the viewport edge. This one is not floating over anything: it sits in a
+ * screen row that `.shell__main` has already inset by 24px, so the margin was
+ * a second inset stacked on the first and the pill hung 16px short of the
+ * trailing edge every other block on the screen lines up to.
+ *
+ * Zeroed here and not in the component: the component's default is correct for
+ * its own case, and this app is the one placing it in an already-inset row.
+ */
+.screen-toolbar md-toolbar {
+  margin-inline: 0;
+}
+
+/* ------------------------------------------------------------------- cards */
+
+.panel {
+  display: block;
+}
+
+.panel__inner {
+  padding: var(--md-sys-spacing-inset-lg, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  min-inline-size: 0;
+}
+
+.panel__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  flex-wrap: wrap;
+}
+
+/*
+ * Title and subtitle are ONE heading: they share a line, and the subtitle
+ * drops beneath the title only when the card is too narrow to hold both. That
+ * is `flex-wrap`, not a media query — the width that runs out is the CARD's,
+ * and the same panel is full-bleed on one screen and a third of a row on
+ * another, so no viewport breakpoint can name the moment it happens.
+ *
+ * `row-gap: 0` because the wrapped form has to stay exactly the stacked form
+ * it replaces: title line box, subtitle line box, nothing between them. Only
+ * the column gap separates the two while they share a line.
+ *
+ * `min-inline-size: 0` defeats the automatic minimum size a flex item takes
+ * from its content, which would otherwise push this heading — and with it the
+ * head — wider than the card instead of wrapping inside it. It does not make
+ * the heading collapse early: `.panel__head` decides whether `actions` share
+ * this row from CONTENT widths, before any item is shrunk. So the order of
+ * retreat is subtitle beside title, then actions to their own row, then
+ * subtitle under title, and only then the character break below.
+ */
+.panel__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--md-sys-spacing-gap-sm, 8px);
+  row-gap: 0;
+  min-inline-size: 0;
+}
+
+.panel__title {
+  font: var(--md-sys-typescale-title-small-font);
+  margin: 0;
+  min-inline-size: 0;
+  /*
+   * `anywhere`, not `break-word`: only `anywhere` also shrinks the intrinsic
+   * min-content width, which is what keeps a single unbroken token — an ISIN,
+   * a reference number, a hyphen-free instrument name — from setting a floor
+   * wider than the card and spilling out of it.
+   */
+  overflow-wrap: anywhere;
+}
+
+.panel__sub {
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+  margin: 0;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * The label for a control that has no label of its own.
+ *
+ * A radio group, a checkbox list, a slider, a rating, a switch: the group needs
+ * a name, and unlike a text field there is no floating label to carry it. These
+ * used to borrow `.panel__sub`, which is a SUBTITLE — body-small, on-surface-
+ * variant — and that inverted the hierarchy wherever the group also had help
+ * text, because help text is body-medium in the same colour. "Investment
+ * horizon" was rendering at 12px above a 14px "How long the money stays
+ * invested": the label was the quietest thing in its own group, and the eye
+ * landed on the sentence instead of on the name of the thing.
+ *
+ * Title-small is the smallest step that fixes it — same 14px as the help text,
+ * so nothing grows, but 500 weight in full on-surface, so the label reads as
+ * the head of the group and the sentence reads as a note under it.
+ */
+.field-label {
+  font: var(--md-sys-typescale-title-small-font);
+  color: var(--md-sys-color-on-surface);
+  margin: 0;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * The signed proposal's allocation, as five things to COMPARE.
+ *
+ * This was a flat `.row` of `.row`s: a chip, its percentage, the next chip, its
+ * percentage, all at the same 8px. Two failures at once. Nothing grouped —
+ * "54.0%" sat as close to "Fixed income" as to the "Equity" it belongs to — and
+ * because the chips are all different widths (Cash 64px, Fixed income 117px),
+ * the figures landed at five unrelated positions, so the one thing a reader
+ * comes here to do, compare five percentages, needed five separate fixations.
+ *
+ * A grid of equal cells fixes both: each cell is one pair, so the pairs are
+ * separated by a real gutter, and within a cell the figure is pushed to the
+ * trailing edge — which is shared, because the cells are equal. The percentages
+ * line up down a column of their own and the chips line up down another.
+ *
+ * (This is not the right-alignment `.dl--numeric` was deleted for. That pulled
+ * a label away from its value across a wide free-form cell. Here the cell is
+ * narrow and fixed, and the label and value are the two ends of one short row —
+ * the ordinary "name ....... figure" line.)
+ */
+.alloc-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  /* 8px down, 28px across — the whole point of the rule. Everything here used
+     to sit at a uniform 8px, so "54.0%" was as close to the "Fixed income"
+     after it as to the "Equity" it belongs to, and the run read as ten loose
+     items instead of five labelled figures. The gutter has to be visibly
+     larger than the pair's own gap for the pairing to survive. */
+  gap: var(--md-sys-spacing-gap-sm, 8px) 28px;
+}
+
+/*
+ * An equal-column grid was the other way to do this, and it was worse. It does
+ * line the figures up — but on a row of five, vertical alignment buys nothing
+ * (they are side by side, not stacked), and pushing each figure to its cell's
+ * trailing edge opened ~90px between a chip and its own percentage. The pairs
+ * came apart to buy an alignment nobody reads. Tight pairs, wide gutters.
+ */
+.alloc-summary > * {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  min-inline-size: 0;
+}
+
+.alloc-summary > * > :last-child {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * The code closes the step, underneath BOTH columns.
+ *
+ * Three placements were measured. At the foot of the right-hand column, under
+ * ten instruments and a "N more" line, it was the one thing the advisor has to
+ * DO on this step, put last in the secondary column. Moved into the summary
+ * column and pinned down with `margin-block-start: auto`, the two columns
+ * finished level — but the summary is ~300px shorter than the instrument list,
+ * so all 300px opened up in the MIDDLE of the column and the code box read as
+ * orphaned; a hole in the middle looks like something failed to load, which a
+ * hole at the end does not.
+ *
+ * So it sits below the grid instead. Reading order is what is being signed,
+ * then what it holds, then the box that signs it, and a full-width band under
+ * two ragged columns closes the layout rather than competing with it.
+ */
+.sign-block {
+  padding-block-start: var(--md-sys-spacing-inset-xl, 24px);
+  /*
+   * Takes the card's leftover height and centres in it.
+   *
+   * The summary above it is a fixed amount of content, and the card is as tall
+   * as the instrument list beside it, so there is always slack underneath — the
+   * code boxes were sitting in the top-left corner of a large empty area, which
+   * made the one thing the advisor has to DO look like a footnote. `flex: 1`
+   * claims that slack instead of leaving it, and `place-content: center` puts
+   * the field in the middle of it on both axes, so the empty space frames the
+   * field rather than trailing after it.
+   */
+  flex: 1 1 auto;
+  display: grid;
+  place-content: center;
+}
+
+/* --------------------------------------------------------------- kpi tiles */
+
+/*
+ * `min(210px, 100%)`, NOT a bare `210px`, and this is a real bug rather than
+ * belt-and-braces.
+ *
+ * A bare floor in `minmax()` is a MINIMUM the track must honour, so in any
+ * container narrower than the floor the track overflows instead of shrinking.
+ * Measured on the analytics screen at 360px: the budget cards sit inside a
+ * panel whose content box is 272px, the `.grid-2` floor is 340px, and the card
+ * hung 68px past its panel. `min(floor, 100%)` caps the floor at the container,
+ * so a narrow container gets one full-width track instead of an overflowing
+ * one. Every auto-fit grid in this file needs it.
+ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+/*
+ * TWO TILES ACROSS ON A PHONE, not one.
+ *
+ * At 360px the 210px floor resolves to a single column, so the four headline
+ * figures became four full-width rows and pushed everything else a screen and
+ * a half down — measured: the home screen was 5.1 phone screens tall. A KPI
+ * tile is a label, a number and a hint; at ~160px it still holds a compact
+ * currency figure without wrapping, and the block halves in height.
+ */
+@media (max-width: 599px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--md-sys-spacing-gap-sm, 8px);
+  }
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  padding: var(--md-sys-spacing-inset-lg, 16px);
+  min-inline-size: 0;
+}
+
+.kpi__label {
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+  margin: 0;
+}
+
+.kpi__value {
+  font: var(--md-sys-typescale-headline-small-font);
+  color: var(--md-sys-color-on-surface);
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.kpi__spark {
+  margin-block-start: var(--md-sys-spacing-gap-xs, 4px);
+}
+
+/**
+ * A TIGHTER KPI TILE ON A PHONE.
+ *
+ * Measured at 390px: four tiles at ~155px each, two rows, 310px — 37% of the
+ * viewport spent on four numbers before the reader has seen an account. The
+ * headline typescale and 16px of inset are right on a desktop tile that is
+ * 300px wide; on a 185px one they are most of the box.
+ *
+ * The value drops one step to title-large and the inset to 12px, which brings
+ * a tile to about 100px without shrinking the number below the thing a reader
+ * is actually here to read. The sparkline is dropped rather than squeezed: at
+ * 185px wide it is a 12-month curve in 160px, which is a texture rather than a
+ * trend, and the tile beside it is not the place to read one.
+ */
+@media (max-width: 599px) {
+  .kpi {
+    gap: 2px;
+    padding: var(--md-sys-spacing-inset-md, 12px);
+  }
+
+  .kpi__value {
+    font: var(--md-sys-typescale-title-large-font);
+  }
+
+  .kpi__spark {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ layout */
+
+/*
+ * Cards in a row share a height — `stretch`, not `start`.
+ *
+ * With `start` each card is only as tall as its own content, so two panels side
+ * by side end at different heights and the row reads as ragged rather than as a
+ * pair. `.panel` is `display: block` and its inner is a flex column, so the
+ * extra height lands as card background under the content rather than
+ * stretching the content itself.
+ */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  align-items: stretch;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  align-items: stretch;
+}
+
+/* A wide panel beside a narrow one — a chart and its legend, a table and its
+   summary. Collapses to one column below the same 900px the rail does. */
+.grid-wide {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(min(280px, 100%), 1fr);
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  align-items: stretch;
+}
+
+@media (max-width: 899px) {
+  .grid-wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+/*
+ * A form's vertical rhythm, which is not a stack's.
+ *
+ * `.stack` is 12px, right for a run of blocks that belong together. A form row
+ * is not that: each one carries a field AND its supporting text, so at 12px the
+ * hint under one field sits closer to the NEXT field's label than to the field
+ * it explains — the rows stop reading as rows. This is the same 24px the screen
+ * uses between its sections, because a form row is a section of the form.
+ */
+/* There is no `--md-sys-spacing-gap-xl`, so `inset-xl` is the only 24px token
+   that still tracks density (20px at -2, 16px at -3/-4). A hard 24px here would
+   stay 24px while every field around it got shorter. */
+.stack.form-stack {
+  gap: var(--md-sys-spacing-inset-xl, 24px);
+}
+
+/*
+ * The pickers fill their grid cell like every other field.
+ *
+ * `md-date-picker` and `md-time-picker` shrink-wrap their trigger field —
+ * they publish no width prop and no width custom property — so in a two-column
+ * form the date sat at 360px beside 698px neighbours and the row looked broken.
+ * Their own trigger stretches once the host does.
+ */
+.form-stack md-date-picker,
+.form-stack md-time-picker {
+  inline-size: 100%;
+  /* Lift `md-date-picker`'s 360px trigger ceiling inside the form, so the pair
+     matches each other AND the rows above them — through the component's own
+     public property now, rather than overriding its host from outside. The
+     component keeps its default everywhere else. (Harmless on md-time-picker,
+     which reads no such property.) */
+  --md-date-picker-trigger-max-width: none;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+.row--end {
+  justify-content: flex-end;
+}
+
+.row--between {
+  justify-content: space-between;
+}
+
+/* ------------------------------------------------------------------- links */
+
+.drill {
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+}
+
+.drill:hover {
+  text-decoration: underline;
+}
+
+.drill:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+/*
+ * The badge and the dot both sit on the avatar RIM, and neither needs a
+ * hand-tuned offset any more.
+ *
+ * This used to carry `--md-badge-offset-x: 8%` / `-y: -35%` — numbers found by
+ * eye, correct for one avatar at one size and silently wrong at any other,
+ * because a translate percentage is relative to the BADGE, not to the host it
+ * is meant to hug. `md-badge` and `md-status-dot` now both take
+ * `shape="circle"`, which anchors them with percentages of the HOST and is
+ * therefore right at every size. The call sites say what the host is; nothing
+ * here has to know its diameter.
+ */
+
+/*
+ * A card that sits on the SAME surface the charts do.
+ *
+ * `md-card variant="outlined"` paints `--md-sys-color-surface` (#1C1B1F in
+ * the dark scheme); `md-line-chart` and `md-pie-chart` paint
+ * `surface-container-low` (#1D1B20). One shade apart, which is invisible in
+ * isolation and obvious when a fact card sits directly beneath a chart on the
+ * same panel.
+ *
+ * Set through the card's own documented custom property rather than a literal,
+ * so it follows the theme, the accent preset and the light scheme with
+ * everything else.
+ */
+.surface-card {
+  --md-card-container-color: var(--md-sys-color-surface-container-low);
+}
+
+/*
+ * A card whose whole content is one fact grid, sitting beside something taller.
+ *
+ * `.grid-wide` stretches its items, so this card is as tall as the chart next
+ * to it — measured 260px against a 198px grid, which left 30px of dead space
+ * under the last row while the rows themselves bunched at the top on a flat
+ * 12px gap. Filling the card and DISTRIBUTING the rows spends that space where
+ * it helps: the three rows breathe, and the block reads as deliberate rather
+ * than as content that ran out.
+ *
+ * `align-content` and not `justify-content`: the grid's block axis is what
+ * has slack. The row gap is a floor, so a card with no slack still separates
+ * its rows properly.
+ */
+/* When the grid sits under a header row — chips, a title — the wrapper has to
+   pass the card's spare height down to it, or the grid has nothing to
+   distribute and the slack pools under the last row instead. */
+.fact-card > .stack {
+  flex: 1 1 auto;
+  min-block-size: 0;
+}
+
+.fact-card .dl {
+  flex: 1 1 auto;
+  align-content: space-between;
+  row-gap: var(--md-sys-spacing-gap-lg, 16px);
+  column-gap: var(--md-sys-spacing-gap-xl, 24px);
+}
+
+/* --------------------------------------------------------------- data bits */
+
+/*
+ * Figures line up by place value or they cannot be compared, so every number
+ * on every screen goes through one of these. `tabular-nums` gives each digit
+ * the same advance width; `text-align: end` puts the units under the units.
+ */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.num--end {
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  display: block;
+}
+
+/*
+ * `margin: 0` is not cosmetic here — it is what makes a caption belong to
+ * something.
+ *
+ * `.muted` is nearly always a `<p>`, and a UA paragraph carries `margin: 1em 0`.
+ * Inside a `.stack` — a flex column whose spacing comes from `gap` — those
+ * margins do not collapse and are pure noise, added on BOTH sides. Measured on
+ * the allocation step: the stack gap is 12px and the grid row gap is 12px, but
+ * the caption under a weight field sat 26px below the field it explains and
+ * 26px above the NEXT field's label. Perfectly equidistant, so it read as
+ * belonging to neither, and the whole grid stopped grouping.
+ *
+ * `.panel__title`, `.panel__sub` and `.field-label` all zero their margins for
+ * this reason; `.muted` was the one that got missed.
+ */
+.muted {
+  color: var(--md-sys-color-on-surface-variant);
+  margin: 0;
+}
+
+/*
+ * A validation message for a control that cannot carry its own.
+ *
+ * `md-text-field`, `md-select`, `md-number-field`, `md-otp-field`,
+ * `md-date-picker` and `md-time-picker` all hold their message inside
+ * themselves, where it belongs and where the supporting-text line is already
+ * reserved. `md-slider`, `md-rating`, `md-switch`, `md-transfer-list` and a
+ * group of `md-checkbox`es have no such slot, so those messages are the app's
+ * to draw — and they occupy the SAME line the hint was using, never an extra
+ * one, or the control below moves every time validation fails.
+ *
+ * The colour is the `error` ROLE. `.pl-down` is the same red but it means "this
+ * figure went down", and reusing it would put a P/L class on a validation
+ * message.
+ */
+.field-error {
+  margin: 0;
+  color: var(--md-sys-color-error);
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The submit dialog's progress bar appears mid-flow when the send starts. The
+   fact grid above it ends on a chip, and with no margin the wave began right
+   under that chip and read as part of the last fact rather than as the state of
+   the whole dialog. */
+.submit-progress {
+  display: block;
+  margin-block-start: var(--md-sys-spacing-inset-xl, 24px);
+}
+
+/*
+ * A filter-chip set sitting in a table container's `top` band, under the
+ * toolbar.
+ *
+ * `.row` already supplies the flex, the wrap and the 8px gap the chip docs ask
+ * for; all this adds is the alignment. The inline padding repeats the toolbar's
+ * OWN expression rather than reaching for `--md-sys-spacing-inset-xl`, because
+ * the two disagree away from density 0 — the toolbar runs 24/22/20/18/16 and
+ * inset-xl runs 24/24/20/16/16, so a chip row built on the token would sit a
+ * couple of pixels off the headline at three of the five rungs the dock can
+ * write. There is no padding-block-start: the toolbar's own block padding is
+ * already the gap between them.
+ */
+/**
+ * ONE SCROLLING LINE PER FACET ON A PHONE, not a wrapped block.
+ *
+ * The statement has four facet rows — month, account, category, status — and
+ * with 48px touch targets they wrapped into six lines of chips, about a third
+ * of a screen of filters above the thing being filtered. A horizontally
+ * scrollable chip row is the Material pattern for exactly this, and it keeps
+ * each facet to one line whatever the locale does to the label lengths.
+ *
+ * `scroll-snap` so a swipe lands on a chip rather than halfway through one, and
+ * the scrollbar is hidden because the chips are self-evidently a row that
+ * continues — a visible bar under each of four rows is four bars of noise.
+ * Scrolling stays reachable by keyboard: the row is focusable-by-content, and
+ * tabbing to a chip scrolls it into view.
+ */
+/**
+ * `md-search` CANNOT FIT A 360px PHONE at its defaults, and this is the fix.
+ *
+ * The component sets `min-inline-size: var(--md-search-container-min-inline-size, 360px)`.
+ * On the most common small phone width that minimum is the entire viewport, so
+ * the bar overflows its container by whatever padding sits around it —
+ * measured at 37px inside this screen's filter panel. Nothing the host lays out
+ * can shrink it, because a min-inline-size wins over the parent's width.
+ *
+ * Zeroing the floor through the component's own custom property is the
+ * supported way out; the bar still fills its container through the
+ * `inline-size: 100%` beside it. Worth raising upstream — a 360px floor makes
+ * the component unusable at 360px in any app — but the default is not this
+ * vertical's to change.
+ */
+@media (max-width: 719px) {
+  md-search {
+    --md-search-container-min-inline-size: 0;
+  }
+}
+
+/**
+ * A labelled facet: a caption over its chips.
+ *
+ * Four rows of outlined chips with nothing above them are four identical grey
+ * bands, and a reader cannot tell the months from the accounts from the
+ * categories without reading every chip. The caption is one line of
+ * label-medium and it is what makes the panel scannable.
+ */
+.facet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  min-inline-size: 0;
+}
+
+.facet__label {
+  margin: 0;
+  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* The count and the reset, on their own line under the facets. */
+.facet-foot {
+  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  padding-block-start: var(--md-sys-spacing-gap-xs, 4px);
+}
+
+/**
+ * SCROLLING CHIP ROWS, AND THE FADE THAT SAYS SO.
+ *
+ * A row that simply stops at the container edge reads as clipped, not as
+ * scrollable — the category row ended mid-word on "Entertainment" and looked
+ * broken. `mask-image` fades the last 24px of a row that overflows, which is
+ * the conventional signal that there is more in that direction.
+ *
+ * The fade is applied unconditionally rather than only when the row overflows,
+ * because CSS cannot ask whether an element scrolls. On a row that FITS the
+ * gradient still exists, so a last chip ending inside the final 24px would be
+ * faded for no reason — checked across 640/700/719px in all three locales, and
+ * the smallest margin on a fitting row is 40px, so it does not happen with this
+ * content. It is a content-dependent assumption rather than a guarantee; if a
+ * future facet lands a chip in that band, the fix is a `data-scrollable`
+ * attribute set from a ResizeObserver, not a wider guess here.
+ *
+ * It is `mask-image` and not an overlay pseudo-element so it works on any
+ * background — an overlay would have to guess the surface colour and would be
+ * wrong inside a card.
+ *
+ * Logical properties throughout (`inline-end`, not `right`), so the fade is on
+ * the correct side under `dir="rtl"`.
+ */
+.facet-row {
+  --_fade: 24px;
+
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  /* Both, and they do different jobs: `padding` keeps the chips off the port's
+     edges, `scroll-padding` keeps a snapped chip off them too. */
+  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  scroll-padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  scrollbar-width: none;
+  mask-image: linear-gradient(
+    to var(--_fade-dir, right),
+    #000 calc(100% - var(--_fade)),
+    transparent 100%
+  );
+}
+
+[dir='rtl'] .facet-row {
+  --_fade-dir: left;
+}
+
+.facet-row::-webkit-scrollbar {
+  display: none;
+}
+
+.facet-row > * {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/*
+ * The wrapped layout comes back where there is room for it. Above the phone
+ * breakpoint a facet has space for its chips on one or two lines, and wrapping
+ * beats scrolling with a mouse — there is no swipe.
+ */
+@media (min-width: 720px) {
+  .facet-row {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    mask-image: none;
+  }
+}
+
+.strong {
+  font-weight: 500;
+}
+
+/* A signed figure. The COLOUR is never the only carrier — the sign is in the
+   text, because `signDisplay: 'exceptZero'` is what the formatters are given. */
+.pl-up {
+  color: var(--md-sys-color-success);
+}
+
+.pl-down {
+  color: var(--md-sys-color-error);
+}
+
+.pl-flat {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ------------------------------------------------------------ fact  grids */
+
+.dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  margin: 0;
+}
+
+.dl > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.dl dt {
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.dl dd {
+  font: var(--md-sys-typescale-body-large-font);
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * THERE IS NO `.dl--numeric` ANY MORE, and the reason is worth keeping.
+ *
+ * It right-aligned both the term and the value of every fact in a grid, on the
+ * theory that figures compare best flush-right. That is true INSIDE A TABLE,
+ * where a column of numbers shares one edge and place values line up down the
+ * page. A fact grid is not a table: each cell is its own island, so aligning to
+ * the trailing edge lines the figures up against nothing and drags every label
+ * away from the reader's eye. On the household return windows it put six
+ * headings and their values hard against the right of a 1080px panel with a
+ * river of empty space to their left.
+ *
+ * Right-alignment of numbers belongs to `md-table` — which does it properly,
+ * per column, via `md-table-cell numeric`. `tabular-nums` on `.dl dd` above is
+ * the part that was actually earning its keep and it stays.
+ */
+
+/* ----------------------------------------------------------- named blocks */
+/* ============================================================================
+ * Everything below is Corvus's own. The sections above are the shared shell.
+ * ========================================================================= */
+
+/* ------------------------------------------------------- three columns */
+
+/**
+ * THE SIGNATURE LAYOUT OF THIS VERTICAL, and the reason it is a separate
+ * application rather than Lyra with different nouns.
+ *
+ * Three columns on a wide screen: the navigation rail (from the shell), the
+ * feed, and a right rail of contacts, birthdays and events. Lyra is one capped
+ * column with a single aside; this is a genuinely different problem, because
+ * the middle column has to stay READABLE while two fixed-width neighbours eat
+ * into it.
+ *
+ * THE FEED IS CAPPED AND THE RAILS ARE NOT FLEXIBLE. `minmax(0, 680px)` on the
+ * middle and a fixed 300px on the right — not `1fr 300px`, which would let a
+ * 2560px monitor stretch the feed to 2000px and turn every post into a single
+ * line of text. The `minmax(0, …)` rather than a bare `680px` is load-bearing
+ * too: a grid track sized only by its content refuses to shrink below its
+ * largest item, and one long unbroken word in a post body would then push the
+ * right rail off the screen.
+ *
+ * TWO BREAKPOINTS, NOT ONE.
+ *   · below 1200px the right rail goes, because 300px of contacts is not worth
+ *     100px off the feed;
+ *   · below 900px the shell swaps the navigation rail for the bottom bar, which
+ *     is the shared shell's own breakpoint and nothing here has to know it.
+ *
+ * The right rail is `position: sticky` so it stays put while the feed scrolls —
+ * it is reference material, not part of the reading order, and scrolling it
+ * away would mean scrolling back up to use it.
+ */
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 680px) 300px;
+  gap: var(--md-sys-spacing-gap-xl, 24px);
+  align-items: start;
+  justify-content: center;
+  inline-size: 100%;
+}
+
+.columns__main {
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+}
+
+.columns__rail {
+  position: sticky;
+  /* Clear of the app bar, which is the only fixed thing above it. */
+  inset-block-start: var(--md-sys-spacing-gap-lg, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+  min-inline-size: 0;
+}
+
+@media (max-width: 1199px) {
+  .columns {
+    grid-template-columns: minmax(0, 680px);
+  }
+  .columns__rail {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------- composer */
+
+/**
+ * The inline composer at the top of the feed.
+ *
+ * IT IS A TRIGGER, NOT A FORM, until it is pressed. A permanently-open
+ * multi-line textarea with an audience picker and three buttons costs 180px at
+ * the top of every visit to the feed, and the reader came for the feed. Pressed,
+ * it expands in place — which is a harder layout than a separate screen and is
+ * exactly why this vertical has no Create destination.
+ */
+.composer {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+.composer__trigger {
+  flex: 1;
+  min-inline-size: 0;
+  text-align: start;
+  padding: var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px);
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full, 999px);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-large-font);
+  cursor: pointer;
+}
+
+.composer__trigger:hover {
+  background: var(--md-sys-color-surface-container-highest);
+}
+
+.composer__open {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+.composer__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  flex-wrap: wrap;
+}
+
+.composer__spacer {
+  flex: 1;
+}
+
+/* ------------------------------------------------------------ post card */
+
+.post-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+.post-card__head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+.post-card__author {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  min-inline-size: 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.post-card__names {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+
+.post-card__name {
+  font: var(--md-sys-typescale-title-small-font);
+  color: var(--md-sys-color-on-surface);
+}
+
+/**
+ * The second byline shape: "Ada Lindqvist › Nordic Film Club".
+ *
+ * A CHEVRON, NOT THE WORD "in". The group is a second link on the same line and
+ * a preposition between two links reads as part of the first one; a separator
+ * glyph belongs to neither. The translated "in {group}" string still exists for
+ * the accessible name, where word order matters and a chevron says nothing.
+ */
+.post-card__in {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-inline-size: 0;
+}
+
+.post-card__group {
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+  font: var(--md-sys-typescale-label-large-font);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.post-card__group:hover {
+  text-decoration: underline;
+}
+
+.post-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-small-font);
+}
+
+.post-card__meta .material-symbols-outlined {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/**
+ * The body, truncated to four lines with a "see more".
+ *
+ * `-webkit-line-clamp` IS THE ONLY THING THAT DOES THIS, and it is not a
+ * prefix-era relic: it is specified in CSS Overflow 3 as `line-clamp` and every
+ * engine ships it under the `-webkit-` name. A `max-height` in `em` is the
+ * alternative and it is worse in the way that matters — it cuts through the
+ * middle of a line rather than at a line boundary, so the last line of a
+ * truncated post is a row of half-height letterforms.
+ *
+ * THE CLAMP IS REMOVED, NOT INCREASED, when the reader expands: `-webkit-line-clamp`
+ * has no "unset to natural height" value that works in every engine, so the
+ * expanded state simply does not set `display: -webkit-box` at all.
+ */
+.post-card__body {
+  margin: 0;
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-sys-typescale-body-large-font);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.post-card__body[data-clamped] {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+}
+
+.post-card__more {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--md-sys-color-primary);
+  font: var(--md-sys-typescale-label-large-font);
+  cursor: pointer;
+}
+
+.post-card__more:hover {
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------------------ post media */
+
+/**
+ * One to four photos, in a grid whose shape depends on how many there are.
+ *
+ * FOUR LAYOUTS, NOT ONE RESPONSIVE GRID. `repeat(auto-fit, …)` would give two
+ * awkward halves for three images and a 1×4 strip for four. The shapes below
+ * are the ones every product of this kind converges on because they are the
+ * ones that read as a set: one fills, two split, three are a big one and two
+ * stacked, four are a square.
+ */
+.post-photos {
+  display: grid;
+  gap: 2px;
+  border-radius: var(--md-sys-shape-corner-medium, 12px);
+  overflow: hidden;
+}
+
+.post-photos[data-count='1'] {
+  grid-template-columns: 1fr;
+}
+
+/*
+ * THE GRID IS HEIGHT-CAPPED, and it has to be.
+ *
+ * Square cells in a 680px column make a 2x2 grid 680px tall — a post whose
+ * pictures are taller than a laptop's viewport, so the reader scrolls past four
+ * images to reach the reactions. Capping the CONTAINER and letting the rows
+ * divide it is what bounds the whole attachment; `object-fit: cover` on the
+ * cells absorbs the difference, which is already how a multi-image set is
+ * cropped.
+ *
+ * The single-image case is capped separately and much higher (560px): one
+ * picture IS the attachment, and there is nothing below it competing for the
+ * screen.
+ */
+.post-photos[data-count='2'] {
+  grid-template-columns: 1fr 1fr;
+  block-size: 340px;
+}
+
+.post-photos[data-count='3'] {
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  block-size: 400px;
+}
+
+.post-photos[data-count='3'] > :first-child {
+  grid-row: span 2;
+}
+
+.post-photos[data-count='4'] {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  block-size: 420px;
+}
+
+.post-photos__cell {
+  display: block;
+  min-inline-size: 0;
+  overflow: hidden;
+}
+
+/*
+ * A SET IS CROPPED, A SINGLE PICTURE IS NOT. With more than one image the cells
+ * have to agree or the grid has ragged edges, so they are square-cropped; alone,
+ * the picture keeps its own ratio because there is nothing for it to line up
+ * with and cropping it would be throwing away the photograph for no reason.
+ */
+/* No `aspect-ratio` on the cells: the container's `block-size` above already
+   decides the height, and a ratio as well would fight it — the cell would size
+   itself from its width and overflow the box it was given. */
+.post-photos:not([data-count='1']) .post-photos__cell {
+  min-block-size: 0;
+}
+
+.post-photos__cell img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.post-photos[data-count='1'] img {
+  block-size: auto;
+  max-block-size: 560px;
+  object-fit: cover;
+}
+
+/* ---------------------------------------------------------- link preview */
+
+/**
+ * The link card.
+ *
+ * NOT AN ANCHOR, and that is deliberate rather than an omission — see the note
+ * on `LinkPreview` in the kit. Nothing here navigates off the app, so a live
+ * href would put a real outbound request behind a fictional article. It also
+ * means the card can sit inside the post's own link target without nesting one
+ * anchor in another.
+ */
+.link-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-medium, 12px);
+  overflow: hidden;
+  background: var(--md-sys-color-surface-container-low);
+}
+
+.link-card__image {
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+}
+
+.link-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--md-sys-spacing-inset-md, 12px) var(--md-sys-spacing-inset-lg, 16px);
+}
+
+.link-card__domain {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.link-card__title {
+  margin: 0;
+  font: var(--md-sys-typescale-title-small-font);
+  color: var(--md-sys-color-on-surface);
+  /* Two lines, then ellipsis: a headline is allowed to wrap once. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.link-card__about {
+  margin: 0;
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  overflow: hidden;
+}
+
+/* ----------------------------------------------------------- shared post */
+
+/**
+ * A post inside a post.
+ *
+ * TWO LEVELS OF SURFACE AND ONLY ONE BORDER. The outer card is an `md-card`
+ * with its own elevation; the inner one is a bordered box on the same ground
+ * rather than a second card, because two stacked elevations read as a modal
+ * over a modal. The border is what says "this is a different post".
+ *
+ * IT IS NOT A LINK EITHER, for the same reason the link card is not: the outer
+ * post's own controls sit under it, and an anchor around this whole block would
+ * swallow the inner post's author link.
+ */
+.shared-post {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  padding: var(--md-sys-spacing-inset-md, 12px);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-medium, 12px);
+  background: var(--md-sys-color-surface-container-lowest);
+}
+
+.shared-post .post-card__body {
+  font: var(--md-sys-typescale-body-medium-font);
+}
+
+/* A shared post's own photos are smaller — it is a quotation, not the point. */
+.shared-post .post-photos[data-count='1'] img {
+  max-block-size: 320px;
+}
+
+/* ------------------------------------------------------------- reactions */
+
+/**
+ * The aggregate line: three overlapping glyphs and a count.
+ *
+ * THE GLYPHS OVERLAP BY DESIGN, which is what makes them read as one group
+ * rather than three separate marks. Each sits in its own ring of the page's
+ * background so the overlap has an edge; without the ring they merge into an
+ * unreadable smudge at 16px.
+ *
+ * THE AGGREGATE IS NEVER COLOURED. Only the viewer's OWN reaction takes a
+ * colour, on the button below. A row of six tinted glyphs at the top of every
+ * post is six things shouting.
+ */
+.reactions {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  min-block-size: 24px;
+}
+
+.reactions__glyphs {
+  display: flex;
+  align-items: center;
+}
+
+.reactions__glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 20px;
+  block-size: 20px;
+  border-radius: 50%;
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+  box-shadow: 0 0 0 2px var(--md-sys-color-surface);
+}
+
+.reactions__glyph + .reactions__glyph {
+  margin-inline-start: -6px;
+}
+
+.reactions__glyph .material-symbols-outlined {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.reactions__count {
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-small-font);
+}
+
+.reactions__spacer {
+  flex: 1;
+}
+
+/* --------------------------------------------------------- reaction bar */
+
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  padding-block-start: var(--md-sys-spacing-gap-sm, 8px);
+  border-block-start: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.post-actions > * {
+  flex: 1;
+}
+
+/**
+ * THE PICKER.
+ *
+ * Six reactions on a popover anchored to the react button. It opens on hover
+ * with a pointer and on press everywhere — `:focus-within` and `[data-open]`
+ * both show it, so a keyboard reaches it without a pointer ever being involved.
+ *
+ * IT IS NOT AN `md-menu`. A menu is a list of commands with a roving tab stop
+ * and a text label per row; this is six icons in a line, and forcing it into a
+ * menu would give every reaction a full-width row and a name it does not need
+ * beside the glyph. The names ARE there, on each button's `aria-label`.
+ */
+.react {
+  position: relative;
+  display: flex;
+}
+
+.react__picker {
+  position: absolute;
+  inset-block-end: calc(100% + 4px);
+  inset-inline-start: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--md-sys-shape-corner-full, 999px);
+  background: var(--md-sys-color-surface-container-high);
+  box-shadow: var(--md-sys-elevation-level2, 0 2px 6px rgb(0 0 0 / 0.2));
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease,
+    visibility 120ms;
+  z-index: 2;
+}
+
+.react:hover .react__picker,
+.react:focus-within .react__picker,
+.react__picker[data-open] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* A thumb has no hover, so the picker only ever opens on a press there — and
+   the transition is dropped with it, because an animation the reader is waiting
+   on is an animation in the way. */
+@media (pointer: coarse) {
+  .react:hover .react__picker {
+    opacity: 0;
+    visibility: hidden;
+  }
+  .react__picker {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .react__picker {
+    transition: none;
+  }
+}
+
+.react__option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 36px;
+  block-size: 36px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+}
+
+.react__option:hover,
+.react__option:focus-visible {
+  background: var(--md-sys-color-surface-container-highest);
+}
+
+.react__option[data-on] {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+/* Each reaction's own tone, applied ONLY where it is the viewer's choice. */
+.react__option[data-tone='primary'][data-on] { color: var(--md-sys-color-primary); }
+.react__option[data-tone='error'][data-on] { color: var(--md-sys-color-error); }
+.react__option[data-tone='warning'][data-on] { color: var(--md-sys-color-warning); }
+.react__option[data-tone='info'][data-on] { color: var(--md-sys-color-info); }
+
+/* -------------------------------------------------------- comment thread */
+
+/**
+ * TWO LEVELS OF INDENT AND NO MORE, which is a property of the data rather than
+ * a limit imposed here: the fixture asserts `depth <= 2`. That is what lets the
+ * indent be a constant instead of a calculation, and what keeps the
+ * accessibility tree two lists deep at worst.
+ *
+ * THE INDENT IS ON A WRAPPER, NOT ON THE ROW. A padding on the row itself would
+ * be inside the row's own background and hover target, so a nested comment
+ * would have a wider hit area than the one it answers.
+ */
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+.thread__children {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  margin-block-start: var(--md-sys-spacing-gap-md, 12px);
+  padding-inline-start: var(--md-sys-spacing-inset-xl, 32px);
+}
+
+.comment {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  min-inline-size: 0;
+}
+
+/**
+ * The bubble.
+ *
+ * A ROUNDED BLOCK ON A CONTAINER SURFACE, not a list row — because a comment is
+ * a piece of writing and a list row is a record. The bubble hugs its content:
+ * `width: fit-content` with a `max-width`, so a two-word reply is a two-word
+ * bubble rather than a full-width band with a word in the corner.
+ */
+.comment__bubble {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  padding: var(--md-sys-spacing-inset-sm, 8px) var(--md-sys-spacing-inset-md, 12px);
+  border-radius: var(--md-sys-shape-corner-large, 16px);
+  background: var(--md-sys-color-surface-container-high);
+}
+
+.comment__author {
+  font: var(--md-sys-typescale-label-large-font);
+  color: var(--md-sys-color-on-surface);
+  text-decoration: none;
+}
+
+.comment__author:hover {
+  text-decoration: underline;
+}
+
+.comment__body {
+  margin: 0;
+  font: var(--md-sys-typescale-body-medium-font);
+  color: var(--md-sys-color-on-surface);
+  overflow-wrap: anywhere;
+}
+
+/**
+ * "Replying to Ada" — shown ONLY at depth 2.
+ *
+ * At depth 1 the indent alone is unambiguous: there is exactly one comment it
+ * could be answering, and it is directly above. At depth 2 there may be several
+ * siblings between this reply and its parent, so the indent no longer says WHO,
+ * and the name has to. Rendering it at every depth would put a redundant line
+ * on every reply in the thread.
+ */
+.comment__replying {
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-primary);
+}
+
+.comment__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  padding-inline-start: var(--md-sys-spacing-inset-md, 12px);
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.comment__act {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.comment__act:hover {
+  text-decoration: underline;
+}
+
+.comment__act[data-on] {
+  color: var(--md-sys-color-primary);
+  font-weight: 600;
+}
+
+.comment__likes {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.comment__likes .material-symbols-outlined {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* The collapse control under a run of replies. */
+.thread__toggle {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--md-sys-color-primary);
+  font: var(--md-sys-typescale-label-large-font);
+  cursor: pointer;
+}
+
+.thread__toggle:hover {
+  text-decoration: underline;
+}
+
+.comment-compose {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+.comment-compose md-text-field {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+/* --------------------------------------------------------- person rows */
+
+/**
+ * A person: avatar, then name, meta and whatever control the section adds.
+ *
+ * `align-items: flex-start`, not `center`. These rows are three deep — name,
+ * mutual friends, a button — and centring put the 40px avatar level with the
+ * MIDDLE line, so it floated beside "6 mutual friends" instead of beside the
+ * name it belongs to. Top-aligned it reads as the row's subject, which is what
+ * it is.
+ */
+.person-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  min-inline-size: 0;
+}
+
+.person-row__text {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  flex: 1;
+}
+
+.person-row__name {
+  font: var(--md-sys-typescale-title-small-font);
+  color: var(--md-sys-color-on-surface);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.person-row__name:hover {
+  text-decoration: underline;
+}
+
+.person-row__meta {
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/**
+ * The buttons under a person's name.
+ *
+ * THEY SIT UNDER THE NAME, not beside it. Beside it they were two 90px buttons
+ * squeezed against a truncated name in a 230px column, and "Decline" wrapped.
+ * Underneath they are clear targets and the name gets the whole line.
+ *
+ * FLEX, NOT `grid-template-columns: 1fr 1fr`, and that was a real bug rather
+ * than a preference. A fixed two-track grid gives a LONE button half the row —
+ * so every one-button state clipped its own label: "Cancel requ", "Add frienc",
+ * both unreadable and both shipped. Flex with `flex: 1` on the children sizes
+ * to however many there actually are: one fills, two split.
+ */
+.request-actions {
+  display: flex;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  margin-block-start: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+.request-actions > * {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.person-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+}
+
+/* --------------------------------------------------------- group cards */
+
+.group-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+.group-card__cover {
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  border-radius: var(--md-sys-shape-corner-medium, 12px);
+}
+
+.group-card__name {
+  margin: 0;
+  font: var(--md-sys-typescale-title-medium-font);
+  color: var(--md-sys-color-on-surface);
+  text-decoration: none;
+}
+
+.group-card__name:hover {
+  text-decoration: underline;
+}
+
+.group-card__about {
+  margin: 0;
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+}
+
+/* --------------------------------------------------------- event cards */
+
+/**
+ * An event row: a date block, then the details, then the answer.
+ *
+ * THE DATE IS A BLOCK, NOT A LINE OF TEXT. A column of events is scanned by
+ * date before anything else, and a date rendered inline inside a paragraph
+ * cannot be scanned — the eye has to read each row to find it. Month over day,
+ * fixed width, so every row's dates line up vertically.
+ */
+.event-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+  align-items: start;
+}
+
+.event-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--md-sys-spacing-inset-sm, 8px) 0;
+  border-radius: var(--md-sys-shape-corner-medium, 12px);
+  background: var(--md-sys-color-surface-container-high);
+}
+
+.event-date__month {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-error);
+}
+
+.event-date__day {
+  font: var(--md-sys-typescale-headline-small-font);
+  color: var(--md-sys-color-on-surface);
+  line-height: 1.1;
+}
+
+.event-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+/**
+ * The RSVP chip under an event's details.
+ *
+ * 2px IS RIGHT BETWEEN THE TEXT LINES AND WRONG BEFORE THE CHIP. The column's
+ * gap is deliberately tight because name, time and counts are one block of
+ * writing — but the chip is a different KIND of thing, a state rather than a
+ * line, and at 2px it collided with the counts above it and sat almost as close
+ * to the next event's name below. It gets its own space on both sides.
+ */
+.event-row__text > .row {
+  margin-block: var(--md-sys-spacing-gap-sm, 8px) var(--md-sys-spacing-gap-xs, 4px);
+}
+
+/**
+ * And more air BETWEEN events than within one.
+ *
+ * The shared `.stack` gap is 12px, which is less than the space this row has
+ * inside itself once the chip is there — so two events read as one block with a
+ * stray chip in the middle rather than as two rows. The separation between
+ * items has to beat the separation within one, or the grouping inverts.
+ */
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-xl, 24px);
+}
+
+.event-row__name {
+  font: var(--md-sys-typescale-title-small-font);
+  color: var(--md-sys-color-on-surface);
+  text-decoration: none;
+}
+
+.event-row__name:hover {
+  text-decoration: underline;
+}
+
+.event-row__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.event-row__meta .material-symbols-outlined {
+  font-size: 15px;
+  line-height: 1;
+}
+
+/**
+ * The counts line under an event.
+ *
+ * A BLOCK, NOT A FLEX ROW, and it is the same trap `.profile-fact` fell into
+ * one screen over: the line above it IS a row of discrete items (a time, a
+ * glyph, a place) and wants the gap, but this one is a SENTENCE — "31 going ·
+ * 6 of your friends are going" — whose only element is the figure. Under flex
+ * the figure became an item and took the 6px gap on top of its own space, so
+ * it read "31  going" with a visible double gap.
+ */
+.event-row__counts {
+  display: block;
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* On a phone the answer drops under the details rather than squeezing them. */
+@media (max-width: 599px) {
+  .event-row {
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+  .event-row__action {
+    grid-column: 2;
+  }
+}
+
+.event-cover {
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  border-radius: var(--md-sys-shape-corner-large, 16px);
+}
+
+/* ------------------------------------------------------------- profile */
+
+/**
+ * The profile header: a cover banner with the avatar overlapping its lower
+ * edge, which is the arrangement every product of this shape uses.
+ *
+ * THE OVERLAP IS A NEGATIVE MARGIN ON THE AVATAR, not absolute positioning.
+ * Absolutely positioned, the avatar is out of flow and the name under it has to
+ * be pushed down by a hard-coded amount that is wrong at every other avatar
+ * size. A negative margin keeps it in flow: the text below moves by exactly the
+ * amount the avatar does not occupy, whatever size it is.
+ */
+.profile-head {
+  display: flex;
+  flex-direction: column;
+  /*
+   * HOW FAR THE AVATAR RIDES UP OVER THE COVER, in one place.
+   *
+   * Two rules depend on it and they must not drift: the row moves up by it, and
+   * the text moves back down by it. Written as two literals they disagreed —
+   * the row rose and the text came with it, so "Petra Novák" was printed across
+   * the cover artwork and was unreadable against it.
+   */
+  --profile-overlap: 36px;
+}
+
+.profile-head__cover {
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 3 / 1;
+  min-block-size: 120px;
+  object-fit: cover;
+  border-radius: var(--md-sys-shape-corner-large, 16px);
+}
+
+/**
+ * ONLY THE AVATAR OVERLAPS THE COVER.
+ *
+ * The negative margin is on the ROW, because that is what puts the avatar over
+ * the banner — but everything else in the row has to be pushed back down by the
+ * same amount, or it rides up onto the artwork with it. `align-items:
+ * flex-start` and a matching top padding on the two text columns is what
+ * separates them: the avatar keeps the offset, the words do not.
+ */
+.profile-head__row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+  padding-inline: var(--md-sys-spacing-inset-lg, 16px);
+  margin-block-start: calc(var(--profile-overlap) * -1);
+}
+
+.profile-head__avatar {
+  flex: none;
+  border-radius: 50%;
+  padding: 3px;
+  /* The ring is the page's own ground, which is what separates the portrait
+     from whatever the cover happens to be doing behind it. */
+  background: var(--md-sys-color-surface);
+}
+
+.profile-head__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-inline-size: 0;
+  flex: 1;
+  /* Back down past the cover's lower edge, plus a little air. */
+  padding-block-start: calc(var(--profile-overlap) + var(--md-sys-spacing-gap-sm, 8px));
+}
+
+.profile-head__name {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: var(--md-sys-typescale-headline-small-font);
+  color: var(--md-sys-color-on-surface);
+}
+
+.profile-head__handle {
+  font: var(--md-sys-typescale-body-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.profile-head__action {
+  padding-block-start: calc(var(--profile-overlap) + var(--md-sys-spacing-gap-sm, 8px));
+}
+
+@media (max-width: 599px) {
+  .profile-head__row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .profile-head__action {
+    inline-size: 100%;
+  }
+}
+
+.profile-facts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+/**
+ * One fact under a name: a glyph, then a sentence.
+ *
+ * NOT A FLEX CONTAINER, and that is the correction. As `display: flex` with a
+ * gap, EVERY inline piece of the line became a flex item and got the gap
+ * between it and the next — so a date built from a `<time>`, a comma, another
+ * `<time>`, the word "to" and a third `<time>` rendered as
+ * "30 September 2026 , 05:40 PM  to  08:05 PM", with the comma floating clear
+ * of the date it belongs to. The text was correct the whole time; the layout
+ * was pulling it apart.
+ *
+ * A block with an inline glyph puts the spacing back where the SENTENCE says it
+ * is. The glyph keeps its own margin, and `vertical-align` seats it on the text
+ * baseline rather than letting an 18px icon ride high in a 20px line.
+ */
+.profile-fact {
+  display: block;
+  margin: 0;
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-medium-font);
+}
+
+.profile-fact .material-symbols-outlined {
+  font-size: 18px;
+  vertical-align: -4px;
+  margin-inline-end: var(--md-sys-spacing-gap-sm, 8px);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* The photo strip: three across, square, cropped. */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  border-radius: var(--md-sys-shape-corner-medium, 12px);
+  overflow: hidden;
+}
+
+.photo-grid__cell {
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.photo-grid__cell img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* --------------------------------------------------------- the right rail */
+
+.rail-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+/*
+ * A rail row: a glyph or avatar, then one or two lines of text.
+ *
+ * THE ALIGNMENT DEPENDS ON HOW MANY LINES THERE ARE, and both cases are real in
+ * this rail, which is why it cannot simply be one value.
+ *
+ *   · TWO lines — an event, whose date sits under its name — must align to the
+ *     FIRST line. Centred, the glyph floats between the two rather than beside
+ *     the name it belongs to.
+ *   · ONE line — a contact, a host — must CENTRE. Top-aligned, a 20px name sits
+ *     against the top edge of a 40px avatar with 20px of nothing under it,
+ *     which is what the "Hosted by" panel was doing.
+ *
+ * `:has()` asks the question directly: a row carrying a `__meta` line is the
+ * two-line case, and everything else is the one-line case. The alternative was
+ * a modifier class on every call site, which is the same fact written five
+ * times and forgotten on the sixth.
+ */
+.rail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  min-inline-size: 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.rail-row:not(:has(.rail-row__meta)) {
+  align-items: center;
+}
+
+/*
+ * THE NAME TRUNCATES, THE DATE DOES NOT.
+ *
+ * Both were in one nowrap ellipsis span at first, which cut the date in half —
+ * "Darkroom Open Day · 14 Oct 20…" — and a truncated date is worse than no
+ * date: the reader cannot tell the year from a fragment of it. The name is the
+ * part that may be any length, so the name is the part that clips, and the
+ * date drops to its own line where it always fits.
+ */
+.rail-row__text {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  font: var(--md-sys-typescale-body-medium-font);
+  color: var(--md-sys-color-on-surface);
+}
+
+.rail-row__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rail-row:hover .rail-row__text {
+  text-decoration: underline;
+}
+
+.rail-row__meta {
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* -------------------------------------------------------------- the when */
+
+.when {
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-small-font);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ empty state */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--md-sys-spacing-inset-2xl, 40px) var(--md-sys-spacing-inset-lg, 16px);
+  text-align: center;
+}
+
+.empty p {
+  margin: 0;
+}
+
+.empty p:first-child {
+  font: var(--md-sys-typescale-title-small-font);
+  color: var(--md-sys-color-on-surface);
+}
+
+.empty p + p {
+  font: var(--md-sys-typescale-body-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ------------------------------------------------------------ feed ending */
+
+.feed__end {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--md-sys-spacing-inset-xl, 32px) 0;
+  text-align: center;
+}
+
+.feed__end .material-symbols-outlined {
+  font-size: 32px;
+  color: var(--md-sys-color-primary);
+}
+
+.feed__more {
+  display: flex;
+  justify-content: center;
+}
+
+/* ---------------------------------------------------------- touch targets */
+
+/**
+ * A thumb needs 48px. Every one of these is smaller than that by default
+ * because a pointer does not, and growing them unconditionally would put 48px
+ * of padding around a 16px glyph on a desktop toolbar.
+ */
+@media (pointer: coarse) {
+  .react__option {
+    inline-size: 44px;
+    block-size: 44px;
+  }
+  .comment__act,
+  .post-card__more,
+  .thread__toggle {
+    min-block-size: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* --------------------------------------------------------------- overlays */
+
+/**
+ * Anything sitting ON a picture.
+ *
+ * The backdrop is CONTENT, not a surface, so it cannot borrow the page's
+ * colours — the same lesson Lyra learned twice. `inverse-surface` and
+ * `inverse-on-surface` are the guaranteed-contrast pair in both themes, and the
+ * `color-mix` keeps a little of the picture showing through without letting the
+ * text lose its ground.
+ */
+.on-media {
+  background: color-mix(in srgb, var(--md-sys-color-inverse-surface) 88%, transparent);
+  color: var(--md-sys-color-inverse-on-surface);
+  border-radius: var(--md-sys-shape-corner-small, 8px);
+  padding: 2px 6px;
+  font: var(--md-sys-typescale-label-small-font);
+}
+
+
+/* ------------------------------------------------- borrowed primitives */
+
+/*
+ * THREE CLASSES THAT WERE USED AND NEVER DEFINED.
+ *
+ * The shell and layout sections at the top of this file are copied from the
+ * other verticals; these three live in each vertical's NAMED BLOCKS section, so
+ * copying the shared half left them behind — and the screens went on using them
+ * anyway. Nothing warned: an undefined class is not an error, it is a class
+ * that does nothing, so `.stat-row` silently fell back to the user agent's
+ * default `dd` indent and the event screen's figures sat 40px to the right of
+ * their own labels.
+ */
+
+/**
+ * A row of figures with their labels.
+ *
+ * EQUAL COLUMNS, NOT A FLEX ROW. As a flex row each pair is only as wide as its
+ * own LABEL, so a short figure under a long word sits at the left of a wide
+ * column and a long figure under a short word is cramped — the gaps are equal
+ * and the numbers still look unevenly spaced, because what the eye measures is
+ * the distance between the FIGURES. A grid of equal tracks puts them on a
+ * regular rhythm whatever the labels do, which matters most in Romanian and
+ * Arabic where the same words are very different lengths.
+ *
+ * The figure comes FIRST visually and the label second, via `order` — the
+ * number is what the reader is here for. The DOM keeps `dt` before `dd`,
+ * because that is the pairing a screen reader announces.
+ */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  margin: 0;
+}
+
+.stat-row > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-row dt {
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+  order: 2;
+}
+
+.stat-row dd {
+  font: var(--md-sys-typescale-title-medium-font);
+  color: var(--md-sys-color-on-surface);
+  /* The UA gives `dd` a 40px inline start margin. Without this reset every
+     figure in the app sits indented from the label above it. */
+  margin: 0;
+  order: 1;
+}
+
+/**
+ * Announced, and occupying nothing.
+ *
+ * NOT `display: none` and NOT `visibility: hidden` — both take the text out of
+ * the accessibility tree, which is the exact opposite of what this is for. The
+ * clip-rect idiom is the one that leaves it readable to a screen reader.
+ */
+.visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/** The verified tick beside a name. Sized to the text it sits in, not to a
+    fixed pixel value, so it tracks the heading it is part of. */
+.verified {
+  font-size: 1em;
+  line-height: 1;
+  color: var(--md-sys-color-primary);
+}
+
+/** The avatar inside a comment. A link, so it needs its own line box. */
+.comment__avatar {
+  display: inline-flex;
+  flex: none;
+  text-decoration: none;
+}
