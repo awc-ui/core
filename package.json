@@ -51,6 +51,7 @@
     "lint:stylelint": "stylelint \"packages/core/src/**/*.css\"",
     "test:a11y": "pnpm --filter @awc-ui/storybook test:a11y",
     "verify:showcase-a11y": "node scripts/verify-showcase-a11y.mjs",
+    "verify:showcase-head": "node scripts/verify-showcase-head.mjs",
     "verify:showcase-parity": "node scripts/verify-showcase-parity.mjs",
     "size": "pnpm --filter @awc-ui/core size",
     "size:why": "pnpm --filter @awc-ui/core size:why",

@@ -37,6 +37,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Cheap, static, and it goes FIRST because it needs no build: every
+      # build's <title> and meta description must name its own vertical. Four
+      # showcases shipped with the previous one's head before this existed.
+      - name: Verify every showcase build's document head
+        run: pnpm verify:showcase-head
+
       - name: Build docs site (core + storybook + astro)
         run: bash scripts/build-docs.sh
 
