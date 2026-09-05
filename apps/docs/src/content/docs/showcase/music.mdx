@@ -1,0 +1,156 @@
+---
+title: Music & Studio
+description: "A music app for the fictional Cygnus — a listening half and an editing half sharing one shell, with a transport that survives every navigation, in the framework of your choice."
+---
+
+**Cygnus is two apps in one shell.** A listening half — home, library, albums,
+artists, tracks — and an editing half with an arrangement timeline and a mixer,
+joined by a transport bar that survives every navigation. Built entirely from
+AWC UI components.
+
+{/*
+  The call to action is an `<a>`, not `md-button`: the component navigates on
+  click but renders no anchor and exposes `role="button"`, so middle-click,
+  ⌘-click and "copy link address" all stop working. Same reasoning as the
+  credit-risk page — see the longer note there.
+*/}
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 28px 0;">
+  <a href="/showcase/music/react/" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border-radius: 999px; background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); font: var(--md-sys-typescale-label-large-font); text-decoration: none;">Open the application</a>
+  <span style="font: var(--md-sys-typescale-body-small-font); color: var(--md-sys-color-on-surface-variant);">Switch framework, theme, density, direction and language from inside the app.</span>
+</div>
+
+## The five builds
+
+All five are live, and the control bar switches between them without losing your
+place. Every artist, release, clip and fader position comes from
+`@awc-ui/showcase-kit`, so the only thing that differs between them is the view
+layer — which is what makes two screenshots comparable evidence.
+
+| Build | Open | How it renders | Where the language lives |
+|---|---|---|---|
+| **HTML** | [/html/](/showcase/music/html/) | Static pages, written at build time — no framework at all | **In the URL** — a page per locale |
+| **React** | [/react/](/showcase/music/react/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+| **Vue** | [/vue/](/showcase/music/vue/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+| **Angular** | [/angular/](/showcase/music/angular/) | Single-page app — client-rendered only | Client state — switches in place |
+| **Svelte** | [/svelte/](/showcase/music/svelte/) | Single-page app — Vite, no meta-framework | Client state — switches in place |
+
+:::note[Nothing plays, and that is a design decision rather than a gap]
+There is no audio here, no `<audio>` element and no recordings. Pressing Play
+flips a state and starts a one-second interval; the playhead advances, the queue
+turns over, and not a byte is decoded.
+
+Three reasons, in the order they bite. **Real tracks are licensed binaries** and
+generated tones would be a synthesiser rather than a component demonstration.
+**A showcase that shipped audio could not be compared**: the parity check
+measures five builds' documents against each other, and anything that loaded at
+its own pace would make that meaningless. And it is **the same promise the other
+five verticals make** — Corvus never posts, Lyra never uploads, the consoles
+never trade. The showcase demonstrates the interface to an operation, not the
+operation.
+
+The clock is the one thing that does move, and it is deliberately gated: the
+interval runs **only while playing**, every build ships paused at `0:00`, and
+the parity, accessibility and CSP checks never press play. So what they compare
+is the same frozen readout in all five.
+:::
+
+## What you can drill into
+
+| Screen | What it shows | Where it leads |
+|---|---|---|
+| **Home** | Most played, recent releases, your playlists and the artists you follow — four short shelves rather than one long feed | An album, an artist, or a track |
+| **Library** | Everything saved, ordered by how often it is opened: liked tracks, your playlists, followed playlists, then all 16 albums | An album or a track |
+| **Studio** | The open project's arrangement — a ruler, a lane per track, clips you can drag, resize and delete — with the edit history under it | A project |
+| **Mixer** | A strip per track: a vertical fader, a level meter, pan, mute and solo | Nothing: it is the deepest screen |
+| **Profile** | Your listening, the whole queue, liked tracks, playlists and projects | A track or a project |
+| **Album** | The sleeve, the running order numbered as printed, and the rest of the discography | A track or an artist |
+| **Artist** | Portrait, biography, a follow button, top tracks and every release | An album or a track |
+| **Track** | One track with its waveform, its facts and the rest of its album | An album or an artist |
+| **Project** | The same arrangement as Studio, opened directly | A track's lane |
+
+## What it is really demonstrating
+
+A music app was chosen because it asks for what the other five do not: **state
+that outlives a screen**, and **a layout measured in time**.
+
+- **A transport above the router.** Every other vertical's interaction state
+  dies with the screen — Corvus's reactions belong to the feed, Lyra's follow
+  flags to the profile. An app that stopped playing when you opened an album
+  would not be a music app, so the transport is held outside the routed subtree
+  in all four SPA builds. Each framework does it differently and the browser
+  suite asserts the same outcome for all of them: start a track, navigate twice,
+  and it is still loaded, still playing, and the playhead has not reset.
+- **A timeline that a content-security policy shaped.** The deployed policy is
+  `style-src-attr 'none'`, so no element may carry a `style` attribute — and the
+  usual way to place a clip is `left: 340px; width: 96px`. What works instead is
+  a CSS grid with one column per bar: a clip declares `data-start` and
+  `data-span`, and the stylesheet does the arithmetic the element is not allowed
+  to. Dragging rewrites those two integers, which is why the snap is a property
+  of the layout and why five builds drag identically — none of them is
+  positioning anything.
+- **Solo and mute, which do not compose the way anyone expects.** Any soloed
+  track silences every track that is not soloed; an explicitly muted track stays
+  silent regardless, including when it is itself soloed. Implemented as "solo
+  mutes everything else" it cannot represent two tracks soloed at once and
+  leaves them muted afterwards. `audibleTracks()` in the kit is the only place
+  that rule is written, and the mixer's dimming is keyed on its answer rather
+  than on the mute flag — so pressing solo on one strip visibly drops the others
+  back.
+- **An undo history with a redo branch.** Moving, resizing and deleting a clip,
+  and every fader and pan, go through one stack. A new edit after an undo
+  discards the redo branch — the rule implementations forget, and without it
+  redo reapplies an edit onto a document it no longer fits.
+- **Sixty controls on one screen.** A mixer is a bank of identical strips, and
+  the accessibility question stops being "does this control have a label" and
+  becomes "does its label say which track". Every fader, meter, mute and solo
+  takes its track's name into its accessible name.
+- **Three languages including a right-to-left one.** Biographies, playlist
+  descriptions and clip labels are dictionary entries, so an Arabic reader gets
+  an Arabic catalogue. Musical time is the exception: `mm:ss` stays in Latin
+  digits everywhere, because Arabic-Indic digits in the scrubber beside Latin
+  bar numbers on the ruler would put two numbering systems on one screen.
+
+:::tip[The plain-HTML build has no memory, so it writes one down]
+The other four hold the transport in a provider, a store or a service. This one
+has no router: every navigation is a real page load, and a page load destroys
+every variable there is.
+
+So it persists rather than pretends. The bar is written into the markup of all
+270 pages in its default state, and the client restores what the reader was
+actually doing from `sessionStorage` — `sessionStorage` and not `localStorage`,
+because the transport is a property of this visit rather than of this browser.
+
+Two things fell out of that. The bar has to be able to NAME whatever it skips
+to, and it cannot read that off the page — the home screen lists six tracks and
+the queue holds seven, so pressing Next landed on a track the document had never
+mentioned and the title silently did not change. Every queued track now ships
+its title, artist and length in a `<template>` inside the bar. And a deleted
+clip has to leave the document rather than merely hide, because the parity
+census counts elements and not visible ones — so the node is kept aside and put
+back by undo.
+:::
+
+## Fictional artists
+
+Cygnus, its twelve artists, their releases and the four projects are invented.
+No real recording, label, person or release is represented, and none of the
+artwork depicts anyone. The disclaimer sits in the app bar on every screen
+rather than at the bottom of one.
+
+The fixture holds 12 artists, 16 albums, 53 tracks, 8 playlists and 4 projects
+with 23 studio tracks and 181 clips between them, over 41 generated images, all
+from one seed and internally consistent — an album's running order agrees with
+its tracks' numbers in both directions, no playlist holds the same track twice,
+and no two clips on one lane overlap. That last one is not a nicety: two clips
+in the same grid columns render on top of each other, so an overlap is a clip
+that has vanished.
+
+Every project is at 120 BPM in 4/4, which is not laziness about tempo. Four
+beats at 120 is exactly two seconds, so bar boundaries fall on whole seconds and
+the ruler's labels, the clip edges and the transport's readout all agree without
+anybody rounding. At 137 BPM bar 5 would start at 8.759…s and five builds would
+each round it their own way.
+
+Every timestamp is measured from a fixed reporting instant of **18 November
+2026, 15:20 UTC**, not from the clock.

@@ -254,6 +254,32 @@ const EXPECTATIONS = {
      */
     badgeScreen: null,
   },
+  music: {
+    arabicLocale: 'ar',
+    /*
+     * NO TABLE, NO SEVERITY, NO PAGER, NO CHART — the same four this vertical
+     * shares with the two social ones. What Cygnus adds over them is a
+     * transport, a bar-grid timeline and a bank of sixty mixer controls, and
+     * none of those is a shape this file knows how to assert. All three are
+     * asserted properly in the builds' own `verify-browser.mjs`, which presses
+     * them.
+     */
+    listScreen: null,
+    severityWords: [],
+    markerChipCell: null,
+    paginatedScreen: null,
+    bookRows: null,
+    pageRows: null,
+    sortLabels: false,
+    footerScreen: '/profile/',
+    /** An album is the drill, and it renders the back affordance. */
+    detailScreen: '/album/drift-season/',
+    summaryChart: null,
+    /* No `md-badge` in an `md-button` anywhere: this app deliberately has no
+       badge at all, because nothing in it is a count somebody else is blocked
+       on. See the note in the React build's `Shell.tsx`. */
+    badgeScreen: null,
+  },
 };
 
 /**

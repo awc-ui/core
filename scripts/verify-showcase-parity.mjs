@@ -160,6 +160,21 @@ const SCREENS = {
     '/g/nordic-film-club/',
     '/e/harbour-night-screening/',
   ],
+  /* The five destinations and all four drills. Studio and Mixer are the two
+     that will matter when the ports land: a timeline placed by a stylesheet and
+     a bank of sixty controls are the screens most likely to differ by one
+     element between frameworks. */
+  music: [
+    '/',
+    '/library/',
+    '/studio/',
+    '/mixer/',
+    '/profile/',
+    '/album/drift-season/',
+    '/artist/halva.drift/',
+    '/t/trk-001/',
+    '/project/untitled-nov/',
+  ],
 };
 
 /**

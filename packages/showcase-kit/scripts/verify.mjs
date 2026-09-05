@@ -16,6 +16,7 @@ const D = await load('data/index.mjs');
 const I = await load('i18n/index.mjs');
 const P = await load('preboot/index.mjs');
 const C = await load('credit-risk/index.mjs');
+const MU = await load('music/index.mjs');
 
 let failures = 0;
 let checks = 0;
@@ -306,13 +307,20 @@ ok('ar has exactly the same keys', Object.keys(I.ar).length === keys.length && k
  *
  * Note which locale each entry is for. Romanian shares most of these with
  * English because the two languages genuinely share the word; Arabic shares
+ * MUSIC ADDS A WHOLE CATEGORY OF LEGITIMATE MATCHES. Romanian takes `Studio`,
+ * `Mixer`, `Solo`, `Album`, `Artist`, `Audio`, `MIDI` and `BPM` unchanged —
+ * they are the words Romanian studios actually use — and so do the clip labels
+ * `Intro`, `Fill`, `Riff` and `Pad`, which are printed on hardware in English
+ * everywhere. `dB` and `#` are symbols. Translating any of them would be worse
+ * than leaving them, which is the test this exemption exists to allow.
+ *
  * only `common.na` (an em-dash) and `social.common.characters` (a
  * placeholder-only string), and everything else in the banking and social arms
  * below IS translated into Arabic — they are listed here for the ro comparison
  * and the ar one simply never reaches them.
  */
 const IDENTICAL_OK =
-  /^(rating\.|table\.(id|pd|lgd|ead|rwa|rwaDelta|ccf|rating|sector|margin|type)$|kpi\.(expectedLossRatio|.*\.short)$|covenant\..*\.abbr$|dock\.(framework|accent)$|unit\.times$|common\.(na|total)$|screen\.counterparty\.title$|wealth\.(screen\.household\.title|kpi\..*\.short|table\.(client|contact|kyc|segment|aum|ytd|instrument|sector)|segment\.family-office|instrumentType\.etf|region\.global|entity\.client|common\.(na|total)|proposal\.(step\.client|instruments\.meta|time\.(am|pm)|ok))$|banking\.(app\.brand|table\.(card|iban|spread|plan|costBasis|total)|category\.transport|cardKind\.virtual|txnType\.(card|transfer|dividend)|instrumentKind\.etf|plan\.(standard|plus|metal)|control\.contactless|common\.na|unit\.endingIn)$|social\.(app\.(brand|demo)|accountKind\.(personal|creator|business)|postKind\.video|common\.(na|characters)|topic\.(film|design|sport))$|community\.(app\.(brand|demo)|reaction\.haha|privacy\.public|role\.moderator|postKind\.link|audience\.public|common\.(na|characters)|topic\.(film|sport|design))$)/;
+  /^(rating\.|table\.(id|pd|lgd|ead|rwa|rwaDelta|ccf|rating|sector|margin|type)$|kpi\.(expectedLossRatio|.*\.short)$|covenant\..*\.abbr$|dock\.(framework|accent)$|unit\.times$|common\.(na|total)$|screen\.counterparty\.title$|wealth\.(screen\.household\.title|kpi\..*\.short|table\.(client|contact|kyc|segment|aum|ytd|instrument|sector)|segment\.family-office|instrumentType\.etf|region\.global|entity\.client|common\.(na|total)|proposal\.(step\.client|instruments\.meta|time\.(am|pm)|ok))$|banking\.(app\.brand|table\.(card|iban|spread|plan|costBasis|total)|category\.transport|cardKind\.virtual|txnType\.(card|transfer|dividend)|instrumentKind\.etf|plan\.(standard|plus|metal)|control\.contactless|common\.na|unit\.endingIn)$|social\.(app\.(brand|demo)|accountKind\.(personal|creator|business)|postKind\.video|common\.(na|characters)|topic\.(film|design|sport))$|community\.(app\.(brand|demo)|reaction\.haha|privacy\.public|role\.moderator|postKind\.link|audience\.public|common\.(na|characters)|topic\.(film|sport|design))$|music\.(app\.(brand|demo|viewer)|nav\.(studio|mixer)|screen\.(studio|mixer)\.title|screen\.(album|artist)\.subtitle|action\.solo|kind\.(album|artist)|clip\.(audio|midi)|label\.(bpm|decibels|trackNumber)|clip\.label\.(1|6|7|8))$)/;
 const roSame = keys.filter((k) => I.ro[k] === I.en[k] && !IDENTICAL_OK.test(k));
 const arSame = keys.filter((k) => I.ar[k] === I.en[k] && !IDENTICAL_OK.test(k));
 ok('every ro string that should differ from en does', roSame.length === 0, roSame.join(',') || 'none');
@@ -905,6 +913,179 @@ ok(
       }),
     ).pathname === `/showcase/credit-risk/${fw}/watchlist/`,
   ),
+);
+
+
+/* ------------------------------------------------------------- music logic */
+
+/*
+ * THE FOUR THINGS CYGNUS WAS BUILT AROUND, pinned here rather than in any one
+ * build's browser suite.
+ *
+ * Every one of them was a candidate for being written five times — a transport
+ * that survives navigation, a timeline placed on a bar grid, a mixer whose
+ * solo and mute do not compose the way anyone expects, and an undo history with
+ * a redo branch. A regression in any of them is the same wrong behaviour in
+ * five applications with no disagreement between the ports to reveal it, which
+ * is exactly the failure mode a parity check cannot see.
+ */
+
+section('music — solo and mute do not compose symmetrically');
+
+const mixBase = MU.getStudioTracks().slice(0, 4).map((t) => ({ ...t }));
+const withFlags = (indexes, flag) =>
+  mixBase.map((t, i) => (indexes.includes(i) ? { ...t, [flag]: true } : t));
+
+ok('with nothing set, every track is audible', MU.audibleTracks(mixBase).size === 4);
+ok(
+  'muting one leaves the others alone',
+  MU.audibleTracks(withFlags([1], 'muted')).size === 3 &&
+    !MU.audibleTracks(withFlags([1], 'muted')).has(mixBase[1].id),
+);
+ok(
+  'soloing one silences everything else',
+  MU.audibleTracks(withFlags([0], 'soloed')).size === 1 &&
+    MU.audibleTracks(withFlags([0], 'soloed')).has(mixBase[0].id),
+);
+/* THE ONE THAT CATCHES "SOLO = MUTE EVERYTHING ELSE". An implementation that
+   mutates other tracks cannot represent this at all. */
+ok('soloing TWO leaves both audible', MU.audibleTracks(withFlags([0, 1], 'soloed')).size === 2);
+/* AND THE ONE THAT CATCHES "SOLO WINS". It does not: mute is the more
+   deliberate statement and outranks it. */
+const soloedAndMuted = mixBase.map((t, i) => (i === 0 ? { ...t, soloed: true, muted: true } : t));
+ok(
+  'a track that is soloed AND muted stays silent',
+  !MU.audibleTracks(soloedAndMuted).has(mixBase[0].id) && MU.audibleTracks(soloedAndMuted).size === 0,
+);
+ok('unity gain is 0 dB, and silence has none', MU.volumeDb(1) === 0 && MU.volumeDb(0) === null);
+ok('half scale is -6 dB', MU.volumeDb(0.5) === -6, String(MU.volumeDb(0.5)));
+ok('centre pan has no side', MU.panPosition(0).side === 'centre' && MU.panPosition(0).amount === 0);
+ok('and a panned track names one', MU.panPosition(-0.5).side === 'left');
+
+section('music — the timeline is placed in whole bars');
+
+const mProject = MU.getProjects()[0];
+const mClip = MU.trackClips(mProject.trackIds[0])[0];
+const placed = MU.placeClip(mClip, mProject.bars);
+ok(
+  'a clip lands inside the grid',
+  placed.startBar >= 1 && placed.endBar <= mProject.bars,
+  `bars ${placed.startBar}..${placed.endBar} of ${mProject.bars}`,
+);
+/* A clip beyond the last column must CLAMP. Collapsing it to column 1 is what
+   an unclamped `grid-column-start` does, and it reads as corrupt data. */
+const runaway = MU.placeClip({ ...mClip, startBar: 400, bars: 99 }, mProject.bars);
+ok('a clip past the end is clamped, not collapsed', runaway.startBar > 1 && runaway.endBar <= mProject.bars);
+const ticks = MU.rulerTicks(mProject.bars);
+ok('the ruler has one tick per bar', ticks.length === mProject.bars, `${ticks.length}`);
+ok(
+  'and labels only some of them',
+  ticks.filter((t) => t.labelled).length > 0 && ticks.filter((t) => t.labelled).length < ticks.length,
+  `${ticks.filter((t) => t.labelled).length} labelled`,
+);
+/* The playhead and the clips must be placed by the same rule, or the playhead
+   leads or trails the arrangement by one column. */
+ok('the playhead starts in bar 1', MU.playheadBar(0, mProject.bars) === 1);
+ok('and is in bar 2 one bar later', MU.playheadBar(MU.SECONDS_PER_BAR, mProject.bars) === 2);
+ok('and never leaves the grid', MU.playheadBar(1e6, mProject.bars) === mProject.bars);
+ok('bars:beats counts from 1, not 0', MU.barsBeats(0).bar === 1 && MU.barsBeats(0).beat === 1);
+
+section('music — the transport survives, and skips the way readers expect');
+
+let T = MU.initialTransport(MU.getQueue());
+ok('it starts paused on the first queued track', T.state === 'paused' && T.trackId === MU.getQueue()[0]);
+ok('seeking rounds to a whole second', MU.seekTo(T, 42.7, 300).positionSec === 43);
+ok('and clamps at both ends', MU.seekTo(T, 1e6, 300).positionSec === 300 && MU.seekTo(T, -5, 300).positionSec === 0);
+/* The three-second rule: every player implements it, no specification mentions
+   it, and its absence reads as a skip button that overshoots. */
+ok(
+  'Previous past three seconds restarts the track',
+  MU.previous(MU.seekTo(T, 10, 300)).trackId === T.trackId &&
+    MU.previous(MU.seekTo(T, 10, 300)).positionSec === 0,
+);
+let walked = MU.initialTransport(MU.getQueue());
+const visited = [walked.trackId];
+for (let i = 0; i < 3; i += 1) {
+  walked = MU.next(walked);
+  visited.push(walked.trackId);
+}
+ok('Next walks the queue without repeating', new Set(visited).size === 4, visited.join(' > '));
+/* `repeat: one` is a rule about a track ENDING, not about the Next button. */
+const repeating = { ...walked, repeat: 'one' };
+ok('repeat-one holds the track when it ends', MU.nextTrackId(repeating, false) === repeating.trackId);
+ok('but an explicit Next still advances', MU.nextTrackId(repeating, true) !== repeating.trackId);
+ok(
+  'raising the fader un-mutes, because moving it means you want to hear it',
+  MU.setVolume(MU.toggleMute(T), 0.5).muted === false,
+);
+ok(
+  'muting silences without moving the fader',
+  MU.effectiveVolume(MU.toggleMute(T)) === 0 && MU.toggleMute(T).volume === T.volume,
+);
+let cyc = T;
+const seenRepeat = [cyc.repeat];
+for (let i = 0; i < 3; i += 1) {
+  cyc = MU.cycleRepeat(cyc);
+  seenRepeat.push(cyc.repeat);
+}
+ok('repeat cycles off > all > one > off', seenRepeat.join(',') === 'off,all,one,off', seenRepeat.join(','));
+ok('up-next excludes the track already playing', !MU.upNext(T).includes(T.trackId));
+ok('mm:ss pads and carries past ten minutes', MU.clock(65) === '1:05' && MU.clock(632) === '10:32');
+
+section('music — the edit history has a redo branch and discards it');
+
+let H = MU.emptyHistory;
+ok('nothing to undo or redo at the start', !MU.canUndo(H) && !MU.canRedo(H));
+const editA = MU.makeEdit('a', 'clip.move', 'k', 'clp-001', { startBar: 1 }, { startBar: 5 });
+const editB = MU.makeEdit('b', 'track.mute', 'k', 'st-001', { muted: false }, { muted: true });
+H = MU.record(MU.record(H, editA), editB);
+ok('two edits are recorded in order', H.done.length === 2 && MU.nextUndo(H).id === 'b');
+const undone = MU.undo(H);
+H = undone.history;
+ok('undo hands back the edit to reverse', undone.edit.id === 'b' && MU.canRedo(H));
+const redone = MU.redo(H);
+H = redone.history;
+ok('redo hands back the edit to reapply', redone.edit.id === 'b' && !MU.canRedo(H));
+/* THE RULE IMPLEMENTATIONS FORGET. Without it, redo reapplies an edit onto a
+   document it no longer fits. */
+H = MU.undo(H).history;
+H = MU.record(H, MU.makeEdit('c', 'track.pan', 'k', 'st-002', { pan: 0 }, { pan: 0.5 }));
+ok('editing after an undo discards the redo branch', !MU.canRedo(H) && H.done.length === 2);
+const inverted = MU.invertEdit(editA);
+ok(
+  'inverting an edit swaps its ends',
+  JSON.stringify(inverted.before) === JSON.stringify(editA.after) &&
+    JSON.stringify(inverted.after) === JSON.stringify(editA.before),
+);
+let capped = MU.emptyHistory;
+for (let i = 0; i < MU.HISTORY_LIMIT + 10; i += 1) {
+  capped = MU.record(capped, MU.makeEdit(`x${i}`, 'clip.move', 'k', 'c', { startBar: i }, { startBar: i + 1 }));
+}
+/* Dropping from the NEW end would make the most recent action the first to
+   become un-undoable, which is exactly backwards. */
+ok(
+  'the history caps by dropping the oldest',
+  capped.done.length === MU.HISTORY_LIMIT && MU.nextUndo(capped).id === `x${MU.HISTORY_LIMIT + 9}`,
+  `${capped.done.length} deep, newest ${MU.nextUndo(capped).id}`,
+);
+
+section('music — routes');
+
+ok('every destination has a real path', MU.DESTINATIONS.every((d) => d.path.endsWith('/')));
+ok('five destinations, for the rail and the bar alike', MU.DESTINATIONS.length === 5);
+ok('home matches only itself', MU.destinationFor('/').value === 'home');
+ok('an album drill belongs to the library', MU.destinationFor('/album/drift-season/').value === 'library');
+ok('a project drill belongs to the studio', MU.destinationFor('/project/harbour-wall/').value === 'studio');
+ok('an unknown path matches nothing', MU.destinationFor('/nope/') === null);
+ok(
+  'every drill route ends in a slash',
+  [MU.route.album('x'), MU.route.artist('x'), MU.route.track('x'), MU.route.project('x')].every((p) =>
+    p.endsWith('/'),
+  ),
+);
+ok(
+  'the dock can swap any framework segment for any other',
+  MU.FRAMEWORKS.every((fw) => MU.createRoutes(fw).basePath === `${MU.SHOWCASE_BASE}/${fw}`),
 );
 
 

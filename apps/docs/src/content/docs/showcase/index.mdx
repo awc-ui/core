@@ -98,3 +98,20 @@ with a gap between asking and being answered, and group membership adds
 Five builds, all single-page or static. The plain-HTML one clones threads, feed
 pages and the composer out of `<template>` elements on demand, because a hidden
 element is still an element the parity census counts.
+
+### [Music & Studio](/showcase/music/)
+
+A music app for the fictional **Cygnus** — a listening half with a library,
+albums and artists, an editing half with an arrangement timeline and a mixer,
+and a transport bar that spans both.
+
+The other five hold their interaction state inside a screen. This one cannot: an
+app that stopped playing when you opened an album would not be a music app, so
+the transport lives above the router in all four SPA builds — and the
+plain-HTML one, which has no router at all, writes it to `sessionStorage` and
+reads it back on every page load. Time is the layout's axis rather than a row
+index, and the arrangement is a CSS grid with one column per bar because the
+deployed policy forbids the `style` attribute a pixel offset would need.
+
+Five builds, all single-page or static. Nothing plays: there is no audio, and
+the playhead advances only while the transport says it is playing.

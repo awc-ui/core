@@ -80,6 +80,20 @@ const SCREENS = {
     '/g/nordic-film-club/',
     '/e/harbour-night-screening/',
   ],
+  /* The five destinations and all four drills. The Studio and the Mixer are the
+     two that matter most here: a timeline that positioned clips with a `style`
+     attribute, or a fader that did, would be refused by `style-src-attr 'none'`
+     in production and nowhere else. This is the check that would catch it. */
+  music: [
+    '/',
+    '/library/',
+    '/studio/',
+    '/mixer/',
+    '/profile/',
+    '/album/drift-season/',
+    '/artist/halva.drift/',
+    '/project/untitled-nov/',
+  ],
 };
 
 const POLICY = [

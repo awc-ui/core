@@ -171,6 +171,30 @@ export const VERTICALS = Object.freeze([
        social entry for what happens when the two get out of step. */
     localeRouted: Object.freeze(['html']),
   },
+  {
+    id: 'music',
+    title: 'Cygnus — Music & Studio',
+    /*
+     * All five ports, landed one at a time.
+     *
+     * `builds` is what the deploy's pre-flight, the parity check and the a11y
+     * check all read, so listing a port that does not exist yet turns every one
+     * of them red on a build that is simply not written. Each entry landed with
+     * its port, exactly as Lyra's and Corvus's did — and `localeRouted` must
+     * never name a framework `builds` lacks, which is a mistake this file has
+     * already recorded once.
+     */
+    builds: Object.freeze([
+      { framework: 'react', output: 'dist' },
+      { framework: 'vue', output: 'dist' },
+      { framework: 'svelte', output: 'dist' },
+      { framework: 'angular', output: 'dist/browser' },
+      { framework: 'html', output: 'dist' },
+    ]),
+    reference: 'react',
+    /* `html` goes in here only now that the port exists. */
+    localeRouted: Object.freeze(['html']),
+  },
 ]);
 
 export const verticalById = (id) => VERTICALS.find((v) => v.id === id);

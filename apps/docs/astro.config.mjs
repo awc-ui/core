@@ -474,6 +474,7 @@ export default defineConfig({
             { label: 'Money & Investing App', link: '/showcase/banking/' },
             { label: 'Photos & People', link: '/showcase/social/' },
             { label: 'Friends & Groups', link: '/showcase/community/' },
+            { label: 'Music & Studio', link: '/showcase/music/' },
           ],
         },
         {

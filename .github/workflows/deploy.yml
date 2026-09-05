@@ -84,6 +84,11 @@ jobs:
             test -f "apps/docs/dist/showcase/community/$fw/index.html" \
               || (echo "::error::Missing apps/docs/dist/showcase/community/$fw/index.html (showcase build not embedded)" && exit 1)
           done
+          # And Cygnus's five, on the same terms.
+          for fw in html react vue angular svelte; do
+            test -f "apps/docs/dist/showcase/music/$fw/index.html" \
+              || (echo "::error::Missing apps/docs/dist/showcase/music/$fw/index.html (showcase build not embedded)" && exit 1)
+          done
           for fw in next nuxt angular-ssr sveltekit; do
             grep -q "from = \"/showcase/credit-risk/$fw/\*\"" apps/docs/netlify.toml \
               || (echo "::error::apps/docs/netlify.toml has no proxy for /showcase/credit-risk/$fw/ — the showcase page links to it and it renders on a server, so every route under it would 404" && exit 1)
