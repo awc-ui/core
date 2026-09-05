@@ -58,6 +58,7 @@ import { createTranslator, type Translator } from '../i18n/translator';
  * Română, العربية — because a language should name itself.
  */
 const DOCK_LOCALE = 'en' as const;
+import { BRAND_SEEDS, LIBRARY_SEED } from './brands.generated';
 import { DOCK_STYLES } from './styles';
 import {
   DENSITY_RUNGS,
@@ -181,6 +182,19 @@ function make<T extends HTMLElement = HTMLElement>(
  */
 const ElementBase: typeof HTMLElement =
   typeof HTMLElement === 'undefined' ? (class {} as unknown as typeof HTMLElement) : HTMLElement;
+
+/**
+ * The seed the current application's stylesheet was generated from.
+ *
+ * Derived from the path, the same way the per-app accent is remembered — every
+ * deployment mounts as `/showcase/<vertical>/<framework>/`. A page outside the
+ * six gets the library's own violet, which is what its `default` genuinely is.
+ */
+function brandSeed(): string {
+  if (typeof location === 'undefined') return LIBRARY_SEED;
+  const match = /\/showcase\/([^/]+)\//.exec(location.pathname);
+  return (match && BRAND_SEEDS[match[1]!]) || LIBRARY_SEED;
+}
 
 export class AwcShowcaseDock extends ElementBase {
   static get observedAttributes(): string[] {
@@ -780,7 +794,14 @@ export class AwcShowcaseDock extends ElementBase {
    * The swatch IS the label — the button's container is painted the preset's
    * seed colour through `--md-icon-button-container-color`, which the component
    * documents as a customisation point, so nothing here reaches past the shadow
-   * boundary. Selection shows as a checkmark inside the swatch (`selectedIcon`,
+   * boundary.
+   *
+   * THE FIRST SWATCH IS PAINTED PER APPLICATION. `default` means "this app as
+   * shipped" — it removes the adopted sheet and falls back to the accent baked
+   * into the vertical's own `app.css` — so painting it the library's violet in
+   * all six was the picker lying about what pressing it would do. It now takes
+   * its colour from `brands.generated.ts`, written by the same script that
+   * bakes the stylesheets, so the two cannot drift. Selection shows as a checkmark inside the swatch (`selectedIcon`,
    * which only renders in toggle mode) as well as through `aria-pressed`, which
    * md-icon-button emits for the same states the old buttons declared by hand.
    *
@@ -802,6 +823,7 @@ export class AwcShowcaseDock extends ElementBase {
     const wrap = this.#group('dock.accent', 'awc-dock-accent-label', true);
     for (const preset of SEED_PRESETS) {
       const selected = this.#state.seed === preset.id;
+      const swatchColor = preset.id === 'default' ? brandSeed() : preset.seed;
       const swatch = make('md-icon-button', {
         class: 'swatch',
         'data-focus': `accent:${preset.id}`,
@@ -817,12 +839,12 @@ export class AwcShowcaseDock extends ElementBase {
         'selected-icon': 'check',
         'aria-label': t.t(preset.labelKey),
       });
-      swatch.style.setProperty('--md-icon-button-container-color', preset.seed);
+      swatch.style.setProperty('--md-icon-button-container-color', swatchColor);
       // The four seeds are all mid-to-dark, but the checkmark is picked against
       // the actual colour rather than assumed, so a lighter preset added later
       // does not silently ship a white tick on a pale disc.
-      swatch.style.setProperty('--md-icon-button-icon-color', onColorFor(preset.seed));
-      swatch.style.setProperty('--md-icon-button-state-layer-color', onColorFor(preset.seed));
+      swatch.style.setProperty('--md-icon-button-icon-color', onColorFor(swatchColor));
+      swatch.style.setProperty('--md-icon-button-state-layer-color', onColorFor(swatchColor));
       swatch.addEventListener('mdClick', () => setShowcaseState({ seed: preset.id }));
       wrap.append(swatch);
     }

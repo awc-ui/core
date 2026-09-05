@@ -18,6 +18,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
 import { BASE_PATH } from '../src/lib/i18n.mjs';
+import { STORAGE_KEY } from '@awc-ui/showcase-kit/dock';
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 4331;
@@ -324,9 +325,9 @@ const DEEP_CANVAS = `(() => {
 /* ----- 5. a stale locale in storage cannot overwrite the written language --- */
 {
   const page = await browser.newPage();
-  await page.evaluateOnNewDocument(() => {
-    localStorage.setItem('awc:showcase:v1', JSON.stringify({ locale: 'ro', dir: 'ltr', theme: 'dark' }));
-  });
+  await page.evaluateOnNewDocument((key) => {
+    localStorage.setItem(key, JSON.stringify({ locale: 'ro', dir: 'ltr', theme: 'dark' }));
+  }, STORAGE_KEY);
   await page.goto(`${BASE}/ar/`, { waitUntil: 'networkidle0', timeout: 90000 });
   await new Promise((r) => setTimeout(r, 1500));
   const probe = await page.evaluate(() => ({

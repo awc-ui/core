@@ -508,7 +508,16 @@ const fakeDoc = {
 globalThis.window = undefined;
 const K = await load('dock/index.mjs');
 
-ok('storage key is the single namespaced one', K.STORAGE_KEY === 'awc:showcase:v1');
+/*
+ * ONE NAMESPACED KEY, and the suffix is part of the contract.
+ *
+ * It went to v2 when the accent became per-application: the stored shape gained
+ * a `seeds` map keyed by vertical, and a reader carrying a v1 blob would have
+ * had one accent applied to all six apps — which is the bug the change fixes.
+ * Bumping the suffix is how that state is invalidated rather than migrated, and
+ * pinning it here is what makes the bump deliberate rather than accidental.
+ */
+ok('storage key is the single namespaced one', K.STORAGE_KEY === 'awc:showcase:v2');
 ok('density rungs are 0..-4', K.DENSITY_RUNGS.join(',') === '0,-1,-2,-3,-4');
 ok('theme modes', K.THEME_MODES.join(',') === 'light,dark,system');
 ok('4 accent presets', K.SEED_PRESETS.length === 4, K.SEED_PRESETS.map((p) => p.id).join(','));

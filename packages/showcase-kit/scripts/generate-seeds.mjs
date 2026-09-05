@@ -19,12 +19,28 @@ const THEME = pathToFileURL(resolve(here, '..', '..', 'theme', 'dist', 'index.mj
 
 const { computeTheme, generateCss } = await import(THEME);
 
-/** id → seed hex. `default` is the library's own violet and emits no CSS. */
+/**
+ * id → seed hex.
+ *
+ * `default` EMITS NO CSS, and what it means changed when each vertical got an
+ * accent of its own: it used to be the library's violet, and it is now "this
+ * app as shipped" — removing the dock's adopted sheet falls back to whatever
+ * the vertical's `app.css` baked in. Its swatch is painted per app from
+ * `brands.generated.ts` rather than from the seed here, which is only the
+ * fallback for a page outside the six.
+ *
+ * THE OTHER THREE ARE ALTERNATES, and they were chosen again once the six
+ * brands existed. The old set — a muted blue, a muted green and a bronze — sat
+ * close enough to several brands that switching accent barely showed, which is
+ * the one thing an accent picker has to do. These are brighter, and spread far
+ * enough apart (about 215, 175 and 20 degrees) that any of them reads as a
+ * clear change against any of the six.
+ */
 const PRESETS = [
   { id: 'default', seed: '#6750A4', labelKey: 'dock.accent.default' },
-  { id: 'azure', seed: '#00629E', labelKey: 'dock.accent.azure' },
-  { id: 'evergreen', seed: '#216E39', labelKey: 'dock.accent.evergreen' },
-  { id: 'bronze', seed: '#8B5000', labelKey: 'dock.accent.bronze' },
+  { id: 'azure', seed: '#1A56DB', labelKey: 'dock.accent.azure' },
+  { id: 'evergreen', seed: '#00796B', labelKey: 'dock.accent.evergreen' },
+  { id: 'bronze', seed: '#C2410C', labelKey: 'dock.accent.bronze' },
 ];
 
 /** Squeeze the generated sheet: no comments, no runs of whitespace. */

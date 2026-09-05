@@ -26,6 +26,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import puppeteer from 'puppeteer';
 import { createRoutes } from '@awc-ui/showcase-kit/credit-risk';
+import { STORAGE_KEY } from '@awc-ui/showcase-kit/dock';
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 4346;
@@ -318,7 +319,7 @@ const pickInDock = async (page, id, value) => {
   const page = await browser.newPage();
   // Arrive at the English page carrying a stale Romanian preference.
   await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-  await page.evaluate(() => localStorage.setItem('awc:showcase:v1', JSON.stringify({ locale: 'ro', theme: 'dark', density: -2 })));
+  await page.evaluate((key) => localStorage.setItem(key, JSON.stringify({ locale: 'ro', theme: 'dark', density: -2 })), STORAGE_KEY);
   await page.goto(`${BASE}/watchlist/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
   const probe = await page.evaluate(() => ({
     lang: document.documentElement.lang,

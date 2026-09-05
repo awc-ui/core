@@ -42,7 +42,43 @@ export interface ShowcaseState {
 /* -------------------------------------------------------------- constants */
 
 /** The one and only localStorage key. Bump the suffix to invalidate old state. */
-export const STORAGE_KEY = 'awc:showcase:v1';
+export const STORAGE_KEY = 'awc:showcase:v2';
+
+/**
+ * Which showcase application the page belongs to, from its own URL.
+ *
+ * THE ACCENT IS REMEMBERED PER APPLICATION, and everything else globally. Theme,
+ * density, locale and direction are properties of the READER — somebody who
+ * prefers dark and reads Arabic prefers that everywhere. The accent stopped
+ * being one of those the moment each vertical got a colour of its own: with a
+ * single stored value, picking Evergreen once in Corvus silently repainted the
+ * other five and every app opened green. That is not a preference travelling,
+ * it is five brands being overwritten by a choice made about a sixth.
+ *
+ * Derived from the path rather than plumbed through, because every deployment
+ * mounts as `/showcase/<vertical>/<framework>/` and the dock already relies on
+ * that shape to swap frameworks. A page outside it — a dev harness, a test —
+ * gets one shared bucket, which is the right answer for something that is not
+ * one of the six.
+ *
+ * The key suffix went to v2 with this change, which also clears any single
+ * accent readers had already saved across all six.
+ */
+function currentVertical(): string {
+  if (typeof location === 'undefined') return 'shared';
+  const match = /\/showcase\/([^/]+)\//.exec(location.pathname);
+  return match ? match[1]! : 'shared';
+}
+
+/** What is actually persisted: the reader's preferences, plus an accent per app. */
+interface StoredState {
+  theme?: ThemeMode;
+  locale?: LocaleCode;
+  dir?: Direction;
+  density?: DensityRung;
+  /** Accent by vertical id — see `currentVertical`. */
+  seeds?: Record<string, string>;
+}
 
 /** URL query parameter names, in the order the dock writes them. */
 export const URL_PARAMS = {
@@ -110,15 +146,29 @@ export function normalizeState(input: Partial<ShowcaseState> | null | undefined)
 
 /* -------------------------------------------------------------- reading */
 
-function readStorage(): Partial<ShowcaseState> {
+function readStored(): StoredState {
   if (typeof localStorage === 'undefined') return {};
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Partial<ShowcaseState>) : {};
+    return raw ? (JSON.parse(raw) as StoredState) : {};
   } catch {
     // Private mode, disabled storage, or corrupt JSON — fall back to defaults.
     return {};
   }
+}
+
+function readStorage(): Partial<ShowcaseState> {
+  const stored = readStored();
+  const seed = stored.seeds?.[currentVertical()];
+  return {
+    theme: stored.theme,
+    locale: stored.locale,
+    dir: stored.dir,
+    density: stored.density,
+    /* Absent means "this app as shipped" — its own accent, baked into its
+       stylesheet — rather than the library's default palette. */
+    ...(seed ? { seed } : {}),
+  };
 }
 
 /** Pull whatever showcase params a query string carries. */
@@ -158,7 +208,17 @@ export function readShowcaseState(search?: string): ShowcaseState {
 function writeStorage(state: ShowcaseState): void {
   if (typeof localStorage === 'undefined') return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const stored = readStored();
+    /* The accent joins this app's slot and leaves the other five alone. */
+    const seeds = { ...stored.seeds, [currentVertical()]: state.seed };
+    const next: StoredState = {
+      theme: state.theme,
+      locale: state.locale,
+      dir: state.dir,
+      density: state.density,
+      seeds,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   } catch {
     // Quota or private mode. The URL still carries the state; nothing to do.
   }
