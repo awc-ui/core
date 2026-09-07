@@ -11,7 +11,7 @@ import {
   Method,
 } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
-import { registerRailTabTransition } from '../../utils/navigation-rail-motion';
+import { getRailTransitionTiming, parseRailMotionDuration, registerRailTabTransition, synchronizeRailAnimation } from '../../utils/navigation-rail-motion';
 import { sanitizeHref, SAFE_LINK_REL } from '../../utils/url';
 
 /**
@@ -96,7 +96,26 @@ export class MdNavigationRailTab {
   /** Rendered geometry captured before the rail or destination changes layout. */
   private iconFirst: { cx: number; cy: number } | null = null;
   private indicatorFirst: { left: number; top: number; width: number; height: number } | null = null;
-  private labelFirstOpacity = 0;
+  private labelFirst: {
+    rect: DOMRect;
+    opacity: number;
+    visible: boolean;
+    fontFamily: string;
+    fontSize: string;
+    fontWeight: string;
+    lineHeight: string;
+    letterSpacing: string;
+    paddingTop: string;
+    paddingRight: string;
+    paddingBottom: string;
+    paddingLeft: string;
+    textAlign: string;
+    boxSizing: string;
+  } | null = null;
+  private labelOverlay?: {
+    element: HTMLElement;
+    styles: Map<string, { value: string; priority: string }>;
+  };
   private pendingTransition = false;
   private transitionPrepared = false;
   private iconAnimation?: Animation;
@@ -116,6 +135,7 @@ export class MdNavigationRailTab {
     this.cancelAnimations();
     this.iconFirst = null;
     this.indicatorFirst = null;
+    this.labelFirst = null;
     this.pendingTransition = false;
     this.transitionPrepared = false;
   }
@@ -171,14 +191,29 @@ export class MdNavigationRailTab {
     // reversal then starts at the pixels on screen, not the previous target.
     this.iconFirst = this.iconCentre();
     this.indicatorFirst = indicator?.getBoundingClientRect() ?? null;
-    this.labelFirstOpacity = this.labelAnimation?.playState === 'running' && label
-      ? Number.parseFloat(getComputedStyle(label).opacity) || 0
-      : 0;
+    const labelCss = label ? getComputedStyle(label) : null;
+    this.labelFirst = label && labelCss ? {
+      rect: label.getBoundingClientRect(),
+      opacity: Number.parseFloat(labelCss.opacity) || 0,
+      visible: labelCss.display !== 'none' && labelCss.visibility !== 'hidden',
+      fontFamily: labelCss.fontFamily,
+      fontSize: labelCss.fontSize,
+      fontWeight: labelCss.fontWeight,
+      lineHeight: labelCss.lineHeight,
+      letterSpacing: labelCss.letterSpacing,
+      paddingTop: labelCss.paddingTop,
+      paddingRight: labelCss.paddingRight,
+      paddingBottom: labelCss.paddingBottom,
+      paddingLeft: labelCss.paddingLeft,
+      textAlign: labelCss.textAlign,
+      boxSizing: labelCss.boxSizing,
+    } : null;
     this.cancelAnimations();
     this.pendingTransition = !this.prefersReducedMotion();
     if (!this.pendingTransition) {
       this.iconFirst = null;
       this.indicatorFirst = null;
+      this.labelFirst = null;
     }
   }
 
@@ -189,6 +224,46 @@ export class MdNavigationRailTab {
     this.iconAnimation = undefined;
     this.indicatorAnimation = undefined;
     this.labelAnimation = undefined;
+    this.restoreLabelOverlay();
+  }
+
+  private restoreLabelOverlay() {
+    if (!this.labelOverlay) return;
+    const { element, styles } = this.labelOverlay;
+    for (const [name, previous] of styles) {
+      if (previous.value) element.style.setProperty(name, previous.value, previous.priority);
+      else element.style.removeProperty(name);
+    }
+    this.labelOverlay = undefined;
+  }
+
+  private retainOutgoingLabel(label: HTMLElement, first: NonNullable<MdNavigationRailTab['labelFirst']>) {
+    const host = this.el.getBoundingClientRect();
+    const styles = new Map<string, { value: string; priority: string }>();
+    const overlay: Record<string, string> = {
+      display: 'inline-block', position: 'absolute',
+      left: `${first.rect.left - host.left - this.el.clientLeft + this.el.scrollLeft}px`,
+      top: `${first.rect.top - host.top - this.el.clientTop + this.el.scrollTop}px`,
+      width: `${first.rect.width}px`, height: `${first.rect.height}px`,
+      'max-inline-size': 'none', 'max-block-size': 'none',
+      'margin-top': '0', 'margin-right': '0', 'margin-bottom': '0', 'margin-left': '0',
+      transform: 'none', opacity: String(first.opacity), visibility: 'visible',
+      'pointer-events': 'none', 'transition-property': 'none',
+      // Longhands preserve authored font/margin/padding/transition values when
+      // cleanup restores each property; clearing a shorthand would erase them.
+      'font-family': first.fontFamily, 'font-size': first.fontSize,
+      'font-weight': first.fontWeight, 'line-height': first.lineHeight,
+      'letter-spacing': first.letterSpacing,
+      'padding-top': first.paddingTop, 'padding-right': first.paddingRight,
+      'padding-bottom': first.paddingBottom, 'padding-left': first.paddingLeft,
+      'text-align': first.textAlign, 'box-sizing': first.boxSizing,
+    };
+    for (const [name, value] of Object.entries(overlay)) {
+      if (!value) continue;
+      styles.set(name, { value: label.style.getPropertyValue(name), priority: label.style.getPropertyPriority(name) });
+      label.style.setProperty(name, value);
+    }
+    this.labelOverlay = { element: label, styles };
   }
 
   componentDidRender() {
@@ -224,18 +299,24 @@ export class MdNavigationRailTab {
     const raw = getComputedStyle(this.el)
       .getPropertyValue('--md-sys-motion-duration-short4')
       .trim();
-    if (raw.endsWith('ms')) return parseFloat(raw) || 200;
-    if (raw.endsWith('s')) return (parseFloat(raw) || 0.2) * 1000;
-    return 200;
+    return parseRailMotionDuration(raw);
   }
 
   private playTransition() {
     const sr = this.el.shadowRoot;
     if (!sr) return;
-    const duration = this.motionDuration();
-    const easing = getComputedStyle(this.el)
+    const fallbackEasing = getComputedStyle(this.el)
       .getPropertyValue('--md-sys-motion-easing-standard').trim()
       || 'cubic-bezier(0.2, 0, 0, 1)';
+    const { duration, easing, source } = getRailTransitionTiming(this.el, {
+      duration: this.motionDuration(), easing: fallbackEasing,
+    });
+    if (duration === 0) {
+      this.iconFirst = null;
+      this.indicatorFirst = null;
+      this.labelFirst = null;
+      return;
+    }
     const timing: KeyframeAnimationOptions = { duration, easing, fill: 'none' };
 
     const icon = sr.querySelector<HTMLElement>('[part="icon-wrapper"]');
@@ -248,6 +329,8 @@ export class MdNavigationRailTab {
           { transform: `translate(${dx}px, ${dy}px)` },
           { transform: 'translate(0, 0)' },
         ], timing);
+        const animation = this.iconAnimation;
+        synchronizeRailAnimation(animation, source, () => this.iconAnimation === animation);
       }
     }
     this.iconFirst = null;
@@ -266,16 +349,48 @@ export class MdNavigationRailTab {
           },
           { transform: 'translate(0, 0) scale(1, 1)', transformOrigin: 'top left' },
         ], timing);
+        const animation = this.indicatorAnimation;
+        synchronizeRailAnimation(animation, source, () => this.indicatorAnimation === animation);
       }
     }
     this.indicatorFirst = null;
 
     const label = sr.querySelector<HTMLElement>('[part="label"]');
-    if (label && getComputedStyle(label).display !== 'none') {
-      this.labelAnimation = label.animate([
-        { opacity: this.labelFirstOpacity },
-        { opacity: 1 },
-      ], { duration, easing: 'ease-out', fill: 'none' });
+    const first = this.labelFirst;
+    this.labelFirst = null;
+    if (label && first) {
+      const css = getComputedStyle(label);
+      const targetOpacity = Number.parseFloat(css.opacity) || 0;
+      const visible = css.display !== 'none' && css.visibility !== 'hidden' && targetOpacity > 0;
+      if (!visible && first.visible && first.opacity > 0 && first.rect.width > 0 && first.rect.height > 0) {
+        // Preserve only the outgoing label's painted box. It no longer takes
+        // layout space, so the collapsed icon and pill can reach their targets.
+        this.retainOutgoingLabel(label, first);
+        this.labelAnimation = label.animate([
+          { opacity: first.opacity }, { opacity: 0 },
+        ], { ...timing, fill: 'forwards' });
+        const animation = this.labelAnimation;
+        synchronizeRailAnimation(animation, source, () => this.labelAnimation === animation);
+        void animation.finished.then(() => {
+          if (this.labelAnimation !== animation) return;
+          this.restoreLabelOverlay();
+          this.labelAnimation = undefined;
+          animation.cancel();
+        }, () => undefined);
+      } else if (visible) {
+        const last = label.getBoundingClientRect();
+        const dx = first.visible ? first.rect.left - last.left : 0;
+        const dy = first.visible ? first.rect.top - last.top : 0;
+        const opacity = first.visible ? first.opacity : 0;
+        if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5 || Math.abs(opacity - targetOpacity) > 0.01) {
+          this.labelAnimation = label.animate([
+            { transform: `translate(${dx}px, ${dy}px)`, opacity },
+            { transform: 'translate(0, 0)', opacity: targetOpacity },
+          ], timing);
+          const animation = this.labelAnimation;
+          synchronizeRailAnimation(animation, source, () => this.labelAnimation === animation);
+        }
+      }
     }
   }
 

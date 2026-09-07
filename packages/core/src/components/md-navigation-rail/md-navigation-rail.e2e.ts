@@ -350,6 +350,14 @@ describe('md-navigation-rail e2e', () => {
         const indicator = tab.shadowRoot!.querySelector('[part="indicator"]') as HTMLElement;
         const toggle = rail.shadowRoot!.querySelector('[part="toggle"] md-icon-button') as HTMLElement;
         const rtl = getComputedStyle(rail).direction === 'rtl';
+        const clock = (animation: Animation | undefined) => {
+          if (!animation?.effect || typeof animation.startTime !== 'number') return null;
+          const duration = animation.effect.getTiming().duration;
+          return typeof duration === 'number' ? {
+            duration,
+            end: animation.startTime + Number(animation.effect.getComputedTiming().endTime),
+          } : null;
+        };
         rail.addEventListener('mdExpand', () => { rail.labelVisibility = 'all'; });
         rail.addEventListener('mdCollapse', () => { rail.labelVisibility = 'none'; });
         const sample = () => {
@@ -360,6 +368,8 @@ describe('md-navigation-rail e2e', () => {
             toggleLeading: rtl ? r.right - (t.left + t.width / 2) : t.left + t.width / 2 - r.left,
             indicatorLeading: rtl ? r.right - p.right : p.left - r.left,
             indicatorTop: p.top - r.top, indicatorWidth: p.width, indicatorHeight: p.height,
+            railClock: clock(rail.getAnimations().find(animation => /^(inline-size|width)$/.test((animation as CSSTransition).transitionProperty))),
+            pillClock: clock(indicator.getAnimations().find(animation => animation.effect instanceof KeyframeEffect && animation.effect.getKeyframes().some(frame => frame.transform !== undefined))),
           };
         };
         await document.fonts.ready;
@@ -392,6 +402,15 @@ describe('md-navigation-rail e2e', () => {
         // only the final return to the same collapsed resting position.
         expect(Math.max(...values) - Math.min(...values)).toBeLessThanOrEqual(0.5);
       }
+      // The browser shortens a reversed CSS transition. Destinations must use
+      // that same clock rather than restarting their entire original duration.
+      const reversing = samples.slice(reversal + 1).filter(sample => sample.railClock && sample.pillClock);
+      expect(reversing.length).toBeGreaterThan(0);
+      for (const frame of reversing) {
+        expect(frame.pillClock!.duration).toBeCloseTo(frame.railClock!.duration, 1);
+        expect(Math.abs(frame.pillClock!.end - frame.railClock!.end)).toBeLessThanOrEqual(2);
+      }
+      const reversalDuration = reversing[0].railClock!.duration;
       for (const key of ['indicatorLeading', 'indicatorTop', 'indicatorWidth', 'indicatorHeight'] as const) {
         expect(last[key]).toBeCloseTo(first[key], 1);
         const travel = Math.abs(before[key] - first[key]);
@@ -400,7 +419,7 @@ describe('md-navigation-rail e2e', () => {
           const elapsed = current.at - previous.at;
           // Restarting from either old endpoint would jump here; a reversal
           // must start from the box that was visible immediately before toggle.
-          expect(Math.abs(current[key] - previous[key])).toBeLessThanOrEqual(travel * Math.min(1, elapsed / 400 * 2) + 2);
+          expect(Math.abs(current[key] - previous[key])).toBeLessThanOrEqual(travel * Math.min(1, elapsed / reversalDuration * 2) + 2);
         }
       }
     });

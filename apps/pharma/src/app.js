@@ -1,6 +1,11 @@
 import { createAuth, readSession, clearSession } from "./auth.js";
 import * as model from "./model.js";
-import { defaults, readPreferences, applyPreferences } from "./preferences.js";
+import {
+  defaults,
+  readPreferences,
+  applyPreferences,
+  savePreferences,
+} from "./preferences.js";
 
 const app = document.getElementById("app");
 const overlays = document.getElementById("overlays");
@@ -86,6 +91,7 @@ async function renderRoute({ focus = false } = {}) {
   const wanted = requestedRoute();
   route = destinations.some(([key]) => key === wanted) ? wanted : "overview";
   if (wanted !== route) history.replaceState(null, "", `#/${route}`);
+  updateNavigation();
   const main = document.getElementById("main");
   if (!main) return;
   if (!views) {
@@ -106,7 +112,6 @@ async function renderRoute({ focus = false } = {}) {
   if (version !== navigationVersion) return;
   await views.hydrateView(main, state);
   wireView(main);
-  updateNavigation();
   if (focus) {
     main.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -155,11 +160,18 @@ async function updateRunResults(main) {
     await readyTree(next);
   }
 }
+function syncRail() {
+  const rail = document.getElementById("rail");
+  if (!rail) return;
+  const variant = prefs.expanded ? "expanded" : "standard";
+  const labels = prefs.expanded ? "all" : "none";
+  if (rail.variant !== variant) rail.variant = variant;
+  if (rail.labelVisibility !== labels) rail.labelVisibility = labels;
+}
 async function mountWorkspace(profile) {
   session = profile;
   auth?.dispose();
-  const small = matchMedia("(max-width: 1000px)").matches;
-  app.innerHTML = `<div class="app-shell"><md-navigation-rail id="rail" variant="${prefs.expanded && !small ? "expanded" : "standard"}" expandable full-height label-visibility="${prefs.expanded && !small ? "all" : "none"}" toggle-label="Expand or collapse navigation" label="Vela workspace navigation" active-index="0">
+  app.innerHTML = `<div class="app-shell"><md-navigation-rail id="rail" variant="${prefs.expanded ? "expanded" : "standard"}" expandable full-height label-visibility="${prefs.expanded ? "all" : "none"}" toggle-label="Expand or collapse navigation" label="Vela workspace navigation" active-index="0">
     <span slot="logo" class="brand-mark" aria-label="Vela">v</span>
     <div slot="logo-expanded" class="brand-full"><span class="brand-word">vela</span><span class="brand-caption">Research operations</span></div>
     ${destinations.map(([key, label, icon]) => `<md-navigation-rail-tab value="${key}" href="#/${key}" label="${label}" icon="${icon}"></md-navigation-rail-tab>`).join("")}
@@ -170,16 +182,13 @@ async function mountWorkspace(profile) {
   await readyTree(app);
   const rail = document.getElementById("rail");
   rail.addEventListener("mdTabChange", (event) => navigate(event.detail.value));
-  rail.addEventListener("mdExpand", () => {
-    prefs.expanded = true;
-    rail.labelVisibility = "all";
-    applyPreferences(prefs);
-  });
-  rail.addEventListener("mdCollapse", () => {
-    prefs.expanded = false;
-    rail.labelVisibility = "none";
-    applyPreferences(prefs);
-  });
+  const rememberRail = (expanded) => {
+    prefs.expanded = expanded;
+    syncRail();
+    savePreferences(prefs);
+  };
+  rail.addEventListener("mdExpand", () => rememberRail(true));
+  rail.addEventListener("mdCollapse", () => rememberRail(false));
   document
     .getElementById("mobile-nav")
     .addEventListener("mdChange", (event) => {
@@ -363,6 +372,7 @@ async function handleAction(event) {
   if (action === "account") return openOverlay("account");
   if (action === "reset-preferences") {
     Object.assign(prefs, defaults);
+    syncRail();
     applyPreferences(prefs);
     return openOverlay("settings");
   }

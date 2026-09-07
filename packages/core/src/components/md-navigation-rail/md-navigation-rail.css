@@ -54,9 +54,8 @@
   );
   /* Spec: collapsed container = 80px (the collapsed-rail maximum width). */
   --_container-width: var(--md-navigation-rail-container-width, max(56px, calc(80px + var(--md-sys-density-scale, 0) * 4px)));
-  /* The collapsed footprint of the slotted FAB, used to centre it on the rail's
-     icon axis. 56px is the M3 FAB and what an extended FAB collapses to; raise
-     it for a `size="medium"` / `size="large"` icon-only FAB. */
+  /* Reserved collapsed footprint for a labelled FAB. Icon-only FABs use their
+     actual rendered size, including the component's size and density props. */
   --_fab-size: var(--md-navigation-rail-fab-size, 56px);
   /* Spec: expanded container = 220px minimum, 360px maximum. */
   --_expanded-width: var(--md-navigation-rail-expanded-width, max(140px, calc(220px + var(--md-sys-density-scale, 0) * 20px)));
@@ -65,6 +64,11 @@
   --_container-elevation: var(--md-navigation-rail-container-elevation, none);
   --_padding-block: var(--md-navigation-rail-padding-block, max(24px, calc(44px + var(--md-sys-density-scale, 0) * 4px)));
   --_padding-inline: var(--md-navigation-rail-padding-inline, 0px);
+  /* Resolve on the rail before inheritance: slotted controls can define their
+     own --_container-width, so they must consume this computed coordinate. */
+  --_rail-slot-axis: calc(var(--_container-width) / 2 - var(--_padding-inline));
+  --_rail-slot-center-shift: -50%;
+  --_rail-fab-size: var(--_fab-size);
   --_gap: var(--md-navigation-rail-gap, var(--md-sys-spacing-gap-md, 12px));
   --_header-space: var(--md-navigation-rail-header-space, max(20px, calc(40px + var(--md-sys-density-scale, 0) * 4px)));
   --_destinations-gap: var(--md-navigation-rail-destinations-gap, max(0px, calc(8px + var(--md-sys-density-scale, 0) * 2px)));
@@ -129,6 +133,10 @@
   font-family: var(--md-sys-typescale-label-medium-font-family, Roboto, sans-serif);
 }
 
+:host(:dir(rtl)) {
+  --_rail-slot-center-shift: 50%;
+}
+
 /* ---------- Full-height (opt-in via `full-height`) ----------
    Span the whole viewport instead of just the parent. `dvh` tracks the dynamic
    viewport (mobile browser chrome show/hide); `vh` is the fallback for engines
@@ -143,12 +151,8 @@
   inline-size: var(--_expanded-width);
   min-inline-size: var(--_expanded-width);
   max-inline-size: var(--_expanded-max-width);
-  /* Leading inset for expanded content. Spec is 16px, but we use 12px so each
-     control's icon lands back on the rail's centre axis (x=40) — exactly where
-     it sits while collapsed — giving ZERO horizontal icon movement during the
-     expand/collapse spring. A 24px icon centred in the 80px collapsed rail is at
-     x=28; with this 12px inset the expanded icons (toggle 12+8 button inset,
-     destinations 12+16 pill inset, etc.) also resolve to x=28. */
+  /* Expanded content gains an inset. Controls compensate this value against
+     the collapsed width, so their icon axis also holds at compact densities. */
   --_padding-inline: var(--md-sys-spacing-inset-md, 12px);
 }
 
@@ -303,19 +307,12 @@
   justify-content: flex-start;
   /* Anchor the leading glyph on the rail's centre axis (x=40 in the 80px rail).
      This padding is leading-edge based (NOT justify-content: center, which would
-     track the animating host width and drift). Identical in both states — the
-     expanded rule below cancels the host padding — so the logo NEVER moves. */
+     track the animating host width and drift). The margin compensates the
+     current host inset in both states, preserving the same leading position. */
   padding-inline-start: calc((var(--_container-width) - var(--_logo-icon-size)) / 2);
-  transition: opacity var(--_motion-effects-duration) var(--_motion-effects-easing);
-}
-
-/* Expanded: the in-flow logo wrapper is pushed right by the host's expanded
-   padding. Cancel exactly that, so the glyph stays on the same centre axis
-   (x=40) it holds while collapsed — zero horizontal movement. Both variants get
-   it, so the cross-fade happens perfectly in place. */
-:host(.md-navigation-rail--expanded) .md-navigation-rail__logo-contracted,
-:host(.md-navigation-rail--expanded) .md-navigation-rail__logo-expanded {
+  /* Compensate in both states, including a custom collapsed rail inset. */
   margin-inline-start: calc(-1 * var(--_padding-inline));
+  transition: opacity var(--_motion-duration) var(--_motion-easing);
 }
 
 .md-navigation-rail__logo-contracted {
@@ -364,6 +361,8 @@
 
 /* ---------- Header (top group) ---------- */
 .md-navigation-rail__header {
+  --_header-padding-inline: 0px;
+  --_rail-slot-axis: calc(var(--_container-width) / 2 - var(--_padding-inline) - var(--_header-padding-inline));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -374,8 +373,9 @@
 }
 
 :host(.md-navigation-rail--expanded) .md-navigation-rail__header {
+  --_header-padding-inline: var(--md-sys-spacing-inset-sm, 8px);
   align-items: flex-start;
-  padding-inline: var(--md-sys-spacing-inset-sm, 8px);
+  padding-inline: var(--_header-padding-inline);
 }
 
 .md-navigation-rail__header[hidden] {
@@ -383,65 +383,53 @@
 }
 
 /* ---------- FAB region ----------
-   LEADING-ANCHORED IN BOTH STATES, so the FAB's leading edge — and with it its
-   icon — never moves. This is the same idiom the logo and the toggle above use,
-   and it is here for the same reason plus a sharper one.
-
-   Centring was the problem. `justify-content: center` resolves against the
-   ANIMATING host width, and on collapse the state flips instantly while the rail
-   narrows 220→80 over 200ms and the FAB runs its own 500ms morph spring. The
-   three timelines are unrelated, so the centred FAB was dragged past its target:
-   measured, the icon left x=28, dipped to 16.67 — about 11px BELOW its resting
-   27.5 — and sprang back. A visible rubber-band on every collapse.
-
-   Anchoring removes the moving target entirely. Collapsed, the leading inset is
-   whatever centres the FAB, `(rail - fab) / 2` = (80 - 56) / 2 = 12px; expanded,
-   the host's own `--_padding-inline` is already 12px and the wrapper adds
-   nothing. Both put the leading edge at 12 and the icon at 28 — the rail's
-   documented axis — so across the whole transition the FAB only CHANGES WIDTH.
-   Nothing translates, in either direction.
-
-   The `- var(--_fab-size)` term is the one assumption, and it is exposed rather
-   than hidden: 56px is the M3 FAB and what an extended FAB collapses to, so it
-   is right for `size="standard"`, for a labelled FAB, and for every FAB in this
-   component's own stories. A consumer slotting a `size="medium"` or
-   `size="large"` icon-only FAB must set `--md-navigation-rail-fab-size` to that
-   width, or its icon lands off the axis by half the difference. `max(0px, …)`
-   keeps a FAB wider than the rail from producing a negative inset. */
+   A labelled FAB expands from a fixed icon axis. Its own label width, opacity,
+   and padding transitions use the rail's width clock instead of a second
+   spatial spring. Icon-only FABs are centred using their actual footprint. */
 .md-navigation-rail__fab {
+  /* Preserve the slot's legacy inset for wrappers and other custom content.
+     Direct FABs compensate it through the computed axis below. */
+  --_fab-padding-inline: max(0px, calc((var(--_container-width) - var(--_fab-size)) / 2));
+  --_rail-slot-axis: calc(var(--_container-width) / 2 - var(--_padding-inline) - var(--_fab-padding-inline));
+  --md-sys-motion-spring-spatial-default-duration: var(--_motion-duration);
+  --md-sys-motion-spring-spatial-default-easing: var(--_motion-easing);
+  --md-sys-motion-spring-effects-default-duration: var(--_motion-duration);
+  --md-sys-motion-spring-effects-default-easing: var(--_motion-easing);
   display: flex;
   align-items: center;
   justify-content: flex-start;
   inline-size: 100%;
-  padding-inline-start: max(0px, calc((var(--_container-width) - var(--_fab-size)) / 2));
+  padding-inline-start: var(--_fab-padding-inline);
   padding-block-end: var(--md-sys-spacing-inset-sm, 8px);
 }
 
-/*
- * NO extra leading padding here — the host's `--_padding-inline` has already
- * applied it, and a second copy double-counted it.
- *
- * The rail's whole expand promise is the x=28 icon axis documented at the top
- * of this file: a 24px icon centred in the 80px collapsed rail sits at 28, and
- * the 12px expanded inset is chosen so every expanded control lands back on 28
- * too — "ZERO horizontal icon movement". Every other control keeps that
- * promise; measured, a destination tab's glyph is at x=28.00 in BOTH states.
- * The FAB was the sole violator: host inset 12 + this padding 12 put its
- * leading edge at 24, and with the FAB's own 16px icon inset the "+" landed at
- * x=40 expanded against x=27.5 collapsed. It did not even glide — it jumped the
- * full 12.5px in one frame and then held while only the width animated, which
- * is what made it read as a jerk rather than a movement.
- *
- * `justify-content: flex-start` still earns its place: it anchors the FAB to
- * the leading edge instead of centring it, the same idiom the logo and toggle
- * above already use, and for the reason recorded there — centring resolves
- * against the ANIMATING host width and drifts.
- */
 :host(.md-navigation-rail--expanded) .md-navigation-rail__fab {
-  /* The host's `--_padding-inline` already puts the content box at 12px, so the
-     wrapper contributes nothing — adding its own copy on top is what used to
-     double-count it and shove the icon from x=28 to x=40. */
-  padding-inline-start: 0;
+  --_fab-padding-inline: 0px;
+}
+
+:host(:not(.md-navigation-rail--horizontal)) .md-navigation-rail__fab ::slotted(md-fab) {
+  position: relative;
+  inset-inline-start: var(--_rail-slot-axis);
+  translate: var(--_rail-slot-center-shift) 0;
+}
+
+:host(:not(.md-navigation-rail--horizontal)) .md-navigation-rail__fab ::slotted(md-fab.md-fab--extended),
+:host(:not(.md-navigation-rail--horizontal)) .md-navigation-rail__fab ::slotted(md-fab.md-fab--collapsed) {
+  inset-inline-start: calc(var(--_rail-slot-axis) - var(--_rail-fab-size) / 2);
+  translate: none;
+}
+
+/* A labelled FAB's collapsed footprint is fixed, while its icon size and
+   inset tokens can change with density. Reserve half of that footprint before
+   the icon in both states so the shrinking label cannot displace it. */
+:host(:not(.md-navigation-rail--horizontal)) .md-navigation-rail__fab ::slotted(md-fab.md-fab--extended.md-fab--with-icon),
+:host(:not(.md-navigation-rail--horizontal)) .md-navigation-rail__fab ::slotted(md-fab.md-fab--collapsed.md-fab--with-icon) {
+  justify-content: flex-start;
+  padding-inline-start: calc((var(--_rail-fab-size) - var(--_icon-size)) / 2);
+}
+
+:host(:not(.md-navigation-rail--horizontal)) .md-navigation-rail__fab ::slotted(md-fab.md-fab--collapsed.md-fab--with-icon) {
+  padding-inline-end: calc((var(--_rail-fab-size) - var(--_icon-size)) / 2);
 }
 
 .md-navigation-rail__fab[hidden] {
@@ -494,6 +482,7 @@
   flex-shrink: 0;
   box-sizing: border-box;
   --_footer-padding-inline: 0px;
+  --_rail-slot-axis: calc(var(--_container-width) / 2 - var(--_padding-inline) - var(--_footer-padding-inline));
   --_footer-leading-size: var(--md-navigation-rail-footer-leading-size, 32px);
   display: flex;
   flex-direction: column;
@@ -507,21 +496,24 @@
   margin-block-start: auto; /* push to bottom even with align=top */
 }
 
-/* Legacy footer content keeps its existing alignment. For an account that
-   stays anchored during expansion, use footer-leading + footer-content. */
-/* Centred with `align-self`, NOT a margin. A margin here has to be written
-   through `::slotted()`, and document-tree rules out-rank `::slotted()` at any
-   specificity — so a consumer's `* { margin: 0 }` reset (Starlight, Tailwind
-   preflight, any normalise) silently pushed the button to the rail's leading
-   edge. `align-self` is not a margin, so the reset cannot reach it, and the
-   expanded offset moves to padding on the footer itself (a shadow element the
-   reset never matches). */
+/* Preserve the existing alignment of horizontal and profile-slot controls. */
 .md-navigation-rail__footer ::slotted(md-icon-button) {
   align-self: center;
 }
 
 :host(.md-navigation-rail--expanded) .md-navigation-rail__footer ::slotted(md-icon-button) {
   align-self: flex-start;
+}
+
+/* Known icon controls use their own rendered width instead of a fixed button
+   size. Relative logical positioning avoids margins that document resets can
+   override. Other custom header/footer content retains its existing layout. */
+:host(:not(.md-navigation-rail--horizontal)) .md-navigation-rail__header ::slotted(md-icon-button[slot='header']),
+:host(:not(.md-navigation-rail--horizontal)) .md-navigation-rail__footer ::slotted(md-icon-button[slot='footer']) {
+  align-self: flex-start;
+  position: relative;
+  inset-inline-start: var(--_rail-slot-axis);
+  translate: var(--_rail-slot-center-shift) 0;
 }
 
 :host(.md-navigation-rail--expanded) .md-navigation-rail__footer {
@@ -641,10 +633,17 @@
   :host,
   .md-navigation-rail__toggle,
   .md-navigation-rail__fab,
+  .md-navigation-rail__logo-contracted,
+  .md-navigation-rail__logo-expanded,
   .md-navigation-rail__footer-content,
   .md-navigation-rail__scrim,
   :host(.md-navigation-rail--modal) .md-navigation-rail__container {
     transition: none;
+  }
+
+  .md-navigation-rail__fab {
+    --md-sys-motion-spring-spatial-default-duration: 0ms;
+    --md-sys-motion-spring-effects-default-duration: 0ms;
   }
 }
 
@@ -755,6 +754,7 @@
 :host(.md-navigation-rail--horizontal) .md-navigation-rail__logo-expanded {
   position: static;
   padding-inline: var(--md-sys-spacing-inset-sm, 8px);
+  margin-inline-start: 0;
 }
 
 :host(.md-navigation-rail--horizontal) .md-navigation-rail__logo-expanded {

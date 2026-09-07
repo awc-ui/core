@@ -314,6 +314,7 @@ describe('md-navigation-rail-tab layout motion', () => {
     finished: Promise<unknown>;
     addEventListener: jest.Mock;
     removeEventListener: jest.Mock;
+    finish: () => void;
   };
   const rect = (box: Box): DOMRect => ({
     ...box, x: box.left, y: box.top,
@@ -323,10 +324,12 @@ describe('md-navigation-rail-tab layout motion', () => {
   const collapsed = {
     icon: { left: 120, top: 72, width: 56, height: 32 },
     indicator: { left: 120, top: 72, width: 56, height: 32 },
+    label: { left: 120, top: 108, width: 56, height: 16 },
   };
   const expanded = {
     icon: { left: 108, top: 80, width: 24, height: 24 },
     indicator: { left: 96, top: 68, width: 248, height: 56 },
+    label: { left: 140, top: 86, width: 84, height: 20 },
   };
 
   /** Read the visible bounds represented by a FLIP frame; assert geometry,
@@ -368,7 +371,35 @@ describe('md-navigation-rail-tab layout motion', () => {
     let visualIcon: Box | null = null;
     let visualIndicator: Box | null = null;
     let labelOpacity = '1';
+    let duration = '200ms';
     let reduced = false;
+    // Model standard CSSOM priority and shorthand-reset behavior, omitted by
+    // MockDOM, so cleanup can be checked against authored longhand styles.
+    const priorities = new Map<string, string>();
+    const setStyle = label.style.setProperty.bind(label.style);
+    const removeStyle = label.style.removeProperty.bind(label.style);
+    const shorthandLonghands: Record<string, string[]> = {
+      font: ['font-family', 'font-size', 'font-weight', 'line-height'],
+      margin: ['margin-top', 'margin-right', 'margin-bottom', 'margin-left'],
+      padding: ['padding-top', 'padding-right', 'padding-bottom', 'padding-left'],
+      transition: ['transition-property', 'transition-duration', 'transition-delay', 'transition-timing-function'],
+    };
+    label.style.removeProperty = (name: string) => {
+      for (const longhand of shorthandLonghands[name] || []) {
+        removeStyle(longhand); priorities.delete(longhand);
+      }
+      priorities.delete(name);
+      return removeStyle(name);
+    };
+    label.style.setProperty = (name: string, value: string, priority = '') => {
+      label.style.removeProperty(name);
+      setStyle(name, value);
+      if (value && priority) priorities.set(name, priority);
+    };
+    Object.defineProperty(label.style, 'getPropertyPriority', { value: (name: string) => priorities.get(name) || '' });
+    for (const name of ['clientLeft', 'clientTop', 'scrollLeft', 'scrollTop']) {
+      Object.defineProperty(page.root!, name, { configurable: true, value: 0 });
+    }
     const originalMedia = Object.getOwnPropertyDescriptor(window, 'matchMedia');
     Object.defineProperty(window, 'matchMedia', { configurable: true, writable: true, value: jest.fn(() => ({
       matches: reduced, media: '(prefers-reduced-motion: reduce)',
@@ -380,18 +411,32 @@ describe('md-navigation-rail-tab layout motion', () => {
     };
     jest.spyOn(icon, 'getBoundingClientRect').mockImplementation(() => rect(visualIcon || layout.icon));
     jest.spyOn(indicator, 'getBoundingClientRect').mockImplementation(() => rect(visualIndicator || layout.indicator));
+    jest.spyOn(label, 'getBoundingClientRect').mockImplementation(() => {
+      if (label.style.position === 'absolute') return rect({ left: Number.parseFloat(label.style.left), top: Number.parseFloat(label.style.top), width: Number.parseFloat(label.style.width), height: Number.parseFloat(label.style.height) });
+      return rect(page.rootInstance.labelVisibility === 'none' ? { left: 0, top: 0, width: 0, height: 0 } : layout.label);
+    });
     const computed = globalThis.getComputedStyle;
     jest.spyOn(globalThis, 'getComputedStyle').mockImplementation((element: Element) => {
-      if (element === label) return { opacity: labelOpacity, getPropertyValue: (name: string) => name === 'opacity' ? labelOpacity : '' } as CSSStyleDeclaration;
+      if (element === label) return {
+        opacity: labelOpacity,
+        display: label.style.display || (page.rootInstance.labelVisibility === 'none' ? 'none' : 'inline-block'),
+        visibility: 'visible', fontFamily: 'Roboto', fontSize: '14px', fontWeight: '500', lineHeight: '20px',
+        letterSpacing: '0.1px', paddingTop: '0px', paddingRight: '4px', paddingBottom: '0px', paddingLeft: '4px',
+        textAlign: 'start', boxSizing: 'border-box',
+        getPropertyValue: (name: string) => name === 'opacity' ? labelOpacity : '',
+      } as CSSStyleDeclaration;
+      if (element === page.root) return { getPropertyValue: (name: string) => name === '--md-sys-motion-duration-short4' ? duration : '' } as CSSStyleDeclaration;
       return computed(element);
     });
     function recorder(element: HTMLElement, onCancel: () => void) {
       const animations: RecordedAnimation[] = [];
       Object.defineProperty(element, 'animate', { configurable: true, value: jest.fn((frames: Keyframe[], options: KeyframeAnimationOptions) => {
+        let finish!: () => void;
         const animation: RecordedAnimation = {
-          frames, options, playState: 'running', finished: new Promise(() => undefined),
+          frames, options, playState: 'running', finished: new Promise<void>(resolve => { finish = resolve; }),
           cancel: jest.fn(() => { animation.playState = 'idle'; onCancel(); }),
           addEventListener: jest.fn(), removeEventListener: jest.fn(),
+          finish: () => { animation.playState = 'finished'; finish(); },
         };
         animations.push(animation);
         return animation;
@@ -408,10 +453,12 @@ describe('md-navigation-rail-tab layout motion', () => {
         visualIcon = iconBox; visualIndicator = indicatorBox; labelOpacity = opacity;
       },
       setReduced(value: boolean) { reduced = value; },
-      async toggle(value: boolean) {
+      setDuration(value: string) { duration = value; },
+      async toggle(value: boolean, labels: 'all' | 'none' = page.rootInstance.labelVisibility) {
         // Stencil's watcher observes the currently painted layout, before the
         // following render changes the expanded class and measured target.
-        page.rootInstance.expanded = value;
+        (page.root as HTMLMdNavigationRailTabElement).expanded = value;
+        (page.root as HTMLMdNavigationRailTabElement).labelVisibility = labels;
         layout = value ? expanded : collapsed;
         await page.waitForChanges();
       },
@@ -450,6 +497,96 @@ describe('md-navigation-rail-tab layout motion', () => {
     expectBox(frameBox(collapsed.indicator, f.indicatorAnimations[1].frames[0]), visibleIndicator);
     expect(Number(f.labelAnimations[1].frames[0].opacity)).toBeCloseTo(0.42);
     expect(Number(f.labelAnimations[1].frames[f.labelAnimations[1].frames.length - 1].opacity)).toBe(1);
+  });
+
+  it('preserves a settled visible label instead of blinking from zero on layout changes', async () => {
+    const f = await fixture();
+    await f.toggle(true);
+    expect(Number(f.labelAnimations[0].frames[0].opacity)).toBe(1);
+    expect(Number(f.labelAnimations[0].frames[1].opacity)).toBe(1);
+    f.labelAnimations[0].finish();
+    await Promise.resolve();
+    await f.toggle(false);
+    expect(Number(f.labelAnimations[1].frames[0].opacity)).toBe(1);
+    expect(Number(f.labelAnimations[1].frames[1].opacity)).toBe(1);
+    expect(f.labelAnimations[1].options.easing).toBe(f.indicatorAnimations[1].options.easing);
+  });
+
+  it('retains only the outgoing label during collapse and restores its styles after fade-out', async () => {
+    const f = await fixture();
+    f.label.style.setProperty('letter-spacing', '0.7px');
+    f.label.style.setProperty('font-weight', '600', 'important');
+    f.label.style.setProperty('margin-top', '3px', 'important');
+    f.label.style.setProperty('padding-left', '7px');
+    f.label.style.setProperty('transition-duration', '75ms');
+    await f.toggle(true);
+    f.labelAnimations[0].finish();
+    await Promise.resolve();
+    await f.toggle(false, 'none');
+    const exit = f.labelAnimations[1];
+    expect(Number(exit.frames[0].opacity)).toBe(1);
+    expect(Number(exit.frames[1].opacity)).toBe(0);
+    expect(f.label.style.display).toBe('inline-block');
+    expect(f.label.style.position).toBe('absolute');
+    expect(Number.parseFloat(f.label.style.width)).toBe(expanded.label.width);
+    expect(Number.parseFloat(f.label.style.height)).toBe(expanded.label.height);
+    exit.finish();
+    await Promise.resolve();
+    expect(f.label.style.display).toBe('');
+    expect(f.label.style.position).toBe('');
+    expect(f.label.style.width).toBe('');
+    expect(f.label.style.getPropertyValue('letter-spacing')).toBe('0.7px');
+    expect(f.label.style.getPropertyValue('font-weight')).toBe('600');
+    expect(f.label.style.getPropertyPriority('font-weight')).toBe('important');
+    expect(f.label.style.getPropertyValue('margin-top')).toBe('3px');
+    expect(f.label.style.getPropertyPriority('margin-top')).toBe('important');
+    expect(f.label.style.getPropertyValue('padding-left')).toBe('7px');
+    expect(f.label.style.getPropertyValue('transition-duration')).toBe('75ms');
+    expect(exit.cancel).toHaveBeenCalledTimes(1);
+    expect(getComputedStyle(f.label).display).toBe('none');
+  });
+
+  it('reverses an outgoing fade from its visible opacity and removes the temporary overlay', async () => {
+    const f = await fixture();
+    await f.toggle(true);
+    await f.toggle(false, 'none');
+    const exit = f.labelAnimations[1];
+    f.setVisual(collapsed.icon, collapsed.indicator, '0.38');
+    await f.toggle(true, 'all');
+    const reveal = f.labelAnimations[2];
+    expect(exit.cancel).toHaveBeenCalledTimes(1);
+    expect(Number(reveal.frames[0].opacity)).toBeCloseTo(0.38);
+    expect(Number(reveal.frames[1].opacity)).toBe(1);
+    expect(f.label.style.position).toBe('');
+    expect(f.label.style.display).toBe('');
+    exit.finish();
+    await Promise.resolve();
+    expect(reveal.cancel).not.toHaveBeenCalled();
+  });
+
+  it('cleans up an outgoing label on disconnect or reduced-motion cancellation', async () => {
+    const f = await fixture();
+    await f.toggle(true);
+    await f.toggle(false, 'none');
+    expect(f.label.style.position).toBe('absolute');
+    f.setReduced(true);
+    await f.toggle(true, 'all');
+    expect(f.label.style.position).toBe('');
+    f.setReduced(false);
+    await f.toggle(false, 'none');
+    expect(f.label.style.position).toBe('absolute');
+    f.page.rootInstance.disconnectedCallback();
+    expect(f.label.style.position).toBe('');
+    expect(f.label.style.display).toBe('');
+  });
+
+  it.each(['0ms', '0s'])('honors an explicit zero motion duration (%s)', async (duration) => {
+    const f = await fixture();
+    f.setDuration(duration);
+    await f.toggle(true);
+    expect(f.iconAnimations).toHaveLength(0);
+    expect(f.indicatorAnimations).toHaveLength(0);
+    expect(f.labelAnimations).toHaveLength(0);
   });
 
   it('cancels all ongoing layout motion when toggled under reduced motion', async () => {

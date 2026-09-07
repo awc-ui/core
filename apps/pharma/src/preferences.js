@@ -22,12 +22,19 @@ export function readPreferences() {
     expanded: saved.expanded !== false,
   };
 }
+export function savePreferences(prefs) {
+  try {
+    localStorage.setItem("vela.preferences.v1", JSON.stringify(prefs));
+  } catch {}
+}
 let lastPrimary;
 export function applyPreferences(prefs) {
   const root = document.documentElement;
-  root.dataset.theme = prefs.theme;
-  root.dataset.density = String(prefs.density);
-  root.dir = prefs.rtl ? "rtl" : "ltr";
+  const density = String(prefs.density);
+  const direction = prefs.rtl ? "rtl" : "ltr";
+  if (root.dataset.theme !== prefs.theme) root.dataset.theme = prefs.theme;
+  if (root.dataset.density !== density) root.dataset.density = density;
+  if (root.dir !== direction) root.dir = direction;
   if (lastPrimary !== prefs.primary) {
     applyThemeStylesheet(
       computeTheme({ primaryHex: prefs.primary }),
@@ -41,7 +48,5 @@ export function applyPreferences(prefs) {
       );
     } catch {}
   }
-  try {
-    localStorage.setItem("vela.preferences.v1", JSON.stringify(prefs));
-  } catch {}
+  savePreferences(prefs);
 }
