@@ -20,6 +20,7 @@ import {
   parseColor,
   formatColor,
 } from './color-utils';
+import { colorPickerLabel } from './color-picker-labels';
 
 export type ColorFormat = 'hex' | 'rgb' | 'hsl';
 export type ColorPickerVariant = 'inline' | 'popover';
@@ -31,6 +32,9 @@ export type ColorPickerVariant = 'inline' | 'popover';
 })
 export class MdColorPicker {
   @Element() el!: HTMLElement;
+
+  /** BCP-47 locale for built-in accessible labels (English, Arabic, Romanian). */
+  @Prop() locale: string = 'en-US';
 
   /**
    * Layout variant.
@@ -633,7 +637,7 @@ export class MdColorPicker {
         part="plate"
         role="application"
         tabindex={this.disabled ? -1 : 0}
-        aria-label="Saturation and brightness"
+        aria-label={colorPickerLabel(this.locale, 'saturation')}
         style={{ background: bg }}
         onPointerDown={this.onSatPointerDown}
         onPointerMove={this.onSatPointerMove}
@@ -664,7 +668,7 @@ export class MdColorPicker {
         class="md-color-picker__hue"
         part="hue"
         role="slider"
-        aria-label="Hue"
+        aria-label={colorPickerLabel(this.locale, 'hue')}
         aria-valuemin="0"
         aria-valuemax="360"
         aria-valuenow={Math.round(hue)}
@@ -698,7 +702,7 @@ export class MdColorPicker {
         class="md-color-picker__alpha"
         part="alpha"
         role="slider"
-        aria-label="Opacity"
+        aria-label={colorPickerLabel(this.locale, 'opacity')}
         aria-valuemin="0"
         aria-valuemax="1"
         aria-valuenow={+alphaVal.toFixed(2)}
@@ -873,7 +877,7 @@ export class MdColorPicker {
     const presets = this.parsedPresets;
     if (presets.length === 0) return null;
     return (
-      <div class="md-color-picker__presets" part="presets" role="listbox" aria-label="Color presets">
+      <div class="md-color-picker__presets" part="presets" role="listbox" aria-label={colorPickerLabel(this.locale, 'presets')}>
         {presets.map((hex) => (
           <button
             key={hex}
@@ -906,7 +910,7 @@ export class MdColorPicker {
             class="md-color-picker__preview"
             part="preview"
             role="img"
-            aria-label={`Current colour ${formatColor(this.hsva, this.format)}`}
+            aria-label={`${colorPickerLabel(this.locale, 'current')} ${formatColor(this.hsva, this.format)}`}
           >
             <div
               class="md-color-picker__preview-inner"

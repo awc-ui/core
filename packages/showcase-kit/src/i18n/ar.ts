@@ -2170,6 +2170,291 @@ export const ar: Dictionary = {
   'music.clip.label.12': 'تناغم',
   'music.clip.label.13': 'معكوس',
   'music.clip.label.14': 'ذيل',
+
+/* ----------------------------------------------------------------- design */
+/*
+ * Pictor — the design and image editing vertical.
+ *
+ * The pooled blocks at the end (project descriptions, component descriptions,
+ * the strings text layers render) are indexed by the fixture generator, so
+ * their COUNTS are part of the contract: `scripts/generate-design-fixture.mjs`
+ * holds the same numbers and `scripts/verify.mjs` fails if a key it emits is
+ * missing from any locale.
+ */
+  /* the product ----------------------------------------------------------- */
+  'design.app.demo': 'عرض',
+  'design.app.brand': 'بيكتور',
+  'design.app.title': 'التصميم والصور',
+  'design.app.viewer': 'مسجّل الدخول باسم {name}',
+  'design.app.disclaimer': 'مشاريع وملفات وموارد خيالية. لا يمثل أي منتج أو علامة تجارية أو شخص حقيقي.',
+
+  /* navigation ------------------------------------------------------------ */
+  'design.nav.assets': 'الموارد',
+  'design.nav.editor': 'المحرّر',
+  'design.nav.profile': 'الملف الشخصي',
+  'design.nav.projects': 'المشاريع',
+
+  /* what a layer is ------------------------------------------------------- */
+  'design.layerKind.rect': 'مستطيل',
+  'design.layerKind.text': 'نص',
+  'design.layerKind.frame': 'إطار',
+  'design.layerKind.group': 'مجموعة',
+  'design.layerKind.image': 'صورة',
+  'design.layerKind.ellipse': 'بيضاوي',
+  'design.layerKind.instance': 'نسخة',
+  'design.layerKind.component': 'مكوّن',
+
+  /* blend modes — the CSS values, deliberately ---------------------------- */
+  'design.blend.darken': 'تغميق',
+  'design.blend.normal': 'عادي',
+  'design.blend.screen': 'شاشة',
+  'design.blend.lighten': 'تفتيح',
+  'design.blend.overlay': 'تراكب',
+  'design.blend.multiply': 'ضرب',
+  'design.blend.difference': 'فرق',
+
+  /* the four image adjustments -------------------------------------------- */
+  'design.adjustment.contrast': 'التباين',
+  'design.adjustment.exposure': 'التعريض',
+  'design.adjustment.saturation': 'التشبّع',
+  'design.adjustment.temperature': 'الحرارة',
+
+  /* the toolbar ----------------------------------------------------------- */
+  'design.tool.hand': 'تحريك',
+  'design.tool.rect': 'مستطيل',
+  'design.tool.text': 'نص',
+  'design.tool.frame': 'إطار',
+  'design.tool.image': 'إدراج صورة',
+  'design.tool.select': 'تحديد',
+  'design.tool.ellipse': 'بيضاوي',
+
+  /* align ----------------------------------------------------------------- */
+  'design.align.top': 'محاذاة للأعلى',
+  'design.align.left': 'محاذاة لليسار',
+  'design.align.right': 'محاذاة لليمين',
+  'design.align.bottom': 'محاذاة للأسفل',
+  'design.align.center-x': 'توسيط أفقي',
+  'design.align.center-y': 'توسيط رأسي',
+
+  /* boolean operations ---------------------------------------------------- */
+  'design.boolean.union': 'اتحاد',
+  'design.boolean.exclude': 'استبعاد',
+  'design.boolean.subtract': 'طرح',
+  'design.boolean.intersect': 'تقاطع',
+
+  /* what an undo entry did ------------------------------------------------ */
+  'design.edit.move': 'نقل',
+  'design.edit.align': 'محاذاة',
+  'design.edit.group': 'تجميع',
+  'design.edit.style': 'تغيير النمط',
+  'design.edit.create': 'إنشاء',
+  'design.edit.delete': 'حذف',
+  'design.edit.resize': 'تغيير الحجم',
+  'design.edit.boolean': 'دمج',
+  'design.edit.reorder': 'إعادة ترتيب',
+  'design.edit.ungroup': 'فك التجميع',
+  'design.edit.reparent': 'نقل إلى',
+  'design.edit.distribute': 'توزيع',
+
+  /* where a file is in review --------------------------------------------- */
+  'design.fileState.draft': 'مسودة',
+  'design.fileState.approved': 'معتمد',
+  'design.fileState.archived': 'مؤرشف',
+  'design.fileState.in-review': 'قيد المراجعة',
+
+  /* the asset library ----------------------------------------------------- */
+  'design.assetKind.color': 'لون',
+  'design.assetKind.image': 'صورة',
+  'design.assetKind.component': 'مكوّن',
+  'design.assetKind.text-style': 'نمط نص',
+
+  /* the project palette --------------------------------------------------- */
+  'design.swatch.p0': 'أزرق عميق',
+  'design.swatch.p1': 'بحيرة',
+  'design.swatch.p2': 'سوسن',
+  'design.swatch.p3': 'فخّاري',
+  'design.swatch.p4': 'سرخس',
+  'design.swatch.p5': 'مغرة',
+  'design.swatch.p6': 'أردوازي',
+  'design.swatch.p7': 'وردي داكن',
+  'design.swatch.p8': 'كوبالت',
+  'design.swatch.p9': 'زيتوني',
+  'design.swatch.ink': 'حبر',
+  'design.swatch.paper': 'ورق',
+
+  /* actions --------------------------------------------------------------- */
+  'design.action.hide': 'إخفاء الطبقة',
+  'design.action.lock': 'قفل الطبقة',
+  'design.action.redo': 'إعادة',
+  'design.action.show': 'إظهار الطبقة',
+  'design.action.undo': 'تراجع',
+  'design.action.group': 'تجميع التحديد',
+  'design.action.delete': 'حذف التحديد',
+  'design.action.unlock': 'فتح الطبقة',
+  'design.action.zoomIn': 'تكبير',
+  'design.action.ungroup': 'فك التجميع',
+  'design.action.zoomOut': 'تصغير',
+  'design.action.deselect': 'إلغاء التحديد',
+  'design.action.openFile': 'فتح في المحرّر',
+  'design.action.duplicate': 'تكرار',
+  'design.action.openAsset': 'فتح المورد',
+  'design.action.selectAll': 'تحديد الكل',
+  'design.action.toggleGrid': 'تبديل الشبكة',
+  'design.action.distributeH': 'توزيع أفقي',
+  'design.action.distributeV': 'توزيع رأسي',
+  'design.action.openProject': 'فتح المشروع',
+  'design.action.bringForward': 'إحضار للأمام',
+  'design.action.sendBackward': 'إرسال للخلف',
+
+  /* screen heads ---------------------------------------------------------- */
+  'design.screen.assets.title': 'الموارد',
+  'design.screen.editor.title': 'المحرّر',
+  'design.screen.file.subtitle': 'الطبقات والسجل وكل ما يحتويه المستند',
+  'design.screen.profile.title': 'الملف الشخصي',
+  'design.screen.asset.subtitle': 'أين يُستخدم هذا المورد',
+  'design.screen.projects.title': 'المشاريع',
+  'design.screen.assets.subtitle': 'صور وألوان وأنماط نصوص ومكوّنات مشتركة',
+  'design.screen.editor.subtitle': 'مستند واحد وطبقاته وكل ما يمكنك فعله بها',
+  'design.screen.profile.subtitle': 'عملك عبر كل المشاريع',
+  'design.screen.project.subtitle': 'ملفات هذا المشروع',
+  'design.screen.projects.subtitle': 'كل ما تعمل عليه أنت وفريقك',
+
+  /* panels ---------------------------------------------------------------- */
+  'design.panel.size': 'الحجم',
+  'design.panel.usage': 'الاستخدام',
+  'design.panel.layers': 'الطبقات',
+  'design.panel.recent': 'ملفات حديثة',
+  'design.panel.shared': 'مشاركة معك',
+  'design.panel.history': 'السجل',
+  'design.panel.palette': 'لوحة الألوان',
+  'design.panel.position': 'الموضع',
+  'design.panel.appearance': 'المظهر',
+  'design.panel.properties': 'الخصائص',
+  'design.panel.adjustments': 'التعديلات',
+  'design.panel.collaborators': 'المتعاونون',
+
+  /* labels and counts ----------------------------------------------------- */
+  'design.label.x': 'س',
+  'design.label.y': 'ص',
+  'design.label.fill': 'التعبئة',
+  'design.label.kind': 'النوع',
+  'design.label.mask': 'قناع',
+  'design.label.name': 'الاسم',
+  'design.label.zoom': 'التكبير',
+  'design.label.blend': 'المزج',
+  'design.label.cells': '{count} خلية',
+  'design.label.depth': 'المستوى {level}',
+  'design.label.files': '{count} ملف',
+  'design.label.mixed': 'قيم مختلفة',
+  'design.label.width': 'ع',
+  'design.label.assets': 'الموارد',
+  'design.label.edited': 'عُدّل {when}',
+  'design.label.height': 'ر',
+  'design.label.layers': '{count} طبقة',
+  'design.label.usedIn': 'مستخدم في {count} ملف',
+  'design.label.editors': '{count} محرر',
+  'design.label.opacity': 'العتامة',
+  'design.label.projects': 'المشاريع',
+  'design.label.selected': '{count} محدد',
+  'design.label.instances': '{count} نسخة',
+  'design.label.components': 'المكوّنات',
+
+  /* empty states ---------------------------------------------------------- */
+  'design.empty.noUsage': 'غير مستخدم في أي ملف بعد',
+  'design.empty.noAssets': 'لا توجد موارد من هذا النوع',
+  'design.empty.noHistory': 'لا شيء للتراجع عنه بعد',
+  'design.empty.noSelection': 'لا شيء محدد',
+  'design.empty.noHistoryBody': 'حرّك طبقة أو غيّر حجمها أو نمطها وستظهر هنا.',
+  'design.empty.noSelectionBody': 'اختر طبقة على اللوحة أو من القائمة لعرض خصائصها.',
+
+  /* hints ----------------------------------------------------------------- */
+  'design.hint.locked': 'هذه الطبقة مقفلة',
+  'design.hint.marquee': 'اسحب على مساحة فارغة لتحديد عدة طبقات',
+  'design.hint.readonly': 'لا يتم حفظ أي شيء. كل تغيير موجود في هذه اللسان فقط.',
+  'design.hint.snapGrid': 'تلتصق الطبقات بشبكة {cols} × {rows}',
+  'design.hint.dragLayer': 'اسحب صفًا لإعادة ترتيبه أو تضمينه',
+  'design.hint.mixedValue': 'الطبقات المحددة مختلفة؛ إدخال قيمة يطبّقها على جميعها',
+
+  /* alt text — every image is self-describing (convention 5) -------------- */
+  'design.alt.file.1': 'عمل تجريدي: أقواس متراكبة',
+  'design.alt.file.2': 'عمل تجريدي: كثبان متحركة',
+  'design.alt.file.3': 'عمل تجريدي: حلقات مدارية',
+  'design.alt.file.4': 'عمل تجريدي: منشور منقسم',
+  'design.alt.file.5': 'عمل تجريدي: زهرة متفتحة',
+  'design.alt.file.6': 'عمل تجريدي: حافة متدرجة',
+  'design.alt.viewer': 'صورة ملفك الشخصي',
+  'design.alt.asset.1': 'غلاف المشروع: شريط تدرّج عريض',
+  'design.alt.asset.2': 'غلاف المشروع: حقول متداخلة',
+  'design.alt.asset.3': 'غلاف المشروع: أفق ناعم',
+  'design.alt.asset.4': 'غلاف المشروع: أوجه مائلة',
+  'design.alt.layer.1': 'عمل تجريدي: أقواس متراكبة',
+  'design.alt.layer.2': 'عمل تجريدي: كثبان متحركة',
+  'design.alt.layer.3': 'عمل تجريدي: حلقات مدارية',
+  'design.alt.layer.4': 'عمل تجريدي: منشور منقسم',
+  'design.alt.layer.5': 'عمل تجريدي: زهرة متفتحة',
+  'design.alt.layer.6': 'عمل تجريدي: حافة متدرجة',
+  'design.alt.project.1': 'غلاف المشروع: شريط تدرّج عريض',
+  'design.alt.project.2': 'غلاف المشروع: حقول متداخلة',
+  'design.alt.project.3': 'غلاف المشروع: أفق ناعم',
+  'design.alt.project.4': 'غلاف المشروع: أوجه مائلة',
+  'design.alt.component.1': 'عمل تجريدي: أقواس متراكبة',
+  'design.alt.component.2': 'عمل تجريدي: كثبان متحركة',
+  'design.alt.component.3': 'عمل تجريدي: حلقات مدارية',
+  'design.alt.component.4': 'عمل تجريدي: منشور منقسم',
+  'design.alt.component.5': 'عمل تجريدي: زهرة متفتحة',
+  'design.alt.component.6': 'عمل تجريدي: حافة متدرجة',
+
+  /* pooled: project descriptions ------------------------------------------ */
+  'design.project.about.1': 'تحديث بصري كامل: الخطوط والألوان وشكل كل سطح.',
+  'design.project.about.2': 'شاشات تطبيق الهاتف، من الإعداد حتى الإعدادات.',
+  'design.project.about.3': 'تخطيطات تحريرية مطوّلة والشبكة المشتركة بينها.',
+  'design.project.about.4': 'صفحات الحملات والإعلانات وكل ما له موعد نهائي.',
+  'design.project.about.5': 'استكشاف فقط. لم يُتفق على أي شيء هنا.',
+  'design.project.about.6': 'القطع التي تستمد منها كل المشاريع الأخرى.',
+  'design.project.about.7': 'توثيق ما يفعله النظام بالفعل.',
+  'design.project.about.8': 'مؤرشف بعد إعادة العلامة. محفوظ للرجوع إليه.',
+
+  /* pooled: component descriptions ---------------------------------------- */
+  'design.component.about.1': 'حجمان وأربع حالات. التسمية هي التجاوز الوحيد.',
+  'design.component.about.2': 'يجمع التسمية وعنصر التحكم وسطر الخطأ في وحدة واحدة.',
+  'design.component.about.3': 'سطح مع وسائط وعنوان وإجراءات اختيارية.',
+  'design.component.about.4': 'يعود إلى الأحرف الأولى عند غياب الصورة.',
+  'design.component.about.5': 'مضغوط وقابل للتحديد والإزالة.',
+  'design.component.about.6': 'من ثلاث إلى خمس وجهات، لا أكثر.',
+  'design.component.about.7': 'رسالة بعرض كامل تدفع المحتوى للأسفل بدل تغطيته.',
+  'design.component.about.8': 'يظهر عند التحويم والتركيز، لا بالنقر وحده.',
+  'design.component.about.9': 'يحتفظ بحالته ويبلّغ عن التغييرات للأعلى.',
+  'design.component.about.10': 'مهمل. محفوظ كي تُفتح الملفات القديمة.',
+
+  /* pooled: the strings text layers render -------------------------------- */
+  'design.text.1': 'مصمَّم للطريقة التي تعمل بها فعلًا',
+  'design.text.2': 'كل شيء في مكان واحد',
+  'design.text.3': 'ابدأ من هنا',
+  'design.text.4': 'من إنتاج فريق صغير',
+  'design.text.5': 'تسعير بسيط',
+  'design.text.6': 'بدون بطاقة',
+  'design.text.7': 'الإعداد خلال دقائق',
+  'design.text.8': 'أحضر فريقك بالكامل',
+  'design.text.9': 'ما تغيّر هذا الأسبوع',
+  'design.text.10': 'اقرأ الدليل',
+  'design.text.11': 'موثوق من الاستوديوهات في كل مكان',
+  'design.text.12': 'ملف واحد، كل الشاشات',
+  'design.text.13': 'تصميم بلا تسليم',
+  'design.text.14': 'مكتبتك، مشتركة',
+  'design.text.15': 'انشره اليوم',
+  'design.text.16': 'أسئلة؟ تواصل معنا',
+
+  /* shell chrome and the drill heads -------------------------------------- */
+  'design.app.demoNotice': 'بيانات خيالية بالكامل',
+  'design.nav.label': 'التنقل الرئيسي',
+  'design.nav.menu': 'فتح التنقل',
+  'design.nav.breadcrumb': 'مسار التنقل',
+  'design.nav.toolbar': 'إجراءات الشاشة',
+  'design.screen.notFound.title': 'غير موجود',
+  'design.screen.notFound.subtitle': 'هذا العنوان لا يطابق أي شيء في هذا العرض.',
+  'design.screen.project.title': 'مشروع',
+  'design.screen.file.title': 'ملف',
+  'design.screen.asset.title': 'مورد',
 };
 
 export default ar;

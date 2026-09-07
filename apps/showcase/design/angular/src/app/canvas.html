@@ -1,0 +1,118 @@
+<div class="pictor-canvas" [attr.data-presentation]="presentation?'true':null">
+  <div class="pictor-canvas__label">
+    <span
+      ><span class="pictor-live-dot"></span>{{presentation?studio.t('INTERACTIVE
+      PREVIEW'):studio.t('ARTBOARD 01')}}</span
+    ><span>960 × 640 · RGB</span>
+  </div>
+  <div
+    #viewport
+    class="canvas-scroll"
+    [attr.data-pan-active]="gesture?.mode==='pan'?'true':null"
+    (pointerdown)="viewportDown($event)"
+    (pointermove)="move($event)"
+    (dblclick)="doubleClick($event)"
+    (pointerup)="up($event)"
+    (pointercancel)="up($event,true)"
+    (lostpointercapture)="up($event,true)"
+    (keydown)="escape($event)"
+  >
+    <div class="canvas-workspace">
+      <div class="canvas-frame" [attr.data-zoom]="zoomPercent(doc.zoomIndex)">
+        <div class="ruler ruler--x" aria-hidden="true">
+          @for(tick of ticks;track tick){<span>{{tick}}</span>}
+        </div>
+        <div
+          #board
+          class="artboard"
+          [attr.tabindex]="presentation?null:0"
+          data-artboard
+          [attr.data-zoom]="presentation?100:zoomPercent(doc.zoomIndex)"
+          [attr.data-grid]="!presentation&&doc.showGrid?'':null"
+          [attr.data-tool]="doc.tool"
+          [attr.role]="presentation?'region':'application'"
+          [attr.aria-label]="presentation?studio.t('Interactive design preview'):studio.t('Design canvas. Select a tool or layer, drag to draw or move, use corner handles to resize.')"
+          (pointerdown)="down($event)"
+        >
+          @for(layer of painted;track layer.id){
+          <div
+            class="layer"
+            [attr.data-x]="shown(layer).rect.x"
+            [attr.data-y]="shown(layer).rect.y"
+            [attr.data-w]="shown(layer).rect.w"
+            [attr.data-h]="shown(layer).rect.h"
+            [attr.data-layer]="layer.id"
+            [attr.data-kind]="layer.kind"
+            [attr.data-opacity]="layer.opacity"
+            [attr.data-blend]="layer.blend"
+            [attr.data-masked]="layer.masked?'':null"
+            [attr.data-locked]="locked.has(layer.id)?'true':null"
+            [attr.data-selected]="!presentation&&doc.selection.includes(layer.id)?'':null"
+            [attr.aria-label]="layer.name"
+            (pointerdown)="down($event,layer)"
+          >
+            <pictor-paint
+              [layer]="shown(layer)"
+              [presentation]="presentation"
+            />
+          </div>
+          } @if(!presentation&&drawing){
+          <div
+            class="layer layer--drawing"
+            [attr.data-x]="drawing.rect.x"
+            [attr.data-y]="drawing.rect.y"
+            [attr.data-w]="drawing.rect.w"
+            [attr.data-h]="drawing.rect.h"
+            [attr.data-kind]="drawing.kind"
+          >
+            <pictor-paint [layer]="drawing" />
+          </div>
+          } @if(!presentation&&box&&!drawing){
+          <div
+            class="marquee"
+            [attr.data-x]="box.x"
+            [attr.data-y]="box.y"
+            [attr.data-w]="box.w"
+            [attr.data-h]="box.h"
+          ></div>
+          } @if(!presentation){@for(layer of selected;track layer.id){
+          <div
+            class="selection-box"
+            [attr.data-x]="layer.rect.x"
+            [attr.data-y]="layer.rect.y"
+            [attr.data-w]="layer.rect.w"
+            [attr.data-h]="layer.rect.h"
+          >
+            <span class="selection-box__size"
+              >{{layer.rect.w*20}} × {{layer.rect.h*20}}</span
+            >@if(doc.selection.length===1){@for(corner of corners;track
+            corner){<button
+              class="resize-handle"
+              [attr.data-corner]="corner"
+              [attr.aria-label]="studio.t('Resize {name} from {corner}', {name: layer.name, corner: studio.t(corner)})"
+              (pointerdown)="resize($event,layer,corner)"
+            ></button
+            >}}
+          </div>
+          }}
+        </div>
+      </div>
+    </div>
+  </div>
+  @if(!presentation){
+  <div class="pictor-canvas__foot">
+    <span
+      >{{doc.tool==='select'?studio.t('Drag to move · Shift-click to add/remove
+      · Corners to resize · Shift-resize keeps
+      proportions'):doc.tool==='hand'?studio.t('Drag anywhere to pan · Fit
+      recenters the artboard'):doc.tool==='image'?studio.t('Choose Artwork in
+      Insert, or drag to place a sample image'):studio.t('Click to add a {tool},
+      or drag to size it · Shift for equal
+      sides',{tool:studio.t('design.tool.'+doc.tool)})}}</span
+    ><span
+      >{{studio.t('X {x} · Y
+      {y}',{x:studio.t.formatNumber(position.x*20),y:studio.t.formatNumber(position.y*20)})}}</span
+    >
+  </div>
+  }
+</div>

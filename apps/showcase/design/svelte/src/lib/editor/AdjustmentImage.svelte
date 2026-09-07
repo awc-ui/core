@@ -1,0 +1,2 @@
+<script lang="ts">export let art:{src:string};export let alt:string;export let adjustments:readonly {kind:string;value:number}[];</script>
+{#if adjustments.length}{@const adjustment=adjustments[adjustments.length-1]}<span data-adj={adjustment.kind} data-v={String(adjustment.value)}><svelte:self {art} {alt} adjustments={adjustments.slice(0,-1)}/></span>{:else}<img src={art.src} {alt} draggable={false}/>{/if}

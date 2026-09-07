@@ -1,0 +1,194 @@
+@if(valid&&file){<pictor-screen
+  [title]="file.name"
+  [subtitle]="studio.t('An idea becomes a composition. Make something unmistakably yours.')"
+  ><div
+    aside
+    class="studio-save-status"
+    [attr.data-save-status]="doc.saveStatus"
+  >
+    <span class="material-symbols-outlined" aria-hidden="true"
+      >{{doc.saveStatus==='saved'?'cloud_done':doc.saveStatus==='unavailable'?'cloud_off':'edit'}}</span
+    >{{doc.saveStatus==='saved'?studio.t('Saved on this
+    device'):doc.saveStatus==='unavailable'?studio.t('Device storage
+    unavailable'):studio.t('Saving your changes…')}}
+  </div>
+  <div
+    class="editor studio-editor"
+    data-editor
+    [attr.data-left]="showLeft?'open':'closed'"
+    [attr.data-right]="showRight?'open':'closed'"
+    (keydown)="keyboard($event)"
+    tabindex="-1"
+  >
+    <div class="editor__toolbar">
+      <md-toolbar
+        class="toolbar studio-toolbar"
+        variant="floating"
+        [attr.aria-label]="studio.t('Canvas editing tools')"
+        [density]="-2"
+        ><div class="toolbar__group">
+          <md-icon-button
+            icon="left_panel_open"
+            [attr.aria-label]="studio.t('Toggle layers panel')"
+            (click)="showLeft=!showLeft"
+          /><md-icon-button
+            icon="add_circle"
+            [attr.aria-label]="studio.t('Insert assets and live components')"
+            (click)="insert()"
+          />
+        </div>
+        <div
+          class="toolbar__group"
+          role="group"
+          [attr.aria-label]="studio.t('Drawing tools')"
+        >
+          @for(item of tools;track item.tool){<md-icon-button
+            [icon]="item.icon"
+            [attr.aria-label]="studio.t('{tool} ({key})', {tool: studio.t(item.label), key: item.key})"
+            [title]="studio.t('{tool} · {key}', {tool: studio.t(item.label), key: item.key})"
+            [attr.aria-pressed]="doc.tool===item.tool"
+            [attr.data-tool]="item.tool"
+            [attr.data-active]="doc.tool===item.tool?'':null"
+            (click)="tool(item.tool)"
+          />}
+        </div>
+        <div class="toolbar__group">
+          <md-icon-button
+            icon="undo"
+            [attr.aria-label]="studio.t('Undo (⌘Z)')"
+            data-undo
+            [disabled]="!canUndo(doc.history)"
+            (click)="doc.undo()"
+          /><md-icon-button
+            icon="redo"
+            [attr.aria-label]="studio.t('Redo (⌘⇧Z)')"
+            data-redo
+            [disabled]="!canRedo(doc.history)"
+            (click)="doc.redo()"
+          />
+        </div>
+        <span class="toolbar__spacer"></span>
+        <div class="toolbar__group toolbar__view">
+          <md-icon-button
+            icon="grid_4x4"
+            [attr.aria-label]="studio.t('Toggle grid')"
+            [attr.aria-pressed]="doc.showGrid"
+            data-grid-toggle
+            (click)="doc.toggleGrid()"
+          /><md-icon-button
+            icon="zoom_out"
+            [attr.aria-label]="studio.t('Zoom out')"
+            data-zoom-out
+            [disabled]="doc.zoomIndex===0"
+            (click)="doc.zoomOut()"
+          /><button
+            class="studio-zoom"
+            [attr.aria-label]="studio.t('Fit and center canvas')"
+            [title]="studio.t('Fit and center canvas')"
+            (click)="studio.emit('pictor:fit')"
+          >
+            {{zoomPercent(doc.zoomIndex)}}% <span>⌄</span></button
+          ><md-icon-button
+            icon="zoom_in"
+            [attr.aria-label]="studio.t('Zoom in')"
+            data-zoom-in
+            [disabled]="doc.zoomIndex===4"
+            (click)="doc.zoomIn()"
+          />
+        </div>
+        <div class="toolbar__group">
+          <md-icon-button
+            icon="right_panel_open"
+            [attr.aria-label]="studio.t('Toggle inspector')"
+            (click)="showRight=!showRight"
+          /><md-icon-button
+            icon="play_arrow"
+            [attr.aria-label]="studio.t('Present design')"
+            data-present
+            (click)="presentOpen=true"
+          /><md-button
+            variant="filled"
+            icon="download"
+            data-export
+            (click)="exportOpen=true"
+            >{{ studio.t('Export') }}</md-button
+          >
+        </div></md-toolbar
+      >
+      <div class="studio-tool-hint" role="status">
+        <strong>{{studio.t(help[doc.tool][0])}}</strong
+        ><span>{{studio.t(help[doc.tool][1])}}</span>
+      </div>
+    </div>
+    <aside class="editor__tree studio-left-panel">
+      <pictor-tabs
+        [panel]="true"
+        [label]="studio.t('Studio panels')"
+        [value]="panel"
+        [options]="panels"
+        (changed)="panel=$event"
+      />@switch(panel){@case('layers'){<pictor-layer-tree />}@case('insert'){<pictor-insert
+        [category]="insertCategory"
+        [request]="insertRequest"
+      />}@default{<pictor-history />}}
+    </aside>
+    <div class="editor__canvas">
+      <pictor-canvas (inspect)="showRight=true" />
+    </div>
+    <aside class="editor__inspector"><pictor-inspector /></aside>
+    <div class="studio-statusbar">
+      <span
+        ><span class="pictor-live-dot"></span
+        >{{doc.selection.length?studio.t('{count} selected', {count:
+        studio.t.formatNumber(doc.selection.length)}):studio.t('Your next move
+        starts here')}}</span
+      ><span
+        >{{ studio.t('{count} layers', {count:
+        studio.t.formatNumber(doc.layers.length)}) }}<span
+          class="studio-statusbar__separator"
+          >·</span
+        >
+        960 × 640 <span class="studio-statusbar__separator">·</span> {{
+        studio.t('20 px snap') }}</span
+      ><button (click)="panel='history';showLeft=true">
+        <span class="material-symbols-outlined" aria-hidden="true">history</span
+        >{{ studio.t('{count} edits', {count:
+        studio.t.formatNumber(doc.history.entries.length)}) }}
+      </button>
+    </div>
+  </div>
+  <pictor-export
+    [open]="exportOpen"
+    (closed)="exportOpen=false"
+  />@if(presentOpen){<pictor-dialog
+    [title]="studio.t('Your idea, center stage')"
+    [fullscreen]="true"
+    (closed)="presentOpen=false"
+    ><div class="studio-presentation">
+      <div class="studio-presentation__intro">
+        <span class="pictor-eyebrow"
+          >{{ studio.t('THE FINISHED PICTURE') }}</span
+        >
+        <p>
+          {{ studio.t('Live AWC controls are interactive here. Try a button,
+          field or switch.') }}
+        </p>
+      </div>
+      <pictor-canvas [presentation]="true" />
+    </div>
+    <md-button
+      actions
+      variant="filled"
+      icon="close"
+      data-close-present
+      (click)="presentOpen=false"
+      >{{ studio.t('Back to studio') }}</md-button
+    ></pictor-dialog
+  >}</pictor-screen
+>}@else{<pictor-screen
+  [title]="studio.t('This canvas isn\'t here')"
+  [subtitle]="studio.t('Return to your workspace and choose another design.')"
+  ><md-button variant="filled" (click)="studio.go('/')"
+    >{{ studio.t('Back to projects') }}</md-button
+  ></pictor-screen
+>}

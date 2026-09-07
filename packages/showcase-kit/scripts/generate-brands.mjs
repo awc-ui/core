@@ -73,6 +73,11 @@ const BRANDS = [
     seed: '#7A3FB5',
     why: 'Violet. Cygnus is a studio, and violet is where audio software has lived for years — pushed more saturated than the library default so it reads as a choice rather than as an app nobody themed.',
   },
+  {
+    id: 'design',
+    seed: '#3F3DA8',
+    why: 'Indigo. Pictor is a design tool, and the reason it is not red — the obvious choice for a creative suite — is that Material\'s error colour is #BA1A1A: a primary that close to it would make the destructive action and the primary action the same colour. Indigo sits between credit-risk\'s blue and Cygnus\'s violet with the same separation banking and wealth already have.',
+  },
 ];
 
 const BEGIN = '/* === GENERATED: brand accent — do not edit by hand === */';

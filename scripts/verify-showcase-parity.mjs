@@ -97,6 +97,8 @@ const PORT = 4352;
  * rather than a run that quietly measures nothing.
  */
 const SCREENS = {
+  // Every Pictor screen family, including real fixture drill routes.
+  design: ['/', '/editor/', '/assets/', '/profile/', '/p/meridian-rebrand/', '/f/fl-01/', '/a/as-001/'],
   'credit-risk': [
     '/',
     '/watchlist/',

@@ -1,0 +1,2538 @@
+/* === GENERATED: brand accent — do not edit by hand === */
+/*
+ * Indigo. Pictor is a design tool, and the reason it is not red — the obvious choice for a creative suite — is that Material's error colour is #BA1A1A: a primary that close to it would make the destructive action and the primary action the same colour. Indigo sits between credit-risk's blue and Cygnus's violet with the same separation banking and wealth already have.
+ *
+ * Seed #3F3DA8, expanded by `@awc-ui/theme`'s computeTheme into the full
+ * tonal set. Regenerate with `pnpm --filter @awc-ui/showcase-kit generate:brands`;
+ * editing the declarations below by hand breaks the contrast pairings the
+ * theme package guarantees.
+ */
+:root{--md-sys-color-primary:#5251BC;--md-sys-color-on-primary:#FFFFFF;--md-sys-color-primary-container:#E2DFFF;--md-sys-color-on-primary-container:#3937A2;--md-sys-color-inverse-primary:#C2C1FF;--md-sys-color-secondary:#5D5C71;--md-sys-color-on-secondary:#FFFFFF;--md-sys-color-secondary-container:#E3E0F9;--md-sys-color-on-secondary-container:#454559;--md-sys-color-tertiary:#795369;--md-sys-color-on-tertiary:#FFFFFF;--md-sys-color-tertiary-container:#FFD8EB;--md-sys-color-on-tertiary-container:#5F3C50;--md-sys-color-error:#BA1A1A;--md-sys-color-on-error:#FFFFFF;--md-sys-color-error-container:#FFDAD6;--md-sys-color-on-error-container:#93000A;--md-sys-color-background:#FCF8FD;--md-sys-color-on-background:#1C1B1F;--md-sys-color-surface:#FCF8FD;--md-sys-color-on-surface:#1C1B1F;--md-sys-color-surface-variant:#E4E1EC;--md-sys-color-on-surface-variant:#47464F;--md-sys-color-surface-container-lowest:#FFFFFF;--md-sys-color-surface-container-low:#F6F2F7;--md-sys-color-surface-container:#F0EDF1;--md-sys-color-surface-container-high:#EBE7EC;--md-sys-color-surface-container-highest:#E5E1E6;--md-sys-color-surface-dim:#DCD9DD;--md-sys-color-surface-bright:#FCF8FD;--md-sys-color-outline:#787680;--md-sys-color-outline-variant:#C8C5D0;--md-sys-color-inverse-surface:#313034;--md-sys-color-inverse-on-surface:#F3EFF4;--md-sys-color-shadow:#000000;--md-sys-color-scrim:#000000;--md-sys-color-surface-tint:#5251BC}[data-theme="dark"]{--md-sys-color-primary:#C2C1FF;--md-sys-color-on-primary:#211B8C;--md-sys-color-primary-container:#3937A2;--md-sys-color-on-primary-container:#E2DFFF;--md-sys-color-inverse-primary:#5251BC;--md-sys-color-secondary:#C6C4DD;--md-sys-color-on-secondary:#2F2F42;--md-sys-color-secondary-container:#454559;--md-sys-color-on-secondary-container:#E3E0F9;--md-sys-color-tertiary:#E9B9D2;--md-sys-color-on-tertiary:#47263A;--md-sys-color-tertiary-container:#5F3C50;--md-sys-color-on-tertiary-container:#FFD8EB;--md-sys-color-error:#FFB4AB;--md-sys-color-on-error:#690005;--md-sys-color-error-container:#93000A;--md-sys-color-on-error-container:#FFDAD6;--md-sys-color-background:#131316;--md-sys-color-on-background:#E5E1E6;--md-sys-color-surface:#131316;--md-sys-color-on-surface:#E5E1E6;--md-sys-color-surface-variant:#47464F;--md-sys-color-on-surface-variant:#C8C5D0;--md-sys-color-surface-container-lowest:#0E0E11;--md-sys-color-surface-container-low:#1C1B1F;--md-sys-color-surface-container:#201F23;--md-sys-color-surface-container-high:#2A292D;--md-sys-color-surface-container-highest:#353438;--md-sys-color-surface-dim:#131316;--md-sys-color-surface-bright:#3A393C;--md-sys-color-outline:#918F9A;--md-sys-color-outline-variant:#47464F;--md-sys-color-inverse-surface:#E5E1E6;--md-sys-color-inverse-on-surface:#313034;--md-sys-color-shadow:#000000;--md-sys-color-scrim:#000000;--md-sys-color-surface-tint:#C2C1FF}
+/* === END GENERATED brand accent === */
+
+
+/**
+ * The Pictor app's own stylesheet — the shell, the layout primitives and the
+ * named blocks this vertical draws.
+ *
+ * Shared by all five framework builds, which is the point: the shell that holds
+ * a screen must be pixel-identical across ports or two screenshots of the same
+ * screen stop being comparable evidence. Everything here is either structure
+ * (the rail, the app bar, the screen body) or a primitive the screens compose
+ * (`.panel`, `.row`, `.stack`), and every colour, radius and spacing value is
+ * an M3 token — there is no literal hex in this file.
+ *
+ * WHAT IS NOT HERE: anything a component already does. If a card needs a
+ * surface, it is an `md-card`; if a figure needs a colour, it comes from
+ * `status.ts`. These rules lay things out and nothing more.
+ *
+ * THE SHELL AND LAYOUT SECTIONS ARE THE SAME SHAPE AS THE OTHER FOUR
+ * VERTICALS' — that duplication is deliberate and matches the existing
+ * convention: one stylesheet per vertical, so a change to Corvus cannot
+ * silently reflow this app. What is genuinely different begins at "named
+ * blocks", and the biggest of those differences is the TIMELINE, which exists
+ * in the shape it does because of a content-security policy rather than a
+ * design preference — see the long note above `.lane`.
+ */
+
+/*
+ * `hidden` MEANS HIDDEN, whatever a class underneath it says.
+ *
+ * The user-agent's `[hidden] { display: none }` is a plain type-less rule, so
+ * ANY class rule in this file outranks it: `.post-grid { display: grid }` and
+ * `.feed__end { display: flex }` both win, and an element written with `hidden`
+ * stays on the screen. The plain-HTML build leans on the attribute for every
+ * one of its state swaps — the queue panel, the edit history, a lane's clips
+ * when a project is swapped — so this is load-bearing there rather than
+ * defensive. It was found by the parity check on an earlier vertical, where a
+ * profile rendered three tab panels stacked on top of each other.
+ *
+ * `!important` because the alternative is remembering to out-specify it in
+ * every rule that sets `display`, which is the same bug waiting on the next
+ * block anyone adds.
+ */
+[hidden] {
+  display: none !important;
+}
+
+/*
+ * The application's mount node.
+ *
+ * `display: contents` so the framework's root element is transparent to layout
+ * and `.shell` below behaves as though it were a child of <body> — every build
+ * mounts into a div, and without this each one would introduce a block box the
+ * others do not have, which the parity check reads as a layout difference.
+ *
+ * A CLASS, not the `style="display: contents"` attribute this used to be: an
+ * enterprise Content-Security-Policy with `style-src-attr 'none'` refuses inline
+ * style attributes, and that one was in the shipped HTML of every build.
+ */
+.awc-root {
+  display: contents;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* The dock also writes lang/dir/data-theme/data-density here. */
+  color-scheme: light dark;
+
+  /*
+   * THE ROUNDED CUT OF MATERIAL SYMBOLS, library-wide, from one line.
+   *
+   * `packages/tokens` defaults this to the Outlined cut and documents exactly
+   * this swap. Outlined draws square terminals and sharp points — a FILLED star
+   * comes out spiky — while Rounded softens them, which is the shape the chips,
+   * meters and rating on these screens read best against, and the one Storybook
+   * shows because it loads both faces. Every component reads the token, so this
+   * is not a per-component decision and cannot drift into one.
+   *
+   * Outlined stays behind it in the stack: each build's `index.html` decides
+   * which faces it actually loads, and one that has only Outlined falls back to
+   * it rather than to a serif.
+   */
+  --md-sys-icon-font-family: 'Material Symbols Rounded', 'Material Symbols Outlined', 'Material Icons';
+}
+
+body {
+  margin: 0;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font: var(--md-sys-typescale-body-medium-font);
+  /* <awc-showcase-dock> is position: fixed and publishes its measured height
+     here. Without this the last row of every screen sits under the bar — and
+     so does the navigation bar, which docks immediately above the dock. */
+  padding-block-end: var(--awc-dock-height, 0px);
+}
+
+a {
+  color: inherit;
+}
+
+/* ------------------------------------------------------------------- shell */
+
+/*
+ * The app frame: app bar across the top, then rail beside content.
+ *
+ * THE FRAME DOES NOT SCROLL — ONLY `.shell__main` DOES, and that is the whole
+ * point of a fixed block-size here rather than a minimum. When the DOCUMENT
+ * scrolled, two things went wrong at once: the content slid underneath the
+ * sticky app bar, clipping the breadcrumb row against it, and the navigation
+ * rail scrolled away with the page even though a destination list is supposed
+ * to stay put. Both are the same bug — there was no scroll port other than the
+ * viewport, so everything moved together.
+ *
+ * The height subtracts the dock, because <awc-showcase-dock> is fixed to the
+ * bottom and `body` already reserves its measured height as padding. A frame of
+ * a full `100dvh` inside that padded body would overflow by exactly the dock's
+ * height and put the document scrollbar straight back.
+ */
+.shell {
+  display: flex;
+  flex-direction: column;
+  block-size: calc(100dvh - var(--awc-dock-height, 0px));
+  overflow: hidden;
+  /* The rail's `modal` overlay and scrim position against the nearest
+     positioned ancestor. This build does not use modal, but the rail's manual
+     is explicit that a static ancestor is where that breaks, and the cost of
+     being right in advance is one declaration. */
+  position: relative;
+}
+
+/*
+ * Rail and content, side by side.
+ *
+ * `min-inline-size: 0` on the main column is load-bearing: without it a grid
+ * item refuses to shrink below the intrinsic width of its widest child, so one
+ * wide table would push the whole layout past the viewport and produce a
+ * horizontal scrollbar on the DOCUMENT instead of inside the table's own
+ * scroll port.
+ */
+.shell__body {
+  display: flex;
+  flex: 1 1 auto;
+  /* `min-block-size: 0` lets this row shrink inside the fixed frame; without
+     it a flex item floors at its content height and pushes the overflow back
+     out to the document. */
+  min-block-size: 0;
+  overflow: hidden;
+}
+
+/*
+ * The rail is a destination list, so it stays where it is.
+ *
+ * It sits outside `.shell__main`'s scroll port, so it no longer moves with the
+ * content. `overflow: hidden` is the guard for the other direction: a rail with
+ * more destinations than fit would otherwise grow the row and hand the frame
+ * its scrollbar back.
+ */
+.shell__rail {
+  flex: 0 0 auto;
+  overflow: hidden;
+  /* The rail fills the row, and the row is what bounds it. It used to carry
+     `full-height`, which sizes against the VIEWPORT — taller than this row now
+     that the app bar sits above it in a fixed frame, so the rail overflowed
+     `.shell__body` by exactly the bar's height and its last destination was
+     clipped. The attribute is gone; this is the correct bound. */
+  block-size: 100%;
+  border-inline-end: 1px solid var(--md-sys-color-outline-variant);
+  /* The rail's pre-upgrade width floor used to be hand-copied here; it now
+     ships with the library (`@awc-ui/core/css/pre-upgrade.css`, imported in
+     main.tsx), generated from the component's own :host at build time. */
+}
+
+/*
+ * The FAB band needs no reservation any more. `md-navigation-rail` now seeds
+ * `hasFab` from the light DOM in `componentWillLoad`, so the band is open from
+ * the rail's very first painted frame — the repair the 40-line comment that
+ * used to sit here asked for by name. The two `::part()` rules it justified
+ * (and their coupling to the rail's internal `--with-fab` class) went with it.
+ */
+
+/*
+ * The one scroll port in the app.
+ *
+ * `overscroll-behavior: contain` stops a scroll that reaches the end of this
+ * column from chaining out to the document and bouncing the whole frame.
+ */
+.shell__main {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+  /* Full width on purpose. A statement is read ACROSS — the transaction
+     table alone carries twelve columns — and capping the content at a reading
+     measure only forces horizontal scrolling inside the tables while leaving
+     the screen empty on both sides. */
+  padding-inline: var(--md-sys-spacing-inset-xl, 24px);
+  padding-block: var(--md-sys-spacing-inset-lg, 16px) var(--md-sys-spacing-inset-xl, 24px);
+}
+
+/*
+ * Keep every row of the screen at its natural height.
+ *
+ * `.shell__main` is a flex column with a bounded height, and a flex item's
+ * default `flex-shrink: 1` means the screen is COMPRESSED to fit rather than
+ * overflowing — so the column never gains anything to scroll, and the content
+ * is quietly squashed instead. Pinning the children to their content height is
+ * what turns the bounded column into a real scroll port.
+ */
+.shell__main > * {
+  flex-shrink: 0;
+}
+
+/*
+ * The bottom bar sits ABOVE the dock, not under it.
+ *
+ * `--awc-dock-height` is published by <awc-showcase-dock> once it has measured
+ * itself; the fallback of 0 is what a first frame (or a dismissed dock) gets,
+ * and the bar simply sits on the viewport edge then.
+ */
+.shell__bar {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: var(--awc-dock-height, 0px);
+  z-index: var(--md-sys-z-index-navigation, 200);
+  /* This box is anchored by its BOTTOM edge, so a 0-height first frame put the
+     bar's top at the very bottom of the viewport and the surface climbed into
+     place. The height floor that prevented it used to be hand-copied here; the
+     slotted `md-navigation-bar` now floors itself via the library's
+     pre-upgrade sheet, and this wrapper takes its height from that. */
+}
+
+/*
+ * ONE navigation surface at a time.
+ *
+ * M3 is explicit in both directions: a bar is for compact, a rail is for
+ * medium and expanded, and shipping both at once means two active indicators
+ * claiming to be the current destination. `display: none` rather than
+ * `visibility` so the hidden one is out of the accessibility tree too — a
+ * screen reader finding two "Main navigation" landmarks with the same five
+ * destinations is the audible version of the same bug.
+ *
+ * 900px is where the twelve-column holdings table stops fitting beside an 80px
+ * rail. Below it the rail's width is worth more to the table than the labels
+ * are to the reader.
+ */
+.shell__bar {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .shell__rail {
+    display: none;
+  }
+
+  .shell__bar {
+    display: block;
+  }
+
+  .shell__main {
+    padding-inline: var(--md-sys-spacing-inset-md, 12px);
+    /* Clear the docked bar, which is out of flow. 80px is its own height at
+       density 0; it tightens with the density rungs, and the extra few pixels
+       at a compact rung are harmless whitespace under the last panel. */
+    padding-block-end: calc(80px + var(--md-sys-spacing-inset-xl, 24px));
+  }
+}
+
+/* --------------------------------------------------------------- app bar */
+
+/*
+ * The masthead is `role="banner"` and `position: sticky` on its own — the
+ * component does both. What is set here is only what a HOST decides: the tone
+ * that separates it from the content beneath, and the rule that replaces the
+ * elevation M3 does not give a small bar.
+ */
+.shell__appbar {
+  --md-app-bar-container-color: var(--md-sys-color-surface-container-low);
+  border-block-end: 1px solid var(--md-sys-color-outline-variant);
+  /* The library's pre-upgrade sheet floors `md-app-bar` at its own row height;
+     what it cannot know about is the 1px border THIS app draws two lines up,
+     which `border-box` counts inside the box. This rule exists for that pixel:
+     without it the floor is one short of the settled 65px and the frame nudges
+     1px on hydration. The base expression must match the component's — the
+     sheet is generated against it, so drift shows up there first. */
+  min-block-size: calc(
+    var(--md-app-bar-row-height, max(48px, calc(64px + var(--md-sys-density-scale, 0) * 4px))) + 1px
+  );
+}
+
+/*
+ * The screen's body and the placeholder painted over it.
+ *
+ * THE STAGE IS THE POSITIONING CONTEXT, AND THAT IS ITS WHOLE JOB. The real
+ * content keeps its box for the entire life of the screen; the placeholder is
+ * taken out of flow and laid over the top. Revealing is a `visibility` flip, so
+ * there is no reflow to get wrong — 0px of movement at every width, density and
+ * locale, by construction rather than by arithmetic.
+ *
+ * The arithmetic is what this replaced, and it could not have worked: measured
+ * on holdings, `.grid-3` is 268 tall at 1600 and 464 at 1024, the concentration
+ * panel 498 at 1600 and 1384 at 720, and the KPI grid's second row is shorter
+ * than its first because those two tiles hold less. A placeholder that occupies
+ * layout has to predict all of that; hard-coded heights matched at the single
+ * width they were measured at and drifted up to 1102px elsewhere.
+ *
+ * `.screen-body` still restates the column and the gap, because it sits between
+ * `.shell__main` and the sections that used to be its direct children.
+ */
+.screen-stage {
+  position: relative;
+  min-inline-size: 0;
+}
+
+.screen-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-lg, 16px);
+  min-inline-size: 0;
+}
+
+/*
+ * `visibility`, never `display: none`.
+ *
+ * `display: none` would take the box away and hand back the collapse this whole
+ * arrangement exists to prevent. `visibility: hidden` keeps the layout and — the
+ * part that matters for a screen reader — takes the content out of the
+ * accessibility tree, so the placeholder is the only thing announcing.
+ */
+.screen-body[data-placeholder] {
+  visibility: hidden;
+}
+
+/*
+ * The members list's action cluster, hidden while nothing is ticked.
+ *
+ * Same reasoning as the placeholder above — `visibility` keeps the space the
+ * cluster occupies, so the list below does not jump down the moment a row is
+ * selected, and takes the button out of the tab order and the accessibility
+ * tree while it is inert, which `opacity: 0` would not.
+ *
+ * DRIVEN BY `aria-hidden`, which the row already carries: one attribute keeps
+ * what is seen and what is announced in step, and it is a class rather than a
+ * `style="…"` attribute because the plain-HTML build ships this state in the
+ * document and a strict `style-src` refuses inline styles. (React and Vue
+ * write the same state through CSSOM, which is exempt.)
+ */
+[data-cluster][aria-hidden='true'] {
+  visibility: hidden;
+}
+
+/* Same reason as `.shell__main > *`: in a bounded flex column, children
+   compress to fit instead of overflowing unless they are told not to. */
+.screen-body > * {
+  flex-shrink: 0;
+}
+
+/*
+ * Out of flow, over the content — and sized by ITSELF, not by the stage.
+ *
+ * `inset: 0` was the obvious way to write this and it is wrong. The stage takes
+ * its height from the real content, and the real content spends its first
+ * frames un-upgraded and short: measured on holdings, the stage was 148px for
+ * three frames before the components hydrated and it became 1996. A placeholder
+ * stretched to `inset: 0` is clipped to that 148px and then snaps open — the
+ * same flicker as before, moved from the content onto the thing covering it.
+ *
+ * So only the top and the inline edges are pinned, and the block size is the
+ * placeholder's own. It paints at full height from its first frame no matter
+ * what the stage is doing underneath, and because it is out of flow it still
+ * cannot move anything.
+ */
+.screen-stage__placeholder {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  display: flex;
+  flex-direction: column;
+  /*
+   * TIGHTER THAN THE CONTENT IT COVERS, ON PURPOSE.
+   *
+   * The real body uses the 16px section gap because those sections are separate
+   * pieces of furniture a reader has to tell apart. A placeholder has nothing to
+   * tell apart — it is one object suggesting a shape — and at 16px its bars read
+   * as scattered slabs with holes between them. This is only affordable because
+   * the placeholder no longer occupies layout: its spacing is appearance now,
+   * not structure, so it can be set by how it looks rather than by what it has
+   * to match.
+   */
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  min-inline-size: 0;
+}
+
+/* Same reasoning one level down: rows inside a placeholder sit tight to each
+   other rather than at the content's own rhythm. */
+.screen-stage__placeholder .stack {
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+}
+
+.screen-stage__placeholder > * {
+  flex-shrink: 0;
+}
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────
+ * PLACEHOLDER PRIMITIVES — plain DOM, and that is the entire point.
+ *
+ * The placeholder used to be built out of `md-skeleton` and `md-card`. Those
+ * are lazily-hydrated custom elements exactly like the content they stand in
+ * for, so the placeholder had the same disease as the thing it was treating:
+ * measured on holdings, it was 172px for three frames, 228px for one, and only
+ * then 1986px. A loading state that pops open cannot hide a loading state that
+ * pops open.
+ *
+ * Divs have their size from the first paint, before a single chunk has loaded.
+ * They cost nothing, they cannot fail to upgrade, and a placeholder needs none
+ * of what a component gives you — no slots, no a11y semantics of its own, no
+ * variants. It is a grey rectangle with a shimmer.
+ *
+ * Everything below is tokens only, so the placeholder themes, densifies and
+ * mirrors with the rest of the sheet.
+ * ─────────────────────────────────────────────────────────────────────────
+ */
+.skel {
+  display: block;
+  background: var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-extra-small, 4px);
+  flex-shrink: 0;
+  /* The shimmer travels across a gradient wider than the box. `background-size`
+     and the keyframes are the only pair that has to agree here. */
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--md-sys-color-surface-bright) 55%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: skel-shimmer 1.4s var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)) infinite;
+}
+
+@keyframes skel-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* A skeleton is decoration. Honour the reader's setting: hold the surface, drop
+   the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .skel {
+    animation: none;
+  }
+}
+
+.skel--pill {
+  border-radius: var(--md-sys-shape-corner-full, 9999px);
+}
+
+.skel--circle {
+  border-radius: 50%;
+}
+
+/*
+ * A card-shaped placeholder surface: the outlined card's own tokens, without
+ * the component. `md-card` publishes these, so the two cannot drift apart
+ * without the tokens changing for both.
+ */
+.skel-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  padding: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px));
+  border-radius: var(--md-sys-shape-corner-medium, 12px);
+  background: var(--md-sys-color-surface-container-low);
+  box-sizing: border-box;
+}
+
+.skel-card--filled {
+  background: var(--md-sys-color-surface-container-highest);
+}
+
+/*
+ * The brand and the demo chip, sharing the app bar's title line.
+ *
+ * `inline-flex` so the pair sits on the baseline row the bar already lays out
+ * — the span is slotted into `part="title"`, so a block here would take the
+ * chip out of the title's own line box. The chip brings its own typescale, so
+ * it does not inherit the headline's size.
+ */
+.shell__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  min-inline-size: 0;
+}
+
+/* The reporting context, in the app bar's trailing cluster. */
+.shell__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+  padding-inline-end: var(--md-sys-spacing-inset-sm, 8px);
+}
+
+/* Below the rail breakpoint the reporting context is the first thing to go —
+   the app bar has three trailing children at most, and on a phone the date
+   matters less than the actions do. */
+@media (max-width: 719px) {
+  .shell__meta {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------ breadcrumbs */
+
+/*
+ * The trail row, whose HEIGHT is reserved whether or not it has a trail in it.
+ *
+ * The trail only appears on the drill into a household; the five destination
+ * screens get their "where am I" from the rail's active indicator, so a trail
+ * there would only repeat it. But an empty row still has to occupy the same
+ * space as a full one, because a row that comes and goes moves the heading and
+ * every panel under it on each navigation — which is exactly what "jumpy"
+ * means. `min-block-size` rather than a fixed height, so a trail that wraps on
+ * a narrow viewport can still grow.
+ */
+.shell__trail {
+  display: flex;
+  align-items: center;
+  min-block-size: 36px;
+}
+
+/**
+ * DON'T RESERVE THE TRAIL BAND ON A PHONE.
+ *
+ * The reservation exists so the heading does not jump between a screen with
+ * breadcrumbs and one without. That is worth 36px on a desktop and it is not
+ * worth 36px of an 844px phone — especially here, where only the two drill
+ * screens have a trail at all and you reach one by tapping a row, so the whole
+ * page changes anyway and there is no jump left to prevent.
+ *
+ * The band still takes its natural height where it has crumbs; only the empty
+ * reservation goes.
+ */
+@media (max-width: 719px) {
+  .shell__trail {
+    min-block-size: 0;
+  }
+}
+
+/* ------------------------------------------------------------- screen head */
+
+.screen-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+.screen-head__text {
+  min-inline-size: 0;
+  flex: 1 1 260px;
+}
+
+.screen-head h1 {
+  font: var(--md-sys-typescale-headline-medium-font);
+  margin: 0;
+}
+
+.screen-head p {
+  font: var(--md-sys-typescale-body-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+  margin: var(--md-sys-spacing-gap-xs, 4px) 0 0;
+}
+
+.screen-head__aside {
+  display: flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  flex-wrap: wrap;
+}
+
+/*
+ * The screen's own action strip.
+ *
+ * `md-toolbar variant="floating"` is an inline pill, which is why it can live
+ * here at all — the docked variant is `position: sticky` against the BOTTOM
+ * edge, where the navigation bar and the dock already are. Aligned to the end
+ * so the actions sit opposite the heading rather than under it.
+ */
+.screen-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  /* The 64px height floor that stopped this row collapsing pre-upgrade used to
+     be hand-copied here; the floating `md-toolbar` inside it now floors itself
+     via the library's pre-upgrade sheet, and this row takes its height from
+     that. */
+}
+
+/*
+ * NO OUTER MARGIN ON THE PILL.
+ *
+ * `md-toolbar` gives its floating variant `margin-inline: 16px` — right for a
+ * toolbar floating free over a canvas, where that margin is what keeps it off
+ * the viewport edge. This one is not floating over anything: it sits in a
+ * screen row that `.shell__main` has already inset by 24px, so the margin was
+ * a second inset stacked on the first and the pill hung 16px short of the
+ * trailing edge every other block on the screen lines up to.
+ *
+ * Zeroed here and not in the component: the component's default is correct for
+ * its own case, and this app is the one placing it in an already-inset row.
+ */
+.screen-toolbar md-toolbar {
+  margin-inline: 0;
+}
+
+/* ------------------------------------------------------------------- cards */
+
+.panel {
+  display: block;
+}
+
+/*
+ * A PLACEHOLDER'S PANEL, matching an outlined `md-card`'s box.
+ *
+ * The skeletons cannot use `md-card`: it is a lazily-hydrated custom element
+ * exactly like the content it stands in for, so a placeholder built from one
+ * catches the disease it exists to treat — see the header of `skeletons.tsx`.
+ * But a bare div has no border, no radius and no surface, so the placeholder
+ * was a column of loose grey bars floating on the page while the real screen
+ * showed four bordered cards. It read as a different layout, which is the one
+ * thing a placeholder must never do.
+ *
+ * It shares `.panel__inner` with the real panel rather than repeating the
+ * padding, so the two cannot drift.
+ */
+.skel-panel {
+  display: block;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface);
+  /*
+   * `md-card` PADS ITS OWN HOST BY 16px, on top of `.panel__inner`'s 16. Both
+   * are needed or the placeholder is exactly 32px shorter than the panel it
+   * covers — per panel, which compounds down a four-panel screen into a reveal
+   * that visibly jumps.
+   */
+  padding: var(--md-sys-spacing-inset-lg, 16px);
+  /*
+   * AN OUTLINE, NOT A BORDER, and that is the whole trick. A 1px border adds
+   * 2px to the box and would leave the placeholder 2px taller than the card it
+   * stands in for — the card's own edge costs nothing because it is inside the
+   * component's box. An outline draws in the same place and takes no space, so
+   * the two boxes measure identically.
+   */
+  outline: 1px solid var(--md-sys-color-outline-variant);
+  outline-offset: -1px;
+}
+
+.panel__inner {
+  padding: var(--md-sys-spacing-inset-lg, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  min-inline-size: 0;
+}
+
+.panel__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  flex-wrap: wrap;
+}
+
+/*
+ * Title and subtitle are ONE heading: they share a line, and the subtitle
+ * drops beneath the title only when the card is too narrow to hold both. That
+ * is `flex-wrap`, not a media query — the width that runs out is the CARD's,
+ * and the same panel is full-bleed on one screen and a third of a row on
+ * another, so no viewport breakpoint can name the moment it happens.
+ *
+ * `row-gap: 0` because the wrapped form has to stay exactly the stacked form
+ * it replaces: title line box, subtitle line box, nothing between them. Only
+ * the column gap separates the two while they share a line.
+ *
+ * `min-inline-size: 0` defeats the automatic minimum size a flex item takes
+ * from its content, which would otherwise push this heading — and with it the
+ * head — wider than the card instead of wrapping inside it. It does not make
+ * the heading collapse early: `.panel__head` decides whether `actions` share
+ * this row from CONTENT widths, before any item is shrunk. So the order of
+ * retreat is subtitle beside title, then actions to their own row, then
+ * subtitle under title, and only then the character break below.
+ */
+.panel__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--md-sys-spacing-gap-sm, 8px);
+  row-gap: 0;
+  min-inline-size: 0;
+}
+
+.panel__title {
+  font: var(--md-sys-typescale-title-small-font);
+  margin: 0;
+  min-inline-size: 0;
+  /*
+   * `anywhere`, not `break-word`: only `anywhere` also shrinks the intrinsic
+   * min-content width, which is what keeps a single unbroken token — an ISIN,
+   * a reference number, a hyphen-free instrument name — from setting a floor
+   * wider than the card and spilling out of it.
+   */
+  overflow-wrap: anywhere;
+}
+
+.panel__sub {
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+  margin: 0;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * The label for a control that has no label of its own.
+ *
+ * A radio group, a checkbox list, a slider, a rating, a switch: the group needs
+ * a name, and unlike a text field there is no floating label to carry it. These
+ * used to borrow `.panel__sub`, which is a SUBTITLE — body-small, on-surface-
+ * variant — and that inverted the hierarchy wherever the group also had help
+ * text, because help text is body-medium in the same colour. "Investment
+ * horizon" was rendering at 12px above a 14px "How long the money stays
+ * invested": the label was the quietest thing in its own group, and the eye
+ * landed on the sentence instead of on the name of the thing.
+ *
+ * Title-small is the smallest step that fixes it — same 14px as the help text,
+ * so nothing grows, but 500 weight in full on-surface, so the label reads as
+ * the head of the group and the sentence reads as a note under it.
+ */
+.field-label {
+  font: var(--md-sys-typescale-title-small-font);
+  color: var(--md-sys-color-on-surface);
+  margin: 0;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * The signed proposal's allocation, as five things to COMPARE.
+ *
+ * This was a flat `.row` of `.row`s: a chip, its percentage, the next chip, its
+ * percentage, all at the same 8px. Two failures at once. Nothing grouped —
+ * "54.0%" sat as close to "Fixed income" as to the "Equity" it belongs to — and
+ * because the chips are all different widths (Cash 64px, Fixed income 117px),
+ * the figures landed at five unrelated positions, so the one thing a reader
+ * comes here to do, compare five percentages, needed five separate fixations.
+ *
+ * A grid of equal cells fixes both: each cell is one pair, so the pairs are
+ * separated by a real gutter, and within a cell the figure is pushed to the
+ * trailing edge — which is shared, because the cells are equal. The percentages
+ * line up down a column of their own and the chips line up down another.
+ *
+ * (This is not the right-alignment `.dl--numeric` was deleted for. That pulled
+ * a label away from its value across a wide free-form cell. Here the cell is
+ * narrow and fixed, and the label and value are the two ends of one short row —
+ * the ordinary "name ....... figure" line.)
+ */
+.alloc-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  /* 8px down, 28px across — the whole point of the rule. Everything here used
+     to sit at a uniform 8px, so "54.0%" was as close to the "Fixed income"
+     after it as to the "Equity" it belongs to, and the run read as ten loose
+     items instead of five labelled figures. The gutter has to be visibly
+     larger than the pair's own gap for the pairing to survive. */
+  gap: var(--md-sys-spacing-gap-sm, 8px) 28px;
+}
+
+/*
+ * An equal-column grid was the other way to do this, and it was worse. It does
+ * line the figures up — but on a row of five, vertical alignment buys nothing
+ * (they are side by side, not stacked), and pushing each figure to its cell's
+ * trailing edge opened ~90px between a chip and its own percentage. The pairs
+ * came apart to buy an alignment nobody reads. Tight pairs, wide gutters.
+ */
+.alloc-summary > * {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  min-inline-size: 0;
+}
+
+.alloc-summary > * > :last-child {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * The code closes the step, underneath BOTH columns.
+ *
+ * Three placements were measured. At the foot of the right-hand column, under
+ * ten instruments and a "N more" line, it was the one thing the advisor has to
+ * DO on this step, put last in the secondary column. Moved into the summary
+ * column and pinned down with `margin-block-start: auto`, the two columns
+ * finished level — but the summary is ~300px shorter than the instrument list,
+ * so all 300px opened up in the MIDDLE of the column and the code box read as
+ * orphaned; a hole in the middle looks like something failed to load, which a
+ * hole at the end does not.
+ *
+ * So it sits below the grid instead. Reading order is what is being signed,
+ * then what it holds, then the box that signs it, and a full-width band under
+ * two ragged columns closes the layout rather than competing with it.
+ */
+.sign-block {
+  padding-block-start: var(--md-sys-spacing-inset-xl, 24px);
+  /*
+   * Takes the card's leftover height and centres in it.
+   *
+   * The summary above it is a fixed amount of content, and the card is as tall
+   * as the instrument list beside it, so there is always slack underneath — the
+   * code boxes were sitting in the top-left corner of a large empty area, which
+   * made the one thing the advisor has to DO look like a footnote. `flex: 1`
+   * claims that slack instead of leaving it, and `place-content: center` puts
+   * the field in the middle of it on both axes, so the empty space frames the
+   * field rather than trailing after it.
+   */
+  flex: 1 1 auto;
+  display: grid;
+  place-content: center;
+}
+
+/* --------------------------------------------------------------- kpi tiles */
+
+/*
+ * `min(210px, 100%)`, NOT a bare `210px`, and this is a real bug rather than
+ * belt-and-braces.
+ *
+ * A bare floor in `minmax()` is a MINIMUM the track must honour, so in any
+ * container narrower than the floor the track overflows instead of shrinking.
+ * Measured on the analytics screen at 360px: the budget cards sit inside a
+ * panel whose content box is 272px, the `.grid-2` floor is 340px, and the card
+ * hung 68px past its panel. `min(floor, 100%)` caps the floor at the container,
+ * so a narrow container gets one full-width track instead of an overflowing
+ * one. Every auto-fit grid in this file needs it.
+ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+/*
+ * TWO TILES ACROSS ON A PHONE, not one.
+ *
+ * At 360px the 210px floor resolves to a single column, so the four headline
+ * figures became four full-width rows and pushed everything else a screen and
+ * a half down — measured: the home screen was 5.1 phone screens tall. A KPI
+ * tile is a label, a number and a hint; at ~160px it still holds a compact
+ * currency figure without wrapping, and the block halves in height.
+ */
+@media (max-width: 599px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--md-sys-spacing-gap-sm, 8px);
+  }
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  padding: var(--md-sys-spacing-inset-lg, 16px);
+  min-inline-size: 0;
+}
+
+.kpi__label {
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+  margin: 0;
+}
+
+.kpi__value {
+  font: var(--md-sys-typescale-headline-small-font);
+  color: var(--md-sys-color-on-surface);
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  font: var(--md-sys-typescale-body-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.kpi__spark {
+  margin-block-start: var(--md-sys-spacing-gap-xs, 4px);
+}
+
+/**
+ * A TIGHTER KPI TILE ON A PHONE.
+ *
+ * Measured at 390px: four tiles at ~155px each, two rows, 310px — 37% of the
+ * viewport spent on four numbers before the reader has seen an account. The
+ * headline typescale and 16px of inset are right on a desktop tile that is
+ * 300px wide; on a 185px one they are most of the box.
+ *
+ * The value drops one step to title-large and the inset to 12px, which brings
+ * a tile to about 100px without shrinking the number below the thing a reader
+ * is actually here to read. The sparkline is dropped rather than squeezed: at
+ * 185px wide it is a 12-month curve in 160px, which is a texture rather than a
+ * trend, and the tile beside it is not the place to read one.
+ */
+@media (max-width: 599px) {
+  .kpi {
+    gap: 2px;
+    padding: var(--md-sys-spacing-inset-md, 12px);
+  }
+
+  .kpi__value {
+    font: var(--md-sys-typescale-title-large-font);
+  }
+
+  .kpi__spark {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ layout */
+
+/*
+ * Cards in a row share a height — `stretch`, not `start`.
+ *
+ * With `start` each card is only as tall as its own content, so two panels side
+ * by side end at different heights and the row reads as ragged rather than as a
+ * pair. `.panel` is `display: block` and its inner is a flex column, so the
+ * extra height lands as card background under the content rather than
+ * stretching the content itself.
+ */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  align-items: stretch;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  align-items: stretch;
+}
+
+/* A wide panel beside a narrow one — a chart and its legend, a table and its
+   summary. Collapses to one column below the same 900px the rail does. */
+.grid-wide {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(min(280px, 100%), 1fr);
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  align-items: stretch;
+}
+
+@media (max-width: 899px) {
+  .grid-wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-md, 12px);
+}
+
+/*
+ * A form's vertical rhythm, which is not a stack's.
+ *
+ * `.stack` is 12px, right for a run of blocks that belong together. A form row
+ * is not that: each one carries a field AND its supporting text, so at 12px the
+ * hint under one field sits closer to the NEXT field's label than to the field
+ * it explains — the rows stop reading as rows. This is the same 24px the screen
+ * uses between its sections, because a form row is a section of the form.
+ */
+/* There is no `--md-sys-spacing-gap-xl`, so `inset-xl` is the only 24px token
+   that still tracks density (20px at -2, 16px at -3/-4). A hard 24px here would
+   stay 24px while every field around it got shorter. */
+.stack.form-stack {
+  gap: var(--md-sys-spacing-inset-xl, 24px);
+}
+
+/*
+ * The pickers fill their grid cell like every other field.
+ *
+ * `md-date-picker` and `md-time-picker` shrink-wrap their trigger field —
+ * they publish no width prop and no width custom property — so in a two-column
+ * form the date sat at 360px beside 698px neighbours and the row looked broken.
+ * Their own trigger stretches once the host does.
+ */
+.form-stack md-date-picker,
+.form-stack md-time-picker {
+  inline-size: 100%;
+  /* Lift `md-date-picker`'s 360px trigger ceiling inside the form, so the pair
+     matches each other AND the rows above them — through the component's own
+     public property now, rather than overriding its host from outside. The
+     component keeps its default everywhere else. (Harmless on md-time-picker,
+     which reads no such property.) */
+  --md-date-picker-trigger-max-width: none;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+}
+
+.row--end {
+  justify-content: flex-end;
+}
+
+.row--between {
+  justify-content: space-between;
+}
+
+/* ------------------------------------------------------------------- links */
+
+.drill {
+  color: var(--md-sys-color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: var(--md-sys-shape-corner-extra-small);
+}
+
+.drill:hover {
+  text-decoration: underline;
+}
+
+.drill:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+/*
+ * The badge and the dot both sit on the avatar RIM, and neither needs a
+ * hand-tuned offset any more.
+ *
+ * This used to carry `--md-badge-offset-x: 8%` / `-y: -35%` — numbers found by
+ * eye, correct for one avatar at one size and silently wrong at any other,
+ * because a translate percentage is relative to the BADGE, not to the host it
+ * is meant to hug. `md-badge` and `md-status-dot` now both take
+ * `shape="circle"`, which anchors them with percentages of the HOST and is
+ * therefore right at every size. The call sites say what the host is; nothing
+ * here has to know its diameter.
+ */
+
+/*
+ * A card that sits on the SAME surface the charts do.
+ *
+ * `md-card variant="outlined"` paints `--md-sys-color-surface` (#1C1B1F in
+ * the dark scheme); `md-line-chart` and `md-pie-chart` paint
+ * `surface-container-low` (#1D1B20). One shade apart, which is invisible in
+ * isolation and obvious when a fact card sits directly beneath a chart on the
+ * same panel.
+ *
+ * Set through the card's own documented custom property rather than a literal,
+ * so it follows the theme, the accent preset and the light scheme with
+ * everything else.
+ */
+.surface-card {
+  --md-card-container-color: var(--md-sys-color-surface-container-low);
+}
+
+/*
+ * A card whose whole content is one fact grid, sitting beside something taller.
+ *
+ * `.grid-wide` stretches its items, so this card is as tall as the chart next
+ * to it — measured 260px against a 198px grid, which left 30px of dead space
+ * under the last row while the rows themselves bunched at the top on a flat
+ * 12px gap. Filling the card and DISTRIBUTING the rows spends that space where
+ * it helps: the three rows breathe, and the block reads as deliberate rather
+ * than as content that ran out.
+ *
+ * `align-content` and not `justify-content`: the grid's block axis is what
+ * has slack. The row gap is a floor, so a card with no slack still separates
+ * its rows properly.
+ */
+/* When the grid sits under a header row — chips, a title — the wrapper has to
+   pass the card's spare height down to it, or the grid has nothing to
+   distribute and the slack pools under the last row instead. */
+.fact-card > .stack {
+  flex: 1 1 auto;
+  min-block-size: 0;
+}
+
+.fact-card .dl {
+  flex: 1 1 auto;
+  align-content: space-between;
+  row-gap: var(--md-sys-spacing-gap-lg, 16px);
+  column-gap: var(--md-sys-spacing-gap-xl, 24px);
+}
+
+/* --------------------------------------------------------------- data bits */
+
+/*
+ * Figures line up by place value or they cannot be compared, so every number
+ * on every screen goes through one of these. `tabular-nums` gives each digit
+ * the same advance width; `text-align: end` puts the units under the units.
+ */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.num--end {
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  display: block;
+}
+
+/*
+ * `margin: 0` is not cosmetic here — it is what makes a caption belong to
+ * something.
+ *
+ * `.muted` is nearly always a `<p>`, and a UA paragraph carries `margin: 1em 0`.
+ * Inside a `.stack` — a flex column whose spacing comes from `gap` — those
+ * margins do not collapse and are pure noise, added on BOTH sides. Measured on
+ * the allocation step: the stack gap is 12px and the grid row gap is 12px, but
+ * the caption under a weight field sat 26px below the field it explains and
+ * 26px above the NEXT field's label. Perfectly equidistant, so it read as
+ * belonging to neither, and the whole grid stopped grouping.
+ *
+ * `.panel__title`, `.panel__sub` and `.field-label` all zero their margins for
+ * this reason; `.muted` was the one that got missed.
+ */
+.muted {
+  color: var(--md-sys-color-on-surface-variant);
+  margin: 0;
+}
+
+/*
+ * A validation message for a control that cannot carry its own.
+ *
+ * `md-text-field`, `md-select`, `md-number-field`, `md-otp-field`,
+ * `md-date-picker` and `md-time-picker` all hold their message inside
+ * themselves, where it belongs and where the supporting-text line is already
+ * reserved. `md-slider`, `md-rating`, `md-switch`, `md-transfer-list` and a
+ * group of `md-checkbox`es have no such slot, so those messages are the app's
+ * to draw — and they occupy the SAME line the hint was using, never an extra
+ * one, or the control below moves every time validation fails.
+ *
+ * The colour is the `error` ROLE. `.pl-down` is the same red but it means "this
+ * figure went down", and reusing it would put a P/L class on a validation
+ * message.
+ */
+.field-error {
+  margin: 0;
+  color: var(--md-sys-color-error);
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The submit dialog's progress bar appears mid-flow when the send starts. The
+   fact grid above it ends on a chip, and with no margin the wave began right
+   under that chip and read as part of the last fact rather than as the state of
+   the whole dialog. */
+.submit-progress {
+  display: block;
+  margin-block-start: var(--md-sys-spacing-inset-xl, 24px);
+}
+
+/*
+ * A filter-chip set sitting in a table container's `top` band, under the
+ * toolbar.
+ *
+ * `.row` already supplies the flex, the wrap and the 8px gap the chip docs ask
+ * for; all this adds is the alignment. The inline padding repeats the toolbar's
+ * OWN expression rather than reaching for `--md-sys-spacing-inset-xl`, because
+ * the two disagree away from density 0 — the toolbar runs 24/22/20/18/16 and
+ * inset-xl runs 24/24/20/16/16, so a chip row built on the token would sit a
+ * couple of pixels off the headline at three of the five rungs the dock can
+ * write. There is no padding-block-start: the toolbar's own block padding is
+ * already the gap between them.
+ */
+/**
+ * ONE SCROLLING LINE PER FACET ON A PHONE, not a wrapped block.
+ *
+ * The statement has four facet rows — month, account, category, status — and
+ * with 48px touch targets they wrapped into six lines of chips, about a third
+ * of a screen of filters above the thing being filtered. A horizontally
+ * scrollable chip row is the Material pattern for exactly this, and it keeps
+ * each facet to one line whatever the locale does to the label lengths.
+ *
+ * `scroll-snap` so a swipe lands on a chip rather than halfway through one, and
+ * the scrollbar is hidden because the chips are self-evidently a row that
+ * continues — a visible bar under each of four rows is four bars of noise.
+ * Scrolling stays reachable by keyboard: the row is focusable-by-content, and
+ * tabbing to a chip scrolls it into view.
+ */
+/**
+ * `md-search` CANNOT FIT A 360px PHONE at its defaults, and this is the fix.
+ *
+ * The component sets `min-inline-size: var(--md-search-container-min-inline-size, 360px)`.
+ * On the most common small phone width that minimum is the entire viewport, so
+ * the bar overflows its container by whatever padding sits around it —
+ * measured at 37px inside this screen's filter panel. Nothing the host lays out
+ * can shrink it, because a min-inline-size wins over the parent's width.
+ *
+ * Zeroing the floor through the component's own custom property is the
+ * supported way out; the bar still fills its container through the
+ * `inline-size: 100%` beside it. Worth raising upstream — a 360px floor makes
+ * the component unusable at 360px in any app — but the default is not this
+ * vertical's to change.
+ */
+@media (max-width: 719px) {
+  md-search {
+    --md-search-container-min-inline-size: 0;
+  }
+}
+
+/**
+ * A labelled facet: a caption over its chips.
+ *
+ * Four rows of outlined chips with nothing above them are four identical grey
+ * bands, and a reader cannot tell the months from the accounts from the
+ * categories without reading every chip. The caption is one line of
+ * label-medium and it is what makes the panel scannable.
+ */
+.facet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-gap-xs, 4px);
+  min-inline-size: 0;
+}
+
+.facet__label {
+  margin: 0;
+  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  font: var(--md-sys-typescale-label-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* The count and the reset, on their own line under the facets. */
+.facet-foot {
+  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  padding-block-start: var(--md-sys-spacing-gap-xs, 4px);
+}
+
+/**
+ * SCROLLING CHIP ROWS, AND THE FADE THAT SAYS SO.
+ *
+ * A row that simply stops at the container edge reads as clipped, not as
+ * scrollable — the category row ended mid-word on "Entertainment" and looked
+ * broken. `mask-image` fades the last 24px of a row that overflows, which is
+ * the conventional signal that there is more in that direction.
+ *
+ * The fade is applied unconditionally rather than only when the row overflows,
+ * because CSS cannot ask whether an element scrolls. On a row that FITS the
+ * gradient still exists, so a last chip ending inside the final 24px would be
+ * faded for no reason — checked across 640/700/719px in all three locales, and
+ * the smallest margin on a fitting row is 40px, so it does not happen with this
+ * content. It is a content-dependent assumption rather than a guarantee; if a
+ * future facet lands a chip in that band, the fix is a `data-scrollable`
+ * attribute set from a ResizeObserver, not a wider guess here.
+ *
+ * It is `mask-image` and not an overlay pseudo-element so it works on any
+ * background — an overlay would have to guess the surface colour and would be
+ * wrong inside a card.
+ *
+ * Logical properties throughout (`inline-end`, not `right`), so the fade is on
+ * the correct side under `dir="rtl"`.
+ */
+.facet-row {
+  --_fade: 24px;
+
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--md-sys-spacing-gap-sm, 8px);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  /* Both, and they do different jobs: `padding` keeps the chips off the port's
+     edges, `scroll-padding` keeps a snapped chip off them too. */
+  padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  scroll-padding-inline: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
+  scrollbar-width: none;
+  mask-image: linear-gradient(
+    to var(--_fade-dir, right),
+    #000 calc(100% - var(--_fade)),
+    transparent 100%
+  );
+}
+
+[dir='rtl'] .facet-row {
+  --_fade-dir: left;
+}
+
+.facet-row::-webkit-scrollbar {
+  display: none;
+}
+
+.facet-row > * {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/*
+ * The wrapped layout comes back where there is room for it. Above the phone
+ * breakpoint a facet has space for its chips on one or two lines, and wrapping
+ * beats scrolling with a mouse — there is no swipe.
+ */
+@media (min-width: 720px) {
+  .facet-row {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    mask-image: none;
+  }
+}
+
+.strong {
+  font-weight: 500;
+}
+
+/* A signed figure. The COLOUR is never the only carrier — the sign is in the
+   text, because `signDisplay: 'exceptZero'` is what the formatters are given. */
+.pl-up {
+  color: var(--md-sys-color-success);
+}
+
+.pl-down {
+  color: var(--md-sys-color-error);
+}
+
+.pl-flat {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ------------------------------------------------------------ fact  grids */
+
+.dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  margin: 0;
+}
+
+.dl > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.dl dt {
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.dl dd {
+  font: var(--md-sys-typescale-body-large-font);
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * THERE IS NO `.dl--numeric` ANY MORE, and the reason is worth keeping.
+ *
+ * It right-aligned both the term and the value of every fact in a grid, on the
+ * theory that figures compare best flush-right. That is true INSIDE A TABLE,
+ * where a column of numbers shares one edge and place values line up down the
+ * page. A fact grid is not a table: each cell is its own island, so aligning to
+ * the trailing edge lines the figures up against nothing and drags every label
+ * away from the reader's eye. On the household return windows it put six
+ * headings and their values hard against the right of a 1080px panel with a
+ * river of empty space to their left.
+ *
+ * Right-alignment of numbers belongs to `md-table` — which does it properly,
+ * per column, via `md-table-cell numeric`. `tabular-nums` on `.dl dd` above is
+ * the part that was actually earning its keep and it stays.
+ */
+
+/* -------------------------------------------------------------- the when */
+
+.when {
+  color: var(--md-sys-color-on-surface-variant);
+  font: var(--md-sys-typescale-body-small-font);
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ empty state */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--md-sys-spacing-inset-2xl, 40px) var(--md-sys-spacing-inset-lg, 16px);
+  text-align: center;
+}
+
+.empty p {
+  margin: 0;
+}
+
+.empty p:first-child {
+  font: var(--md-sys-typescale-title-small-font);
+  color: var(--md-sys-color-on-surface);
+}
+
+.empty p + p {
+  font: var(--md-sys-typescale-body-medium-font);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ------------------------------------------------------------ feed ending */
+
+.feed__end {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--md-sys-spacing-inset-xl, 32px) 0;
+  text-align: center;
+}
+
+.feed__end .material-symbols-outlined {
+  font-size: 32px;
+  color: var(--md-sys-color-primary);
+}
+
+.feed__more {
+  display: flex;
+  justify-content: center;
+}
+
+/* ---------------------------------------------------------- touch targets */
+
+/**
+ * A thumb needs 48px. Every one of these is smaller than that by default
+ * because a pointer does not, and growing them unconditionally would put 48px
+ * of padding around a 16px glyph on a desktop toolbar.
+ */
+@media (pointer: coarse) {
+  .transport__button {
+    inline-size: 44px;
+    block-size: 44px;
+  }
+  .track-row__like,
+  .clip {
+    min-block-size: 44px;
+  }
+}
+
+/* --------------------------------------------------------------- overlays */
+
+/**
+ * Anything sitting ON a picture.
+ *
+ * The backdrop is CONTENT, not a surface, so it cannot borrow the page's
+ * colours — the same lesson Lyra learned twice. `inverse-surface` and
+ * `inverse-on-surface` are the guaranteed-contrast pair in both themes, and the
+ * `color-mix` keeps a little of the picture showing through without letting the
+ * text lose its ground.
+ */
+.on-media {
+  background: color-mix(in srgb, var(--md-sys-color-inverse-surface) 88%, transparent);
+  color: var(--md-sys-color-inverse-on-surface);
+  border-radius: var(--md-sys-shape-corner-small, 8px);
+  padding: 2px 6px;
+  font: var(--md-sys-typescale-label-small-font);
+}
+
+
+/* ------------------------------------------------- borrowed primitives */
+
+/*
+ * THREE CLASSES THAT WERE USED AND NEVER DEFINED.
+ *
+ * The shell and layout sections at the top of this file are copied from the
+ * other verticals; these three live in each vertical's NAMED BLOCKS section, so
+ * copying the shared half left them behind — and the screens went on using them
+ * anyway. Nothing warned: an undefined class is not an error, it is a class
+ * that does nothing, so `.stat-row` silently fell back to the user agent's
+ * default `dd` indent and the event screen's figures sat 40px to the right of
+ * their own labels.
+ */
+
+/**
+ * A row of figures with their labels.
+ *
+ * EQUAL COLUMNS, NOT A FLEX ROW. As a flex row each pair is only as wide as its
+ * own LABEL, so a short figure under a long word sits at the left of a wide
+ * column and a long figure under a short word is cramped — the gaps are equal
+ * and the numbers still look unevenly spaced, because what the eye measures is
+ * the distance between the FIGURES. A grid of equal tracks puts them on a
+ * regular rhythm whatever the labels do, which matters most in Romanian and
+ * Arabic where the same words are very different lengths.
+ *
+ * The figure comes FIRST visually and the label second, via `order` — the
+ * number is what the reader is here for. The DOM keeps `dt` before `dd`,
+ * because that is the pairing a screen reader announces.
+ */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+  gap: var(--md-sys-spacing-gap-md, 12px);
+  margin: 0;
+}
+
+.stat-row > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-row dt {
+  font: var(--md-sys-typescale-label-small-font);
+  color: var(--md-sys-color-on-surface-variant);
+  order: 2;
+}
+
+.stat-row dd {
+  font: var(--md-sys-typescale-title-medium-font);
+  color: var(--md-sys-color-on-surface);
+  /* The UA gives `dd` a 40px inline start margin. Without this reset every
+     figure in the app sits indented from the label above it. */
+  margin: 0;
+  order: 1;
+}
+
+/**
+ * Announced, and occupying nothing.
+ *
+ * NOT `display: none` and NOT `visibility: hidden` — both take the text out of
+ * the accessibility tree, which is the exact opposite of what this is for. The
+ * clip-rect idiom is the one that leaves it readable to a screen reader.
+ */
+.visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/** The verified tick beside a name. Sized to the text it sits in, not to a
+    fixed pixel value, so it tracks the heading it is part of. */
+.verified {
+  font-size: 1em;
+  line-height: 1;
+  color: var(--md-sys-color-primary);
+}
+
+
+/* ============================================================== THE EDITOR */
+/*
+ * Four regions: a toolbar across the top, a layer tree on the left, the canvas
+ * in the middle and an inspector on the right. The middle is the only one that
+ * grows — 1fr for the canvas and fixed rails either side — because a canvas
+ * that shrank to fit its panels would make the app unusable at the exact moment
+ * the reader added a panel.
+ *
+ * Below 1200px the inspector drops away and becomes a sheet reached from the
+ * toolbar; below 900px the tree does too. The canvas is never the thing that
+ * goes, which is the whole rule for laying out an editor.
+ */
+.editor {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr) 288px;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 1px;
+  background: var(--md-sys-color-outline-variant);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-medium, 12px);
+  overflow: hidden;
+  block-size: clamp(520px, calc(100dvh - 260px), 860px);
+}
+
+.editor__toolbar { grid-column: 1 / -1; }
+
+.editor__tree,
+.editor__canvas,
+.editor__inspector {
+  background: var(--md-sys-color-surface);
+  min-inline-size: 0;
+  overflow: auto;
+}
+
+.editor__canvas {
+  background: var(--md-sys-color-surface-container-low);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+@media (max-width: 1199px) {
+  .editor { grid-template-columns: 248px minmax(0, 1fr); }
+  .editor__inspector { display: none; }
+}
+
+@media (max-width: 899px) {
+  .editor { grid-template-columns: minmax(0, 1fr); block-size: auto; }
+  .editor__tree { display: none; }
+  .editor__canvas { padding: 12px; }
+}
+
+/* ----------------------------------------------------------- the toolbar */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  padding: 6px 8px;
+  background: var(--md-sys-color-surface-container);
+}
+
+.toolbar__group { display: flex; align-items: center; gap: 2px; }
+
+/*
+ * A HAIRLINE, NOT A GAP, between groups. Six align buttons and four boolean
+ * buttons next to each other read as ten unrelated icons; a rule between them
+ * says which four belong together, and costs no horizontal space on the narrow
+ * layouts where the toolbar wraps.
+ */
+.toolbar__group + .toolbar__group {
+  margin-inline-start: 4px;
+  padding-inline-start: 6px;
+  border-inline-start: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.toolbar__spacer { flex: 1 1 auto; }
+.toolbar__zoom { min-inline-size: 5ch; text-align: center; font-variant-numeric: tabular-nums; }
+
+.toolbar md-icon-button[data-active] {
+  background: var(--md-sys-color-secondary-container);
+  border-radius: var(--md-sys-shape-corner-full, 999px);
+}
+
+/* -------------------------------------------------------- the layer tree */
+/*
+ * INDENT IS A CUSTOM PROPERTY, not a nested list. A nested <ul> would be more
+ * semantic on paper and much worse in practice: the tree is drag-reorderable,
+ * and a flat list of rows lets a drop land between any two rows regardless of
+ * depth without the drag crossing a list boundary.
+ *
+ * The rows keep role="treeitem" with aria-level, so the accessibility tree is
+ * the nested structure the DOM is not.
+ */
+.tree { padding: 4px 0; }
+
+.tree__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 32px;
+  padding-inline: 8px;
+  padding-inline-start: calc(8px + var(--tree-indent, 0) * 16px);
+  cursor: default;
+  border: none;
+  background: none;
+  inline-size: 100%;
+  text-align: start;
+  color: var(--md-sys-color-on-surface);
+  font: inherit;
+}
+
+.tree__row:hover { background: var(--md-sys-color-surface-container-high); }
+
+.tree__row[data-selected] {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.tree__row[data-tone='hidden'] { opacity: 0.45; }
+.tree__row[data-tone='locked'] .tree__name { font-style: italic; }
+.tree__row[data-drop='before'] { box-shadow: inset 0 2px 0 0 var(--md-sys-color-primary); }
+.tree__row[data-drop='after'] { box-shadow: inset 0 -2px 0 0 var(--md-sys-color-primary); }
+.tree__row[data-drop='inside'] { outline: 2px solid var(--md-sys-color-primary); outline-offset: -2px; }
+.tree__name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree__icon { color: var(--md-sys-color-on-surface-variant); }
+.tree__row[data-selected] .tree__icon { color: inherit; }
+
+/* The state toggles only appear on hover or focus unless the state is already
+   off-default, because twelve rows of four icons is a wall. */
+.tree__toggle { opacity: 0; }
+
+.tree__row:hover .tree__toggle,
+.tree__row:focus-within .tree__toggle,
+.tree__toggle[data-on] { opacity: 1; }
+
+/* ------------------------------------------------------------- the canvas */
+/*
+ * THE ARTBOARD IS A CSS GRID OF FIXED-SIZE CELLS, and every layer is placed on
+ * it by generated rules further down this file. See src/design/types.ts for
+ * why: the deployed policy forbids the style attribute a pixel offset would
+ * need, and the plain-HTML build cannot reach the CSSOM to get around it.
+ *
+ * --cell is the one thing zoom changes, so zooming rescales the whole board
+ * without touching a single layer's rule.
+ */
+.artboard {
+  --cell: 14px;
+
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(48, var(--cell));
+  grid-template-rows: repeat(32, var(--cell));
+  background: var(--md-sys-color-surface-container-lowest);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
+  flex: none;
+}
+
+.artboard[data-zoom='50'] { --cell: 7px; }
+.artboard[data-zoom='75'] { --cell: 10px; }
+.artboard[data-zoom='100'] { --cell: 14px; }
+.artboard[data-zoom='150'] { --cell: 21px; }
+.artboard[data-zoom='200'] { --cell: 28px; }
+
+/* A faint cell grid, drawn as a background rather than as elements — 1536
+   divider elements would be 1536 more nodes for the parity census to walk. */
+.artboard[data-grid] {
+  background-image:
+    linear-gradient(to right, var(--md-sys-color-outline-variant) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--md-sys-color-outline-variant) 1px, transparent 1px);
+  background-size: var(--cell) var(--cell);
+}
+
+.canvas-scroll {
+  overflow: auto;
+  max-inline-size: 100%;
+  max-block-size: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.canvas-frame {
+  display: grid;
+  grid-template-columns: 20px auto;
+  grid-template-rows: 16px auto;
+}
+
+.canvas-frame__corner { grid-area: 1 / 1; }
+
+/* Every layer occupies whole cells; grid-area comes from the generated rules. */
+.layer {
+  position: relative;
+  min-inline-size: 0;
+  min-block-size: 0;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: default;
+  background: transparent;
+  touch-action: none;
+}
+
+.layer[data-kind='ellipse'] { border-radius: 50%; }
+.layer[data-kind='frame'] { outline: 1px solid var(--md-sys-color-outline); }
+.layer[data-kind='group'] { background: transparent; }
+
+.layer[data-kind='text'] {
+  display: flex;
+  align-items: center;
+  padding-inline: 4px;
+  font-size: clamp(10px, calc(var(--cell) * 0.9), 22px);
+  overflow: hidden;
+}
+
+.layer[data-kind='instance'] { outline: 1px dashed var(--md-sys-color-primary); outline-offset: -1px; }
+.layer[data-kind='component'] { outline: 1px solid var(--md-sys-color-primary); outline-offset: -1px; }
+.layer img { inline-size: 100%; block-size: 100%; object-fit: cover; display: block; }
+.layer[data-masked] { overflow: hidden; border-radius: var(--md-sys-shape-corner-medium, 12px); }
+.layer[data-hidden] { display: none; }
+
+/* Selection is an outline INSIDE the layer, so selecting never changes layout —
+   a selected layer that grew by two pixels would nudge the grid it sits on. */
+.layer[data-selected] {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: -1px;
+  z-index: 2;
+}
+
+.layer[data-selected]::after {
+  content: '';
+  position: absolute;
+  inset-inline-end: -3px;
+  inset-block-end: -3px;
+  inline-size: 7px;
+  block-size: 7px;
+  background: var(--md-sys-color-primary);
+  border: 1px solid var(--md-sys-color-on-primary);
+}
+
+.layer[data-dragging] { opacity: 0.7; }
+
+/* A GRID ITEM, not an absolutely-positioned box: it is placed by the same
+   [data-x]/[data-y]/[data-w]/[data-h] rules as everything else on the board,
+   so the selection rectangle and the layers it is selecting cannot disagree
+   about where a cell is. */
+.marquee {
+  border: 1px solid var(--md-sys-color-primary);
+  background: color-mix(in srgb, var(--md-sys-color-primary) 12%, transparent);
+  pointer-events: none;
+  touch-action: none;
+  z-index: 3;
+}
+
+/* ------------------------------------------------------------- the rulers */
+.ruler {
+  display: grid;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.ruler--x { grid-template-columns: repeat(48, var(--cell)); block-size: 16px; }
+.ruler--y { grid-template-rows: repeat(32, var(--cell)); inline-size: 20px; }
+.ruler__tick { position: relative; }
+.ruler--x .ruler__tick { border-inline-start: 1px solid var(--md-sys-color-outline-variant); padding-inline-start: 2px; }
+.ruler--y .ruler__tick { border-block-start: 1px solid var(--md-sys-color-outline-variant); padding-inline-start: 2px; }
+
+/* ---------------------------------------------------------- the inspector */
+.inspector { padding: 12px; display: flex; flex-direction: column; gap: 16px; }
+.inspector__section { display: flex; flex-direction: column; gap: 8px; }
+
+.inspector__title {
+  font-size: var(--md-sys-typescale-label-large-size, 14px);
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.inspector__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.inspector__row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+/*
+ * A FIELD WHOSE SELECTION DISAGREES SHOWS AN EM-DASH AND STAYS EDITABLE.
+ * Dimming it would read as disabled, which is the opposite of true: typing into
+ * it assigns to every selected layer at once, and that is the whole point of
+ * the mixed state.
+ */
+.inspector [data-mixed] { font-style: italic; color: var(--md-sys-color-on-surface-variant); }
+
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.swatch {
+  inline-size: 24px;
+  block-size: 24px;
+  border-radius: var(--md-sys-shape-corner-small, 8px);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  padding: 0;
+  cursor: pointer;
+}
+
+.swatch[data-selected] { outline: 2px solid var(--md-sys-color-primary); outline-offset: 2px; }
+
+/* ------------------------------------------------------------ the history */
+.history { display: flex; flex-direction: column; gap: 2px; }
+
+.history__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: var(--md-sys-shape-corner-small, 8px);
+  font-size: var(--md-sys-typescale-body-small-size, 12px);
+}
+
+/* Entries past the cursor are the redo branch: still listed, because the reader
+   can walk back into them, but clearly not where they are standing. */
+.history__row[data-undone] { opacity: 0.42; }
+.history__row[data-current] { background: var(--md-sys-color-secondary-container); }
+
+/* ============================================ THE GENERATED PLACEMENT RULES */
+/*
+ * Below here is machine-shaped repetition, and it is the load-bearing half of
+ * this stylesheet. Every value a layer can hold that would otherwise need a
+ * style attribute has a rule here instead:
+ *
+ *   [data-x] / [data-y]   where a layer starts
+ *   [data-w] / [data-h]   how many cells it spans
+ *   [data-fill]           one of the twelve palette tokens
+ *   [data-opacity]        0..100 in steps of 5
+ *   [data-blend]          the seven CSS blend modes
+ *   [data-adj][data-v]    one adjustment at one rung, composed by nesting
+ *
+ * WHY NOT JUST WRITE THE STYLE FROM SCRIPT. The four SPA builds could: CSP's
+ * style-src-attr governs the attribute, and script setting el.style is exempt
+ * because script is already trusted. The plain-HTML build cannot — it emits
+ * markup and never runs a line of layout code. Letting the SPAs take the easy
+ * path would give four builds one canvas and the fifth another, and the parity
+ * check would be right to fail it.
+ *
+ * About 252 rules, and they compress to almost nothing: the same short
+ * declaration over and over is the best case a gzip window ever gets.
+ */
+
+/* where a layer starts */[data-x='0'] { grid-column-start: 1; }
+[data-x='1'] { grid-column-start: 2; }
+[data-x='2'] { grid-column-start: 3; }
+[data-x='3'] { grid-column-start: 4; }
+[data-x='4'] { grid-column-start: 5; }
+[data-x='5'] { grid-column-start: 6; }
+[data-x='6'] { grid-column-start: 7; }
+[data-x='7'] { grid-column-start: 8; }
+[data-x='8'] { grid-column-start: 9; }
+[data-x='9'] { grid-column-start: 10; }
+[data-x='10'] { grid-column-start: 11; }
+[data-x='11'] { grid-column-start: 12; }
+[data-x='12'] { grid-column-start: 13; }
+[data-x='13'] { grid-column-start: 14; }
+[data-x='14'] { grid-column-start: 15; }
+[data-x='15'] { grid-column-start: 16; }
+[data-x='16'] { grid-column-start: 17; }
+[data-x='17'] { grid-column-start: 18; }
+[data-x='18'] { grid-column-start: 19; }
+[data-x='19'] { grid-column-start: 20; }
+[data-x='20'] { grid-column-start: 21; }
+[data-x='21'] { grid-column-start: 22; }
+[data-x='22'] { grid-column-start: 23; }
+[data-x='23'] { grid-column-start: 24; }
+[data-x='24'] { grid-column-start: 25; }
+[data-x='25'] { grid-column-start: 26; }
+[data-x='26'] { grid-column-start: 27; }
+[data-x='27'] { grid-column-start: 28; }
+[data-x='28'] { grid-column-start: 29; }
+[data-x='29'] { grid-column-start: 30; }
+[data-x='30'] { grid-column-start: 31; }
+[data-x='31'] { grid-column-start: 32; }
+[data-x='32'] { grid-column-start: 33; }
+[data-x='33'] { grid-column-start: 34; }
+[data-x='34'] { grid-column-start: 35; }
+[data-x='35'] { grid-column-start: 36; }
+[data-x='36'] { grid-column-start: 37; }
+[data-x='37'] { grid-column-start: 38; }
+[data-x='38'] { grid-column-start: 39; }
+[data-x='39'] { grid-column-start: 40; }
+[data-x='40'] { grid-column-start: 41; }
+[data-x='41'] { grid-column-start: 42; }
+[data-x='42'] { grid-column-start: 43; }
+[data-x='43'] { grid-column-start: 44; }
+[data-x='44'] { grid-column-start: 45; }
+[data-x='45'] { grid-column-start: 46; }
+[data-x='46'] { grid-column-start: 47; }
+[data-x='47'] { grid-column-start: 48; }
+[data-y='0'] { grid-row-start: 1; }
+[data-y='1'] { grid-row-start: 2; }
+[data-y='2'] { grid-row-start: 3; }
+[data-y='3'] { grid-row-start: 4; }
+[data-y='4'] { grid-row-start: 5; }
+[data-y='5'] { grid-row-start: 6; }
+[data-y='6'] { grid-row-start: 7; }
+[data-y='7'] { grid-row-start: 8; }
+[data-y='8'] { grid-row-start: 9; }
+[data-y='9'] { grid-row-start: 10; }
+[data-y='10'] { grid-row-start: 11; }
+[data-y='11'] { grid-row-start: 12; }
+[data-y='12'] { grid-row-start: 13; }
+[data-y='13'] { grid-row-start: 14; }
+[data-y='14'] { grid-row-start: 15; }
+[data-y='15'] { grid-row-start: 16; }
+[data-y='16'] { grid-row-start: 17; }
+[data-y='17'] { grid-row-start: 18; }
+[data-y='18'] { grid-row-start: 19; }
+[data-y='19'] { grid-row-start: 20; }
+[data-y='20'] { grid-row-start: 21; }
+[data-y='21'] { grid-row-start: 22; }
+[data-y='22'] { grid-row-start: 23; }
+[data-y='23'] { grid-row-start: 24; }
+[data-y='24'] { grid-row-start: 25; }
+[data-y='25'] { grid-row-start: 26; }
+[data-y='26'] { grid-row-start: 27; }
+[data-y='27'] { grid-row-start: 28; }
+[data-y='28'] { grid-row-start: 29; }
+[data-y='29'] { grid-row-start: 30; }
+[data-y='30'] { grid-row-start: 31; }
+[data-y='31'] { grid-row-start: 32; }
+
+/* how many cells it spans */
+[data-w='1'] { grid-column-end: span 1; }
+[data-w='2'] { grid-column-end: span 2; }
+[data-w='3'] { grid-column-end: span 3; }
+[data-w='4'] { grid-column-end: span 4; }
+[data-w='5'] { grid-column-end: span 5; }
+[data-w='6'] { grid-column-end: span 6; }
+[data-w='7'] { grid-column-end: span 7; }
+[data-w='8'] { grid-column-end: span 8; }
+[data-w='9'] { grid-column-end: span 9; }
+[data-w='10'] { grid-column-end: span 10; }
+[data-w='11'] { grid-column-end: span 11; }
+[data-w='12'] { grid-column-end: span 12; }
+[data-w='13'] { grid-column-end: span 13; }
+[data-w='14'] { grid-column-end: span 14; }
+[data-w='15'] { grid-column-end: span 15; }
+[data-w='16'] { grid-column-end: span 16; }
+[data-w='17'] { grid-column-end: span 17; }
+[data-w='18'] { grid-column-end: span 18; }
+[data-w='19'] { grid-column-end: span 19; }
+[data-w='20'] { grid-column-end: span 20; }
+[data-w='21'] { grid-column-end: span 21; }
+[data-w='22'] { grid-column-end: span 22; }
+[data-w='23'] { grid-column-end: span 23; }
+[data-w='24'] { grid-column-end: span 24; }
+[data-w='25'] { grid-column-end: span 25; }
+[data-w='26'] { grid-column-end: span 26; }
+[data-w='27'] { grid-column-end: span 27; }
+[data-w='28'] { grid-column-end: span 28; }
+[data-w='29'] { grid-column-end: span 29; }
+[data-w='30'] { grid-column-end: span 30; }
+[data-w='31'] { grid-column-end: span 31; }
+[data-w='32'] { grid-column-end: span 32; }
+[data-w='33'] { grid-column-end: span 33; }
+[data-w='34'] { grid-column-end: span 34; }
+[data-w='35'] { grid-column-end: span 35; }
+[data-w='36'] { grid-column-end: span 36; }
+[data-w='37'] { grid-column-end: span 37; }
+[data-w='38'] { grid-column-end: span 38; }
+[data-w='39'] { grid-column-end: span 39; }
+[data-w='40'] { grid-column-end: span 40; }
+[data-w='41'] { grid-column-end: span 41; }
+[data-w='42'] { grid-column-end: span 42; }
+[data-w='43'] { grid-column-end: span 43; }
+[data-w='44'] { grid-column-end: span 44; }
+[data-w='45'] { grid-column-end: span 45; }
+[data-w='46'] { grid-column-end: span 46; }
+[data-w='47'] { grid-column-end: span 47; }
+[data-w='48'] { grid-column-end: span 48; }
+[data-h='1'] { grid-row-end: span 1; }
+[data-h='2'] { grid-row-end: span 2; }
+[data-h='3'] { grid-row-end: span 3; }
+[data-h='4'] { grid-row-end: span 4; }
+[data-h='5'] { grid-row-end: span 5; }
+[data-h='6'] { grid-row-end: span 6; }
+[data-h='7'] { grid-row-end: span 7; }
+[data-h='8'] { grid-row-end: span 8; }
+[data-h='9'] { grid-row-end: span 9; }
+[data-h='10'] { grid-row-end: span 10; }
+[data-h='11'] { grid-row-end: span 11; }
+[data-h='12'] { grid-row-end: span 12; }
+[data-h='13'] { grid-row-end: span 13; }
+[data-h='14'] { grid-row-end: span 14; }
+[data-h='15'] { grid-row-end: span 15; }
+[data-h='16'] { grid-row-end: span 16; }
+[data-h='17'] { grid-row-end: span 17; }
+[data-h='18'] { grid-row-end: span 18; }
+[data-h='19'] { grid-row-end: span 19; }
+[data-h='20'] { grid-row-end: span 20; }
+[data-h='21'] { grid-row-end: span 21; }
+[data-h='22'] { grid-row-end: span 22; }
+[data-h='23'] { grid-row-end: span 23; }
+[data-h='24'] { grid-row-end: span 24; }
+[data-h='25'] { grid-row-end: span 25; }
+[data-h='26'] { grid-row-end: span 26; }
+[data-h='27'] { grid-row-end: span 27; }
+[data-h='28'] { grid-row-end: span 28; }
+[data-h='29'] { grid-row-end: span 29; }
+[data-h='30'] { grid-row-end: span 30; }
+[data-h='31'] { grid-row-end: span 31; }
+[data-h='32'] { grid-row-end: span 32; }
+
+
+/* tree indent — a custom property cannot come from a style attribute either */
+[data-level='0'] { --tree-indent: 0; }
+[data-level='1'] { --tree-indent: 1; }
+[data-level='2'] { --tree-indent: 2; }
+[data-level='3'] { --tree-indent: 3; }
+
+/* the project palette */
+[data-fill='p0'] { background-color: #1F3A5F; }
+.swatch[data-token='p0'] { background-color: #1F3A5F; }
+[data-fill='p1'] { background-color: #2E6F76; }
+.swatch[data-token='p1'] { background-color: #2E6F76; }
+[data-fill='p2'] { background-color: #7A4E9B; }
+.swatch[data-token='p2'] { background-color: #7A4E9B; }
+[data-fill='p3'] { background-color: #B3543C; }
+.swatch[data-token='p3'] { background-color: #B3543C; }
+[data-fill='p4'] { background-color: #3F7A34; }
+.swatch[data-token='p4'] { background-color: #3F7A34; }
+[data-fill='p5'] { background-color: #8C6A1F; }
+.swatch[data-token='p5'] { background-color: #8C6A1F; }
+[data-fill='p6'] { background-color: #4A4A57; }
+.swatch[data-token='p6'] { background-color: #4A4A57; }
+[data-fill='p7'] { background-color: #A8354F; }
+.swatch[data-token='p7'] { background-color: #A8354F; }
+[data-fill='p8'] { background-color: #2B5FA8; }
+.swatch[data-token='p8'] { background-color: #2B5FA8; }
+[data-fill='p9'] { background-color: #6B7A2E; }
+.swatch[data-token='p9'] { background-color: #6B7A2E; }
+[data-fill='ink'] { background-color: #12141A; }
+.swatch[data-token='ink'] { background-color: #12141A; }
+[data-fill='paper'] { background-color: #E8EAF0; }
+.swatch[data-token='paper'] { background-color: #E8EAF0; }
+[data-kind='text'][data-fill='paper'] { background-color: transparent; color: #E8EAF0; }
+[data-kind='text'][data-fill='ink'] { background-color: transparent; color: #12141A; }
+
+/* opacity, in rungs of 5 */
+[data-opacity='0'] { opacity: 0.00; }
+[data-opacity='5'] { opacity: 0.05; }
+[data-opacity='10'] { opacity: 0.10; }
+[data-opacity='15'] { opacity: 0.15; }
+[data-opacity='20'] { opacity: 0.20; }
+[data-opacity='25'] { opacity: 0.25; }
+[data-opacity='30'] { opacity: 0.30; }
+[data-opacity='35'] { opacity: 0.35; }
+[data-opacity='40'] { opacity: 0.40; }
+[data-opacity='45'] { opacity: 0.45; }
+[data-opacity='50'] { opacity: 0.50; }
+[data-opacity='55'] { opacity: 0.55; }
+[data-opacity='60'] { opacity: 0.60; }
+[data-opacity='65'] { opacity: 0.65; }
+[data-opacity='70'] { opacity: 0.70; }
+[data-opacity='75'] { opacity: 0.75; }
+[data-opacity='80'] { opacity: 0.80; }
+[data-opacity='85'] { opacity: 0.85; }
+[data-opacity='90'] { opacity: 0.90; }
+[data-opacity='95'] { opacity: 0.95; }
+[data-opacity='100'] { opacity: 1.00; }
+
+/* blend modes */
+[data-blend='normal'] { mix-blend-mode: normal; }
+[data-blend='multiply'] { mix-blend-mode: multiply; }
+[data-blend='screen'] { mix-blend-mode: screen; }
+[data-blend='overlay'] { mix-blend-mode: overlay; }
+[data-blend='darken'] { mix-blend-mode: darken; }
+[data-blend='lighten'] { mix-blend-mode: lighten; }
+[data-blend='difference'] { mix-blend-mode: difference; }
+
+/*
+ * ADJUSTMENTS COMPOSE BY NESTING, one wrapper per active adjustment.
+ *
+ * Four kinds at ten rungs each is forty rules. The alternative — one rule per
+ * COMBINATION — is ten thousand, which is why an image layer renders its
+ * picture inside up to four spans instead of carrying one filter. Nesting
+ * multiplies the filters, which is what a filter chain does anyway, so the
+ * result is what filterCss() would produce in a single string.
+ */
+[data-adj='exposure'][data-v='-100'] { filter: brightness(0.400); }
+[data-adj='exposure'][data-v='-80'] { filter: brightness(0.520); }
+[data-adj='exposure'][data-v='-60'] { filter: brightness(0.640); }
+[data-adj='exposure'][data-v='-40'] { filter: brightness(0.760); }
+[data-adj='exposure'][data-v='-20'] { filter: brightness(0.880); }
+[data-adj='exposure'][data-v='20'] { filter: brightness(1.120); }
+[data-adj='exposure'][data-v='40'] { filter: brightness(1.240); }
+[data-adj='exposure'][data-v='60'] { filter: brightness(1.360); }
+[data-adj='exposure'][data-v='80'] { filter: brightness(1.480); }
+[data-adj='exposure'][data-v='100'] { filter: brightness(1.600); }
+[data-adj='contrast'][data-v='-100'] { filter: contrast(0.400); }
+[data-adj='contrast'][data-v='-80'] { filter: contrast(0.520); }
+[data-adj='contrast'][data-v='-60'] { filter: contrast(0.640); }
+[data-adj='contrast'][data-v='-40'] { filter: contrast(0.760); }
+[data-adj='contrast'][data-v='-20'] { filter: contrast(0.880); }
+[data-adj='contrast'][data-v='20'] { filter: contrast(1.120); }
+[data-adj='contrast'][data-v='40'] { filter: contrast(1.240); }
+[data-adj='contrast'][data-v='60'] { filter: contrast(1.360); }
+[data-adj='contrast'][data-v='80'] { filter: contrast(1.480); }
+[data-adj='contrast'][data-v='100'] { filter: contrast(1.600); }
+[data-adj='saturation'][data-v='-100'] { filter: saturate(0.000); }
+[data-adj='saturation'][data-v='-80'] { filter: saturate(0.200); }
+[data-adj='saturation'][data-v='-60'] { filter: saturate(0.400); }
+[data-adj='saturation'][data-v='-40'] { filter: saturate(0.600); }
+[data-adj='saturation'][data-v='-20'] { filter: saturate(0.800); }
+[data-adj='saturation'][data-v='20'] { filter: saturate(1.200); }
+[data-adj='saturation'][data-v='40'] { filter: saturate(1.400); }
+[data-adj='saturation'][data-v='60'] { filter: saturate(1.600); }
+[data-adj='saturation'][data-v='80'] { filter: saturate(1.800); }
+[data-adj='saturation'][data-v='100'] { filter: saturate(2.000); }
+[data-adj='temperature'][data-v='-100'] { filter: sepia(0.000); }
+[data-adj='temperature'][data-v='-80'] { filter: sepia(0.000); }
+[data-adj='temperature'][data-v='-60'] { filter: sepia(0.000); }
+[data-adj='temperature'][data-v='-40'] { filter: sepia(0.000); }
+[data-adj='temperature'][data-v='-20'] { filter: sepia(0.000); }
+[data-adj='temperature'][data-v='20'] { filter: sepia(0.200); }
+[data-adj='temperature'][data-v='40'] { filter: sepia(0.400); }
+[data-adj='temperature'][data-v='60'] { filter: sepia(0.600); }
+[data-adj='temperature'][data-v='80'] { filter: sepia(0.800); }
+[data-adj='temperature'][data-v='100'] { filter: sepia(1.000); }
+
+/* Pictor studio: a connected creative workspace. These rules affect only this vertical. */
+.pictor-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .14em; line-height: 1.6; }
+.pictor-muted { color: var(--md-sys-color-on-surface-variant); font-size: 12px; }
+.pictor-live-dot { display: inline-block; inline-size: 7px; block-size: 7px; border-radius: 50%; background: #80b99a; box-shadow: 0 0 0 4px rgb(128 185 154 / 14%); margin-inline-end: 8px; }
+.pictor-hero { display: grid; grid-template-columns: 1.2fr 1fr; min-block-size: 350px; padding: 38px 44px; background: #eef1e6; color: #203d35; border: 1px solid #dce2d3; border-radius: 24px; overflow: hidden; position: relative; }
+.pictor-hero__copy { position: relative; z-index: 1; }
+.pictor-hero h2 { font-family: Georgia, serif; font-weight: 400; font-size: clamp(36px, 4.4vw, 66px); line-height: 1.03; letter-spacing: -.055em; margin: 21px 0 18px; }
+.pictor-hero h2 em { color: #447451; font-weight: 400; }
+.pictor-hero p { max-inline-size: 390px; font-size: 13px; line-height: 1.65; color: #586b5f; }
+.pictor-hero__actions { display: flex; gap: 8px; align-items: center; margin-block-start: 22px; flex-wrap: wrap; }
+.pictor-hero__actions md-button[variant='filled'] { --md-sys-color-primary: #203d35; --md-sys-color-on-primary: #fff; }
+.pictor-hero__actions md-button[variant='text'] { --md-sys-color-primary: #203d35; }
+.pictor-hero__facts { display: flex; gap: 28px; margin-block-start: 30px; font-size: 10px; color: #69796d; }
+.pictor-hero__facts strong { display: block; font-size: 14px; margin-block-end: 3px; color: #203d35; }
+.pictor-hero__art { position: relative; display: grid; place-items: center; min-inline-size: 0; }
+.pictor-hero__art > img { display: block; inline-size: min(390px, 115%); max-block-size: 360px; object-fit: contain; z-index: 1; }
+.pictor-art-orbit { position: absolute; inline-size: 340px; block-size: 340px; border: 1px solid #d6ddca; border-radius: 50%; }
+.pictor-art-orbit::after { content: ''; position: absolute; inset: -24px; border: 1px solid #e0e5d6; border-radius: 50%; }
+.pictor-art-label { position: absolute; z-index: 2; display: flex; align-items: center; gap: 6px; padding: 9px 13px; background: #fffef4; border: 1px solid #dde3d3; border-radius: 9px; box-shadow: 0 5px 20px rgb(32 61 53 / 6%); font-size: 10px; }
+.pictor-art-label--top { inset-block-start: 22px; inset-inline-end: 10px; transform: rotate(5deg); }
+.pictor-art-label--bottom { inset-block-end: 4px; inset-inline-start: 0; transform: rotate(-4deg); }
+.pictor-section { display: flex; flex-direction: column; gap: 18px; margin-block: 12px 8px; min-inline-size: 0; }
+.pictor-section__head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.pictor-section__head h2 { font-size: 19px; line-height: 1.35; font-weight: 600; letter-spacing: -.035em; margin: 3px 0 0; }
+.pictor-section__head .pictor-eyebrow { color: var(--md-sys-color-on-surface-variant); }
+.pictor-template-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; }
+.pictor-template { border: 0; padding: 0; background: transparent; text-align: start; color: inherit; cursor: pointer; font: inherit; min-inline-size: 0; }
+.pictor-template:focus-visible { outline: 3px solid var(--md-sys-color-primary); outline-offset: 4px; border-radius: 18px; }
+.pictor-template__art { aspect-ratio: 1.8; position: relative; overflow: hidden; border-radius: 16px; display: flex; align-items: center; padding: 24px; transition: transform 180ms ease, box-shadow 180ms ease; }
+.pictor-template:hover .pictor-template__art { transform: translateY(-3px); box-shadow: 0 12px 24px rgb(0 0 0 / 9%); }
+.pictor-template__art[data-tone='orbit'], .pictor-project-mark[data-tone='orbit'] { background: #eef1e6; color: #203d35; }
+.pictor-template__art[data-tone='pulse'], .pictor-project-mark[data-tone='pulse'] { background: #392263; color: #f3f2d3; }
+.pictor-template__art[data-tone='field'], .pictor-project-mark[data-tone='field'] { background: #eee8dc; color: #9d382b; }
+.pictor-template__art > img { position: absolute; inline-size: 70%; block-size: 120%; inset-inline-end: -12%; object-fit: contain; }
+.pictor-template__art > span:not(.pictor-template__arrow) { position: relative; z-index: 1; font-family: Georgia, serif; font-size: clamp(19px, 2.2vw, 32px); line-height: 1.07; letter-spacing: -.055em; max-inline-size: 62%; }
+.pictor-template__arrow { position: absolute; inset-block-start: 13px; inset-inline-end: 13px; display: grid; place-items: center; inline-size: 28px; block-size: 28px; background: rgb(255 255 255 / 18%); border-radius: 50%; }
+.pictor-template__meta { display: flex; flex-direction: column; gap: 5px; padding: 13px 1px 0; }
+.pictor-template__meta strong { font-size: 12px; font-weight: 600; }
+.pictor-template__meta > span { font-size: 11px; color: var(--md-sys-color-on-surface-variant); }
+.pictor-project-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.pictor-project-card { display: flex; align-items: center; gap: 12px; text-decoration: none; padding: 16px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 14px; background: var(--md-sys-color-surface-container-lowest); min-inline-size: 0; transition: border-color 160ms ease, transform 160ms ease; }
+.pictor-project-card:hover { border-color: var(--md-sys-color-primary); transform: translateY(-2px); }
+.pictor-project-card > div:nth-child(2) { display: flex; flex-direction: column; gap: 4px; flex: 1; min-inline-size: 0; }
+.pictor-project-card strong { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pictor-project-card span { font-size: 10px; color: var(--md-sys-color-on-surface-variant); }
+.pictor-project-card > .material-symbols-outlined { font-size: 18px; color: var(--md-sys-color-outline); }
+.pictor-project-mark { display: grid; place-items: center; inline-size: 42px; block-size: 42px; border-radius: 12px; flex: 0 0 auto; }
+.pictor-filterbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.pictor-filterbar > md-text-field { flex: 1; min-inline-size: 160px; }
+.pictor-filterbar > md-select { inline-size: 175px; }
+.studio-segments { max-inline-size: 100%; }
+.pictor-file-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+.pictor-file-card { display: flex; flex-direction: column; padding: 0 !important; overflow: hidden; min-inline-size: 0; --md-card-padding: 0px; }
+.pictor-file-preview { display: block; overflow: hidden; aspect-ratio: 1.5; position: relative; border-block-end: 1px solid var(--md-sys-color-outline-variant); background: var(--md-sys-color-surface-container); }
+.pictor-file-preview > img { inline-size: 100%; block-size: 100%; object-fit: contain; display: block; transition: transform 250ms ease; }
+.pictor-file-preview:hover > img { transform: scale(1.025); }
+.pictor-open-label { display: flex; gap: 6px; align-items: center; position: absolute; inset: 0; margin: auto; inline-size: max-content; block-size: max-content; padding: 9px 15px; border-radius: 24px; background: #203d35; color: #fff; font-size: 11px; opacity: 0; transform: translateY(5px); transition: opacity 150ms ease, transform 150ms ease; }
+.pictor-file-preview:hover .pictor-open-label, .pictor-file-preview:focus-visible .pictor-open-label { opacity: 1; transform: translateY(0); }
+.pictor-file-meta { display: flex; gap: 8px; align-items: center; padding: 12px 12px 4px; }
+.pictor-file-meta > a { display: flex; flex-direction: column; gap: 5px; text-decoration: none; min-inline-size: 0; flex: 1; }
+.pictor-file-meta strong { font-size: 12px; }
+.pictor-file-meta span { font-size: 10px; color: var(--md-sys-color-on-surface-variant); }
+.pictor-file-footer { display: flex; align-items: center; justify-content: space-between; padding: 0 16px 12px; }
+.pictor-file-footer > span { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--md-sys-color-on-surface-variant); }
+.pictor-file-footer > span .material-symbols-outlined { font-size: 16px; }
+.pictor-file-grid[data-view='list'] { grid-template-columns: 1fr; gap: 8px; }
+.pictor-file-grid[data-view='list'] .pictor-file-card { display: grid; grid-template-columns: 100px 1fr 180px; align-items: center; }
+.pictor-file-grid[data-view='list'] .pictor-file-preview { block-size: 72px; aspect-ratio: auto; border: 0; }
+.pictor-file-grid[data-view='list'] .pictor-file-footer { padding: 8px 16px; }
+.pictor-empty { padding: 40px 24px; border: 1px dashed var(--md-sys-color-outline-variant); border-radius: 18px; text-align: center; }
+.pictor-empty > .material-symbols-outlined { font-size: 34px; color: var(--md-sys-color-primary); }
+.pictor-empty h3 { font-size: 16px; margin: 12px 0 5px; }
+.pictor-empty p { color: var(--md-sys-color-on-surface-variant); font-size: 12px; }
+.pictor-template-preview { display: block; max-inline-size: 100%; inline-size: 650px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; }
+.studio-dialog__content { display: flex; flex-direction: column; gap: 16px; max-inline-size: 100%; }
+.studio-dialog__content p { font-size: 13px; line-height: 1.6; color: var(--md-sys-color-on-surface-variant); }
+.studio-dialog__actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.studio-dialog { --md-dialog-max-width: 760px; }
+@media (min-width: 1500px) { .pictor-file-grid { grid-template-columns: repeat(4,minmax(0,1fr)); } }
+@media (max-width: 1000px) { .pictor-hero { padding: 30px; grid-template-columns: 1.2fr .8fr; } .pictor-hero__art > img { inline-size: 125%; } .pictor-art-label { display: none; } .pictor-project-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .pictor-file-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 700px) { .pictor-hero { padding: 25px; grid-template-columns: 1fr; } .pictor-hero__art { display: none; } .pictor-hero__facts { gap: 20px; } .pictor-template-grid { grid-template-columns: 1fr; } .pictor-template__art { aspect-ratio: 2.1; } .pictor-template__art > span:not(.pictor-template__arrow) { font-size: 32px; } .pictor-template__art > img { inline-size: 60%; } .pictor-project-grid { grid-template-columns: 1fr; } .pictor-file-grid { grid-template-columns: 1fr; } .pictor-file-grid[data-view='list'] .pictor-file-card { grid-template-columns: 72px 1fr; } .pictor-file-grid[data-view='list'] .pictor-file-footer { display: none; } .pictor-filterbar { align-items: stretch; } .pictor-filterbar > * { inline-size: 100%; } }
+@media (prefers-reduced-motion: reduce) { .pictor-template__art, .pictor-project-card, .pictor-file-preview > img, .pictor-open-label { transition: none; } }
+
+/* Pictor studio: the document stays central, its controls stay within reach. */
+.studio-editor { position: relative; grid-template-columns: 288px minmax(260px, 1fr) 300px; grid-template-rows: auto minmax(0, 1fr) 34px; block-size: max(600px, calc(100dvh - 215px)); max-block-size: 1000px; border-radius: 20px; box-shadow: 0 12px 40px rgb(25 53 42 / 5%); }
+.studio-editor[data-left='closed'] { grid-template-columns: minmax(260px, 1fr) 300px; }
+.studio-editor[data-right='closed'] { grid-template-columns: 288px minmax(260px, 1fr); }
+.studio-editor[data-left='closed'][data-right='closed'] { grid-template-columns: minmax(260px, 1fr); }
+.studio-editor[data-left='closed'] .editor__tree, .studio-editor[data-right='closed'] .editor__inspector { display: none; }
+.studio-editor .editor__tree, .studio-editor .editor__inspector { display: block; min-block-size: 0; overscroll-behavior: contain; }
+.studio-editor .editor__canvas { padding: 0; display: block; overflow: hidden; min-block-size: 0; }
+.studio-toolbar { display: flex; flex-wrap: wrap; padding: 6px 10px; border-radius: 0; background: var(--md-sys-color-surface); min-block-size: 56px; gap: 3px; }
+.studio-toolbar { inline-size: 100%; margin: 0; --md-toolbar-flex-wrap: wrap; --md-toolbar-container-shape: 0px; --md-toolbar-container-color: var(--md-sys-color-surface); }
+.studio-toolbar::part(container) { inline-size: 100%; block-size: auto; min-block-size: 44px; flex: 1; flex-wrap: wrap; padding: 0; border-radius: 0; box-shadow: none; }
+.studio-toolbar md-icon-button { flex: none; --md-icon-button-container-width: 40px; --md-icon-button-container-height: 40px; --md-icon-button-icon-size: 22px; }
+.studio-toolbar .toolbar__group { gap: 3px; }
+.studio-toolbar .toolbar__group + .toolbar__group { margin-inline-start: 2px; padding-inline-start: 4px; }
+.studio-zoom { display: flex; gap: 7px; justify-content: center; align-items: center; min-inline-size: 60px; block-size: 34px; border: 0; border-radius: 8px; background: transparent; color: var(--md-sys-color-on-surface); cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 500; }
+.studio-zoom:hover { background: var(--md-sys-color-surface-container-high); }
+.studio-zoom span { color: var(--md-sys-color-on-surface-variant); }
+.studio-left-panel { padding: 16px 0 0; }
+.studio-left-panel > .studio-segments { margin: 0 10px 16px; }
+.studio-left-panel .studio-segments { display: flex; }
+.studio-left-panel .studio-segments md-segmented-button { flex: 1; }
+.studio-panel-head, .studio-panel-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.studio-panel-head { font-size: 13px; }
+.studio-panel-head > span { font-size: 11px; color: var(--md-sys-color-on-surface-variant); }
+.studio-panel-heading { padding: 0 20px; gap: 14px; }
+.studio-panel-heading h3 { margin: 0; font-size: 15px; font-weight: 650; }
+.studio-panel-heading h3 span { margin-inline-start: 5px; font-size: 11px; color: var(--md-sys-color-on-surface-variant); }
+.studio-panel-heading p { margin: 8px 0 0; color: var(--md-sys-color-on-surface-variant); font-size: 11px; line-height: 1.5; }
+.studio-layers > md-text-field { display: block; margin: 14px 10px 8px; }
+.studio-layers .tree__row { grid-template-columns: 16px 18px minmax(0, 1fr) 26px 26px; gap: 4px; min-block-size: 38px; padding-inline: 7px; padding-inline-start: calc(6px + var(--tree-indent, 0) * 10px); font-size: 11px; border-radius: 6px; }
+.studio-layers .tree__icon { font-size: 17px; }
+.studio-layers .tree { padding: 0 5px; }
+.studio-layers .tree__toggle { opacity: .38; }
+.studio-layers .tree__row:hover .tree__toggle, .studio-layers .tree__row:focus-within .tree__toggle { opacity: 1; }
+.tree__expand { display: grid; place-items: center; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; }
+.tree__expand .material-symbols-outlined { font-size: 17px; }
+.studio-panel-footnote { margin: 20px 14px; font-size: 10px; color: var(--md-sys-color-on-surface-variant); line-height: 1.6; }
+.studio-statusbar { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--md-sys-color-surface); padding: 0 14px; font-size: 10px; color: var(--md-sys-color-on-surface-variant); }
+.studio-statusbar > span:first-child { display: flex; align-items: center; gap: 7px; }
+.studio-statusbar__separator { margin: 0 7px; opacity: .5; }
+.studio-statusbar button { display: flex; align-items: center; gap: 5px; background: none; border: 0; color: inherit; font: inherit; cursor: pointer; }
+.studio-statusbar .material-symbols-outlined { font-size: 15px; }
+.studio-save-status { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--md-sys-color-on-surface-variant); }
+.studio-save-status .material-symbols-outlined { font-size: 18px; color: var(--md-sys-color-primary); }
+.pictor-canvas { display: flex; flex-direction: column; block-size: 100%; min-inline-size: 0; background: var(--md-sys-color-surface-container-low); background-image: radial-gradient(var(--md-sys-color-outline-variant) .7px, transparent .7px); background-size: 12px 12px; }
+.pictor-canvas__label, .pictor-canvas__foot { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--md-sys-color-on-surface-variant); padding: 16px 20px; font-size: 10px; }
+.pictor-canvas__label > span:first-child { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: 650; letter-spacing: 1.3px; }
+.pictor-canvas__foot { padding: 12px 18px; font-size: 9px; line-height: 1.5; }
+.pictor-canvas__foot > span:last-child { white-space: nowrap; }
+.pictor-canvas .canvas-scroll { display: flex; align-items: safe center; justify-content: safe center; flex: 1; min-block-size: 0; padding: 25px 32px 34px; touch-action: none; overscroll-behavior: contain; }
+.pictor-canvas .canvas-frame { display: grid; grid-template-columns: auto; grid-template-rows: 20px auto; flex: none; }
+.pictor-canvas .ruler--x { grid-area: 1 / 1; grid-template-columns: repeat(12, 1fr); block-size: 20px; font-size: 8px; }
+.pictor-canvas .ruler--x span { border-inline-start: 1px solid var(--md-sys-color-outline-variant); padding-inline-start: 4px; }
+.pictor-canvas .artboard { grid-area: 2 / 1; inline-size: max-content; block-size: max-content; box-shadow: 0 3px 5px rgb(0 0 0 / 7%), 0 24px 60px rgb(21 41 32 / 12%); isolation: isolate; }
+.pictor-canvas .artboard[data-zoom='75'] { --cell: 10.5px; }
+.pictor-canvas .artboard[data-tool='hand'] { cursor: grab; }
+.pictor-canvas .artboard:not([data-tool='select'], [data-tool='hand']) { cursor: crosshair; }
+.pictor-canvas .layer { display: block; padding: 0; overflow: hidden; user-select: none; }
+.pictor-canvas .layer[data-kind='group'] { overflow: visible; pointer-events: none; }
+.pictor-canvas .layer[data-selected] { z-index: auto; outline: none; }
+.pictor-canvas .layer[data-selected]::after { content: none; }
+.pictor-canvas .layer[data-kind='component'], .pictor-canvas .layer[data-kind='instance'] { outline: none; }
+.pictor-canvas .layer[data-kind='frame'] { outline: 1px dashed var(--md-sys-color-primary); outline-offset: -1px; }
+.pictor-canvas .layer__paint { display: block; inline-size: 100%; block-size: 100%; pointer-events: none; }
+.layer__image, .layer__image > span, .layer__image span > span { display: block; inline-size: 100%; block-size: 100%; }
+.layer__image { pointer-events: none; }
+.layer__live { display: flex; justify-content: center; align-items: center; inline-size: 100%; block-size: 100%; padding: 6px; box-sizing: border-box; pointer-events: none; }
+.layer__live[data-live] { pointer-events: auto; }
+.layer__live md-button, .layer__live md-text-field { max-inline-size: 100%; }
+.layer__live md-card { inline-size: 100%; block-size: 100%; display: flex; flex-direction: column; gap: 8px; padding: 18px; box-sizing: border-box; }
+.live-card__eyebrow { font-size: 8px; letter-spacing: 1.5px; }
+.layer__live md-card strong { font-size: 19px; font-weight: 650; }
+.layer__live md-card p { font-size: 11px; line-height: 1.5; margin: 0; }
+.layer__live md-card md-button { margin-block-start: auto; }
+.live-switch { display: flex; align-items: center; gap: 12px; padding: 8px; color: var(--md-sys-color-on-surface); font-size: 12px; }
+.selection-box { position: relative; border: 1.5px solid #5477e6; pointer-events: none; z-index: 100; min-inline-size: 0; min-block-size: 0; }
+.selection-box__size { position: absolute; inset-block-end: -22px; inset-inline-start: 50%; transform: translateX(-50%); background: #5477e6; color: #fff; white-space: nowrap; padding: 3px 6px; border-radius: 4px; font-size: 8px; font-variant-numeric: tabular-nums; }
+.resize-handle { position: absolute; inline-size: 9px; block-size: 9px; padding: 0; border: 1.5px solid #5477e6; background: #fff; border-radius: 2px; pointer-events: auto; touch-action: none; }
+.resize-handle[data-corner='nw'] { inset-block-start: -5px; inset-inline-start: -5px; cursor: nwse-resize; }
+.resize-handle[data-corner='ne'] { inset-block-start: -5px; inset-inline-end: -5px; cursor: nesw-resize; }
+.resize-handle[data-corner='sw'] { inset-block-end: -5px; inset-inline-start: -5px; cursor: nesw-resize; }
+.resize-handle[data-corner='se'] { inset-block-end: -5px; inset-inline-end: -5px; cursor: nwse-resize; }
+.layer--drawing { opacity: .75; pointer-events: none; z-index: 90; }
+.pictor-canvas .marquee { z-index: 99; }
+.studio-inspector { padding: 20px; gap: 24px; }
+.studio-inspector .inspector__section { gap: 12px; padding-block-start: 16px; border-block-start: 1px solid var(--md-sys-color-outline-variant); }
+.studio-inspector .inspector__title { display: flex; align-items: center; justify-content: space-between; margin: 0; font-size: 11px; font-weight: 650; color: var(--md-sys-color-on-surface); }
+.studio-inspector .inspector__title span { font-size: 9px; color: var(--md-sys-color-on-surface-variant); }
+.studio-inspector .inspector__grid { gap: 8px; }
+.studio-inspector md-number-field, .studio-inspector md-text-field, .studio-inspector md-select { min-inline-size: 0; inline-size: 100%; }
+.studio-tip, .studio-description { margin: 0; color: var(--md-sys-color-on-surface-variant); font-size: 10px; line-height: 1.65; }
+.studio-inspector-empty { display: flex; align-items: stretch; flex-direction: column; gap: 16px; padding-block-start: 28px; }
+.studio-inspector-empty > .material-symbols-outlined { display: grid; place-items: center; inline-size: 64px; block-size: 64px; background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); border-radius: 24px; margin: 0 auto; font-size: 30px; }
+.studio-inspector-empty h3 { margin: 0; font-family: Georgia, serif; font-size: 23px; line-height: 1.25; font-weight: 400; text-align: center; }
+.studio-inspector-empty > p { margin: 0; text-align: center; color: var(--md-sys-color-on-surface-variant); font-size: 11px; line-height: 1.7; }
+.studio-canvas-spec { display: grid; grid-template-columns: 1fr auto; gap: 12px; padding: 16px 0; font-size: 10px; border-block: 1px solid var(--md-sys-color-outline-variant); margin-block: 8px; }
+.studio-canvas-spec > span { color: var(--md-sys-color-on-surface-variant); }
+.studio-canvas-spec > code { max-inline-size: 130px; overflow-wrap: anywhere; text-align: end; }
+.studio-color-row { display: flex; align-items: center; gap: 8px; }
+.studio-color-row md-color-picker { flex: none; }
+.studio-color-row md-text-field { flex: 1; }
+.studio-swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.studio-swatches button { display: block; inline-size: 26px; block-size: 26px; padding: 0; border: 1px solid var(--md-sys-color-outline-variant); background: none; border-radius: 8px; cursor: pointer; }
+.studio-swatches button[aria-pressed='true'] { outline: 2px solid var(--md-sys-color-primary); outline-offset: 2px; }
+.studio-swatches svg { inline-size: 100%; block-size: 100%; }
+.studio-range { display: grid; gap: 4px; }
+.studio-range > div { display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: var(--md-sys-color-on-surface-variant); }
+.studio-range > div strong { font-weight: 500; color: var(--md-sys-color-on-surface); }
+.studio-range md-slider { inline-size: 100%; }
+.studio-toggle { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 11px; }
+.studio-arrange { display: flex; justify-content: space-between; gap: 0; }
+.studio-arrange md-icon-button { --md-icon-button-size: 32px; }
+.studio-code { white-space: pre-wrap; word-break: break-word; background: var(--md-sys-color-surface-container); border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; padding: 14px; font-size: 10px; line-height: 1.7; margin: 0; color: var(--md-sys-color-on-surface); }
+.studio-history { padding: 0 20px 24px; gap: 8px; }
+.studio-history > .studio-tip { margin: 10px 0 14px; }
+.studio-history .history__row { inline-size: 100%; border: 0; background: transparent; color: var(--md-sys-color-on-surface); cursor: pointer; text-align: start; padding: 12px 9px; gap: 9px; }
+.studio-history .history__row:hover { background: var(--md-sys-color-surface-container-high); }
+.studio-history .history__row[data-current] { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+.studio-history .history__row > .material-symbols-outlined { font-size: 18px; flex: none; }
+.studio-history .history__row > span:nth-child(2) { display: grid; min-inline-size: 0; gap: 4px; flex: 1; }
+.studio-history .history__row strong { font-size: 12px; font-weight: 550; }
+.studio-history .history__row small { font-size: 11px; opacity: .65; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.studio-history__current { font-size: 8px; border: 1px solid currentcolor; border-radius: 4px; padding: 2px 3px; }
+.studio-history__number { opacity: .5; font-size: 9px; }
+.studio-history-empty { padding: 30px 15px; text-align: center; color: var(--md-sys-color-on-surface-variant); font-size: 11px; line-height: 1.7; }
+.studio-history-empty .material-symbols-outlined { font-size: 36px; opacity: .45; }
+.studio-insert { padding: 0 12px 16px; display: flex; flex-direction: column; gap: 14px; }
+.studio-insert .studio-panel-heading { padding: 0; }
+.studio-insert .studio-panel-heading > .material-symbols-outlined { color: var(--md-sys-color-primary); font-size: 23px; }
+.studio-callout { display: flex; align-items: flex-start; gap: 8px; background: var(--md-sys-color-secondary-container); border-radius: 12px; padding: 12px; color: var(--md-sys-color-on-secondary-container); }
+.studio-callout .material-symbols-outlined { font-size: 18px; flex: none; }
+.studio-callout p { margin: 0; font-size: 10px; line-height: 1.65; }
+.studio-insert-grid { display: grid; gap: 8px; }
+.studio-insert-item { position: relative; display: grid; grid-template-columns: 32px 1fr; column-gap: 10px; row-gap: 5px; padding: 14px 12px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; background: var(--md-sys-color-surface); color: var(--md-sys-color-on-surface); font: inherit; text-align: start; cursor: pointer; }
+.studio-insert-item:hover { background: var(--md-sys-color-surface-container-low); border-color: var(--md-sys-color-primary); }
+.studio-insert-item__icon { grid-row: 1 / 3; align-self: center; color: var(--md-sys-color-primary); font-size: 26px; }
+.studio-insert-item strong { font-size: 11px; font-weight: 600; }
+.studio-insert-item > span:not([class]) { font-size: 9px; color: var(--md-sys-color-on-surface-variant); line-height: 1.6; }
+.studio-insert-item__plus { position: absolute; inset-inline-end: 8px; inset-block-start: 10px; font-size: 14px; color: var(--md-sys-color-on-surface-variant); }
+.studio-art-grid, .studio-color-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.studio-art-grid button, .studio-color-grid button { display: grid; gap: 8px; padding: 7px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 10px; background: var(--md-sys-color-surface-container-low); cursor: pointer; font: inherit; color: var(--md-sys-color-on-surface); text-align: start; }
+.studio-art-grid button:hover, .studio-color-grid button:hover { border-color: var(--md-sys-color-primary); }
+.studio-art-grid img, .studio-color-grid svg { display: block; inline-size: 100%; aspect-ratio: 1; object-fit: contain; border-radius: 6px; }
+.studio-art-grid button > span, .studio-color-grid button > span { font-size: 9px; line-height: 1.4; }
+.studio-label { margin: 8px 0 0; font-size: 9px; letter-spacing: 1.4px; color: var(--md-sys-color-on-surface-variant); }
+.studio-export { display: grid; gap: 24px; }
+.studio-export__preview { background: var(--md-sys-color-surface-container); border-radius: 14px; padding: 16px; }
+.studio-export__preview img { display: block; inline-size: 100%; max-block-size: 320px; object-fit: contain; box-shadow: 0 8px 24px rgb(0 0 0 / 12%); }
+.studio-export__settings { display: grid; gap: 16px; }
+.studio-export__message { color: var(--md-sys-color-primary); font-size: 12px; min-block-size: 18px; }
+.studio-presentation { display: flex; flex-direction: column; gap: 20px; align-items: stretch; inline-size: 100%; }
+.studio-presentation__intro { text-align: center; }
+.studio-presentation__intro p { color: var(--md-sys-color-on-surface-variant); font-size: 12px; }
+.studio-presentation .pictor-canvas { min-block-size: 540px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 18px; overflow: hidden; }
+.studio-presentation .pictor-canvas .canvas-scroll { padding: 20px 24px 36px; }
+.studio-presentation .ruler { visibility: hidden; }
+.studio-dialog[fullscreen] .studio-dialog__content { inline-size: min(1100px, 90vw); max-inline-size: none; margin: auto; }
+.studio-dialog[fullscreen]::part(container) { max-inline-size: none; }
+@media (max-width: 1200px) {
+  .studio-editor { grid-template-columns: 280px minmax(220px, 1fr) 290px; }
+  .studio-editor[data-left='closed'] { grid-template-columns: minmax(220px, 1fr) 290px; }
+  .studio-editor[data-right='closed'] { grid-template-columns: 280px minmax(220px, 1fr); }
+  .studio-layers .tree__row { grid-template-columns: 13px 16px minmax(0, 1fr) 24px 24px; }
+  .studio-toolbar { gap: 2px; }
+  .studio-toolbar .toolbar__spacer { display: none; }
+  .studio-toolbar .toolbar__view { margin-inline-start: auto; }
+}
+@media (max-width: 980px) {
+  .studio-editor, .studio-editor[data-right='closed'] { grid-template-columns: 280px minmax(240px, 1fr); }
+  .studio-editor[data-left='closed'], .studio-editor[data-left='closed'][data-right='closed'] { grid-template-columns: minmax(240px, 1fr); }
+  .studio-editor .editor__inspector { position: absolute; z-index: 120; inset-inline-end: 0; inset-block: 106px 34px; inline-size: min(320px, calc(100% - 20px)); border-inline-start: 1px solid var(--md-sys-color-outline-variant); box-shadow: -10px 0 28px rgb(0 0 0 / 8%); }
+  .studio-editor[data-right='closed'] .editor__inspector { display: none; }
+  .studio-save-status { font-size: 10px; }
+}
+@media (max-width: 700px) {
+  .studio-editor, .studio-editor[data-left='closed'], .studio-editor[data-right='closed'] { grid-template-columns: minmax(0, 1fr); block-size: 700px; max-block-size: none; border-radius: 14px; }
+  .studio-editor .editor__tree { position: absolute; z-index: 120; inset-inline-start: 0; inset-block: 156px 34px; inline-size: min(320px, calc(100% - 20px)); border-inline-end: 1px solid var(--md-sys-color-outline-variant); box-shadow: 10px 0 28px rgb(0 0 0 / 8%); }
+  .studio-editor .editor__inspector { inset-block-start: 156px; }
+  .studio-toolbar { justify-content: center; padding: 8px 4px; }
+  .studio-toolbar .toolbar__view { margin-inline-start: 0; }
+  .studio-statusbar > span:nth-child(2) { display: none; }
+  .pictor-canvas__label { padding-inline: 12px; font-size: 8px; }
+  .pictor-canvas__foot > span:last-child { display: none; }
+  .studio-save-status { display: none; }
+  .studio-presentation .artboard[data-zoom='100'] { --cell: 7px; }
+  .studio-presentation .pictor-canvas { min-block-size: 330px; }
+  .studio-dialog[fullscreen] .studio-dialog__content { inline-size: 100%; }
+}
+.pictor-live-library { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.pictor-live-library > md-card { display: flex; flex-direction: column; gap: 13px; padding: 24px; border-radius: 20px; }
+.pictor-live-library > md-card > .material-symbols-outlined { color: var(--md-sys-color-primary); font-size: 30px; }
+.pictor-live-library h3 { margin: 0; font-size: 16px; font-weight: 600; }
+.pictor-live-library p { margin: 0 0 5px; font-size: 12px; line-height: 1.7; color: var(--md-sys-color-on-surface-variant); }
+.pictor-live-library md-button { margin-block-start: auto; align-self: flex-start; }
+.pictor-library-filters { display: flex; gap: 14px; margin-block-end: 24px; }
+.pictor-library-filters > md-text-field { flex: 1; }
+.pictor-library-filters > md-select { inline-size: 220px; }
+.pictor-library-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+.pictor-library-card { padding: 0 !important; overflow: hidden; border-radius: 18px; }
+.pictor-library-preview { display: block; aspect-ratio: 3 / 2; background: var(--md-sys-color-surface-container); overflow: hidden; }
+.pictor-library-preview > img, .pictor-library-preview > svg { display: block; inline-size: 100%; block-size: 100%; object-fit: cover; transition: transform 240ms ease; }
+.pictor-library-preview:hover > img { transform: scale(1.03); }
+.pictor-library-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 15px 14px; }
+.pictor-library-meta > div { display: grid; gap: 6px; min-inline-size: 0; }
+.pictor-library-meta strong { display: block; font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pictor-library-meta a { color: inherit; text-decoration: none; }
+.pictor-library-meta span { font-size: 10px; color: var(--md-sys-color-on-surface-variant); }
+.pictor-library-more { text-align: center; margin-block-start: 28px; }
+.pictor-asset-detail { display: grid; grid-template-columns: 1.4fr 1fr; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 24px; overflow: hidden; }
+.pictor-asset-detail__art { display: grid; place-items: center; background: var(--md-sys-color-surface-container); padding: 40px; }
+.pictor-asset-detail__art img, .pictor-asset-detail__art svg { display: block; inline-size: 100%; max-block-size: 400px; object-fit: contain; border-radius: 12px; }
+.pictor-asset-detail__copy { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; padding: 36px; }
+.pictor-asset-detail__copy h2 { font-family: Georgia, serif; font-size: 36px; font-weight: 400; margin: 0; }
+.pictor-asset-detail__copy p { font-size: 13px; line-height: 1.8; color: var(--md-sys-color-on-surface-variant); margin: 0; }
+.pictor-project-banner { display: flex; align-items: center; justify-content: space-between; gap: 30px; border-radius: 24px; background: #e8eddf; padding: 28px 48px; color: #203d35; overflow: hidden; }
+.pictor-project-banner > div { max-inline-size: 600px; }
+.pictor-project-banner h2 { font: 400 clamp(30px, 4vw, 48px)/1.1 Georgia, serif; margin: 18px 0; }
+.pictor-project-banner p { font-size: 13px; line-height: 1.8; margin: 0 0 18px; }
+.pictor-project-banner > div > span:last-child { font-size: 11px; }
+.pictor-project-banner > img { inline-size: 240px; block-size: 220px; object-fit: contain; flex: none; }
+@media (max-width: 1000px) { .pictor-live-library, .pictor-library-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pictor-asset-detail { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .pictor-live-library { grid-template-columns: 1fr; } .pictor-library-grid { gap: 12px; } .pictor-library-filters { flex-direction: column; } .pictor-library-filters > md-select { inline-size: 100%; } .pictor-project-banner { padding: 28px; } .pictor-project-banner > img { display: none; } .pictor-asset-detail__copy { padding: 28px; } }
+
+.pictor-canvas .artboard[data-grid]::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 90; background-image: linear-gradient(to right, rgb(84 119 230 / 12%) 1px, transparent 1px), linear-gradient(to bottom, rgb(84 119 230 / 12%) 1px, transparent 1px); background-size: var(--cell) var(--cell); }
+.pictor-canvas .artboard:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 5px; }
+
+/* Compact panels follow the actual toolbar row, including wrapped controls. */
+@media (max-width: 980px) {
+  .studio-editor .editor__inspector { grid-row: 2 / 3; grid-column: 1 / -1; inset-block: 0; }
+}
+@media (max-width: 700px) {
+  .studio-editor .editor__tree { grid-row: 2 / 3; grid-column: 1 / -1; inset-block: 0; }
+  .pictor-canvas .canvas-scroll { padding-inline: 12px; }
+  .studio-dialog__actions { flex-wrap: wrap; }
+}
+@media (max-width: 420px) {
+  .studio-presentation .pictor-canvas .canvas-scroll { padding-inline: 0; }
+}
+
+/* Comfortable navigation and clear instructions in the editing workspace. */
+.studio-panel-tabs { display: block; inline-size: 100%; min-inline-size: 0; }
+.studio-panel-tabs md-tab { padding-inline: 10px; font-size: 13px; }
+.studio-left-panel > .studio-panel-tabs { inline-size: calc(100% - 32px); margin: 0 16px 24px; }
+.studio-tool-hint { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 16px; padding: 12px 20px; background: var(--md-sys-color-surface-container-low); border-block-start: 1px solid var(--md-sys-color-outline-variant); font-size: 12px; line-height: 1.6; }
+.studio-tool-hint strong { color: var(--md-sys-color-primary); font-weight: 600; }
+.studio-tool-hint span { color: var(--md-sys-color-on-surface-variant); }
+.studio-panel-head { font-size: 15px; gap: 16px; }
+.studio-panel-head > span { white-space: nowrap; font-size: 12px; }
+.studio-history > .studio-tip { margin: 10px 0 18px; font-size: 12px; }
+.studio-left-panel .studio-insert { padding-inline: 20px; }
+.studio-left-panel .studio-layers > md-text-field { inline-size: calc(100% - 32px); min-inline-size: 0; margin: 18px 16px 12px; }
+.studio-layers .tree__row { min-block-size: 44px; font-size: 12px; }
+@media (max-width: 700px) {
+  .studio-tool-hint { padding: 12px 16px; font-size: 11px; }
+}

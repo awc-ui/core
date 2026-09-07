@@ -1,0 +1,227 @@
+<pictor-screen
+  [title]="studio.t('Your creative workspace')"
+  [subtitle]="studio.t('A little structure. Infinite possibility.')"
+  ><md-button
+    aside
+    variant="tonal"
+    icon="arrow_outward"
+    (click)="studio.go(route.editor())"
+    >{{ studio.t('Resume designing') }}</md-button
+  >
+  <section
+    class="pictor-hero"
+    [attr.aria-label]="studio.t('Welcome to Pictor')"
+  >
+    <div class="pictor-hero__copy">
+      <span class="pictor-eyebrow"
+        ><span class="pictor-live-dot"></span> {{ studio.t('MADE FOR YOUR NEXT
+        BIG IDEA') }}</span
+      >
+      <h2>
+        {{ studio.t('Big ideas.') }}<br /><em
+          >{{ studio.t('Beautifully made.') }}</em
+        >
+      </h2>
+      <p>
+        {{ studio.t('From the first spark to the final pixel. Draw, compose,
+        refine and export in one beautifully connected studio.') }}
+      </p>
+      <div class="pictor-hero__actions">
+        <md-button
+          variant="filled"
+          icon="draw"
+          (click)="studio.go(route.editor())"
+          >{{ studio.t('Enter the studio') }}</md-button
+        ><md-button
+          variant="text"
+          icon="auto_awesome"
+          (click)="scrollTemplates()"
+          >{{ studio.t('Start with a spark') }}</md-button
+        >
+      </div>
+      <div class="pictor-hero__facts">
+        <span
+          ><strong>{{totals.projects}}</strong> {{ studio.t('creative spaces')
+          }}</span
+        ><span
+          ><strong>{{totals.assets}}</strong> {{ studio.t('reusable assets')
+          }}</span
+        ><span
+          ><strong>{{ studio.t('Yours.') }}</strong> {{ studio.t('Saved on this
+          device') }}</span
+        >
+      </div>
+    </div>
+    <div class="pictor-hero__art" aria-hidden="true">
+      <div class="pictor-art-orbit"></div>
+      <img [src]="orb.src" alt="" /><span
+        class="pictor-art-label pictor-art-label--top"
+        ><span class="material-symbols-outlined" aria-hidden="true"
+          >deployed_code</span
+        >
+        {{ studio.t('Shape the unexpected') }}</span
+      ><span class="pictor-art-label pictor-art-label--bottom"
+        ><span class="pictor-live-dot"></span> {{ studio.t('Boundless by
+        design') }}</span
+      >
+    </div>
+  </section>
+  <section id="pictor-templates" class="pictor-section">
+    <div class="pictor-section__head">
+      <div>
+        <span class="pictor-eyebrow"
+          >{{ studio.t('SKIP THE BLANK CANVAS') }}</span
+        >
+        <h2>{{ studio.t('A starting point. A world of possibilities.') }}</h2>
+      </div>
+      <span class="pictor-muted"
+        >{{ studio.t('Every layer is yours to change') }}</span
+      >
+    </div>
+    <div class="pictor-template-grid">
+      @for(item of templates;track item.id){<button
+        class="pictor-template"
+        [attr.data-template]="item.id"
+        (click)="template=item.id"
+      >
+        <div class="pictor-template__art" [attr.data-tone]="item.tone">
+          <img [src]="item.art.src" alt="" /><span
+            >{{studio.t(item.tagline)}}</span
+          ><span class="pictor-template__arrow"
+            ><span class="material-symbols-outlined" aria-hidden="true"
+              >arrow_outward</span
+            ></span
+          >
+        </div>
+        <div class="pictor-template__meta">
+          <strong>{{studio.t(item.name)}}</strong
+          ><span>{{studio.t(item.category)}} · 960 × 640</span>
+        </div></button
+      >}
+    </div>
+  </section>
+  <section class="pictor-section">
+    <div class="pictor-section__head">
+      <div>
+        <span class="pictor-eyebrow">{{ studio.t('ROOM TO CREATE') }}</span>
+        <h2>{{ studio.t('Your projects') }}</h2>
+      </div>
+      <span class="pictor-muted"
+        >{{ studio.t('{count} spaces, one creative flow', {count:
+        studio.t.formatNumber(projects.length)}) }}</span
+      >
+    </div>
+    <div class="pictor-project-grid">
+      @for(project of projects;track project.id;let i=$index){<a
+        [routerLink]="route.project(projectSlug(project))"
+        class="pictor-project-card"
+        ><div
+          class="pictor-project-mark"
+          [attr.data-tone]="templates[i%3].tone"
+        >
+          <span class="material-symbols-outlined" aria-hidden="true"
+            >{{projectIcons[i%6]}}</span
+          >
+        </div>
+        <div>
+          <strong>{{project.name}}</strong
+          ><span
+            >{{ studio.t('{count} design files', {count:
+            studio.t.formatNumber(project.fileIds.length)}) }}</span
+          >
+        </div>
+        <span class="material-symbols-outlined" aria-hidden="true"
+          >arrow_forward</span
+        ></a
+      >}
+    </div>
+  </section>
+  <section class="pictor-section">
+    <div class="pictor-section__head">
+      <h2>{{ studio.t('Pick up where inspiration left you') }}</h2>
+      <pictor-tabs
+        [label]="studio.t('File layout')"
+        [value]="view"
+        [options]="layoutOptions"
+        (changed)="view=$event"
+      />
+    </div>
+    <div class="pictor-filterbar">
+      <md-button-group
+        class="pictor-file-filters"
+        variant="standard"
+        size="sm"
+        selection-mode="single-select"
+        [required]="true"
+        [attr.aria-label]="studio.t('Filter design files')"
+        (mdSelectionChange)="filter=$any($event).detail.values[0] ?? 'all'"
+      >
+        @for(option of filterOptions; track option.value) {
+        <md-button
+          variant="tonal"
+          [value]="option.value"
+          [selected]="filter===option.value"
+          [icon]="option.icon"
+          >{{studio.t(option.label)}}</md-button
+        >
+        } </md-button-group
+      ><pictor-text
+        [live]="true"
+        [label]="studio.t('Search files')"
+        [placeholder]="studio.t('Find your next idea…')"
+        [value]="query"
+        (changed)="query=$event"
+      /><pictor-select
+        [label]="studio.t('Sort by')"
+        [value]="sort"
+        [options]="sortOptions"
+        (changed)="sort=$event"
+      />
+    </div>
+    @if(files.length){
+    <div class="pictor-file-grid" [attr.data-view]="view">
+      @for(file of files;track file.id){<pictor-file-card [file]="file"
+        ><md-icon-button
+          [icon]="favorites.includes(file.id)?'star':'star_outline'"
+          [attr.aria-label]="studio.t(favorites.includes(file.id)?'Unstar {name}':'Star {name}',{name:file.name})"
+          (click)="favorite(file.id)" /></pictor-file-card
+      >}
+    </div>
+    }@else{
+    <div class="pictor-empty">
+      <span class="material-symbols-outlined" aria-hidden="true"
+        >search_off</span
+      >
+      <h3>{{ studio.t('No files in this view') }}</h3>
+      <p>
+        {{ studio.t('Try another search or star a design to collect it here.')
+        }}
+      </p>
+      <md-button variant="text" (click)="reset()"
+        >{{ studio.t('Show all files') }}</md-button
+      >
+    </div>
+    }
+  </section>
+  @if(selectedTemplate;as selected){<pictor-dialog
+    [title]="selected.name"
+    (closed)="template=null"
+    ><img
+      class="pictor-template-preview"
+      [src]="studio.svg(selected.layers)"
+      [alt]="studio.t('{name} editable design', {name:selected.name})"
+    />
+    <p>
+      {{ studio.t('This replaces your current canvas with {count} editable
+      layers. You can undo the replacement from the studio history.', {count:
+      studio.t.formatNumber(selected.layers.length)}) }}
+    </p>
+    <div actions>
+      <md-button variant="text" (click)="template=null"
+        >{{ studio.t('Keep exploring') }}</md-button
+      ><md-button variant="filled" icon="auto_awesome" (click)="applyTemplate()"
+        >{{ studio.t('Make it yours') }}</md-button
+      >
+    </div></pictor-dialog
+  >}
+</pictor-screen>

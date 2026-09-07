@@ -2168,6 +2168,291 @@ export const ro: Dictionary = {
   'music.clip.label.12': 'Armonie',
   'music.clip.label.13': 'Inversat',
   'music.clip.label.14': 'Coadă',
+
+/* ----------------------------------------------------------------- design */
+/*
+ * Pictor — the design and image editing vertical.
+ *
+ * The pooled blocks at the end (project descriptions, component descriptions,
+ * the strings text layers render) are indexed by the fixture generator, so
+ * their COUNTS are part of the contract: `scripts/generate-design-fixture.mjs`
+ * holds the same numbers and `scripts/verify.mjs` fails if a key it emits is
+ * missing from any locale.
+ */
+  /* the product ----------------------------------------------------------- */
+  'design.app.demo': 'Demo',
+  'design.app.brand': 'Pictor',
+  'design.app.title': 'Design și imagine',
+  'design.app.viewer': 'Autentificat ca {name}',
+  'design.app.disclaimer': 'Proiecte, fișiere și resurse fictive. Nu este reprezentat niciun produs, brand sau persoană reală.',
+
+  /* navigation ------------------------------------------------------------ */
+  'design.nav.assets': 'Resurse',
+  'design.nav.editor': 'Editor',
+  'design.nav.profile': 'Profil',
+  'design.nav.projects': 'Proiecte',
+
+  /* what a layer is ------------------------------------------------------- */
+  'design.layerKind.rect': 'Dreptunghi',
+  'design.layerKind.text': 'Text',
+  'design.layerKind.frame': 'Cadru',
+  'design.layerKind.group': 'Grup',
+  'design.layerKind.image': 'Imagine',
+  'design.layerKind.ellipse': 'Elipsă',
+  'design.layerKind.instance': 'Instanță',
+  'design.layerKind.component': 'Componentă',
+
+  /* blend modes — the CSS values, deliberately ---------------------------- */
+  'design.blend.darken': 'Întunecare',
+  'design.blend.normal': 'Normal',
+  'design.blend.screen': 'Ecran',
+  'design.blend.lighten': 'Luminare',
+  'design.blend.overlay': 'Suprapunere',
+  'design.blend.multiply': 'Multiplicare',
+  'design.blend.difference': 'Diferență',
+
+  /* the four image adjustments -------------------------------------------- */
+  'design.adjustment.contrast': 'Contrast',
+  'design.adjustment.exposure': 'Expunere',
+  'design.adjustment.saturation': 'Saturație',
+  'design.adjustment.temperature': 'Temperatură',
+
+  /* the toolbar ----------------------------------------------------------- */
+  'design.tool.hand': 'Deplasare',
+  'design.tool.rect': 'Dreptunghi',
+  'design.tool.text': 'Text',
+  'design.tool.frame': 'Cadru',
+  'design.tool.image': 'Inserare imagine',
+  'design.tool.select': 'Selectare',
+  'design.tool.ellipse': 'Elipsă',
+
+  /* align ----------------------------------------------------------------- */
+  'design.align.top': 'Aliniere sus',
+  'design.align.left': 'Aliniere la stânga',
+  'design.align.right': 'Aliniere la dreapta',
+  'design.align.bottom': 'Aliniere jos',
+  'design.align.center-x': 'Centrare pe orizontală',
+  'design.align.center-y': 'Centrare pe verticală',
+
+  /* boolean operations ---------------------------------------------------- */
+  'design.boolean.union': 'Reuniune',
+  'design.boolean.exclude': 'Excludere',
+  'design.boolean.subtract': 'Scădere',
+  'design.boolean.intersect': 'Intersecție',
+
+  /* what an undo entry did ------------------------------------------------ */
+  'design.edit.move': 'Mutare',
+  'design.edit.align': 'Aliniere',
+  'design.edit.group': 'Grupare',
+  'design.edit.style': 'Restilizare',
+  'design.edit.create': 'Creare',
+  'design.edit.delete': 'Ștergere',
+  'design.edit.resize': 'Redimensionare',
+  'design.edit.boolean': 'Combinare',
+  'design.edit.reorder': 'Reordonare',
+  'design.edit.ungroup': 'Degrupare',
+  'design.edit.reparent': 'Mutare în',
+  'design.edit.distribute': 'Distribuire',
+
+  /* where a file is in review --------------------------------------------- */
+  'design.fileState.draft': 'Ciornă',
+  'design.fileState.approved': 'Aprobat',
+  'design.fileState.archived': 'Arhivat',
+  'design.fileState.in-review': 'În revizuire',
+
+  /* the asset library ----------------------------------------------------- */
+  'design.assetKind.color': 'Culoare',
+  'design.assetKind.image': 'Imagine',
+  'design.assetKind.component': 'Componentă',
+  'design.assetKind.text-style': 'Stil de text',
+
+  /* the project palette --------------------------------------------------- */
+  'design.swatch.p0': 'Albastru adânc',
+  'design.swatch.p1': 'Lagună',
+  'design.swatch.p2': 'Iris',
+  'design.swatch.p3': 'Teracotă',
+  'design.swatch.p4': 'Ferigă',
+  'design.swatch.p5': 'Ocru',
+  'design.swatch.p6': 'Ardezie',
+  'design.swatch.p7': 'Roz închis',
+  'design.swatch.p8': 'Cobalt',
+  'design.swatch.p9': 'Măsliniu',
+  'design.swatch.ink': 'Cerneală',
+  'design.swatch.paper': 'Hârtie',
+
+  /* actions --------------------------------------------------------------- */
+  'design.action.hide': 'Ascunde stratul',
+  'design.action.lock': 'Blochează stratul',
+  'design.action.redo': 'Refacere',
+  'design.action.show': 'Afișează stratul',
+  'design.action.undo': 'Anulare',
+  'design.action.group': 'Grupează selecția',
+  'design.action.delete': 'Șterge selecția',
+  'design.action.unlock': 'Deblochează stratul',
+  'design.action.zoomIn': 'Mărește',
+  'design.action.ungroup': 'Degrupează',
+  'design.action.zoomOut': 'Micșorează',
+  'design.action.deselect': 'Deselectează',
+  'design.action.openFile': 'Deschide în editor',
+  'design.action.duplicate': 'Duplică',
+  'design.action.openAsset': 'Deschide resursa',
+  'design.action.selectAll': 'Selectează tot',
+  'design.action.toggleGrid': 'Comută grila',
+  'design.action.distributeH': 'Distribuie pe orizontală',
+  'design.action.distributeV': 'Distribuie pe verticală',
+  'design.action.openProject': 'Deschide proiectul',
+  'design.action.bringForward': 'Adu în față',
+  'design.action.sendBackward': 'Trimite în spate',
+
+  /* screen heads ---------------------------------------------------------- */
+  'design.screen.assets.title': 'Resurse',
+  'design.screen.editor.title': 'Editor',
+  'design.screen.file.subtitle': 'Straturi, istoric și tot ce conține documentul',
+  'design.screen.profile.title': 'Profil',
+  'design.screen.asset.subtitle': 'Unde este folosită resursa',
+  'design.screen.projects.title': 'Proiecte',
+  'design.screen.assets.subtitle': 'Imagini, culori, stiluri de text și componente partajate',
+  'design.screen.editor.subtitle': 'Un document, straturile lui și tot ce poți face cu ele',
+  'design.screen.profile.subtitle': 'Munca ta în toate proiectele',
+  'design.screen.project.subtitle': 'Fișierele din acest proiect',
+  'design.screen.projects.subtitle': 'Tot ce lucrați tu și echipa ta',
+
+  /* panels ---------------------------------------------------------------- */
+  'design.panel.size': 'Dimensiune',
+  'design.panel.usage': 'Utilizare',
+  'design.panel.layers': 'Straturi',
+  'design.panel.recent': 'Fișiere recente',
+  'design.panel.shared': 'Partajate cu tine',
+  'design.panel.history': 'Istoric',
+  'design.panel.palette': 'Paletă',
+  'design.panel.position': 'Poziție',
+  'design.panel.appearance': 'Aspect',
+  'design.panel.properties': 'Proprietăți',
+  'design.panel.adjustments': 'Ajustări',
+  'design.panel.collaborators': 'Colaboratori',
+
+  /* labels and counts ----------------------------------------------------- */
+  'design.label.x': 'X',
+  'design.label.y': 'Y',
+  'design.label.fill': 'Umplere',
+  'design.label.kind': 'Tip',
+  'design.label.mask': 'Mască',
+  'design.label.name': 'Nume',
+  'design.label.zoom': 'Zoom',
+  'design.label.blend': 'Amestec',
+  'design.label.cells': '{count} celule',
+  'design.label.depth': 'Nivel {level}',
+  'design.label.files': '{count} fișiere',
+  'design.label.mixed': 'Valori diferite',
+  'design.label.width': 'L',
+  'design.label.assets': 'Resurse',
+  'design.label.edited': 'Modificat {when}',
+  'design.label.height': 'Î',
+  'design.label.layers': '{count} straturi',
+  'design.label.usedIn': 'Folosită în {count} fișiere',
+  'design.label.editors': '{count} editori',
+  'design.label.opacity': 'Opacitate',
+  'design.label.projects': 'Proiecte',
+  'design.label.selected': '{count} selectate',
+  'design.label.instances': '{count} instanțe',
+  'design.label.components': 'Componente',
+
+  /* empty states ---------------------------------------------------------- */
+  'design.empty.noUsage': 'Nefolosită în niciun fișier',
+  'design.empty.noAssets': 'Nicio resursă de acest tip',
+  'design.empty.noHistory': 'Nimic de anulat încă',
+  'design.empty.noSelection': 'Nimic selectat',
+  'design.empty.noHistoryBody': 'Mută, redimensionează sau restilizează un strat și va apărea aici.',
+  'design.empty.noSelectionBody': 'Alege un strat pe pânză sau din listă pentru a-i vedea proprietățile.',
+
+  /* hints ----------------------------------------------------------------- */
+  'design.hint.locked': 'Acest strat este blocat',
+  'design.hint.marquee': 'Trage pe pânza goală pentru a selecta mai multe straturi',
+  'design.hint.readonly': 'Nu se salvează nimic. Fiecare modificare există doar în această filă.',
+  'design.hint.snapGrid': 'Straturile se aliniază la o grilă de {cols} pe {rows}',
+  'design.hint.dragLayer': 'Trage un rând pentru a-l reordona sau imbrica',
+  'design.hint.mixedValue': 'Straturile selectate diferă; o valoare introdusă le setează pe toate',
+
+  /* alt text — every image is self-describing (convention 5) -------------- */
+  'design.alt.file.1': 'Grafică abstractă: arce suprapuse',
+  'design.alt.file.2': 'Grafică abstractă: dune în derivă',
+  'design.alt.file.3': 'Grafică abstractă: inele pe orbită',
+  'design.alt.file.4': 'Grafică abstractă: prismă divizată',
+  'design.alt.file.5': 'Grafică abstractă: floare deschizându-se',
+  'design.alt.file.6': 'Grafică abstractă: creastă stratificată',
+  'design.alt.viewer': 'Fotografia ta de profil',
+  'design.alt.asset.1': 'Copertă proiect: bandă lată în degrade',
+  'design.alt.asset.2': 'Copertă proiect: câmpuri suprapuse',
+  'design.alt.asset.3': 'Copertă proiect: orizont difuz',
+  'design.alt.asset.4': 'Copertă proiect: fațete înclinate',
+  'design.alt.layer.1': 'Grafică abstractă: arce suprapuse',
+  'design.alt.layer.2': 'Grafică abstractă: dune în derivă',
+  'design.alt.layer.3': 'Grafică abstractă: inele pe orbită',
+  'design.alt.layer.4': 'Grafică abstractă: prismă divizată',
+  'design.alt.layer.5': 'Grafică abstractă: floare deschizându-se',
+  'design.alt.layer.6': 'Grafică abstractă: creastă stratificată',
+  'design.alt.project.1': 'Copertă proiect: bandă lată în degrade',
+  'design.alt.project.2': 'Copertă proiect: câmpuri suprapuse',
+  'design.alt.project.3': 'Copertă proiect: orizont difuz',
+  'design.alt.project.4': 'Copertă proiect: fațete înclinate',
+  'design.alt.component.1': 'Grafică abstractă: arce suprapuse',
+  'design.alt.component.2': 'Grafică abstractă: dune în derivă',
+  'design.alt.component.3': 'Grafică abstractă: inele pe orbită',
+  'design.alt.component.4': 'Grafică abstractă: prismă divizată',
+  'design.alt.component.5': 'Grafică abstractă: floare deschizându-se',
+  'design.alt.component.6': 'Grafică abstractă: creastă stratificată',
+
+  /* pooled: project descriptions ------------------------------------------ */
+  'design.project.about.1': 'O reîmprospătare vizuală completă: tipografie, culoare și forma fiecărei suprafețe.',
+  'design.project.about.2': 'Ecrane pentru aplicația de telefon, de la înrolare la setări.',
+  'design.project.about.3': 'Machete editoriale ample și grila pe care o împart.',
+  'design.project.about.4': 'Pagini de campanie, reclame și tot ce are termen limită.',
+  'design.project.about.5': 'Doar explorare. Nimic de aici nu a fost agreat cu nimeni.',
+  'design.project.about.6': 'Piesele din care se inspiră toate celelalte proiecte.',
+  'design.project.about.7': 'Documentarea a ceea ce face deja sistemul.',
+  'design.project.about.8': 'Arhivat după rebranding. Păstrat ca referință.',
+
+  /* pooled: component descriptions ---------------------------------------- */
+  'design.component.about.1': 'Două mărimi și patru stări. Eticheta este singura suprascriere.',
+  'design.component.about.2': 'Grupează o etichetă, un control și linia de eroare ca o unitate.',
+  'design.component.about.3': 'O suprafață cu media, titlu și acțiuni opționale.',
+  'design.component.about.4': 'Revine la inițiale când nu există imagine.',
+  'design.component.about.5': 'Compact, selectabil și înlăturabil.',
+  'design.component.about.6': 'Între trei și cinci destinații, niciodată mai multe.',
+  'design.component.about.7': 'Mesaj pe toată lățimea, care împinge conținutul în jos în loc să îl acopere.',
+  'design.component.about.8': 'Apare la trecerea cu mouse-ul și la focalizare, niciodată doar la clic.',
+  'design.component.about.9': 'Își păstrează starea și raportează schimbările în sus.',
+  'design.component.about.10': 'Învechit. Păstrat pentru ca fișierele vechi să se deschidă.',
+
+  /* pooled: the strings text layers render -------------------------------- */
+  'design.text.1': 'Creat pentru felul în care lucrezi cu adevărat',
+  'design.text.2': 'Totul într-un singur loc',
+  'design.text.3': 'Începe aici',
+  'design.text.4': 'Realizat de o echipă mică',
+  'design.text.5': 'Prețuri simple',
+  'design.text.6': 'Fără card',
+  'design.text.7': 'Configurare în câteva minute',
+  'design.text.8': 'Adu-ți toată echipa',
+  'design.text.9': 'Ce s-a schimbat săptămâna aceasta',
+  'design.text.10': 'Citește ghidul',
+  'design.text.11': 'Ales de studiouri din toată lumea',
+  'design.text.12': 'Un fișier, toate ecranele',
+  'design.text.13': 'Design fără predare',
+  'design.text.14': 'Biblioteca ta, partajată',
+  'design.text.15': 'Publică azi',
+  'design.text.16': 'Întrebări? Scrie-ne',
+
+  /* shell chrome and the drill heads -------------------------------------- */
+  'design.app.demoNotice': 'Date fictive, în întregime',
+  'design.nav.label': 'Navigare principală',
+  'design.nav.menu': 'Deschide navigarea',
+  'design.nav.breadcrumb': 'Firimituri',
+  'design.nav.toolbar': 'Acțiuni pentru ecran',
+  'design.screen.notFound.title': 'Nu a fost găsit',
+  'design.screen.notFound.subtitle': 'Adresa nu corespunde cu nimic din această demonstrație.',
+  'design.screen.project.title': 'Proiect',
+  'design.screen.file.title': 'Fișier',
+  'design.screen.asset.title': 'Resursă',
 };
 
 export default ro;

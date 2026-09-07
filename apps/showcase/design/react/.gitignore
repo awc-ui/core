@@ -1,0 +1,12 @@
+/dist/
+/node_modules/
+*.tsbuildinfo
+
+# Copied verbatim from packages/core/dist by `pnpm sync-runtime`. Never edit,
+# never commit — the chunk hashes rotate on every core build.
+/public/awc-runtime/
+
+# Copied from @awc-ui/showcase-kit by the same script. It is the preboot IIFE as
+# a FILE, because an enterprise Content-Security-Policy refuses the inline script
+# it used to be — generated, so not committed.
+/public/preboot.js

@@ -2359,7 +2359,294 @@ const music = {
   'music.clip.label.14': 'Tail',
 } as const;
 
-export const en = { ...core, ...wealth, ...banking, ...social, ...community, ...music };
+const design = {
+/* ----------------------------------------------------------------- design */
+/*
+ * Pictor — the design and image editing vertical.
+ *
+ * The pooled blocks at the end (project descriptions, component descriptions,
+ * the strings text layers render) are indexed by the fixture generator, so
+ * their COUNTS are part of the contract: `scripts/generate-design-fixture.mjs`
+ * holds the same numbers and `scripts/verify.mjs` fails if a key it emits is
+ * missing from any locale.
+ */
+  /* the product ----------------------------------------------------------- */
+  'design.app.demo': 'Demo',
+  'design.app.brand': 'Pictor',
+  'design.app.title': 'Design & Image',
+  'design.app.viewer': 'Signed in as {name}',
+  'design.app.disclaimer': 'Fictional projects, files and assets. No real product, brand or person is represented.',
+
+  /* navigation ------------------------------------------------------------ */
+  'design.nav.assets': 'Assets',
+  'design.nav.editor': 'Editor',
+  'design.nav.profile': 'Profile',
+  'design.nav.projects': 'Projects',
+
+  /* what a layer is ------------------------------------------------------- */
+  'design.layerKind.rect': 'Rectangle',
+  'design.layerKind.text': 'Text',
+  'design.layerKind.frame': 'Frame',
+  'design.layerKind.group': 'Group',
+  'design.layerKind.image': 'Image',
+  'design.layerKind.ellipse': 'Ellipse',
+  'design.layerKind.instance': 'Instance',
+  'design.layerKind.component': 'Component',
+
+  /* blend modes — the CSS values, deliberately ---------------------------- */
+  'design.blend.darken': 'Darken',
+  'design.blend.normal': 'Normal',
+  'design.blend.screen': 'Screen',
+  'design.blend.lighten': 'Lighten',
+  'design.blend.overlay': 'Overlay',
+  'design.blend.multiply': 'Multiply',
+  'design.blend.difference': 'Difference',
+
+  /* the four image adjustments -------------------------------------------- */
+  'design.adjustment.contrast': 'Contrast',
+  'design.adjustment.exposure': 'Exposure',
+  'design.adjustment.saturation': 'Saturation',
+  'design.adjustment.temperature': 'Temperature',
+
+  /* the toolbar ----------------------------------------------------------- */
+  'design.tool.hand': 'Pan',
+  'design.tool.rect': 'Rectangle',
+  'design.tool.text': 'Text',
+  'design.tool.frame': 'Frame',
+  'design.tool.image': 'Place image',
+  'design.tool.select': 'Select',
+  'design.tool.ellipse': 'Ellipse',
+
+  /* align ----------------------------------------------------------------- */
+  'design.align.top': 'Align top',
+  'design.align.left': 'Align left',
+  'design.align.right': 'Align right',
+  'design.align.bottom': 'Align bottom',
+  'design.align.center-x': 'Align centres horizontally',
+  'design.align.center-y': 'Align centres vertically',
+
+  /* boolean operations ---------------------------------------------------- */
+  'design.boolean.union': 'Union',
+  'design.boolean.exclude': 'Exclude',
+  'design.boolean.subtract': 'Subtract',
+  'design.boolean.intersect': 'Intersect',
+
+  /* what an undo entry did ------------------------------------------------ */
+  'design.edit.move': 'Move',
+  'design.edit.align': 'Align',
+  'design.edit.group': 'Group',
+  'design.edit.style': 'Restyle',
+  'design.edit.create': 'Create',
+  'design.edit.delete': 'Delete',
+  'design.edit.resize': 'Resize',
+  'design.edit.boolean': 'Combine',
+  'design.edit.reorder': 'Reorder',
+  'design.edit.ungroup': 'Ungroup',
+  'design.edit.reparent': 'Move into',
+  'design.edit.distribute': 'Distribute',
+
+  /* where a file is in review --------------------------------------------- */
+  'design.fileState.draft': 'Draft',
+  'design.fileState.approved': 'Approved',
+  'design.fileState.archived': 'Archived',
+  'design.fileState.in-review': 'In review',
+
+  /* the asset library ----------------------------------------------------- */
+  'design.assetKind.color': 'Colour',
+  'design.assetKind.image': 'Image',
+  'design.assetKind.component': 'Component',
+  'design.assetKind.text-style': 'Text style',
+
+  /* the project palette --------------------------------------------------- */
+  'design.swatch.p0': 'Deep sea',
+  'design.swatch.p1': 'Lagoon',
+  'design.swatch.p2': 'Iris',
+  'design.swatch.p3': 'Terracotta',
+  'design.swatch.p4': 'Fern',
+  'design.swatch.p5': 'Ochre',
+  'design.swatch.p6': 'Slate',
+  'design.swatch.p7': 'Rose',
+  'design.swatch.p8': 'Cobalt',
+  'design.swatch.p9': 'Olive',
+  'design.swatch.ink': 'Ink',
+  'design.swatch.paper': 'Paper',
+
+  /* actions --------------------------------------------------------------- */
+  'design.action.hide': 'Hide layer',
+  'design.action.lock': 'Lock layer',
+  'design.action.redo': 'Redo',
+  'design.action.show': 'Show layer',
+  'design.action.undo': 'Undo',
+  'design.action.group': 'Group selection',
+  'design.action.delete': 'Delete selection',
+  'design.action.unlock': 'Unlock layer',
+  'design.action.zoomIn': 'Zoom in',
+  'design.action.ungroup': 'Ungroup',
+  'design.action.zoomOut': 'Zoom out',
+  'design.action.deselect': 'Deselect',
+  'design.action.openFile': 'Open in editor',
+  'design.action.duplicate': 'Duplicate',
+  'design.action.openAsset': 'Open asset',
+  'design.action.selectAll': 'Select all',
+  'design.action.toggleGrid': 'Toggle grid',
+  'design.action.distributeH': 'Distribute horizontally',
+  'design.action.distributeV': 'Distribute vertically',
+  'design.action.openProject': 'Open project',
+  'design.action.bringForward': 'Bring forward',
+  'design.action.sendBackward': 'Send backward',
+
+  /* screen heads ---------------------------------------------------------- */
+  'design.screen.assets.title': 'Assets',
+  'design.screen.editor.title': 'Editor',
+  'design.screen.file.subtitle': 'Layers, history and everything this document contains',
+  'design.screen.profile.title': 'Profile',
+  'design.screen.asset.subtitle': 'Where this asset is used',
+  'design.screen.projects.title': 'Projects',
+  'design.screen.assets.subtitle': 'Shared images, colours, text styles and components',
+  'design.screen.editor.subtitle': 'One document, its layers and everything you can do to them',
+  'design.screen.profile.subtitle': 'Your work across every project',
+  'design.screen.project.subtitle': 'Files in this project',
+  'design.screen.projects.subtitle': 'Everything you and your team are working on',
+
+  /* panels ---------------------------------------------------------------- */
+  'design.panel.size': 'Size',
+  'design.panel.usage': 'Usage',
+  'design.panel.layers': 'Layers',
+  'design.panel.recent': 'Recent files',
+  'design.panel.shared': 'Shared with you',
+  'design.panel.history': 'History',
+  'design.panel.palette': 'Palette',
+  'design.panel.position': 'Position',
+  'design.panel.appearance': 'Appearance',
+  'design.panel.properties': 'Properties',
+  'design.panel.adjustments': 'Adjustments',
+  'design.panel.collaborators': 'Collaborators',
+
+  /* labels and counts ----------------------------------------------------- */
+  'design.label.x': 'X',
+  'design.label.y': 'Y',
+  'design.label.fill': 'Fill',
+  'design.label.kind': 'Kind',
+  'design.label.mask': 'Mask',
+  'design.label.name': 'Name',
+  'design.label.zoom': 'Zoom',
+  'design.label.blend': 'Blend',
+  'design.label.cells': '{count} cells',
+  'design.label.depth': 'Level {level}',
+  'design.label.files': '{count} files',
+  'design.label.mixed': 'Mixed',
+  'design.label.width': 'W',
+  'design.label.assets': 'Assets',
+  'design.label.edited': 'Edited {when}',
+  'design.label.height': 'H',
+  'design.label.layers': '{count} layers',
+  'design.label.usedIn': 'Used in {count} files',
+  'design.label.editors': '{count} editors',
+  'design.label.opacity': 'Opacity',
+  'design.label.projects': 'Projects',
+  'design.label.selected': '{count} selected',
+  'design.label.instances': '{count} instances',
+  'design.label.components': 'Components',
+
+  /* empty states ---------------------------------------------------------- */
+  'design.empty.noUsage': 'Not used in any file yet',
+  'design.empty.noAssets': 'No assets of this kind',
+  'design.empty.noHistory': 'Nothing to undo yet',
+  'design.empty.noSelection': 'Nothing selected',
+  'design.empty.noHistoryBody': 'Move, resize or restyle a layer and it will appear here.',
+  'design.empty.noSelectionBody': 'Choose a layer on the canvas or in the layer list to see its properties.',
+
+  /* hints ----------------------------------------------------------------- */
+  'design.hint.locked': 'This layer is locked',
+  'design.hint.marquee': 'Drag on empty canvas to select several layers',
+  'design.hint.readonly': 'Nothing is saved. Every change lives in this tab only.',
+  'design.hint.snapGrid': 'Layers snap to a {cols} by {rows} grid',
+  'design.hint.dragLayer': 'Drag a row to reorder or nest it',
+  'design.hint.mixedValue': 'The selected layers differ; typing a value sets all of them',
+
+  /* alt text — every image is self-describing (convention 5) -------------- */
+  'design.alt.file.1': 'Abstract artwork: layered arcs',
+  'design.alt.file.2': 'Abstract artwork: drifting dunes',
+  'design.alt.file.3': 'Abstract artwork: orbiting rings',
+  'design.alt.file.4': 'Abstract artwork: split prism',
+  'design.alt.file.5': 'Abstract artwork: opening bloom',
+  'design.alt.file.6': 'Abstract artwork: layered ridge',
+  'design.alt.viewer': 'Your profile picture',
+  'design.alt.asset.1': 'Project cover: wide gradient band',
+  'design.alt.asset.2': 'Project cover: overlapping fields',
+  'design.alt.asset.3': 'Project cover: soft horizon',
+  'design.alt.asset.4': 'Project cover: angled facets',
+  'design.alt.layer.1': 'Abstract artwork: layered arcs',
+  'design.alt.layer.2': 'Abstract artwork: drifting dunes',
+  'design.alt.layer.3': 'Abstract artwork: orbiting rings',
+  'design.alt.layer.4': 'Abstract artwork: split prism',
+  'design.alt.layer.5': 'Abstract artwork: opening bloom',
+  'design.alt.layer.6': 'Abstract artwork: layered ridge',
+  'design.alt.project.1': 'Project cover: wide gradient band',
+  'design.alt.project.2': 'Project cover: overlapping fields',
+  'design.alt.project.3': 'Project cover: soft horizon',
+  'design.alt.project.4': 'Project cover: angled facets',
+  'design.alt.component.1': 'Abstract artwork: layered arcs',
+  'design.alt.component.2': 'Abstract artwork: drifting dunes',
+  'design.alt.component.3': 'Abstract artwork: orbiting rings',
+  'design.alt.component.4': 'Abstract artwork: split prism',
+  'design.alt.component.5': 'Abstract artwork: opening bloom',
+  'design.alt.component.6': 'Abstract artwork: layered ridge',
+
+  /* pooled: project descriptions ------------------------------------------ */
+  'design.project.about.1': 'A full visual refresh: type, colour and the shape of every surface.',
+  'design.project.about.2': 'Screens for the phone app, from onboarding to settings.',
+  'design.project.about.3': 'Long-form editorial layouts and the grid they share.',
+  'design.project.about.4': 'Campaign pages, ads and everything with a deadline on it.',
+  'design.project.about.5': 'Exploration only. Nothing here has been agreed with anyone.',
+  'design.project.about.6': 'The pieces every other project pulls from.',
+  'design.project.about.7': 'Documentation of what the system already does.',
+  'design.project.about.8': 'Archived after the rebrand. Kept for reference.',
+
+  /* pooled: component descriptions ---------------------------------------- */
+  'design.component.about.1': 'Two sizes and four states. The label is the only override.',
+  'design.component.about.2': 'Wraps a label, a control and its error line as one unit.',
+  'design.component.about.3': 'A surface with optional media, heading and actions.',
+  'design.component.about.4': 'Falls back to initials when no picture is set.',
+  'design.component.about.5': 'Compact, selectable and dismissible.',
+  'design.component.about.6': 'Three to five destinations, never more.',
+  'design.component.about.7': 'Full-width message that pushes content down rather than covering it.',
+  'design.component.about.8': 'Appears on hover and on focus, never on click alone.',
+  'design.component.about.9': 'Holds its own state and reports changes upward.',
+  'design.component.about.10': 'Deprecated. Kept so old files still open.',
+
+  /* pooled: the strings text layers render -------------------------------- */
+  'design.text.1': 'Built for the way you actually work',
+  'design.text.2': 'Everything in one place',
+  'design.text.3': 'Start here',
+  'design.text.4': 'Made by a small team',
+  'design.text.5': 'Simple pricing',
+  'design.text.6': 'No card required',
+  'design.text.7': 'Set up in minutes',
+  'design.text.8': 'Bring your whole team',
+  'design.text.9': 'What changed this week',
+  'design.text.10': 'Read the guide',
+  'design.text.11': 'Trusted by studios everywhere',
+  'design.text.12': 'One file, every screen',
+  'design.text.13': 'Design without the handoff',
+  'design.text.14': 'Your library, shared',
+  'design.text.15': 'Ship it today',
+  'design.text.16': 'Questions? Talk to us',
+
+  /* shell chrome and the drill heads -------------------------------------- */
+  'design.app.demoNotice': 'Fictional data, throughout',
+  'design.nav.label': 'Main navigation',
+  'design.nav.menu': 'Open navigation',
+  'design.nav.breadcrumb': 'Breadcrumb',
+  'design.nav.toolbar': 'Screen actions',
+  'design.screen.notFound.title': 'Not found',
+  'design.screen.notFound.subtitle': 'That address does not match anything in this demo.',
+  'design.screen.project.title': 'Project',
+  'design.screen.file.title': 'File',
+  'design.screen.asset.title': 'Asset',
+} as const;
+
+export const en = { ...core, ...wealth, ...banking, ...social, ...community, ...music, ...design };
 
 /** Every message key the showcase may ask for, across all five verticals. */
 export type MessageKey = keyof typeof en;

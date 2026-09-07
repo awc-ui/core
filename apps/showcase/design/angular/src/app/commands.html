@@ -1,0 +1,59 @@
+@if(open){<pictor-dialog
+  class="pictor-command-host"
+  dialogClass="studio-dialog pictor-command-dialog"
+  [title]="studio.t('Go anywhere. Make something.')"
+  (closed)="open=false"
+  ><div class="pictor-command-search">
+    <input
+      [value]="query"
+      (input)="query=$any($event.target).value;active=0"
+      [attr.aria-label]="studio.t('Search commands, projects, files and assets')"
+      [placeholder]="studio.t('Search commands, files, projects…')"
+      role="combobox"
+      aria-expanded="true"
+      aria-controls="pictor-command-results"
+      aria-autocomplete="list"
+      [attr.aria-activedescendant]="results.length?'pictor-command-'+selected:null"
+      (keydown)="keyboard($event)"
+    />
+  </div>
+  <div
+    class="pictor-command-results"
+    id="pictor-command-results"
+    role="listbox"
+    [attr.aria-label]="studio.t('Commands and destinations')"
+  >
+    @for(command of results;track command.id;let index=$index){<button
+      [id]="'pictor-command-'+index"
+      type="button"
+      role="option"
+      tabindex="-1"
+      [attr.aria-selected]="index===selected"
+      class="pictor-command-item"
+      (mouseenter)="active=index"
+      (click)="choose(command)"
+    >
+      <span class="pictor-command-icon" aria-hidden="true"
+        >{{command.icon}}</span
+      ><span
+        ><strong>{{command.label}}</strong
+        ><small>{{command.detail}}</small></span
+      ><span class="pictor-command-enter" aria-hidden="true">↵</span></button
+    >}@if(!results.length){
+    <p class="pictor-command-empty">
+      {{ studio.t('No matches. Try “canvas”, “export”, or a project name.') }}
+    </p>
+    }
+  </div>
+  <div actions class="pictor-command-hints">
+    <span><kbd>↑</kbd> <kbd>↓</kbd> {{ studio.t('to navigate') }}</span
+    ><span><kbd>Enter</kbd> {{ studio.t('to open') }}</span
+    ><span><kbd>Esc</kbd> {{ studio.t('to close') }}</span>
+  </div></pictor-dialog
+>}
+<md-snackbar
+  [open]="!!message"
+  [message]="studio.t(message)"
+  [duration]="4500"
+  (mdClose)="message=''"
+/>

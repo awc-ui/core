@@ -1,0 +1,77 @@
+<div class="studio-insert" data-insert-panel>
+  <div class="studio-panel-heading">
+    <span class="material-symbols-outlined" aria-hidden="true">add_circle</span>
+    <div>
+      <h3>{{ studio.t('Your creative toolkit') }}</h3>
+      <p>{{ studio.t('Click anything to make it yours.') }}</p>
+    </div>
+  </div>
+  <pictor-text
+    [label]="studio.t('Search assets')"
+    [live]="true"
+    [value]="query"
+    (changed)="query=$event"
+  /><pictor-tabs
+    [panel]="true"
+    [label]="studio.t('Asset type')"
+    [value]="tab"
+    [options]="tabs"
+    (changed)="tab=$event"
+  />
+  @if(tab==='components'){
+  <div class="studio-callout">
+    <span class="material-symbols-outlined" aria-hidden="true">touch_app</span>
+    <p>
+      {{ studio.t('Real AWC components. Add one, then enter Present to interact
+      with it.') }}
+    </p>
+  </div>
+  <div class="studio-insert-grid">
+    @for(item of components;track item.id){<button
+      class="studio-insert-item"
+      [attr.data-insert-component]="item.id"
+      (click)="component(item)"
+    >
+      <span
+        class="studio-insert-item__icon material-symbols-outlined"
+        aria-hidden="true"
+        >{{item.icon}}</span
+      ><strong>{{studio.t(item.name)}}</strong><span>{{studio.t(item.description)}}</span
+      ><span
+        class="studio-insert-item__plus material-symbols-outlined"
+        aria-hidden="true"
+        >add</span
+      ></button
+    >}
+  </div>
+  } @else if(tab==='art'){
+  <div class="studio-art-grid">
+    @for(item of art;track item.name){<button (click)="image(item)">
+      <img [src]="item.art.src" alt="" /><span>{{item.name}}</span></button
+    >}
+  </div>
+  <p class="studio-label">{{ studio.t('FROM YOUR LIBRARY') }}</p>
+  <div class="studio-art-grid">
+    @for(item of assets;track item.id){<button (click)="asset(item)">
+      <img [src]="item.art!.src" alt="" loading="lazy" /><span
+        >{{item.name}}</span
+      ></button
+    >}
+  </div>
+  } @else{
+  <p class="studio-description">
+    {{ studio.t('A curated palette for your next composition. Add a color shape,
+    then make it your own in the inspector.') }}
+  </p>
+  <div class="studio-color-grid">
+    @for(fill of colors;track fill){<button
+      [attr.aria-label]="studio.t('Insert {color} rectangle', {color:fill})"
+      (click)="color(fill)"
+    >
+      <svg viewBox="0 0 80 64" aria-hidden="true">
+        <rect width="80" height="64" rx="10" [attr.fill]="fill" /></svg
+      ><span>{{fill}}</span></button
+    >}
+  </div>
+  }
+</div>

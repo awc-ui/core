@@ -26,6 +26,15 @@
  *   pnpm showcase:build      # stage the six static builds, compile the four servers
  *   pnpm showcase:preview    # then this
  *
+ * For Pictor only, with no server-rendered processes:
+ *   pnpm showcase:build --vertical design
+ *   pnpm showcase:preview 4317 --static-only --vertical design
+ *
+ * The positional port remains optional (default 4500). With no flags, all
+ * existing server-rendered builds still start and all staged paths are served.
+ * --vertical limits both static paths and server processes to that vertical;
+ * --static-only disables server startup and proxying altogether.
+ *
  * The four server-rendered builds are started here and stopped on exit. The six
  * static builds are read from `apps/docs/public`, so anything not staged 404s
  * with a message saying so rather than silently serving nothing.
@@ -35,12 +44,42 @@ import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer, request as httpRequest } from 'node:http';
 import { dirname, extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SSR_APPS, basePathFor } from './lib/ssr-apps.mjs';
+import { SSR_APPS } from './lib/ssr-apps.mjs';
+import { VERTICALS, staticBuilds, verticalById } from './lib/showcase-verticals.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PUBLIC = join(root, 'apps/docs/public');
-const PORT = Number(process.argv[2] || 4500);
-const VERTICAL = 'credit-risk';
+const USAGE = 'usage: node scripts/showcase-preview.mjs [port] [--static-only] [--vertical <id>]';
+let port = 4500;
+let portSeen = false;
+let staticOnly = false;
+let selectedVertical = null;
+function fail(message) {
+  console.error(`[showcase-preview] ${message}\n${USAGE}`);
+  process.exit(1);
+}
+const argv = process.argv.slice(2);
+for (let i = 0; i < argv.length; i++) {
+  const arg = argv[i];
+  if (arg === '--help' || arg === '-h') {
+    console.log(`${USAGE}\n\nDefault: all staged builds plus server-rendered processes, on port 4500.\nStatic Pictor: pnpm showcase:preview 4317 --static-only --vertical design\nVerticals: ${VERTICALS.map(v => v.id).join(', ')}`);
+    process.exit(0);
+  }
+  if (arg === '--static-only') { staticOnly = true; continue; }
+  if (arg === '--vertical' || arg.startsWith('--vertical=')) {
+    const id = arg.startsWith('--vertical=') ? arg.slice('--vertical='.length) : argv[++i];
+    if (!id || !verticalById(id)) fail(`unknown or missing vertical: ${id ?? ''}`);
+    selectedVertical = id;
+    continue;
+  }
+  if (arg.startsWith('-')) fail(`unknown option: ${arg}`);
+  if (portSeen || !/^\d+$/.test(arg) || Number(arg) > 65535) fail(`invalid port: ${arg}`);
+  port = Number(arg);
+  portSeen = true;
+}
+const PORT = port;
+const VERTICAL = selectedVertical ?? 'credit-risk';
+const ACTIVE_SSR = staticOnly ? [] : SSR_APPS.filter(app => !selectedVertical || app.vertical === selectedVertical);
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -68,7 +107,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const children = [];
 
 function startServers() {
-  for (const app of SSR_APPS) {
+  for (const app of ACTIVE_SSR) {
     const cwd = join(root, app.dir);
     if (!existsSync(cwd)) {
       console.error(`  ${app.id}: ${app.dir} does not exist — skipping`);
@@ -96,7 +135,7 @@ function stopServers() {
 }
 
 async function waitFor(app, timeoutMs = 90_000) {
-  const url = `http://localhost:${app.port}${basePathFor(app.id)}/`;
+  const url = `http://localhost:${app.port}${app.base}/`;
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     try {
@@ -112,14 +151,18 @@ async function waitFor(app, timeoutMs = 90_000) {
 /* ------------------------------------------------------------------- routing */
 
 /** Same order as netlify.toml: server-rendered prefixes first, then static. */
-const PROXIED = SSR_APPS.map((app) => ({
+const PROXIED = ACTIVE_SSR.map((app) => ({
   id: app.id,
-  prefix: `${basePathFor(app.id)}/`,
+  prefix: `${app.base}/`,
   port: app.port,
 }));
 
 const server = createServer((req, res) => {
   const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+  if (selectedVertical && pathname !== `/showcase/${selectedVertical}` && !pathname.startsWith(`/showcase/${selectedVertical}/`)) {
+    res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });
+    return res.end(`This preview serves /showcase/${selectedVertical}/ only.`);
+  }
 
   for (const rule of PROXIED) {
     if (pathname === rule.prefix.slice(0, -1)) {
@@ -184,11 +227,15 @@ process.on('SIGTERM', () => {
 });
 process.on('exit', stopServers);
 
-console.log(`\n  starting ${SSR_APPS.length} server-rendered builds…`);
-startServers();
+if (ACTIVE_SSR.length) {
+  console.log(`\n  starting ${ACTIVE_SSR.length} server-rendered builds…`);
+  startServers();
+} else {
+  console.log('\n  serving static builds only — no server-rendered processes');
+}
 
 const ready = [];
-for (const app of SSR_APPS) {
+for (const app of ACTIVE_SSR) {
   const up = await waitFor(app);
   ready.push({ app, up });
   console.log(`  ${up ? '  ok' : 'FAIL'}  ${app.id.padEnd(12)} :${app.port}`);
@@ -201,13 +248,13 @@ for (const app of SSR_APPS) {
 }
 
 if (!existsSync(join(PUBLIC, 'showcase', VERTICAL))) {
-  console.log(`\n  NOTE: no staged static builds — run \`pnpm showcase:build\` for the other six.`);
+  console.log(`\n  NOTE: no staged ${VERTICAL} builds — run \`pnpm showcase:build --vertical ${VERTICAL}\`.`);
 }
 
 server.listen(PORT, () => {
   console.log(`\n  showcase           http://localhost:${PORT}/showcase/${VERTICAL}/react/`);
   console.log(`  every build is reachable from the dock at the bottom of the page.\n`);
-  console.log(`  static (from apps/docs/public):  html astro react vue angular svelte`);
-  console.log(`  proxied to live servers:         ${ready.filter((r) => r.up).map((r) => r.app.id).join(' ')}`);
+  console.log(`  static (from apps/docs/public):  ${staticBuilds(selectedVertical).map(build => `${build.vertical}/${build.framework}`).join(', ')}`);
+  if (ready.length) console.log(`  proxied to live servers:         ${ready.filter((r) => r.up).map((r) => r.app.id).join(' ')}`);
   console.log(`\n  ctrl-c stops the servers as well as this one.\n`);
 });

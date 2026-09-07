@@ -475,6 +475,7 @@ export default defineConfig({
             { label: 'Photos & People', link: '/showcase/social/' },
             { label: 'Friends & Groups', link: '/showcase/community/' },
             { label: 'Music & Studio', link: '/showcase/music/' },
+            { label: 'Pictor — Design & Image', link: '/showcase/design/' },
           ],
         },
         {

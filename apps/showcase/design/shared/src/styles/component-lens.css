@@ -1,0 +1,18 @@
+.component-lens__intro { max-inline-size: 64ch; line-height: 1.6; }
+.component-lens__intro strong { color: var(--md-sys-color-primary); }
+.component-lens__layout { display: grid; grid-template-columns: minmax(160px, 0.7fr) minmax(0, 1.6fr); gap: 24px; margin-block: 20px; }
+.component-lens__list { display: flex; flex-direction: column; gap: 4px; max-block-size: 360px; overflow: auto; }
+.component-lens__list button { display: flex; justify-content: space-between; gap: 12px; text-align: start; border: 0; border-radius: 8px; padding: 10px; background: transparent; color: inherit; cursor: pointer; }
+.component-lens__list button[aria-pressed="true"] { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+.component-lens__list button:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: -2px; }
+.component-lens__list button span { opacity: 0.65; }
+.component-lens__eyebrow { font-size: 10px; letter-spacing: 0.13em; font-weight: 700; }
+.component-lens__detail h3 { margin-block: 8px; }
+.component-lens__detail p { font-size: 12px; line-height: 1.6; opacity: 0.75; }
+.component-lens__detail pre { padding: 16px; border-radius: 12px; background: var(--md-sys-color-surface-container-high); overflow: auto; max-block-size: 240px; font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.component-lens__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.component-lens__detail [role="status"] { display: block; font-size: 12px; min-block-size: 20px; padding-block-start: 8px; }
+.component-lens__install { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 16px; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 12px; font-size: 12px; }
+.component-lens__install code { font-weight: 700; }
+.component-lens__install a { color: var(--md-sys-color-primary); }
+@media (width <= 600px) { .component-lens__layout { grid-template-columns: 1fr; } .component-lens__list { max-block-size: 150px; } }

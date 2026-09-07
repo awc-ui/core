@@ -65,6 +65,16 @@ const PORT = 4351;
  * below rather than a run that quietly checks nothing.
  */
 const EXPECTATIONS = {
+  design: {
+    // Pictor has no severity tables, chart summaries or badge-in-button pattern.
+    // Its actual keyboard, canvas, route and dialog contracts are checked below.
+    designStudio: true,
+    arabicLocale: 'ar',
+    listScreen: null, severityWords: [], markerChipCell: null,
+    paginatedScreen: null, bookRows: null, pageRows: null,
+    sortLabels: false, footerScreen: '/profile/', detailScreen: '/f/fl-01/',
+    summaryChart: null, badgeScreen: null,
+  },
   'credit-risk': {
     /*
      * The Arabic locale segment. Named for the script and not for "the RTL
@@ -425,6 +435,73 @@ for (const vertical of verticals) {
   const L = localeBuild ? url(localeBuild) : null;
 
   if (verticals.length > 1) console.log(`\n======== ${vertical.id} ========`);
+
+  if (expect.designStudio) {
+    const screens = [
+      ['/', '.pictor-hero'], ['/editor/', '[data-editor]'],
+      ['/assets/', '.pictor-library-grid'], ['/profile/', '[data-profile]'],
+      ['/p/meridian-rebrand/', '.pictor-project-banner'],
+      ['/f/fl-01/', '[data-editor]'], ['/a/as-001/', '.pictor-asset-detail'],
+    ];
+    for (const framework of builds) {
+      console.log(`\n[${framework} Pictor] real screens and keyboard controls`);
+      for (const [path, selector] of screens) {
+        const p = await load(`${url(framework)}${path}`);
+        const probe = await p.evaluate((selector) => {
+          const area = document.querySelector(selector), heading = document.querySelector('.screen-head h1');
+          const box = area?.getBoundingClientRect();
+          const dock = document.querySelector('awc-showcase-dock');
+          return {
+            rendered: !!box?.width && !!box?.height,
+            heading: heading?.textContent?.trim() ?? '',
+            mains: document.querySelectorAll('main').length,
+            frameworks: (dock?.getAttribute('frameworks') ?? '').split(',').sort(),
+            dockLabel: dock?.getAttribute('label') ?? '',
+            missingImages: [...document.querySelectorAll('.screen-body img')].filter(image => image.loading !== 'lazy' && (!image.complete || image.naturalWidth === 0)).length,
+            unnamedIcons: [...document.querySelectorAll('.shell md-icon-button')].filter(button => !(button.getAttribute('aria-label') || button.label || button.shadowRoot?.querySelector('button')?.getAttribute('aria-label'))).length,
+            hiddenDialogs: [...document.querySelectorAll('md-dialog')].filter(dialog => !dialog.open).length,
+          };
+        }, selector);
+        ok(`${path} renders its intended screen`, probe.rendered && !!probe.heading && !/not found|isn't here/i.test(probe.heading), probe.heading);
+        ok(`${path} has one main landmark`, probe.mains === 1);
+        ok(`${path} exposes every framework in a named dock`, JSON.stringify(probe.frameworks) === JSON.stringify([...builds].sort()) && !!probe.dockLabel);
+        ok(`${path} loads its visible artwork`, probe.missingImages === 0, `${probe.missingImages} missing`);
+        ok(`${path} names every icon button`, probe.unnamedIcons === 0, `${probe.unnamedIcons} unnamed`);
+        ok(`${path} unmounts closed dialogs`, probe.hiddenDialogs === 0);
+        if (path === '/editor/') {
+          const canvas = await p.evaluate(() => {
+            const board = document.querySelector('[data-artboard]'), tree = document.querySelector('[data-layer-tree]');
+            return {name:board?.getAttribute('aria-label'),role:board?.getAttribute('role'),focusable:board?.getAttribute('tabindex')==='0',layers:board?.querySelectorAll('[data-layer]').length??0,treeName:tree?.getAttribute('aria-label'),items:tree?.querySelectorAll('[role="treeitem"]').length??0};
+          });
+          ok('canvas is named, keyboard focusable and contains real layers', !!canvas.name && canvas.role === 'application' && canvas.focusable && canvas.layers > 0);
+          ok('layer tree is named and contains keyboard targets', !!canvas.treeName && canvas.items > 0);
+          const editable = '[data-layer-tree] [role="treeitem"]:not([data-tone="locked"]):not([data-tone="hidden"])';
+          await p.waitForSelector(editable);
+          await p.focus(editable);
+          const id = await p.$eval(editable, row => row.getAttribute('data-layer'));
+          await p.keyboard.press('Enter');
+          await p.waitForFunction(id => document.querySelector(`[data-layer-tree] [data-layer="${id}"]`)?.getAttribute('aria-selected') === 'true', {}, id);
+          ok('Enter selects a tree layer and exposes its geometry', await p.$('[data-inspector] [data-geometry="x"]') !== null);
+          await p.click('[data-export]');
+          await p.waitForSelector('md-dialog[open] [data-export-dialog]');
+          ok('Export opens a named dialog with an actual download control', await p.evaluate(() => {const dialog=document.querySelector('md-dialog[open]');return !!dialog?.headline && !!dialog?.querySelector('[data-download]');}));
+          await p.keyboard.press('Escape');
+          await p.waitForFunction(() => !document.querySelector('md-dialog[open]'));
+          ok('Escape dismisses the export dialog', true);
+          await p.click('[data-present]');
+          await p.waitForSelector('[data-presentation] [data-artboard]');
+          ok('presentation exposes current layers and an exit action', await p.evaluate(() => !!document.querySelector('[data-presentation] [data-layer]') && !!document.querySelector('[data-close-present]')));
+          await p.click('[data-close-present]');
+          await p.waitForFunction(() => !document.querySelector('[data-presentation]'));
+        }
+        await p.close();
+      }
+      for (const path of ['/missing-pictor-route/', '/f/missing-pictor-file/', '/a/missing-pictor-asset/']) {
+        const response = await fetch(`${url(framework)}${path}`);
+        ok(`${path} remains an HTTP 404`, response.status === 404, String(response.status));
+      }
+    }
+  }
 
   /* ---- English leaking into the locale-routed tree ---- */
   /*

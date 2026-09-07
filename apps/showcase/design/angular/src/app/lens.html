@@ -1,0 +1,79 @@
+<div data-component-lens>
+  @if(open){<pictor-dialog
+    [title]="studio.t('Inside the interface')"
+    (closed)="open=false"
+    ><p class="component-lens__intro">
+      <strong
+        >{{ studio.t('{count} AWC component types', {count:
+        studio.t.formatNumber(entries.length)}) }}</strong
+      >
+      {{ studio.t('compose this screen. Explore the elements behind the
+      experience, then bring them into your own application.') }}
+    </p>
+    <pictor-text
+      [live]="true"
+      [label]="studio.t('Find a component')"
+      [value]="query"
+      (changed)="query=$event"
+      [placeholder]="studio.t('Try button, dialog, slider…')"
+    />
+    <div class="component-lens__layout">
+      <div
+        class="component-lens__list"
+        [attr.aria-label]="studio.t('Components on this screen')"
+      >
+        @for(entry of filtered;track entry.tag){<button
+          [attr.aria-pressed]="selected===entry.tag"
+          (click)="selected=entry.tag;copyStatus=''"
+        >
+          <code>{{entry.tag}}</code><span>{{entry.count}}</span></button
+        >}@if(!filtered.length){
+        <p>{{ studio.t('No matching components on this screen.') }}</p>
+        }
+      </div>
+      @if(current){
+      <section class="component-lens__detail">
+        <span class="component-lens__eyebrow"
+          >{{ studio.t('LIVE ELEMENT MARKUP') }}</span
+        >
+        <h3>{{current.tag}}</h3>
+        <p>
+          {{ studio.t('{count} instances in this application surface. This HTML
+          shows the first instance; object properties and event handlers belong
+          in your framework code.', {count:
+          studio.t.formatNumber(current.count)}) }}
+        </p>
+        <pre
+          tabindex="0"
+        ><code>{{current.markup.length>5000?current.markup.slice(0,5000)+'\n'+studio.t('… Preview truncated; copy includes the complete element.'):current.markup}}</code></pre>
+        <div class="component-lens__actions">
+          <md-button variant="tonal" icon="content_copy" (click)="copy()"
+            >{{ studio.t('Copy HTML') }}</md-button
+          ><md-button
+            variant="text"
+            icon="open_in_new"
+            [href]="'https://awc-ui.dev/components/'+current.tag.slice(3)+'/'"
+            target="_blank"
+            rel="noopener noreferrer"
+            >{{ studio.t('Component API') }}</md-button
+          >
+        </div>
+        <span role="status">{{studio.t(copyStatus)}}</span>
+      </section>
+      }
+    </div>
+    <div class="component-lens__install">
+      <span>{{ studio.t('Start with the library') }}</span
+      ><code>{{install}}</code
+      ><a
+        href="https://awc-ui.dev/getting-started/installation/"
+        target="_blank"
+        rel="noopener noreferrer"
+        >{{ studio.t('Choose your framework →') }}</a
+      >
+    </div>
+    <md-button actions variant="text" (click)="open=false"
+      >{{ studio.t('Back to Pictor') }}</md-button
+    ></pictor-dialog
+  >}
+</div>

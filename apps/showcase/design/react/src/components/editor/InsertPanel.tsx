@@ -1,0 +1,20 @@
+import { pictorSearchText } from '@awc-ui/pictor-model';
+import { useT as usePictorT } from '@/lib/showcase';
+import { useEffect, useMemo, useState } from 'react';
+import { getAssets } from '@awc-ui/showcase-kit/design';
+import { useDocument } from '@/lib/document';
+import { createLayer, layerFromAsset, LIVE_COMPONENTS, ORB_ART, WAVE_ART, LANDSCAPE_ART, DEFAULT_SWATCHES } from '@/lib/editor-model';
+import { PanelTabs, TextControl } from './controls';
+
+export function InsertPanel({ category = 'components' }: { category?: 'components' | 'art' }) {
+  const p = usePictorT();
+  const doc = useDocument();
+  const [tab, setTab] = useState<string>(category);
+  useEffect(() => setTab(category), [category]);
+  const [query, setQuery] = useState('');
+  const assets = useMemo(() => getAssets().filter(asset => pictorSearchText(asset.name).includes(pictorSearchText(query))), [query]);
+  const insert = (layer: ReturnType<typeof createLayer>) => { doc.commitLayers('create', layers => [...layers, layer], [layer.id]); doc.setTool('select'); };
+  return <div className="studio-insert" data-insert-panel><div className="studio-panel-heading"><span className="material-symbols-outlined" aria-hidden="true">add_circle</span><div><h3>{p("Your creative toolkit")}</h3><p>{p("Click anything to make it yours.")}</p></div></div><TextControl live label={p("Search assets")} value={query} onValue={setQuery} /><PanelTabs label={p("Asset type")} value={tab} onValue={setTab} options={[{ value: 'components', label: p("Live UI") }, { value: 'art', label: p("Artwork") }, { value: 'color', label: p("Color") }]} />
+    {tab === 'components' ? <><div className="studio-callout"><span className="material-symbols-outlined" aria-hidden="true">touch_app</span><p>{p("Real AWC components. Add one, then enter Present to interact with it.")}</p></div><div className="studio-insert-grid">{LIVE_COMPONENTS.filter(item => pictorSearchText(`${item.name} ${item.description} ${p(item.name)} ${p(item.description)}`).includes(pictorSearchText(query))).map(item => <button className="studio-insert-item" key={item.id} data-insert-component={item.id} onClick={() => insert(createLayer('component', { x: 16, y: 12, w: item.id === 'awc:card' ? 17 : 15, h: item.id === 'awc:card' ? 14 : 5 }, { name: item.name, componentId: item.id, fill: '#BEE7AA' }))}><span className="studio-insert-item__icon material-symbols-outlined" aria-hidden="true">{item.icon}</span><strong>{p(item.name)}</strong><span>{p(item.description)}</span><span className="studio-insert-item__plus material-symbols-outlined" aria-hidden="true">add</span></button>)}</div></> : tab === 'art' ? <><div className="studio-art-grid">{[{ name: 'Orbital sculpture', art: ORB_ART }, { name: 'Electric ribbon', art: WAVE_ART }, { name: 'New horizons', art: LANDSCAPE_ART }].filter(item => pictorSearchText(`${item.name} ${p(item.name)}`).includes(pictorSearchText(query))).map(item => <button key={p(item.name)} onClick={() => insert(createLayer('image', { x: 14, y: 6, w: 20, h: 20 }, { name: item.name, art: item.art, fill: null }))}><img src={item.art.src} alt="" /><span>{p(item.name)}</span></button>)}</div><p className="studio-label">{p("FROM YOUR LIBRARY")}</p><div className="studio-art-grid">{assets.filter(asset => asset.art).slice(0, 18).map(asset => <button key={asset.id} onClick={() => insert(layerFromAsset(asset))}><img src={asset.art!.src} alt="" loading="lazy" /><span>{asset.name}</span></button>)}</div></> : <><p className="studio-description">{p("A curated palette for your next composition. Add a color shape, then make it your own in the inspector.")}</p><div className="studio-color-grid">{DEFAULT_SWATCHES.filter(color => color.toLowerCase().includes(query.toLowerCase())).map(color => <button key={color} aria-label={p("Insert {color} rectangle", { color: color })} onClick={() => insert(createLayer('rect', { x: 16, y: 10, w: 16, h: 12 }, { name: color, fill: color }))}><svg viewBox="0 0 80 64" aria-hidden="true"><rect width="80" height="64" rx="10" fill={color} /></svg><span>{color}</span></button>)}</div></>}
+  </div>;
+}

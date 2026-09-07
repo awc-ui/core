@@ -1,0 +1,81 @@
+<div class="shell">
+  <md-app-bar
+    class="shell__appbar"
+    variant="small"
+    [subtitle]="t('design.app.title')"
+    [leadingIcon]="compact?undefined:'menu'"
+    [leadingIconLabel]="compact?undefined:t('design.nav.menu')"
+    (mdLeadingClick)="expanded=!expanded"
+    ><span slot="headline" class="shell__brand">{{t('design.app.brand')}}</span>
+    <div slot="trailing" class="pictor-studio-actions">
+      <span
+        class="pictor-save-state"
+        [attr.data-state]="doc.saveStatus"
+        [title]="savedAt"
+        ><span class="pictor-save-dot" aria-hidden="true"></span
+        >{{doc.saveStatus==='saved'?studio.t('Saved
+        locally'):doc.saveStatus==='unavailable'?studio.t('Storage
+        unavailable'):studio.t('Saving…')}}</span
+      ><button
+        class="pictor-command-trigger"
+        type="button"
+        (click)="studio.emit('pictor:commands')"
+        [attr.aria-label]="studio.t('Open command palette')"
+      >
+        <span>{{ studio.t('Quick actions') }}</span><kbd>⌘ K</kbd></button
+      ><md-button
+        variant="text"
+        icon="widgets"
+        (click)="studio.emit('pictor:components')"
+        >{{ studio.t('Components') }}</md-button
+      >
+    </div>
+    <md-avatar
+      slot="trailing"
+      [src]="viewer.art.src"
+      [name]="viewer.displayName"
+      [label]="t('design.app.viewer',{name:viewer.displayName})"
+      size="small"
+  /></md-app-bar>
+  <div class="shell__body">
+    <md-navigation-rail
+      class="shell__rail"
+      [label]="t('design.nav.label')"
+      [variant]="expanded?'expanded':'standard'"
+      [activeIndex]="activeIndex"
+      label-visibility="all"
+      >@for(destination of destinations;track
+      destination.value){<md-navigation-rail-tab
+        [icon]="destination.icon"
+        [label]="t(destination.labelKey)"
+        [value]="destination.value"
+        [attr.data-value]="destination.value"
+        [href]="href(destination.path)"
+      />}</md-navigation-rail
+    >
+    <main class="shell__main"><router-outlet /></main>
+  </div>
+  <md-navigation-bar
+    class="shell__bar"
+    [attr.aria-label]="t('design.nav.label')"
+    [activeIndex]="activeIndex"
+    label-behavior="always"
+    >@for(destination of destinations;track
+    destination.value){<md-navigation-tab
+      [attr.data-value]="destination.value"
+      [icon]="destination.icon"
+      [activeIcon]="destination.activeIcon"
+      [label]="t(destination.labelKey)"
+      [href]="href(destination.path)"
+    />}</md-navigation-bar
+  >
+</div>
+<awc-showcase-dock
+  collapsed
+  [attr.frameworks]="frameworks"
+  framework="angular"
+  base-path="/showcase/design"
+  position="bottom"
+  [attr.label]="t('design.app.title')"
+/>
+<pictor-commands /><pictor-lens />

@@ -1,0 +1,234 @@
+<pictor-screen
+  [title]="studio.t('Your creative space')"
+  [subtitle]="studio.t('The things you\'re making, and the possibilities ahead.')"
+>
+  <md-button
+    aside
+    variant="tonal"
+    icon="arrow_outward"
+    (click)="studio.go(route.editor())"
+    >{{ studio.t('Open the studio') }}</md-button
+  >
+  <div class="pictor-profile" data-profile>
+    <section
+      class="pictor-profile-identity"
+      [attr.aria-label]="studio.t('Your profile')"
+    >
+      <div class="pictor-profile-identity__person">
+        <md-avatar
+          [src]="viewer.art.src"
+          [name]="viewer.displayName"
+          [label]="t(viewer.art.altKey)"
+          size="large"
+        />
+        <div>
+          <span class="pictor-profile-eyebrow"
+            >{{ studio.t('YOUR CORNER OF PICTOR') }}</span
+          >
+          <h2>{{viewer.displayName}}</h2>
+          <p>
+            &#64;{{viewer.handle}} <span aria-hidden="true">·</span> {{
+            studio.t('A little curiosity goes a long way.') }}
+          </p>
+        </div>
+      </div>
+      <div class="pictor-profile-identity__art" aria-hidden="true">
+        <svg viewBox="0 0 210 140">
+          <circle cx="67" cy="70" r="49" fill="#BEE7AA" />
+          <rect
+            x="82"
+            y="20"
+            width="89"
+            height="100"
+            rx="44"
+            fill="none"
+            stroke="#C2BBF3"
+            stroke-width="20"
+            transform="rotate(30 125 70)"
+          />
+          <circle cx="174" cy="113" r="11" fill="#F2AAA7" /></svg
+        ><span>{{ studio.t('ROOM FOR YOUR NEXT BIG IDEA') }}</span>
+      </div>
+    </section>
+    <section
+      class="pictor-profile-metrics"
+      [attr.aria-label]="studio.t('Workspace library overview')"
+    >
+      @for(metric of metrics;track metric.label){
+      <div class="pictor-profile-metric">
+        <span class="material-symbols-outlined" aria-hidden="true"
+          >{{metric.icon}}</span
+        ><strong>{{t.formatNumber(metric.value)}}</strong
+        ><span>{{studio.t(metric.label)}}</span>
+      </div>
+      }
+    </section>
+    @if(current){<md-card class="pictor-profile-resume" variant="outlined"
+      ><a
+        class="pictor-profile-resume__preview"
+        [routerLink]="route.editor()"
+        [attr.aria-label]="studio.t('Continue editing {name}', {name:current.name})"
+        ><img
+          [src]="studio.preview(current.id)"
+          [alt]="studio.t('{name} current canvas', {name:current.name})"
+      /></a>
+      <div class="pictor-profile-resume__copy">
+        <span class="pictor-profile-eyebrow"
+          >{{ studio.t('RIGHT WHERE YOU LEFT OFF') }}</span
+        >
+        <h2>{{current.name}}</h2>
+        <p>
+          {{ studio.t('Your canvas is waiting. Pick up a detail, follow an idea,
+          or take the whole thing somewhere new.') }}
+        </p>
+        <div class="pictor-profile-resume__details">
+          <span
+            ><span class="material-symbols-outlined" aria-hidden="true"
+              >layers</span
+            >{{ studio.t('{count} editable layers', {count:
+            studio.t.formatNumber(doc.layers.length)}) }}</span
+          ><span
+            ><span class="material-symbols-outlined" aria-hidden="true"
+              >history</span
+            >{{ studio.t('{count} reversible edits', {count:
+            studio.t.formatNumber(doc.history.index)}) }}</span
+          >
+        </div>
+        <md-button
+          variant="filled"
+          icon="arrow_forward"
+          (click)="studio.go(route.editor())"
+          >{{ studio.t('Continue designing') }}</md-button
+        >
+      </div></md-card
+    >}
+    <div class="pictor-profile-workspace">
+      <section class="pictor-profile-files">
+        <div class="pictor-profile-section-head">
+          <div>
+            <span class="pictor-profile-eyebrow"
+              >{{ studio.t('KEEP YOUR MOMENTUM') }}</span
+            >
+            <h2>{{ studio.t('Your design files') }}</h2>
+          </div>
+          <pictor-tabs
+            [label]="studio.t('Profile file view')"
+            [value]="view"
+            [options]="views"
+            (changed)="view=$event"
+          />
+        </div>
+        <pictor-text
+          [live]="true"
+          [label]="studio.t('Find a design file')"
+          [value]="query"
+          (changed)="query=$event"
+        />
+        <div class="pictor-profile-file-list">
+          @for(file of files;track file.id){<a
+            [routerLink]="route.file(file.id)"
+            class="pictor-profile-file"
+            ><img [src]="studio.preview(file.id)" alt="" loading="lazy" />
+            <div>
+              <strong>{{file.name}}</strong
+              ><span
+                >{{projectName(file.projectId)}}
+                <span aria-hidden="true">·</span>
+                {{ studio.t('{count} layers', {count:
+                studio.t.formatNumber(doc.layersForFile(file.id).length)})
+                }}</span
+              >
+            </div>
+            <md-chip [label]="t(file.stateKey)" /><span
+              class="material-symbols-outlined pictor-profile-file__arrow"
+              aria-hidden="true"
+              >arrow_outward</span
+            ></a
+          >}
+        </div>
+        @if(!files.length){
+        <div class="pictor-profile-empty">
+          <span class="material-symbols-outlined" aria-hidden="true"
+            >search_off</span
+          >
+          <h3>{{ studio.t('No designs in this view') }}</h3>
+          <p>
+            {{ studio.t('Try another name or return to your recent files.') }}
+          </p>
+          <md-button variant="text" (click)="query='';view='recent'"
+            >{{ studio.t('Show recent files') }}</md-button
+          >
+        </div>
+        }
+      </section>
+      <aside class="pictor-profile-sidebar">
+        <md-card class="pictor-profile-activity" variant="outlined"
+          ><div class="pictor-profile-section-head">
+            <h2>{{ studio.t('A little progress') }}</h2>
+            <span class="material-symbols-outlined" aria-hidden="true"
+              >history</span
+            >
+          </div>
+          <p class="pictor-profile-note">
+            {{ studio.t('Recent changes on your current canvas.') }}
+          </p>
+          @if(entries.length){
+          <ol>
+            @for(entry of entries;track entry.id){
+            <li>
+              <span class="material-symbols-outlined" aria-hidden="true"
+                >{{editIcon(entry.kind)}}</span
+              >
+              <div>
+                <strong>{{t(entry.labelKey)}}</strong
+                ><span>{{entryName(entry)}}</span>
+              </div>
+            </li>
+            }
+          </ol>
+          }@else{
+          <div class="pictor-profile-first-step">
+            <span class="material-symbols-outlined" aria-hidden="true"
+              >draw</span
+            >
+            <p>{{ studio.t('Every good idea starts with a first move.') }}</p>
+            <md-button variant="text" (click)="studio.go(route.editor())"
+              >{{ studio.t('Make your first edit') }}</md-button
+            >
+          </div>
+          }</md-card
+        >
+        <md-card class="pictor-profile-saved" variant="filled"
+          ><span class="material-symbols-outlined" aria-hidden="true"
+            >{{doc.saveStatus==='unavailable'?'cloud_off':'check_circle'}}</span
+          >
+          <h2>{{ studio.t('Your ideas stay with you') }}</h2>
+          <p>
+            {{doc.saveStatus==='unavailable'?studio.t('Browser storage is
+            unavailable. Export a copy to keep your work.'):studio.t('Your
+            canvas and undo history save in this browser as you work.')}}
+          </p>
+          <md-button
+            variant="text"
+            [icon]="doc.saveStatus==='unavailable'?'download':'save'"
+            (click)="save()"
+            >{{doc.saveStatus==='unavailable'?studio.t('Export a
+            copy'):studio.t('Save workspace')}}</md-button
+          ></md-card
+        >
+        <a class="pictor-profile-library-link" [routerLink]="route.assets()"
+          ><span class="material-symbols-outlined" aria-hidden="true"
+            >interests</span
+          >
+          <div>
+            <strong>{{ studio.t('A new ingredient?') }}</strong
+            ><span>{{ studio.t('Explore the creative library') }}</span>
+          </div>
+          <span class="material-symbols-outlined" aria-hidden="true"
+            >arrow_forward</span
+          ></a
+        >
+      </aside>
+    </div>
+  </div></pictor-screen
+>

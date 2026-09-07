@@ -1,0 +1,12 @@
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+import 'material-symbols/outlined.css';
+import '@awc-ui/core/css/tokens.css';
+import '@awc-ui/core/css/pre-upgrade.css';
+import '@awc-ui/showcase-kit/design/app.css';
+import '@awc-ui/pictor-model/styles.css';
+import App from './App.svelte';
+const target=document.getElementById('root');
+if(!target)throw new Error('Missing app root');
+export default new App({target});

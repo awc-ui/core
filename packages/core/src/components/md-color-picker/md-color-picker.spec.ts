@@ -23,6 +23,27 @@ async function flushRaf() {
 }
 
 describe('md-color-picker', () => {
+  describe('localized accessible labels', () => {
+    it('updates every internal label when the locale changes without changing the color', async () => {
+      const page = await create('<md-color-picker value="#123456" alpha presets="#123456,#ffffff"></md-color-picker>');
+      const shadow = page.root!.shadowRoot!;
+      expect(shadow.querySelector('[part="hue"]')!.getAttribute('aria-label')).toBe('Hue');
+      page.root!.locale = 'ar-EG';
+      await page.waitForChanges();
+      expect(shadow.querySelector('[part="plate"]')!.getAttribute('aria-label')).toBe('التشبّع والسطوع');
+      expect(shadow.querySelector('[part="hue"]')!.getAttribute('aria-label')).toBe('درجة اللون');
+      expect(shadow.querySelector('[part="alpha"]')!.getAttribute('aria-label')).toBe('العتامة');
+      expect(shadow.querySelector('[part="presets"]')!.getAttribute('aria-label')).toBe('ألوان جاهزة');
+      expect(shadow.querySelector('[part="preview"]')!.getAttribute('aria-label')).toMatch(/^اللون الحالي /);
+      expect(page.root!.value).toBe('#123456');
+      page.root!.locale = 'ro-RO';
+      await page.waitForChanges();
+      expect(shadow.querySelector('[part="hue"]')!.getAttribute('aria-label')).toBe('Nuanță');
+      page.root!.locale = 'unknown';
+      await page.waitForChanges();
+      expect(shadow.querySelector('[part="hue"]')!.getAttribute('aria-label')).toBe('Hue');
+    });
+  });
   describe('rendering', () => {
     it('renders inline with defaults', async () => {
       const page = await create('<md-color-picker></md-color-picker>');

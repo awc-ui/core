@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <!-- charset and viewport first, and inside the first 1024 bytes, which is
+         all the encoding sniffer reads. -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- THE PREBOOT SCRIPT, before any stylesheet.
+
+         ~800 bytes of synchronous IIFE that reads the showcase state from the
+         URL (or localStorage) and stamps lang / dir / data-theme / data-density
+         onto <html> before the first paint. Placed after a stylesheet it still
+         runs before paint, but the browser blocks it on the CSS download first
+         — so it goes ahead of the font sheets and ahead of the app sheet Vite
+         injects at the end of this head.
+
+         It deliberately does NOT apply the accent preset: that is ~2.8 kB of
+         palette per seed and would blow the preboot budget. The dock module
+         injects it a moment later, so a non-default accent has a brief
+         default-violet frame on a cold load. Documented trade, made in the kit.
+
+         The body is interpolated from @awc-ui/showcase-kit/preboot at build
+         time — see the `awc-showcase-head` plugin in vite.config.ts. There is
+         no second copy of it here. -->
+    <!--__AWC_PREBOOT_SCRIPT__-->
+
+    <!-- THE FONTS ARE NOT LOADED HERE. Stylesheet links to fonts.googleapis.com
+         used to sit at this point; an enterprise Content-Security-Policy refuses
+         them under `style-src 'self'`, and a blocked font sheet is not cosmetic —
+         every icon degrades to its ligature text. They are npm dependencies now,
+         imported from the entry module, so the woff2 files are emitted beside the
+         app's own assets and served from this origin. -->
+
+    <meta name="awc-reporting-date" content="__AWC_REPORTING_DATE__" />
+    <meta name="awc-render-mode" content="spa" />
+
+    <!-- English, and it stays English. The locale lives in a query parameter
+         that only client JS reads, so the document that leaves the static host
+         has no authoritative language; the preboot script swaps lang/dir on
+         <html> and every visible string re-renders through the translator, but
+         the title cannot follow. -->
+    <title>__AWC_TITLE__</title>
+    <meta name="description" content="__AWC_DESCRIPTION__" />
+
+    <!-- THE FONTS, at document level. The components render Material Symbols
+         glyphs inside their own shadow roots; font registration crosses shadow
+         boundaries, class rules do not — so the faces must be registered here
+         or every `icon=` prop renders its ligature text. -->
+    <!-- THE AXES ARE NOT OPTIONAL, AND THIS IS THE ONE LINE THAT DECIDES IT.
+
+         Requested without an axis list, Google Fonts serves the STATIC instance
+         of Material Symbols pinned at its defaults — FILL 0 among them. Every
+         component that fills a glyph does so through
+         `font-variation-settings: 'FILL' 1`, and against a static face that
+         declaration is inert: the glyph stays an outline and only its colour
+         changes. `md-rating` was the visible casualty — clicking three stars set
+         `value` to 3 and the label to "3 of 5" while the stars stayed hollow,
+         which reads exactly like a broken control.
+
+         `FILL@0..1` (with wght, GRAD and opsz, which the components also drive)
+         serves the variable face, so a filled star is actually filled. -->
+    <!-- The ROUNDED cut, which is the one this console actually renders — see
+         `--md-sys-icon-font-family` in the kit's app.css. Storybook loads both
+         faces too, which is why a glyph could look softer there than here.
+         Outlined stays loaded as the fallback in that stack. -->
+
+    <!-- THE COMPONENT RUNTIME, as a module script pointing at an absolute URL
+         under `public/`. Stencil's lazy build resolves its sibling chunks
+         relative to its OWN location, so putting it through the bundler makes
+         it hunt for entry chunks under `/assets/`, where nothing was written.
+         `scripts/sync-runtime.mjs` has the full post-mortem. `md3.esm.js`
+         self-registers and needs no `defineCustomElements` call.
+
+         WHY THIS IS A CLASSIC SCRIPT THAT INJECTS A MODULE ONE. Vite treats an
+         inline module script as a module of its OWN and follows the imports
+         inside it, so a literal specifier there fails the build outright and an
+         `@vite-ignore`d one gets bundled into the app's entry chunk — the
+         runtime is then not requested until the whole application bundle has
+         downloaded and parsed, and every screen paints empty first.
+
+         Vite does not touch a NON-module inline script, so this one is emitted
+         byte for byte and runs while the head is still parsing, which is the
+         earliest the request can be made. `__AWC_BASE__` is interpolated from
+         the same `base` vite.config.ts passes to Vite, so the URL and the mount
+         cannot drift. -->
+    <!--__AWC_RUNTIME_SCRIPT__-->
+  </head>
+  <body>
+    <!-- `display: contents` — the mount point has no box.
+
+         Svelte needs a target element, but the shell is a full-height flex
+         column and `<awc-showcase-dock>` is its sibling; a real block here
+         would become the element those two are laid out inside, and the shell's
+         `100dvh` would then measure this div rather than the viewport. A
+         `display: contents` host is transparent to layout. Written inline
+         rather than in a stylesheet so it holds from the first byte, before any
+         CSS has loaded.
+
+         THIS DIV IS EMPTY AND STAYS EMPTY WITHOUT JAVASCRIPT. The document is
+         the same file for every visitor and every route; everything a reader
+         sees is rendered in the browser. -->
+    <div id="root" class="awc-root"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

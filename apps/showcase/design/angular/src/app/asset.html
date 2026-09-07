@@ -1,0 +1,78 @@
+@if(asset;as item){<pictor-screen
+  [title]="item.name"
+  [subtitle]="studio.t('One ingredient. Endless possible compositions.')"
+  ><md-button aside variant="filled" icon="add" (click)="insert()"
+    >{{ studio.t('Add to canvas') }}</md-button
+  >
+  <div class="pictor-asset-detail">
+    <div class="pictor-asset-detail__art">
+      @if(item.art){<img
+        [src]="item.art.src"
+        [alt]="t(item.art.altKey)"
+      />}@else{<svg viewBox="0 0 600 400" [attr.aria-label]="item.name">
+        <rect
+          width="600"
+          height="400"
+          [attr.fill]="colorOf(item.color,'#E6EBDC')"
+        />
+        @if(item.kind==='text-style'){
+        <text
+          x="70"
+          y="270"
+          font-size="210"
+          font-family="Georgia,serif"
+          fill="#203D35"
+        >
+          Aa
+        </text>
+        }</svg
+      >}
+    </div>
+    <div class="pictor-asset-detail__copy">
+      <span class="pictor-eyebrow"
+        >{{ studio.t('YOUR CREATIVE INGREDIENT') }}</span
+      >
+      <h2>{{item.name}}</h2>
+      <md-chip [label]="t(item.kindKey)" />
+      <p>
+        {{ studio.t('Add this asset as an editable layer in your current design.
+        Move it, resize it, and make it part of something new.') }}
+      </p>
+      @if(item.color){<code>{{colorOf(item.color)}}</code>}<md-button
+        variant="filled"
+        icon="add"
+        (click)="insert()"
+        >{{ studio.t('Use in my design') }}</md-button
+      ><md-button
+        variant="text"
+        icon="arrow_back"
+        (click)="studio.go(route.assets())"
+        >{{ studio.t('Explore the library') }}</md-button
+      >
+    </div>
+  </div>
+  <section class="pictor-section">
+    <div class="pictor-section__head">
+      <h2>{{ studio.t('Where this idea already lives') }}</h2>
+      <span class="pictor-muted"
+        >{{ studio.t('{count} design files', {count:
+        studio.t.formatNumber(usage.length)}) }}</span
+      >
+    </div>
+    <div class="pictor-file-grid">
+      @for(file of usage;track file.id){<pictor-file-card [file]="file" />}
+    </div>
+    @if(!usage.length){
+    <p class="studio-description">
+      {{ studio.t('Be the first to put this asset to work in your current
+      canvas.') }}
+    </p>
+    }
+  </section></pictor-screen
+>}@else{<pictor-screen
+  [title]="studio.t('Asset not found')"
+  [subtitle]="studio.t('Find another ingredient in your library.')"
+  ><md-button variant="filled" (click)="studio.go(route.assets())"
+    >{{ studio.t('Explore the library') }}</md-button
+  ></pictor-screen
+>}

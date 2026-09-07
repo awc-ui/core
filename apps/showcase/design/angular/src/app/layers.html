@@ -1,0 +1,86 @@
+<div class="studio-layers">
+  <div class="studio-panel-heading">
+    <div>
+      <h3>{{ studio.t('Layers') }} <span>{{doc.layers.length}}</span></h3>
+      <p>{{ studio.t('Your composition, piece by piece.') }}</p>
+    </div>
+    <md-icon-button
+      icon="add"
+      [attr.aria-label]="studio.t('Insert a layer')"
+      (click)="studio.emit('pictor:insert')"
+    />
+  </div>
+  <pictor-text
+    [live]="true"
+    [label]="studio.t('Find a layer')"
+    [value]="query"
+    (changed)="query=$event"
+  />
+  <div
+    class="tree"
+    role="tree"
+    [attr.aria-label]="studio.t('Canvas layers')"
+    data-layer-tree
+  >
+    @for(row of rows;track row.layer.id;let i=$index){
+    <div
+      class="tree__row"
+      role="treeitem"
+      [attr.aria-level]="row.level+1"
+      [attr.aria-expanded]="isContainer(row.layer)?!collapsed.has(row.layer.id):null"
+      [attr.aria-selected]="doc.selection.includes(row.layer.id)"
+      tabindex="0"
+      [attr.data-layer]="row.layer.id"
+      [attr.data-level]="row.level"
+      [attr.data-selected]="doc.selection.includes(row.layer.id)?'':null"
+      [attr.data-tone]="!visible.has(row.layer.id)?'hidden':locked.has(row.layer.id)?'locked':null"
+      [attr.data-drop]="dropOn?.id===row.layer.id?dropOn?.side:null"
+      [draggable]="!locked.has(row.layer.id)"
+      (dragstart)="start($event,row.layer.id)"
+      (dragover)="over($event,row.layer.id)"
+      (drop)="drop($event)"
+      (dragend)="end()"
+      (click)="select(row.layer.id,$event)"
+      (keydown)="key($event,row.layer.id,i)"
+    >
+      @if(isContainer(row.layer)){<button
+        class="tree__expand"
+        [attr.aria-label]="studio.t('Toggle {name}', {name:row.layer.name})"
+        (click)="toggle(row.layer.id,$event)"
+      >
+        <span class="material-symbols-outlined" aria-hidden="true"
+          >{{collapsed.has(row.layer.id)?'chevron_right':'expand_more'}}</span
+        ></button
+      >}@else{<span class="tree__expand-spacer"></span>}<span
+        class="material-symbols-outlined tree__icon"
+        aria-hidden="true"
+        >{{layerIcon(row.layer.kind)}}</span
+      ><span class="tree__name" [title]="row.layer.name"
+        >{{row.layer.name}}</span
+      ><md-icon-button
+        class="tree__toggle"
+        size="x-small"
+        [icon]="row.layer.visible?'visibility':'visibility_off'"
+        [attr.aria-label]="studio.t(row.layer.visible?'Hide {name}':'Show {name}',{name:row.layer.name})"
+        [attr.data-visibility]="row.layer.id"
+        (click)="visibility(row.layer.id,$event)"
+      /><md-icon-button
+        class="tree__toggle"
+        size="x-small"
+        [icon]="row.layer.locked?'lock':'lock_open'"
+        [attr.aria-label]="studio.t(row.layer.locked?'Unlock {name}':'Lock {name}',{name:row.layer.name})"
+        [attr.data-lock]="row.layer.id"
+        (click)="lock(row.layer.id,$event)"
+      />
+    </div>
+    }
+  </div>
+  @if(!rows.length){
+  <p class="studio-description">
+    {{ studio.t('No matching layers. Try another name.') }}
+  </p>
+  }
+  <p class="studio-panel-footnote">
+    {{ studio.t('Shift-click to select more. Drag rows to reorder or nest.') }}
+  </p>
+</div>

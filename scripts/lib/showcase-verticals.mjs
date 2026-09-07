@@ -195,6 +195,13 @@ export const VERTICALS = Object.freeze([
     /* `html` goes in here only now that the port exists. */
     localeRouted: Object.freeze(['html']),
   },
+  {
+    id: 'design',
+    title: 'Pictor — Design & Image',
+    builds: Object.freeze([...SPA_BUILDS]),
+    reference: 'react',
+    localeRouted: Object.freeze([]),
+  },
 ]);
 
 export const verticalById = (id) => VERTICALS.find((v) => v.id === id);

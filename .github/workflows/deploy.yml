@@ -95,6 +95,15 @@ jobs:
             test -f "apps/docs/dist/showcase/music/$fw/index.html" \
               || (echo "::error::Missing apps/docs/dist/showcase/music/$fw/index.html (showcase build not embedded)" && exit 1)
           done
+          # Pictor's documentation and every native studio entry must ship together.
+          test -f apps/docs/dist/showcase/design/index.html
+          for fw in html react vue angular svelte; do
+            for route in "" editor assets profile p/meridian-rebrand f/fl-01 a/as-001; do
+              test -f "apps/docs/dist/showcase/design/$fw/${route:+$route/}index.html" \
+                || (echo "::error::Missing Pictor route: $fw/$route" && exit 1)
+            done
+            test -f "apps/docs/dist/showcase/design/$fw/awc-runtime/md3/md3.esm.js"
+          done
           for fw in next nuxt angular-ssr sveltekit; do
             grep -q "from = \"/showcase/credit-risk/$fw/\*\"" apps/docs/netlify.toml \
               || (echo "::error::apps/docs/netlify.toml has no proxy for /showcase/credit-risk/$fw/ — the showcase page links to it and it renders on a server, so every route under it would 404" && exit 1)

@@ -1,0 +1,115 @@
+<pictor-screen
+  [title]="studio.t('The possibility library')"
+  [subtitle]="studio.t('Good ideas deserve great ingredients. Add any asset directly to your canvas.')"
+  ><md-button
+    aside
+    variant="tonal"
+    icon="arrow_outward"
+    (click)="studio.go(route.editor())"
+    >{{ studio.t('Back to studio') }}</md-button
+  >
+  <section class="pictor-section">
+    <div class="pictor-section__head">
+      <div>
+        <span class="pictor-eyebrow">{{ studio.t('BUILT WITH AWC') }}</span>
+        <h2>{{ studio.t('Components you can actually touch.') }}</h2>
+      </div>
+      <span class="pictor-muted"
+        >{{ studio.t('Insert, compose, then try them in Present.') }}</span
+      >
+    </div>
+    <div class="pictor-live-library">
+      @for(item of components;track item.id){<md-card variant="outlined"
+        ><span class="material-symbols-outlined" aria-hidden="true"
+          >{{item.icon}}</span
+        >
+        <h3>{{studio.t(item.name)}}</h3>
+        <p>{{studio.t(item.description)}}</p>
+        <md-button variant="tonal" icon="add" (click)="component(item)"
+          >{{ studio.t('Add to canvas') }}</md-button
+        ></md-card
+      >}
+    </div>
+  </section>
+  <section class="pictor-section" data-asset-library>
+    <div class="pictor-section__head">
+      <h2>{{ studio.t('Collect a little inspiration') }}</h2>
+      <span class="pictor-muted"
+        >{{ studio.t('{count} assets', {count:
+        studio.t.formatNumber(assets.length)}) }}</span
+      >
+    </div>
+    <div class="pictor-library-filters">
+      <pictor-text
+        [live]="true"
+        [label]="studio.t('Search library')"
+        [value]="query"
+        (changed)="query=$event;limit=24"
+      /><pictor-select
+        [label]="studio.t('Asset type')"
+        [value]="kind"
+        [options]="kinds"
+        (changed)="kind=$event;limit=24"
+      />
+    </div>
+    <div class="pictor-library-grid">
+      @for(item of assets.slice(0,limit);track item.id){<md-card
+        variant="outlined"
+        class="pictor-library-card"
+        ><a
+          [routerLink]="route.asset(item.id)"
+          class="pictor-library-preview"
+          [attr.aria-label]="studio.t('View {name}', {name:item.name})"
+          >@if(item.art){<img
+            [src]="item.art.src"
+            [alt]="t(item.art.altKey)"
+            loading="lazy"
+          />}@else{<svg viewBox="0 0 300 200" aria-hidden="true">
+            <rect
+              width="300"
+              height="200"
+              [attr.fill]="colorOf(item.color,'#E6EBDC')"
+            />
+            @if(item.kind==='text-style'){
+            <text
+              x="30"
+              y="136"
+              font-size="96"
+              font-family="Georgia,serif"
+              fill="#203D35"
+            >
+              Aa
+            </text>
+            }</svg
+          >}</a
+        >
+        <div class="pictor-library-meta">
+          <div>
+            <a [routerLink]="route.asset(item.id)"
+              ><strong>{{item.name}}</strong></a
+            ><span>{{t(item.kindKey)}}</span>
+          </div>
+          <md-icon-button
+            icon="add_circle"
+            [attr.aria-label]="studio.t('Add {name} to canvas', {name:item.name})"
+            (click)="asset(item)"
+          /></div></md-card
+      >}
+    </div>
+    @if(!assets.length){
+    <div class="pictor-empty">
+      <span class="material-symbols-outlined" aria-hidden="true"
+        >search_off</span
+      >
+      <h3>{{ studio.t('No ingredients found') }}</h3>
+      <p>{{ studio.t('Try a different name or asset type.') }}</p>
+    </div>
+    }@else if(assets.length>limit){
+    <div class="pictor-library-more">
+      <md-button variant="outlined" icon="expand_more" (click)="limit=limit+24"
+        >{{ studio.t('Explore more assets') }}</md-button
+      >
+    </div>
+    }
+  </section></pictor-screen
+>

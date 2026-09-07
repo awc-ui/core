@@ -468,6 +468,7 @@ export const MdChip = /*@__PURE__*/ defineContainer<JSX.MdChip>('md-chip', defin
 
 
 export const MdColorPicker = /*@__PURE__*/ defineContainer<JSX.MdColorPicker>('md-color-picker', defineMdColorPicker, [
+  'locale',
   'variant',
   'value',
   'format',

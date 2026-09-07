@@ -812,7 +812,7 @@ list and will re-render with the chip gone).
 
 @ProxyCmp({
   defineCustomElementFn: defineMdColorPicker,
-  inputs: ['alpha', 'ariaLabelProp', 'density', 'disabled', 'dismissOnOutsideClick', 'format', 'open', 'presets', 'showHex', 'showInputs', 'value', 'variant'],
+  inputs: ['alpha', 'ariaLabelProp', 'density', 'disabled', 'dismissOnOutsideClick', 'format', 'locale', 'open', 'presets', 'showHex', 'showInputs', 'value', 'variant'],
   methods: ['show', 'close']
 })
 @Component({
@@ -820,7 +820,7 @@ list and will re-render with the chip gone).
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['alpha', 'ariaLabelProp', 'density', 'disabled', 'dismissOnOutsideClick', 'format', 'open', 'presets', 'showHex', 'showInputs', 'value', 'variant'],
+  inputs: ['alpha', 'ariaLabelProp', 'density', 'disabled', 'dismissOnOutsideClick', 'format', 'locale', 'open', 'presets', 'showHex', 'showInputs', 'value', 'variant'],
   standalone: true
 })
 export class MdColorPicker {

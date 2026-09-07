@@ -1,0 +1,69 @@
+@if(layer.componentId?.startsWith('awc:')) {
+<div class="layer__live" [attr.data-live]="presentation?'':null">
+  @switch(layer.componentId){@case('awc:button'){<md-button
+    variant="filled"
+    [icon]="activated?'check':'arrow_forward'"
+    (click)="activate()"
+    >{{activated?studio.t('You made it happen!'):layer.name}}</md-button
+  >}@case('awc:text-field'){<md-text-field
+    variant="outlined"
+    [label]="layer.name"
+    [placeholder]="studio.t('Try typing here…')"
+  />}@case('awc:switch'){
+  <div class="live-switch">
+    <span>{{layer.name}}</span
+    ><md-switch [attr.aria-label]="layer.name" icons />
+  </div>
+  }@default{<md-card variant="filled"
+    ><span class="live-card__eyebrow"
+      >{{ studio.t('MADE OF POSSIBILITIES') }}</span
+    ><strong>{{layer.name}}</strong>
+    <p>{{ studio.t('A real component. Ready for your next idea.') }}</p>
+    <md-button variant="tonal" (click)="activate()"
+      >{{activated?studio.t('Nice work!'):studio.t('Explore more')}}</md-button
+    ></md-card
+  >}}
+</div>
+} @else if(layer.art){
+<div class="layer__image">
+  <span data-adj="temperature" [attr.data-v]="adjustment('temperature')"
+    ><span data-adj="saturation" [attr.data-v]="adjustment('saturation')"
+      ><span data-adj="contrast" [attr.data-v]="adjustment('contrast')"
+        ><span data-adj="exposure" [attr.data-v]="adjustment('exposure')"
+          ><img
+            [src]="layer.art.src"
+            [alt]="layer.art.altKey?studio.t(layer.art.altKey):layer.name"
+            draggable="false" /></span></span></span
+  ></span>
+</div>
+} @else if(layer.kind!=='group'){<svg
+  class="layer__paint"
+  [attr.viewBox]="'0 0 '+width+' '+height"
+  preserveAspectRatio="none"
+  aria-hidden="true"
+>
+  @if(layer.kind==='text'){
+  <text
+    x="0"
+    [attr.y]="text.top"
+    [attr.fill]="fill"
+    [attr.font-size]="text.size"
+    font-family="Arial, sans-serif"
+    font-weight="600"
+  >
+    @for(line of text.lines;track $index){
+    <tspan x="0" [attr.dy]="$index?text.lineHeight:0">{{line}}</tspan>
+    }
+  </text>
+  }@else if(layer.kind==='ellipse'){
+  <ellipse
+    [attr.cx]="width/2"
+    [attr.cy]="height/2"
+    [attr.rx]="width/2"
+    [attr.ry]="height/2"
+    [attr.fill]="fill"
+  />
+  }@else{
+  <rect [attr.width]="width" [attr.height]="height" [attr.fill]="fill" />
+  }</svg
+>}

@@ -1610,6 +1610,11 @@ export namespace Components {
          */
         "format": ColorFormat;
         /**
+          * BCP-47 locale for built-in accessible labels (English, Arabic, Romanian).
+          * @default 'en-US'
+         */
+        "locale": string;
+        /**
           * Whether the popover is open. Only meaningful when variant=`popover`.
           * @default false
          */
@@ -11258,6 +11263,11 @@ declare namespace LocalJSX {
          */
         "format"?: ColorFormat;
         /**
+          * BCP-47 locale for built-in accessible labels (English, Arabic, Romanian).
+          * @default 'en-US'
+         */
+        "locale"?: string;
+        /**
           * Emitted when the user commits a value (release pointer, blur input, Enter, or click a preset).
          */
         "onMdChange"?: (event: MdColorPickerCustomEvent<{ value: string }>) => void;
@@ -17373,6 +17383,7 @@ declare namespace LocalJSX {
         "density": 0 | -1 | -2 | -3 | -4;
     }
     interface MdColorPickerAttributes {
+        "locale": string;
         "variant": ColorPickerVariant;
         "value": string;
         "format": ColorFormat;

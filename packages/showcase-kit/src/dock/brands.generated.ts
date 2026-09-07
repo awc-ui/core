@@ -16,6 +16,7 @@ export const BRAND_SEEDS: Readonly<Record<string, string>> = {
   'social': '#B3216B',
   'community': '#9A5B18',
   'music': '#7A3FB5',
+  'design': '#3F3DA8',
 };
 
 /** The library's own violet, for a page that is not one of the six. */

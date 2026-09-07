@@ -1,0 +1,101 @@
+@import "@fontsource/roboto/400.css";
+@import "@fontsource/roboto/500.css";
+@import "@fontsource/roboto/700.css";
+@import "material-symbols/outlined.css";
+@import "@awc-ui/core/css/tokens.css";
+@import "@awc-ui/core/css/pre-upgrade.css";
+@import "@awc-ui/showcase-kit/design/app.css";
+@import "@awc-ui/pictor-model/styles.css";
+awc-root,
+pictor-screen,
+pictor-home,
+pictor-library,
+pictor-profile,
+pictor-project,
+pictor-asset,
+pictor-editor,
+pictor-canvas,
+pictor-inspector,
+pictor-layer-tree,
+pictor-insert,
+pictor-dialog,
+pictor-controls {
+  display: contents;
+}
+
+/* Angular control hosts stay transparent while their native AWC children
+   retain the same flex/grid measurements as the other framework views. */
+.pictor-filterbar > pictor-text > md-text-field {
+  flex: 1;
+  min-inline-size: 160px;
+}
+.pictor-filterbar > pictor-select > md-select {
+  inline-size: 175px;
+}
+.pictor-library-filters > pictor-text > md-text-field {
+  flex: 1;
+}
+.pictor-library-filters > pictor-select > md-select {
+  inline-size: 220px;
+}
+.studio-layers > pictor-text > md-text-field {
+  display: block;
+  inline-size: calc(100% - 32px);
+  min-inline-size: 0;
+  margin: 18px 16px 12px;
+}
+.studio-dialog__actions > [actions] {
+  display: contents;
+}
+.pictor-command-host > md-dialog {
+  --md-dialog-min-width: 320px;
+  --md-dialog-max-width: 600px;
+}
+.pictor-command-host .studio-dialog__content {
+  gap: 0;
+}
+.pictor-command-host .studio-dialog__actions > .pictor-command-hints {
+  display: flex;
+}
+@media (max-width: 700px) {
+  .pictor-filterbar > pictor-text > md-text-field,
+  .pictor-filterbar > pictor-select > md-select {
+    inline-size: 100%;
+  }
+}
+@media (max-width: 600px) {
+  .pictor-library-filters > pictor-select > md-select {
+    inline-size: 100%;
+  }
+}
+
+.studio-left-panel > pictor-tabs > .studio-panel-tabs {
+  inline-size: calc(100% - 32px);
+  margin: 0 16px 24px;
+}
+
+/* Component hosts are styled externally so strict CSP needs no inline styles. */
+awc-root,
+pictor-asset,
+pictor-canvas,
+pictor-commands,
+pictor-dialog,
+pictor-editor,
+pictor-export,
+pictor-file-card,
+pictor-history,
+pictor-home,
+pictor-insert,
+pictor-inspector,
+pictor-layer-tree,
+pictor-lens,
+pictor-library,
+pictor-not-found,
+pictor-paint,
+pictor-profile,
+pictor-project,
+pictor-range,
+pictor-screen,
+pictor-select,
+pictor-tabs,
+pictor-text { display: contents; }

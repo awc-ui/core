@@ -17,6 +17,7 @@ const I = await load('i18n/index.mjs');
 const P = await load('preboot/index.mjs');
 const C = await load('credit-risk/index.mjs');
 const MU = await load('music/index.mjs');
+const DE = await load('design/index.mjs');
 
 let failures = 0;
 let checks = 0;
@@ -307,6 +308,12 @@ ok('ar has exactly the same keys', Object.keys(I.ar).length === keys.length && k
  *
  * Note which locale each entry is for. Romanian shares most of these with
  * English because the two languages genuinely share the word; Arabic shares
+ * DESIGN ADDS THIRTEEN, and every one is a word Romanian already uses: the
+ * brand `Pictor` (which is itself the Romanian for painter), `Demo`, `Editor`,
+ * `Text`, `Normal`, `Contrast` and `Zoom` are borrowed unchanged, `Iris` and
+ * `Cobalt` are the pigment names, and `X` and `Y` are axis letters. Arabic
+ * translates every one of them, which is why none appears twice here.
+ *
  * MUSIC ADDS A WHOLE CATEGORY OF LEGITIMATE MATCHES. Romanian takes `Studio`,
  * `Mixer`, `Solo`, `Album`, `Artist`, `Audio`, `MIDI` and `BPM` unchanged —
  * they are the words Romanian studios actually use — and so do the clip labels
@@ -320,7 +327,7 @@ ok('ar has exactly the same keys', Object.keys(I.ar).length === keys.length && k
  * and the ar one simply never reaches them.
  */
 const IDENTICAL_OK =
-  /^(rating\.|table\.(id|pd|lgd|ead|rwa|rwaDelta|ccf|rating|sector|margin|type)$|kpi\.(expectedLossRatio|.*\.short)$|covenant\..*\.abbr$|dock\.(framework|accent)$|unit\.times$|common\.(na|total)$|screen\.counterparty\.title$|wealth\.(screen\.household\.title|kpi\..*\.short|table\.(client|contact|kyc|segment|aum|ytd|instrument|sector)|segment\.family-office|instrumentType\.etf|region\.global|entity\.client|common\.(na|total)|proposal\.(step\.client|instruments\.meta|time\.(am|pm)|ok))$|banking\.(app\.brand|table\.(card|iban|spread|plan|costBasis|total)|category\.transport|cardKind\.virtual|txnType\.(card|transfer|dividend)|instrumentKind\.etf|plan\.(standard|plus|metal)|control\.contactless|common\.na|unit\.endingIn)$|social\.(app\.(brand|demo)|accountKind\.(personal|creator|business)|postKind\.video|common\.(na|characters)|topic\.(film|design|sport))$|community\.(app\.(brand|demo)|reaction\.haha|privacy\.public|role\.moderator|postKind\.link|audience\.public|common\.(na|characters)|topic\.(film|sport|design))$|music\.(app\.(brand|demo|viewer)|nav\.(studio|mixer)|screen\.(studio|mixer)\.title|screen\.(album|artist)\.subtitle|action\.solo|kind\.(album|artist)|clip\.(audio|midi)|label\.(bpm|decibels|trackNumber)|clip\.label\.(1|6|7|8))$)/;
+  /^(rating\.|table\.(id|pd|lgd|ead|rwa|rwaDelta|ccf|rating|sector|margin|type)$|kpi\.(expectedLossRatio|.*\.short)$|covenant\..*\.abbr$|dock\.(framework|accent)$|unit\.times$|common\.(na|total)$|screen\.counterparty\.title$|wealth\.(screen\.household\.title|kpi\..*\.short|table\.(client|contact|kyc|segment|aum|ytd|instrument|sector)|segment\.family-office|instrumentType\.etf|region\.global|entity\.client|common\.(na|total)|proposal\.(step\.client|instruments\.meta|time\.(am|pm)|ok))$|banking\.(app\.brand|table\.(card|iban|spread|plan|costBasis|total)|category\.transport|cardKind\.virtual|txnType\.(card|transfer|dividend)|instrumentKind\.etf|plan\.(standard|plus|metal)|control\.contactless|common\.na|unit\.endingIn)$|social\.(app\.(brand|demo)|accountKind\.(personal|creator|business)|postKind\.video|common\.(na|characters)|topic\.(film|design|sport))$|community\.(app\.(brand|demo)|reaction\.haha|privacy\.public|role\.moderator|postKind\.link|audience\.public|common\.(na|characters)|topic\.(film|sport|design))$|music\.(app\.(brand|demo|viewer)|nav\.(studio|mixer)|screen\.(studio|mixer)\.title|screen\.(album|artist)\.subtitle|action\.solo|kind\.(album|artist)|clip\.(audio|midi)|label\.(bpm|decibels|trackNumber)|clip\.label\.(1|6|7|8))$|design\.(app\.(brand|demo)|nav\.editor|layerKind\.text|blend\.normal|adjustment\.contrast|tool\.text|swatch\.(p2|p8)|screen\.editor\.title|label\.(x|y|zoom))$)/;
 const roSame = keys.filter((k) => I.ro[k] === I.en[k] && !IDENTICAL_OK.test(k));
 const arSame = keys.filter((k) => I.ar[k] === I.en[k] && !IDENTICAL_OK.test(k));
 ok('every ro string that should differ from en does', roSame.length === 0, roSame.join(',') || 'none');
@@ -1097,6 +1104,236 @@ ok(
   MU.FRAMEWORKS.every((fw) => MU.createRoutes(fw).basePath === `${MU.SHOWCASE_BASE}/${fw}`),
 );
 
+
+
+/* ------------------------------------------------------------ design logic */
+
+/*
+ * THE FOUR THINGS PICTOR WAS BUILT AROUND, pinned here rather than in any one
+ * build's browser suite.
+ *
+ * The tree inherits, the selection is a set, the canvas is a grid of integers,
+ * and an edit has an inverse. Every one of them would otherwise be written five
+ * times, and a regression in any would be the same wrong behaviour in five
+ * applications with no disagreement between the ports to reveal it — exactly
+ * the failure mode a parity check cannot see.
+ */
+
+section('design — visibility and locking inherit down the tree');
+
+const dgDoc = DE.defaultFile().layers;
+const dgFrame = dgDoc.find((l) => l.kind === 'frame');
+const dgGroup = dgDoc.find((l) => l.kind === 'group' && l.parentId === dgFrame.id);
+const dgLeaf = dgDoc.find((l) => l.parentId === dgGroup.id);
+
+ok('the fixture nests at least three levels', Boolean(dgFrame && dgGroup && dgLeaf));
+ok('a visible leaf under visible ancestors is visible', DE.visibleLayers(dgDoc).has(dgLeaf.id));
+
+const dgHidden = dgDoc.map((l) => (l.id === dgGroup.id ? { ...l, visible: false } : l));
+ok(
+  'hiding the GROUP hides the leaf, whose own flag is still true',
+  !DE.visibleLayers(dgHidden).has(dgLeaf.id) && dgHidden.find((l) => l.id === dgLeaf.id).visible === true,
+);
+ok('and the group itself is hidden too', !DE.visibleLayers(dgHidden).has(dgGroup.id));
+ok('the frame above it is unaffected', DE.visibleLayers(dgHidden).has(dgFrame.id));
+
+const dgLocked = dgDoc.map((l) => (l.id === dgFrame.id ? { ...l, locked: true } : l));
+ok('locking the FRAME locks everything under it', DE.lockedLayers(dgLocked).has(dgLeaf.id));
+ok(
+  'locking is independent of visibility',
+  DE.visibleLayers(dgLocked).has(dgLeaf.id) && DE.lockedLayers(dgLocked).has(dgLeaf.id),
+);
+ok('the leaf is not locked by default', DE.lockedLayers(dgDoc).has(dgLeaf.id) === false);
+
+section('design — the tree refuses the impossible drops');
+
+ok('a layer cannot become its own child', !DE.canReparent(dgDoc, dgGroup.id, dgGroup.id));
+ok('a layer cannot move into its own descendant', !DE.canReparent(dgDoc, dgFrame.id, dgGroup.id));
+ok('nothing can move into a leaf', !DE.canReparent(dgDoc, dgGroup.id, dgLeaf.id));
+ok('a legal move into a container is allowed', DE.canReparent(dgDoc, dgLeaf.id, dgFrame.id));
+ok('a move to the root is allowed', DE.canReparent(dgDoc, dgLeaf.id, null));
+ok('no layer nests past the limit', dgDoc.every((l) => DE.depthOf(dgDoc, l.id) < DE.TREE_MAX_DEPTH));
+
+section('design — paint order is depth-first, parents first');
+
+const dgPaint = DE.zOrder(dgDoc);
+ok('every layer appears exactly once', dgPaint.length === dgDoc.length);
+ok(
+  'a parent always paints before its children',
+  dgDoc.every((l) =>
+    !l.parentId ||
+    dgPaint.findIndex((q) => q.id === l.parentId) < dgPaint.findIndex((q) => q.id === l.id),
+  ),
+);
+ok(
+  'siblings paint in ascending order',
+  DE.childrenOf(dgDoc, dgFrame.id).every((l, i, all) => i === 0 || all[i - 1].order < l.order),
+);
+
+section('design — a selection agrees, disagrees, or is empty');
+
+const dgKids = DE.childrenOf(dgDoc, dgGroup.id).map((l) => l.id);
+ok('nothing selected reads as null', DE.commonValue(dgDoc, [], (l) => l.opacity) === null);
+ok(
+  'one layer reads as its own value',
+  DE.commonValue(dgDoc, [dgKids[0]], (l) => l.opacity) === DE.layerById(dgDoc, dgKids[0]).opacity,
+);
+ok(
+  'the fixture guarantees a disagreeing pair, so MIXED is reachable',
+  DE.isMixed(DE.commonValue(dgDoc, dgKids, (l) => l.fill)),
+);
+ok('MIXED is not null, and the difference matters', DE.commonValue(dgDoc, dgKids, (l) => l.fill) !== null);
+
+section('design — the canvas is integer cells, clamped to the artboard');
+
+const dgClamp = DE.clampRect({ x: 4, y: 4, w: 6, h: 6 });
+ok('a rect inside the board is unchanged', dgClamp.x === 4 && dgClamp.w === 6);
+const dgSlid = DE.clampRect({ x: DE.CANVAS_COLS - 2, y: 0, w: 8, h: 4 });
+ok('a rect off the right edge slides back rather than shrinking', dgSlid.w === 8 && dgSlid.x === DE.CANVAS_COLS - 8);
+ok('a rect wider than the board is clipped to it', DE.clampRect({ x: 0, y: 0, w: 999, h: 4 }).w === DE.CANVAS_COLS);
+ok('a zero-size rect is raised to the minimum', DE.clampRect({ x: 0, y: 0, w: 0, h: 0 }).w === DE.MIN_LAYER_CELLS);
+ok('a pixel drag becomes a whole number of cells', DE.cellsMoved(100, 480, 48) === 10);
+ok('a drag on a zero-width canvas moves nothing', DE.cellsMoved(100, 0, 48) === 0);
+ok(
+  'zoom saturates at both ends',
+  DE.zoomOut(0) === 0 && DE.zoomIn(DE.ZOOM_LEVELS.length - 1) === DE.ZOOM_LEVELS.length - 1,
+);
+
+section('design — moving a container takes its contents with it');
+
+const dgMoved = DE.moveSubtree(dgDoc, dgGroup.id, 1, 1);
+ok('the container moved', DE.layerById(dgMoved, dgGroup.id).rect.x === DE.layerById(dgDoc, dgGroup.id).rect.x + 1);
+ok('and so did its child', DE.layerById(dgMoved, dgLeaf.id).rect.x === DE.layerById(dgDoc, dgLeaf.id).rect.x + 1);
+const dgOutside = dgDoc.find((l) => l.parentId === null && l.id !== dgFrame.id);
+ok('a sibling outside it did not', DE.layerById(dgMoved, dgOutside.id).rect.x === dgOutside.rect.x);
+const dgFar = DE.moveSubtree(dgDoc, dgGroup.id, 9999, 0);
+ok(
+  'a subtree cannot be torn apart at the edge',
+  DE.layerById(dgFar, dgGroup.id).rect.x + DE.layerById(dgFar, dgGroup.id).rect.w <= DE.CANVAS_COLS &&
+    DE.layerById(dgFar, dgLeaf.id).rect.x >= DE.layerById(dgFar, dgGroup.id).rect.x,
+);
+
+section('design — align and distribute');
+
+const dgAligned = DE.alignLayers(dgDoc, dgKids, 'left');
+const dgBounds = DE.selectionBounds(dgDoc, dgKids);
+ok('aligning left puts every layer on the selection bounds', dgKids.every((id) => DE.layerById(dgAligned, id).rect.x === dgBounds.x));
+ok(
+  'aligning does not resize anything',
+  dgKids.every((id) => DE.layerById(dgAligned, id).rect.w === DE.layerById(dgDoc, id).rect.w),
+);
+ok('a single layer is already aligned with itself', DE.alignLayers(dgDoc, [dgLeaf.id], 'left') === dgDoc);
+ok('distributing needs three layers', DE.distributeLayers(dgDoc, dgKids.slice(0, 2), 'horizontal') === dgDoc);
+
+const dgRootIds = DE.childrenOf(dgDoc, null).map((l) => l.id);
+const dgSorted = dgRootIds.slice().sort((a, b) => DE.layerById(dgDoc, a).rect.y - DE.layerById(dgDoc, b).rect.y);
+const dgSpread = DE.distributeLayers(dgDoc, dgRootIds, 'vertical');
+ok(
+  'the outermost two never move when distributing',
+  DE.layerById(dgSpread, dgSorted[0]).rect.y === DE.layerById(dgDoc, dgSorted[0]).rect.y &&
+    DE.layerById(dgSpread, dgSorted[dgSorted.length - 1]).rect.y ===
+      DE.layerById(dgDoc, dgSorted[dgSorted.length - 1]).rect.y,
+);
+
+section('design — boolean operations on rectangles');
+
+const dgA = { x: 0, y: 0, w: 10, h: 10 };
+const dgB = { x: 5, y: 5, w: 10, h: 10 };
+const dgUnion = DE.booleanRect([dgA, dgB], 'union');
+ok('union is the bounding box', dgUnion.x === 0 && dgUnion.w === 15 && dgUnion.h === 15);
+const dgInter = DE.booleanRect([dgA, dgB], 'intersect');
+ok('intersect is the overlap', dgInter.x === 5 && dgInter.y === 5 && dgInter.w === 5 && dgInter.h === 5);
+ok('intersecting disjoint rects is nothing at all', DE.booleanRect([dgA, { x: 40, y: 20, w: 4, h: 4 }], 'intersect') === null);
+ok('one rect is not an operation', DE.booleanRect([dgA], 'union') === null);
+const dgSub = DE.booleanRect([{ x: 0, y: 0, w: 10, h: 10 }, { x: 0, y: 0, w: 4, h: 10 }], 'subtract');
+ok('subtracting a full-height overlap trims the base', dgSub.x === 4 && dgSub.w === 6);
+
+section('design — the history stores values, and the redo branch is discarded');
+
+const dgMake = (id, kind, before, after) => ({
+  id,
+  kind,
+  kindKey: `design.edit.${kind}`,
+  labelKey: `design.edit.${kind}`,
+  layerIds: after.map((l) => l.id),
+  before,
+  after,
+  at: DE.REPORTING_INSTANT,
+});
+
+const dgTarget = DE.layerById(dgDoc, dgLeaf.id);
+const dgNudged = { ...dgTarget, rect: { ...dgTarget.rect, x: dgTarget.rect.x + 1 } };
+const dgHist = DE.pushEdit(DE.EMPTY_HISTORY, dgMake('e1', 'move', [dgTarget], [dgNudged]));
+
+ok('an empty history cannot undo', !DE.canUndo(DE.EMPTY_HISTORY));
+ok('one edit can be undone and not redone', DE.canUndo(dgHist) && !DE.canRedo(dgHist));
+
+const dgAfter = dgDoc.map((l) => (l.id === dgNudged.id ? dgNudged : l));
+const dgBack = DE.undo(dgAfter, dgHist);
+ok('undo restores the whole previous value', DE.layerById(dgBack.layers, dgLeaf.id).rect.x === dgTarget.rect.x);
+ok('and it can now be redone', DE.canRedo(dgBack.history));
+const dgForward = DE.redo(dgBack.layers, dgBack.history);
+ok('redo puts it back', DE.layerById(dgForward.layers, dgLeaf.id).rect.x === dgNudged.rect.x);
+
+const dgBranch = DE.pushEdit(dgBack.history, dgMake('e2', 'style', [dgTarget], [{ ...dgTarget, opacity: 20 }]));
+ok('editing after undoing discards the redo branch', !DE.canRedo(dgBranch) && dgBranch.entries.length === 1);
+
+let dgDeep = DE.EMPTY_HISTORY;
+for (let i = 0; i < DE.HISTORY_LIMIT + 6; i += 1) {
+  dgDeep = DE.pushEdit(dgDeep, dgMake(`e${i}`, 'move', [dgTarget], [dgNudged]));
+}
+ok('the history is bounded', dgDeep.entries.length === DE.HISTORY_LIMIT);
+ok('and the cursor stays at the end after trimming', dgDeep.index === dgDeep.entries.length);
+
+const dgNew = { ...dgTarget, id: 'ly-new' };
+ok(
+  'undoing a create removes the layer rather than restoring an old value',
+  DE.undo([...dgDoc, dgNew], DE.pushEdit(DE.EMPTY_HISTORY, dgMake('e3', 'create', [], [dgNew]))).layers.every(
+    (l) => l.id !== 'ly-new',
+  ),
+);
+ok(
+  'undoing a delete brings the layer back',
+  DE.undo(
+    dgDoc.filter((l) => l.id !== dgLeaf.id),
+    DE.pushEdit(DE.EMPTY_HISTORY, dgMake('e4', 'delete', [dgTarget], [])),
+  ).layers.some((l) => l.id === dgLeaf.id),
+);
+
+section('design — the fixture and the stylesheet agree on what is renderable');
+
+ok(
+  'every fill is a palette token the stylesheet has a rule for',
+  DE.allLayers().every((l) => l.fill === null || DE.PALETTE.some((q) => q.token === l.fill)),
+);
+ok('every opacity sits on a generated rung', DE.allLayers().every((l) => l.opacity % DE.OPACITY_STEP === 0));
+ok(
+  'every adjustment sits on a generated rung and is never zero',
+  DE.allLayers().every((l) => l.adjustments.every((a) => a.value !== 0 && a.value % DE.ADJUSTMENT_STEP === 0)),
+);
+ok(
+  'every layer fits the artboard',
+  DE.allLayers().every((l) => l.rect.x + l.rect.w <= DE.CANVAS_COLS && l.rect.y + l.rect.h <= DE.CANVAS_ROWS),
+);
+const dgTicks = DE.rulerTicks(DE.CANVAS_COLS, 4);
+ok('the ruler always closes on the far edge', dgTicks[dgTicks.length - 1].cell === DE.CANVAS_COLS);
+
+section('design — routes');
+
+ok('four destinations', DE.DESTINATIONS.length === 4);
+ok('the editor owns the file drill', DE.destinationFor('/f/fl-01/').value === 'editor');
+ok('projects owns the project drill', DE.destinationFor('/p/atlas-mobile/').value === 'projects');
+ok('assets owns the asset drill', DE.destinationFor('/a/as-001/').value === 'assets');
+ok('the root is projects, matched exactly', DE.destinationFor('/').value === 'projects');
+ok('an unknown path matches nothing', DE.destinationFor('/nope/') === null);
+ok(
+  'every drill route ends in a slash',
+  [DE.route.project('x'), DE.route.file('x'), DE.route.asset('x')].every((q) => q.endsWith('/')),
+);
+ok(
+  'the dock can swap any framework segment for any other',
+  DE.FRAMEWORKS.every((fw) => DE.createRoutes(fw).basePath === `${DE.SHOWCASE_BASE}/${fw}`),
+);
 
 /* ------------------------------------------------------------------ report */
 

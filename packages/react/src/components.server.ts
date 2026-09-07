@@ -594,6 +594,7 @@ export type MdColorPickerEvents = {
 export const MdColorPicker: StencilReactComponent<MdColorPickerElement, MdColorPickerEvents, Components.MdColorPicker> = /*@__PURE__*/ createComponent<MdColorPickerElement, MdColorPickerEvents, Components.MdColorPicker>({
     tagName: 'md-color-picker',
     properties: {
+        locale: 'locale',
         variant: 'variant',
         value: 'value',
         format: 'format',

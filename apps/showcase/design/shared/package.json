@@ -1,0 +1,21 @@
+{
+  "name": "@awc-ui/pictor-model",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared framework-free Pictor document engine, artwork, exports, and presentation styles.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles.css": "./styles.css"
+  },
+  "dependencies": {
+    "@awc-ui/showcase-kit": "workspace:*"
+  },
+  "scripts": {
+    "verify": "node scripts/verify-model.mjs && node scripts/verify-localization.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12",
+    "puppeteer": "^24.0.0"
+  }
+}

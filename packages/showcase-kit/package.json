@@ -44,6 +44,11 @@
       "import": "./dist/music/index.mjs"
     },
     "./music/app.css": "./src/music/app.css",
+    "./design": {
+      "types": "./dist/design/index.d.ts",
+      "import": "./dist/design/index.mjs"
+    },
+    "./design/app.css": "./src/design/app.css",
     "./i18n": {
       "types": "./dist/i18n/index.d.ts",
       "import": "./dist/i18n/index.mjs"
@@ -65,7 +70,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.json --emitDeclarationOnly && esbuild src/index.ts src/data/index.ts src/credit-risk/index.ts src/wealth/index.ts src/banking/index.ts src/social/index.ts src/community/index.ts src/music/index.ts src/i18n/index.ts src/dock/index.ts src/preboot/index.ts --bundle --splitting --format=esm --target=es2020 --sourcemap --outdir=dist --out-extension:.js=.mjs --chunk-names=chunks/[name]-[hash] && node scripts/emit-preboot.mjs",
+    "build": "rm -rf dist && tsc -p tsconfig.json --emitDeclarationOnly && esbuild src/index.ts src/data/index.ts src/credit-risk/index.ts src/wealth/index.ts src/banking/index.ts src/social/index.ts src/community/index.ts src/music/index.ts src/design/index.ts src/i18n/index.ts src/dock/index.ts src/preboot/index.ts --bundle --splitting --format=esm --target=es2020 --sourcemap --outdir=dist --out-extension:.js=.mjs --chunk-names=chunks/[name]-[hash] && node scripts/emit-preboot.mjs",
     "generate:fixture": "node scripts/generate-fixture.mjs",
     "generate:wealth": "node scripts/generate-wealth-fixture.mjs",
     "generate:seeds": "node scripts/generate-seeds.mjs",
@@ -75,7 +80,8 @@
     "generate:banking": "node scripts/generate-banking-fixture.mjs",
     "generate:social": "node scripts/generate-social-fixture.mjs",
     "generate:community": "node scripts/generate-community-fixture.mjs",
-    "generate:music": "node scripts/generate-music-fixture.mjs"
+    "generate:music": "node scripts/generate-music-fixture.mjs",
+    "generate:design": "node scripts/generate-design-fixture.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.12",

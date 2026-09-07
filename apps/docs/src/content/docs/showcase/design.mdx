@@ -1,0 +1,86 @@
+---
+title: Pictor — Design & Image
+description: "An interactive design studio built with AWC UI in HTML, React, Vue, Angular and Svelte. Edit layers, insert live components, inspect their markup and export your work."
+---
+
+**Pictor is a working design studio built with AWC UI.** Start with a template,
+move and resize its layers, add a live component, and export the result. The
+same document engine powers five native implementations, so you can explore
+the components in the framework you use.
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 28px 0;">
+  <a href="/showcase/design/react/" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border-radius: 999px; background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); font: var(--md-sys-typescale-label-large-font); text-decoration: none;">Open Pictor</a>
+  <a href="/showcase/design/react/editor/?lang=ar&dir=rtl">Try the Arabic editor</a>
+</div>
+
+## Try it in five minutes
+
+1. **Choose a starting point.** Open a project or start with an Orbit, Pulse or
+   Fieldnotes template. Every layer remains editable.
+2. **Make it yours.** Draw a rectangle, change its fill, drag it into place and
+   resize it. Use the layer tree and inspector to arrange, group, hide or lock
+   objects. Undo and redo preserve the edit history.
+3. **Insert a real component.** Open Insert and add a live AWC control to the
+   canvas. Explore how it behaves alongside text, artwork and shapes.
+4. **See how the interface is built.** Select Components in the app bar to open
+   the component explorer. Search for a component, inspect its rendered HTML,
+   copy the example and follow its API documentation link.
+5. **Export your work.** Download SVG, PNG or JSON. Open Quick actions with
+   **⌘K / Ctrl+K**, use **↑ / ↓** to choose a result and **Enter** to open it.
+
+## Choose your framework
+
+Each build has its own native view layer and event bindings. All five share the
+document model, assets, exports and translations. The plain HTML version uses
+TypeScript and native Web Components without a UI framework runtime.
+
+| Build | Open the app | Browse the source |
+|---|---|---|
+| **HTML** | [HTML studio](/showcase/design/html/) | [HTML source](https://github.com/awc-ui/core/tree/main/apps/showcase/design/html) |
+| **React** | [React studio](/showcase/design/react/) | [React source](https://github.com/awc-ui/core/tree/main/apps/showcase/design/react) |
+| **Vue** | [Vue studio](/showcase/design/vue/) | [Vue source](https://github.com/awc-ui/core/tree/main/apps/showcase/design/vue) |
+| **Angular** | [Angular studio](/showcase/design/angular/) | [Angular source](https://github.com/awc-ui/core/tree/main/apps/showcase/design/angular) |
+| **Svelte** | [Svelte studio](/showcase/design/svelte/) | [Svelte source](https://github.com/awc-ui/core/tree/main/apps/showcase/design/svelte) |
+
+Open the control bar at the bottom to switch framework, theme, density,
+direction or language. These are client-rendered applications; language changes
+happen in place. Arabic includes translated interface labels, command search,
+right-to-left layout and Arabic number entry. Switching language preserves the
+text and names you have authored on the canvas.
+
+## Components in context
+
+| Part of the studio | AWC components to explore |
+|---|---|
+| File filters | [Button group](/components/button-group/), [Button](/components/button/) |
+| Canvas tools and panel navigation | [Toolbar](/components/toolbar/), [Icon button](/components/icon-button/), [Tabs](/components/tabs/) |
+| Geometry and appearance | [Number field](/components/number-field/), [Color picker](/components/color-picker/), [Slider](/components/slider/), [Select](/components/select/) |
+| Commands, exports and feedback | [Dialog](/components/dialog/), [Text field](/components/text-field/), [Snackbar](/components/snackbar/) |
+
+The [shared document engine](https://github.com/awc-ui/core/tree/main/apps/showcase/design/shared)
+handles selection, geometry, reversible edits and persistence. The framework
+sources show how to connect those operations to the components.
+
+## Saving and export
+
+Pictor saves your files and undo history in this browser on this site. Switching
+frameworks on the same site keeps that workspace available. Clearing site data
+removes the local copy; there is no account sync or collaboration backend.
+Projects, people and shared-file metadata are demonstration data.
+
+SVG and PNG export the visible composition. Live controls become static vector
+representations, and image adjustments and blend effects are simplified. JSON
+preserves the layer model, including geometry, colors and component references.
+
+## Run locally
+
+From the repository root, after installing dependencies:
+
+```sh
+pnpm --filter @awc-ui/core build
+pnpm showcase:build --vertical design
+pnpm showcase:preview 4317 --static-only --vertical design
+```
+
+Open [the local React studio](http://localhost:4317/showcase/design/react/), then
+use its control bar to try the other four builds.

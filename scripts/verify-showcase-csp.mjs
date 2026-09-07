@@ -53,6 +53,8 @@ const PORT = 4356;
  * rather than editing a list, and a vertical with none is a hard error below.
  */
 const SCREENS = {
+  // Every Pictor screen family, including real fixture drill routes.
+  design: ['/', '/editor/', '/assets/', '/profile/', '/p/meridian-rebrand/', '/f/fl-01/', '/a/as-001/'],
   wealth: ['/', '/holdings/', '/households/hh-01/', '/proposals/', '/trade/', '/planning/'],
   'credit-risk': ['/', '/watchlist/', '/counterparties/cp-01/'],
   /* The six destinations plus one drill. Every screen that runs a client
@@ -203,7 +205,7 @@ for (const vertical of verticals) {
       // A page that never booted cannot violate anything, so liveness is asserted
       // alongside — see the note at the top.
       const upgraded = await page.evaluate(
-        () => document.querySelectorAll('md-card.hydrated, md-table.hydrated, md-list.hydrated').length,
+        () => document.querySelectorAll('md-card.hydrated, md-table.hydrated, md-list.hydrated, [data-editor] md-toolbar.hydrated').length,
       );
       if (upgraded > 0) booted += 1;
       screens += 1;

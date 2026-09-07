@@ -1,0 +1,221 @@
+<div class="inspector studio-inspector" data-inspector>
+  <div class="studio-panel-head">
+    <strong>{{ studio.t('Inspector') }}</strong
+    ><span
+      >{{selected.length?studio.t('{count} selected', {count:
+      studio.t.formatNumber(selected.length)}):studio.t('Canvas')}}</span
+    >
+  </div>
+  <pictor-tabs
+    [panel]="true"
+    [label]="studio.t('Inspector view')"
+    [value]="tab"
+    [options]="tabs"
+    (changed)="tab=$event"
+  />
+  @if(!first){
+  <div class="studio-inspector-empty">
+    <span class="material-symbols-outlined" aria-hidden="true">interests</span>
+    <h3>{{ studio.t('Every detail is a possibility.') }}</h3>
+    <p>
+      {{ studio.t('Select an object to adjust its geometry, color and
+      appearance.') }}
+    </p>
+    <div class="studio-canvas-spec">
+      <span>{{ studio.t('Canvas size') }}</span><strong>960 × 640</strong
+      ><span>{{ studio.t('Color profile') }}</span><strong>sRGB</strong
+      ><span>{{ studio.t('Editable layers') }}</span
+      ><strong>{{doc.layers.length}}</strong><span>{{ studio.t('Grid') }}</span
+      ><strong>{{ studio.t('20px snapping') }}</strong>
+    </div>
+    <md-button variant="tonal" icon="add" (click)="studio.emit('pictor:insert')"
+      >{{ studio.t('Insert something') }}</md-button
+    >
+    <p class="studio-tip">
+      {{ studio.t('Try R to draw a rectangle, T for text, or double-click a text
+      layer to edit it.') }}
+    </p>
+  </div>
+  } @else if(tab==='code'){
+  <section class="inspector__section">
+    <h3 class="inspector__title">
+      {{first.componentId?.startsWith('awc:')?studio.t('AWC component
+      markup'):studio.t('CSS properties')}}
+    </h3>
+    <p class="studio-tip">
+      {{first.componentId?.startsWith('awc:')?studio.t('This is a live
+      component. Open Present mode to interact with it.'):studio.t('Measured
+      directly from your selected layer. Position it within your own layout.')}}
+    </p>
+    <pre class="studio-code"><code>{{snippet}}</code></pre>
+    <md-button
+      variant="tonal"
+      [icon]="copied?'check':'content_copy'"
+      (click)="copy()"
+      >{{copied?studio.t('Copied'):studio.t('Copy code')}}</md-button
+    >
+    <div class="studio-canvas-spec">
+      <span>{{ studio.t('Layer ID') }}</span><code>{{first.id}}</code
+      ><span>{{ studio.t('Type') }}</span><strong>{{t(first.kindKey)}}</strong>
+    </div>
+  </section>
+  } @else{
+  <section class="inspector__section">
+    <pictor-text
+      [label]="first.kind==='text'?studio.t('Text content'):studio.t('Layer name')"
+      [value]="name"
+      [multiline]="first.kind==='text'"
+      (changed)="rename($event)"
+      data-name-field
+    />@if(first.kind==='text'){
+    <p class="studio-tip">
+      {{ studio.t('Text scales to fit its frame. Add a line break or resize for
+      a new composition.') }}
+    </p>
+    }
+  </section>
+  <section class="inspector__section">
+    <h3 class="inspector__title">
+      {{ studio.t('Position & size') }} <span>PX</span>
+    </h3>
+    <div class="inspector__grid">
+      @for(key of keys;track key){<md-number-field
+        [locale]="studio.t.locale === 'ar' ? 'ar-u-nu-arab' : studio.t.locale"
+        [incrementLabel]="studio.t('Increment')"
+        [decrementLabel]="studio.t('Decrement')"
+        [valueMissingLabel]="studio.t('Please enter a number.')"
+        [label]="key.toUpperCase()"
+        [value]="geometry(key)"
+        [min]="key==='w'||key==='h'?20:0"
+        [max]="key==='x'||key==='w'?960:640"
+        [step]="20"
+        variant="outlined"
+        [density]="-2"
+        steppers="none"
+        [attr.data-geometry]="key"
+        (mdChange)="setGeometry(key,$any($event).detail.value)"
+      />}
+    </div>
+    <p class="studio-tip">
+      {{ studio.t('Snaps to 20px. Drag canvas corner handles to resize.') }}
+    </p>
+  </section>
+  <section class="inspector__section">
+    <h3 class="inspector__title">{{ studio.t('Fill & appearance') }}</h3>
+    <div class="studio-color-row">
+      <md-color-picker
+        [locale]="studio.t.locale"
+        [value]="colorOf(first.fill,'#203D35')"
+        variant="popup"
+        [attr.aria-label]="studio.t('Custom fill color')"
+        show-hex
+        presets="#203D35,#BEE7AA,#F4F1E9,#F2AAA7,#392263,#C2BBF3"
+        (mdChange)="fill($any($event).detail.value)"
+      /><pictor-text
+        [label]="studio.t('Color')"
+        [value]="colorOf(first.fill,'#203D35')"
+        (changed)="fill($event)"
+      />
+    </div>
+    <div
+      class="studio-swatches"
+      role="group"
+      [attr.aria-label]="studio.t('Brand colors')"
+    >
+      @for(color of swatches;track color){<button
+        [title]="color"
+        [attr.aria-label]="studio.t('Set fill to {color}', {color:color})"
+        [attr.aria-pressed]="colorOf(first.fill)===color"
+        (click)="fill(color)"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect width="24" height="24" rx="7" [attr.fill]="color" />
+        </svg></button
+      >}
+    </div>
+    <pictor-range
+      [label]="studio.t('Opacity')"
+      [value]="opacity"
+      (changed)="doc.restyle({opacity:$event})"
+    /><pictor-select
+      [label]="studio.t('Blend mode')"
+      [value]="first.blend"
+      [options]="blends"
+      (changed)="blend($event)"
+    />
+  </section>
+  <section class="inspector__section">
+    <h3 class="inspector__title">{{ studio.t('Arrange') }}</h3>
+    <div
+      class="studio-arrange"
+      role="group"
+      [attr.aria-label]="studio.t('Align selected layers')"
+    >
+      @for(axis of aligns;track axis){<md-icon-button
+        [icon]="alignIcon(axis)"
+        [attr.aria-label]="t(alignKey(axis))"
+        [disabled]="selected.length<2"
+        [attr.data-align]="axis"
+        (click)="doc.align(axis)"
+      />}
+    </div>
+    <div class="studio-arrange">
+      <md-icon-button
+        icon="horizontal_distribute"
+        [attr.aria-label]="studio.t('Distribute horizontally')"
+        [disabled]="selected.length<3"
+        (click)="doc.distribute('horizontal')"
+      /><md-icon-button
+        icon="vertical_distribute"
+        [attr.aria-label]="studio.t('Distribute vertically')"
+        [disabled]="selected.length<3"
+        (click)="doc.distribute('vertical')"
+      /><md-icon-button
+        icon="flip_to_front"
+        [attr.aria-label]="studio.t('Bring to front')"
+        (click)="reorder(true)"
+      /><md-icon-button
+        icon="flip_to_back"
+        [attr.aria-label]="studio.t('Send to back')"
+        (click)="reorder(false)"
+      /><md-icon-button
+        icon="folder"
+        [attr.aria-label]="studio.t('Group layers')"
+        [disabled]="selected.length<2"
+        (click)="doc.group()"
+      /><md-icon-button
+        icon="folder_off"
+        [attr.aria-label]="studio.t('Ungroup')"
+        [disabled]="!canUngroup"
+        (click)="doc.ungroup()"
+      />
+    </div>
+  </section>
+  @if(hasImage){
+  <section class="inspector__section">
+    <h3 class="inspector__title">{{ studio.t('Image adjustments') }}</h3>
+    @for(kind of adjustments;track kind){<pictor-range
+      [label]="t(adjustmentKey(kind))"
+      [min]="-100"
+      [max]="100"
+      [step]="20"
+      [value]="adjustment(kind)"
+      (changed)="doc.setAdjustment(kind,$event)"
+    />}<label class="studio-toggle"
+      ><span>{{ studio.t('Rounded image mask') }}</span
+      ><md-switch
+        [selected]="first.masked"
+        [attr.aria-label]="studio.t('Rounded image mask')"
+        (mdChange)="doc.restyle({masked:$any($event).detail.selected})"
+    /></label>
+  </section>
+  }
+  <section class="inspector__section">
+    <md-button variant="tonal" icon="content_copy" (click)="doc.duplicate()"
+      >{{ studio.t('Duplicate selection') }}</md-button
+    ><md-button variant="text" icon="delete" (click)="doc.remove()"
+      >{{ studio.t('Delete selection') }}</md-button
+    >
+  </section>
+  }
+</div>
