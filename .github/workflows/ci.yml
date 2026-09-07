@@ -33,6 +33,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  publish-auth:
+    name: Publishing authentication checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test scripts/check-publish-auth.test.mjs
+
   core:
     name: Core build + spec tests (coverage)
     runs-on: ubuntu-latest

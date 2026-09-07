@@ -18,14 +18,23 @@
 # the workspace:* peer ranges rewrite to the stamped version at publish time
 # (verified with pnpm pack), so only the version fields need setting.
 #
-# Requires the NPM_TOKEN repo secret: an npm Granular Access Token with
-# read/write on the @awc-ui scope (npmjs.com → Access Tokens).
+# authentication=trusted is the default: GitHub OIDC without a stored npm token.
+# authentication=token is an explicit legacy fallback for separate dist-tag writes.
+# See docs/npm-trusted-publishing.md for package setup and release verification.
 
 name: Publish
 
 on:
   workflow_dispatch:
     inputs:
+      authentication:
+        description: 'npm authentication (trusted requires package setup; token supports extra dist-tag updates)'
+        required: true
+        type: choice
+        default: trusted
+        options:
+          - trusted
+          - token
       channel:
         description: Release channel
         required: true
@@ -49,6 +58,9 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  # Current npm 11 maintenance release, checked against npm's official
+  # changelog on 2026-09-06. OIDC requires npm >=11.5.1 and Node >=22.14.
+  TRUSTED_NPM_VERSION: '11.19.1'
   PUBLISH_FILTERS: >-
     --filter @awc-ui/core
     --filter @awc-ui/tokens
@@ -64,10 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      # Lets the runner mint the OIDC token npm exchanges for a signed
-      # provenance attestation. Without it npm silently publishes WITHOUT
-      # provenance rather than failing, so this line is load-bearing for the
-      # "Built and signed on GitHub Actions" badge.
+      # Required for Trusted Publishing authentication and npm provenance.
       id-token: write
     steps:
       - name: beta/prod release only from main
@@ -82,9 +91,13 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
           registry-url: 'https://registry.npmjs.org'
+
+      - name: Install npm with Trusted Publishing support
+        if: inputs.authentication == 'trusted'
+        run: npm install --global "npm@$TRUSTED_NPM_VERSION" --registry=https://registry.npmjs.org --ignore-scripts
 
       - run: pnpm install --frozen-lockfile
 
@@ -119,6 +132,16 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "Publishing $VERSION under dist-tag $TAG"
+
+      - name: Validate publishing authentication and tag plan
+        env:
+          AUTHENTICATION: ${{ inputs.authentication }}
+          CHANNEL: ${{ inputs.channel }}
+          RELEASE_VERSION: ${{ steps.rv.outputs.version }}
+          PROMOTE_LATEST: ${{ inputs.promote_latest }}
+        run: |
+          node --test scripts/check-publish-auth.test.mjs
+          node scripts/check-publish-auth.mjs
 
       - name: Stamp package versions
         run: |
@@ -182,8 +205,10 @@ jobs:
       # that is what v1.0.0-beta.1 shipped. Rebuild after all test gates so
       # npm gets the prod artifacts (the core build script now cleans dist/
       # first, so no stale files survive either).
-      - name: Rebuild dist for publish (e2e overwrites it with a dev build)
-        run: pnpm --filter @awc-ui/core build
+      - name: Rebuild production packages after tests
+        run: |
+          pnpm --filter @awc-ui/core build
+          pnpm ci:wrappers
 
       - name: Assert custom-elements output is clean
         run: |
@@ -215,7 +240,19 @@ jobs:
         # instead of silently costing every consumer hundreds of kB.
         run: pnpm ci:size
 
-      - name: Publish to npm
+      - name: Recheck trusted publishing tag plan
+        if: inputs.authentication == 'trusted'
+        # Builds/tests can take a while; refresh the public tag checks before
+        # publishing the first package in case the registry changed meanwhile.
+        env:
+          AUTHENTICATION: ${{ inputs.authentication }}
+          CHANNEL: ${{ inputs.channel }}
+          RELEASE_VERSION: ${{ steps.rv.outputs.version }}
+          PROMOTE_LATEST: ${{ inputs.promote_latest }}
+        run: node scripts/check-publish-auth.mjs
+
+      - name: Publish to npm (token)
+        if: inputs.authentication == 'token'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           # Publish with a sigstore provenance attestation, which npm surfaces
@@ -235,6 +272,23 @@ jobs:
           --tag ${{ steps.rv.outputs.tag }}
           --no-git-checks
 
+      - name: Publish to npm (Trusted Publishing)
+        if: inputs.authentication == 'trusted'
+        env:
+          NPM_CONFIG_PROVENANCE: 'true'
+        # pnpm creates the publish tarballs (including workspace peer ranges
+        # and Angular's publishConfig.directory) then invokes the chosen npm.
+        # npm performs the OIDC exchange. No npm token is passed to this step.
+        run: |
+          unset NODE_AUTH_TOKEN NPM_TOKEN NPM_AUTH_TOKEN
+          # pnpm otherwise prepends node's bin directory to PATH and could
+          # choose a different npm from the one installed/validated above.
+          export npm_config_npm_path="$(command -v npm)"
+          pnpm -r ${{ env.PUBLISH_FILTERS }} publish \
+            --access public \
+            --tag ${{ steps.rv.outputs.tag }} \
+            --no-git-checks
+
       - name: Heal bootstrap latest tag (beta/prod)
         # npm forcibly assigns `latest` on a package's FIRST publish even when
         # --tag says otherwise, so the inaugural snapshot run left `latest`
@@ -242,7 +296,9 @@ jobs:
         # the snapshot. Whenever a real release publishes, move any
         # snapshot-held `latest` to this version. A `latest` that already
         # points at a real release never matches and is never touched.
-        if: inputs.channel != 'snapshot'
+        # Trusted-mode tag repairs are rejected by the preflight, before any
+        # package is published. OIDC cannot authenticate npm dist-tag.
+        if: inputs.authentication == 'token' && inputs.channel != 'snapshot'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           VERSION: ${{ steps.rv.outputs.version }}
@@ -260,7 +316,7 @@ jobs:
         # so a plain `npm i @awc-ui/<pkg>` installs it. Useful while the
         # project's public builds are prereleases and `latest` would otherwise
         # sit on an old beta forever.
-        if: inputs.channel != 'snapshot' && inputs.promote_latest
+        if: inputs.authentication == 'token' && inputs.channel != 'snapshot' && inputs.promote_latest
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           VERSION: ${{ steps.rv.outputs.version }}
@@ -312,6 +368,7 @@ jobs:
         run: |
           {
             echo "### Published ${{ steps.rv.outputs.version }} (dist-tag: ${{ steps.rv.outputs.tag }})"
+            echo "Authentication: ${{ inputs.authentication }}"
             echo ""
             for p in core tokens react vue angular svelte theme; do
               echo "- \`@awc-ui/$p@${{ steps.rv.outputs.version }}\`"

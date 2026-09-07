@@ -7,6 +7,7 @@ import { MdMenu } from '../md-menu/md-menu';
 import { MdMenuItem } from '../md-menu-item/md-menu-item';
 import { MdButton } from '../md-button/md-button';
 import { MdTooltip } from '../md-tooltip/md-tooltip';
+import * as ripple from '../../utils/ripple';
 
 describe('md-date-picker', () => {
   let originalAnimateDescriptor: PropertyDescriptor | undefined;
@@ -1730,15 +1731,48 @@ describe('md-date-picker', () => {
       const btn = shadow(page)?.querySelector('[part="month-menu-button"]') as HTMLElement;
       btn.click();
       await page.waitForChanges();
-      const options = shadow(page)?.querySelectorAll('md-menu-item[part~="month-option"]');
-      (options?.[0] as HTMLElement).click();
-      await new Promise((r) => setTimeout(r, 400));
-      await page.waitForChanges();
-      const calendar = shadow(page)?.querySelector('[part="calendar"]');
-      expect(calendar?.classList.contains('md-date-picker__calendar--docked-bloom-in')).toBe(
-        true,
+      // Control the three sequential animation promises so runner load cannot
+      // move the assertion before menu close or past calendar bloom completion.
+      let settleRipple!: () => void;
+      const rippleSpy = jest.spyOn(ripple, 'waitForHostRipple').mockReturnValue(
+        new Promise<void>((resolve) => { settleRipple = resolve; }),
       );
-      expect(page.rootInstance.dockedCalendarBloom).toBe(true);
+      const delays: { ms: number; finish: () => void }[] = [];
+      const delaySpy = jest.spyOn(
+        page.rootInstance as { delay(ms: number): Promise<void> }, 'delay',
+      ).mockImplementation((ms) =>
+        new Promise<void>((finish) => { delays.push({ ms, finish }); }),
+      );
+      try {
+        const options = shadow(page)?.querySelectorAll('md-menu-item[part~="month-option"]');
+        (options?.[0] as HTMLElement).click();
+        await page.waitForChanges();
+        expect(rippleSpy).toHaveBeenCalledWith(options?.[0]);
+        expect(page.rootInstance.monthMenuOpen).toBe(true);
+        expect(delays).toHaveLength(0);
+
+        settleRipple();
+        await page.waitForChanges();
+        expect(page.rootInstance.selectionMenuClosing).toBe('month');
+        expect(shadow(page)?.querySelector('[part="calendar"]')).toBeNull();
+        expect(delays[0].ms).toBe(200);
+
+        delays[0].finish();
+        await page.waitForChanges();
+        const calendar = shadow(page)?.querySelector('[part="calendar"]');
+        expect(calendar).not.toBeNull();
+        expect(calendar?.classList.contains('md-date-picker__calendar--docked-bloom-in')).toBe(true);
+        expect(page.rootInstance.dockedCalendarBloom).toBe(true);
+        expect(page.rootInstance.viewMonth).toBe(0);
+        expect(delays[1].ms).toBe(300);
+
+        delays[1].finish();
+        await page.waitForChanges();
+        expect(page.rootInstance.dockedCalendarBloom).toBe(false);
+      } finally {
+        rippleSpy.mockRestore();
+        delaySpy.mockRestore();
+      }
     });
 
     it('animates panel bloom-out when closing the docked picker', async () => {
