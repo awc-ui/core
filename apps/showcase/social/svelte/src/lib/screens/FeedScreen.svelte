@@ -16,10 +16,11 @@
   harness happened to scroll.
 -->
 <script lang="ts">
-  import { FEED_PAGE, feedItems, storyRail, suggestedPeople, type Person } from '@awc-ui/showcase-kit/social';
+  import { discoveryCopy, discoveryCount, discoverFeed, type DiscoveryFilter } from '@awc-ui/showcase-kit/social';
+import { FEED_PAGE, feedItems, storyRail, suggestedPeople, type Person } from '@awc-ui/showcase-kit/social';
   import { route } from '$lib/routes';
   import { t } from '$lib/showcase';
-  import { follows, isFollowing, setFollowing } from '$lib/engagement';
+  import { follows, isFollowing, setFollowing, saves, isSaved } from '$lib/engagement';
   import Screen from '$lib/components/Screen.svelte';
   import Panel from '$lib/components/Panel.svelte';
   import EmptyState from '$lib/components/EmptyState.svelte';
@@ -35,7 +36,13 @@
 
   const { message, say, close } = createSnackbar();
 
-  const items = feedItems();
+  const allItems = feedItems();
+  let search = '';
+  let filter: DiscoveryFilter = 'all';
+  $: copy = discoveryCopy($t.locale);
+  $: items = discoverFeed(allItems, search, filter, $t, (item) => isSaved($saves, item.post));
+  function onSearch(event: CustomEvent<string>) { search = event.detail ?? ''; shown = FEED_PAGE; }
+  function setFilter(value: DiscoveryFilter) { filter = value; shown = FEED_PAGE; }
   const rail = storyRail();
   const suggestions = suggestedPeople(5);
 
@@ -51,12 +58,24 @@
 <Screen title={$t('social.screen.feed.title')} subtitle={$t('social.screen.feed.subtitle')}>
   <svelte:fragment slot="skeleton"><PanelSkeleton height="640px" lines={6} /></svelte:fragment>
 
+  <section class="discovery-hero" aria-label={copy.eyebrow}>
+    <div><span class="discovery-hero__eyebrow">{copy.eyebrow}</span><h2>{copy.title}</h2><p>{copy.description}</p></div>
+    <div class="discovery-hero__stat"><span class="material-symbols-outlined" aria-hidden="true">camera</span><strong class="discovery-hero__number">{$t.formatNumber(allItems.length)}</strong><span class="discovery-hero__caption">{copy.stat}</span></div>
+  </section>
+
   <StoryRail rings={rail} />
 
   <div class="feed-layout">
     <div class="feed">
+      <div class="discovery-tools">
+        <md-text-field label={copy.search} value={search} on:mdInput={onSearch}><span slot="leading-icon" class="material-symbols-outlined" aria-hidden="true">search</span></md-text-field>
+        <div class="discovery-tools__filters" role="group" aria-label={copy.eyebrow}><md-button variant={filter === 'all' ? 'tonal' : 'text'} size="sm" icon="auto_awesome" aria-pressed={filter === 'all'} on:mdClick={() => setFilter('all')}>{copy.all}</md-button>
+<md-button variant={filter === 'saved' ? 'tonal' : 'text'} size="sm" icon="bookmark" aria-pressed={filter === 'saved'} on:mdClick={() => setFilter('saved')}>{copy.second}</md-button>
+<md-button variant={filter === 'carousel' ? 'tonal' : 'text'} size="sm" icon="view_carousel" aria-pressed={filter === 'carousel'} on:mdClick={() => setFilter('carousel')}>{copy.third}</md-button></div>
+        <div class="discovery-tools__row"><p class="discovery-tools__count" role="status">{discoveryCount(items.length, $t.locale)}</p><md-button class="discovery-tools__reset" size="sm" variant="text" icon="restart_alt" disabled={!search && filter === 'all'} on:mdClick={() => {search = ''; setFilter('all');}}>{copy.clear}</md-button></div>
+      </div>
       {#if visible.length === 0}
-        <EmptyState message={$t('social.empty.feed')} hint={$t('social.empty.feedHint')} />
+        <EmptyState message={copy.empty} hint={copy.hint} />
       {:else}
         <!-- Only the first decodes eagerly. Everything below the fold is lazy,
              which is what keeps forty images off the first paint. -->
@@ -76,7 +95,7 @@
           </md-button>
         </div>
       {:else}
-        <div class="feed__end">
+        <div class="feed__end" hidden={items.length === 0}>
           <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
           <p class="strong">{$t('social.common.caughtUp')}</p>
           <p class="muted">{$t('social.common.caughtUpHint')}</p>

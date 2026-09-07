@@ -140,3 +140,13 @@ export {
 } from './routes';
 
 export type { CommunityRoutes, CrumbSpec, Destination, Framework, RouteName } from './routes';
+
+export {
+  discoveryCopy,
+  discoveryCount,
+  discoverySearchText,
+  discoverFeed,
+  matchesDiscovery,
+  normalizeDiscoveryQuery,
+} from './discovery';
+export type { DiscoveryFilter } from './discovery';

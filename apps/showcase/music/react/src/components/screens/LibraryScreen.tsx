@@ -10,19 +10,21 @@ import {
   followedPlaylists,
   getAlbums,
   getTotals,
-  likedTracks,
+  getTracks,
   ownPlaylists,
 } from '@awc-ui/showcase-kit/music';
 import { Panel, Screen } from '@/components/Shell';
 import { AlbumCard, Count, PlaylistCard, TrackList } from '@/components/bits';
 import { EmptyState } from '@/components/screens/EmptyState';
+import { usePlayer } from '@/lib/player';
 import { useT } from '@/lib/showcase';
 import { LibrarySkeleton } from '@/components/skeletons';
 
 export function LibraryScreen() {
   const t = useT();
   const totals = getTotals();
-  const liked = likedTracks();
+  const player = usePlayer();
+  const liked = getTracks().filter(player.likedFor);
   const own = ownPlaylists();
   const followed = followedPlaylists();
   const albums = getAlbums();

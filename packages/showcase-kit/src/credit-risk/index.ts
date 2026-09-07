@@ -45,3 +45,5 @@ export type { CreditRiskRoutes, Framework, RouteName } from './routes';
 export { TABLES } from './tables';
 
 export type { TableLayout } from './tables';
+
+export { stressBriefing, stressScenarioCsv, stressScenarioDownload } from './stress';

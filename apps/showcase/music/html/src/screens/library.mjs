@@ -6,17 +6,17 @@ import {
   followedPlaylists,
   getAlbums,
   getTotals,
-  likedTracks,
+  getTracks,
   ownPlaylists,
 } from '@awc-ui/showcase-kit/music';
 import { html } from '../lib/html.mjs';
 import { emptyState, panel, screen } from '../components/shell.mjs';
-import { albumCard, count, playlistCard, trackList } from '../lib/bits.mjs';
+import { albumCard, count, playlistCard, trackList, trackRow } from '../lib/bits.mjs';
 import { route } from '@awc-ui/showcase-kit/music';
 
 export function libraryScreen(t, locale) {
   const totals = getTotals();
-  const liked = likedTracks();
+  const liked = getTracks().filter((track) => track.liked);
   const own = ownPlaylists();
   const followed = followedPlaylists();
   const albums = getAlbums();
@@ -30,11 +30,13 @@ export function libraryScreen(t, locale) {
     children: html`<div class="stack">
       ${panel({
         title: t('music.panel.liked'),
-        actions: count(t, liked.length),
-        children:
-          liked.length === 0
-            ? emptyState(t('music.empty.liked'))
-            : trackList(t, locale, liked, { showAlbum: true }),
+        actions: html`<span data-liked-count>${count(t, liked.length)}</span>`,
+        children: html`<div data-liked-library>
+          ${trackList(t, locale, liked, { showAlbum: true })}<template data-library-tracks
+            >${getTracks().map((track) => trackRow(t, locale, track, { showAlbum: true }))}</template
+          >
+          <div data-liked-empty hidden>${emptyState(t('music.empty.liked'))}</div>
+        </div>`,
       })}
       ${panel({
         title: t('music.panel.yourPlaylists'),

@@ -5,8 +5,15 @@
   scannable rows the reader recognises, each answering a different question.
 -->
 <script setup lang="ts">
-import { followedArtists, getTotals, ownPlaylists, recentAlbums, topTracks } from '@awc-ui/showcase-kit/music';
+import {
+  followedArtists,
+  getTotals,
+  ownPlaylists,
+  recentAlbums,
+  topTracks,
+} from '@awc-ui/showcase-kit/music';
 import { useT } from '~/composables/useShowcase';
+import ListeningRoom from '~/components/ListeningRoom.vue';
 import Screen from '~/components/Screen.vue';
 import Panel from '~/components/Panel.vue';
 import Count from '~/components/bits/Count.vue';
@@ -29,7 +36,8 @@ const artists = followedArtists().slice(0, 4);
     <template #aside><Count :value="totals.tracks" /></template>
     <template #skeleton><HomeSkeleton /></template>
 
-    <div class="stack">
+    <div class="stack music-home">
+      <ListeningRoom />
       <Panel :title="t('music.panel.topTracks')">
         <template #actions><Count :value="tracks.length" /></template>
         <TrackList :tracks="tracks" show-album />

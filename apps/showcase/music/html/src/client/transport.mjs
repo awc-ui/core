@@ -15,10 +15,28 @@
  * Latin digits in every locale by design.
  */
 
-import { clock, cycleRepeat, initialTransport, next, previous, seekTo, setVolume, tick, togglePlay, toggleMute } from '@awc-ui/showcase-kit/music';
+import {
+  SESSION_MODES,
+  sessionCopy,
+  listeningSession,
+  startSession,
+  removeQueuedTrack,
+  getTracks,
+  clock,
+  cycleRepeat,
+  initialTransport,
+  next,
+  previous,
+  seekTo,
+  setVolume,
+  tick,
+  togglePlay,
+  toggleMute,
+} from '@awc-ui/showcase-kit/music';
 import { raise } from './snackbar.mjs';
 
 const KEY = 'cygnus.transport';
+let activeTransport = null;
 
 /** Durations, read off the markup so the client needs no fixture of its own. */
 const durations = new Map();
@@ -28,9 +46,13 @@ function load(queue) {
     const saved = sessionStorage.getItem(KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      /* The queue comes from the DOCUMENT, not from storage: a fixture change
-         would otherwise leave a stale queue in a reader's session for ever. */
-      return { ...initialTransport(queue), ...parsed, queue };
+      const valid = new Set(getTracks().map((track) => track.id));
+      const savedQueue = Array.isArray(parsed.queue)
+        ? [...new Set(parsed.queue.filter((id) => valid.has(id)))]
+        : queue;
+      const restored = { ...initialTransport(savedQueue), ...parsed, queue: savedQueue };
+      if (!valid.has(restored.trackId)) return initialTransport(queue);
+      return restored;
     }
   } catch {
     /* A refused or corrupt store is not an error worth showing anybody — the
@@ -93,11 +115,13 @@ export function enhanceTransport(root = document) {
   const rows = new Map();
   const remember = (el) => {
     const id = el.getAttribute('data-track');
-    if (!id || rows.has(id)) return;
+    if (!id) return;
     rows.set(id, {
       title: el.getAttribute('data-title') ?? '',
       artist: el.getAttribute('data-artist') ?? '',
       seconds: Number(el.getAttribute('data-seconds') ?? 0),
+      artSrc: el.getAttribute('data-art-src'),
+      artAlt: el.getAttribute('data-art-alt'),
     });
   };
   for (const row of document.querySelectorAll('.track-row[data-track]')) remember(row);
@@ -111,13 +135,24 @@ export function enhanceTransport(root = document) {
 
   function render() {
     const playing = state.state === 'playing';
-    play?.setAttribute('icon', play.getAttribute(playing ? 'data-icon-pause' : 'data-icon-play') ?? '');
-    play?.setAttribute('aria-label', play.getAttribute(playing ? 'data-label-pause' : 'data-label-play') ?? '');
+    play?.setAttribute(
+      'icon',
+      play.getAttribute(playing ? 'data-icon-pause' : 'data-icon-play') ?? '',
+    );
+    play?.setAttribute(
+      'aria-label',
+      play.getAttribute(playing ? 'data-label-pause' : 'data-label-play') ?? '',
+    );
     play?.toggleAttribute('data-playing', playing);
 
     const info = state.trackId ? rows.get(state.trackId) : null;
     if (info && title) title.textContent = info.title;
     if (info && artist) artist.textContent = info.artist;
+    const artwork = bar.querySelector('.transport__art');
+    if (artwork && info?.artSrc) {
+      artwork.setAttribute('src', info.artSrc);
+      artwork.setAttribute('alt', info.artAlt ?? '');
+    }
 
     const duration = durationOf(state.trackId);
     if (elapsed) elapsed.textContent = clock(state.positionSec);
@@ -138,7 +173,10 @@ export function enhanceTransport(root = document) {
     const silent = state.muted || state.volume === 0;
     mute?.setAttribute('icon', silent ? 'volume_off' : 'volume_up');
     mute?.setAttribute('aria-pressed', String(state.muted));
-    mute?.setAttribute('aria-label', mute.getAttribute(state.muted ? 'data-label-unmute' : 'data-label-mute') ?? '');
+    mute?.setAttribute(
+      'aria-label',
+      mute.getAttribute(state.muted ? 'data-label-unmute' : 'data-label-mute') ?? '',
+    );
     volume?.setAttribute('value', String(Math.round(state.volume * 100)));
 
     /* The row that is loaded is marked on whatever screen is showing it — the
@@ -146,6 +184,7 @@ export function enhanceTransport(root = document) {
     for (const row of document.querySelectorAll('.track-row[data-track]')) {
       row.toggleAttribute('data-current', row.getAttribute('data-track') === state.trackId);
     }
+    renderListeningRoom();
     save(state);
   }
 
@@ -173,6 +212,97 @@ export function enhanceTransport(root = document) {
       render();
     }, 1000);
   }
+
+  const room = root.querySelector('.listening-room');
+  const copy = sessionCopy(document.documentElement.lang);
+  const number = new Intl.NumberFormat(document.documentElement.lang || 'en');
+  let mode = 'for-you';
+  const queueList = room?.querySelector('.listening-queue__list');
+  const queueTemplateRows = room?.querySelector('.listening-queue__template')?.content;
+
+  function renderListeningRoom() {
+    if (!room) return;
+    const session = listeningSession(mode);
+    const loaded =
+      session.tracks.some((track) => track.id === state.trackId) &&
+      state.queue.every((id) => session.tracks.some((track) => track.id === id));
+    const playing = loaded && state.state === 'playing';
+    const start = room.querySelector('.listening-room__play');
+    start.textContent = playing ? copy.pause : loaded ? copy.resume : copy.play;
+    start.setAttribute('icon', playing ? 'pause' : 'play_arrow');
+    room.querySelector('.listening-queue__heading span').textContent =
+      `${number.format(state.queue.length)} ${copy.tracks}`;
+    for (const row of [...queueList.children])
+      if (!state.queue.includes(row.getAttribute('data-track'))) row.remove();
+    for (const [index, id] of state.queue.entries()) {
+      let row = [...queueList.children].find((item) => item.getAttribute('data-track') === id);
+      if (!row)
+        row = [...queueTemplateRows.children]
+          .find((item) => item.getAttribute('data-track') === id)
+          ?.cloneNode(true);
+      if (!row) continue;
+      if (queueList.children[index] !== row)
+        queueList.insertBefore(row, queueList.children[index] ?? null);
+      const current = id === state.trackId;
+      row.toggleAttribute('data-current', current);
+      row.querySelector('[data-queue-remove]').toggleAttribute('disabled', current);
+      const button = row.querySelector('[data-queue-play]');
+      const paused = !(current && state.state === 'playing');
+      button.setAttribute('icon', paused ? 'play_arrow' : 'pause');
+      button.setAttribute(
+        'aria-label',
+        button.getAttribute(paused ? 'data-label-play' : 'data-label-pause'),
+      );
+    }
+  }
+
+  for (const button of room?.querySelectorAll('[data-session-mode]') ?? []) {
+    button.addEventListener('click', () => {
+      mode = button.getAttribute('data-session-mode');
+      const at = SESSION_MODES.indexOf(mode);
+      const session = listeningSession(mode);
+      for (const option of room.querySelectorAll('[data-session-mode]')) {
+        const selected = option === button;
+        option.toggleAttribute('selected', selected);
+        option.setAttribute('aria-pressed', String(selected));
+      }
+      room.querySelector('.listening-room__session h3').textContent = copy.names[at];
+      room.querySelector('.listening-room__session p').textContent = copy.notes[at];
+      const facts = room.querySelectorAll('.listening-room__facts span');
+      facts[0].textContent = `${number.format(session.tracks.length)} ${copy.tracks}`;
+      facts[1].textContent = `${clock(session.duration)} ${copy.duration}`;
+      const artwork = [...room.querySelectorAll('[data-session-art]')].find(
+        (item) => item.getAttribute('data-session-art') === mode,
+      );
+      room
+        .querySelector('.listening-room__artwork')
+        .replaceChildren(artwork.content.cloneNode(true));
+      renderListeningRoom();
+    });
+  }
+  room?.querySelector('.listening-room__play')?.addEventListener('click', () => {
+    const session = listeningSession(mode);
+    const loaded =
+      session.tracks.some((track) => track.id === state.trackId) &&
+      state.queue.every((id) => session.tracks.some((track) => track.id === id));
+    set(loaded ? togglePlay(state) : startSession(state, session.tracks));
+  });
+  queueList?.addEventListener('click', (event) => {
+    const remove = event.target.closest('[data-queue-remove]');
+    if (remove) {
+      set(removeQueuedTrack(state, remove.getAttribute('data-queue-remove')));
+      return;
+    }
+    const play = event.target.closest('[data-queue-play]');
+    if (play) {
+      const id = play.getAttribute('data-queue-play');
+      set(
+        state.trackId === id
+          ? togglePlay(state)
+          : { ...state, trackId: id, state: 'playing', positionSec: 0 },
+      );
+    }
+  });
 
   play?.addEventListener('click', () => set(togglePlay(state)));
   bar.querySelector('.transport__next')?.addEventListener('click', () => set(next(state)));
@@ -206,13 +336,24 @@ export function enhanceTransport(root = document) {
 
   render();
   restartTicker();
-  return { get state() { return state; } };
+  activeTransport = {
+    get state() {
+      return state;
+    },
+    enqueue(id) {
+      if (rows.has(id) && !state.queue.includes(id)) set({ ...state, queue: [...state.queue, id] });
+    },
+  };
+  return activeTransport;
 }
 
 /** Add to the queue without disturbing the playhead. */
 export function enhanceQueueButtons(root = document) {
   for (const button of root.querySelectorAll('.track__queue:not([data-bound])')) {
     button.setAttribute('data-bound', '');
-    button.addEventListener('click', () => raise(button.getAttribute('data-msg')));
+    button.addEventListener('click', () => {
+      activeTransport?.enqueue(button.getAttribute('data-enqueue'));
+      raise(button.getAttribute('data-msg'));
+    });
   }
 }

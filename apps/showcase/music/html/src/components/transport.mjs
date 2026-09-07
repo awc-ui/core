@@ -20,7 +20,18 @@
  * dictionary, so both spellings of every control's name ship in the markup.
  */
 
-import { clock, repeatIcon, repeatLabelKey, repeatTone, trackById, albumById, artistById, transportIcon, transportLabelKey } from '@awc-ui/showcase-kit/music';
+import {
+  getTracks,
+  clock,
+  repeatIcon,
+  repeatLabelKey,
+  repeatTone,
+  trackById,
+  albumById,
+  artistById,
+  transportIcon,
+  transportLabelKey,
+} from '@awc-ui/showcase-kit/music';
 import { attrs, html } from '../lib/html.mjs';
 import { art } from '../lib/bits.mjs';
 
@@ -128,14 +139,14 @@ export function transport(t, { queue }) {
       as seven extra elements the four SPA builds do not have. A template's
       contents are an inert fragment outside the document.
     -->
-    <template class="transport__queue">${queue.map((id) => {
-      const queued = trackById(id);
-      if (!queued) return '';
+    <template class="transport__queue">${getTracks().map((queued) => {
       return html`<span${attrs({
         'data-track': queued.id,
         'data-title': queued.title,
         'data-artist': artistById(queued.artistId)?.name ?? '',
         'data-seconds': queued.durationSec,
+        'data-art-src': albumById(queued.albumId)?.art.src ?? '',
+        'data-art-alt': t(albumById(queued.albumId)?.art.altKey ?? ''),
       })}></span>`;
     })}</template>
 

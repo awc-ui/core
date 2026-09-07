@@ -3,10 +3,23 @@
 Whole applications built from AWC UI, one directory per vertical and one build
 per framework underneath: `apps/showcase/<vertical>/<framework>`.
 
-Today there is one vertical — **credit-risk**, the Aurelia Bank Credit Risk
-Console — in ten builds.
+There are seven applications in forty native builds. Every application supports
+English, Romanian and Arabic, plus the shared theme, density and direction dock.
 
-They come in PAIRS. Each of the four component frameworks appears twice: once as
+| Application | Vertical | Try it |
+|---|---|---|
+| Aurelia Bank | `credit-risk` | Compare stress scenarios, read the impact briefing and download the selected scenario as CSV. |
+| Kestrel | `wealth` | Filter the rebalancing queue by mandate severity, then inspect proposals and trades. |
+| Vela | `banking` | Switch between 3, 6 and 12 months of balance history and inspect the period movement. |
+| Lyra | `social` | Search captions and people, browse carousels and filter your saved moments. |
+| Corvus | `community` | Search conversations and switch between friends and group posts. |
+| Cygnus | `music` | Start a curated listening session, edit the queue and build a liked library. Playback is a silent simulation. |
+| Pictor | `design` | Create and edit a canvas, manage layers, inspect history and export designs. |
+
+All seven ship HTML, React, Vue, Angular and Svelte views. **Credit-risk** also
+has Astro and four server-rendered counterparts, for ten builds in that vertical.
+
+Credit-risk's component frameworks come in pairs. Each appears twice: once as
 a single-page application, where the server sends an empty shell and the browser
 renders everything, and once server-rendered per request, where the HTML arrives
 complete with the components already inside declarative shadow DOM. Within a
@@ -94,9 +107,10 @@ demonstrate.
 ```bash
 pnpm --filter @awc-ui/core build      # every build copies the runtime out of dist/
 
-pnpm showcase:build                   # every build; the static six staged into apps/docs/public/showcase/
+pnpm showcase:build                   # all 40 builds; 36 static builds staged into apps/docs/public/showcase/
 pnpm showcase:build svelte vue        # just these two
-pnpm showcase:preview                 # all ten behind ONE origin, with the four servers running
+pnpm showcase:build banking:react     # one vertical and framework
+pnpm showcase:preview                 # all applications behind one origin, with the four servers running
 pnpm showcase:lint                    # type-check every build
 pnpm showcase:verify                  # drive each one in a real browser
 pnpm verify:showcase-parity           # diff the static builds against React, screen by screen
@@ -108,7 +122,7 @@ pnpm dev:showcase-react               # one build, in watch mode
 ```
 
 Every build is compiled against an absolute base path of
-`/showcase/credit-risk/<framework>/`, so its output only works when served at
+`/showcase/<vertical>/<framework>/`, so its output only works when served at
 exactly that path. Each app therefore ships a `serve` script that mounts its own
 output there — `vite preview`, `nuxi preview` and `ng serve` all serve at `/`
 and will 404 on every asset.

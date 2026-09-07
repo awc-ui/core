@@ -19,7 +19,14 @@
  * far the harness happened to scroll.
  */
 
-import { useState } from 'react';
+import {
+  discoveryCopy,
+  discoveryCount,
+  discoverFeed,
+  type DiscoveryFilter,
+} from '@awc-ui/showcase-kit/social';
+import { useRef, useState } from 'react';
+import { useCustomEvent } from '@/components/elements';
 import { FEED_PAGE, feedItems, storyRail, suggestedPeople } from '@awc-ui/showcase-kit/social';
 import { useT } from '@/lib/showcase';
 import { useEngagement } from '@/lib/engagement';
@@ -34,11 +41,20 @@ import { Snackbar, useSnackbar } from './Snackbar';
 
 export function FeedScreen() {
   const t = useT();
-  const { isFollowing, setFollowing } = useEngagement();
+  const { isFollowing, setFollowing, isSaved } = useEngagement();
   const { message, say, close } = useSnackbar();
   const [shown, setShown] = useState(FEED_PAGE);
 
-  const items = feedItems();
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<DiscoveryFilter>('all');
+  const copy = discoveryCopy(t.locale);
+  const allItems = feedItems();
+  const items = discoverFeed(allItems, search, filter, t, (item) => isSaved(item.post));
+  const searchRef = useRef<HTMLElement | null>(null);
+  useCustomEvent<CustomEvent<string>>(searchRef, 'mdInput', (event) => {
+    setSearch(event.detail ?? '');
+    setShown(FEED_PAGE);
+  });
   const visible = items.slice(0, shown);
   const rail = storyRail();
   const suggestions = suggestedPeople(5);
@@ -56,12 +72,91 @@ export function FeedScreen() {
         all be inert. `StoryRail` hides the scrollbar and adds the two chevrons
         that replace it; the scrolling itself is still the browser's.
       */}
+      <section className="discovery-hero" aria-label={copy.eyebrow}>
+        <div>
+          <span className="discovery-hero__eyebrow">{copy.eyebrow}</span>
+          <h2>{copy.title}</h2>
+          <p>{copy.description}</p>
+        </div>
+        <div className="discovery-hero__stat">
+          <span className="material-symbols-outlined" aria-hidden="true">
+            camera
+          </span>
+          <strong className="discovery-hero__number">{t.formatNumber(allItems.length)}</strong>
+          <span className="discovery-hero__caption">{copy.stat}</span>
+        </div>
+      </section>
+
       <StoryRail rings={rail} />
 
       <div className="feed-layout">
         <div className="feed">
+          <div className="discovery-tools">
+            <md-text-field ref={searchRef} label={copy.search} value={search}>
+              <span slot="leading-icon" className="material-symbols-outlined" aria-hidden="true">
+                search
+              </span>
+            </md-text-field>
+            <div className="discovery-tools__filters" role="group" aria-label={copy.eyebrow}>
+              <md-button
+                variant={filter === 'all' ? 'tonal' : 'text'}
+                size="sm"
+                icon="auto_awesome"
+                aria-pressed={filter === 'all'}
+                onClick={() => {
+                  setFilter('all');
+                  setShown(FEED_PAGE);
+                }}
+              >
+                {copy.all}
+              </md-button>
+              <md-button
+                variant={filter === 'saved' ? 'tonal' : 'text'}
+                size="sm"
+                icon="bookmark"
+                aria-pressed={filter === 'saved'}
+                onClick={() => {
+                  setFilter('saved');
+                  setShown(FEED_PAGE);
+                }}
+              >
+                {copy.second}
+              </md-button>
+              <md-button
+                variant={filter === 'carousel' ? 'tonal' : 'text'}
+                size="sm"
+                icon="view_carousel"
+                aria-pressed={filter === 'carousel'}
+                onClick={() => {
+                  setFilter('carousel');
+                  setShown(FEED_PAGE);
+                }}
+              >
+                {copy.third}
+              </md-button>
+            </div>
+            <div className="discovery-tools__row">
+              <p className="discovery-tools__count" role="status">
+                {discoveryCount(items.length, t.locale)}
+              </p>
+              <md-button
+                class="discovery-tools__reset"
+                size="sm"
+                variant="text"
+                icon="restart_alt"
+                disabled={(!search && filter === 'all') || undefined}
+                onClick={() => {
+                  setSearch('');
+                  setFilter('all');
+                  setShown(FEED_PAGE);
+                }}
+              >
+                {copy.clear}
+              </md-button>
+            </div>
+          </div>
           {visible.length === 0 ? (
-            <EmptyState message={t('social.empty.feed')} hint={t('social.empty.feedHint')} />
+            <EmptyState message={copy.empty} hint={copy.hint} />
           ) : (
             visible.map((item, index) => (
               <PostCard
@@ -82,7 +177,7 @@ export function FeedScreen() {
               </md-button>
             </div>
           ) : (
-            <div className="feed__end">
+            <div className="feed__end" hidden={items.length === 0}>
               <span className="material-symbols-outlined" aria-hidden="true">
                 check_circle
               </span>

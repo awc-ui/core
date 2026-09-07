@@ -9,6 +9,7 @@ import {
   recentAlbums,
   topTracks,
 } from '@awc-ui/showcase-kit/music';
+import { listeningRoom } from '../components/listening-room.mjs';
 import { html } from '../lib/html.mjs';
 import { panel, screen } from '../components/shell.mjs';
 import { albumCard, artistRow, count, playlistCard, trackList } from '../lib/bits.mjs';
@@ -26,7 +27,8 @@ export function homeScreen(t, locale) {
     title: t('music.screen.home.title'),
     subtitle: t('music.screen.home.subtitle'),
     aside: count(t, totals.tracks),
-    children: html`<div class="stack">
+    children: html`<div class="stack music-home">
+      ${listeningRoom(t)}
       ${panel({
         title: t('music.panel.topTracks'),
         actions: count(t, tracks.length),
@@ -40,7 +42,9 @@ export function homeScreen(t, locale) {
       ${panel({
         title: t('music.panel.yourPlaylists'),
         actions: count(t, playlists.length),
-        children: html`<div class="shelf">${playlists.map((p) => playlistCard(t, locale, p))}</div>`,
+        children: html`<div class="shelf">
+          ${playlists.map((p) => playlistCard(t, locale, p))}
+        </div>`,
       })}
       ${panel({
         title: t('music.panel.artists'),

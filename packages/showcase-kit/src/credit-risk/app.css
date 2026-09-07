@@ -13,7 +13,7 @@
 /*
  * `@awc-ui/showcase-kit/credit-risk/app.css`
  *
- * Page furniture only, shared by all six framework builds of the Credit Risk
+ * Page furniture only, shared by all ten framework builds of the Credit Risk
  * Console. Every component on every screen is an `md-*` element that styles
  * itself; what is left is the grid the screens sit on, and that is written
  * entirely in `--md-sys-*` tokens so it themes, densifies and mirrors with the
@@ -22,11 +22,11 @@
  * It lives in the kit for the same reason the derived series do: six copies of
  * a grid drift, and the first spacing fix would land in one build and quietly
  * make the screenshots incomparable. Nothing here is framework-specific — it is
- * class selectors over plain elements, which is all any of the six emit.
+ * class selectors over plain elements, which is all any of the ten emit.
  *
- * There is not one hard-coded colour, radius, shadow or font stack in this file.
- * All spacing is logical (`inline-start`, `block-end`), so `dir="rtl"` — which
- * the dock sets on <html> — mirrors the layout without a single RTL override.
+ * Colours and typography use the system tokens. Page spacing is responsive
+ * and logical (`inline-start`, `block-end`), so `dir="rtl"` — which the dock
+ * sets on <html> — mirrors the layout without a separate RTL layout.
  */
 
 * {
@@ -61,11 +61,11 @@ a {
    inline padding keeps content off the edges. */
 .shell {
   width: 100%;
-  padding-inline: var(--md-sys-spacing-inset-xl, 24px);
-  padding-block: var(--md-sys-spacing-inset-lg, 16px) var(--md-sys-spacing-inset-xl, 24px);
+  padding-inline: clamp(16px, 2.6vw, 48px);
+  padding-block: 24px 40px;
   display: flex;
   flex-direction: column;
-  gap: var(--md-sys-spacing-gap-lg, 16px);
+  gap: 24px;
 }
 
 /*
@@ -177,14 +177,17 @@ a {
 }
 
 .screen-head h1 {
-  font: var(--md-sys-typescale-headline-medium-font);
+  font: var(--md-sys-typescale-headline-large-font);
+  font-size: clamp(28px, 3vw, 40px);
+  text-wrap: balance;
   margin: 0;
 }
 
 .screen-head p {
   font: var(--md-sys-typescale-body-medium-font);
   color: var(--md-sys-color-on-surface-variant);
-  margin: var(--md-sys-spacing-gap-xs, 4px) 0 0;
+  margin: 12px 0 0;
+  line-height: 1.6;
 }
 
 .screen-head__aside {
@@ -201,15 +204,15 @@ a {
 }
 
 .panel__inner {
-  padding: var(--md-sys-spacing-inset-lg, 16px);
+  padding: clamp(18px, 2vw, 28px);
   display: flex;
   flex-direction: column;
-  gap: var(--md-sys-spacing-gap-md, 12px);
+  gap: 20px;
   min-inline-size: 0;
 }
 
 .panel__title {
-  font: var(--md-sys-typescale-title-small-font);
+  font: var(--md-sys-typescale-title-medium-font);
   margin: 0;
 }
 
@@ -232,14 +235,14 @@ a {
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: var(--md-sys-spacing-gap-md, 12px);
+  gap: 20px;
 }
 
 .kpi {
   display: flex;
   flex-direction: column;
-  gap: var(--md-sys-spacing-gap-xs, 4px);
-  padding: var(--md-sys-spacing-inset-lg, 16px);
+  gap: 12px;
+  padding: 24px;
   min-inline-size: 0;
 }
 
@@ -250,7 +253,7 @@ a {
 }
 
 .kpi__value {
-  font: var(--md-sys-typescale-headline-small-font);
+  font: var(--md-sys-typescale-headline-large-font);
   color: var(--md-sys-color-on-surface);
   margin: 0;
   font-variant-numeric: tabular-nums;
@@ -456,3 +459,24 @@ md-organization-chart {
 md-table-pagination {
   --md-table-pagination-select-width: 5.5rem;
 }
+
+/* Scenario briefing: readable at a glance, with the detailed figures below. */
+.stress-briefing { padding: clamp(20px, 2.5vw, 32px); border-radius: 20px; background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+.stress-briefing__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.stress-briefing__metric { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; min-inline-size: 0; }
+.stress-briefing__metric > span { font: var(--md-sys-typescale-label-large-font); }
+.stress-briefing__metric strong { font: var(--md-sys-typescale-headline-medium-font); font-size: clamp(22px, 2.2vw, 32px); font-variant-numeric: tabular-nums; text-wrap: balance; }
+.stress-briefing__metric small { font: var(--md-sys-typescale-body-small-font); line-height: 1.6; }
+.stress-briefing__footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; border-block-start: 1px solid color-mix(in srgb, currentColor 20%, transparent); margin-block-start: 28px; padding-block-start: 20px; font: var(--md-sys-typescale-body-small-font); }
+.stress-export { display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-block-size: 44px; border: 1px solid currentColor; border-radius: 24px; padding: 10px 20px; text-decoration: none; font: var(--md-sys-typescale-label-large-font); }
+.stress-export:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
+.stress-export:focus-visible { outline: 3px solid currentColor; outline-offset: 4px; }
+@media (max-width: 760px) {
+  .stress-briefing__grid { grid-template-columns: 1fr; gap: 24px; }
+  .stress-briefing__metric + .stress-briefing__metric { border-block-start: 1px solid color-mix(in srgb, currentColor 20%, transparent); padding-block-start: 24px; }
+  .kpi-grid, .grid-2 { grid-template-columns: minmax(0, 1fr); }
+  .screen-head__aside { max-inline-size: 100%; overflow-x: auto; }
+}
+
+/* Application bodies own their inset; avoid adding the card host padding twice. */
+md-card.panel, md-card:has(> .kpi) { padding: 0; }

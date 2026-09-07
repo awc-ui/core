@@ -10,13 +10,14 @@
  * A `.map()` over a kit series to lift one field out is a projection, not a
  * calculation.
  *
- * WHAT THE CLIENT SCRIPT ADDS: nothing. Every element on this screen is
- * complete as written — the only interactive pieces are links, which work
- * before any JavaScript runs. The charts get their axis config from
- * `client/charts.mjs`, which is true of every screen in this build.
+ * The balance-history picker progressively enhances the complete 12-month
+ * view with shorter windows and a synchronized change figure.
  */
 
 import {
+  BALANCE_WINDOWS,
+  balanceHistory,
+  balanceHistoryCopy,
   BASE_CURRENCY,
   accountSummaries,
   balanceSeries,
@@ -50,6 +51,32 @@ export function homeScreen(t, locale) {
   const totals = getTotals();
   const summaries = accountSummaries();
   const curve = balanceSeries();
+  const historyCopy = balanceHistoryCopy(locale);
+  const history = balanceHistory();
+  const periods = Object.fromEntries(
+    BALANCE_WINDOWS.map((window) => {
+      const { points, total, change } = balanceHistory(window);
+      return [
+        window,
+        {
+          series: [
+            {
+              id: 'balance',
+              label: t('banking.kpi.balance'),
+              data: points.map((p) => p.balanceEur),
+            },
+          ],
+          xAxis: {
+            data: points.map((p) => t.formatDate(`${p.month}-01`, 'monthYear')),
+            scale: 'category',
+          },
+          subtitle: t('banking.common.showing', { shown: points.length, total }),
+          change: `${change > 0 ? '+' : ''}${t.formatCurrency(change, { maximumFractionDigits: 2, minimumFractionDigits: 2 })}`,
+          direction: change > 0 ? 'pl-up' : change < 0 ? 'pl-down' : 'pl-flat',
+        },
+      ];
+    }),
+  );
   const budget = budgetOverall();
   const charges = upcomingCharges(4);
   const cards = getCards();
@@ -71,11 +98,11 @@ export function homeScreen(t, locale) {
     title: t('banking.screen.home.title'),
     subtitle: t('banking.screen.home.subtitle'),
     aside: html`<md-button${attrs({
-        variant: 'tonal',
-        size: 'sm',
-        icon: 'currency_exchange',
-        href: localeHref(locale, route.exchange()),
-      })}>${t('banking.action.exchange')}</md-button>
+      variant: 'tonal',
+      size: 'sm',
+      icon: 'currency_exchange',
+      href: localeHref(locale, route.exchange()),
+    })}>${t('banking.action.exchange')}</md-button>
       <md-button${attrs({
         variant: 'text',
         size: 'sm',
@@ -91,12 +118,15 @@ export function homeScreen(t, locale) {
               h.changePct === null
                 ? null
                 : html`${signed(t, h.changePct, { kind: 'percent' })}
-                    ${h.labelKey === 'banking.kpi.spentThisMonth'
+                  ${
+                    h.labelKey === 'banking.kpi.spentThisMonth'
                       ? t('banking.common.vsLastMonth')
-                      : t('banking.kpi.unrealisedPl')}`,
+                      : t('banking.kpi.unrealisedPl')
+                  }`,
             /* Only the balance tile gets the curve. Four sparklines across a
                KPI row is four competing shapes and none of them is read. */
-            trend: h.labelKey === 'banking.kpi.balance' ? curve.map((p) => p.balanceEur) : undefined,
+            trend:
+              h.labelKey === 'banking.kpi.balance' ? curve.map((p) => p.balanceEur) : undefined,
             trendLabels,
             trendFormat: 'currency',
           }),
@@ -109,10 +139,10 @@ export function homeScreen(t, locale) {
           subtitle: t('banking.app.baseCurrency', { currency: BASE_CURRENCY }),
           actions: count(t, totals.accountCount),
           children: html`<md-list${attrs({
-              label: t('banking.panel.accounts'),
-              'interaction-mode': 'navigation',
-              'list-style': 'segmented',
-            })}>
+            label: t('banking.panel.accounts'),
+            'interaction-mode': 'navigation',
+            'list-style': 'segmented',
+          })}>
               ${summaries.map(
                 ({ account, transactionCount }) => html`<md-list-item${attrs({
                   type: 'link',
@@ -127,9 +157,13 @@ export function homeScreen(t, locale) {
                     ${money(t, account.balance, { currency: account.currency })}
                     <!-- The EUR twin only when it differs — the same figure
                          twice is noise on the three EUR accounts. -->
-                    ${account.currency === BASE_CURRENCY
-                      ? null
-                      : html`<span class="muted">${money(t, account.balanceEur, { compact: true })}</span>`}
+                    ${
+                      account.currency === BASE_CURRENCY
+                        ? null
+                        : html`<span class="muted"
+                            >${money(t, account.balanceEur, { compact: true })}</span
+                          >`
+                    }
                   </span>
                 </md-list-item>`,
               )}
@@ -138,38 +172,61 @@ export function homeScreen(t, locale) {
             <!-- The vault's progress, under the list it belongs to rather than
                  as a sixth row — the same account, shown a second way. -->
             ${vaults.map(
-              ({ account }) => html`<div class="budget-row">
-                <div class="budget-row__head">
-                  <span class="strong">${account.goalName}</span>
-                  <span class="muted">${t('banking.hint.vault', {
-                    pct: t.formatPercent(account.goalFundedPct ?? 0, { maximumFractionDigits: 0 }),
-                    target: t.formatCurrency(account.goalTarget ?? 0, { notation: 'compact' }),
-                  })}</span>
-                </div>
-                ${vaultMeter(t, { fraction: account.goalFundedPct ?? 0, label: account.goalName ?? '' })}
-              </div>`,
+              ({ account }) =>
+                html`<div class="budget-row">
+                  <div class="budget-row__head">
+                    <span class="strong">${account.goalName}</span>
+                    <span class="muted"
+                      >${t('banking.hint.vault', {
+                        pct: t.formatPercent(account.goalFundedPct ?? 0, {
+                          maximumFractionDigits: 0,
+                        }),
+                        target: t.formatCurrency(account.goalTarget ?? 0, { notation: 'compact' }),
+                      })}</span
+                    >
+                  </div>
+                  ${vaultMeter(t, { fraction: account.goalFundedPct ?? 0, label: account.goalName ?? '' })}
+                </div>`,
             )}`,
         })}
-
         ${panel({
           title: t('banking.panel.balanceTrend'),
+          attributes: { 'data-balance-history': true, 'data-periods': JSON.stringify(periods) },
+          actions: html`<md-button-group
+            variant="connected"
+            selection-mode="single-select"
+            required
+            size="sm"
+            aria-label="${historyCopy.period}"
+            data-history-picker
+          >
+            ${BALANCE_WINDOWS.map((value) => html`<md-button${attrs({ value, selected: value === 12, 'aria-pressed': value === 12 })}>${t.formatNumber(value)} ${historyCopy.months}</md-button>`)}
+          </md-button-group>`,
           subtitle: t('banking.common.showing', { shown: curve.length, total: curve.length }),
-          children: areaChart({
-            series: [
-              { id: 'balance', label: t('banking.kpi.balance'), data: curve.map((p) => p.balanceEur) },
-            ],
-            config: {
-              xAxis: { data: trendLabels, scale: 'category' },
-              format: 'currency',
-            },
-            attributes: {
-              class: 'chart-md',
-              locale: t.locale,
-              summary: t('banking.panel.balanceTrend'),
-              curve: 'monotone',
-              grid: 'horizontal',
-            },
-          }),
+          children: html`<div class="overview-window" aria-live="polite">
+              <span class="muted">${historyCopy.change}</span
+              ><strong data-history-change>${signed(t, history.change)}</strong>
+            </div>
+            ${areaChart({
+              series: [
+                {
+                  id: 'balance',
+                  label: t('banking.kpi.balance'),
+                  data: curve.map((p) => p.balanceEur),
+                },
+              ],
+              config: {
+                xAxis: { data: trendLabels, scale: 'category' },
+                format: 'currency',
+              },
+              attributes: {
+                class: 'chart-md',
+                locale: t.locale,
+                summary: t('banking.panel.balanceTrend'),
+                curve: 'monotone',
+                grid: 'horizontal',
+              },
+            })}`,
         })}
       </div>
 
@@ -204,12 +261,14 @@ export function homeScreen(t, locale) {
               </div>
               ${budgetMeter(t, { fraction: budget.usedPct, status: budgetStatus })}
               <div class="budget-row__foot">
-                <span>${money(t, budget.spent, { compact: true })} / ${money(t, budget.limit, { compact: true })}</span>
+                <span
+                  >${money(t, budget.spent, { compact: true })} /
+                  ${money(t, budget.limit, { compact: true })}</span
+                >
                 ${totals.budgetOverCount > 0 ? html`<span>${t('banking.budgetStatus.over')}</span>` : null}
               </div>
             </div>`,
         })}
-
         ${panel({
           title: t('banking.panel.upcoming'),
           subtitle: t('banking.kpi.subscriptions'),
@@ -252,7 +311,6 @@ export function homeScreen(t, locale) {
             'list-style': 'segmented',
           })}>${recent.map((txn) => statementRow(t, txn))}</md-list>`,
         })}
-
         ${panel({
           title: t('banking.panel.cards'),
           actions: html`<md-button${attrs({

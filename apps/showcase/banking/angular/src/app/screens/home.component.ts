@@ -1,5 +1,9 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import {
+  BALANCE_WINDOWS,
+  balanceHistory,
+  balanceHistoryCopy,
+  isBalanceWindow,
   BASE_CURRENCY,
   accountSummaries,
   balanceSeries,
@@ -85,7 +89,7 @@ import {
       <section class="kpi-grid">
         @for (h of headlines; track h.labelKey) {
           <awc-kpi-tile
-          [hasFoot]="true"
+            [hasFoot]="true"
             [label]="t(h.labelKey)"
             [trend]="h.labelKey === 'banking.kpi.balance' ? balanceTrend : undefined"
             [trendLabels]="trendLabels"
@@ -133,7 +137,11 @@ import {
                 "
               >
                 <span slot="trailing" class="account-row__figures">
-                  <span awcMoney [value]="row.account.balance" [currency]="row.account.currency"></span>
+                  <span
+                    awcMoney
+                    [value]="row.account.balance"
+                    [currency]="row.account.currency"
+                  ></span>
                   <!-- The EUR twin only when it differs — the same figure twice
                        is noise on the three EUR accounts. -->
                   @if (row.account.currency !== baseCurrency) {
@@ -164,8 +172,32 @@ import {
 
         <awc-panel
           [title]="t('banking.panel.balanceTrend')"
-          [subtitle]="t('banking.common.showing', { shown: curve.length, total: curve.length })"
+          [subtitle]="
+            t('banking.common.showing', { shown: history.points.length, total: curve.length })
+          "
         >
+          <md-button-group
+            actions
+            variant="connected"
+            selection-mode="single-select"
+            required
+            [attr.aria-label]="copy.period"
+            size="sm"
+            (mdSelectionChange)="changeWindow($event)"
+          >
+            @for (value of windows; track value) {
+              <md-button
+                [attr.value]="value"
+                [attr.selected]="window === value ? '' : null"
+                [attr.aria-pressed]="window === value"
+                >{{ t.formatNumber(value) }} {{ copy.months }}</md-button
+              >
+            }
+          </md-button-group>
+          <div class="overview-window" aria-live="polite">
+            <span class="muted">{{ copy.change }}</span
+            ><strong><bdi awcSigned [value]="history.change"></bdi></strong>
+          </div>
           <awc-chart
             tag="md-area-chart"
             chartClass="chart-md"
@@ -306,6 +338,18 @@ export class HomeScreen extends ShowcaseComponent {
   protected readonly totals = getTotals();
   protected readonly summaries = accountSummaries();
   protected readonly curve = balanceSeries();
+  protected readonly windows = BALANCE_WINDOWS;
+  protected window = 12;
+  protected history = balanceHistory();
+  protected get copy() {
+    return balanceHistoryCopy(this.t.locale);
+  }
+  protected changeWindow(event: Event) {
+    const next = Number((event as CustomEvent<{ values: string[] }>).detail.values[0]);
+    if (!isBalanceWindow(next)) return;
+    this.window = next;
+    this.history = balanceHistory(next);
+  }
   protected readonly budget = budgetOverall();
   protected readonly charges = upcomingCharges(4);
   protected readonly cards = getCards();
@@ -316,7 +360,6 @@ export class HomeScreen extends ShowcaseComponent {
   protected readonly balanceTrend = this.curve.map((p) => p.balanceEur);
   protected readonly budgetStatus =
     this.totals.budgetOverCount > 0 ? 'over' : this.totals.budgetNearCount > 0 ? 'near' : 'under';
-
 
   /*
    * MEMOISED, and this is not an optimisation — it is what stops the page
@@ -336,13 +379,20 @@ export class HomeScreen extends ShowcaseComponent {
   }
 
   protected get balanceSeriesProp() {
-    return this.memo('balanceSeries', () => [
-      { id: 'balance', label: this.t('banking.kpi.balance'), data: this.balanceTrend },
+    return this.memo(`balanceSeries-${this.window}`, () => [
+      {
+        id: 'balance',
+        label: this.t('banking.kpi.balance'),
+        data: this.history.points.map((point) => point.balanceEur),
+      },
     ]);
   }
 
   protected get balanceAxis() {
-    return this.memo('balanceAxis', () => ({ data: this.trendLabels, scale: 'category' }));
+    return this.memo(`balanceAxis-${this.window}`, () => ({
+      data: this.history.points.map((p) => this.t.formatDate(`${p.month}-01`, 'monthYear')),
+      scale: 'category',
+    }));
   }
 
   protected readonly formatCompact = (value: number | null): string =>
@@ -352,7 +402,10 @@ export class HomeScreen extends ShowcaseComponent {
     return cardStateColor[state];
   }
 
-  protected vaultHint(account: { goalFundedPct: number | null; goalTarget: number | null }): string {
+  protected vaultHint(account: {
+    goalFundedPct: number | null;
+    goalTarget: number | null;
+  }): string {
     return this.t('banking.hint.vault', {
       pct: this.t.formatPercent(account.goalFundedPct ?? 0, { maximumFractionDigits: 0 }),
       target: this.t.formatCurrency(account.goalTarget ?? 0, { notation: 'compact' }),

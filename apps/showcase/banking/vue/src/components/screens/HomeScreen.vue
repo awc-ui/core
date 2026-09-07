@@ -10,7 +10,12 @@
   `accountSummaries()`, `budgetOverall()`, `upcomingCharges()`.
 -->
 <script setup lang="ts">
+import { computed, ref } from 'vue';
 import {
+  BALANCE_WINDOWS,
+  balanceHistory,
+  balanceHistoryCopy,
+  isBalanceWindow,
   BASE_CURRENCY,
   accountSummaries,
   balanceSeries,
@@ -42,6 +47,13 @@ const t = useT();
 const totals = getTotals();
 const summaries = accountSummaries();
 const curve = balanceSeries();
+const window = ref(12);
+const history = computed(() => balanceHistory(window.value));
+const copy = computed(() => balanceHistoryCopy(t.value.locale));
+function changeWindow(event: CustomEvent<{ values: string[] }>) {
+  const next = Number(event.detail.values[0]);
+  if (isBalanceWindow(next)) window.value = next;
+}
 const budget = budgetOverall();
 const charges = upcomingCharges(4);
 const cards = getCards();
@@ -53,16 +65,27 @@ const vaults = summaries.filter(({ account }) => account.goalTarget !== null);
 
 /* The overall meter takes the WORST status of the five, not an average: one
    category 15% over is the thing worth surfacing. */
-const budgetStatus = totals.budgetOverCount > 0 ? 'over' : totals.budgetNearCount > 0 ? 'near' : 'under';
+const budgetStatus =
+  totals.budgetOverCount > 0 ? 'over' : totals.budgetNearCount > 0 ? 'near' : 'under';
 </script>
 
 <template>
   <Screen :title="t('banking.screen.home.title')" :subtitle="t('banking.screen.home.subtitle')">
     <template #aside>
-      <md-button variant="tonal" size="sm" icon="currency_exchange" :href="withBase(route.exchange())">
+      <md-button
+        variant="tonal"
+        size="sm"
+        icon="currency_exchange"
+        :href="withBase(route.exchange())"
+      >
         {{ t('banking.action.exchange') }}
       </md-button>
-      <md-button variant="text" size="sm" icon="receipt_long" :href="withBase(route.transactions())">
+      <md-button
+        variant="text"
+        size="sm"
+        icon="receipt_long"
+        :href="withBase(route.transactions())"
+      >
         {{ t('banking.action.statement') }}
       </md-button>
     </template>
@@ -79,7 +102,11 @@ const budgetStatus = totals.budgetOverCount > 0 ? 'over' : totals.budgetNearCoun
         <template #value><Money :value="h.valueEur" compact /></template>
         <template v-if="h.changePct !== null" #hint>
           <Signed :value="h.changePct" kind="percent" />
-          {{ h.labelKey === 'banking.kpi.spentThisMonth' ? t('banking.common.vsLastMonth') : t('banking.kpi.unrealisedPl') }}
+          {{
+            h.labelKey === 'banking.kpi.spentThisMonth'
+              ? t('banking.common.vsLastMonth')
+              : t('banking.kpi.unrealisedPl')
+          }}
         </template>
       </KpiTile>
     </section>
@@ -91,7 +118,11 @@ const budgetStatus = totals.budgetOverCount > 0 ? 'over' : totals.budgetNearCoun
       >
         <template #actions><Count :value="totals.accountCount" /></template>
 
-        <md-list :label="t('banking.panel.accounts')" interaction-mode="navigation" list-style="segmented">
+        <md-list
+          :label="t('banking.panel.accounts')"
+          interaction-mode="navigation"
+          list-style="segmented"
+        >
           <md-list-item
             v-for="{ account, transactionCount } in summaries"
             :key="account.id"
@@ -134,13 +165,47 @@ const budgetStatus = totals.budgetOverCount > 0 ? 'over' : totals.budgetNearCoun
 
       <Panel
         :title="t('banking.panel.balanceTrend')"
-        :subtitle="t('banking.common.showing', { shown: curve.length, total: curve.length })"
+        :subtitle="
+          t('banking.common.showing', { shown: history.points.length, total: curve.length })
+        "
       >
+        <template #actions
+          ><md-button-group
+            variant="connected"
+            selection-mode="single-select"
+            required
+            :aria-label="copy.period"
+            size="sm"
+            @mdSelectionChange="changeWindow"
+          >
+            <md-button
+              v-for="value in BALANCE_WINDOWS"
+              :key="value"
+              :value="String(value)"
+              :selected="window === value"
+              :aria-pressed="window === value"
+              >{{ t.formatNumber(value) }} {{ copy.months }}</md-button
+            >
+          </md-button-group></template
+        >
+        <div class="overview-window" aria-live="polite">
+          <span class="muted">{{ copy.change }}</span
+          ><strong><Signed :value="history.change" /></strong>
+        </div>
         <Chart
           tag="md-area-chart"
           class="chart-md"
-          :series="[{ id: 'balance', label: t('banking.kpi.balance'), data: curve.map((p) => p.balanceEur) }]"
-          :x-axis="{ data: curve.map((p) => t.formatDate(`${p.month}-01`, 'monthYear')), scale: 'category' }"
+          :series="[
+            {
+              id: 'balance',
+              label: t('banking.kpi.balance'),
+              data: history.points.map((p) => p.balanceEur),
+            },
+          ]"
+          :x-axis="{
+            data: history.points.map((p) => t.formatDate(`${p.month}-01`, 'monthYear')),
+            scale: 'category',
+          }"
           :value-formatter="(v) => t.formatCurrency(v ?? 0, { notation: 'compact' })"
           :summary="t('banking.panel.balanceTrend')"
           curve="monotone"
@@ -189,7 +254,11 @@ const budgetStatus = totals.budgetOverCount > 0 ? 'over' : totals.budgetNearCoun
 
       <Panel :title="t('banking.panel.upcoming')" :subtitle="t('banking.kpi.subscriptions')">
         <template #actions><Count :value="totals.activeSubscriptionCount" /></template>
-        <md-list :label="t('banking.panel.upcoming')" interaction-mode="multi-action" list-style="segmented">
+        <md-list
+          :label="t('banking.panel.upcoming')"
+          interaction-mode="multi-action"
+          list-style="segmented"
+        >
           <md-list-item
             v-for="charge in charges"
             :key="charge.subscriptionId"
@@ -216,7 +285,11 @@ const budgetStatus = totals.budgetOverCount > 0 ? 'over' : totals.budgetNearCoun
             {{ t('banking.action.viewAll') }}
           </md-button>
         </template>
-        <md-list :label="t('banking.panel.recent')" interaction-mode="multi-action" list-style="segmented">
+        <md-list
+          :label="t('banking.panel.recent')"
+          interaction-mode="multi-action"
+          list-style="segmented"
+        >
           <StatementRow v-for="txn in recent" :key="txn.id" :txn="txn" />
         </md-list>
       </Panel>
@@ -227,7 +300,11 @@ const budgetStatus = totals.budgetOverCount > 0 ? 'over' : totals.budgetNearCoun
             {{ t('banking.action.viewAll') }}
           </md-button>
         </template>
-        <md-list :label="t('banking.panel.cards')" interaction-mode="navigation" list-style="segmented">
+        <md-list
+          :label="t('banking.panel.cards')"
+          interaction-mode="navigation"
+          list-style="segmented"
+        >
           <md-list-item
             v-for="card in cards"
             :key="card.id"

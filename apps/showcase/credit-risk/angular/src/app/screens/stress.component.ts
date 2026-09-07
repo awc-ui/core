@@ -6,7 +6,7 @@ import {
   getStressScenarios,
   type ScenarioId,
 } from '@awc-ui/showcase-kit/data';
-import { TABLES } from '@awc-ui/showcase-kit/credit-risk';
+import { TABLES, stressBriefing, stressScenarioDownload } from '@awc-ui/showcase-kit/credit-risk';
 import { ShowcaseComponent } from '../lib/screen.base';
 import { ShellComponent } from '../components/shell.component';
 import { PanelComponent } from '../components/panel.component';
@@ -49,11 +49,28 @@ import { FactComponent } from '../components/bits.component';
       </ng-container>
 
       <awc-panel [title]="t(scenario.nameKey)" [subtitle]="description">
+        <section class="stress-briefing" [attr.aria-label]="briefing.title">
+          <div class="stress-briefing__grid">
+            @for (item of briefing.items; track item.label) {
+              <div class="stress-briefing__metric">
+                <span>{{ item.label }}</span
+                ><strong>{{ item.value }}</strong
+                ><small>{{ item.detail }}</small>
+              </div>
+            }
+          </div>
+          <div class="stress-briefing__footer">
+            <span>{{ briefing.note }}</span>
+            <a class="stress-export" [href]="download.href" [download]="download.filename"
+              >{{ briefing.exportLabel }}<span aria-hidden="true"> ↓</span></a
+            >
+          </div>
+        </section>
         <dl class="dl dl--numeric">
           <div awcFact [label]="t('table.pdMultiplier')">
             {{
               t('unit.times', {
-                value: t.formatNumber(scenario.pdMultiplier, { maximumFractionDigits: 2 })
+                value: t.formatNumber(scenario.pdMultiplier, { maximumFractionDigits: 2 }),
               })
             }}
           </div>
@@ -61,7 +78,7 @@ import { FactComponent } from '../components/bits.component';
             {{
               t.formatPercent(scenario.lgdUplift, {
                 maximumFractionDigits: 0,
-                signDisplay: 'exceptZero'
+                signDisplay: 'exceptZero',
               })
             }}
           </div>
@@ -148,7 +165,9 @@ import { FactComponent } from '../components/bits.component';
                 <md-table-cell head scope="col" numeric>{{ t('table.ead') }}</md-table-cell>
                 <md-table-cell head scope="col" numeric>{{ t('table.pd') }}</md-table-cell>
                 <md-table-cell head scope="col" numeric>{{ t('table.lgd') }}</md-table-cell>
-                <md-table-cell head scope="col" numeric>{{ t('table.expectedLoss') }}</md-table-cell>
+                <md-table-cell head scope="col" numeric>{{
+                  t('table.expectedLoss')
+                }}</md-table-cell>
                 <md-table-cell head scope="col" numeric>{{ t('table.elDelta') }}</md-table-cell>
                 <md-table-cell head scope="col" numeric>{{ t('table.rwa') }}</md-table-cell>
                 <md-table-cell head scope="col" numeric>{{ t('table.rwaDelta') }}</md-table-cell>
@@ -176,9 +195,7 @@ import { FactComponent } from '../components/bits.component';
                   </md-table-cell>
                   <md-table-cell numeric>
                     <span
-                      [style.color]="
-                        row.expectedLossDelta > 0 ? 'var(--md-sys-color-error)' : null
-                      "
+                      [style.color]="row.expectedLossDelta > 0 ? 'var(--md-sys-color-error)' : null"
                     >
                       {{
                         row.expectedLossDelta === 0
@@ -220,6 +237,14 @@ export class StressScreen extends ShowcaseComponent {
     return getStressScenarioById(this.scenarioId) ?? this.scenarios[0];
   }
 
+  protected get briefing() {
+    return stressBriefing(this.scenario, this.t.locale);
+  }
+
+  protected get download() {
+    return stressScenarioDownload(this.scenario);
+  }
+
   protected get description(): string {
     const s = this.scenario;
     return this.t(s.descriptionKey, {
@@ -234,8 +259,9 @@ export class StressScreen extends ShowcaseComponent {
   }
 
   protected get money() {
-    return this.memo('money', () => (v: number | null) =>
-      this.t.formatCurrency(v ?? 0, { notation: 'compact' }),
+    return this.memo(
+      'money',
+      () => (v: number | null) => this.t.formatCurrency(v ?? 0, { notation: 'compact' }),
     );
   }
 

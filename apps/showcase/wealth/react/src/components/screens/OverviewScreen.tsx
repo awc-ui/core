@@ -50,15 +50,12 @@
  * clock is read, and two runs produce the same frames.
  */
 
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
-  Fragment,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
-import {
+  REBALANCE_FILTERS,
+  rebalanceQueue,
+  isRebalanceFilter,
+  type RebalanceFilter,
   assetClassColor,
   driftedMandates,
   getActivity,
@@ -102,7 +99,6 @@ import {
 import { OverviewBookTable } from './OverviewBookTable';
 
 /* --------------------------------------------------------------- constants */
-
 
 /** The index the kit rebases the performance series to. `growthOf100()`'s own base. */
 const GROWTH_BASE = 100;
@@ -287,7 +283,8 @@ function KpiRow() {
         value={<Percent value={totals.ytdReturn} />}
         hint={
           <>
-            {t('wealth.common.vsBenchmark')} <Signed value={totals.ytdExcessReturn} kind="percent" />
+            {t('wealth.common.vsBenchmark')}{' '}
+            <Signed value={totals.ytdExcessReturn} kind="percent" />
           </>
         }
         trend={points.map((point) => point.cumulativeReturn)}
@@ -493,12 +490,7 @@ function Donut({
   );
 
   return (
-    <md-pie-chart
-      ref={ref}
-      locale={locale}
-      label-plot={t('wealth.chart.plotHint')}
-      {...attributes}
-    >
+    <md-pie-chart ref={ref} locale={locale} label-plot={t('wealth.chart.plotHint')} {...attributes}>
       <div slot="center">{centre}</div>
     </md-pie-chart>
   );
@@ -668,7 +660,13 @@ function RebalancePanel() {
    * and a rebalancing queue is exactly the list you want in full: "2 more"
    * gives no name, no drift and nothing to act on.
    */
-  const drifted = driftedMandates();
+  const [filter, setFilter] = useState<RebalanceFilter>('all');
+  const drifted = rebalanceQueue(filter);
+  const filterRef = useRef<HTMLElement | null>(null);
+  useCustomEvent<CustomEvent<{ values: string[] }>>(filterRef, 'mdSelectionChange', (event) => {
+    const next = event.detail.values[0];
+    if (isRebalanceFilter(next)) setFilter(next);
+  });
 
   return (
     <Panel
@@ -676,6 +674,30 @@ function RebalancePanel() {
       subtitle={t('wealth.panel.rebalanceHint')}
       actions={<Count value={drifted.length} color="warning" />}
     >
+      <md-button-group
+        ref={filterRef}
+        class="overview-filters"
+        variant="connected"
+        selection-mode="single-select"
+        required
+        aria-label={t('wealth.panel.rebalance')}
+        size="sm"
+      >
+        {REBALANCE_FILTERS.map((option) => (
+          <md-button
+            key={option.value}
+            value={option.value}
+            icon={option.icon}
+            selected={filter === option.value || undefined}
+            aria-pressed={filter === option.value}
+          >
+            {t(option.labelKey)}
+          </md-button>
+        ))}
+      </md-button-group>
+      <p className="muted overview-result" role="status">
+        {t('wealth.common.showing', { shown: drifted.length, total: driftedMandates().length })}
+      </p>
       {drifted.length === 0 ? (
         // No `hint`: this is a fact about the book, not a filter result, and
         // telling the reader to widen a filter they never set would be nonsense.

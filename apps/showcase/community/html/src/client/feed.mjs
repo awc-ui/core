@@ -1,34 +1,70 @@
-import { claim } from './claim.mjs';
-/**
- * The feed's one control: reveal the rest.
- *
- * The remaining posts are in a `<template>`, so this clones a fragment rather
- * than building anything — every body, name and timestamp in it is already in
- * the page's language. A template rather than hidden divs because the parity
- * census counts ELEMENTS, not visible ones.
- */
+import { matchesDiscovery } from '@awc-ui/showcase-kit/community';
+/** Discovery filters reuse translated server-rendered cards and preserve their interaction state. */
 export function enhanceFeed(root = document, onCloned = () => {}) {
-  const more = root.querySelector('.feed__more');
-  if (!more) return;
-  if (!claim(more, 'feedPager')) return;
-
-  const button = more.querySelector('md-button');
-  const end = root.querySelector('.feed__end');
-  const rest = root.querySelector('template.feed-rest');
-
-  button?.addEventListener('mdClick', () => {
-    if (rest) {
-      const fragment = rest.content.cloneNode(true);
-      /* Inserted BEFORE the button so the ending stays at the bottom where the
-         reader's eye already is. */
-      more.before(fragment);
+  const tools = root.querySelector('.discovery-tools:not([data-discovery-bound])');
+  if (!tools) return;
+  tools.setAttribute('data-discovery-bound', '');
+  const host = tools.parentElement;
+  const more = host.querySelector('.feed__more');
+  const end = host.querySelector('.feed__end');
+  const empty = host.querySelector('.discovery-empty');
+  const rest = host.querySelector('template.feed-rest');
+  const cards = [...host.querySelectorAll(':scope > .feed__item')];
+  if (rest) cards.push(...rest.content.cloneNode(true).querySelectorAll('.feed__item'));
+  // Full labels are translated at build time, including singular and dual forms.
+  const countLabels = JSON.parse(tools.getAttribute('data-discovery-count-labels') ?? '[]');
+  const page = Number(tools.getAttribute('data-discovery-page'));
+  const field = tools.querySelector('md-text-field');
+  const reset = tools.querySelector('.discovery-tools__reset');
+  let query = '';
+  let filter = 'all';
+  let shown = page;
+  const render = () => {
+    const matches = cards.filter((card) =>
+      matchesDiscovery(
+        card.getAttribute('data-discovery-search') ?? '',
+        query,
+        filter,
+        card.getAttribute('data-discovery-category') ?? '',
+      ),
+    );
+    cards.forEach((card) => card.remove());
+    const anchor = more ?? end;
+    for (const card of matches.slice(0, shown)) anchor.before(card);
+    more?.toggleAttribute('hidden', shown >= matches.length);
+    end?.toggleAttribute('hidden', matches.length === 0 || shown < matches.length);
+    empty?.toggleAttribute('hidden', matches.length > 0);
+    tools.querySelector('.discovery-count').textContent =
+      countLabels[matches.length] ?? String(matches.length);
+    reset.disabled = !query && filter === 'all';
+    for (const button of tools.querySelectorAll('[data-discovery-filter]')) {
+      const selected = button.getAttribute('data-discovery-filter') === filter;
+      button.setAttribute('variant', selected ? 'tonal' : 'text');
+      button.setAttribute('aria-pressed', String(selected));
     }
-    more.setAttribute('hidden', '');
-    end?.removeAttribute('hidden');
-    /* The cloned cards carry controls of their own, and the enhancements bind
-       by selector at load — so they have to be re-run over what just arrived.
-       Every binder is idempotent via `data-bound`, which is what makes a second
-       sweep safe rather than a source of doubled listeners. */
     onCloned();
+  };
+  field?.addEventListener('mdInput', (event) => {
+    query = event.detail ?? '';
+    shown = page;
+    render();
+  });
+  for (const button of tools.querySelectorAll('[data-discovery-filter]')) {
+    button.addEventListener('mdClick', () => {
+      filter = button.getAttribute('data-discovery-filter');
+      shown = page;
+      render();
+    });
+  }
+  reset?.addEventListener('mdClick', () => {
+    query = '';
+    filter = 'all';
+    shown = page;
+    field.value = '';
+    render();
+  });
+  more?.querySelector('md-button')?.addEventListener('mdClick', () => {
+    shown = cards.length;
+    render();
   });
 }

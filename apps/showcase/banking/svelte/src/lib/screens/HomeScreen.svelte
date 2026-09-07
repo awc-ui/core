@@ -11,6 +11,7 @@
 -->
 <script lang="ts">
   import {
+    BALANCE_WINDOWS, balanceHistory, balanceHistoryCopy, isBalanceWindow,
     BASE_CURRENCY,
     accountSummaries,
     balanceSeries,
@@ -41,6 +42,13 @@
   const totals = getTotals();
   const summaries = accountSummaries();
   const curve = balanceSeries();
+  let window = 12;
+  $: history = balanceHistory(window);
+  $: copy = balanceHistoryCopy($t.locale);
+  function changeWindow(event: CustomEvent<{ values: string[] }>) {
+    const next = Number(event.detail.values[0]);
+    if (isBalanceWindow(next)) window = next;
+  }
   const budget = budgetOverall();
   const charges = upcomingCharges(4);
   const cards = getCards();
@@ -137,13 +145,17 @@
 
     <Panel
       title={$t('banking.panel.balanceTrend')}
-      subtitle={$t('banking.common.showing', { shown: curve.length, total: curve.length })}
+      subtitle={$t('banking.common.showing', { shown: history.points.length, total: curve.length })}
     >
+      <svelte:fragment slot="actions"><md-button-group variant="connected" selection-mode="single-select" required aria-label={copy.period} size="sm" on:mdSelectionChange={changeWindow}>
+        {#each BALANCE_WINDOWS as value}<md-button value={String(value)} selected={window === value} aria-pressed={window === value}>{$t.formatNumber(value)} {copy.months}</md-button>{/each}
+      </md-button-group></svelte:fragment>
+      <div class="overview-window" aria-live="polite"><span class="muted">{copy.change}</span><strong><Signed value={history.change} /></strong></div>
       <Chart
         tag="md-area-chart"
         class="chart-md"
-        series={[{ id: 'balance', label: $t('banking.kpi.balance'), data: curve.map((p) => p.balanceEur) }]}
-        xAxis={{ data: trendLabels, scale: 'category' }}
+        series={[{ id: 'balance', label: $t('banking.kpi.balance'), data: history.points.map((p) => p.balanceEur) }]}
+        xAxis={{ data: history.points.map((p) => $t.formatDate(`${p.month}-01`, 'monthYear')), scale: 'category' }}
         valueFormatter={(v) => $t.formatCurrency(v ?? 0, { notation: 'compact' })}
         summary={$t('banking.panel.balanceTrend')}
         curve="monotone"

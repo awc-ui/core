@@ -42,6 +42,8 @@ import {
   type ReactNode,
 } from 'react';
 import {
+  startSession,
+  removeQueuedTrack,
   audibleTracks,
   emptyHistory,
   getQueue,
@@ -73,6 +75,8 @@ interface PlayerState {
   /* ---- transport ---- */
   transport: Transport;
   play(track: Track): void;
+  playSession(tracks: readonly Track[]): void;
+  removeFromQueue(id: string): void;
   toggle(): void;
   next(): void;
   previous(): void;
@@ -167,6 +171,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setTransport((t) => playTrack(t, track.id));
   }, []);
 
+  const playSession = useCallback(
+    (tracks: readonly Track[]) => setTransport((current) => startSession(current, tracks)),
+    [],
+  );
+  const removeFromQueue = useCallback(
+    (id: string) => setTransport((current) => removeQueuedTrack(current, id)),
+    [],
+  );
+
   const toggle = useCallback(() => setTransport(togglePlay), []);
   const next = useCallback(() => setTransport(advance), []);
   const previous = useCallback(() => setTransport(goBack), []);
@@ -181,10 +194,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const toggleMute = useCallback(() => setTransport(toggleTransportMute), []);
   const cycleRepeatMode = useCallback(() => setTransport(cycleRepeat), []);
-  const toggleShuffle = useCallback(
-    () => setTransport((t) => ({ ...t, shuffle: !t.shuffle })),
-    [],
-  );
+  const toggleShuffle = useCallback(() => setTransport((t) => ({ ...t, shuffle: !t.shuffle })), []);
 
   /*
    * ADDING TO THE QUEUE IS AN APPEND, and it must not disturb the playhead.
@@ -193,9 +203,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
    * queue" ends up behaving like "play now" in half the implementations.
    */
   const enqueue = useCallback((track: Track) => {
-    setTransport((t) =>
-      t.queue.includes(track.id) ? t : { ...t, queue: [...t.queue, track.id] },
-    );
+    setTransport((t) => (t.queue.includes(track.id) ? t : { ...t, queue: [...t.queue, track.id] }));
   }, []);
 
   /* ------------------------------------------------- listening overrides */
@@ -233,12 +241,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
    * the mixer and the timeline with one stack. The edit carries both ends of
    * the change, so undoing it is applying `before` — see `applyEdit` below.
    */
-  const patchTrack = useCallback(
-    (id: string, patch: Partial<StudioTrack>) => {
-      setTracks((current) => current.map((t) => (t.id === id ? { ...t, ...patch } : t)));
-    },
-    [],
-  );
+  const patchTrack = useCallback((id: string, patch: Partial<StudioTrack>) => {
+    setTracks((current) => current.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+  }, []);
 
   const setTrackVolume = useCallback(
     (id: string, value: number) => {
@@ -247,7 +252,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setHistory((h) =>
         record(
           h,
-          makeEdit(nextEditId(), 'track.volume', 'music.edit.trackVolume', id, { volume: before }, { volume: value }),
+          makeEdit(
+            nextEditId(),
+            'track.volume',
+            'music.edit.trackVolume',
+            id,
+            { volume: before },
+            { volume: value },
+          ),
         ),
       );
     },
@@ -259,7 +271,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const before = tracks.find((t) => t.id === id)?.pan ?? 0;
       patchTrack(id, { pan: value });
       setHistory((h) =>
-        record(h, makeEdit(nextEditId(), 'track.pan', 'music.edit.trackPan', id, { pan: before }, { pan: value })),
+        record(
+          h,
+          makeEdit(
+            nextEditId(),
+            'track.pan',
+            'music.edit.trackPan',
+            id,
+            { pan: before },
+            { pan: value },
+          ),
+        ),
       );
     },
     [patchTrack, tracks],
@@ -270,7 +292,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const before = tracks.find((t) => t.id === id)?.muted ?? false;
       patchTrack(id, { muted: !before });
       setHistory((h) =>
-        record(h, makeEdit(nextEditId(), 'track.mute', 'music.edit.trackMute', id, { muted: before }, { muted: !before })),
+        record(
+          h,
+          makeEdit(
+            nextEditId(),
+            'track.mute',
+            'music.edit.trackMute',
+            id,
+            { muted: before },
+            { muted: !before },
+          ),
+        ),
       );
     },
     [patchTrack, tracks],
@@ -281,7 +313,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const before = tracks.find((t) => t.id === id)?.soloed ?? false;
       patchTrack(id, { soloed: !before });
       setHistory((h) =>
-        record(h, makeEdit(nextEditId(), 'track.solo', 'music.edit.trackSolo', id, { soloed: before }, { soloed: !before })),
+        record(
+          h,
+          makeEdit(
+            nextEditId(),
+            'track.solo',
+            'music.edit.trackSolo',
+            id,
+            { soloed: before },
+            { soloed: !before },
+          ),
+        ),
       );
     },
     [patchTrack, tracks],
@@ -309,7 +351,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setHistory((h) =>
         record(
           h,
-          makeEdit(nextEditId(), 'clip.move', 'music.edit.clipMove', id, { startBar: before }, { startBar }),
+          makeEdit(
+            nextEditId(),
+            'clip.move',
+            'music.edit.clipMove',
+            id,
+            { startBar: before },
+            { startBar },
+          ),
         ),
       );
     },
@@ -322,7 +371,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       if (before === bars) return;
       setClipSpans((current) => ({ ...current, [id]: bars }));
       setHistory((h) =>
-        record(h, makeEdit(nextEditId(), 'clip.resize', 'music.edit.clipResize', id, { bars: before }, { bars })),
+        record(
+          h,
+          makeEdit(
+            nextEditId(),
+            'clip.resize',
+            'music.edit.clipResize',
+            id,
+            { bars: before },
+            { bars },
+          ),
+        ),
       );
     },
     [clipSpans],
@@ -333,7 +392,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setHistory((h) =>
       record(
         h,
-        makeEdit(nextEditId(), 'clip.remove', 'music.edit.clipRemove', id, { removed: false }, { removed: true }),
+        makeEdit(
+          nextEditId(),
+          'clip.remove',
+          'music.edit.clipRemove',
+          id,
+          { removed: false },
+          { removed: true },
+        ),
       ),
     );
   }, []);
@@ -344,7 +410,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       if (before === name || name.trim() === '') return;
       patchTrack(id, { name });
       setHistory((h) =>
-        record(h, makeEdit(nextEditId(), 'track.rename', 'music.edit.trackRename', id, { name: before }, { name })),
+        record(
+          h,
+          makeEdit(
+            nextEditId(),
+            'track.rename',
+            'music.edit.trackRename',
+            id,
+            { name: before },
+            { name },
+          ),
+        ),
       );
     },
     [patchTrack, tracks],
@@ -412,6 +488,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const value = useMemo<PlayerState>(
     () => ({
       transport,
+      playSession,
+      removeFromQueue,
       play,
       toggle,
       next,
@@ -444,10 +522,39 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       redo,
     }),
     [
-      transport, play, toggle, next, previous, seek, setVolume, toggleMute, cycleRepeatMode,
-      toggleShuffle, enqueue, likedFor, toggleLike, followedFor, toggleFollow, tracks, audible,
-      setTrackVolume, setTrackPan, toggleTrackMute, toggleTrackSolo, clipStart, clipBars,
-      clipRemoved, moveClip, resizeClip, removeClip, renameTrack, history, undo, redo,
+      transport,
+      playSession,
+      removeFromQueue,
+      play,
+      toggle,
+      next,
+      previous,
+      seek,
+      setVolume,
+      toggleMute,
+      cycleRepeatMode,
+      toggleShuffle,
+      enqueue,
+      likedFor,
+      toggleLike,
+      followedFor,
+      toggleFollow,
+      tracks,
+      audible,
+      setTrackVolume,
+      setTrackPan,
+      toggleTrackMute,
+      toggleTrackSolo,
+      clipStart,
+      clipBars,
+      clipRemoved,
+      moveClip,
+      resizeClip,
+      removeClip,
+      renameTrack,
+      history,
+      undo,
+      redo,
     ],
   );
 

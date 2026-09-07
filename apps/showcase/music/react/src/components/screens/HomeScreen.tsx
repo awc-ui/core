@@ -14,6 +14,7 @@ import {
   recentAlbums,
   topTracks,
 } from '@awc-ui/showcase-kit/music';
+import { ListeningRoom } from '@/components/ListeningRoom';
 import { Panel, Screen } from '@/components/Shell';
 import { AlbumCard, ArtistRow, Count, PlaylistCard, TrackList } from '@/components/bits';
 import { useT } from '@/lib/showcase';
@@ -34,11 +35,9 @@ export function HomeScreen() {
       aside={<Count value={totals.tracks} />}
       skeleton={<HomeSkeleton />}
     >
-      <div className="stack">
-        <Panel
-          title={t('music.panel.topTracks')}
-          actions={<Count value={tracks.length} />}
-        >
+      <div className="stack music-home">
+        <ListeningRoom />
+        <Panel title={t('music.panel.topTracks')} actions={<Count value={tracks.length} />}>
           <TrackList tracks={tracks} showAlbum />
         </Panel>
 

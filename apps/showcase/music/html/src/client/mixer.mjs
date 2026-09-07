@@ -39,7 +39,9 @@ export function enhanceMixer(root = document) {
   }));
 
   function render() {
-    const audible = audibleTracks(state.map((s) => ({ id: s.id, muted: s.muted, soloed: s.soloed })));
+    const audible = audibleTracks(
+      state.map((s) => ({ id: s.id, muted: s.muted, soloed: s.soloed })),
+    );
     for (const entry of state) {
       const heard = audible.has(entry.id);
       entry.strip.toggleAttribute('data-silent', !heard);
@@ -48,14 +50,20 @@ export function enhanceMixer(root = document) {
       mute?.setAttribute('icon', muteIcon(heard));
       mute?.setAttribute('aria-pressed', String(entry.muted));
       mute?.toggleAttribute('data-on', entry.muted);
-      mute?.setAttribute('aria-label', mute.getAttribute(entry.muted ? 'data-label-unmute' : 'data-label-mute') ?? '');
+      mute?.setAttribute(
+        'aria-label',
+        mute.getAttribute(entry.muted ? 'data-label-unmute' : 'data-label-mute') ?? '',
+      );
       if (entry.muted) mute?.setAttribute('color', 'error');
       else mute?.removeAttribute('color');
 
       const solo = entry.strip.querySelector('.strip__solo');
       solo?.setAttribute('aria-pressed', String(entry.soloed));
       solo?.toggleAttribute('data-on', entry.soloed);
-      solo?.setAttribute('aria-label', solo.getAttribute(entry.soloed ? 'data-label-unsolo' : 'data-label-solo') ?? '');
+      solo?.setAttribute(
+        'aria-label',
+        solo.getAttribute(entry.soloed ? 'data-label-unsolo' : 'data-label-solo') ?? '',
+      );
       if (entry.soloed) solo?.setAttribute('color', 'primary');
       else solo?.removeAttribute('color');
 
@@ -64,7 +72,8 @@ export function enhanceMixer(root = document) {
       const word = entry.strip.querySelector('.visually-hidden');
       if (word) {
         const label = word.getAttribute(heard ? 'data-audible' : 'data-inaudible');
-        if (label) word.textContent = `${label} — ${word.textContent.split('—').pop()?.trim() ?? ''}`;
+        if (label)
+          word.textContent = `${label} — ${word.textContent.split('—').pop()?.trim() ?? ''}`;
       }
     }
   }
@@ -90,7 +99,7 @@ export function enhanceMixer(root = document) {
       if (!volumeOut) return;
       volumeOut.textContent =
         db === null
-          ? volumeOut.getAttribute('data-silent') ?? ''
+          ? (volumeOut.getAttribute('data-silent') ?? '')
           : (volumeOut.getAttribute('data-db') ?? '{value}').replace(
               '{value}',
               new Intl.NumberFormat(document.documentElement.lang || 'en', {
@@ -106,11 +115,10 @@ export function enhanceMixer(root = document) {
       const amount = new Intl.NumberFormat(document.documentElement.lang || 'en').format(at.amount);
       panOut.textContent =
         at.side === 'centre'
-          ? panOut.getAttribute('data-centre') ?? ''
-          : (panOut.getAttribute(at.side === 'left' ? 'data-left' : 'data-right') ?? '{amount}').replace(
-              '{amount}',
-              amount,
-            );
+          ? (panOut.getAttribute('data-centre') ?? '')
+          : (
+              panOut.getAttribute(at.side === 'left' ? 'data-left' : 'data-right') ?? '{amount}'
+            ).replace('{amount}', amount);
     });
 
     entry.strip.querySelector('.strip__mute')?.addEventListener('click', (event) => {
@@ -121,7 +129,9 @@ export function enhanceMixer(root = document) {
     entry.strip.querySelector('.strip__solo')?.addEventListener('click', (event) => {
       entry.soloed = !entry.soloed;
       render();
-      raise(event.currentTarget.getAttribute(entry.soloed ? 'data-msg-soloed' : 'data-msg-unsoloed'));
+      raise(
+        event.currentTarget.getAttribute(entry.soloed ? 'data-msg-soloed' : 'data-msg-unsoloed'),
+      );
     });
   }
 
@@ -130,9 +140,38 @@ export function enhanceMixer(root = document) {
 
 /** The like buttons in every track list, and on the track drill. */
 export function enhanceLikes(root = document) {
-  for (const button of claimAll(root, '.track-row__like, .track__like', 'like')) {
-    button.addEventListener('click', () => {
-      const liked = !button.hasAttribute('data-liked');
+  const key = 'cygnus.likes';
+  let likes = {};
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(key) ?? '{}');
+    if (saved && typeof saved === 'object' && !Array.isArray(saved)) likes = saved;
+  } catch {
+    /* A new session starts from the fixture. */
+  }
+  const library = root.querySelector('[data-liked-library]');
+  const template = library?.querySelector('[data-library-tracks]');
+  if (template) {
+    const restored = [...template.content.children].filter((row) => {
+      const id = row.getAttribute('data-track');
+      return typeof likes[id] === 'boolean'
+        ? likes[id]
+        : row.querySelector('[data-like-track]')?.hasAttribute('data-liked');
+    });
+    library
+      .querySelector('.track-list')
+      .replaceChildren(...restored.map((row) => row.cloneNode(true)));
+  }
+  const buttons = [...root.querySelectorAll('[data-like-track]')];
+  const shipped = new Map(
+    buttons.map((button) => [
+      button.getAttribute('data-like-track'),
+      button.hasAttribute('data-liked'),
+    ]),
+  );
+  const isLiked = (id) => (typeof likes[id] === 'boolean' ? likes[id] : shipped.get(id));
+  const render = () => {
+    for (const button of buttons) {
+      const liked = isLiked(button.getAttribute('data-like-track'));
       button.toggleAttribute('data-liked', liked);
       button.toggleAttribute('selected', liked);
       button.setAttribute('icon', liked ? 'favorite' : 'favorite_border');
@@ -140,11 +179,44 @@ export function enhanceLikes(root = document) {
       if (label) button.setAttribute('aria-label', label);
       if (button.classList.contains('track__like')) {
         button.setAttribute('variant', liked ? 'tonal' : 'outlined');
-        button.textContent = button.getAttribute(liked ? 'data-label-unlike' : 'data-label-like') ?? '';
+        button.textContent = label ?? '';
       }
-      raise(button.getAttribute(liked ? 'data-msg-liked' : 'data-msg-unliked'));
+    }
+    const library = root.querySelector('[data-liked-library]');
+    if (library) {
+      let count = 0;
+      for (const row of library.querySelectorAll('.track-row')) {
+        const liked = isLiked(row.getAttribute('data-track'));
+        if (!liked) {
+          row.remove();
+          continue;
+        }
+        count += 1;
+        const index = row.querySelector('.track-row__index');
+        if (index) index.textContent = String(count);
+      }
+      library.querySelector('[data-liked-empty]').hidden = count > 0;
+      const badge = root.querySelector('[data-liked-count]');
+      if (badge)
+        badge.textContent = new Intl.NumberFormat(document.documentElement.lang || 'en').format(
+          count,
+        );
+    }
+  };
+  for (const button of claimAll(root, '[data-like-track]', 'like')) {
+    button.addEventListener('click', () => {
+      const id = button.getAttribute('data-like-track');
+      likes[id] = !isLiked(id);
+      try {
+        sessionStorage.setItem(key, JSON.stringify(likes));
+      } catch {
+        /* Overrides still work for this document. */
+      }
+      render();
+      raise(button.getAttribute(likes[id] ? 'data-msg-liked' : 'data-msg-unliked'));
     });
   }
+  render();
 }
 
 /** The follow button on an artist. One press, both states pre-written. */
@@ -155,7 +227,8 @@ export function enhanceFollow(root = document) {
       button.toggleAttribute('data-followed', followed);
       button.setAttribute('variant', followed ? 'outlined' : 'filled');
       button.setAttribute('icon', followed ? 'check' : 'person_add');
-      button.textContent = button.getAttribute(followed ? 'data-label-unfollow' : 'data-label-follow') ?? '';
+      button.textContent =
+        button.getAttribute(followed ? 'data-label-unfollow' : 'data-label-follow') ?? '';
       raise(button.getAttribute(followed ? 'data-msg-followed' : 'data-msg-unfollowed'));
     });
   }

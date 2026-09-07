@@ -12,9 +12,9 @@ import { enhanceMixer, enhanceLikes, enhanceFollow } from './mixer.mjs';
 import { enhanceTimeline } from './timeline.mjs';
 
 enhanceShell();
+enhanceLikes();
 enhanceTransport();
 enhanceQueueButtons();
-enhanceLikes();
 enhanceFollow();
 enhanceMixer();
 enhanceTimeline();

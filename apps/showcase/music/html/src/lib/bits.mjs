@@ -26,12 +26,14 @@ import { route } from '@awc-ui/showcase-kit/music';
 
 /** `compact` only above ten thousand; below that it hides a real difference. */
 export const count = (t, value, { compact = false } = {}) =>
-  html`<span class="num">${t.formatNumber(
-    value,
-    compact && value >= 10_000
-      ? { notation: 'compact', maximumFractionDigits: 1 }
-      : { maximumFractionDigits: 0 },
-  )}</span>`;
+  html`<span class="num"
+    >${t.formatNumber(
+      value,
+      compact && value >= 10_000
+        ? { notation: 'compact', maximumFractionDigits: 1 }
+        : { maximumFractionDigits: 0 },
+    )}</span
+  >`;
 
 /** mm:ss. Latin digits in every locale — see `clock()` in the kit. */
 export const clockText = (seconds) => html`<span class="tabular">${clock(seconds)}</span>`;
@@ -60,12 +62,17 @@ export const art = (t, artwork, { className, eager = false } = {}) =>
  * to one of eleven buckets and `app.css` carries a rule per bucket.
  */
 export const peaks = (samples) =>
-  html`<span class="peaks" aria-hidden="true">${samples.map(
-    (value) =>
-      html`<span class="peaks__bar"${attrs({
-        'data-h': Math.round(Math.max(0, Math.min(1, value)) * 10),
-      })}></span>`,
-  )}</span>`;
+  html`<span class="peaks" aria-hidden="true"
+    >${samples.map(
+      (value) =>
+        html`<span
+          class="peaks__bar"
+          ${attrs({
+            'data-h': Math.round(Math.max(0, Math.min(1, value)) * 10),
+          })}
+        ></span>`,
+    )}</span
+  >`;
 
 /* -------------------------------------------------------------- track rows */
 
@@ -102,29 +109,46 @@ export function trackRow(t, locale, track, { index, showArtist = true, showAlbum
       <a class="track-row__title link"${attrs({
         href: localeHref(locale, route.track(track.id)),
       })}>${track.title}</a>
-      ${showArtist
-        ? html`<span class="track-row__meta">${
-            artist
-              ? html`<a class="link"${attrs({
-                  href: localeHref(locale, route.artist(artist.handle)),
-                })}>${artist.name}</a>`
-              : ''
-          }</span>`
-        : ''}
+      ${
+        showArtist
+          ? html`<span class="track-row__meta"
+              >${
+                artist
+                  ? html`<a
+                      class="link"
+                      ${attrs({
+                        href: localeHref(locale, route.artist(artist.handle)),
+                      })}
+                      >${artist.name}</a
+                    >`
+                  : ''
+              }</span
+            >`
+          : ''
+      }
     </span>
-    ${showAlbum
-      ? html`<span class="track-row__album">${
-          album
-            ? html`<a class="link"${attrs({
-                href: localeHref(locale, route.album(album.slug)),
-              })}>${album.title}</a>`
-            : ''
-        }</span>`
-      : ''}
+    ${
+      showAlbum
+        ? html`<span class="track-row__album"
+            >${
+              album
+                ? html`<a
+                    class="link"
+                    ${attrs({
+                      href: localeHref(locale, route.album(album.slug)),
+                    })}
+                    >${album.title}</a
+                  >`
+                : ''
+            }</span
+          >`
+        : ''
+    }
     <span class="track-row__time">${clockText(track.durationSec)}</span>
     <span class="row">
       <md-icon-button${attrs({
         class: 'track-row__like',
+        'data-like-track': track.id,
         toggle: true,
         selected: liked || undefined,
         icon: liked ? 'favorite' : 'favorite_border',
@@ -149,20 +173,26 @@ export function trackRow(t, locale, track, { index, showArtist = true, showAlbum
   </div>`;
 }
 
-export const trackList = (t, locale, tracks, { numbered = false, showArtist = true, showAlbum = false } = {}) =>
-  html`<div class="track-list"${attrs({ 'data-albums': showAlbum ? true : undefined })}>${tracks.map(
-    (track, at) =>
+export const trackList = (
+  t,
+  locale,
+  tracks,
+  { numbered = false, showArtist = true, showAlbum = false } = {},
+) =>
+  html`<div class="track-list" ${attrs({ 'data-albums': showAlbum ? true : undefined })}>
+    ${tracks.map((track, at) =>
       trackRow(t, locale, track, {
         index: numbered ? track.trackNumber : at + 1,
         showArtist,
         showAlbum,
       }),
-  )}</div>`;
+    )}
+  </div>`;
 
 /* ---------------------------------------------------------------- shelves */
 
 export const shelfCard = (t, { href, artwork, title, meta, wide = false }) =>
-  html`<a class="shelf-card"${attrs({ href })}>
+  html`<a class="shelf-card" ${attrs({ href })}>
     ${art(t, artwork, { className: `shelf-card__art${wide ? ' shelf-card__art--wide' : ''}` })}
     <span class="shelf-card__title">${title}</span>
     ${meta ? html`<span class="shelf-card__meta">${meta}</span>` : ''}
@@ -186,13 +216,18 @@ export const playlistCard = (t, locale, playlist) =>
   });
 
 export const artistRow = (t, locale, artist) =>
-  html`<a class="artist-row"${attrs({ href: localeHref(locale, route.artist(artist.handle)) })}>
+  html`<a class="artist-row" ${attrs({ href: localeHref(locale, route.artist(artist.handle)) })}>
     ${art(t, artist.art, { className: 'artist-row__art' })}
     <span class="track-row__text">
       <span class="track-row__title">${artist.name}</span>
-      <span class="track-row__meta">${t('music.label.listeners', {
-        count: t.formatNumber(artist.monthlyListeners, { notation: 'compact', maximumFractionDigits: 1 }),
-      })}</span>
+      <span class="track-row__meta"
+        >${t('music.label.listeners', {
+        count: t.formatNumber(artist.monthlyListeners, {
+          notation: 'compact',
+          maximumFractionDigits: 1,
+        }),
+      })}</span
+      >
     </span>
   </a>`;
 
@@ -204,30 +239,38 @@ export function volumeReadout(t, volume) {
   /* THE TWO SPELLINGS TRAVEL WITH THE ELEMENT. The client recomputes the
      decibel figure as the fader moves, but it must not compose the sentence
      around it — so both forms ship here, with `{value}` left for it to fill. */
-  return html`<span class="strip__readout"${attrs({
-    'data-silent': t('music.label.silent'),
-    'data-db': t('music.label.decibels', { value: '{value}' }),
-  })}>${
-    db === null
-      ? t('music.label.silent')
-      : t('music.label.decibels', { value: t.formatNumber(db, { maximumFractionDigits: 1 }) })
-  }</span>`;
+  return html`<span
+    class="strip__readout"
+    ${attrs({
+      'data-silent': t('music.label.silent'),
+      'data-db': t('music.label.decibels', { value: '{value}' }),
+    })}
+    >${
+      db === null
+        ? t('music.label.silent')
+        : t('music.label.decibels', { value: t.formatNumber(db, { maximumFractionDigits: 1 }) })
+    }</span
+  >`;
 }
 
 /** A side and an amount, never a signed number. */
 export function panReadout(t, pan) {
   const position = panPosition(pan);
-  return html`<span class="strip__readout"${attrs({
-    'data-centre': t('music.label.panCentre'),
-    'data-left': t('music.label.panLeft', { amount: '{amount}' }),
-    'data-right': t('music.label.panRight', { amount: '{amount}' }),
-  })}>${
-    position.side === 'centre'
-      ? t('music.label.panCentre')
-      : t(position.side === 'left' ? 'music.label.panLeft' : 'music.label.panRight', {
-          amount: t.formatNumber(position.amount),
-        })
-  }</span>`;
+  return html`<span
+    class="strip__readout"
+    ${attrs({
+      'data-centre': t('music.label.panCentre'),
+      'data-left': t('music.label.panLeft', { amount: '{amount}' }),
+      'data-right': t('music.label.panRight', { amount: '{amount}' }),
+    })}
+    >${
+      position.side === 'centre'
+        ? t('music.label.panCentre')
+        : t(position.side === 'left' ? 'music.label.panLeft' : 'music.label.panRight', {
+            amount: t.formatNumber(position.amount),
+          })
+    }</span
+  >`;
 }
 
 export const trackKindMark = (t, track) =>

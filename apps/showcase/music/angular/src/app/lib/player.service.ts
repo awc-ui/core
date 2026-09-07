@@ -21,6 +21,8 @@
 
 import { Injectable, computed, effect, signal } from '@angular/core';
 import {
+  startSession,
+  removeQueuedTrack,
   audibleTracks,
   emptyHistory,
   getQueue,
@@ -105,17 +107,39 @@ export class PlayerService {
 
   /* ---------------------------------------------------------- transport */
 
-  play(track: Track) { this.transport.update((t) => playTrack(t, track.id)); }
-  toggle() { this.transport.update(togglePlay); }
-  next() { this.transport.update(advance); }
-  previous() { this.transport.update(goBack); }
+  playSession(tracks: readonly Track[]) {
+    this.transport.update((t) => startSession(t, tracks));
+  }
+  removeFromQueue(id: string) {
+    this.transport.update((t) => removeQueuedTrack(t, id));
+  }
+  play(track: Track) {
+    this.transport.update((t) => playTrack(t, track.id));
+  }
+  toggle() {
+    this.transport.update(togglePlay);
+  }
+  next() {
+    this.transport.update(advance);
+  }
+  previous() {
+    this.transport.update(goBack);
+  }
   seek(seconds: number, durationSec: number) {
     this.transport.update((t) => seekTo(t, seconds, durationSec));
   }
-  setVolume(value: number) { this.transport.update((t) => setTransportVolume(t, value)); }
-  toggleMute() { this.transport.update(toggleTransportMute); }
-  cycleRepeat() { this.transport.update(cycleRepeatMode); }
-  toggleShuffle() { this.transport.update((t) => ({ ...t, shuffle: !t.shuffle })); }
+  setVolume(value: number) {
+    this.transport.update((t) => setTransportVolume(t, value));
+  }
+  toggleMute() {
+    this.transport.update(toggleTransportMute);
+  }
+  cycleRepeat() {
+    this.transport.update(cycleRepeatMode);
+  }
+  toggleShuffle() {
+    this.transport.update((t) => ({ ...t, shuffle: !t.shuffle }));
+  }
 
   /* An append that must not disturb the playhead — touching `trackId` here is
      how "add to queue" ends up behaving like "play now". */
@@ -154,35 +178,68 @@ export class PlayerService {
   private push(edit: Edit) {
     this.history.update((h) => record(h, edit));
   }
-  private id() { return `edit-${(this.editSeq += 1)}`; }
+  private id() {
+    return `edit-${(this.editSeq += 1)}`;
+  }
 
   setTrackVolume(id: string, value: number) {
     const before = this.tracks().find((t) => t.id === id)?.volume ?? 0;
     if (before === value) return;
     this.patchTrack(id, { volume: value });
-    this.push(makeEdit(this.id(), 'track.volume', 'music.edit.trackVolume', id, { volume: before }, { volume: value }));
+    this.push(
+      makeEdit(
+        this.id(),
+        'track.volume',
+        'music.edit.trackVolume',
+        id,
+        { volume: before },
+        { volume: value },
+      ),
+    );
   }
   setTrackPan(id: string, value: number) {
     const before = this.tracks().find((t) => t.id === id)?.pan ?? 0;
     if (before === value) return;
     this.patchTrack(id, { pan: value });
-    this.push(makeEdit(this.id(), 'track.pan', 'music.edit.trackPan', id, { pan: before }, { pan: value }));
+    this.push(
+      makeEdit(this.id(), 'track.pan', 'music.edit.trackPan', id, { pan: before }, { pan: value }),
+    );
   }
   toggleTrackMute(id: string) {
     const before = this.tracks().find((t) => t.id === id)?.muted ?? false;
     this.patchTrack(id, { muted: !before });
-    this.push(makeEdit(this.id(), 'track.mute', 'music.edit.trackMute', id, { muted: before }, { muted: !before }));
+    this.push(
+      makeEdit(
+        this.id(),
+        'track.mute',
+        'music.edit.trackMute',
+        id,
+        { muted: before },
+        { muted: !before },
+      ),
+    );
   }
   toggleTrackSolo(id: string) {
     const before = this.tracks().find((t) => t.id === id)?.soloed ?? false;
     this.patchTrack(id, { soloed: !before });
-    this.push(makeEdit(this.id(), 'track.solo', 'music.edit.trackSolo', id, { soloed: before }, { soloed: !before }));
+    this.push(
+      makeEdit(
+        this.id(),
+        'track.solo',
+        'music.edit.trackSolo',
+        id,
+        { soloed: before },
+        { soloed: !before },
+      ),
+    );
   }
   renameTrack(id: string, name: string) {
     const before = this.tracks().find((t) => t.id === id)?.name ?? '';
     if (before === name || name.trim() === '') return;
     this.patchTrack(id, { name });
-    this.push(makeEdit(this.id(), 'track.rename', 'music.edit.trackRename', id, { name: before }, { name }));
+    this.push(
+      makeEdit(this.id(), 'track.rename', 'music.edit.trackRename', id, { name: before }, { name }),
+    );
   }
 
   /* -------------------------------------------------------------- clips */
@@ -195,25 +252,47 @@ export class PlayerService {
     const map = this.clipSpans();
     return id in map ? map[id]! : shipped;
   }
-  clipRemoved(id: string): boolean { return this.removed()[id] === true; }
+  clipRemoved(id: string): boolean {
+    return this.removed()[id] === true;
+  }
 
   moveClip(id: string, shipped: number, startBar: number) {
     const before = this.clipStart(id, shipped);
     if (before === startBar) return;
     this.clipStarts.update((m) => ({ ...m, [id]: startBar }));
-    this.push(makeEdit(this.id(), 'clip.move', 'music.edit.clipMove', id, { startBar: before }, { startBar }));
+    this.push(
+      makeEdit(
+        this.id(),
+        'clip.move',
+        'music.edit.clipMove',
+        id,
+        { startBar: before },
+        { startBar },
+      ),
+    );
   }
   resizeClip(id: string, shipped: number, bars: number) {
     const before = this.clipBars(id, shipped);
     if (before === bars) return;
     this.clipSpans.update((m) => ({ ...m, [id]: bars }));
-    this.push(makeEdit(this.id(), 'clip.resize', 'music.edit.clipResize', id, { bars: before }, { bars }));
+    this.push(
+      makeEdit(this.id(), 'clip.resize', 'music.edit.clipResize', id, { bars: before }, { bars }),
+    );
   }
   /* A REMOVED CLIP IS A FLAG, NOT A DELETION. Undo has to bring it back, and
      the fixture is frozen — there would be nothing to splice it back into. */
   removeClip(id: string) {
     this.removed.update((m) => ({ ...m, [id]: true }));
-    this.push(makeEdit(this.id(), 'clip.remove', 'music.edit.clipRemove', id, { removed: false }, { removed: true }));
+    this.push(
+      makeEdit(
+        this.id(),
+        'clip.remove',
+        'music.edit.clipRemove',
+        id,
+        { removed: false },
+        { removed: true },
+      ),
+    );
   }
 
   /* ------------------------------------------------------------ history */

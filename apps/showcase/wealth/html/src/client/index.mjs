@@ -61,3 +61,6 @@ enhanceHousehold();
 // it as a JS property, so unlike the enhancements above this one is not an
 // improvement on a complete control — without it the step has an empty one.
 enhanceProposals();
+
+import { enhanceRebalanceQueue } from './rebalance.mjs';
+enhanceRebalanceQueue();

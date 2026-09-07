@@ -1824,3 +1824,47 @@ md-list-item[data-status='declined'] .txn-row__amount {
   min-inline-size: 0;
 }
 
+
+/* Finance workspace rhythm. These application-level choices use the component
+   surface properties, so density, color themes, and RTL remain native. */
+.shell__main {
+  padding-inline: clamp(var(--md-sys-spacing-inset-lg, 16px), 2.4vw, 40px);
+  padding-block-start: var(--md-sys-spacing-inset-xl, 24px);
+  gap: var(--md-sys-spacing-inset-xl, 24px);
+}
+.screen-body { gap: var(--md-sys-spacing-inset-xl, 24px); }
+.screen-head { padding-block: var(--md-sys-spacing-gap-sm, 8px); gap: var(--md-sys-spacing-gap-lg, 16px); }
+.screen-head h1 { font: var(--md-sys-typescale-headline-large-font); letter-spacing: -0.025em; }
+.screen-head p { margin-block-start: var(--md-sys-spacing-gap-sm, 8px); max-inline-size: 70ch; }
+.panel__inner { padding: var(--md-sys-spacing-inset-xl, 24px); gap: var(--md-sys-spacing-gap-lg, 16px); }
+.panel__head { align-items: center; gap: var(--md-sys-spacing-gap-lg, 16px); }
+.panel__heading { flex-direction: column; align-items: flex-start; gap: var(--md-sys-spacing-gap-xs, 4px); }
+.panel__title { font: var(--md-sys-typescale-title-medium-font); }
+.kpi-grid { gap: var(--md-sys-spacing-gap-lg, 16px); }
+.kpi { padding: var(--md-sys-spacing-inset-xl, 24px); gap: var(--md-sys-spacing-gap-sm, 8px); }
+.kpi__value { font: var(--md-sys-typescale-headline-medium-font); letter-spacing: -0.025em; overflow-wrap: anywhere; }
+.kpi-grid > :first-child { --md-card-container-color: var(--md-sys-color-primary-container); }
+.kpi-grid > :first-child .kpi__value,
+.kpi-grid > :first-child .kpi__label { color: var(--md-sys-color-on-primary-container); }
+.grid-2, .grid-3, .grid-wide { gap: var(--md-sys-spacing-inset-xl, 24px); }
+.overview-window { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--md-sys-spacing-gap-sm, 8px); padding-block: var(--md-sys-spacing-gap-sm, 8px); }
+.overview-window strong { font: var(--md-sys-typescale-headline-small-font); font-variant-numeric: tabular-nums; }
+.overview-filters { align-self: flex-start; max-inline-size: 100%; }
+.overview-result { font: var(--md-sys-typescale-label-medium-font); }
+[data-rebalance-results] { display: contents; }
+@media (max-width: 599px) {
+  .shell__main { padding-inline: var(--md-sys-spacing-inset-md, 12px); }
+  .screen-head h1 { font: var(--md-sys-typescale-headline-medium-font); }
+  .panel__inner, .kpi { padding: var(--md-sys-spacing-inset-lg, 16px); }
+  .kpi-grid { gap: var(--md-sys-spacing-gap-sm, 8px); }
+  .kpi__value { font: var(--md-sys-typescale-headline-small-font); }
+  .overview-filters { max-inline-size: 100%; overflow-x: auto; }
+}
+
+.panel__inner:has(.overview-window) .chart-md { block-size: 340px; }
+.account-row__figures { gap: var(--md-sys-spacing-gap-xs, 4px); }
+.budget-row { padding-block: var(--md-sys-spacing-gap-sm, 8px); }
+@media (max-width: 599px) { .panel__inner:has(.overview-window) .chart-md { block-size: 260px; } }
+
+/* Application bodies own their inset; avoid adding the card host padding twice. */
+md-card.panel, md-card:has(> .kpi) { padding: 0; }

@@ -36,6 +36,7 @@
   import { onMount } from 'svelte';
   import {
     assetClassColor,
+    REBALANCE_FILTERS, rebalanceQueue, isRebalanceFilter, type RebalanceFilter,
     driftedMandates,
     getActivity,
     getBookAllocation,
@@ -109,7 +110,12 @@
   const points = getPerformanceSeries();
   const growth = growthOf100();
   const allocRows = getBookAllocation();
-  const drifted = driftedMandates();
+  let rebalanceFilter: RebalanceFilter = 'all';
+  $: drifted = rebalanceQueue(rebalanceFilter);
+  function changeRebalanceFilter(event: CustomEvent<{ values: string[] }>) {
+    const next = event.detail.values[0];
+    if (isRebalanceFilter(next)) rebalanceFilter = next;
+  }
   const activityRows = getActivity({ limit: ACTIVITY_ROWS });
 
   /* --------------------------------------------------------------- KPI row */
@@ -481,6 +487,10 @@
          and nothing to act on. -->
     <Panel title={$t('wealth.panel.rebalance')} subtitle={$t('wealth.panel.rebalanceHint')}>
       <Count slot="actions" value={drifted.length} color="warning" />
+      <md-button-group class="overview-filters" variant="connected" selection-mode="single-select" required aria-label={$t('wealth.panel.rebalance')} size="sm" on:mdSelectionChange={changeRebalanceFilter}>
+        {#each REBALANCE_FILTERS as option}<md-button value={option.value} icon={option.icon} selected={rebalanceFilter === option.value} aria-pressed={rebalanceFilter === option.value}>{$t(option.labelKey)}</md-button>{/each}
+      </md-button-group>
+      <p class="muted overview-result" role="status">{$t('wealth.common.showing', { shown: drifted.length, total: driftedMandates().length })}</p>
       {#if drifted.length === 0}
         <!-- No `hint`: this is a fact about the book, not a filter result,
              and telling the reader to widen a filter they never set would be

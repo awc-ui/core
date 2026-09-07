@@ -13,7 +13,12 @@
  * The only thing this file decides is what is on screen.
  */
 
+import { useRef, useState } from 'react';
 import {
+  BALANCE_WINDOWS,
+  balanceHistory,
+  balanceHistoryCopy,
+  isBalanceWindow,
   BASE_CURRENCY,
   accountSummaries,
   balanceSeries,
@@ -30,7 +35,7 @@ import { useT } from '@/lib/showcase';
 import { route, withBase } from '@/lib/routes';
 import { Link } from '@/lib/router';
 import { Panel, Screen } from '../Shell';
-import { AreaChart } from '../elements';
+import { AreaChart, useCustomEvent } from '../elements';
 import {
   AccountKindChip,
   CardStateChip,
@@ -56,6 +61,14 @@ export function HomeScreen() {
   const primary = getPrimaryAccount();
   const summaries = accountSummaries();
   const curve = balanceSeries();
+  const [window, setWindow] = useState(12);
+  const history = balanceHistory(window);
+  const copy = balanceHistoryCopy(t.locale);
+  const windowRef = useRef<HTMLElement | null>(null);
+  useCustomEvent<CustomEvent<{ values: string[] }>>(windowRef, 'mdSelectionChange', (event) => {
+    const next = Number(event.detail.values[0]);
+    if (isBalanceWindow(next)) setWindow(next);
+  });
   const budget = budgetOverall();
   const charges = upcomingCharges(4);
   const cards = getCards();
@@ -77,7 +90,12 @@ export function HomeScreen() {
           >
             {t('banking.action.exchange')}
           </md-button>
-          <md-button variant="text" size="sm" icon="receipt_long" href={withBase(route.transactions())}>
+          <md-button
+            variant="text"
+            size="sm"
+            icon="receipt_long"
+            href={withBase(route.transactions())}
+          >
             {t('banking.action.statement')}
           </md-button>
         </>
@@ -102,7 +120,9 @@ export function HomeScreen() {
             /* Only the balance tile gets the curve. Four sparklines across a
                KPI row is four competing shapes and none of them is read; the
                one that earns it is the figure the curve is actually of. */
-            trend={h.labelKey === 'banking.kpi.balance' ? curve.map((p) => p.balanceEur) : undefined}
+            trend={
+              h.labelKey === 'banking.kpi.balance' ? curve.map((p) => p.balanceEur) : undefined
+            }
             trendLabels={curve.map((p) => t.formatDate(`${p.month}-01`, 'monthYear'))}
             formatTrend={(value) => t.formatCurrency(value ?? 0, { notation: 'compact' })}
           />
@@ -115,7 +135,11 @@ export function HomeScreen() {
           subtitle={t('banking.app.baseCurrency', { currency: BASE_CURRENCY })}
           actions={<Count value={totals.accountCount} />}
         >
-          <md-list label={t('banking.panel.accounts')} interaction-mode="navigation" list-style="segmented">
+          <md-list
+            label={t('banking.panel.accounts')}
+            interaction-mode="navigation"
+            list-style="segmented"
+          >
             {summaries.map(({ account, transactionCount }) => (
               <md-list-item
                 key={account.id}
@@ -153,7 +177,9 @@ export function HomeScreen() {
                   <span className="strong">{account.goalName}</span>
                   <span className="muted">
                     {t('banking.hint.vault', {
-                      pct: t.formatPercent(account.goalFundedPct ?? 0, { maximumFractionDigits: 0 }),
+                      pct: t.formatPercent(account.goalFundedPct ?? 0, {
+                        maximumFractionDigits: 0,
+                      }),
                       target: t.formatCurrency(account.goalTarget ?? 0, { notation: 'compact' }),
                     })}
                   </span>
@@ -166,21 +192,48 @@ export function HomeScreen() {
         <Panel
           title={t('banking.panel.balanceTrend')}
           subtitle={t('banking.common.showing', {
-            shown: curve.length,
+            shown: history.points.length,
             total: curve.length,
           })}
+          actions={
+            <md-button-group
+              ref={windowRef}
+              variant="connected"
+              selection-mode="single-select"
+              required
+              aria-label={copy.period}
+              size="sm"
+            >
+              {BALANCE_WINDOWS.map((value) => (
+                <md-button
+                  key={value}
+                  value={String(value)}
+                  selected={window === value || undefined}
+                  aria-pressed={window === value}
+                >
+                  {t.formatNumber(value)} {copy.months}
+                </md-button>
+              ))}
+            </md-button-group>
+          }
         >
+          <div className="overview-window" aria-live="polite">
+            <span className="muted">{copy.change}</span>
+            <strong>
+              <Signed value={history.change} />
+            </strong>
+          </div>
           <AreaChart
             class="chart-md"
             series={[
               {
                 id: 'balance',
                 label: t('banking.kpi.balance'),
-                data: curve.map((p) => p.balanceEur),
+                data: history.points.map((p) => p.balanceEur),
               },
             ]}
             xAxis={{
-              data: curve.map((p) => t.formatDate(`${p.month}-01`, 'monthYear')),
+              data: history.points.map((p) => t.formatDate(`${p.month}-01`, 'monthYear')),
               scale: 'category',
             }}
             valueFormatter={(value: number | null) =>
@@ -244,9 +297,7 @@ export function HomeScreen() {
               <span>
                 <Money value={budget.spent} compact /> / <Money value={budget.limit} compact />
               </span>
-              {totals.budgetOverCount > 0 ? (
-                <span>{t('banking.budgetStatus.over')}</span>
-              ) : null}
+              {totals.budgetOverCount > 0 ? <span>{t('banking.budgetStatus.over')}</span> : null}
             </div>
           </div>
         </Panel>
@@ -256,7 +307,11 @@ export function HomeScreen() {
           subtitle={t('banking.kpi.subscriptions')}
           actions={<Count value={totals.activeSubscriptionCount} />}
         >
-          <md-list label={t('banking.panel.upcoming')} interaction-mode="multi-action" list-style="segmented">
+          <md-list
+            label={t('banking.panel.upcoming')}
+            interaction-mode="multi-action"
+            list-style="segmented"
+          >
             {charges.map((charge) => (
               <md-list-item
                 key={charge.subscriptionId}
@@ -288,7 +343,11 @@ export function HomeScreen() {
             </md-button>
           }
         >
-          <md-list label={t('banking.panel.recent')} interaction-mode="multi-action" list-style="segmented">
+          <md-list
+            label={t('banking.panel.recent')}
+            interaction-mode="multi-action"
+            list-style="segmented"
+          >
             {recent.map((txn) => (
               <TransactionRow key={txn.id} txn={txn} />
             ))}
@@ -303,7 +362,11 @@ export function HomeScreen() {
             </md-button>
           }
         >
-          <md-list label={t('banking.panel.cards')} interaction-mode="navigation" list-style="segmented">
+          <md-list
+            label={t('banking.panel.cards')}
+            interaction-mode="navigation"
+            list-style="segmented"
+          >
             {cards.map((card) => (
               <md-list-item
                 key={card.id}

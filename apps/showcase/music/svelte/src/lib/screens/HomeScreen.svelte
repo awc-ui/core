@@ -5,6 +5,7 @@
 <script lang="ts">
   import { followedArtists, getTotals, ownPlaylists, recentAlbums, topTracks } from '@awc-ui/showcase-kit/music';
   import { t } from '$lib/showcase';
+  import ListeningRoom from '$lib/components/ListeningRoom.svelte';
   import Screen from '$lib/components/Screen.svelte';
   import Panel from '$lib/components/Panel.svelte';
   import Count from '$lib/bits/Count.svelte';
@@ -25,7 +26,8 @@
   <Count slot="aside" value={totals.tracks} />
   <HomeSkeleton slot="skeleton" />
 
-  <div class="stack">
+  <div class="stack music-home">
+    <ListeningRoom />
     <Panel title={$t('music.panel.topTracks')}>
       <Count slot="actions" value={tracks.length} />
       <TrackList {tracks} showAlbum />

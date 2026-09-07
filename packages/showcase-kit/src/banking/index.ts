@@ -185,13 +185,10 @@ export {
   route,
 } from './routes';
 
-export type {
-  BankingRoutes,
-  CrumbSpec,
-  Destination,
-  Framework,
-  RouteName,
-} from './routes';
+export type { BankingRoutes, CrumbSpec, Destination, Framework, RouteName } from './routes';
 
 export { TABLES } from './tables';
 export type { TableLayout } from './tables';
+
+export { BALANCE_WINDOWS, balanceHistory, balanceHistoryCopy, isBalanceWindow } from './overview';
+export type { BalanceWindow } from './overview';

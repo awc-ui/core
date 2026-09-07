@@ -25,7 +25,12 @@
  */
 
 import { getSectors, getStressScenarios } from '@awc-ui/showcase-kit/data';
-import { route, TABLES } from '@awc-ui/showcase-kit/credit-risk';
+import {
+  route,
+  TABLES,
+  stressBriefing,
+  stressScenarioDownload,
+} from '@awc-ui/showcase-kit/credit-risk';
 import { attrs, html, style } from '../lib/html.mjs';
 import { barChart } from '../lib/charts.mjs';
 import { fact } from '../lib/bits.mjs';
@@ -45,37 +50,58 @@ export function stressScreen(t, locale) {
       lgd: t.formatPercent(scenario.lgdUplift, { maximumFractionDigits: 0 }),
     });
 
-  const aside = html`<md-segmented-button-set data-scenario-selector${attrs({ 'aria-label': t('table.scenario') })}>
+  const aside = html`<md-segmented-button-set
+    data-scenario-selector${attrs({ 'aria-label': t('table.scenario') })}
+  >
     ${scenarios.map(
-      (s) => html`<md-segmented-button${attrs({
-        value: s.id,
-        label: t(s.nameKey),
-        selected: s.id === INITIAL_SCENARIO || undefined,
-      })}></md-segmented-button>`,
+      (s) =>
+        html`<md-segmented-button${attrs({
+          value: s.id,
+          label: t(s.nameKey),
+          selected: s.id === INITIAL_SCENARIO || undefined,
+        })}></md-segmented-button>`,
     )}
   </md-segmented-button-set>`;
 
-  const facts = (scenario) => html`<dl class="dl dl--numeric">
-    ${fact(t('table.pdMultiplier'), t('unit.times', { value: t.formatNumber(scenario.pdMultiplier, { maximumFractionDigits: 2 }) }))}
-    ${fact(t('table.lgdUplift'), t.formatPercent(scenario.lgdUplift, { maximumFractionDigits: 0, signDisplay: 'exceptZero' }))}
-    ${fact(t('kpi.ead'), t.formatCurrency(scenario.totals.ead, { notation: 'compact' }))}
-    ${fact(t('kpi.expectedLoss'), t.formatCurrency(scenario.totals.expectedLoss, { notation: 'compact' }))}
-    ${fact(
-      t('table.elDelta'),
-      scenario.totals.expectedLossDelta === 0
-        ? t('common.na')
-        : t.formatCurrency(scenario.totals.expectedLossDelta, { notation: 'compact' }),
-    )}
-    ${fact(t('kpi.rwa'), t.formatCurrency(scenario.totals.rwa, { notation: 'compact' }))}
-    ${fact(
-      t('table.rwaDelta'),
-      scenario.totals.rwaDelta === 0
-        ? t('common.na')
-        : t.formatCurrency(scenario.totals.rwaDelta, { notation: 'compact' }),
-    )}
-    ${fact(t('kpi.weightedAvgPd'), t.formatPercent(scenario.totals.weightedAvgPd, { maximumFractionDigits: 2 }))}
-    ${fact(t('kpi.rwaDensity'), t.formatPercent(scenario.totals.rwaDensity, { maximumFractionDigits: 1 }))}
-  </dl>`;
+  const briefing = (scenario) => {
+    const brief = stressBriefing(scenario, locale);
+    const download = stressScenarioDownload(scenario);
+    return html`<section class="stress-briefing" ${attrs({ 'aria-label': brief.title })}>
+      <div class="stress-briefing__grid">
+        ${brief.items.map((item) => html`<div class="stress-briefing__metric"><span>${item.label}</span><strong>${item.value}</strong><small>${item.detail}</small></div>`)}
+      </div>
+      <div class="stress-briefing__footer">
+        <span>${brief.note}</span>
+        <a class="stress-export" ${attrs({ href: download.href, download: download.filename })}
+          >${brief.exportLabel}<span aria-hidden="true"> ↓</span></a
+        >
+      </div>
+    </section>`;
+  };
+
+  const facts = (scenario) =>
+    html`${briefing(scenario)}
+      <dl class="dl dl--numeric">
+        ${fact(t('table.pdMultiplier'), t('unit.times', { value: t.formatNumber(scenario.pdMultiplier, { maximumFractionDigits: 2 }) }))}
+        ${fact(t('table.lgdUplift'), t.formatPercent(scenario.lgdUplift, { maximumFractionDigits: 0, signDisplay: 'exceptZero' }))}
+        ${fact(t('kpi.ead'), t.formatCurrency(scenario.totals.ead, { notation: 'compact' }))}
+        ${fact(t('kpi.expectedLoss'), t.formatCurrency(scenario.totals.expectedLoss, { notation: 'compact' }))}
+        ${fact(
+          t('table.elDelta'),
+          scenario.totals.expectedLossDelta === 0
+            ? t('common.na')
+            : t.formatCurrency(scenario.totals.expectedLossDelta, { notation: 'compact' }),
+        )}
+        ${fact(t('kpi.rwa'), t.formatCurrency(scenario.totals.rwa, { notation: 'compact' }))}
+        ${fact(
+          t('table.rwaDelta'),
+          scenario.totals.rwaDelta === 0
+            ? t('common.na')
+            : t.formatCurrency(scenario.totals.rwaDelta, { notation: 'compact' }),
+        )}
+        ${fact(t('kpi.weightedAvgPd'), t.formatPercent(scenario.totals.weightedAvgPd, { maximumFractionDigits: 2 }))}
+        ${fact(t('kpi.rwaDensity'), t.formatPercent(scenario.totals.rwaDensity, { maximumFractionDigits: 1 }))}
+      </dl>`;
 
   const sectorTable = (scenario) => html`<md-table-container variant="outlined">
     <md-table${attrs({
@@ -114,7 +140,9 @@ export function stressScreen(t, locale) {
             <md-table-cell numeric>${t.formatCurrency(row.rwa, { notation: 'compact' })}</md-table-cell>
             <md-table-cell numeric>
               <span${attrs({ style: style({ color: row.rwaDelta > 0 ? 'var(--md-sys-color-warning)' : undefined }) })}>${
-                row.rwaDelta === 0 ? t('common.na') : t.formatCurrency(row.rwaDelta, { notation: 'compact' })
+                row.rwaDelta === 0
+                  ? t('common.na')
+                  : t.formatCurrency(row.rwaDelta, { notation: 'compact' })
               }</span>
             </md-table-cell>
           </md-table-row>`,
@@ -159,7 +187,7 @@ export function stressScreen(t, locale) {
 
   const initial = scenarios.find((s) => s.id === INITIAL_SCENARIO) ?? scenarios[0];
 
-  const children = html`    ${factsPanel(initial, true)}
+  const children = html` ${factsPanel(initial, true)}
 
     <!-- Both charts carry their own header; the panels stay untitled so the
          heading is not printed twice. They plot all three scenarios whatever is
@@ -178,7 +206,9 @@ export function stressScreen(t, locale) {
          The initial scenario is here too, so switching away and back is the
          same operation in both directions. -->
     ${scenarios.map(
-      (scenario) => html`<template${attrs({ 'data-scenario': scenario.id, 'data-slot': 'facts' })}>${factsPanel(scenario, false)}</template>
+      (
+        scenario,
+      ) => html`<template${attrs({ 'data-scenario': scenario.id, 'data-slot': 'facts' })}>${factsPanel(scenario, false)}</template>
       <template${attrs({ 'data-scenario': scenario.id, 'data-slot': 'table' })}>${tablePanel(scenario, false)}</template>`,
     )}`;
 

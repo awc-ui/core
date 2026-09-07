@@ -19,7 +19,7 @@ import {
   getStressScenarios,
   type ScenarioId,
 } from '@awc-ui/showcase-kit/data';
-import { TABLES } from '@awc-ui/showcase-kit/credit-risk';
+import { TABLES, stressBriefing, stressScenarioDownload } from '@awc-ui/showcase-kit/credit-risk';
 import { useT } from '~/composables/useShowcase';
 import { route } from '~/lib/routes';
 import Shell from '../Shell.vue';
@@ -35,7 +35,11 @@ const sectors = getSectors();
 const scenarioId = ref<ScenarioId>('adverse');
 
 const scenario = computed(() => getStressScenarioById(scenarioId.value) ?? scenarios[0]);
-const money = computed(() => (v: number | null) => t.value.formatCurrency(v ?? 0, { notation: 'compact' }));
+const briefing = computed(() => stressBriefing(scenario.value, t.value.locale));
+const download = computed(() => stressScenarioDownload(scenario.value));
+const money = computed(
+  () => (v: number | null) => t.value.formatCurrency(v ?? 0, { notation: 'compact' }),
+);
 const sectorLabels = computed(() => sectors.map((s) => t.value(s.nameKey)));
 
 const selectorListeners = {
@@ -84,12 +88,36 @@ const rwaSeries = computed(() =>
     </template>
 
     <Panel :title="t(scenario.nameKey)" :subtitle="describe">
+      <section class="stress-briefing" :aria-label="briefing.title">
+        <div class="stress-briefing__grid">
+          <div v-for="item in briefing.items" :key="item.label" class="stress-briefing__metric">
+            <span>{{ item.label }}</span
+            ><strong>{{ item.value }}</strong
+            ><small>{{ item.detail }}</small>
+          </div>
+        </div>
+        <div class="stress-briefing__footer">
+          <span>{{ briefing.note }}</span>
+          <a class="stress-export" :href="download.href" :download="download.filename"
+            >{{ briefing.exportLabel }}<span aria-hidden="true"> ↓</span></a
+          >
+        </div>
+      </section>
       <dl class="dl dl--numeric">
         <Fact :label="t('table.pdMultiplier')">
-          {{ t('unit.times', { value: t.formatNumber(scenario.pdMultiplier, { maximumFractionDigits: 2 }) }) }}
+          {{
+            t('unit.times', {
+              value: t.formatNumber(scenario.pdMultiplier, { maximumFractionDigits: 2 }),
+            })
+          }}
         </Fact>
         <Fact :label="t('table.lgdUplift')">
-          {{ t.formatPercent(scenario.lgdUplift, { maximumFractionDigits: 0, signDisplay: 'exceptZero' }) }}
+          {{
+            t.formatPercent(scenario.lgdUplift, {
+              maximumFractionDigits: 0,
+              signDisplay: 'exceptZero',
+            })
+          }}
         </Fact>
         <Fact :label="t('kpi.ead')">
           {{ t.formatCurrency(scenario.totals.ead, { notation: 'compact' }) }}
@@ -181,11 +209,17 @@ const rwaSeries = computed(() =>
             </md-table-row>
           </md-table-head>
           <md-table-body>
-            <md-table-row v-for="row in scenario.bySector" :key="row.sectorId" :value="row.sectorId">
+            <md-table-row
+              v-for="row in scenario.bySector"
+              :key="row.sectorId"
+              :value="row.sectorId"
+            >
               <md-table-cell>
                 <Drill :to="route.sector(row.sectorId)">{{ t(`sector.${row.sectorId}`) }}</Drill>
               </md-table-cell>
-              <md-table-cell numeric>{{ t.formatCurrency(row.ead, { notation: 'compact' }) }}</md-table-cell>
+              <md-table-cell numeric>{{
+                t.formatCurrency(row.ead, { notation: 'compact' })
+              }}</md-table-cell>
               <md-table-cell numeric>
                 {{ t.formatPercent(row.weightedAvgPd, { maximumFractionDigits: 2 }) }}
               </md-table-cell>
@@ -196,7 +230,11 @@ const rwaSeries = computed(() =>
                 {{ t.formatCurrency(row.expectedLoss, { notation: 'compact' }) }}
               </md-table-cell>
               <md-table-cell numeric>
-                <span :style="row.expectedLossDelta > 0 ? 'color: var(--md-sys-color-error)' : undefined">
+                <span
+                  :style="
+                    row.expectedLossDelta > 0 ? 'color: var(--md-sys-color-error)' : undefined
+                  "
+                >
                   {{
                     row.expectedLossDelta === 0
                       ? t('common.na')
@@ -204,7 +242,9 @@ const rwaSeries = computed(() =>
                   }}
                 </span>
               </md-table-cell>
-              <md-table-cell numeric>{{ t.formatCurrency(row.rwa, { notation: 'compact' }) }}</md-table-cell>
+              <md-table-cell numeric>{{
+                t.formatCurrency(row.rwa, { notation: 'compact' })
+              }}</md-table-cell>
               <md-table-cell numeric>
                 <span :style="row.rwaDelta > 0 ? 'color: var(--md-sys-color-warning)' : undefined">
                   {{

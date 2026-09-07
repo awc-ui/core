@@ -9,6 +9,7 @@
 import type { StressScenario } from '@awc-ui/showcase-kit/data';
 import type { LocaleCode } from '@awc-ui/showcase-kit/i18n';
 import { useT } from '../lib/i18n';
+import { stressBriefing, stressScenarioDownload } from '@awc-ui/showcase-kit/credit-risk';
 import Panel from './Panel.astro';
 
 interface Props {
@@ -20,6 +21,8 @@ interface Props {
 
 const { locale, scenario, live = false } = Astro.props;
 const t = useT(locale);
+const briefing = stressBriefing(scenario, locale);
+const download = stressScenarioDownload(scenario);
 
 const money = (v: number) => t.formatCurrency(v, { notation: 'compact' });
 /** Zero delta is structural for the baseline, not a rounded-away number. */
@@ -32,6 +35,14 @@ const describe = t(scenario.descriptionKey, {
 ---
 
 <Panel title={t(scenario.nameKey)} subtitle={describe} data-stress-facts={live ? '' : undefined}>
+  <section class="stress-briefing" aria-label={briefing.title}>
+    <div class="stress-briefing__grid">
+      {briefing.items.map((item) => <div class="stress-briefing__metric"><span>{item.label}</span><strong>{item.value}</strong><small>{item.detail}</small></div>)}
+    </div>
+    <div class="stress-briefing__footer"><span>{briefing.note}</span>
+      <a class="stress-export" href={download.href} download={download.filename}>{briefing.exportLabel}<span aria-hidden="true"> ↓</span></a>
+    </div>
+  </section>
   <dl class="dl dl--numeric">
     <div>
       <dt>{t('table.pdMultiplier')}</dt>

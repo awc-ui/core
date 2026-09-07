@@ -24,6 +24,8 @@
 
 import { computed, reactive, readonly, watch } from 'vue';
 import {
+  startSession,
+  removeQueuedTrack,
   audibleTracks,
   emptyHistory,
   getQueue,
@@ -155,6 +157,13 @@ export function usePlayer() {
     history: computed(() => state.history),
     audible,
 
+    playSession: (tracks: readonly Track[]) => {
+      state.transport = startSession(state.transport, tracks);
+    },
+    removeFromQueue: (id: string) => {
+      state.transport = removeQueuedTrack(state.transport, id);
+    },
+
     /* ---- transport ---- */
     play: (track: Track) => {
       state.transport = playTrack(state.transport, track.id);
@@ -209,23 +218,59 @@ export function usePlayer() {
       const before = state.tracks.find((t) => t.id === id)?.volume ?? 0;
       if (before === value) return;
       patchTrack(id, { volume: value });
-      push(makeEdit(nextEditId(), 'track.volume', 'music.edit.trackVolume', id, { volume: before }, { volume: value }));
+      push(
+        makeEdit(
+          nextEditId(),
+          'track.volume',
+          'music.edit.trackVolume',
+          id,
+          { volume: before },
+          { volume: value },
+        ),
+      );
     },
     setTrackPan: (id: string, value: number) => {
       const before = state.tracks.find((t) => t.id === id)?.pan ?? 0;
       if (before === value) return;
       patchTrack(id, { pan: value });
-      push(makeEdit(nextEditId(), 'track.pan', 'music.edit.trackPan', id, { pan: before }, { pan: value }));
+      push(
+        makeEdit(
+          nextEditId(),
+          'track.pan',
+          'music.edit.trackPan',
+          id,
+          { pan: before },
+          { pan: value },
+        ),
+      );
     },
     toggleTrackMute: (id: string) => {
       const before = state.tracks.find((t) => t.id === id)?.muted ?? false;
       patchTrack(id, { muted: !before });
-      push(makeEdit(nextEditId(), 'track.mute', 'music.edit.trackMute', id, { muted: before }, { muted: !before }));
+      push(
+        makeEdit(
+          nextEditId(),
+          'track.mute',
+          'music.edit.trackMute',
+          id,
+          { muted: before },
+          { muted: !before },
+        ),
+      );
     },
     toggleTrackSolo: (id: string) => {
       const before = state.tracks.find((t) => t.id === id)?.soloed ?? false;
       patchTrack(id, { soloed: !before });
-      push(makeEdit(nextEditId(), 'track.solo', 'music.edit.trackSolo', id, { soloed: before }, { soloed: !before }));
+      push(
+        makeEdit(
+          nextEditId(),
+          'track.solo',
+          'music.edit.trackSolo',
+          id,
+          { soloed: before },
+          { soloed: !before },
+        ),
+      );
     },
 
     /* ---- clips ---- */
@@ -238,25 +283,61 @@ export function usePlayer() {
       const before = id in state.clipStarts ? state.clipStarts[id]! : shipped;
       if (before === startBar) return;
       state.clipStarts[id] = startBar;
-      push(makeEdit(nextEditId(), 'clip.move', 'music.edit.clipMove', id, { startBar: before }, { startBar }));
+      push(
+        makeEdit(
+          nextEditId(),
+          'clip.move',
+          'music.edit.clipMove',
+          id,
+          { startBar: before },
+          { startBar },
+        ),
+      );
     },
     resizeClip: (id: string, shipped: number, bars: number) => {
       const before = id in state.clipSpans ? state.clipSpans[id]! : shipped;
       if (before === bars) return;
       state.clipSpans[id] = bars;
-      push(makeEdit(nextEditId(), 'clip.resize', 'music.edit.clipResize', id, { bars: before }, { bars }));
+      push(
+        makeEdit(
+          nextEditId(),
+          'clip.resize',
+          'music.edit.clipResize',
+          id,
+          { bars: before },
+          { bars },
+        ),
+      );
     },
     /* A REMOVED CLIP IS A FLAG, NOT A DELETION. Undo has to bring it back, and
        the fixture is frozen — there would be nothing to splice it back into. */
     removeClip: (id: string) => {
       state.removed[id] = true;
-      push(makeEdit(nextEditId(), 'clip.remove', 'music.edit.clipRemove', id, { removed: false }, { removed: true }));
+      push(
+        makeEdit(
+          nextEditId(),
+          'clip.remove',
+          'music.edit.clipRemove',
+          id,
+          { removed: false },
+          { removed: true },
+        ),
+      );
     },
     renameTrack: (id: string, name: string) => {
       const before = state.tracks.find((t) => t.id === id)?.name ?? '';
       if (before === name || name.trim() === '') return;
       patchTrack(id, { name });
-      push(makeEdit(nextEditId(), 'track.rename', 'music.edit.trackRename', id, { name: before }, { name }));
+      push(
+        makeEdit(
+          nextEditId(),
+          'track.rename',
+          'music.edit.trackRename',
+          id,
+          { name: before },
+          { name },
+        ),
+      );
     },
 
     /* ---- history ---- */

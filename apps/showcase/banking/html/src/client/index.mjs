@@ -44,3 +44,6 @@ enhanceTrade();
 // The cards screen: the card picker, the freeze switch and the three controls,
 // and the snackbar all of them raise.
 enhanceCards();
+
+import { enhanceBalanceHistory } from './history.mjs';
+enhanceBalanceHistory();

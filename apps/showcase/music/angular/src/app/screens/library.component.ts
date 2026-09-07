@@ -2,13 +2,13 @@
  * Library — four sections ordered by how often they are opened, not
  * alphabetically: liked tracks first, because that is the list people live in.
  */
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   followedPlaylists,
   getAlbums,
   getTotals,
-  likedTracks,
+  getTracks,
   ownPlaylists,
 } from '@awc-ui/showcase-kit/music';
 import { ScreenComponent } from '../components/screen.component';
@@ -21,6 +21,7 @@ import {
   TrackListComponent,
 } from '../components/bits.component';
 import { LibrarySkeletonComponent } from '../components/skeletons.component';
+import { PlayerService } from '../lib/player.service';
 import { ShowcaseService } from '../lib/showcase.service';
 
 @Component({
@@ -32,20 +33,30 @@ import { ShowcaseService } from '../lib/showcase.service';
   selector: 'awc-library-screen',
   standalone: true,
   imports: [
-    CommonModule, ScreenComponent, PanelComponent, EmptyStateComponent, CountComponent,
-    TrackListComponent, AlbumCardComponent, PlaylistCardComponent, LibrarySkeletonComponent,
+    CommonModule,
+    ScreenComponent,
+    PanelComponent,
+    EmptyStateComponent,
+    CountComponent,
+    TrackListComponent,
+    AlbumCardComponent,
+    PlaylistCardComponent,
+    LibrarySkeletonComponent,
   ],
   changeDetection: ChangeDetectionStrategy.Default,
   template: `
-    <awc-screen [title]="t('music.screen.library.title')" [subtitle]="t('music.screen.library.subtitle')">
+    <awc-screen
+      [title]="t('music.screen.library.title')"
+      [subtitle]="t('music.screen.library.subtitle')"
+    >
       <awc-count aside [value]="totals.tracks" />
       <awc-library-skeleton skeleton />
 
       <div class="stack">
         <awc-panel [title]="t('music.panel.liked')">
-          <awc-count actions [value]="liked.length" />
-          <awc-empty-state *ngIf="liked.length === 0" [message]="t('music.empty.liked')" />
-          <awc-track-list *ngIf="liked.length > 0" [tracks]="liked" [showAlbum]="true" />
+          <awc-count actions [value]="liked().length" />
+          <awc-empty-state *ngIf="liked().length === 0" [message]="t('music.empty.liked')" />
+          <awc-track-list *ngIf="liked().length > 0" [tracks]="liked()" [showAlbum]="true" />
         </awc-panel>
 
         <awc-panel [title]="t('music.panel.yourPlaylists')">
@@ -69,7 +80,8 @@ import { ShowcaseService } from '../lib/showcase.service';
 export class LibraryScreen {
   private readonly showcase = inject(ShowcaseService);
   readonly totals = getTotals();
-  readonly liked = likedTracks();
+  private readonly player = inject(PlayerService);
+  readonly liked = computed(() => getTracks().filter((track) => this.player.likedFor(track)));
   readonly own = ownPlaylists();
   readonly followed = followedPlaylists();
   readonly albums = getAlbums();

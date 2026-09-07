@@ -3,7 +3,8 @@
   alphabetically: liked tracks first, because that is the list people live in.
 -->
 <script lang="ts">
-  import { followedPlaylists, getAlbums, getTotals, likedTracks, ownPlaylists } from '@awc-ui/showcase-kit/music';
+  import { followedPlaylists, getAlbums, getTotals, getTracks, ownPlaylists } from '@awc-ui/showcase-kit/music';
+  import { player, likedFor } from '$lib/player';
   import { t } from '$lib/showcase';
   import Screen from '$lib/components/Screen.svelte';
   import Panel from '$lib/components/Panel.svelte';
@@ -15,7 +16,7 @@
   import LibrarySkeleton from '$lib/skeletons/LibrarySkeleton.svelte';
 
   const totals = getTotals();
-  const liked = likedTracks();
+  $: liked = getTracks().filter((track) => likedFor($player, track));
   const own = ownPlaylists();
   const followed = followedPlaylists();
   const albums = getAlbums();

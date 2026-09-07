@@ -20,13 +20,7 @@
 
 /* ------------------------------------------------------------- the fixture */
 
-export {
-  ASPECT_RATIO,
-  FEED_PAGE,
-  REPORTING_DATE,
-  REPORTING_INSTANT,
-  VIEWER_HANDLE,
-} from './types';
+export { ASPECT_RATIO, FEED_PAGE, REPORTING_DATE, REPORTING_INSTANT, VIEWER_HANDLE } from './types';
 
 export type {
   AccountKind,
@@ -120,3 +114,13 @@ export {
   route,
 } from './routes';
 export type { CrumbSpec, Destination, Framework, RouteName, SocialRoutes } from './routes';
+
+export {
+  discoveryCopy,
+  discoveryCount,
+  discoverySearchText,
+  discoverFeed,
+  matchesDiscovery,
+  normalizeDiscoveryQuery,
+} from './discovery';
+export type { DiscoveryFilter } from './discovery';

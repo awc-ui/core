@@ -3,7 +3,15 @@
   alphabetically: liked tracks first, because that is the list people live in.
 -->
 <script setup lang="ts">
-import { followedPlaylists, getAlbums, getTotals, likedTracks, ownPlaylists } from '@awc-ui/showcase-kit/music';
+import { computed } from 'vue';
+import { usePlayer } from '~/composables/usePlayer';
+import {
+  followedPlaylists,
+  getAlbums,
+  getTotals,
+  getTracks,
+  ownPlaylists,
+} from '@awc-ui/showcase-kit/music';
 import { useT } from '~/composables/useShowcase';
 import Screen from '~/components/Screen.vue';
 import Panel from '~/components/Panel.vue';
@@ -16,7 +24,8 @@ import LibrarySkeleton from '~/components/skeletons/LibrarySkeleton.vue';
 
 const t = useT();
 const totals = getTotals();
-const liked = likedTracks();
+const player = usePlayer();
+const liked = computed(() => getTracks().filter(player.likedFor));
 const own = ownPlaylists();
 const followed = followedPlaylists();
 const albums = getAlbums();

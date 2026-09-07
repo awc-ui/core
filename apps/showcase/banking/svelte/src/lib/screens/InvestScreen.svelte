@@ -247,7 +247,7 @@
             {#each holdings as h (h.instrument.id)}
               <md-table-row value={h.instrument.id}>
                 <md-table-cell>
-                  <Drill href={withBase(route.instrument(h.instrument.id))}>
+                  <Drill href={route.instrument(h.instrument.id)}>
                     <span class="strong">{h.instrument.ticker}</span>
                   </Drill>
                 </md-table-cell>

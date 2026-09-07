@@ -11,6 +11,7 @@ import {
   recentAlbums,
   topTracks,
 } from '@awc-ui/showcase-kit/music';
+import { ListeningRoomComponent } from '../components/listening-room.component';
 import { ScreenComponent } from '../components/screen.component';
 import { PanelComponent } from '../components/panel.component';
 import {
@@ -32,8 +33,16 @@ import { ShowcaseService } from '../lib/showcase.service';
   selector: 'awc-home-screen',
   standalone: true,
   imports: [
-    CommonModule, ScreenComponent, PanelComponent, CountComponent, TrackListComponent,
-    AlbumCardComponent, PlaylistCardComponent, ArtistRowComponent, HomeSkeletonComponent,
+    ListeningRoomComponent,
+    CommonModule,
+    ScreenComponent,
+    PanelComponent,
+    CountComponent,
+    TrackListComponent,
+    AlbumCardComponent,
+    PlaylistCardComponent,
+    ArtistRowComponent,
+    HomeSkeletonComponent,
   ],
   changeDetection: ChangeDetectionStrategy.Default,
   template: `
@@ -41,7 +50,8 @@ import { ShowcaseService } from '../lib/showcase.service';
       <awc-count aside [value]="totals.tracks" />
       <awc-home-skeleton skeleton />
 
-      <div class="stack">
+      <div class="stack music-home">
+        <awc-listening-room />
         <awc-panel [title]="t('music.panel.topTracks')">
           <awc-count actions [value]="tracks.length" />
           <awc-track-list [tracks]="tracks" [showAlbum]="true" />

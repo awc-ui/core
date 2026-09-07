@@ -168,3 +168,12 @@ export {
 export type { ClipPlacement, History, Tick, Transport } from './derive';
 
 export { FIXTURE } from './generated';
+
+export {
+  SESSION_MODES,
+  sessionCopy,
+  listeningSession,
+  startSession,
+  removeQueuedTrack,
+} from './experience';
+export type { SessionMode } from './experience';

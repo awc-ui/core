@@ -57,6 +57,10 @@
 import { computed, onBeforeUnmount, onMounted, ref, type Ref } from 'vue';
 import {
   assetClassColor,
+  REBALANCE_FILTERS,
+  rebalanceQueue,
+  isRebalanceFilter,
+  type RebalanceFilter,
   driftedMandates,
   getActivity,
   getBookAllocation,
@@ -185,7 +189,9 @@ const percent = computed(
   () => (value: number | null) => t.value.formatPercent(value ?? 0, { maximumFractionDigits: 2 }),
 );
 
-const monthLabels = computed(() => points.map((point) => t.value.formatDate(point.date, 'monthYear')));
+const monthLabels = computed(() =>
+  points.map((point) => t.value.formatDate(point.date, 'monthYear')),
+);
 
 const aumTrend = points.map((point) => point.marketValue);
 const returnTrend = points.map((point) => point.cumulativeReturn);
@@ -309,7 +315,12 @@ const donutProps = computed(() => ({
  * queue is exactly the list you want in full: "2 more" gives no name, no drift
  * and nothing to act on.
  */
-const drifted = driftedMandates();
+const rebalanceFilter = ref<RebalanceFilter>('all');
+const drifted = computed(() => rebalanceQueue(rebalanceFilter.value));
+function changeRebalanceFilter(event: CustomEvent<{ values: string[] }>) {
+  const next = event.detail.values[0];
+  if (isRebalanceFilter(next)) rebalanceFilter.value = next;
+}
 
 /* ----------------------------------------------------------------- activity */
 
@@ -332,8 +343,7 @@ function onActivityClick(event: MouseEvent) {
   const item = event
     .composedPath()
     .find(
-      (node): node is HTMLElement =>
-        node instanceof HTMLElement && node.tagName === 'MD-LIST-ITEM',
+      (node): node is HTMLElement => node instanceof HTMLElement && node.tagName === 'MD-LIST-ITEM',
     );
   const href = item?.getAttribute('href');
   if (!href) return;
@@ -394,8 +404,7 @@ const fabMenuListeners = {
 const fabStyle = {
   position: 'fixed',
   insetInlineEnd: 'var(--md-sys-spacing-inset-lg, 16px)',
-  insetBlockEnd:
-    'calc(var(--awc-dock-height, 0px) + 80px + var(--md-sys-spacing-inset-lg, 16px))',
+  insetBlockEnd: 'calc(var(--awc-dock-height, 0px) + 80px + var(--md-sys-spacing-inset-lg, 16px))',
   zIndex: 'var(--md-sys-z-index-navigation, 200)',
 };
 </script>
@@ -403,9 +412,7 @@ const fabStyle = {
 <template>
   <Screen
     :title="t('wealth.screen.overview.title')"
-    :subtitle="
-      t('wealth.screen.overview.subtitle', { date: t.formatDate(REPORTING_DATE, 'long') })
-    "
+    :subtitle="t('wealth.screen.overview.subtitle', { date: t.formatDate(REPORTING_DATE, 'long') })"
     :crumbs="crumbs"
   >
     <template #aside>
@@ -413,9 +420,7 @@ const fabStyle = {
         variant="assist"
         appearance="outlined"
         icon="groups"
-        :label="
-          t('wealth.common.of', { count: totals.householdCount, total: totals.clientCount })
-        "
+        :label="t('wealth.common.of', { count: totals.householdCount, total: totals.clientCount })"
         :title="`${t('wealth.kpi.households')} / ${t('wealth.kpi.clients')}`"
       ></md-chip>
     </template>
@@ -446,7 +451,10 @@ const fabStyle = {
         :color="plColor(totals.ytdExcessReturn)"
       >
         <template #value><Percent :value="totals.ytdReturn" /></template>
-        <template #hint>{{ t('wealth.common.vsBenchmark') }} <Signed :value="totals.ytdExcessReturn" kind="percent" /></template>
+        <template #hint
+          >{{ t('wealth.common.vsBenchmark') }}
+          <Signed :value="totals.ytdExcessReturn" kind="percent"
+        /></template>
       </KpiTile>
 
       <KpiTile
@@ -457,7 +465,10 @@ const fabStyle = {
         color="tertiary"
       >
         <template #value><Signed :value="totals.netNewMoneyYtd" compact /></template>
-        <template #hint>{{ t('wealth.unit.months', { value: 12 }) }} <Signed :value="totals.netNewMoneyOneYear" compact /></template>
+        <template #hint
+          >{{ t('wealth.unit.months', { value: 12 }) }}
+          <Signed :value="totals.netNewMoneyOneYear" compact
+        /></template>
       </KpiTile>
 
       <!-- No sparkline: there is no history behind these two counts in the
@@ -610,23 +621,50 @@ const fabStyle = {
             <DriftMeter :drift="row.drift" />
 
             <div class="alloc-row__figures">
-              <span>{{ t('wealth.table.target') }} <Percent :value="row.targetWeight" :digits="1" /></span>
-              <span>{{ t('wealth.table.actual') }} <Percent :value="row.actualWeight" :digits="1" /></span>
-              <span>{{ t('wealth.table.rebalance') }} <Signed :value="row.rebalanceAmount" compact /></span>
+              <span
+                >{{ t('wealth.table.target') }} <Percent :value="row.targetWeight" :digits="1"
+              /></span>
+              <span
+                >{{ t('wealth.table.actual') }} <Percent :value="row.actualWeight" :digits="1"
+              /></span>
+              <span
+                >{{ t('wealth.table.rebalance') }} <Signed :value="row.rebalanceAmount" compact
+              /></span>
             </div>
           </md-card>
         </div>
       </Panel>
 
-      <Panel
-        :title="t('wealth.panel.rebalance')"
-        :subtitle="t('wealth.panel.rebalanceHint')"
-      >
+      <Panel :title="t('wealth.panel.rebalance')" :subtitle="t('wealth.panel.rebalanceHint')">
         <template #actions><Count :value="drifted.length" color="warning" /></template>
 
         <!-- No `hint`: this is a fact about the book, not a filter result, and
              telling the reader to widen a filter they never set would be
              nonsense. -->
+        <md-button-group
+          class="overview-filters"
+          variant="connected"
+          selection-mode="single-select"
+          required
+          :aria-label="t('wealth.panel.rebalance')"
+          size="sm"
+          @mdSelectionChange="changeRebalanceFilter"
+        >
+          <md-button
+            v-for="option in REBALANCE_FILTERS"
+            :key="option.value"
+            :value="option.value"
+            :icon="option.icon"
+            :selected="rebalanceFilter === option.value"
+            :aria-pressed="rebalanceFilter === option.value"
+            >{{ t(option.labelKey) }}</md-button
+          >
+        </md-button-group>
+        <p class="muted overview-result" role="status">
+          {{
+            t('wealth.common.showing', { shown: drifted.length, total: driftedMandates().length })
+          }}
+        </p>
         <div v-if="drifted.length === 0" class="empty">
           <p>{{ t('wealth.empty.rebalance') }}</p>
         </div>
@@ -656,9 +694,14 @@ const fabStyle = {
             </div>
 
             <div class="alloc-row__figures">
-              <span>{{ t(entry.worst.assetClassKey) }} <Signed :value="entry.worst.drift" kind="percent" /></span>
+              <span
+                >{{ t(entry.worst.assetClassKey) }}
+                <Signed :value="entry.worst.drift" kind="percent"
+              /></span>
               <span>{{ t('wealth.kpi.driftBreaches') }} <Num :value="entry.breachCount" /></span>
-              <span>{{ t('wealth.allocationStatus.drifted') }} <Num :value="entry.driftedCount" /></span>
+              <span
+                >{{ t('wealth.allocationStatus.drifted') }} <Num :value="entry.driftedCount"
+              /></span>
             </div>
           </md-card>
         </div>
@@ -693,11 +736,7 @@ const fabStyle = {
         row gets the ripple, focus ring and roving focus a bare `<li>` had
         none of.
       -->
-      <md-list
-        v-else
-        :label="t('wealth.panel.activity')"
-        @click="onActivityClick"
-      >
+      <md-list v-else :label="t('wealth.panel.activity')" @click="onActivityClick">
         <md-list-item
           expandable
           expanded
@@ -730,7 +769,9 @@ const fabStyle = {
               :headline="`${t(entry.actionKey)} · ${entry.householdName}`"
               lines="1"
             >
-              <span slot="trailing-supporting-text"><DateText :value="entry.date" date-style="short" /> · {{ entry.actorName }}</span>
+              <span slot="trailing-supporting-text"
+                ><DateText :value="entry.date" date-style="short" /> · {{ entry.actorName }}</span
+              >
             </md-list-item>
           </template>
         </md-list-item>

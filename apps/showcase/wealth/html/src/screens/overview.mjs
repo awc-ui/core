@@ -55,6 +55,8 @@
 import {
   assetClassColor,
   crumbsFor,
+  REBALANCE_FILTERS,
+  rebalanceQueue,
   driftedMandates,
   getActivity,
   getBookAllocation,
@@ -140,24 +142,14 @@ export function overviewScreen(t, locale) {
 
   const children = html`${kpiRow(t)}
 
-    <section class="grid-wide">
-      ${performancePanel(t)}
-      ${allocationPanel(t)}
-    </section>
+    <section class="grid-wide">${performancePanel(t)} ${allocationPanel(t)}</section>
 
     <!-- Two columns, not three: app.css stretches cards in a row to the
          tallest, so panels sharing a row want similar content. The trail goes
          full width at the bottom, where its rows have room for the actor. -->
-    <section class="grid-2">
-      ${driftPanel(t)}
-      ${rebalancePanel(t, locale)}
-    </section>
+    <section class="grid-2">${driftPanel(t)} ${rebalancePanel(t, locale)}</section>
 
-    ${bookTable(t, locale)}
-
-    ${activityPanel(t, locale)}
-
-    ${quickActions(t, locale)}`;
+    ${bookTable(t, locale)} ${activityPanel(t, locale)} ${quickActions(t, locale)}`;
 
   return screen(t, {
     locale,
@@ -195,7 +187,8 @@ function kpiRow(t) {
     ${kpiTile(t, {
       label: t('wealth.kpi.ytdReturn'),
       value: percent(t, totals.ytdReturn),
-      hint: html`${t('wealth.common.vsBenchmark')} ${signed(t, totals.ytdExcessReturn, { kind: 'percent' })}`,
+      hint: html`${t('wealth.common.vsBenchmark')}
+      ${signed(t, totals.ytdExcessReturn, { kind: 'percent' })}`,
       trend: points.map((point) => point.cumulativeReturn),
       trendLabels: monthLabels,
       trendFormat: 'percent',
@@ -207,7 +200,8 @@ function kpiRow(t) {
     ${kpiTile(t, {
       label: t('wealth.kpi.netNewMoney'),
       value: signed(t, totals.netNewMoneyYtd, { compact: true }),
-      hint: html`${t('wealth.unit.months', { value: 12 })} ${signed(t, totals.netNewMoneyOneYear, { compact: true })}`,
+      hint: html`${t('wealth.unit.months', { value: 12 })}
+      ${signed(t, totals.netNewMoneyOneYear, { compact: true })}`,
       trend: points.map((point) => point.netFlow),
       trendLabels: monthLabels,
       trendFormat: 'currency',
@@ -313,13 +307,14 @@ function performancePanel(t) {
     'data-period-picker': true,
   })}>
     ${PERIODS.map(
-      (period) => html`<md-segmented-button${attrs({
-        value: String(period),
-        // `label`, never slotted text: slotted label content is read once
-        // before the first render, and the picker is re-rendered by nothing.
-        label: t('wealth.unit.months', { value: period }),
-        selected: period === initial.months,
-      })}></md-segmented-button>`,
+      (period) =>
+        html`<md-segmented-button${attrs({
+          value: String(period),
+          // `label`, never slotted text: slotted label content is read once
+          // before the first render, and the picker is re-rendered by nothing.
+          label: t('wealth.unit.months', { value: period }),
+          selected: period === initial.months,
+        })}></md-segmented-button>`,
     )}
   </md-segmented-button-set>`;
 
@@ -351,9 +346,9 @@ function performancePanel(t) {
       <md-divider></md-divider>
 
       ${figures(initial, { 'data-period-facts': true })}
-
       ${windows.map(
-        (window_) => html`<template${attrs({ 'data-period-dl': String(window_.months) })}>${figures(window_)}</template>`,
+        (window_) =>
+          html`<template${attrs({ 'data-period-dl': String(window_.months) })}>${figures(window_)}</template>`,
       )}`,
   });
 }
@@ -404,7 +399,10 @@ function allocationPanel(t) {
         // stretches both cards to the taller one anyway.
         height: CHART_LG,
       },
-      children: html`<div slot="center"><strong>${money(t, totals.aum, { compact: true })}</strong><br />${t('wealth.kpi.aum.short')}</div>`,
+      children: html`<div slot="center">
+        <strong>${money(t, totals.aum, { compact: true })}</strong
+        ><br />${t('wealth.kpi.aum.short')}
+      </div>`,
     }),
   });
 }
@@ -432,7 +430,9 @@ function allocationRowBlock(t, row) {
     <div class="alloc-row__figures">
       <span>${t('wealth.table.target')} ${percent(t, row.targetWeight, { digits: 1 })}</span>
       <span>${t('wealth.table.actual')} ${percent(t, row.actualWeight, { digits: 1 })}</span>
-      <span>${t('wealth.table.rebalance')} ${signed(t, row.rebalanceAmount, { compact: true })}</span>
+      <span
+        >${t('wealth.table.rebalance')} ${signed(t, row.rebalanceAmount, { compact: true })}</span
+      >
     </div>
   </md-card>`;
 }
@@ -444,9 +444,7 @@ function driftPanel(t) {
   // actual, by asset class", and saying it twice on one screen is noise.
   return panel({
     title: t('wealth.table.drift'),
-    children: html`<div class="stack">
-      ${rows.map((row) => allocationRowBlock(t, row))}
-    </div>`,
+    children: html`<div class="stack">${rows.map((row) => allocationRowBlock(t, row))}</div>`,
   });
 }
 
@@ -477,24 +475,34 @@ function driftedRow(t, locale, entry) {
 }
 
 function rebalancePanel(t, locale) {
-  /*
-   * EVERY DRIFTED MANDATE, not the first five: a rebalancing queue is exactly
-   * the list you want in full — "2 more" gives no name, no drift and nothing
-   * to act on.
-   */
-  const drifted = driftedMandates();
-
+  const all = driftedMandates();
+  const queue = (filter) => {
+    const rows = rebalanceQueue(filter);
+    return html`<div data-rebalance-results>
+      <p class="muted overview-result" role="status">
+        ${t('wealth.common.showing', { shown: rows.length, total: all.length })}
+      </p>
+      ${rows.length ? html`<div class="stack">${rows.map((entry) => driftedRow(t, locale, entry))}</div>` : emptyState(t, t('wealth.empty.rebalance'))}
+    </div>`;
+  };
   return panel({
     title: t('wealth.panel.rebalance'),
     subtitle: t('wealth.panel.rebalanceHint'),
-    actions: count(t, drifted.length, { color: 'warning' }),
-    children:
-      drifted.length === 0
-        ? // No hint: this is a fact about the book, not a filter result.
-          emptyState(t, t('wealth.empty.rebalance'))
-        : html`<div class="stack">
-            ${drifted.map((entry) => driftedRow(t, locale, entry))}
-          </div>`,
+    attributes: { 'data-rebalance-queue': true },
+    actions: html`<span data-rebalance-count>${count(t, all.length, { color: 'warning' })}</span>`,
+    children: html`<md-button-group
+        class="overview-filters"
+        variant="connected"
+        selection-mode="single-select"
+        required
+        size="sm"
+        aria-label="${t('wealth.panel.rebalance')}"
+        data-rebalance-picker
+      >
+        ${REBALANCE_FILTERS.map((option) => html`<md-button${attrs({ value: option.value, icon: option.icon, selected: option.value === 'all', 'aria-pressed': option.value === 'all' })}>${t(option.labelKey)}</md-button>`)}
+      </md-button-group>
+      ${queue('all')}
+      ${REBALANCE_FILTERS.map((option) => html`<template data-rebalance-template="${option.value}">${queue(option.value)}</template><template data-rebalance-count-template="${option.value}">${count(t, rebalanceQueue(option.value).length, { color: 'warning' })}</template>`)}`,
   });
 }
 
@@ -619,7 +627,8 @@ function bookTable(t, locale) {
           style: style({ flex: '0 1 200px', 'max-inline-size': '240px' }),
         })}>
           ${segments.map(
-            (value) => html`<md-select-option${attrs({ value })}>${t(`wealth.segment.${value}`)}</md-select-option>`,
+            (value) =>
+              html`<md-select-option${attrs({ value })}>${t(`wealth.segment.${value}`)}</md-select-option>`,
           )}
         </md-select>
       </div>
@@ -642,15 +651,22 @@ function bookTable(t, locale) {
                above and pushes both down into every label itself. -->
           <md-table-row rowgroup="head">
             ${columns.map(
-              (column) => html`<md-table-cell head scope="col"${attrs({ numeric: column.numeric || undefined })}>
-                ${column.key
-                  ? html`<md-table-sort-label${attrs({
-                      column: column.key,
-                      'default-order': NUMERIC_KEYS.includes(column.key) ? 'desc' : 'asc',
-                      'icon-position': column.numeric ? 'start' : 'end',
-                    })}>${column.label}</md-table-sort-label>`
-                  : column.label}
-              </md-table-cell>`,
+              (column) =>
+                html`<md-table-cell
+                  head
+                  scope="col"
+                  ${attrs({ numeric: column.numeric || undefined })}
+                >
+                  ${
+                    column.key
+                      ? html`<md-table-sort-label${attrs({
+                          column: column.key,
+                          'default-order': NUMERIC_KEYS.includes(column.key) ? 'desc' : 'asc',
+                          'icon-position': column.numeric ? 'start' : 'end',
+                        })}>${column.label}</md-table-sort-label>`
+                      : column.label
+                  }
+                </md-table-cell>`,
             )}
           </md-table-row>
         </md-table-head>
@@ -777,11 +793,12 @@ function quickActions(t, locale) {
       'menu-label': t('wealth.nav.toolbar'),
     })}>
       ${QUICK_ACTIONS.map(
-        (action) => html`<md-fab-menu-item${attrs({
-          icon: action.icon,
-          label: t(action.labelKey),
-          'data-path': localeHref(locale, action.path),
-        })}></md-fab-menu-item>`,
+        (action) =>
+          html`<md-fab-menu-item${attrs({
+            icon: action.icon,
+            label: t(action.labelKey),
+            'data-path': localeHref(locale, action.path),
+          })}></md-fab-menu-item>`,
       )}
     </md-fab-menu>
   </template>`;

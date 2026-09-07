@@ -1,3 +1,9 @@
+import {
+  discoveryCopy,
+  discoveryCount,
+  discoverFeed,
+  type DiscoveryFilter,
+} from '@awc-ui/showcase-kit/social';
 import { Component, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
@@ -13,7 +19,11 @@ import { ScreenComponent } from '../components/screen.component';
 import { PanelComponent } from '../components/panel.component';
 import { EmptyStateComponent } from '../components/empty-state.component';
 import { PanelSkeletonComponent } from '../components/skeletons.component';
-import { AvatarComponent, CountComponent, FollowButtonComponent } from '../components/bits.component';
+import {
+  AvatarComponent,
+  CountComponent,
+  FollowButtonComponent,
+} from '../components/bits.component';
 import { PostCardComponent, StoryRailComponent } from './parts.component';
 import { SnackbarComponent, type SnackbarMessage } from './snackbar.component';
 
@@ -59,15 +69,72 @@ import { SnackbarComponent, type SnackbarMessage } from './snackbar.component';
     >
       <awc-panel-skeleton skeleton height="640px" [lines]="6" />
 
+      <section class="discovery-hero" [attr.aria-label]="copy.eyebrow">
+        <div>
+          <span class="discovery-hero__eyebrow">{{ copy.eyebrow }}</span>
+          <h2>{{ copy.title }}</h2>
+          <p>{{ copy.description }}</p>
+        </div>
+        <div class="discovery-hero__stat">
+          <span class="material-symbols-outlined" aria-hidden="true">camera</span
+          ><strong class="discovery-hero__number">{{ t.formatNumber(allItems.length) }}</strong
+          ><span class="discovery-hero__caption">{{ copy.stat }}</span>
+        </div>
+      </section>
+
       <awc-story-rail [rings]="rail" />
 
       <div class="feed-layout">
         <div class="feed">
+          <div class="discovery-tools">
+            <md-text-field [label]="copy.search" [value]="search" (mdInput)="onSearch($event)"
+              ><span slot="leading-icon" class="material-symbols-outlined" aria-hidden="true"
+                >search</span
+              ></md-text-field
+            >
+            <div class="discovery-tools__filters" role="group" [attr.aria-label]="copy.eyebrow">
+              <md-button
+                [variant]="filter === 'all' ? 'tonal' : 'text'"
+                size="sm"
+                icon="auto_awesome"
+                [attr.aria-pressed]="filter === 'all'"
+                (mdClick)="setFilter('all')"
+                >{{ copy.all }}</md-button
+              >
+              <md-button
+                [variant]="filter === 'saved' ? 'tonal' : 'text'"
+                size="sm"
+                icon="bookmark"
+                [attr.aria-pressed]="filter === 'saved'"
+                (mdClick)="setFilter('saved')"
+                >{{ copy.second }}</md-button
+              >
+              <md-button
+                [variant]="filter === 'carousel' ? 'tonal' : 'text'"
+                size="sm"
+                icon="view_carousel"
+                [attr.aria-pressed]="filter === 'carousel'"
+                (mdClick)="setFilter('carousel')"
+                >{{ copy.third }}</md-button
+              >
+            </div>
+            <div class="discovery-tools__row">
+              <p class="discovery-tools__count" role="status">
+                {{ discoveryCount(items.length, t.locale) }}
+              </p>
+              <md-button
+                class="discovery-tools__reset"
+                size="sm"
+                variant="text"
+                icon="restart_alt"
+                [disabled]="!search && filter === 'all'"
+                (mdClick)="search = ''; setFilter('all')"
+                >{{ copy.clear }}</md-button
+              >
+            </div>
+          </div>
           @if (visible.length === 0) {
-            <awc-empty-state
-              [message]="t('social.empty.feed')"
-              [hint]="t('social.empty.feedHint')"
-            />
+            <awc-empty-state [message]="copy.empty" [hint]="copy.hint" />
           } @else {
             <!-- Only the first decodes eagerly. Everything below the fold is
                  lazy, which keeps forty images off the first paint. -->
@@ -83,7 +150,7 @@ import { SnackbarComponent, type SnackbarMessage } from './snackbar.component';
               </md-button>
             </div>
           } @else {
-            <div class="feed__end">
+            <div class="feed__end" [hidden]="items.length === 0">
               <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
               <p class="strong">{{ t('social.common.caughtUp') }}</p>
               <p class="muted">{{ t('social.common.caughtUpHint') }}</p>
@@ -128,9 +195,28 @@ import { SnackbarComponent, type SnackbarMessage } from './snackbar.component';
   `,
 })
 export class FeedScreen extends ShowcaseComponent {
+  protected readonly discoveryCount = discoveryCount;
   protected readonly store = inject(EngagementService);
 
-  protected readonly items = feedItems();
+  protected readonly allItems = feedItems();
+  protected search = '';
+  protected filter: DiscoveryFilter = 'all';
+  protected get copy() {
+    return discoveryCopy(this.t.locale);
+  }
+  protected get items() {
+    return discoverFeed(this.allItems, this.search, this.filter, this.t, (item) =>
+      this.store.isSaved(item.post),
+    );
+  }
+  protected onSearch(event: Event) {
+    this.search = (event as CustomEvent<string>).detail ?? '';
+    this.shown = FEED_PAGE;
+  }
+  protected setFilter(value: DiscoveryFilter) {
+    this.filter = value;
+    this.shown = FEED_PAGE;
+  }
   protected readonly rail = storyRail();
   protected readonly suggestions = suggestedPeople(5);
   protected shown = FEED_PAGE;

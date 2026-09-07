@@ -18,7 +18,7 @@
     getStressScenarios,
     type ScenarioId,
   } from '@awc-ui/showcase-kit/data';
-  import { TABLES } from '@awc-ui/showcase-kit/credit-risk';
+  import { TABLES, stressBriefing, stressScenarioDownload } from '@awc-ui/showcase-kit/credit-risk';
   import { t } from '$lib/showcase';
   import { route } from '$lib/routes';
   import Shell from '$lib/components/Shell.svelte';
@@ -33,6 +33,8 @@
   let scenarioId: ScenarioId = 'adverse';
 
   $: scenario = getStressScenarioById(scenarioId) ?? scenarios[0];
+  $: briefing = stressBriefing(scenario, $t.locale);
+  $: download = stressScenarioDownload(scenario);
   $: money = (v: number | null) => $t.formatCurrency(v ?? 0, { notation: 'compact' });
   $: sectorLabels = sectors.map((s) => $t(s.nameKey));
 
@@ -65,6 +67,16 @@
   </svelte:fragment>
 
   <Panel title={$t(scenario.nameKey)} subtitle={describe(scenario.id)}>
+    <section class="stress-briefing" aria-label={briefing.title}>
+      <div class="stress-briefing__grid">
+        {#each briefing.items as item (item.label)}
+          <div class="stress-briefing__metric"><span>{item.label}</span><strong>{item.value}</strong><small>{item.detail}</small></div>
+        {/each}
+      </div>
+      <div class="stress-briefing__footer"><span>{briefing.note}</span>
+        <a class="stress-export" href={download.href} download={download.filename}>{briefing.exportLabel}<span aria-hidden="true"> ↓</span></a>
+      </div>
+    </section>
     <dl class="dl dl--numeric">
       <Fact label={$t('table.pdMultiplier')}>
         {$t('unit.times', {

@@ -9,6 +9,10 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import {
   assetClassColor,
+  REBALANCE_FILTERS,
+  rebalanceQueue,
+  isRebalanceFilter,
+  type RebalanceFilter,
   driftedMandates,
   getActivity,
   getBookAllocation,
@@ -193,11 +197,7 @@ const ACTIVITY_ROWS = 12;
            fixture, and drawing a flat line would invent one. The trailing is a
            count CHIP rather than an md-badge, which would anchor to the card's
            corner and be clipped in half — see bits.component.ts. -->
-      <awc-kpi-tile
-        [label]="t('wealth.kpi.driftBreaches')"
-        color="error"
-        [hasFoot]="true"
-      >
+      <awc-kpi-tile [label]="t('wealth.kpi.driftBreaches')" color="error" [hasFoot]="true">
         <span awcNum [value]="totals.driftBreachCount" ngProjectAs="[value]"></span>
         <ng-container ngProjectAs="[hint]">{{ t('wealth.kpi.kycReviewDue') }}</ng-container>
         <md-chip
@@ -223,14 +223,17 @@ export class KpiRowComponent extends ShowcaseComponent {
   // `memo()` keeps each reference stable per locale, or every change-detection
   // pass would hand the sparkline fresh objects and redraw it.
   protected get money() {
-    return this.memo('money', () => (value: number | null) =>
-      this.t.formatCurrency(value ?? 0, { notation: 'compact' }),
+    return this.memo(
+      'money',
+      () => (value: number | null) => this.t.formatCurrency(value ?? 0, { notation: 'compact' }),
     );
   }
 
   protected get percent() {
-    return this.memo('percent', () => (value: number | null) =>
-      this.t.formatPercent(value ?? 0, { maximumFractionDigits: 2 }),
+    return this.memo(
+      'percent',
+      () => (value: number | null) =>
+        this.t.formatPercent(value ?? 0, { maximumFractionDigits: 2 }),
     );
   }
 
@@ -266,7 +269,7 @@ export class KpiRowComponent extends ShowcaseComponent {
       [subtitle]="
         t('wealth.panel.performanceHint', {
           base: t.formatNumber(base, { maximumFractionDigits: 0 }),
-          months: windowReturn.months
+          months: windowReturn.months,
         })
       "
     >
@@ -391,8 +394,9 @@ export class PerformancePanelComponent extends ShowcaseComponent {
   }
 
   protected get index() {
-    return this.memo('index', () => (value: number | null) =>
-      this.t.formatNumber(value ?? 0, { maximumFractionDigits: 1 }),
+    return this.memo(
+      'index',
+      () => (value: number | null) => this.t.formatNumber(value ?? 0, { maximumFractionDigits: 1 }),
     );
   }
 
@@ -477,8 +481,9 @@ export class AllocationPanelComponent extends ShowcaseComponent {
   }
 
   protected get donutMoney() {
-    return this.memo('donutMoney', () => (value: number) =>
-      this.t.formatCurrency(value, { notation: 'compact' }),
+    return this.memo(
+      'donutMoney',
+      () => (value: number) => this.t.formatCurrency(value, { notation: 'compact' }),
     );
   }
 
@@ -575,17 +580,31 @@ export class DriftPanelComponent extends ShowcaseComponent {
     SignedComponent,
   ],
   template: `
-    <awc-panel
-      [title]="t('wealth.panel.rebalance')"
-      [subtitle]="t('wealth.panel.rebalanceHint')"
-    >
-      <md-chip
-        awcCount
-        [value]="drifted.length"
-        color="warning"
-        ngProjectAs="[actions]"
-      ></md-chip>
+    <awc-panel [title]="t('wealth.panel.rebalance')" [subtitle]="t('wealth.panel.rebalanceHint')">
+      <md-chip awcCount [value]="drifted.length" color="warning" ngProjectAs="[actions]"></md-chip>
 
+      <md-button-group
+        class="overview-filters"
+        variant="connected"
+        selection-mode="single-select"
+        required
+        [attr.aria-label]="t('wealth.panel.rebalance')"
+        size="sm"
+        (mdSelectionChange)="changeFilter($event)"
+      >
+        @for (option of filters; track option.value) {
+          <md-button
+            [attr.value]="option.value"
+            [attr.icon]="option.icon"
+            [attr.selected]="filter === option.value ? '' : null"
+            [attr.aria-pressed]="filter === option.value"
+            >{{ t(option.labelKey) }}</md-button
+          >
+        }
+      </md-button-group>
+      <p class="muted overview-result" role="status">
+        {{ t('wealth.common.showing', { shown: drifted.length, total: totalDrifted }) }}
+      </p>
       @if (drifted.length === 0) {
         <!-- No hint line: this is a fact about the book, not a filter result,
              and telling the reader to widen a filter they never set would be
@@ -637,7 +656,16 @@ export class DriftPanelComponent extends ShowcaseComponent {
   `,
 })
 export class RebalancePanelComponent extends ShowcaseComponent {
-  protected readonly drifted: DriftedMandate[] = driftedMandates();
+  protected readonly filters = REBALANCE_FILTERS;
+  protected readonly totalDrifted = driftedMandates().length;
+  protected filter: RebalanceFilter = 'all';
+  protected drifted: DriftedMandate[] = rebalanceQueue();
+  protected changeFilter(event: Event) {
+    const next = (event as CustomEvent<{ values: string[] }>).detail.values[0];
+    if (!isRebalanceFilter(next)) return;
+    this.filter = next;
+    this.drifted = rebalanceQueue(next);
+  }
 }
 
 /* --------------------------------------------------------- activity panel */

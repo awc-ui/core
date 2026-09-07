@@ -21,7 +21,7 @@ import {
 } from '@awc-ui/showcase-kit/data';
 import { useShowcase, useT } from '@/lib/showcase';
 import { route } from '@/lib/routes';
-import { TABLES } from '@awc-ui/showcase-kit/credit-risk';
+import { TABLES, stressBriefing, stressScenarioDownload } from '@awc-ui/showcase-kit/credit-risk';
 import { BarChart, useCustomEvent } from '../elements';
 import { Drill, Panel, Screen } from '../Shell';
 import { Fact } from '../bits';
@@ -41,7 +41,12 @@ export function StressScreen() {
   });
 
   const scenario = getStressScenarioById(scenarioId) ?? scenarios[0];
-  const money = useMemo(() => (v: number | null) => t.formatCurrency(v ?? 0, { notation: 'compact' }), [t]);
+  const briefing = stressBriefing(scenario, t.locale);
+  const download = stressScenarioDownload(scenario);
+  const money = useMemo(
+    () => (v: number | null) => t.formatCurrency(v ?? 0, { notation: 'compact' }),
+    [t],
+  );
 
   const describe = (id: ScenarioId) => {
     const s = getStressScenarioById(id);
@@ -72,14 +77,39 @@ export function StressScreen() {
       }
     >
       <Panel title={t(scenario.nameKey)} subtitle={describe(scenario.id)}>
+        <section className="stress-briefing" aria-label={briefing.title}>
+          <div className="stress-briefing__grid">
+            {briefing.items.map((item) => (
+              <div className="stress-briefing__metric" key={item.label}>
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+                <small>{item.detail}</small>
+              </div>
+            ))}
+          </div>
+          <div className="stress-briefing__footer">
+            <span>{briefing.note}</span>
+            <a className="stress-export" href={download.href} download={download.filename}>
+              {briefing.exportLabel}
+              <span aria-hidden="true"> ↓</span>
+            </a>
+          </div>
+        </section>
         <dl className="dl dl--numeric">
           <Fact label={t('table.pdMultiplier')}>
-            {t('unit.times', { value: t.formatNumber(scenario.pdMultiplier, { maximumFractionDigits: 2 }) })}
+            {t('unit.times', {
+              value: t.formatNumber(scenario.pdMultiplier, { maximumFractionDigits: 2 }),
+            })}
           </Fact>
           <Fact label={t('table.lgdUplift')}>
-            {t.formatPercent(scenario.lgdUplift, { maximumFractionDigits: 0, signDisplay: 'exceptZero' })}
+            {t.formatPercent(scenario.lgdUplift, {
+              maximumFractionDigits: 0,
+              signDisplay: 'exceptZero',
+            })}
           </Fact>
-          <Fact label={t('kpi.ead')}>{t.formatCurrency(scenario.totals.ead, { notation: 'compact' })}</Fact>
+          <Fact label={t('kpi.ead')}>
+            {t.formatCurrency(scenario.totals.ead, { notation: 'compact' })}
+          </Fact>
           <Fact label={t('kpi.expectedLoss')}>
             {t.formatCurrency(scenario.totals.expectedLoss, { notation: 'compact' })}
           </Fact>
@@ -90,7 +120,9 @@ export function StressScreen() {
                   notation: 'compact',
                 })}
           </Fact>
-          <Fact label={t('kpi.rwa')}>{t.formatCurrency(scenario.totals.rwa, { notation: 'compact' })}</Fact>
+          <Fact label={t('kpi.rwa')}>
+            {t.formatCurrency(scenario.totals.rwa, { notation: 'compact' })}
+          </Fact>
           <Fact label={t('table.rwaDelta')}>
             {scenario.totals.rwaDelta === 0
               ? t('common.na')
@@ -147,7 +179,10 @@ export function StressScreen() {
         </Panel>
       </section>
 
-      <Panel title={t('table.sector')} subtitle={`${t(scenario.nameKey)} · ${t('scenario.vsBaseline')}`}>
+      <Panel
+        title={t('table.sector')}
+        subtitle={`${t(scenario.nameKey)} · ${t('scenario.vsBaseline')}`}
+      >
         <md-table-container variant="outlined">
           <md-table
             label={t('screen.stress.title')}
@@ -189,7 +224,9 @@ export function StressScreen() {
                   <md-table-cell>
                     <Drill href={route.sector(row.sectorId)}>{t(`sector.${row.sectorId}`)}</Drill>
                   </md-table-cell>
-                  <md-table-cell numeric>{t.formatCurrency(row.ead, { notation: 'compact' })}</md-table-cell>
+                  <md-table-cell numeric>
+                    {t.formatCurrency(row.ead, { notation: 'compact' })}
+                  </md-table-cell>
                   <md-table-cell numeric>
                     {t.formatPercent(row.weightedAvgPd, { maximumFractionDigits: 2 })}
                   </md-table-cell>
@@ -201,16 +238,24 @@ export function StressScreen() {
                   </md-table-cell>
                   <md-table-cell numeric>
                     <span
-                      style={{ color: row.expectedLossDelta > 0 ? 'var(--md-sys-color-error)' : undefined }}
+                      style={{
+                        color: row.expectedLossDelta > 0 ? 'var(--md-sys-color-error)' : undefined,
+                      }}
                     >
                       {row.expectedLossDelta === 0
                         ? t('common.na')
                         : t.formatCurrency(row.expectedLossDelta, { notation: 'compact' })}
                     </span>
                   </md-table-cell>
-                  <md-table-cell numeric>{t.formatCurrency(row.rwa, { notation: 'compact' })}</md-table-cell>
                   <md-table-cell numeric>
-                    <span style={{ color: row.rwaDelta > 0 ? 'var(--md-sys-color-warning)' : undefined }}>
+                    {t.formatCurrency(row.rwa, { notation: 'compact' })}
+                  </md-table-cell>
+                  <md-table-cell numeric>
+                    <span
+                      style={{
+                        color: row.rwaDelta > 0 ? 'var(--md-sys-color-warning)' : undefined,
+                      }}
+                    >
                       {row.rwaDelta === 0
                         ? t('common.na')
                         : t.formatCurrency(row.rwaDelta, { notation: 'compact' })}

@@ -1,4 +1,11 @@
-import { albumById, albumTracks, artistById, clock, route, trackById } from '@awc-ui/showcase-kit/music';
+import {
+  albumById,
+  albumTracks,
+  artistById,
+  clock,
+  route,
+  trackById,
+} from '@awc-ui/showcase-kit/music';
 import { attrs, html } from '../lib/html.mjs';
 import { panel, screen } from '../components/shell.mjs';
 import { art, count, peaks, trackList } from '../lib/bits.mjs';
@@ -30,9 +37,9 @@ export function trackScreen(t, locale, trackId) {
           <div class="release-head__text">
             <h2 class="release-head__title">${track.title}</h2>
             <div class="row">
-              ${artist ? html`<a class="link"${attrs({ href: localeHref(locale, route.artist(artist.handle)) })}>${artist.name}</a>` : ''}
+              ${artist ? html`<a class="link" ${attrs({ href: localeHref(locale, route.artist(artist.handle)) })}>${artist.name}</a>` : ''}
               <span class="person-row__meta">·</span>
-              ${album ? html`<a class="link"${attrs({ href: localeHref(locale, route.album(album.slug)) })}>${album.title}</a>` : ''}
+              ${album ? html`<a class="link" ${attrs({ href: localeHref(locale, route.album(album.slug)) })}>${album.title}</a>` : ''}
               <span class="person-row__meta">${album?.year ?? ''}</span>
             </div>
             ${peaks(track.peaks)}
@@ -47,6 +54,7 @@ export function trackScreen(t, locale, trackId) {
               })}>${t('music.action.play')}</md-button>
               <md-button${attrs({
                 class: 'track__like',
+                'data-like-track': track.id,
                 variant: liked ? 'tonal' : 'outlined',
                 icon: liked ? 'favorite' : 'favorite_border',
                 'data-liked': liked ? true : undefined,
@@ -57,6 +65,7 @@ export function trackScreen(t, locale, trackId) {
               })}>${t(liked ? 'music.action.unlike' : 'music.action.like')}</md-button>
               <md-button${attrs({
                 class: 'track__queue',
+                'data-enqueue': track.id,
                 variant: 'text',
                 icon: 'queue_music',
                 'data-msg': t('music.msg.queued', { name: track.title }),
@@ -68,19 +77,30 @@ export function trackScreen(t, locale, trackId) {
       ${panel({
         title: t('music.panel.listening'),
         children: html`<div class="stat-row">
-          <div><dt>${t('music.label.duration')}</dt><dd class="tabular">${clock(track.durationSec)}</dd></div>
-          <div><dt>${t('music.label.playCount')}</dt><dd>${count(t, track.playCount, { compact: true })}</dd></div>
-          <div><dt>${t('music.label.year')}</dt><dd>${album?.year ?? ''}</dd></div>
+          <div>
+            <dt>${t('music.label.duration')}</dt>
+            <dd class="tabular">${clock(track.durationSec)}</dd>
+          </div>
+          <div>
+            <dt>${t('music.label.playCount')}</dt>
+            <dd>${count(t, track.playCount, { compact: true })}</dd>
+          </div>
+          <div>
+            <dt>${t('music.label.year')}</dt>
+            <dd>${album?.year ?? ''}</dd>
+          </div>
         </div>`,
       })}
-      ${siblings.length > 0 && album
-        ? panel({
-            title: t('music.panel.appearsOn'),
-            subtitle: album.title,
-            actions: count(t, siblings.length),
-            children: trackList(t, locale, siblings, { numbered: true, showArtist: false }),
-          })
-        : ''}
+      ${
+        siblings.length > 0 && album
+          ? panel({
+              title: t('music.panel.appearsOn'),
+              subtitle: album.title,
+              actions: count(t, siblings.length),
+              children: trackList(t, locale, siblings, { numbered: true, showArtist: false }),
+            })
+          : ''
+      }
     </div>`,
   });
 }
