@@ -1,0 +1,84 @@
+.appearance-sheet {
+  --md-side-sheet-width: 26rem;
+  --md-side-sheet-max-width: 100vw;
+  /* Keep these controls steady while they change the workspace density. */
+  --md-sys-density-scale: 0;
+  --md-sys-spacing-inset-xs: 0.25rem;
+  --md-sys-spacing-inset-sm: 0.5rem;
+  --md-sys-spacing-inset-md: 0.75rem;
+  --md-sys-spacing-inset-lg: 1rem;
+  --md-sys-spacing-inset-xl: 1.5rem;
+  --md-sys-spacing-gap-xs: 0.25rem;
+  --md-sys-spacing-gap-sm: 0.5rem;
+  --md-sys-spacing-gap-md: 0.75rem;
+  --md-sys-spacing-gap-lg: 1rem;
+  --md-sys-spacing-row-height: 3.5rem;
+}
+.appearance-sheet::part(content) {
+  padding: 1.5rem;
+}
+.appearance-sheet::part(actions) {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.appearance-intro,
+.appearance-direction p,
+.appearance-save-status {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.875rem;
+}
+.appearance-section {
+  display: grid;
+  gap: 0.75rem;
+  margin-block-start: 1.5rem;
+  min-inline-size: 0;
+}
+.appearance-choices {
+  inline-size: 100%;
+}
+.appearance-sheet md-color-picker {
+  --md-color-picker-width: 100%;
+  --md-color-picker-plate-height: 7rem;
+  --md-color-picker-radius: var(--md-sys-shape-corner-medium);
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+.appearance-direction {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+.appearance-direction md-switch {
+  flex-shrink: 0;
+}
+.appearance-direction p {
+  margin-block-start: 0.25rem;
+}
+.appearance-save-status {
+  padding-block-start: 1rem;
+  border-block-start: 1px solid var(--md-sys-color-outline-variant);
+}
+/* Geographic route positions and verification strings keep their own order. */
+.network-map svg,
+.auth-otp,
+.verify-account {
+  direction: ltr;
+}
+.metro-directional:dir(rtl)::part(icon) {
+  transform: scaleX(-1);
+}
+@media (max-width: 760px) {
+  .sidebar:dir(rtl) {
+    transform: translateX(100%);
+  }
+  .sidebar.is-open:dir(rtl) {
+    transform: translateX(0);
+  }
+}
+@media (max-width: 420px) {
+  .appearance-sheet::part(content) {
+    padding: 1rem;
+  }
+}

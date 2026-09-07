@@ -1,4 +1,4 @@
-import { getValidityOf } from '../../utils/form';
+import { getValidityOf, submitFormOnEnter } from '../../utils/form';
 import { AttachInternals, Build, Component, Element, Event, EventEmitter, Host, Method, Prop, State, Watch, h } from '@stencil/core';
 
 const RESTRICT_PATTERNS: Record<string, RegExp> = {
@@ -53,7 +53,8 @@ export class MdTextField {
   @Prop({ attribute: 'inputmode' }) inputMode: string = '';
   @Prop({ attribute: 'enterkeyhint' }) enterKeyHint: string = '';
   @Prop({ attribute: 'autocapitalize' }) autoCapitalize: string = '';
-  @Prop() spellcheck: boolean | undefined;
+  /** Spell checking is enabled by default, matching the native DOM boolean property. */
+  @Prop() spellcheck: boolean = true;
   @Prop({ reflect: true }) disabled: boolean = false;
   @Prop({ attribute: 'readonly' }) readOnly: boolean = false;
   @Prop() required: boolean = false;
@@ -863,18 +864,11 @@ export class MdTextField {
   };
 
   private handleKeyDown = (e: KeyboardEvent) => {
-    // Enter submits the owning form (single-line fields, like a native input)
-    if (e.key === 'Enter' && !this.multiline && !this.composing) {
-      try {
-        const form = this.internals?.form;
-        // native implicit submission activates the DEFAULT submit button so
-        // its name/value participates and its click handlers fire
-        const submitter = form?.querySelector<HTMLElement>(
-          'button[type="submit"], input[type="submit"], button:not([type])',
-        );
-        form?.requestSubmit(submitter instanceof HTMLButtonElement || submitter instanceof HTMLInputElement ? submitter : undefined);
-      } catch { /* spec mock */ }
-    }
+    submitFormOnEnter(this.internals, e, {
+      disabled: this.isDisabled,
+      composing: this.composing,
+      multiline: !!this.multiline,
+    });
     // Escape clears (internal clearable only) — keyboard parity with the icon
     if (e.key === 'Escape' && !this.composing && this.clearable === 'internal' && this.value && !this.readOnly && !this.isDisabled) {
       e.stopPropagation();

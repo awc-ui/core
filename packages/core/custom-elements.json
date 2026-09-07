@@ -7146,6 +7146,15 @@
           "members": [
             {
               "kind": "field",
+              "name": "locale",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "default": "'en-US'"
+            },
+            {
+              "kind": "field",
               "name": "variant",
               "privacy": "public",
               "type": {
@@ -7266,6 +7275,14 @@
             }
           ],
           "attributes": [
+            {
+              "name": "locale",
+              "fieldName": "locale",
+              "type": {
+                "text": "string"
+              },
+              "default": "'en-US'"
+            },
             {
               "name": "variant",
               "fieldName": "variant",
@@ -15902,6 +15919,12 @@
               "description": "Optional FAB above the destinations"
             },
             {
+              "name": "footer-leading"
+            },
+            {
+              "name": "footer-content"
+            },
+            {
               "name": "footer",
               "description": "Optional bottom group — settings, account / user menu, etc."
             }
@@ -15948,6 +15971,15 @@
             {
               "name": "footer",
               "description": "Footer slot wrapper (bottom group)"
+            },
+            {
+              "name": "footer-profile"
+            },
+            {
+              "name": "footer-leading"
+            },
+            {
+              "name": "footer-content"
             }
           ],
           "cssProperties": [
@@ -16005,6 +16037,12 @@
             },
             {
               "name": "--md-navigation-rail-fab-size"
+            },
+            {
+              "name": "--md-navigation-rail-footer-leading-size"
+            },
+            {
+              "name": "--md-navigation-rail-footer-gap"
             },
             {
               "name": "--md-navigation-rail-horizontal-padding-block"
@@ -17101,6 +17139,14 @@
             }
           ],
           "attributes": [
+            {
+              "name": "nodes",
+              "fieldName": "nodes",
+              "type": {
+                "text": "NodeInput"
+              },
+              "default": "[]"
+            },
             {
               "name": "selection-mode",
               "fieldName": "selectionMode",
@@ -29448,8 +29494,9 @@
               "name": "spellcheck",
               "privacy": "public",
               "type": {
-                "text": "boolean | undefined"
-              }
+                "text": "boolean"
+              },
+              "default": "true"
             },
             {
               "kind": "field",
@@ -29878,8 +29925,9 @@
               "name": "spellcheck",
               "fieldName": "spellcheck",
               "type": {
-                "text": "boolean | undefined"
-              }
+                "text": "boolean"
+              },
+              "default": "true"
             },
             {
               "name": "disabled",

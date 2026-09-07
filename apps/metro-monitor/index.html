@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-density="-1">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#3458da" />
+    <meta
+      name="description"
+      content="Metro station operations: network health, passenger flow and incident management. An interactive AWC UI showcase with demo authentication."
+    />
+    <title>Metro pulse · Operations control</title>
+    <script>
+      try {
+        document.documentElement.dataset.theme =
+          localStorage.getItem("metro-theme") ||
+          (matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light");
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

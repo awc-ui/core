@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-density="-1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Medflow hospital case management — an interactive AWC UI showcase with fictional patient records, clinician assignment, and demo authentication."
+    />
+    <meta name="theme-color" content="#006b5e" />
+    <title>Medflow · Clinical workspace</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="stylesheet" href="./awc/md3.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./auth.css" />
+    <style id="medflow-primary-theme"></style>
+    <script src="./preboot.js"></script>
+    <link
+      rel="preload"
+      href="./fonts/roboto-latin-400-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="./fonts/material-symbols-outlined.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <script type="module" src="./awc/md3.esm.js"></script>
+    <script type="module" src="./bootstrap.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to workspace</a>
+    <div id="app">
+      <main id="main" class="bootstrap-loading" aria-busy="true">
+        <h1>Medflow</h1>
+        <p id="boot-label" role="status">
+          <span class="boot-en">Opening clinical workspace…</span
+          ><span class="boot-ar" lang="ar">جارٍ فتح مساحة العمل السريرية…</span>
+        </p>
+        <md-skeleton
+          variant="text"
+          width="45%"
+          height="2rem"
+          announce="false"
+        ></md-skeleton
+        ><md-skeleton variant="text" width="65%" announce="false"></md-skeleton>
+        <div class="loading-metrics">
+          <md-skeleton
+            variant="rounded"
+            full-width
+            height="8rem"
+            announce="false"
+          ></md-skeleton
+          ><md-skeleton
+            variant="rounded"
+            full-width
+            height="8rem"
+            announce="false"
+          ></md-skeleton
+          ><md-skeleton
+            variant="rounded"
+            full-width
+            height="8rem"
+            announce="false"
+          ></md-skeleton
+          ><md-skeleton
+            variant="rounded"
+            full-width
+            height="8rem"
+            announce="false"
+          ></md-skeleton>
+        </div>
+        <md-skeleton
+          variant="rounded"
+          full-width
+          height="18rem"
+          announce="false"
+        ></md-skeleton>
+      </main>
+    </div>
+    <div id="overlays"></div>
+    <md-snackbar
+      id="toast"
+      position="bottom-end"
+      closeable
+      auto-hide-duration="5500"
+    ></md-snackbar>
+    <noscript
+      ><style>
+        .bootstrap-loading {
+          display: none;
+        }
+      </style>
+      <main>
+        <h1>Medflow</h1>
+        <p>Enable JavaScript to explore the clinical workspace.</p>
+      </main></noscript
+    >
+  </body>
+</html>

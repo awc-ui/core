@@ -389,11 +389,13 @@ otherwise you have removed the only affordance that explained the problem.
 
 ## Framework Notes
 
+Load `@awc-ui/core/css/tokens.css` once and follow the framework guide's
+registration instructions before using these controls.
+
 ### React
 
-React does not yet set custom-element properties for non-primitive values, so
-`@awc-ui/react` ships wrappers that assign properties directly. Use them rather
-than the raw tags:
+`@awc-ui/react` supplies typed component properties and exact custom-event
+mappings for React 18 and later. Use the wrappers for a consistent API:
 
 ```jsx
 import { MdTextField, MdButton } from '@awc-ui/react';
@@ -404,35 +406,72 @@ import { MdTextField, MdButton } from '@awc-ui/react';
 </form>
 ```
 
+For controlled fields, pass `value` and update your state from `onMdInput`'s
+`event.detail`. Native `FormData` also works for named form-associated controls.
+
 ### Angular
 
-Import `AwcUiModule` from `@awc-ui/angular` (or add `CUSTOM_ELEMENTS_SCHEMA` if
-you use the raw tags).
-
-The generated directives do **not** implement `ControlValueAccessor`, so
-`[(ngModel)]` and `formControlName` will not bind to these controls. Read values
-from the form itself — which works precisely because the controls are
-form-associated:
+AWC UI supplies `ControlValueAccessor` directives for text, select, multi-select,
+checkbox, switch, radio and numeric controls. Import `AwcUiModule` and either
+`FormsModule` or `ReactiveFormsModule` into the component's template scope:
 
 ```ts
-onSubmit(e: Event) {
-  const data = new FormData(e.target as HTMLFormElement);
+import { Component } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { AwcUiModule } from '@awc-ui/angular';
+
+@Component({
+  standalone: true,
+  imports: [ReactiveFormsModule, AwcUiModule],
+  template: `<md-text-field label="Email" [formControl]="email"></md-text-field>`,
+})
+export class ProfileComponent {
+  email = new FormControl('');
 }
 ```
 
-For reactive forms, sync on the component's own event:
-
-```html
-<md-text-field label="Email" (mdInput)="form.controls.email.setValue($any($event.target).value)"></md-text-field>
-```
+For smaller bundles import each proxy and its accessor, for example
+`MdTextField` with `TextValueAccessor`. Checkbox models use `checked`, switch
+models use `selected`, and radio models contain the selected option's `value`.
+Radio options retain their values when the form resets; multi-select resets to
+an empty array. See the [Angular guide](/frameworks/angular/).
 
 ### Vue
 
-Values bind with `.prop` where a property rather than an attribute is wanted:
+Typed wrappers support `v-model` and normal component events:
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue';
+import { MdSelect } from '@awc-ui/vue';
+const country = ref('');
+</script>
+
+<template>
+  <MdSelect v-model="country" />
+</template>
+```
+
+For raw `md-*` tags, configure `isCustomElement` in the build-time compiler as
+shown in the [Vue guide](/frameworks/vue/), then bind the property and exact-case
+event explicitly:
 
 ```vue
 <md-select :value.prop="country" @mdChange="country = $event.detail" />
 ```
+
+### Svelte
+
+Import the package's types once with `import type {} from '@awc-ui/svelte'` and
+register the core components used by the app. Bind properties and synchronize
+on the control's event:
+
+```svelte
+<md-text-field value={email} on:mdInput={(event) => email = event.detail} />
+```
+
+The package types infer the event payload. See the
+[Svelte guide](/frameworks/svelte/) for setup and the SvelteKit hydration lifecycle.
 
 ## Accessibility
 

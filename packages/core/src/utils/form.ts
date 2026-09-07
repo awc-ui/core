@@ -111,3 +111,87 @@ export function getValidityOf(internals: ElementInternals): {
     return { valid: true, validationMessage: '', flags: {} };
   }
 }
+
+
+const pendingEnterSubmissions = new WeakSet<KeyboardEvent>();
+
+/**
+ * Give a shadow-owned text input the owning form's implicit Enter action.
+ * The input itself has no native association with the OUTER form. Defer the
+ * action until keydown has finished bubbling, so composite controls and app
+ * handlers can preventDefault (for example, Enter selecting an autocomplete
+ * option). Never call submit(): validation and cancelable submission must run.
+ */
+export function submitFormOnEnter(
+  internals: ElementInternals | undefined,
+  event: KeyboardEvent,
+  options: { disabled?: boolean; composing?: boolean; multiline?: boolean } = {},
+): boolean {
+  if (event.key !== 'Enter' || event.defaultPrevented || event.repeat ||
+      event.altKey || event.ctrlKey || event.metaKey || event.shiftKey ||
+      event.isComposing || event.keyCode === 229 || options.composing ||
+      options.disabled || options.multiline || pendingEnterSubmissions.has(event)) return false;
+
+  // The spec ElementInternals proxy does not implement form association.
+  let form: HTMLFormElement | null;
+  try {
+    form = internals && 'form' in internals ? internals.form : null;
+  } catch {
+    return false;
+  }
+  if (!form) return false;
+  pendingEnterSubmissions.add(event);
+
+  setTimeout(() => {
+    if (event.defaultPrevented) return;
+    // Search the form's DOM tree, not just descendants: native form="id"
+    // submitters can precede the form and are still its default button.
+    const root = form.getRootNode() as ParentNode;
+    const defaultSubmitter = () => Array.from(root.querySelectorAll<HTMLElement>('button, input, md-button'))
+      .find((element) => {
+        const tag = element.localName;
+        if (tag === 'button' || tag === 'input') {
+          const control = element as HTMLButtonElement | HTMLInputElement;
+          return control.form === form && (control.type === 'submit' || (tag === 'input' && control.type === 'image'));
+        }
+        const button = element as HTMLElement & { type?: string; href?: string };
+        if ((button.type || button.getAttribute('type')) !== 'submit' || button.href || button.getAttribute('href')) return false;
+        const owner = button.getAttribute('form');
+        return owner === null ? button.closest('form') === form : !!owner && owner === form.getAttribute('id');
+      });
+    const submitter = defaultSubmitter();
+    if (submitter) {
+      const button = submitter as HTMLElement & {
+        disabled?: boolean;
+        softDisabled?: boolean;
+        loading?: boolean;
+        componentOnReady?: () => Promise<unknown>;
+      };
+      const activate = () => {
+        // A lazy default may finish loading after its form has unmounted, the
+        // button has moved, or another control has become the default. Never
+        // submit a different form or bypass a newly disabled/loading default.
+        if (event.defaultPrevented || !form.isConnected || !button.isConnected || defaultSubmitter() !== button) return;
+        event.preventDefault();
+        if (button.matches(':disabled') || button.disabled || button.softDisabled || button.loading) return;
+        // Native click preserves SubmitEvent.submitter, name/value and
+        // formnovalidate. md-button's HOST click preserves cancelable mdClick.
+        button.click();
+      };
+      if (button.localName === 'md-button' && !button.classList.contains('hydrated') && typeof button.componentOnReady === 'function') {
+        // The text field can hydrate before the default button's lazy chunk.
+        // Wait for its click handler instead of losing Enter on an inert host.
+        // Rejection leaves the original default in charge; no fallback submit.
+        try {
+          void button.componentOnReady().then(activate, () => undefined);
+        } catch { /* failed lazy upgrade: do not bypass the default button */ }
+      } else {
+        activate();
+      }
+    } else if (typeof form.requestSubmit === 'function' && form.isConnected) {
+      event.preventDefault();
+      form.requestSubmit();
+    }
+  }, 0);
+  return true;
+}

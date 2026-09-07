@@ -1,0 +1,20 @@
+{
+  "name": "@awc-ui/scada",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Sentinel SCADA monitoring \u2014 an AWC UI component showcase",
+  "scripts": {
+    "dev": "node scripts/build.mjs && node scripts/serve.mjs",
+    "build": "node scripts/build.mjs",
+    "preview": "node scripts/serve.mjs",
+    "lint": "node --check src/app.js && node --check src/loading.js && node --check src/auth.js && node --check src/model.js && node --check src/webmcp.js && node --check src/preferences.js && node --check src/preboot.js && node --check src/i18n.js && node --check src/ar.js && node --check src/ar-auth.js",
+    "test": "node --test scripts/*.test.mjs"
+  },
+  "dependencies": {
+    "@awc-ui/core": "workspace:*"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

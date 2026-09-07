@@ -641,6 +641,42 @@ describe('md-navigation-rail', () => {
       expect(destinations(page)?.hasAttribute('role')).toBe(false);
     });
   });
+  describe('account footer', () => {
+    const account = `<span slot="footer-leading">DO</span><div slot="footer-content"><b>Demo operator</b><div>Demo workspace</div></div>`;
+
+    it('reserves the profile on the first render and keeps it mounted across variants', async () => {
+      const page = await create(`<md-navigation-rail>${account}</md-navigation-rail>`);
+      const profile = page.root?.shadowRoot?.querySelector('[part="footer-profile"]');
+      const content = page.root?.shadowRoot?.querySelector('[part="footer-content"]');
+      expect(page.root).toHaveClass('md-navigation-rail--with-footer');
+      expect(profile?.hasAttribute('hidden')).toBe(false);
+      expect(content?.getAttribute('aria-hidden')).toBe('true');
+      expect(content?.hasAttribute('inert')).toBe(true);
+      await page.rootInstance.expand();
+      await page.waitForChanges();
+      expect(page.root?.shadowRoot?.querySelector('[part="footer-profile"]')).toBe(profile);
+      expect(content?.hasAttribute('aria-hidden')).toBe(false);
+      expect(content?.hasAttribute('inert')).toBe(false);
+      await page.rootInstance.collapse();
+      await page.waitForChanges();
+      expect(content?.hasAttribute('inert')).toBe(true);
+    });
+
+    it('keeps horizontal account content available without requiring expansion', async () => {
+      const page = await create(`<md-navigation-rail orientation="horizontal">${account}</md-navigation-rail>`);
+      const content = page.root?.shadowRoot?.querySelector('[part="footer-content"]');
+      expect(content?.hasAttribute('aria-hidden')).toBe(false);
+      expect(content?.hasAttribute('inert')).toBe(false);
+    });
+
+    it('preserves the utility footer slot and hides the unused profile', async () => {
+      const page = await create('<md-navigation-rail><button slot="footer">Account</button></md-navigation-rail>');
+      expect(page.root?.shadowRoot?.querySelector('[part="footer"]')?.hasAttribute('hidden')).toBe(false);
+      expect(page.root?.shadowRoot?.querySelector('[part="footer-profile"]')?.hasAttribute('hidden')).toBe(true);
+      expect(page.root?.shadowRoot?.querySelector('slot[name="footer"]')).toBeTruthy();
+    });
+  });
+
   // ─── Horizontal orientation ──────────────────────────────
   describe('orientation', () => {
     const destinations = (page: { root?: Element | null }) =>

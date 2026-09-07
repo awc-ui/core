@@ -9,12 +9,18 @@ import TechnologyTabs from "../../../components/TechnologyTabs.astro";
 
 ## Your First Component
 
-After [installing](/getting-started/installation/) the packages, here is how to render your first AWC UI button:
+Complete the [installation](/getting-started/installation/) path for your app
+first, including global styles, fonts and framework registration. The HTML tab
+is an `index.html` for the Vite app from that guide: run `npx vite` to resolve
+its npm import. The other tabs assume the corresponding framework guide's setup.
 
 <TechnologyTabs
   html={`<!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AWC UI quick start</title>
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,email,more_vert&display=block">
   <link rel="stylesheet"
@@ -43,12 +49,13 @@ export default function App() {
   );
 }`}
   angular={`// app.component.ts
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component } from '@angular/core';
+import { MdButton } from '@awc-ui/angular';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  imports: [MdButton],
   template: \`
     <md-button variant="filled" icon="add"
       (mdClick)="handleClick()">
@@ -69,7 +76,7 @@ function handleClick() {
 
 <template>
   <md-button variant="filled" icon="add"
-    @md-click="handleClick">
+    @mdClick="handleClick">
     Add Item
   </md-button>
 </template>`}
@@ -114,21 +121,26 @@ Here is a complete form using several AWC UI components:
 
 ## Building a Card Layout
 
+Card content uses the default slot. Use ordinary headings and containers for
+layout. The first card enables `interactive`; its child buttons remain the
+keyboard targets. For a card with one action and no nested controls, attach the
+handler to `mdClick` and use `interactive` for keyboard activation.
+
 ```html
 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
-  <md-card variant="elevated" clickable>
-    <div slot="header">Project Alpha</div>
+  <md-card variant="elevated" interactive>
+    <h2>Project Alpha</h2>
     <p>Status: Active</p>
-    <div slot="actions">
+    <div style="display: flex; gap: 8px;">
       <md-button variant="text">Open</md-button>
-      <md-icon-button variant="standard" icon="more_vert"></md-icon-button>
+      <md-icon-button variant="standard" icon="more_vert" aria-label="More project actions"></md-icon-button>
     </div>
   </md-card>
 
   <md-card variant="outlined">
-    <div slot="header">Project Beta</div>
+    <h2>Project Beta</h2>
     <p>Status: Draft</p>
-    <div slot="actions">
+    <div style="display: flex; gap: 8px;">
       <md-button variant="text">Open</md-button>
     </div>
   </md-card>

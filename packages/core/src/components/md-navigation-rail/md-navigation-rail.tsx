@@ -125,6 +125,8 @@ export class MdNavigationRail {
   @State() private hasHeader = false;
   @State() private hasFab = false;
   @State() private hasFooter = false;
+  @State() private hasFooterLeading = false;
+  @State() private hasFooterContent = false;
 
   /**
    * True when one or more destinations render as links (`href` set). A `tablist`
@@ -204,6 +206,8 @@ export class MdNavigationRail {
     this.hasHeader = slotted('header');
     this.hasFab = slotted('fab');
     this.hasFooter = slotted('footer');
+    this.hasFooterLeading = slotted('footer-leading');
+    this.hasFooterContent = slotted('footer-content');
     // Adopt a pre-marked destination: authors can write `active` directly on a
     // child tab instead of `active-index` on the rail. This MUST run before the
     // first slotchange-driven syncTabs(), which (with activeIndex still -1)
@@ -607,7 +611,17 @@ export class MdNavigationRail {
     this.wireSlottedMenus();
   };
 
+  private handleFooterProfileSlotChange = (e: Event) => {
+    const slot = e.target as HTMLSlotElement;
+    const populated = slot.assignedElements().length > 0;
+    if (slot.name === 'footer-leading') this.hasFooterLeading = populated;
+    else this.hasFooterContent = populated;
+    this.wireSlottedMenus();
+  };
+
   render() {
+    const hasFooterProfile = this.hasFooterLeading || this.hasFooterContent;
+    const footerContentVisible = this.variant === 'expanded' || this.orientation === 'horizontal';
     return (
       <Host
         class={{
@@ -624,7 +638,7 @@ export class MdNavigationRail {
           'md-navigation-rail--with-logo-expanded': this.hasLogoExpanded,
           'md-navigation-rail--with-header': this.hasHeader,
           'md-navigation-rail--with-fab': this.hasFab,
-          'md-navigation-rail--with-footer': this.hasFooter,
+          'md-navigation-rail--with-footer': this.hasFooter || hasFooterProfile,
         }}
         role="navigation"
         aria-label={this.label}
@@ -729,7 +743,23 @@ export class MdNavigationRail {
             </div>
           )}
 
-          <div class="md-navigation-rail__footer" part="footer" hidden={!this.hasFooter}>
+          <div class="md-navigation-rail__footer" part="footer" hidden={!this.hasFooter && !hasFooterProfile}>
+            {/* Keep one leading item and one persistent text layout through
+                width transitions. The library owns anchoring and concealment;
+                consumers do not need variant-dependent footer styles. */}
+            <div class="md-navigation-rail__footer-profile" part="footer-profile" hidden={!hasFooterProfile}>
+              <div class="md-navigation-rail__footer-leading" part="footer-leading">
+                <slot name="footer-leading" onSlotchange={this.handleFooterProfileSlotChange} />
+              </div>
+              <div
+                class="md-navigation-rail__footer-content"
+                part="footer-content"
+                aria-hidden={footerContentVisible ? undefined : 'true'}
+                inert={!footerContentVisible}
+              >
+                <slot name="footer-content" onSlotchange={this.handleFooterProfileSlotChange} />
+              </div>
+            </div>
             <slot name="footer" onSlotchange={this.handleFooterSlotChange} />
           </div>
         </div>

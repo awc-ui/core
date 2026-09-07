@@ -5,38 +5,74 @@ sidebar:
   order: 1
 ---
 
-import TechnologyTabs from "../../../components/TechnologyTabs.astro";
+## Choose your app
 
-## Package Manager
+For an existing framework application, use its complete setup guide. Each guide
+covers package installation, global CSS, component registration, event handling
+and its server-rendered integration.
 
-Install the core component library and design tokens:
+| App | Setup |
+| --- | --- |
+| React or Next.js | [React and Next.js](/frameworks/react/) |
+| Angular or Angular SSR | [Angular](/frameworks/angular/) |
+| Vue or Nuxt | [Vue and Nuxt](/frameworks/vue/) |
+| Svelte or SvelteKit | [Svelte and SvelteKit](/frameworks/svelte/) |
+| Plain HTML | Follow the Vite example below. |
+
+Keep AWC framework packages on the same release as `@awc-ui/core`. Framework
+wrappers have their own registration path; do not add a global `/define` import
+unless the framework guide calls for it. For server rendering, use the relevant
+server entry and the framework's client adoption setup.
+
+## Plain HTML with Vite
+
+Use Node 22.13+ (22.x) or Node 24+ for this Vite development setup:
 
 ```bash
-npm install @awc-ui/core @awc-ui/tokens
+mkdir awc-example
+cd awc-example
+npm init -y
+npm install @awc-ui/core
+npm install --save-dev vite@7
 ```
 
-Or with other package managers:
+Create `index.html` in that directory:
+
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AWC UI example</title>
+</head>
+<body>
+  <script type="module">
+    import '@awc-ui/core/define';
+    document.querySelector('md-button').addEventListener('mdClick', () => {
+      document.querySelector('output').textContent = 'Created!';
+    });
+  </script>
+  <md-button variant="filled">Create</md-button>
+  <output aria-live="polite"></output>
+</body>
+</html>
+```
+
+Start the app:
 
 ```bash
-# pnpm
-pnpm add @awc-ui/core @awc-ui/tokens
-
-# yarn
-yarn add @awc-ui/core @awc-ui/tokens
+npx vite
 ```
 
-## Technology Wrappers
+Open the local URL printed by Vite and select **Create**. “Created!” should
+appear beside the styled button. Run `npx vite build` for production output.
+Vite resolves the npm import in this HTML module. Opening the file directly or
+serving it through a plain static server cannot resolve that import.
 
-For the best developer experience, install the wrapper package for your technology:
-
-<TechnologyTabs
-  html={`# No wrapper needed — use the core package directly
-npm install @awc-ui/core @awc-ui/tokens`}
-  react={`npm install @awc-ui/core @awc-ui/tokens @awc-ui/react`}
-  angular={`npm install @awc-ui/core @awc-ui/tokens @awc-ui/angular`}
-  vue={`npm install @awc-ui/core @awc-ui/tokens @awc-ui/vue`}
-  svelte={`npm install @awc-ui/core @awc-ui/tokens @awc-ui/svelte`}
-/>
+`@awc-ui/core/define` registers the components and loads the bundled tokens CSS.
+You do not need a separate tokens package for this path. The example uses a text
+button; add the fonts below when you use icons or want Roboto typography.
 
 ## Required Fonts
 
@@ -90,11 +126,13 @@ import "material-icons/iconfont/material-icons.css";
 import "material-symbols/outlined.css";
 ```
 
-## Component Registration
+## Advanced: registration and bundle control
 
-There are three ways to register components:
+The Vite example above is the recommended first setup. After it works, choose a
+more selective registration path if your bundle needs it. These are client-side
+bundler imports; `/define` imports CSS and is not a plain Node SSR entry.
 
-### Option A: Auto-register all (recommended)
+### Auto-register all
 
 ```ts
 import "@awc-ui/core/define";
@@ -102,37 +140,44 @@ import "@awc-ui/core/define";
 
 This registers every component and loads the AWC UI design-token stylesheet.
 
-### Option B: Lazy-load via the loader
+### Lazy-load via the loader
 
 ```ts
 import { defineCustomElements } from "@awc-ui/core/loader";
 defineCustomElements(window);
+import "@awc-ui/core/css/tokens.css";
 ```
 
-Components are registered on-demand when first encountered in the DOM.
+The loader defines the tags at bootstrap, then loads each component implementation
+on demand when its element is used.
 
-### Option C: Per-component tree-shaking
+### Per-component tree-shaking
 
 ```ts
 import "@awc-ui/core/components/md-button";
 import "@awc-ui/core/components/md-text-field";
+import "@awc-ui/core/css/tokens.css";
 ```
 
 Only the imported components are included in your bundle.
 
 ## Design Tokens
 
-The tokens CSS is automatically loaded with Option A. For Options B and C, import the tokens separately:
+The tokens CSS is loaded by `/define`. For loader or per-component imports, use
+the core package's embedded stylesheet:
 
 ```ts
-import "@awc-ui/tokens/tokens.css";
+import "@awc-ui/core/css/tokens.css";
 ```
 
-This provides all the `--md-sys-*` CSS custom properties for colors, typography, shape, elevation, and motion.
+This provides the `--md-sys-*` CSS custom properties for colors, typography,
+shape, elevation and motion. Install `@awc-ui/tokens` separately when you want
+tokens independently of core; then use `@awc-ui/tokens/tokens.css` instead of
+loading both token sheets.
 
 ## Preventing Layout Shift
 
-Components register before their code arrives. With Option A or B the runtime
+Components register before their code arrives. With `/define` or the loader, the runtime
 defines every tag at bootstrap and then fetches each component's chunk on
 demand — so for a moment a layout-critical element like `md-navigation-rail`
 exists in the DOM with none of its own CSS, occupying no space. When the chunk

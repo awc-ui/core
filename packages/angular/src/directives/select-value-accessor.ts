@@ -5,7 +5,7 @@ import { ValueAccessor } from './value-accessor';
 
 @Directive({
   /* tslint:disable-next-line:directive-selector */
-  selector: 'md-select, md-multi-select, md-date-picker, md-time-picker',
+  selector: 'md-select, md-date-picker, md-time-picker',
   host: {
     '(mdChange)': 'handleChangeEvent($event.target.value)'
   },

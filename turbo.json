@@ -8,7 +8,11 @@
       "outputs": [
         "dist/**",
         "www/**",
-        "loader/**"
+        "loader/**",
+        "hydrate/**",
+        "bin/templates/**",
+        "main-llm.md",
+        "custom-elements.json"
       ]
     },
     "@awc-ui/showcase-credit-risk-html#build": {
@@ -122,10 +126,39 @@
     },
     "@awc-ui/docs#build": {
       "dependsOn": [
-        "@awc-ui/docs#generate-data"
+        "^build",
+        "@awc-ui/docs#generate-data",
+        "@awc-ui/frame#build",
+        "@awc-ui/medflow#build",
+        "@awc-ui/metro-monitor#build",
+        "@awc-ui/scada#build"
       ],
       "outputs": [
         "dist/**"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "../../CONTRIBUTING.md",
+        "../../apps/frame/src/**",
+        "../../apps/frame/public/**",
+        "../../apps/frame/scripts/**",
+        "../../apps/frame/frameworks/**",
+        "../../apps/frame/package.json",
+        "../../scripts/lib/standalone-showcases.mjs",
+        "../../apps/medflow/src/**",
+        "../../apps/medflow/public/**",
+        "../../apps/medflow/scripts/**",
+        "../../apps/medflow/package.json",
+        "../../apps/scada/src/**",
+        "../../apps/scada/public/**",
+        "../../apps/scada/scripts/**",
+        "../../apps/scada/package.json",
+        "../../apps/metro-monitor/src/**",
+        "../../apps/metro-monitor/public/**",
+        "../../apps/metro-monitor/index.html",
+        "../../apps/metro-monitor/vite.config.ts",
+        "../../apps/metro-monitor/tsconfig.json",
+        "../../apps/metro-monitor/package.json"
       ]
     },
     "test": {
@@ -145,9 +178,9 @@
       "cache": false,
       "persistent": true
     },
-    "build-storybook": {
+    "@awc-ui/storybook#build": {
       "dependsOn": [
-        "@awc-ui/core#build"
+        "^build"
       ],
       "outputs": [
         "storybook-static/**"

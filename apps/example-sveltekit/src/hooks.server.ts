@@ -1,21 +1,20 @@
 import type { Handle } from '@sveltejs/kit';
-// Server hook: post-process the rendered page with the AWC UI hydrate module to
-// inject Declarative Shadow DOM for every <md-*> element (same framework-agnostic
-// primitive as the Nuxt Nitro hook). renderToString preserves the surrounding
-// document — head, %sveltekit.head% assets, and hydration scripts.
 import { renderToString } from '@awc-ui/core/hydrate';
+import { createPageTransform } from '@awc-ui/core/ssr/sveltekit';
 
-export const handle: Handle = async ({ event, resolve }) => {
-  return resolve(event, {
-    transformPageChunk: async ({ html }) => {
-      if (!html.includes('<md-')) return html;
-      const { html: hydrated } = await renderToString(html, {
-        fullDocument: html.includes('<html'),
-        serializeShadowRoot: 'declarative-shadow-dom',
-        removeScripts: false,
-        removeHtmlComments: false,
-      });
-      return hydrated;
-    },
-  });
-};
+export const handle: Handle = ({ event, resolve }) => resolve(event, {
+  // One buffer per request: chunks are not necessarily well-formed HTML.
+  transformPageChunk: createPageTransform(async (html) => {
+    if (!html.includes('<md-')) return html;
+    const result = await renderToString(html, {
+      fullDocument: true,
+      serializeShadowRoot: 'declarative-shadow-dom',
+      removeScripts: false,
+      removeHtmlComments: false,
+    });
+    const errors = result.diagnostics.filter((d) => d.level === 'error');
+    if (errors.length) throw new Error(errors.map((d) => d.messageText).join(' | '));
+    if (!result.html) throw new Error('AWC SSR returned no HTML');
+    return result.html;
+  }),
+});

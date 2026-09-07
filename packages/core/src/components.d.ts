@@ -24,7 +24,7 @@ import { MenuElement, VirtualMenuProvider } from "./utils/types";
 import { MdNavigationBarLabelBehavior } from "./components/md-navigation-bar/md-navigation-bar";
 import { MdNavigationTabLabelBehavior } from "./components/md-navigation-tab/md-navigation-tab";
 import { MdNumberFieldChangeDetail } from "./components/md-number-field/md-number-field";
-import { OrgChartSelectionChangeDetail, OrgChartToggleDetail } from "./components/md-organization-chart/md-organization-chart";
+import { NodeInput, OrgChartSelectionChangeDetail, OrgChartToggleDetail } from "./components/md-organization-chart/md-organization-chart";
 import { MdOtpFieldCompleteDetail, MdOtpFieldInvalidDetail, MdOtpFieldValidityDetail } from "./components/md-otp-field/md-otp-field";
 import { MdPieDatum } from "./components/md-pie-chart/md-pie-chart.types";
 import { MdSearchLeadingIconClickDetail, MdSearchTrailingIconClickDetail } from "./components/md-search/md-search";
@@ -54,7 +54,7 @@ export { MenuElement, VirtualMenuProvider } from "./utils/types";
 export { MdNavigationBarLabelBehavior } from "./components/md-navigation-bar/md-navigation-bar";
 export { MdNavigationTabLabelBehavior } from "./components/md-navigation-tab/md-navigation-tab";
 export { MdNumberFieldChangeDetail } from "./components/md-number-field/md-number-field";
-export { OrgChartSelectionChangeDetail, OrgChartToggleDetail } from "./components/md-organization-chart/md-organization-chart";
+export { NodeInput, OrgChartSelectionChangeDetail, OrgChartToggleDetail } from "./components/md-organization-chart/md-organization-chart";
 export { MdOtpFieldCompleteDetail, MdOtpFieldInvalidDetail, MdOtpFieldValidityDetail } from "./components/md-otp-field/md-otp-field";
 export { MdPieDatum } from "./components/md-pie-chart/md-pie-chart.types";
 export { MdSearchLeadingIconClickDetail, MdSearchTrailingIconClickDetail } from "./components/md-search/md-search";
@@ -6808,7 +6808,11 @@ export namespace Components {
           * @default false
          */
         "speechToText": 'internal' | 'external' | false;
-        "spellcheck": boolean | undefined;
+        /**
+          * Spell checking is enabled by default, matching the native DOM boolean property.
+          * @default true
+         */
+        "spellcheck": boolean;
         "step": string | number | undefined;
         /**
           * @default ''
@@ -16561,7 +16565,11 @@ declare namespace LocalJSX {
           * @default false
          */
         "speechToText"?: 'internal' | 'external' | false;
-        "spellcheck"?: boolean | undefined;
+        /**
+          * Spell checking is enabled by default, matching the native DOM boolean property.
+          * @default true
+         */
+        "spellcheck"?: boolean;
         "step"?: string | number | undefined;
         /**
           * @default ''
@@ -18315,7 +18323,7 @@ declare namespace LocalJSX {
         "inputMode": string;
         "enterKeyHint": string;
         "autoCapitalize": string;
-        "spellcheck": boolean | undefined;
+        "spellcheck": boolean;
         "disabled": boolean;
         "readOnly": boolean;
         "required": boolean;

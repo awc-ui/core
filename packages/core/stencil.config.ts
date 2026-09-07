@@ -2,6 +2,7 @@ import { Config } from '@stencil/core';
 import { angularOutputTarget } from '@stencil/angular-output-target';
 import { reactOutputTarget } from '@stencil/react-output-target';
 import { vueOutputTarget } from '@stencil/vue-output-target';
+import { withVueRuntime } from '../vue/stencil-output-target';
 
 export const config: Config = {
   namespace: 'md3',
@@ -80,7 +81,7 @@ export const config: Config = {
           type: 'text',
         },
         {
-          elementSelectors: ['md-select', 'md-multi-select', 'md-date-picker', 'md-time-picker'],
+          elementSelectors: ['md-select', 'md-date-picker', 'md-time-picker'],
           event: 'mdChange',
           targetAttr: 'value',
           type: 'select',
@@ -97,12 +98,9 @@ export const config: Config = {
           targetAttr: 'checked',
           type: 'boolean',
         },
-        {
-          elementSelectors: ['md-radio'],
-          event: 'mdChange',
-          targetAttr: 'checked',
-          type: 'radio',
-        },
+        // RadioValueAccessor is hand-written: a radio preserves its option
+        // value and maps the selected form value to checked. The generated
+        // radio accessor instead overwrites value, so do not generate it.
         {
           elementSelectors: ['md-rating', 'md-slider', 'md-number-field'],
           event: 'mdChange',
@@ -111,7 +109,7 @@ export const config: Config = {
         },
       ],
     }),
-    vueOutputTarget({
+    withVueRuntime(vueOutputTarget({
       componentCorePackage: '@awc-ui/core',
       proxiesFile: '../vue/lib/components.ts',
       // Per-component static registration from the tree-shakable
@@ -122,7 +120,13 @@ export const config: Config = {
       // its own element, so consumers bundle exactly what they use.
       includeImportCustomElements: true,
       customElementsDir: 'dist/components',
-    }),
+      componentModels: [
+        { elements: ['md-text-field', 'md-autocomplete', 'md-otp-field'], event: 'mdInput', targetAttr: 'value' },
+        { elements: ['md-select', 'md-multi-select', 'md-date-picker', 'md-time-picker', 'md-rating', 'md-slider', 'md-number-field', 'md-radio'], event: 'mdChange', targetAttr: 'value' },
+        { elements: ['md-checkbox'], event: 'mdChange', targetAttr: 'checked' },
+        { elements: ['md-switch'], event: 'mdChange', targetAttr: 'selected' },
+      ],
+    })),
     {
       type: 'dist',
       isPrimaryPackageOutputTarget: true,

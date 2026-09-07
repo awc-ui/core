@@ -210,6 +210,20 @@ jobs:
           pnpm --filter @awc-ui/core build
           pnpm ci:wrappers
 
+      - name: Install Chromium for standalone starter verification
+        run: pnpm exec puppeteer browsers install chrome
+
+      - name: Consumer, adapter and installation gates
+        run: |
+          pnpm verify:contributor
+          pnpm test:cli
+          pnpm test:adapters
+          pnpm test:ssr-contracts
+          pnpm verify:consumer-types
+          node --test scripts/compact-sourcemaps.test.mjs scripts/side-effects.test.mjs
+          pnpm verify:package-size
+          pnpm verify:starters
+
       - name: Assert custom-elements output is clean
         run: |
           for d in packages/core/dist/components packages/core/dist/components-csr; do

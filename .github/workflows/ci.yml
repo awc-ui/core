@@ -53,7 +53,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -100,6 +100,8 @@ jobs:
           path: |
             packages/core/dist/
             packages/core/hydrate/
+            packages/core/loader/
+            packages/core/bin/templates/
           retention-days: 1
 
   e2e:
@@ -116,7 +118,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -145,7 +147,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -159,7 +161,17 @@ jobs:
       - name: Build react + vue + angular wrappers
         run: pnpm ci:wrappers
 
-      - name: publint (core, react, vue)
+      - name: Consumer and adapter contracts
+        run: |
+          pnpm verify:contributor
+          pnpm test:cli
+          pnpm test:adapters
+          pnpm test:ssr-contracts
+          pnpm verify:consumer-types
+          pnpm verify:package-size
+          node --test scripts/compact-sourcemaps.test.mjs scripts/side-effects.test.mjs
+
+      - name: publint (all public packages)
         # publint exits 0 with warnings; current known warnings (accepted):
         # - core/react: exports["."].types is interpreted as CJS under the
         #   "import" condition (single .d.ts serving both conditions). Fixing
@@ -191,6 +203,26 @@ jobs:
         # eager dependency — on every push instead of at publish time.
         run: pnpm ci:size
 
+  starters:
+    name: Standalone starter (${{ matrix.starter }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        starter: [html, next, nuxt, sveltekit, astro]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @awc-ui/core build
+      - run: pnpm --filter @awc-ui/react build
+      - run: pnpm exec puppeteer browsers install chrome
+      - run: pnpm verify:starters --starter=${{ matrix.starter }}
+
   test-ct:
     name: Component Tests (Playwright CT + coverage)
     runs-on: ubuntu-latest
@@ -201,7 +233,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -235,7 +267,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -264,7 +296,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -286,7 +318,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -316,7 +348,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile

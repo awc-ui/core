@@ -6,49 +6,79 @@ sidebar:
   order: 5
 ---
 
-AWC UI supports **server-side rendering (SSR)** for Web Components through
-`@awc-ui/core/hydrate`. The server emits Declarative Shadow DOM (DSD), including
-each component's shadow markup and styles, and the browser hydrates the same
-custom elements instead of replacing the first render.
+AWC UI supports **server-side rendering (SSR)** through `@awc-ui/core/hydrate`.
+The server emits Declarative Shadow DOM (DSD), including component markup and
+styles. Client registration makes those elements interactive. Adoption also
+requires the framework to preserve Stencil's hydration annotations; Svelte 4
+needs the lifecycle helper described below.
 
 ## SSR framework support
 
-| Framework          | Integration                                                           | Validated path                                                            |
-| ------------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| React / Next.js    | Import React components from `@awc-ui/react/server`                   | [React and Next.js SSR](/frameworks/react/)                               |
-| Angular            | Transform Angular SSR or prerendered HTML with `@awc-ui/core/hydrate` | [Angular SSR](/frameworks/angular/)                                       |
-| Vue / Nuxt         | Run the hydrate transform from a Nitro `render:html` hook             | [Vue and Nuxt SSR](/frameworks/vue/)                                      |
-| Svelte / SvelteKit | Run the hydrate transform from a SvelteKit server handle              | [SvelteKit SSR](/frameworks/svelte/)                                      |
-| Astro or Node.js   | Transform generated HTML with the framework-agnostic hydrate module   | [reference apps on GitHub](https://github.com/awc-ui/core/tree/main/apps) |
+| Framework | Integration | Example |
+| --- | --- | --- |
+| React / Next.js | `@awc-ui/react/server` wrappers | [React and Next.js SSR](/frameworks/react/) |
+| Angular | Transform SSR or prerendered HTML | [Angular SSR](/frameworks/angular/) |
+| Vue / Nuxt | Nitro `render:html` hook | [Vue and Nuxt SSR](/frameworks/vue/) |
+| Svelte / SvelteKit | Buffered server handle and client annotation preservation | [SvelteKit SSR](/frameworks/svelte/) |
+| Astro / Node.js | Transform complete generated HTML | [Standalone starters](https://github.com/awc-ui/core/tree/main/starters) |
 
-## Framework-agnostic server transform
+## Transform the complete HTML
 
 For integrations without a dedicated server entry, transform the framework's
-rendered HTML before returning it:
+complete rendered HTML before returning it. Keep the hydrate import server-side:
 
 ```ts
 import { renderToString } from "@awc-ui/core/hydrate";
 
-const { html: hydrated } = await renderToString(renderedHtml, {
-  fullDocument: renderedHtml.includes("<html"),
+const result = await renderToString(renderedHtml, {
+  fullDocument: true, // false when the framework supplies only its body fragment
   serializeShadowRoot: "declarative-shadow-dom",
   removeScripts: false,
   removeHtmlComments: false,
 });
+const errors = result.diagnostics.filter((entry) => entry.level === "error");
+if (errors.length) throw new Error(errors.map((entry) => entry.messageText).join(" | "));
+if (!result.html) throw new Error("AWC SSR returned no HTML");
+const hydrated = result.html;
 ```
 
-Run this only when the response contains an `md-*` element. On the client,
-register AWC UI once with `@awc-ui/core/loader`, the framework package, or the
-React server wrapper. Load `@awc-ui/core/css/tokens.css` globally so system
-tokens are available outside every shadow root.
+Skip the transform when the response contains no `md-*` tags. Preserve scripts
+and comments because the framework and component runtimes use them for hydration.
+Load `@awc-ui/core/css/tokens.css` globally. In bundler-based applications,
+SSR-capable `@awc-ui/core/components/*` entries register the used elements and
+allow the bundler to resolve their dependencies. Do not use `components-csr/*`
+to hydrate DSD.
 
-## What SSR improves
+## SvelteKit lifecycle
 
-- Component structure and styles arrive in the initial HTML response.
-- Search engines and AI retrieval systems can inspect meaningful rendered markup.
-- Users avoid an unstyled custom-element flash while JavaScript loads.
-- Declarative Shadow DOM preserves encapsulation across the server/client boundary.
+`@awc-ui/core/ssr/sveltekit` contains two helpers with no framework dependencies:
 
-The CI suite exercises SSR for every component, and the repository contains
-working Next.js, Nuxt, SvelteKit, Astro, and Angular SSR examples. For
-client-only applications, use the smaller `components-csr/*` build instead.
+- `createPageTransform(transform)` collects HTML chunks until `done`, then calls
+  the transform once. Create it inside the server handle so concurrent requests
+  have separate buffers. This delays streaming until the document is complete.
+- `createSvelteHydration()` returns `capture()` and `restore()`. Share one instance
+  in an app module. Use SvelteKit 2.10 or later. Call `capture()` from `hooks.client.ts`'s `init`, then call
+  `restore()` in the root layout's `onMount` **before** dynamically importing
+  component entries. Restore only attributes removed by Svelte; application
+  attribute changes take precedence.
+
+The [SvelteKit starter](https://github.com/awc-ui/core/tree/main/starters/sveltekit)
+and [reference app](https://github.com/awc-ui/core/tree/main/apps/example-sveltekit)
+implement the complete sequence. Registration guarded only by `browser` does
+not establish this ordering. These helpers ship with the package release matching
+this source; packed-candidate starter checks validate new APIs before publication.
+
+## What SSR provides and how it is checked
+
+Component structure and styles arrive in the initial response, avoiding an
+unstyled first paint while JavaScript loads. Interactions require registration.
+Canvas charts render their surrounding structure on the server and draw their
+plots in the browser.
+
+The core SSR smoke test renders every component and fails on render errors or
+missing expected DSD. The Svelte integration regression checks annotation loss,
+adoption, and HTML chunk buffering. `node scripts/verify-starters.mjs` installs
+packed candidates outside the workspace, builds the starters, and checks server
+HTML plus browser adoption and interaction. Use `--source=registry` after release
+to verify published-package installations; `--skip-browser` checks only the
+installation, build, and initial HTML.

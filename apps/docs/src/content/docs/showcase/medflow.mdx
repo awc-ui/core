@@ -1,0 +1,71 @@
+---
+title: Medflow — Hospital Cases
+description: "A hospital case-management showcase with clinician assignment, patient worklists, charts, Arabic, and demo MFA, built with existing AWC UI components."
+---
+
+**Medflow is a hospital case-management workspace built with AWC UI web components.**
+Explore fictional patient cases, assign clinicians, and follow care coordination
+from intake to discharge.
+
+[Open Medflow](/showcase/medflow/html/) ·
+[Try clinician assignment](/showcase/medflow/html/#/assignments)
+
+## Try it in five minutes
+
+1. **Explore the overview.** Inspect case counts, patient-flow charts, the priority
+   worklist, and recent coordination activity.
+2. **Manage a worklist.** Open Patient cases, search or filter the records, sort a
+   column, select cases, and export the current results as CSV.
+3. **Assign a clinician.** Open an unassigned case and choose an available care
+   owner. Assignments validate clinician capacity, including bulk changes.
+4. **Follow a case.** Open its side sheet, add a coordination note, or advance its
+   status. Discharge requires Ready for discharge; discharged cases are read-only.
+5. **Make it yours.** Use the settings button beside the avatar to change the
+   primary color, density, language, direction, or appearance. Arabic updates the
+   workspace and authentication screens and selects right-to-left layout.
+
+The overview is a public demo. To explore the account flow, choose **Sign in →
+Use demo credentials**, then enter verification code **246810**. The recovery code
+is **MEDF2026**. Signup accepts fictional details and a sample password of at least
+12 characters. Verification expires after five minutes and locks after five
+failed attempts.
+
+## Components in context
+
+| Workflow                      | AWC components                                                                                                                                                                                         |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Responsive workspace          | [App bar](/components/app-bar/), [Navigation rail](/components/navigation-rail/), [Navigation bar](/components/navigation-bar/)                                                                        |
+| Case worklist and assignments | [Table](/components/table/), [Chip](/components/chip/), [Select](/components/select/), [Dialog](/components/dialog/), [Side sheet](/components/side-sheet/)                                            |
+| Overview and care team        | [Card](/components/card/), [Line chart](/components/line-chart/), [Bar chart](/components/bar-chart/), [Sparkline](/components/sparkline/), [Meter](/components/meter/), [Avatar](/components/avatar/) |
+| Account and preferences       | [Text field](/components/text-field/), [OTP field](/components/otp-field/), [Stepper](/components/stepper/), [Color picker](/components/color-picker/), [Switch](/components/switch/)                  |
+| Loading and action feedback   | [Skeleton](/components/skeleton/), [Progress indicator](/components/progress-indicator/), [Button](/components/button/), [Snackbar](/components/snackbar/)                                             |
+
+Native chips display priority and status. The rail's built-in control expands or
+collapses navigation. Menus use the library's popover layer above dialogs and
+sheets. Loading feedback preserves mounted charts and fields, and action loaders
+prevent duplicate submissions. The app adds layout and domain logic around the
+existing components.
+
+## Build and data
+
+This is a plain JavaScript application in `apps/medflow`. The docs build stages
+its self-contained output at `/showcase/medflow/html/`, with local fonts, AWC
+runtime chunks, and the theme generator. Hash routes work on static hosting.
+
+All patient records are fictional. Cases, notes, profiles, and authentication
+challenges live in memory and reset on reload. Only appearance, language, density,
+direction, and rail preferences persist locally. Authentication is a visible demo
+flow; it does not connect to an identity provider or protect medical records.
+Use fictional input when exploring the forms.
+
+## Run locally
+
+From the repository root, with core and theme built:
+
+```sh
+pnpm --filter @awc-ui/medflow dev
+```
+
+Open [Medflow locally](http://127.0.0.1:4397/). The standalone server serves a
+snapshot: rebuild and refresh after changing source. Tests run with
+`pnpm --filter @awc-ui/medflow test`.

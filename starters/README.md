@@ -24,8 +24,38 @@ Every starter's README carries an **Open in StackBlitz** badge of the form
 
 ## Run any of them
 
+Use Node.js 20.19 or later.
+
 ```sh
 cd <starter>
 npm install     # not needed for html/
 npm run dev     # html/: npm start
 ```
+
+## Verify consumer installations
+
+From the repository root, after building core and React:
+
+```sh
+node scripts/verify-starters.mjs --starter=next,nuxt,sveltekit,astro
+node scripts/verify-starters.mjs --source=registry
+```
+
+The first command installs packed candidate packages into clean temporary projects
+outside the workspace, builds them, and verifies server DSD, browser adoption,
+chart data, and the theme switch. The second tests published package ranges and
+the HTML starter's CDN URLs; run it after publishing the matching release.
+The source starter may use APIs added since the last release. Candidate tests
+verify those before publication; registry tests verify the published result.
+
+Use `--starter=sveltekit` to select one project and `--keep` to inspect its
+installation and lockfile. npm uses a temporary cache by default. Pass
+`--cache=/path/to/cache` to reuse an explicit cache, with `--offline` when its
+registry packages are already cached. The HTML starter also validates `npm install`;
+its browser check loads the published CDN URLs and requires network access. Chromium must
+be installed for Puppeteer. `--skip-browser` explicitly limits verification to
+installation, production build, and initial HTML; it does not prove hydration.
+
+Dependency ranges intentionally allow compatible releases. This harness records
+the resolved versions in each temporary project's package-lock.json; use
+`--keep` to preserve it when diagnosing a regression.

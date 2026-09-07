@@ -1,0 +1,49 @@
+:root:lang(ar) {
+  --metro-arabic-font: Tahoma, Arial, sans-serif;
+  --md-sys-typescale-display-large-font-family: var(--metro-arabic-font);
+  --md-sys-typescale-display-medium-font-family: var(--metro-arabic-font);
+  --md-sys-typescale-display-small-font-family: var(--metro-arabic-font);
+  --md-sys-typescale-headline-large-font-family: var(--metro-arabic-font);
+  --md-sys-typescale-headline-medium-font-family: var(--metro-arabic-font);
+  --md-sys-typescale-headline-small-font-family: var(--metro-arabic-font);
+  --md-sys-typescale-title-large-font-family: var(--metro-arabic-font);
+  --md-sys-typescale-title-medium-font-family: var(--metro-arabic-font);
+  --md-sys-typescale-title-small-font-family: var(--metro-arabic-font);
+  --md-sys-typescale-body-large-font-family: var(--metro-arabic-font);
+  --md-sys-typescale-body-medium-font-family: var(--metro-arabic-font);
+  --md-sys-typescale-body-small-font-family: var(--metro-arabic-font);
+  --md-sys-typescale-label-large-font-family: var(--metro-arabic-font);
+  --md-sys-typescale-label-medium-font-family: var(--metro-arabic-font);
+  --md-sys-typescale-label-small-font-family: var(--metro-arabic-font);
+}
+:lang(ar) h1,
+:lang(ar) h2,
+:lang(ar) h3,
+:lang(ar) .metric-value {
+  letter-spacing: normal;
+}
+.language-choice {
+  inline-size: 100%;
+}
+.language-choice--compact {
+  inline-size: auto;
+  --md-sys-density-scale: -1;
+}
+.appearance-language {
+  margin-block: 0 1.5rem;
+}
+.code-direction::part(input) {
+  direction: ltr;
+  text-align: start;
+}
+.auth-top {
+  flex-wrap: wrap;
+}
+.auth-top .language-choice {
+  margin-inline-end: auto;
+}
+@media (max-width: 1100px) {
+  .auth-top .environment-badge {
+    display: none;
+  }
+}

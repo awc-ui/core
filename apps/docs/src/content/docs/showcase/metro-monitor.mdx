@@ -1,0 +1,69 @@
+---
+title: Metro pulse — Station Operations
+description: "A React metro-operations showcase with station monitoring, simulated trains, passenger-flow charts, incident workflows, and AWC UI components."
+---
+
+**Metro pulse is a metro-station operations app built with the typed AWC UI React
+wrappers.** Monitor 15 fictional stations on three lines, inspect passenger flow,
+and manage simulated incidents.
+
+[Open Metro pulse](/showcase/metro-monitor/react/)
+
+Choose **Use demo credentials → Sign in**, then enter **246810** and press Enter
+or choose **Verify & continue**. The one-use recovery code is **METR2026**. Signup
+also supports fictional account details and demo verification.
+
+## Try it in five minutes
+
+1. **Explore the network.** Select a station on the keyboard-operable schematic
+   to open its details. Route chips filter stations and trains by line.
+2. **Inspect passenger flow.** Compare entry and exit charts, station occupancy,
+   network KPIs, and sparklines.
+3. **Build a station worklist.** Search, filter by status or line, sort, page, and
+   export the station table as CSV.
+4. **Review incidents.** Switch between active and resolved incidents, acknowledge
+   an event, and follow it through resolution.
+5. **Control the simulation.** Pause trains, change their speed, or pause the
+   network from Settings. Open **Make it yours** to try color, density, Arabic,
+   right-to-left layout, and light/dark appearance.
+
+Six simulated trains stop at stations and reverse at terminals. Network telemetry
+updates every 15 seconds. These controls alter browser simulation data only.
+
+## Components in context
+
+| Workflow                        | AWC components                                                                                                                                                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| App shell                       | [App bar](/components/app-bar/), [Navigation rail](/components/navigation-rail/), [Avatar](/components/avatar/), [Tooltip](/components/tooltip/)                                                                   |
+| Station filters and worklists   | [Chip](/components/chip/), [Text field](/components/text-field/), [Select](/components/select/), [Table](/components/table/)                                                                                       |
+| Network and station readings    | [Card](/components/card/), [Line chart](/components/line-chart/), [Sparkline](/components/sparkline/), [Meter](/components/meter/), [Side sheet](/components/side-sheet/)                                          |
+| Account, settings, and feedback | [OTP field](/components/otp-field/), [Checkbox](/components/checkbox/), [Switch](/components/switch/), [Color picker](/components/color-picker/), [Button](/components/button/), [Snackbar](/components/snackbar/) |
+
+The metro schematic is application SVG because AWC UI has no metro-map component.
+The surrounding controls, table composition, charts, form behavior, and inspection
+surfaces use the existing library. React passes arrays, objects, and handlers
+through typed component properties and the documented `md*` events.
+
+## Build and data
+
+Source lives in `apps/metro-monitor`. Vite compiles the React app with relative
+asset URLs, and the documentation build stages it at
+`/showcase/metro-monitor/react/`. The root workspace lockfile manages its local
+core, React wrapper, and theme dependencies.
+
+Station locations, telemetry, trains, and incidents are fictional fixtures.
+Authentication and account changes are kept in memory, with no identity service
+or operational API. Accounts and incident edits reset on reload; appearance and
+sidebar layout are browser preferences. The demo verification codes are public.
+
+## Run locally
+
+From the repository root, with core, React wrappers, and theme built:
+
+```sh
+pnpm --filter @awc-ui/metro-monitor dev
+```
+
+Open [Metro pulse locally](http://127.0.0.1:4387/). The build includes TypeScript
+checking, and `pnpm --filter @awc-ui/metro-monitor test` exercises domain,
+authentication, simulation, export, and optional agent-tool contracts.

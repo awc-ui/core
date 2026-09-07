@@ -180,19 +180,20 @@ export class MdSideSheet {
     // sheet on the page registered this listener, so one Escape (aimed at a
     // modal, or at nothing) collapsed every inline sheet on the page at once.
     if (this.variant !== 'modal') return;
-    document.addEventListener('keydown', this.handleDocKeyDown, true);
+    // Nested menus get the first chance to consume Escape.
+    document.addEventListener('keydown', this.handleDocKeyDown);
     document.addEventListener('focusin', this.handleDocFocusIn);
   }
 
   private removeGlobalListeners() {
-    document.removeEventListener('keydown', this.handleDocKeyDown, true);
+    document.removeEventListener('keydown', this.handleDocKeyDown);
     document.removeEventListener('focusin', this.handleDocFocusIn);
   }
 
   // ── Keyboard ────────────────────────────────────────────
 
   private handleDocKeyDown = (e: KeyboardEvent) => {
-    if (!this.open || this.variant !== 'modal') return;
+    if (!this.open || this.variant !== 'modal' || e.defaultPrevented) return;
 
     if (e.key === 'Escape') {
       e.preventDefault();

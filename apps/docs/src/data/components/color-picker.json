@@ -7,6 +7,14 @@
   "storyId": "selection-color-picker--playground",
   "props": [
     {
+      "name": "locale",
+      "attribute": "locale",
+      "type": "string",
+      "default": "'en-US'",
+      "reflect": false,
+      "mutable": false
+    },
+    {
       "name": "variant",
       "attribute": "variant",
       "type": "ColorPickerVariant",

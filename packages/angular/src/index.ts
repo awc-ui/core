@@ -13,3 +13,4 @@ export { BooleanValueAccessor } from './directives/boolean-value-accessor';
 export { RadioValueAccessor } from './directives/radio-value-accessor';
 export { NumericValueAccessor } from './directives/number-value-accessor';
 export { SwitchValueAccessor } from './directives/switch-value-accessor';
+export { MultiSelectValueAccessor } from './directives/multi-select-value-accessor';

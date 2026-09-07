@@ -2,29 +2,28 @@
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/fork/github/awc-ui/core/tree/main/starters/sveltekit)
 
-> The StackBlitz link works once this directory lands on the `main` branch of
-> [awc-ui/core](https://github.com/awc-ui/core).
+A standalone Svelte 4 dashboard using the published AWC UI packages. Use Node.js
+20.19 or later. Source changes that add package APIs require the matching package
+release; the repository's packed-candidate checks verify them before publication.
 
-A minimal SvelteKit project using the published `@awc-ui/core` and
-`@awc-ui/tokens` packages. It renders a compact mini-dashboard — app bar, two
-stat cards, a line chart, a small table, and a dark-mode switch.
+## How it works
 
-## How it's wired
-
-- **Tokens** — `src/routes/+layout.svelte` imports `@awc-ui/tokens/tokens.css`
-  so the `--md-sys-*` custom properties are available document-wide.
-- **SSR** — `src/hooks.server.ts` post-processes each rendered page chunk with
-  `@awc-ui/core/hydrate` (`renderToString`) to inject Declarative Shadow DOM
-  for every `<md-*>` element (this also runs at prerender time with
-  `@sveltejs/adapter-static`), so the first paint is styled.
-- **Client registration** — `+layout.svelte` calls
-  `defineCustomElements(window)` from `@awc-ui/core/loader` in `onMount` so
-  the server DSD hydrates and becomes interactive.
-- **Chart data** — objects and arrays have no attribute form;
-  `src/routes/+page.svelte` sets the line chart's `xAxis` / `series` / `yAxis`
-  as JS properties in `onMount` via `bind:this`.
-- **Dark mode** — the app-bar switch's `on:mdChange` sets `data-theme="dark"`
-  on `<html>`, which swaps the token palette.
+- `src/hooks.server.ts` creates a separate HTML buffer for each request and calls
+  `renderToString` once the final chunk arrives. This preserves a complete document
+  and emits Declarative Shadow DOM during prerendering. Buffering delays streamed HTML.
+- `src/hooks.client.ts` uses SvelteKit 2.10+ `init` to capture Stencil's SSR host attributes before Svelte
+  hydrates. The root layout restores removed attributes before importing the
+  component entries. Svelte 4 otherwise removes the `s-id` adoption markers,
+  causing the component runtime to append a second shadow render.
+- `src/lib/awc.ts` shares `createSvelteHydration()` from
+  `@awc-ui/core/ssr/sveltekit` between the two lifecycle hooks.
+- `src/lib/components.ts` imports the used SSR-capable component entries. Vite
+  bundles their dependencies, so registration does not depend on lazy-loader URLs.
+  Add new component imports there when extending the page.
+- The root layout imports global tokens. The page waits for chart registration
+  before assigning object-valued data. Canvas chart plots appear after JavaScript
+  runs; SSR provides their surrounding structure.
+- The app-bar switch changes `data-theme` on `<html>`.
 
 ## Run it
 
@@ -34,3 +33,7 @@ npm run dev       # http://localhost:5173
 npm run build
 npm run preview
 ```
+
+The static adapter prerenders this dashboard with DSD. See the
+[starter verification instructions](../README.md#verify-consumer-installations)
+for isolated install, production build, and browser checks.

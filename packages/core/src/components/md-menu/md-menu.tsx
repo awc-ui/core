@@ -1,6 +1,6 @@
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element, Method, Watch, Listen } from '@stencil/core';
 import { MenuElement, VirtualMenuProvider } from '../../utils/types';
-import { fixedContainingBlockOrigin } from '../../utils/fixed-position';
+import { fixedContainingBlockOrigin, stepUpFlatTree } from '../../utils/fixed-position';
 import { releaseIsolatingAncestors } from '../../utils/isolation-escape';
 
 const CLOSE_ANIMATION_MS = 150;
@@ -357,6 +357,7 @@ export class MdMenu {
     } else {
       // After the close animation (`open` flips only when it finishes), so the
       // menu stays on top while it fades out.
+      this.releaseTopLayer();
       this.releaseAncestorIsolation();
       this.mdClose.emit();
       this.focusedIndex = -1;
@@ -497,6 +498,16 @@ export class MdMenu {
     const target = e.target as HTMLElement;
     if (target && target.closest('md-menu') !== this.el) return;
 
+    // Escape belongs to the innermost popup, even when filtering leaves no
+    // items. Do not let the parent dialog handle the same dismissal key.
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      this.close();
+      this.restoreFocusToAnchor();
+      return;
+    }
+
     if (this.provider) {
       this.handleKeyDownVirtual(e);
       return;
@@ -521,11 +532,6 @@ export class MdMenu {
       case 'End':
         e.preventDefault();
         this.focusItem(items, items.length - 1);
-        break;
-      case 'Escape':
-        e.preventDefault();
-        this.close();
-        this.restoreFocusToAnchor();
         break;
       case 'Tab':
         e.stopPropagation();
@@ -580,11 +586,6 @@ export class MdMenu {
           e.preventDefault();
           this.provider!.domItemForIndex(this.focusedIndex)?.click();
         }
-        break;
-      case 'Escape':
-        e.preventDefault();
-        this.close();
-        this.restoreFocusToAnchor();
         break;
       case 'Tab':
         e.stopPropagation();
@@ -908,8 +909,55 @@ export class MdMenu {
   /** Restores the ancestor `isolation` this menu relaxed for the current open. */
   private isolationRelease?: () => void;
 
+  private topLayerOpen = false;
+  private popupOwners: Element[] = [];
+  private handleOwnerClose = (event: Event) => {
+    if (event.target === event.currentTarget) void this.close();
+  };
+
+  private watchPopupOwners() {
+    if (this.popupOwners.length) return;
+    for (let owner = stepUpFlatTree(this.el); owner; owner = stepUpFlatTree(owner)) {
+      if (!owner.tagName.startsWith('MD-')) continue;
+      owner.addEventListener('mdClose', this.handleOwnerClose);
+      this.popupOwners.push(owner);
+    }
+  }
+
+
+  private promoteToTopLayer(): boolean {
+    if (this.topLayerOpen) return true;
+    if (typeof this.el.showPopover !== 'function') return false;
+    // Keep the host in its original shadow/slot tree: option IDREFs, inherited
+    // tokens, form ownership and bubbling events must remain intact. A manual
+    // popover changes paint order only; our existing handlers own dismissal.
+    this.el.setAttribute('popover', 'manual');
+    try {
+      this.el.showPopover();
+      this.topLayerOpen = true;
+      this.watchPopupOwners();
+      return true;
+    } catch {
+      // Detached elements / older implementations retain the fixed fallback.
+      this.el.removeAttribute('popover');
+      return false;
+    }
+  }
+
+  private releaseTopLayer() {
+    for (const owner of this.popupOwners) owner.removeEventListener('mdClose', this.handleOwnerClose);
+    this.popupOwners = [];
+    if (!this.topLayerOpen) return;
+    this.topLayerOpen = false;
+    try { this.el.hidePopover(); } catch { /* Already removed from the document. */ }
+    this.el.removeAttribute('popover');
+  }
+
   private applyDepthZIndex() {
-    if (!this.anchor) return;
+    if (!this.anchor || this.inlineFill) return;
+    // Fixed descendants of a transformed dialog/sheet are still clipped by
+    // its scroll container. No z-index can escape that clipping ancestor.
+    if (this.promoteToTopLayer()) return;
     this.el.style.zIndex = 'var(--md-sys-z-index-popup, 1000)';
     // That z-index only ranks this menu inside its OWN stacking context. An
     // ancestor with `isolation: isolate` — md-table-toolbar, md-table-container,
@@ -1272,7 +1320,8 @@ export class MdMenu {
     this.stopAnchorWatch();
     this.unobserveSurfaceResize();
     this.updateAnchorAria(false);
-    // A menu torn down while open must not leave an ancestor un-isolated.
+    // A menu torn down while open must release both layering mechanisms.
+    this.releaseTopLayer();
     this.releaseAncestorIsolation();
   }
 

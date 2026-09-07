@@ -1,22 +1,15 @@
 /**
- * @awc-ui/svelte
+ * Svelte 4/5 custom-element types and optional lazy-loader registration.
  *
- * Svelte integration for AWC UI Material Design 3 components.
- *
- * Registration is client-only. In a plain Vite/SPA app:
+ * In a client-rendered Vite app, load types and statically register what you use:
  * @example
- * import { defineCustomElements } from '@awc-ui/svelte';
- * defineCustomElements(window);
+ * import type {} from '@awc-ui/svelte';
+ * import '@awc-ui/core/css/tokens.css';
+ * import '@awc-ui/core/components/md-button';
  *
- * Under SvelteKit (SSR), guard it so it runs only in the browser — and for
- * server-rendered markup use `@awc-ui/core/hydrate` (`renderToString`):
- * @example
- * import { browser } from '$app/environment';
- * import { defineCustomElements } from '@awc-ui/svelte';
- * if (browser) defineCustomElements(window);
- *
- * Then use components directly in .svelte files:
- * @example
- * <md-button variant="filled">Click me</md-button>
+ * Under SvelteKit, use @awc-ui/core/ssr/sveltekit to preserve server-rendered
+ * shadow roots, then dynamically import components after Svelte hydrates.
+ * See the Svelte framework guide for the complete client/server lifecycle.
  */
-export * from './lib/components';
+export * from './lib/components.js';
+export type { AwcElementAttributes } from './lib/elements.js';

@@ -1,0 +1,458 @@
+diff --git a/packages/core/src/components/md-navigation-rail/md-navigation-rail.css b/packages/core/src/components/md-navigation-rail/md-navigation-rail.css
+index 3f4ff43..99d2193 100644
+--- a/packages/core/src/components/md-navigation-rail/md-navigation-rail.css
++++ b/packages/core/src/components/md-navigation-rail/md-navigation-rail.css
+@@ -494,6 +494,8 @@
+ 
+ /* ---------- Footer (bottom group) ---------- */
+ .md-navigation-rail__footer {
++  --_footer-padding-inline: 0px;
++  --_footer-leading-size: var(--md-navigation-rail-footer-leading-size, 32px);
+   display: flex;
+   flex-direction: column;
+   /* `stretch` lets a slotted tab fill the width and render exactly like the
+@@ -506,10 +508,8 @@
+   margin-block-start: auto; /* push to bottom even with align=top */
+ }
+ 
+-/* A slotted icon button (e.g. the account / user-menu trigger) is centred in
+-   the collapsed rail and pinned to the SAME leading offset as the toggle + logo
+-   when expanded — so it never drifts as the rail width / host padding change.
+-   Scoped to the footer + icon button so slotted tabs are left untouched. */
++/* Legacy footer content keeps its existing alignment. For an account that
++   stays anchored during expansion, use footer-leading + footer-content. */
+ /* Centred with `align-self`, NOT a margin. A margin here has to be written
+    through `::slotted()`, and document-tree rules out-rank `::slotted()` at any
+    specificity — so a consumer's `* { margin: 0 }` reset (Starlight, Tailwind
+@@ -526,13 +526,56 @@
+ }
+ 
+ :host(.md-navigation-rail--expanded) .md-navigation-rail__footer {
+-  padding-inline-start: var(--md-sys-spacing-inset-sm, 8px);
++  --_footer-padding-inline: var(--md-sys-spacing-inset-sm, 8px);
++  padding-inline-start: var(--_footer-padding-inline);
+ }
+ 
+-.md-navigation-rail__footer[hidden] {
++.md-navigation-rail__footer[hidden],
++.md-navigation-rail__footer-profile[hidden] {
+   display: none;
+ }
+ 
++/* Anchor to the collapsed rail's centre, never the animated current width.
++   Compensate the host (or modal surface) and footer insets in the same frame.
++   Keep the profile's full text height even when concealed, so the leading
++   item cannot jump vertically when two text lines appear/disappear. */
++.md-navigation-rail__footer-profile {
++  --_footer-leading-inset: calc((var(--_container-width) - var(--_footer-leading-size)) / 2 - var(--_padding-inline) - var(--_footer-padding-inline));
++  display: flex;
++  flex: 0 0 auto;
++  align-items: center;
++  gap: var(--md-navigation-rail-footer-gap, var(--md-sys-spacing-gap-md, 12px));
++  min-block-size: var(--_footer-leading-size);
++  margin-inline-start: var(--_footer-leading-inset);
++  min-inline-size: 0;
++}
++
++.md-navigation-rail__footer-leading {
++  display: flex;
++  flex: 0 0 var(--_footer-leading-size);
++  inline-size: var(--_footer-leading-size);
++  align-items: center;
++  justify-content: center;
++}
++
++.md-navigation-rail__footer-content {
++  flex: 1 1 auto;
++  min-inline-size: 0;
++  white-space: nowrap;
++  overflow: hidden;
++  opacity: 0;
++  visibility: hidden;
++  transition: opacity var(--_motion-duration) var(--_motion-easing),
++    visibility 0s linear var(--_motion-duration);
++}
++
++:host(.md-navigation-rail--expanded) .md-navigation-rail__footer-content,
++:host(.md-navigation-rail--horizontal) .md-navigation-rail__footer-content {
++  opacity: 1;
++  visibility: visible;
++  transition-delay: 0s;
++}
++
+ /* ---------- Slotted descendants ----------
+    Each tab is pinned to its FINAL width for the current state (not 100% of the
+    animating rail), so its internal layout is static while the rail width
+@@ -590,6 +633,7 @@
+   :host,
+   .md-navigation-rail__toggle,
+   .md-navigation-rail__fab,
++  .md-navigation-rail__footer-content,
+   .md-navigation-rail__scrim,
+   :host(.md-navigation-rail--modal) .md-navigation-rail__container {
+     transition: none;
+@@ -724,6 +768,10 @@
+   margin-inline-start: auto;
+ }
+ 
++:host(.md-navigation-rail--horizontal) .md-navigation-rail__footer-profile {
++  margin-inline-start: 0;
++}
++
+ /* A section header groups a column; a bar has no room for it. */
+ :host(.md-navigation-rail--horizontal) ::slotted([data-section-header]) {
+   display: none;
+diff --git a/packages/core/src/components/md-navigation-rail/md-navigation-rail.e2e.ts b/packages/core/src/components/md-navigation-rail/md-navigation-rail.e2e.ts
+index a336b6c..fdf4625 100644
+--- a/packages/core/src/components/md-navigation-rail/md-navigation-rail.e2e.ts
++++ b/packages/core/src/components/md-navigation-rail/md-navigation-rail.e2e.ts
+@@ -95,4 +95,115 @@ describe('md-navigation-rail e2e', () => {
+     await page.waitForChanges();
+     expect(rail.getAttribute('variant')).toBe('standard');
+   });
++
++  describe('account footer motion', () => {
++    const footerFixture = (direction = 'ltr', custom = false, modal = false) => `
++      <div dir="${direction}" style="position:relative;display:flex;height:560px;width:760px">
++        <md-navigation-rail id="rail" variant="standard" ${modal ? 'modal' : ''}
++          style="--md-sys-motion-duration-short4:200ms;--md-navigation-rail-padding-block:24px;
++          ${custom ? '--md-navigation-rail-container-width:96px;--md-navigation-rail-expanded-width:260px;--md-navigation-rail-padding-inline:10px;--md-navigation-rail-footer-leading-size:40px' : ''}">
++          <md-navigation-rail-tab icon="home" label="Overview"></md-navigation-rail-tab>
++          <md-avatar id="account-avatar" slot="footer-leading" initials="DO" name="Demo operator" size="${custom ? 40 : 32}"></md-avatar>
++          <div id="account-copy" slot="footer-content" style="font:14px/20px Arial,sans-serif">
++            <button id="account-action" style="display:block;padding:0;border:0;background:none;font:inherit">Demo operator</button>
++            <div>Demo workspace</div>
++          </div>
++        </md-navigation-rail>
++      </div>`;
++
++    it.each([
++      ['ltr', false, false],
++      ['rtl', false, false],
++      ['ltr', true, false],
++      ['rtl', true, false],
++      ['ltr', false, true],
++      ['rtl', false, true],
++    ])('keeps the account anchored across frames (%s, custom=%s, modal=%s)', async (direction, custom, modal) => {
++      const page = await newE2EPage();
++      await page.setContent(footerFixture(direction as string, custom as boolean, modal as boolean));
++      await page.waitForChanges();
++
++      // Measure every painted frame, including the frame before the state flips.
++      // Endpoint-only assertions miss the old centre/width animation drift.
++      for (const [target, reverse] of [['expanded', false], ['standard', false], ['expanded', true]] as const) {
++        const samples = await page.evaluate(async ({ target, reverse }) => {
++          const rail = document.querySelector('#rail') as HTMLMdNavigationRailElement;
++          const avatar = rail.querySelector('#account-avatar') as HTMLElement;
++          const copy = rail.querySelector('#account-copy') as HTMLElement;
++          const content = rail.shadowRoot!.querySelector('[part="footer-content"]') as HTMLElement;
++          const sample = () => {
++            const surface = rail.modal ? rail.shadowRoot!.querySelector('[part="container"]') as HTMLElement : rail;
++            const a = avatar.getBoundingClientRect(), r = surface.getBoundingClientRect();
++            const css = getComputedStyle(content);
++            return {
++              leading: getComputedStyle(rail).direction === 'rtl' ? r.right - a.right : a.left - r.left,
++              bottom: r.bottom - a.bottom, width: a.width, height: a.height,
++              copyHeight: copy.getBoundingClientRect().height,
++              copyWhiteSpace: getComputedStyle(copy).whiteSpace,
++              avatarVisible: getComputedStyle(avatar).visibility === 'visible' && Number(getComputedStyle(avatar).opacity) === 1,
++              sameAvatar: rail.querySelector('#account-avatar') === avatar && avatar.isConnected,
++              opacity: Number(css.opacity), visibility: css.visibility,
++              inert: content.inert, ariaHidden: content.getAttribute('aria-hidden') === 'true',
++            };
++          };
++          const samples = [sample()], start = performance.now();
++          rail.variant = target;
++          let reversed = false;
++          while (performance.now() - start < (reverse ? 400 : 300)) {
++            await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
++            if (reverse && !reversed && performance.now() - start >= 65) {
++              rail.variant = target === 'expanded' ? 'standard' : 'expanded';
++              reversed = true;
++            }
++            samples.push(sample());
++          }
++          return samples;
++        }, { target, reverse });
++        expect(samples.length).toBeGreaterThan(4);
++        for (const key of ['leading', 'bottom', 'width', 'height', 'copyHeight'] as const) {
++          const values = samples.map(s => s[key]);
++          expect(Math.max(...values) - Math.min(...values)).toBeLessThanOrEqual(0.5);
++        }
++        expect(samples.every(s => s.avatarVisible && s.sameAvatar && s.copyWhiteSpace === 'nowrap')).toBe(true);
++        const expectedSize = custom ? 40 : 32;
++        expect(samples.every(s => Math.abs(s.width - expectedSize) <= 0.5 && Math.abs(s.height - expectedSize) <= 0.5)).toBe(true);
++        const last = samples[samples.length - 1];
++        const visible = reverse ? target !== 'expanded' : target === 'expanded';
++        expect(last.visibility).toBe(visible ? 'visible' : 'hidden');
++        expect(last.opacity).toBeCloseTo(Number(visible), 2);
++        expect(last.inert).toBe(!visible);
++        expect(last.ariaHidden).toBe(!visible);
++      }
++    });
++
++    it('settles immediately for reduced motion and blocks focus on collapsed account text', async () => {
++      const page = await newE2EPage();
++      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
++      await page.setContent(footerFixture());
++      await page.waitForChanges();
++      const rail = await page.find('#rail');
++      for (const method of ['expand', 'collapse']) {
++        await rail.callMethod(method);
++        await page.waitForChanges();
++        const state = await page.evaluate(async () => {
++          await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
++          const rail = document.querySelector('#rail') as HTMLElement;
++          const content = rail.shadowRoot!.querySelector('[part="footer-content"]') as HTMLElement;
++          const button = rail.querySelector('#account-action') as HTMLButtonElement;
++          (document.activeElement as HTMLElement)?.blur();
++          button.focus();
++          return {
++            transition: getComputedStyle(content).transitionDuration,
++            opacity: Number(getComputedStyle(content).opacity),
++            inert: content.inert, focused: document.activeElement === button,
++          };
++        });
++        const expanded = method === 'expand';
++        expect(state.transition).toBe('0s');
++        expect(state.opacity).toBe(Number(expanded));
++        expect(state.inert).toBe(!expanded);
++        expect(state.focused).toBe(expanded);
++      }
++    });
++  });
+ });
+diff --git a/packages/core/src/components/md-navigation-rail/md-navigation-rail.spec.ts b/packages/core/src/components/md-navigation-rail/md-navigation-rail.spec.ts
+index cd55615..724bb3e 100644
+--- a/packages/core/src/components/md-navigation-rail/md-navigation-rail.spec.ts
++++ b/packages/core/src/components/md-navigation-rail/md-navigation-rail.spec.ts
+@@ -641,6 +641,42 @@ describe('md-navigation-rail', () => {
+       expect(destinations(page)?.hasAttribute('role')).toBe(false);
+     });
+   });
++  describe('account footer', () => {
++    const account = `<span slot="footer-leading">DO</span><div slot="footer-content"><b>Demo operator</b><div>Demo workspace</div></div>`;
++
++    it('reserves the profile on the first render and keeps it mounted across variants', async () => {
++      const page = await create(`<md-navigation-rail>${account}</md-navigation-rail>`);
++      const profile = page.root?.shadowRoot?.querySelector('[part="footer-profile"]');
++      const content = page.root?.shadowRoot?.querySelector('[part="footer-content"]');
++      expect(page.root).toHaveClass('md-navigation-rail--with-footer');
++      expect(profile?.hasAttribute('hidden')).toBe(false);
++      expect(content?.getAttribute('aria-hidden')).toBe('true');
++      expect(content?.hasAttribute('inert')).toBe(true);
++      await page.rootInstance.expand();
++      await page.waitForChanges();
++      expect(page.root?.shadowRoot?.querySelector('[part="footer-profile"]')).toBe(profile);
++      expect(content?.hasAttribute('aria-hidden')).toBe(false);
++      expect(content?.hasAttribute('inert')).toBe(false);
++      await page.rootInstance.collapse();
++      await page.waitForChanges();
++      expect(content?.hasAttribute('inert')).toBe(true);
++    });
++
++    it('keeps horizontal account content available without requiring expansion', async () => {
++      const page = await create(`<md-navigation-rail orientation="horizontal">${account}</md-navigation-rail>`);
++      const content = page.root?.shadowRoot?.querySelector('[part="footer-content"]');
++      expect(content?.hasAttribute('aria-hidden')).toBe(false);
++      expect(content?.hasAttribute('inert')).toBe(false);
++    });
++
++    it('preserves the utility footer slot and hides the unused profile', async () => {
++      const page = await create('<md-navigation-rail><button slot="footer">Account</button></md-navigation-rail>');
++      expect(page.root?.shadowRoot?.querySelector('[part="footer"]')?.hasAttribute('hidden')).toBe(false);
++      expect(page.root?.shadowRoot?.querySelector('[part="footer-profile"]')?.hasAttribute('hidden')).toBe(true);
++      expect(page.root?.shadowRoot?.querySelector('slot[name="footer"]')).toBeTruthy();
++    });
++  });
++
+   // ─── Horizontal orientation ──────────────────────────────
+   describe('orientation', () => {
+     const destinations = (page: { root?: Element | null }) =>
+diff --git a/packages/core/src/components/md-navigation-rail/md-navigation-rail.tsx b/packages/core/src/components/md-navigation-rail/md-navigation-rail.tsx
+index 1e0b419..1b57703 100644
+--- a/packages/core/src/components/md-navigation-rail/md-navigation-rail.tsx
++++ b/packages/core/src/components/md-navigation-rail/md-navigation-rail.tsx
+@@ -125,6 +125,8 @@ export class MdNavigationRail {
+   @State() private hasHeader = false;
+   @State() private hasFab = false;
+   @State() private hasFooter = false;
++  @State() private hasFooterLeading = false;
++  @State() private hasFooterContent = false;
+ 
+   /**
+    * True when one or more destinations render as links (`href` set). A `tablist`
+@@ -204,6 +206,8 @@ export class MdNavigationRail {
+     this.hasHeader = slotted('header');
+     this.hasFab = slotted('fab');
+     this.hasFooter = slotted('footer');
++    this.hasFooterLeading = slotted('footer-leading');
++    this.hasFooterContent = slotted('footer-content');
+     // Adopt a pre-marked destination: authors can write `active` directly on a
+     // child tab instead of `active-index` on the rail. This MUST run before the
+     // first slotchange-driven syncTabs(), which (with activeIndex still -1)
+@@ -607,7 +611,17 @@ export class MdNavigationRail {
+     this.wireSlottedMenus();
+   };
+ 
++  private handleFooterProfileSlotChange = (e: Event) => {
++    const slot = e.target as HTMLSlotElement;
++    const populated = slot.assignedElements().length > 0;
++    if (slot.name === 'footer-leading') this.hasFooterLeading = populated;
++    else this.hasFooterContent = populated;
++    this.wireSlottedMenus();
++  };
++
+   render() {
++    const hasFooterProfile = this.hasFooterLeading || this.hasFooterContent;
++    const footerContentVisible = this.variant === 'expanded' || this.orientation === 'horizontal';
+     return (
+       <Host
+         class={{
+@@ -624,7 +638,7 @@ export class MdNavigationRail {
+           'md-navigation-rail--with-logo-expanded': this.hasLogoExpanded,
+           'md-navigation-rail--with-header': this.hasHeader,
+           'md-navigation-rail--with-fab': this.hasFab,
+-          'md-navigation-rail--with-footer': this.hasFooter,
++          'md-navigation-rail--with-footer': this.hasFooter || hasFooterProfile,
+         }}
+         role="navigation"
+         aria-label={this.label}
+@@ -729,7 +743,23 @@ export class MdNavigationRail {
+             </div>
+           )}
+ 
+-          <div class="md-navigation-rail__footer" part="footer" hidden={!this.hasFooter}>
++          <div class="md-navigation-rail__footer" part="footer" hidden={!this.hasFooter && !hasFooterProfile}>
++            {/* Keep one leading item and one persistent text layout through
++                width transitions. The library owns anchoring and concealment;
++                consumers do not need variant-dependent footer styles. */}
++            <div class="md-navigation-rail__footer-profile" part="footer-profile" hidden={!hasFooterProfile}>
++              <div class="md-navigation-rail__footer-leading" part="footer-leading">
++                <slot name="footer-leading" onSlotchange={this.handleFooterProfileSlotChange} />
++              </div>
++              <div
++                class="md-navigation-rail__footer-content"
++                part="footer-content"
++                aria-hidden={footerContentVisible ? undefined : 'true'}
++                inert={!footerContentVisible}
++              >
++                <slot name="footer-content" onSlotchange={this.handleFooterProfileSlotChange} />
++              </div>
++            </div>
+             <slot name="footer" onSlotchange={this.handleFooterSlotChange} />
+           </div>
+         </div>
+diff --git a/packages/core/src/components/md-navigation-rail/readme.md b/packages/core/src/components/md-navigation-rail/readme.md
+index 8b5fa96..901d7a0 100644
+--- a/packages/core/src/components/md-navigation-rail/readme.md
++++ b/packages/core/src/components/md-navigation-rail/readme.md
+@@ -57,7 +57,8 @@ application bar.
+ | Too many destinations for the width | `max-visible="N"` (+ `overflow-label`, `overflow-icon`) |
+ | A destination that opens a dropdown | `md-menu` in the tab's `submenu` slot |
+ | Brand at the leading edge | `slot="logo"` (+ `slot="logo-expanded"`) |
+-| Signed-in user at the trailing edge | `slot="footer"` |
++| Account avatar with expanding name and role | `slot="footer-leading"` + `slot="footer-content"` |
++| Menus and utilities at the trailing edge | `slot="footer"` |
+ 
+ **Choosing an orientation**
+ 
+@@ -104,11 +105,12 @@ application bar.
+ **Methods** — `expand()`, `collapse()`, `toggle()`, `focusTab(index)`.
+ 
+ **Slots** — the default slot (destinations: `md-navigation-rail-tab`
+-children), `logo`, `logo-expanded`, `header`, `fab`, `footer`.
++children), `logo`, `logo-expanded`, `header`, `fab`, `footer-leading`,
++`footer-content`, `footer`.
+ 
+ **Parts** — `scrim`, `container`, `logo`, `logo-contracted`, `logo-expanded`,
+ `toggle`, `header`, `fab`, `destinations`, `overflow`, `overflow-trigger`,
+-`footer`.
++`footer`, `footer-profile`, `footer-leading`, `footer-content`.
+ 
+ ### Behavioral contract worth knowing
+ 
+@@ -125,6 +127,12 @@ children), `logo`, `logo-expanded`, `header`, `fab`, `footer`.
+ - A `md-fab` in the `fab` slot is **morphed by the rail**: it sets the FAB's
+   `extended` property from the rail's expanded state. Don't pin `extended`
+   yourself.
++- `footer-leading` and `footer-content` form a persistent account row. The
++  leading avatar or button stays anchored on the collapsed rail's centre axis
++  throughout expansion. In a collapsed vertical rail, content fades out,
++  becomes hidden and inert, and keeps its unwrapped layout height so the
++  leading item does not jump. It is visible when expanded or horizontal.
++  The existing `footer` slot remains available for menus and utilities.
+ - `expand()` / `collapse()` / `toggle()` change `variant`, which is what emits
+   `mdExpand` / `mdCollapse` — so setting `variant` directly emits them too.
+ - **`expandable` is ignored while `orientation="horizontal"`** — a bar has
+@@ -234,6 +242,37 @@ house rules.
+ </md-navigation-rail>
+ ```
+ 
++```html
++<!-- Account identity: the rail owns alignment and the expanding text. -->
++<md-navigation-rail expandable full-height active-index="0" label="Main navigation">
++  <md-navigation-rail-tab icon="dashboard" label="Overview" value="overview"></md-navigation-rail-tab>
++  <md-navigation-rail-tab icon="dns" label="Assets" value="assets"></md-navigation-rail-tab>
++
++  <md-avatar slot="footer-leading" name="Ada Lovelace" initials="AL" size="32"></md-avatar>
++  <div slot="footer-content" class="account-summary">
++    <strong>Ada Lovelace</strong>
++    <span>Plant operator</span>
++  </div>
++</md-navigation-rail>
++
++<style>
++  .account-summary > * {
++    display: block;
++    overflow: hidden;
++    text-overflow: ellipsis;
++  }
++</style>
++```
++
++The leading slot reserves `32px` by default. For a different avatar or button
++size, set `--md-navigation-rail-footer-leading-size` to match its rendered size.
++`--md-navigation-rail-footer-gap` controls the gap before the text (default
++`12px`). Apply your own typography to the slotted content; the rail clips it to
++the available width and prevents line wrapping. The example adds an ellipsis
++to each text line. Remove consumer rules that toggle the text with
++`display: none` or recenter the avatar by variant: the native slots handle both
++without changing the account row's height during the transition.
++
+ ```html
+ <!-- Application bar: brand leads, destinations take the middle, account trails -->
+ <md-navigation-rail orientation="horizontal" label="Main navigation" active-index="0">
+@@ -319,9 +358,13 @@ house rules.
+ - A decorative logo should have empty `alt`; a meaningful one needs real text.
+ - The overflow trigger is a `button` with `aria-haspopup="menu"` and a
+   localized `overflow-label`, kept outside the `tablist`.
+-- Anything in `logo` / `header` / `fab` / `footer` is outside the `tablist` —
++- Anything in `logo` / `header` / `fab` / `footer-leading` / `footer-content` /
++  `footer` is outside the `tablist` —
+   an account avatar needs its own accessible name (and `aria-haspopup="menu"`
+   when it opens one).
++- Collapsed vertical rails make `footer-content` inert and hide it from
++  assistive technology. Keep account controls that must remain available in
++  `footer-leading` or `footer`.
+ 
+ **RTL** — the rail sits on the leading edge and all internals use logical
+ properties. In a horizontal rail the left/right arrow keys follow the writing
+@@ -359,13 +402,16 @@ width per locale.
+ | `--md-navigation-rail-header-space` | Space under the header/FAB group | `40px` (tapers 4px/rung, floor 20px) |
+ | `--md-navigation-rail-destinations-gap` | Gap between destinations | `8px` (tapers 2px/rung, floor 0) |
+ | `--md-navigation-rail-logo-icon-size` | Brand glyph footprint in the logo slots | `24px` |
++| `--md-navigation-rail-footer-leading-size` | Reserved avatar or button footprint in `footer-leading`; match the supplied item's size | `32px` |
++| `--md-navigation-rail-footer-gap` | Gap between the leading item and account content | `--md-sys-spacing-gap-md` (12px) |
+ | `--md-navigation-rail-horizontal-height` | Bar height when `orientation="horizontal"` | `72px` (tapers 4px/rung, floor 64px) |
+ | `--md-navigation-rail-horizontal-padding-block` | Bar block gutter | `0px` (so a destination's ripple reaches the edges) |
+ | `--md-navigation-rail-horizontal-padding-inline` | Bar inline gutter | `--md-sys-spacing-inset-md` (12px) |
+ 
+ **CSS parts** — `scrim`, `container`, `logo`, `logo-contracted`,
+ `logo-expanded`, `toggle`, `header`, `fab`, `destinations`, `overflow`,
+-`overflow-trigger`, `footer`.
++`overflow-trigger`, `footer`, `footer-profile`, `footer-leading`,
++`footer-content`.
+ 
+ Destination appearance is themed with the `--md-navigation-rail-tab-*`
+ properties.

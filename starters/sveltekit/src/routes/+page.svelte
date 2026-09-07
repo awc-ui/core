@@ -3,7 +3,8 @@
 
   let chart;
 
-  onMount(() => {
+  onMount(async () => {
+    await customElements.whenDefined('md-line-chart');
     // Objects/arrays have no attribute form — set the chart data as JS properties.
     if (chart) {
       chart.xAxis = { data: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8'], scale: 'category' };
@@ -23,7 +24,7 @@
 </svelte:head>
 
 <md-app-bar headline="Acme Analytics" subtitle="Overview">
-  <md-switch slot="trailing" icons aria-label="Dark mode" on:mdChange={onThemeChange}></md-switch>
+  <md-switch slot="trailing" aria-label="Dark mode" on:mdChange={onThemeChange}></md-switch>
 </md-app-bar>
 
 <main style="padding:24px;font-family:system-ui,sans-serif;display:grid;gap:20px;max-width:840px;margin:0 auto">
@@ -53,7 +54,7 @@
         curve="monotone"
         area
         legend="none"
-        height="260px"
+        style="block-size:260px"
       ></md-line-chart>
     </div>
   </md-card>

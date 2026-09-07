@@ -20,14 +20,19 @@ stat cards, a line chart, a small table, and a dark-mode switch.
   (`renderToString`) to inject Declarative Shadow DOM for every `<md-*>`
   element, so the first paint is styled. The hydrate module is kept external
   to the Nitro build (`nitro.externals`).
-- **Client registration** — `plugins/awc.client.ts` calls
-  `defineCustomElements(window)` from `@awc-ui/core/loader` so the server DSD
-  hydrates and becomes interactive.
+- **Client registration** — `plugins/awc.client.ts` imports the
+  used `@awc-ui/core/components/*` entries so Vite bundles their dependencies
+  and the server DSD becomes interactive.
 - **Chart data** — objects and arrays have no attribute form; `app.vue` sets
   the line chart's `xAxis` / `series` / `yAxis` as JS properties in
   `onMounted` via a template ref.
 - **Dark mode** — the app-bar switch sets `data-theme="dark"` on `<html>`,
   which swaps the token palette.
+
+The package manifest keeps the optional `@vitejs/devtools` dependency on the
+`0.5.x` line, which satisfies the Vite peer range. This avoids an npm 10 peer
+resolver crash caused by newer DevTools releases while retaining the current
+Nuxt 3 release. Recheck the override when upgrading the Nuxt/Vite toolchain.
 
 ## Run it
 

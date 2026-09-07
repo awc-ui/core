@@ -125,6 +125,12 @@ the code is complete), `clear()`, plus the constraint-validation set:
   non-empty (reported through the `valueMissing` flag with that message — the
   shared form helpers expose no `badInput` channel). Form reset **clears**
   the code (one-time codes are transient).
+- **Enter** in any cell activates the owning form's default native submit
+  button or `md-button type="submit"`; without one, it uses `requestSubmit()`.
+  Form validation still runs, including required/incomplete-code checks.
+  Modified/repeated/composing Enter and disabled fields do nothing. An ancestor
+  keydown handler can cancel the action with `preventDefault()`. `readonly`
+  still permits submission, just as it permits focus and navigation.
 - `auto-submit` calls `form.requestSubmit()` (never `submit()`) **after**
   `mdComplete`, so the form's submit event and validation both run.
 - `mask` renders `type="password"` cells; the value is never reflected to an

@@ -32,7 +32,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -95,6 +95,9 @@ jobs:
             test -f "apps/docs/dist/showcase/music/$fw/index.html" \
               || (echo "::error::Missing apps/docs/dist/showcase/music/$fw/index.html (showcase build not embedded)" && exit 1)
           done
+          # Standalone apps are built/staged by Astro integrations. Verify the
+          # docs page, every advertised build, and its actual entry assets.
+          node scripts/verify-standalone-showcases.mjs
           # Pictor's documentation and every native studio entry must ship together.
           test -f apps/docs/dist/showcase/design/index.html
           for fw in html react vue angular svelte; do

@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@awc-ui/core": ["../../packages/core/dist/types/index.d.ts"],
+      "@awc-ui/core/dist/components": [
+        "../../packages/core/dist/components/index.d.ts"
+      ],
+      "@awc-ui/core/dist/components/*": [
+        "../../packages/core/dist/components/*"
+      ],
+      "@stencil/react-output-target/runtime": [
+        "node_modules/@stencil/react-output-target/dist/runtime/index.d.ts"
+      ],
+      "react": ["node_modules/@types/react/index.d.ts"]
+    }
+  },
+  "include": ["src"]
+}

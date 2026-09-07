@@ -1,7 +1,7 @@
 /* eslint-disable */
 /* tslint:disable */
 /* auto-generated vue proxies */
-import { defineContainer } from './vue-component-lib/utils';
+import { defineContainer } from './runtime.js';
 
 import type { JSX } from '@awc-ui/core/dist/components';
 
@@ -199,7 +199,7 @@ export const MdAreaChart = /*@__PURE__*/ defineContainer<JSX.MdAreaChart>('md-ar
 ]);
 
 
-export const MdAutocomplete = /*@__PURE__*/ defineContainer<JSX.MdAutocomplete>('md-autocomplete', defineMdAutocomplete, [
+export const MdAutocomplete = /*@__PURE__*/ defineContainer<JSX.MdAutocomplete, JSX.MdAutocomplete["value"]>('md-autocomplete', defineMdAutocomplete, [
   'valueMissingLabel',
   'reserveSupportingSpace',
   'variant',
@@ -245,7 +245,8 @@ export const MdAutocomplete = /*@__PURE__*/ defineContainer<JSX.MdAutocomplete>(
   'mdClose',
   'mdClear',
   'mdValidityChange'
-]);
+],
+'value', 'mdInput');
 
 
 export const MdAvatar = /*@__PURE__*/ defineContainer<JSX.MdAvatar>('md-avatar', defineMdAvatar, [
@@ -428,7 +429,7 @@ export const MdCard = /*@__PURE__*/ defineContainer<JSX.MdCard>('md-card', defin
 ]);
 
 
-export const MdCheckbox = /*@__PURE__*/ defineContainer<JSX.MdCheckbox>('md-checkbox', defineMdCheckbox, [
+export const MdCheckbox = /*@__PURE__*/ defineContainer<JSX.MdCheckbox, JSX.MdCheckbox["checked"]>('md-checkbox', defineMdCheckbox, [
   'valueMissingLabel',
   'error',
   'errorText',
@@ -443,7 +444,8 @@ export const MdCheckbox = /*@__PURE__*/ defineContainer<JSX.MdCheckbox>('md-chec
   'density',
   'mdChange',
   'mdValidityChange'
-]);
+],
+'checked', 'mdChange');
 
 
 export const MdChip = /*@__PURE__*/ defineContainer<JSX.MdChip>('md-chip', defineMdChip, [
@@ -487,7 +489,7 @@ export const MdColorPicker = /*@__PURE__*/ defineContainer<JSX.MdColorPicker>('m
 ]);
 
 
-export const MdDatePicker = /*@__PURE__*/ defineContainer<JSX.MdDatePicker>('md-date-picker', defineMdDatePicker, [
+export const MdDatePicker = /*@__PURE__*/ defineContainer<JSX.MdDatePicker, JSX.MdDatePicker["value"]>('md-date-picker', defineMdDatePicker, [
   'valueMissingLabel',
   'reserveSupportingSpace',
   'variant',
@@ -545,7 +547,8 @@ export const MdDatePicker = /*@__PURE__*/ defineContainer<JSX.MdDatePicker>('md-
   'mdMenuSelect',
   'mdModeChange',
   'mdValidityChange'
-]);
+],
+'value', 'mdChange');
 
 
 export const MdDialog = /*@__PURE__*/ defineContainer<JSX.MdDialog>('md-dialog', defineMdDialog, [
@@ -817,7 +820,7 @@ export const MdMeter = /*@__PURE__*/ defineContainer<JSX.MdMeter>('md-meter', de
 ]);
 
 
-export const MdMultiSelect = /*@__PURE__*/ defineContainer<JSX.MdMultiSelect>('md-multi-select', defineMdMultiSelect, [
+export const MdMultiSelect = /*@__PURE__*/ defineContainer<JSX.MdMultiSelect, JSX.MdMultiSelect["value"]>('md-multi-select', defineMdMultiSelect, [
   'valueMissingLabel',
   'reserveSupportingSpace',
   'variant',
@@ -868,7 +871,8 @@ export const MdMultiSelect = /*@__PURE__*/ defineContainer<JSX.MdMultiSelect>('m
   'mdRemove',
   'mdClear',
   'mdValidityChange'
-]);
+],
+'value', 'mdChange');
 
 
 export const MdNavigationBar = /*@__PURE__*/ defineContainer<JSX.MdNavigationBar>('md-navigation-bar', defineMdNavigationBar, [
@@ -938,7 +942,7 @@ export const MdNavigationTab = /*@__PURE__*/ defineContainer<JSX.MdNavigationTab
 ]);
 
 
-export const MdNumberField = /*@__PURE__*/ defineContainer<JSX.MdNumberField>('md-number-field', defineMdNumberField, [
+export const MdNumberField = /*@__PURE__*/ defineContainer<JSX.MdNumberField, JSX.MdNumberField["value"]>('md-number-field', defineMdNumberField, [
   'variant',
   'label',
   'placeholder',
@@ -969,7 +973,8 @@ export const MdNumberField = /*@__PURE__*/ defineContainer<JSX.MdNumberField>('m
   'mdInput',
   'mdChange',
   'mdValidityChange'
-]);
+],
+'value', 'mdChange');
 
 
 export const MdOrganizationChart = /*@__PURE__*/ defineContainer<JSX.MdOrganizationChart>('md-organization-chart', defineMdOrganizationChart, [
@@ -987,7 +992,7 @@ export const MdOrganizationChart = /*@__PURE__*/ defineContainer<JSX.MdOrganizat
 ]);
 
 
-export const MdOtpField = /*@__PURE__*/ defineContainer<JSX.MdOtpField>('md-otp-field', defineMdOtpField, [
+export const MdOtpField = /*@__PURE__*/ defineContainer<JSX.MdOtpField, JSX.MdOtpField["value"]>('md-otp-field', defineMdOtpField, [
   'length',
   'value',
   'validationType',
@@ -1014,7 +1019,8 @@ export const MdOtpField = /*@__PURE__*/ defineContainer<JSX.MdOtpField>('md-otp-
   'mdComplete',
   'mdInvalidInput',
   'mdValidityChange'
-]);
+],
+'value', 'mdInput');
 
 
 export const MdPieChart = /*@__PURE__*/ defineContainer<JSX.MdPieChart>('md-pie-chart', defineMdPieChart, [
@@ -1076,7 +1082,7 @@ export const MdProgressIndicator = /*@__PURE__*/ defineContainer<JSX.MdProgressI
 ]);
 
 
-export const MdRadio = /*@__PURE__*/ defineContainer<JSX.MdRadio>('md-radio', defineMdRadio, [
+export const MdRadio = /*@__PURE__*/ defineContainer<JSX.MdRadio, JSX.MdRadio["value"]>('md-radio', defineMdRadio, [
   'valueMissingLabel',
   'checked',
   'disabled',
@@ -1089,10 +1095,11 @@ export const MdRadio = /*@__PURE__*/ defineContainer<JSX.MdRadio>('md-radio', de
   'mdFocus',
   'mdBlur',
   'mdValidityChange'
-]);
+],
+'value', 'mdChange');
 
 
-export const MdRating = /*@__PURE__*/ defineContainer<JSX.MdRating>('md-rating', defineMdRating, [
+export const MdRating = /*@__PURE__*/ defineContainer<JSX.MdRating, JSX.MdRating["value"]>('md-rating', defineMdRating, [
   'value',
   'defaultValue',
   'max',
@@ -1112,7 +1119,8 @@ export const MdRating = /*@__PURE__*/ defineContainer<JSX.MdRating>('md-rating',
   'density',
   'mdHover',
   'mdChange'
-]);
+],
+'value', 'mdChange');
 
 
 export const MdRipple = /*@__PURE__*/ defineContainer<JSX.MdRipple>('md-ripple', defineMdRipple, [
@@ -1189,7 +1197,7 @@ export const MdSegmentedButtonSet = /*@__PURE__*/ defineContainer<JSX.MdSegmente
 ]);
 
 
-export const MdSelect = /*@__PURE__*/ defineContainer<JSX.MdSelect>('md-select', defineMdSelect, [
+export const MdSelect = /*@__PURE__*/ defineContainer<JSX.MdSelect, JSX.MdSelect["value"]>('md-select', defineMdSelect, [
   'valueMissingLabel',
   'reserveSupportingSpace',
   'variant',
@@ -1228,7 +1236,8 @@ export const MdSelect = /*@__PURE__*/ defineContainer<JSX.MdSelect>('md-select',
   'mdOpen',
   'mdClose',
   'mdValidityChange'
-]);
+],
+'value', 'mdChange');
 
 
 export const MdSelectOption = /*@__PURE__*/ defineContainer<JSX.MdSelectOption>('md-select-option', defineMdSelectOption, [
@@ -1277,7 +1286,7 @@ export const MdSkeleton = /*@__PURE__*/ defineContainer<JSX.MdSkeleton>('md-skel
 ]);
 
 
-export const MdSlider = /*@__PURE__*/ defineContainer<JSX.MdSlider>('md-slider', defineMdSlider, [
+export const MdSlider = /*@__PURE__*/ defineContainer<JSX.MdSlider, JSX.MdSlider["value"]>('md-slider', defineMdSlider, [
   'min',
   'max',
   'value',
@@ -1312,7 +1321,8 @@ export const MdSlider = /*@__PURE__*/ defineContainer<JSX.MdSlider>('md-slider',
   'mdBlur',
   'mdDragStart',
   'mdDragEnd'
-]);
+],
+'value', 'mdChange');
 
 
 export const MdSnackbar = /*@__PURE__*/ defineContainer<JSX.MdSnackbar>('md-snackbar', defineMdSnackbar, [
@@ -1452,7 +1462,7 @@ export const MdSubMenuItem = /*@__PURE__*/ defineContainer<JSX.MdSubMenuItem>('m
 ]);
 
 
-export const MdSwitch = /*@__PURE__*/ defineContainer<JSX.MdSwitch>('md-switch', defineMdSwitch, [
+export const MdSwitch = /*@__PURE__*/ defineContainer<JSX.MdSwitch, JSX.MdSwitch["selected"]>('md-switch', defineMdSwitch, [
   'valueMissingLabel',
   'selected',
   'disabled',
@@ -1468,7 +1478,8 @@ export const MdSwitch = /*@__PURE__*/ defineContainer<JSX.MdSwitch>('md-switch',
   'mdInput',
   'mdChange',
   'mdValidityChange'
-]);
+],
+'selected', 'mdChange');
 
 
 export const MdTab = /*@__PURE__*/ defineContainer<JSX.MdTab>('md-tab', defineMdTab, [
@@ -1651,7 +1662,7 @@ export const MdTabs = /*@__PURE__*/ defineContainer<JSX.MdTabs>('md-tabs', defin
 ]);
 
 
-export const MdTextField = /*@__PURE__*/ defineContainer<JSX.MdTextField>('md-text-field', defineMdTextField, [
+export const MdTextField = /*@__PURE__*/ defineContainer<JSX.MdTextField, JSX.MdTextField["value"]>('md-text-field', defineMdTextField, [
   'reserveSupportingSpace',
   'variant',
   'label',
@@ -1704,10 +1715,11 @@ export const MdTextField = /*@__PURE__*/ defineContainer<JSX.MdTextField>('md-te
   'mdPasswordToggle',
   'mdSpeechResult',
   'mdValidityChange'
-]);
+],
+'value', 'mdInput');
 
 
-export const MdTimePicker = /*@__PURE__*/ defineContainer<JSX.MdTimePicker>('md-time-picker', defineMdTimePicker, [
+export const MdTimePicker = /*@__PURE__*/ defineContainer<JSX.MdTimePicker, JSX.MdTimePicker["value"]>('md-time-picker', defineMdTimePicker, [
   'variant',
   'format',
   'value',
@@ -1751,7 +1763,8 @@ export const MdTimePicker = /*@__PURE__*/ defineContainer<JSX.MdTimePicker>('md-
   'mdCancel',
   'mdModeChange',
   'mdValidityChange'
-]);
+],
+'value', 'mdChange');
 
 
 export const MdToolbar = /*@__PURE__*/ defineContainer<JSX.MdToolbar>('md-toolbar', defineMdToolbar, [

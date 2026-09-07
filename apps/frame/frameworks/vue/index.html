@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#111214">
+    <meta name="description" content="Frame is a video discovery experience built with AWC UI. Explore, watch, and save your next favorite.">
+    <title>Frame — Find your next favorite</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <script src="./preboot.js"></script>
+    <link rel="stylesheet" href="./awc/md3.css">
+    <link rel="stylesheet" href="./theme.css">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="preload" href="./fonts/roboto-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="./fonts/material-symbols-outlined.woff2" as="font" type="font/woff2" crossorigin>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to videos</a>
+    <div id="startup-loading" class="startup-loading" role="status" aria-label="Loading Frame" aria-busy="true">
+    <div class="startup-header"><md-skeleton variant="rounded" width="150px" height="32px" announce="false"></md-skeleton><md-skeleton variant="rounded" width="44rem" height="44px" announce="false"></md-skeleton></div>
+    <div class="startup-content"><md-skeleton variant="text" width="min(26rem, 80%)" height="2.2rem" announce="false"></md-skeleton><md-skeleton variant="text" width="min(20rem, 65%)" announce="false"></md-skeleton>
+    <div class="video-grid startup-grid"><div><div class="startup-thumbnail"><md-skeleton class="image-skeleton" variant="rectangular" animation="wave" full-width full-height announce="false"></md-skeleton></div><div class="startup-row"><md-skeleton variant="circular" width="40px" height="40px" announce="false"></md-skeleton><md-skeleton variant="text" lines="2" full-width announce="false"></md-skeleton></div></div><div><div class="startup-thumbnail"><md-skeleton class="image-skeleton" variant="rectangular" animation="wave" full-width full-height announce="false"></md-skeleton></div><div class="startup-row"><md-skeleton variant="circular" width="40px" height="40px" announce="false"></md-skeleton><md-skeleton variant="text" lines="2" full-width announce="false"></md-skeleton></div></div><div><div class="startup-thumbnail"><md-skeleton class="image-skeleton" variant="rectangular" animation="wave" full-width full-height announce="false"></md-skeleton></div><div class="startup-row"><md-skeleton variant="circular" width="40px" height="40px" announce="false"></md-skeleton><md-skeleton variant="text" lines="2" full-width announce="false"></md-skeleton></div></div><div><div class="startup-thumbnail"><md-skeleton class="image-skeleton" variant="rectangular" animation="wave" full-width full-height announce="false"></md-skeleton></div><div class="startup-row"><md-skeleton variant="circular" width="40px" height="40px" announce="false"></md-skeleton><md-skeleton variant="text" lines="2" full-width announce="false"></md-skeleton></div></div><div><div class="startup-thumbnail"><md-skeleton class="image-skeleton" variant="rectangular" animation="wave" full-width full-height announce="false"></md-skeleton></div><div class="startup-row"><md-skeleton variant="circular" width="40px" height="40px" announce="false"></md-skeleton><md-skeleton variant="text" lines="2" full-width announce="false"></md-skeleton></div></div><div><div class="startup-thumbnail"><md-skeleton class="image-skeleton" variant="rectangular" animation="wave" full-width full-height announce="false"></md-skeleton></div><div class="startup-row"><md-skeleton variant="circular" width="40px" height="40px" announce="false"></md-skeleton><md-skeleton variant="text" lines="2" full-width announce="false"></md-skeleton></div></div></div></div>
+    <span class="sr-only">Loading videos and controls…</span>
+  </div>
+    <div id="app"></div>
+    <noscript><main><h1>Frame</h1><p>Enable JavaScript to browse and watch videos in this AWC UI showcase.</p></main></noscript>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

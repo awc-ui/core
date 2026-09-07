@@ -55,6 +55,30 @@ this library.
 npm install @awc-ui/core
 ```
 
+## Start a project or check setup
+
+```bash
+npx --package @awc-ui/core awc-ui init my-app --framework next --dry-run
+npx --package @awc-ui/core awc-ui init my-app --framework next
+```
+
+Bundled starters: `html`, `next`, `nuxt`, `sveltekit`, and `astro`. The command
+copies files into an empty directory and prints the install/run commands. It does
+not overwrite an existing project or install dependencies. Remove `--dry-run` to
+create the files. React, Angular, Vue and Svelte integration guides cover adding
+AWC UI to existing applications.
+
+From an existing project:
+
+```bash
+npx awc-ui doctor
+npx awc-ui doctor --json
+```
+
+The doctor checks local package resolution, coordinated package versions and
+source-level setup signals. It reports checks that still require a browser,
+such as SSR adoption. `--framework` overrides automatic framework detection.
+
 ## Use
 
 One import registers every element **and** loads the design tokens:

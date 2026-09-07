@@ -1,0 +1,69 @@
+---
+title: Sentinel — SCADA Monitoring
+description: "An industrial monitoring showcase for a fictional water-treatment plant, with telemetry, alarms, asset inspection, trends, Arabic, and AWC UI components."
+---
+
+**Sentinel is a SCADA monitoring frontend for a fictional water-treatment plant.**
+It brings together process telemetry, asset inspection, alarm handling, and
+historian charts using existing AWC UI components.
+
+[Open Sentinel](/showcase/scada/html/) ·
+[Explore assets](/showcase/scada/html/#/assets)
+
+## Try it in five minutes
+
+1. **Read the plant overview.** Follow the process path, equipment health, KPI
+   cards, and telemetry that updates every four seconds.
+2. **Inspect equipment.** Filter assets by name, tag, or process area. Sort or page
+   the table and open an asset side sheet.
+3. **Review an alarm.** Filter by severity or acknowledgment, record an operator
+   note, and confirm acknowledgment. Acknowledgment records review and does not
+   claim to repair an equipment condition.
+4. **Explore history.** Compare flow, pressure, and power over one, six, or 24
+   hours, zoom charts, and download a labeled simulation CSV.
+5. **Personalize the workspace.** Open **Make it yours** beside the account avatar
+   or from Settings. Try a primary color, density level, Arabic, right-to-left
+   layout, and light/dark appearance. Pause the simulation from Settings.
+
+To try the account screens, select **Sign in → Use demo credentials → Continue
+to verification**. Enter verification code **482916**, or use recovery code
+**AWCDEMO1**. Signup and recovery also demonstrate expiry and validation states.
+
+## Components in context
+
+| Workflow                     | AWC components                                                                                                                                                                                 |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Responsive plant workspace   | [App bar](/components/app-bar/), [Navigation rail](/components/navigation-rail/), [Navigation bar](/components/navigation-bar/), [Breadcrumbs](/components/breadcrumbs/)                       |
+| Equipment and alarms         | [Table](/components/table/), [List](/components/list/), [Status dot](/components/status-dot/), [Chip](/components/chip/), [Side sheet](/components/side-sheet/), [Dialog](/components/dialog/) |
+| Telemetry and trends         | [Card](/components/card/), [Line chart](/components/line-chart/), [Sparkline](/components/sparkline/), [Meter](/components/meter/)                                                             |
+| Verification and preferences | [Text field](/components/text-field/), [OTP field](/components/otp-field/), [Color picker](/components/color-picker/), [Select](/components/select/), [Switch](/components/switch/)            |
+| Loading and feedback         | [Skeleton](/components/skeleton/), [Progress indicator](/components/progress-indicator/), [Button](/components/button/), [Snackbar](/components/snackbar/)                                     |
+
+The rail uses its native footer slots and expandable control. Tables provide their
+own loading state, and charts use their existing loading API. Pending submissions,
+exports, acknowledgment, and reset actions show native button progress and prevent
+duplicate work. The app includes a brief labeled simulation delay for this feedback.
+
+## Build and data
+
+Sentinel lives in `apps/scada` as a plain JavaScript app. Its production build
+copies the local AWC runtime, fonts, application modules, and vendored theme helper
+into a self-contained directory. The docs integration serves it at
+`/showcase/scada/html/`; hash routes preserve static hosting beneath that prefix.
+
+All plants, assets, signals, events, and historian data are simulated. No physical
+devices are contacted or controlled. Alarms and notes live in memory and reset on
+reload. Demo account profile state is tab-scoped, while language, appearance, and
+layout preferences persist locally. The sample authentication flow is separate
+from any real identity provider, operational authorization, or SCADA backend.
+
+## Run locally
+
+From the repository root, with core built:
+
+```sh
+pnpm --filter @awc-ui/scada dev
+```
+
+Open [Sentinel locally](http://127.0.0.1:4495/). Rebuild and refresh after source
+changes. Run regression checks with `pnpm --filter @awc-ui/scada test`.

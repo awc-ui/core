@@ -6,6 +6,7 @@ import { DIRECTIVES } from './directives';
 import { TextValueAccessor } from './directives/text-value-accessor';
 import { SelectValueAccessor } from './directives/select-value-accessor';
 import { BooleanValueAccessor } from './directives/boolean-value-accessor';
+import { MultiSelectValueAccessor } from './directives/multi-select-value-accessor';
 import { RadioValueAccessor } from './directives/radio-value-accessor';
 import { NumericValueAccessor } from './directives/number-value-accessor';
 import { SwitchValueAccessor } from './directives/switch-value-accessor';
@@ -19,6 +20,7 @@ import { SwitchValueAccessor } from './directives/switch-value-accessor';
 export const VALUE_ACCESSORS = [
   TextValueAccessor,
   SelectValueAccessor,
+  MultiSelectValueAccessor,
   BooleanValueAccessor,
   RadioValueAccessor,
   NumericValueAccessor,
@@ -45,10 +47,9 @@ export const VALUE_ACCESSORS = [
  * })
  * export class AppModule {}
  *
- * // Standalone app
- * bootstrapApplication(AppComponent, {
- *   providers: [provideAwcUi(), importProvidersFrom(AwcUiModule)],
- * });
+ * // Raw custom elements without imported proxies:
+ * // AppComponent uses CUSTOM_ELEMENTS_SCHEMA; add the loader at bootstrap.
+ * bootstrapApplication(AppComponent, { providers: [provideAwcUi()] });
  *
  * SSR-safe: it is a no-op when `window` is not available.
  */

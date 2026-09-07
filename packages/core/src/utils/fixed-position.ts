@@ -45,6 +45,10 @@ function isFixedContainingBlock(cs: CSSStyleDeclaration): boolean {
   );
 }
 
+function isOpenPopover(element: Element): boolean {
+  return typeof (element as HTMLElement).showPopover === 'function' && element.matches(':popover-open');
+}
+
 /**
  * Origin of the containing block a `position: fixed` element actually resolves
  * against.
@@ -69,7 +73,7 @@ function isFixedContainingBlock(cs: CSSStyleDeclaration): boolean {
  * element itself; its own transform is irrelevant to where it lands.
  */
 export function fixedContainingBlockOrigin(from: Element): { x: number; y: number } {
-  if (typeof getComputedStyle !== 'function') return { x: 0, y: 0 };
+  if (typeof getComputedStyle !== 'function' || isOpenPopover(from)) return { x: 0, y: 0 };
   let node: Element | null = stepUpFlatTree(from);
 
   while (node) {
@@ -82,6 +86,9 @@ export function fixedContainingBlockOrigin(from: Element): { x: number; y: numbe
         y: r.top + (parseFloat(cs.borderTopWidth) || 0),
       };
     }
+    // A top-layer ancestor is rooted at the viewport. Its own transform can
+    // still capture a submenu (checked above), but the dialog behind it cannot.
+    if (isOpenPopover(node)) break;
     node = stepUpFlatTree(node);
   }
   return { x: 0, y: 0 };

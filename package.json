@@ -56,13 +56,13 @@
     "size": "pnpm --filter @awc-ui/core size",
     "size:why": "pnpm --filter @awc-ui/core size:why",
     "ci:size": "pnpm --filter @awc-ui/core size && pnpm --filter @awc-ui/react size",
-    "ci:wrappers": "pnpm --filter @awc-ui/react --filter @awc-ui/vue --filter @awc-ui/angular --filter @awc-ui/svelte --filter @awc-ui/theme build",
-    "ci:publint": "publint packages/core && publint packages/react && publint packages/vue && publint packages/svelte && publint packages/theme",
-    "ci:attw": "attw --pack packages/react --ignore-rules false-cjs cjs-resolves-to-esm no-resolution && attw --pack packages/vue --ignore-rules cjs-resolves-to-esm internal-resolution-error && attw --pack packages/svelte --profile esm-only --ignore-rules internal-resolution-error && attw --pack packages/theme --profile esm-only --ignore-rules internal-resolution-error",
+    "ci:wrappers": "pnpm --filter @awc-ui/react --filter @awc-ui/vue --filter @awc-ui/angular --filter @awc-ui/svelte --filter @awc-ui/theme build && node scripts/fix-declarations.mjs react vue angular svelte theme",
+    "ci:publint": "publint packages/core && publint packages/react && publint packages/vue && publint packages/svelte && publint packages/theme && publint packages/angular && publint packages/tokens",
+    "ci:attw": "attw --pack packages/core --profile node16 --ignore-rules no-resolution cjs-resolves-to-esm && attw --pack packages/react --ignore-rules false-cjs cjs-resolves-to-esm no-resolution && attw --pack packages/vue --ignore-rules cjs-resolves-to-esm internal-resolution-error && attw --pack packages/svelte --profile esm-only --ignore-rules internal-resolution-error && attw --pack packages/theme --profile esm-only --ignore-rules internal-resolution-error",
     "changeset": "changeset",
     "changeset:status": "changeset status --since=origin/main",
     "version-packages": "changeset version && pnpm install --lockfile-only",
-    "dev": "turbo run dev",
+    "dev": "pnpm storybook",
     "storybook": "pnpm --filter @awc-ui/storybook storybook",
     "clean": "turbo run clean && rm -rf node_modules",
     "generate:docs": "node scripts/generate-docs.mjs && node scripts/generate-custom-elements-manifest.mjs",
@@ -89,7 +89,18 @@
     "dev:showcase-sveltekit": "pnpm --filter @awc-ui/showcase-credit-risk-sveltekit dev",
     "coverage:merge": "node scripts/merge-coverage.mjs",
     "verify:ssr": "node scripts/verify-ssr.mjs",
-    "verify:ssr-adoption": "node scripts/verify-ssr-adoption.mjs"
+    "verify:ssr-adoption": "node scripts/verify-ssr-adoption.mjs",
+    "dev:docs": "pnpm --filter @awc-ui/docs dev",
+    "check:environment": "node scripts/check-environment.mjs",
+    "generate:component": "node scripts/create-component.mjs",
+    "verify:contributor": "node scripts/verify-contributor.mjs",
+    "test:cli": "node --test packages/core/bin/*.test.mjs",
+    "verify:consumer-types": "node scripts/verify-consumer-types.mjs",
+    "verify:package-size": "node scripts/verify-package-size.mjs",
+    "test:adapters": "node packages/angular/tests/forms.mjs && node packages/vue/tests/forms.mjs && node packages/vue/tests/generation.mjs && node packages/svelte/tests/types.mjs",
+    "test:ssr-contracts": "node --test packages/core/scripts/ssr-smoke.test.mjs scripts/verify-svelte-ssr.mjs",
+    "verify:starters": "node scripts/verify-starters.mjs",
+    "verify:dx": "pnpm check:environment && pnpm test:cli && pnpm test:adapters && pnpm test:ssr-contracts && pnpm verify:consumer-types && pnpm verify:package-size"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.4",
@@ -104,7 +115,7 @@
     "puppeteer": "^24.0.0",
     "stylelint": "^17.11.0",
     "stylelint-config-standard": "^40.0.0",
-    "turbo": "latest",
+    "turbo": "2.10.12",
     "typescript": "^5.4.0",
     "typescript-eslint": "^8.59.2"
   },
@@ -119,7 +130,7 @@
   },
   "pnpm-note": "Pins @storybook/test-runner (0.24.4) onto the jest 29 tree. It otherwise pulls jest 30 (jest/jest-circus/jest-runner/jest-environment-node), which brings jest-runtime@30 into the store; @stencil/core's `stencil test` then loads jest-runtime@30 against the jest-29 resolver API and crashes (normalizeCoreModuleSpecifier). test-runner is the sole jest-30 consumer, so scoping its jest deps to 29 removes jest 30 entirely; core keeps its declared jest 29.",
   "engines": {
-    "node": ">=18.0.0",
+    "node": "^22.13.0 || >=24.0.0",
     "pnpm": ">=9.0.0"
   },
   "packageManager": "pnpm@9.5.0"

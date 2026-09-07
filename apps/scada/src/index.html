@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="dark" data-density="-1">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101719" />
+    <meta
+      name="description"
+      content="Sentinel SCADA monitoring. An interactive AWC UI showcase with simulated process telemetry, alarm workflows, and authentication demos."
+    />
+    <title>Sentinel — SCADA monitoring</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <script src="./preboot.js"></script>
+    <link rel="stylesheet" href="./awc/md3.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link
+      rel="preload"
+      href="./fonts/roboto-latin-400-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="./fonts/material-symbols-outlined.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <script type="module" src="./awc/md3.esm.js"></script>
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to monitoring</a>
+    <div id="app">
+      <section
+        class="boot-loading"
+        role="status"
+        aria-label="Loading workspace"
+      >
+        <md-skeleton
+          variant="text"
+          width="14rem"
+          height="2.5rem"
+          announce="false"
+        ></md-skeleton>
+        <div class="metrics">
+          <md-skeleton
+            variant="rounded"
+            height="9rem"
+            announce="false"
+          ></md-skeleton
+          ><md-skeleton
+            variant="rounded"
+            height="9rem"
+            announce="false"
+          ></md-skeleton
+          ><md-skeleton
+            variant="rounded"
+            height="9rem"
+            announce="false"
+          ></md-skeleton
+          ><md-skeleton
+            variant="rounded"
+            height="9rem"
+            announce="false"
+          ></md-skeleton>
+        </div>
+        <md-skeleton
+          variant="rounded"
+          full-width
+          height="20rem"
+          announce="false"
+        ></md-skeleton>
+      </section>
+    </div>
+    <div id="overlays"></div>
+    <span
+      id="action-status"
+      class="visually-hidden"
+      role="status"
+      aria-live="polite"
+    ></span>
+    <md-snackbar id="toast" position="bottom-end" closeable></md-snackbar
+    ><noscript
+      ><main>
+        <h1>Sentinel</h1>
+        <p>Enable JavaScript to use this SCADA component showcase.</p>
+      </main></noscript
+    >
+  </body>
+</html>

@@ -3,6 +3,8 @@ import { join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import frameShowcase from './src/integrations/frame-showcase.mjs';
+import workspaceShowcases from './src/integrations/workspace-showcases.mjs';
 import componentsManifest from './src/data/components.json';
 
 /**
@@ -194,6 +196,8 @@ export default defineConfig({
   },
   site: 'https://awc-ui.dev',
   integrations: [
+    frameShowcase(),
+    workspaceShowcases(),
     starlight({
       title: 'AWC UI',
       description:
@@ -461,7 +465,7 @@ export default defineConfig({
             { label: 'Async feedback patterns', link: '/recipes/async-feedback-patterns/' },
           ],
         },
-        // Full applications, each shipped in every supported framework and
+        // Full applications, with available framework builds and focused demos
         // mounted under /showcase/<app>/<framework>/ on the deployed site.
         // Ordered deliberately: the gallery index first, then one page per app.
         {
@@ -476,6 +480,10 @@ export default defineConfig({
             { label: 'Friends & Groups', link: '/showcase/community/' },
             { label: 'Music & Studio', link: '/showcase/music/' },
             { label: 'Pictor — Design & Image', link: '/showcase/design/' },
+            { label: 'Frame — Video & Creators', link: '/showcase/frame/' },
+            { label: 'Medflow — Hospital Cases', link: '/showcase/medflow/' },
+            { label: 'Metro pulse — Station Operations', link: '/showcase/metro-monitor/' },
+            { label: 'Sentinel — SCADA Monitoring', link: '/showcase/scada/' },
           ],
         },
         {

@@ -122,14 +122,21 @@ its own; the composite pickers set it. `setComboboxElement()` and
   link, menuitem, tab, treeitem, checkbox, gridcell, row, rowheader or
   columnheader, or a native `<button>`, `<summary>` or `<a href>`). A roleless
   custom-element trigger deliberately gets none.
-- **A closed menu stays in the DOM**, at `opacity: 0` with `aria-hidden="true"`
+- **Anchored menus use the browser's top layer** through a manual popover when
+  supported. They can extend beyond clipped dialogs and sheets without a
+  consumer z-index override. The menu stays in its original DOM/shadow tree,
+  preserving inherited tokens, focus, events and select option references.
+  Anchorless embedded menus remain in flow. Browsers without the Popover API
+  retain fixed positioning and the existing isolation fallback.
+- **A closed menu stays in the DOM**, with `aria-hidden="true"`
   and `inert`. Don't try to focus into a closed menu; nothing inside it is
   tabbable.
 - **Auto-dismiss is on by default.** The menu closes on an outside click, and
   when another non-persistent top-level menu opens. `persistent` opts out of
   both. Ancestors and descendants of the menu are never dismissed this way, so
   submenus are unaffected regardless.
-- `Escape` closes and returns focus to the anchor. `Tab` closes the **whole**
+- `Escape` closes only the innermost menu and returns focus to the anchor; the
+  parent dialog or sheet remains open. `Tab` closes the **whole**
   menu tree and also returns focus to the anchor.
 - `close()` plays a 150 ms close animation before `open` flips to `false`;
   `quick` makes it immediate.

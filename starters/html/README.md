@@ -11,17 +11,14 @@ small table, and a dark-mode switch.
 
 ## How it's wired (CDN)
 
-- **Components** — `@awc-ui/core` is loaded from **esm.sh**, which resolves the
-  package's `./loader` export as ES modules:
-  `https://esm.sh/@awc-ui/core@1.0.0-beta.4/loader` →
-  `defineCustomElements(window)` registers every `md-*` element (they
-  lazy-load on first use). jsDelivr works too if you prefer it
-  (`https://cdn.jsdelivr.net/npm/@awc-ui/core@1.0.0-beta.4/loader/index.mjs`),
-  but esm.sh rewrites bare-specifier imports for you, so it is the simplest
-  no-tooling option.
+- **Components** — the browser-ready `@awc-ui/core` entry loads directly from
+  **jsDelivr**:
+  `https://cdn.jsdelivr.net/npm/@awc-ui/core@1.0.0-beta.9/dist/md3/md3.esm.js`.
+  Its module script registers every `md-*` element and lazy-loads sibling
+  chunks from the same package directory. No import rewriting is required.
 - **Tokens CSS** — `@awc-ui/tokens` is loaded from **jsDelivr** by its real
   file path inside the package:
-  `https://cdn.jsdelivr.net/npm/@awc-ui/tokens@1.0.0-beta.4/src/tokens.css`.
+  `https://cdn.jsdelivr.net/npm/@awc-ui/tokens@1.0.0-beta.9/src/tokens.css`.
 - **Chart data** — objects and arrays have no attribute form; the second
   module script sets the line chart's `xAxis` / `series` / `yAxis` as JS
   properties.

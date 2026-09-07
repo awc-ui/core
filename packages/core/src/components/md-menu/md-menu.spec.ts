@@ -25,6 +25,57 @@ describe('md-menu', () => {
   afterEach(() => { jest.useRealTimers(); });
   // ── Rendering ──
 
+  // Native popovers are not implemented by Stencil's DOM mock. Exercise the
+  // lifecycle boundary here; clipping and hit-testing live in modal-layer.e2e.
+  it('promotes once and leaves the top layer when a still-mounted owner closes', async () => {
+    const page = await createMenu('<md-dialog><md-menu anchor="trigger" quick><md-menu-item>Alpha</md-menu-item></md-menu></md-dialog>');
+    const menu = page.root!;
+    const owner = page.doc.querySelector('md-dialog')!;
+    const show = jest.fn();
+    const hide = jest.fn();
+    menu.showPopover = show;
+    menu.hidePopover = hide;
+    const instance = page.rootInstance as MdMenu;
+    await instance.show({ autoFocus: false });
+    await page.waitForChanges();
+    expect(show).toHaveBeenCalledTimes(1);
+    expect(menu.getAttribute('popover')).toBe('manual');
+    owner.dispatchEvent(new CustomEvent('mdClose'));
+    await page.waitForChanges();
+    expect(instance.open).toBe(false);
+    expect(hide).toHaveBeenCalledTimes(1);
+    expect(menu.hasAttribute('popover')).toBe(false);
+  });
+
+  it('uses the existing positioning fallback if showing a native popover fails', async () => {
+    const page = await createMenu('<md-menu anchor="trigger" quick></md-menu>');
+    page.root!.showPopover = jest.fn(() => { throw new Error('unavailable'); });
+    await (page.rootInstance as MdMenu).show({ autoFocus: false });
+    await page.waitForChanges();
+    expect(page.rootInstance.open).toBe(true);
+    expect(page.root!.hasAttribute('popover')).toBe(false);
+    expect(page.root!.style.zIndex).toBe('var(--md-sys-z-index-popup, 1000)');
+  });
+
+  it('does not promote embedded anchorless menus', async () => {
+    const page = await createMenu('<md-menu quick></md-menu>');
+    const show = jest.fn();
+    page.root!.showPopover = show;
+    await (page.rootInstance as MdMenu).show({ autoFocus: false });
+    await page.waitForChanges();
+    expect(show).not.toHaveBeenCalled();
+  });
+
+  it('consumes Escape even when an open menu has no matching items', async () => {
+    const page = await createMenu('<md-menu quick open></md-menu>');
+    const event = mockKeyEvent('Escape', page.root!);
+    (page.rootInstance as MdMenu).handleKeyDown(event);
+    await page.waitForChanges();
+    expect(page.rootInstance.open).toBe(false);
+    expect(event.stopPropagation).toHaveBeenCalled();
+  });
+
+
   it('renders and is hidden by default', async () => {
     const page = await createMenu(`<md-menu></md-menu>`);
     expect(page.root).toBeTruthy();

@@ -435,3 +435,75 @@ describe('md-otp-field', () => {
     });
   });
 });
+
+
+describe('md-otp-field Enter submission', () => {
+  afterEach(() => jest.useRealTimers());
+
+  async function formField(attributes = '') {
+    const page = await create(`<md-otp-field name="code" required incomplete-label="Complete the code" ${attributes}></md-otp-field>`);
+    const form = page.doc.createElement('form');
+    page.body.appendChild(form);
+    form.appendChild(page.root!);
+    const requestSubmit = jest.fn();
+    Object.defineProperty(form, 'requestSubmit', { configurable: true, value: requestSubmit });
+    page.rootInstance.internals = { form };
+    jest.useFakeTimers();
+    return { page, form, requestSubmit };
+  }
+
+  function press(page: SpecPage, index = 0) {
+    const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, composed: true, cancelable: true });
+    cells(page)[index].dispatchEvent(event);
+    return event;
+  }
+
+  it.each(['', 'readonly'])('Enter from any cell submits an existing code (%s)', async (attribute) => {
+    const { page, requestSubmit } = await formField(`value="246810" ${attribute}`);
+    const complete = jest.fn();
+    page.root!.addEventListener('mdComplete', complete);
+    for (const index of [0, 3, 5]) {
+      press(page, index);
+      jest.runOnlyPendingTimers();
+    }
+    expect(requestSubmit).toHaveBeenCalledTimes(3);
+    expect((page.rootInstance as MdOtpField).value).toBe('246810');
+    expect(complete).not.toHaveBeenCalled();
+  });
+
+  it('delegates an incomplete code to requestSubmit so native constraint validation runs', async () => {
+    const { page, requestSubmit } = await formField('value="24"');
+    press(page, 1);
+    jest.runOnlyPendingTimers();
+    expect(requestSubmit).toHaveBeenCalledTimes(1);
+    expect((page.rootInstance as MdOtpField).value).toBe('24');
+  });
+
+  it('ignores disabled, composing, modified and already-canceled Enter', async () => {
+    const disabled = await formField('disabled value="246810"');
+    press(disabled.page);
+    jest.runOnlyPendingTimers();
+    expect(disabled.requestSubmit).not.toHaveBeenCalled();
+    jest.useRealTimers();
+    const { page, requestSubmit } = await formField('value="246810"');
+    for (const props of [{ isComposing: true }, { ctrlKey: true }, { repeat: true }]) {
+      const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+      Object.entries(props).forEach(([key, value]) => Object.defineProperty(event, key, { value }));
+      cells(page)[0].dispatchEvent(event);
+    }
+    const canceled = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    canceled.preventDefault();
+    cells(page)[0].dispatchEvent(canceled);
+    jest.runOnlyPendingTimers();
+    expect(requestSubmit).not.toHaveBeenCalled();
+  });
+
+  it('allows a parent keydown handler to consume Enter before submission', async () => {
+    const { page, requestSubmit } = await formField('value="246810"');
+    page.root!.addEventListener('keydown', (event) => event.preventDefault());
+    const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, composed: true, cancelable: true });
+    cells(page)[0].dispatchEvent(event);
+    jest.runOnlyPendingTimers();
+    expect(requestSubmit).not.toHaveBeenCalled();
+  });
+});

@@ -36,6 +36,18 @@
   pointer-events: auto;
 }
 
+/* Anchored popups use the browser top layer. Remove the native popover's
+   default box; the existing surface owns color, shape and elevation. */
+:host([popover]) {
+  inset: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: visible;
+  background: transparent;
+  color: inherit;
+}
+
 /* ==========================================================
    2. SURFACE — BASELINE
    ========================================================== */

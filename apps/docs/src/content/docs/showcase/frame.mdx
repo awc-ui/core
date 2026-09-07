@@ -1,0 +1,104 @@
+---
+title: Frame — Video & Creators
+description: "A YouTube-inspired video app built with 30 AWC UI component types. Discover creators, play videos with library controls, and explore responsive navigation and live theming."
+---
+
+**Frame is a video discovery app built with AWC UI.** Browse the feed, find a
+creator, watch a video, and save it to your library. The app uses 30 component
+types across HTML, React, Vue, Angular, and Svelte builds with real media playback.
+
+<div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 28px 0;">
+  <a href="/showcase/frame/html/" style="display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; border-radius: 999px; background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); font: var(--md-sys-typescale-label-large-font); text-decoration: none;">Open Frame</a>
+  <a href="/showcase/frame/html/#/watch/v9">Try the video player</a>
+</div>
+
+Use the **Framework** selector beside the Frame logo to switch between working
+builds. The current page, search query, theme, and browser-saved library carry
+across on the same origin.
+
+[HTML](/showcase/frame/html/) · [React](/showcase/frame/react/) ·
+[Vue](/showcase/frame/vue/) · [Angular](/showcase/frame/angular/) ·
+[Svelte](/showcase/frame/svelte/)
+
+## Try it in five minutes
+
+1. **Find something worth watching.** Browse categories or search for “design”,
+   “nature”, or a creator. Open a channel to see its videos.
+2. **Try the component-powered player.** Play or pause, seek with the position
+   slider, change the volume, pick a playback speed, and enter fullscreen.
+   Use the toolbar’s arrow navigation or focus a slider and adjust it with keys.
+3. **Make a collection.** Subscribe to a creator, like a video, or save it to
+   Watch later. Open Your library to find it again. Saving supports Undo.
+4. **Change the feel.** Open Appearance and components in the app bar. Try
+   light, dark, and system themes; three accent palettes; compact layout;
+   expressive motion; and autoplay. The panel lists the AWC components on the
+   current screen.
+5. **Bring your own video.** Choose Create, select a video up to 100 MB, and add
+   a title. The file stays in this browser and can be played from your library.
+
+Content uses AWC skeletons during startup, while video covers load, and while a
+video is preparing. Import and clipboard actions show progress in their buttons
+and the app bar. Indicators clear on completion or failure, and repeated clicks
+do not start duplicate work. Local operations report indeterminate progress
+because the browser does not expose a byte-by-byte storage progress value.
+
+## Components in context
+
+| Part of the app | AWC components to explore |
+|---|---|
+| App shell | [App bar](/components/app-bar/), [Select](/components/select/), [Navigation rail](/components/navigation-rail/), [Navigation bar](/components/navigation-bar/) |
+| Discovery and creators | [Search](/components/search/), [Chip](/components/chip/), [Card](/components/card/), [List](/components/list/), [Avatar](/components/avatar/) |
+| Video playback | [Toolbar](/components/toolbar/), [Slider](/components/slider/), [Icon button](/components/icon-button/), [Tooltip](/components/tooltip/), [Menu](/components/menu/), [Progress indicator](/components/progress-indicator/), [Skeleton](/components/skeleton/) |
+| Appearance and playback preferences | [Side sheet](/components/side-sheet/), [Segmented button set](/components/segmented-button/), [Switch](/components/switch/) |
+| Comments, imports, and feedback | [Text field](/components/text-field/), [Dialog](/components/dialog/), [Snackbar](/components/snackbar/), [Divider](/components/divider/) |
+
+The native video element handles decoding and playback. AWC provides the
+visible player controls, their focus behavior, keyboard interaction, and
+feedback. Native video controls remain available as a fallback if those
+components cannot initialize. The rail and bottom bar are the same library
+components shown in the documentation, themed through public tokens and parts.
+
+## Build and storage
+
+Frame ships **five working framework integrations**. React renders the shell
+through JSX, Vue and Svelte compile native component templates, and Angular
+compiles a standalone component ahead of time. Each framework owns its shell
+and component lifecycle. The feed, watch-page rendering, AWC event handlers,
+media controller, and storage code are shared JavaScript modules.
+
+These integrations demonstrate hosting AWC in each stack; route views are not
+five independently rewritten framework implementations. The shell source is
+compiled from `apps/frame/src/shell.js` to keep the same AWC composition in each
+host. No version embeds another in an iframe.
+
+Hash routes work on a static host. Assets resolve beneath each build’s path.
+The source lives in `apps/frame`; docs builds compile and stage all five at
+`/showcase/frame/<framework>/`.
+
+Likes, subscriptions, comments, history, and saved-video metadata persist in
+localStorage. Imported video files persist in IndexedDB on this browser and
+site. They are not uploaded, and sharing a local-video link does not transfer
+the file to another browser.
+
+Creators, view counts, editorial titles, and most feed durations are demo data.
+Sample footage is credited on each watch page and may differ from the editorial
+cover. This frontend showcase has no account service, YouTube API integration,
+or public upload backend. Remote demo media requires an internet connection.
+
+## Run locally
+
+From the repository root, with the core library built:
+
+```sh
+pnpm --filter @awc-ui/frame dev
+```
+
+Open [Frame locally](http://127.0.0.1:4390/). To build the documentation with the
+embedded app, run:
+
+```sh
+pnpm --filter @awc-ui/docs build
+pnpm --filter @awc-ui/docs preview --host 127.0.0.1 --port 4325
+```
+
+Then open [the local showcase page](http://127.0.0.1:4325/showcase/frame/).

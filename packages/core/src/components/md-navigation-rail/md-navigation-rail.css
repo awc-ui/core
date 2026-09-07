@@ -494,6 +494,11 @@
 
 /* ---------- Footer (bottom group) ---------- */
 .md-navigation-rail__footer {
+  /* Preserve the footer at the bottom while destinations use the scroll space. */
+  flex-shrink: 0;
+  box-sizing: border-box;
+  --_footer-padding-inline: 0px;
+  --_footer-leading-size: var(--md-navigation-rail-footer-leading-size, 32px);
   display: flex;
   flex-direction: column;
   /* `stretch` lets a slotted tab fill the width and render exactly like the
@@ -506,10 +511,8 @@
   margin-block-start: auto; /* push to bottom even with align=top */
 }
 
-/* A slotted icon button (e.g. the account / user-menu trigger) is centred in
-   the collapsed rail and pinned to the SAME leading offset as the toggle + logo
-   when expanded — so it never drifts as the rail width / host padding change.
-   Scoped to the footer + icon button so slotted tabs are left untouched. */
+/* Legacy footer content keeps its existing alignment. For an account that
+   stays anchored during expansion, use footer-leading + footer-content. */
 /* Centred with `align-self`, NOT a margin. A margin here has to be written
    through `::slotted()`, and document-tree rules out-rank `::slotted()` at any
    specificity — so a consumer's `* { margin: 0 }` reset (Starlight, Tailwind
@@ -526,11 +529,54 @@
 }
 
 :host(.md-navigation-rail--expanded) .md-navigation-rail__footer {
-  padding-inline-start: var(--md-sys-spacing-inset-sm, 8px);
+  --_footer-padding-inline: var(--md-sys-spacing-inset-sm, 8px);
+  padding-inline-start: var(--_footer-padding-inline);
 }
 
-.md-navigation-rail__footer[hidden] {
+.md-navigation-rail__footer[hidden],
+.md-navigation-rail__footer-profile[hidden] {
   display: none;
+}
+
+/* Anchor to the collapsed rail's centre, never the animated current width.
+   Compensate the host (or modal surface) and footer insets in the same frame.
+   Keep the profile's full text height even when concealed, so the leading
+   item cannot jump vertically when two text lines appear/disappear. */
+.md-navigation-rail__footer-profile {
+  --_footer-leading-inset: calc((var(--_container-width) - var(--_footer-leading-size)) / 2 - var(--_padding-inline) - var(--_footer-padding-inline));
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: var(--md-navigation-rail-footer-gap, var(--md-sys-spacing-gap-md, 12px));
+  min-block-size: var(--_footer-leading-size);
+  margin-inline-start: var(--_footer-leading-inset);
+  min-inline-size: 0;
+}
+
+.md-navigation-rail__footer-leading {
+  display: flex;
+  flex: 0 0 var(--_footer-leading-size);
+  inline-size: var(--_footer-leading-size);
+  align-items: center;
+  justify-content: center;
+}
+
+.md-navigation-rail__footer-content {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--_motion-duration) var(--_motion-easing),
+    visibility 0s linear var(--_motion-duration);
+}
+
+:host(.md-navigation-rail--expanded) .md-navigation-rail__footer-content,
+:host(.md-navigation-rail--horizontal) .md-navigation-rail__footer-content {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
 }
 
 /* ---------- Slotted descendants ----------
@@ -590,6 +636,7 @@
   :host,
   .md-navigation-rail__toggle,
   .md-navigation-rail__fab,
+  .md-navigation-rail__footer-content,
   .md-navigation-rail__scrim,
   :host(.md-navigation-rail--modal) .md-navigation-rail__container {
     transition: none;
@@ -722,6 +769,10 @@
   padding-inline-start: var(--md-sys-spacing-inset-sm, 8px);
   margin-block-start: 0;
   margin-inline-start: auto;
+}
+
+:host(.md-navigation-rail--horizontal) .md-navigation-rail__footer-profile {
+  margin-inline-start: 0;
 }
 
 /* A section header groups a column; a bar has no room for it. */

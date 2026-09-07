@@ -1,0 +1,48 @@
+/* Route colors extend the library through its public chip tokens. */
+.route-chip,
+.route-filter-chip {
+  --metro-route-color: var(--metro-line-1);
+  --metro-route-on-color: var(--metro-on-line);
+}
+
+.route-chip.M2,
+.route-filter-chip.M2 {
+  --metro-route-color: var(--metro-line-2);
+}
+
+.route-chip.M3,
+.route-filter-chip.M3 {
+  --metro-route-color: var(--metro-line-3);
+}
+
+/* Assist chips are real route-filter actions, with the AWC focus/ripple states. */
+md-chip.route-chip {
+  --md-chip-container-color: var(--metro-route-color);
+  --md-chip-label-color: var(--metro-route-on-color);
+  --md-chip-state-layer-color: var(--metro-route-on-color);
+  --md-chip-container-shape: var(--md-sys-shape-corner-small);
+  padding-inline: var(--md-sys-spacing-inset-sm);
+  min-inline-size: 2rem;
+  flex-shrink: 0;
+  font-size: var(--md-sys-typescale-label-small-font-size);
+  font-weight: var(--md-sys-typescale-label-large-font-weight);
+}
+
+/* The toolbar uses one library filter chip per route, without nested controls. */
+md-chip.route-filter-chip {
+  --md-chip-outline-color: var(--metro-route-color);
+  --md-chip-label-color: var(--metro-route-color);
+  --md-chip-icon-color: var(--metro-route-color);
+  --md-chip-container-color-selected: var(--metro-route-color);
+  --md-chip-label-color-selected: var(--metro-route-on-color);
+}
+
+/* The checkmark shares the label's contrast against the selected route fill. */
+md-chip.route-filter-chip[selected] {
+  --md-chip-icon-color: var(--metro-route-on-color);
+}
+
+.line-badges {
+  align-items: center;
+  gap: var(--md-sys-spacing-gap-xs);
+}

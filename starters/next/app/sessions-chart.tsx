@@ -12,7 +12,7 @@ export function SessionsChart() {
       curve="monotone"
       area
       legend="none"
-      height="260px"
+      style={{ blockSize: '260px' }}
       xAxis={{ data: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8'], scale: 'category' }}
       series={[{ label: 'Sessions', data: [320, 410, 380, 520, 490, 610, 580, 700] }]}
       yAxis={{ min: 0 }}

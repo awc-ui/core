@@ -9,19 +9,16 @@
          reference via var(). Served from jsDelivr (real file path in the package). -->
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@awc-ui/tokens@1.0.0-beta.4/src/tokens.css"
+      href="https://cdn.jsdelivr.net/npm/@awc-ui/tokens@1.0.0-beta.9/src/tokens.css"
     />
 
-    <!-- Register every md-* custom element. esm.sh resolves the package's
-         `./loader` export and its dependencies as ES modules. -->
-    <script type="module">
-      import { defineCustomElements } from 'https://esm.sh/@awc-ui/core@1.0.0-beta.4/loader';
-      defineCustomElements(window);
-    </script>
+    <!-- The browser entry registers md-* elements and loads sibling chunks
+         directly from the package, preserving their relative asset URLs. -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@awc-ui/core@1.0.0-beta.9/dist/md3/md3.esm.js"></script>
   </head>
   <body style="margin:0;background:var(--md-sys-color-background);color:var(--md-sys-color-on-background)">
     <md-app-bar headline="Acme Analytics" subtitle="Overview">
-      <md-switch slot="trailing" id="theme-switch" icons aria-label="Dark mode"></md-switch>
+      <md-switch slot="trailing" id="theme-switch" aria-label="Dark mode"></md-switch>
     </md-app-bar>
 
     <main style="padding:24px;font-family:system-ui,sans-serif;display:grid;gap:20px;max-width:840px;margin:0 auto">
@@ -51,7 +48,7 @@
             curve="monotone"
             area
             legend="none"
-            height="260px"
+            style="block-size:260px"
           ></md-line-chart>
         </div>
       </md-card>
@@ -88,6 +85,7 @@
 
     <script type="module">
       // Objects/arrays have no attribute form — set the chart data as JS properties.
+      await customElements.whenDefined('md-line-chart');
       const chart = document.getElementById('sessions-chart');
       chart.xAxis = { data: ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8'], scale: 'category' };
       chart.series = [{ label: 'Sessions', data: [320, 410, 380, 520, 490, 610, 580, 700] }];

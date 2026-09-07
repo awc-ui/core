@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm sync-runtime && astro dev",
+    "dev": "node ../../scripts/dev-docs.mjs",
     "generate-data": "node ../../scripts/generate-docs.mjs",
-    "build": "pnpm sync-runtime && astro build",
+    "build": "pnpm sync-runtime && astro build && node ../../scripts/verify-standalone-showcases.mjs",
     "preview": "astro preview",
     "sync-runtime": "node ../../scripts/sync-docs-runtime.mjs",
     "preview:prod": "node ../../scripts/serve-docs-prod.mjs"
@@ -20,7 +20,8 @@
     "@shikijs/themes": "^3.21.0",
     "astro": "^5.7.0",
     "marked": "^18.0.3",
-    "shiki": "^3.21.0"
+    "shiki": "^3.21.0",
+    "@awc-ui/react": "workspace:*"
   },
   "devDependencies": {
     "sharp": "^0.33.0"

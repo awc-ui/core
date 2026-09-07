@@ -1,7 +1,7 @@
 <template>
   <div>
     <md-app-bar headline="Acme Analytics" subtitle="Overview">
-      <md-switch ref="themeSwitch" slot="trailing" icons aria-label="Dark mode"></md-switch>
+      <md-switch ref="themeSwitch" slot="trailing" aria-label="Dark mode"></md-switch>
     </md-app-bar>
 
     <main style="padding:24px;font-family:system-ui,sans-serif;display:grid;gap:20px;max-width:840px;margin:0 auto">
@@ -31,7 +31,7 @@
             curve="monotone"
             area
             legend="none"
-            height="260px"
+            style="block-size:260px"
           ></md-line-chart>
         </div>
       </md-card>

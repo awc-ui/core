@@ -2,7 +2,10 @@ import type { App } from 'vue';
 import { defineCustomElements } from '@awc-ui/core/loader';
 
 /**
- * AwcUiVue plugin
+ * AwcUiVue compatibility plugin for lazy-loader registration.
+ * Imported component wrappers register themselves and do not require this plugin.
+ * Precompiled SFCs with raw md-* tags must also configure isCustomElement in
+ * the build-time Vue compiler; this runtime setting cannot affect Vite/Nuxt builds.
  *
  * Install in your Vue 3 app:
  *

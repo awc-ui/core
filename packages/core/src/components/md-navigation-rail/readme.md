@@ -57,7 +57,8 @@ application bar.
 | Too many destinations for the width | `max-visible="N"` (+ `overflow-label`, `overflow-icon`) |
 | A destination that opens a dropdown | `md-menu` in the tab's `submenu` slot |
 | Brand at the leading edge | `slot="logo"` (+ `slot="logo-expanded"`) |
-| Signed-in user at the trailing edge | `slot="footer"` |
+| Account avatar with expanding name and role | `slot="footer-leading"` + `slot="footer-content"` |
+| Menus and utilities at the trailing edge | `slot="footer"` |
 
 **Choosing an orientation**
 
@@ -104,11 +105,12 @@ application bar.
 **Methods** — `expand()`, `collapse()`, `toggle()`, `focusTab(index)`.
 
 **Slots** — the default slot (destinations: `md-navigation-rail-tab`
-children), `logo`, `logo-expanded`, `header`, `fab`, `footer`.
+children), `logo`, `logo-expanded`, `header`, `fab`, `footer-leading`,
+`footer-content`, `footer`.
 
 **Parts** — `scrim`, `container`, `logo`, `logo-contracted`, `logo-expanded`,
 `toggle`, `header`, `fab`, `destinations`, `overflow`, `overflow-trigger`,
-`footer`.
+`footer`, `footer-profile`, `footer-leading`, `footer-content`.
 
 ### Behavioral contract worth knowing
 
@@ -125,6 +127,15 @@ children), `logo`, `logo-expanded`, `header`, `fab`, `footer`.
 - A `md-fab` in the `fab` slot is **morphed by the rail**: it sets the FAB's
   `extended` property from the rail's expanded state. Don't pin `extended`
   yourself.
+- The footer stays at the bottom of the rail's available height without
+  shrinking; destinations use the remaining scroll space. Its padding stays
+  within the rail's width. Use `slot="footer"` for a complete custom footer.
+- `footer-leading` and `footer-content` form a persistent account row. The
+  leading avatar or button stays anchored on the collapsed rail's centre axis
+  throughout expansion. In a collapsed vertical rail, content fades out,
+  becomes hidden and inert, and keeps its unwrapped layout height so the
+  leading item does not jump. It is visible when expanded or horizontal.
+  The existing `footer` slot remains available for menus and utilities.
 - `expand()` / `collapse()` / `toggle()` change `variant`, which is what emits
   `mdExpand` / `mdCollapse` — so setting `variant` directly emits them too.
 - **`expandable` is ignored while `orientation="horizontal"`** — a bar has
@@ -235,6 +246,37 @@ house rules.
 ```
 
 ```html
+<!-- Account identity: the rail owns alignment and the expanding text. -->
+<md-navigation-rail expandable full-height active-index="0" label="Main navigation">
+  <md-navigation-rail-tab icon="dashboard" label="Overview" value="overview"></md-navigation-rail-tab>
+  <md-navigation-rail-tab icon="dns" label="Assets" value="assets"></md-navigation-rail-tab>
+
+  <md-avatar slot="footer-leading" name="Ada Lovelace" initials="AL" size="32"></md-avatar>
+  <div slot="footer-content" class="account-summary">
+    <strong>Ada Lovelace</strong>
+    <span>Plant operator</span>
+  </div>
+</md-navigation-rail>
+
+<style>
+  .account-summary > * {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style>
+```
+
+The leading slot reserves `32px` by default. For a different avatar or button
+size, set `--md-navigation-rail-footer-leading-size` to match its rendered size.
+`--md-navigation-rail-footer-gap` controls the gap before the text (default
+`12px`). Apply your own typography to the slotted content; the rail clips it to
+the available width and prevents line wrapping. The example adds an ellipsis
+to each text line. Remove consumer rules that toggle the text with
+`display: none` or recenter the avatar by variant: the native slots handle both
+without changing the account row's height during the transition.
+
+```html
 <!-- Application bar: brand leads, destinations take the middle, account trails -->
 <md-navigation-rail orientation="horizontal" label="Main navigation" active-index="0">
   <span slot="logo">…brand…</span>
@@ -319,9 +361,13 @@ house rules.
 - A decorative logo should have empty `alt`; a meaningful one needs real text.
 - The overflow trigger is a `button` with `aria-haspopup="menu"` and a
   localized `overflow-label`, kept outside the `tablist`.
-- Anything in `logo` / `header` / `fab` / `footer` is outside the `tablist` —
+- Anything in `logo` / `header` / `fab` / `footer-leading` / `footer-content` /
+  `footer` is outside the `tablist` —
   an account avatar needs its own accessible name (and `aria-haspopup="menu"`
   when it opens one).
+- Collapsed vertical rails make `footer-content` inert and hide it from
+  assistive technology. Keep account controls that must remain available in
+  `footer-leading` or `footer`.
 
 **RTL** — the rail sits on the leading edge and all internals use logical
 properties. In a horizontal rail the left/right arrow keys follow the writing
@@ -359,13 +405,16 @@ width per locale.
 | `--md-navigation-rail-header-space` | Space under the header/FAB group | `40px` (tapers 4px/rung, floor 20px) |
 | `--md-navigation-rail-destinations-gap` | Gap between destinations | `8px` (tapers 2px/rung, floor 0) |
 | `--md-navigation-rail-logo-icon-size` | Brand glyph footprint in the logo slots | `24px` |
+| `--md-navigation-rail-footer-leading-size` | Reserved avatar or button footprint in `footer-leading`; match the supplied item's size | `32px` |
+| `--md-navigation-rail-footer-gap` | Gap between the leading item and account content | `--md-sys-spacing-gap-md` (12px) |
 | `--md-navigation-rail-horizontal-height` | Bar height when `orientation="horizontal"` | `72px` (tapers 4px/rung, floor 64px) |
 | `--md-navigation-rail-horizontal-padding-block` | Bar block gutter | `0px` (so a destination's ripple reaches the edges) |
 | `--md-navigation-rail-horizontal-padding-inline` | Bar inline gutter | `--md-sys-spacing-inset-md` (12px) |
 
 **CSS parts** — `scrim`, `container`, `logo`, `logo-contracted`,
 `logo-expanded`, `toggle`, `header`, `fab`, `destinations`, `overflow`,
-`overflow-trigger`, `footer`.
+`overflow-trigger`, `footer`, `footer-profile`, `footer-leading`,
+`footer-content`.
 
 Destination appearance is themed with the `--md-navigation-rail-tab-*`
 properties.

@@ -5,6 +5,7 @@ import {
   checkValidityOf,
   reportValidityOf,
   getValidityOf,
+  submitFormOnEnter,
 } from '../../utils/form';
 
 /** Detail for `mdComplete` — fired when every cell is filled. */
@@ -467,6 +468,9 @@ export class MdOtpField {
     if (index < 0 || this.isDisabled) return;
 
     switch (e.key) {
+      case 'Enter':
+        submitFormOnEnter(this.internals, e, { disabled: this.isDisabled });
+        break;
       case 'Backspace': {
         e.preventDefault();
         if (this.readOnly) return;

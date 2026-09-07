@@ -1615,3 +1615,54 @@ describe('md-text-field', () => {
   });
 
 });
+
+
+describe('md-text-field shared Enter submission', () => {
+  afterEach(() => jest.useRealTimers());
+
+  async function field(attributes = '') {
+    const page = await createField(`<md-text-field label="Password" value="demo" ${attributes}></md-text-field>`);
+    const form = page.doc.createElement('form');
+    page.body.appendChild(form);
+    form.appendChild(page.root!);
+    const requestSubmit = jest.fn();
+    Object.defineProperty(form, 'requestSubmit', { configurable: true, value: requestSubmit });
+    page.rootInstance.internals = { form };
+    jest.useFakeTimers();
+    return { page, requestSubmit };
+  }
+
+  function press(page: SpecPage) {
+    const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, composed: true, cancelable: true });
+    page.root!.shadowRoot!.querySelector('input, textarea')!.dispatchEvent(event);
+    return event;
+  }
+
+  it('submits a single-line field once, including readonly values', async () => {
+    const { page, requestSubmit } = await field('readonly');
+    press(page);
+    jest.runOnlyPendingTimers();
+    expect(requestSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['disabled', 'multiline="fixed"'])('does not submit %s fields', async (attributes) => {
+    const { page, requestSubmit } = await field(attributes);
+    const event = press(page);
+    jest.runOnlyPendingTimers();
+    expect(requestSubmit).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('retains the internal composition guard and permits parent cancellation', async () => {
+    const { page, requestSubmit } = await field();
+    page.rootInstance.composing = true;
+    press(page);
+    jest.runOnlyPendingTimers();
+    expect(requestSubmit).not.toHaveBeenCalled();
+    page.rootInstance.composing = false;
+    page.root!.addEventListener('keydown', (event) => event.preventDefault());
+    press(page);
+    jest.runOnlyPendingTimers();
+    expect(requestSubmit).not.toHaveBeenCalled();
+  });
+});

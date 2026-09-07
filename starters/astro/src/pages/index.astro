@@ -12,7 +12,7 @@ import '@awc-ui/tokens/tokens.css';
   </head>
   <body style="margin:0;background:var(--md-sys-color-background);color:var(--md-sys-color-on-background)">
     <md-app-bar headline="Acme Analytics" subtitle="Overview">
-      <md-switch slot="trailing" id="theme-switch" icons aria-label="Dark mode"></md-switch>
+      <md-switch slot="trailing" id="theme-switch" aria-label="Dark mode"></md-switch>
     </md-app-bar>
 
     <main style="padding:24px;font-family:system-ui,sans-serif;display:grid;gap:20px;max-width:840px;margin:0 auto">
@@ -42,7 +42,7 @@ import '@awc-ui/tokens/tokens.css';
             curve="monotone"
             area
             legend="none"
-            height="260px"
+            style="block-size:260px"
           ></md-line-chart>
         </div>
       </md-card>
@@ -78,9 +78,17 @@ import '@awc-ui/tokens/tokens.css';
     </main>
 
     <script>
-      // Client-only: register the custom elements so the build-time DSD hydrates.
-      import { defineCustomElements } from '@awc-ui/core/loader';
-      defineCustomElements(window);
+      // Bundled component entries adopt the build-time DSD.
+      import '@awc-ui/core/components/md-app-bar';
+      import '@awc-ui/core/components/md-card';
+      import '@awc-ui/core/components/md-switch';
+      import '@awc-ui/core/components/md-line-chart';
+      import '@awc-ui/core/components/md-table';
+      import '@awc-ui/core/components/md-table-container';
+      import '@awc-ui/core/components/md-table-head';
+      import '@awc-ui/core/components/md-table-body';
+      import '@awc-ui/core/components/md-table-row';
+      import '@awc-ui/core/components/md-table-cell';
 
       // Objects/arrays have no attribute form — set the chart data as JS properties.
       const chart = document.getElementById('sessions-chart') as any;

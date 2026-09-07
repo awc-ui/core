@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-05T10:11:00.529Z",
+  "generatedAt": "2026-09-07T08:20:35.695Z",
   "componentCount": 55,
   "documentedCount": 56,
   "subComponentCount": 1,
@@ -4379,6 +4379,14 @@
       "subComponentOf": null,
       "storyId": "selection-color-picker--playground",
       "props": [
+        {
+          "name": "locale",
+          "attribute": "locale",
+          "type": "string",
+          "default": "'en-US'",
+          "reflect": false,
+          "mutable": false
+        },
         {
           "name": "variant",
           "attribute": "variant",
@@ -8853,6 +8861,14 @@
           "description": "Optional FAB above the destinations"
         },
         {
+          "name": "footer-leading",
+          "description": ""
+        },
+        {
+          "name": "footer-content",
+          "description": ""
+        },
+        {
           "name": "footer",
           "description": "Optional bottom group — settings, account / user menu, etc."
         }
@@ -8905,6 +8921,18 @@
         {
           "name": "footer",
           "description": "Footer slot wrapper (bottom group)"
+        },
+        {
+          "name": "footer-profile",
+          "description": ""
+        },
+        {
+          "name": "footer-leading",
+          "description": ""
+        },
+        {
+          "name": "footer-content",
+          "description": ""
         }
       ],
       "cssCustomProps": [
@@ -8962,6 +8990,14 @@
         },
         {
           "name": "--md-navigation-rail-fab-size",
+          "description": ""
+        },
+        {
+          "name": "--md-navigation-rail-footer-leading-size",
+          "description": ""
+        },
+        {
+          "name": "--md-navigation-rail-footer-gap",
           "description": ""
         },
         {
@@ -9342,7 +9378,7 @@
       "props": [
         {
           "name": "nodes",
-          "attribute": "",
+          "attribute": "nodes",
           "type": "NodeInput",
           "default": "[]",
           "reflect": false,
@@ -15214,8 +15250,8 @@
         {
           "name": "spellcheck",
           "attribute": "spellcheck",
-          "type": "boolean | undefined",
-          "default": "",
+          "type": "boolean",
+          "default": "true",
           "reflect": false,
           "mutable": false
         },

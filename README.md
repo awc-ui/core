@@ -31,36 +31,52 @@ Angular SSR, Nuxt, and SvelteKit, plus RTL, theming, and AI-ready documentation.
 
 ## Quick start
 
+For an existing app, follow the [React](https://awc-ui.dev/frameworks/react/),
+[Angular](https://awc-ui.dev/frameworks/angular/), [Vue](https://awc-ui.dev/frameworks/vue/),
+or [Svelte](https://awc-ui.dev/frameworks/svelte/) setup, including its SSR section
+when your framework renders on the server.
+
+For a new plain HTML app, use Node 22.13+ (22.x) or Node 24+ and Vite:
+
 ```bash
-npm install @awc-ui/core @awc-ui/tokens
+mkdir awc-example
+cd awc-example
+npm init -y
+npm install @awc-ui/core
+npm install --save-dev vite@7
 ```
+
+Create `index.html`:
 
 ```html
-<link rel="stylesheet" href="node_modules/@awc-ui/tokens/src/tokens.css" />
-<link
-  rel="stylesheet"
-  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
-/>
-
-<script type="module">
-  import { defineCustomElements } from "@awc-ui/core/loader";
-  defineCustomElements(window);
-</script>
-
-<md-button variant="filled" icon="add">Create</md-button>
-<md-text-field label="Email" variant="outlined"></md-text-field>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AWC UI example</title>
+  </head>
+  <body>
+    <script type="module">
+      import "@awc-ui/core/define";
+      document.querySelector('md-button').addEventListener('mdClick', () => {
+        document.querySelector('output').textContent = 'Created!';
+      });
+    </script>
+    <md-button variant="filled">Create</md-button>
+    <output aria-live="polite"></output>
+  </body>
+</html>
 ```
 
-The icon stylesheet needs those four axis ranges. A default request
-(`?family=Material+Symbols+Outlined`) returns a static instance and the fill
-transition silently stops working. If icons render as words — `add` instead of a
-plus — the font has not loaded at all.
+Run `npx vite` and open the local URL it prints. Build for production with
+`npx vite build`. Vite resolves the npm import; opening this file directly or
+serving it from a plain static server does not resolve package names.
 
-With a bundler, one import registers every element **and** the tokens:
-
-```js
-import "@awc-ui/core/define";
-```
+`/define` registers components and includes the tokens stylesheet. A separate
+`@awc-ui/tokens` dependency is optional. Add the
+[icon and typography fonts](https://awc-ui.dev/getting-started/installation/#required-fonts)
+when using icons or Roboto; subset the icon font for production.
 
 ## Packages
 
@@ -174,18 +190,21 @@ its `readme.md` — one directory, everything about that component.
 
 ## Development
 
-```bash
-pnpm install
-pnpm --filter @awc-ui/core build      # build the library first — most things need dist/
+Use Node 22.13+ (22.x) or Node 24+ and the pinned `pnpm@9.5.0`.
+`.nvmrc` selects Node 22.
 
-pnpm --filter @awc-ui/docs dev        # docs site
-pnpm --filter @awc-ui/core test:spec -- <pattern>   # targeted tests
+```bash
+nvm install                         # if you use nvm
+corepack enable
+node scripts/check-environment.mjs
+pnpm install
+pnpm dev                            # focused Storybook workflow; builds prerequisites
 ```
 
-Stencil runs are slow; keep tests filtered while iterating and save the full
-suite for a final pass. [CONTRIBUTING.md](CONTRIBUTING.md) has the full
-workflow, the house conventions, and the traps worth knowing before your first
-PR.
+Use `pnpm dev:docs` for a docs preview that builds core/theme, generates the
+reference, and watches component changes. Run one of these previews at a time
+because they currently share core build output. The canonical
+[contributor guide](CONTRIBUTING.md) covers scaffolding, targeted tests and checks.
 
 ### Storybook
 
@@ -198,13 +217,9 @@ pnpm storybook
 
 Then open **<http://localhost:6006>**.
 
-You do not need to build the library first — that one command does three things:
-
-1. builds `@awc-ui/core` with `stencil.config.dev.ts` (a lean config that skips
-   the outputs Storybook never loads), which takes about 7 seconds;
-2. starts a Stencil **watcher** on the same config, so editing a component's
-   `.tsx` or `.css` rebuilds and the story reloads;
-3. starts Storybook on port 6006.
+The command checks Node, builds `@awc-ui/theme`, builds core using the lean
+`stencil.config.dev.ts`, then starts the core watcher and Storybook on port 6006.
+Editing component `.tsx` or `.css` files rebuilds the component and reloads its story.
 
 The two run side by side under `concurrently`, prefixed `CORE` and `SB` in the
 output, so you can see which half is talking.
@@ -221,13 +236,10 @@ pkill -f "storybook.*dev -p 6006"
 save. HMR reloads the story but Stencil's component metadata is captured at
 startup, so a newly added member is invisible until Storybook is restarted.
 
-**Before a production build, clear the dev output.** The Storybook watcher
-writes into the same `packages/core/dist` that the real build uses, and Stencil
-does not clean between configs:
-
-```bash
-rm -rf packages/core/dist && pnpm --filter @awc-ui/core build
-```
+**Before a production build, stop the preview.** Development and production
+currently share `packages/core/dist`; a running watcher can overwrite a
+production build. `pnpm --filter @awc-ui/core build` already clears `dist`
+before rebuilding, so no separate cleanup command is needed.
 
 Other Storybook commands:
 

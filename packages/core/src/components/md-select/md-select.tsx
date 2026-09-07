@@ -565,6 +565,7 @@ export class MdSelect {
       this.open = true;
     } else if (this.open && e.key === 'Escape') {
       e.preventDefault();
+      e.stopPropagation();
       this.open = false;
       this.fieldEl?.focus?.();
     }

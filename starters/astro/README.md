@@ -16,9 +16,9 @@ chart, a small table, and a dark-mode switch.
 - **SSR / SSG** — `src/middleware.ts` post-processes every rendered page with
   `@awc-ui/core/hydrate` (`renderToString`) to inject Declarative Shadow DOM
   for each `<md-*>` element at build time, so the first paint is styled.
-- **Client registration** — the inline `<script>` in `index.astro` calls
-  `defineCustomElements(window)` from `@awc-ui/core/loader` so the build-time
-  DSD hydrates and becomes interactive.
+- **Client registration** — the `<script>` in `index.astro` imports the
+  used `@awc-ui/core/components/*` entries so Astro bundles their dependencies
+  and the build-time DSD becomes interactive.
 - **Chart data** — objects and arrays have no attribute form; the line chart's
   `xAxis` / `series` / `yAxis` are set as JS properties in the same script.
 - **Dark mode** — the app-bar switch sets `data-theme="dark"` on `<html>`,

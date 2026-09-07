@@ -23,6 +23,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { doctor, initProject, projectInfo, setupInstruction } from './project-tools.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PKG_ROOT = resolve(HERE, '..');
@@ -35,6 +36,10 @@ const args = process.argv.slice(2);
 const cmd = args.find((a) => !a.startsWith('-')) ?? 'help';
 const dryRun = args.includes('--dry-run');
 const check = args.includes('--check');
+const frameworkIndex = args.indexOf('--framework');
+const explicitFramework = frameworkIndex === -1 ? undefined : args[frameworkIndex + 1];
+if (frameworkIndex !== -1 && (!explicitFramework || explicitFramework.startsWith('-'))) throw new Error('--framework requires a name');
+const { framework } = await projectInfo(process.cwd(), explicitFramework);
 
 /** Where the docs live from the project root, however the package got hoisted. */
 function docsBase(projectRoot) {
@@ -64,8 +69,7 @@ assistants actually make with this library.
 
 Rules that apply everywhere:
 
-- Components are custom elements (\`md-button\`, \`md-text-field\`). Register them
-  once with \`import '${pkg.name}/define'\`.
+- Integration for **${framework}**: ${setupInstruction(framework)}
 - **Arrays, objects and functions are properties, not attributes.** Assign them
   in JavaScript (\`el.data = [...]\`); as an attribute they stringify to nothing
   useful.
@@ -147,11 +151,36 @@ async function aiSetup(projectRoot) {
 }
 
 switch (cmd) {
+  case 'init': {
+    const directory = args[1] && !args[1].startsWith('-') ? args[1] : 'awc-app';
+    const result = await initProject({ packageRoot: PKG_ROOT, cwd: process.cwd(), directory, framework: explicitFramework ?? 'html', dryRun });
+    console.log(`${dryRun ? 'Would create' : 'Created'} ${result.framework} app in ${result.directory}`);
+    for (const file of result.files) console.log(`  ${file}`);
+    const quotedDirectory = "'" + result.directory.replaceAll("'", "'\\''") + "'";
+    console.log(`Next: cd ${quotedDirectory} && npm install && npm run dev`);
+    break;
+  }
+  case 'doctor': {
+    const result = await doctor(process.cwd(), explicitFramework);
+    if (args.includes('--json')) console.log(JSON.stringify(result, null, 2));
+    else {
+      console.log(`AWC UI integration: ${result.framework}`);
+      for (const check of result.checks) console.log(`${check.status.toUpperCase()}: ${check.message}`);
+      console.log(result.guidance);
+    }
+    if (!result.ok) process.exitCode = 1;
+    break;
+  }
   case 'ai-setup':
     await aiSetup(process.cwd());
     break;
   default:
     console.log(`${pkg.name} v${pkg.version}
+
+  npx awc-ui init my-app --framework html|next|nuxt|sveltekit|astro
+                                   Create a standalone project in an empty directory.
+  npx awc-ui doctor [--json]        Check installed packages and integration setup.
+  --framework NAME                 Override framework detection for doctor/ai-setup.
 
   npx awc-ui ai-setup              Point this project's AI assistants at the
                                    documentation installed with this package.

@@ -121,14 +121,25 @@ some hide under a name you might not guess (`md-otp-field`,
 
 ### Setup
 
-Node 18+ and pnpm 9+ (the repo pins `pnpm@9.5.0`).
+Use Node 22.13+ (22.x) or Node 24+ and the pinned `pnpm@9.5.0`.
+The repository's `.nvmrc` selects Node 22.
 
 ```bash
+nvm install                         # optional, for nvm users
+corepack enable
+node scripts/check-environment.mjs
 pnpm install
-pnpm --filter @awc-ui/core build     # build the library first
+pnpm dev                            # build theme/core and start Storybook
 ```
 
-Most things depend on `packages/core/dist`, so the first build is not optional.
+If Corepack is not installed, install `pnpm@9.5.0` using your package-manager
+setup, then continue with `pnpm install`. The environment check validates the
+contributor runtime before a large install. Framework consumer requirements are
+listed in their own guides.
+
+Most tools consume generated core output. `pnpm dev` and `pnpm dev:docs` build
+their prerequisites; focused `pnpm --filter @awc-ui/core ...` commands assume
+you have already built core when their task needs it.
 
 ### Where things live
 
@@ -150,33 +161,46 @@ Most things depend on `packages/core/dist`, so the first build is not optional.
 | Typecheck | `pnpm --filter @awc-ui/core lint` |
 | Lint TS / CSS | `pnpm lint:eslint` / `pnpm lint:stylelint` |
 | Storybook | `pnpm storybook` |
-| Docs site | `pnpm --filter @awc-ui/docs dev` |
+| Docs site + component refresh | `pnpm dev:docs` |
+| Contributor tooling checks | `pnpm verify:contributor` |
+| Scaffold an action component | `pnpm generate:component md-my-component` |
 | Bundle budget | `pnpm --filter @awc-ui/core size` |
 
 **Run targeted tests while you iterate.** Stencil runs are slow, and an
 unfiltered spec run under a live watcher can wedge. Save the full suite for a
 final pass.
 
-### Two build configs
+### Build and preview ownership
 
-`stencil.config.ts` is the real build. `stencil.config.dev.ts` is a lean config
-Storybook's watcher uses — it emits **unhashed, unminified** entries into the
-same `dist/`, and Stencil does not clean between configs. If you have run
-Storybook and then need a production build:
+`stencil.config.ts` produces release and SSR output. Storybook's lean
+`stencil.config.dev.ts` writes into the same `dist` directory. Run one core
+preview at a time and stop it before a production build. The production build
+already clears `dist`; a separate manual deletion is unnecessary.
 
 ```bash
-rm -rf packages/core/dist && pnpm --filter @awc-ui/core build
+pnpm --filter @awc-ui/core build
+pnpm --filter @awc-ui/storybook build-storybook   # bootstrap dependencies via Turbo
 ```
 
-Otherwise both generations sit in `dist/md3` at once and the unminified ones can
-win. The docs' `sync-runtime` step fails loudly if it sees this.
+The Storybook `build` task builds only Storybook; Turbo schedules core and theme
+first. Use `build-storybook` for a standalone static build from a fresh checkout.
+Turbo also caches core's `hydrate/` SSR renderer and waits for theme before
+building the docs site.
 
-### The docs serve a copy of the runtime
+### Docs preview
 
-`apps/docs` does not import `@awc-ui/core`; it serves a copy of the built runtime
-from `public/awc-runtime/`, produced by `pnpm --filter @awc-ui/docs sync-runtime`.
-Nothing re-runs that on its own. If docs components render at zero height, check
-the console for a 404 on a runtime chunk before suspecting CSS.
+`pnpm dev:docs` builds core and theme, copies the runtime into
+`apps/docs/public/awc-runtime`, generates the API reference, and starts Astro.
+It watches core source/readmes, theme source, Storybook stories and generation
+scripts. Saves are debounced and rebuilds are serialized, so a change during a
+build gets a follow-up build. The last successful runtime stays available while
+core compiles. A failed rebuild logs its error; fix the source and save to retry.
+Ordinary docs edits use Astro's normal reload.
+
+This uses the production core build so the preview matches the published
+runtime; component rebuilds take longer than Storybook's lean preview. Use
+Storybook for rapid visual iteration. The complete deployment build (including
+showcases) remains `bash scripts/build-docs.sh`.
 
 ---
 
@@ -188,8 +212,15 @@ agreed before you build.
 ### 1. Scaffold
 
 ```bash
-mkdir -p packages/core/src/components/md-my-component
+pnpm generate:component md-my-component --dry-run
+pnpm generate:component md-my-component
 ```
+
+The generator creates an action-control scaffold, five co-located files, and
+Default/Disabled Storybook stories. It refuses existing files. It starts with a
+native button, which supplies Enter/Space activation and disabled semantics;
+adapt the implementation to the agreed component pattern instead of assigning
+a generic button role to every new component.
 
 Five files, all required:
 
@@ -216,14 +247,11 @@ import { Component, Host, h, Prop, Event, EventEmitter } from '@stencil/core';
   shadow: true,
 })
 export class MdMyComponent {
-  /** Visual variant. */
-  @Prop({ reflect: true }) variant: 'default' | 'alternate' = 'default';
-
   /** Whether the control is disabled. */
   @Prop({ reflect: true }) disabled = false;
 
   /** Fired when the user activates the control. */
-  @Event() mdAction: EventEmitter<void>;
+  @Event() mdAction!: EventEmitter<void>;
 
   private handleClick = () => {
     if (!this.disabled) this.mdAction.emit();
@@ -231,20 +259,20 @@ export class MdMyComponent {
 
   render() {
     return (
-      <Host
-        class={{ 'md-my-component': true, [`md-my-component--${this.variant}`]: true }}
-        role="button"
-        tabindex={this.disabled ? -1 : 0}
-        aria-disabled={this.disabled ? 'true' : 'false'}
-        onClick={this.handleClick}
-      >
-        <span class="md-my-component__state-layer" part="state-layer" aria-hidden="true" />
-        <slot />
+      <Host>
+        <button type="button" part="control" disabled={this.disabled} onClick={this.handleClick}>
+          <slot />
+        </button>
       </Host>
     );
   }
 }
 ```
+
+The native button supplies keyboard activation, focus and disabled behavior.
+Keep its default slot to a text label; do not nest interactive controls in it.
+The generator also includes density, a visible focus ring, and browser tests
+for Enter, Space and disabled behavior.
 
 House conventions, all enforced in review:
 
@@ -269,36 +297,25 @@ Only `--md-sys-*` tokens — no hard-coded colours, radii, durations or easings.
 Every token gets a fallback: `var(--md-sys-color-primary, #6750A4)`.
 
 ```css
-:host {
-  display: inline-flex;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
+button {
+  border: 0;
   border-radius: var(--md-sys-shape-corner-full, 9999px);
-  background-color: var(--md-sys-color-primary, #6750A4);
-  color: var(--md-sys-color-on-primary, #FFFFFF);
+  background: var(--md-sys-color-primary, #6750a4);
+  color: var(--md-sys-color-on-primary, #fff);
+  font: inherit;
 }
 
-.md-my-component__state-layer {
-  position: absolute;
-  inset: 0;
-  background-color: currentColor;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--md-sys-motion-duration-short2, 100ms)
-    var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
+button:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary, #625b71);
+  outline-offset: 3px;
 }
 
-:host(:hover) .md-my-component__state-layer { opacity: 0.08; }
-:host(:active) .md-my-component__state-layer { opacity: 0.12; }
-:host(:focus-visible) .md-my-component__state-layer { opacity: 0.12; }
-
-:host([disabled]) { opacity: 0.38; pointer-events: none; }
-
-@media (prefers-reduced-motion: reduce) {
-  .md-my-component__state-layer { transition: none; }
-}
+button:disabled { opacity: 0.38; }
 ```
+
+The generated stylesheet includes hover/active state treatment, density,
+logical spacing and reduced-motion behavior. Expand those rules for the
+component's actual visual specification.
 
 Expose customisation deliberately: a `--md-my-component-*` custom property for
 values, `::part()` for elements. Both are public API from the moment they ship.
@@ -318,8 +335,8 @@ it('emits mdAction on click', async () => {
     html: `<md-my-component>Hello</md-my-component>`,
   });
   const spy = jest.fn();
-  page.root.addEventListener('mdAction', spy);
-  page.root.click();
+  page.root!.addEventListener('mdAction', spy);
+  page.root!.shadowRoot!.querySelector('button')!.click();
   await page.waitForChanges();
   expect(spy).toHaveBeenCalled();
 });
@@ -330,8 +347,9 @@ Two traps that have cost real time here:
 - **Never register `md-ripple` in a spec** — the WAAPI mock crashes.
 - **Async `@Method` close-chains need a second `waitForChanges()`.**
 
-For anything visual, measure rather than eyeball: assert computed styles or
-bounding boxes in an e2e test. A screenshot cannot fail CI.
+For visual behavior, assert computed styles or bounding boxes in an e2e test.
+A manually inspected screenshot is useful evidence, but automated assertions
+are what make regressions fail CI.
 
 ### 5. Story and docs
 
@@ -344,11 +362,23 @@ Adding a new `@Method` or member needs a **Storybook restart**, not just HMR.
 ### 6. Before you push
 
 ```bash
-pnpm --filter @awc-ui/core lint        # tsc --noEmit
-pnpm --filter @awc-ui/core test:spec
-pnpm --filter @awc-ui/core build       # the build type-checks specs too
-pnpm --filter @awc-ui/core size        # bundle budget
+pnpm verify:contributor               # setup, generator and build-graph checks
+pnpm lint:eslint
+pnpm lint:stylelint
+pnpm --filter @awc-ui/core lint
+pnpm --filter @awc-ui/core exec stencil test --spec md-my-component
+pnpm --filter @awc-ui/core exec stencil test --e2e md-my-component
+pnpm --filter @awc-ui/core build
+pnpm --filter @awc-ui/core test:ssr
+pnpm --filter @awc-ui/core size
 ```
+
+Replace `md-my-component` with the affected component. Run browser tests after
+installing their browser prerequisites, and stop live core watchers before the
+build. `verify:contributor` is a quick tooling check, not the full release gate.
+For public API/package changes also run the consumer/package checks in CI;
+for a new component, add its bundle budget and regenerate docs with
+`pnpm generate:docs`.
 
 A green Jest run does **not** mean the build is green — a spec-only edit can
 break `stencil build`. Check the exit code.
@@ -372,7 +402,9 @@ break `stencil build`. Check the exit code.
 
 Work on a branch, open the PR against `main`, and keep it to one concern.
 
-**Every PR that touches source needs a changeset** — CI enforces it:
+**Every PR that touches published source needs a changeset** as a review
+requirement. The automated changeset gate is currently disabled; maintainers
+check this until release automation is re-enabled:
 
 ```bash
 pnpm changeset

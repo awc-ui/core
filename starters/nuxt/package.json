@@ -2,7 +2,7 @@
   "name": "awc-ui-starter-nuxt",
   "version": "0.1.0",
   "private": true,
-  "description": "AWC UI + Nuxt 3 starter — mini dashboard with server-rendered Declarative Shadow DOM",
+  "description": "AWC UI + Nuxt 3 starter \u2014 mini dashboard with server-rendered Declarative Shadow DOM",
   "scripts": {
     "dev": "nuxi dev",
     "build": "nuxi build",
@@ -17,5 +17,11 @@
     "nuxt": "^3.14.1592",
     "vue": "^3.5.0",
     "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "overrides": {
+    "@vitejs/devtools": "^0.5.0"
   }
 }

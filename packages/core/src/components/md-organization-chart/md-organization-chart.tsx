@@ -35,7 +35,8 @@ export interface OrgChartNode {
   children?: OrgChartNode[];
 }
 
-type NodeInput = OrgChartNode[] | string | null | undefined;
+/** Accepted public input for organization-chart nodes. */
+export type NodeInput = OrgChartNode[] | string | null | undefined;
 
 /** Detail for the `mdSelectionChange` event. */
 export interface OrgChartSelectionChangeDetail {

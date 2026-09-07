@@ -6,49 +6,67 @@ sidebar:
   order: 2
 ---
 
-`@awc-ui/angular` provides **Angular components** and directives for AWC UI's
-accessible Material Design 3 Web Components. It supports Angular 17+,
-standalone applications, NgModules, `ngModel`, reactive forms, and **Angular
-SSR** or prerendered output.
-
-## Install Angular components
+`@awc-ui/angular` provides standalone component proxies and Angular form value
+accessors. Imports register their custom elements automatically.
 
 ```bash
 npm install @awc-ui/angular @awc-ui/core
 ```
 
-For a standalone Angular application, register AWC UI during bootstrap:
+Load the theme once in your application entry:
 
 ```ts
-import { importProvidersFrom } from "@angular/core";
-import { bootstrapApplication } from "@angular/platform-browser";
-import { AwcUiModule, provideAwcUi } from "@awc-ui/angular";
-
-bootstrapApplication(AppComponent, {
-  providers: [provideAwcUi(), importProvidersFrom(AwcUiModule)],
-});
+import '@awc-ui/core/css/tokens.css';
 ```
 
-The elements then work in Angular templates while the directives bridge
-properties, events, and Angular forms:
+For a standalone component, import the controls and accessors into its template
+scope, alongside Angular's forms module:
+
+```ts
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MdButton, MdTextField, TextValueAccessor } from '@awc-ui/angular';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [FormsModule, MdButton, MdTextField, TextValueAccessor],
+  template: `
+    <md-text-field label="Email" type="email" [(ngModel)]="email"></md-text-field>
+    <md-button variant="filled">Continue</md-button>
+  `,
+})
+export class AppComponent {
+  email = '';
+}
+```
+
+For convenience, `imports: [FormsModule, AwcUiModule]` supplies every component
+and accessor. Use `ReactiveFormsModule` for `formControl` and `formControlName`.
+NgModule applications also put `AwcUiModule` in `imports`.
+
+`importProvidersFrom(AwcUiModule)` does not add directives to a standalone
+component's template scope. `provideAwcUi()` is only needed for applications
+using the lazy loader with raw tags; imported proxies already register themselves.
+
+Radio controls bind the selected option's `value`, preserving each radio's
+identity. Import both `MdRadio` and `RadioValueAccessor` for individual imports:
 
 ```html
-<md-text-field
-  label="Email"
-  type="email"
-  required
-  [(ngModel)]="email"
-></md-text-field>
-<md-button variant="filled" type="submit">Continue</md-button>
+<md-radio name="plan" value="basic" [(ngModel)]="plan">Basic</md-radio>
+<md-radio name="plan" value="pro" [(ngModel)]="plan">Pro</md-radio>
 ```
+
+Initialize `plan` to `'basic'` or `'pro'`; resetting the form to `null` clears the
+selection. Multi-select accessors normalize a form reset to an empty array.
 
 ## Angular SSR and prerendering
 
 Angular can server-render the surrounding application normally. AWC UI's
 `@awc-ui/core/hydrate` module then transforms the rendered `md-*` markup into
 Declarative Shadow DOM, preserving styles and content in the server response.
-On the client, `provideAwcUi()` registers the custom elements and hydrates that
-server-rendered output.
+On the client, the imported Angular proxies register their custom elements and
+hydrate that server-rendered output.
 
 The repository includes a validated
 [Angular SSR reference app](https://github.com/awc-ui/core/tree/main/apps/example-angular-ssr)

@@ -1,8 +1,14 @@
-// Client-only: register the custom elements so the server-rendered Declarative
-// Shadow DOM hydrates. (defineCustomElements self-guards `window`.)
 import { defineNuxtPlugin } from '#app';
-import { defineCustomElements } from '@awc-ui/core/loader';
+import '@awc-ui/core/components/md-app-bar';
+import '@awc-ui/core/components/md-card';
+import '@awc-ui/core/components/md-switch';
+import '@awc-ui/core/components/md-line-chart';
+import '@awc-ui/core/components/md-table';
+import '@awc-ui/core/components/md-table-container';
+import '@awc-ui/core/components/md-table-head';
+import '@awc-ui/core/components/md-table-body';
+import '@awc-ui/core/components/md-table-row';
+import '@awc-ui/core/components/md-table-cell';
 
-export default defineNuxtPlugin(() => {
-  defineCustomElements(window);
-});
+// Explicit entries let Vite emit and resolve the component dependencies.
+export default defineNuxtPlugin(() => {});

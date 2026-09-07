@@ -12,7 +12,7 @@ AWC UI — short for **Advanced Web Components UI** — is a
 **Material Design 3** component library built with
 [Stencil.js](https://stenciljs.com/), currently in **beta**. Every component ships as a
 standard web component with full shadow-DOM encapsulation, so it drops into **React,
-Angular, Vue, Svelte, or plain HTML** with zero configuration, and follows the MD3
+Angular, Vue, Svelte, or plain HTML** after registration and stylesheet setup, and follows the MD3
 specification for tokens, states and motion.
 
 :::caution[Beta]
@@ -26,7 +26,7 @@ This page is your map. If you're brand new, start with **Installation** and
 ## Install in seconds
 
 ```bash
-npm install @awc-ui/core @awc-ui/tokens
+npm install @awc-ui/core
 ```
 
 ```ts
@@ -38,7 +38,7 @@ import "@awc-ui/core/define";
 <md-button variant="filled" icon="add">Add item</md-button>
 ```
 
-That's a real, accessible, themeable MD3 button — no build step, no wrapper required.
+Use this import in an app with a package-resolving bundler. The [installation guide](/getting-started/installation/) shows a complete Vite app and its run command; framework guides cover their client and SSR setup.
 
 ## Start here
 
