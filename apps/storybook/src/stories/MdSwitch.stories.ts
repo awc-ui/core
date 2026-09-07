@@ -123,14 +123,17 @@ export const Playground: Story = {
       await waitFor(() => expect(sw.classList.contains('md-switch--focus-ring')).toBe(false));
     });
 
-    await step('Space press drives then auto-clears the pressed state layer (keyboard path)', async () => {
+    await step('Space toggles and releases its keyboard feedback', async () => {
       sw.focus();
       const before = sw.selected;
       key(sw, ' ');
-      // handleKeyDown sets pressed=true synchronously before toggling…
-      await waitFor(() => expect(sw.classList.contains('md-switch--pressed')).toBe(true));
-      await waitFor(() => expect(sw.selected).not.toBe(before)); // …and Space also toggled the switch
-      // …then the 150ms timeout releases the pressed state layer on its own.
+      await waitFor(() => expect(sw.selected).not.toBe(before));
+      await waitFor(() => expect(sw.getAttribute('aria-checked')).toBe(String(!before)));
+      // The pressed class lasts only 150ms. Storybook instrumentation and a
+      // busy browser can miss that entire interval, so assert the durable
+      // settled state here. A fake-clock component spec checks both edges of
+      // the transient pressed state without depending on browser scheduling.
+      await new Promise((resolve) => setTimeout(resolve, 160));
       await waitFor(() => expect(sw.classList.contains('md-switch--pressed')).toBe(false));
     });
 

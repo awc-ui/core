@@ -122,8 +122,12 @@ turns this destination into a disclosure).
   `stopImmediatePropagation()`.
 - In development the tab logs a console warning when it has neither `label` nor
   `aria-label` / `aria-labelledby`.
-- The expand/collapse icon glide is skipped under
-  `prefers-reduced-motion: reduce`.
+- The rail captures destination geometry before changing its own layout. Icons
+  and indicator pills animate from their visible position and size; reversing a
+  toggle continues from the current frame instead of restarting or snapping.
+  Label text fades separately so it is never scaled with the indicator.
+- Layout animations are skipped under `prefers-reduced-motion: reduce` and
+  cancelled when the destination disconnects.
 
 ---
 

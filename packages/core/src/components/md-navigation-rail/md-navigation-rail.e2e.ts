@@ -206,4 +206,203 @@ describe('md-navigation-rail e2e', () => {
       }
     });
   });
+
+  describe('destination expansion motion', () => {
+    const destinationFixture = (direction: string, density: number, collapsedLabels: string, custom = false) => `
+      <div dir="${direction}" data-density="${density}"
+        style="display:flex;height:560px;width:760px;--md-sys-density-scale:${density}">
+        <md-navigation-rail id="motion-rail" variant="standard" active-index="0" expandable
+          label="Primary" label-visibility="${collapsedLabels}"
+          style="--md-sys-motion-duration-short4:400ms;--md-sys-motion-easing-standard:linear;
+          ${custom ? '--md-navigation-rail-container-width:96px;--md-navigation-rail-padding-inline:8px;--md-navigation-rail-tab-icon-size:28px;--md-navigation-rail-expanded-width:260px' : ''}">
+          <md-navigation-rail-tab id="motion-active" icon="home" label="Overview" value="overview"></md-navigation-rail-tab>
+          <md-navigation-rail-tab icon="science" label="Test runs" value="runs"></md-navigation-rail-tab>
+          <md-navigation-rail-tab icon="settings" label="Settings" value="settings"></md-navigation-rail-tab>
+        </md-navigation-rail>
+      </div>`;
+
+    it.each([
+      ['ltr', 0, 'none', false],
+      ['rtl', 0, 'none', false],
+      ['ltr', -1, 'none', false],
+      ['rtl', -1, 'none', false],
+      ['ltr', -2, 'none', false],
+      ['rtl', -2, 'none', false],
+      ['ltr', -3, 'none', false],
+      ['rtl', -3, 'none', false],
+      ['ltr', -4, 'none', false],
+      ['rtl', -4, 'none', false],
+      ['ltr', 0, 'all', false],
+      ['rtl', 0, 'all', false],
+      ['ltr', -1, 'none', true],
+      ['rtl', -1, 'none', true],
+    ])('anchors the icon while the active pill morphs (%s, density=%s, labels=%s, custom=%s)', async (direction, density, collapsedLabels, custom) => {
+      const page = await newE2EPage();
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+      await page.setContent(destinationFixture(direction as string, density as number, collapsedLabels as string, custom as boolean));
+      await page.waitForChanges();
+      await page.evaluate(async (collapsedLabels) => {
+        await document.fonts.ready;
+        const rail = document.querySelector('#motion-rail') as HTMLMdNavigationRailElement;
+        // Match consumers that reveal labels with the expanded layout. Capturing
+        // only in the child's expanded watcher is too late for this parent reflow.
+        rail.addEventListener('mdExpand', () => { rail.labelVisibility = 'all'; });
+        rail.addEventListener('mdCollapse', () => { rail.labelVisibility = collapsedLabels as 'all' | 'none'; });
+      }, collapsedLabels);
+
+      for (const method of ['expand', 'collapse'] as const) {
+        const samples = await page.evaluate(async (method) => {
+          const rail = document.querySelector('#motion-rail') as HTMLMdNavigationRailElement;
+          const tab = document.querySelector('#motion-active') as HTMLMdNavigationRailTabElement;
+          const icon = tab.shadowRoot!.querySelector('[part="icon-wrapper"]') as HTMLElement;
+          const indicator = tab.shadowRoot!.querySelector('[part="indicator"]') as HTMLElement;
+          const toggle = rail.shadowRoot!.querySelector('[part="toggle"] md-icon-button') as HTMLElement;
+          const rtl = getComputedStyle(rail).direction === 'rtl';
+          const sample = () => {
+            const r = rail.getBoundingClientRect(), i = icon.getBoundingClientRect(), p = indicator.getBoundingClientRect(), t = toggle.getBoundingClientRect();
+            return {
+              at: performance.now(), railWidth: r.width,
+              iconLeading: rtl ? r.right - (i.left + i.width / 2) : i.left + i.width / 2 - r.left,
+              iconTop: i.top + i.height / 2 - r.top,
+              toggleLeading: rtl ? r.right - (t.left + t.width / 2) : t.left + t.width / 2 - r.left,
+              indicatorLeading: rtl ? r.right - p.right : p.left - r.left,
+              indicatorTop: p.top - r.top, indicatorWidth: p.width, indicatorHeight: p.height,
+              sameIcon: tab.shadowRoot!.querySelector('[part="icon-wrapper"]') === icon,
+              sameIndicator: tab.shadowRoot!.querySelector('[part="indicator"]') === indicator,
+              expanded: tab.expanded, labels: tab.labelVisibility,
+            };
+          };
+          // Awaiting an RAF before the command ensures the baseline itself was
+          // painted. Every subsequent sample is a frame, not an endpoint snapshot.
+          await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+          const samples = [sample()], start = performance.now();
+          await rail[method]();
+          do {
+            await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+            samples.push(sample());
+          } while (performance.now() - start < 550);
+          return samples;
+        }, method);
+
+        expect(samples.length).toBeGreaterThan(6);
+        const first = samples[0], last = samples[samples.length - 1];
+        expect(first.expanded).toBe(method !== 'expand');
+        expect(last.expanded).toBe(method === 'expand');
+        expect(last.labels).toBe(method === 'expand' ? 'all' : collapsedLabels);
+        expect(samples.every(sample => sample.sameIcon && sample.sameIndicator)).toBe(true);
+
+        // The icon must stay on the collapsed rail's centre axis. Merely gliding
+        // between endpoints still hid the old density -1 drift from 38 to 39.5px.
+        for (const key of ['iconLeading', 'toggleLeading'] as const) {
+          const leading = samples.map(sample => sample[key]);
+          expect(Math.max(...leading) - Math.min(...leading)).toBeLessThanOrEqual(0.5);
+        }
+        if (collapsedLabels === 'none') {
+          const top = samples.map(sample => sample.iconTop);
+          expect(Math.max(...top) - Math.min(...top)).toBeLessThanOrEqual(0.5);
+        }
+
+        for (const key of ['iconTop', 'indicatorLeading', 'indicatorTop', 'indicatorWidth', 'indicatorHeight'] as const) {
+          const low = Math.min(first[key], last[key]), high = Math.max(first[key], last[key]);
+          const travel = high - low;
+          // The compact icon used to jump 12px away from BOTH endpoints on its
+          // first expanded frame. The pill also snapped straight to its target.
+          for (let index = 0; index < samples.length; index++) {
+            const current = samples[index];
+            expect(current[key]).toBeGreaterThanOrEqual(low - 2);
+            expect(current[key]).toBeLessThanOrEqual(high + 2);
+            if (index === 0) continue;
+            const previous = samples[index - 1];
+            const elapsed = current.at - previous.at;
+            // Allow two paint intervals of linear movement and 2px rounding, but
+            // never a full geometry swap in an early 16ms frame.
+            const allowedStep = travel * Math.min(1, elapsed / 400 * 2) + 2;
+            expect(Math.abs(current[key] - previous[key])).toBeLessThanOrEqual(allowedStep);
+          }
+        }
+        expect(samples.some(sample => sample.indicatorWidth > Math.min(first.indicatorWidth, last.indicatorWidth) + 3 && sample.indicatorWidth < Math.max(first.indicatorWidth, last.indicatorWidth) - 3)).toBe(true);
+        for (const sample of samples) {
+          expect(sample.indicatorLeading).toBeGreaterThanOrEqual(-2);
+          expect(sample.indicatorLeading + sample.indicatorWidth).toBeLessThanOrEqual(sample.railWidth + 2);
+        }
+        const collapsed = method === 'expand' ? first : last;
+        expect(collapsed.indicatorWidth).toBeCloseTo(Math.max(40, 56 + Number(density) * 4), 1);
+        expect(collapsed.indicatorHeight).toBeCloseTo(Math.max(24, 32 + Number(density) * 2), 1);
+        expect(samples.every(sample => Math.abs(sample.iconLeading - collapsed.railWidth / 2) <= 0.5)).toBe(true);
+      }
+    });
+
+    it.each([
+      ['ltr', 0], ['rtl', 0],
+      ['ltr', -1], ['rtl', -1],
+      ['ltr', -2], ['rtl', -2],
+      ['ltr', -3], ['rtl', -3],
+      ['ltr', -4], ['rtl', -4],
+    ])('keeps the icon stationary during rapid reversal (%s, density=%s)', async (direction, density) => {
+      const page = await newE2EPage();
+      await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
+      await page.setContent(destinationFixture(direction as string, density as number, 'none'));
+      await page.waitForChanges();
+      const result = await page.evaluate(async () => {
+        const rail = document.querySelector('#motion-rail') as HTMLMdNavigationRailElement;
+        const tab = document.querySelector('#motion-active') as HTMLMdNavigationRailTabElement;
+        const icon = tab.shadowRoot!.querySelector('[part="icon-wrapper"]') as HTMLElement;
+        const indicator = tab.shadowRoot!.querySelector('[part="indicator"]') as HTMLElement;
+        const toggle = rail.shadowRoot!.querySelector('[part="toggle"] md-icon-button') as HTMLElement;
+        const rtl = getComputedStyle(rail).direction === 'rtl';
+        rail.addEventListener('mdExpand', () => { rail.labelVisibility = 'all'; });
+        rail.addEventListener('mdCollapse', () => { rail.labelVisibility = 'none'; });
+        const sample = () => {
+          const r = rail.getBoundingClientRect(), i = icon.getBoundingClientRect(), p = indicator.getBoundingClientRect(), t = toggle.getBoundingClientRect();
+          return {
+            at: performance.now(), iconLeading: rtl ? r.right - (i.left + i.width / 2) : i.left + i.width / 2 - r.left,
+            iconTop: i.top + i.height / 2 - r.top,
+            toggleLeading: rtl ? r.right - (t.left + t.width / 2) : t.left + t.width / 2 - r.left,
+            indicatorLeading: rtl ? r.right - p.right : p.left - r.left,
+            indicatorTop: p.top - r.top, indicatorWidth: p.width, indicatorHeight: p.height,
+          };
+        };
+        await document.fonts.ready;
+        await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+        const samples = [sample()], start = performance.now();
+        let reversal = -1;
+        await rail.expand();
+        do {
+          await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+          samples.push(sample());
+          if (reversal < 0 && performance.now() - start >= 85) {
+            reversal = samples.length - 1;
+            await rail.toggle();
+          }
+        } while (performance.now() - start < 650);
+        return { samples, reversal, variant: rail.variant, expanded: tab.expanded, labels: tab.labelVisibility };
+      });
+
+      const { samples, reversal } = result;
+      expect(reversal).toBeGreaterThan(0);
+      expect(reversal).toBeLessThan(samples.length - 2);
+      expect(result.variant).toBe('standard');
+      expect(result.expanded).toBe(false);
+      expect(result.labels).toBe('none');
+      const first = samples[0], before = samples[reversal], last = samples[samples.length - 1];
+      expect(before.indicatorWidth).toBeGreaterThan(first.indicatorWidth + 3);
+      for (const key of ['iconLeading', 'iconTop', 'toggleLeading'] as const) {
+        const values = samples.map(sample => sample[key]);
+        // Covers expansion, the reversal frame and the complete collapse, not
+        // only the final return to the same collapsed resting position.
+        expect(Math.max(...values) - Math.min(...values)).toBeLessThanOrEqual(0.5);
+      }
+      for (const key of ['indicatorLeading', 'indicatorTop', 'indicatorWidth', 'indicatorHeight'] as const) {
+        expect(last[key]).toBeCloseTo(first[key], 1);
+        const travel = Math.abs(before[key] - first[key]);
+        for (let index = reversal + 1; index < samples.length; index++) {
+          const previous = samples[index - 1], current = samples[index];
+          const elapsed = current.at - previous.at;
+          // Restarting from either old endpoint would jump here; a reversal
+          // must start from the box that was visible immediately before toggle.
+          expect(Math.abs(current[key] - previous[key])).toBeLessThanOrEqual(travel * Math.min(1, elapsed / 400 * 2) + 2);
+        }
+      }
+    });
+  });
 });

@@ -20,6 +20,18 @@ export const STANDALONE_SHOWCASES = Object.freeze([
     ],
   },
   {
+    id: "pharma",
+    title: "Vela",
+    frameworks: ["html"],
+    required: [
+      "awc/md3.esm.js",
+      "awc/md3.css",
+      "bootstrap.js",
+      "app.js",
+      "vendor/theme.js",
+    ],
+  },
+  {
     id: "metro-monitor",
     title: "Metro pulse",
     frameworks: ["react"],

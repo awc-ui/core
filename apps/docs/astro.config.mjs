@@ -482,6 +482,7 @@ export default defineConfig({
             { label: 'Pictor — Design & Image', link: '/showcase/design/' },
             { label: 'Frame — Video & Creators', link: '/showcase/frame/' },
             { label: 'Medflow — Hospital Cases', link: '/showcase/medflow/' },
+            { label: 'Vela — Pharmaceutical Testing', link: '/showcase/pharma/' },
             { label: 'Metro pulse — Station Operations', link: '/showcase/metro-monitor/' },
             { label: 'Sentinel — SCADA Monitoring', link: '/showcase/scada/' },
           ],

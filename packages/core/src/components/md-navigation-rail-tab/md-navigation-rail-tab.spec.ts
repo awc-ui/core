@@ -303,3 +303,182 @@ describe('md-navigation-rail-tab', () => {
     });
   });
 });
+
+describe('md-navigation-rail-tab layout motion', () => {
+  type Box = { left: number; top: number; width: number; height: number };
+  type RecordedAnimation = {
+    frames: Keyframe[];
+    options: KeyframeAnimationOptions;
+    cancel: jest.Mock;
+    playState: string;
+    finished: Promise<unknown>;
+    addEventListener: jest.Mock;
+    removeEventListener: jest.Mock;
+  };
+  const rect = (box: Box): DOMRect => ({
+    ...box, x: box.left, y: box.top,
+    right: box.left + box.width, bottom: box.top + box.height,
+    toJSON: () => box,
+  } as DOMRect);
+  const collapsed = {
+    icon: { left: 120, top: 72, width: 56, height: 32 },
+    indicator: { left: 120, top: 72, width: 56, height: 32 },
+  };
+  const expanded = {
+    icon: { left: 108, top: 80, width: 24, height: 24 },
+    indicator: { left: 96, top: 68, width: 248, height: 56 },
+  };
+
+  /** Read the visible bounds represented by a FLIP frame; assert geometry,
+   * not a serialized animation snapshot or a specific number of frames. */
+  function frameBox(target: Box, frame: Keyframe): Box {
+    const transform = String(frame.transform || 'none');
+    const translation = /translate\(\s*([-\d.e]+)(?:px)?\s*,\s*([-\d.e]+)(?:px)?\s*\)/i.exec(transform)
+      || /translate\(\s*([-\d.e]+)\s*,\s*([-\d.e]+)\s*\)/i.exec(transform);
+    const scale = /scale\(\s*([-\d.e]+)\s*,\s*([-\d.e]+)\s*\)/i.exec(transform);
+    return {
+      left: target.left + (translation ? Number(translation[1]) : 0),
+      top: target.top + (translation ? Number(translation[2]) : 0),
+      width: target.width * (scale ? Number(scale[1]) : 1),
+      height: target.height * (scale ? Number(scale[2]) : 1),
+    };
+  }
+  function expectBox(actual: Box, expected: Box) {
+    for (const key of ['left', 'top', 'width', 'height'] as const)
+      expect(actual[key]).toBeCloseTo(expected[key], 5);
+  }
+  function expectSameCenter(actual: Box, expected: Box) {
+    expect(actual.left + actual.width / 2).toBeCloseTo(expected.left + expected.width / 2, 5);
+    expect(actual.top + actual.height / 2).toBeCloseTo(expected.top + expected.height / 2, 5);
+  }
+
+  let restoreMedia: (() => void) | undefined;
+  afterEach(() => {
+    jest.restoreAllMocks();
+    restoreMedia?.();
+    restoreMedia = undefined;
+  });
+
+  async function fixture() {
+    const page = await create('<md-navigation-rail-tab icon="home" label="Home" active></md-navigation-rail-tab>');
+    const icon = page.root!.shadowRoot!.querySelector('[part="icon-wrapper"]') as HTMLElement;
+    const indicator = page.root!.shadowRoot!.querySelector('[part="indicator"]') as HTMLElement;
+    const label = page.root!.shadowRoot!.querySelector('[part="label"]') as HTMLElement;
+    let layout = collapsed;
+    let visualIcon: Box | null = null;
+    let visualIndicator: Box | null = null;
+    let labelOpacity = '1';
+    let reduced = false;
+    const originalMedia = Object.getOwnPropertyDescriptor(window, 'matchMedia');
+    Object.defineProperty(window, 'matchMedia', { configurable: true, writable: true, value: jest.fn(() => ({
+      matches: reduced, media: '(prefers-reduced-motion: reduce)',
+      addEventListener: jest.fn(), removeEventListener: jest.fn(),
+    })) });
+    restoreMedia = () => {
+      if (originalMedia) Object.defineProperty(window, 'matchMedia', originalMedia);
+      else delete (window as unknown as { matchMedia?: unknown }).matchMedia;
+    };
+    jest.spyOn(icon, 'getBoundingClientRect').mockImplementation(() => rect(visualIcon || layout.icon));
+    jest.spyOn(indicator, 'getBoundingClientRect').mockImplementation(() => rect(visualIndicator || layout.indicator));
+    const computed = globalThis.getComputedStyle;
+    jest.spyOn(globalThis, 'getComputedStyle').mockImplementation((element: Element) => {
+      if (element === label) return { opacity: labelOpacity, getPropertyValue: (name: string) => name === 'opacity' ? labelOpacity : '' } as CSSStyleDeclaration;
+      return computed(element);
+    });
+    function recorder(element: HTMLElement, onCancel: () => void) {
+      const animations: RecordedAnimation[] = [];
+      Object.defineProperty(element, 'animate', { configurable: true, value: jest.fn((frames: Keyframe[], options: KeyframeAnimationOptions) => {
+        const animation: RecordedAnimation = {
+          frames, options, playState: 'running', finished: new Promise(() => undefined),
+          cancel: jest.fn(() => { animation.playState = 'idle'; onCancel(); }),
+          addEventListener: jest.fn(), removeEventListener: jest.fn(),
+        };
+        animations.push(animation);
+        return animation;
+      }) });
+      return animations;
+    }
+    const iconAnimations = recorder(icon, () => { visualIcon = null; });
+    const indicatorAnimations = recorder(indicator, () => { visualIndicator = null; });
+    const labelAnimations = recorder(label, () => { labelOpacity = '1'; });
+    return {
+      page, icon, indicator, label,
+      iconAnimations, indicatorAnimations, labelAnimations,
+      setVisual(iconBox: Box, indicatorBox: Box, opacity: string) {
+        visualIcon = iconBox; visualIndicator = indicatorBox; labelOpacity = opacity;
+      },
+      setReduced(value: boolean) { reduced = value; },
+      async toggle(value: boolean) {
+        // Stencil's watcher observes the currently painted layout, before the
+        // following render changes the expanded class and measured target.
+        page.rootInstance.expanded = value;
+        layout = value ? expanded : collapsed;
+        await page.waitForChanges();
+      },
+    };
+  }
+
+  it('expands the active indicator from its previous nonzero position and size', async () => {
+    const f = await fixture();
+    await f.toggle(true);
+    expect(f.iconAnimations).toHaveLength(1);
+    expect(f.indicatorAnimations).toHaveLength(1);
+    const iconMotion = f.iconAnimations[0];
+    const indicatorMotion = f.indicatorAnimations[0];
+    expectSameCenter(frameBox(expanded.icon, iconMotion.frames[0]), collapsed.icon);
+    expectSameCenter(frameBox(expanded.icon, iconMotion.frames[iconMotion.frames.length - 1]), expanded.icon);
+    expectBox(frameBox(expanded.indicator, indicatorMotion.frames[0]), collapsed.indicator);
+    expectBox(frameBox(expanded.indicator, indicatorMotion.frames[indicatorMotion.frames.length - 1]), expanded.indicator);
+    const origin = String(indicatorMotion.frames[0].transformOrigin || f.indicator.style.transformOrigin).trim();
+    expect(['top left', 'left top', '0 0', '0px 0px']).toContain(origin);
+    expect(indicatorMotion.options.duration).toBeGreaterThan(0);
+  });
+
+  it('reverses from the visible in-flight geometry and opacity before cancelling old motion', async () => {
+    const f = await fixture();
+    await f.toggle(true);
+    const previous = [f.iconAnimations[0], f.indicatorAnimations[0], f.labelAnimations[0]];
+    const visibleIcon = { left: 116, top: 78, width: 24, height: 24 };
+    const visibleIndicator = { left: 110, top: 70, width: 144, height: 44 };
+    f.setVisual(visibleIcon, visibleIndicator, '0.42');
+    await f.toggle(false);
+    for (const animation of previous) expect(animation.cancel).toHaveBeenCalledTimes(1);
+    expect(f.iconAnimations).toHaveLength(2);
+    expect(f.indicatorAnimations).toHaveLength(2);
+    expect(f.labelAnimations).toHaveLength(2);
+    expectSameCenter(frameBox(collapsed.icon, f.iconAnimations[1].frames[0]), visibleIcon);
+    expectBox(frameBox(collapsed.indicator, f.indicatorAnimations[1].frames[0]), visibleIndicator);
+    expect(Number(f.labelAnimations[1].frames[0].opacity)).toBeCloseTo(0.42);
+    expect(Number(f.labelAnimations[1].frames[f.labelAnimations[1].frames.length - 1].opacity)).toBe(1);
+  });
+
+  it('cancels all ongoing layout motion when toggled under reduced motion', async () => {
+    const f = await fixture();
+    await f.toggle(true);
+    const previous = [f.iconAnimations[0], f.indicatorAnimations[0], f.labelAnimations[0]];
+    f.setReduced(true);
+    await f.toggle(false);
+    for (const animation of previous) expect(animation.cancel).toHaveBeenCalledTimes(1);
+    expect(f.iconAnimations).toHaveLength(1);
+    expect(f.indicatorAnimations).toHaveLength(1);
+    expect(f.labelAnimations).toHaveLength(1);
+  });
+
+  it('uses the final layout without starting animations when reduced motion is already enabled', async () => {
+    const f = await fixture();
+    f.setReduced(true);
+    await f.toggle(true);
+    expect(f.page.root).toHaveClass('md-navigation-rail-tab--expanded');
+    expect(f.iconAnimations).toHaveLength(0);
+    expect(f.indicatorAnimations).toHaveLength(0);
+    expect(f.labelAnimations).toHaveLength(0);
+  });
+
+  it('cancels owned animations when the destination disconnects', async () => {
+    const f = await fixture();
+    await f.toggle(true);
+    f.page.rootInstance.disconnectedCallback();
+    for (const animation of [f.iconAnimations[0], f.indicatorAnimations[0], f.labelAnimations[0]])
+      expect(animation.cancel).toHaveBeenCalledTimes(1);
+  });
+});

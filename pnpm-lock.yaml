@@ -347,6 +347,15 @@ importers:
         specifier: ^5.0.0
         version: 5.4.21(@types/node@24.13.3)(less@4.9.0)(lightningcss@1.33.0)(sass@1.103.0)(terser@5.50.0)
 
+  apps/pharma:
+    dependencies:
+      '@awc-ui/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@awc-ui/theme':
+        specifier: workspace:*
+        version: link:../../packages/theme
+
   apps/scada:
     dependencies:
       '@awc-ui/core':

@@ -11,6 +11,7 @@ import {
   Listen,
   Method,
 } from '@stencil/core';
+import { prepareRailTabTransition } from '../../utils/navigation-rail-motion';
 
 /**
  * Material Design 3 — Navigation Rail
@@ -141,11 +142,9 @@ export class MdNavigationRail {
   @State() private submenuOpen = false;
 
   /**
-   * Drives the *destination layout* (stacked vs. inline) independently of the
-   * rail's own width. On expand it flips with the width so labels reveal as the
-   * rail grows; on collapse it lingers in the inline layout until the width
-   * animation has finished, then drops to the stacked resting layout — keeping
-   * the label reveal/conceal in sync with the width instead of snapping.
+   * Destination target layout, synchronized with the variant before rendering.
+   * Tabs capture their current geometry before this changes, then animate to the
+   * new layout while the rail changes width.
    */
   @State() private tabsExpanded = false;
 
@@ -231,17 +230,18 @@ export class MdNavigationRail {
   @Watch('variant')
   onVariantChange(newVal: 'standard' | 'expanded', oldVal: 'standard' | 'expanded') {
     if (newVal === oldVal) return;
-    if (newVal === 'expanded') this.mdExpand.emit();
-    else this.mdCollapse.emit();
 
-    // Switch the destination layout immediately in both directions (modal and
-    // standard alike). Each tab glides its icon + label to the new layout, the
-    // FAB morphs, and — for modal — the overlay container grows/shrinks and the
-    // scrim fades, all driven by CSS transitions on the same spring (see the
-    // modal section of the stylesheet). No JS deferral needed.
+    // Capture destinations before the rail's padding or target layout changes.
+    // A child watcher alone can run after the parent has already moved its icon.
+    this.getTabs().forEach(prepareRailTabTransition);
     this.tabsExpanded = newVal === 'expanded';
     this.syncTabs();
     this.syncFab();
+
+    // Consumers can synchronously update label visibility in these listeners;
+    // publish only after every destination and the FAB have the target state.
+    if (newVal === 'expanded') this.mdExpand.emit();
+    else this.mdCollapse.emit();
   }
 
   /**

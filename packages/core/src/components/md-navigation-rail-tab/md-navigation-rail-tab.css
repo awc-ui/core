@@ -89,18 +89,12 @@
     --md-navigation-rail-tab-state-layer-color,
     var(--md-sys-color-on-secondary-container, #4A4458)
   );
-  /* M3 Expressive motion. Effects spring (fast) for color / opacity / icon-fill
-     micro-interactions; spatial spring (fast) for the active-indicator pill
-     size/shape morph. */
+  /* Effects motion for color, opacity and icon fill. Layout motion is owned
+     by the component so it can reverse from the currently rendered geometry. */
   --_motion-duration: var(--md-sys-motion-spring-effects-fast-duration, 150ms);
   --_motion-easing: var(
     --md-sys-motion-spring-effects-fast-easing,
     cubic-bezier(0.31, 0.94, 0.34, 1)
-  );
-  --_motion-spatial-duration: var(--md-sys-motion-spring-spatial-fast-duration, 350ms);
-  --_motion-spatial-easing: var(
-    --md-sys-motion-spring-spatial-fast-easing,
-    cubic-bezier(0.42, 1.67, 0.21, 0.9)
   );
   --_hover-opacity: var(--md-sys-state-hover-state-layer-opacity, 0.08);
   /* Spec: focused and pressed state layer opacity = 0.10 for nav rail items. */
@@ -194,9 +188,9 @@ md-ripple {
   background-color: transparent;
   pointer-events: none;
   overflow: hidden;
-  transition:
-    background-color var(--_motion-duration) var(--_motion-easing),
-    inline-size var(--_motion-spatial-duration) var(--_motion-spatial-easing);
+  /* Geometry is animated from measured bounds by the component: auto-sized
+     expanded pills cannot transition to fixed collapsed dimensions in CSS. */
+  transition: background-color var(--_motion-duration) var(--_motion-easing);
   z-index: 0;
 }
 
@@ -377,6 +371,9 @@ md-ripple {
   justify-content: flex-start;
   gap: var(--md-sys-spacing-gap-sm, 8px);
   padding-inline: var(--md-sys-spacing-inset-lg, 16px);
+  /* Keep the glyph on the rail's centre axis at every density, including when
+     a destination has a local icon-size override. Logical padding mirrors RTL. */
+  padding-inline-start: calc(var(--_rail-icon-axis, calc(var(--md-sys-spacing-inset-lg, 16px) + var(--_icon-size) / 2)) - var(--_icon-size) / 2);
   padding-block: 0;
   inline-size: fit-content;
   min-block-size: max(48px, calc(56px + var(--md-sys-density-scale, 0) * 4px));

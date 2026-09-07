@@ -359,11 +359,7 @@
      so the button never drifts during the spring transition. NOT transitioned on
      purpose: gliding it reads as an in-place drift, the rail-width spring
      carries the motion instead. */
-  padding-inline-start: calc((var(--_container-width) - 40px) / 2);
-}
-
-:host(.md-navigation-rail--expanded) .md-navigation-rail__toggle {
-  padding-inline-start: var(--md-sys-spacing-inset-sm, 8px);
+  padding-inline-start: calc((var(--_container-width) - 40px) / 2 - var(--_padding-inline));
 }
 
 /* ---------- Header (top group) ---------- */
@@ -586,6 +582,15 @@
    icon + label toward (see md-navigation-rail-tab). */
 ::slotted(md-navigation-rail-tab) {
   inline-size: var(--_container-width);
+}
+
+:host(:not(.md-navigation-rail--horizontal)) ::slotted(md-navigation-rail-tab) {
+  /* Share the collapsed centre axis with the expanded destination. Density
+     changes both the rail width and glyph size; a fixed 16px leading inset
+     only aligns the two layouts at the default density. Subtract the rail's
+     insets from collapsed items so custom padding preserves the same axis. */
+  --_rail-icon-axis: calc(var(--_container-width) / 2 - var(--_padding-inline));
+  inline-size: calc(var(--_container-width) - 2 * var(--_padding-inline));
 }
 
 /* Expanded items hug their content (left-aligned pill per the spec's

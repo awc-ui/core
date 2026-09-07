@@ -11,6 +11,7 @@ import {
   Method,
 } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
+import { registerRailTabTransition } from '../../utils/navigation-rail-motion';
 import { sanitizeHref, SAFE_LINK_REL } from '../../utils/url';
 
 /**
@@ -92,9 +93,32 @@ export class MdNavigationRailTab {
    */
   @Event({ bubbles: true, composed: true }) mdSubmenuToggle: EventEmitter<{ open: boolean }>;
 
-  /** Icon-wrapper centre (host-relative) captured before the layout switch. */
+  /** Rendered geometry captured before the rail or destination changes layout. */
   private iconFirst: { cx: number; cy: number } | null = null;
+  private indicatorFirst: { left: number; top: number; width: number; height: number } | null = null;
+  private labelFirstOpacity = 0;
   private pendingTransition = false;
+  private transitionPrepared = false;
+  private iconAnimation?: Animation;
+  private indicatorAnimation?: Animation;
+  private labelAnimation?: Animation;
+  private unregisterTransition?: () => void;
+
+  connectedCallback() {
+    this.unregisterTransition = registerRailTabTransition(this.el, () => {
+      this.captureTransition();
+      this.transitionPrepared = true;
+    });
+  }
+
+  disconnectedCallback() {
+    this.unregisterTransition?.();
+    this.cancelAnimations();
+    this.iconFirst = null;
+    this.indicatorFirst = null;
+    this.pendingTransition = false;
+    this.transitionPrepared = false;
+  }
 
   /** Mirrors the slotted submenu's open state for `aria-expanded`. */
   @State() private submenuOpen: boolean = false;
@@ -131,20 +155,40 @@ export class MdNavigationRailTab {
     }
   }
 
-  /**
-   * The stacked (collapsed) and inline (expanded) layouts place the icon at
-   * slightly different spots. To avoid an abrupt snap we FLIP it: capture the
-   * old centre before the layout flips, then (in componentDidRender) glide it
-   * to the new centre with a smooth DECELERATE curve — deliberately not the
-   * rail's springy/overshoot easing, which made the small move look like a
-   * floaty wobble. The label can't slide cleanly (its path cuts through the
-   * icon), so it cross-fades into its new position instead.
-   */
+  /** The rail prepares before its own padding changes. Direct prop changes
+   * still capture here, so a destination also behaves correctly in isolation. */
   @Watch('expanded')
   onExpandedChange() {
-    if (this.prefersReducedMotion()) return;
+    if (!this.transitionPrepared) this.captureTransition();
+    this.transitionPrepared = false;
+  }
+
+  private captureTransition() {
+    const sr = this.el.shadowRoot;
+    const indicator = sr?.querySelector<HTMLElement>('[part="indicator"]');
+    const label = sr?.querySelector<HTMLElement>('[part="label"]');
+    // Read the visible (possibly mid-animation) boxes BEFORE cancelling. A
+    // reversal then starts at the pixels on screen, not the previous target.
     this.iconFirst = this.iconCentre();
-    this.pendingTransition = true;
+    this.indicatorFirst = indicator?.getBoundingClientRect() ?? null;
+    this.labelFirstOpacity = this.labelAnimation?.playState === 'running' && label
+      ? Number.parseFloat(getComputedStyle(label).opacity) || 0
+      : 0;
+    this.cancelAnimations();
+    this.pendingTransition = !this.prefersReducedMotion();
+    if (!this.pendingTransition) {
+      this.iconFirst = null;
+      this.indicatorFirst = null;
+    }
+  }
+
+  private cancelAnimations() {
+    this.iconAnimation?.cancel();
+    this.indicatorAnimation?.cancel();
+    this.labelAnimation?.cancel();
+    this.iconAnimation = undefined;
+    this.indicatorAnimation = undefined;
+    this.labelAnimation = undefined;
   }
 
   componentDidRender() {
@@ -189,45 +233,49 @@ export class MdNavigationRailTab {
     const sr = this.el.shadowRoot;
     if (!sr) return;
     const duration = this.motionDuration();
+    const easing = getComputedStyle(this.el)
+      .getPropertyValue('--md-sys-motion-easing-standard').trim()
+      || 'cubic-bezier(0.2, 0, 0, 1)';
+    const timing: KeyframeAnimationOptions = { duration, easing, fill: 'none' };
 
-    // Icon: glide from old centre to new with a smooth decelerate (no overshoot).
-    const icon = sr.querySelector(
-      '.md-navigation-rail-tab__icon-wrapper',
-    ) as HTMLElement | null;
+    const icon = sr.querySelector<HTMLElement>('[part="icon-wrapper"]');
     if (icon && this.iconFirst) {
       const r = icon.getBoundingClientRect();
       const dx = this.iconFirst.cx - (r.left + r.width / 2);
       const dy = this.iconFirst.cy - (r.top + r.height / 2);
       if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
-        icon.animate(
-          [
-            { transform: `translate(${dx}px, ${dy}px)` },
-            { transform: 'translate(0, 0)' },
-          ],
-          {
-            duration,
-            // Standard easing — quick in, snappy settle, no bounce — matching
-            // the rail width morph and the button shape-morph feel.
-            easing:
-              getComputedStyle(this.el)
-                .getPropertyValue('--md-sys-motion-easing-standard')
-                .trim() || 'cubic-bezier(0.2, 0, 0, 1)',
-            fill: 'none',
-          },
-        );
+        this.iconAnimation = icon.animate([
+          { transform: `translate(${dx}px, ${dy}px)` },
+          { transform: 'translate(0, 0)' },
+        ], timing);
       }
     }
     this.iconFirst = null;
 
-    // Label: cross-fade into its new layout position rather than sliding.
-    const label = sr.querySelector(
-      '.md-navigation-rail-tab__label',
-    ) as HTMLElement | null;
-    if (label) {
-      label.animate(
-        [{ opacity: 0 }, { opacity: 0, offset: 0.15 }, { opacity: 1 }],
-        { duration, easing: 'ease-out', fill: 'none' },
-      );
+    // CSS cannot interpolate a content-sized expanded pill to a fixed collapsed
+    // pill. Morph only its surface; scaling the whole destination distorts text.
+    const indicator = sr.querySelector<HTMLElement>('[part="indicator"]');
+    if (indicator && this.indicatorFirst) {
+      const first = this.indicatorFirst;
+      const last = indicator.getBoundingClientRect();
+      if (first.width > 0 && first.height > 0 && last.width > 0 && last.height > 0) {
+        this.indicatorAnimation = indicator.animate([
+          {
+            transform: `translate(${first.left - last.left}px, ${first.top - last.top}px) scale(${first.width / last.width}, ${first.height / last.height})`,
+            transformOrigin: 'top left',
+          },
+          { transform: 'translate(0, 0) scale(1, 1)', transformOrigin: 'top left' },
+        ], timing);
+      }
+    }
+    this.indicatorFirst = null;
+
+    const label = sr.querySelector<HTMLElement>('[part="label"]');
+    if (label && getComputedStyle(label).display !== 'none') {
+      this.labelAnimation = label.animate([
+        { opacity: this.labelFirstOpacity },
+        { opacity: 1 },
+      ], { duration, easing: 'ease-out', fill: 'none' });
     }
   }
 

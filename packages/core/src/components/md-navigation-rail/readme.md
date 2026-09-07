@@ -180,6 +180,14 @@ children), `logo`, `logo-expanded`, `header`, `fab`, `footer-leading`,
 
 ---
 
+Expansion synchronizes destination and FAB state before emitting `mdExpand` or
+`mdCollapse`. Event handlers can change `label-visibility` without observing a
+stale layout. The rail captures destination geometry before its padding changes,
+so icons and selected indicators remain continuous when toggling or reversing.
+Vertical destination icons and the built-in toggle share the collapsed rail's
+centerline at every density, including custom rail padding and icon sizes.
+Collapsed labels can still move icons vertically to make room for stacked text.
+
 ## Do / Don't
 
 Sourced from [M3 · Navigation rail · Guidelines](https://m3.material.io/components/navigation-rail/guidelines).

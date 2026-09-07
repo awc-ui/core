@@ -1,0 +1,84 @@
+---
+title: Vela — Pharmaceutical Testing
+description: "A pharmaceutical laboratory showcase with fictional compounds, samples, test runs, analyst assignment, review workflows, and demo login, signup, and MFA, built with AWC UI."
+---
+
+**Vela is a pharmaceutical testing workspace built with existing AWC UI components.**
+Follow fictional laboratory work from sample intake through test assignment and
+review, and explore account creation and multi-factor verification.
+
+[Open Vela](/showcase/pharma/html/) ·
+[Explore test runs](/showcase/pharma/html/#/runs)
+
+## Try it in five minutes
+
+Choose **Use demo credentials → Sign in**, then enter **246810** to open the
+workspace.
+
+1. **Read the overview.** Inspect the testing workload and open a run for its
+   sample, compound, analyst, and current status.
+2. **Plan laboratory work.** Create a test run, assign an analyst, and advance its
+   progress through the sample workflow.
+3. **Explore the catalog.** Visit Compounds and Samples to inspect the records
+   linked to each test.
+4. **Review a result.** Open the review queue and record an approval or request a
+   retest. These actions update fictional workflow records in the demo.
+5. **Make it yours.** Use the settings beside the account avatar to change the
+   primary color, density, appearance, and left-to-right or right-to-left layout.
+
+## Explore the account flow
+
+Vela opens at **Sign in**. Use the sample account:
+
+| Field             | Demo value              |
+| ----------------- | ----------------------- |
+| Email             | `alex.morgan@vela.demo` |
+| Password          | `VelaDemo!2026`         |
+| Verification code | `246810`                |
+
+Signup demonstrates profile and password validation followed by the verification
+screen. Use fictional details when exploring the forms. The account flow runs
+locally in the browser; it does not connect to an identity provider or protect
+real laboratory records.
+
+## Components in context
+
+| Workflow                       | AWC components                                                                                                               |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Workspace navigation           | [App bar](/components/app-bar/), [Navigation rail](/components/navigation-rail/), [Navigation bar](/components/navigation-bar/), [Icon button](/components/icon-button/) |
+| Test worklists and samples     | [Table](/components/table/), [Chip](/components/chip/), [Select](/components/select/), [Text field](/components/text-field/) |
+| Test assignment and review     | [Dialog](/components/dialog/), [Side sheet](/components/side-sheet/), [Button](/components/button/)                          |
+| Workload and analyst summaries | [Card](/components/card/), [Area chart](/components/area-chart/), [Meter](/components/meter/), [Avatar](/components/avatar/) |
+| Account and preferences        | [OTP field](/components/otp-field/), [Color picker](/components/color-picker/), [Switch](/components/switch/)                |
+| Loading and action feedback    | [Skeleton](/components/skeleton/), [Progress indicator](/components/progress-indicator/), [Snackbar](/components/snackbar/)  |
+
+Vela composes the library's controls with application layout and laboratory
+workflow logic. Status chips, table controls, form inputs, overlays, and loading
+feedback use the existing component APIs.
+
+## Build and data
+
+The plain JavaScript application lives in `apps/pharma`. The documentation build
+stages its self-contained output at `/showcase/pharma/html/`, including the local
+AWC runtime and theme generator. Hash routes support static hosting beneath that
+path.
+
+Laboratory changes and the verified demo profile persist in the tab's
+`sessionStorage`. Appearance and navigation preferences persist in
+`localStorage`. Passwords and pending verification challenges are not persisted;
+signing out clears the verified profile.
+
+All compounds, samples, tests, results, and people are fictional. The interface
+is a workflow demonstration, not a validated laboratory system. Test and review
+actions do not establish a drug's safety, efficacy, or regulatory status.
+
+## Run locally
+
+From the repository root, with core and theme built:
+
+```sh
+pnpm --filter @awc-ui/pharma dev
+```
+
+Open the local address printed by the server. Rebuild and refresh after source
+changes. Run the application checks with `pnpm --filter @awc-ui/pharma test`.

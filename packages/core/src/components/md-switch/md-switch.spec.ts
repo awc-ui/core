@@ -324,6 +324,35 @@ describe('md-switch', () => {
       expect(page.rootInstance.selected).toBe(true);
     });
 
+    it('renders Space pressed feedback until its 150ms release deadline', async () => {
+      const page = await create('<md-switch aria-label="Toggle setting"></md-switch>');
+      // Stencil flushes render work with process.nextTick; keep that queue real
+      // while controlling the component's timeout independently of CI speed.
+      jest.useFakeTimers({ doNotFake: ['nextTick'] });
+      try {
+        const changed = jest.fn();
+        page.root!.addEventListener('mdChange', changed);
+        page.root!.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }));
+        await page.waitForChanges();
+        expect(page.root).toHaveClass('md-switch--pressed');
+        expect(page.rootInstance.selected).toBe(true);
+        expect(page.root!.getAttribute('aria-checked')).toBe('true');
+
+        jest.advanceTimersByTime(149);
+        await page.waitForChanges();
+        expect(page.root).toHaveClass('md-switch--pressed');
+
+        jest.advanceTimersByTime(1);
+        await page.waitForChanges();
+        expect(page.root).not.toHaveClass('md-switch--pressed');
+        expect(page.rootInstance.selected).toBe(true);
+        expect(changed).toHaveBeenCalledTimes(1);
+      } finally {
+        jest.clearAllTimers();
+        jest.useRealTimers();
+      }
+    });
+
     it('does NOT toggle on Enter (WAI-ARIA switch pattern reserves Enter for form submit)', async () => {
       const page = await create('<md-switch></md-switch>');
       const spy = jest.fn();

@@ -1,6 +1,7 @@
 import { newSpecPage } from '@stencil/core/testing';
 import { MdNavigationRail } from './md-navigation-rail';
 import { MdNavigationRailTab } from '../md-navigation-rail-tab/md-navigation-rail-tab';
+import { registerRailTabTransition } from '../../utils/navigation-rail-motion';
 
 async function create(html: string) {
   return newSpecPage({
@@ -207,6 +208,73 @@ describe('md-navigation-rail', () => {
       page.rootInstance.variant = 'standard';
       await page.waitForChanges();
       expect(spy).toHaveBeenCalled();
+    });
+  });
+
+  // ----------------------------------------------------------------
+  describe('transition coordination', () => {
+    it('captures all destinations before changing their layout in either direction', async () => {
+      const page = await create(basicHtml);
+      const tabs = railTabs(page) as Array<HTMLElement & { expanded: boolean }>;
+      const readExpanded = () => tabs.map((tab) => tab.expanded);
+      const captures: Array<{ expanded: boolean[]; renderedExpanded: boolean }> = [];
+      const unregister = tabs.map((tab) => registerRailTabTransition(tab, () => {
+        captures.push({
+          expanded: readExpanded(),
+          renderedExpanded: page.root!.classList.contains('md-navigation-rail--expanded'),
+        });
+      }));
+
+      page.rootInstance.variant = 'expanded';
+      expect(captures).toEqual(tabs.map(() => ({
+        expanded: [false, false, false],
+        renderedExpanded: false,
+      })));
+      await page.waitForChanges();
+      expect(readExpanded()).toEqual([true, true, true]);
+
+      captures.length = 0;
+      page.rootInstance.variant = 'standard';
+      expect(captures).toEqual(tabs.map(() => ({
+        expanded: [true, true, true],
+        renderedExpanded: true,
+      })));
+      await page.waitForChanges();
+      expect(readExpanded()).toEqual([false, false, false]);
+      unregister.forEach((dispose) => dispose());
+    });
+
+    it('publishes the synchronized target state before listeners update label visibility', async () => {
+      const page = await create(basicHtml);
+      const rail = page.root as HTMLElement & { labelVisibility: 'all' | 'none' };
+      const tabs = railTabs(page) as Array<HTMLElement & { expanded: boolean }>;
+      const observed: boolean[][] = [];
+      page.root!.addEventListener('mdExpand', () => {
+        observed.push(tabs.map((tab) => tab.expanded));
+        rail.labelVisibility = 'all';
+      });
+      page.root!.addEventListener('mdCollapse', () => {
+        observed.push(tabs.map((tab) => tab.expanded));
+        rail.labelVisibility = 'none';
+      });
+
+      rail.labelVisibility = 'none';
+      await page.waitForChanges();
+      page.rootInstance.variant = 'expanded';
+      await page.waitForChanges();
+      expect(observed).toEqual([[true, true, true]]);
+      tabs.forEach((tab) => {
+        expect(tab.hasAttribute('expanded')).toBe(true);
+        expect(tab.getAttribute('label-visibility')).toBe('all');
+      });
+
+      page.rootInstance.variant = 'standard';
+      await page.waitForChanges();
+      expect(observed).toEqual([[true, true, true], [false, false, false]]);
+      tabs.forEach((tab) => {
+        expect(tab.hasAttribute('expanded')).toBe(false);
+        expect(tab.getAttribute('label-visibility')).toBe('none');
+      });
     });
   });
 
