@@ -60,7 +60,7 @@ import stats from "../data/stats.json";
       </div>
     </div>
 
-    <div class="awc-hero__preview" data-awc-reveal data-awc-hero-preview>
+    <div class="awc-hero__preview" data-awc-reveal data-awc-hero-preview data-awc-preview-pending>
       <div class="awc-hero__preview-stage">
         {/* Top-right cluster — bundle metric + AI ready, stacked
             vertically. Mirrors the top-left chip cluster but anchored
@@ -124,7 +124,7 @@ import stats from "../data/stats.json";
                 <span class="material-symbols-outlined">notifications_active</span>
               </span>
               <span class="awc-hero__control-label">Push notifications</span>
-              <md-switch checked aria-label="Push notifications"></md-switch>
+              <md-switch selected aria-label="Push notifications"></md-switch>
             </div>
 
             <div class="awc-hero__control">
@@ -140,7 +140,7 @@ import stats from "../data/stats.json";
                 <span class="material-symbols-outlined">auto_awesome</span>
               </span>
               <span class="awc-hero__control-label">Smart suggestions</span>
-              <md-switch checked aria-label="Smart suggestions"></md-switch>
+              <md-switch selected aria-label="Smart suggestions"></md-switch>
             </div>
 
             {/* Sub-panel for the "Smart suggestions" toggle: a label, a
@@ -240,49 +240,20 @@ import stats from "../data/stats.json";
     }
   });
 
-  // 2. Lazy-load AWC UI components used in the hero preview.
-  let elementsLoaded = false;
-  const loadElements = async () => {
-    if (elementsLoaded) return;
-    elementsLoaded = true;
-    try {
-      // Dev and build need DIFFERENT loader paths (the recurring trap):
-      // - dev: Vite's transform middleware refuses module-imports of /public
-      //   files, so import the workspace package — Vite serves it fine.
-      // - build: the npm specifier would bundle the loader into /_astro/,
-      //   where Stencil's lazy entry chunks 404 — import the COPIED runtime.
-      //   The URL sits in a variable because Rollup resolves literal dynamic
-      //   imports even behind @vite-ignore and fails the build.
-      let mod: { defineCustomElements: (win?: Window) => Promise<unknown> };
-      if (import.meta.env.DEV) {
-        mod = await import('@awc-ui/core/loader');
-      } else {
-        const runtimeUrl = '/awc-runtime/md3/md3.esm.js';
-        await import(/* @vite-ignore */ runtimeUrl);
-        await customElements.whenDefined("md-button");
-        return;
-      }
-      await mod.defineCustomElements(window);
-    } catch (err) {
-      console.warn('[AWC UI] hero loader failed:', err);
-    }
-  };
-
-  const preview = document.querySelector('[data-awc-hero-preview]');
-  if (preview && 'IntersectionObserver' in window) {
-    const obs = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          obs.disconnect();
-          loadElements();
-        }
-      },
-      { rootMargin: '300px' },
-    );
-    obs.observe(preview);
-  } else {
-    loadElements();
-  }
+  // Head.astro owns registration and preloads this hero's exact chunks.
+  // A tag being defined is only the lazy proxy; componentOnReady waits for
+  // its shadow styles and children before any scripted demo starts.
+  const preview = document.querySelector<HTMLElement>('[data-awc-hero-preview]');
+  const previewReady = Promise.all(
+    Array.from(preview?.querySelectorAll<HTMLElement>('*') ?? [])
+      .filter((element) => element.localName.startsWith('md-'))
+      .map(async (element) => {
+        await customElements.whenDefined(element.localName);
+        await (element as HTMLElement & { componentOnReady?: () => Promise<unknown> }).componentOnReady?.();
+      }),
+  ).then(() => {
+    preview?.removeAttribute('data-awc-preview-pending');
+  });
 
   // 3. Cursor-driven parallax for the preview card (subtle).
   const stage = document.querySelector<HTMLElement>('[data-awc-hero] .awc-hero__preview-stage');
@@ -321,9 +292,10 @@ import stats from "../data/stats.json";
   //    on the custom element (which the Stencil component reflects to
   //    its attribute and shadow DOM). Pauses when offscreen and when
   //    the user prefers reduced motion.
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!reduceMotion) {
-    const cycleTarget = document.querySelector<HTMLElement & { checked?: boolean }>(
+  void previewReady.then(() => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) return;
+    const cycleTarget = document.querySelector<HTMLElement & { selected: boolean }>(
       '[data-awc-cycle]',
     );
     const previewEl = document.querySelector('[data-awc-hero-preview]');
@@ -333,13 +305,7 @@ import stats from "../data/stats.json";
         if (intervalId !== null) return;
         intervalId = window.setInterval(() => {
           if (document.hidden) return;
-          if ('checked' in cycleTarget) {
-            cycleTarget.checked = !cycleTarget.checked;
-          } else if (cycleTarget.hasAttribute('checked')) {
-            cycleTarget.removeAttribute('checked');
-          } else {
-            cycleTarget.setAttribute('checked', '');
-          }
+          cycleTarget.selected = !cycleTarget.selected;
         }, 3800);
       };
       const stop = () => {
@@ -437,7 +403,7 @@ import stats from "../data/stats.json";
         }
       }
     }
-  }
+  }).catch((err) => console.warn('[AWC UI] hero initialization failed:', err));
 </script>
 
 <style>
@@ -1175,6 +1141,8 @@ import stats from "../data/stats.json";
     /* Every cell is exactly one button-tall so the icons and text
        buttons share the same vertical centre line. */
     grid-auto-rows: 40px;
+    /* Keep the row while Stencil temporarily relocates its slotted children. */
+    min-block-size: 40px;
   }
 
   /* Each button is wrapped in an md-tooltip whose shadow DOM
@@ -1275,6 +1243,47 @@ import stats from "../data/stats.json";
      The shadow DOM honours --md-sys-* tokens already; we only need
      to fix sizing/spacing.
      ============================================================ */
+  /* The floating annotations use icon-font spans, not custom elements.
+     Reserve a glyph box while the font loads so ligature text cannot widen
+     a chip and then snap back when the symbol becomes available. */
+  .awc-hero__preview-stage .material-symbols-outlined {
+    display: inline-block;
+    inline-size: 1em;
+    block-size: 1em;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  /* Reserve only the live controls, not the surrounding hero. Stencil defines
+     lazy proxies before their CSS exists, so :defined is too early here.
+     The switch and xs slider floors mirror their documented public sizing;
+     the cadence group already reserves 40px cells above. */
+  .awc-hero__preview-stage :is(md-switch, md-slider, md-loading-indicator, md-button-group, md-button, md-icon-button, md-tooltip):not(.hydrated) {
+    visibility: hidden;
+  }
+
+  .awc-hero__preview-stage md-switch:not(.hydrated) {
+    display: inline-block;
+    inline-size: var(--md-switch-track-width, max(28px, calc(52px + var(--md-sys-density-scale, 0) * 6px)));
+    min-block-size: max(48px, calc(var(--md-switch-track-height, 32px) + var(--md-sys-density-scale, 0) * 4px));
+    flex-shrink: 0;
+  }
+
+  .awc-hero__suggestion-slider:not(.hydrated) {
+    display: block;
+    min-block-size: var(--md-slider-thumb-height, max(24px, calc(44px + var(--md-sys-density-scale, 0) * 4px)));
+  }
+
+  .awc-hero__card-loader:not(.hydrated) {
+    display: inline-block;
+    inline-size: var(--md-loading-indicator-size);
+    block-size: var(--md-loading-indicator-size);
+  }
+
+  [data-awc-preview-pending] :is(.awc-hero__chip, .awc-hero__badge) {
+    animation-play-state: paused;
+  }
+
   .awc-hero__preview-stage md-switch {
     --md-switch-track-shape: var(--md-sys-shape-corner-full);
   }

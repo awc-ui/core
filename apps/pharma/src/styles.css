@@ -1048,6 +1048,7 @@ md-table-cell {
 .settings-sheet {
   --md-side-sheet-width: 420px;
   --md-side-sheet-max-width: 460px;
+  --md-color-picker-width: 100%;
 }
 .form-grid {
   display: grid;
@@ -1165,6 +1166,15 @@ md-table-cell {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   font-size: 13px;
+}
+.research-notes {
+  --md-list-item-expanded-panel-padding-block: 12px;
+  --md-list-item-expanded-panel-padding-inline: 16px;
+}
+.research-notes md-list-item::part(supporting-text) {
+  -webkit-line-clamp: unset;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .settings-section {
   display: grid;

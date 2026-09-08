@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node ../../scripts/dev-docs.mjs",
     "generate-data": "node ../../scripts/generate-docs.mjs",
-    "build": "pnpm sync-runtime && astro build && node ../../scripts/verify-standalone-showcases.mjs",
+    "build": "pnpm test && pnpm sync-runtime && astro build && node ../../scripts/verify-standalone-showcases.mjs",
+    "test": "node --experimental-strip-types --test ../../scripts/docs-runtime-preloads.test.mjs",
     "preview": "astro preview",
     "sync-runtime": "node ../../scripts/sync-docs-runtime.mjs",
     "preview:prod": "node ../../scripts/serve-docs-prod.mjs"

@@ -35,10 +35,21 @@
  *     pulls the components it uses.
  */
 import Default from '@astrojs/starlight/components/Head.astro';
+import heroMarkup from './HeroSection.astro?raw';
+import { getHeroRuntimePreloads } from '../lib/runtime-preloads';
+
+// Server-only raw imports: resolve Stencil's current hashed chunks at build
+// time. sync-runtime copies this same production build to /awc-runtime/.
+// None of these source strings are included in the page's client JavaScript.
+const runtimeModules = import.meta.glob<string>(
+  '../../../../packages/core/dist/md3/*.js',
+  { eager: true, query: '?raw', import: 'default' },
+);
 
 const { entry, head, lang } = Astro.locals.starlightRoute;
 const pathname = Astro.url.pathname;
 const isHome = pathname === '/';
+const heroPreloads = isHome ? getHeroRuntimePreloads(runtimeModules, heroMarkup) : [];
 const isNotFound = pathname === '/404/';
 const componentMatch = pathname.match(/^\/components\/([^/]+)\/$/);
 const canonical = String(
@@ -97,6 +108,10 @@ const articleJsonLd = !isHome && !isNotFound
 ---
 
 <Default><slot /></Default>
+
+{/* Begin the above-the-fold component requests during HTML parsing instead
+    of waiting for the lazy bootstrap to discover each connected element. */}
+{heroPreloads.map((href) => <link rel="modulepreload" href={href} />)}
 
 <meta
   name="robots"

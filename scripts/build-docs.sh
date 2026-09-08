@@ -19,6 +19,8 @@ ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 cd "$ROOT"
 
+pnpm --filter @awc-ui/docs test
+
 echo "==> Building core library..."
 pnpm --filter @awc-ui/core build
 

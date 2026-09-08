@@ -54,7 +54,19 @@ function analystOptions(state, currentId) {
 // Status chips supply the library's visual treatment; the named wrapper exposes
 // the read-only information without putting an inert action in the tab order.
 function statusChip(label, color = "secondary", prefix = "") {
-  return `<span class="detail-status" role="img" aria-label="${esc(prefix ? `${prefix}: ${label}` : label)}"><md-chip variant="assist" appearance="filled" color="${color}" label="${esc(label)}" inert aria-hidden="true"></md-chip></span>`;
+  const icon = {
+    Draft: "draft",
+    Queued: "schedule",
+    Running: "science",
+    Review: "fact_check",
+    Completed: "task_alt",
+    Urgent: "error",
+    High: "priority_high",
+    Normal: "low_priority",
+    "MFA verified": "verified_user",
+    "Demo session": "science",
+  }[label] || "label";
+  return `<span class="detail-status" role="img" aria-label="${esc(prefix ? `${prefix}: ${label}` : label)}"><md-chip variant="assist" appearance="outlined" color="${color}" icon="${icon}" label="${esc(label)}" inert aria-hidden="true"></md-chip></span>`;
 }
 const statusColor = (status) =>
   ({
@@ -145,12 +157,12 @@ function notesMarkup(run) {
   return `<section class="detail-section"><h3>Research notes</h3>
     ${
       run.notes.length
-        ? `<md-list label="Research notes">${[...run.notes]
+        ? `<md-list class="research-notes" label="Research notes">${[...run.notes]
             .reverse()
-            .map(
-              (note) =>
-                `<md-list-item type="text" expandable headline="${esc(note.author)}" overline="${esc(date(note.at))} UTC" supporting-text="${esc(note.text.length > 90 ? `${note.text.slice(0, 87)}…` : note.text)}" lines="3"><p slot="expanded-content" class="detail-note-text">${esc(note.text)}</p></md-list-item>`,
-            )
+            .map((note) => {
+              const expandable = note.text.length > 90;
+              return `<md-list-item type="text"${expandable ? " expandable" : ""} headline="${esc(note.author)}" overline="${esc(date(note.at))} UTC" supporting-text="${esc(expandable ? "Read full note" : note.text)}" lines="3">${expandable ? `<p slot="expanded-content" class="detail-note-text">${esc(note.text)}</p>` : ""}</md-list-item>`;
+            })
             .join("")}</md-list>`
         : '<p class="detail-caption">No notes yet. Add context for the next person.</p>'
     }

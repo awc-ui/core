@@ -26,6 +26,8 @@ chart, a small table, and a dark-mode switch.
 
 ## Run it
 
+Use Node.js 22.12 or later, as required by Astro 7.
+
 ```sh
 npm install
 npm run dev       # http://localhost:4321

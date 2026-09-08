@@ -24,7 +24,7 @@ Every starter's README carries an **Open in StackBlitz** badge of the form
 
 ## Run any of them
 
-Use Node.js 20.19 or later.
+Use Node.js 20.19 or later. The Astro starter requires Node.js 22.12 or later.
 
 ```sh
 cd <starter>

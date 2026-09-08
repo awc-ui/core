@@ -93,6 +93,19 @@ async function start(name, cwd) {
   let argv = ['run', 'preview', '--', '--host', '127.0.0.1', '--port', String(port)];
   if (name === 'next') argv = ['start', '--', '--hostname', '127.0.0.1', '--port', String(port)];
   if (name === 'sveltekit') argv.push('--strictPort');
+  if (name === 'astro') {
+    // Astro 7's CLI detaches in agent environments. The public API keeps this
+    // verifier's server in its child process so readiness and cleanup are owned here.
+    command = process.execPath;
+    argv = ['--input-type=module', '--eval', `
+      import { preview } from 'astro';
+      const server = await preview({ server: { host: '127.0.0.1', port: ${port} }, vite: { preview: { strictPort: true } } });
+      for (const signal of ['SIGTERM', 'SIGINT']) process.once(signal, async () => {
+        await server.stop();
+        process.exit(0);
+      });
+    `];
+  }
   if (name === 'nuxt') {
     command = process.execPath;
     argv = ['.output/server/index.mjs'];

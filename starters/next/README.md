@@ -5,8 +5,8 @@
 > The StackBlitz link works once this directory lands on the `main` branch of
 > [awc-ui/core](https://github.com/awc-ui/core).
 
-A minimal Next.js App Router project using the published `@awc-ui/react`,
-`@awc-ui/core` and `@awc-ui/tokens` packages. It renders a compact
+A minimal Next.js 16 App Router project with React 19 using the published
+`@awc-ui/react`, `@awc-ui/core` and `@awc-ui/tokens` packages. It renders a compact
 mini-dashboard — app bar, two stat cards, a line chart, a small table, and a
 dark-mode switch.
 
@@ -28,6 +28,9 @@ dark-mode switch.
   which swaps the token palette.
 
 ## Run it
+
+Use Node.js 20.19 or newer. The starter uses Next.js 16's default Turbopack
+bundler for development and production builds.
 
 ```sh
 npm install
