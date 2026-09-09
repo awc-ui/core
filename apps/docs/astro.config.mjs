@@ -486,6 +486,8 @@ export default defineConfig({
             { label: 'Medflow — Hospital Cases', link: '/showcase/medflow/' },
             { label: 'Vela — Pharmaceutical Testing', link: '/showcase/pharma/' },
             { label: 'Roam — Travel Booking', link: '/showcase/booking/' },
+            { label: 'Aero — Flight Booking', link: '/showcase/aero/' },
+            { label: 'Maple House — Smart Home', link: '/showcase/smart-home/' },
             { label: 'Metro pulse — Station Operations', link: '/showcase/metro-monitor/' },
             { label: 'Sentinel — SCADA Monitoring', link: '/showcase/scada/' },
           ],

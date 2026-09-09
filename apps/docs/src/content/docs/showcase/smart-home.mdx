@@ -1,0 +1,71 @@
+---
+title: Maple House — Smart Home
+description: "Explore Habitat's Maple House with simulated device controls, scenes, climate, energy, routines, Arabic, and appearance settings built from AWC UI components."
+---
+
+**Maple House is the demo residence in Habitat, a smart home application built with AWC UI.**
+Control devices across five rooms, apply coordinated scenes, and see how the same
+home state appears in the overview, room details, energy charts, and routines.
+
+[Open Maple House](/showcase/smart-home/html/) ·
+[Explore rooms](/showcase/smart-home/html/#/rooms)
+
+## Try it in five minutes
+
+1. **Set the mood.** Toggle lights and adjust brightness, speaker volume, fan
+   speed, or blinds. Open device details and choose your favorites.
+2. **Explore the rooms.** Switch between the living room, kitchen, bedroom,
+   office, and entrance. The offline hallway plug demonstrates an unavailable device.
+3. **Apply a scene.** Try Welcome home, Movie night, Away, or Good night. Lights,
+   blinds, and climate update together across views.
+4. **Review energy and routines.** Compare daily and weekly sample readings,
+   change climate settings, and create a routine. Use **Run now** to apply its scene.
+5. **Make it yours.** Open settings beside the avatar to change the primary
+   color, density, light/dark appearance, English/Arabic language, and reading direction.
+
+Device controls are simulations. They do not connect to physical lights, locks,
+climate equipment, or other devices. Routine schedules are previews; they do not
+run background automation.
+
+## Components in context
+
+| Workflow | AWC components |
+| -------- | -------------- |
+| Home navigation | [Navigation rail](/components/navigation-rail/), [Navigation bar](/components/navigation-bar/), [App bar](/components/app-bar/), [Avatar](/components/avatar/) |
+| Devices and scenes | [Card](/components/card/), [Switch](/components/switch/), [Slider](/components/slider/), [Chip](/components/chip/), [Status dot](/components/status-dot/), [List](/components/list/) |
+| Energy and climate | [Bar chart](/components/bar-chart/), [Sparkline](/components/sparkline/), [Meter](/components/meter/), [Segmented buttons](/components/segmented-button/) |
+| Routines and preferences | [Text field](/components/text-field/), [Select](/components/select/), [Time picker](/components/time-picker/), [Color picker](/components/color-picker/), [Dialog](/components/dialog/), [Side sheet](/components/side-sheet/) |
+| Action feedback | [Button](/components/button/), [Icon button](/components/icon-button/), [Skeleton](/components/skeleton/), [Tooltip](/components/tooltip/), [Snackbar](/components/snackbar/) |
+
+The navigation rail uses the library's own expand/collapse behavior. Application
+CSS arranges the controls with public component tokens; device and scene state
+is managed by the application.
+
+## Build and data
+
+Habitat lives in `apps/smart-home` as a plain JavaScript application. The docs
+build stages its output at `/showcase/smart-home/html/`, with local AWC runtime
+files, fonts, theme generation, and the illustrative living room image.
+Relative asset paths and hash routes allow the app to run beneath the docs URL.
+
+Device state, routines, and activity live in memory and reset on reload.
+Appearance, language, and layout preferences remain in `localStorage`. The
+sample homeowner avatar is part of the demo; no identity provider or home
+automation backend is connected.
+
+## Run locally
+
+From the repository root, with core built:
+
+```sh
+pnpm --filter @awc-ui/smart-home dev
+```
+
+Open [Maple House locally](http://127.0.0.1:4497/). Rebuild and refresh after
+source changes. Validate the app with:
+
+```sh
+pnpm --filter @awc-ui/smart-home lint
+pnpm --filter @awc-ui/smart-home test
+pnpm --filter @awc-ui/smart-home build
+```

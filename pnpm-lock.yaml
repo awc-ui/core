@@ -61,6 +61,40 @@ importers:
         specifier: ^8.59.2
         version: 8.67.0(eslint@10.8.1(jiti@2.7.0))(typescript@5.4.5)
 
+  apps/aero:
+    dependencies:
+      '@awc-ui/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@awc-ui/react':
+        specifier: workspace:*
+        version: link:../../packages/react
+      '@stencil/react-output-target':
+        specifier: 1.6.1
+        version: 1.6.1(@stencil/core@4.44.0)(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@types/react':
+        specifier: ^18.2.0
+        version: 18.3.31
+      '@types/react-dom':
+        specifier: ^18.2.0
+        version: 18.3.7(@types/react@18.3.31)
+      '@vitejs/plugin-react':
+        specifier: ^4.2.0
+        version: 4.7.0(vite@5.4.21(@types/node@24.13.3)(less@4.9.0)(lightningcss@1.33.0)(sass@1.103.0)(terser@5.50.0))
+      typescript:
+        specifier: ^5.4.0
+        version: 5.4.5
+      vite:
+        specifier: ^5.0.0
+        version: 5.4.21(@types/node@24.13.3)(less@4.9.0)(lightningcss@1.33.0)(sass@1.103.0)(terser@5.50.0)
+
   apps/booking:
     dependencies:
       '@awc-ui/core':
@@ -1954,6 +1988,12 @@ importers:
       vue-tsc:
         specifier: ^2.0.0
         version: 2.2.12(typescript@5.4.5)
+
+  apps/smart-home:
+    dependencies:
+      '@awc-ui/core':
+        specifier: workspace:*
+        version: link:../../packages/core
 
   apps/storybook:
     dependencies:

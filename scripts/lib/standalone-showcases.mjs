@@ -1,6 +1,18 @@
 /** Standalone applications staged alongside the cross-framework showcases. */
 export const STANDALONE_SHOWCASES = Object.freeze([
   {
+    id: "aero",
+    title: "Aero",
+    frameworks: ["react"],
+    required: ["favicon.svg"],
+  },
+  {
+    id: "smart-home",
+    title: "Habitat — Maple House",
+    frameworks: ["html"],
+    required: ["awc/md3.esm.js", "awc/md3.css", "app.js", "vendor/awc-theme.mjs", "images/living-room.png"],
+  },
+  {
     id: "encore",
     title: "Encore",
     frameworks: ["html", "react", "vue", "angular", "svelte"],

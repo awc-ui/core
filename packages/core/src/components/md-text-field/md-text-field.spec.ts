@@ -7,6 +7,25 @@ async function createField(html: string): Promise<SpecPage> {
   return newSpecPage({ components: [MdTextField], html });
 }
 
+// newSpecPage models the lazy output with a separate host and instance. This
+// fixture exercises the direct custom-element shape using the real bridge and
+// display logic, where @Element resolves to the component instance itself.
+function createDirectFormatterHost(formatter?: (value: string) => string, parser?: (value: string) => string) {
+  const field = {
+    el: undefined as unknown as HTMLElement,
+    value: '1234',
+    displayValue: '1234',
+    focused: false,
+    formatterEpoch: 0,
+    formatter,
+    parser,
+    syncDisplayValue: MdTextField.prototype['syncDisplayValue'],
+  };
+  field.el = field as unknown as HTMLElement;
+  MdTextField.prototype['bridgeFormatterProps'].call(field as unknown as MdTextField);
+  return field;
+}
+
 // Helper: simulate typing into input
 function typeInto(input: HTMLInputElement | HTMLTextAreaElement, value: string) {
   input.value = value;
@@ -745,6 +764,69 @@ describe('md-text-field', () => {
   // ══════════════════════════════════════════════════════════
 
   describe('formatter / parser', () => {
+    it('preserves preassigned callbacks when the direct host is the component instance', () => {
+      const formatter = (value: string) => `#${value}`;
+      const parser = (value: string) => value.replace(/\D/g, '');
+      const field = createDirectFormatterHost(formatter, parser);
+
+      expect(field.formatter).toBe(formatter);
+      expect(field.parser).toBe(parser);
+      field.syncDisplayValue();
+      expect(field.displayValue).toBe('#1234');
+      expect(field.parser?.('#1,234')).toBe('1234');
+    });
+
+    it('supports repeated direct-host callback updates and removal without recursion', () => {
+      const field = createDirectFormatterHost();
+      field.formatter = (value: string) => `#${value}`;
+      expect(field.displayValue).toBe('#1234');
+      field.formatter = (value: string) => `$${value}`;
+      expect(field.displayValue).toBe('$1234');
+
+      const parser = (value: string) => value.replace(/\D/g, '');
+      field.parser = parser;
+      expect(field.parser?.('$1,234')).toBe('1234');
+      field.parser = undefined;
+      field.formatter = undefined;
+      expect(field.parser).toBeUndefined();
+      expect(field.formatter).toBeUndefined();
+      expect(field.displayValue).toBe('1234');
+      expect(field.formatterEpoch).toBe(5);
+    });
+
+    it('keeps the editing display while callbacks change on a focused direct host', () => {
+      const field = createDirectFormatterHost();
+      field.focused = true;
+      field.formatter = (value: string) => `$${value}`;
+      field.parser = (value: string) => value.replace(/\D/g, '');
+      expect(field.displayValue).toBe('1234');
+      expect(field.formatterEpoch).toBe(2);
+
+      field.focused = false;
+      field.syncDisplayValue();
+      expect(field.displayValue).toBe('$1234');
+    });
+
+    it('forwards element callback updates to a separate lazy component instance', async () => {
+      const page = await createField(`<md-text-field value="1234"></md-text-field>`);
+      const host = page.root as HTMLMdTextFieldElement;
+      const formatter = (value: string) => `#${value}`;
+      const parser = (value: string) => value.replace(/\D/g, '');
+      host.formatter = formatter;
+      host.parser = parser;
+      await page.waitForChanges();
+      expect(page.rootInstance.formatter).toBe(formatter);
+      expect(page.rootInstance.parser).toBe(parser);
+      expect(page.rootInstance.displayValue).toBe('#1234');
+
+      host.formatter = undefined;
+      host.parser = undefined;
+      await page.waitForChanges();
+      expect(page.rootInstance.formatter).toBeUndefined();
+      expect(page.rootInstance.parser).toBeUndefined();
+      expect(page.rootInstance.displayValue).toBe('1234');
+    });
+
     it('displays formatted value when not focused', async () => {
       const page = await createField(`<md-text-field value="1000"></md-text-field>`);
       page.rootInstance.formatter = (v: string) => Number(v).toLocaleString('en-US');

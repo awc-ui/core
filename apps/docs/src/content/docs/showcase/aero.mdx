@@ -1,0 +1,74 @@
+---
+title: Aero — Flight Booking
+description: "Search simulated flights, compare fares, choose seats and bags, review prices, and manage demo trips in a React application built with existing AWC UI components."
+---
+
+**Aero is a flight-booking application built with the AWC UI React components.**
+Explore a complete journey from an airport search through fare selection,
+traveler details, seat choices, price review, and a sample confirmation.
+
+[Open Aero](/showcase/aero/react/) ·
+[Open My trips](/showcase/aero/react/#trips)
+
+## Try it in five minutes
+
+1. **Find a flight.** Choose one way or round trip, select airports and dates,
+   and search for up to six adult travelers across eight European airports.
+2. **Compare the options.** Filter or sort the simulated results, choose a fare,
+   and select an outbound flight and a return when needed.
+3. **Add traveler details.** Enter fictional passenger names and a contact
+   email. Required fields and validation keep the next step clear.
+4. **Choose seats and bags.** Explore the seat map, compare included and paid
+   seats, and review how an extra checked bag changes the total.
+5. **Review and manage the trip.** Confirm the sample itinerary, open My trips,
+   print its details, or cancel the demo booking. Cancelled trips remain visible
+   for reference.
+
+Flights, availability, prices, seats, and bookings are demonstration data.
+The app does not reserve airline inventory, issue a ticket, charge a card, or
+send an email. Use fictional passenger details when exploring checkout.
+
+## Components in context
+
+| Workflow | AWC components |
+| -------- | -------------- |
+| Search and workspace navigation | [App bar](/components/app-bar/), [Tabs](/components/tabs/), [Autocomplete](/components/autocomplete/), [Date picker](/components/date-picker/), [Select](/components/select/), [Button group](/components/button-group/) |
+| Results and fare comparison | [Card](/components/card/), [Segmented buttons](/components/segmented-button/), [Button](/components/button/), [Icon button](/components/icon-button/), [Divider](/components/divider/) |
+| Traveler details and seat choices | [Text field](/components/text-field/), [Checkbox](/components/checkbox/), [Stepper](/components/stepper/), [Tooltip](/components/tooltip/) |
+| Trips and action feedback | [List](/components/list/), [Dialog](/components/dialog/), [Loading indicator](/components/loading-indicator/) |
+
+The seat-map geometry and booking model belong to the application. Each seat
+uses an existing core toggle button. The search controls remain mounted while
+switching workspace tabs, preserving their initialized selection and keyboard
+behavior. Existing form controls provide focus, validation, and input semantics.
+
+## Build and data
+
+The React application lives in `apps/aero`. Vite builds it against the workspace
+core and React packages; the docs stage the static output at
+`/showcase/aero/react/`. Fonts, icons, and the illustrative flight banner are
+served with the app. Hash navigation and relative asset paths support this
+deployment prefix.
+
+This docs build stores sample bookings in the current tab's `sessionStorage`.
+Trips survive reloads in that tab and are separate from the original hosted
+Aero application's booking database. The local booking service validates the
+search, passenger details, fares, seats, and price calculation before recording
+an itinerary. It preserves matching booking retries to prevent duplicates.
+It is a frontend demonstration, with no account or airline backend.
+
+## Run locally
+
+From the repository root, with core and React built:
+
+```sh
+pnpm --filter @awc-ui/aero dev
+```
+
+Open [Aero locally](http://127.0.0.1:4498/). Validate the app with:
+
+```sh
+pnpm --filter @awc-ui/aero lint
+pnpm --filter @awc-ui/aero test
+pnpm --filter @awc-ui/aero build
+```

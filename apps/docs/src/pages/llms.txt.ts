@@ -104,6 +104,16 @@ function buildManifest(): string {
       "Roam travel booking",
       "Destination discovery, filters, property details, saved stays, demo checkout, trips, login, signup, MFA, and appearance preferences.",
     ),
+    link(
+      "/showcase/aero/",
+      "Aero flight booking",
+      "Flight search, fares, traveler details, seats, bags, booking review, and tab-local demo trips using AWC React components.",
+    ),
+    link(
+      "/showcase/smart-home/",
+      "Maple House smart home",
+      "Habitat home controls with simulated rooms, devices, scenes, climate, energy charts, routines, Arabic, and appearance settings.",
+    ),
     "",
     "## Framework packages",
     "",

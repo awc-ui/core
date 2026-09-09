@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#365ce6" />
+    <title>Habitat — Smart home</title>
+    <meta
+      name="description"
+      content="Your home, connected. Explore room controls, lighting scenes, climate, energy and routines in an interactive AWC UI smart home demo."
+    />
+    <link rel="icon" href="./favicon.svg" />
+    <script src="./preboot.js"></script>
+    <link rel="stylesheet" href="./awc/md3.css" />
+    <link rel="stylesheet" href="./theme.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./awc/md3.esm.js"></script>
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to home controls</a>
+    <div id="app">
+      <div class="boot-loader" role="status" aria-label="Loading home">
+        <md-skeleton variant="text" width="260px" height="40px"></md-skeleton
+        ><md-skeleton variant="text" width="320px"></md-skeleton
+        ><md-skeleton variant="rounded" full-width height="256px"></md-skeleton>
+        <div class="device-grid">
+          <md-skeleton variant="rounded" height="220px" full-width></md-skeleton
+          ><md-skeleton
+            variant="rounded"
+            height="220px"
+            full-width
+          ></md-skeleton>
+        </div>
+      </div>
+    </div>
+    <div id="overlays"></div>
+    <md-snackbar id="toast" closeable position="bottom-end"></md-snackbar
+    ><span id="action-status" role="status" class="sr-only"></span
+    ><noscript
+      ><p>Enable JavaScript to use Habitat’s smart home controls.</p></noscript
+    >
+  </body>
+</html>

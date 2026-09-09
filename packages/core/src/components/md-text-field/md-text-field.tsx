@@ -676,13 +676,20 @@ export class MdTextField {
    *  explicit accessors so the documented `el.formatter = fn` path
    *  reformats the resting display and re-renders (maxLength omission etc). */
   private bridgeFormatterProps() {
+    // Direct custom elements use the host as the component instance; lazy
+    // builds use separate objects. Forwarding to this[key] in the direct
+    // build would invoke the accessor itself and overflow the stack. Capture
+    // initial callbacks before installing accessors so both outputs preserve
+    // functions assigned before the component loads.
+    const directHost = this.el === (this as unknown as HTMLElement);
     (['formatter', 'parser'] as const).forEach((key) => {
-      const el = this.el as unknown as Record<string, unknown>;
+      let current = this[key];
       Object.defineProperty(this.el, key, {
         configurable: true,
-        get: () => this[key],
+        get: () => directHost ? current : this[key],
         set: (fn: ((v: string) => string) | undefined) => {
-          this[key] = fn as never;
+          if (directHost) current = fn;
+          else this[key] = fn;
           // recompute the display BEFORE the reactive poke — spec-env renders
           // flush synchronously per state set, and a stale displayValue would
           // win the final patch
@@ -692,7 +699,6 @@ export class MdTextField {
           this.formatterEpoch++; // re-render (maxLength omission, display)
         },
       });
-      void el;
     });
   }
 

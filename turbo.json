@@ -134,7 +134,9 @@
         "@awc-ui/booking#build",
         "@awc-ui/metro-monitor#build",
         "@awc-ui/scada#build",
-        "@awc-ui/encore#build"
+        "@awc-ui/encore#build",
+        "@awc-ui/aero#build",
+        "@awc-ui/smart-home#build"
       ],
       "outputs": [
         "dist/**"
@@ -174,7 +176,21 @@
         "../../apps/encore/public/**",
         "../../apps/encore/scripts/**",
         "../../apps/encore/frameworks/**",
-        "../../apps/encore/package.json"
+        "../../apps/encore/package.json",
+        "../../apps/aero/src/**",
+        "../../apps/aero/public/**",
+        "../../apps/aero/scripts/**",
+        "../../apps/aero/package.json",
+        "../../apps/smart-home/src/**",
+        "../../apps/smart-home/public/**",
+        "../../apps/smart-home/scripts/**",
+        "../../apps/smart-home/package.json",
+        "../../apps/aero/app/**",
+        "../../apps/aero/lib/**",
+        "../../apps/aero/tests/**",
+        "../../apps/aero/index.html",
+        "../../apps/aero/vite.config.ts",
+        "../../apps/aero/tsconfig.json"
       ]
     },
     "test": {
