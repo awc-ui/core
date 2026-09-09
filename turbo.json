@@ -131,8 +131,10 @@
         "@awc-ui/frame#build",
         "@awc-ui/medflow#build",
         "@awc-ui/pharma#build",
+        "@awc-ui/booking#build",
         "@awc-ui/metro-monitor#build",
-        "@awc-ui/scada#build"
+        "@awc-ui/scada#build",
+        "@awc-ui/encore#build"
       ],
       "outputs": [
         "dist/**"
@@ -154,6 +156,10 @@
         "../../apps/pharma/public/**",
         "../../apps/pharma/scripts/**",
         "../../apps/pharma/package.json",
+        "../../apps/booking/src/**",
+        "../../apps/booking/public/**",
+        "../../apps/booking/scripts/**",
+        "../../apps/booking/package.json",
         "../../apps/scada/src/**",
         "../../apps/scada/public/**",
         "../../apps/scada/scripts/**",
@@ -163,7 +169,12 @@
         "../../apps/metro-monitor/index.html",
         "../../apps/metro-monitor/vite.config.ts",
         "../../apps/metro-monitor/tsconfig.json",
-        "../../apps/metro-monitor/package.json"
+        "../../apps/metro-monitor/package.json",
+        "../../apps/encore/src/**",
+        "../../apps/encore/public/**",
+        "../../apps/encore/scripts/**",
+        "../../apps/encore/frameworks/**",
+        "../../apps/encore/package.json"
       ]
     },
     "test": {

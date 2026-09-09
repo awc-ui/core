@@ -32,14 +32,15 @@ export default function workspaceShowcases() {
           (app) => app.id !== "frame",
         )) {
           await buildApp(app.id);
-          const route = `showcase/${app.id}/${app.frameworks[0]}/`;
-          const destination = fileURLToPath(new URL(route, config.publicDir));
-          await rm(destination, { recursive: true, force: true });
-          await mkdir(destination, { recursive: true });
-          await cp(resolve(repo, "apps", app.id, "dist"), destination, {
-            recursive: true,
-          });
-          logger.info(`${app.title} staged at /${route}`);
+          for (const framework of app.frameworks) {
+            const route = `showcase/${app.id}/${framework}/`;
+            const destination = fileURLToPath(new URL(route, config.publicDir));
+            const source = resolve(repo, "apps", app.id, "dist", ...(app.frameworks.length > 1 ? [framework] : []));
+            await rm(destination, { recursive: true, force: true });
+            await mkdir(destination, { recursive: true });
+            await cp(source, destination, { recursive: true });
+            logger.info(`${app.title} staged at /${route}`);
+          }
         }
       },
     },

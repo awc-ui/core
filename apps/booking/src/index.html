@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#006b5e" />
+    <meta name="description" content="Roam — find a stay worth going somewhere for. An interactive travel booking showcase built with AWC UI." />
+    <title>Roam · Find your somewhere</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="./fonts/roboto-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="./fonts/material-symbols-outlined.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="./images/coast.jpg" as="image" />
+    <link rel="stylesheet" href="./awc/md3.css" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./auth.css" />
+    <style id="roam-primary-theme"></style>
+    <script src="./preboot.js"></script>
+    <script type="module" src="./awc/md3.esm.js"></script>
+    <script type="module" src="./bootstrap.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div id="app"></div>
+    <div id="startup" class="startup" role="status" aria-label="Loading your next getaway">
+      <span class="wordmark">roam<span>✳</span></span>
+      <md-skeleton variant="rounded" height="430px" full-width announce="false"></md-skeleton>
+      <md-skeleton height="32px" width="300px" announce="false"></md-skeleton>
+      <div class="property-grid"> <md-skeleton variant="rounded" height="280px" announce="false"></md-skeleton><md-skeleton variant="rounded" height="280px" announce="false"></md-skeleton><md-skeleton variant="rounded" height="280px" announce="false"></md-skeleton></div>
+    </div>
+    <div id="overlays"></div>
+    <md-snackbar id="toast" position="bottom-end" closeable auto-hide-duration="5000"></md-snackbar>
+    <noscript><p class="startup">Please enable JavaScript to explore the Roam booking demo.</p></noscript>
+  </body>
+</html>

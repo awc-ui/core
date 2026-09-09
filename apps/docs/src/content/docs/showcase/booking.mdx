@@ -1,0 +1,95 @@
+---
+title: Roam — Travel Booking
+description: "Travel booking with destination search, stay filters, saved properties, demo reservations, login, signup, MFA, and appearance settings using AWC UI components."
+---
+
+**Roam is a travel discovery and booking application built with existing AWC UI components.**
+Browse places to stay, compare fictional properties, and take a sample reservation
+from search through checkout and into My trips.
+
+[Open Roam](/showcase/booking/html/)
+
+## Try it in five minutes
+
+1. **Find a stay.** Enter a destination, choose your dates and guests, and search
+   the property collection.
+2. **Narrow your choices.** Filter the results by your preferences, compare
+   prices, and open a property for its photos, amenities, capacity, and cancellation policy.
+3. **Save a favorite.** Keep a property in Saved stays and return to it later.
+4. **Book a sample trip.** Choose a stay, complete the traveler details, and
+   review the reservation total before confirming. Open My trips to inspect the
+   resulting sample booking, download a confirmation, or cancel an eligible upcoming stay.
+5. **Make it yours.** Open settings to change the primary color, density,
+   appearance, and left-to-right or right-to-left layout.
+
+Properties, availability, prices, reviews, and reservations are demonstration
+data. Checkout does not contact a hotel, charge a card, or reserve a real room.
+
+## Explore the account flow
+
+Browse the stays before signing in. The account controls demonstrate login,
+signup, and a six-digit MFA challenge. Choose **Use demo account** or enter:
+
+| Field             | Demo value       |
+| ----------------- | ---------------- |
+| Email             | `alex@roam.demo` |
+| Password          | `RoamDemo!2026`  |
+| Verification code | `246810`         |
+
+You can also create a profile with fictional details. The challenge expires after
+five minutes and permits five attempts; resending has a 30-second cooldown and
+does not reset the attempt budget.
+
+Authentication runs locally in the browser. It does not connect to an identity
+provider or establish a real travel account. Passwords and pending verification
+challenges are not persisted.
+
+## Components in context
+
+| Workflow                         | AWC components                                                                                                                               |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Navigation and search           | [App bar](/components/app-bar/), [Navigation bar and tabs](/components/navigation-bar/), [Text field](/components/text-field/), [Date picker](/components/date-picker/), [Select](/components/select/), [Button](/components/button/), [Icon button](/components/icon-button/) |
+| Property collection and filters  | [Card](/components/card/), [Chip](/components/chip/), [Checkbox](/components/checkbox/), [Number field](/components/number-field/)                       |
+| Property and reservation details | [Dialog](/components/dialog/), [Stepper](/components/stepper/), [Tooltip](/components/tooltip/)                                        |
+| Account and preferences          | [Avatar](/components/avatar/), [OTP field](/components/otp-field/), [Color picker](/components/color-picker/), [Switch](/components/switch/), [Side sheet](/components/side-sheet/) |
+| Loading and action feedback      | [Skeleton](/components/skeleton/), [Progress indicator](/components/progress-indicator/), [Snackbar](/components/snackbar/)                  |
+
+The interface combines existing library controls with travel-specific layout and
+booking state. Its chips, form controls, overlays, and loading feedback use AWC
+component APIs.
+
+## Build and data
+
+The plain JavaScript application lives in `apps/booking`. The documentation build
+stages its static output at `/showcase/booking/html/`, including the local AWC
+runtime, theme generator, and fonts. Hash routes support static hosting beneath
+that path.
+
+Saved stays and appearance preferences remain in `localStorage`. Sample
+reservations and search details use the tab’s `sessionStorage`; the verified demo
+profile is stored there for up to eight hours. Stays and reservations belong to
+the browser session, rather than an account. Signing out clears the profile
+without removing saved stays or reservations. These records are suitable for
+exploring the interface with fictional details; they are not shared with other
+people or a booking service.
+
+The property photographs are illustrative and do not depict the fictional
+hotels in the collection. [Photo credits](/showcase/booking/html/images/CREDITS.md)
+list their sources.
+
+## Run locally
+
+From the repository root, with core and theme built:
+
+```sh
+pnpm --filter @awc-ui/booking dev
+```
+
+Open [Roam locally](http://127.0.0.1:4399/). Rebuild and refresh after source
+changes. Run the application checks with:
+
+```sh
+pnpm --filter @awc-ui/booking lint
+pnpm --filter @awc-ui/booking test
+pnpm --filter @awc-ui/booking build
+```

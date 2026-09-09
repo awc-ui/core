@@ -45,7 +45,10 @@ async function fixture(t) {
 
 test("all advertised standalone builds have separate docs and complete entry assets", async (t) => {
   const { root } = await fixture(t);
-  assert.equal(await verifyStandaloneShowcases(root), 9);
+  assert.equal(
+    await verifyStandaloneShowcases(root),
+    STANDALONE_SHOWCASES.reduce((count, app) => count + app.frameworks.length, 0),
+  );
 });
 
 test("fails if staging overwrites the overview instead of preserving the app subdirectory", async (t) => {

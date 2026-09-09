@@ -87,6 +87,24 @@ function buildManifest(): string {
       "Generate and validate Material Design 3 palettes and downloadable CSS tokens.",
     ),
     "",
+    "## Application showcases",
+    "",
+    link(
+      "/showcase/",
+      "Showcase index",
+      "Complete applications built with AWC UI, including consumer products and operational workspaces.",
+    ),
+    link(
+      "/showcase/encore/",
+      "Encore shows and tickets",
+      "Five framework builds with show discovery, ticket selection, demo checkout, a browser ticket wallet, and AWC loading feedback.",
+    ),
+    link(
+      "/showcase/booking/",
+      "Roam travel booking",
+      "Destination discovery, filters, property details, saved stays, demo checkout, trips, login, signup, MFA, and appearance preferences.",
+    ),
+    "",
     "## Framework packages",
     "",
     link(

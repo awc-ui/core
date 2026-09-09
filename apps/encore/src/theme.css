@@ -1,0 +1,275 @@
+/*!
+ * AWC UI — Material Design 3 theme
+ * Generated: 2026-09-08T18:50:19.003Z
+ * Source colors:
+   primary:   #733EE4
+   secondary: #6A626F
+   tertiary:  #635F27
+ *
+ * Drop this file after @awc-ui/tokens to override the default theme.
+ * Toggle dark mode by setting [data-theme="dark"] on <html> or any ancestor.
+ */
+
+:root {
+  --md-sys-color-primary: #6D37DE;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #E9DDFF;
+  --md-sys-color-on-primary-container: #550BC6;
+  --md-sys-color-inverse-primary: #D0BCFF;
+  --md-sys-color-secondary: #635C68;
+  --md-sys-color-on-secondary: #FFFFFF;
+  --md-sys-color-secondary-container: #EADFEE;
+  --md-sys-color-on-secondary-container: #4B4450;
+  --md-sys-color-tertiary: #646028;
+  --md-sys-color-on-tertiary: #FFFFFF;
+  --md-sys-color-tertiary-container: #EBE59F;
+  --md-sys-color-on-tertiary-container: #4C4812;
+  --md-sys-color-error: #BA1A1A;
+  --md-sys-color-on-error: #FFFFFF;
+  --md-sys-color-error-container: #FFDAD6;
+  --md-sys-color-on-error-container: #93000A;
+  --md-sys-color-background: #FDF8FD;
+  --md-sys-color-on-background: #1C1B1E;
+  --md-sys-color-surface: #FDF8FD;
+  --md-sys-color-on-surface: #1C1B1E;
+  --md-sys-color-surface-variant: #E7E0EB;
+  --md-sys-color-on-surface-variant: #49454E;
+  --md-sys-color-surface-container-lowest: #FFFFFF;
+  --md-sys-color-surface-container-low: #F7F2F7;
+  --md-sys-color-surface-container: #F2ECF1;
+  --md-sys-color-surface-container-high: #ECE7EB;
+  --md-sys-color-surface-container-highest: #E6E1E6;
+  --md-sys-color-surface-dim: #DDD8DD;
+  --md-sys-color-surface-bright: #FDF8FD;
+  --md-sys-color-outline: #7A757F;
+  --md-sys-color-outline-variant: #CAC4CF;
+  --md-sys-color-inverse-surface: #323033;
+  --md-sys-color-inverse-on-surface: #F4EFF4;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-surface-tint: #6D37DE;
+}
+
+[data-theme="dark"] {
+  --md-sys-color-primary: #D0BCFF;
+  --md-sys-color-on-primary: #3B0091;
+  --md-sys-color-primary-container: #550BC6;
+  --md-sys-color-on-primary-container: #E9DDFF;
+  --md-sys-color-inverse-primary: #6D37DE;
+  --md-sys-color-secondary: #CEC3D2;
+  --md-sys-color-on-secondary: #342E39;
+  --md-sys-color-secondary-container: #4B4450;
+  --md-sys-color-on-secondary-container: #EADFEE;
+  --md-sys-color-tertiary: #CFC986;
+  --md-sys-color-on-tertiary: #353200;
+  --md-sys-color-tertiary-container: #4C4812;
+  --md-sys-color-on-tertiary-container: #EBE59F;
+  --md-sys-color-error: #FFB4AB;
+  --md-sys-color-on-error: #690005;
+  --md-sys-color-error-container: #93000A;
+  --md-sys-color-on-error-container: #FFDAD6;
+  --md-sys-color-background: #141316;
+  --md-sys-color-on-background: #E6E1E6;
+  --md-sys-color-surface: #141316;
+  --md-sys-color-on-surface: #E6E1E6;
+  --md-sys-color-surface-variant: #49454E;
+  --md-sys-color-on-surface-variant: #CAC4CF;
+  --md-sys-color-surface-container-lowest: #0F0E11;
+  --md-sys-color-surface-container-low: #1C1B1E;
+  --md-sys-color-surface-container: #201F22;
+  --md-sys-color-surface-container-high: #2B292D;
+  --md-sys-color-surface-container-highest: #363438;
+  --md-sys-color-surface-dim: #141316;
+  --md-sys-color-surface-bright: #3A383C;
+  --md-sys-color-outline: #948F99;
+  --md-sys-color-outline-variant: #49454E;
+  --md-sys-color-inverse-surface: #E6E1E6;
+  --md-sys-color-inverse-on-surface: #323033;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-surface-tint: #D0BCFF;
+}
+
+/*!
+ * AWC UI — Material Design 3 theme
+ * Generated: 2026-09-08T18:50:19.005Z
+ * Source colors:
+   primary:   #AB315C
+   secondary: #6A626F
+   tertiary:  #635F27
+ *
+ * Drop this file after @awc-ui/tokens to override the default theme.
+ * Toggle dark mode by setting [data-theme="dark"] on <html> or any ancestor.
+ */
+
+:root[data-accent="rose"] {
+  --md-sys-color-primary: #A92F5B;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #FFD9E0;
+  --md-sys-color-on-primary-container: #891443;
+  --md-sys-color-inverse-primary: #FFB1C4;
+  --md-sys-color-secondary: #635C68;
+  --md-sys-color-on-secondary: #FFFFFF;
+  --md-sys-color-secondary-container: #EADFEE;
+  --md-sys-color-on-secondary-container: #4B4450;
+  --md-sys-color-tertiary: #646028;
+  --md-sys-color-on-tertiary: #FFFFFF;
+  --md-sys-color-tertiary-container: #EBE59F;
+  --md-sys-color-on-tertiary-container: #4C4812;
+  --md-sys-color-error: #BA1A1A;
+  --md-sys-color-on-error: #FFFFFF;
+  --md-sys-color-error-container: #FFDAD6;
+  --md-sys-color-on-error-container: #93000A;
+  --md-sys-color-background: #FFF8F8;
+  --md-sys-color-on-background: #201A1B;
+  --md-sys-color-surface: #FFF8F8;
+  --md-sys-color-on-surface: #201A1B;
+  --md-sys-color-surface-variant: #F3DDE1;
+  --md-sys-color-on-surface-variant: #514346;
+  --md-sys-color-surface-container-lowest: #FFFFFF;
+  --md-sys-color-surface-container-low: #FDF1F2;
+  --md-sys-color-surface-container: #F7EBEC;
+  --md-sys-color-surface-container-high: #F2E5E6;
+  --md-sys-color-surface-container-highest: #ECE0E1;
+  --md-sys-color-surface-dim: #E3D7D8;
+  --md-sys-color-surface-bright: #FFF8F8;
+  --md-sys-color-outline: #847376;
+  --md-sys-color-outline-variant: #D6C2C5;
+  --md-sys-color-inverse-surface: #352F30;
+  --md-sys-color-inverse-on-surface: #FAEEEF;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-surface-tint: #A92F5B;
+}
+
+[data-theme="dark"][data-accent="rose"] {
+  --md-sys-color-primary: #FFB1C4;
+  --md-sys-color-on-primary: #66002D;
+  --md-sys-color-primary-container: #891443;
+  --md-sys-color-on-primary-container: #FFD9E0;
+  --md-sys-color-inverse-primary: #A92F5B;
+  --md-sys-color-secondary: #CEC3D2;
+  --md-sys-color-on-secondary: #342E39;
+  --md-sys-color-secondary-container: #4B4450;
+  --md-sys-color-on-secondary-container: #EADFEE;
+  --md-sys-color-tertiary: #CFC986;
+  --md-sys-color-on-tertiary: #353200;
+  --md-sys-color-tertiary-container: #4C4812;
+  --md-sys-color-on-tertiary-container: #EBE59F;
+  --md-sys-color-error: #FFB4AB;
+  --md-sys-color-on-error: #690005;
+  --md-sys-color-error-container: #93000A;
+  --md-sys-color-on-error-container: #FFDAD6;
+  --md-sys-color-background: #171213;
+  --md-sys-color-on-background: #ECE0E1;
+  --md-sys-color-surface: #171213;
+  --md-sys-color-on-surface: #ECE0E1;
+  --md-sys-color-surface-variant: #514346;
+  --md-sys-color-on-surface-variant: #D6C2C5;
+  --md-sys-color-surface-container-lowest: #120D0E;
+  --md-sys-color-surface-container-low: #201A1B;
+  --md-sys-color-surface-container: #241E1F;
+  --md-sys-color-surface-container-high: #2F2829;
+  --md-sys-color-surface-container-highest: #3A3334;
+  --md-sys-color-surface-dim: #171213;
+  --md-sys-color-surface-bright: #3E3739;
+  --md-sys-color-outline: #9E8C8F;
+  --md-sys-color-outline-variant: #514346;
+  --md-sys-color-inverse-surface: #ECE0E1;
+  --md-sys-color-inverse-on-surface: #352F30;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-surface-tint: #FFB1C4;
+}
+
+/*!
+ * AWC UI — Material Design 3 theme
+ * Generated: 2026-09-08T18:50:19.006Z
+ * Source colors:
+   primary:   #006A68
+   secondary: #6A626F
+   tertiary:  #635F27
+ *
+ * Drop this file after @awc-ui/tokens to override the default theme.
+ * Toggle dark mode by setting [data-theme="dark"] on <html> or any ancestor.
+ */
+
+:root[data-accent="teal"] {
+  --md-sys-color-primary: #006A68;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #A0F1ED;
+  --md-sys-color-on-primary-container: #00504E;
+  --md-sys-color-inverse-primary: #84D4D1;
+  --md-sys-color-secondary: #635C68;
+  --md-sys-color-on-secondary: #FFFFFF;
+  --md-sys-color-secondary-container: #EADFEE;
+  --md-sys-color-on-secondary-container: #4B4450;
+  --md-sys-color-tertiary: #646028;
+  --md-sys-color-on-tertiary: #FFFFFF;
+  --md-sys-color-tertiary-container: #EBE59F;
+  --md-sys-color-on-tertiary-container: #4C4812;
+  --md-sys-color-error: #BA1A1A;
+  --md-sys-color-on-error: #FFFFFF;
+  --md-sys-color-error-container: #FFDAD6;
+  --md-sys-color-on-error-container: #93000A;
+  --md-sys-color-background: #F7FAF9;
+  --md-sys-color-on-background: #191C1C;
+  --md-sys-color-surface: #F7FAF9;
+  --md-sys-color-on-surface: #191C1C;
+  --md-sys-color-surface-variant: #DAE5E3;
+  --md-sys-color-on-surface-variant: #3F4948;
+  --md-sys-color-surface-container-lowest: #FFFFFF;
+  --md-sys-color-surface-container-low: #F2F4F3;
+  --md-sys-color-surface-container: #ECEEED;
+  --md-sys-color-surface-container-high: #E6E9E8;
+  --md-sys-color-surface-container-highest: #E0E3E2;
+  --md-sys-color-surface-dim: #D8DADA;
+  --md-sys-color-surface-bright: #F7FAF9;
+  --md-sys-color-outline: #6F7978;
+  --md-sys-color-outline-variant: #BEC9C7;
+  --md-sys-color-inverse-surface: #2D3131;
+  --md-sys-color-inverse-on-surface: #EFF1F0;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-surface-tint: #006A68;
+}
+
+[data-theme="dark"][data-accent="teal"] {
+  --md-sys-color-primary: #84D4D1;
+  --md-sys-color-on-primary: #003736;
+  --md-sys-color-primary-container: #00504E;
+  --md-sys-color-on-primary-container: #A0F1ED;
+  --md-sys-color-inverse-primary: #006A68;
+  --md-sys-color-secondary: #CEC3D2;
+  --md-sys-color-on-secondary: #342E39;
+  --md-sys-color-secondary-container: #4B4450;
+  --md-sys-color-on-secondary-container: #EADFEE;
+  --md-sys-color-tertiary: #CFC986;
+  --md-sys-color-on-tertiary: #353200;
+  --md-sys-color-tertiary-container: #4C4812;
+  --md-sys-color-on-tertiary-container: #EBE59F;
+  --md-sys-color-error: #FFB4AB;
+  --md-sys-color-on-error: #690005;
+  --md-sys-color-error-container: #93000A;
+  --md-sys-color-on-error-container: #FFDAD6;
+  --md-sys-color-background: #101414;
+  --md-sys-color-on-background: #E0E3E2;
+  --md-sys-color-surface: #101414;
+  --md-sys-color-on-surface: #E0E3E2;
+  --md-sys-color-surface-variant: #3F4948;
+  --md-sys-color-on-surface-variant: #BEC9C7;
+  --md-sys-color-surface-container-lowest: #0B0F0F;
+  --md-sys-color-surface-container-low: #191C1C;
+  --md-sys-color-surface-container: #1D2020;
+  --md-sys-color-surface-container-high: #272B2A;
+  --md-sys-color-surface-container-highest: #323535;
+  --md-sys-color-surface-dim: #101414;
+  --md-sys-color-surface-bright: #363A39;
+  --md-sys-color-outline: #889392;
+  --md-sys-color-outline-variant: #3F4948;
+  --md-sys-color-inverse-surface: #E0E3E2;
+  --md-sys-color-inverse-on-surface: #2D3131;
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-surface-tint: #84D4D1;
+}

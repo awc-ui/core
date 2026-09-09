@@ -1,0 +1,76 @@
+---
+title: Encore — Shows & Tickets
+description: "Discover live shows, choose tickets, and complete a demo booking with AWC UI across HTML, React, Vue, Angular, and Svelte."
+---
+
+**Encore turns discovering a show into a complete ticket booking journey.**
+Browse music, theatre, comedy, dance, and experiences; pick a performance; then
+follow a three-step checkout to a downloadable demo ticket.
+
+[**Open Encore**](/showcase/encore/html/) ·
+[**Try booking Neon Nights**](/showcase/encore/html/#/event/neon-nights)
+
+[HTML](/showcase/encore/html/) · [React](/showcase/encore/react/) ·
+[Vue](/showcase/encore/vue/) · [Angular](/showcase/encore/angular/) ·
+[Svelte](/showcase/encore/svelte/)
+
+Use the **Framework** selector in the app header to switch implementations.
+The current route, checkout draft, saved shows, tickets, and appearance settings
+carry across builds on the same origin.
+
+## Try a night out
+
+1. **Find your show.** Search by artist, venue, city, or title. Combine category,
+   city, date, and price filters, then sort by date or price. Save a favourite.
+2. **Choose tickets.** Open Neon Nights, select Friday or Saturday, and choose
+   quantities in the available ticket areas. Each booking supports up to six tickets.
+3. **Check out.** Review the transparent 8% fee, try **ENCORE10** for 10% off
+   ticket prices, and use the demo attendee details. Choose a demo card or wallet
+   and complete the demo purchase.
+4. **Keep the memory.** Open My tickets, download an SVG ticket, or add the show
+   to your calendar with an ICS file. Cancellation keeps a record and releases
+   the tickets back into this browser’s demo inventory.
+5. **Change the atmosphere.** Try light, dark, or system appearance; violet,
+   rose, or teal accents; compact spacing; and right-to-left layout.
+
+## Components in context
+
+| Experience | AWC components |
+|---|---|
+| App shell and settings | [App bar](/components/app-bar/), [Navigation bar](/components/navigation-bar/), [Side sheet](/components/side-sheet/), [Switch](/components/switch/), [Select](/components/select/) |
+| Show discovery | [Search](/components/search/), [Chip](/components/chip/), [Card](/components/card/), [Icon button](/components/icon-button/), [Tooltip](/components/tooltip/), [List](/components/list/) |
+| Ticket selection | [Number field](/components/number-field/), [Select](/components/select/), [Divider](/components/divider/) |
+| Checkout | [Stepper](/components/stepper/), [Text field](/components/text-field/), [Radio](/components/radio/), [Checkbox](/components/checkbox/), [Button](/components/button/) |
+| Ticket wallet and feedback | [Segmented buttons](/components/segmented-button/), [Dialog](/components/dialog/), [Snackbar](/components/snackbar/), [Skeleton](/components/skeleton/), [Progress indicator](/components/progress-indicator/) |
+
+AWC skeletons cover startup, ticket loading, and remote images until content is
+ready. Buttons and the app bar show progress during storage and export actions.
+These are indeterminate indicators tied to actual work, without simulated delays.
+
+## Framework integration
+
+React renders a JSX shell; Vue and Svelte compile native templates; Angular
+compiles a standalone component ahead of time; HTML loads the AWC components
+directly. Each framework owns its shell and mount/unmount lifecycle. Route views,
+AWC events, booking rules, and storage are shared JavaScript modules. These are
+five compiled integrations, not five independent rewrites of the business logic.
+No version embeds another in an iframe.
+
+The source lives in `apps/encore`. Documentation builds compile and stage every
+version under `/showcase/encore/<framework>/`. Hash routes and relative assets
+work on a static host.
+
+## Demo data and storage
+
+All shows and bookings are fictional. No payment is taken, no email is sent,
+and downloaded tickets are not valid for admission. Photos are illustrative.
+
+Confirmed bookings live in IndexedDB on this browser and device. Preferences
+and saved shows use local storage; the current checkout draft uses session
+storage. Inventory checks and booking writes share one transaction, and checkout
+IDs prevent duplicate orders on retry. Confirmed bookings consume capacity;
+cancelled bookings release it. Availability is local to the browser, not shared
+between customers. Clearing site data removes the demo records.
+
+A production ticket service would need a backend for shared availability,
+authentication, payment processing, ticket delivery, and admission validation.

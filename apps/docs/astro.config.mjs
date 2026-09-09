@@ -215,6 +215,7 @@ export default defineConfig({
       // render as empty boxes — see src/components/Head.astro.
       components: {
         Head: './src/components/Head.astro',
+        SocialIcons: './src/components/ReleaseLinks.astro',
       },
       customCss: [
         '@awc-ui/tokens/tokens.css',
@@ -481,8 +482,10 @@ export default defineConfig({
             { label: 'Music & Studio', link: '/showcase/music/' },
             { label: 'Pictor — Design & Image', link: '/showcase/design/' },
             { label: 'Frame — Video & Creators', link: '/showcase/frame/' },
+            { label: 'Encore — Shows & Tickets', link: '/showcase/encore/' },
             { label: 'Medflow — Hospital Cases', link: '/showcase/medflow/' },
             { label: 'Vela — Pharmaceutical Testing', link: '/showcase/pharma/' },
+            { label: 'Roam — Travel Booking', link: '/showcase/booking/' },
             { label: 'Metro pulse — Station Operations', link: '/showcase/metro-monitor/' },
             { label: 'Sentinel — SCADA Monitoring', link: '/showcase/scada/' },
           ],

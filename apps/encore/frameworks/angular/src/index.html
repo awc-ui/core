@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#733ee4">
+    <meta name="description" content="Encore — discover your next great night. An event booking showcase built with AWC UI.">
+    <title>Encore · Live a little</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <script src="./preboot.js"></script>
+    <link rel="stylesheet" href="./awc/md3.css">
+    <link rel="stylesheet" href="./theme.css">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div id="startup-loading" class="startup-loading" role="status" aria-label="Loading Encore" aria-busy="true">
+    <md-skeleton variant="text" width="10rem" height="3rem" announce="false"></md-skeleton>
+    <div class="startup-hero"><md-skeleton variant="rounded" full-width height="26rem" announce="false"></md-skeleton></div>
+    <div class="show-grid"><md-skeleton variant="rounded" full-width height="20rem" announce="false"></md-skeleton><md-skeleton variant="rounded" full-width height="20rem" announce="false"></md-skeleton><md-skeleton variant="rounded" full-width height="20rem" announce="false"></md-skeleton></div>
+    <span class="sr-only">Loading shows and controls…</span></div>
+    <div id="app"><encore-shell></encore-shell></div>
+    <noscript>Encore needs JavaScript to browse shows and book demo tickets.</noscript>
+  </body>
+</html>

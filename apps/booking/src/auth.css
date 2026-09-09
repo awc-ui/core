@@ -1,0 +1,35 @@
+/* Composition and spacing only; every control remains an AWC UI component. */
+#identity-overlays .roam-identity::part(container) {
+  inline-size: min(500px, calc(100vw - 32px));
+  max-inline-size: min(500px, calc(100vw - 32px));
+}
+#identity-overlays .roam-identity::part(content) { overflow-y: auto; }
+#identity-overlays .roam-identity-body { min-inline-size: 0; }
+#identity-overlays .roam-auth-intro { margin: 0 0 24px; line-height: 1.6; }
+#identity-overlays .roam-auth-form { display: grid; gap: 8px; }
+#identity-overlays md-text-field { inline-size: 100%; }
+#identity-overlays .roam-auth-error { color: var(--md-sys-color-error); font-size: 14px; margin: 0; }
+#identity-overlays .roam-auth-error:not(:empty) { margin-block-end: 12px; }
+#identity-overlays .roam-auth-links { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px; margin-block: 12px; font-size: 14px; }
+#identity-overlays .roam-auth-disclosure { font-size: 12px; line-height: 1.6; margin: 18px 0 0; text-align: center; }
+#identity-overlays .roam-auth-code-note { display: grid; justify-items: center; gap: 8px; padding: 16px; margin-block-end: 24px; border-radius: var(--md-sys-shape-corner-medium, 12px); color: var(--md-sys-color-on-primary-container); background: var(--md-sys-color-primary-container); font-size: 13px; }
+#identity-overlays .roam-auth-code-note strong { font-size: 28px; letter-spacing: 0.22em; font-variant-numeric: tabular-nums; }
+#identity-overlays md-otp-field { display: block; inline-size: 100%; }
+#identity-overlays md-otp-field::part(cells) { justify-content: center; }
+#identity-overlays md-otp-field::part(supporting-text) { text-align: center; padding-inline: 0; }
+#identity-overlays .roam-demo-credentials { padding-block-start: 12px; font-size: 12px; }
+#identity-overlays .roam-demo-credentials p { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin: 4px 0; }
+#preference-overlays .roam-preferences { --md-side-sheet-width: 400px; --md-side-sheet-max-width: 420px; }
+#preference-overlays .roam-preference-content { display: grid; gap: 28px; min-inline-size: 0; }
+#preference-overlays .roam-preference-content > p { margin: 0; line-height: 1.6; color: var(--md-sys-color-on-surface-variant); }
+#preference-overlays .roam-preference-section { display: grid; gap: 16px; }
+#preference-overlays h3 { margin: 0; font-size: 18px; }
+#preference-overlays .roam-preference-section > p { font-size: 14px; line-height: 1.5; margin: -8px 0 0; color: var(--md-sys-color-on-surface-variant); }
+#preference-overlays md-color-picker { display: block; inline-size: 100%; min-inline-size: 0; --md-color-picker-width: 100%; }
+#preference-overlays .roam-preference-toggle { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+#preference-overlays .roam-preference-toggle > span { display: grid; gap: 5px; }
+#preference-overlays .roam-preference-toggle > span > span { font-size: 13px; color: var(--md-sys-color-on-surface-variant); }
+#preference-overlays md-switch { flex-shrink: 0; }
+@media (max-width: 420px) {
+  #identity-overlays md-otp-field { --md-otp-field-cell-width: 32px; --md-otp-field-cell-height: 48px; --md-otp-field-cell-gap: 4px; }
+}
