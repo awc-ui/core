@@ -152,6 +152,11 @@ the older alias for it). The `head` slot is **assigned by the table itself** in
   reorder the rows in the handler. Clicking an `md-table-sort-label` cycles that
   column: its `default-order`, then the opposite, then off (`sort-by` clears and
   `sort-order` resets to `asc`).
+- Sort labels accept `column` as either an HTML attribute or a JavaScript
+  property (including React props). The live property takes precedence;
+  assigning `''` clears the binding. Changing a label's column or replacing
+  header rows updates its arrow and the header cell's `aria-sort` from the
+  table's current sort state.
 - **Selection checkboxes are auto-wired.** With `selection` set, an
   `md-checkbox` slotted into a body row toggles that row, and one slotted into
   `md-table-head` is the select-all. The table pushes the model back into

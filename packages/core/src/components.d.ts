@@ -1985,6 +1985,10 @@ export namespace Components {
           * Open the dialog
          */
         "show": () => Promise<void>;
+        /**
+          * Resolves after the current open cycle and shell exit motion finish; safe to unmount afterward.
+         */
+        "whenClosed": () => Promise<void>;
     }
     interface MdDivider {
         /**
@@ -2038,6 +2042,10 @@ export namespace Components {
           * @default true
          */
         "ripple": boolean;
+        /**
+          * Temporary presentation icon used by md-fab-menu during its morph. Does not change the authored `icon` property or slotted icon. Pass null to reveal the latest authored icon again. Normally managed by md-fab-menu.
+         */
+        "setMenuIcon": (icon: string | null) => Promise<void>;
         /**
           * @default 'standard'
          */
@@ -2095,6 +2103,10 @@ export namespace Components {
           * @default 'primary'
          */
         "variant": 'primary' | 'secondary' | 'tertiary';
+        /**
+          * Resolves after the current opening cycle has fully closed, including shell motion.
+         */
+        "whenClosed": () => Promise<void>;
     }
     interface MdFabMenuItem {
         /**
@@ -2795,6 +2807,10 @@ export namespace Components {
           * @default 'baseline'
          */
         "variant": 'baseline' | 'standard' | 'vibrant';
+        /**
+          * Resolves after the current open cycle and shell exit motion finish; safe to unmount afterward.
+         */
+        "whenClosed": () => Promise<void>;
     }
     interface MdMenuItem {
         /**
@@ -4983,6 +4999,10 @@ export namespace Components {
           * @default 'standard'
          */
         "variant": 'standard' | 'modal';
+        /**
+          * Resolves after the current open cycle and shell exit motion finish; safe to unmount afterward.
+         */
+        "whenClosed": () => Promise<void>;
     }
     interface MdSkeleton {
         /**
@@ -6539,6 +6559,16 @@ export namespace Components {
           * @default 'none'
          */
         "order": 'asc' | 'desc' | 'none';
+        /**
+          * Live-region announcement for the active ascending sort.
+          * @default 'sorted ascending'
+         */
+        "sortedAscendingLabel": string;
+        /**
+          * Live-region announcement for the active descending sort.
+          * @default 'sorted descending'
+         */
+        "sortedDescendingLabel": string;
     }
     /**
      * Material Design 3 — Table Toolbar.
@@ -6705,6 +6735,11 @@ export namespace Components {
          */
         "getValidity": () => Promise<{ valid: boolean; validationMessage: string; flags: Record<string, boolean>; }>;
         /**
+          * Accessible name for the password toggle while the value is revealed.
+          * @default 'Hide password'
+         */
+        "hidePasswordLabel": string;
+        /**
           * `aria-autocomplete` for the combobox — how typing relates to the popup.
           * @default ''
          */
@@ -6798,6 +6833,11 @@ export namespace Components {
           * Focus the inner input (host.focus() also works via delegatesFocus).
          */
         "setFocus": () => Promise<void>;
+        /**
+          * Accessible name for the password toggle while the value is concealed.
+          * @default 'Show password'
+         */
+        "showPasswordLabel": string;
         /**
           * Language/locale for internal speech recognition (e.g. 'en-US', 'de-DE'). Defaults to browser locale.
           * @default ''
@@ -16300,6 +16340,16 @@ declare namespace LocalJSX {
           * @default 'none'
          */
         "order"?: 'asc' | 'desc' | 'none';
+        /**
+          * Live-region announcement for the active ascending sort.
+          * @default 'sorted ascending'
+         */
+        "sortedAscendingLabel"?: string;
+        /**
+          * Live-region announcement for the active descending sort.
+          * @default 'sorted descending'
+         */
+        "sortedDescendingLabel"?: string;
     }
     /**
      * Material Design 3 — Table Toolbar.
@@ -16458,6 +16508,11 @@ declare namespace LocalJSX {
          */
         "formatter"?: (value: string) => string;
         /**
+          * Accessible name for the password toggle while the value is revealed.
+          * @default 'Hide password'
+         */
+        "hidePasswordLabel"?: string;
+        /**
           * `aria-autocomplete` for the combobox — how typing relates to the popup.
           * @default ''
          */
@@ -16555,6 +16610,11 @@ declare namespace LocalJSX {
           * Number of visible text rows for multiline modes. Defaults to 2 for auto-grow, 4 for fixed.
          */
         "rows"?: number | undefined;
+        /**
+          * Accessible name for the password toggle while the value is concealed.
+          * @default 'Show password'
+         */
+        "showPasswordLabel"?: string;
         /**
           * Language/locale for internal speech recognition (e.g. 'en-US', 'de-DE'). Defaults to browser locale.
           * @default ''
@@ -18287,6 +18347,8 @@ declare namespace LocalJSX {
         "inactiveIcon": 'always' | 'hover';
         "active": boolean;
         "order": 'asc' | 'desc' | 'none';
+        "sortedAscendingLabel": string;
+        "sortedDescendingLabel": string;
         "density": 0 | -1 | -2 | -3 | -4;
     }
     interface MdTableToolbarAttributes {
@@ -18335,6 +18397,8 @@ declare namespace LocalJSX {
         "maxLength": number | undefined;
         "clearable": string;
         "passwordToggle": string;
+        "showPasswordLabel": string;
+        "hidePasswordLabel": string;
         "density": 0 | -1 | -2 | -3 | -4;
         "multiline": string;
         "rows": number | undefined;

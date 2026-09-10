@@ -1,4 +1,4 @@
-import { Component, Host, h, Prop, State, Watch, Event, EventEmitter, Element } from '@stencil/core';
+import { Component, Host, h, Prop, State, Watch, Event, EventEmitter, Element, Method } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
 
 @Component({ tag: 'md-fab', styleUrl: 'md-fab.css', shadow: true })
@@ -48,6 +48,17 @@ export class MdFab {
   mdClick!: EventEmitter<MouseEvent>;
 
   @State() private hasSlottedIcon = false;
+  @State() private menuIcon: string | null = null;
+
+  /**
+   * Temporary presentation icon used by md-fab-menu during its morph.
+   * Does not change the authored `icon` property or slotted icon. Pass null to
+   * reveal the latest authored icon again. Normally managed by md-fab-menu.
+   */
+  @Method()
+  async setMenuIcon(icon: string | null): Promise<void> {
+    this.menuIcon = icon || null;
+  }
 
   private get isDisabled() {
     return this.disabled || this.softDisabled;
@@ -173,7 +184,8 @@ export class MdFab {
     // Extended unless explicitly collapsed. Default (prop unset) = extended
     // whenever a label is present, preserving the original behaviour.
     const isExtended = this.extended === undefined ? hasLabel : this.extended;
-    const hasIcon = !!this.icon;
+    const hasIcon = !!(this.menuIcon || this.icon);
+    const overridesSlottedIcon = this.menuIcon !== null && this.hasSlottedIcon;
     const hasExplicitAriaLabel = this.authoredAccessibleName;
 
     return (
@@ -187,6 +199,7 @@ export class MdFab {
           'md-fab--collapsed': hasLabel && !isExtended,
           'md-fab--with-icon': hasIcon || this.hasSlottedIcon,
           'md-fab--lowered': this.lowered,
+          'md-fab--menu-icon': overridesSlottedIcon,
           'md-fab--disabled': this.disabled || this.softDisabled,
         }}
         role="button"
@@ -199,8 +212,9 @@ export class MdFab {
         {this.ripple && <md-ripple disabled={isEffectivelyDisabled}></md-ripple>}
         <span class="md-fab__state-layer" part="state-layer" aria-hidden="true"></span>
         <slot name="icon">
-          {hasIcon && <span class="md-fab__icon material-symbols-outlined" part="icon" aria-hidden="true">{this.icon}</span>}
+          {hasIcon && <span class="md-fab__icon material-symbols-outlined" part="icon" aria-hidden="true">{this.menuIcon || this.icon}</span>}
         </slot>
+        {overridesSlottedIcon && <span class="md-fab__icon material-symbols-outlined" part="icon" aria-hidden="true">{this.menuIcon}</span>}
         {hasLabel && <span class="md-fab__label" part="label" aria-hidden={!isExtended ? 'true' : undefined}>{this.label}</span>}
       </Host>
     );

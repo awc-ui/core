@@ -53,6 +53,8 @@ turns that request into sort state and hands it back.
     icon=""                       <!-- default: "" (built-in SVG arrow) -->
     active                        <!-- default: false — pushed by md-table -->
     order="asc|desc|none"         <!-- default: none — pushed by md-table -->
+    sorted-ascending-label="sorted ascending"
+    sorted-descending-label="sorted descending"
     disabled                      <!-- default: false -->
     density="-1|-2|-3|-4"         <!-- default: 0 = no local rung -->
   >Name</md-table-sort-label>
@@ -225,9 +227,10 @@ rung (rung 0 is the uncompacted default and has no rule of its own). Normally
 the rung is inherited from `md-table`, so set it there.
 
 **i18n** — translate the slotted label; keep `column` untranslated, since it is
-the key echoed to your sort code. The live-region strings ("sorted ascending" /
-"sorted descending") are fixed English — mirror the sort state into your own
-localized live region if that matters for your audience.
+the key echoed to your sort code. Translate `sorted-ascending-label` and
+`sorted-descending-label` for the built-in live region; they default to
+"sorted ascending" and "sorted descending". Updating these props also updates
+an active announcement when the application changes language.
 
 ## Related components
 

@@ -160,6 +160,24 @@ function approxWidth(text: string, fontSize: number): number {
   return text.length * fontSize * 0.58;
 }
 
+/** Keep the range endpoints and only interior ticks whose formatted labels fit.
+ * Projected positions, rather than a fixed stride, also cover log/broken axes. */
+function visibleValueTicks(values: number[], labels: string[], toPx: (value: number) => number, measure: (text: string) => number): number[] {
+  const ticks = values.map((value, index) => ({ value, index, x: toPx(value), width: measure(labels[index]) }))
+    .sort((a, b) => a.x - b.x);
+  if (ticks.length < 2) return ticks.map((tick) => tick.index);
+  const fits = (a: typeof ticks[number], b: typeof ticks[number]) => b.x - a.x >= (a.width + b.width) / 2 + 8;
+  const first = ticks[0];
+  const last = ticks[ticks.length - 1];
+  if (!fits(first, last)) return [(ticks.find((tick) => tick.value === 0) ?? first).index];
+  const visible = [first];
+  for (const tick of ticks.slice(1, -1)) {
+    if (fits(visible[visible.length - 1], tick) && fits(tick, last)) visible.push(tick);
+  }
+  visible.push(last);
+  return visible.map((tick) => tick.index);
+}
+
 /**
  * Extend whichever value axis has the smaller below-zero share so both axes'
  * ZERO lands on the same pixel — the shared baseline a dual-axis bar chart needs
@@ -384,6 +402,7 @@ function computeGutters(
   vTickLabels: string[],
   catLabels: string[],
   maxV2LabelW: number,
+  measureLabel: (text: string) => number,
 ) {
   const subtitleH = spec.subtitle ? theme.labelSize + 4 : 0;
   const titleH = spec.title ? theme.titleSize + 10 + subtitleH : 0;
@@ -465,6 +484,11 @@ function computeGutters(
     padLeft = maxCatLabelW + 12 + axisTitleC + legendLeftW + (labelsAtLowEnd ? maxDataLabelW + 8 : 0);
     padBottom = (spec.valueHidden || spec.valueHideTicks ? 0 : labelRowH) + axisTitleV + 6 + legendBandBottom;
     padRight = 12 + (spec.showLabels ? maxDataLabelW + 8 : 0) + legendRightW + (mirrorCats ? maxCatLabelW + 12 : 0);
+    // Centered endpoint labels need half their width beyond the plot edge.
+    // Keep the category, data-label and legend gutters when they are larger.
+    const tickOverhang = spec.valueHidden || spec.valueHideTicks ? 0 : Math.max(0, ...vTickLabels.map(measureLabel)) / 2 + 4;
+    padLeft = Math.max(padLeft, legendLeftW + tickOverhang);
+    padRight = Math.max(padRight, legendRightW + tickOverhang);
   } else {
     padTop = titleH + 8 + legendBandTop + (spec.showLabels ? theme.labelSize + 4 : 0);
     // A vertical chart's labels sit ABOVE the bar, so their width is not the
@@ -484,7 +508,10 @@ function computeGutters(
   return { plot, compact, legendBandTop, legendBandBottom, lowEndRoom, mirrorCats, maxDataLabelW, catRot, catRotRad };
 }
 
-export function computeBarLayout(spec: BarChartSpec, theme: EngineTheme, width: number, height: number): RenderScene {
+export function computeBarLayout(
+  spec: BarChartSpec, theme: EngineTheme, width: number, height: number,
+  measureLabel: (text: string) => number = (text) => approxWidth(text, theme.labelSize),
+): RenderScene {
   const horizontal = spec.horizontal;
   // Phase 1: value bands, domains, ticks, breaks, category labels (no pixels yet).
   const { C, stacked, stackKeys, bands, onAxis2, hasAxis2, vDomain, vDomain2, vBreaks, vTickVals, vTickLabels, v2TickVals, v2TickLabels, maxV2LabelW, catLabels } =
@@ -495,7 +522,7 @@ export function computeBarLayout(spec: BarChartSpec, theme: EngineTheme, width: 
   // Phase 2: reserve gutters for the chrome (title, legend, axis labels) and
   // derive the plot rect + the label metrics later phases still need.
   const { plot, compact, legendBandTop, legendBandBottom, lowEndRoom, mirrorCats, maxDataLabelW, catRot, catRotRad } =
-    computeGutters(spec, theme, width, height, horizontal, hasAxis2, vTickLabels, catLabels, maxV2LabelW);
+    computeGutters(spec, theme, width, height, horizontal, hasAxis2, vTickLabels, catLabels, maxV2LabelW, measureLabel);
 
   // ── value scale maps onto the cross length ──
   const crossLen = horizontal ? plot.width : plot.height;
@@ -509,6 +536,11 @@ export function computeBarLayout(spec: BarChartSpec, theme: EngineTheme, width: 
   /** Project a value for the axis THIS series is measured against. */
   const valPxFor = (si: number, v: number) => (hasAxis2 && onAxis2(si) ? valPx2(v) : valPx(v));
   const basePx = valPx(baselineVal);
+  // One selection owns labels, ticks and gridlines, so thinning never leaves
+  // a label detached from its tick. Hidden labels retain the full grid.
+  const valueTicks = horizontal && !spec.valueHideTicks && !spec.valueHidden
+    ? visibleValueTicks(vTickVals, vTickLabels, valPx, measureLabel)
+    : vTickVals.map((_, index) => index);
 
   /**
    * The pixel strips the cuts occupy, along the value axis. A bar drawn
@@ -735,8 +767,8 @@ export function computeBarLayout(spec: BarChartSpec, theme: EngineTheme, width: 
   const gridDash = dashPattern(spec.valueGridDash);
   const categoryDash = dashPattern(spec.categoryDash);
   if (!spec.valueHidden && !compact) {
-    for (const t of vTickVals) {
-      const pv = valPx(t);
+    for (const index of valueTicks) {
+      const pv = valPx(vTickVals[index]);
       if (horizontal) {
         gridlines.push({ x1: pv, y1: plot.y, x2: pv, y2: yb, color: theme.gridLineColor, width: 1, dash: gridDash });
         if (spec.axisTicks) axisLines.push({ x1: pv, y1: yb, x2: pv, y2: yb + TICK, color: theme.axisLineColor, width: 1, dash: valueDash });
@@ -814,8 +846,8 @@ export function computeBarLayout(spec: BarChartSpec, theme: EngineTheme, width: 
     }
   }
   if (!spec.valueHidden && !spec.valueHideTicks && !compact) {
-    vTickVals.forEach((t, i) => {
-      const pv = valPx(t);
+    valueTicks.forEach((i) => {
+      const pv = valPx(vTickVals[i]);
       if (horizontal) {
         texts.push({ x: pv, y: plot.y + plot.height + 6, text: vTickLabels[i], color: theme.textColorMuted, fontSize: theme.labelSize, align: 'center', baseline: 'top', key: `vt-${i}` });
       } else {

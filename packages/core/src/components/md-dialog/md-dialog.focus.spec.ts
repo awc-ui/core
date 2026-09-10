@@ -59,6 +59,44 @@ const THREE = `
 describe('md-dialog — focus trap', () => {
   afterEach(() => setActive(document.body));
 
+  describe('deferred opening focus', () => {
+    afterEach(() => jest.restoreAllMocks());
+
+    it.each(['close', 'disconnect'])('does not steal focus after %s before the opening frame', async (action) => {
+      const page = await create(THREE, '');
+      const request = jest.spyOn(global, 'requestAnimationFrame').mockReturnValue(42);
+      const cancel = jest.spyOn(global, 'cancelAnimationFrame').mockImplementation(() => {});
+      const focus = jest.spyOn(page.rootInstance, 'focusFirst');
+
+      page.root!.open = true;
+      const openingFocus = request.mock.calls[0][0];
+      if (action === 'close') {
+        await page.root!.close();
+      } else {
+        page.root!.remove();
+        page.rootInstance.disconnectedCallback();
+      }
+      await page.waitForChanges();
+
+      expect(cancel).toHaveBeenCalledWith(42);
+      // A stale callback must be harmless even if it has already been queued.
+      openingFocus(0);
+      expect(focus).not.toHaveBeenCalled();
+    });
+
+    it('does not focus when an mdOpen listener immediately closes the dialog', async () => {
+      const page = await create(THREE, '');
+      const callbacks: FrameRequestCallback[] = [];
+      jest.spyOn(global, 'requestAnimationFrame').mockImplementation((callback) => callbacks.push(callback));
+      const focus = jest.spyOn(page.rootInstance, 'focusFirst');
+      page.root!.addEventListener('mdOpen', () => { page.root!.open = false; });
+
+      page.root!.open = true;
+      for (const callback of callbacks) callback(0);
+      expect(focus).not.toHaveBeenCalled();
+    });
+  });
+
   describe('collecting stops', () => {
     it('finds the slotted controls once they have a box', async () => {
       const page = await create(THREE);

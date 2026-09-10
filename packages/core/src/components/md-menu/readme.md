@@ -384,6 +384,27 @@ md-menu::part(surface) {
 
 ## Methods
 
+### `whenClosed() => Promise<void>`
+
+Resolves once the current opening cycle has closed and this overlay's shell
+animations have finished. A pending `show()` cancelled by `close()` also settles;
+disconnecting the element settles pending callers. Reopening during exit keeps
+the same completion pending until the overlay closes again. This does not change
+when `mdClose` fires and does not wait for animations inside slotted content.
+
+Use this before removing the element or replacing it with another overlay:
+
+```js
+await overlay.close();
+await overlay.whenClosed();
+overlay.remove();
+```
+
+For a conditionally mounted React overlay, `useOverlay` from `@awc-ui/react`
+manages opening and calls `onClosed` after this completion signal. Keep the
+component mounted until that callback. No hydration polling or application-owned
+animation timers are needed.
+
 ### `close() => Promise<void>`
 
 Closes the menu programmatically.

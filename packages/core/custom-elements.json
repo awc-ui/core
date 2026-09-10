@@ -8921,6 +8921,12 @@
             },
             {
               "kind": "method",
+              "name": "whenClosed",
+              "privacy": "public",
+              "parameters": []
+            },
+            {
+              "kind": "method",
               "name": "close",
               "privacy": "public",
               "parameters": []
@@ -9587,6 +9593,12 @@
             },
             {
               "kind": "method",
+              "name": "whenClosed",
+              "privacy": "public",
+              "parameters": []
+            },
+            {
+              "kind": "method",
               "name": "close",
               "privacy": "public",
               "parameters": []
@@ -9808,6 +9820,19 @@
                 "text": "0 | -1 | -2 | -3 | -4"
               },
               "default": "0"
+            },
+            {
+              "kind": "method",
+              "name": "setMenuIcon",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "icon",
+                  "type": {
+                    "text": "string | null"
+                  }
+                }
+              ]
             }
           ],
           "attributes": [
@@ -13339,6 +13364,12 @@
             {
               "kind": "method",
               "name": "reposition",
+              "privacy": "public",
+              "parameters": []
+            },
+            {
+              "kind": "method",
+              "name": "whenClosed",
               "privacy": "public",
               "parameters": []
             },
@@ -22168,6 +22199,12 @@
             },
             {
               "kind": "method",
+              "name": "whenClosed",
+              "privacy": "public",
+              "parameters": []
+            },
+            {
+              "kind": "method",
               "name": "close",
               "privacy": "public",
               "parameters": []
@@ -28027,6 +28064,24 @@
             },
             {
               "kind": "field",
+              "name": "sortedAscendingLabel",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "default": "'sorted ascending'"
+            },
+            {
+              "kind": "field",
+              "name": "sortedDescendingLabel",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "default": "'sorted descending'"
+            },
+            {
+              "kind": "field",
               "name": "density",
               "privacy": "public",
               "type": {
@@ -28099,6 +28154,22 @@
                 "text": "'asc' | 'desc' | 'none'"
               },
               "default": "'none'"
+            },
+            {
+              "name": "sorted-ascending-label",
+              "fieldName": "sortedAscendingLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'sorted ascending'"
+            },
+            {
+              "name": "sorted-descending-label",
+              "fieldName": "sortedDescendingLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'sorted descending'"
             },
             {
               "name": "density",
@@ -29598,6 +29669,24 @@
             },
             {
               "kind": "field",
+              "name": "showPasswordLabel",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Show password'"
+            },
+            {
+              "kind": "field",
+              "name": "hidePasswordLabel",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Hide password'"
+            },
+            {
+              "kind": "field",
               "name": "density",
               "privacy": "public",
               "type": {
@@ -30015,6 +30104,22 @@
                 "text": "'internal' | 'external' | false"
               },
               "default": "false"
+            },
+            {
+              "name": "show-password-label",
+              "fieldName": "showPasswordLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Show password'"
+            },
+            {
+              "name": "hide-password-label",
+              "fieldName": "hidePasswordLabel",
+              "type": {
+                "text": "string"
+              },
+              "default": "'Hide password'"
             },
             {
               "name": "density",
@@ -31282,7 +31387,7 @@
             },
             {
               "name": "--md-time-picker-trigger-min-width",
-              "description": "Trigger min-inline-size (default 240px)"
+              "description": "Preferred intrinsic trigger width (default 240px)"
             },
             {
               "name": "--md-time-picker-trigger-icon-size",

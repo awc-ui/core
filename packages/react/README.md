@@ -22,6 +22,11 @@ export function Demo() {
 
 The components register their underlying custom elements automatically on first render.
 
+For conditionally mounted dialogs, sheets and menus, use the exported
+[`useOverlay` hook](./src/use-overlay.readme.md). It opens the Core component
+and keeps it mounted until its native exit animation finishes, including
+StrictMode replay and cancellation before the first open completes.
+
 ## Server rendering
 
 For styled markup on first paint (Next.js App Router and other SSR setups), import the same components from the server entry — they render each component's Declarative Shadow DOM on the server and hydrate on the client:

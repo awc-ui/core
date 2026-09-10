@@ -5,6 +5,30 @@ const create = (html: string) =>
   newSpecPage({ components: [MdTableSortLabel], html });
 
 describe('md-table-sort-label', () => {
+  it('localizes sort announcements across direction and locale changes', async () => {
+    const page = await create(`<md-table-sort-label column="name" active order="asc"
+      sorted-ascending-label="تم الفرز تصاعدياً" sorted-descending-label="تم الفرز تنازلياً">الاسم</md-table-sort-label>`);
+    const announcement = () => page.root!.shadowRoot!.querySelector('[aria-live="polite"]')!.textContent;
+    expect(announcement()).toBe('تم الفرز تصاعدياً');
+    page.rootInstance.order = 'desc';
+    await page.waitForChanges();
+    expect(announcement()).toBe('تم الفرز تنازلياً');
+    page.root!.setAttribute('sorted-descending-label', 'sorted descending');
+    await page.waitForChanges();
+    expect(announcement()).toBe('sorted descending');
+    page.rootInstance.active = false;
+    await page.waitForChanges();
+    expect(announcement()).toBe('');
+  });
+
+  it('preserves the default English sort announcement', async () => {
+    const page = await create('<md-table-sort-label column="name" active order="asc">Name</md-table-sort-label>');
+    expect(page.root!.shadowRoot!.querySelector('[aria-live="polite"]')!.textContent).toBe('sorted ascending');
+    page.rootInstance.order = 'desc';
+    await page.waitForChanges();
+    expect(page.root!.shadowRoot!.querySelector('[aria-live="polite"]')!.textContent).toBe('sorted descending');
+  });
+
   it('renders with role=button', async () => {
     const page = await create('<md-table-sort-label column="name">Name</md-table-sort-label>');
     expect(page.root?.getAttribute('role')).toBe('button');

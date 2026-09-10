@@ -515,6 +515,29 @@ describe('md-text-field', () => {
   // ══════════════════════════════════════════════════════════
 
   describe('password toggle', () => {
+    it('localizes both toggle states and responds to locale changes', async () => {
+      const page = await createField(`<md-text-field type="password" password-toggle="internal"
+        show-password-label="إظهار كلمة المرور" hide-password-label="إخفاء كلمة المرور"></md-text-field>`);
+      const button = () => page.root!.shadowRoot!.querySelector('.md-text-field__password-toggle') as HTMLButtonElement;
+      expect(button().getAttribute('aria-label')).toBe('إظهار كلمة المرور');
+      button().click();
+      await page.waitForChanges();
+      expect(button().getAttribute('aria-label')).toBe('إخفاء كلمة المرور');
+      page.root!.setAttribute('hide-password-label', 'Hide password');
+      await page.waitForChanges();
+      expect(button().getAttribute('aria-label')).toBe('Hide password');
+    });
+
+    it('uses localized labels for an externally controlled reveal', async () => {
+      const page = await createField(`<md-text-field type="password" password-toggle="external"
+        show-password-label="Reveal" hide-password-label="Conceal"></md-text-field>`);
+      const button = () => page.root!.shadowRoot!.querySelector('.md-text-field__password-toggle') as HTMLButtonElement;
+      expect(button().getAttribute('aria-label')).toBe('Reveal');
+      page.root!.setAttribute('type', 'text');
+      await page.waitForChanges();
+      expect(button().getAttribute('aria-label')).toBe('Conceal');
+    });
+
     it('renders toggle button when set', async () => {
       const page = await createField(`<md-text-field type="password" password-toggle="internal"></md-text-field>`);
       expect(page.root?.shadowRoot?.querySelector('.md-text-field__password-toggle')).toBeTruthy();

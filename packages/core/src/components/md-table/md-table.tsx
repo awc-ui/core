@@ -1039,6 +1039,14 @@ export class MdTable {
   // Sort / selection event coordination
   // ------------------------------------------------------------------
 
+  /** Sort labels relay property changes that do not produce slotchange. */
+  @Listen('mdSortLabelChange')
+  handleSortLabelChange(e: CustomEvent) {
+    if ((e.target as HTMLElement).closest('md-table') !== this.el) return;
+    e.stopPropagation();
+    this.syncSortLabels();
+  }
+
   @Listen('mdSortRequest')
   handleSortRequest(e: CustomEvent<{ column: string; defaultOrder?: 'asc' | 'desc' }>) {
     e.stopPropagation();
@@ -1104,6 +1112,7 @@ export class MdTable {
   @Listen('mdRowgroupSlotChange')
   handleRowgroupSlotChange() {
     this.syncRows();
+    this.syncSortLabels();
     // Covers checkbox columns appearing with a mode switch: the select-all box
     // must pick up its single-mode disabled state even though it was
     // inserted AFTER the selection watch ran.
@@ -1348,10 +1357,13 @@ export class MdTable {
   /** Push the active sort state into every slotted sort label. */
   private syncSortLabels() {
     const labels = Array.from(this.el.querySelectorAll('md-table-sort-label')) as Array<
-      HTMLElement & { active: boolean; order: MdTableSortOrder }
+      HTMLElement & { column?: string; active: boolean; order: MdTableSortOrder }
     >;
     for (const l of labels) {
-      const col = l.getAttribute('column') || '';
+      if (l.closest('md-table') !== this.el) continue;
+      // Frameworks assign non-reflected props directly. An explicit empty
+      // property clears the binding even when an older attribute remains.
+      const col = l.column ?? l.getAttribute('column') ?? '';
       const active = !!col && col === this.sortBy;
       if (l.active !== active) l.active = active;
       const order = active ? this.sortOrder : 'none';

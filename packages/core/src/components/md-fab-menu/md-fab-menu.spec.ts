@@ -1,6 +1,7 @@
 import { newSpecPage, SpecPage } from '@stencil/core/testing';
 import { MdFabMenu } from './md-fab-menu';
 import { MdFabMenuItem } from '../md-fab-menu-item/md-fab-menu-item';
+import { MdFab } from '../md-fab/md-fab';
 
 describe('md-fab-menu', () => {
   async function createMenu(html: string): Promise<SpecPage> {
@@ -14,6 +15,7 @@ describe('md-fab-menu', () => {
     const anchor = page.doc.createElement('div') as any;
     anchor.id = id;
     anchor.icon = 'add';
+    anchor.setMenuIcon = jest.fn(async () => {});
     anchor.style.width = '56px';
     anchor.style.height = '56px';
     anchor.getBoundingClientRect = () => ({
@@ -273,7 +275,9 @@ describe('md-fab-menu', () => {
       const openSpy = jest.fn();
       page.root?.addEventListener('mdOpen', openSpy);
 
+      const opened = new Promise<void>((resolve) => page.root!.addEventListener('mdOpen', () => resolve(), { once: true }));
       anchor.click();
+      await opened;
       await page.waitForChanges();
 
       expect(openSpy).toHaveBeenCalledTimes(1);
@@ -454,7 +458,9 @@ describe('md-fab-menu', () => {
       const anchor = page.body.querySelector('#fab-anchor') as HTMLElement;
       const menu = page.body.querySelector('md-fab-menu') as HTMLElement;
 
+      const opened = new Promise<void>((resolve) => page.root!.addEventListener('mdOpen', () => resolve(), { once: true }));
       anchor.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, composed: true }));
+      await opened;
       await page.waitForChanges();
 
       expect(menu).toHaveClass('md-fab-menu--open');
@@ -473,7 +479,9 @@ describe('md-fab-menu', () => {
       const anchor = page.body.querySelector('#fab-anchor') as HTMLElement;
       const menu = page.body.querySelector('md-fab-menu') as HTMLElement;
 
+      const opened = new Promise<void>((resolve) => page.root!.addEventListener('mdOpen', () => resolve(), { once: true }));
       anchor.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, composed: true }));
+      await opened;
       await page.waitForChanges();
 
       expect(menu).toHaveClass('md-fab-menu--open');
@@ -800,7 +808,7 @@ describe('md-fab-menu', () => {
       const focusSpy = jest.spyOn(page.rootInstance as any, 'focusFirstItem');
 
       (page.rootInstance as any).openedViaKeyboard = false;
-      (page.rootInstance as any).onOpenChange(true);
+      page.root!.open = true;
 
       await new Promise(r => setTimeout(r, 50));
 
@@ -824,7 +832,7 @@ describe('md-fab-menu', () => {
       // held focus at activation, so focus should move into the menu.
       (page.rootInstance as any).openedViaKeyboard = false;
       (page.rootInstance as any).anchorFocusedAtActivation = true;
-      (page.rootInstance as any).onOpenChange(true);
+      page.root!.open = true;
 
       await new Promise(r => setTimeout(r, 50));
 
@@ -871,7 +879,7 @@ describe('md-fab-menu', () => {
       const focusSpy = jest.spyOn(page.rootInstance as any, 'focusFirstItem');
 
       (page.rootInstance as any).openedViaKeyboard = true;
-      (page.rootInstance as any).onOpenChange(true);
+      page.root!.open = true;
 
       await new Promise(r => setTimeout(r, 50));
 
@@ -1067,6 +1075,40 @@ describe('md-fab-menu', () => {
   /* ── Typeahead ── */
 
   describe('typeahead', () => {
+    it('uses live property labels, including changes that leave an old attribute behind', async () => {
+      const page = await createMenu(`
+        <md-fab-menu open>
+          <md-fab-menu-item></md-fab-menu-item>
+          <md-fab-menu-item></md-fab-menu-item>
+          <md-fab-menu-item label="Previous"></md-fab-menu-item>
+        </md-fab-menu>
+      `);
+      const items = page.body.querySelectorAll('md-fab-menu-item');
+      items[0].label = 'Alpha';
+      items[1].label = 'Beta';
+      items[2].label = 'Gamma';
+      await page.waitForChanges();
+      expect(items[1].getAttribute('label')).toBeNull();
+      expect(items[2].getAttribute('label')).toBe('Previous');
+      (page.rootInstance as any).focusItem(null, 0);
+
+      page.root!.dispatchEvent(new KeyboardEvent('keydown', { key: 'g', bubbles: true }));
+      await page.waitForChanges();
+      expect(items[2].getAttribute('tabindex')).toBe('0');
+      (page.rootInstance as any).typeaheadBuffer = '';
+      page.root!.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', bubbles: true }));
+      await page.waitForChanges();
+      expect(items[1].getAttribute('tabindex')).toBe('0');
+
+      items[2].label = '';
+      items[2].textContent = 'Zebra';
+      await page.waitForChanges();
+      (page.rootInstance as any).typeaheadBuffer = '';
+      page.root!.dispatchEvent(new KeyboardEvent('keydown', { key: 'z', bubbles: true }));
+      await page.waitForChanges();
+      expect(items[2].getAttribute('tabindex')).toBe('0');
+    });
+
     it('focuses item matching typed character', async () => {
       const page = await createMenu(`
         <md-fab-menu open>
@@ -1179,7 +1221,9 @@ describe('md-fab-menu', () => {
       await page.waitForChanges();
 
       const anchorB = page.body.querySelector('#anchor-b') as HTMLElement;
+      const opened = new Promise<void>((resolve) => page.root!.addEventListener('mdOpen', () => resolve(), { once: true }));
       anchorB.click();
+      await opened;
       await page.waitForChanges();
 
       expect(page.root).toHaveClass('md-fab-menu--open');
@@ -1197,7 +1241,9 @@ describe('md-fab-menu', () => {
       });
 
       const anchor = page.body.querySelector('#fab-anchor') as HTMLElement;
+      const opened = new Promise<void>((resolve) => page.root!.addEventListener('mdOpen', () => resolve(), { once: true }));
       anchor.click();
+      await opened;
       await page.waitForChanges();
 
       expect(page.root).toHaveClass('md-fab-menu--open');
@@ -1818,7 +1864,56 @@ describe('md-fab-menu', () => {
   /* ── Morph & timer callbacks ── */
 
   describe('morph callbacks', () => {
-    it('morphAnchorFab(true) saves icon and sets morph attributes', async () => {
+    it('morphs a Core FAB without changing controlled icon props and restores their latest value', async () => {
+      const page = await newSpecPage({
+        components: [MdFab, MdFabMenu, MdFabMenuItem],
+        html: `
+          <md-fab id="controlled-fab" icon="add" label="Create"></md-fab>
+          <md-fab-menu anchor="controlled-fab" quick>
+            <md-fab-menu-item label="Instance"></md-fab-menu-item>
+            <md-fab-menu-item label="Bucket"></md-fab-menu-item>
+          </md-fab-menu>
+        `,
+      });
+      const fab = page.body.querySelector('md-fab')!;
+      const menu = page.body.querySelector('md-fab-menu')!;
+      const presentationIcon = () => fab.shadowRoot!.querySelector('[part="icon"]');
+      menu.open = true;
+      await page.waitForChanges();
+      await new Promise((resolve) => setTimeout(resolve, 140));
+      await page.waitForChanges();
+      expect(fab.icon).toBe('add');
+      expect(presentationIcon()?.textContent).toBe('close');
+
+      // Match a controlled framework rerender, then a new icon supplied while open.
+      fab.icon = 'add';
+      fab.label = 'Create resource';
+      await page.waitForChanges();
+      expect(presentationIcon()?.textContent).toBe('close');
+      fab.icon = 'edit';
+      await page.waitForChanges();
+      expect(presentationIcon()?.textContent).toBe('close');
+
+      await menu.close();
+      await page.waitForChanges();
+      await new Promise((resolve) => setTimeout(resolve, 140));
+      await page.waitForChanges();
+      expect(fab.icon).toBe('edit');
+      expect(fab.shadowRoot!.querySelector('[part="icon"]')?.textContent).toBe('edit');
+
+      menu.open = true;
+      await page.waitForChanges();
+      await new Promise((resolve) => setTimeout(resolve, 140));
+      await page.waitForChanges();
+      fab.icon = 'cloud';
+      menu.remove();
+      await page.waitForChanges();
+      expect(fab.icon).toBe('cloud');
+      expect(fab.shadowRoot!.querySelector('[part="icon"]')?.textContent).toBe('cloud');
+      expect(fab.shadowRoot!.querySelector('slot[name="icon"]')!.hasAttribute('hidden')).toBe(false);
+    });
+
+    it('morphAnchorFab(true) preserves the authored icon and sets morph attributes', async () => {
       const page = await createMenu(`
         <md-fab-menu anchor="fab-anchor">
           <md-fab-menu-item icon="edit" label="Edit"></md-fab-menu-item>
@@ -1830,7 +1925,7 @@ describe('md-fab-menu', () => {
       const instance = page.rootInstance as any;
       instance.morphAnchorFab(true);
 
-      expect(instance.savedIcon).toBe('add');
+      expect(anchor.icon).toBe('add');
       expect(anchor.getAttribute('data-shape')).toBe('circle');
       expect(anchor.hasAttribute('data-icon-morphing')).toBe(true);
     });
@@ -1863,7 +1958,7 @@ describe('md-fab-menu', () => {
       expect(() => instance.morphAnchorFab(false)).not.toThrow();
     });
 
-    it('resetAnchorFab restores savedIcon', async () => {
+    it('resetAnchorFab clears the presentation override without restoring a stale icon', async () => {
       const page = await createMenu(`
         <md-fab-menu anchor="fab-anchor">
           <md-fab-menu-item icon="edit" label="Edit"></md-fab-menu-item>
@@ -1872,14 +1967,14 @@ describe('md-fab-menu', () => {
       const anchor = setupAnchor(page);
 
       const instance = page.rootInstance as any;
-      instance.savedIcon = 'add';
+      anchor.icon = 'edit';
       instance.resetAnchorFab();
 
-      expect(anchor.icon).toBe('add');
-      expect(instance.savedIcon).toBe('');
+      expect(anchor.icon).toBe('edit');
+      expect(anchor.setMenuIcon).toHaveBeenCalledWith(null);
     });
 
-    it('resetAnchorFab does not set icon when savedIcon is empty', async () => {
+    it('resetAnchorFab does not set the authored icon', async () => {
       const page = await createMenu(`
         <md-fab-menu anchor="fab-anchor">
           <md-fab-menu-item icon="edit" label="Edit"></md-fab-menu-item>
@@ -1889,7 +1984,6 @@ describe('md-fab-menu', () => {
       anchor.icon = 'original';
 
       const instance = page.rootInstance as any;
-      instance.savedIcon = '';
       instance.resetAnchorFab();
 
       expect(anchor.icon).toBe('original');

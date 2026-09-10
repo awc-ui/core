@@ -1,4 +1,5 @@
 import { Component, Host, h, Prop, Event, EventEmitter, Method, Watch, State, Element } from '@stencil/core';
+import { OverlayLifecycle } from '../../utils/overlay-lifecycle';
 
 /**
  * MD3 Side sheet — anchored panel for secondary content and actions.
@@ -26,6 +27,8 @@ import { Component, Host, h, Prop, Event, EventEmitter, Method, Watch, State, El
 })
 export class MdSideSheet {
   @Element() el!: HTMLElement;
+
+  private overlayLifecycle = new OverlayLifecycle(() => this.el, () => this.open);
 
   /** Whether the sheet is visible */
   @Prop({ mutable: true, reflect: true }) open: boolean = false;
@@ -89,15 +92,18 @@ export class MdSideSheet {
 
   private containerEl!: HTMLElement;
   private previousFocus: HTMLElement | null = null;
+  private openFocusFrame?: number;
   private headlineId = `md-side-sheet-headline-${Math.random().toString(36).slice(2)}`;
 
   // ── Lifecycle ───────────────────────────────────────────
 
   connectedCallback() {
+    this.overlayLifecycle.connected();
     this.hasActions = !!this.el.querySelector('[slot="actions"]');
   }
 
   componentDidLoad() {
+    this.overlayLifecycle.loaded();
     const shadow = this.el.shadowRoot;
     if (!shadow) return;
 
@@ -121,6 +127,8 @@ export class MdSideSheet {
   }
 
   disconnectedCallback() {
+    this.cancelOpenFocus();
+    this.overlayLifecycle.disconnect();
     this.removeGlobalListeners();
     document.body.style.overflow = '';
   }
@@ -129,12 +137,17 @@ export class MdSideSheet {
 
   @Watch('open')
   onOpenChange(newVal: boolean) {
+    this.cancelOpenFocus();
+    if (newVal) this.overlayLifecycle.opened();
+    else this.overlayLifecycle.closed();
     if (newVal) {
       this.addGlobalListeners();
       if (this.variant === 'modal') {
         this.previousFocus = document.activeElement as HTMLElement;
         document.body.style.overflow = 'hidden';
-        requestAnimationFrame(() => {
+        this.openFocusFrame = requestAnimationFrame(() => {
+          this.openFocusFrame = undefined;
+          if (!this.open || !this.el.isConnected) return;
           // The re-render that clears `inert` is scheduled *after* this watcher
           // (Stencil runs @Watch before scheduleUpdate), so it may not have
           // committed yet. Unlike aria-hidden, `inert` blocks .focus(); drop it
@@ -150,9 +163,9 @@ export class MdSideSheet {
       if (this.variant === 'modal') {
         document.body.style.overflow = '';
         // `preventScroll` because a bare focus() scrolls its target into view: an
-      // overlay opened programmatically (or whose opener has since scrolled out
-      // of sight) would yank the page on close.
-      this.previousFocus?.focus?.({ preventScroll: true });
+        // overlay opened programmatically (or whose opener has since scrolled out
+        // of sight) would yank the page on close.
+        this.previousFocus?.focus?.({ preventScroll: true });
         this.previousFocus = null;
       }
       this.mdClose.emit();
@@ -161,13 +174,26 @@ export class MdSideSheet {
 
   // ── Public methods ──────────────────────────────────────
 
+  private cancelOpenFocus() {
+    if (this.openFocusFrame === undefined) return;
+    cancelAnimationFrame(this.openFocusFrame);
+    this.openFocusFrame = undefined;
+  }
+
   @Method()
   async show() {
-    this.open = true;
+    await this.overlayLifecycle.show(() => { this.open = true; });
+  }
+
+  /** Resolves after the current open cycle and shell exit motion finish; safe to unmount afterward. */
+  @Method()
+  async whenClosed(): Promise<void> {
+    await this.overlayLifecycle.whenClosed();
   }
 
   @Method()
   async close() {
+    this.overlayLifecycle.cancelOpen();
     this.open = false;
   }
 

@@ -2131,6 +2131,8 @@ export const MdTableSortLabel: StencilReactComponent<MdTableSortLabelElement, Md
         inactiveIcon: 'inactive-icon',
         active: 'active',
         order: 'order',
+        sortedAscendingLabel: 'sorted-ascending-label',
+        sortedDescendingLabel: 'sorted-descending-label',
         density: 'density'
     },
     hydrateModule: typeof window === 'undefined' ? (import('@awc-ui/core/hydrate') as Promise<HydrateModule>) : undefined,
@@ -2214,6 +2216,8 @@ export const MdTextField: StencilReactComponent<MdTextFieldElement, MdTextFieldE
         maxLength: 'max-length',
         clearable: 'clearable',
         passwordToggle: 'password-toggle',
+        showPasswordLabel: 'show-password-label',
+        hidePasswordLabel: 'hide-password-label',
         density: 'density',
         multiline: 'multiline',
         rows: 'rows',

@@ -89,6 +89,8 @@ search event, and the full constraint-validation API through ElementInternals.
   prefix-text="$" suffix-text="kg"
   clearable="internal|external"              <!-- default: off -->
   password-toggle="internal|external"        <!-- default: off -->
+  show-password-label="Show password"
+  hide-password-label="Hide password"
   speech-to-text="internal|external"         <!-- default: off -->
   speech-lang="en-US"
   multiline="auto-grow|fixed"                <!-- default: off (single line) -->
@@ -202,6 +204,13 @@ The host also re-dispatches a bubbling native `change` event, so form-level
   `mdSearch`. With `speech-to-text` and a debounced search, run the fetch from
   `mdInput` as well, or a dictated query is silently dropped.
 - `password-toggle` is ignored in multiline mode.
+- `show-password-label` and `hide-password-label` localize the toggle's
+  accessible name in both internal and externally controlled modes. Update
+  these props when the application locale changes.
+- A single-line field without a visible `label` centres its value and icons.
+  Give it an accessible name using `aria-label`; a placeholder is not a name.
+- Filled fields retain the same container background when focused, including
+  `appear-focused`. The active indicator and label show the focused state.
 - IME composition is respected: `restrict`, `parser` and `formatter` run once on
   `compositionend`, not on every intermediate keystroke.
 
@@ -339,8 +348,9 @@ ignored.
 The supporting line carries `role="alert"` while `error` is set, so the message
 is announced. `max-length` renders a counter that is wired in through
 `aria-describedby`, as is the supporting text. The clear, password and mic
-buttons carry their own English labels (`Clear`, `Show password` /
-`Hide password`, `Start voice input` / `Stop listening`); replace their glyphs
+buttons carry their own labels. Localize `Show password` / `Hide password`
+with `show-password-label` / `hide-password-label`; `Clear`, `Start voice input`
+and `Stop listening` currently use English defaults. Replace their glyphs
 through the `clear-icon`, `password-toggle-icon` and `speech-icon` slots.
 `readonly` stays focusable; `disabled` does not. The host uses
 `delegatesFocus`, so `element.focus()` and a click anywhere in the container
@@ -357,7 +367,8 @@ the field inherit an ancestor's `data-density` rung. Both drive the same
 host. There is no `density="0"` rule — rung 0 is the uncompacted default.
 
 **i18n** — translate `label`, `placeholder`, `supporting-text`, `error-text`,
-`prefix-text` and `suffix-text`. Set `speech-lang` per locale. Use `Intl`
+`prefix-text`, `suffix-text`, `show-password-label` and `hide-password-label`.
+Set `speech-lang` per locale. Use `Intl`
 inside `formatter` for locale-correct numbers and currency. Note that speech
 input depends on the browser's Web Speech API and is unavailable in browsers
 that do not implement it — the component logs a warning and does nothing.

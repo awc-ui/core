@@ -80,7 +80,7 @@ a trigger.
 **Events** — `mdOpen` and `mdClose`, both with `void` detail, and both default
 Stencil events (they bubble and are composed).
 
-**Methods** — `show(): Promise<void>` opens immediately; `close(): Promise<void>`
+**Methods** — `show(): Promise<void>` waits for the initial closed render, then opens; `close(): Promise<void>`
 returns before the close finishes — unless `quick` is set it flips `open` to
 `false` about 180ms later, after the exit animation.
 
@@ -93,9 +93,9 @@ the custom properties below.
   The anchor must be in the light DOM and the id unique on the page. It is
   looked up when `anchor` changes and when the menu opens.
 - While open, the component **writes to your anchor**: `aria-expanded`,
-  `aria-haspopup="menu"`, `aria-controls`, and it swaps `anchorEl.icon` to
-  `close`, restoring the original on close. Don't fight it by setting those
-  yourself.
+  `aria-haspopup="menu"`, `aria-controls`, and a temporary visual `close` icon.
+  The authored `anchorEl.icon` property and custom icon slot remain unchanged;
+  closing reveals their latest value. Leave the ARIA wiring to the menu.
 - The popup is `role="menu"` with `aria-orientation="vertical"`, and is
   `position: fixed` — the component positions itself against the anchor's
   rect every animation frame while open, so it tracks scrolls and reflows.
@@ -195,7 +195,7 @@ Sourced from [M3 · FAB menu · Guidelines](https://m3.material.io/components/fa
 | `<md-fab-menu>` with no `anchor` | Always set `anchor` to a real element `id` | Without it there is no trigger and no positioning reference. |
 | Putting the `md-fab` **inside** `md-fab-menu` | Keep the FAB outside; reference it by `id` | The menu only accepts `md-fab-menu-item` children. |
 | Setting `aria-expanded` / `aria-haspopup` on your FAB | Let the menu manage them | It writes them on open and sets `aria-expanded="false"` on close. |
-| Setting `anchorEl.icon` while the menu is open | Leave the icon alone | The menu saves and restores it around the `close` morph. |
+| Replacing the FAB's visual icon to simulate the close morph | Keep binding the authored `icon` normally | The menu manages a separate visual override and restores the latest authored icon on close. |
 | A single-item FAB menu | Plain `md-fab` | M3 names this explicitly. |
 | A FAB menu on a screen with a navigation rail | `md-menu` | M3 says don't combine them. |
 | Calling `close()` from your `mdClick` handler | Just run the action | The menu already closes itself and restores focus to the anchor. |
@@ -279,6 +279,27 @@ md-fab-menu {
 
 
 ## Methods
+
+### `whenClosed() => Promise<void>`
+
+Resolves once the current opening cycle has closed and this overlay's shell
+animations have finished. A pending `show()` cancelled by `close()` also settles;
+disconnecting the element settles pending callers. Reopening during exit keeps
+the same completion pending until the overlay closes again. This does not change
+when `mdClose` fires and does not wait for animations inside slotted content.
+
+Use this before removing the element or replacing it with another overlay:
+
+```js
+await overlay.close();
+await overlay.whenClosed();
+overlay.remove();
+```
+
+For a conditionally mounted React overlay, `useOverlay` from `@awc-ui/react`
+manages opening and calls `onClosed` after this completion signal. Keep the
+component mounted until that callback. No hydration polling or application-owned
+animation timers are needed.
 
 ### `close() => Promise<void>`
 

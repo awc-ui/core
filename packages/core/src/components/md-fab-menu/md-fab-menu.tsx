@@ -1,11 +1,11 @@
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element, Method, Watch, Listen } from '@stencil/core';
-import { FabElement } from '../../utils/types';
+import { OverlayLifecycle } from '../../utils/overlay-lifecycle';
 
-type FabMenuFocusableElement = HTMLElement & { rovingFocusVisible?: boolean };
+type FabMenuFocusableElement = HTMLElement & { rovingFocusVisible?: boolean; label?: string };
+type FabMenuAnchor = HTMLElement & { setMenuIcon?: (icon: string | null) => Promise<void> };
 
 const CLOSE_ANIMATION_MS = 180;
 const _ITEM_STAGGER_MS = 50;
-const MORPH_BACK_MS = 400;
 const ICON_FADE_MS = 120;
 
 const VARIANT_COLORS: Record<string, { bg: string; fg: string }> = {
@@ -23,6 +23,8 @@ let fabMenuIdCounter = 0;
 })
 export class MdFabMenu {
   @Element() el!: HTMLElement;
+
+  private overlayLifecycle = new OverlayLifecycle(() => this.el, () => this.open);
 
   /** Whether the menu is open. */
   @Prop({ mutable: true, reflect: true }) open: boolean = false;
@@ -75,7 +77,9 @@ export class MdFabMenu {
 
   private menuId = `md-fab-menu-${++fabMenuIdCounter}`;
   private closeTimer?: ReturnType<typeof setTimeout>;
-  private morphCleanupTimer?: ReturnType<typeof setTimeout>;
+  private openTaskGeneration = 0;
+  private openTaskFrames = new Set<number>();
+  private openTaskTimers = new Set<ReturnType<typeof setTimeout>>();
   private iconMorphTimer?: ReturnType<typeof setTimeout>;
   private focusedIndex = -1;
   /** Set when the anchor is activated via Enter/Space (cleared on pointer down). */
@@ -85,7 +89,6 @@ export class MdFabMenu {
   /** Whether the anchor already held focus when a pointer activation began — a
       click on an already-focused FAB moves focus into the menu (like keyboard). */
   private anchorFocusedAtActivation = false;
-  private savedIcon = '';
   /** rAF handle for the open-menu anchor tracker (see startAnchorTracking). */
   private positionRafId: number | null = null;
   /** Last anchor rect observed by the tracker; reposition only when it changes. */
@@ -93,19 +96,18 @@ export class MdFabMenu {
     null;
 
   connectedCallback() {
+    this.overlayLifecycle.connected();
     this.effectivePlacement = this.placement === 'auto' ? 'up' : this.placement;
   }
 
   componentDidLoad() {
+    this.overlayLifecycle.loaded();
     this.wireAnchor();
     if (this.open) {
       this.resolveEffectivePlacement();
-      requestAnimationFrame(() => this.positionMenu());
+      this.deferOpenFrame(() => this.positionMenu());
       // Initial open=true requires the same anchor-FAB setup that
-      // `@Watch('open')` does on a closed→open transition. Without
-      // morphAnchorFab() here, `savedIcon` would stay '' (its default)
-      // and the next close cycle would write an empty string back
-      // to anchorEl.icon, leaving a blank FAB. We deliberately skip
+      // `@Watch('open')` does on a closed→open transition. We deliberately skip
       // mdOpen.emit() and the autofocus dance — both are interaction
       // semantics; this branch is for "already open at mount" only.
       this.updateAnchorAria(true);
@@ -117,10 +119,11 @@ export class MdFabMenu {
   }
 
   disconnectedCallback() {
+    this.cancelOpenTasks();
+    this.overlayLifecycle.disconnect();
     this.unwireAnchor();
     this.removeGlobalListeners();
     clearTimeout(this.closeTimer);
-    clearTimeout(this.morphCleanupTimer);
     clearTimeout(this.iconMorphTimer);
     clearTimeout(this.typeaheadTimer);
     this.resetAnchorFab();
@@ -141,21 +144,19 @@ export class MdFabMenu {
 
   @Watch('open')
   onOpenChange(open: boolean) {
+    this.cancelOpenTasks();
+    if (open) this.overlayLifecycle.opened();
+    else this.overlayLifecycle.closed();
     if (open) {
       this.resolveEffectivePlacement();
-      requestAnimationFrame(() => this.positionMenu());
+      this.deferOpenFrame(() => this.positionMenu());
       this.mdOpen.emit();
+      if (!this.open || this.closing || !this.el.isConnected) return;
       this.updateAnchorAria(true);
       this.morphAnchorFab(true);
       this.addGlobalListeners();
       this.updateItemDelays();
-      if (this.openedViaKeyboard || this.anchorFocusedAtActivation) {
-        this.scheduleFocus(() => this.focusFirstItem(3, true));
-      } else {
-        this.scheduleFocus(() => this.initRovingTabindex());
-      }
-      this.openedViaKeyboard = false;
-      this.anchorFocusedAtActivation = false;
+      this.scheduleOpeningFocus();
     } else {
       this.updateAnchorAria(false);
       this.morphAnchorFab(false);
@@ -188,14 +189,31 @@ export class MdFabMenu {
   /** Opens the menu programmatically. */
   @Method()
   async show() {
-    clearTimeout(this.closeTimer);
-    this.closing = false;
-    this.open = true;
+    this.cancelOpenTasks();
+    await this.overlayLifecycle.show(() => {
+      const wasOpen = this.open;
+      clearTimeout(this.closeTimer);
+      this.closing = false;
+      this.open = true;
+      if (wasOpen && this.open && !this.closing) {
+        this.deferOpenFrame(() => this.positionMenu());
+        this.addGlobalListeners();
+        this.scheduleOpeningFocus();
+      }
+    });
+  }
+
+  /** Resolves after the current opening cycle has fully closed, including shell motion. */
+  @Method()
+  async whenClosed(): Promise<void> {
+    await this.overlayLifecycle.whenClosed();
   }
 
   /** Closes the menu programmatically. */
   @Method()
   async close() {
+    this.cancelOpenTasks();
+    this.overlayLifecycle.cancelOpen();
     if (!this.open || this.closing) return;
 
     if (this.quick) {
@@ -311,15 +329,12 @@ export class MdFabMenu {
    * Icon cross-fade: fade-out (120ms) → swap icon → fade-in (120ms).
    */
   private morphAnchorFab(toOpen: boolean) {
-    const anchorEl = this.getAnchorEl() as FabElement | null;
+    const anchorEl = this.getAnchorEl() as FabMenuAnchor | null;
     if (!anchorEl) return;
 
-    clearTimeout(this.morphCleanupTimer);
     clearTimeout(this.iconMorphTimer);
 
     if (toOpen) {
-      this.savedIcon = anchorEl.icon || '';
-
       anchorEl.setAttribute('data-shape', 'circle');
       anchorEl.setAttribute('data-icon-morphing', '');
 
@@ -330,7 +345,7 @@ export class MdFabMenu {
       }
 
       this.iconMorphTimer = setTimeout(() => {
-        anchorEl.icon = 'close';
+        void anchorEl.setMenuIcon?.('close');
         anchorEl.removeAttribute('data-icon-morphing');
       }, ICON_FADE_MS);
 
@@ -343,29 +358,21 @@ export class MdFabMenu {
       anchorEl.style.removeProperty('--md-fab-icon-color');
 
       this.iconMorphTimer = setTimeout(() => {
-        anchorEl.icon = this.savedIcon;
+        void anchorEl.setMenuIcon?.(null);
         anchorEl.removeAttribute('data-icon-morphing');
       }, ICON_FADE_MS);
 
       anchorEl.removeEventListener('keydown', this.handleAnchorKeyDown);
-
-      this.morphCleanupTimer = setTimeout(() => {
-        this.savedIcon = '';
-      }, MORPH_BACK_MS);
     }
   }
 
   private resetAnchorFab() {
-    const anchorEl = this.getAnchorEl() as FabElement | null;
+    const anchorEl = this.getAnchorEl() as FabMenuAnchor | null;
     if (!anchorEl) return;
-    clearTimeout(this.morphCleanupTimer);
     clearTimeout(this.iconMorphTimer);
     anchorEl.removeAttribute('data-shape');
     anchorEl.removeAttribute('data-icon-morphing');
-    if (this.savedIcon) {
-      anchorEl.icon = this.savedIcon;
-      this.savedIcon = '';
-    }
+    void anchorEl.setMenuIcon?.(null);
     anchorEl.style.removeProperty('--md-fab-container-color');
     anchorEl.style.removeProperty('--md-fab-icon-color');
     anchorEl.removeEventListener('keydown', this.handleAnchorKeyDown);
@@ -462,8 +469,39 @@ export class MdFabMenu {
     this.clearRovingFocusVisible(items);
   }
 
+  private cancelOpenTasks() {
+    ++this.openTaskGeneration;
+    this.openTaskFrames.forEach((frame) => cancelAnimationFrame(frame));
+    this.openTaskFrames.clear();
+    this.openTaskTimers.forEach((timer) => clearTimeout(timer));
+    this.openTaskTimers.clear();
+  }
+
+  private deferOpenFrame(fn: () => void) {
+    const generation = this.openTaskGeneration;
+    const frame = requestAnimationFrame(() => {
+      this.openTaskFrames.delete(frame);
+      if (generation !== this.openTaskGeneration || !this.open || this.closing || !this.el.isConnected) return;
+      fn();
+    });
+    this.openTaskFrames.add(frame);
+  }
+
   private scheduleFocus(fn: () => void) {
-    setTimeout(() => requestAnimationFrame(() => fn()), 0);
+    const generation = this.openTaskGeneration;
+    const timer = setTimeout(() => {
+      this.openTaskTimers.delete(timer);
+      if (generation !== this.openTaskGeneration || !this.open || this.closing || !this.el.isConnected) return;
+      this.deferOpenFrame(fn);
+    }, 0);
+    this.openTaskTimers.add(timer);
+  }
+
+  private scheduleOpeningFocus() {
+    if (this.openedViaKeyboard || this.anchorFocusedAtActivation) this.scheduleFocus(() => this.focusFirstItem(3, true));
+    else this.scheduleFocus(() => this.initRovingTabindex());
+    this.openedViaKeyboard = false;
+    this.anchorFocusedAtActivation = false;
   }
 
   private setRovingFocusVisible(items: HTMLElement[], index: number, visible: boolean) {
@@ -621,8 +659,11 @@ export class MdFabMenu {
 
     for (let offset = 1; offset <= len; offset++) {
       const idx = (startIndex + offset) % len;
-      const label = (items[idx].getAttribute('label') || items[idx].textContent || '').trim().toLowerCase();
-      if (label.startsWith(this.typeaheadBuffer)) {
+      const item = items[idx] as FabMenuFocusableElement;
+      // Frameworks assign properties without reflecting attributes. Prefer
+      // the live label, including an explicit empty value that reveals a slot.
+      const label = (item.label ?? item.getAttribute('label') ?? '').trim() || (item.textContent || '').trim();
+      if (label.toLowerCase().startsWith(this.typeaheadBuffer)) {
         this.focusItem(items, idx);
         return;
       }
@@ -691,6 +732,7 @@ export class MdFabMenu {
   private startAnchorTracking() {
     this.stopAnchorTracking();
     const tick = () => {
+      if (!this.open || !this.el.isConnected) return;
       this.repositionIfAnchorMoved();
       this.positionRafId = requestAnimationFrame(tick);
     };
@@ -724,7 +766,7 @@ export class MdFabMenu {
   }
 
   private addGlobalListeners() {
-    requestAnimationFrame(() => {
+    this.deferOpenFrame(() => {
       document.addEventListener('click', this.handleOutsideClick);
     });
     this.startAnchorTracking();

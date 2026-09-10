@@ -37,6 +37,49 @@ describe('md-fab', () => {
     expect(icon).toBeNull();
   });
 
+  it('keeps the menu icon visible through controlled prop updates, then restores the latest icon', async () => {
+    const page = await newSpecPage({
+      components: [MdFab],
+      html: '<md-fab icon="add" label="Create"></md-fab>',
+    });
+    await page.rootInstance.setMenuIcon('close');
+    await page.waitForChanges();
+
+    // React wrappers reapply even unchanged props on every parent render.
+    page.root!.icon = 'add';
+    page.root!.label = 'Create resource';
+    await page.waitForChanges();
+    const menuIcon = () => page.root!.shadowRoot!.querySelector('[part="icon"]');
+    expect(page.root!.icon).toBe('add');
+    expect(menuIcon()?.textContent).toBe('close');
+
+    page.root!.icon = 'edit';
+    await page.waitForChanges();
+    expect(menuIcon()?.textContent).toBe('close');
+    await page.rootInstance.setMenuIcon(null);
+    await page.waitForChanges();
+    expect(page.root!.icon).toBe('edit');
+    expect(page.root!.shadowRoot!.querySelector('[part="icon"]')?.textContent).toBe('edit');
+    expect(page.root!.classList.contains('md-fab--menu-icon')).toBe(false);
+  });
+
+  it('temporarily hides a slotted icon without replacing its content', async () => {
+    const page = await newSpecPage({
+      components: [MdFab],
+      html: '<md-fab label="Create"><svg slot="icon"><path d="M0 0h4" /></svg></md-fab>',
+    });
+    const authoredIcon = page.root!.querySelector('svg');
+    await page.rootInstance.setMenuIcon('close');
+    await page.waitForChanges();
+    expect(page.root!.classList.contains('md-fab--menu-icon')).toBe(true);
+    expect(page.root!.shadowRoot!.querySelector('[part="icon"]')?.textContent).toBe('close');
+    await page.rootInstance.setMenuIcon(null);
+    await page.waitForChanges();
+    expect(page.root!.querySelector('svg')).toBe(authoredIcon);
+    expect(page.root!.classList.contains('md-fab--menu-icon')).toBe(false);
+    expect(page.root!.icon).toBe('');
+  });
+
   // ── Variant ─────────────────────────────────────────────────
   it('applies variant class: primary-container (default)', async () => {
     const page = await newSpecPage({

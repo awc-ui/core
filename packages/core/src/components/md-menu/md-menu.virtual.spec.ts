@@ -76,6 +76,21 @@ async function withProvider(labels = LABELS, opts: Parameters<typeof makeProvide
 }
 
 describe('md-menu — virtual provider', () => {
+  it('does not focus a pending virtual row after closing begins', async () => {
+    const { menu, provider } = await withProvider();
+    let resolve!: () => void;
+    provider.ensureVisible = () => new Promise<void>((done) => { resolve = done; });
+    const item = provider.domItemForIndex(0)!;
+    const focus = jest.spyOn(item, 'focus');
+    key(menu, 'ArrowDown');
+
+    await (menu as HTMLMdMenuElement).close();
+    resolve();
+    await Promise.resolve();
+    expect(focus).not.toHaveBeenCalled();
+    expect(item.getAttribute('data-md-focused')).toBeNull();
+  });
+
   describe('registration', () => {
     it('drops the menu semantics from the surface', async () => {
       const { page } = await withProvider();

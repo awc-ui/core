@@ -128,9 +128,10 @@
 }
 
 :host(.md-text-field--filled.md-text-field--focused) .md-text-field__container {
-  /* the PUBLIC container var must keep applying while focused — it
-     previously vanished behind this hardcoded focus tint */
-  background-color: var(--md-text-field-container-color, var(--md-sys-color-surface-container-high, #ECE6F0));
+  /* Keep the surface stable on focus, including composite popup fields.
+     The active indicator and label communicate focus without making the
+     field disappear into a dialog's surface-container-high background. */
+  background-color: var(--_container-color);
 }
 
 /* Horizontal rhythm comes from the SPACING TOKENS, not literals: those already
@@ -262,6 +263,13 @@
 
 :host(.md-text-field--filled) .md-text-field__input-wrap {
   justify-content: flex-end;
+}
+
+/* With no visible label there is no floating-label row to reserve. Use the
+   same centre as the leading/trailing affordances, even after input/focus.
+   Multiline and wrapping chips retain their own top-aligned layout. */
+:host(.md-text-field--filled.md-text-field--without-label:not(.md-text-field--multiline)) .md-text-field__input-wrap {
+  justify-content: center;
 }
 
 .md-text-field__input-row {
@@ -398,7 +406,7 @@
    Inset the chip stack by the label's own line-height, density-aware, exactly
    as the multiline case does. Outlined fields are unaffected: their label sits
    ON the outline stroke (top: -8px), outside the content box. */
-:host(.md-text-field--filled.md-text-field--floating.md-text-field--with-chips)
+:host(.md-text-field--filled.md-text-field--floating.md-text-field--with-chips:not(.md-text-field--without-label))
   .md-text-field__input-wrap {
   padding-block-start: max(12px, calc(16px + var(--md-sys-density-scale, 0) * 1px));
 }

@@ -345,8 +345,17 @@ export class BarChartEngine {
     // no part of the geometry / animation pipeline needs to know about direction.
     this.rtl = isRtl(this.container);
     const layout = (): RenderScene => {
-      const s = computeBarLayout(this.spec!, this.theme!, w, h);
-      return this.rtl ? mirrorScene(s) : s;
+      const ctx = this.ctx;
+      ctx?.save();
+      try {
+        // Match the DOM axis-label font; character-count estimates miss wide
+        // glyphs and localized currency formats on narrow horizontal charts.
+        if (ctx) ctx.font = `400 ${this.theme!.labelSize}px ${this.theme!.fontFamily}`;
+        const s = computeBarLayout(this.spec!, this.theme!, w, h, ctx ? (text) => ctx.measureText(text).width : undefined);
+        return this.rtl ? mirrorScene(s) : s;
+      } finally {
+        ctx?.restore();
+      }
     };
     this.scene = layout();
     // A tooltip open over the OLD data must not survive a swap that replaced it:

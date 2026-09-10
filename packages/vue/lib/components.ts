@@ -1635,6 +1635,8 @@ export const MdTableSortLabel = /*@__PURE__*/ defineContainer<JSX.MdTableSortLab
   'inactiveIcon',
   'active',
   'order',
+  'sortedAscendingLabel',
+  'sortedDescendingLabel',
   'density',
   'mdSortRequest'
 ]);
@@ -1691,6 +1693,8 @@ export const MdTextField = /*@__PURE__*/ defineContainer<JSX.MdTextField, JSX.Md
   'maxLength',
   'clearable',
   'passwordToggle',
+  'showPasswordLabel',
+  'hidePasswordLabel',
   'density',
   'multiline',
   'rows',

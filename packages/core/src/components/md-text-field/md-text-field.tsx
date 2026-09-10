@@ -68,6 +68,10 @@ export class MdTextField {
   @Prop({ mutable: true }) clearable: 'internal' | 'external' | false = false;
   /** Show a password visibility toggle. 'internal' toggles the input type directly; 'external' emits mdPasswordToggle and leaves type control to the consumer. */
   @Prop({ attribute: 'password-toggle', mutable: true }) passwordToggle: 'internal' | 'external' | false = false;
+  /** Accessible name for the password toggle while the value is concealed. */
+  @Prop() showPasswordLabel: string = 'Show password';
+  /** Accessible name for the password toggle while the value is revealed. */
+  @Prop() hidePasswordLabel: string = 'Hide password';
   /** Density scale: 0 (default 56px), -1 (52px), -2 (48px), -3 (44px). */
   @Prop({ reflect: true }) density: 0 | -1 | -2 | -3 | -4 = 0;
   /**
@@ -1213,6 +1217,7 @@ export class MdTextField {
           'md-text-field--clearable': showClear,
           'md-text-field--with-chips': this.hasSlottedChips,
           'md-text-field--floating': this.isFloating,
+          'md-text-field--without-label': !this.label,
           [`md-text-field--density${this.density}`]: this.density !== 0,
           'md-text-field--multiline': !!this.multiline,
           'md-text-field--auto-grow': this.multiline === 'auto-grow',
@@ -1295,7 +1300,7 @@ export class MdTextField {
               }}
               disabled={this.isDisabled}
               onClick={this.handlePasswordToggle}
-              aria-label={isPasswordRevealed ? 'Hide password' : 'Show password'}
+              aria-label={isPasswordRevealed ? this.hidePasswordLabel : this.showPasswordLabel}
               aria-pressed={isPasswordRevealed ? 'true' : 'false'}
             >
               <slot name="password-toggle-icon">

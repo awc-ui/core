@@ -55,7 +55,106 @@ function canvasInkCount(page: Awaited<ReturnType<typeof newE2EPage>>): Promise<n
   });
 }
 
+async function mountHorizontalRevenue(
+  page: Awaited<ReturnType<typeof newE2EPage>>,
+  direction: 'ltr' | 'rtl',
+  wideLabels = false,
+) {
+  await page.setViewport({ width: 387, height: 844, deviceScaleFactor: 3 });
+  // 300px on the reported mobile viewport; the same chart grows with the
+  // viewport so ResizeObserver, rather than a data re-feed, must restore ticks.
+  await page.setContent(`
+    <md-bar-chart layout="horizontal" height="340px" legend="none" animation="none"
+      style="width:calc(100vw - 87px);max-width:800px;
+        --md-sys-typescale-label-medium-font:Arial,sans-serif;
+        --md-sys-typescale-label-small-size:${wideLabels ? 16 : 11}px;
+        --md-sys-density-scale:0"></md-bar-chart>
+  `);
+  await page.evaluate((dir, wide) => {
+    document.documentElement.dir = dir;
+    const chart = document.querySelector('md-bar-chart') as HTMLMdBarChartElement;
+    chart.xAxis = {
+      data: ['Real estate', 'Manufacturing', 'Energy', 'Retail trade', 'Technology', 'Healthcare', 'Transport'],
+    };
+    chart.yAxis = {
+      min: 0,
+      max: 600e6,
+      valueFormatter: (v) => Number(v) === 0 ? '€0' : `€${Number(v) / 1e6}m${wide ? ' WWW' : ''}`,
+    };
+    chart.series = [{ label: 'Revenue', data: [560e6, 480e6, 410e6, 360e6, 310e6, 270e6, 210e6] }];
+  }, direction, wideLabels);
+  await page.waitForChanges();
+  await page.waitForFunction(() => {
+    const root = document.querySelector('md-bar-chart')?.shadowRoot;
+    return root?.querySelectorAll('[data-key^="ct-"]').length === 7
+      && root.querySelectorAll('[data-key^="vt-"]').length >= 2;
+  });
+}
+
+/** Measure the rendered text, not character-count estimates or canvas pixels. */
+async function valueTickBoxes(page: Awaited<ReturnType<typeof newE2EPage>>) {
+  return page.evaluate(async () => {
+    await document.fonts.ready;
+    const chart = document.querySelector('md-bar-chart')!;
+    const bounds = chart.getBoundingClientRect();
+    const ticks = Array.from(chart.shadowRoot!.querySelectorAll<HTMLElement>('[data-key^="vt-"]'))
+      .map((label) => {
+        const rect = label.getBoundingClientRect();
+        return {
+          text: label.textContent,
+          left: rect.left,
+          right: rect.right,
+          width: rect.width,
+          fontSize: parseFloat(getComputedStyle(label).fontSize),
+        };
+      })
+      .sort((a, b) => a.left - b.left);
+    return { ticks, left: bounds.left, right: bounds.right, width: bounds.width };
+  });
+}
+
+function expectReadableValueTicks(snapshot: Awaited<ReturnType<typeof valueTickBoxes>>) {
+  expect(snapshot.ticks.length).toBeGreaterThanOrEqual(2);
+  snapshot.ticks.forEach((tick, i) => {
+    expect(tick.width).toBeGreaterThan(0);
+    expect(tick.left).toBeGreaterThanOrEqual(snapshot.left - 0.5);
+    expect(tick.right).toBeLessThanOrEqual(snapshot.right + 0.5);
+    if (i > 0) expect(snapshot.ticks[i - 1].right).toBeLessThanOrEqual(tick.left + 0.5);
+  });
+}
+
 describe('md-bar-chart e2e', () => {
+  it.each(['ltr', 'rtl'] as const)('keeps horizontal euro value ticks readable on mobile and restores detail after resizing (%s)', async (direction) => {
+    const page = await newE2EPage();
+    await mountHorizontalRevenue(page, direction);
+    const mobile = await valueTickBoxes(page);
+    expect(mobile.width).toBeCloseTo(300, 0);
+    expectReadableValueTicks(mobile);
+    expect(mobile.ticks.map((tick) => tick.text)).toEqual(expect.arrayContaining(['€0', '€600m']));
+    expect(mobile.ticks[0].text).toBe(direction === 'rtl' ? '€600m' : '€0');
+
+    await page.setViewport({ width: 1024, height: 844, deviceScaleFactor: 3 });
+    await page.waitForChanges();
+    await page.waitForFunction((mobileCount) => {
+      const chart = document.querySelector('md-bar-chart');
+      return chart?.getBoundingClientRect().width === 800
+        && chart.shadowRoot!.querySelectorAll('[data-key^="vt-"]').length > mobileCount;
+    }, {}, mobile.ticks.length);
+    const desktop = await valueTickBoxes(page);
+    expectReadableValueTicks(desktop);
+    expect(desktop.ticks.length).toBeGreaterThan(mobile.ticks.length);
+    expect(desktop.ticks.map((tick) => tick.text)).toEqual(expect.arrayContaining(['€0', '€600m']));
+  });
+
+  it('fits horizontal value ticks using their rendered font and wide glyphs', async () => {
+    const page = await newE2EPage();
+    await mountHorizontalRevenue(page, 'ltr', true);
+    const mobile = await valueTickBoxes(page);
+    expectReadableValueTicks(mobile);
+    expect(mobile.ticks.every((tick) => tick.fontSize === 16)).toBe(true);
+    expect(mobile.ticks.map((tick) => tick.text)).toEqual(expect.arrayContaining(['€0', '€600m WWW']));
+  });
+
   it('renders and paints the canvas', async () => {
     const page = await newE2EPage();
     await mount(page);

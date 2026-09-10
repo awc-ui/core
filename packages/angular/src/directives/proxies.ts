@@ -939,7 +939,7 @@ it uncomposed means each component reports only for itself, while
 @ProxyCmp({
   defineCustomElementFn: defineMdDialog,
   inputs: ['cancelLabel', 'closeLabel', 'density', 'divider', 'fullscreen', 'headerDivider', 'headline', 'icon', 'locale', 'okLabel', 'open', 'scrimDismissible'],
-  methods: ['show', 'close']
+  methods: ['show', 'whenClosed', 'close']
 })
 @Component({
   selector: 'md-dialog',
@@ -1001,7 +1001,8 @@ export declare interface MdDivider extends Components.MdDivider {}
 
 @ProxyCmp({
   defineCustomElementFn: defineMdFab,
-  inputs: ['density', 'disabled', 'extended', 'icon', 'label', 'lowered', 'ripple', 'size', 'softDisabled', 'variant']
+  inputs: ['density', 'disabled', 'extended', 'icon', 'label', 'lowered', 'ripple', 'size', 'softDisabled', 'variant'],
+  methods: ['setMenuIcon']
 })
 @Component({
   selector: 'md-fab',
@@ -1042,7 +1043,7 @@ document.querySelector('md-fab')!.addEventListener('mdClick', (e) => {
 @ProxyCmp({
   defineCustomElementFn: defineMdFabMenu,
   inputs: ['anchor', 'density', 'menuLabel', 'open', 'placement', 'quick', 'variant'],
-  methods: ['show', 'close']
+  methods: ['show', 'whenClosed', 'close']
 })
 @Component({
   selector: 'md-fab-menu',
@@ -1336,7 +1337,7 @@ export declare interface MdLoadingIndicator extends Components.MdLoadingIndicato
 @ProxyCmp({
   defineCustomElementFn: defineMdMenu,
   inputs: ['anchor', 'autoFocus', 'density', 'emptyText', 'layout', 'listLabel', 'listbox', 'matchAnchorWidth', 'maxHeight', 'open', 'persistent', 'placement', 'quick', 'responsive', 'useGap', 'variant'],
-  methods: ['setComboboxElement', 'setVirtualProvider', 'getScrollViewport', 'show', 'reposition', 'close']
+  methods: ['setComboboxElement', 'setVirtualProvider', 'getScrollViewport', 'show', 'reposition', 'whenClosed', 'close']
 })
 @Component({
   selector: 'md-menu',
@@ -2204,7 +2205,7 @@ parent picker can re-read its option set.
 @ProxyCmp({
   defineCustomElementFn: defineMdSideSheet,
   inputs: ['bottomDivider', 'closeable', 'density', 'detached', 'headline', 'open', 'scrimDismissible', 'sheetAriaLabel', 'showBack', 'side', 'topDivider', 'variant'],
-  methods: ['show', 'close']
+  methods: ['show', 'whenClosed', 'close']
 })
 @Component({
   selector: 'md-side-sheet',
@@ -2973,14 +2974,14 @@ selection coordination).
 
 @ProxyCmp({
   defineCustomElementFn: defineMdTableSortLabel,
-  inputs: ['active', 'column', 'defaultOrder', 'density', 'disabled', 'icon', 'iconPosition', 'inactiveIcon', 'order']
+  inputs: ['active', 'column', 'defaultOrder', 'density', 'disabled', 'icon', 'iconPosition', 'inactiveIcon', 'order', 'sortedAscendingLabel', 'sortedDescendingLabel']
 })
 @Component({
   selector: 'md-table-sort-label',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['active', 'column', 'defaultOrder', 'density', 'disabled', 'icon', 'iconPosition', 'inactiveIcon', 'order'],
+  inputs: ['active', 'column', 'defaultOrder', 'density', 'disabled', 'icon', 'iconPosition', 'inactiveIcon', 'order', 'sortedAscendingLabel', 'sortedDescendingLabel'],
   standalone: true
 })
 export class MdTableSortLabel {
@@ -3058,7 +3059,7 @@ export declare interface MdTabs extends Components.MdTabs {
 
 @ProxyCmp({
   defineCustomElementFn: defineMdTextField,
-  inputs: ['appearFocused', 'autoCapitalize', 'autocomplete', 'chipsWrap', 'clearable', 'debounce', 'density', 'disabled', 'enterKeyHint', 'error', 'errorText', 'focusBorderWidth', 'formatOn', 'formatter', 'inputAriaAutocomplete', 'inputExpanded', 'inputMode', 'inputRole', 'label', 'max', 'maxLength', 'min', 'minLength', 'multiline', 'name', 'parser', 'passwordToggle', 'pattern', 'placeholder', 'prefixText', 'readOnly', 'required', 'reserveSupportingSpace', 'restrict', 'rows', 'speechLang', 'speechToText', 'spellcheck', 'step', 'suffixText', 'supportingText', 'throttle', 'type', 'value', 'variant'],
+  inputs: ['appearFocused', 'autoCapitalize', 'autocomplete', 'chipsWrap', 'clearable', 'debounce', 'density', 'disabled', 'enterKeyHint', 'error', 'errorText', 'focusBorderWidth', 'formatOn', 'formatter', 'hidePasswordLabel', 'inputAriaAutocomplete', 'inputExpanded', 'inputMode', 'inputRole', 'label', 'max', 'maxLength', 'min', 'minLength', 'multiline', 'name', 'parser', 'passwordToggle', 'pattern', 'placeholder', 'prefixText', 'readOnly', 'required', 'reserveSupportingSpace', 'restrict', 'rows', 'showPasswordLabel', 'speechLang', 'speechToText', 'spellcheck', 'step', 'suffixText', 'supportingText', 'throttle', 'type', 'value', 'variant'],
   methods: ['setFocus', 'select', 'getInputElement', 'getValidity', 'setCustomValidity', 'checkValidity', 'reportValidity']
 })
 @Component({
@@ -3066,7 +3067,7 @@ export declare interface MdTabs extends Components.MdTabs {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-content></ng-content>',
   // eslint-disable-next-line @angular-eslint/no-inputs-metadata-property
-  inputs: ['appearFocused', 'autoCapitalize', 'autocomplete', 'chipsWrap', 'clearable', 'debounce', 'density', 'disabled', 'enterKeyHint', 'error', 'errorText', 'focusBorderWidth', 'formatOn', 'formatter', 'inputAriaAutocomplete', 'inputExpanded', 'inputMode', 'inputRole', 'label', 'max', 'maxLength', 'min', 'minLength', 'multiline', 'name', 'parser', 'passwordToggle', 'pattern', 'placeholder', 'prefixText', 'readOnly', 'required', 'reserveSupportingSpace', 'restrict', 'rows', 'speechLang', 'speechToText', 'spellcheck', 'step', 'suffixText', 'supportingText', 'throttle', 'type', 'value', 'variant'],
+  inputs: ['appearFocused', 'autoCapitalize', 'autocomplete', 'chipsWrap', 'clearable', 'debounce', 'density', 'disabled', 'enterKeyHint', 'error', 'errorText', 'focusBorderWidth', 'formatOn', 'formatter', 'hidePasswordLabel', 'inputAriaAutocomplete', 'inputExpanded', 'inputMode', 'inputRole', 'label', 'max', 'maxLength', 'min', 'minLength', 'multiline', 'name', 'parser', 'passwordToggle', 'pattern', 'placeholder', 'prefixText', 'readOnly', 'required', 'reserveSupportingSpace', 'restrict', 'rows', 'showPasswordLabel', 'speechLang', 'speechToText', 'spellcheck', 'step', 'suffixText', 'supportingText', 'throttle', 'type', 'value', 'variant'],
   standalone: true
 })
 export class MdTextField {

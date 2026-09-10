@@ -1,4 +1,5 @@
 import { Component, Host, h, Prop, Event, EventEmitter, Method, Watch, State, Element, Listen } from '@stencil/core';
+import { OverlayLifecycle } from '../../utils/overlay-lifecycle';
 import { resolveDialogLabel } from './dialog-utils';
 
 @Component({
@@ -8,6 +9,8 @@ import { resolveDialogLabel } from './dialog-utils';
 })
 export class MdDialog {
   @Element() el!: HTMLElement;
+
+  private overlayLifecycle = new OverlayLifecycle(() => this.el, () => this.open);
 
   /** Whether the dialog is open */
   @Prop({ mutable: true, reflect: true }) open: boolean = false;
@@ -76,9 +79,13 @@ export class MdDialog {
   private contentId = `md-dialog-content-${Math.random().toString(36).slice(2)}`;
   private containerEl!: HTMLElement;
   private previousFocus: HTMLElement | null = null;
+  private openFocusFrame?: number;
 
   @Watch('open')
   openChanged(newVal: boolean) {
+    this.cancelOpenFocus();
+    if (newVal) this.overlayLifecycle.opened();
+    else this.overlayLifecycle.closed();
     this.animating = true;
     setTimeout(() => { this.animating = false; }, 300);
 
@@ -86,7 +93,11 @@ export class MdDialog {
       this.previousFocus = document.activeElement as HTMLElement;
       document.body.style.overflow = 'hidden';
       this.mdOpen.emit();
-      requestAnimationFrame(() => this.focusFirst());
+      this.openFocusFrame = requestAnimationFrame(() => {
+        this.openFocusFrame = undefined;
+        if (!this.open || !this.el.isConnected) return;
+        this.focusFirst();
+      });
     } else {
       document.body.style.overflow = '';
       this.mdClose.emit();
@@ -99,6 +110,7 @@ export class MdDialog {
   }
 
   connectedCallback() {
+    this.overlayLifecycle.connected();
     if (this.open) {
       document.body.style.overflow = 'hidden';
     }
@@ -133,6 +145,7 @@ export class MdDialog {
   }
 
   componentDidLoad() {
+    this.overlayLifecycle.loaded();
     // Once the slot wrappers exist (because the seed above made them
     // render), register `slotchange` listeners so dynamic add/remove
     // of slotted children at runtime keeps the host state in sync.
@@ -159,18 +172,27 @@ export class MdDialog {
   }
 
   disconnectedCallback() {
+    this.cancelOpenFocus();
+    this.overlayLifecycle.disconnect();
     document.body.style.overflow = '';
   }
 
   /** Open the dialog */
   @Method()
   async show() {
-    this.open = true;
+    await this.overlayLifecycle.show(() => { this.open = true; });
+  }
+
+  /** Resolves after the current open cycle and shell exit motion finish; safe to unmount afterward. */
+  @Method()
+  async whenClosed(): Promise<void> {
+    await this.overlayLifecycle.whenClosed();
   }
 
   /** Close the dialog */
   @Method()
   async close() {
+    this.overlayLifecycle.cancelOpen();
     this.open = false;
   }
 
@@ -211,6 +233,12 @@ export class MdDialog {
     key: 'close' | 'cancel' | 'ok',
   ): string {
     return explicit || resolveDialogLabel(this.locale, key);
+  }
+
+  private cancelOpenFocus() {
+    if (this.openFocusFrame === undefined) return;
+    cancelAnimationFrame(this.openFocusFrame);
+    this.openFocusFrame = undefined;
   }
 
   private focusFirst() {

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T18:46:47.228Z",
+  "generatedAt": "2026-09-10T11:13:16.978Z",
   "componentCount": 55,
   "documentedCount": 56,
   "subComponentCount": 1,
@@ -5690,6 +5690,10 @@
           "params": ""
         },
         {
+          "name": "whenClosed",
+          "params": ""
+        },
+        {
           "name": "close",
           "params": ""
         }
@@ -5995,7 +5999,12 @@
           "detail": "MouseEvent"
         }
       ],
-      "methods": [],
+      "methods": [
+        {
+          "name": "setMenuIcon",
+          "params": "icon: string | null"
+        }
+      ],
       "slots": [
         {
           "name": "icon",
@@ -6130,6 +6139,10 @@
       "methods": [
         {
           "name": "show",
+          "params": ""
+        },
+        {
+          "name": "whenClosed",
           "params": ""
         },
         {
@@ -7499,6 +7512,10 @@
         },
         {
           "name": "reposition",
+          "params": ""
+        },
+        {
+          "name": "whenClosed",
           "params": ""
         },
         {
@@ -12544,6 +12561,10 @@
           "params": ""
         },
         {
+          "name": "whenClosed",
+          "params": ""
+        },
+        {
           "name": "close",
           "params": ""
         }
@@ -15344,6 +15365,22 @@
           "mutable": true
         },
         {
+          "name": "showPasswordLabel",
+          "attribute": "show-password-label",
+          "type": "string",
+          "default": "'Show password'",
+          "reflect": false,
+          "mutable": false
+        },
+        {
+          "name": "hidePasswordLabel",
+          "attribute": "hide-password-label",
+          "type": "string",
+          "default": "'Hide password'",
+          "reflect": false,
+          "mutable": false
+        },
+        {
           "name": "density",
           "attribute": "density",
           "type": "0 | -1 | -2 | -3 | -4",
@@ -16319,7 +16356,7 @@
         },
         {
           "name": "--md-time-picker-trigger-min-width",
-          "description": "Trigger min-inline-size (default 240px)"
+          "description": "Preferred intrinsic trigger width (default 240px)"
         },
         {
           "name": "--md-time-picker-trigger-icon-size",

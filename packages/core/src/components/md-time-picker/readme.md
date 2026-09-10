@@ -180,6 +180,10 @@ CSS parts.
   itself is not mutated.
 - The trigger is a read-only `md-text-field`: Tab focuses it, click and
   Enter/Space open the dialog, and free text cannot be typed into it.
+- The picker keeps an intrinsic trigger width by default. Set the host's
+  `inline-size` (for example `100%` in a form) to stretch the whole trigger;
+  it also shrinks with a narrower host without a `::part(trigger)` override.
+  `--md-time-picker-trigger-min-width` supplies the preferred intrinsic size.
 
 ---
 
@@ -230,6 +234,11 @@ Sourced from [M3 · Time pickers · Guidelines](https://m3.material.io/component
 ```html
 <!-- Dial first, adaptive layout -->
 <md-time-picker variant="dial" orientation="horizontal" responsive></md-time-picker>
+```
+
+```html
+<!-- A full-width form control; the field follows the host's width. -->
+<md-time-picker label="Start time" style="inline-size: 100%" responsive></md-time-picker>
 ```
 
 ```html
@@ -340,7 +349,7 @@ canonical `HH:MM`.
 | `--md-time-picker-trigger-icon-color` | Trigger clock glyph | `--md-sys-color-on-surface-variant` |
 | `--md-time-picker-trigger-icon-size` | Trigger glyph size | 24px, tapering 1px per density rung (18px floor) |
 | `--md-time-picker-trigger-shape` | Trigger corner radius | `--md-sys-shape-corner-extra-small` (4px) |
-| `--md-time-picker-trigger-min-width` | Trigger min inline size | `240px` |
+| `--md-time-picker-trigger-min-width` | Preferred intrinsic trigger width; an explicit host width can shrink it | `240px` |
 | `--md-time-picker-dialog-color` | Dialog surface | `--md-sys-color-surface-container-high` |
 | `--md-time-picker-dialog-on-color` | Dialog foreground | `--md-sys-color-on-surface` |
 | `--md-time-picker-dialog-shape` | Dialog corner radius | `--md-sys-shape-corner-extra-large` (28px) |

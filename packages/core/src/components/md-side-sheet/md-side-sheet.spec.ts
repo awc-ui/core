@@ -251,6 +251,34 @@ describe('md-side-sheet', () => {
 
   // ── Public methods ──────────────────────────────────────
 
+  describe('deferred opening focus', () => {
+    afterEach(() => jest.restoreAllMocks());
+
+    it.each(['close', 'disconnect'])('does not focus or clear inert after %s before the opening frame', async (action) => {
+      const page = await create('<md-side-sheet variant="modal"><button>Action</button></md-side-sheet>');
+      const request = jest.spyOn(global, 'requestAnimationFrame').mockReturnValue(42);
+      const cancel = jest.spyOn(global, 'cancelAnimationFrame').mockImplementation(() => {});
+      const focus = jest.spyOn(page.rootInstance, 'focusFirst');
+      const container = page.root!.shadowRoot!.querySelector('[part="container"]')!;
+
+      page.root!.open = true;
+      const openingFocus = request.mock.calls[0][0];
+      if (action === 'close') {
+        await page.root!.close();
+      } else {
+        page.root!.remove();
+        page.rootInstance.disconnectedCallback();
+      }
+      await page.waitForChanges();
+      container.setAttribute('inert', '');
+
+      expect(cancel).toHaveBeenCalledWith(42);
+      openingFocus(0);
+      expect(focus).not.toHaveBeenCalled();
+      expect(container.hasAttribute('inert')).toBe(true);
+    });
+  });
+
   describe('methods', () => {
     it('show() sets open to true', async () => {
       const page = await create('<md-side-sheet headline="Test"></md-side-sheet>');

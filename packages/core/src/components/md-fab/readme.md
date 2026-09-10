@@ -102,6 +102,12 @@ There is no veto hook on `md-fab`; use `md-button`, whose `mdClick` is honoured.
 
 **Parts** — `state-layer`, `icon`, `label`.
 
+**Composition method** — `setMenuIcon(icon: string | null): Promise<void>` temporarily
+displays a menu icon without changing the authored `icon` property or slotted icon.
+`md-fab-menu` manages this method automatically. Passing `null` restores the latest
+authored icon, including changes made while the menu was open. Framework consumers
+can keep binding `icon` normally; no imperative initialization workaround is needed.
+
 ### Behavioral contract worth knowing
 
 - **`extended` is tri-state.** Left unset it is *derived*: extended whenever a

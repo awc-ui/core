@@ -1148,7 +1148,7 @@ describe('md-menu', () => {
   it('onOpenChange(true) with anchor registers scroll/resize listeners', async () => {
     const page = await createMenu(`<md-menu anchor="anchor-el"></md-menu>`);
     const addSpy = jest.spyOn(window, 'addEventListener');
-    page.rootInstance.onOpenChange(true);
+    page.root!.open = true;
     expect(addSpy).toHaveBeenCalledWith('scroll', expect.any(Function), true);
     expect(addSpy).toHaveBeenCalledWith('resize', expect.any(Function));
     addSpy.mockRestore();
@@ -1172,7 +1172,7 @@ describe('md-menu', () => {
     `);
     page.rootInstance.skipAutoFocus = true;
     const initSpy = jest.spyOn(page.rootInstance, 'initRovingTabindex');
-    page.rootInstance.onOpenChange(true);
+    page.root!.open = true;
 
     await new Promise(r => setTimeout(r, 50));
 
@@ -1190,7 +1190,7 @@ describe('md-menu', () => {
     `);
     const initSpy = jest.spyOn(page.rootInstance, 'initRovingTabindex');
     const focusSpy = jest.spyOn(page.rootInstance, 'focusFirstItem');
-    page.rootInstance.onOpenChange(true);
+    page.root!.open = true;
 
     await new Promise((r) => setTimeout(r, 50));
 

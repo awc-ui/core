@@ -84,8 +84,10 @@ yourself.
 **Events** — `mdOpen`, `mdClose`, `mdCancel`, all `CustomEvent<void>` and all
 default Stencil events (bubbling and composed).
 
-**Methods** — `show(): Promise<void>` and `close(): Promise<void>`. Both just
-set `open`, so `open` stays the single source of truth.
+**Methods** — `show(): Promise<void>`, `close(): Promise<void>`, and
+`whenClosed(): Promise<void>`. `show()` waits for the first closed render before
+opening; `close()` retains its existing event timing. Both update `open`,
+which stays the single source of truth. `whenClosed()` only observes completion.
 
 **Slots** — `(default)` body content · `actions` · `headline` and `icon`
 (**basic variant only** — neither slot is rendered when `fullscreen`) ·
@@ -371,6 +373,27 @@ md-dialog.branded::part(headline) {
 
 
 ## Methods
+
+### `whenClosed() => Promise<void>`
+
+Resolves once the current opening cycle has closed and this overlay's shell
+animations have finished. A pending `show()` cancelled by `close()` also settles;
+disconnecting the element settles pending callers. Reopening during exit keeps
+the same completion pending until the overlay closes again. This does not change
+when `mdClose` fires and does not wait for animations inside slotted content.
+
+Use this before removing the element or replacing it with another overlay:
+
+```js
+await overlay.close();
+await overlay.whenClosed();
+overlay.remove();
+```
+
+For a conditionally mounted React overlay, `useOverlay` from `@awc-ui/react`
+manages opening and calls `onClosed` after this completion signal. Keep the
+component mounted until that callback. No hydration polling or application-owned
+animation timers are needed.
 
 ### `close() => Promise<void>`
 

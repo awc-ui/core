@@ -62,6 +62,7 @@
   ],
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.json",
+    "test:overlay": "node --test scripts/use-overlay.test.mjs",
     "size": "size-limit"
   },
   "size-limit": [

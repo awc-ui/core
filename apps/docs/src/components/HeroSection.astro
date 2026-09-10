@@ -59,7 +59,11 @@ import ReleaseLinks from './ReleaseLinks.astro';
           </svg>
         </button>
       </div>
-      <ReleaseLinks variant="hero" />
+
+      {/* The header exposes these links from 50rem; the splash page has no mobile menu. */}
+      <div class="awc-hero__mobile-release-links">
+        <ReleaseLinks variant="hero" />
+      </div>
     </div>
 
     <div class="awc-hero__preview" data-awc-reveal data-awc-hero-preview data-awc-preview-pending>
@@ -409,6 +413,12 @@ import ReleaseLinks from './ReleaseLinks.astro';
 </script>
 
 <style>
+  @media (min-width: 50rem) {
+    .awc-hero__mobile-release-links {
+      display: none;
+    }
+  }
+
   /* ============================================================
      Section foundation — surface-bright with ambient tonal blobs
      ============================================================ */

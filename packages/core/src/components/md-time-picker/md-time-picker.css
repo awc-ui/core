@@ -51,7 +51,7 @@
      --md-time-picker-toggle-shape              Mode-toggle corner-radius (piped onto md-icon-button)
 
      ── Dimensions ──
-     --md-time-picker-trigger-min-width         Trigger min-inline-size (default 240px)
+     --md-time-picker-trigger-min-width         Preferred intrinsic trigger width (default 240px)
      --md-time-picker-trigger-icon-size         Trigger leading icon font-size (default 24px, tapers with density)
      --md-time-picker-dialog-padding            Dialog internal padding (default 24px)
      --md-time-picker-dialog-min-width          Dialog width in portrait / input variants (default 328px)
@@ -277,7 +277,7 @@
   --_toggle-icon-size: var(--md-time-picker-toggle-icon-size, max(18px, calc(24px + var(--md-sys-density-scale, 0) * 1px)));
   --_toggle-shape: var(--md-time-picker-toggle-shape, var(--md-sys-shape-corner-full, 9999px));
 
-  display: inline-block;
+  display: inline-flex;
   position: relative;
   font-family: var(--md-sys-typescale-body-large-font-family, Roboto, sans-serif);
   color: var(--_dialog-on-color);
@@ -304,12 +304,13 @@
    color so it picks up the time-picker icon token rather than the
    text-field's inherit-from-label default. */
 .md-time-picker__field {
-  /* Width parity with the legacy trigger so dialogs / forms keep the
-     same intrinsic field width after the swap. md-text-field is
-     inline-flex internally so this is just a min-inline-size hint. */
-  min-inline-size: var(--_trigger-min-width);
+  /* Keep the intrinsic trigger footprint, but let an explicitly sized host
+     stretch or shrink the field. A fixed minimum on the child defeated both
+     full-width forms and narrow grid tracks. */
+  flex: 1 1 auto;
+  min-inline-size: 0;
   display: inline-flex;
-  inline-size: auto;
+  inline-size: var(--_trigger-min-width);
   cursor: pointer;
 
   /* Forward time-picker public tokens onto md-text-field's API surface.

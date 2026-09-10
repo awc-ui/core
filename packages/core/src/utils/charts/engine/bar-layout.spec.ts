@@ -136,6 +136,112 @@ describe('chart engine — bar layout', () => {
   });
 });
 
+describe('horizontal bar value-axis labels (issue #8)', () => {
+  const categories = ['Real estate', 'Manufacturing', 'Energy', 'Retail trade', 'Technology', 'Healthcare', 'Transport'];
+  const currency = (value: number) => value === 0 ? '€0' : `€${value / 1e6}m`;
+  const spec = (over: Partial<BarChartSpec> = {}) => baseSpec({
+    horizontal: true, categories, legend: 'none', axisTicks: true,
+    valueMin: 0, valueMax: 600e6, valueTickFormatter: currency,
+    series: [{ label: 'Exposure', color: '#6750A4', data: [450e6, 530e6, 600e6, 320e6, 420e6, 280e6, 540e6], hidden: false }],
+    ...over,
+  });
+  const measure = (text: string) => text.length * 7;
+  const labels = (scene: ReturnType<typeof computeBarLayout>) => scene.texts.filter((text) => text.key?.startsWith('vt-')).sort((a, b) => a.x - b.x);
+  function expectNoOverlap(scene: ReturnType<typeof computeBarLayout>, widthOf = measure) {
+    const ticks = labels(scene);
+    for (let i = 1; i < ticks.length; i++) {
+      expect(ticks[i].x - widthOf(ticks[i].text) / 2 - (ticks[i - 1].x + widthOf(ticks[i - 1].text) / 2)).toBeGreaterThanOrEqual(7.99);
+    }
+  }
+
+  it('fits mobile currency labels and their endpoint gutters, then restores detail on resize', () => {
+    const mobile = computeBarLayout(spec(), theme, 280, 340, measure);
+    const desktop = computeBarLayout(spec(), theme, 800, 340, measure);
+    const ticks = labels(mobile);
+    expectNoOverlap(mobile);
+    expect(ticks.length).toBeGreaterThanOrEqual(2);
+    expect(ticks.length).toBeLessThan(labels(desktop).length);
+    expect(ticks[0].text).toBe('€0');
+    expect(ticks[ticks.length - 1].text).toBe('€600m');
+    for (const tick of ticks) {
+      expect(tick.x - measure(tick.text) / 2).toBeGreaterThanOrEqual(0);
+      expect(tick.x + measure(tick.text) / 2).toBeLessThanOrEqual(mobile.width);
+    }
+    expect(mobile.bars.length).toBe(categories.length);
+    expect(mobile.gridlines.map((line) => line.x1)).toEqual(ticks.map((tick) => tick.x));
+    const y = mobile.plot.y + mobile.plot.height;
+    expect(mobile.axisLines.filter((line) => line.y1 === y && line.y2 === y + 5).map((line) => line.x1)).toEqual(ticks.map((tick) => tick.x));
+    expectNoOverlap(mirrorScene(mobile));
+  });
+
+  it('uses measured formatter widths instead of category count or character estimates', () => {
+    const wide = (text: string) => text === '€0' ? 20 : 105;
+    const scene = computeBarLayout(spec(), theme, 350, 340, wide);
+    expectNoOverlap(scene, wide);
+    expect(labels(scene).length).toBeLessThan(labels(computeBarLayout(spec(), theme, 350, 340, measure)).length);
+  });
+
+  it('never forces colliding endpoints into an extremely narrow plot', () => {
+    const scene = computeBarLayout(spec(), theme, 120, 340, measure);
+    expect(labels(scene).map((tick) => tick.text)).toEqual(['€0']);
+  });
+
+  it.each([
+    { name: 'mixed positive and negative', min: -300e6, max: 300e6, data: [-300e6, -200e6, -100e6, 0, 100e6, 200e6, 300e6] },
+    { name: 'all negative', min: -600e6, max: 0, data: [-600e6, -500e6, -400e6, -300e6, -200e6, -100e6, 0] },
+  ])('fits localized $name currency ticks in both directions without changing bar values', ({ min, max, data }) => {
+    const formatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+    const format = (value: number) => formatter.format(value / 1e6);
+    const signed = spec({
+      valueMin: min, valueMax: max, valueTickFormatter: format,
+      series: [{ label: 'Net exposure', color: '#6750A4', data, hidden: false }],
+    });
+    const mobile = computeBarLayout(signed, theme, 280, 340, measure);
+    const desktop = computeBarLayout(signed, theme, 800, 340, measure);
+    const mobileTicks = labels(mobile);
+    expect(mobileTicks.length).toBeGreaterThanOrEqual(2);
+    expect(mobileTicks.length).toBeLessThan(labels(desktop).length);
+    expect(mobileTicks[0].text).toBe(format(min));
+    expect(mobileTicks[mobileTicks.length - 1].text).toBe(format(max));
+    for (const scene of [mobile, mirrorScene(mobile)]) {
+      expectNoOverlap(scene);
+      const ticks = labels(scene);
+      expect(scene.gridlines.map((line) => line.x1).sort((a, b) => a - b)).toEqual(ticks.map((tick) => tick.x));
+      for (const tick of ticks) {
+        expect(tick.x - measure(tick.text) / 2).toBeGreaterThanOrEqual(0);
+        expect(tick.x + measure(tick.text) / 2).toBeLessThanOrEqual(scene.width);
+      }
+    }
+    expect(labels(mirrorScene(mobile)).map((tick) => tick.text)).toEqual(mobileTicks.map((tick) => tick.text).reverse());
+    // Tick selection can change on resize, but a datum keeps the same share
+    // of the value domain and the same position relative to the zero baseline.
+    mobile.bars.forEach((bar, index) => {
+      const wide = desktop.bars[index];
+      expect((bar.x - mobile.plot.x) / mobile.plot.width).toBeCloseTo((wide.x - desktop.plot.x) / desktop.plot.width, 8);
+      expect(bar.w / mobile.plot.width).toBeCloseTo(wide.w / desktop.plot.width, 8);
+    });
+  });
+
+  it('selects using projected positions on logarithmic and broken value axes', () => {
+    for (const options of [
+      { valueScale: 'log' as const, valueMin: 1, valueMax: 1e9 },
+      { valueMin: 0, valueMax: 600e6, valueBreaks: [{ from: 100e6, to: 500e6 }] },
+    ]) {
+      const scene = computeBarLayout(spec(options), theme, 310, 340, measure);
+      expectNoOverlap(scene);
+      expect(scene.gridlines.map((line) => line.x1)).toEqual(labels(scene).map((tick) => tick.x));
+    }
+  });
+
+  it('preserves vertical axes and the full grid when value tick labels are hidden', () => {
+    const full = computeBarLayout(spec({ horizontal: false }), theme, 280, 340, measure);
+    expect(labels(full)).toHaveLength(7);
+    const hidden = computeBarLayout(spec({ valueHideTicks: true }), theme, 280, 340, measure);
+    expect(labels(hidden)).toHaveLength(0);
+    expect(hidden.gridlines).toHaveLength(7);
+  });
+});
+
 describe('chart engine — bar value-axis breaks', () => {
   const barSpec = (over: Record<string, unknown> = {}) => ({
     series: [{ label: 'A', color: '#6750A4', data: [4, 18, 1.1e12], hidden: false }],

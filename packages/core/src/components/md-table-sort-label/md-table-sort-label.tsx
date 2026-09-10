@@ -1,4 +1,4 @@
-import { Component, Host, h, Prop, Event, EventEmitter } from '@stencil/core';
+import { Component, Element, Host, h, Prop, Event, EventEmitter, Watch } from '@stencil/core';
 
 /** Material Symbols 24px `arrow_upward` glyph. */
 const ICON_ARROW = 'M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z';
@@ -27,6 +27,8 @@ const ICON_ARROW = 'M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z'
   shadow: true,
 })
 export class MdTableSortLabel {
+  @Element() el!: HTMLElement;
+
   /**
    * Column id — matched against the `<md-table>`'s `sort-by` value.
    * Required.
@@ -78,6 +80,12 @@ export class MdTableSortLabel {
   /** Active sort direction. Pushed by the parent `<md-table>`. */
   @Prop({ mutable: true, reflect: true }) order: 'asc' | 'desc' | 'none' = 'none';
 
+  /** Live-region announcement for the active ascending sort. */
+  @Prop() sortedAscendingLabel: string = 'sorted ascending';
+
+  /** Live-region announcement for the active descending sort. */
+  @Prop() sortedDescendingLabel: string = 'sorted descending';
+
   /**
    * Local density rung. Drives the same `--md-sys-density-scale` signal that a
    * global `data-density` ancestor sets, so a local value simply overrides the
@@ -87,6 +95,18 @@ export class MdTableSortLabel {
 
   /** Fired when the user requests to sort by this column. */
   @Event() mdSortRequest: EventEmitter<{ column: string; defaultOrder: 'asc' | 'desc' }>;
+
+  componentWillLoad() {
+    this.notifyColumnChange();
+  }
+
+  @Watch('column')
+  notifyColumnChange() {
+    // Internal coordination, like mdRowgroupSlotChange: assigning a column
+    // property or adding a label inside an existing cell produces no table
+    // slotchange. Let the owning table push its current sort state back.
+    this.el.dispatchEvent(new CustomEvent('mdSortLabelChange', { bubbles: true }));
+  }
 
   private handleClick = () => {
     if (this.disabled || !this.column) return;
@@ -147,7 +167,7 @@ export class MdTableSortLabel {
         </span>
         {this.iconPosition === 'end' && this.renderArrow()}
         <span class="md-table-sort-label__sr" aria-live="polite">
-          {this.active ? (this.order === 'desc' ? 'sorted descending' : 'sorted ascending') : ''}
+          {this.active ? (this.order === 'desc' ? this.sortedDescendingLabel : this.sortedAscendingLabel) : ''}
         </span>
       </Host>
     );

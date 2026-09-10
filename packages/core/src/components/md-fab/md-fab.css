@@ -322,6 +322,10 @@ slot[name="icon"] {
   display: contents;
 }
 
+:host(.md-fab--menu-icon) slot[name="icon"] {
+  display: none;
+}
+
 ::slotted([slot="icon"]) {
   color: var(--md-fab-icon-color, inherit);
   width: var(--_icon-size, 24px);

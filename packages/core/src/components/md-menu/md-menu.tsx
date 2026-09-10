@@ -1,4 +1,5 @@
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element, Method, Watch, Listen } from '@stencil/core';
+import { OverlayLifecycle } from '../../utils/overlay-lifecycle';
 import { MenuElement, VirtualMenuProvider } from '../../utils/types';
 import { fixedContainingBlockOrigin, stepUpFlatTree } from '../../utils/fixed-position';
 import { releaseIsolatingAncestors } from '../../utils/isolation-escape';
@@ -23,6 +24,8 @@ let menuIdCounter = 0;
 @Component({ tag: 'md-menu', styleUrl: 'md-menu.css', shadow: true })
 export class MdMenu {
   @Element() el!: HTMLElement;
+
+  private overlayLifecycle = new OverlayLifecycle(() => this.el, () => this.open);
 
   /** Whether the menu is open. */
   @Prop({ mutable: true, reflect: true }) open: boolean = false;
@@ -134,6 +137,9 @@ export class MdMenu {
    */
   private ringedIndex = -1;
   private closeTimer?: ReturnType<typeof setTimeout>;
+  private openTaskGeneration = 0;
+  private openTaskFrames = new Set<number>();
+  private openTaskTimers = new Set<ReturnType<typeof setTimeout>>();
   private skipAutoFocus = false;
   private menuId = `md-menu-${++menuIdCounter}`;
   private typeaheadBuffer = '';
@@ -206,6 +212,7 @@ export class MdMenu {
   }
 
   connectedCallback() {
+    this.overlayLifecycle.connected();
     if (typeof document === 'undefined') return;
     document.addEventListener('keydown', this.trackKeyboardModality, true);
     document.addEventListener('pointerdown', this.trackPointerModality, true);
@@ -215,6 +222,7 @@ export class MdMenu {
   private trackPointerModality = () => { this.keyboardModality = false; };
 
   componentDidLoad() {
+    this.overlayLifecycle.loaded();
     if (this.open) {
       this.applyDepthZIndex();
     }
@@ -279,17 +287,24 @@ export class MdMenu {
   /** Opens the menu programmatically. Pass `{ autoFocus: false }` to keep focus on the caller (e.g. a text field). */
   @Method()
   async show(opts?: { autoFocus?: boolean }) {
-    clearTimeout(this.closeTimer);
-    this.closing = false;
-    // Top-level menus always (re)open from a clean state. This also covers
-    // the case where a prior close was interrupted — e.g. clicking the
-    // trigger fires the anchor's show() which cancels the close timer, so
-    // `open` never flips to false and the close-path reset never runs.
-    // Submenus (no anchor) are skipped so live drill-down isn't disturbed.
-    if (this.anchor) this.collapseSubmenus();
-    this.skipAutoFocus = opts?.autoFocus === false;
-    this.open = true;
-    this.applyDepthZIndex();
+    this.cancelOpenTasks();
+    await this.overlayLifecycle.show(() => {
+      const wasOpen = this.open;
+      clearTimeout(this.closeTimer);
+      this.closing = false;
+      // Top-level menus always (re)open from a clean state. This also covers
+      // the case where a prior close was interrupted — e.g. clicking the
+      // trigger fires the anchor's show() which cancels the close timer, so
+      // `open` never flips to false and the close-path reset never runs.
+      // Submenus (no anchor) are skipped so live drill-down isn't disturbed.
+      if (this.anchor) this.collapseSubmenus();
+      this.skipAutoFocus = opts?.autoFocus === false;
+      this.open = true;
+      if (this.open && !this.closing) {
+        if (wasOpen) this.scheduleOpenTasks();
+        this.applyDepthZIndex();
+      }
+    });
   }
 
   /**
@@ -305,9 +320,17 @@ export class MdMenu {
     if (this.open) this.positionMenu();
   }
 
+  /** Resolves after the current open cycle and shell exit motion finish; safe to unmount afterward. */
+  @Method()
+  async whenClosed(): Promise<void> {
+    await this.overlayLifecycle.whenClosed();
+  }
+
   /** Closes the menu programmatically. */
   @Method()
   async close() {
+    this.cancelOpenTasks();
+    this.overlayLifecycle.cancelOpen();
     if (!this.open || this.closing) return;
 
     if (this.quick) {
@@ -324,36 +347,25 @@ export class MdMenu {
 
   @Watch('open')
   onOpenChange(open: boolean) {
+    this.cancelOpenTasks();
+    if (open) this.overlayLifecycle.opened();
+    else this.overlayLifecycle.closed();
     if (open) {
       // Snapshot the modality that triggered this open; the actual focus
       // is deferred (scheduleFocus), so capture it now before it drifts.
       this.openedViaKeyboard = this.keyboardModality;
       this.dismissPeerMenus();
       this.applyDepthZIndex();
-      requestAnimationFrame(() => this.positionMenu());
       this.mdOpen.emit();
+      if (!this.open || this.closing || !this.el.isConnected) return;
       this.updateAnchorAria(true);
       if (this.anchor) {
-        requestAnimationFrame(() => {
-          document.addEventListener('click', this.handleOutsideClick);
-          document.addEventListener('keydown', this.handleDocumentKeyDown);
-        });
         window.addEventListener('scroll', this.handleScroll, true);
         window.addEventListener('resize', this.handleScroll);
         this.observeSurfaceResize();
         this.startAnchorWatch();
       }
-      if (this.skipAutoFocus || !this.autoFocus) {
-        this.scheduleFocus(() => this.initRovingTabindex());
-      } else {
-        // Always move focus to the first item so it leaves the trigger
-        // (a mouse-clicked trigger must not keep its keyboard ring). The
-        // ring on the item itself is shown only for keyboard opens — see
-        // focusFirstItem(): mouse opens focus the item ring-less, and the
-        // ring appears once the user navigates with the keyboard.
-        this.scheduleFocus(() => this.focusFirstItem());
-      }
-      this.skipAutoFocus = false;
+      this.scheduleOpenTasks();
     } else {
       // After the close animation (`open` flips only when it finishes), so the
       // menu stays on top while it fades out.
@@ -640,7 +652,7 @@ export class MdMenu {
     // A newer keystroke superseded this one while we awaited the scroll. Bail so
     // we don't re-stamp the focus ring / move focus to this now-stale row — the
     // latest call owns those. The current ring stays put (we never removed it).
-    if (seq !== this.navSeq) return;
+    if (seq !== this.navSeq || !this.open || this.closing || !this.el.isConnected || this.provider !== p) return;
     const node = p.domItemForIndex(index);
     if (!node) return;
     // Atomic swap: clear the previously ringed row, then ring/seat the new one,
@@ -804,8 +816,47 @@ export class MdMenu {
     });
   }
 
+  private cancelOpenTasks() {
+    ++this.openTaskGeneration;
+    ++this.navSeq;
+    this.openTaskFrames.forEach((frame) => cancelAnimationFrame(frame));
+    this.openTaskFrames.clear();
+    this.openTaskTimers.forEach((timer) => clearTimeout(timer));
+    this.openTaskTimers.clear();
+  }
+
+  private deferOpenFrame(fn: () => void) {
+    const generation = this.openTaskGeneration;
+    const frame = requestAnimationFrame(() => {
+      this.openTaskFrames.delete(frame);
+      if (generation !== this.openTaskGeneration || !this.open || this.closing || !this.el.isConnected) return;
+      fn();
+    });
+    this.openTaskFrames.add(frame);
+  }
+
   private scheduleFocus(fn: () => void) {
-    setTimeout(() => requestAnimationFrame(() => fn()), 0);
+    const generation = this.openTaskGeneration;
+    const timer = setTimeout(() => {
+      this.openTaskTimers.delete(timer);
+      if (generation !== this.openTaskGeneration || !this.open || this.closing || !this.el.isConnected) return;
+      this.deferOpenFrame(fn);
+    }, 0);
+    this.openTaskTimers.add(timer);
+  }
+
+  private scheduleOpenTasks() {
+    this.deferOpenFrame(() => this.positionMenu());
+    if (this.anchor) {
+      this.deferOpenFrame(() => {
+        document.addEventListener('click', this.handleOutsideClick);
+        document.addEventListener('keydown', this.handleDocumentKeyDown);
+      });
+    }
+    // Retain the opening modality while the timer waits for slotted items.
+    if (this.skipAutoFocus || !this.autoFocus) this.scheduleFocus(() => this.initRovingTabindex());
+    else this.scheduleFocus(() => this.focusFirstItem());
+    this.skipAutoFocus = false;
   }
 
   private focusFirstItem(retries = 3) {
@@ -1006,7 +1057,7 @@ export class MdMenu {
     let menuH = surface.offsetHeight;
 
     if (menuW === 0 || menuH === 0) {
-      requestAnimationFrame(() => this.positionMenu());
+      this.deferOpenFrame(() => this.positionMenu());
       return;
     }
 
@@ -1307,6 +1358,8 @@ export class MdMenu {
   }
 
   disconnectedCallback() {
+    this.cancelOpenTasks();
+    this.overlayLifecycle.disconnect();
     document.removeEventListener('click', this.handleOutsideClick);
     document.removeEventListener('keydown', this.handleDocumentKeyDown);
     document.removeEventListener('keydown', this.trackKeyboardModality, true);

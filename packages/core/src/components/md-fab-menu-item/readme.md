@@ -57,6 +57,10 @@ container. The parent menu owns opening, roving focus, and dismissal.
 `label` prop **wins**: the default slot only renders when `label` is empty.
 Element content in the `icon` slot suppresses the `icon` prop's glyph.
 
+The parent menu's typeahead uses the current `label` property, so JavaScript and
+framework property bindings work without reflecting a `label` attribute. An empty
+label falls back to the item's slotted text, matching the visible content.
+
 **Event** — `mdClick`, `void` detail (`event.detail` is `null`), fired on
 pointer activation and on `Enter`/`Space`. It bubbles and is composed.
 
