@@ -112,8 +112,8 @@ reference in JS. `scroll-shadow` still parses but is a documented no-op.
 | `mdLeadingIconClick` | `{ value, open }` | Leading affordance activated — the open-state back button, or a slotted `leading` element |
 | `mdTrailingIconClick` | `{ value, open }` | A **slotted** `trailing` element was clicked (the built-in clear and mic emit `mdClear` / `mdVoice` instead) |
 
-**Methods** — `show()`, `close()`, `toggle()`, `focusInput()`, `startVoice()`,
-`stopVoice()`.
+**Methods** — `show()`, `close()`, `whenClosed()`, `toggle()`, `focusInput()`,
+`startVoice()`, `stopVoice()`.
 
 **Slots** — `results` (the panel body — **you render this**), `leading`,
 `trailing`, `trigger` (replaces the built-in trigger), `loader` (replaces the
@@ -128,6 +128,16 @@ built-in loading indicator in the trailing cluster while `loading`).
 
 - **The component does not search.** It gives you the surface, the query and
   the panel; you render results into the `results` slot and run the query.
+- **`close()` requests dismissal; `whenClosed()` waits for completion.**
+  `mdClose` still fires when closing starts. Await `whenClosed()` before removing
+  the search element or opening another modal: it resolves after the panel fade,
+  bar contraction, scroll restoration and focus restoration. It follows actual
+  shell motion, including custom durations and reduced motion, and ignores
+  animations inside slotted results. Reopening during exit keeps the current
+  completion pending until the next completed close. Disconnecting cleans up and
+  settles pending callers; an already closed search resolves immediately.
+- `show()` waits for the initial closed render before opening. A `close()` during
+  that wait cancels the opening without leaving a pending completion.
 - **Wire exactly one query source.** `mdInput` fires on every keystroke,
   `mdSearch` is the debounced/de-duplicated one, `mdSubmit` fires on Enter and
   `mdChange` on a changed blur. Use `mdSearch` for the fetch; the other three
@@ -245,6 +255,16 @@ Sourced from [M3 · Search · Guidelines](https://m3.material.io/components/sear
 </script>
 ```
 
+```js
+// A result opens a report dialog. Wait for search to release focus/scroll first.
+async function openReport() {
+  await search.close();
+  await search.whenClosed();
+  await reportDialog.show();
+}
+// In a framework, keep search mounted until whenClosed() resolves.
+```
+
 ```html
 <!-- Collapsed icon trigger, full-screen overlay -->
 <md-search trigger="icon" trigger-icon="search" layout="full-screen"
@@ -298,6 +318,7 @@ Sourced from [M3 · Search · Guidelines](https://m3.material.io/components/sear
 | ❌ Wrong | ✅ Right | Why |
 |---|---|---|
 | Expecting built-in search results | Render into the `results` slot | The component provides the surface only. |
+| Opening a dialog from `mdClose`, or waiting a hardcoded timeout | `await search.close(); await search.whenClosed();` before opening the dialog | `mdClose` marks the start of exit; focus and scroll cleanup finish later, with motion controlled by the theme. |
 | Wiring `mdInput`, `mdSearch`, `mdSubmit` and `mdChange` to the same query | Fetch on `mdSearch` alone | You would run the query up to four times per keystroke sequence. |
 | Setting `debounce` and then listening to `mdInput` | Listen to `mdSearch` | `debounce`/`throttle` gate `mdSearch` only; `mdInput` is always immediate. |
 | `throttle` on its own | Pair it with `debounce` | It is a max-wait for the debounce, not a standalone rate limiter. |
@@ -488,6 +509,16 @@ Close the focused panel.
 
 Type: `Promise<void>`
 
+
+
+### `whenClosed() => Promise<void>`
+
+Wait for the current open cycle, both shell exit stages, and focus/scroll cleanup.
+Reopening keeps completion pending; disconnecting also settles it.
+
+#### Returns
+
+Type: `Promise<void>`
 
 
 ### `focusInput() => Promise<void>`

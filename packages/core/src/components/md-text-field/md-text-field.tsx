@@ -1,5 +1,5 @@
-import { getValidityOf, submitFormOnEnter } from '../../utils/form';
-import { AttachInternals, Build, Component, Element, Event, EventEmitter, Host, Method, Prop, State, Watch, h } from '@stencil/core';
+import { getValidityOf, submitFormOnEnter, InlineValidationPresenter, withValidationCheck, withValidationReport } from '../../utils/form';
+import { AttachInternals, Build, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
 
 const RESTRICT_PATTERNS: Record<string, RegExp> = {
   numeric: /[^0-9]/g,
@@ -166,6 +166,31 @@ export class MdTextField {
   @State() private hasTrailingIconButton = false;
   @State() private listening = false;
   @State() private displayValue: string = '';
+  @State() private validationMessage = '';
+  private validation = new InlineValidationPresenter({
+    host: () => this.el,
+    validity: () => this.readValidationState(),
+    message: (message) => { this.validationMessage = message; },
+    focus: () => this.setFocus(),
+  });
+
+  @Watch('name')
+  resetValidationPresentation() {
+    this.validation.reset();
+  }
+
+  @Listen('invalid')
+  onInvalid(event: Event) { this.validation.handleInvalid(event); }
+
+  private readValidationState() {
+    if (this.internals && 'validity' in this.internals) return getValidityOf(this.internals);
+    return { valid: this.inputEl?.validity.valid ?? true, validationMessage: this.inputEl?.validationMessage || '' };
+  }
+
+  private get hasError(): boolean { return this.error || !!this.validationMessage; }
+  private get supportMessage(): string {
+    return this.hasError ? this.errorText || this.validationMessage || this.supportingText : this.supportingText;
+  }
 
   private inputEl?: HTMLInputElement | HTMLTextAreaElement;
   private defaultValue = '';
@@ -404,10 +429,14 @@ export class MdTextField {
         this.internals?.setValidity(flags, message || 'Invalid value', input);
       }
     } catch { /* spec mock */ }
+    finally {
+      this.validation.refresh();
       this.emitValidityChange();
+    }
   }
 
   formResetCallback() {
+    this.validation.reset();
     this.internalWrite = false;
     this.value = this.defaultValue;
     this.syncDisplayValue();
@@ -416,6 +445,7 @@ export class MdTextField {
   }
 
   formDisabledCallback(disabled: boolean) {
+    if (disabled) queueMicrotask(() => this.validation.reset());
     // called synchronously while Stencil reflects the disabled attribute
     // during render — a direct @State write logs 'changed during rendering'
     queueMicrotask(() => {
@@ -556,18 +586,18 @@ export class MdTextField {
     // internals reflects the SUBMITTED value's validity (the inner input may
     // hold a formatted display that would answer wrongly in both directions)
     try {
-      return this.internals.checkValidity();
+      return withValidationCheck(() => this.internals.checkValidity());
     } catch {
-      return this.inputEl?.checkValidity() ?? true;
+      return withValidationCheck(() => this.inputEl?.checkValidity() ?? true);
     }
   }
 
   @Method()
   async reportValidity(): Promise<boolean> {
     try {
-      return this.internals.reportValidity();
+      return withValidationReport(() => this.internals.reportValidity());
     } catch {
-      return this.inputEl?.reportValidity() ?? true;
+      return withValidationReport(() => this.inputEl?.reportValidity() ?? true);
     }
   }
 
@@ -1063,7 +1093,7 @@ export class MdTextField {
     const useRawWhileFocused = this.focused && this.formatter && this.effectiveFormatOn === 'blur';
     const showValue = useRawWhileFocused ? this.value : this.displayValue;
 
-    const supportText = this.error && this.errorText ? this.errorText : this.supportingText;
+    const supportText = this.supportMessage;
     const describedBy = [
       supportText ? `${this.uid}-support` : '',
       this.maxLength != null && !isNaN(this.maxLength) ? `${this.uid}-counter` : '',
@@ -1123,9 +1153,10 @@ export class MdTextField {
       'aria-describedby': describedBy || undefined,
       // omit when valid — a hard-coded "false" suppresses the browser's own
       // :user-invalid signal on the inner input
-      'aria-invalid': this.error ? 'true' : undefined,
+      'aria-invalid': this.hasError ? 'true' : undefined,
       'aria-required': this.required ? 'true' : undefined,
       id: `${this.uid}-input`,
+      onInvalid: (event: Event) => this.validation.handleInputInvalid(event),
       onInput: this.handleInput,
       onChange: this.handleChange,
       onFocus: this.handleFocus,
@@ -1167,12 +1198,12 @@ export class MdTextField {
   }
 
   render() {
-    const supportText = this.error && this.errorText ? this.errorText : this.supportingText;
+    const supportText = this.supportMessage;
     const showClear = !!this.clearable;
     const showPasswordToggle = !this.multiline && !!this.passwordToggle;
     const showSpeech = !!this.speechToText;
     const hasLeading = this.hasSlottedLeading;
-    const hasTrailing = this.hasSlottedTrailing || showClear || showPasswordToggle || showSpeech || this.error;
+    const hasTrailing = this.hasSlottedTrailing || showClear || showPasswordToggle || showSpeech || this.hasError;
     // The counter must count what the LIMIT counts: native maxLength counts
     // every char; only the live-formatter path enforces a stripped length.
     const usesFormatterLimit = !!this.formatter && this.effectiveFormatOn === 'input';
@@ -1208,7 +1239,7 @@ export class MdTextField {
           'md-text-field': true,
           [`md-text-field--${this.variant}`]: true,
           'md-text-field--focused': this.focused || this.appearFocused,
-          'md-text-field--error': this.error,
+          'md-text-field--error': this.hasError,
           'md-text-field--disabled': this.isDisabled,
           'md-text-field--with-leading': hasLeading,
           'md-text-field--with-trailing': hasTrailing,
@@ -1330,7 +1361,7 @@ export class MdTextField {
             </button>
           )}
 
-          {this.error && (
+          {this.hasError && (
             <span class="md-text-field__error-icon" aria-hidden="true">
               <slot name="error-icon">
                 <span class="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>error</span>
@@ -1376,8 +1407,8 @@ export class MdTextField {
             <span
               id={`${this.uid}-support`}
               part="supporting-text"
-              role={this.error ? 'alert' : undefined}
-              class={{ 'md-text-field__support-text': true, 'md-text-field__support-text--error': this.error }}
+              role={this.hasError ? 'alert' : undefined}
+              class={{ 'md-text-field__support-text': true, 'md-text-field__support-text--error': this.hasError }}
             >
               {/* A zero-width space holds the line box open when reserving, so
                   the row has height before any message exists. An empty span

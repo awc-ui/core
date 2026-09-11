@@ -79,7 +79,7 @@ export class MdNavigationBar {
 
   /**
    * Emitted when the selected destination changes (user click,
-   * keyboard activation, or programmatic `select()` call).
+   * keyboard activation, or programmatic `activeIndex` / `select()` update).
    * Detail includes both the new and previous indices so listeners
    * can short-circuit no-op reselects.
    */
@@ -87,14 +87,27 @@ export class MdNavigationBar {
 
   private tabs: HTMLElement[] = [];
   private previousIndex: number = -1;
+  private hasInitializedSelection = false;
+  private normalizingSelection = false;
   private slotObserver?: MutationObserver;
 
   // ─── Lifecycle ───────────────────────────────────────────────────
 
+  componentWillLoad() {
+    // Resolve existing light-DOM children before the first paint. Waiting for
+    // componentDidLoad would briefly select an invalid/disabled destination and
+    // require a second render just to reflect the normalized index.
+    this.tabs = Array.from(this.el.children).filter(
+      (element): element is HTMLElement => element.tagName === 'MD-NAVIGATION-TAB',
+    );
+    if (this.tabs.length > 0) {
+      this.hasInitializedSelection = true;
+      this.updateSelection(this.activeIndex, /* announce */ false);
+    }
+  }
+
   componentDidLoad() {
     this.syncTabs();
-    this.applyActiveState(this.activeIndex, /* announce */ false);
-    this.previousIndex = this.activeIndex;
   }
 
   disconnectedCallback() {
@@ -104,15 +117,11 @@ export class MdNavigationBar {
   // ─── Watchers ────────────────────────────────────────────────────
 
   @Watch('activeIndex')
-  onActiveIndexChange(newIndex: number, oldIndex: number) {
-    const clamped = this.clampToEnabled(newIndex);
-    if (clamped !== newIndex) {
-      // Re-assigning here triggers the watcher again — but with the
-      // already-clamped value it will be a no-op next time.
-      this.activeIndex = clamped;
-      return;
-    }
-    this.applyActiveState(clamped, /* announce */ true, oldIndex);
+  onActiveIndexChange(newIndex: number) {
+    // Frameworks may supply the selected index before their async children
+    // arrive. Keep that request until the first populated slot can resolve it.
+    if (this.normalizingSelection || !this.hasInitializedSelection) return;
+    this.updateSelection(newIndex, /* announce */ true);
   }
 
   @Watch('labelBehavior')
@@ -128,9 +137,11 @@ export class MdNavigationBar {
    */
   @Method()
   async select(index: number): Promise<void> {
-    const clamped = this.clampToEnabled(index);
-    if (clamped === this.activeIndex) return;
-    this.activeIndex = clamped; // Triggers @Watch which emits events.
+    if (!this.hasInitializedSelection) {
+      this.activeIndex = index;
+      return;
+    }
+    this.updateSelection(index, /* announce */ true);
   }
 
   /**
@@ -167,7 +178,12 @@ export class MdNavigationBar {
 
     this.tabs.forEach(tab => this.propagateLabelBehavior(tab));
 
-    this.applyActiveState(this.activeIndex, /* announce */ false);
+    if (!this.hasInitializedSelection && this.tabs.length === 0) {
+      this.applyActiveState(-1, /* announce */ false);
+      return;
+    }
+    this.hasInitializedSelection = true;
+    this.updateSelection(this.activeIndex, /* announce */ false);
   }
 
   private propagateLabelBehavior(tab: HTMLElement) {
@@ -186,7 +202,7 @@ export class MdNavigationBar {
    * (`aria-disabled="true"`, set by the tab when `soft-disabled`).
    */
   private isDisabled(tab: HTMLElement): boolean {
-    return tab.hasAttribute('disabled') ||
+    return tab.hasAttribute('disabled') || tab.hasAttribute('soft-disabled') ||
       tab.getAttribute('aria-disabled') === 'true';
   }
 
@@ -206,7 +222,9 @@ export class MdNavigationBar {
    */
   private clampToEnabled(index: number): number {
     if (this.tabs.length === 0) return -1;
-    const inRange = Math.max(0, Math.min(index, this.tabs.length - 1));
+    // Fractional / NaN values must never become an undefined tab lookup.
+    const requested = Number.isNaN(index) ? 0 : Math.trunc(index);
+    const inRange = Math.max(0, Math.min(requested, this.tabs.length - 1));
     if (!this.isDisabled(this.tabs[inRange])) return inRange;
 
     for (let i = inRange + 1; i < this.tabs.length; i++) {
@@ -218,7 +236,23 @@ export class MdNavigationBar {
     return -1;
   }
 
-  private applyActiveState(activeIndex: number, announce: boolean, oldIndex?: number) {
+  private updateSelection(index: number, announce: boolean) {
+    const clamped = this.clampToEnabled(index);
+    // Reflect the normalized value without treating this internal correction
+    // as a second request. previousIndex tracks the last APPLIED selection,
+    // never an invalid intermediate property value.
+    if (this.activeIndex !== clamped) {
+      this.normalizingSelection = true;
+      try {
+        this.activeIndex = clamped;
+      } finally {
+        this.normalizingSelection = false;
+      }
+    }
+    this.applyActiveState(clamped, announce);
+  }
+
+  private applyActiveState(activeIndex: number, announce: boolean) {
     this.tabs.forEach((tab, i) => {
       if (i === activeIndex) {
         if (!tab.hasAttribute('active')) tab.setAttribute('active', '');
@@ -231,12 +265,10 @@ export class MdNavigationBar {
       }
     });
 
-    if (announce) {
-      const prev = oldIndex ?? this.previousIndex;
-      this.previousIndex = activeIndex;
-      this.mdChange.emit({ index: activeIndex, previousIndex: prev });
-    } else {
-      this.previousIndex = activeIndex;
+    const previousIndex = this.previousIndex;
+    this.previousIndex = activeIndex;
+    if (announce && activeIndex !== previousIndex) {
+      this.mdChange.emit({ index: activeIndex, previousIndex });
     }
   }
 

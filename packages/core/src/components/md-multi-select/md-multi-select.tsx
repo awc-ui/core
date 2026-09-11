@@ -8,7 +8,7 @@ import {
   SelectOptionData,
   SelectOptionInit,
 } from '../../utils/select-options';
-import { setFormValue, checkValidityOf, reportValidityOf, getValidityOf } from '../../utils/form';
+import { setFormValue, checkValidityOf, reportValidityOf, getValidityOf, InlineValidationPresenter } from '../../utils/form';
 import { VirtualSelectController } from '../../utils/virtual-select-controller';
 import { isWasmSupported, FilterMode } from '../../utils/wasm-option-store';
 import { VirtualMenuProvider } from '../../utils/types';
@@ -89,6 +89,24 @@ export class MdMultiSelect {
    * `<input>`s in the shadow root would be invisible to `FormData`.
    */
   @AttachInternals() internals!: ElementInternals;
+
+  @State() private validationMessage = '';
+  private inlineValidation = new InlineValidationPresenter({
+    host: () => this.el,
+    validity: () => getValidityOf(this.internals),
+    message: (message) => { this.validationMessage = message; },
+    focus: () => this.focusTrigger(),
+  });
+
+  @Watch('name')
+  resetValidationPresentation() {
+    this.inlineValidation.reset();
+  }
+
+  @Listen('invalid')
+  handleInvalid(event: Event) {
+    this.inlineValidation.handleInvalid(event);
+  }
 
   /** Visual variant — forwarded to the inner `md-text-field`. */
   @Prop({ reflect: true }) variant: 'filled' | 'outlined' = 'outlined';
@@ -532,7 +550,12 @@ export class MdMultiSelect {
   }
 
   /** Restore the initial selection when the owning form is reset. */
+  formDisabledCallback(disabled: boolean) {
+    if (disabled) queueMicrotask(() => this.inlineValidation.reset());
+  }
+
   formResetCallback() {
+    this.inlineValidation.reset();
     this.value = [...this.defaultValue];
   }
 
@@ -582,7 +605,8 @@ export class MdMultiSelect {
     } else {
       this.internals.setValidity({});
     }
-      this.emitValidityChange();
+    this.inlineValidation.refresh();
+    this.emitValidityChange();
   }
 
   /** Current validity: boolean, message and flags. Mirrors md-text-field. */
@@ -1037,8 +1061,8 @@ export class MdMultiSelect {
         value={displayValue}
         readOnly={true}
         disabled={this.disabled}
-        error={this.error}
-        errorText={this.errorText}
+        error={this.error || !!this.validationMessage}
+        errorText={this.errorText || this.validationMessage}
         reserveSupportingSpace={this.reserveSupportingSpace}
         supportingText={this.supportingText}
         required={this.required}
@@ -1116,7 +1140,8 @@ export class MdMultiSelect {
   private renderButtonTrigger() {
     // The field trigger delegates required/error/supporting to md-text-field; the
     // button path must wire the equivalent ARIA + a visible message itself.
-    const descText = this.error && this.errorText ? this.errorText : this.supportingText;
+    const descText = (this.error || !!this.validationMessage) && (this.errorText || this.validationMessage)
+      ? this.errorText || this.validationMessage : this.supportingText;
     const descId = descText ? `${this.triggerId}-desc` : undefined;
     return [
       <md-button
@@ -1135,7 +1160,7 @@ export class MdMultiSelect {
         // aria-required is not allowed on role="button"; required is conveyed via
         // the described-by message + form validity (ElementInternals). aria-invalid
         // is a global state and is allowed.
-        aria-invalid={this.error ? 'true' : undefined}
+        aria-invalid={this.error || !!this.validationMessage ? 'true' : undefined}
         aria-describedby={descId}
         onMdClick={this.toggleOpen}
       >
@@ -1151,17 +1176,18 @@ export class MdMultiSelect {
    *  IDREF into this shadow root would dangle, so an error there is announced by
    *  role="alert" instead of aria-describedby. */
   private renderTriggerMessage() {
-    const descText = this.error && this.errorText ? this.errorText : this.supportingText;
+    const descText = (this.error || !!this.validationMessage) && (this.errorText || this.validationMessage)
+      ? this.errorText || this.validationMessage : this.supportingText;
     if (!descText) return null;
     return (
       <div
         id={this.hasSlottedTrigger ? undefined : `${this.triggerId}-desc`}
         class={{
           'md-multi-select__button-desc': true,
-          'md-multi-select__button-desc--error': this.error && !!this.errorText,
+          'md-multi-select__button-desc--error': (this.error || !!this.validationMessage) && !!(this.errorText || this.validationMessage),
         }}
         part="button-desc"
-        role={this.error ? 'alert' : undefined}
+        role={this.error || !!this.validationMessage ? 'alert' : undefined}
       >
         {descText}
       </div>

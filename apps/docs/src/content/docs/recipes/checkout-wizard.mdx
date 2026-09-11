@@ -856,6 +856,113 @@ function placeOrder() {
 - **Payment confirmation step:** insert an `md-otp-field` step between Payment
   and Review for 3-D Secure style verification — see the two-factor recipe.
 
+## A wizard inside a dialog: one footer
+
+For a modal flow, let the full-screen dialog supply its labelled close button
+and keep **one** Back / Continue row in `slot="actions"`. Set `nav="false"` on
+the stepper so it does not add another row. `readonly` makes the step headers a
+progress display; every forward move then uses the same form validation path.
+The `next()` and `prev()` methods still move the stepper programmatically.
+
+```html
+<md-dialog id="order-dialog" fullscreen headline="Complete your order" divider>
+  <form id="order-form" novalidate>
+    <md-stepper id="order-steps" nav="false" readonly label="Order progress">
+      <md-step label="Address">
+        <md-text-field id="order-address" name="address" label="Street address"
+          required autocomplete="street-address"></md-text-field>
+      </md-step>
+      <md-step label="Contact">
+        <md-text-field id="order-email" name="email" type="email" label="Email"
+          required autocomplete="email"></md-text-field>
+      </md-step>
+      <md-step label="Review"><p id="order-review"></p></md-step>
+    </md-stepper>
+    <p id="order-feedback" role="status" aria-atomic="true"></p>
+  </form>
+  <md-button id="order-back" slot="actions" type="button" variant="text" hidden>Back</md-button>
+  <md-button id="order-next" slot="actions" type="submit" form="order-form">Continue</md-button>
+</md-dialog>
+```
+
+The `form` attribute associates the footer button with the body form. Enter in
+a Core single-line field activates that submit button; no dialog-wide key
+handler is needed. `novalidate` lets this wizard report **only the current
+step's** constraints, through Core's inline `reportValidity()` presentation.
+Keep the field elements mounted so Back preserves the draft.
+
+```js
+// Application services: placeOrder(data, { signal }) performs the real request;
+// showReceipt(result) displays its confirmed result outside the dialog.
+function wireOrderDialog(placeOrder, showReceipt) {
+  const dialog = document.querySelector('#order-dialog');
+  const form = document.querySelector('#order-form');
+  const steps = document.querySelector('#order-steps');
+  const back = document.querySelector('#order-back');
+  const next = document.querySelector('#order-next');
+  const feedback = document.querySelector('#order-feedback');
+  const fields = [document.querySelector('#order-address'), document.querySelector('#order-email')];
+  let request = null;
+
+  function sync() {
+    back.hidden = steps.active === 0;
+    back.disabled = request !== null;
+    next.textContent = next.loading ? 'Placing order…' : steps.active === 2 ? 'Place order' : 'Continue';
+  }
+  steps.addEventListener('mdStepChange', sync);
+  back.addEventListener('mdClick', () => { if (!request) steps.prev(); });
+  dialog.addEventListener('mdClose', (event) => {
+    if (event.target === dialog) request?.abort(); // ignore nested picker closes
+  });
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (request || !dialog.open) return;
+    const controller = request = new AbortController();
+    sync();
+    try {
+      const field = fields[steps.active];
+      if (field && !(await field.reportValidity())) return;
+      if (controller.signal.aborted) return;
+      feedback.textContent = '';
+      if (steps.active < 2) {
+        document.querySelector('#order-review').textContent =
+          `${fields[0].value} · ${fields[1].value}`;
+        await steps.next();
+        return;
+      }
+      next.loading = true;
+      steps.inert = true;
+      feedback.textContent = 'Placing your order…';
+      sync();
+      const result = await placeOrder(new FormData(form), { signal: controller.signal });
+      if (controller.signal.aborted) return;
+      await dialog.close();
+      await dialog.whenClosed();
+      showReceipt(result);
+    } catch (error) {
+      if (!controller.signal.aborted) feedback.textContent = 'Could not place the order. Try again.';
+    } finally {
+      request = null;
+      next.loading = false;
+      steps.inert = false;
+      sync();
+    }
+  });
+  sync();
+  return dialog;
+}
+```
+
+Use a unique form ID for each mounted instance. Mount and wire a fresh dialog
+for each session, and remove the old one only after `whenClosed()` resolves;
+do not reopen the same instance while its previous request is still settling.
+That keeps an aborted request's `finally` cleanup confined to its old controls.
+The header close button and Escape remain available during the request; Back and repeated submissions are
+guarded. The request signal prevents late UI updates after dismissal. Cancelling
+a client request is not a server rollback: an order API should also deduplicate
+retries and expose the final order status. For editable step headers instead of
+`readonly`, use the `mdBeforeChange` validation gate shown earlier.
+
 ## Related
 
 - Recipe: [Two-factor verification](/recipes/two-factor-verification/) — the

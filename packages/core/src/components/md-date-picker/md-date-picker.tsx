@@ -23,6 +23,7 @@ import {
   checkValidityOf,
   reportValidityOf,
   getValidityOf,
+  InlineValidationPresenter,
 } from '../../utils/form';
 
 let dpUid = 0;
@@ -125,6 +126,24 @@ export class MdDatePicker {
    * was not form-associated, so the chosen date never reached FormData.
    */
   @AttachInternals() internals!: ElementInternals;
+
+  @State() private validationMessage = '';
+  private inlineValidation = new InlineValidationPresenter({
+    host: () => this.el,
+    validity: () => getValidityOf(this.internals),
+    message: (message) => { this.validationMessage = message; },
+    focus: () => this.focusInput(),
+  });
+
+  @Watch('name')
+  resetValidationPresentation() {
+    this.inlineValidation.reset();
+  }
+
+  @Listen('invalid')
+  handleInvalid(event: Event) {
+    this.inlineValidation.handleInvalid(event);
+  }
 
 
   /**
@@ -2332,7 +2351,8 @@ export class MdDatePicker {
         const selected = parseIsoDate(this.value);
     const display = this.focused ? this.inputDraft : this.formatField(selected);
     const supporting =
-      this.error && this.errorText ? '' : this.supportingText || this.dateFormatHint();
+      (this.error || !!this.validationMessage) && (this.errorText || this.validationMessage)
+        ? '' : this.supportingText || this.dateFormatHint();
     return (
       <md-text-field
         class="md-date-picker__textfield"
@@ -2341,8 +2361,8 @@ export class MdDatePicker {
         label={this.label}
         value={display}
         supportingText={supporting}
-        error={this.error}
-        errorText={this.errorText}
+        error={this.error || !!this.validationMessage}
+        errorText={this.errorText || this.validationMessage}
         reserveSupportingSpace={this.reserveSupportingSpace}
         disabled={this.disabled}
         required={this.required}
@@ -2923,8 +2943,8 @@ export class MdDatePicker {
           label={this.label}
           placeholder={this.placeholder || this.dateFormatHint()}
           value={this.inputDraft}
-          error={this.error}
-          errorText={this.errorText}
+          error={this.error || !!this.validationMessage}
+          errorText={this.errorText || this.validationMessage}
         reserveSupportingSpace={this.reserveSupportingSpace}
           ref={(el) => (this.entryTextFieldEl = el as HTMLElement)}
           onKeyDown={this.entryTextFieldKeyDown}
@@ -3189,7 +3209,7 @@ export class MdDatePicker {
           'md-date-picker--open': panelOpen,
           'md-date-picker--panel-closing': this.panelClosing,
           'md-date-picker--disabled': this.disabled,
-          'md-date-picker--error': this.error,
+          'md-date-picker--error': this.error || !!this.validationMessage,
         }}
         aria-disabled={this.disabled ? 'true' : null}
       >
@@ -3230,11 +3250,17 @@ export class MdDatePicker {
       missingMessage: this.valueMissingLabel,
       customMessage: this.customValidityMessage,
     });
-      this.emitValidityChange();
+    this.inlineValidation.refresh();
+    this.emitValidityChange();
   }
 
   /** Restore the initial date when the owning form is reset. */
+  formDisabledCallback(disabled: boolean) {
+    if (disabled) queueMicrotask(() => this.inlineValidation.reset());
+  }
+
   formResetCallback() {
+    this.inlineValidation.reset();
     this.value = this.defaultValue;
   }
 

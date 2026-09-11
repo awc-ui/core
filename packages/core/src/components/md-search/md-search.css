@@ -483,7 +483,11 @@
   overflow: visible;
 }
 
-:host(.md-search--trigger-icon.md-search--closed) .md-search__panel,
+/* Closed full-screen results must not size either trigger. A visibility-only
+   panel still contributes its rows to the host height and can make an app-bar
+   headline overlap controls below it. --closed is applied after the exit fade,
+   so removing the panel from layout here preserves open/close motion. */
+:host(.md-search--full-screen.md-search--closed) .md-search__panel,
 :host(.md-search--trigger-icon.md-search--closed) .md-search__inset-probe {
   display: none;
 }

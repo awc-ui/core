@@ -1,6 +1,7 @@
-import { AttachInternals, Component, Element, Event, EventEmitter, Host, Method, Prop, State, Watch, h } from '@stencil/core';
+import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
 import {
+  InlineValidationPresenter,
   setFormValue,
   setValidityState,
   checkValidityOf,
@@ -46,6 +47,34 @@ export class MdCheckbox {
 
   /** Message set via setCustomValidity(); non-empty wins over valueMissing. */
   private customValidityMessage = '';
+
+  @State() private validationMessage = '';
+  private supportEl?: HTMLSpanElement;
+  private validationPresenter = new InlineValidationPresenter({
+    host: () => this.el,
+    validity: () => getValidityOf(this.internals),
+    message: (message) => { this.validationMessage = message; },
+    focus: () => this.el.focus(),
+  });
+
+  @Watch('name')
+  resetValidationPresentation() {
+    this.validationPresenter.reset();
+  }
+
+  @Listen('invalid')
+  handleInvalid(event: Event) {
+    this.validationPresenter.handleInvalid(event);
+  }
+
+  componentDidRender() {
+    // The interactive host and its supporting text are in different roots.
+    // Element references keep the description associated across that boundary.
+    if (this.internals && 'ariaDescribedByElements' in this.internals) {
+      this.internals.ariaDescribedByElements = this.supportEl ? [this.supportEl] : [];
+    }
+  }
+
 
   /** Stable id so the supporting line can be referenced by aria-describedby. */
   private uid = `md-checkbox-${Math.random().toString(36).slice(2, 7)}`;
@@ -149,7 +178,12 @@ export class MdCheckbox {
   }
 
   /** Restore the initial checked / indeterminate state when the form resets. */
+  formDisabledCallback(disabled: boolean) {
+    if (disabled) queueMicrotask(() => this.validationPresenter.reset());
+  }
+
   formResetCallback() {
+    this.validationPresenter.reset();
     this.checked = this.initialChecked;
     this.indeterminate = this.initialIndeterminate;
   }
@@ -173,10 +207,9 @@ export class MdCheckbox {
     // Mirror the computed validity into state so the host can expose
     // aria-invalid. WCAG 3.3.1 (Error Identification, Level A): a control that
     // is invalid must SAY SO programmatically, not just look wrong. This host
-    // carries role="checkbox", so aria-invalid belongs on it. Error TEXT stays
-    // the app's to render and link with aria-describedby on this host (it is a
-    // light-DOM element, so that association works without our help) — the
-    // component does not own the label and should not own the message.
+    // carries role="checkbox", so aria-invalid belongs on it. Interactive
+    // validation reveals the message through the component's supporting row;
+    // authored error/errorText remain owned by the application.
     this.invalid = this.required && !this.checked && !this.customValidityMessage
       ? true
       : !!this.customValidityMessage;
@@ -185,7 +218,8 @@ export class MdCheckbox {
       missingMessage: this.valueMissingLabel,
       customMessage: this.customValidityMessage,
     });
-      this.emitValidityChange();
+    this.validationPresenter.refresh();
+    this.emitValidityChange();
   }
 
   /** Current validity: boolean, message and flags. Mirrors md-text-field. */
@@ -297,6 +331,8 @@ export class MdCheckbox {
 
   render() {
     const isEffectivelyDisabled = this.isDisabled;
+    const hasError = this.error || !!this.validationMessage;
+    const supportingMessage = this.errorText || this.validationMessage || this.supportingText;
     const isSelected = this.checked || this.indeterminate;
     /* A checkbox authored `aria-hidden="true"` is a purely decorative
        indicator (e.g. an M3 list-row selection glyph mirroring the row's
@@ -320,11 +356,10 @@ export class MdCheckbox {
           'md-checkbox--unselected': !isSelected,
           'md-checkbox--pressed': this.pressed,
           'md-checkbox--prev-unselected': !this.prevChecked && !this.prevIndeterminate,
-          'md-checkbox--has-support': !!(this.errorText || this.supportingText),
+          'md-checkbox--has-support': !!supportingMessage,
         }}
         role="checkbox"
-        aria-invalid={this.invalid ? 'true' : undefined}
-        aria-describedby={this.errorText || this.supportingText ? `${this.uid}-support` : undefined}
+        aria-invalid={this.invalid || hasError ? 'true' : undefined}
         aria-checked={this.ariaCheckedValue}
         aria-disabled={isEffectivelyDisabled ? 'true' : undefined}
         aria-required={this.required ? 'true' : undefined}
@@ -355,17 +390,18 @@ export class MdCheckbox {
         </span>
         </span>
 
-{(this.errorText || this.supportingText) && (
+        {supportingMessage && (
           <span
             id={`${this.uid}-support`}
+            ref={(el) => { this.supportEl = el; }}
             part="supporting-text"
-            role={this.error ? 'alert' : undefined}
+            role={hasError ? 'alert' : undefined}
             class={{
               'md-checkbox__support': true,
-              'md-checkbox__support--error': this.error,
+              'md-checkbox__support--error': hasError,
             }}
           >
-            {this.errorText || this.supportingText}
+            {supportingMessage}
           </span>
         )}
 

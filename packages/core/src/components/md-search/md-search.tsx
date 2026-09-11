@@ -12,6 +12,7 @@ import {
   Listen,
 } from '@stencil/core';
 import { LazyLoadingIndicator } from '../../utils/lazy-loading-indicator';
+import { finishShellMotion, OverlayLifecycle } from '../../utils/overlay-lifecycle';
 
 /**
  * Minimal structural type for the Web Speech API `SpeechRecognition`
@@ -387,17 +388,28 @@ export class MdSearch {
 
   /** Open the focused panel. */
   @Method() async show(): Promise<void> {
-    this.open = true;
+    await this.overlayLifecycle.show(() => { this.open = true; });
   }
 
   /** Close the focused panel. */
   @Method() async close(): Promise<void> {
+    this.overlayLifecycle.cancelOpen();
     this.open = false;
+  }
+
+  /**
+   * Wait for the current open cycle, both shell exit stages and focus/scroll
+   * cleanup. Use after close() before removing search or opening another overlay.
+   * Reopening keeps the same completion pending; disconnecting also settles it.
+   */
+  @Method() async whenClosed(): Promise<void> {
+    await this.overlayLifecycle.whenClosed();
   }
 
   /** Toggle the focused panel. */
   @Method() async toggle(): Promise<void> {
-    this.open = !this.open;
+    if (this.open) await this.close();
+    else await this.show();
   }
 
   /** Programmatically focus the input. */
@@ -453,7 +465,18 @@ export class MdSearch {
   private previousFocus: HTMLElement | null = null;
   private valueOnFocus: string = '';
   private outsideClickHandler?: (e: MouseEvent) => void;
-  private closeTimer?: ReturnType<typeof setTimeout>;
+  private overlayLifecycle = new OverlayLifecycle(() => this.el, () => this.open || this.barExpanded);
+  private closeRevision = 0;
+  private openFocusRaf?: number;
+  private hasLoaded = false;
+  private sideEffectsApplied = false;
+  private scrollLock?: {
+    body: HTMLElement;
+    overflow: string;
+    overflowPriority: string;
+    padding: string;
+    paddingPriority: string;
+  };
   /**
    * Set when a full-screen open is waiting for the `position: fixed` overlay
    * layout to commit before the panel surface reveal. `componentDidRender`
@@ -468,8 +491,6 @@ export class MdSearch {
   private pendingSearchValue: string | null = null;
   private lastEmittedSearch: string | null = null;
 
-  /** Full-screen close duration — keep in sync with `--_fs-collapse-duration` in md-search.css. */
-  private static readonly PANEL_CLOSE_MS = 300;
   /** Loading↔clear morph duration — keep in sync with the CSS morph transition. */
   private static readonly MORPH_MS = 300;
 
@@ -483,6 +504,17 @@ export class MdSearch {
   // ────────────────────────────────────────────────────────────────────────
 
   connectedCallback() {
+    this.overlayLifecycle.connected();
+    if (this.hasLoaded) {
+      this.wireExternalTrigger();
+      this.observeHostResize();
+      this.barExpanded = this.open;
+      this.panelVisible = this.open;
+      if (this.open) {
+        this.overlayLifecycle.opened();
+        this.applyOpenSideEffects();
+      }
+    }
     if (typeof document !== 'undefined') {
       // Capture phase so we record the modality before the resulting focus
       // event fires (and before any programmatic focus we trigger on open).
@@ -507,6 +539,8 @@ export class MdSearch {
   }
 
   componentDidLoad() {
+    this.hasLoaded = true;
+    this.overlayLifecycle.loaded();
     this.wireExternalTrigger();
     const shadow = this.el.shadowRoot;
     if (!shadow) return;
@@ -552,9 +586,12 @@ export class MdSearch {
   }
 
   disconnectedCallback() {
-    this.unwireExternalTrigger();
-    this.clearCloseTimer();
+    ++this.closeRevision;
+    this.cancelOpenFocus();
     this.cancelReveal();
+    this.finishCloseSideEffects();
+    this.overlayLifecycle.disconnect();
+    this.unwireExternalTrigger();
     this.clearSearchTimers();
     this.stopVoice();
     this.clearLoadingMorphTimers();
@@ -564,9 +601,6 @@ export class MdSearch {
     if (typeof document !== 'undefined') {
       document.removeEventListener('keydown', this.trackKeyboardModality, true);
       document.removeEventListener('pointerdown', this.trackPointerModality, true);
-    }
-    if (this.layout === 'full-screen' && typeof document !== 'undefined') {
-      document.body.style.removeProperty('overflow');
     }
   }
 
@@ -728,9 +762,11 @@ export class MdSearch {
   @Watch('open')
   onOpenChange(newVal: boolean, oldVal: boolean) {
     if (newVal === oldVal) return;
-    this.clearCloseTimer();
+    const revision = ++this.closeRevision;
+    this.cancelOpenFocus();
     this.cancelReveal();
     if (newVal) {
+      this.overlayLifecycle.opened();
       // Expand the bar first — in full-screen this flips the host to the
       // position:fixed overlay (a one-off layout + paint). The panel surface
       // reveal is deferred to AFTER that layout has committed and painted
@@ -760,19 +796,17 @@ export class MdSearch {
       this.updateResultsStatus();
       this.mdClose.emit();
       this.syncExternalTriggerAria();
-      this.closeTimer = setTimeout(() => {
+      // Honor the actual panel motion (including custom/reduced durations),
+      // then contract the bar. The public completion waits for that second
+      // stage too, so consumers never need to know our animation timings.
+      void finishShellMotion(this.el).then(async () => {
+        if (revision !== this.closeRevision || this.open || !this.el.isConnected) return;
         this.barExpanded = false;
+        await finishShellMotion(this.el);
+        if (revision !== this.closeRevision || this.open || !this.el.isConnected) return;
         this.finishCloseSideEffects();
-        // An external opener is the thing the user left to get here, so it is
-        // where focus belongs on the way back — the built-in trigger gets this
-        // for free by being inside the component.
-        if (this.wiredTrigger && typeof document !== 'undefined') {
-          const active = document.activeElement;
-          const inSearch = active === this.el || this.el.contains(active as Node);
-          if (active === document.body || inSearch) this.wiredTrigger.focus?.();
-        }
-        this.closeTimer = undefined;
-      }, MdSearch.PANEL_CLOSE_MS);
+        this.overlayLifecycle.closed();
+      });
     }
   }
 
@@ -849,16 +883,28 @@ export class MdSearch {
     this.revealRaf = undefined;
   }
 
-  private clearCloseTimer() {
-    if (this.closeTimer === undefined) return;
-    clearTimeout(this.closeTimer);
-    this.closeTimer = undefined;
+  private cancelOpenFocus() {
+    if (this.openFocusRaf !== undefined && typeof cancelAnimationFrame !== 'undefined') {
+      cancelAnimationFrame(this.openFocusRaf);
+    }
+    this.openFocusRaf = undefined;
   }
 
   private applyOpenSideEffects() {
     if (typeof document === 'undefined') return;
-    this.previousFocus = (document.activeElement as HTMLElement) ?? null;
-    if (this.layout === 'full-screen') {
+    if (!this.sideEffectsApplied) {
+      this.previousFocus = (document.activeElement as HTMLElement) ?? null;
+      this.sideEffectsApplied = true;
+    }
+    if (this.layout === 'full-screen' && !this.scrollLock) {
+      const body = document.body;
+      this.scrollLock = {
+        body,
+        overflow: body.style.getPropertyValue('overflow'),
+        overflowPriority: typeof body.style.getPropertyPriority === 'function' ? body.style.getPropertyPriority('overflow') : '',
+        padding: body.style.getPropertyValue('padding-inline-end'),
+        paddingPriority: typeof body.style.getPropertyPriority === 'function' ? body.style.getPropertyPriority('padding-inline-end') : '',
+      };
       // Lock document scroll. Compensate for the removed scrollbar with an
       // equal-width padding so the page (and the fixed overlay) doesn't
       // shift sideways when the scrollbar disappears — that lateral jump
@@ -871,7 +917,10 @@ export class MdSearch {
     }
     this.attachOutsideClickHandler();
     if (typeof requestAnimationFrame !== 'undefined') {
-      requestAnimationFrame(() => this.focusInitialTarget());
+      this.openFocusRaf = requestAnimationFrame(() => {
+        this.openFocusRaf = undefined;
+        if (this.open && this.el.isConnected) this.focusInitialTarget();
+      });
     } else {
       this.focusInitialTarget();
     }
@@ -929,12 +978,27 @@ export class MdSearch {
   }
 
   private finishCloseSideEffects() {
-    if (typeof document !== 'undefined' && this.layout === 'full-screen') {
-      document.body.style.removeProperty('overflow');
-      document.body.style.removeProperty('padding-inline-end');
+    const lock = this.scrollLock;
+    this.scrollLock = undefined;
+    if (lock) {
+      lock.body.style.setProperty('overflow', lock.overflow, lock.overflowPriority);
+      lock.body.style.setProperty('padding-inline-end', lock.padding, lock.paddingPriority);
     }
-    this.previousFocus?.focus?.();
+    // The built-in icon trigger is recreated after bar contraction. The
+    // document's activeElement was the search host when it opened, so resolve
+    // the new trigger rather than attempting to focus that non-tabbable host.
+    const restingTarget = this.el.querySelector<HTMLElement>('[slot="trigger"]')
+      || this.el.shadowRoot?.querySelector<HTMLElement>('[part="trigger-button"]')
+      || this.input;
+    const target = this.wiredTrigger
+      || (this.previousFocus === this.el ? restingTarget : this.previousFocus);
     this.previousFocus = null;
+    this.sideEffectsApplied = false;
+    if (typeof document === 'undefined' || !target?.isConnected) return;
+    const active = document.activeElement;
+    // Do not steal focus if the app/user has already moved to another surface.
+    const inSearch = active === this.el || (active && this.el.contains(active));
+    if (!active || active === document.body || inSearch) target.focus?.({ preventScroll: true });
   }
 
   private attachOutsideClickHandler() {

@@ -128,12 +128,18 @@ which stays the single source of truth. `whenClosed()` only observes completion.
 - **Focus is handled for you.** On open the dialog focuses the first visible
   tabbable element — the trap descends into open shadow roots, so the `<input>`
   inside a slotted `md-text-field` counts — or the container itself if there is
-  none. Tab and Shift+Tab wrap inside the dialog. On close, focus returns to
+  none. Traversal follows rendered order through slots and open shadow roots,
+  including directly slotted composite controls such as an inline color picker.
+  Do not add `tabindex` to a field host just to make the dialog find it. Tab and
+  Shift+Tab wrap inside the dialog. On close, focus returns to
   whatever was focused before, with `preventScroll`.
 - Escape closes the dialog and calls `preventDefault()` + `stopPropagation()`,
   so an outer Escape handler will not also fire.
 - The dialog sets `document.body.style.overflow = 'hidden'` while open and
   clears it on close and on disconnect.
+- **The header and actions stay in place** when a basic dialog contains a long
+  form. Only `part="content"` scrolls, including when keyboard focus moves to an
+  off-screen field; the outer frame is not a scroll container.
 - The host is `display: contents`; the scrim and container are `position: fixed`
   at `z-index` 2147483646 / 2147483647, so the dialog paints above host-app
   chrome. Override with `--md-dialog-scrim-z-index` / `--md-dialog-z-index`.

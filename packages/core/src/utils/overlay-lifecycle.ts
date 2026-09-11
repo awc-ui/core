@@ -21,7 +21,7 @@ async function painted(element: HTMLElement): Promise<void> {
 }
 
 /** Wait only for this overlay's shell, not slotted controls or their spinners. */
-async function finishShellMotion(element: HTMLElement): Promise<void> {
+export async function finishShellMotion(element: HTMLElement): Promise<void> {
   await painted(element);
   const animations = new Set([
     ...(element.getAnimations?.({ subtree: true }) ?? []),

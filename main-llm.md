@@ -498,7 +498,12 @@ Rules:
 - Do **not** add hidden `<input>`s to mirror values — that's the old pattern and
   it double-submits.
 - Validity changes are announced on a `mdValidityChange` event on the control.
-  Error presentation is `error` + `error-text` on the field.
+  Invalid submissions show the platform's message in the control's own inline
+  error styling, with no browser validation popover. Correcting or resetting a
+  field clears its generated message. `error` + `error-text` remain available
+  for app-provided messages and take precedence over generated messages.
+  `checkValidity()` checks silently; `reportValidity()` shows inline errors and
+  focuses the first invalid control. Core submit buttons and Enter do the same.
 - Boolean state props differ by control — `md-checkbox` uses `checked`,
   `md-switch` uses **`selected`**, `md-select-option` uses `selected`. Check the
   manual; guessing `checked` on a switch silently does nothing.
@@ -768,7 +773,36 @@ one usually means you want the other.
 | `md-accordion` | `md-divider` | Optional inner dividers inside long item content |
 | `md-stepper` | `md-button` | Next / back / submit adjacent to the stepper |
 
-### 7.3 Nesting that is always wrong
+### 7.3 Reusable interaction patterns
+
+- **One footer for a dialog wizard.** Set `md-stepper.nav = false` and put
+  Back / Continue in the dialog's `actions` slot. Keep the steps in the body;
+  the dialog owns scrolling and keeps its header/footer visible. In fullscreen
+  mode use the header close button for dismissal. Use a real form and submit
+  button so Enter and inline validation follow the same path as a click.
+- **Overlay handoffs wait for completion.** Use `await search.close(); await
+  search.whenClosed();` before opening a result dialog or unmounting search.
+  `mdClose` signals the state change; `whenClosed()` includes motion and cleanup.
+  Do not replace that contract with a guessed timeout or a second focus trap.
+- **Appearance controls fill their allocated space.** For an inline color picker
+  in settings, set `--md-color-picker-width: 100%`. Its compact default remains
+  appropriate for a popover. No shadow-DOM width overrides or extra tabindex.
+- **Loading belongs to the operation.** Use `md-button.loading` for the initiating
+  action and `md-skeleton` with `announce=false` for the content being replaced.
+  Preserve the content layout, expose one live status, and guard repeated submits.
+  Abort or ignore stale responses when the owner closes or a newer request wins.
+  Provide inline error/retry and preserve entered values; do not add artificial waits.
+- **Separate routing intent from selection synchronization.** `md-navigation-bar`
+  emits `mdChange` for both user and programmatic changes. For a controlled router,
+  use each `md-navigation-tab`'s `mdTabClick` for user intent, `manual-activation`
+  on the bar, and synchronize `activeIndex` from the confirmed route. Avoid routing
+  again merely because browser Back/Forward updated the selected index.
+- **Keep table chrome outside the column scroller.** Use `slot="top"` and
+  `slot="bottom"` on the toolbar and pagination. Set `min-inline-size: 0` on the
+  containing grid/flex child and a readable minimum width on the table. Nested
+  controls own their keys; do not add row-level Enter/Space interception in apps.
+
+### 7.4 Nesting that is always wrong
 
 - A dialog opened from inside a dialog. Use `md-stepper` inside **one**
   `md-dialog`.

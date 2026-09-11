@@ -46,6 +46,8 @@
   --_state-layer-color: var(--md-radio-state-layer-color, var(--md-sys-color-on-surface));
   --_selected-state-layer-color: var(--md-radio-selected-state-layer-color, var(--md-sys-color-primary));
 
+  --_touch-size: max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px));
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -53,8 +55,8 @@
   /* Global density: each `data-density` rung (0…-4) trims 4px off the touch
      target, floored at 32px to keep breathing room around the 20px circle.
      Unchanged at density 0. */
-  inline-size: max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px));
-  block-size: max(32px, calc(48px + var(--md-sys-density-scale, 0) * 4px));
+  inline-size: var(--_touch-size);
+  block-size: var(--_touch-size);
   cursor: pointer;
   border-radius: var(--md-sys-shape-corner-full, 50%);
   overflow: hidden;
@@ -148,8 +150,8 @@
    container.
    ========================================================== */
 
-:host(:focus-visible)::after,
-:host(.md-radio--focus-ring)::after {
+:host(:focus-visible) .md-radio__target::after,
+:host(.md-radio--focus-ring) .md-radio__target::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -312,8 +314,8 @@
     background-color: Highlight;
   }
 
-  :host(:focus-visible)::after,
-  :host(.md-radio--focus-ring)::after {
+  :host(:focus-visible) .md-radio__target::after,
+  :host(.md-radio--focus-ring) .md-radio__target::after {
     outline-color: Highlight;
   }
 
@@ -341,6 +343,42 @@
 :host([density='-2']) { --md-sys-density-scale: -2; }
 :host([density='-3']) { --md-sys-density-scale: -3; }
 :host([density='-4']) { --md-sys-density-scale: -4; }
+
+
+/* Keep the touch target and adjacent label geometry stable when validation
+   adds an in-flow supporting row. Only the message may exceed the host width. */
+.md-radio__target {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_touch-size);
+  block-size: var(--_touch-size);
+  flex-shrink: 0;
+  border-radius: var(--md-sys-shape-corner-full, 50%);
+  overflow: hidden;
+}
+
+:host(.md-radio--has-support) {
+  flex-direction: column;
+  align-items: flex-start;
+  block-size: auto;
+  overflow: visible;
+  border-radius: 0;
+}
+
+.md-radio__support {
+  display: block;
+  margin-block-start: 2px;
+  margin-inline-start: calc((var(--_touch-size) - var(--_icon-size)) / 2);
+  inline-size: max-content;
+  max-inline-size: min(60ch, calc(100vw - 48px));
+  overflow-wrap: anywhere;
+  font-family: var(--md-sys-typescale-body-small-font-family, Roboto, sans-serif);
+  font-size: max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px));
+  line-height: max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  color: var(--md-sys-color-error, #B3261E);
+}
 
 /* ==========================================================
    HIDDEN

@@ -26,12 +26,11 @@
    ========================================================== */
 
 :host {
-  /* Use the canonical MD3 surface-container-highest as the
-     placeholder colour. Falls back to a tonal mix of on-surface
-     when the token isn't loaded. */
+  /* Tint the actual underlying surface instead of reusing an opaque surface
+     token: filled cards already use surface-container-highest, which made
+     the old default disappear. The on-surface role works in both themes. */
   --_color: var(--md-skeleton-color,
-    var(--md-sys-color-surface-container-highest,
-      color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 11%, transparent)));
+    color-mix(in srgb, var(--md-sys-color-on-surface, #1C1B1F) 16%, transparent));
   /* Highlight uses surface-bright (lifted tone) so the wave reads
      as light passing across a tactile surface. */
   --_highlight: var(--md-skeleton-highlight,

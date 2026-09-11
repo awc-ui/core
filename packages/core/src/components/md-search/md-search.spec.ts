@@ -1173,6 +1173,8 @@ describe('md-search', () => {
 
     it('skips full-screen panel reveal when closed before the reveal animation frame', async () => {
       const page = await create('<md-search layout="full-screen"></md-search>');
+      await flushRaf();
+      await flushRaf();
       const rafCbs: FrameRequestCallback[] = [];
       const spy = jest.spyOn(global, 'requestAnimationFrame').mockImplementation((cb) => {
         rafCbs.push(cb);
@@ -1248,19 +1250,14 @@ describe('md-search', () => {
 
     it('collapses the bar and clears scroll lock after the close fade', async () => {
       const page = await create('<md-search open layout="full-screen"></md-search>');
-      document.body.style.paddingInlineEnd = '16px';
-      document.body.style.overflow = 'hidden';
-      jest.useFakeTimers();
-      try {
-        page.rootInstance.open = false;
-        jest.advanceTimersByTime(300);
-        const instance = page.rootInstance as unknown as { barExpanded: boolean };
-        expect(instance.barExpanded).toBe(false);
-        expect(document.body.style.paddingInlineEnd).toBe('');
-        expect(document.body.style.overflow).toBe('');
-      } finally {
-        jest.useRealTimers();
-      }
+      await page.rootInstance.close();
+      await page.waitForChanges();
+      await page.rootInstance.whenClosed();
+      await page.waitForChanges();
+      const instance = page.rootInstance as unknown as { barExpanded: boolean };
+      expect(instance.barExpanded).toBe(false);
+      expect(document.body.style.paddingInlineEnd).toBe('');
+      expect(document.body.style.overflow).toBe('');
     });
   });
 
@@ -1798,6 +1795,7 @@ describe('md-search', () => {
     it('restores focus to the previously focused element after close', async () => {
       const page = await create('<md-search open></md-search>');
       const trigger = page.doc.createElement('button');
+      page.doc.body.appendChild(trigger);
       const restoreSpy = jest.spyOn(trigger, 'focus');
 
       const instance = page.rootInstance as unknown as {

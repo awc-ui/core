@@ -1,8 +1,28 @@
 import { newE2EPage } from '@stencil/core/testing';
 
-type E2EPage = Awaited<ReturnType<typeof newE2EPage>>;
-
 describe('md-color-picker (e2e)', () => {
+  it.each(['ltr', 'rtl'])('fills a responsive settings column with the public width token (%s)', async (direction) => {
+    const page = await newE2EPage();
+    await page.setViewport({ width: 390, height: 844 });
+    await page.setContent(`<div dir="${direction}" style="width:100%;max-width:560px;box-sizing:border-box;padding:16px">
+      <md-color-picker style="--md-color-picker-width:100%" aria-label="Primary color"></md-color-picker>
+      <md-text-field label="Workspace name" style="display:block;width:100%"></md-text-field>
+    </div>`);
+    for (const width of [390, 1024]) {
+      await page.setViewport({ width, height: 844 });
+      const boxes = await page.evaluate(() => {
+        const picker = document.querySelector('md-color-picker')!;
+        const field = document.querySelector('md-text-field')!;
+        const panel = picker.shadowRoot!.querySelector('[part="panel"]')!;
+        return { picker: picker.getBoundingClientRect().width, field: field.getBoundingClientRect().width,
+          panel: panel.getBoundingClientRect().width, page: document.documentElement.scrollWidth, viewport: innerWidth };
+      });
+      expect(boxes.picker).toBeCloseTo(boxes.field, 0);
+      expect(boxes.panel).toBeCloseTo(boxes.picker, 0);
+      expect(boxes.page).toBeLessThanOrEqual(boxes.viewport);
+    }
+  });
+
   it('renders inline with the saturation plate', async () => {
     const page = await newE2EPage();
     await page.setContent('<md-color-picker value="#6750A4"></md-color-picker>');

@@ -323,52 +323,8 @@ export class MdDialog {
     if (!this.containerEl) return [];
 
     const collected: HTMLElement[] = [];
-
-    // 1. Built-in chrome inside md-dialog's own shadow root (the
-    //    fullscreen close button lives here).
-    collectTabbablesDeep(
-      this.containerEl,
-      MdDialog.FOCUSABLE_SELECTOR,
-      collected,
-    );
-
-    // 2. Slotted light-DOM content. For each assigned element we (a)
-    //    consider the host itself if it advertises a real tabindex
-    //    (md-button, md-radio, …) AND (b) descend into ITS shadow
-    //    root + light-DOM children. The shadow descent is what
-    //    surfaces the inner <input> of an <md-text-field>, the
-    //    inner <button> of a custom icon-button wrapper, etc.
-    const slots = this.containerEl.querySelectorAll('slot');
-    slots.forEach((slot) => {
-      const assigned = (slot as HTMLSlotElement).assignedElements({
-        flatten: true,
-      });
-      assigned.forEach((el) => {
-        if ((el as HTMLElement).matches?.(MdDialog.FOCUSABLE_SELECTOR)) {
-          collected.push(el as HTMLElement);
-        }
-        collectTabbablesDeep(el as Element, MdDialog.FOCUSABLE_SELECTOR, collected);
-      });
-    });
-
-    // De-dupe: a host that exposes its own focusable inner element
-    // (e.g. an md-button host with tabindex=0 AND an internal button
-    // in its shadow root) would otherwise contribute two stops for
-    // the same visual control. Keep the FIRST occurrence — that's the
-    // host the user/screen reader sees.
-    const seen = new Set<HTMLElement>();
-    const deduped: HTMLElement[] = [];
-    for (const el of collected) {
-      // For host-with-shadow custom elements, prefer the host: drop
-      // any later focusable that is a shadow-descendant of an already-
-      // added host.
-      if (deduped.some((h) => isShadowDescendant(el, h))) continue;
-      if (seen.has(el)) continue;
-      seen.add(el);
-      deduped.push(el);
-    }
-
-    return deduped.filter(isVisible);
+    collectTabbablesDeep(this.containerEl, MdDialog.FOCUSABLE_SELECTOR, collected);
+    return collected.filter(isVisible);
   }
 
   render() {
@@ -487,29 +443,43 @@ export class MdDialog {
 // recursions) AND so each helper is independently unit-testable in
 // the future without instantiating a Stencil component.
 
-/** Walk into every open shadow root reachable from `root`, collecting
- *  every element matching `selector`. Light-DOM `querySelectorAll`
- *  doesn't pierce shadow boundaries on its own — this helper does the
- *  recursion explicitly. Closed shadow roots are inaccessible by spec
- *  and silently skipped (third-party closed-shadow components inside
- *  the dialog will simply not contribute focus stops). */
+/** Walk the rendered (composed) tree in order. A shadow root replaces its
+ * host's light children; a slot inserts assigned children at that position.
+ * Collecting all light-DOM controls before shadow controls would focus a later
+ * switch before an earlier text field and give the trap the wrong edges. */
 function collectTabbablesDeep(
   root: Element | ShadowRoot,
   selector: string,
   out: HTMLElement[],
 ): void {
-  const direct = root.querySelectorAll<HTMLElement>(selector);
-  direct.forEach((el) => out.push(el));
+  const seen = new Set<Element>();
+  const visit = (element: Element): void => {
+    if (seen.has(element)) return;
+    seen.add(element);
+    if (element.hasAttribute('hidden') || element.hasAttribute('inert')) return;
 
-  // Walk every descendant looking for shadow roots. We can't use
-  // `:has(*)` or similar — we must enumerate every element to peek at
-  // `.shadowRoot`. The cost is bounded by the dialog's subtree, which
-  // is always small.
-  const everything = root.querySelectorAll<Element>('*');
-  everything.forEach((el) => {
-    const sr = (el as Element & { shadowRoot?: ShadowRoot | null }).shadowRoot;
-    if (sr) collectTabbablesDeep(sr, selector, out);
-  });
+    if (element.localName === 'slot') {
+      const assigned = (element as HTMLSlotElement).assignedElements({ flatten: true });
+      const children = assigned.length ? assigned : Array.from(element.children);
+      children.forEach(visit);
+      return;
+    }
+
+    const shadow = element.shadowRoot;
+    const tabindex = element.getAttribute('tabindex');
+    const excluded = tabindex !== null && Number(tabindex) < 0;
+    // A negative-tabindex shadow host removes its entire focus scope from
+    // sequential navigation. Ordinary non-tabbable wrappers still expose theirs.
+    if (shadow && excluded) return;
+    // delegatesFocus hosts focus their inner control, not a separate stop. Do
+    // not discard a composite widget's inner fields just because its host is
+    // also focusable: without delegation those are distinct browser tab stops.
+    if (!excluded && !shadow?.delegatesFocus && element.matches(selector)) {
+      out.push(element as HTMLElement);
+    }
+    Array.from((shadow ?? element).children).forEach(visit);
+  };
+  Array.from(root.children).forEach(visit);
 }
 
 /** Find the actually-focused element, regardless of how many open
@@ -528,30 +498,6 @@ function getDeepActiveElement(): Element | null {
     active = sr.activeElement;
   }
   return active;
-}
-
-/** True if `node` lives inside the shadow root of `host` (at any
- *  depth). Used to de-dupe when both a custom-element host and one
- *  of its shadow descendants would land in the focusable list — the
- *  host wins and the descendant is dropped. */
-function isShadowDescendant(node: Element, host: Element): boolean {
-  // No shadow root means `host` can't have shadow descendants at all.
-  if (!(host as Element & { shadowRoot?: ShadowRoot | null }).shadowRoot) {
-    return false;
-  }
-  let cursor: Node | null = node;
-  while (cursor) {
-    const root = cursor.getRootNode?.();
-    if (root && (root as ShadowRoot).host === host) return true;
-    // Step out of the current shadow root, if any, then continue
-    // walking up the next ancestor chain.
-    if (root && (root as ShadowRoot).host) {
-      cursor = (root as ShadowRoot).host;
-    } else {
-      cursor = (cursor as Element).parentNode;
-    }
-  }
-  return false;
 }
 
 /** Tab-order visibility check that survives shadow boundaries.

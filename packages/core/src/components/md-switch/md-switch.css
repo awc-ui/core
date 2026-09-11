@@ -391,6 +391,40 @@
 :host([density='-3']) { --md-sys-density-scale: -3; }
 :host([density='-4']) { --md-sys-density-scale: -4; }
 
+
+/* Keep the touch target and adjacent label geometry stable when validation
+   adds an in-flow supporting row. Only the message may exceed the host width. */
+.md-switch__target {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--_track-w);
+  block-size: max(48px, var(--_track-h));
+  flex-shrink: 0;
+}
+
+:host(.md-switch--has-support) {
+  flex-direction: column;
+  align-items: flex-start;
+  block-size: auto;
+  overflow: visible;
+  border-radius: 0;
+}
+
+.md-switch__support {
+  display: block;
+  margin-block-start: 2px;
+  margin-inline-start: 0;
+  inline-size: max-content;
+  max-inline-size: min(60ch, calc(100vw - 48px));
+  overflow-wrap: anywhere;
+  font-family: var(--md-sys-typescale-body-small-font-family, Roboto, sans-serif);
+  font-size: max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px));
+  line-height: max(14px, calc(16px + var(--md-sys-density-scale, 0) * 0.5px));
+  color: var(--md-sys-color-error, #B3261E);
+}
+
 /* ==========================================================
    HIDDEN
    `[hidden]` is a UA-stylesheet rule, and every `:host` display

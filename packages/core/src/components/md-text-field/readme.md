@@ -136,6 +136,11 @@ The host also re-dispatches a bubbling native `change` event, so form-level
 **Methods** — `setFocus()`, `select()`, `getInputElement()`, `getValidity()`,
 `checkValidity()`, `reportValidity()`, `setCustomValidity(message)`.
 
+Failed submissions and `reportValidity()` display constraint messages through the
+field’s own error outline and supporting text, without a browser popover.
+`checkValidity()` is silent. Generated messages clear after correction or reset;
+app-provided `error` / `errorText` remain unchanged and take precedence.
+
 **Slots** — `leading-icon`, `trailing-icon`, `chips`, `clear-icon`,
 `password-toggle-icon`, `speech-icon`, `error-icon`.
 

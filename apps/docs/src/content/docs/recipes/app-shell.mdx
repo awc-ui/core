@@ -782,6 +782,46 @@ function navigate(index: number) {
   `layout="full-screen"` below the breakpoint — it locks document scroll,
   traps Tab in the overlay, and keeps the same `mdSearch` wiring.
 
+## Router-controlled destinations
+
+The example above synchronizes local view state. A router needs a separate user
+intent handler: `md-navigation-bar` emits `mdChange` for programmatic `activeIndex`
+updates too. Treating every change as navigation can turn browser Back/Forward
+into another route push.
+
+Use `manual-activation` and listen to `mdTabClick` **on each destination**. Stop
+that event before it reaches the bar when route guards decide whether to accept
+it. After the router confirms the location, write its index back to the bar.
+Reselecting the current destination can be handled separately by the app.
+
+```js
+const bar = document.querySelector('md-navigation-bar');
+const destinations = ['/', '/projects', '/reviews', '/settings'];
+bar.manualActivation = true;
+bar.querySelectorAll('md-navigation-tab').forEach((tab, index) => {
+  tab.addEventListener('mdTabClick', (event) => {
+    event.stopPropagation();
+    router.navigate(destinations[index]);
+  });
+});
+
+// Wire this to your router's location subscription, including Back/Forward.
+function reflectLocation(pathname) {
+  const index = destinations.indexOf(pathname);
+  if (index >= 0) bar.activeIndex = index;
+}
+```
+
+In React, the equivalent is `manualActivation` on `MdNavigationBar` and
+`onMdTabClick` on each `MdNavigationTab`. Keep the `activeIndex` prop derived from
+the confirmed route. See the [navigation bar manual](/components/navigation-bar/)
+for selection and event details.
+
+When a search result opens another overlay, close search and await
+`search.whenClosed()` before showing the destination dialog. This waits for
+search's exit motion, focus return, and scroll cleanup; a timeout cannot reliably
+follow reduced-motion preferences or a customized transition duration.
+
 ## Related
 
 - Recipe: [Inbox with reading pane](/recipes/inbox-shell/) — a full working

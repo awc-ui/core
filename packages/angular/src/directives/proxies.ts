@@ -1540,7 +1540,7 @@ export class MdNavigationBar {
 export declare interface MdNavigationBar extends Components.MdNavigationBar {
   /**
    * Emitted when the selected destination changes (user click,
-keyboard activation, or programmatic `select()` call).
+keyboard activation, or programmatic `activeIndex` / `select()` update).
 Detail includes both the new and previous indices so listeners
 can short-circuit no-op reselects.
    */
@@ -1978,7 +1978,7 @@ export declare interface MdRipple extends Components.MdRipple {}
 @ProxyCmp({
   defineCustomElementFn: defineMdSearch,
   inputs: ['announceResults', 'debounce', 'density', 'disabled', 'dismissOnOutsideClick', 'elevation', 'escapeCloses', 'fullWidth', 'initialFocus', 'inputAriaLabel', 'layout', 'leadingIcon', 'loading', 'loadingLabel', 'maxBlockSize', 'noResultsLabel', 'open', 'openLeadingIcon', 'placeholder', 'resultsLabel', 'scrollShadow', 'showClearButton', 'throttle', 'trigger', 'triggerElement', 'triggerFor', 'triggerIcon', 'value', 'variant', 'voiceSearch'],
-  methods: ['show', 'close', 'toggle', 'focusInput', 'startVoice', 'stopVoice']
+  methods: ['show', 'close', 'whenClosed', 'toggle', 'focusInput', 'startVoice', 'stopVoice']
 })
 @Component({
   selector: 'md-search',

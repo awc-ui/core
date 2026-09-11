@@ -1,6 +1,6 @@
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, forceUpdate, h } from '@stencil/core';
 import { LazyLoadingIndicator } from '../../utils/lazy-loading-indicator';
-import { setFormValue, checkValidityOf, reportValidityOf, getValidityOf } from '../../utils/form';
+import { setFormValue, checkValidityOf, reportValidityOf, getValidityOf, InlineValidationPresenter } from '../../utils/form';
 import {
   collectOptions,
   SelectOptionData,
@@ -99,6 +99,24 @@ export class MdAutocomplete {
    * `multiple`), so the control participates in `<form>`/`FormData` natively.
    */
   @AttachInternals() internals!: ElementInternals;
+
+  @State() private validationMessage = '';
+  private inlineValidation = new InlineValidationPresenter({
+    host: () => this.el,
+    validity: () => getValidityOf(this.internals),
+    message: (message) => { this.validationMessage = message; },
+    focus: () => this.focusInput(),
+  });
+
+  @Watch('name')
+  resetValidationPresentation() {
+    this.inlineValidation.reset();
+  }
+
+  @Listen('invalid')
+  handleInvalid(event: Event) {
+    this.inlineValidation.handleInvalid(event);
+  }
 
   /** Visual variant of the inner text-field. */
   @Prop({ reflect: true }) variant: 'filled' | 'outlined' = 'filled';
@@ -538,7 +556,12 @@ export class MdAutocomplete {
     this.vc.detachViewport();
   }
 
+  formDisabledCallback(disabled: boolean) {
+    if (disabled) queueMicrotask(() => this.inlineValidation.reset());
+  }
+
   formResetCallback() {
+    this.inlineValidation.reset();
     this.value = Array.isArray(this.defaultValue) ? [...this.defaultValue] : this.defaultValue;
     this.inputValue = this.defaultInputValue;
     // Stale filter state must not survive a reset.
@@ -609,7 +632,8 @@ export class MdAutocomplete {
     } else {
       this.internals.setValidity({});
     }
-      this.emitValidityChange();
+    this.inlineValidation.refresh();
+    this.emitValidityChange();
   }
 
   /** Current validity: boolean, message and flags. Mirrors md-text-field. */
@@ -1117,8 +1141,8 @@ export class MdAutocomplete {
         placeholder={this.placeholder}
         value={this.inputValue}
         disabled={this.disabled}
-        error={this.error}
-        errorText={this.errorText}
+        error={this.error || !!this.validationMessage}
+        errorText={this.errorText || this.validationMessage}
         reserveSupportingSpace={this.reserveSupportingSpace}
         supportingText={this.supportingText}
         required={this.required}

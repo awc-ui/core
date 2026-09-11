@@ -1,5 +1,5 @@
-import { getValidityOf } from '../../utils/form';
-import { AttachInternals, Build, Component, Element, Event, EventEmitter, Host, Method, Prop, State, Watch, h } from '@stencil/core';
+import { checkValidityOf, getValidityOf, InlineValidationPresenter, reportValidityOf } from '../../utils/form';
+import { AttachInternals, Build, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
 
 export type MdTimePickerFormat = '12h' | '24h';
 export type MdTimePickerMode = 'dial' | 'input';
@@ -135,6 +135,24 @@ export class MdTimePicker {
   @Element() el!: HTMLElement;
 
   @AttachInternals() internals!: ElementInternals;
+
+  @State() private validationMessage = '';
+  private inlineValidation = new InlineValidationPresenter({
+    host: () => this.el,
+    validity: () => getValidityOf(this.internals),
+    message: (message) => { this.validationMessage = message; },
+    focus: () => this.focusTrigger(),
+  });
+
+  @Watch('name')
+  resetValidationPresentation() {
+    this.inlineValidation.reset();
+  }
+
+  @Listen('invalid')
+  handleInvalid(event: Event) {
+    this.inlineValidation.handleInvalid(event);
+  }
 
   // ───────────────────────────── PUBLIC API ─────────────────────────────
 
@@ -512,6 +530,7 @@ export class MdTimePicker {
   // ─────────────────────── FORM-ASSOCIATED CALLBACKS ───────────────────────
 
   formResetCallback() {
+    this.inlineValidation.reset();
     // Native `<input type="time">` reset restores the initial attribute
     // value, not empty. The @Watch('value') pass handles re-parsing/
     // committing when the value actually changed; when it was already at
@@ -521,6 +540,7 @@ export class MdTimePicker {
   }
 
   formDisabledCallback(disabled: boolean) {
+    if (disabled) queueMicrotask(() => this.inlineValidation.reset());
     this.formDisabled = disabled;
     if (disabled && this.isOpen) this.cancel();
   }
@@ -696,16 +716,14 @@ export class MdTimePicker {
    *  the committed value satisfies `required` / `min` / `max`. */
   @Method()
   async checkValidity(): Promise<boolean> {
-    if (typeof this.internals?.checkValidity !== 'function') return true;
-    return this.internals.checkValidity();
+    return checkValidityOf(this.internals);
   }
 
   /** Like `checkValidity()` but also surfaces the browser's validation
    *  UI anchored on the trigger field (matches md-text-field). */
   @Method()
   async reportValidity(): Promise<boolean> {
-    if (typeof this.internals?.reportValidity !== 'function') return true;
-    return this.internals.reportValidity();
+    return reportValidityOf(this.internals);
   }
 
   /** Snapshot of the host's ValidityState + message (ElementInternals). */
@@ -1250,7 +1268,8 @@ export class MdTimePicker {
     } catch {
       /* spec mock */
     }
-      this.emitValidityChange();
+    this.inlineValidation.refresh();
+    this.emitValidityChange();
   }
 
   // ───────────────────────────── MODE / SELECTION ─────────────────────────────
@@ -1804,9 +1823,9 @@ export class MdTimePicker {
         /* An error message replaces the helper rather than stacking under it —
            the same rule md-text-field applies to its own two, and what
            md-date-picker does one line for one line. */
-        supportingText={this.error && this.errorText ? '' : this.supportingText}
-        error={this.error}
-        errorText={this.errorText}
+        supportingText={(this.error || !!this.validationMessage) && (this.errorText || this.validationMessage) ? '' : this.supportingText}
+        error={this.error || !!this.validationMessage}
+        errorText={this.errorText || this.validationMessage}
         reserveSupportingSpace={this.reserveSupportingSpace}
         disabled={this.isDisabled}
         required={this.required}

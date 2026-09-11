@@ -118,6 +118,9 @@ text row) and `line-last` (also carried by the final tapered row when
 - **Reduced motion is already handled.** Under `prefers-reduced-motion: reduce`
   the component forces the effective animation to `none` itself and drops the
   bloom, and it re-evaluates live if the preference changes.
+- The default fill tints the underlying surface with the `on-surface` role,
+  so it stays visible on filled cards and dialog surfaces in both themes.
+  `--md-skeleton-color` still overrides the fill for custom backgrounds.
 - The skeleton has no timeout and no error state — it renders until **you**
   replace it. A stuck skeleton is a bug in the caller.
 
@@ -251,7 +254,7 @@ dimension out of density scaling.
 
 | Custom property | Purpose | Default |
 |---|---|---|
-| `--md-skeleton-color` | Base fill | `--md-sys-color-surface-container-highest` |
+| `--md-skeleton-color` | Base fill | 16% `--md-sys-color-on-surface`, mixed with transparent |
 | `--md-skeleton-highlight` | Wave shimmer highlight | `--md-sys-color-surface-bright` |
 | `--md-skeleton-radius` | Radius for `text` lines and `rectangular` | `--md-sys-shape-corner-extra-small` (4px) |
 | `--md-skeleton-rounded-radius` | Radius for `variant="rounded"` | `12px`, density-scaled, floor `8px` |

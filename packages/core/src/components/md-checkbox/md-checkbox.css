@@ -458,7 +458,8 @@
   /* Sized to its content and allowed to overflow the narrow host — the host
      reserves the vertical space, not the horizontal. */
   inline-size: max-content;
-  max-inline-size: 60ch;
+  max-inline-size: min(60ch, calc(100vw - 48px));
+  overflow-wrap: anywhere;
 
   font-family: var(--md-sys-typescale-body-small-font-family, Roboto, sans-serif);
   font-size: max(10px, calc(12px + var(--md-sys-density-scale, 0) * 0.5px));

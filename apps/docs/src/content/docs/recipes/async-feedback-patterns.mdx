@@ -900,6 +900,109 @@ const hookText = computed(() => hook.state === 'retrying' ? 'Attempt ' + hook.at
   `size="small"` status dots and a negative density rung; the dot's logical
   insets and the linear track both mirror automatically in RTL.
 
+## Saving a form without losing its context
+
+Keep entered values visible while a real request runs. Use the submit button's
+`loading` state, make the editable region `inert`, and keep a dismissive action
+available. A single persistent status line announces saving, failure or success;
+the button's built-in spinner is already decorative. On failure, retain the draft
+and let the same submit action retry. A skeleton belongs to content that has not
+arrived yet, not to a filled-in form the user is saving.
+
+This React example receives `saveProfile(data, { signal })` from the application.
+It must return a promise for the real request and pass the signal to its transport.
+There are no display timers or simulated delays.
+
+```tsx
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { MdButton, MdDialog, MdTextField, useOverlay } from '@awc-ui/react';
+
+interface ProfileDialogProps {
+  saveProfile(data: FormData, options: { signal: AbortSignal }): Promise<unknown>;
+  onClosed(): void;
+}
+
+export function ProfileDialog({ saveProfile, onClosed }: ProfileDialogProps) {
+  const dialog = useRef<HTMLMdDialogElement>(null);
+  const form = useRef<HTMLFormElement>(null);
+  const name = useRef<HTMLMdTextFieldElement>(null);
+  const request = useRef<AbortController | null>(null);
+  const formId = useId();
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [message, setMessage] = useState('');
+  const overlay = useOverlay(dialog, {
+    onClosing: () => request.current?.abort(),
+    onClosed,
+  });
+  useEffect(() => () => request.current?.abort(), []);
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const currentForm = form.current;
+    const currentName = name.current;
+    if (request.current || !dialog.current?.open || !currentForm || !currentName) return;
+    // Lock before awaiting validation so two activations cannot race.
+    const controller = new AbortController();
+    request.current = controller;
+    try {
+      if (!(await currentName.reportValidity()) || controller.signal.aborted) return;
+      setBusy(true);
+      setFailed(false);
+      setMessage('Saving your profile…');
+      await saveProfile(new FormData(currentForm), { signal: controller.signal });
+      if (!controller.signal.aborted) setMessage('Your profile has been saved.');
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        setFailed(true);
+        setMessage('Your profile could not be saved. Your changes are still here; try again.');
+      }
+    } finally {
+      if (request.current === controller) request.current = null;
+      if (!controller.signal.aborted) setBusy(false);
+    }
+  }
+
+  return (
+    <MdDialog ref={dialog} headline="Edit profile" divider {...overlay}>
+      <form id={formId} ref={form} noValidate onSubmit={submit}>
+        <div ref={(element) => { if (element) element.inert = busy; }}>
+          <MdTextField ref={name} name="displayName" label="Display name"
+            required autocomplete="name" reserveSupportingSpace />
+        </div>
+        <p role="status" aria-atomic="true"
+          style={{ color: failed ? 'var(--md-sys-color-error)' : 'var(--md-sys-color-on-surface-variant)' }}>
+          {message}
+        </p>
+      </form>
+      <MdButton slot="actions" type="button" variant="text"
+        onMdClick={() => dialog.current?.close()}>Close</MdButton>
+      <MdButton slot="actions" type="submit" loading={busy}
+        ref={(button) => { button?.setAttribute('form', formId); }}>
+        {busy ? 'Saving…' : failed ? 'Retry save' : 'Save'}
+      </MdButton>
+    </MdDialog>
+  );
+}
+```
+
+The footer button is associated with the real form through its native `form`
+attribute. The refs set `form` and the native `inert` property directly, which
+works with the library’s React 18+ support and its React 18 type definitions.
+In React 19, the editable region can instead use `inert={busy}`. Clicking
+it and pressing Enter in the single-line field use the same `submit` handler.
+`noValidate` delegates presentation to the explicit Core `reportValidity()` call,
+which keeps constraint errors inline. Keep the status line outside the inert
+region so announcements remain available during the request. Do not add a
+second live loader or an error snackbar announcing the same message.
+
+`useOverlay` ignores nested picker close events, aborts through `onClosing`, and
+calls `onClosed` only after the dialog's exit completes. The abort checks prevent
+a late response from changing dismissed UI. The caller should unmount the dialog
+in `onClosed`; reopening mounts a fresh session. If saving creates a lasting
+server-side job, cancellation of that job needs an application API in addition
+to aborting the client request.
+
 ## Related
 
 - Recipe: [Server fleet status](/recipes/server-fleet-status/) — status dots

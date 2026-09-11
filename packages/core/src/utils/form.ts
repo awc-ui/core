@@ -2,6 +2,105 @@
  * Helpers for form-associated custom elements (ElementInternals).
  */
 
+let validationIntent: 'check' | 'report' | undefined;
+
+/** Preserve native constraint validation while marking an interactive report. */
+export function withValidationReport<T>(action: () => T): T {
+  const previous = validationIntent;
+  validationIntent = 'report';
+  try { return action(); } finally { validationIntent = previous; }
+}
+
+/** A validity query must not reveal errors or move keyboard focus. */
+export function withValidationCheck<T>(action: () => T): T {
+  const previous = validationIntent;
+  validationIntent = 'check';
+  try { return action(); } finally { validationIntent = previous; }
+}
+
+interface InlineValidationOptions {
+  host: () => HTMLElement;
+  validity: () => { valid: boolean; validationMessage: string };
+  message: (message: string) => void;
+  focus: () => void | Promise<void>;
+}
+const pendingInvalidFocus = new WeakMap<Node, InlineValidationPresenter[]>();
+
+/**
+ * Present platform validity through the control's supporting/error UI.
+ * Canceling invalid cancels only the browser popover, never validity or the
+ * submission guard. Public error/errorText remain owned by the application.
+ */
+export class InlineValidationPresenter {
+  private revealed = false;
+  private shown = '';
+  constructor(private options: InlineValidationOptions) {}
+
+  handleInvalid(event: Event) {
+    if (event.target !== this.options.host()) return;
+    this.present(event);
+  }
+
+  /** Explicit native input fallback (invalid does not cross shadow roots). */
+  handleInputInvalid(event: Event) { this.present(event); }
+
+  private present(event: Event) {
+    event.preventDefault();
+    if (validationIntent === 'check') return;
+    this.revealed = true;
+    this.refresh();
+    // Native form.checkValidity and form.reportValidity emit identical events.
+    // Only known reports/submits move focus; unmarked queries never steal it.
+    if (validationIntent === 'report') this.queueFocus();
+  }
+
+  refresh() {
+    if (!this.revealed) return;
+    const validity = this.options.validity();
+    this.publish(validity.valid ? '' : validity.validationMessage);
+  }
+
+  reset() {
+    this.revealed = false;
+    this.publish('');
+  }
+
+  private publish(message: string) {
+    if (message === this.shown) return;
+    this.shown = message;
+    this.options.message(message);
+  }
+
+  private queueFocus() {
+    const host = this.options.host();
+    const root = host.getRootNode();
+    const formId = host.getAttribute('form');
+    const owner = formId && 'getElementById' in root
+      ? (root as Document | ShadowRoot).getElementById(formId)
+      : host.closest('form');
+    const key = owner || root;
+    const pending = pendingInvalidFocus.get(key);
+    if (pending) { if (!pending.includes(this)) pending.push(this); return; }
+    const candidates = [this];
+    pendingInvalidFocus.set(key, candidates);
+    const run = () => {
+      pendingInvalidFocus.delete(key);
+      const first = candidates.find((candidate) => {
+        const el = candidate.options.host();
+        return candidate.revealed && el.isConnected && !el.hasAttribute('disabled') && !candidate.options.validity().valid;
+      });
+      if (!first) return;
+      void Promise.resolve(first.options.focus()).then(() => {
+        first.options.host().scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+      });
+    };
+    // Allow the supporting message to render before focusing and scrolling.
+    const view = host.ownerDocument.defaultView;
+    if (view?.requestAnimationFrame) view.requestAnimationFrame(run);
+    else setTimeout(run, 0);
+  }
+}
+
 /**
  * Set a form-associated control's submitted value.
  *
@@ -27,10 +126,8 @@ export function setFormValue(
  * `customMessage`, when non-empty, wins — matching the native precedence where
  * `setCustomValidity()` invalidates a field regardless of its other flags.
  *
- * The `anchor` is the element the browser focuses and points its bubble at when
- * `reportValidity()` fails. Pass a focusable element from the shadow root;
- * without one the browser has nowhere to anchor the message and silently
- * reports nothing, which looks exactly like "validation isn't wired up".
+ * The `anchor` identifies the native focus target. Core presents the message
+ * inline and suppresses the browser's separate validation popover.
  *
  * Guarded the same way as `setFormValue` — the Stencil spec-test mock does not
  * implement `setValidity`, so specs stay quiet and e2e covers real behaviour.
@@ -61,7 +158,7 @@ export function setValidityState(
 export function checkValidityOf(internals: ElementInternals): boolean {
   if (!internals || !('checkValidity' in internals)) return true;
   try {
-    return internals.checkValidity();
+    return withValidationCheck(() => internals.checkValidity());
   } catch {
     return true;
   }
@@ -70,7 +167,7 @@ export function checkValidityOf(internals: ElementInternals): boolean {
 export function reportValidityOf(internals: ElementInternals): boolean {
   if (!internals || !('reportValidity' in internals)) return true;
   try {
-    return internals.reportValidity();
+    return withValidationReport(() => internals.reportValidity());
   } catch {
     return true;
   }
@@ -176,7 +273,7 @@ export function submitFormOnEnter(
         if (button.matches(':disabled') || button.disabled || button.softDisabled || button.loading) return;
         // Native click preserves SubmitEvent.submitter, name/value and
         // formnovalidate. md-button's HOST click preserves cancelable mdClick.
-        button.click();
+        withValidationReport(() => button.click());
       };
       if (button.localName === 'md-button' && !button.classList.contains('hydrated') && typeof button.componentOnReady === 'function') {
         // The text field can hydrate before the default button's lazy chunk.
@@ -190,7 +287,7 @@ export function submitFormOnEnter(
       }
     } else if (typeof form.requestSubmit === 'function' && form.isConnected) {
       event.preventDefault();
-      form.requestSubmit();
+      withValidationReport(() => form.requestSubmit());
     }
   }, 0);
   return true;

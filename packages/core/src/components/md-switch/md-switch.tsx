@@ -1,5 +1,6 @@
-import { AttachInternals, Component, Element, Event, EventEmitter, Host, Method, Prop, State, Watch, h } from '@stencil/core';
+import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
 import {
+  InlineValidationPresenter,
   setFormValue,
   setValidityState,
   checkValidityOf,
@@ -51,6 +52,35 @@ export class MdSwitch {
 
   /** Message set via setCustomValidity(); non-empty wins over valueMissing. */
   private customValidityMessage = '';
+
+  private uid = `md-switch-${Math.random().toString(36).slice(2, 7)}`;
+  @State() private validationMessage = '';
+  private supportEl?: HTMLSpanElement;
+  private validationPresenter = new InlineValidationPresenter({
+    host: () => this.el,
+    validity: () => getValidityOf(this.internals),
+    message: (message) => { this.validationMessage = message; },
+    focus: () => this.setFocus(),
+  });
+
+  @Watch('name')
+  resetValidationPresentation() {
+    this.validationPresenter.reset();
+  }
+
+  @Listen('invalid')
+  handleInvalid(event: Event) {
+    this.validationPresenter.handleInvalid(event);
+  }
+
+  componentDidRender() {
+    // The interactive host and its supporting text are in different roots.
+    // Element references keep the description associated across that boundary.
+    if (this.internals && 'ariaDescribedByElements' in this.internals) {
+      this.internals.ariaDescribedByElements = this.supportEl ? [this.supportEl] : [];
+    }
+  }
+
 
   /**
    * Form-association handle. The switch submits `value` under the host's `name`
@@ -158,7 +188,12 @@ export class MdSwitch {
   }
 
   /** Restore the initial state when the owning form is reset. */
+  formDisabledCallback(disabled: boolean) {
+    if (disabled) queueMicrotask(() => this.validationPresenter.reset());
+  }
+
   formResetCallback() {
+    this.validationPresenter.reset();
     this.selected = this.initialSelected;
   }
 
@@ -193,7 +228,8 @@ export class MdSwitch {
       missingMessage: this.valueMissingLabel,
       customMessage: this.customValidityMessage,
     });
-      this.emitValidityChange();
+    this.validationPresenter.refresh();
+    this.emitValidityChange();
   }
 
   /** Current validity: boolean, message and flags. Mirrors md-text-field. */
@@ -310,6 +346,7 @@ export class MdSwitch {
     return (
       <Host
         role="switch"
+        aria-invalid={this.validationMessage ? 'true' : undefined}
         aria-checked={String(this.selected)}
         aria-disabled={this.isDisabled ? 'true' : null}
         aria-required={this.required ? 'true' : null}
@@ -321,6 +358,7 @@ export class MdSwitch {
           'md-switch--pressed': this.pressed,
           'md-switch--with-icon': showIcon,
           'md-switch--focus-ring': this.programmaticFocus,
+          'md-switch--has-support': !!this.validationMessage,
         }}
         onClick={this.toggle}
         onKeyDown={this.handleKeyDown}
@@ -330,26 +368,38 @@ export class MdSwitch {
         onPointerCancel={this.handlePointerUp}
         onBlur={this.handleBlur}
       >
-        <div class="md-switch__track" part="track">
-          <div class="md-switch__handle-container">
-            <span class="md-switch__state-layer" part="state-layer" aria-hidden="true"></span>
-            <span class="md-switch__handle" part="handle">
-              {showIcon && (this.selected ? (
-                <slot name="selected-icon">
-                  <span class="md-switch__icon material-symbols-outlined" part="icon" aria-hidden="true">
-                    {this.selectedIcon}
-                  </span>
-                </slot>
-              ) : (
-                <slot name="unselected-icon">
-                  <span class="md-switch__icon material-symbols-outlined" part="icon" aria-hidden="true">
-                    {this.unselectedIcon}
-                  </span>
-                </slot>
-              ))}
-            </span>
+        <span class="md-switch__target">
+          <div class="md-switch__track" part="track">
+            <div class="md-switch__handle-container">
+              <span class="md-switch__state-layer" part="state-layer" aria-hidden="true"></span>
+              <span class="md-switch__handle" part="handle">
+                {showIcon && (this.selected ? (
+                  <slot name="selected-icon">
+                    <span class="md-switch__icon material-symbols-outlined" part="icon" aria-hidden="true">
+                      {this.selectedIcon}
+                    </span>
+                  </slot>
+                ) : (
+                  <slot name="unselected-icon">
+                    <span class="md-switch__icon material-symbols-outlined" part="icon" aria-hidden="true">
+                      {this.unselectedIcon}
+                    </span>
+                  </slot>
+                ))}
+              </span>
+            </div>
           </div>
-        </div>
+        </span>
+        {this.validationMessage && (
+          <span
+            id={`${this.uid}-support`}
+            ref={(el) => { this.supportEl = el; }}
+            class="md-switch__support"
+            role="alert"
+          >
+            {this.validationMessage}
+          </span>
+        )}
       </Host>
     );
   }

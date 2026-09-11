@@ -96,7 +96,11 @@ takes the detail panel (rendered only when `expandable`).
   clicks that land on an interactive descendant (`md-checkbox`, `md-radio`,
   `md-button`, `md-icon-button`, `md-switch`, `md-fab`, `md-chip`, `button`,
   `a`, `input`, `select`, `textarea`). A `clickable` row is a tab stop
-  (`tabindex="0"`) and Enter / Space activate it.
+  (`tabindex="0"`) and Enter / Space activate it when the row itself has focus.
+  Keys from nested controls, links, custom elements, or editable content stay
+  with that control, including across shadow roots. Already-prevented keyboard
+  events are left alone; consumers do not need `stopPropagation()` on each
+  action button.
 - `disabled` removes the tab stop, blocks click and key activation, sets
   `aria-disabled="true"` and kills pointer events.
 - **`mdRowSelectionChange` fires on every change to `selected`, programmatic
@@ -203,7 +207,7 @@ House rules, informed by the WAI table patterns — M3 has no data-table page.
 | Wrapping cells in a `<div>` | Cells as direct children | The subgrid only sees direct children. |
 | A second row used as the detail panel | The `expanded` slot | Keeps the detail owned by, and inert with, its row. |
 | `<a>` wrapping the whole row | `clickable` + `mdRowClick` | Nested interactive controls; also the row is already the tab stop. |
-| Expecting `mdRowClick` from a checkbox click | Listen for the control's own event | Clicks on interactive descendants are deliberately ignored. |
+| Expecting `mdRowClick` from a checkbox click or nested-control keypress | Listen for the control's own event | Controls own their interaction; Enter / Space activate the row only when the row itself is focused. |
 | `selectable="false"` on a foot row | Nothing needed | Foot rows are already outside the selection model. |
 | Setting `aria-selected` / `data-stripe` yourself | Let `md-table` stamp them | The table rewrites them on every sync. |
 | Expecting a `density` prop here | Set `density` on `md-table` | Row height is the table's decision. |

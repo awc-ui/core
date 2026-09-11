@@ -25,7 +25,7 @@ for (const [name, size] of [['offsetWidth', 200], ['offsetHeight', 160]]) {
   });
 }
 
-await environment.define(['md-dialog', 'md-side-sheet', 'md-menu', 'md-menu-item', 'md-fab', 'md-fab-menu', 'md-fab-menu-item']);
+await environment.define(['md-dialog', 'md-side-sheet', 'md-menu', 'md-menu-item', 'md-fab', 'md-fab-menu', 'md-fab-menu-item', 'md-search']);
 
 async function completes(promise, message) {
   let timer;
@@ -54,6 +54,10 @@ function mount(t, tag) {
   const element = document.createElement(tag);
   element.headline = 'Test overlay';
   if (tag === 'md-side-sheet') element.variant = 'modal';
+  if (tag === 'md-search') {
+    element.layout = 'full-screen';
+    element.triggerFor = opener.id;
+  }
   if (tag === 'md-menu') {
     element.anchor = opener.id;
     const item = document.createElement('md-menu-item');
@@ -62,6 +66,7 @@ function mount(t, tag) {
   } else {
     const button = document.createElement('button');
     button.textContent = 'Save';
+    if (tag === 'md-search') button.slot = 'results';
     element.append(button);
   }
   const events = [];
@@ -98,6 +103,26 @@ for (const tag of ['md-dialog', 'md-side-sheet']) {
     assert.ok(element.isConnected, 'Core leaves removal to the caller after whenClosed()');
   });
 }
+
+test('md-search: immediate append/show focuses its input and close completion includes cleanup', async (t) => {
+  const { element, events } = mount(t, 'md-search');
+  const showing = element.show();
+  assert.equal(element.open, false, 'CSR show must wait for the first closed render');
+  await completes(showing, 'search show() did not resolve');
+  await until(() => focusedInside(element) && events.includes('open'));
+  assert.equal(element.shadowRoot.activeElement?.tagName, 'INPUT');
+  assert.equal(document.body.style.overflow, 'hidden');
+  const closed = element.whenClosed();
+  await element.close();
+  assert.deepEqual(events, ['open', 'close'], 'mdClose keeps its immediate timing');
+  assert.equal(document.body.style.overflow, 'hidden', 'scroll stays locked through the search exit');
+  await completes(closed, 'search close() did not finish its open cycle');
+  assert.equal(element.open, false);
+  assert.ok(element.classList.contains('md-search--closed'));
+  assert.equal(document.body.style.overflow, '');
+  assert.equal(document.activeElement, opener);
+  assert.ok(element.isConnected, 'whenClosed resolves before the caller removes search');
+});
 
 test('md-menu: immediate append/show positions against its anchor and restores focus after Escape', async (t) => {
   const { element, events } = mount(t, 'md-menu');
@@ -173,7 +198,7 @@ test('whenClosed also completes when a shell animation is canceled', async (t) =
   await completes(closed, 'a canceled shell animation must not reject or strand whenClosed()');
 });
 
-for (const tag of ['md-dialog', 'md-side-sheet', 'md-menu']) {
+for (const tag of ['md-dialog', 'md-side-sheet', 'md-menu', 'md-search']) {
   test(`${tag}: closing before its initial load cancels a pending show`, async (t) => {
     const { element, events } = mount(t, tag);
     const showing = element.show();
@@ -201,6 +226,47 @@ for (const tag of ['md-dialog', 'md-side-sheet', 'md-menu']) {
     assert.equal(document.body.style.overflow, '');
   });
 }
+
+test('md-search: disconnect settles a pending exit, restores prior body styles, and prevents stale cleanup', async (t) => {
+  const originalBodyStyle = document.body.style.cssText;
+  document.body.style.setProperty('overflow', 'auto', 'important');
+  document.body.style.setProperty('padding-inline-end', '11px', 'important');
+  const { element } = mount(t, 'md-search');
+  t.after(() => { document.body.style.cssText = originalBodyStyle; });
+  await element.show();
+  await until(() => focusedInside(element));
+  assert.equal(document.body.style.overflow, 'hidden');
+  const motion = deferred();
+  let sampled = false;
+  element.getAnimations = () => {
+    sampled = true;
+    return [{ effect: { target: element, getTiming: () => ({ iterations: 1 }) }, finished: motion.promise }];
+  };
+  const closed = element.whenClosed();
+  await element.close();
+  await until(() => sampled);
+  element.remove();
+  await completes(closed, 'disconnect left search whenClosed() pending');
+  assert.equal(document.body.style.overflow, 'auto');
+  assert.equal(document.body.style.getPropertyPriority('overflow'), 'important');
+  assert.equal(document.body.style.paddingInlineEnd, '11px');
+  assert.equal(document.body.style.getPropertyPriority('padding-inline-end'), 'important');
+  assert.equal(document.activeElement, opener);
+
+  const destination = document.createElement('button');
+  destination.textContent = 'Next surface';
+  document.body.append(destination);
+  t.after(() => destination.remove());
+  destination.focus();
+  document.body.style.overflow = 'hidden';
+  document.body.style.paddingInlineEnd = '22px';
+  motion.resolve();
+  await delay(80);
+  assert.equal(document.activeElement, destination, 'a disconnected search must not return focus later');
+  assert.equal(document.body.style.overflow, 'hidden');
+  assert.equal(document.body.style.paddingInlineEnd, '22px', 'a stale exit must not change the next surface scroll lock');
+  await completes(element.whenClosed(), 'whenClosed after disconnect should already be settled');
+});
 
 for (const slotted of [false, true]) {
   test(`persistent FAB menu preserves its ${slotted ? 'slotted' : 'property'} icon and current label across dismissal`, async (t) => {

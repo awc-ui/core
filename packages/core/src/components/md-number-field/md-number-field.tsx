@@ -1,5 +1,5 @@
-import { AttachInternals, Component, Element, Event, EventEmitter, Host, Method, Prop, State, Watch, h } from '@stencil/core';
-import { setFormValue, checkValidityOf, reportValidityOf, getValidityOf } from '../../utils/form';
+import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
+import { setFormValue, checkValidityOf, reportValidityOf, getValidityOf, InlineValidationPresenter } from '../../utils/form';
 
 /** What caused a value change / commit — reported as `reason` on every event. */
 export type MdNumberFieldChangeReason =
@@ -181,6 +181,22 @@ export class MdNumberField {
    * `name` via `setFormValue` (`String(value)`; empty submits no entry).
    */
   @AttachInternals() internals!: ElementInternals;
+  @State() private validationMessage = '';
+  private validation = new InlineValidationPresenter({
+    host: () => this.el,
+    validity: () => getValidityOf(this.internals),
+    message: (message) => { this.validationMessage = message; },
+    focus: () => this.setFocus(),
+  });
+
+  @Watch('name')
+  resetValidationPresentation() {
+    this.validation.reset();
+  }
+
+  @Listen('invalid')
+  onInvalid(event: Event) { this.validation.handleInvalid(event); }
+
 
   // ── Props ────────────────────────────────────────────────
 
@@ -531,6 +547,7 @@ export class MdNumberField {
   }
 
   formResetCallback() {
+    this.validation.reset();
     this.internalWrite = false;
     this.customValidityMessage = '';
     this.value = this.defaultValue;
@@ -542,6 +559,7 @@ export class MdNumberField {
   }
 
   formDisabledCallback(disabled: boolean) {
+    if (disabled) queueMicrotask(() => this.validation.reset());
     // called synchronously while Stencil reflects the disabled attribute
     // during render — a direct @State write logs 'changed during rendering'
     queueMicrotask(() => {
@@ -598,6 +616,7 @@ export class MdNumberField {
     } else {
       this.internals.setValidity({});
     }
+    this.validation.refresh();
     this.emitValidityChange();
   }
 
@@ -1027,8 +1046,8 @@ export class MdNumberField {
           disabled={this.isDisabled}
           readOnly={this.readOnly}
           required={this.required}
-          error={this.error}
-          errorText={this.errorText}
+          error={this.error || !!this.validationMessage}
+          errorText={this.errorText || this.validationMessage}
           supportingText={this.supportingText}
           reserveSupportingSpace={this.reserveSupportingSpace}
           density={this.density}

@@ -109,6 +109,60 @@ describe('md-table-row', () => {
     });
   });
 
+  describe('keyboard ownership', () => {
+    it.each(['Enter', ' '])('activates the focused row exactly once with %s', async (key) => {
+      const page = await create('<md-table-row clickable></md-table-row>');
+      const onRow = jest.fn();
+      page.root!.addEventListener('mdRowClick', onRow);
+      const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+      page.root!.dispatchEvent(event);
+      expect(onRow).toHaveBeenCalledTimes(1);
+      expect(event.defaultPrevented).toBe(true);
+    });
+
+    it.each([
+      '<button>Action</button>', '<a href="#target">Link</a>', '<input>',
+      '<select><option>A</option></select>', '<textarea></textarea>',
+      '<md-button>Action</md-button>', '<md-checkbox></md-checkbox>',
+      '<md-select></md-select>', '<md-text-field></md-text-field>',
+      '<div contenteditable="true">Edit</div>', '<div role="button" tabindex="0">Action</div>',
+    ])('leaves descendant keyboard behavior intact: %s', async (control) => {
+      const page = await create(`<md-table-row clickable><md-table-cell>${control}</md-table-cell></md-table-row>`);
+      const onRow = jest.fn();
+      page.root!.addEventListener('mdRowClick', onRow);
+      const target = page.root!.querySelector('md-table-cell')!.firstElementChild!;
+      for (const key of ['Enter', ' ']) {
+        const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+        target.dispatchEvent(event);
+        expect(event.defaultPrevented).toBe(false);
+      }
+      expect(onRow).not.toHaveBeenCalled();
+    });
+
+    it('uses the composed origin when a nested shadow control is retargeted', async () => {
+      const page = await create('<md-table-row clickable></md-table-row>');
+      const onRow = jest.fn();
+      page.root!.addEventListener('mdRowClick', onRow);
+      const button = document.createElement('button');
+      const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+      // The host-facing target alone cannot identify the shadow control.
+      Object.defineProperty(event, 'composedPath', { value: () => [button, page.root!] });
+      page.root!.dispatchEvent(event);
+      expect(onRow).not.toHaveBeenCalled();
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('respects keyboard handling that already prevented the default', async () => {
+      const page = await create('<md-table-row clickable></md-table-row>');
+      const onRow = jest.fn();
+      page.root!.addEventListener('mdRowClick', onRow);
+      const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+      event.preventDefault();
+      page.root!.dispatchEvent(event);
+      expect(onRow).not.toHaveBeenCalled();
+    });
+  });
+
   describe('methods', () => {
     it('toggle() flips expanded', async () => {
       const page = await create('<md-table-row expandable></md-table-row>');

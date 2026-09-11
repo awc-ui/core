@@ -101,7 +101,8 @@
   opacity: 0;
   pointer-events: none;
   outline: none;
-  overflow: hidden;
+  /* Only the body scrolls. hidden would still let focus scroll this frame. */
+  overflow: clip;
   transition:
     opacity var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1)),
     transform var(--md-sys-motion-duration-medium2, 300ms) var(--md-sys-motion-easing-standard, cubic-bezier(0.2, 0, 0, 1));
@@ -118,6 +119,7 @@
    ========================================================== */
 
 .md-dialog__basic-header {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   padding: max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px)) max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px)) 0;
@@ -184,7 +186,9 @@
 .md-dialog__content {
   padding: max(8px, calc(16px + var(--md-sys-density-scale, 0) * 2px)) max(12px, calc(24px + var(--md-sys-density-scale, 0) * 2px));
   flex: 1;
+  min-block-size: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   font-family: var(--md-sys-typescale-body-medium-font-family, Roboto, sans-serif);
   font-size: max(12px, calc(14px + var(--md-sys-density-scale, 0) * 0.5px));
   font-weight: var(--md-sys-typescale-body-medium-font-weight, 400);
@@ -219,6 +223,7 @@
    divider line while the 24px bottom padding stays, producing the
    asymmetric "buttons crowded at the top" look. */
 .md-dialog__actions {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: flex-end;

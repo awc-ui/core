@@ -15,6 +15,7 @@ import {
   checkValidityOf,
   reportValidityOf,
   getValidityOf,
+  InlineValidationPresenter,
 } from '../../utils/form';
 import { VirtualSelectController } from '../../utils/virtual-select-controller';
 import { isWasmSupported, FilterMode } from '../../utils/wasm-option-store';
@@ -114,6 +115,24 @@ export class MdSelect {
    * `FormData`.
    */
   @AttachInternals() internals!: ElementInternals;
+
+  @State() private validationMessage = '';
+  private inlineValidation = new InlineValidationPresenter({
+    host: () => this.el,
+    validity: () => getValidityOf(this.internals),
+    message: (message) => { this.validationMessage = message; },
+    focus: () => this.focusTrigger(),
+  });
+
+  @Watch('name')
+  resetValidationPresentation() {
+    this.inlineValidation.reset();
+  }
+
+  @Listen('invalid')
+  handleInvalid(event: Event) {
+    this.inlineValidation.handleInvalid(event);
+  }
 
   /** Visual variant — forwarded to the inner `md-text-field`. */
   @Prop({ reflect: true }) variant: 'filled' | 'outlined' = 'outlined';
@@ -422,7 +441,8 @@ export class MdSelect {
       missingMessage: this.valueMissingLabel,
       customMessage: this.customValidityMessage,
     });
-      this.emitValidityChange();
+    this.inlineValidation.refresh();
+    this.emitValidityChange();
   }
 
   /** Current validity: boolean, message and flags. Mirrors md-text-field. */
@@ -493,7 +513,12 @@ export class MdSelect {
   }
 
   /** Restore the initial selection when the owning form is reset. */
+  formDisabledCallback(disabled: boolean) {
+    if (disabled) queueMicrotask(() => this.inlineValidation.reset());
+  }
+
   formResetCallback() {
+    this.inlineValidation.reset();
     this.value = this.defaultValue;
   }
 
@@ -757,8 +782,8 @@ export class MdSelect {
         readOnly={true}
         disabled={this.disabled}
         required={this.required}
-        error={this.error}
-        errorText={this.errorText}
+        error={this.error || !!this.validationMessage}
+        errorText={this.errorText || this.validationMessage}
         reserveSupportingSpace={this.reserveSupportingSpace}
         supportingText={this.supportingText}
         density={this.density}

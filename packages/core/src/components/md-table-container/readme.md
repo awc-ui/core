@@ -176,6 +176,29 @@ data-table page.
 </md-card>
 ```
 
+### Narrow screens with wide columns
+
+Keep the container shrinkable in its parent grid or flex layout. Give the table
+its minimum readable width; the container already provides horizontal scrolling.
+The toolbar and pagination stay aligned with the viewport through their slots.
+
+```css
+.results-pane {
+  min-inline-size: 0;
+}
+.results-pane md-table-container {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+.results-pane md-table {
+  min-inline-size: 48rem;
+}
+```
+
+Use the toolbar/scroll/pagination composition above inside `.results-pane`.
+Do not add another overflow wrapper around the whole surface: it would move the
+actions with the columns. Test the scroll in both LTR and RTL on a narrow screen.
+
 ## Anti-patterns
 
 | ❌ Wrong | ✅ Right | Why |
@@ -249,9 +272,9 @@ Compose freely:
 
 ```html
 <md-table-container variant="elevated" max-height="480px">
-  <md-table-toolbar headline="Users"></md-table-toolbar>
+  <md-table-toolbar slot="top" headline="Users"></md-table-toolbar>
   <md-table>…</md-table>
-  <md-table-pagination></md-table-pagination>
+  <md-table-pagination slot="bottom"></md-table-pagination>
 </md-table-container>
 ```
 

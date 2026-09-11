@@ -11,9 +11,9 @@ import { Component, Host, h, Prop, Element, Listen, forceUpdate } from '@stencil
  *
  * ```html
  * <md-table-container variant="elevated" max-height="480px">
- *   <md-table-toolbar headline="Users"></md-table-toolbar>
+ *   <md-table-toolbar slot="top" headline="Users"></md-table-toolbar>
  *   <md-table>…</md-table>
- *   <md-table-pagination></md-table-pagination>
+ *   <md-table-pagination slot="bottom"></md-table-pagination>
  * </md-table-container>
  * ```
  */

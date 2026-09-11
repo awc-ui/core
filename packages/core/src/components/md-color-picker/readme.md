@@ -48,6 +48,7 @@ row. Renders inline or as a popover behind a trigger **you** supply.
 | Need | Setting |
 |---|---|
 | Embedded in a panel | `variant="inline"` (default) |
+| Fill a settings panel or dialog | `variant="inline"` + `style="--md-color-picker-width: 100%"` |
 | Behind a trigger of your own | `variant="popover"` + a slotted `trigger` |
 | Transparency | `alpha` |
 | Output format | `format="hex"` (default) / `"rgb"` / `"hsl"` |
@@ -148,6 +149,18 @@ House rules — no M3 page exists for this component.
 ---
 
 ## Patterns
+
+```html
+<!-- Fill the same content width as the other settings fields. -->
+<md-color-picker variant="inline" aria-label="Primary color"
+  style="--md-color-picker-width: 100%;"
+  presets="#6750A4,#006B5E,#005BC0"></md-color-picker>
+```
+
+The inline picker is capped to its parent and its internal plate, sliders and
+inputs follow the panel width. Keep the default designed width for compact
+popover use; changing the global default is unnecessary.
+
 
 ```html
 <!-- Inline, hex, with brand presets -->

@@ -362,7 +362,7 @@ el.addEventListener('mdValidityChange', (e) => {
   them. They are labelled by `increment-label` / `decrement-label`.
 - `required` with no value blocks submission; `value-missing-label` is the
   bubble message and `error-text` wins when set, so the inline and native
-  messages agree. `reportValidity()` anchors its bubble on the inner field.
+  messages agree. `reportValidity()` shows the message inline and focuses the inner field.
 - `reserve-supporting-space` avoids layout jump when errors appear.
 - ⚠️ There is no `role="spinbutton"` and no `aria-valuenow`/`valuemin`/`valuemax`
   — a spinbutton role makes assistive tech announce a bare number that fights
@@ -475,7 +475,7 @@ in Safari. `allow-wheel-scrub` covers the "nudge without typing" case.
 | `steppers`               | `steppers`                 | Which stepper buttons render: inside the field, split around it, or none.                                                                                                                                                                                                                                                                          | `"inline" \| "none" \| "split"`                     | `'inline'`                  |
 | `supportingText`         | `supporting-text`          | Supporting / helper text below the field.                                                                                                                                                                                                                                                                                                          | `string`                                            | `''`                        |
 | `value`                  | `value`                    | The raw numeric value (`null` = empty). Never the formatted string — the display text is derived via `Intl.NumberFormat`. Non-finite numbers, empty strings, `undefined` and unparseable text all normalize to `null`.                                                                                                                              | `number \| null`                                    | `null`                      |
-| `valueMissingLabel`      | `value-missing-label`      | Localized constraint-validation message shown when `required` is unmet. `errorText` still wins when set, so an app-supplied inline message and the native bubble stay in agreement.                                                                                                                                                                 | `string`                                            | `'Please enter a number.'`  |
+| `valueMissingLabel`      | `value-missing-label`      | Localized constraint-validation message shown when `required` is unmet. `errorText` still wins when set, so an app-supplied inline message and constraint validation stay in agreement.                                                                                                                                                                 | `string`                                            | `'Please enter a number.'`  |
 | `variant`                | `variant`                  | Visual variant of the inner text-field.                                                                                                                                                                                                                                                                                                            | `"filled" \| "outlined"`                            | `'filled'`                  |
 
 
@@ -515,7 +515,7 @@ Type: `Promise<{ valid: boolean; validationMessage: string; flags: Record<string
 
 ### `reportValidity() => Promise<boolean>`
 
-Like checkValidity(), but also shows the browser's validation message,
+Like checkValidity(), but also shows the control's inline validation message,
 anchored on the inner md-text-field.
 
 #### Returns

@@ -78,17 +78,18 @@ destinations. Owns the active index and keyboard movement across its
 - `active-index` is the single source of truth. The bar writes `active`,
   `tabindex` and `aria-selected` onto its children on every sync — anything you
   set on a child yourself is overwritten.
-- `active-index` **clamps on every change after mount**: an out-of-range or
-  disabled index moves to the nearest enabled tab (searching forward, then
-  backward). With no enabled tab it becomes `-1`.
-- **Clamping does not run for the initial attribute.** The value present at
-  mount is applied as-is, so `<md-navigation-bar active-index="0">` whose first
-  tab is `disabled` marks that disabled tab `active` / `aria-selected="true"`
-  and leaves it there. Point the initial `active-index` at an enabled tab, or
-  assign the property once after mount so the watcher clamps it.
-- `select(index)` is a no-op when the clamped index is already current, so
-  `mdChange` never fires for a reselect. `mdChange` also does not fire for the
-  initial `active-index` applied on mount.
+- `active-index` clamps to an enabled destination on initialization and later
+  updates: an out-of-range or disabled index moves to the nearest enabled tab
+  (searching forward, then backward). With no enabled tab it becomes `-1`.
+  Fractional values are truncated; `NaN` resolves from index `0`.
+- An initially empty bar retains its requested index until the first tabs
+  arrive, so asynchronously rendered destinations honor the router's initial
+  selection. Initial selection and slot synchronization do not emit `mdChange`.
+- **`mdChange` reports selection changes, not only user intent.** External
+  `activeIndex` assignments and `select(index)` calls emit it too, with the
+  last actual selection in `previousIndex`. A request that clamps back to the
+  current destination emits nothing; an invalid intermediate index is never
+  published as `previousIndex`.
 - **Arrow keys activate immediately by default.** `manual-activation` separates
   focus from selection — arrow to preview, `Enter` / `Space` to commit.
 - Keyboard: `ArrowLeft` / `ArrowRight` (swapped under `dir="rtl"`), `Home`,
@@ -108,8 +109,10 @@ destinations. Owns the active index and keyboard movement across its
   directly on the `md-navigation-bar` element.
 - The bar sets `data-tab-count` on itself so you can style by destination
   count.
-- The bar does **not** route, and it does **not** position itself. Wire
-  `mdChange` to your router and place the bar at the bottom with CSS.
+- The bar does **not** route, and it does **not** position itself. Connect
+  selection or per-tab activation to your router and position the bar with CSS.
+  For a router-controlled bar, use the user-activation pattern below so state
+  synchronization cannot trigger a second navigation.
 
 ---
 
@@ -136,7 +139,8 @@ Sourced from [M3 · Navigation bar · Guidelines](https://m3.material.io/compone
 ## Patterns
 
 ```html
-<md-navigation-bar id="nav" aria-label="Main navigation"
+<!-- Router-controlled: programmatic selection must not initiate routing. -->
+<md-navigation-bar id="nav" manual-activation aria-label="Main navigation"
                    style="position:fixed; inset-inline:0; inset-block-end:0;">
   <md-navigation-tab label="Home"    icon="home"           active-icon="home"></md-navigation-tab>
   <md-navigation-tab label="Search"  icon="search"></md-navigation-tab>
@@ -147,11 +151,20 @@ Sourced from [M3 · Navigation bar · Guidelines](https://m3.material.io/compone
   const routes = ['/', '/search', '/library'];
   const nav = document.getElementById('nav');
 
-  nav.addEventListener('mdChange', (e) => router.go(routes[e.detail.index]));
+  // Listen on each tab: the bar stops this event before it reaches ancestors.
+  // manual-activation makes arrows move focus; click / Enter / Space activate.
+  nav.querySelectorAll('md-navigation-tab').forEach((tab, index) => {
+    tab.addEventListener('mdTabClick', (event) => {
+      // Leave selection to the router, including any async route guards.
+      event.stopPropagation();
+      router.go(routes[index]);
+    });
+  });
 
-  // Keep the bar in sync with the router. select() is a no-op when the
-  // destination is already current, so this cannot loop.
-  router.afterEach((to) => nav.select(routes.indexOf(to.path)));
+  router.afterEach((to) => {
+    const index = routes.indexOf(to.path);
+    if (index >= 0) nav.activeIndex = index;
+  });
 </script>
 ```
 
@@ -193,7 +206,8 @@ Sourced from [M3 · Navigation bar · Guidelines](https://m3.material.io/compone
 | `tab.labelBehavior = 'none'` in JS to override one tab | Set the `label-behavior` **attribute** | The bar only treats the attribute as an explicit override. |
 | Listening for `mdTabClick` on an ancestor of the bar | Listen on the tab, or use the bar's `mdChange` | The bar calls `stopPropagation()` on it. |
 | Expecting `mdChange` when the user re-taps the current tab | Listen for `mdTabClick` on that tab | Selection did not change, so no `mdChange`. |
-| Expecting the bar to route | Wire `mdChange` to your router | It only reports the change. |
+| Treating `mdChange` as user-only activation | Use per-tab `mdTabClick` with `manual-activation` for a controlled router | Programmatic selection also emits `mdChange`. |
+| Expecting the bar to route | Connect a selection or activation handler | Routing is owned by the app. |
 | Expecting the bar to pin itself to the bottom | Position it yourself | The host is `display: block`, in flow. |
 | A FAB overlapping the bar | Place it above, right-aligned | M3 explicit rule. |
 | Reordering destinations by usage | Fixed positions | M3 explicit rule. |
@@ -290,7 +304,7 @@ References:
 
 | Event      | Description                                                                                                                                                                                                         | Type                                                     |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| `mdChange` | Emitted when the selected destination changes (user click, keyboard activation, or programmatic `select()` call). Detail includes both the new and previous indices so listeners can short-circuit no-op reselects. | `CustomEvent<{ index: number; previousIndex: number; }>` |
+| `mdChange` | Emitted when the selected destination changes (user click, keyboard activation, or programmatic `activeIndex` / `select()` update). Detail includes both the new and previous indices so listeners can short-circuit no-op reselects. | `CustomEvent<{ index: number; previousIndex: number; }>` |
 
 
 ## Methods

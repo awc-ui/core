@@ -1,7 +1,8 @@
-import { AttachInternals, Component, Element, Event, EventEmitter, Host, Method, Prop, State, Watch, h } from '@stencil/core';
+import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
 import { RadioElement } from '../../utils/types';
 import { triggerRipple } from '../../utils/ripple';
 import {
+  InlineValidationPresenter,
   setFormValue,
   setValidityState,
   checkValidityOf,
@@ -41,6 +42,35 @@ export class MdRadio {
 
   /** Message set via setCustomValidity(); non-empty wins over valueMissing. */
   private customValidityMessage = '';
+
+  private uid = `md-radio-${Math.random().toString(36).slice(2, 7)}`;
+  @State() private validationMessage = '';
+  private supportEl?: HTMLSpanElement;
+  private validationPresenter = new InlineValidationPresenter({
+    host: () => this.el,
+    validity: () => getValidityOf(this.internals),
+    message: (message) => { this.validationMessage = message; },
+    focus: () => this.setFocus(),
+  });
+
+  @Watch('name')
+  resetValidationPresentation() {
+    this.validationPresenter.reset();
+  }
+
+  @Listen('invalid')
+  handleInvalid(event: Event) {
+    this.validationPresenter.handleInvalid(event);
+  }
+
+  componentDidRender() {
+    // The interactive host and its supporting text are in different roots.
+    // Element references keep the description associated across that boundary.
+    if (this.internals && 'ariaDescribedByElements' in this.internals) {
+      this.internals.ariaDescribedByElements = this.supportEl ? [this.supportEl] : [];
+    }
+  }
+
 
   /** Drives aria-invalid on the host. */
   @State() private invalid = false;
@@ -199,7 +229,8 @@ export class MdRadio {
       missingMessage: this.valueMissingLabel,
       customMessage: this.customValidityMessage,
     });
-      this.emitValidityChange();
+    this.validationPresenter.refresh();
+    this.emitValidityChange();
   }
 
   /** Re-publish validity for every radio in the group. */
@@ -223,7 +254,12 @@ export class MdRadio {
   }
 
   /** Restore the initial selection when the owning form is reset. */
+  formDisabledCallback(disabled: boolean) {
+    if (disabled) queueMicrotask(() => this.validationPresenter.reset());
+  }
+
   formResetCallback() {
+    this.validationPresenter.reset();
     this.checked = this.defaultChecked;
   }
 
@@ -471,6 +507,7 @@ export class MdRadio {
           'md-radio--pressed': this.pressed,
           'md-radio--focused': this.focused,
           'md-radio--focus-ring': this.programmaticFocus,
+          'md-radio--has-support': !!this.validationMessage,
         }}
         role="radio"
         aria-invalid={this.invalid ? 'true' : undefined}
@@ -487,28 +524,42 @@ export class MdRadio {
         onPointerLeave={this.handlePointerUp}
         onPointerCancel={this.handlePointerUp}
       >
-        <span class="md-radio__ripple-layer" aria-hidden="true">
-          <md-ripple disabled={isEffectivelyDisabled}></md-ripple>
-        </span>
-        <span class="md-radio__state-layer" part="state-layer" aria-hidden="true"></span>
+        <span class="md-radio__target">
+          <span class="md-radio__ripple-layer" aria-hidden="true">
+            <md-ripple disabled={isEffectivelyDisabled}></md-ripple>
+          </span>
+          <span class="md-radio__state-layer" part="state-layer" aria-hidden="true"></span>
 
-        <span class="md-radio__container" part="container" aria-hidden="true">
-          <span class="md-radio__outer" part="outer-circle"></span>
-          <span class="md-radio__inner" part="inner-circle"></span>
-        </span>
+          <span class="md-radio__container" part="container" aria-hidden="true">
+            <span class="md-radio__outer" part="outer-circle"></span>
+            <span class="md-radio__inner" part="inner-circle"></span>
+          </span>
 
-        <input
-          type="radio"
-          class="md-radio__native"
-          checked={this.checked}
-          disabled={this.disabled}
-          required={this.required}
-          name={this.name}
-          value={this.value}
-          aria-hidden="true"
-          tabindex="-1"
-          onChange={() => {}}
-        />
+          <input
+            type="radio"
+            class="md-radio__native"
+            checked={this.checked}
+            disabled={this.disabled}
+            required={this.required}
+            name={this.name}
+            value={this.value}
+            aria-hidden="true"
+            aria-invalid={this.invalid ? 'true' : undefined}
+            aria-describedby={this.validationMessage ? `${this.uid}-support` : undefined}
+            tabindex="-1"
+            onChange={() => {}}
+          />
+        </span>
+        {this.validationMessage && (
+          <span
+            id={`${this.uid}-support`}
+            ref={(el) => { this.supportEl = el; }}
+            class="md-radio__support"
+            role="alert"
+          >
+            {this.validationMessage}
+          </span>
+        )}
       </Host>
     );
   }

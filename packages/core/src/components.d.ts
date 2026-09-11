@@ -4571,6 +4571,10 @@ export namespace Components {
           * @default false
          */
         "voiceSearch": boolean;
+        /**
+          * Wait for the current open cycle, both shell exit stages and focus/scroll cleanup. Use after close() before removing search or opening another overlay. Reopening keeps the same completion pending; disconnecting also settles it.
+         */
+        "whenClosed": () => Promise<void>;
     }
     interface MdSegmentedButton {
         /**
@@ -6250,9 +6254,9 @@ export namespace Components {
      * Compose freely:
      * ```html
      * <md-table-container variant="elevated" max-height="480px">
-     *   <md-table-toolbar headline="Users"></md-table-toolbar>
+     *   <md-table-toolbar slot="top" headline="Users"></md-table-toolbar>
      *   <md-table>…</md-table>
-     *   <md-table-pagination></md-table-pagination>
+     *   <md-table-pagination slot="bottom"></md-table-pagination>
      * </md-table-container>
      * ```
      */
@@ -9252,9 +9256,9 @@ declare global {
      * Compose freely:
      * ```html
      * <md-table-container variant="elevated" max-height="480px">
-     *   <md-table-toolbar headline="Users"></md-table-toolbar>
+     *   <md-table-toolbar slot="top" headline="Users"></md-table-toolbar>
      *   <md-table>…</md-table>
-     *   <md-table-pagination></md-table-pagination>
+     *   <md-table-pagination slot="bottom"></md-table-pagination>
      * </md-table-container>
      * ```
      */
@@ -13030,7 +13034,7 @@ declare namespace LocalJSX {
          */
         "manualActivation"?: boolean;
         /**
-          * Emitted when the selected destination changes (user click, keyboard activation, or programmatic `select()` call). Detail includes both the new and previous indices so listeners can short-circuit no-op reselects.
+          * Emitted when the selected destination changes (user click, keyboard activation, or programmatic `activeIndex` / `select()` update). Detail includes both the new and previous indices so listeners can short-circuit no-op reselects.
          */
         "onMdChange"?: (event: MdNavigationBarCustomEvent<{ index: number; previousIndex: number }>) => void;
     }
@@ -16019,9 +16023,9 @@ declare namespace LocalJSX {
      * Compose freely:
      * ```html
      * <md-table-container variant="elevated" max-height="480px">
-     *   <md-table-toolbar headline="Users"></md-table-toolbar>
+     *   <md-table-toolbar slot="top" headline="Users"></md-table-toolbar>
      *   <md-table>…</md-table>
-     *   <md-table-pagination></md-table-pagination>
+     *   <md-table-pagination slot="bottom"></md-table-pagination>
      * </md-table-container>
      * ```
      */
@@ -19120,9 +19124,9 @@ declare module "@stencil/core" {
              * Compose freely:
              * ```html
              * <md-table-container variant="elevated" max-height="480px">
-             *   <md-table-toolbar headline="Users"></md-table-toolbar>
+             *   <md-table-toolbar slot="top" headline="Users"></md-table-toolbar>
              *   <md-table>…</md-table>
-             *   <md-table-pagination></md-table-pagination>
+             *   <md-table-pagination slot="bottom"></md-table-pagination>
              * </md-table-container>
              * ```
              */

@@ -1,6 +1,7 @@
 import { Component, Fragment, Host, h, Prop, State, Event, EventEmitter, Element, AttachInternals } from '@stencil/core';
 import { LazyLoadingIndicator } from '../../utils/lazy-loading-indicator';
 import { triggerRipple } from '../../utils/ripple';
+import { withValidationReport } from '../../utils/form';
 import { sanitizeHref, SAFE_LINK_REL, SAFE_WINDOW_FEATURES } from '../../utils/url';
 
 /**
@@ -281,7 +282,7 @@ export class MdButton {
     // boundary. requestSubmit() (not submit()) so the form's submit event
     // fires and built-in constraint validation runs.
     if (this.type === 'submit') {
-      this.internals.form?.requestSubmit();
+      withValidationReport(() => this.internals.form?.requestSubmit());
     } else if (this.type === 'reset') {
       this.internals.form?.reset();
     }

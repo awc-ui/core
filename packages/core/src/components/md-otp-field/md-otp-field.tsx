@@ -1,10 +1,11 @@
-import { AttachInternals, Component, Element, Event, EventEmitter, Host, Method, Prop, State, VNode, Watch, h } from '@stencil/core';
+import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, VNode, Watch, h } from '@stencil/core';
 import {
   setFormValue,
   setValidityState,
   checkValidityOf,
   reportValidityOf,
   getValidityOf,
+  InlineValidationPresenter,
   submitFormOnEnter,
 } from '../../utils/form';
 
@@ -62,6 +63,24 @@ export class MdOtpField {
    * `reportValidity()` bubbles at the first cell.
    */
   @AttachInternals() internals!: ElementInternals;
+
+  @State() private validationMessage = '';
+  private inlineValidation = new InlineValidationPresenter({
+    host: () => this.el,
+    validity: () => getValidityOf(this.internals),
+    message: (message) => { this.validationMessage = message; },
+    focus: () => this.setFocus(),
+  });
+
+  @Watch('name')
+  resetValidationPresentation() {
+    this.inlineValidation.reset();
+  }
+
+  @Listen('invalid')
+  handleInvalid(event: Event) {
+    this.inlineValidation.handleInvalid(event);
+  }
 
   /** Number of character cells. */
   @Prop() length: number = 6;
@@ -250,12 +269,14 @@ export class MdOtpField {
 
   /** Form reset clears the code — one-time codes are transient by nature. */
   formResetCallback() {
+    this.inlineValidation.reset();
     this.value = '';
     this.lastCommitted = '';
   }
 
   /** Ancestor form/fieldset disabling. State write deferred — Stencil forbids sync writes here. */
   formDisabledCallback(disabled: boolean) {
+    if (disabled) queueMicrotask(() => this.inlineValidation.reset());
     queueMicrotask(() => {
       this.formDisabled = disabled;
     });
@@ -343,6 +364,7 @@ export class MdOtpField {
       customMessage: this.customValidityMessage,
       anchor: this.inputEls[0],
     });
+    this.inlineValidation.refresh();
     this.emitValidityChange();
   }
 
@@ -569,7 +591,8 @@ export class MdOtpField {
     const inputType = this.mask ? 'password' : 'text';
     const inputMode = this.effectiveInputMode;
     const group = Math.max(0, Math.floor(this.groupSize) || 0);
-    const supportText = this.error && this.errorText ? this.errorText : this.supportingText;
+    const supportText = (this.error || !!this.validationMessage) && (this.errorText || this.validationMessage)
+      ? this.errorText || this.validationMessage : this.supportingText;
     const showSupport = !!supportText || this.reserveSupportingSpace;
 
     this.inputEls.length = count;
@@ -613,7 +636,7 @@ export class MdOtpField {
           // keystrokes replacing rather than appending.
           value={chars[i]}
           aria-label={cellLabel}
-          aria-invalid={this.error ? 'true' : undefined}
+          aria-invalid={this.error || !!this.validationMessage ? 'true' : undefined}
           aria-required={i === 0 && this.required ? 'true' : undefined}
           aria-describedby={supportText ? `${this.uid}-support` : undefined}
           onInput={this.handleInput}
@@ -631,7 +654,7 @@ export class MdOtpField {
           'md-otp-field': true,
           'md-otp-field--disabled': disabled,
           'md-otp-field--readonly': this.readOnly,
-          'md-otp-field--error': this.error,
+          'md-otp-field--error': this.error || !!this.validationMessage,
           'md-otp-field--masked': this.mask,
         }}
       >
@@ -655,10 +678,10 @@ export class MdOtpField {
             <span
               id={`${this.uid}-support`}
               part="supporting-text"
-              role={this.error && supportText ? 'alert' : undefined}
+              role={(this.error || !!this.validationMessage) && supportText ? 'alert' : undefined}
               class={{
                 'md-otp-field__support-text': true,
-                'md-otp-field__support-text--error': this.error,
+                'md-otp-field__support-text--error': this.error || !!this.validationMessage,
               }}
             >
               {supportText || '\u200B'}

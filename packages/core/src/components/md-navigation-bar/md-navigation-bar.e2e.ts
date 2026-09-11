@@ -71,6 +71,61 @@ describe('md-navigation-bar — e2e', () => {
     expect(await activeIndex(page)).toBe(0);
   });
 
+  it('distinguishes controlled state updates from per-tab user activation', async () => {
+    const page = await newE2EPage();
+    await setupBar(page, HTML_FOUR.replace('<md-navigation-bar>', '<md-navigation-bar manual-activation>'));
+    const bar = await page.find('md-navigation-bar');
+    const tab = await page.find('md-navigation-tab:nth-child(2)');
+    const onChange = await bar.spyOnEvent('mdChange');
+    const onActivate = await tab.spyOnEvent('mdTabClick');
+    await bar.setProperty('activeIndex', 3);
+    await page.waitForChanges();
+    expect(onChange).toHaveReceivedEventDetail({ index: 3, previousIndex: 0 });
+    expect(onActivate).not.toHaveReceivedEvent();
+
+    await page.$eval('md-navigation-tab', (element: HTMLElement) => element.focus());
+    await page.keyboard.press('ArrowRight');
+    await page.waitForChanges();
+    expect(await focusedTabIndex(page)).toBe(1);
+    expect(await activeIndex(page)).toBe(3);
+    expect(onActivate).not.toHaveReceivedEvent();
+    await page.keyboard.press('Enter');
+    await page.waitForChanges();
+    expect(onActivate).toHaveReceivedEventTimes(1);
+    expect(await activeIndex(page)).toBe(1);
+    expect(onChange).toHaveReceivedEventTimes(2);
+    expect(onChange.events[1].detail).toEqual({ index: 1, previousIndex: 3 });
+  });
+
+  it('keeps delayed initial tabs and clamped controlled writes synchronized', async () => {
+    const page = await newE2EPage();
+    await setupBar(page, '<md-navigation-bar active-index="2"></md-navigation-bar>');
+    const bar = await page.find('md-navigation-bar');
+    const onChange = await bar.spyOnEvent('mdChange');
+    await page.$eval('md-navigation-bar', (element: HTMLElement) => {
+      element.innerHTML = `
+        <md-navigation-tab label="A"></md-navigation-tab>
+        <md-navigation-tab label="B" disabled></md-navigation-tab>
+        <md-navigation-tab label="C"></md-navigation-tab>`;
+    });
+    await page.waitForChanges();
+    expect(await activeIndex(page)).toBe(2);
+    expect((await page.find('md-navigation-tab:nth-child(3)')).getAttribute('aria-selected')).toBe('true');
+    expect(onChange).not.toHaveReceivedEvent();
+    await bar.setProperty('activeIndex', 99);
+    await page.waitForChanges();
+    expect(onChange).not.toHaveReceivedEvent();
+    await bar.setProperty('activeIndex', 0);
+    await page.waitForChanges();
+    await bar.setProperty('activeIndex', 1);
+    await page.waitForChanges();
+    expect(onChange).toHaveReceivedEventTimes(2);
+    expect(onChange.events.map(event => event.detail)).toEqual([
+      { index: 0, previousIndex: 2 },
+      { index: 2, previousIndex: 0 },
+    ]);
+  });
+
   // ─── Keyboard navigation ─────────────────────────────────
   describe('keyboard', () => {
     it('moves focus and selects on ArrowRight (automatic activation)', async () => {

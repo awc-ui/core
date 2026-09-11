@@ -10,7 +10,7 @@
  * WHY IT IS NOT A PARALLEL ERROR SYSTEM. Every rule result is pushed into the
  * control's OWN validity via `setCustomValidity()`. That keeps exactly one
  * source of truth: `form.checkValidity()` stays authoritative, the browser
- * still blocks submission, the native message still appears, and an error
+ * still blocks submission, core renders the message inline, and an error
  * summary built from this controller can never disagree with the form. A
  * library that tracked its own error map alongside the platform would drift the
  * moment anything else touched validity.
@@ -60,7 +60,8 @@ export interface FormControllerConfig<V extends FormValues = FormValues> {
   liveValidate?: boolean;
   /**
    * Mirror each message onto the control's own `error` / `error-text`, so the
-   * failure is visible ON THE FIELD and not only in the native bubble. Default
+   * rule failure is visible ON THE FIELD. Native constraint failures are already
+   * presented inline by core controls. Default
    * true. Controls without those props (checkbox, radio, switch) are skipped —
    * they still expose `aria-invalid`.
    */

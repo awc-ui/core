@@ -128,7 +128,12 @@ export class MdTableRow {
   };
 
   private handleKeyDown = (e: KeyboardEvent) => {
-    if (this.disabled || !this.clickable) return;
+    if (this.disabled || !this.clickable || e.defaultPrevented) return;
+    // Only the row's own tab stop activates the row. A key from a button,
+    // editor, or any other focusable descendant belongs to that control.
+    // composedPath preserves the origin through nested shadow roots.
+    const origin = e.composedPath()[0] ?? e.target;
+    if (origin !== this.el) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       this.mdRowClick.emit({ value: this.value, row: this.el });

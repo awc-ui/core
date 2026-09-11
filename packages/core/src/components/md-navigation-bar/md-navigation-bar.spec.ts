@@ -150,6 +150,107 @@ describe('md-navigation-bar', () => {
     });
   });
 
+  describe('selection event bookkeeping', () => {
+    it('reports the actual previous selection for external valid and clamped writes', async () => {
+      const page = await create(THREE_TABS);
+      const onChange = jest.fn();
+      page.root!.addEventListener('mdChange', onChange);
+      page.rootInstance.activeIndex = 1;
+      await page.waitForChanges();
+      page.rootInstance.activeIndex = 99;
+      await page.waitForChanges();
+      expect(onChange.mock.calls.map(([event]) => event.detail)).toEqual([
+        { index: 1, previousIndex: 0 },
+        { index: 2, previousIndex: 1 },
+      ]);
+      expect(page.rootInstance.activeIndex).toBe(2);
+    });
+
+    it('does not emit for an external write that clamps back to the selected tab', async () => {
+      const page = await create(THREE_TABS.replace('<md-navigation-bar>', '<md-navigation-bar active-index="2">'));
+      const onChange = jest.fn();
+      page.root!.addEventListener('mdChange', onChange);
+      page.rootInstance.activeIndex = 99;
+      await page.waitForChanges();
+      await page.rootInstance.select(99);
+      await page.waitForChanges();
+      expect(page.rootInstance.activeIndex).toBe(2);
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('clamps disabled targets once without publishing the rejected index', async () => {
+      const page = await create(THREE_TABS.replace('label="Search"', 'label="Search" disabled'));
+      const onChange = jest.fn();
+      page.root!.addEventListener('mdChange', onChange);
+      page.rootInstance.activeIndex = 1;
+      await page.waitForChanges();
+      page.rootInstance.activeIndex = 1;
+      await page.waitForChanges();
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onChange.mock.calls[0][0].detail).toEqual({ index: 2, previousIndex: 0 });
+    });
+
+    it('publishes no-selection once when no destination can be activated', async () => {
+      const page = await create(THREE_TABS);
+      const onChange = jest.fn();
+      page.root!.addEventListener('mdChange', onChange);
+      tabs(page).forEach(tab => tab.setAttribute('disabled', ''));
+      page.rootInstance.activeIndex = 2;
+      await page.waitForChanges();
+      expect(page.rootInstance.activeIndex).toBe(-1);
+      expect(onChange.mock.calls[0][0].detail).toEqual({ index: -1, previousIndex: 0 });
+      page.rootInstance.activeIndex = 99;
+      await page.waitForChanges();
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(tabs(page).every(tab => tab.getAttribute('aria-selected') === 'false')).toBe(true);
+    });
+
+    it.each([NaN, 1.75, Infinity, -Infinity])('normalizes numeric input %s without invalid tab access', async (requested) => {
+      const page = await create(THREE_TABS);
+      page.rootInstance.activeIndex = requested;
+      await page.waitForChanges();
+      const expected = Number.isNaN(requested) || requested === -Infinity ? 0 : requested === Infinity ? 2 : 1;
+      expect(page.rootInstance.activeIndex).toBe(expected);
+      expect(tabs(page)[expected].getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('normalizes the initial selection without activating a disabled tab', async () => {
+      const page = await create(THREE_TABS.replace('label="Home"', 'label="Home" disabled'));
+      expect(page.rootInstance.activeIndex).toBe(1);
+      expect(tabs(page)[0].getAttribute('aria-selected')).toBe('false');
+      expect(tabs(page)[1].getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('initializes all-disabled destinations with no selection', async () => {
+      const page = await create(THREE_TABS.replace(/<md-navigation-tab /g, '<md-navigation-tab disabled '));
+      expect(page.rootInstance.activeIndex).toBe(-1);
+      expect(tabs(page).every(tab => tab.getAttribute('aria-selected') === 'false')).toBe(true);
+    });
+
+    it('retains the requested index until asynchronously slotted destinations arrive', async () => {
+      const page = await create('<md-navigation-bar active-index="1"></md-navigation-bar>');
+      const onChange = jest.fn();
+      page.root!.addEventListener('mdChange', onChange);
+      page.rootInstance.activeIndex = 2;
+      await page.waitForChanges();
+      expect(page.rootInstance.activeIndex).toBe(2);
+      page.root!.innerHTML = `
+        <md-navigation-tab label="A"></md-navigation-tab>
+        <md-navigation-tab label="B"></md-navigation-tab>
+        <md-navigation-tab label="C"></md-navigation-tab>`;
+      await page.waitForChanges();
+      // mock-doc does not dispatch native slotchange after this DOM mutation.
+      page.root!.shadowRoot!.querySelector('slot')!.dispatchEvent(new Event('slotchange'));
+      await page.waitForChanges();
+      expect(page.rootInstance.activeIndex).toBe(2);
+      expect(tabs(page)[2].getAttribute('aria-selected')).toBe('true');
+      expect(onChange).not.toHaveBeenCalled();
+      await page.rootInstance.select(0);
+      await page.waitForChanges();
+      expect(onChange.mock.calls[0][0].detail).toEqual({ index: 0, previousIndex: 2 });
+    });
+  });
+
   // ─── Soft-disabled ───────────────────────────────────────
   describe('soft-disabled', () => {
     const SOFT = `
