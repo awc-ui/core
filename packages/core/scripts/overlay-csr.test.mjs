@@ -81,6 +81,105 @@ function mount(t, tag) {
 
 after(() => environment.close());
 
+for (const timing of ['after-connect', 'after-first-render']) {
+  test(`md-side-sheet: actions appended ${timing} create the footer and bottom divider`, async (t) => {
+    const sheet = document.createElement('md-side-sheet');
+    sheet.headline = 'Edit record';
+    sheet.bottomDivider = true;
+    document.body.append(sheet);
+    t.after(() => sheet.remove());
+    if (timing === 'after-first-render') {
+      await until(() => sheet.shadowRoot?.querySelector('[part="content"]'));
+      assert.equal(sheet.shadowRoot.querySelector('[part="actions"]'), null);
+    }
+    const save = document.createElement('button');
+    save.slot = 'actions';
+    save.textContent = 'Save record';
+    sheet.append(save);
+    await sheet.show();
+    await until(() => sheet.shadowRoot?.querySelector('[part="actions"]'), 'late actions must create their slot');
+    assert.deepEqual(sheet.shadowRoot.querySelector('slot[name="actions"]').assignedElements(), [save]);
+    assert.ok(sheet.shadowRoot.querySelector('[part="divider-bottom"]'));
+
+    save.remove();
+    await until(() => !sheet.shadowRoot.querySelector('[part="actions"]'), 'removing the last action must remove its footer');
+    assert.equal(sheet.shadowRoot.querySelector('[part="divider-bottom"]'), null);
+  });
+}
+
+test('md-side-sheet: direct slot reassignment updates actions and nested slots do not create a footer', async (t) => {
+  const sheet = document.createElement('md-side-sheet');
+  sheet.headline = 'Record details';
+  sheet.bottomDivider = true;
+  const body = document.createElement('div');
+  body.innerHTML = '<button slot="actions">Nested action for another component</button>';
+  const action = document.createElement('button');
+  action.textContent = 'Save';
+  sheet.append(body, action);
+  document.body.append(sheet);
+  t.after(() => sheet.remove());
+  await sheet.show();
+  await until(() => sheet.shadowRoot?.querySelector('[part="content"]'));
+  assert.equal(sheet.shadowRoot.querySelector('[part="actions"]'), null, 'only direct children can fill a shadow slot');
+
+  action.slot = 'actions';
+  await until(() => sheet.shadowRoot.querySelector('[part="actions"]'));
+  assert.deepEqual(sheet.shadowRoot.querySelector('slot[name="actions"]').assignedElements(), [action]);
+  action.slot = 'close';
+  await until(() => !sheet.shadowRoot.querySelector('[part="actions"]'));
+  assert.deepEqual(sheet.shadowRoot.querySelector('slot[name="close"]').assignedElements(), [action]);
+  assert.equal(sheet.shadowRoot.querySelector('[part="divider-bottom"]'), null);
+
+  action.slot = 'actions';
+  await until(() => sheet.shadowRoot.querySelector('[part="actions"]'), 'the footer must return after its original slot was removed');
+});
+
+test('md-side-sheet: reconnect rescans actions and resumes observing later changes', async (t) => {
+  const sheet = document.createElement('md-side-sheet');
+  sheet.headline = 'Reconnect';
+  document.body.append(sheet);
+  t.after(() => sheet.remove());
+  await until(() => sheet.shadowRoot?.querySelector('[part="content"]'));
+  sheet.remove();
+  const action = document.createElement('button');
+  action.slot = 'actions';
+  action.textContent = 'Save';
+  sheet.append(action);
+  document.body.append(sheet);
+  await until(() => sheet.shadowRoot.querySelector('[part="actions"]'), 'reconnected hosts must rescan changes made while detached');
+  action.removeAttribute('slot');
+  await until(() => !sheet.shadowRoot.querySelector('[part="actions"]'), 'the observer must reconnect with the host');
+});
+
+test('md-side-sheet: late close/back replacements and newly enabled slots use native assignment', async (t) => {
+  const sheet = document.createElement('md-side-sheet');
+  sheet.variant = 'modal';
+  sheet.headline = 'Localized record editor';
+  sheet.closeable = false;
+  document.body.append(sheet);
+  t.after(() => sheet.remove());
+  await until(() => sheet.shadowRoot?.querySelector('[part="content"]'));
+  const close = document.createElement('button');
+  close.slot = 'close';
+  close.textContent = 'Fermer';
+  const back = document.createElement('button');
+  back.slot = 'back';
+  back.textContent = 'Retour';
+  sheet.append(close, back);
+  sheet.closeable = true;
+  sheet.showBack = true;
+  await until(() => sheet.shadowRoot.querySelector('slot[name="close"]') && sheet.shadowRoot.querySelector('slot[name="back"]'));
+  const closeSlot = sheet.shadowRoot.querySelector('slot[name="close"]');
+  const backSlot = sheet.shadowRoot.querySelector('slot[name="back"]');
+  assert.deepEqual(closeSlot.assignedElements(), [close]);
+  assert.deepEqual(backSlot.assignedElements(), [back]);
+  close.remove();
+  back.remove();
+  await until(() => closeSlot.assignedElements().length === 0 && backSlot.assignedElements().length === 0);
+  assert.equal(closeSlot.querySelector('md-icon-button').icon, 'close', 'the built-in fallback remains available');
+  assert.equal(backSlot.querySelector('md-icon-button').icon, 'arrow_back');
+});
+
 for (const tag of ['md-dialog', 'md-side-sheet']) {
   test(`${tag}: append/show opens after its closed render, focuses inside and handles Escape`, async (t) => {
     const { element, events } = mount(t, tag);

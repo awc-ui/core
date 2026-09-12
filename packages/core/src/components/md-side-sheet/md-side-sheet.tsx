@@ -86,10 +86,9 @@ export class MdSideSheet {
 
   // ── Internal state ──────────────────────────────────────
 
-  @State() private hasSlottedClose = false;
-  @State() private hasSlottedBack = false;
   @State() private hasActions = false;
 
+  private slotObserver?: MutationObserver;
   private containerEl!: HTMLElement;
   private previousFocus: HTMLElement | null = null;
   private openFocusFrame?: number;
@@ -99,27 +98,34 @@ export class MdSideSheet {
 
   connectedCallback() {
     this.overlayLifecycle.connected();
-    this.hasActions = !!this.el.querySelector('[slot="actions"]');
+    this.syncActions();
+    // React can append children after the host connects. The actions slot is
+    // conditional, so its own slotchange cannot discover the first insertion.
+    // Observe only changes that affect this host's direct slot assignments.
+    if (typeof MutationObserver !== 'undefined') {
+      this.slotObserver = new MutationObserver((records) => {
+        if (records.some((record) => record.type === 'childList'
+          ? record.target === this.el
+          : record.target.parentNode === this.el)) {
+          this.syncActions();
+        }
+      });
+      this.slotObserver.observe(this.el, {
+        childList: true,
+        attributes: true,
+        attributeFilter: ['slot'],
+        subtree: true,
+      });
+    }
+  }
+
+  componentWillLoad() {
+    this.syncActions();
   }
 
   componentDidLoad() {
+    this.syncActions();
     this.overlayLifecycle.loaded();
-    const shadow = this.el.shadowRoot;
-    if (!shadow) return;
-
-    const closeSlot = shadow.querySelector('slot[name="close"]') as HTMLSlotElement | null;
-    const backSlot = shadow.querySelector('slot[name="back"]') as HTMLSlotElement | null;
-    const actionsSlot = shadow.querySelector('slot[name="actions"]') as HTMLSlotElement | null;
-
-    closeSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedClose = closeSlot.assignedElements().length > 0;
-    });
-    backSlot?.addEventListener('slotchange', () => {
-      this.hasSlottedBack = backSlot.assignedElements().length > 0;
-    });
-    actionsSlot?.addEventListener('slotchange', () => {
-      this.hasActions = actionsSlot.assignedElements().length > 0;
-    });
 
     if (this.open) {
       this.onOpenChange(true);
@@ -127,11 +133,18 @@ export class MdSideSheet {
   }
 
   disconnectedCallback() {
+    this.slotObserver?.disconnect();
+    this.slotObserver = undefined;
     this.cancelOpenFocus();
     this.overlayLifecycle.disconnect();
     this.removeGlobalListeners();
     document.body.style.overflow = '';
   }
+
+  private syncActions = () => {
+    // Nested slot attributes belong to their own component, not this sheet.
+    this.hasActions = Array.from(this.el.children).some((child) => child.getAttribute('slot') === 'actions');
+  };
 
   // ── Watchers ────────────────────────────────────────────
 
