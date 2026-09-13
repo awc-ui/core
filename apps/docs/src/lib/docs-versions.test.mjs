@@ -139,3 +139,23 @@ test('keeps known links in the same release and pins source-file references to i
   assert.equal(rewriteArchiveLink('javascript:alert(1)', release, page), '#');
   assert.equal(rewriteArchiveLink('data:text/html,evil', release, page), '#');
 });
+
+test('retired references are validated but omitted from rendering and version groups', async (t) => {
+  const directory = await fixture(t, (entry) => { entry.hidden = true; });
+  const releases = await loadDocsVersions({ directory });
+  assert.deepEqual(releases, []);
+  assert.deepEqual(groupDocsVersions(releases), { lts: null, newer: [], previous: [] });
+  const visible = await fixture(t, (entry) => { entry.hidden = false; });
+  assert.equal((await loadDocsVersions({ directory: visible })).length, 1);
+});
+
+test('hidden metadata cannot bypass integrity validation or remove an active LTS', async (t) => {
+  await assert.rejects(loadDocsVersions({ directory: await fixture(t, (entry) => { entry.hidden = true; entry.sha256 = '0'.repeat(64); }) }), /checksum mismatch/);
+  await assert.rejects(loadDocsVersions({ directory: await fixture(t, (entry) => { entry.hidden = true; }, (data) => { data.sourceCommit = 'b'.repeat(40); }) }), /Invalid docs snapshot/);
+  await assert.rejects(loadDocsVersions({ directory: await fixture(t, (entry) => { entry.hidden = 'true'; }) }), /hidden must be boolean/);
+  const lts = await fixture(t, (entry) => { entry.hidden = true; }, (data) => {
+    data.version = '1.0.0';
+    data.sourceRef = 'v1.0.0';
+  }, { lts: '1.0.0' });
+  await assert.rejects(loadDocsVersions({ directory: lts }), /cannot point to a hidden archive/);
+});

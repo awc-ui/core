@@ -439,9 +439,9 @@ search fields.
     { value: 'i18n', label: 'Internationalisation' },
   ];
   const SHORT = [
-    { value: 'a', label: 'Alpha' },
-    { value: 'b', label: 'Beta' },
-    { value: 'c', label: 'Gamma' },
+    { value: 'a', label: 'Design' },
+    { value: 'b', label: 'Engineering' },
+    { value: 'c', label: 'Operations' },
   ];
 
   const wire = (id, items, value) => {
@@ -703,9 +703,9 @@ const assigned = ref(['support']);
     const el = document.getElementById('tl-disabled');
     if (el && el.classList.contains('hydrated')) {
       el.items = [
-        { value: 'a', label: 'Alpha' },
-        { value: 'b', label: 'Beta' },
-        { value: 'c', label: 'Gamma' },
+        { value: 'a', label: 'Design' },
+        { value: 'b', label: 'Engineering' },
+        { value: 'c', label: 'Operations' },
         { value: 'd', label: 'Delta' },
       ];
       el.value = ['c'];

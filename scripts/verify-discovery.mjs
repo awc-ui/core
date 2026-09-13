@@ -273,8 +273,17 @@ if (await exists(dist)) {
   check(pageUrls.includes("https://awc-ui.dev/llm/"), "sitemap omits /llm/");
   check(pageUrls.includes("https://awc-ui.dev/versions/"), "sitemap omits documentation versions");
   check(!pageUrls.some((url) => new URL(url).pathname.startsWith("/compare/")), "removed Compare pages remain in the site");
+  // Integrity checks include retired references, even though they do not ship.
   const { manifest: docsVersions, bundles } = await checkArchives(join(root, "apps/docs/versions"));
+  const hiddenPrefixes = docsVersions.versions.filter((release) => release.hidden).map((release) => `/versions/${release.version}/`);
   for (const [index, release] of docsVersions.versions.entries()) {
+    if (release.hidden) {
+      const prefix = `/versions/${release.version}/`;
+      check(!pageUrls.some((url) => new URL(url).pathname.startsWith(prefix)), `sitemap includes retired reference: ${release.version}`);
+      check(!(await exists(join(dist, "versions", release.version))), `retired reference remains in rendered output: ${release.version}`);
+      check(!(await exists(join(dist, "versions", release.file))), `retired archive artifact is publicly exposed: ${release.file}`);
+      continue;
+    }
     const snapshot = bundles[index];
     const slugs = ["", ...snapshot.components.map(({ tag }) => `components/${tag.replace(/^md-/, "")}`), ...snapshot.guides.map(({ slug }) => slug)];
     for (const slug of slugs) {
@@ -307,6 +316,9 @@ if (await exists(dist)) {
     check(await exists(htmlPath), `sitemap URL has no built page: ${pageUrl}`);
     if (!(await exists(htmlPath))) continue;
     const html = await readFile(htmlPath, "utf8");
+    for (const prefix of hiddenPrefixes) {
+      check(!html.includes(prefix), `${pageUrl}: links or embeds a retired reference (${prefix})`);
+    }
     if (/^\/versions\/[^/]+\//.test(new URL(pageUrl).pathname)) {
       check(html.includes('data-pagefind-ignore="all"'), `${pageUrl}: archive is not excluded from current search`);
       check(html.includes("Archived reference for v"), `${pageUrl}: release banner is missing`);

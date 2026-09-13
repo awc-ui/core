@@ -424,8 +424,8 @@
 
   /* Full-screen modal enter / exit — matches md-dialog fullscreen:
      translateY(30px) + opacity fade over medium2 / standard easing.
-     Collapse duration is kept in sync with PANEL_CLOSE_MS in md-search.tsx
-     so the bar un-pins right as the surface finishes exiting. */
+     The overlay lifecycle waits for the actual shell motion before the bar
+     un-pins, including these custom durations and reduced-motion overrides. */
   --_fs-expand-duration: var(
     --md-search-fullscreen-expand-duration,
     var(--md-sys-motion-duration-medium2, 300ms)
@@ -1583,6 +1583,9 @@
   .md-search__trailing-morph > .md-search__loading,
   .md-search__trailing-morph > .md-search__clear {
     transition-duration: 0.01ms !important;
+    /* Visibility normally waits for the exit fade. Reduced motion must also
+       remove that delay so close completion and focus return happen promptly. */
+    transition-delay: 0ms !important;
   }
 
   /* The listening halo is decorative — drop the pulse but keep the tint. */

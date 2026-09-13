@@ -55,7 +55,7 @@ export async function loadDocsVersions({ directory = defaultDirectory } = {}) {
 async function readVersions(directory) {
   const manifest = validateManifest(JSON.parse(await readFile(resolve(directory, 'manifest.json'), 'utf8')));
   const seen = new Set();
-  return Promise.all(manifest.versions.map(async (entry) => {
+  const releases = await Promise.all(manifest.versions.map(async (entry) => {
     if (!versionPattern.test(entry.version) || seen.has(entry.version)
       || entry.file !== `${entry.version}.json.gz` || !/^[a-f0-9]{64}$/.test(entry.sha256)
       || !/^[a-f0-9]{40}$/.test(entry.commit) || typeof entry.ref !== 'string' || !entry.ref) {
@@ -87,6 +87,9 @@ async function readVersions(directory) {
     if (new Set(pages.map((page) => page.slug)).size !== pages.length) throw new Error(`Duplicate docs page: ${entry.version}`);
     return { ...entry, snapshot, pages, isLts: entry.version === manifest.channels?.lts };
   }));
+  // Retired references remain immutable build inputs and are still validated,
+  // but never generate public pages, search entries, or selector options.
+  return releases.filter((release) => !release.hidden);
 }
 
 /** Release availability and LTS support are independent: only promotion sets LTS. */

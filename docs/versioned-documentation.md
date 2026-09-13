@@ -17,11 +17,11 @@ from the current site's Pagefind index.
 LTS is an explicit documentation channel, stored as `channels.lts` in
 `apps/docs/versions/manifest.json`. It is independent of npm's `latest` tag.
 Until a stable archive is designated, the selector shows **Latest LTS — coming
-soon**. Beta releases are never labeled LTS.
+soon**. Prereleases are never labeled LTS.
 
-For the first stable release, select **promote_lts** when running the Publish
+To designate a stable release, select **promote_lts** when running the Publish
 workflow with `channel=prod`. This captures the release reference and designates
-it Latest LTS. The option is off by default: publishing a newer beta or stable
+it Latest LTS. The option is off by default: publishing a newer prerelease or stable
 version must not silently replace an existing LTS.
 
 You can also capture and designate a tagged stable release from the repository:
@@ -45,7 +45,7 @@ remain unchanged.
 Releases newer than the designated LTS appear under **New versions**, together
 with development docs. Older releases appear under **Previous versions**. Each
 group is sorted newest first using semantic version precedence, including
-numeric beta suffixes. The LTS release appears only once in the selector.
+numeric prerelease identifiers. The LTS release appears only once in the selector.
 
 ## Capture a release
 
@@ -53,7 +53,7 @@ From the repository root, after the release commit and tag exist:
 
 ```sh
 git fetch origin --tags
-pnpm docs:snapshot --ref v1.0.0-beta.14
+pnpm docs:snapshot --ref v1.0.0
 pnpm docs:versions:check
 pnpm --filter @awc-ui/docs test
 ```
@@ -83,10 +83,23 @@ safe rendering. `pnpm docs:versions:check` validates the committed archives
 without fetching Git history or accessing the network. Both local docs builds
 and CI run these checks before rendering `/versions/<version>/…`.
 
-The publish workflow captures beta and production releases **after** creating
+The publish workflow captures prereleases and production releases **after** creating
 their release tag, then commits the new archive separately. Snapshot npm builds
 do not create documentation versions. The workflow explicitly starts CI after
 the archive commit; successful CI triggers the documentation deployment. This
 is necessary because pushes made with GitHub's workflow token do not start
-push-triggered workflows. The initial beta.14 reference is verified
-against both its Git tag and its published Core package.
+push-triggered workflows. Each release reference is tied to its exact Git tag;
+when a published package is supplied, its APIs and manuals are verified too.
+
+## Production deployment
+
+Production deployment verifies that all eight packages exist on npm at the
+source Core version. A stable version also needs its visible, verified release
+reference. This prevents release-preparation commits from deploying before
+publishing and archive capture finish. PR previews can still build unreleased
+changes. Run the same check locally with `node scripts/check-docs-release.mjs`.
+
+A retired reference can be marked `hidden: true` in the versions manifest. Its
+immutable source artifact remains integrity-checked, but the site excludes its
+routes, links, search entries, and selector option. The active LTS cannot be
+hidden.

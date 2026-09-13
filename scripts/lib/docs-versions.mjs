@@ -56,11 +56,13 @@ export function validateManifest(manifest) {
     if (entry.file !== archiveFile(entry.version)) throw new Error(`Invalid archive path for ${entry.version}`);
     if (entry.ref !== `v${entry.version}` || !COMMIT_PATTERN.test(entry.commit)) throw new Error(`Invalid source provenance for ${entry.version}`);
     if (!/^[a-f0-9]{64}$/.test(entry.sha256)) throw new Error(`Invalid archive hash for ${entry.version}`);
+    if (entry.hidden !== undefined && typeof entry.hidden !== 'boolean') throw new Error(`Invalid archive visibility for ${entry.version}: hidden must be boolean`);
   }
   if (manifest.channels !== undefined) {
     const channels = manifest.channels;
     if (!channels || typeof channels !== 'object' || Array.isArray(channels) || !Object.hasOwn(channels, 'lts')) throw new Error('Invalid documentation channels: expected an lts value');
     if (channels.lts !== null && (!isStableVersion(channels.lts) || !seen.has(channels.lts))) throw new Error('Documentation LTS channel must point to an archived stable release');
+    if (channels.lts !== null && manifest.versions.find(entry => entry.version === channels.lts)?.hidden) throw new Error('Documentation LTS channel cannot point to a hidden archive');
   }
   return manifest;
 }

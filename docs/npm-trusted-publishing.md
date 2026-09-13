@@ -25,14 +25,14 @@ The workflow retains Node 22 and installs **npm 11.19.1** only in trusted mode. 
 | Request | `token` | `trusted` |
 | --- | --- | --- |
 | Snapshot → `snapshot` | Existing behavior | Supported after setup |
-| Beta → `beta` | Existing behavior | Supported if no bootstrap repair is needed |
-| Beta plus `promote_latest=true` | Publishes beta and promotes latest | Rejected before publishing |
+| Prerelease → dedicated dist-tag | Existing behavior | Supported if no bootstrap repair is needed |
+| Prerelease plus `promote_latest=true` | Publishes the prerelease and promotes latest | Rejected before publishing |
 | Production → `latest` | Existing behavior | Supported; publish assigns latest directly |
-| Beta while latest points at a bootstrap snapshot | Automatically repairs latest | Rejected before publishing |
+| Prerelease while latest points at a bootstrap snapshot | Automatically repairs latest | Rejected before publishing |
 
-OIDC authenticates publishing, not `npm dist-tag`. The trusted branch therefore performs no extra tag writes. A read-only preflight checks public metadata for all eight packages before versioning, and again immediately before publishing. It rejects bootstrap repairs, beta promotion, and existing versions whose requested tag differs; pnpm would skip those existing versions. The error identifies the package and the required action. ([npm OIDC command limitations](https://docs.npmjs.com/trusted-publishers/#limitations-and-future-improvements))
+OIDC authenticates publishing, not `npm dist-tag`. The trusted branch therefore performs no extra tag writes. A read-only preflight checks public metadata for all eight packages before versioning, and again immediately before publishing. It rejects bootstrap repairs, prerelease promotion, and existing versions whose requested tag differs; pnpm would skip those existing versions. The error identifies the package and the required action. ([npm OIDC command limitations](https://docs.npmjs.com/trusted-publishers/#limitations-and-future-improvements))
 
-For a beta requiring latest promotion or bootstrap repair, a maintainer can perform the necessary tag update interactively under separate release authorization. The explicit `authentication=token` legacy fallback remains available during migration. For an existing version whose tag needs repair, the preflight prints the exact `npm dist-tag add` command. No tag command is run automatically in trusted mode.
+For a prerelease requiring latest promotion or bootstrap repair, a maintainer can perform the necessary tag update interactively under separate release authorization. The explicit `authentication=token` legacy fallback remains available during migration. For an existing version whose tag needs repair, the preflight prints the exact `npm dist-tag add` command. No tag command is run automatically in trusted mode.
 
 Both authentication branches use `pnpm -r ... publish`, preserving pnpm's workspace-range rewriting and Angular's `publishConfig.directory=dist`. Trusted mode explicitly selects the upgraded npm executable with `npm_config_npm_path`; pnpm otherwise prefers the npm next to its Node executable. The trusted branch passes no npm secret and unsets token environment variables before npm performs its OIDC exchange. Token publishing and the `NPM_TOKEN` repository secret remain available during migration.
 
@@ -52,8 +52,8 @@ Sensitive account, organization, and package-management operations now require i
 
 npm 12 also makes dependency lifecycle scripts, Git dependencies, and remote URL dependencies opt-in. This workflow still installs workspace dependencies with pnpm and uses the pinned npm 11 CLI for OIDC publishing, so migrating authentication does not change the workspace's install policy. ([July 8 announcement](https://github.blog/changelog/2026-07-08-npm-install-time-security-and-gat-bypass2fa-deprecation/))
 
-## First MCP package publication
+## New package bootstrap
 
-`@awc-ui/mcp@1.0.0-beta.14` was first published publicly under the `beta` tag on 2026-09-12 using interactive npm authentication. This MCP-only release bundles the exact published Core beta.14 APIs and manuals, with framework guides from `v1.0.0-beta.14`; it does not publish newer Core component changes or the skill installer.
+A newly added package needs an authenticated first publication before it can join the trusted release workflow. Configure its npm Trusted Publisher for the repository and workflow listed above; a bootstrap publication does not configure that trust automatically. The preflight rejects missing packages.
 
-Configure its npm Trusted Publisher for the repository and workflow listed above before the next trusted release. The bootstrap publication does not configure that trust automatically. The preflight continues to reject missing packages; a future new package needs its own authenticated first publication.
+Core and MCP normally ship together. For an MCP-only release, bundle the matching published Core APIs and manuals as described in the [MCP maintenance guide](../packages/mcp/README.md#maintain-and-verify).

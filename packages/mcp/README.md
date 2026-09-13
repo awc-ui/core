@@ -152,7 +152,7 @@ This uses the published package's APIs and manuals and the matching Git ref's
 framework guides. It rejects mismatched versions. Omitting both inputs retains
 the normal source build used when Core and MCP ship together.
 
-Reusable agent skills live in the repository's `skills/` directory. The
-`awc-ui ai-setup --skills` installer requires a Core release containing those
-skills; publishing MCP alone does not add it to older Core packages. See
+Reusable agent skills are included in Core. Run
+`npx --no-install awc-ui ai-setup --skills` from your app to install them.
+Installing MCP does not update Core or install skills in your project. See
 [Building with AI](https://awc-ui.dev/guides/building-with-ai/).

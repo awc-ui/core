@@ -28,6 +28,7 @@ export interface MdAutocompleteOption extends SelectOptionInit {
 }
 
 interface VirtualMenuEl extends HTMLElement {
+  open?: boolean;
   show?: (opts?: { autoFocus?: boolean }) => Promise<void>;
   close?: () => Promise<void>;
   setVirtualProvider?: (p: unknown | null) => Promise<void>;
@@ -310,6 +311,7 @@ export class MdAutocomplete {
   /** Deferred focus target inside the freshly-opened listbox (APG: ArrowDown
    *  from a closed combobox opens AND focuses the first option). */
   private pendingListFocus: 'first' | 'last' | null = null;
+  private listFocusFrame: number | null = null;
 
   private fieldEl?: HTMLElement & { focus?: () => void };
   private menuEl?: VirtualMenuEl;
@@ -552,6 +554,7 @@ export class MdAutocomplete {
   }
 
   disconnectedCallback() {
+    this.cancelListFocus();
     clearTimeout(this.searchDebounce);
     this.vc.detachViewport();
   }
@@ -709,6 +712,7 @@ export class MdAutocomplete {
 
   @Watch('open')
   syncMenu(open: boolean) {
+    if (!open) this.cancelListFocus();
     if (this._syncGuard || !this.menuEl) return;
     if (open) {
       // Focus stays in the input — typing keeps filtering.
@@ -743,6 +747,7 @@ export class MdAutocomplete {
       this._lastEmit = 'open';
       this.mdOpen.emit();
     }
+    this.scheduleListFocus();
     if (this.vc.active) {
       // Apply the live query (typing may have just opened the menu — the open
       // event lands after the keystroke, so the filter must be preserved).
@@ -793,20 +798,7 @@ export class MdAutocomplete {
       this.providerSet = false;
     }
     if (this.open && this.vc.active && !this.vpWired) this.attachMenuViewport();
-    if (this.pendingListFocus && this.open) {
-      const all = this.el.shadowRoot?.querySelectorAll(
-        '.md-autocomplete__listbox md-menu-item:not([disabled])',
-      );
-      const target = (this.pendingListFocus === 'first' ? all?.[0] : all?.[all.length - 1]) as
-        | HTMLElement
-        | undefined;
-      if (target) {
-        this.pendingListFocus = null;
-        target.focus();
-      }
-    } else if (this.pendingListFocus && !this.open) {
-      this.pendingListFocus = null;
-    }
+    this.scheduleListFocus();
   }
 
   /**
@@ -946,6 +938,7 @@ export class MdAutocomplete {
   }
 
   private handleFieldInput = (e: CustomEvent<string>) => {
+    this.cancelListFocus();
     this.applyTyped(e.detail ?? '');
   };
 
@@ -964,13 +957,34 @@ export class MdAutocomplete {
     );
   };
 
-  /** First visible, enabled option row in this shadow root (plain or virtual). */
-  private firstOptionItem(): HTMLElement | null {
-    return (
-      (this.el.shadowRoot?.querySelector(
-        '.md-autocomplete__listbox md-menu-item:not([disabled])',
-      ) as HTMLElement | null) ?? null
-    );
+  private cancelListFocus() {
+    this.pendingListFocus = null;
+    if (this.listFocusFrame !== null) cancelAnimationFrame(this.listFocusFrame);
+    this.listFocusFrame = null;
+  }
+
+  /** The parent can render filtered rows before md-menu's deferred show()
+   * finishes. Retain the arrow-key request until the popup is open and painted;
+   * focusing a row in its closed surface is a silent no-op. */
+  private scheduleListFocus() {
+    if (!this.open || !this.pendingListFocus || this.listFocusFrame !== null) return;
+    // The menu emits mdOpen before Stencil applies its open CSS class. The
+    // second frame also covers option hydration in that same render cycle.
+    this.listFocusFrame = requestAnimationFrame(() => {
+      this.listFocusFrame = requestAnimationFrame(() => {
+        this.listFocusFrame = null;
+        if (!this.open || !this.pendingListFocus || !this.menuEl?.open || !this.el.isConnected) return;
+        const all = this.el.shadowRoot?.querySelectorAll(
+          '.md-autocomplete__listbox md-menu-item:not([disabled])',
+        );
+        const target = (this.pendingListFocus === 'first' ? all?.[0] : all?.[all.length - 1]) as
+          | HTMLElement
+          | undefined;
+        if (!target) return;
+        target.focus();
+        if (this.el.shadowRoot?.activeElement === target) this.pendingListFocus = null;
+      });
+    });
   }
 
   private handleFieldKeyDown = (e: KeyboardEvent) => {
@@ -978,28 +992,15 @@ export class MdAutocomplete {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        if (!this.open) {
-          // APG: ArrowDown on a closed combobox opens the popup AND moves
-          // focus to the first option (deferred until the list renders).
-          this.pendingListFocus = 'first';
-          this.open = true;
-        } else {
-          // Focus-moves-into-popup combobox variant: the option takes real
-          // focus (announced by AT); md-menu's roving model handles the rest.
-          this.firstOptionItem()?.focus();
-        }
+        this.pendingListFocus = 'first';
+        if (!this.open) this.open = true;
+        this.scheduleListFocus();
         break;
       case 'ArrowUp':
         e.preventDefault();
-        if (!this.open) {
-          this.pendingListFocus = 'last';
-          this.open = true;
-        } else {
-          const all = this.el.shadowRoot?.querySelectorAll(
-            '.md-autocomplete__listbox md-menu-item:not([disabled])',
-          );
-          (all?.[all.length - 1] as HTMLElement | undefined)?.focus();
-        }
+        this.pendingListFocus = 'last';
+        if (!this.open) this.open = true;
+        this.scheduleListFocus();
         break;
       case 'Enter':
         if (this.freeSolo && this.commitFreeSolo()) {

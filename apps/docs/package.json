@@ -7,7 +7,7 @@
     "dev": "node ../../scripts/dev-docs.mjs",
     "generate-data": "node ../../scripts/generate-docs.mjs",
     "build": "pnpm test && node ../../scripts/snapshot-docs.mjs --check && pnpm sync-runtime && astro build && node ../../scripts/verify-standalone-showcases.mjs",
-    "test": "node --experimental-strip-types --test ../../scripts/docs-runtime-preloads.test.mjs ../../scripts/snapshot-docs.test.mjs src/lib/docs-versions.test.mjs",
+    "test": "node --experimental-strip-types --test ../../scripts/docs-runtime-preloads.test.mjs ../../scripts/snapshot-docs.test.mjs ../../scripts/check-docs-release.test.mjs src/lib/docs-versions.test.mjs",
     "preview": "astro preview",
     "sync-runtime": "node ../../scripts/sync-docs-runtime.mjs",
     "preview:prod": "node ../../scripts/serve-docs-prod.mjs"

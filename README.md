@@ -4,7 +4,6 @@
 ![StencilJS](https://img.shields.io/badge/StencilJS-4-16161D?style=flat-square&logo=stencil&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
-![Beta](https://img.shields.io/badge/status-beta-F2B8B5?style=flat-square)
 [![npm version](https://img.shields.io/npm/v/%40awc-ui%2Fcore?style=flat-square&label=npm)](https://www.npmjs.com/package/@awc-ui/core)
 [![npm downloads](https://img.shields.io/npm/dm/%40awc-ui%2Fcore?style=flat-square)](https://www.npmjs.com/package/@awc-ui/core)
 [![CI](https://github.com/awc-ui/core/actions/workflows/ci.yml/badge.svg)](https://github.com/awc-ui/core/actions/workflows/ci.yml)
@@ -25,9 +24,6 @@ Angular SSR, Nuxt, and SvelteKit, plus RTL, theming, and AI-ready documentation.
 [React](https://awc-ui.dev/frameworks/react/) · [Angular](https://awc-ui.dev/frameworks/angular/) ·
 [Vue](https://awc-ui.dev/frameworks/vue/) · [Svelte](https://awc-ui.dev/frameworks/svelte/) ·
 [SSR guide](https://awc-ui.dev/frameworks/ssr/)
-
-> **Beta.** The API is stable enough to build on, but not frozen — expect
-> occasional breaking changes before 1.0.
 
 ## Quick start
 
@@ -160,8 +156,8 @@ installed version. See [Building with AI](https://awc-ui.dev/guides/building-wit
 for examples and setup details.
 
 [AI skills and MCP](docs/ai-integration.md) are optional additions for reusable
-workflows and searchable documentation. `@awc-ui/mcp` is available
-on npm; the skill installer still requires a Core release containing the skills.
+workflows and searchable documentation. Connect `@awc-ui/mcp` from npm, or
+install the skills included in Core with `npx --no-install awc-ui ai-setup --skills`.
 
 The core package also publishes a standard
 [`custom-elements.json`](https://custom-elements-manifest.open-wc.org/) manifest,

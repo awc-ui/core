@@ -77,10 +77,13 @@ describe('md-search overlay handoff', () => {
     expect(restored).toBe(true);
   });
 
-  it('does not retain a fixed close delay under reduced motion', async () => {
+  it.each(['full-screen', 'docked'])('does not retain a %s close delay under reduced motion', async (layout) => {
     const page = await newE2EPage();
     await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
-    await page.setContent('<md-search style="--md-search-fullscreen-collapse-duration:10s"></md-search>');
+    await page.setContent(`<md-search layout="${layout}"
+      style="--md-search-fullscreen-collapse-duration:10s;--md-search-panel-motion-duration:10s">
+      <button slot="results">Open report</button>
+    </md-search>`);
     const result = await page.evaluate(async () => {
       const search = document.querySelector('md-search') as HTMLMdSearchElement & {
         show(): Promise<void>; close(): Promise<void>; whenClosed(): Promise<void>;

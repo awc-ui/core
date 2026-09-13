@@ -1,4 +1,5 @@
 import corePackage from '../../../../packages/core/package.json' with { type: 'json' };
+import { compareVersions } from '../../../../scripts/lib/docs-versions.mjs';
 
 export const npmUrl = 'https://www.npmjs.com/package/@awc-ui/core';
 export const githubUrl = 'https://github.com/awc-ui/core';
@@ -17,6 +18,11 @@ export function getRelease() {
       const tags = await response.json();
       if (typeof tags.latest !== 'string' || !/^\d+\.\d+\.\d+(?:-[\w.-]+)?(?:\+[\w.-]+)?$/.test(tags.latest)) {
         throw new Error('npm did not return a valid latest version');
+      }
+      // A release-preparation checkout can be newer than npm. Label its own
+      // version without calling it published or regressing to an older tag.
+      if (compareVersions(corePackage.version, tags.latest) > 0) {
+        return { version: corePackage.version, tag: null };
       }
       return { version: tags.latest, tag: 'latest' };
     } catch (error) {

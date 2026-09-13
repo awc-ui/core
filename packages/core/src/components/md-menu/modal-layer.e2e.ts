@@ -1,6 +1,7 @@
 import { E2EPage, newE2EPage } from '@stencil/core/testing';
 
 type OverlayTag = 'md-dialog' | 'md-side-sheet';
+type ClippingOverflow = 'clip' | 'hidden';
 
 const options = Array.from({ length: 10 }, (_, index) =>
   `<md-select-option value="clinician-${index}">Clinician ${index + 1}</md-select-option>`,
@@ -12,7 +13,7 @@ async function settle(page: E2EPage, milliseconds = 200) {
   await page.waitForChanges();
 }
 
-async function openFixture(overlayTag: OverlayTag, direction: 'ltr' | 'rtl') {
+async function openFixture(overlayTag: OverlayTag, direction: 'ltr' | 'rtl', dialogOverflow: ClippingOverflow = 'clip') {
   const page = await newE2EPage();
   await page.setViewport({ width: 1120, height: 900 });
   await page.setContent(`
@@ -22,6 +23,9 @@ async function openFixture(overlayTag: OverlayTag, direction: 'ltr' | 'rtl') {
         inline-size: 420px;
         min-inline-size: 420px;
         max-inline-size: 420px;
+        /* Both clip and hidden clip descendants; clip also prevents focus
+           from scrolling the dialog frame and is its production default. */
+        overflow: ${dialogOverflow};
       }
       md-side-sheet {
         --md-side-sheet-width: 420px;
@@ -96,19 +100,21 @@ async function outsideOption(page: E2EPage) {
         hitsMenu: hits.some((hit) => hit === menu || menu.contains(hit) || menu.shadowRoot!.contains(hit)),
         hitsScrim: hits.some((hit) => hit.getAttribute('part') === 'scrim'),
         transformedOverlay: getComputedStyle(container).transform !== 'none',
-        clippedOverlay: getComputedStyle(container).overflow === 'hidden',
+        overflowX: getComputedStyle(container).overflowX,
+        overflowY: getComputedStyle(container).overflowY,
       };
     }
     return null;
   });
 }
 
-async function assertOutsideOptionIsClickable(page: E2EPage) {
+async function assertOutsideOptionIsClickable(page: E2EPage, expectedOverflow: ClippingOverflow) {
   const target = await outsideOption(page);
   expect(target).not.toBeNull();
   if (!target) throw new Error('Fixture must expose a visible menu option below the overlay container.');
   expect(target.transformedOverlay).toBe(true);
-  expect(target.clippedOverlay).toBe(true);
+  expect(target.overflowX).toBe(expectedOverflow);
+  expect(target.overflowY).toBe(expectedOverflow);
   expect(target.extendsPastOverlay).toBe(true);
   expect(target.hitsMenu).toBe(true);
   expect(target.hitsScrim).toBe(false);
@@ -159,10 +165,12 @@ async function assertEscapeClosesMenuOnly(page: E2EPage) {
 
 describe('md-select popup across a modal clipping boundary', () => {
   for (const direction of ['ltr', 'rtl'] as const) {
-    it(`paints and selects an option outside a transformed md-dialog (${direction})`, async () => {
-      const page = await openFixture('md-dialog', direction);
-      await assertOutsideOptionIsClickable(page);
-    });
+    for (const overflow of ['clip', 'hidden'] as const) {
+      it(`paints and selects an option outside a transformed md-dialog (${direction}, overflow: ${overflow})`, async () => {
+        const page = await openFixture('md-dialog', direction, overflow);
+        await assertOutsideOptionIsClickable(page, overflow);
+      });
+    }
 
     it(`Escape closes the popup, preserves md-dialog and returns trigger focus (${direction})`, async () => {
       const page = await openFixture('md-dialog', direction);
@@ -172,7 +180,7 @@ describe('md-select popup across a modal clipping boundary', () => {
 
   it('paints and selects an option outside a transformed modal md-side-sheet', async () => {
     const page = await openFixture('md-side-sheet', 'ltr');
-    await assertOutsideOptionIsClickable(page);
+    await assertOutsideOptionIsClickable(page, 'hidden');
   });
 
   it('Escape closes the popup, preserves modal md-side-sheet and returns trigger focus', async () => {

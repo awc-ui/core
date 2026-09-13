@@ -37,6 +37,10 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Verify release is published before deploying production docs
+        if: github.event_name != 'pull_request'
+        run: node scripts/check-docs-release.mjs
+
       # Cheap, static, and it goes FIRST because it needs no build: every
       # build's <title> and meta description must name its own vertical. Four
       # showcases shipped with the previous one's head before this existed.

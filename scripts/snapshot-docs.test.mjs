@@ -304,3 +304,40 @@ test('CLI supports explicit LTS designation and rejects incompatible mode flags'
     ['--ref', 'v1.2.3', '--lts', '--lts'], ['--promote-lts', '1.2.3', '--promote-lts', '1.2.4'],
   ]) assert.throws(() => parseArguments(args));
 });
+
+test('retired archive visibility is optional boolean metadata and cannot hide the active LTS', async t => {
+  const { repository, output } = await fixture(t);
+  const { entry } = await snapshotDocs({ repository, output, ref: 'v1.2.3' });
+  const record = { schemaVersion: 1, versions: [entry] };
+  assert.equal(validateManifest(record), record);
+  for (const hidden of [false, true]) {
+    assert.equal(validateManifest({ ...record, versions: [{ ...entry, hidden }] }).versions[0].hidden, hidden);
+  }
+  for (const hidden of [null, 'true', 1, {}, []]) {
+    assert.throws(() => validateManifest({ ...record, versions: [{ ...entry, hidden }] }), /hidden must be boolean/);
+  }
+  assert.throws(() => validateManifest({ ...record, versions: [{ ...entry, hidden: true }], channels: { lts: '1.2.3' } }), /cannot point to a hidden archive/);
+});
+
+test('retired archives remain immutable checked inputs while new captures default to public', async t => {
+  const { repository, output } = await fixture(t);
+  const { bundle, entry } = await snapshotDocs({ repository, output, ref: 'v1.2.3' });
+  const bytes = await readFile(join(output, entry.file));
+  const manifest = await readManifest(output);
+  manifest.versions[0].hidden = true;
+  await writeFile(join(output, 'manifest.json'), JSON.stringify(manifest));
+  const checked = await checkArchives(output);
+  assert.equal(checked.bundles.length, 1);
+  assert.equal(checked.manifest.versions[0].hidden, true);
+  const repeated = await snapshotDocs({ repository, output, ref: 'v1.2.3' });
+  assert.equal(repeated.created, false);
+  assert.equal(repeated.entry.hidden, true);
+  await addVersion(output, bundle, '2.0.0');
+  const appended = await readManifest(output);
+  assert.equal(appended.versions[0].hidden, true);
+  assert.equal(appended.versions[1].hidden, undefined);
+  await assert.rejects(promoteLts(output, '1.2.3'), /cannot point to a hidden archive/);
+  assert.deepEqual(await readFile(join(output, entry.file)), bytes);
+  await writeFile(join(output, entry.file), bytes.subarray(0, 40));
+  await assert.rejects(checkArchives(output), /hash mismatch/);
+});
