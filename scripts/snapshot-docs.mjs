@@ -4,7 +4,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { archiveFile, assertVersion, checkArchives, encodeBundle, sha256, validateBundle, verifyArchives } from './lib/docs-versions.mjs';
+import { archiveFile, assertVersion, checkArchives, compareStableVersions, encodeBundle, isStableVersion, sha256, validateBundle, validateManifest, verifyArchives } from './lib/docs-versions.mjs';
 
 const defaultRepository = fileURLToPath(new URL('../', import.meta.url));
 const guideRoot = 'apps/docs/src/content/docs/';
@@ -91,29 +91,62 @@ export async function saveSnapshot(directory, bundle) {
     if (error.code !== 'EEXIST') throw error;
     if (!(await readFile(file)).equals(bytes)) throw new Error(`Refusing to overwrite existing archive file ${entry.file}`);
   }
-  const updated = { schemaVersion: 1, versions: [...manifest.versions, entry] };
-  const temporary = join(directory, `.manifest-${process.pid}.tmp`);
-  await writeFile(temporary, JSON.stringify(updated, null, 2) + '\n');
-  await rename(temporary, join(directory, 'manifest.json'));
+  const updated = { ...manifest, versions: [...manifest.versions, entry] };
+  await writeManifest(directory, updated);
   return { entry, created: true };
+}
+async function writeManifest(directory, manifest) {
+  validateManifest(manifest);
+  const temporary = join(directory, `.manifest-${process.pid}.tmp`);
+  await writeFile(temporary, JSON.stringify(manifest, null, 2) + '\n');
+  await rename(temporary, join(directory, 'manifest.json'));
+}
+export function assertLtsTarget(manifest, version, { requireArchived = true } = {}) {
+  if (!isStableVersion(version)) throw new Error('LTS can only designate a stable SemVer release, without a prerelease suffix');
+  if (requireArchived && !manifest.versions.some(entry => entry.version === version)) throw new Error(`Cannot designate unarchived version ${version} as LTS`);
+  const current = manifest.channels?.lts;
+  if (current && compareStableVersions(version, current) < 0) throw new Error(`Refusing to downgrade documentation LTS from ${current} to ${version}`);
+}
+export async function promoteLts(directory, version) {
+  // Promotion changes only the pointer. Verify every immutable archive first,
+  // and never infer an LTS designation from the newest stable/beta release.
+  const { manifest } = await checkArchives(directory);
+  assertLtsTarget(manifest, version);
+  if (manifest.channels?.lts === version) return { version, changed: false, manifest };
+  const updated = { ...manifest, channels: { ...manifest.channels, lts: version } };
+  await writeManifest(directory, updated);
+  return { version, changed: true, manifest: updated };
 }
 export async function snapshotDocs(options = {}) {
   const repository = options.repository ?? defaultRepository;
   const directory = options.output ?? join(repository, 'apps/docs/versions');
   const bundle = await createSnapshot({ ...options, repository });
-  return { ...await saveSnapshot(directory, bundle), bundle };
+  if (options.lts) {
+    // Reject a beta or downgrade before creating any new snapshot files.
+    const { manifest } = await verifyArchives(directory, { allowMissing: true });
+    assertLtsTarget(manifest, bundle.version, { requireArchived: false });
+  }
+  const result = { ...await saveSnapshot(directory, bundle), bundle };
+  if (options.lts) result.lts = await promoteLts(directory, bundle.version);
+  return result;
 }
 export function parseArguments(args) {
   const options = {};
-  const flags = { '--ref': 'ref', '--package': 'packageDirectory', '--repository': 'repository', '--output': 'output' };
+  const flags = { '--ref': 'ref', '--package': 'packageDirectory', '--repository': 'repository', '--output': 'output', '--promote-lts': 'promoteLts' };
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    if (arg === '--check' || arg === '--help') { options[arg.slice(2)] = true; continue; }
+    if (arg === '--check' || arg === '--help' || arg === '--lts') {
+      if (options[arg.slice(2)]) throw new Error(`Repeated option: ${arg}`);
+      options[arg.slice(2)] = true; continue;
+    }
     if (!flags[arg] || !args[i + 1] || args[i + 1].startsWith('--') || options[flags[arg]]) throw new Error(`Unknown, repeated, or incomplete option: ${arg}`);
     options[flags[arg]] = args[++i];
   }
-  if (options.check && (options.ref || options.packageDirectory)) throw new Error('--check cannot be combined with --ref or --package');
-  if (!options.check && !options.help && !options.ref) throw new Error('Provide --ref v<version> or --check');
+  if (options.check && (options.ref || options.packageDirectory || options.lts || options.promoteLts)) throw new Error('--check cannot be combined with snapshot or LTS promotion options');
+  if (options.promoteLts && (options.ref || options.packageDirectory || options.lts)) throw new Error('--promote-lts cannot be combined with --ref, --package, or --lts');
+  if (options.lts && !options.ref) throw new Error('--lts requires --ref v<stable-version>');
+  if (options.promoteLts) assertVersion(options.promoteLts);
+  if (!options.check && !options.help && !options.ref && !options.promoteLts) throw new Error('Provide --ref v<version>, --promote-lts <version>, or --check');
   if (options.repository) options.repository = resolve(options.repository);
   if (options.output) options.output = resolve(options.output);
   return options;
@@ -122,14 +155,19 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   try {
     const options = parseArguments(process.argv.slice(2));
     if (options.help) {
-      console.log('Usage: node scripts/snapshot-docs.mjs --ref v<version> [--package /absolute/extracted/package]\n       node scripts/snapshot-docs.mjs --check\n\nArchives released Core manuals, APIs, and guides. Existing versions are immutable.');
+      console.log('Usage: node scripts/snapshot-docs.mjs --ref v<version> [--package /absolute/extracted/package] [--lts]\n       node scripts/snapshot-docs.mjs --promote-lts <archived-stable-version>\n       node scripts/snapshot-docs.mjs --check\n\nArchives released Core manuals, APIs, and guides. Existing snapshots are immutable.\nLTS is designated explicitly; --lts captures a stable release and sets its channel.');
     } else if (options.check) {
       const directory = options.output ?? join(options.repository ?? defaultRepository, 'apps/docs/versions');
       const { manifest } = await checkArchives(directory);
       console.log(`Verified ${manifest.versions.length} immutable documentation archive(s).`);
+    } else if (options.promoteLts) {
+      const directory = options.output ?? join(options.repository ?? defaultRepository, 'apps/docs/versions');
+      const { version, changed } = await promoteLts(directory, options.promoteLts);
+      console.log(`${changed ? 'Designated' : 'Verified existing'} documentation LTS: ${version}.`);
     } else {
-      const { entry, created, bundle } = await snapshotDocs(options);
+      const { entry, created, bundle, lts } = await snapshotDocs(options);
       console.log(`${created ? 'Archived' : 'Verified existing'} ${entry.version}: ${bundle.components.length} components, ${bundle.guides.length} guides, source ${entry.commit}.`);
+      if (lts) console.log(`${lts.changed ? 'Designated' : 'Verified existing'} documentation LTS: ${lts.version}.`);
     }
   } catch (error) {
     console.error(`[docs:versions] ${error.message}`);

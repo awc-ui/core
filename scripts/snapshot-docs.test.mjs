@@ -5,8 +5,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { gzipSync } from 'node:zlib';
-import { createSnapshot, parseArguments, saveSnapshot, snapshotDocs } from './snapshot-docs.mjs';
-import { assertVersion, checkArchives, decodeBundle, encodeBundle, readManifest, sha256, validateBundle, validateManifest } from './lib/docs-versions.mjs';
+import { createSnapshot, parseArguments, promoteLts, saveSnapshot, snapshotDocs } from './snapshot-docs.mjs';
+import { assertVersion, checkArchives, compareVersions, decodeBundle, encodeBundle, isStableVersion, readManifest, sha256, validateBundle, validateManifest } from './lib/docs-versions.mjs';
 
 const api = { kind: 'class', name: 'MdButton', customElement: true, tagName: 'md-button', description: 'A released button.', members: [{ kind: 'method', name: 'focus' }] };
 const manifest = { schemaVersion: '1.0.0', modules: [{ kind: 'javascript-module', path: 'src/components/md-button/md-button.tsx', declarations: [api] }] };
@@ -183,4 +183,124 @@ test('CLI --check verifies portable output and validates options', async t => {
   for (const args of [[], ['--ref'], ['--version', '1.2.3'], ['--check', '--ref', 'v1.2.3'], ['--ref', 'v1.2.3', '--ref', 'v1.2.4']]) assert.throws(() => parseArguments(args));
   assert.equal(parseArguments(['--ref', 'v1.2.3']).ref, 'v1.2.3');
   assert.equal((await readManifest(output)).versions.length, 1);
+});
+
+async function addVersion(output, bundle, version) {
+  return saveSnapshot(output, { ...bundle, version, sourceRef: `v${version}` });
+}
+
+test('compares SemVer precedence numerically, with prereleases below stable and build metadata ignored', () => {
+  const ordered = ['1.0.0-alpha', '1.0.0-alpha.1', '1.0.0-alpha.beta', '1.0.0-beta', '1.0.0-beta.2', '1.0.0-beta.11', '1.0.0-rc.1', '1.0.0', '1.0.1', '1.1.0', '1.10.0', '2.0.0'];
+  for (let i = 1; i < ordered.length; i++) {
+    assert.equal(compareVersions(ordered[i - 1], ordered[i]), -1);
+    assert.equal(compareVersions(ordered[i], ordered[i - 1]), 1);
+  }
+  assert.equal(compareVersions('1.0.0+build.2', '1.0.0+build.1'), 0);
+  assert.equal(compareVersions('1.0.0-beta.9+build', '1.0.0-beta.9'), 0);
+  assert.equal(compareVersions('1.0.0-9', '1.0.0-a'), -1);
+  assert.equal(compareVersions('1.0.0-alpha-two', '1.0.0-alpha-one'), 1);
+  assert.equal(compareVersions('99999999999999999999.0.0', '99999999999999999998.0.0'), 1);
+  assert.equal(isStableVersion('1.0.0+build-1'), true);
+  assert.equal(isStableVersion('1.0.0-beta.14'), false);
+  assert.equal(isStableVersion('not-a-version'), false);
+  assert.throws(() => compareVersions('1.0.0-01', '1.0.0'), /Invalid documentation version/);
+});
+
+test('validates explicit archived stable LTS channels while retaining legacy manifests', async t => {
+  const { repository, output } = await fixture(t);
+  const { bundle, entry } = await snapshotDocs({ repository, output, ref: 'v1.2.3' });
+  const legacy = { schemaVersion: 1, versions: [entry] };
+  assert.equal(validateManifest(legacy), legacy);
+  assert.equal(validateManifest({ ...legacy, channels: { lts: null } }).channels.lts, null);
+  assert.equal(validateManifest({ ...legacy, channels: { lts: '1.2.3' } }).channels.lts, '1.2.3');
+  for (const channels of [null, [], {}, '1.2.3', { lts: undefined }, { lts: '1.2.4' }, { lts: '../unsafe' }]) {
+    assert.throws(() => validateManifest({ ...legacy, channels }), /channels|channel/);
+  }
+  const beta = await addVersion(output, bundle, '1.3.0-beta.1');
+  assert.throws(() => validateManifest({ schemaVersion: 1, versions: [entry, beta.entry], channels: { lts: '1.3.0-beta.1' } }), /archived stable release/);
+});
+
+test('appending stable or prerelease archives preserves channels without implicitly selecting LTS', async t => {
+  const { repository, output } = await fixture(t);
+  const { bundle } = await snapshotDocs({ repository, output, ref: 'v1.2.3' });
+  assert.equal((await readManifest(output)).channels, undefined);
+  await addVersion(output, bundle, '1.3.0');
+  assert.equal((await readManifest(output)).channels, undefined);
+  const initial = await readManifest(output);
+  await writeFile(join(output, 'manifest.json'), JSON.stringify({ ...initial, channels: { lts: null } }));
+  await addVersion(output, bundle, '1.4.0-beta.1');
+  assert.deepEqual((await readManifest(output)).channels, { lts: null });
+  await promoteLts(output, '1.3.0');
+  await addVersion(output, bundle, '2.0.0');
+  assert.deepEqual((await readManifest(output)).channels, { lts: '1.3.0' });
+});
+
+test('explicit LTS promotion is idempotent, portable, monotonic and leaves gzip bytes unchanged', async t => {
+  const { repository, output } = await fixture(t);
+  const { bundle, entry } = await snapshotDocs({ repository, output, ref: 'v1.2.3' });
+  const later = await addVersion(output, bundle, '1.10.0');
+  await addVersion(output, bundle, '1.9.0');
+  await addVersion(output, bundle, '2.0.0-beta.1');
+  const original = await readFile(join(output, entry.file));
+  const laterOriginal = await readFile(join(output, later.entry.file));
+  await rm(join(repository, '.git'), { recursive: true, force: true });
+  assert.equal((await promoteLts(output, '1.2.3')).changed, true);
+  const written = await readFile(join(output, 'manifest.json'));
+  assert.equal((await promoteLts(output, '1.2.3')).changed, false);
+  assert.deepEqual(await readFile(join(output, 'manifest.json')), written);
+  assert.equal((await promoteLts(output, '1.10.0')).changed, true);
+  await assert.rejects(promoteLts(output, '1.9.0'), /Refusing to downgrade/);
+  await assert.rejects(promoteLts(output, '2.0.0'), /unarchived version/);
+  await assert.rejects(promoteLts(output, '2.0.0-beta.1'), /stable SemVer release/);
+  assert.deepEqual(await readFile(join(output, entry.file)), original);
+  assert.deepEqual(await readFile(join(output, later.entry.file)), laterOriginal);
+  assert.equal((await readManifest(output)).channels.lts, '1.10.0');
+});
+
+test('promotion verifies checksums of all archived versions before changing its channel', async t => {
+  const { repository, output } = await fixture(t);
+  const { bundle } = await snapshotDocs({ repository, output, ref: 'v1.2.3' });
+  const later = await addVersion(output, bundle, '2.0.0');
+  const untouched = await readFile(join(output, 'manifest.json'));
+  await writeFile(join(output, later.entry.file), 'corrupted non-target archive');
+  await assert.rejects(promoteLts(output, '1.2.3'), /hash mismatch/);
+  assert.deepEqual(await readFile(join(output, 'manifest.json')), untouched);
+});
+
+test('--lts captures and designates a release, rejecting a beta or downgrade before writes', async t => {
+  const { repository, output } = await fixture(t);
+  const result = await snapshotDocs({ repository, output, ref: 'v1.2.3', lts: true });
+  assert.equal(result.lts.version, '1.2.3');
+  assert.equal((await readManifest(output)).channels.lts, '1.2.3');
+  await addVersion(output, result.bundle, '2.0.0');
+  await promoteLts(output, '2.0.0');
+  const untouched = await readFile(join(output, 'manifest.json'));
+  await assert.rejects(snapshotDocs({ repository, output, ref: 'v1.2.3', lts: true }), /Refusing to downgrade/);
+  assert.deepEqual(await readFile(join(output, 'manifest.json')), untouched);
+  await write(repository, 'packages/core/package.json', JSON.stringify({ name: '@awc-ui/core', version: '3.0.0-beta.1' }));
+  git(repository, 'add', 'packages/core/package.json');
+  git(repository, 'commit', '-qm', 'Beta release');
+  git(repository, 'tag', 'v3.0.0-beta.1');
+  const emptyOutput = join(repository, 'beta-archive');
+  await assert.rejects(snapshotDocs({ repository, output: emptyOutput, ref: 'v3.0.0-beta.1', lts: true }), /stable SemVer release/);
+  await assert.rejects(readFile(join(emptyOutput, 'manifest.json')), { code: 'ENOENT' });
+  await assert.rejects(readFile(join(emptyOutput, '3.0.0-beta.1.json.gz')), { code: 'ENOENT' });
+});
+
+test('CLI supports explicit LTS designation and rejects incompatible mode flags', async t => {
+  const { repository, output } = await fixture(t);
+  const script = new URL('./snapshot-docs.mjs', import.meta.url).pathname;
+  const response = execFileSync(node, [script, '--ref', 'v1.2.3', '--lts', '--repository', repository, '--output', output], { encoding: 'utf8' });
+  assert.match(response, /Designated documentation LTS: 1.2.3/);
+  await rm(join(repository, '.git'), { recursive: true, force: true });
+  const promoted = execFileSync(node, [script, '--promote-lts', '1.2.3', '--output', output], { encoding: 'utf8' });
+  assert.match(promoted, /Verified existing documentation LTS: 1.2.3/);
+  assert.equal(parseArguments(['--ref', 'v1.2.3', '--lts']).lts, true);
+  assert.equal(parseArguments(['--promote-lts', '1.2.3']).promoteLts, '1.2.3');
+  for (const args of [
+    ['--lts'], ['--check', '--lts'], ['--check', '--promote-lts', '1.2.3'],
+    ['--ref', 'v1.2.3', '--promote-lts', '1.2.3'], ['--package', '/tmp/core', '--promote-lts', '1.2.3'],
+    ['--promote-lts', '1.2.3', '--lts'], ['--promote-lts'], ['--promote-lts', '../unsafe'],
+    ['--ref', 'v1.2.3', '--lts', '--lts'], ['--promote-lts', '1.2.3', '--promote-lts', '1.2.4'],
+  ]) assert.throws(() => parseArguments(args));
 });

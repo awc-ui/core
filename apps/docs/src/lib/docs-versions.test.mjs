@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
 import {
-  archivePath, currentDocSlugs, loadDocsVersions, pageSlug, referenceMarkdown,
+  archivePath, currentDocSlugs, groupDocsVersions, loadDocsVersions, pageSlug, referenceMarkdown,
   renderReferenceMarkdown, rewriteArchiveLink, snapshotPages, versionDestination, versionSidebar,
 } from './docs-versions.mjs';
 
@@ -17,16 +17,16 @@ const snapshot = {
 };
 const release = { version: snapshot.version, commit: snapshot.sourceCommit, snapshot, pages: snapshotPages(snapshot) };
 
-async function fixture(t, editManifest = () => {}, editSnapshot = () => {}) {
+async function fixture(t, editManifest = () => {}, editSnapshot = () => {}, channels) {
   const directory = await mkdtemp(join(tmpdir(), 'awc-docs-versions-'));
   t.after(() => rm(directory, { recursive: true, force: true }));
   const data = structuredClone(snapshot);
   editSnapshot(data);
   const compressed = gzipSync(JSON.stringify(data));
-  const entry = { version: snapshot.version, ref: snapshot.sourceRef, commit: snapshot.sourceCommit, sha256: createHash('sha256').update(compressed).digest('hex'), file: `${snapshot.version}.json.gz` };
+  const entry = { version: data.version, ref: data.sourceRef, commit: snapshot.sourceCommit, sha256: createHash('sha256').update(compressed).digest('hex'), file: `${data.version}.json.gz` };
   editManifest(entry);
-  await writeFile(join(directory, `${snapshot.version}.json.gz`), compressed);
-  await writeFile(join(directory, 'manifest.json'), JSON.stringify({ schemaVersion: 1, versions: [entry] }));
+  await writeFile(join(directory, `${data.version}.json.gz`), compressed);
+  await writeFile(join(directory, 'manifest.json'), JSON.stringify({ schemaVersion: 1, versions: [entry], ...(channels ? { channels } : {}) }));
   return directory;
 }
 
@@ -36,13 +36,47 @@ test('loads frozen manuals and APIs only after validating the manifest and compr
   assert.equal(loaded.snapshot.components[0].manual, snapshot.components[0].manual);
   assert.deepEqual(loaded.snapshot.components[0].api, snapshot.components[0].api);
   assert.deepEqual(loaded.pages.map((page) => page.slug), ['components/button', 'frameworks/react']);
+  assert.equal(loaded.isLts, false);
 });
 
 test('rejects tampered data, path traversal, and mismatched snapshot identity', async (t) => {
   await assert.rejects(loadDocsVersions({ directory: await fixture(t, (entry) => { entry.sha256 = '0'.repeat(64); }) }), /checksum mismatch/);
-  await assert.rejects(loadDocsVersions({ directory: await fixture(t, (entry) => { entry.file = '../outside.json.gz'; }) }), /Invalid docs version entry/);
+  await assert.rejects(loadDocsVersions({ directory: await fixture(t, (entry) => { entry.file = '../outside.json.gz'; }) }), /Invalid archive path/);
   await assert.rejects(loadDocsVersions({ directory: await fixture(t, () => {}, (data) => { data.sourceCommit = 'b'.repeat(40); }) }), /Invalid docs snapshot/);
   await assert.rejects(loadDocsVersions({ directory: await fixture(t, () => {}, (data) => { data.guides[0].slug = '../escape'; }) }), /Invalid guide snapshot/);
+});
+
+test('exposes an explicitly designated stable LTS and rejects invalid channel targets', async (t) => {
+  const directory = await fixture(t, () => {}, (data) => {
+    data.version = '1.0.0';
+    data.sourceRef = 'v1.0.0';
+  }, { lts: '1.0.0' });
+  const [lts] = await loadDocsVersions({ directory });
+  assert.equal(lts.isLts, true);
+  assert.equal(groupDocsVersions([lts]).lts, lts);
+  assert.equal(versionDestination('/components/button/', lts), '/versions/1.0.0/components/button/');
+  for (const version of ['1.0.0', '1.0.0-beta.14']) {
+    const invalid = await fixture(t, () => {}, () => {}, { lts: version });
+    await assert.rejects(loadDocsVersions({ directory: invalid }), /LTS|lts/);
+  }
+});
+
+test('beta and stable releases without promotion do not become LTS automatically', () => {
+  const available = [{ version: '1.0.0-beta.14' }, { version: '1.0.0' }];
+  const groups = groupDocsVersions(available);
+  assert.equal(groups.lts, null);
+  assert.deepEqual(groups.newer.map(({ version }) => version), ['1.0.0', '1.0.0-beta.14']);
+  assert.deepEqual(groups.previous, []);
+});
+
+test('sorts newer and previous releases around the designated LTS by semantic version', () => {
+  const versions = ['1.9.0-beta.14', '1.10.0-beta.9', '1.8.0', '2.0.0', '1.9.0', '1.10.0-beta.10'];
+  const releases = versions.map((version) => ({ version, isLts: version === '1.9.0' }));
+  const groups = groupDocsVersions(releases);
+  assert.equal(groups.lts.version, '1.9.0');
+  assert.deepEqual(groups.newer.map(({ version }) => version), ['2.0.0', '1.10.0-beta.10', '1.10.0-beta.9']);
+  assert.deepEqual(groups.previous.map(({ version }) => version), ['1.9.0-beta.14', '1.8.0']);
+  assert.deepEqual(releases.map(({ version }) => version), versions);
 });
 
 test('switches versions on corresponding pages and falls back when a page is unavailable', () => {

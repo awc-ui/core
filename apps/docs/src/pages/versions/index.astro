@@ -1,26 +1,57 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
-import { archivePath, loadDocsVersions } from '../../lib/docs-versions.mjs';
+import { archivePath, groupDocsVersions, isStableVersion, loadDocsVersions } from '../../lib/docs-versions.mjs';
 const releases = await loadDocsVersions();
+const { lts, newer, previous } = groupDocsVersions(releases);
 ---
-<StarlightPage frontmatter={{ title: 'Documentation versions', description: 'Browse frozen AWC UI component and guide references for a released version.', editUrl: false, prev: false, next: false }}>
+<StarlightPage frontmatter={{ title: 'Documentation versions', description: 'Browse frozen AWC UI component and guide references for a released version.', editUrl: false, prev: false, next: false }} headings={[
+  { depth: 2, slug: 'latest-lts', text: 'Latest LTS' },
+  { depth: 2, slug: 'new-versions', text: 'New versions' },
+  { depth: 2, slug: 'previous-versions', text: 'Previous versions' },
+]}>
   <div class="sl-markdown-content">
-    <p>Choose the documentation that matches the version installed in your project. Release references preserve the manuals, API definitions, and guides from their source commit.</p>
-    <div class="version-card">
-      <h2><a href="/">Current (main)</a></h2>
-      <p>The latest documentation, including unreleased changes and interactive examples.</p>
-    </div>
-    {releases.map((release) => (
-      <div class="version-card">
-        <h2><a href={archivePath(release.version)}>v{release.version}</a></h2>
-        <p>{release.snapshot.components.length} components · {release.snapshot.guides.length} guides</p>
-        <p>Frozen release reference · <a href={`https://github.com/awc-ui/core/tree/${release.commit}`}>Source commit {release.commit.slice(0, 7)}</a></p>
+    <p>Choose the documentation that matches your project: the latest long-term support release, an upcoming version, or an earlier release.</p>
+    <section aria-labelledby="latest-lts">
+      <h2 id="latest-lts">Latest LTS</h2>
+      <div class="version-card version-card--lts">
+        {lts ? <>
+          <h3><a href={archivePath(lts.version)}>v{lts.version}</a></h3>
+          <p>The current long-term support release.</p>
+          <p>{lts.snapshot.components.length} components · {lts.snapshot.guides.length} guides</p>
+        </> : <>
+          <h3>Coming soon</h3>
+          <p>Our first long-term support release has not been promoted yet. Browse the available releases below.</p>
+        </>}
       </div>
-    ))}
+    </section>
+    <section aria-labelledby="new-versions">
+      <h2 id="new-versions">New versions</h2>
+      <div class="version-card">
+        <h3><a href="/">Next (development)</a></h3>
+        <p>Latest documentation from main, including unreleased changes and interactive examples.</p>
+      </div>
+      {newer.map((release) => (
+        <div class="version-card">
+          <h3><a href={archivePath(release.version)}>v{release.version}</a></h3>
+          <p>{isStableVersion(release.version) ? 'Released version · Not designated LTS' : 'Prerelease · Preview upcoming changes'}</p>
+          <p>{release.snapshot.components.length} components · {release.snapshot.guides.length} guides</p>
+        </div>
+      ))}
+    </section>
+    <section aria-labelledby="previous-versions">
+      <h2 id="previous-versions">Previous versions</h2>
+      {previous.length ? previous.map((release) => (
+        <div class="version-card">
+          <h3><a href={archivePath(release.version)}>v{release.version}</a></h3>
+          <p>{isStableVersion(release.version) ? 'Release reference' : 'Prerelease reference'} · {release.snapshot.components.length} components · {release.snapshot.guides.length} guides</p>
+        </div>
+      )) : <p>Previous release references will appear here as newer versions are promoted to LTS.</p>}
+    </section>
   </div>
 </StarlightPage>
 <style>
   .version-card { padding: 1.25rem; margin-block: 1rem; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 1rem; }
-  .version-card h2 { margin: 0; }
+  .sl-markdown-content .version-card h3 { margin: 0; }
+  .version-card--lts { border-inline-start: 4px solid var(--md-sys-color-primary); }
   .version-card p { margin-block: .5rem 0; }
 </style>

@@ -52,6 +52,11 @@ on:
         required: false
         type: boolean
         default: false
+      promote_lts:
+        description: 'Designate this production release as Latest LTS in the documentation'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: publish
@@ -83,6 +88,12 @@ jobs:
       # Required for Trusted Publishing authentication and npm provenance.
       id-token: write
     steps:
+      - name: LTS designation requires a production release
+        if: inputs.promote_lts && inputs.channel != 'prod'
+        run: |
+          echo "::error::Only production releases can be designated Latest LTS"
+          exit 1
+
       - name: beta/prod release only from main
         if: inputs.channel != 'snapshot' && github.ref != 'refs/heads/main'
         run: |
@@ -136,6 +147,18 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "Publishing $VERSION under dist-tag $TAG"
+
+      - name: Validate documentation LTS promotion before publishing
+        if: inputs.promote_lts
+        env:
+          RELEASE_VERSION: ${{ steps.rv.outputs.version }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { checkArchives } from './scripts/lib/docs-versions.mjs';
+          import { assertLtsTarget } from './scripts/snapshot-docs.mjs';
+          const { manifest } = await checkArchives('apps/docs/versions');
+          assertLtsTarget(manifest, process.env.RELEASE_VERSION, { requireArchived: false });
+          NODE
 
       - name: Validate publishing authentication and tag plan
         env:
@@ -390,11 +413,16 @@ jobs:
         if: inputs.channel != 'snapshot'
         env:
           VERSION: ${{ steps.rv.outputs.version }}
+          PROMOTE_LTS: ${{ inputs.promote_lts }}
         run: |
           # Read the immutable release commit, never the newer working tree.
           # Archives live in Git so every future deployment retains them.
           git fetch origin "refs/tags/v$VERSION:refs/tags/v$VERSION"
-          node scripts/snapshot-docs.mjs --ref "v$VERSION"
+          if [ "$PROMOTE_LTS" = "true" ]; then
+            node scripts/snapshot-docs.mjs --ref "v$VERSION" --lts
+          else
+            node scripts/snapshot-docs.mjs --ref "v$VERSION"
+          fi
           node scripts/snapshot-docs.mjs --check
           git add apps/docs/versions/
           if ! git diff --cached --quiet; then

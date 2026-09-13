@@ -1,6 +1,6 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
-import { archivePath, currentDocSlugs, loadDocsVersions, renderReferenceMarkdown, versionDestination, versionSidebar } from '../../../lib/docs-versions.mjs';
+import { archivePath, currentDocSlugs, isStableVersion, loadDocsVersions, renderReferenceMarkdown, versionDestination, versionSidebar } from '../../../lib/docs-versions.mjs';
 
 export async function getStaticPaths() {
   const releases = await loadDocsVersions();
@@ -25,8 +25,9 @@ const description = `Archived AWC UI v${release.version} reference${page ? ` for
   <div class="sl-markdown-content archive-reference" data-pagefind-ignore="all">
     <aside class="archive-banner" aria-label="Documentation version">
       <strong>Archived reference for v{release.version}</strong>
+      <span class="release-channel">{release.isLts ? 'Latest LTS' : isStableVersion(release.version) ? 'Released version' : 'Prerelease'}</span>
       <p>This page is frozen at release commit <a href={`https://github.com/awc-ui/core/tree/${release.commit}`}>{release.commit.slice(0, 7)}</a>. Examples are shown as code and use this release’s APIs.</p>
-      <a href={currentHref}>View current documentation</a> · <a href="/versions/">All versions</a>
+      <a href={currentHref}>View development docs</a> · <a href="/versions/">All versions</a>
     </aside>
     {page ? (
       <>
@@ -79,6 +80,7 @@ const description = `Archived AWC UI v${release.version} reference${page ? ` for
 <style>
   .archive-banner { padding: 1rem 1.25rem; border: 1px solid var(--md-sys-color-outline-variant); border-inline-start: 4px solid var(--md-sys-color-primary); border-radius: .5rem; background: var(--md-sys-color-surface-container); margin-block-end: 2rem; }
   .archive-banner p { margin-block: .5rem; }
+  .release-channel { display: block; margin-block-start: .25rem; color: var(--md-sys-color-primary); font-weight: 600; }
   .archive-search-label { display: block; font-weight: 600; margin-block-end: .5rem; }
   .archive-search { inline-size: 100%; min-block-size: 3rem; padding: .75rem 1rem; border: 1px solid var(--md-sys-color-outline); border-radius: .75rem; background: var(--md-sys-color-surface-container); color: var(--md-sys-color-on-surface); font: inherit; }
   .archive-search:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 2px; }

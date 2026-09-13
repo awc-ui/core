@@ -5,6 +5,9 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { gunzipSync } from 'node:zlib';
 import { Marked } from 'marked';
+import { compareVersions, isStableVersion, validateManifest } from '../../../../scripts/lib/docs-versions.mjs';
+
+export { isStableVersion };
 
 // Astro bundles this module into dist/chunks during a static build. Resolve the
 // project ancestor in both source and build locations, rather than assuming the
@@ -50,8 +53,7 @@ export async function loadDocsVersions({ directory = defaultDirectory } = {}) {
 }
 
 async function readVersions(directory) {
-  const manifest = JSON.parse(await readFile(resolve(directory, 'manifest.json'), 'utf8'));
-  if (manifest.schemaVersion !== 1 || !Array.isArray(manifest.versions)) throw new Error('Invalid docs version manifest');
+  const manifest = validateManifest(JSON.parse(await readFile(resolve(directory, 'manifest.json'), 'utf8')));
   const seen = new Set();
   return Promise.all(manifest.versions.map(async (entry) => {
     if (!versionPattern.test(entry.version) || seen.has(entry.version)
@@ -83,8 +85,19 @@ async function readVersions(directory) {
     }
     const pages = snapshotPages(snapshot);
     if (new Set(pages.map((page) => page.slug)).size !== pages.length) throw new Error(`Duplicate docs page: ${entry.version}`);
-    return { ...entry, snapshot, pages };
+    return { ...entry, snapshot, pages, isLts: entry.version === manifest.channels?.lts };
   }));
+}
+
+/** Release availability and LTS support are independent: only promotion sets LTS. */
+export function groupDocsVersions(releases) {
+  const sorted = [...releases].sort((a, b) => compareVersions(b.version, a.version));
+  const lts = sorted.find((release) => release.isLts) ?? null;
+  return {
+    lts,
+    newer: sorted.filter((release) => release !== lts && (!lts || compareVersions(release.version, lts.version) > 0)),
+    previous: sorted.filter((release) => release !== lts && lts && compareVersions(release.version, lts.version) <= 0),
+  };
 }
 
 export async function currentDocSlugs({ directory = resolve(docsRoot, 'src/content/docs') } = {}) {

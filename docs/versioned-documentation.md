@@ -1,15 +1,50 @@
 # Versioned documentation
 
-The documentation header lets readers choose **Current (main)** or an archived
-release. `/versions/` lists the available releases. Switching versions keeps the
-same page when it exists; otherwise it opens the selected version's overview.
+The documentation header groups versions into **Latest LTS**, **New versions**,
+and **Previous versions**. `/versions/` lists the same groups. Switching versions
+keeps the same page when it exists; otherwise it opens that version's overview.
 
-Current documentation includes unreleased changes and interactive examples.
+**Next (development)** includes unreleased changes and interactive examples.
 Release references preserve the component manuals, generated API definitions,
 and guides from an exact release commit. Their examples are rendered as code;
 historical MDX and demo components are never executed with the current runtime.
 Each release overview has its own reference search. Archived pages are excluded
 from the current site's Pagefind index.
+
+## Designate Latest LTS
+
+LTS is an explicit documentation channel, stored as `channels.lts` in
+`apps/docs/versions/manifest.json`. It is independent of npm's `latest` tag.
+Until a stable archive is designated, the selector shows **Latest LTS — coming
+soon**. Beta releases are never labeled LTS.
+
+For the first stable release, select **promote_lts** when running the Publish
+workflow with `channel=prod`. This captures the release reference and designates
+it Latest LTS. The option is off by default: publishing a newer beta or stable
+version must not silently replace an existing LTS.
+
+You can also capture and designate a tagged stable release from the repository:
+
+```sh
+pnpm docs:snapshot --ref v1.0.0 --lts
+```
+
+Or promote an already archived stable version without fetching Git history:
+
+```sh
+pnpm docs:snapshot --promote-lts 1.0.0
+pnpm docs:versions:check
+```
+
+Replace `1.0.0` with the real stable release. Promotion verifies the archives,
+rejects missing or prerelease targets and downgrades, and changes only the
+manifest pointer. Commit and deploy that manifest change; frozen archive files
+remain unchanged.
+
+Releases newer than the designated LTS appear under **New versions**, together
+with development docs. Older releases appear under **Previous versions**. Each
+group is sorted newest first using semantic version precedence, including
+numeric beta suffixes. The LTS release appears only once in the selector.
 
 ## Capture a release
 

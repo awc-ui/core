@@ -3,7 +3,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { gzipSync, gunzipSync } from 'node:zlib';
 
-export const VERSION_PATTERN = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
+export const VERSION_PATTERN = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:0|[1-9]\d*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 const COMMIT_PATTERN = /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/;
 const TAG_PATTERN = /^md-[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
 const GUIDE_PATTERN = /^(?:getting-started|frameworks|theming|behaviour|guides|recipes)(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$/;
@@ -12,6 +12,36 @@ const GUIDE_SOURCE_PATTERN = /^apps\/docs\/src\/content\/docs\/(?:getting-starte
 export function assertVersion(version) {
   if (typeof version !== 'string' || !VERSION_PATTERN.test(version)) throw new Error(`Invalid documentation version: ${String(version)}`);
   return version;
+}
+export function isStableVersion(version) {
+  return typeof version === 'string' && VERSION_PATTERN.test(version) && !version.split('+')[0].includes('-');
+}
+export function compareVersions(left, right) {
+  assertVersion(left);
+  assertVersion(right);
+  function parts(version) {
+    const [core, ...prerelease] = version.split('+')[0].split('-');
+    return { core: core.split('.').map(BigInt), pre: prerelease.length ? prerelease.join('-').split('.') : null };
+  }
+  const a = parts(left);
+  const b = parts(right);
+  for (let i = 0; i < 3; i++) if (a.core[i] !== b.core[i]) return a.core[i] > b.core[i] ? 1 : -1;
+  if (!a.pre || !b.pre) return a.pre ? -1 : b.pre ? 1 : 0;
+  for (let i = 0; i < Math.max(a.pre.length, b.pre.length); i++) {
+    if (a.pre[i] === undefined) return -1;
+    if (b.pre[i] === undefined) return 1;
+    if (a.pre[i] === b.pre[i]) continue;
+    const aNumeric = /^\d+$/.test(a.pre[i]);
+    const bNumeric = /^\d+$/.test(b.pre[i]);
+    if (aNumeric && bNumeric) return BigInt(a.pre[i]) > BigInt(b.pre[i]) ? 1 : -1;
+    if (aNumeric !== bNumeric) return aNumeric ? -1 : 1;
+    return a.pre[i] > b.pre[i] ? 1 : -1;
+  }
+  return 0;
+}
+export function compareStableVersions(left, right) {
+  if (!isStableVersion(left) || !isStableVersion(right)) throw new Error('LTS versions must be stable SemVer releases');
+  return compareVersions(left, right);
 }
 export function archiveFile(version) { return `${assertVersion(version)}.json.gz`; }
 export function sha256(bytes) { return createHash('sha256').update(bytes).digest('hex'); }
@@ -26,6 +56,11 @@ export function validateManifest(manifest) {
     if (entry.file !== archiveFile(entry.version)) throw new Error(`Invalid archive path for ${entry.version}`);
     if (entry.ref !== `v${entry.version}` || !COMMIT_PATTERN.test(entry.commit)) throw new Error(`Invalid source provenance for ${entry.version}`);
     if (!/^[a-f0-9]{64}$/.test(entry.sha256)) throw new Error(`Invalid archive hash for ${entry.version}`);
+  }
+  if (manifest.channels !== undefined) {
+    const channels = manifest.channels;
+    if (!channels || typeof channels !== 'object' || Array.isArray(channels) || !Object.hasOwn(channels, 'lts')) throw new Error('Invalid documentation channels: expected an lts value');
+    if (channels.lts !== null && (!isStableVersion(channels.lts) || !seen.has(channels.lts))) throw new Error('Documentation LTS channel must point to an archived stable release');
   }
   return manifest;
 }
