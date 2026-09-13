@@ -6097,7 +6097,7 @@ export namespace Components {
          */
         "rowOffset": number;
         /**
-          * Vertical scrollbar presentation (frozen mode): - `overlay` (default) — a custom always-visible thumb FLOATS over the   rows' right edge; no gutter is reserved, so row backgrounds and   dividers run the full width and the bar never takes layout space. - `gutter` — classic inset bar in a reserved gap: `scrollbar-gutter:   stable` keeps a fixed strip inside the table (rows stop short of the   edge) and the native bar renders in it, crossing the row borders.
+          * Scrollbar presentation (frozen mode): - `overlay` (default) — a custom always-visible thumb FLOATS over the   rows' right edge; no gutter is reserved, so row backgrounds and   dividers run the full width and the bar never takes layout space. - `gutter` — classic inset bar in a reserved gap: `scrollbar-gutter:   stable` keeps a fixed strip inside the table (rows stop short of the   edge) and native bars render on both overflowing axes.
           * @default 'overlay'
          */
         "scrollbar": 'overlay' | 'gutter';
@@ -15882,7 +15882,7 @@ declare namespace LocalJSX {
          */
         "rowOffset"?: number;
         /**
-          * Vertical scrollbar presentation (frozen mode): - `overlay` (default) — a custom always-visible thumb FLOATS over the   rows' right edge; no gutter is reserved, so row backgrounds and   dividers run the full width and the bar never takes layout space. - `gutter` — classic inset bar in a reserved gap: `scrollbar-gutter:   stable` keeps a fixed strip inside the table (rows stop short of the   edge) and the native bar renders in it, crossing the row borders.
+          * Scrollbar presentation (frozen mode): - `overlay` (default) — a custom always-visible thumb FLOATS over the   rows' right edge; no gutter is reserved, so row backgrounds and   dividers run the full width and the bar never takes layout space. - `gutter` — classic inset bar in a reserved gap: `scrollbar-gutter:   stable` keeps a fixed strip inside the table (rows stop short of the   edge) and native bars render on both overflowing axes.
           * @default 'overlay'
          */
         "scrollbar"?: 'overlay' | 'gutter';

@@ -1,0 +1,26 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { archivePath, loadDocsVersions } from '../../lib/docs-versions.mjs';
+const releases = await loadDocsVersions();
+---
+<StarlightPage frontmatter={{ title: 'Documentation versions', description: 'Browse frozen AWC UI component and guide references for a released version.', editUrl: false, prev: false, next: false }}>
+  <div class="sl-markdown-content">
+    <p>Choose the documentation that matches the version installed in your project. Release references preserve the manuals, API definitions, and guides from their source commit.</p>
+    <div class="version-card">
+      <h2><a href="/">Current (main)</a></h2>
+      <p>The latest documentation, including unreleased changes and interactive examples.</p>
+    </div>
+    {releases.map((release) => (
+      <div class="version-card">
+        <h2><a href={archivePath(release.version)}>v{release.version}</a></h2>
+        <p>{release.snapshot.components.length} components · {release.snapshot.guides.length} guides</p>
+        <p>Frozen release reference · <a href={`https://github.com/awc-ui/core/tree/${release.commit}`}>Source commit {release.commit.slice(0, 7)}</a></p>
+      </div>
+    ))}
+  </div>
+</StarlightPage>
+<style>
+  .version-card { padding: 1.25rem; margin-block: 1rem; border: 1px solid var(--md-sys-color-outline-variant); border-radius: 1rem; }
+  .version-card h2 { margin: 0; }
+  .version-card p { margin-block: .5rem 0; }
+</style>

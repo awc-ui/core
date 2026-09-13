@@ -1,0 +1,95 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { archivePath, currentDocSlugs, loadDocsVersions, renderReferenceMarkdown, versionDestination, versionSidebar } from '../../../lib/docs-versions.mjs';
+
+export async function getStaticPaths() {
+  const releases = await loadDocsVersions();
+  return releases.flatMap((release) => [
+    { params: { version: release.version, path: undefined }, props: { release, page: null } },
+    ...release.pages.map((page) => ({ params: { version: release.version, path: page.slug }, props: { release, page } })),
+  ]);
+}
+
+const { release, page } = Astro.props;
+const rendered = page ? renderReferenceMarkdown(page.text, release, page) : null;
+const currentHref = versionDestination(Astro.url.pathname, null, await currentDocSlugs());
+const title = `v${release.version} · ${page?.title || 'Release reference'}`;
+const description = `Archived AWC UI v${release.version} reference${page ? ` for ${page.title}` : ''}.`;
+---
+
+<StarlightPage
+  frontmatter={{ title, description, pagefind: false, editUrl: false, prev: false, next: false }}
+  sidebar={versionSidebar(release)}
+  headings={rendered?.headings || []}
+>
+  <div class="sl-markdown-content archive-reference" data-pagefind-ignore="all">
+    <aside class="archive-banner" aria-label="Documentation version">
+      <strong>Archived reference for v{release.version}</strong>
+      <p>This page is frozen at release commit <a href={`https://github.com/awc-ui/core/tree/${release.commit}`}>{release.commit.slice(0, 7)}</a>. Examples are shown as code and use this release’s APIs.</p>
+      <a href={currentHref}>View current documentation</a> · <a href="/versions/">All versions</a>
+    </aside>
+    {page ? (
+      <>
+        <div class="archive-body" set:html={rendered.html} />
+        {page.api && <details class="archive-api">
+          <summary>Generated API definition for {page.title}</summary>
+          <pre><code>{JSON.stringify(page.api, null, 2)}</code></pre>
+        </details>}
+        <p class="archive-source"><a href={`https://github.com/awc-ui/core/blob/${release.commit}/${page.source}`}>View this page’s frozen source</a></p>
+      </>
+    ) : (
+      <>
+        <p>Reference for <code>@awc-ui/core@{release.version}</code>. Browse {release.snapshot.components.length} components and {release.snapshot.guides.length} guides, or filter this release below.</p>
+        <label class="archive-search-label" for="archive-search">Search this version</label>
+        <input id="archive-search" class="archive-search" type="search" placeholder="Component or guide name…" autocomplete="off" aria-controls="archive-results" />
+        <p id="archive-result-count" role="status" aria-live="polite">{release.pages.length} references</p>
+        <ul id="archive-results" class="archive-results">
+          {release.pages.map((entry) => (
+            <li data-reference-search={`${entry.title} ${entry.summary} ${entry.kind}`.toLowerCase()}>
+              <a href={archivePath(release.version, entry.slug)}>{entry.title}</a>
+              <span class="archive-kind">{entry.kind === 'component' ? 'Component' : 'Guide'}</span>
+              {entry.summary && <p>{entry.summary}</p>}
+            </li>
+          ))}
+        </ul>
+        <p id="archive-no-results" hidden>No references match this search. Try another component or guide name.</p>
+      </>
+    )}
+  </div>
+</StarlightPage>
+
+<script>
+  document.addEventListener('input', (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || input.id !== 'archive-search') return;
+    const query = input.value.trim().toLocaleLowerCase();
+    let count = 0;
+    document.querySelectorAll<HTMLElement>('[data-reference-search]').forEach((entry) => {
+      const matches = (entry.dataset.referenceSearch || '').includes(query);
+      entry.hidden = !matches;
+      if (matches) count++;
+    });
+    const status = document.getElementById('archive-result-count');
+    if (status) status.textContent = `${count} ${count === 1 ? 'reference' : 'references'}`;
+    const empty = document.getElementById('archive-no-results');
+    if (empty) empty.hidden = count !== 0;
+  });
+</script>
+
+<style>
+  .archive-banner { padding: 1rem 1.25rem; border: 1px solid var(--md-sys-color-outline-variant); border-inline-start: 4px solid var(--md-sys-color-primary); border-radius: .5rem; background: var(--md-sys-color-surface-container); margin-block-end: 2rem; }
+  .archive-banner p { margin-block: .5rem; }
+  .archive-search-label { display: block; font-weight: 600; margin-block-end: .5rem; }
+  .archive-search { inline-size: 100%; min-block-size: 3rem; padding: .75rem 1rem; border: 1px solid var(--md-sys-color-outline); border-radius: .75rem; background: var(--md-sys-color-surface-container); color: var(--md-sys-color-on-surface); font: inherit; }
+  .archive-search:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 2px; }
+  .archive-results { list-style: none; padding: 0; }
+  .archive-results li { padding-block: 1rem; border-block-end: 1px solid var(--md-sys-color-outline-variant); }
+  .archive-results li[hidden] { display: none; }
+  .archive-results li p { margin-block: .4rem 0; color: var(--md-sys-color-on-surface-variant); }
+  .archive-kind { display: inline-block; font-size: .8rem; margin-inline-start: .75rem; color: var(--md-sys-color-on-surface-variant); }
+  .archive-api, .archive-source { margin-block-start: 2rem; }
+  .archive-api summary { cursor: pointer; font-weight: 600; }
+  .archive-reference :global(pre) { max-inline-size: 100%; padding: 1rem; overflow-x: auto; border-radius: .5rem; background: var(--md-sys-color-surface-container-high); font-size: .85rem; }
+  .archive-reference :global(.archive-table) { max-inline-size: 100%; overflow-x: auto; }
+  .archive-reference :global(table) { display: table; min-inline-size: 100%; }
+</style>

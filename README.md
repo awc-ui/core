@@ -146,19 +146,22 @@ Build a palette from a source colour with the
 
 ## Working with AI assistants
 
-The library is documented for assistants as a first-class audience, and it all
-ships inside the npm package:
+From your app's directory, install Core if needed and connect your assistant
+to its bundled documentation:
 
-| File                                                | What it is                                                                                         |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| [`llms.txt`](https://awc-ui.dev/llms.txt)           | Short, crawler-friendly map of the docs, packages, frameworks, and component manuals               |
-| [`llms-full.txt`](https://awc-ui.dev/llms-full.txt) | The complete hosted build director in one response                                                 |
-| `main-llm.md`                                       | **Start here.** Interview, decision matrix, token reference, page recipes, ship checklist          |
-| `src/components/<tag>/readme.md`                    | The manual for one component — when NOT to use it, full API, accessibility contract, anti-patterns |
+```sh
+npm install @awc-ui/core
+npx --no-install awc-ui ai-setup
+```
 
-`main-llm.md` tells the assistant to load a component's `readme.md` before writing
-any of its markup. Run `npx awc-ui ai-setup` in a consuming project to point
-Claude, Copilot, Cursor and Codex at them.
+Then describe what you want to build, change, or review. The assistant follows
+your existing project decisions and reads the component manuals for your
+installed version. See [Building with AI](https://awc-ui.dev/guides/building-with-ai/)
+for examples and setup details.
+
+[AI skills and MCP](docs/ai-integration.md) are optional additions for reusable
+workflows and searchable documentation. `@awc-ui/mcp` is available
+on npm; the skill installer still requires a Core release containing the skills.
 
 The core package also publishes a standard
 [`custom-elements.json`](https://custom-elements-manifest.open-wc.org/) manifest,
@@ -171,6 +174,7 @@ elements, properties, events, slots, CSS parts, and CSS custom properties.
 awc-ui/
 ├── packages/
 │   ├── core/        Stencil components — src/components/<tag>/ is the source of truth
+│   ├── mcp/         Read-only MCP server with bundled Core documentation
 │   ├── tokens/      MD3 design tokens (CSS custom properties)
 │   ├── theme/       Palette generation from a source colour
 │   ├── react/       Wrapper — generated, never hand-edited
@@ -258,6 +262,7 @@ and a guide:
 - [Request a feature](https://awc-ui.dev/contributing/feature-requests/)
 - [Request a component](https://awc-ui.dev/contributing/new-component-requests/)
 - [Contributing guide](CONTRIBUTING.md)
+- [Maintaining versioned documentation](docs/versioned-documentation.md)
 
 You do not need to write code to help — a bug report we can reproduce is worth
 more than a patch we cannot verify.

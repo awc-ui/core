@@ -11,7 +11,7 @@
 # beta and prod must be dispatched on main; they also commit the version
 # bump back, tag v<version>, and create a GitHub release.
 #
-# Published set: core, tokens, react, vue, angular, svelte, theme.
+# Published set: core, tokens, react, vue, angular, svelte, theme, mcp.
 #
 # Versions are stamped into the manifests BEFORE the build because
 # ng-packagr bakes the version into packages/angular/dist/package.json, and
@@ -69,6 +69,7 @@ env:
     --filter @awc-ui/angular
     --filter @awc-ui/svelte
     --filter @awc-ui/theme
+    --filter @awc-ui/mcp
 
 jobs:
   publish:
@@ -76,6 +77,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      # Start CI explicitly after the bot's archive commit (bot pushes do not
+      # trigger push workflows). Successful CI then starts the docs deployment.
+      actions: write
       # Required for Trusted Publishing authentication and npm provenance.
       id-token: write
     steps:
@@ -145,7 +149,7 @@ jobs:
 
       - name: Stamp package versions
         run: |
-          for p in core tokens react vue angular svelte theme; do
+          for p in core tokens react vue angular svelte theme mcp; do
             (cd "packages/$p" && npm pkg set version='${{ steps.rv.outputs.version }}')
           done
 
@@ -154,6 +158,7 @@ jobs:
           pnpm generate:docs
           pnpm --filter @awc-ui/core build
           pnpm ci:wrappers
+          pnpm test:mcp
 
       # Full test suite before anything reaches npm — including the
       # Playwright CT and Storybook gates further down. Those two used to be
@@ -209,6 +214,7 @@ jobs:
         run: |
           pnpm --filter @awc-ui/core build
           pnpm ci:wrappers
+          pnpm test:mcp
 
       - name: Install Chromium for standalone starter verification
         run: pnpm exec puppeteer browsers install chrome
@@ -217,6 +223,8 @@ jobs:
         run: |
           pnpm verify:contributor
           pnpm test:cli
+          pnpm --filter @awc-ui/docs test
+          pnpm docs:versions:check
           pnpm test:adapters
           pnpm test:ssr-contracts
           pnpm verify:consumer-types
@@ -317,7 +325,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           VERSION: ${{ steps.rv.outputs.version }}
         run: |
-          for p in core tokens react vue angular svelte theme; do
+          for p in core tokens react vue angular svelte theme mcp; do
             latest=$(npm view "@awc-ui/$p" dist-tags.latest 2>/dev/null || echo "")
             if [[ "$latest" == 0.0.0-snapshot.* ]]; then
               echo "@awc-ui/$p: latest=$latest -> $VERSION"
@@ -335,7 +343,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           VERSION: ${{ steps.rv.outputs.version }}
         run: |
-          for p in core tokens react vue angular svelte theme; do
+          for p in core tokens react vue angular svelte theme mcp; do
             npm dist-tag add "@awc-ui/$p@$VERSION" latest
           done
 
@@ -348,6 +356,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add packages/*/package.json
+          # Preserve the generated API/manuals that were actually packaged.
+          git add packages/core/custom-elements.json packages/core/src/components.d.ts
+          git add -u -- 'packages/core/src/components/*/readme.md'
           # main may already carry this exact version (a local prep commit),
           # leaving nothing staged — a bare `git commit` would exit 1 here,
           # killing the step AFTER npm publish succeeded and skipping tag+release.
@@ -355,15 +366,6 @@ jobs:
             echo "versions already at v$VERSION on main; skipping bump commit"
           else
             git commit -m "chore(release): v$VERSION"
-            # --autostash because the tree is DIRTY at this point and a plain
-            # rebase refuses to start: the rebuild step regenerates dist/ and
-            # ng-packagr restamps packages/angular/dist/package.json. Without
-            # it the step dies with "cannot pull with rebase: You have unstaged
-            # changes" AFTER npm publish has already succeeded, leaving the
-            # registry ahead of the repo with no bump commit, tag or release —
-            # which is exactly what happened on v1.0.0-beta.9.
-            git pull --rebase --autostash origin main
-            git push origin HEAD:main
           fi
           # A re-run of an already-tagged version (e.g. to publish packages
           # added to the set later — pnpm -r publish skips versions the
@@ -371,12 +373,41 @@ jobs:
           if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null 2>&1; then
             echo "tag v$VERSION already exists; skipping tag + release"
           else
+            # Tag the exact built source BEFORE incorporating a newer main.
+            # Rebase may move the branch, but this tag keeps release provenance.
             git tag "v$VERSION"
             git push origin "v$VERSION"
             PRERELEASE=""
             if [ "${{ inputs.channel }}" = "beta" ]; then PRERELEASE="--prerelease"; fi
             gh release create "v$VERSION" --generate-notes $PRERELEASE
           fi
+          # Generated build outputs may remain dirty; preserve them across the
+          # rebase. The immutable tag continues to identify the published tree.
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main
+
+      - name: Archive released documentation (beta/prod)
+        if: inputs.channel != 'snapshot'
+        env:
+          VERSION: ${{ steps.rv.outputs.version }}
+        run: |
+          # Read the immutable release commit, never the newer working tree.
+          # Archives live in Git so every future deployment retains them.
+          git fetch origin "refs/tags/v$VERSION:refs/tags/v$VERSION"
+          node scripts/snapshot-docs.mjs --ref "v$VERSION"
+          node scripts/snapshot-docs.mjs --check
+          git add apps/docs/versions/
+          if ! git diff --cached --quiet; then
+            git commit -m "docs: archive reference for v$VERSION"
+            git pull --rebase --autostash origin main
+            git push origin HEAD:main
+          fi
+
+      - name: Validate and deploy the archived documentation
+        if: inputs.channel != 'snapshot'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run ci.yml --ref main
 
       - name: Summary
         run: |
@@ -384,7 +415,7 @@ jobs:
             echo "### Published ${{ steps.rv.outputs.version }} (dist-tag: ${{ steps.rv.outputs.tag }})"
             echo "Authentication: ${{ inputs.authentication }}"
             echo ""
-            for p in core tokens react vue angular svelte theme; do
+            for p in core tokens react vue angular svelte theme mcp; do
               echo "- \`@awc-ui/$p@${{ steps.rv.outputs.version }}\`"
             done
           } >> "$GITHUB_STEP_SUMMARY"

@@ -4,7 +4,7 @@ The manual `Publish` workflow now has an `authentication` choice. It defaults to
 
 ## Complete npm setup
 
-An npm maintainer must configure **each** package: `@awc-ui/core`, `@awc-ui/tokens`, `@awc-ui/react`, `@awc-ui/vue`, `@awc-ui/angular`, `@awc-ui/svelte`, and `@awc-ui/theme`.
+An npm maintainer must configure **each** package: `@awc-ui/core`, `@awc-ui/tokens`, `@awc-ui/react`, `@awc-ui/vue`, `@awc-ui/angular`, `@awc-ui/svelte`, `@awc-ui/theme`, and `@awc-ui/mcp`.
 
 In each package's Settings → Trusted publishing, add GitHub Actions with:
 
@@ -30,7 +30,7 @@ The workflow retains Node 22 and installs **npm 11.19.1** only in trusted mode. 
 | Production → `latest` | Existing behavior | Supported; publish assigns latest directly |
 | Beta while latest points at a bootstrap snapshot | Automatically repairs latest | Rejected before publishing |
 
-OIDC authenticates publishing, not `npm dist-tag`. The trusted branch therefore performs no extra tag writes. A read-only preflight checks public metadata for all seven packages before versioning, and again immediately before publishing. It rejects bootstrap repairs, beta promotion, and existing versions whose requested tag differs; pnpm would skip those existing versions. The error identifies the package and the required action. ([npm OIDC command limitations](https://docs.npmjs.com/trusted-publishers/#limitations-and-future-improvements))
+OIDC authenticates publishing, not `npm dist-tag`. The trusted branch therefore performs no extra tag writes. A read-only preflight checks public metadata for all eight packages before versioning, and again immediately before publishing. It rejects bootstrap repairs, beta promotion, and existing versions whose requested tag differs; pnpm would skip those existing versions. The error identifies the package and the required action. ([npm OIDC command limitations](https://docs.npmjs.com/trusted-publishers/#limitations-and-future-improvements))
 
 For a beta requiring latest promotion or bootstrap repair, a maintainer can perform the necessary tag update interactively under separate release authorization. The explicit `authentication=token` legacy fallback remains available during migration. For an existing version whose tag needs repair, the preflight prints the exact `npm dist-tag add` command. No tag command is run automatically in trusted mode.
 
@@ -39,8 +39,8 @@ Both authentication branches use `pnpm -r ... publish`, preserving pnpm's worksp
 ## Verify and finish the migration
 
 1. Review the workflow and run `node --test scripts/check-publish-auth.test.mjs` locally. This checks runtime bounds, auth branches, promotion/repair rejection, and partial reruns without publishing anything.
-2. Confirm all seven npm configurations use the exact owner, repository, workflow filename, and direct-publish permission above. Package repository URLs already point at `https://github.com/awc-ui/core`.
-3. For the **next separately authorized release**, choose `authentication=trusted` and a compatible channel/tag plan. Inspect the published package versions, requested tags, and provenance for all seven packages.
+2. Confirm all eight npm configurations use the exact owner, repository, workflow filename, and direct-publish permission above. Package repository URLs already point at `https://github.com/awc-ui/core`.
+3. For the **next separately authorized release**, choose `authentication=trusted` and a compatible channel/tag plan. Inspect the published package versions, requested tags, and provenance for all eight packages.
 4. Trusted mode is already the default. After the first successful OIDC release, decide how maintainers will handle the remaining interactive dist-tag operations before removing the legacy fallback.
 5. Only then restrict token publishing and revoke/remove obsolete credentials. npm recommends validating Trusted Publishing before disabling tokens. ([npm migration sequence](https://docs.npmjs.com/trusted-publishers/#migration-tip))
 
@@ -51,3 +51,9 @@ Packing and `publish --dry-run` validate artifacts but do not prove OIDC trust. 
 Sensitive account, organization, and package-management operations now require interactive 2FA even with bypass-2FA granular access tokens. npm targets January 2027 for removing those tokens' direct-publishing capability; Trusted Publishing is the automated replacement. This npm change does not revoke GitHub tokens. ([July 31 enforcement update](https://github.blog/changelog/2026-07-31-restricting-npm-bypass-2fa-granular-access-tokens/))
 
 npm 12 also makes dependency lifecycle scripts, Git dependencies, and remote URL dependencies opt-in. This workflow still installs workspace dependencies with pnpm and uses the pinned npm 11 CLI for OIDC publishing, so migrating authentication does not change the workspace's install policy. ([July 8 announcement](https://github.blog/changelog/2026-07-08-npm-install-time-security-and-gat-bypass2fa-deprecation/))
+
+## First MCP package publication
+
+`@awc-ui/mcp@1.0.0-beta.14` was first published publicly under the `beta` tag on 2026-09-12 using interactive npm authentication. This MCP-only release bundles the exact published Core beta.14 APIs and manuals, with framework guides from `v1.0.0-beta.14`; it does not publish newer Core component changes or the skill installer.
+
+Configure its npm Trusted Publisher for the repository and workflow listed above before the next trusted release. The bootstrap publication does not configure that trust automatically. The preflight continues to reject missing packages; a future new package needs its own authenticated first publication.

@@ -1,4 +1,5 @@
 ---
+import DocVersionSelect from './DocVersionSelect.astro';
 import { Icon } from '@astrojs/starlight/components';
 import { getRelease, npmUrl, githubUrl } from '../lib/release.mjs';
 
@@ -12,6 +13,7 @@ const releaseLabel = `@awc-ui/core v${version} on npm${tag ? ` (${tag} tag)` : '
 ---
 
 <div class:list={['awc-release-links', { 'awc-release-links--hero': variant === 'hero' }]}>
+  {variant === 'compact' && <DocVersionSelect />}
   <a class="awc-release-links__npm" href={tag ? `${npmUrl}/v/${version}` : npmUrl} aria-label={releaseLabel} title={releaseLabel}>
     <Icon name="npm" size="1.125rem" />
     <span class="awc-release-links__label">npm</span>

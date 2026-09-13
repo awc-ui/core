@@ -1,221 +1,127 @@
 ---
 title: Showcase
-description: "Complete applications built with AWC UI — explore cross-framework showcases and focused demos with real navigation, playback, and live theming."
+description: "Explore complete AWC UI applications by industry, from banking and healthcare to travel, media, and industrial operations."
 ---
 
-A component gallery shows you parts. These are whole applications: real
-navigation, real drill-downs, real data density — the conditions a component
-library actually has to survive.
+Explore AWC UI through the business workflows you are building. Each showcase
+combines Core components into a complete application, with examples for both
+customer-facing services and staff workspaces.
 
-The cross-framework showcases ship in **every framework they target** — React,
-Vue, Angular, Svelte and plain HTML with no framework at all, plus Astro and the
-four server-rendered builds on the credit-risk console. Open one in React,
-switch to Angular or Svelte from inside the app, and you are looking at the same
-screens and the same data rendered by a different stack. Not a port each time:
-the data, the translations, the derived series and the table layouts all come
-from one shared package, so the only thing that differs between the builds is
-the view layer.
+Choose an industry below, then open an application for its demo, supported
+frameworks, component breakdown, and suggested workflows to try. The showcases
+use fictional business data; transactions, care records, and equipment controls
+are demonstrations.
 
-The control bar in those apps also flips **theme, density, text direction and
-language** at runtime, so you can see how the components behave under conditions
-most demos never show.
+## Banking & finance
 
-Frame provides five framework integrations around a shared video app controller.
-Its appearance panel changes theme,
-accent color, density, and motion; its player demonstrates AWC controls working
-with real video playback.
+### [Credit risk analysis — Aurelia Bank](/showcase/credit-risk/)
 
-## Applications
+A Credit Risk Console for bank risk analysts reviewing portfolio exposure,
+sectors, counterparties, facilities, and covenants. Explore a watchlist and
+stress-testing scenarios through dense tables, charts, and connected drill-downs.
 
-### [Credit Risk Console](/showcase/credit-risk/)
+### [Wealth management — Kestrel Private Bank](/showcase/wealth/)
 
-A wholesale-banking credit risk workbench for the fictional **Aurelia Bank** —
-portfolio exposure that drills down through sectors, counterparties, facilities
-and covenants, with a watchlist and stress-testing scenarios.
+An advisory workspace for private bankers managing households, portfolios, and
+investment goals. Build rebalancing proposals, inspect positions, and explore an
+order ticket with multi-step validation.
 
-Built to stress the parts of a library that dashboards usually avoid: dense
-sortable tables, deep breadcrumb trails, charts fed from the same data, corporate
-group hierarchies, and a full translation layer including a right-to-left
-language.
+### [Retail banking & investing — Vela](/showcase/banking/)
 
-Ten builds: each framework twice, once as a single-page app and once
-server-rendered per request.
+A customer banking app for reviewing accounts, filtering statements, managing
+cards, exchanging currencies, and exploring investments. Its responsive screens
+demonstrate everyday banking workflows on phones and desktops, using fictional
+accounts and simulated transactions.
 
-### [Wealth Management Console](/showcase/wealth/)
+## Healthcare & pharmaceuticals
 
-A private-bank advisory workbench for the fictional **Kestrel Private Bank** — a
-book of households that opens out into portfolios, positions, rebalancing
-proposals, an order ticket and a goal planner.
+### [Hospital case management — Medflow](/showcase/medflow/)
 
-Built to stress what a dashboard never asks for: a four-step form that vetoes
-its own step changes until each is valid, an order ticket that re-estimates as
-you type, a transfer list whose universe prunes itself as the constraints above
-it change, and an organisation chart that traces a selection back to its root.
+A workspace for clinicians and care coordinators to search patient worklists,
+assign clinicians, track case progression, and inspect patient-flow charts.
 
-Five builds, all single-page or static — no SSR. The plain-HTML one is the
-comparison worth making: no framework, no hydration of its own, a page per
-locale written at build time.
+### [Laboratory testing & review — Vela](/showcase/pharma/)
 
-### [Money & Investing App](/showcase/banking/)
+A pharmaceutical laboratory workspace for analysts and reviewers handling
+compounds, samples, test assignments, and review queues. Follow a test run,
+approve a review, or request a retest using fictional laboratory records.
 
-A consumer banking and investing app for the fictional **Vela** — five accounts,
-a year of statement, an exchange desk, a small portfolio and the cards that
-spend it.
+## Travel & transportation
 
-The two consoles above are workstation software. This one is a phone app that
-also has to work on a desktop screen, which is a different set of demands: two
-screens swap their markup rather than their styling below 720px, every touch
-target grows under `pointer: coarse`, and a statement grouped by day has to
-re-derive each day's total whenever a filter changes what is under the heading.
+### [Accommodation discovery & booking — Roam](/showcase/booking/)
 
-Five builds, all single-page or static. The plain-HTML one answers the same
-media queries with no framework to re-render it.
+A travel booking app for guests searching destinations, comparing stays, saving
+properties, and choosing dates and guest counts. Complete a demo checkout and
+manage the reservation in My trips. Prices and availability are simulated.
 
-### [Photos & People](/showcase/social/)
+### [Flight search & booking — Aero](/showcase/aero/)
 
-A social photo app for the fictional **Lyra** — a feed of pictures from the
-people you follow, an explore grid over everything else, a four-step composer,
-notifications and the profiles behind all of it.
+An airline booking interface for travelers comparing one-way and return flights,
+choosing fares, adding passenger details, and selecting seats and bags. Review
+and manage demo trips with simulated availability and prices.
 
-The other three are figures. This one is content: pictures with aspect ratios
-that must not reflow, captions and comments that are themselves translated
-rather than being fixture strings, timestamps in "3h ago" measured against a
-fixed instant, and a carousel whose pager sits inside a card whose picture is a
-link. Every image is SVG artwork generated from the seed and inlined — not one
-photograph, no CDN, and every one of them carries a written description.
+### [Metro station operations — Metro pulse](/showcase/metro-monitor/)
 
-Five builds, all single-page or static. The plain-HTML one keeps its state
-swaps in `<template>` elements, because a hidden element is still an element.
+An operations workspace for network operators monitoring passenger flow,
+filtering stations, and acknowledging or resolving incidents. Explore train
+movement across 15 fictional stations on three lines. Telemetry, trains, and
+incidents belong to the browser simulation.
 
-### [Friends & Groups](/showcase/community/)
+## Media & entertainment
 
-A social network for the fictional **Corvus** — a three-column feed of what your
-friends are saying, the friendships behind it, the groups they meet in, the
-events they turn up to, and threaded arguments underneath all of it.
+### [Video discovery & creator channels — Frame](/showcase/frame/)
 
-Lyra is wide and shallow: many pictures, one level of comments. This one is the
-opposite. Comments nest two deep in reading order, a share renders the original
-post inside the outer one, and almost nothing here is a boolean — a reaction is
-seven states whose *switch* must leave the total alone, a friendship is five
-with a gap between asking and being answered, and group membership adds
-**pending**, which is why privacy is data rather than a lock icon.
+A video platform for viewers browsing feeds, searching videos, following creator
+channels, and organizing a personal library. Watch demo footage or import a local
+video with working playback controls. Creator and engagement data are fictional.
 
-Five builds, all single-page or static. The plain-HTML one clones threads, feed
-pages and the composer out of `<template>` elements on demand, because a hidden
-element is still an element the parity census counts.
+### [Music libraries & studio editing — Cygnus](/showcase/music/)
 
-### [Music & Studio](/showcase/music/)
+A music app combining listener libraries, albums, and artist pages with an
+arrangement timeline and mixer for studio workflows. Its shared transport keeps
+playback state across navigation, but the playhead is simulated: the showcase
+contains no audio or recordings.
 
-A music app for the fictional **Cygnus** — a listening half with a library,
-albums and artists, an editing half with an arrangement timeline and a mixer,
-and a transport bar that spans both.
+### [Live events & ticket booking — Encore](/showcase/encore/)
 
-The other five hold their interaction state inside a screen. This one cannot: an
-app that stopped playing when you opened an album would not be a music app, so
-the transport lives above the router in all four SPA builds — and the
-plain-HTML one, which has no router at all, writes it to `sessionStorage` and
-reads it back on every page load. Time is the layout's axis rather than a row
-index, and the arrangement is a CSS grid with one column per bar because the
-deployed policy forbids the `style` attribute a pixel offset would need.
+A ticketing app for audiences discovering shows, choosing performances and ticket
+areas, and completing a booking. Try discounts, demo checkout, downloadable
+tickets, and cancellations. Shows and bookings are fictional.
 
-Five builds, all single-page or static. Nothing plays: there is no audio, and
-the playhead advances only while the transport says it is playing.
+## Social networks
 
+### [Photo sharing & discovery — Lyra](/showcase/social/)
 
-### [Pictor — Design & Image](/showcase/design/)
+A social photo app for browsing a followed feed, exploring images, composing
+posts, and visiting profiles. Notifications, captions, and comments demonstrate
+content-led interfaces with generated artwork and fictional people and accounts.
 
-An interactive design studio with editable templates, a canvas and layer tree,
-a geometry and color inspector, live AWC components, and reversible edit
-history. Browse projects and assets, inspect the actual components behind the
-interface, and export a composition as SVG, PNG or JSON.
+### [Community feeds, groups & events — Corvus](/showcase/community/)
 
-Five native builds: HTML, React, Vue, Angular and Svelte. The shared document
-engine keeps your work in this browser across framework switches. Try Arabic
-and right-to-left layout from the control bar, including Arabic command search
-and number entry.
+A social network for connecting with friends, joining groups, exploring events,
+and taking part in threaded conversations. Explore reactions, membership states,
+and nested posts with fictional people, groups, and events.
 
+## Design & creative work
 
-### [Encore — Shows & Tickets](/showcase/encore/)
+### [Visual design & image editing — Pictor](/showcase/design/)
 
-Discover live music, theatre, comedy, and more. Choose a performance and ticket
-area, apply a discount, complete a demo checkout, and find your booking in My
-tickets. Download a demo ticket, add it to your calendar, or cancel the booking.
-AWC search, filters, number fields, steppers, payment choices, skeletons, and
-progress indicators work across HTML, React, Vue, Angular, and Svelte builds.
+A design studio for creating compositions from templates, assets, layers, and
+live AWC components. Designers can adjust geometry and colors, undo edits, and
+export SVG, PNG, or JSON. Work is kept in the browser; project and shared-file
+metadata are demonstration data.
 
-### [Frame — Video & Creators](/showcase/frame/)
+## Industry & utilities
 
-A YouTube-inspired discovery app with video feeds, creator channels, search,
-subscriptions, and a personal library. Play demo footage or import a local
-video, save something for later, and explore the interface in light and dark
-with three accent palettes.
+### [Water-treatment plant monitoring — Sentinel](/showcase/scada/)
 
-Frame uses **30 AWC UI component types**, including a toolbar, icon buttons,
-sliders, menus, and progress indicators for its video player. Navigation adapts
-from a desktop rail to a phone bottom bar. Switch among HTML, React, Vue,
-Angular, and Svelte integrations with browser storage and actual media playback.
+A SCADA-style workspace for plant operators inspecting assets, acknowledging
+alarms, adding notes, and comparing flow, pressure, and power trends. Plant data and equipment controls are simulated.
 
-### [Medflow — Hospital Cases](/showcase/medflow/)
+## Smart homes
 
-A hospital workspace with fictional patient cases, clinician assignment, care
-coordination, and patient-flow charts. Search and export a worklist, manage case
-progression, and explore login, signup, MFA, and recovery. Existing AWC chips,
-tables, dialogs, sheets, skeletons, and progress indicators compose the workflows.
+### [Home automation & energy monitoring — Habitat's Maple House](/showcase/smart-home/)
 
-One plain JavaScript build, with English and Arabic, automatic RTL, generated
-primary-color palettes, density controls, and an expandable navigation rail.
-
-### [Vela — Pharmaceutical Testing](/showcase/pharma/)
-
-A pharmaceutical laboratory workspace with fictional compounds, samples, test
-runs, and review queues. Create a test, assign an analyst, track run progress,
-and approve a review or request a retest. Explore login, signup, and MFA with
-a sample account.
-
-One plain JavaScript build composed from existing AWC tables, chips, forms,
-charts, dialogs, and sheets. Personalize the primary color, density, appearance,
-and layout direction. All laboratory data and account flows are demonstrations.
-
-### [Roam — Travel Booking](/showcase/booking/)
-
-A travel discovery and booking app with destination search, accommodation filters,
-property details, saved stays, and a checkout flow. Compare fictional properties,
-choose your dates and guests, then manage your sample reservation in My trips.
-
-One plain JavaScript build using existing AWC cards, chips, date pickers, forms,
-dialogs, and progress indicators. Explore login, signup, MFA, and personal color,
-density, appearance, and layout direction settings. Prices and reservations are
-simulated; no payment is taken.
-
-### [Aero — Flight Booking](/showcase/aero/)
-
-Search one-way and return flights, compare fares, enter traveler details, and
-choose seats and bags before reviewing a sample booking. Manage tab-local demo
-reservations in My trips. Existing AWC React components provide the search
-controls, fare cards, booking steps, dialogs, and action feedback.
-
-### [Maple House — Smart Home](/showcase/smart-home/)
-
-Explore Habitat's simulated home across five rooms. Control lights, blinds,
-climate, and other devices; apply scenes, inspect energy readings, and create
-routine previews. Existing AWC navigation, switches, sliders, charts, forms,
-and sheets support a responsive workspace with Arabic and appearance settings.
-
-### [Metro pulse — Station Operations](/showcase/metro-monitor/)
-
-A React operations app for 15 fictional metro stations on three lines. Explore
-passenger-flow charts, station filters, incident acknowledgment and resolution,
-and six simulated trains with station stops and adjustable playback speed.
-
-Uses the typed React wrappers, native AWC tables and charts, a custom network
-schematic, demo MFA, and persistent appearance preferences.
-
-### [Sentinel — SCADA Monitoring](/showcase/scada/)
-
-An industrial monitoring frontend for a fictional water-treatment plant. Track
-simulated telemetry, inspect assets, acknowledge alarms, add operator notes, and
-compare flow, pressure, and power trends over one, six, or 24 hours.
-
-One plain JavaScript build with responsive native navigation, English and Arabic,
-color and density settings, demo authentication, and loading/action feedback.
-All equipment signals and controls belong to the browser simulation.
+A home-control app for residents managing rooms, lights, blinds, climate, scenes,
+and routine previews. Inspect energy readings and device states across the demo
+residence. Device controls are simulated.

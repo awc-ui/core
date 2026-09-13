@@ -1,0 +1,53 @@
+{
+  "name": "@awc-ui/mcp",
+  "version": "1.0.0-beta.14",
+  "description": "Offline MCP server for AWC UI Core component discovery, API manuals, and integration guides",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://awc-ui.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awc-ui/core.git",
+    "directory": "packages/mcp"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": "^22.13.0 || >=24.0.0"
+  },
+  "bin": {
+    "awc-ui-mcp": "bin/awc-ui-mcp.mjs"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node scripts/build-catalog.mjs",
+    "start": "node bin/awc-ui-mcp.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "prepack": "node scripts/build-catalog.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.0.0"
+  },
+  "keywords": [
+    "awc-ui",
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "components",
+    "web-components",
+    "design-system",
+    "documentation",
+    "accessibility"
+  ]
+}

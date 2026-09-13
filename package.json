@@ -57,7 +57,7 @@
     "size:why": "pnpm --filter @awc-ui/core size:why",
     "ci:size": "pnpm --filter @awc-ui/core size && pnpm --filter @awc-ui/react size",
     "ci:wrappers": "pnpm --filter @awc-ui/react --filter @awc-ui/vue --filter @awc-ui/angular --filter @awc-ui/svelte --filter @awc-ui/theme build && node scripts/fix-declarations.mjs react vue angular svelte theme",
-    "ci:publint": "publint packages/core && publint packages/react && publint packages/vue && publint packages/svelte && publint packages/theme && publint packages/angular && publint packages/tokens",
+    "ci:publint": "publint packages/core && publint packages/react && publint packages/vue && publint packages/svelte && publint packages/theme && publint packages/angular && publint packages/tokens && publint packages/mcp",
     "ci:attw": "attw --pack packages/core --profile node16 --ignore-rules no-resolution cjs-resolves-to-esm && attw --pack packages/react --ignore-rules false-cjs cjs-resolves-to-esm no-resolution && attw --pack packages/vue --ignore-rules cjs-resolves-to-esm internal-resolution-error && attw --pack packages/svelte --profile esm-only --ignore-rules internal-resolution-error && attw --pack packages/theme --profile esm-only --ignore-rules internal-resolution-error",
     "changeset": "changeset",
     "changeset:status": "changeset status --since=origin/main",
@@ -100,7 +100,11 @@
     "test:adapters": "node packages/angular/tests/forms.mjs && node packages/vue/tests/forms.mjs && node packages/vue/tests/generation.mjs && node packages/svelte/tests/types.mjs",
     "test:ssr-contracts": "node --test packages/core/scripts/ssr-smoke.test.mjs scripts/verify-svelte-ssr.mjs",
     "verify:starters": "node scripts/verify-starters.mjs",
-    "verify:dx": "pnpm check:environment && pnpm test:cli && pnpm test:adapters && pnpm test:ssr-contracts && pnpm verify:consumer-types && pnpm verify:package-size"
+    "verify:dx": "pnpm check:environment && pnpm test:cli && pnpm test:adapters && pnpm test:ssr-contracts && pnpm verify:consumer-types && pnpm verify:package-size",
+    "build:mcp": "pnpm --filter @awc-ui/mcp build",
+    "test:mcp": "pnpm build:mcp && pnpm --filter @awc-ui/mcp test",
+    "docs:snapshot": "node scripts/snapshot-docs.mjs",
+    "docs:versions:check": "node scripts/snapshot-docs.mjs --check"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.4",

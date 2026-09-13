@@ -12,7 +12,8 @@
         "hydrate/**",
         "bin/templates/**",
         "main-llm.md",
-        "custom-elements.json"
+        "custom-elements.json",
+        "skills/**"
       ]
     },
     "@awc-ui/showcase-credit-risk-html#build": {
@@ -144,6 +145,9 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "../../CONTRIBUTING.md",
+        "../../scripts/snapshot-docs.mjs",
+        "../../scripts/snapshot-docs.test.mjs",
+        "../../scripts/lib/docs-versions.mjs",
         "../../apps/frame/src/**",
         "../../apps/frame/public/**",
         "../../apps/frame/scripts/**",
@@ -216,6 +220,44 @@
       ],
       "outputs": [
         "storybook-static/**"
+      ]
+    },
+    "@awc-ui/core#build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "../../main-llm.md",
+        "../../skills/**",
+        "../../scripts/build-package-docs.mjs"
+      ],
+      "outputs": [
+        "dist/**",
+        "www/**",
+        "loader/**",
+        "hydrate/**",
+        "bin/templates/**",
+        "main-llm.md",
+        "custom-elements.json",
+        "skills/**"
+      ]
+    },
+    "@awc-ui/mcp#build": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "../../main-llm.md",
+        "../../packages/core/package.json",
+        "../../packages/core/src/components/**",
+        "../../apps/docs/src/content/docs/**",
+        "../../scripts/generate-custom-elements-manifest.mjs",
+        "../../LICENSE",
+        "../../scripts/generate-docs.mjs",
+        "../../apps/storybook/src/stories/**"
+      ],
+      "outputs": [
+        "dist/**",
+        "LICENSE"
       ]
     }
   }

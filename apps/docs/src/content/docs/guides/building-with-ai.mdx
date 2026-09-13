@@ -1,141 +1,250 @@
 ---
 title: Building with AI
-description: Install the package and your AI assistant already knows the library — Claude, Cursor, Copilot and Codex read the docs that ship inside it
+description: Set up your AI assistant with AWC UI Core, then add optional build and review skills or MCP documentation tools.
 sidebar:
   order: 3
 ---
 
-AWC UI ships its own documentation **inside the npm package**. Every component
-has a manual next to the code, so an assistant reads the real API instead of
-guessing at prop names and inventing components that do not exist.
+Set up your assistant once, then describe what you want to build. AWC UI ships
+component manuals with the package, so your assistant can use the API for your
+installed version.
 
-Nothing is fetched from the network. Everything below works offline, from
-`node_modules`.
+## 1. Set up your project
 
-## Two commands
+Run these commands in your app's directory. Skip the install if Core is already
+in your project.
 
-```bash
+```sh
 npm install @awc-ui/core
-npx awc-ui ai-setup
+npx --no-install awc-ui ai-setup
 ```
 
-The second command points the assistants in your project at the docs that came
-with the package. It writes one small block into each file your tools already
-read:
+The setup command adds documentation links to the instruction files used by
+Codex, Claude Code, Cursor, and GitHub Copilot. It preserves your own instructions
+and uses your project's framework when it can detect it.
 
-| File | Read by |
-|---|---|
-| `AGENTS.md` | Codex, Amp, and anything following the AGENTS.md convention |
-| `CLAUDE.md` | Claude Code |
-| `.cursor/rules/awc-ui.mdc` | Cursor |
-| `.github/copilot-instructions.md` | GitHub Copilot |
+That is enough to get started. MCP and skills are optional.
 
-Each block is wrapped in `<!-- BEGIN awc-ui -->` / `<!-- END awc-ui -->`
-markers. Re-running updates that block in place — your own instructions in
-those files are never touched. Run it again after upgrading the package.
+## 2. Ask for what you need
 
-```bash
-npx awc-ui ai-setup --dry-run   # show what would change, write nothing
-npx awc-ui ai-setup --check     # exit 1 if a pointer is missing or stale (CI)
+Describe the result and any constraints that matter. You do not need to choose
+component names or repeat the library's rules.
+
+**Build something new**
+
+```text
+Build a customer dashboard with AWC UI. Use React, a searchable
+customer table, and a form for adding customers. Support mobile.
 ```
 
-:::note[Why a command instead of automatic]
-No assistant scans `node_modules` on its own — each one reads a specific file
-in your project root. A postinstall hook could write those files for you, but
-package managers increasingly block postinstall by default, and silently
-editing a project's instruction files is not something a dependency should do
-uninvited. One explicit command is both more reliable and better manners.
-:::
+**Change an existing app**
 
-## What the assistant now has
-
-| Path | What it is |
-|---|---|
-| `main-llm.md` | **The build director.** Interviews you about scope, theming, density, RTL and forms, then routes each need through a decision matrix. Its inventory lists every component |
-| `src/components/<tag>/readme.md` | One component: when to use it, when **not** to, its full API, the accessibility contract, and an anti-patterns table |
-
-All paths are relative to `node_modules/@awc-ui/core/`.
-
-The per-component manuals are the part that matters most. Each one carries a
-*When NOT to use* table pointing at the component you probably wanted instead,
-and an *Anti-patterns* table of mistakes models actually make — which is what
-stops an assistant confidently generating the wrong thing.
-
-## Prompts that work
-
-**Start from the director.** It asks before it builds:
-
-```
-Read the AWC UI build director and build me a settings page.
+```text
+Fix the table toolbar jumping when rows are selected.
+Use the existing AWC UI components and keep our current theme.
 ```
 
-**Be explicit about the surface, not the markup.** The decision matrix does the
-component selection:
+**Review without making changes**
 
-```
-Build an admin console shell: navigation rail on desktop,
-top app bar with search, dense (-2) data table with row
-selection and pagination. Dark mode toggle in the app bar.
+```text
+Review this form's AWC UI integration and keyboard behavior.
+Report issues before changing code.
 ```
 
-**Name the constraints up front.** These change component choice:
+Your assistant should read the relevant component manuals, preserve existing
+project decisions, and check the requested behavior. For a new app, it asks
+only about missing decisions that affect the work. A focused fix does not
+restart app setup, and a review stays read-only unless you request changes.
 
-```
-Mobile-first, RTL support required (Arabic + Hebrew),
-WCAG 2.1 AA, forms must submit natively with FormData.
-```
+## 3. Keep setup current
 
-**Ask for the check.** Every manual has an anti-patterns table:
+Run `npx --no-install awc-ui ai-setup` again after upgrading Core. It refreshes
+only the generated documentation links.
 
-```
-Review this against the anti-patterns section of the manual
-for each component you used.
-```
+<details>
+<summary>Preview changes, check setup, and see which files are updated</summary>
 
-## What agents get wrong
-
-Even with the docs installed, these recur:
-
-| Mistake | Correct |
-|---|---|
-| `<md-list items='[…]'>` | `el.items = [...]` — arrays are JS properties |
-| Wrapping `md-button` in `<button>` or `<a>` | The host **is** the control; use `href`/`type` |
-| Icon-only `md-button` | `md-icon-button` with `aria-label` |
-| `max-selected="0"` to block selection | `0` means **unlimited** |
-| `density="0"` to escape an inherited rung | `0` is inert; set `--md-sys-density-scale: 0` |
-| Hardcoding `#6750A4` | `var(--md-sys-color-primary)` |
-| Adding a hidden `<input>` to submit a value | The form-associated components already do this |
-| Building a table by hand | `md-table` with `md-table-row` / `md-table-cell` |
-
-## Components that do not exist
-
-Agents hallucinate these. There is no rich text editor, file upload/dropzone,
-calendar view, map, toast queue manager, or data-driven grid — `md-table` is
-composable: it tracks sort, selection and pagination state, and you render the
-rows.
-
-If you need one, ask for a third-party library **styled with the MD3 tokens**:
-
-```
-There's no RTE in AWC UI. Integrate TipTap and style it with
---md-sys-color-* and --md-sys-typescale-* so it matches.
+```sh
+npx --no-install awc-ui ai-setup --dry-run
+npx --no-install awc-ui ai-setup --check
 ```
 
-## Verifying the output
+`--dry-run` previews changes. `--check` writes nothing and exits with code 1
+when setup is missing or stale, so it can also run in CI.
 
-Ask the assistant to check its own work against the library's own rules:
+The command maintains a marked AWC UI block in `AGENTS.md`, `CLAUDE.md`,
+`.cursor/rules/awc-ui.mdc`, and `.github/copilot-instructions.md`.
+Content outside that block is preserved.
 
+The links point to `main-llm.md` for task guidance and
+`src/components/<tag>/readme.md` for individual component contracts, inside
+your installed `@awc-ui/core` package.
+
+</details>
+
+## Optional: MCP and skills
+
+Add **skills** for reusable build and review workflows, or **MCP** to let your
+assistant search component documentation through tools. Use either or both;
+they read the same Core manuals as the basic setup.
+
+### Add skills
+
+Copy `skills/awc-ui-build/` and `skills/awc-ui-review/` from the Core checkout
+into your app's `.agents/skills/` directory. If your assistant uses another skill
+directory, copy the complete folders there instead. Preserve any customized
+copies already in that location.
+
+Then ask your assistant to build or review an interface. In clients that support
+explicit skill invocation, you can also use:
+
+```text
+Use $awc-ui-build to add a settings form. Keep our framework and theme.
 ```
-Run through the ship checklist at the end of the AWC UI build
-director against what you built.
+
+```text
+Use $awc-ui-review to check this form. Report issues without changing code.
 ```
 
-That covers accessible names on icon-only controls, a keyboard-only pass,
-light **and** dark, RTL if applicable, density, form submission, and no
-hardcoded strings.
+The skills read your installed Core manuals. They preserve project decisions,
+keep fixes focused, and use MCP only when available with matching documentation.
 
-## Related
+<details>
+<summary>Install skills through the CLI after the Core release</summary>
 
-- [Components](/components/) — the browsable component set
-- [Accessibility](/guides/accessibility/) — what the checklist is checking
-- [Theming](/theming/) — the token layer the assistant is told to use
+With a Core version containing the skills installed, run in your app:
+
+```sh
+npx --no-install awc-ui ai-setup --skills
+```
+
+This sets up the documentation links and installs both skills in
+`.agents/skills/`. Run it again after upgrading Core. Add `--dry-run` to preview
+changes or `--check` to verify setup without writing.
+
+Identical skills are kept. Customized or conflicting copies are reported
+without being overwritten. The command does not configure MCP or global agent
+settings.
+
+</details>
+
+### Connect MCP
+
+MCP gives your assistant tools to find components and read their APIs. Use
+Node 22.13+ on the 22.x line, or Node 24+. Install Core using the project setup
+above, then connect your assistant.
+
+#### Codex
+
+With the Codex CLI installed, run this once to make the server available across
+your Codex projects:
+
+```sh
+codex mcp add awc-ui -- npx -y @awc-ui/mcp
+```
+
+Restart Codex, then use `/mcp` to check the connection. The desktop app and CLI
+share MCP configuration. See the [Codex MCP setup guide](https://learn.chatgpt.com/docs/extend/mcp?surface=cli)
+for settings and project-specific configuration.
+
+#### Claude Code
+
+With the Claude Code CLI installed, run this in your app's directory:
+
+```sh
+claude mcp add --transport stdio --scope project awc-ui -- npx -y @awc-ui/mcp
+```
+
+This creates or updates `.mcp.json` in the project root. Start a new Claude Code
+session, approve the server when prompted, and use `/mcp` to check the
+connection. Use `--scope user` instead of `--scope project` to make it available
+across all your projects. See the [Claude Code MCP setup guide](https://code.claude.com/docs/en/mcp).
+
+<details>
+<summary>Configure another MCP client</summary>
+
+Add this local stdio server in your assistant's MCP settings. The surrounding
+configuration format depends on your client.
+
+```json
+{
+  "mcpServers": {
+    "awc-ui": {
+      "command": "npx",
+      "args": ["-y", "@awc-ui/mcp"]
+    }
+  }
+}
+```
+
+</details>
+
+Your assistant starts the server for you; no separate terminal process is
+needed. The unversioned package name uses npm's `latest` release. The first
+package download needs internet access; the installed server serves its bundled
+documentation offline, without an API key.
+
+Then ask:
+
+```text
+Use the AWC UI MCP tools to find a searchable table component.
+Check its API against our installed Core version, then implement it.
+```
+
+The server reports its bundled `coreVersion`; your assistant should compare it
+with your app's installed Core version before using a documented feature. If
+the versions differ, use the manuals included with your installed Core package.
+Project edits use your assistant's existing tools.
+
+<details>
+<summary>Run from a Core checkout instead</summary>
+
+To try documentation for the current source, use the repository's pnpm version:
+
+```sh
+pnpm install
+pnpm build:mcp
+```
+
+Replace the npm configuration with:
+
+```json
+{
+  "mcpServers": {
+    "awc-ui": {
+      "command": "node",
+      "args": ["/absolute/path/to/core/packages/mcp/bin/awc-ui-mcp.mjs"]
+    }
+  }
+}
+```
+
+Replace the path with your checkout location. A source build may describe
+unreleased changes; use the npm package for documentation of a released Core
+version.
+
+</details>
+
+<details>
+<summary>MCP tool and resource reference</summary>
+
+| Tool | Purpose |
+| --- | --- |
+| `search_components` | Find components by name or use case. An empty query lists components; `limit`, `offset`, and `nextOffset` support pagination. |
+| `get_component` | Read an exact tag's `manual`, structured `api`, or `both`. |
+| `list_guides` | List available framework, build, theme, and accessibility guides. |
+| `get_guide` | Read a guide by its listed ID. |
+
+The same content is available through `awc://catalog`,
+`awc://components/{tag}/manual`, `awc://components/{tag}/api`, and
+`awc://guides/{id}` resources. The `awc-ui-build` and `awc-ui-review` MCP prompts
+accept a `task` and an optional `framework`; they do not install skill folders.
+
+Component manuals are canonical Markdown. Guide snapshots retain MDX source;
+repository-relative links refer to source locations, not files on the client.
+The server has no project-file, shell, URL-fetch, or application-data tools.
+
+</details>
+
+For component APIs, browse the [component reference](/components/). For a manual
+project setup, follow the [installation guide](/getting-started/installation/).

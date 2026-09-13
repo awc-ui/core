@@ -3,7 +3,7 @@
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
-export const PACKAGES = ['core', 'tokens', 'react', 'vue', 'angular', 'svelte', 'theme'].map(name => `@awc-ui/${name}`);
+export const PACKAGES = ['core', 'tokens', 'react', 'vue', 'angular', 'svelte', 'theme', 'mcp'].map(name => `@awc-ui/${name}`);
 
 function atLeast(actual, minimum) {
   const match = /^v?(\d+)\.(\d+)\.(\d+)$/.exec(actual);

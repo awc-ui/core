@@ -153,7 +153,8 @@
     "src/components/*/readme.md",
     "define.d.mts",
     "ssr/",
-    "!bin/**/*.test.mjs"
+    "!bin/**/*.test.mjs",
+    "skills/"
   ],
   "scripts": {
     "build": "node ../../scripts/build-starter-templates.mjs && node ../../scripts/build-package-docs.mjs && rm -rf dist && stencil build && stencil build --config stencil.config.csr.ts && node ../../scripts/fix-module-types.mjs && node ../../scripts/fix-declarations.mjs && node ../../scripts/split-react-components.mjs && node ../../scripts/emit-tokens-css.mjs && node ../../scripts/emit-pre-upgrade-css.mjs && node ../../scripts/compact-sourcemaps.mjs",

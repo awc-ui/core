@@ -164,9 +164,9 @@ function rehypeWrapTables() {
 }
 
 export default defineConfig({
-  // The accordion-item reference was folded into the accordion page; keep the
-  // old URL alive rather than 404ing anyone who bookmarked or linked it.
+  // Preserve URLs for references and guides folded into their parent pages.
   redirects: {
+    '/guides/ai-assistants/': '/guides/building-with-ai/#optional-mcp-and-skills',
     '/components/breadcrumb-item/': '/components/breadcrumbs/#md-breadcrumb-item',
     '/components/select-option/': '/components/select/#md-select-option',
     '/components/menu-item/': '/components/menu/#md-menu-item',
@@ -216,6 +216,7 @@ export default defineConfig({
       components: {
         Head: './src/components/Head.astro',
         SocialIcons: './src/components/ReleaseLinks.astro',
+        Search: './src/components/DocsSearch.astro',
       },
       customCss: [
         '@awc-ui/tokens/tokens.css',
@@ -468,34 +469,77 @@ export default defineConfig({
         },
         // Full applications, with available framework builds and focused demos
         // mounted under /showcase/<app>/<framework>/ on the deployed site.
-        // Ordered deliberately: the gallery index first, then one page per app.
+        // Group applications by the businesses and workflows they serve.
         {
           label: 'Showcase',
           collapsed: true,
           items: [
             { label: 'Overview', link: '/showcase/' },
-            { label: 'Credit Risk Console', link: '/showcase/credit-risk/' },
-            { label: 'Wealth Management Console', link: '/showcase/wealth/' },
-            { label: 'Money & Investing App', link: '/showcase/banking/' },
-            { label: 'Photos & People', link: '/showcase/social/' },
-            { label: 'Friends & Groups', link: '/showcase/community/' },
-            { label: 'Music & Studio', link: '/showcase/music/' },
-            { label: 'Pictor — Design & Image', link: '/showcase/design/' },
-            { label: 'Frame — Video & Creators', link: '/showcase/frame/' },
-            { label: 'Encore — Shows & Tickets', link: '/showcase/encore/' },
-            { label: 'Medflow — Hospital Cases', link: '/showcase/medflow/' },
-            { label: 'Vela — Pharmaceutical Testing', link: '/showcase/pharma/' },
-            { label: 'Roam — Travel Booking', link: '/showcase/booking/' },
-            { label: 'Aero — Flight Booking', link: '/showcase/aero/' },
-            { label: 'Maple House — Smart Home', link: '/showcase/smart-home/' },
-            { label: 'Metro pulse — Station Operations', link: '/showcase/metro-monitor/' },
-            { label: 'Sentinel — SCADA Monitoring', link: '/showcase/scada/' },
+            {
+              label: 'Banking & finance',
+              collapsed: true,
+              items: [
+                { label: 'Credit risk', link: '/showcase/credit-risk/' },
+                { label: 'Wealth management', link: '/showcase/wealth/' },
+                { label: 'Retail banking & investing', link: '/showcase/banking/' },
+              ],
+            },
+            {
+              label: 'Healthcare & pharmaceuticals',
+              collapsed: true,
+              items: [
+                { label: 'Hospital case management', link: '/showcase/medflow/' },
+                { label: 'Pharmaceutical testing', link: '/showcase/pharma/' },
+              ],
+            },
+            {
+              label: 'Travel & transportation',
+              collapsed: true,
+              items: [
+                { label: 'Hotel & stay booking', link: '/showcase/booking/' },
+                { label: 'Flight booking', link: '/showcase/aero/' },
+                { label: 'Metro operations', link: '/showcase/metro-monitor/' },
+              ],
+            },
+            {
+              label: 'Media & entertainment',
+              collapsed: true,
+              items: [
+                { label: 'Video streaming & creators', link: '/showcase/frame/' },
+                { label: 'Music listening & production', link: '/showcase/music/' },
+                { label: 'Event ticketing', link: '/showcase/encore/' },
+              ],
+            },
+            {
+              label: 'Social networks',
+              collapsed: true,
+              items: [
+                { label: 'Photo sharing', link: '/showcase/social/' },
+                { label: 'Communities & groups', link: '/showcase/community/' },
+              ],
+            },
+            {
+              label: 'Design & creative work',
+              collapsed: true,
+              items: [
+                { label: 'Design & image editing', link: '/showcase/design/' },
+              ],
+            },
+            {
+              label: 'Industry & utilities',
+              collapsed: true,
+              items: [
+                { label: 'SCADA & plant monitoring', link: '/showcase/scada/' },
+              ],
+            },
+            {
+              label: 'Smart homes',
+              collapsed: true,
+              items: [
+                { label: 'Home automation', link: '/showcase/smart-home/' },
+              ],
+            },
           ],
-        },
-        {
-          label: 'Compare',
-          collapsed: true,
-          autogenerate: { directory: 'compare' },
         },
         {
           label: 'Components',

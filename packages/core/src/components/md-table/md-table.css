@@ -166,18 +166,14 @@
   inline-size: 100%;
   min-block-size: 0;
   max-block-size: var(--md-table-body-max-h, none);
-  /* Vertical scrolls natively; horizontal is fully owned by the custom bar
-     (.md-table__hscroll) — overflow-x:hidden kills the native horizontal bar
-     (so it never doubles with the custom one) while programmatic scrollLeft +
-     the wheel handler still scroll it. */
-  overflow-x: hidden;
-  overflow-y: auto;
+  /* Both axes must scroll natively so a finger can pan across rows, including
+     momentum scrolling. Hide native bars separately in overlay mode below;
+     overflow:hidden also disables touch panning, not just the scrollbar. */
+  overflow: auto;
   /* No overscroll containment. This body scroller is inline page content, so
      reaching its first or last row must chain to the page — `contain` left a
      reader stuck inside the table with no way to scroll back up. It also
-     contained the INLINE axis, which this element does not even scroll
-     (overflow-x is hidden above), and containing an axis an element cannot
-     scroll still blocks chaining on it. */
+     contained the inline axis, preventing page scrolling at its edges too. */
 }
 /* Default `scrollbar="overlay"`: the native vertical bar is fully hidden —
    the custom overlay bar (.md-table__vscroll) floats over the rows' right
@@ -207,6 +203,7 @@
 }
 :host([scrollbar='gutter']) .md-table__body-scroll::-webkit-scrollbar {
   width: 10px;
+  height: 10px;
 }
 :host([scrollbar='gutter']) .md-table__body-scroll::-webkit-scrollbar-thumb {
   /* >= 3:1 non-text contrast (surface-container-highest measured ~1.25:1). */
@@ -219,7 +216,9 @@
   background: var(--md-sys-color-on-surface-variant, #49454F);
   background-clip: content-box;
 }
-:host([scrollbar='gutter']) .md-table__vscroll {
+:host([scrollbar='gutter']) .md-table__vscroll,
+:host([scrollbar='gutter']) .md-table__hscroll {
+  /* JS updates track display inline; native gutter bars must still win. */
   display: none !important;
 }
 

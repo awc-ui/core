@@ -2,9 +2,10 @@
 /**
  * build-package-docs.mjs
  *
- * Prepares the one generated file that ships inside @awc-ui/core:
+ * Prepares generated documentation and skill copies shipped inside @awc-ui/core:
  *
  *   packages/core/main-llm.md   the build director an assistant reads FIRST
+ *   packages/core/skills/       portable skills authored in /skills
  *
  * The per-component manuals are NOT copied. package.json `files[]` publishes
  * `src/components/*​/readme.md` directly, so the tarball carries the exact file
@@ -18,7 +19,7 @@
  * Run:   node scripts/build-package-docs.mjs
  */
 
-import { readFile, writeFile, rm } from 'node:fs/promises';
+import { readFile, writeFile, rm, cp } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -77,6 +78,10 @@ if (!existsSync(DIRECTOR)) {
   process.exit(1);
 }
 await writeFile(join(PKG, 'main-llm.md'), rewriteLinks(await readFile(DIRECTOR, 'utf8')));
+
+// Ship reusable skills from their canonical repo folders.
+await rm(join(PKG, 'skills'), { recursive: true, force: true });
+await cp(join(ROOT, 'skills'), join(PKG, 'skills'), { recursive: true });
 
 // Older revisions of this script copied every manual into packages/core/docs/
 // and emitted llms.txt / AGENTS.md there. files[] does not publish any of it,

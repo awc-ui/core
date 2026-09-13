@@ -7,6 +7,7 @@
 import { access, readFile, readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { checkArchives } from "./lib/docs-versions.mjs";
 
 const scriptDir = fileURLToPath(new URL(".", import.meta.url));
 const root = join(scriptDir, "..");
@@ -47,6 +48,7 @@ const publicPackages = [
   "svelte",
   "theme",
   "tokens",
+  "mcp",
 ];
 const requiredNpmKeywords = {
   core: [
@@ -192,6 +194,8 @@ if (await exists(dist)) {
     "robots.txt does not advertise the sitemap",
   );
 
+  check(await exists(join(dist, "guides/building-with-ai/index.html")), "Building with AI guide is missing from the site build");
+  check(await exists(join(dist, "guides/ai-assistants/index.html")), "Legacy AI assistants guide redirect is missing from the site build");
   const llmsPath = join(dist, "llms.txt");
   const llmsFullPath = join(dist, "llms-full.txt");
   check(await exists(llmsPath), "/llms.txt is missing from the site build");
@@ -267,6 +271,17 @@ if (await exists(dist)) {
     `sitemap contains only ${pageUrls.length} pages`,
   );
   check(pageUrls.includes("https://awc-ui.dev/llm/"), "sitemap omits /llm/");
+  check(pageUrls.includes("https://awc-ui.dev/versions/"), "sitemap omits documentation versions");
+  check(!pageUrls.some((url) => new URL(url).pathname.startsWith("/compare/")), "removed Compare pages remain in the site");
+  const { manifest: docsVersions, bundles } = await checkArchives(join(root, "apps/docs/versions"));
+  for (const [index, release] of docsVersions.versions.entries()) {
+    const snapshot = bundles[index];
+    const slugs = ["", ...snapshot.components.map(({ tag }) => `components/${tag.replace(/^md-/, "")}`), ...snapshot.guides.map(({ slug }) => slug)];
+    for (const slug of slugs) {
+      const url = `https://awc-ui.dev/versions/${release.version}/${slug ? `${slug}/` : ""}`;
+      check(pageUrls.includes(url), `sitemap omits archived reference: ${url}`);
+    }
+  }
   check(
     pageUrls.includes("https://awc-ui.dev/theme-generator/"),
     "sitemap omits /theme-generator/",
@@ -292,6 +307,12 @@ if (await exists(dist)) {
     check(await exists(htmlPath), `sitemap URL has no built page: ${pageUrl}`);
     if (!(await exists(htmlPath))) continue;
     const html = await readFile(htmlPath, "utf8");
+    if (/^\/versions\/[^/]+\//.test(new URL(pageUrl).pathname)) {
+      check(html.includes('data-pagefind-ignore="all"'), `${pageUrl}: archive is not excluded from current search`);
+      check(html.includes("Archived reference for v"), `${pageUrl}: release banner is missing`);
+      check(!html.includes("import('/awc-runtime/md3/md3.esm.js')"), `${pageUrl}: archive loads the current component runtime`);
+      check(!/<link[^>]+rel=["']alternate["'][^>]+href=["']https:\/\/awc-ui\.dev\/llm/.test(html), `${pageUrl}: archive advertises current AI reference metadata`);
+    }
     const title = html.match(/<title>([^<]+)<\/title>/i)?.[1]?.trim();
     const canonical = html.match(
       /<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)/i,

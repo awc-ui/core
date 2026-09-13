@@ -23,6 +23,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
@@ -160,6 +161,14 @@ jobs:
 
       - name: Build react + vue + angular wrappers
         run: pnpm ci:wrappers
+
+      - name: MCP protocol and documentation bundle
+        run: pnpm test:mcp
+
+      - name: Documentation version archives and navigation
+        run: |
+          pnpm --filter @awc-ui/docs test
+          pnpm docs:versions:check
 
       - name: Consumer and adapter contracts
         run: |

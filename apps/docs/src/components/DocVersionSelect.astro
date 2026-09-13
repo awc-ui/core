@@ -1,0 +1,47 @@
+---
+import { currentDocSlugs, loadDocsVersions, versionDestination } from '../lib/docs-versions.mjs';
+
+const releases = await loadDocsVersions();
+const currentSlugs = await currentDocSlugs();
+const pathname = Astro.url.pathname;
+const activeVersion = pathname.match(/^\/versions\/([^/]+)\//)?.[1];
+---
+
+<label class="doc-version">
+  <span class="doc-version__label">Docs</span>
+  <select aria-label="Documentation version" data-doc-version>
+    <option value={versionDestination(pathname, null, currentSlugs)} selected={!pathname.startsWith('/versions/')}>Current (main)</option>
+    {releases.map((release) => (
+      <option value={versionDestination(pathname, release)} selected={release.version === activeVersion}>
+        v{release.version}
+      </option>
+    ))}
+    <option value="/versions/" selected={pathname === '/versions/'}>All versions</option>
+  </select>
+</label>
+
+<script>
+  document.addEventListener('change', (event) => {
+    const select = event.target;
+    if (select instanceof HTMLSelectElement && select.matches('[data-doc-version]')) {
+      window.location.assign(select.value);
+    }
+  });
+</script>
+
+<style>
+  .doc-version { display: inline-flex; align-items: center; gap: .4rem; color: var(--md-sys-color-on-surface-variant); }
+  .doc-version select {
+    max-inline-size: 14rem;
+    min-block-size: 2.75rem;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    padding: .5rem .65rem;
+    background: var(--md-sys-color-surface-container);
+    color: var(--md-sys-color-on-surface);
+    font: inherit;
+    cursor: pointer;
+  }
+  .doc-version select:focus-visible { outline: 2px solid var(--md-sys-color-primary); outline-offset: 2px; }
+  @media (max-width: 64rem) { .doc-version__label { display: none; } .doc-version select { max-inline-size: 10.5rem; } }
+</style>

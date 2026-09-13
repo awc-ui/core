@@ -45,6 +45,16 @@ function buildManifest(): string {
       "Full single-file context",
       "The complete LLM specification served from the conventional root filename.",
     ),
+    link(
+      "/guides/building-with-ai/",
+      "Building with AI",
+      "Set up your assistant, build or review interfaces, and add optional AI skills or MCP documentation tools.",
+    ),
+    link(
+      "/versions/",
+      "Documentation versions",
+      "Choose current development docs or a frozen component and guide reference for a released Core version.",
+    ),
     "- [npm: @awc-ui/core](https://www.npmjs.com/package/@awc-ui/core): Published core Web Components package and README.",
     "- [GitHub: awc-ui/core](https://github.com/awc-ui/core): Source, issues, releases, examples, and contribution history.",
     "",
@@ -75,11 +85,6 @@ function buildManifest(): string {
       "/recipes/app-shell/",
       "Application recipes",
       "Start with the SSR-ready app shell, then follow its links to complete production-shaped examples.",
-    ),
-    link(
-      "/compare/",
-      "Comparisons",
-      "Evidence-based comparisons with adjacent component libraries.",
     ),
     link(
       "/theme-generator/",

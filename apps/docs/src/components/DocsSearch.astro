@@ -1,0 +1,50 @@
+---
+import DefaultSearch from '@astrojs/starlight/components/Search.astro';
+import { Icon } from '@astrojs/starlight/components';
+import { archivePath } from '../lib/docs-versions.mjs';
+
+const version = Astro.url.pathname.match(/^\/versions\/([^/]+)\//)?.[1];
+---
+
+{version ? (
+  <a
+    class="archive-search-link"
+    href={`${archivePath(version)}#archive-search`}
+    aria-label={`Search documentation for v${version}`}
+    title={`Search documentation for v${version}`}
+  >
+    <Icon name="magnifier" size="1.25rem" />
+    <span>Search this version</span>
+  </a>
+) : <DefaultSearch {...Astro.props} />}
+
+<style>
+  .archive-search-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+    border-radius: .5rem;
+    color: var(--sl-color-gray-1);
+    text-decoration: none;
+  }
+  .archive-search-link span { display: none; }
+  .archive-search-link:hover { color: var(--sl-color-white); background: var(--sl-color-gray-6); }
+  .archive-search-link:focus-visible { outline: 2px solid var(--sl-color-accent); outline-offset: 2px; }
+  @media (min-width: 50rem) {
+    .archive-search-link {
+      justify-content: flex-start;
+      inline-size: 100%;
+      max-inline-size: 22rem;
+      padding-inline: .75rem;
+      border: 1px solid var(--sl-color-gray-5);
+      background: var(--sl-color-black);
+      color: var(--sl-color-gray-2);
+      font-size: var(--sl-text-sm);
+    }
+    .archive-search-link span { display: inline; }
+    .archive-search-link:hover { border-color: var(--sl-color-gray-2); }
+  }
+</style>

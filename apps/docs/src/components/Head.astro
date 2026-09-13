@@ -49,6 +49,7 @@ const runtimeModules = import.meta.glob<string>(
 const { entry, head, lang } = Astro.locals.starlightRoute;
 const pathname = Astro.url.pathname;
 const isHome = pathname === '/';
+const isArchive = pathname.startsWith('/versions/');
 const heroPreloads = isHome ? getHeroRuntimePreloads(runtimeModules, heroMarkup) : [];
 const isNotFound = pathname === '/404/';
 const componentMatch = pathname.match(/^\/components\/([^/]+)\/$/);
@@ -119,13 +120,13 @@ const articleJsonLd = !isHome && !isNotFound
     ? 'noindex, follow'
     : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'}
 />
-<link rel="alternate" type="text/markdown" href={markdownAlternate} title={markdownTitle} />
-<link
+{!isArchive && <link rel="alternate" type="text/markdown" href={markdownAlternate} title={markdownTitle} />}
+{!isArchive && <link
   rel="alternate"
   type="text/plain"
   href="https://awc-ui.dev/llms.txt"
   title="AWC UI machine-readable documentation map"
-/>
+/>}
 {articleJsonLd && <script type="application/ld+json" set:html={articleJsonLd} />}
 
 {/* is:inline + an absolute URL keeps Vite's hands off it. loader.js then
@@ -133,11 +134,11 @@ const articleJsonLd = !isHome && !isNotFound
     /awc-runtime/esm/, which is the whole point — bundling it makes Stencil
     look for chunks in /_astro/ where they do not exist. (loader/cdn.js is
     CJS and throws "module is not defined" in a module script.) */}
-<script is:inline type="module">
+{!isArchive && <script is:inline type="module">
   /* md3.esm.js is Stencil's MINIFIED lazy build and self-registers on import —
      it exports no defineCustomElements. The previous entry (esm/loader.js) was
      the unminified bundler output: same components, ~2x the bytes. */
   import('/awc-runtime/md3/md3.esm.js').catch((err) =>
     console.error('[awc-ui] component registration failed', err),
   );
-</script>
+</script>}

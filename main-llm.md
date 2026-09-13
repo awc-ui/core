@@ -10,48 +10,48 @@ manual-count: 81
 per-component-docs: ./packages/core/src/components/<tag>/readme.md
 -->
 
-**You are building a web app with AWC UI, a Material Design 3 web-component
-library.** This file is the entry point and the only document you need before
-writing UI code. Everything here is self-contained: tokens, recipes,
-composition rules and the ship checklist. Per-component detail lives in
+**Use this reference when building, updating, or reviewing an interface with
+AWC UI, a Material Design 3 web-component library.** Start with the user's
+request and the existing project. The sections below cover setup, component
+selection, composition, and verification; read the sections relevant to the
+task. Per-component detail lives in
 `./packages/core/src/components/<tag>/readme.md` — e.g.
 [`md-button`](./packages/core/src/components/md-button/readme.md).
 
-Your job, in order:
-
-1. **Interview** the user (§1). Do not skip it and do not guess.
-2. **Lock the configuration** their answers imply (§2) and bootstrap it (§3–§4).
-3. **Route every UI need through the decision matrix** (§5) — never pick a
-   component by name-similarity.
-4. **Load the component's readme.md before writing a single line of its
-   markup** (§6). The file is
-   `./packages/core/src/components/<tag>/readme.md` — read it in full, do not
-   skim it, and do not write the markup from memory of a similar library. Each
-   one has a `When NOT to use`, a `Do / Don't` table sourced from
-   [m3.material.io](https://m3.material.io), and an `Anti-patterns` table of
-   mistakes models actually make. If you are about to use three components,
-   load all three readmes first.
-5. **Check what nests inside what** (§7) and start from a recipe (§8) rather
-   than from a blank page.
-6. **Apply the universal rules** (§9) — the API, content and accessibility
-   rules every component is bound by, and the ones §10 checks you against.
-7. **Run the ship checklist** (§10) before declaring done.
-
-**Fail closed.** If you cannot satisfy a step — no component fits, a token
-doesn't exist, an accessible name has nowhere to come from — say so and ask.
-Do not invent an `md-*` tag, a prop, or a token. If it is not in this file or
-in the component's manual, it does not exist.
+1. **Match the task's scope** (§1). Reuse decisions from the project and
+   conversation. A focused edit does not need a product interview or scaffold.
+2. **Choose documented components** using the decision matrix (§5), and read
+   each affected component's manual before changing its markup (§6). Check its
+   API, `When NOT to use`, accessibility, and `Anti-patterns` sections; do not
+   infer behavior from a similar library or sibling component.
+3. **Use the existing integration.** For a new app or a requested setup change,
+   use §2–§4. For composition, consult §7 and the relevant recipes in §8.
+4. **Follow the API and accessibility rules** (§9). Do not invent an `md-*`
+   tag, prop, event, slot, CSS part, or token. If the documented API cannot
+   satisfy the request, explain the gap and resolve the consequential choice.
+5. **Verify the affected behavior** using the applicable checks in §10.
+   Report what changed and what was checked. A review reports findings without
+   changing files unless a fix was requested.
 
 ---
 
-## §1 — Interview the user
+## §1 — Match the task
 
-Ask these **one at a time**, in this order. Each answer closes off decisions
-downstream, so don't batch them into a wall of questions. Skip a question only
-if the user has already answered it unprompted.
+| Task | How to proceed |
+|---|---|
+| New app | Establish the app's purpose and use known project or user decisions. Ask only about missing choices that materially affect the result; use reasonable defaults for minor details and state consequential assumptions. Then apply the relevant setup in §2–§4. |
+| Existing app or focused fix | Preserve the framework, configuration, design, and product scope unless the request changes them. Inspect the affected code and manuals, then make the requested change. Do not restart discovery or scaffold another app. |
+| Review or explanation | Inspect and explain the requested surface. Keep the work read-only unless the user asks for a fix. |
 
-If the user says "just pick sensible defaults", use the **bold** option and tell
-them what you chose.
+### Optional discovery checklist
+
+Use the questions below as a reference when a new app or requested feature
+leaves an important decision open. They are not a required interview, an
+ordered sequence, or a reason to stop a focused task. Project configuration
+and answers already given in the conversation take precedence; do not ask for
+them again. Ask only what matters to the current task, and group related
+questions when that helps. The **bold** options are starting defaults for a
+new app, not instructions to override an existing project.
 
 ### 1.1 Scope and shape
 
@@ -98,8 +98,8 @@ them what you chose.
 16. **Are there charts?** Which questions should they answer?
 17. **How heavy are the forms?** Validation rules, async validation, multi-step?
 18. **Rich text editing anywhere?** — ⚠️ **AWC UI has no RTE component.** If yes,
-    you must integrate a third-party editor (TipTap, Lexical, Quill) and style
-    it to the MD3 tokens yourself. Confirm this with the user explicitly.
+    the feature needs a third-party editor (TipTap, Lexical, Quill) styled with
+    MD3 tokens. Resolve that choice if the project or request does not cover it.
 
 ### 1.5 Constraints
 
@@ -112,6 +112,9 @@ them what you chose.
 ---
 
 ## §2 — Map answers to configuration
+
+Apply this reference to new setup or requested configuration changes. Preserve
+an existing project's choices for unrelated work.
 
 | Answer | What you set |
 |---|---|
@@ -1184,6 +1187,11 @@ rules you must not break:
 
 ## §10 — Before you ship
 
+Use the checks relevant to the affected components and behavior. For a small
+fix, verify the changed interaction and nearby regressions; a new app or broad
+change needs wider coverage. Do not turn a focused edit into an unrelated
+full-app audit.
+
 1. **Every icon-only control has an accessible name.**
 2. **Keyboard-only pass**: reach and operate every control; focus is always
    visible; no traps in dialogs/menus/sheets; focus returns to the trigger.
@@ -1206,3 +1214,10 @@ rules you must not break:
 11. **No shadow-internal CSS** — only tokens, custom properties, and `::part()`.
 12. **Every `md-*` tag you emitted appears in §6.** If it doesn't, it doesn't
     exist.
+
+
+## MCP server and reusable skills
+
+Core provides a read-only MCP server (`@awc-ui/mcp`) and `awc-ui-build` / `awc-ui-review` skills. MCP tools `search_components`, `get_component`, `list_guides`, and `get_guide` expose versioned Core documentation. Match the reported Core version to the consumer installation; use local manuals when versions differ. The server is optional and grants no permission for project mutations.
+
+The Core package ships skills in `skills/`; `awc-ui ai-setup --skills` installs them under the consumer project’s `.agents/skills/` without overwriting customized copies. For configuration and skill-installer availability, see [AI integration](https://awc-ui.dev/guides/building-with-ai/#optional-mcp-and-skills). Use existing project and user decisions rather than restarting discovery for a focused edit.

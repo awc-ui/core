@@ -148,13 +148,13 @@ export class MdTable {
   @Prop({ reflect: true, attribute: 'keep-height' }) keepHeight: boolean = true;
 
   /**
-   * Vertical scrollbar presentation (frozen mode):
+   * Scrollbar presentation (frozen mode):
    * - `overlay` (default) — a custom always-visible thumb FLOATS over the
    *   rows' right edge; no gutter is reserved, so row backgrounds and
    *   dividers run the full width and the bar never takes layout space.
    * - `gutter` — classic inset bar in a reserved gap: `scrollbar-gutter:
    *   stable` keeps a fixed strip inside the table (rows stop short of the
-   *   edge) and the native bar renders in it, crossing the row borders.
+   *   edge) and native bars render on both overflowing axes.
    */
   @Prop({ reflect: true }) scrollbar: 'overlay' | 'gutter' = 'overlay';
 
@@ -657,12 +657,10 @@ export class MdTable {
     }
   };
 
-  /** overflow-x is hidden (no native horizontal bar), so translate horizontal
-   *  wheel / trackpad (and shift+wheel) into programmatic horizontal scroll. */
   /**
-   * Keyboard horizontal scrolling (WCAG 2.1.1): overflow-x is hidden (the
-   * custom bar owns the axis) and the custom thumbs are pointer-only, so
-   * without this a keyboard user could never reach off-screen columns.
+   * Keyboard horizontal scrolling (WCAG 2.1.1): provide consistent steps and
+   * horizontal-end shortcuts alongside native touch panning. The custom
+   * overlay thumbs are pointer-only, so the body remains a keyboard tab stop.
    * Vertical arrows/PageUp/Down stay native (overflow-y: auto).
    */
   private onBodyKeyDown = (e: KeyboardEvent) => {
@@ -684,6 +682,8 @@ export class MdTable {
     sc.scrollLeft = Math.max(lo, Math.min(hi, dx === -Infinity ? lo : dx === Infinity ? hi : sc.scrollLeft + dx));
   };
 
+  /** Keep shift+wheel support and clamp wheel/trackpad movement in both
+   * directions. Native touch scrolling uses the same body scroll listener. */
   private onBodyWheel = (e: WheelEvent) => {
     const sc = this.bodyScrollEl;
     if (!sc || sc.scrollWidth <= sc.clientWidth + 1) return;
