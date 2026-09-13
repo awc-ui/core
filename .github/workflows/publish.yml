@@ -114,6 +114,14 @@ jobs:
         if: inputs.authentication == 'trusted'
         run: npm install --global "npm@$TRUSTED_NPM_VERSION" --registry=https://registry.npmjs.org --ignore-scripts
 
+      - name: Verify npm token authentication
+        if: inputs.authentication == 'token'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # Fail before the build and browser gates if the configured fallback
+        # credential has expired. This checks identity, not package permissions.
+        run: npm whoami --registry=https://registry.npmjs.org/
+
       - run: pnpm install --frozen-lockfile
 
       - name: Resolve version and dist-tag
