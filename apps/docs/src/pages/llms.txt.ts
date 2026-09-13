@@ -50,11 +50,6 @@ function buildManifest(): string {
       "Building with AI",
       "Set up your assistant, build or review interfaces, and add optional AI skills or MCP documentation tools.",
     ),
-    link(
-      "/versions/",
-      "Documentation versions",
-      "Choose current development docs or a frozen component and guide reference for a released Core version.",
-    ),
     "- [npm: @awc-ui/core](https://www.npmjs.com/package/@awc-ui/core): Published core Web Components package and README.",
     "- [GitHub: awc-ui/core](https://github.com/awc-ui/core): Source, issues, releases, examples, and contribution history.",
     "",

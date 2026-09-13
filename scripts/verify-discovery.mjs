@@ -7,7 +7,6 @@
 import { access, readFile, readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { checkArchives } from "./lib/docs-versions.mjs";
 
 const scriptDir = fileURLToPath(new URL(".", import.meta.url));
 const root = join(scriptDir, "..");
@@ -271,26 +270,9 @@ if (await exists(dist)) {
     `sitemap contains only ${pageUrls.length} pages`,
   );
   check(pageUrls.includes("https://awc-ui.dev/llm/"), "sitemap omits /llm/");
-  check(pageUrls.includes("https://awc-ui.dev/versions/"), "sitemap omits documentation versions");
+  check(!pageUrls.some((url) => new URL(url).pathname.startsWith("/versions/")), "removed documentation archives remain in the sitemap");
+  check(!(await exists(join(dist, "versions"))), "removed documentation archives remain in rendered output");
   check(!pageUrls.some((url) => new URL(url).pathname.startsWith("/compare/")), "removed Compare pages remain in the site");
-  // Integrity checks include retired references, even though they do not ship.
-  const { manifest: docsVersions, bundles } = await checkArchives(join(root, "apps/docs/versions"));
-  const hiddenPrefixes = docsVersions.versions.filter((release) => release.hidden).map((release) => `/versions/${release.version}/`);
-  for (const [index, release] of docsVersions.versions.entries()) {
-    if (release.hidden) {
-      const prefix = `/versions/${release.version}/`;
-      check(!pageUrls.some((url) => new URL(url).pathname.startsWith(prefix)), `sitemap includes retired reference: ${release.version}`);
-      check(!(await exists(join(dist, "versions", release.version))), `retired reference remains in rendered output: ${release.version}`);
-      check(!(await exists(join(dist, "versions", release.file))), `retired archive artifact is publicly exposed: ${release.file}`);
-      continue;
-    }
-    const snapshot = bundles[index];
-    const slugs = ["", ...snapshot.components.map(({ tag }) => `components/${tag.replace(/^md-/, "")}`), ...snapshot.guides.map(({ slug }) => slug)];
-    for (const slug of slugs) {
-      const url = `https://awc-ui.dev/versions/${release.version}/${slug ? `${slug}/` : ""}`;
-      check(pageUrls.includes(url), `sitemap omits archived reference: ${url}`);
-    }
-  }
   check(
     pageUrls.includes("https://awc-ui.dev/theme-generator/"),
     "sitemap omits /theme-generator/",
@@ -316,15 +298,8 @@ if (await exists(dist)) {
     check(await exists(htmlPath), `sitemap URL has no built page: ${pageUrl}`);
     if (!(await exists(htmlPath))) continue;
     const html = await readFile(htmlPath, "utf8");
-    for (const prefix of hiddenPrefixes) {
-      check(!html.includes(prefix), `${pageUrl}: links or embeds a retired reference (${prefix})`);
-    }
-    if (/^\/versions\/[^/]+\//.test(new URL(pageUrl).pathname)) {
-      check(html.includes('data-pagefind-ignore="all"'), `${pageUrl}: archive is not excluded from current search`);
-      check(html.includes("Archived reference for v"), `${pageUrl}: release banner is missing`);
-      check(!html.includes("import('/awc-runtime/md3/md3.esm.js')"), `${pageUrl}: archive loads the current component runtime`);
-      check(!/<link[^>]+rel=["']alternate["'][^>]+href=["']https:\/\/awc-ui\.dev\/llm/.test(html), `${pageUrl}: archive advertises current AI reference metadata`);
-    }
+    check(!/\b(?:href|src)=["'](?:https:\/\/awc-ui\.dev)?\/versions(?:\/|["'])/.test(html), `${pageUrl}: links or embeds a removed documentation archive`);
+    check(!html.includes('aria-label="Documentation version"'), `${pageUrl}: documentation version selector remains`);
     const title = html.match(/<title>([^<]+)<\/title>/i)?.[1]?.trim();
     const canonical = html.match(
       /<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)/i,

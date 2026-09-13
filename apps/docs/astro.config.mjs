@@ -216,7 +216,6 @@ export default defineConfig({
       components: {
         Head: './src/components/Head.astro',
         SocialIcons: './src/components/ReleaseLinks.astro',
-        Search: './src/components/DocsSearch.astro',
       },
       customCss: [
         '@awc-ui/tokens/tokens.css',
@@ -413,10 +412,6 @@ export default defineConfig({
         {
           label: 'Theme Generator',
           link: '/theme-generator/',
-        },
-        {
-          label: 'Documentation versions',
-          link: '/versions/',
         },
         {
           label: 'Getting Started',

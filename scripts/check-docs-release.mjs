@@ -3,16 +3,15 @@ import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { PACKAGES } from './check-publish-auth.mjs';
-import { assertVersion, checkArchives, isStableVersion } from './lib/docs-versions.mjs';
 
 const defaultRepository = fileURLToPath(new URL('../', import.meta.url));
+const VERSION_PATTERN = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:0|[1-9]\d*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 
 /** Production docs must describe an available release, not a version bump awaiting publication. */
 export async function checkDocsRelease({
   repository = defaultRepository,
   manifests,
   fetchImpl = globalThis.fetch,
-  archiveDirectory = join(repository, 'apps/docs/versions'),
   timeoutMs = 10000,
 } = {}) {
   manifests ??= await Promise.all(PACKAGES.map(name =>
@@ -21,17 +20,13 @@ export async function checkDocsRelease({
     || PACKAGES.some(name => manifests.filter(item => item?.name === name).length !== 1)) {
     throw new Error('Production docs require source manifests for all eight @awc-ui packages');
   }
-  const version = assertVersion(manifests.find(item => item.name === '@awc-ui/core').version);
+  const version = manifests.find(item => item.name === '@awc-ui/core').version;
+  if (typeof version !== 'string' || version !== version.trim() || !VERSION_PATTERN.test(version)) {
+    throw new Error('Invalid source package version: ' + String(version));
+  }
   for (const manifest of manifests) {
     if (manifest.version !== version || manifest.private === true) {
       throw new Error(`Source package ${manifest.name} must be public and match @awc-ui/core@${version}`);
-    }
-  }
-  if (isStableVersion(version)) {
-    // Verifies checksums, provenance and every listed archive, including hidden releases.
-    const { manifest } = await checkArchives(archiveDirectory);
-    if (!manifest.versions.some(entry => entry.version === version && entry.hidden !== true)) {
-      throw new Error(`Production docs require a visible documentation archive for ${version}`);
     }
   }
   await Promise.all(PACKAGES.map(async name => {

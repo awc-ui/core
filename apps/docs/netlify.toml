@@ -7,6 +7,17 @@
 # If you ever re-enable Netlify Git integration as a fallback, add a [build] section
 # here pointing to `bash scripts/build-docs.sh` and disable the deploy workflow.
 
+# Retired documentation archive links lead to the single current guide.
+[[redirects]]
+  from = "/versions"
+  to = "/getting-started/"
+  status = 302
+
+[[redirects]]
+  from = "/versions/*"
+  to = "/getting-started/"
+  status = 302
+
 [[headers]]
   for = "/storybook/*"
   [headers.values]

@@ -165,10 +165,8 @@ jobs:
       - name: MCP protocol and documentation bundle
         run: pnpm test:mcp
 
-      - name: Documentation version archives and navigation
-        run: |
-          pnpm --filter @awc-ui/docs test
-          pnpm docs:versions:check
+      - name: Documentation runtime and release checks
+        run: pnpm --filter @awc-ui/docs test
 
       - name: Consumer and adapter contracts
         run: |

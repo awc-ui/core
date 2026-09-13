@@ -102,9 +102,7 @@
     "verify:starters": "node scripts/verify-starters.mjs",
     "verify:dx": "pnpm check:environment && pnpm test:cli && pnpm test:adapters && pnpm test:ssr-contracts && pnpm verify:consumer-types && pnpm verify:package-size",
     "build:mcp": "pnpm --filter @awc-ui/mcp build",
-    "test:mcp": "pnpm build:mcp && pnpm --filter @awc-ui/mcp test",
-    "docs:snapshot": "node scripts/snapshot-docs.mjs",
-    "docs:versions:check": "node scripts/snapshot-docs.mjs --check"
+    "test:mcp": "pnpm build:mcp && pnpm --filter @awc-ui/mcp test"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.4",

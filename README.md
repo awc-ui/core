@@ -258,7 +258,6 @@ and a guide:
 - [Request a feature](https://awc-ui.dev/contributing/feature-requests/)
 - [Request a component](https://awc-ui.dev/contributing/new-component-requests/)
 - [Contributing guide](CONTRIBUTING.md)
-- [Maintaining versioned documentation](docs/versioned-documentation.md)
 
 You do not need to write code to help — a bug report we can reproduce is worth
 more than a patch we cannot verify.
