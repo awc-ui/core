@@ -131,7 +131,7 @@ export function versionSidebar(release) {
     { label: `v${release.version} overview`, link: archivePath(release.version) },
     { label: 'Guides', items: release.pages.filter((page) => page.kind === 'guide').map((page) => ({ label: page.title, link: archivePath(release.version, page.slug) })) },
     { label: 'Components', collapsed: true, items: release.pages.filter((page) => page.kind === 'component').map((page) => ({ label: page.title, link: archivePath(release.version, page.slug) })) },
-    { label: 'All documentation versions', link: '/versions/' },
+    { label: 'Documentation versions', link: '/versions/' },
   ];
 }
 

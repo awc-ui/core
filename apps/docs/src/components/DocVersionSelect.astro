@@ -11,6 +11,7 @@ const activeVersion = pathname.match(/^\/versions\/([^/]+)\//)?.[1];
 <label class="doc-version">
   <span class="doc-version__label">Docs</span>
   <select aria-label="Documentation version" data-doc-version>
+    {pathname === '/versions/' && <option value="" disabled selected hidden>Choose version</option>}
     {lts ? (
       <option value={versionDestination(pathname, lts)} selected={lts.version === activeVersion}>Latest LTS (v{lts.version})</option>
     ) : <option value="" disabled>Latest LTS — coming soon</option>}
@@ -25,7 +26,6 @@ const activeVersion = pathname.match(/^\/versions\/([^/]+)\//)?.[1];
         <option value={versionDestination(pathname, release)} selected={release.version === activeVersion}>v{release.version}</option>
       ))}
     </optgroup>}
-    <option value="/versions/" selected={pathname === '/versions/'}>All versions</option>
   </select>
 </label>
 

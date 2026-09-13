@@ -1,8 +1,9 @@
 # Versioned documentation
 
 The documentation header groups versions into **Latest LTS**, **New versions**,
-and **Previous versions**. `/versions/` lists the same groups. Switching versions
-keeps the same page when it exists; otherwise it opens that version's overview.
+and **Previous versions**. The **Documentation versions** navigation link opens
+`/versions/`, which lists the same groups. Switching versions keeps the same page
+when it exists; otherwise it opens that version's overview.
 
 **Next (development)** includes unreleased changes and interactive examples.
 Release references preserve the component manuals, generated API definitions,

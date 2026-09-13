@@ -27,7 +27,7 @@ const description = `Archived AWC UI v${release.version} reference${page ? ` for
       <strong>Archived reference for v{release.version}</strong>
       <span class="release-channel">{release.isLts ? 'Latest LTS' : isStableVersion(release.version) ? 'Released version' : 'Prerelease'}</span>
       <p>This page is frozen at release commit <a href={`https://github.com/awc-ui/core/tree/${release.commit}`}>{release.commit.slice(0, 7)}</a>. Examples are shown as code and use this release’s APIs.</p>
-      <a href={currentHref}>View development docs</a> · <a href="/versions/">All versions</a>
+      <a href={currentHref}>View development docs</a> · <a href="/versions/">Documentation versions</a>
     </aside>
     {page ? (
       <>

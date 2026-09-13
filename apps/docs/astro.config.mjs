@@ -415,6 +415,10 @@ export default defineConfig({
           link: '/theme-generator/',
         },
         {
+          label: 'Documentation versions',
+          link: '/versions/',
+        },
+        {
           label: 'Getting Started',
           autogenerate: { directory: 'getting-started' },
         },
