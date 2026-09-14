@@ -414,6 +414,10 @@ export default defineConfig({
           link: '/theme-generator/',
         },
         {
+          label: 'Roadmap',
+          link: '/roadmap/',
+        },
+        {
           label: 'Getting Started',
           autogenerate: { directory: 'getting-started' },
         },
