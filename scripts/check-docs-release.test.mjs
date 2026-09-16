@@ -3,7 +3,7 @@ import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { checkDocsRelease } from './check-docs-release.mjs';
+import { checkDocsRelease, isReleaseVersion } from './check-docs-release.mjs';
 import { PACKAGES } from './check-publish-auth.mjs';
 
 const manifests = PACKAGES.map(name => ({ name, version: '1.0.0' }));
@@ -15,6 +15,15 @@ function metadata(url) {
 }
 const published = async url => Response.json(metadata(url));
 const mustNotFetch = () => { assert.fail('must not fetch'); };
+
+test('long malformed prereleases are rejected without backtracking', () => {
+  assert.equal(isReleaseVersion('1.0.0-' + 'a'.repeat(100000) + '!'), false);
+  assert.equal(isReleaseVersion('1.0.0-' + '0'.repeat(100000)), false);
+  assert.equal(isReleaseVersion('1.0.0-0.alpha-1+build.01'), true);
+  for (const value of ['1.0.0-', '1.0.0+', '1.0.0+one+two', '1.0.0-01', '1.0.0-a..b']) {
+    assert.equal(isReleaseVersion(value), false, value);
+  }
+});
 
 test('docs require matching public registry metadata for all eight packages', async () => {
   const seen = [];

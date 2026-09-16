@@ -102,7 +102,8 @@
     "verify:starters": "node scripts/verify-starters.mjs",
     "verify:dx": "pnpm check:environment && pnpm test:cli && pnpm test:adapters && pnpm test:ssr-contracts && pnpm verify:consumer-types && pnpm verify:package-size",
     "build:mcp": "pnpm --filter @awc-ui/mcp build",
-    "test:mcp": "pnpm build:mcp && pnpm --filter @awc-ui/mcp test"
+    "test:mcp": "pnpm build:mcp && pnpm --filter @awc-ui/mcp test",
+    "test:security": "pnpm --filter @awc-ui/showcase-kit build && node --experimental-strip-types --test scripts/tests/app-security.test.mjs scripts/tests/html-comments.test.mjs scripts/tests/markdown-text.test.mjs scripts/tests/serve-docs-prod.test.mjs scripts/check-docs-release.test.mjs apps/docs/src/lib/htmlToTechnology.test.mjs packages/showcase-kit/src/dock/state.test.mjs packages/showcase-kit/src/design/selectors.test.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.4",
@@ -112,6 +113,7 @@
     "@typescript-eslint/eslint-plugin": "^8.59.2",
     "@typescript-eslint/parser": "^8.59.2",
     "eslint": "^10.3.0",
+    "parse5": "^8.0.1",
     "prettier": "^3.2.0",
     "publint": "^0.3.21",
     "puppeteer": "^25.11.0",

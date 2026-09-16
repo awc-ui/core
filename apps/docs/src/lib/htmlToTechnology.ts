@@ -35,11 +35,14 @@
  *     untouched rather than guessed at.
  *   • Bidirectional binding / signals — authors hand-write those.
  *
- * Safe to call on arbitrary user-supplied HTML; failures fall back to the
- * original string so we never break a docs build over a malformed demo.
+ * This transforms trusted, authored demo source; it does not sanitize HTML
+ * or JavaScript. Failures fall back to the original string so a malformed
+ * demo does not break a docs build.
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { parseFragment, type DefaultTreeAdapterTypes } from 'parse5';
 
 const AWC_TAG_PATTERN = /<\/?md-[a-z0-9-]+/g;
 
@@ -159,13 +162,14 @@ function styleStringToJsxObject(css: string): string {
       const colon = decl.indexOf(':');
       if (colon < 0) return null;
       const rawProp = decl.slice(0, colon).trim();
-      const value = decl.slice(colon + 1).trim().replace(/'/g, "\\'");
+      const value = decl.slice(colon + 1).trim();
       // Custom properties keep their literal name and must stay quoted; normal
       // properties become camelCase identifiers.
-      const key = rawProp.startsWith('--')
-        ? `'${rawProp}'`
+      const prop = rawProp.startsWith('--')
+        ? rawProp
         : rawProp.replace(/-([a-z])/g, (_m, c: string) => c.toUpperCase());
-      return `${key}: '${value}'`;
+      const key = /^[a-zA-Z_$][\w$]*$/.test(prop) ? prop : JSON.stringify(prop);
+      return `${key}: ${JSON.stringify(value)}`;
     })
     .filter(Boolean);
   return entries.length ? `style={{ ${entries.join(', ')} }}` : '';
@@ -383,8 +387,6 @@ function applyWiring(
  * framework's ref. Lookups in any other shape are left untouched inside the
  * hook — still valid code, just not ref-based.
  */
-const SCRIPT_BLOCK = /[ \t]*<script\b[^>]*>([\s\S]*?)<\/script>[ \t]*\n?/gi;
-
 interface ScriptEl {
   id: string;
   varName: string;
@@ -417,14 +419,45 @@ function normaliseDemoScript(script: string): string {
 }
 
 function extractScript(html: string): { markup: string; script: string } {
+  const scripts: Array<{ start: number; end: number; body: string }> = [];
+  const visit = (node: DefaultTreeAdapterTypes.Node): void => {
+    if ('tagName' in node && node.tagName === 'script') {
+      const location = node.sourceCodeLocation;
+      if (location?.startTag) {
+        // An unclosed HTML script consumes the rest of the fragment. parse5
+        // can leave its end offset at the opening position at EOF.
+        const end = location.endOffset < location.startTag.endOffset
+          ? html.length
+          : location.endOffset;
+        scripts.push({
+          start: location.startOffset,
+          end,
+          body: html.slice(
+            location.startTag.endOffset,
+            location.endTag?.startOffset ?? end,
+          ),
+        });
+      }
+      return;
+    }
+    if ('childNodes' in node) node.childNodes.forEach(visit);
+    if ('content' in node) visit(node.content);
+  };
+  visit(parseFragment(html, { sourceCodeLocationInfo: true }));
+  scripts.sort((a, b) => a.start - b.start);
+
+  const markup: string[] = [];
   const bodies: string[] = [];
-  const markup = html.replace(SCRIPT_BLOCK, (_full: string, body: string) => {
-    const text = dedent(String(body));
-    if (text.trim()) bodies.push(text);
-    return '';
-  });
+  let cursor = 0;
+  for (const script of scripts) {
+    markup.push(html.slice(cursor, script.start), '\n');
+    const body = dedent(script.body);
+    if (body.trim()) bodies.push(body);
+    cursor = script.end;
+  }
+  markup.push(html.slice(cursor));
   return {
-    markup: markup.replace(/\n{3,}/g, '\n\n').trim(),
+    markup: markup.join('').replace(/\n{3,}/g, '\n\n').trim(),
     script: bodies.join('\n\n'),
   };
 }

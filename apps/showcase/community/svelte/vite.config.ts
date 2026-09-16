@@ -17,6 +17,7 @@
  * stages into `apps/docs/public/showcase/community/svelte/`.
  */
 
+import { removeHtmlComments } from '../../../../scripts/lib/html-comments.mjs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
@@ -81,16 +82,7 @@ function stripHtmlComments(): Plugin {
     apply: 'build',
     transformIndexHtml: {
       order: 'post',
-      handler: (html) =>
-        html
-          // NON-greedy, so two adjacent comments do not collapse into one match
-          // that swallows the markup between them. There is no comment inside a
-          // `<script>` here to protect — the runtime injector uses JS comments,
-          // which this pattern cannot see.
-          .replace(/<!--[\s\S]*?-->/g, '')
-          // The comments sat on their own lines; removing them leaves the blank
-          // lines behind.
-          .replace(/\n\s*\n+/g, '\n'),
+      handler: removeHtmlComments,
     },
   };
 }

@@ -14,6 +14,7 @@
  * and append the same framework id. One source, two short derivations.
  */
 
+import { removeHtmlComments } from '../../../../scripts/lib/html-comments.mjs';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
 import { en } from '@awc-ui/showcase-kit/i18n';
@@ -111,12 +112,7 @@ function stripHtmlComments(): Plugin {
     apply: 'build',
     transformIndexHtml: {
       order: 'post',
-      handler: (html) =>
-        html
-          // NON-greedy, so two adjacent comments do not collapse into one match
-          // that swallows the markup between them.
-          .replace(/<!--[\s\S]*?-->/g, '')
-          .replace(/\n\s*\n+/g, '\n'),
+      handler: removeHtmlComments,
     },
   };
 }

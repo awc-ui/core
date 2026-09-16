@@ -1,3 +1,4 @@
+import { createId } from '../../utils/id';
 import {
   Component,
   Host,
@@ -143,9 +144,7 @@ export class MdBottomSheet {
 
   private containerEl!: HTMLElement;
   private previousFocus: HTMLElement | null = null;
-  private headlineId = `md-bottom-sheet-headline-${Math.random()
-    .toString(36)
-    .slice(2)}`;
+  private headlineId = createId('md-bottom-sheet-headline');
 
   private dragStartY = 0;
   private dragCurrentY = 0;

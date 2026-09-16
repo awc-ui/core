@@ -99,15 +99,25 @@ async function renderRoute({ focus = false } = {}) {
     views = await import("./views.js");
   }
   if (version !== navigationVersion || !session) return;
-  const renderers = {
-    overview: views.renderOverview,
-    runs: views.renderRuns,
-    compounds: views.renderCompounds,
-    samples: views.renderSamples,
-    reviews: views.renderReviews,
-    team: views.renderTeam,
-  };
-  main.innerHTML = renderers[route](state, filters);
+  switch (route) {
+    case "runs":
+      main.innerHTML = views.renderRuns(state, filters);
+      break;
+    case "compounds":
+      main.innerHTML = views.renderCompounds(state, filters);
+      break;
+    case "samples":
+      main.innerHTML = views.renderSamples(state, filters);
+      break;
+    case "reviews":
+      main.innerHTML = views.renderReviews(state, filters);
+      break;
+    case "team":
+      main.innerHTML = views.renderTeam(state, filters);
+      break;
+    default:
+      main.innerHTML = views.renderOverview(state, filters);
+  }
   await readyTree(main);
   if (version !== navigationVersion) return;
   await views.hydrateView(main, state);

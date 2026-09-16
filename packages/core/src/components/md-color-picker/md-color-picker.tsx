@@ -1,3 +1,4 @@
+import { createId } from '../../utils/id';
 import {
   Component,
   Host,
@@ -126,7 +127,7 @@ export class MdColorPicker {
 
   /** Instance-unique prefix so each channel <label> can be associated with
    *  its <input> via for/id without colliding across multiple pickers. */
-  private uid = `md-color-picker-${Math.random().toString(36).slice(2, 7)}`;
+  private uid = createId('md-color-picker');
 
   componentWillLoad() {
     this.applyValue(this.value, /* emit */ false);

@@ -454,6 +454,12 @@ function watchSystemTheme(): void {
 
 /* ------------------------------------------------------- framework routing */
 
+function trimTrailingSlashes(path: string): string {
+  let end = path.length;
+  while (end > 0 && path[end - 1] === '/') end--;
+  return path.slice(0, end);
+}
+
 export interface FrameworkUrlOptions {
   /** The framework segment currently in the path, e.g. `'react'`. */
   current: string;
@@ -491,7 +497,7 @@ export function buildFrameworkUrl(target: string, options: FrameworkUrlOptions):
     segments[idx] = target;
     nextPath = segments.join('/');
   } else {
-    const base = basePath.replace(/\/+$/, '');
+    const base = trimTrailingSlashes(basePath);
     nextPath = `${base}/${target}/`;
   }
 
@@ -531,7 +537,7 @@ export function splitLocalePath(
 ): { locale: string; rest: string } {
   const fallback = options.defaultLocale ?? 'en';
   const codes = options.locales ?? LOCALES.map((l) => l.code);
-  const base = options.appBase.replace(/\/+$/, '');
+  const base = trimTrailingSlashes(options.appBase);
 
   let rest = pathname.startsWith(base) ? pathname.slice(base.length) : pathname;
   let locale = fallback;
@@ -562,7 +568,7 @@ export function buildLocaleUrl(
   options: LocalePathOptions & { href?: string },
 ): string {
   const fallback = options.defaultLocale ?? 'en';
-  const base = options.appBase.replace(/\/+$/, '');
+  const base = trimTrailingSlashes(options.appBase);
   const url = new URL(
     options.href ?? (typeof location === 'undefined' ? 'http://localhost/' : location.href),
   );

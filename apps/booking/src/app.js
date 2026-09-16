@@ -178,12 +178,12 @@ async function openDialog(title, body, actions) {
 }
 const closeAction = (text = 'Close') => `<md-button variant="text" data-action="close-dialog">${text}</md-button>`;
 function guestFields(search) {
-  return `<div class="guest-fields"><md-number-field id="travel-adults" label="Adults" supporting-text="Ages 18+ · one adult per room" variant="outlined" min="1" max="8" value="${search.adults}"></md-number-field><md-number-field id="travel-children" label="Children" supporting-text="Ages 0–17" variant="outlined" min="0" max="6" value="${search.children}"></md-number-field><md-number-field id="travel-rooms" label="Rooms / units" supporting-text="Up to 4 per reservation" variant="outlined" min="1" max="4" value="${search.rooms}"></md-number-field></div><p id="travel-error" class="form-error" role="alert" hidden></p>`;
+  return `<div class="guest-fields"><md-number-field id="travel-adults" label="Adults" supporting-text="Ages 18+ · one adult per room" variant="outlined" min="1" max="8" value="${views.escape(search.adults)}"></md-number-field><md-number-field id="travel-children" label="Children" supporting-text="Ages 0–17" variant="outlined" min="0" max="6" value="${views.escape(search.children)}"></md-number-field><md-number-field id="travel-rooms" label="Rooms / units" supporting-text="Up to 4 per reservation" variant="outlined" min="1" max="4" value="${views.escape(search.rooms)}"></md-number-field></div><p id="travel-error" class="form-error" role="alert" hidden></p>`;
 }
 async function openTravel(includeDates = false) {
   dialogContext = { kind: 'travel', includeDates };
   const search = searchFields();
-  const dates = includeDates ? `<div class="dialog-dates"><md-date-picker id="travel-in" label="Check-in" variant="docked" locale="en-GB" supporting-text=" " min="${new Date().toISOString().slice(0,10)}" value="${search.checkIn}" commit-on-select></md-date-picker><md-date-picker id="travel-out" label="Check-out" variant="docked" locale="en-GB" supporting-text=" " min="${search.checkIn}" value="${search.checkOut}" commit-on-select></md-date-picker></div>` : '';
+  const dates = includeDates ? `<div class="dialog-dates"><md-date-picker id="travel-in" label="Check-in" variant="docked" locale="en-GB" supporting-text=" " min="${new Date().toISOString().slice(0,10)}" value="${views.escape(search.checkIn)}" commit-on-select></md-date-picker><md-date-picker id="travel-out" label="Check-out" variant="docked" locale="en-GB" supporting-text=" " min="${views.escape(search.checkIn)}" value="${views.escape(search.checkOut)}" commit-on-select></md-date-picker></div>` : '';
   await openDialog(includeDates ? 'A little time for away' : "Who's coming along?", `<p>Make room for your kind of getaway.</p>${dates}${guestFields(search)}`, `${closeAction('Cancel')}<md-button data-action="apply-travel">Apply</md-button>`);
 }
 async function applyTravel() {

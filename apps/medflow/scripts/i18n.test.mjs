@@ -72,7 +72,8 @@ test("localized details escape identifiers and preserve entered Arabic notes ver
     text: "ملاحظة جديدة <script>alert(1)</script>",
   });
   const html = detailsView({ data }, item.id);
-  assert.doesNotMatch(html, /<img src=x|<script>/);
+  assert.ok(!html.includes(item.patient));
+  assert.ok(!html.includes(item.notes.at(-1).text));
   assert.match(html, /ملاحظة جديدة &lt;script&gt;/);
   setLanguage("en");
 });

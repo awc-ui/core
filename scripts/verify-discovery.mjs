@@ -269,12 +269,13 @@ if (await exists(dist)) {
     pageUrls.length >= 100,
     `sitemap contains only ${pageUrls.length} pages`,
   );
-  check(pageUrls.includes("https://awc-ui.dev/llm/"), "sitemap omits /llm/");
+  const exactPageUrls = new Set(pageUrls);
+  check(exactPageUrls.has("https://awc-ui.dev/llm/"), "sitemap omits /llm/");
   check(!pageUrls.some((url) => new URL(url).pathname.startsWith("/versions/")), "removed documentation archives remain in the sitemap");
   check(!(await exists(join(dist, "versions"))), "removed documentation archives remain in rendered output");
   check(!pageUrls.some((url) => new URL(url).pathname.startsWith("/compare/")), "removed Compare pages remain in the site");
   check(
-    pageUrls.includes("https://awc-ui.dev/theme-generator/"),
+    exactPageUrls.has("https://awc-ui.dev/theme-generator/"),
     "sitemap omits /theme-generator/",
   );
   for (const route of [
@@ -286,7 +287,7 @@ if (await exists(dist)) {
     "/frameworks/ssr/",
   ]) {
     check(
-      pageUrls.includes(`https://awc-ui.dev${route}`),
+      exactPageUrls.has(`https://awc-ui.dev${route}`),
       `sitemap omits ${route}`,
     );
   }

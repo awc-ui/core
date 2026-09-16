@@ -27,7 +27,7 @@ function parseHexOrRgb(s: string): Rgba | null {
     if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) return null;
     return [r, g, b, a];
   }
-  const m = s.match(/rgba?\(([^)]+)\)/);
+  const m = s.match(/^rgba?\(([^)]+)\)$/);
   if (m) {
     const parts = m[1].split(/[,/]/).map((p) => p.trim());
     const chan = (v: string) => (v.endsWith('%') ? (parseFloat(v) / 100) * 255 : parseFloat(v));

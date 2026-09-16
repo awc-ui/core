@@ -5,7 +5,21 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { PACKAGES } from './check-publish-auth.mjs';
 
 const defaultRepository = fileURLToPath(new URL('../', import.meta.url));
-const VERSION_PATTERN = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:0|[1-9]\d*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
+// Validate SemVer pieces separately so long invalid prereleases cannot trigger
+// backtracking through overlapping alternatives.
+export function isReleaseVersion(version) {
+  if (typeof version !== 'string' || version !== version.trim()) return false;
+  const parts = version.split('+');
+  if (parts.length > 2) return false;
+  if (parts.length === 2 && !parts[1].split('.').every(part => /^[0-9A-Za-z-]+$/.test(part))) return false;
+  const dash = parts[0].indexOf('-');
+  const core = dash < 0 ? parts[0] : parts[0].slice(0, dash);
+  const numbers = core.split('.');
+  if (numbers.length !== 3 || !numbers.every(part => /^(?:0|[1-9][0-9]*)$/.test(part))) return false;
+  if (dash < 0) return true;
+  return parts[0].slice(dash + 1).split('.').every(part =>
+    /^[0-9A-Za-z-]+$/.test(part) && (!/^[0-9]+$/.test(part) || part === '0' || part[0] !== '0'));
+}
 
 /** Production docs must describe an available release, not a version bump awaiting publication. */
 export async function checkDocsRelease({
@@ -21,7 +35,7 @@ export async function checkDocsRelease({
     throw new Error('Production docs require source manifests for all eight @awc-ui packages');
   }
   const version = manifests.find(item => item.name === '@awc-ui/core').version;
-  if (typeof version !== 'string' || version !== version.trim() || !VERSION_PATTERN.test(version)) {
+  if (!isReleaseVersion(version)) {
     throw new Error('Invalid source package version: ' + String(version));
   }
   for (const manifest of manifests) {

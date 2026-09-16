@@ -1,3 +1,4 @@
+import { removeHtmlComments } from "../../../../scripts/lib/html-comments.mjs";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin } from "vite";
 import vue from "@vitejs/plugin-vue";
@@ -56,12 +57,7 @@ function stripHtmlComments(): Plugin {
     apply: "build",
     transformIndexHtml: {
       order: "post",
-      handler: (html) =>
-        html
-          // NON-greedy, so two adjacent comments do not collapse into one match
-          // that swallows the markup between them.
-          .replace(/<!--[\s\S]*?-->/g, "")
-          .replace(/\n\s*\n+/g, "\n"),
+      handler: removeHtmlComments,
     },
   };
 }

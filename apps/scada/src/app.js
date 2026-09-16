@@ -1094,21 +1094,26 @@ async function render() {
     if (epoch !== renderEpoch || !main.isConnected) return false;
   }
   main.removeAttribute("aria-busy");
-  const views = {
-    overview,
-    assets: () =>
-      heading(
+  switch (route) {
+    case "assets":
+      main.innerHTML = heading(
         "Assets",
         "Equipment status, signals, and process health.",
         btn("Export snapshot", "export", "filled", "download"),
-      ) +
-      assetTable(true) +
-      footer(),
-    alarms: alarmsView,
-    trends: trendsView,
-    settings: settingsView,
-  };
-  $("#main").innerHTML = views[state.route]();
+      ) + assetTable(true) + footer();
+      break;
+    case "alarms":
+      main.innerHTML = alarmsView();
+      break;
+    case "trends":
+      main.innerHTML = trendsView();
+      break;
+    case "settings":
+      main.innerHTML = settingsView();
+      break;
+    default:
+      main.innerHTML = overview();
+  }
   localize($("#main"), appearance.language);
   renderRows();
   wireMain();

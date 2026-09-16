@@ -839,7 +839,7 @@ async function click(page, selector, index = 0) {
   }));
   ok('and a press keeps its label in Arabic', /[؀-ۿ]/.test(after.label), after.label || '(none)');
   ok('and re-spells the aggregate in Arabic, without arithmetic',
-    after.total !== before && /[٠-٩\u0660-\u0669]|[؀-ۿ]/.test(after.total),
+    after.total !== before && /[\u0600-\u06ff]/.test(after.total),
     `${before} -> ${after.total}`);
   await page.close();
 }

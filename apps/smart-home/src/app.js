@@ -149,13 +149,23 @@ async function render() {
   const index = nav.findIndex(([id]) => id === state.route);
   $("#nav").activeIndex = index;
   $("#mobile-nav").activeIndex = index;
-  $("#main").innerHTML = {
-    home,
-    rooms: roomView,
-    scenes: scenesView,
-    energy: energyView,
-    routines: routineView,
-  }[state.route](state);
+  const main = $("#main");
+  switch (state.route) {
+    case "rooms":
+      main.innerHTML = roomView(state);
+      break;
+    case "scenes":
+      main.innerHTML = scenesView(state);
+      break;
+    case "energy":
+      main.innerHTML = energyView(state);
+      break;
+    case "routines":
+      main.innerHTML = routineView(state);
+      break;
+    default:
+      main.innerHTML = home(state);
+  }
   await chart();
 }
 function refreshDevices() {

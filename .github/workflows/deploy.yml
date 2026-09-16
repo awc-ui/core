@@ -7,9 +7,12 @@ on:
     types: [completed]
   pull_request:
     branches: [main]
-  # Manual production deploy of whatever ref it is dispatched on — for
+  # Manual production deploy from main — for
   # bootstrapping the site and for re-deploys without waiting on a CI cycle.
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
   group: deploy-${{ github.event.pull_request.number || github.ref }}
@@ -21,19 +24,42 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       github.event_name == 'pull_request' ||
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
     steps:
+      # Preview code stays in the pull request's cache/security context.
       - uses: actions/checkout@v4
+        if: github.event_name == 'pull_request'
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+
+      # Production only executes code fetched from our trusted main branch.
+      - uses: actions/checkout@v4
+        if: github.event_name != 'pull_request'
+        with:
+          ref: refs/heads/main
+          persist-credentials: false
+
+      - name: Verify main still matches the triggering commit
+        if: github.event_name != 'pull_request'
+        env:
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          if [ "$(git rev-parse HEAD)" != "$EXPECTED_SHA" ]; then
+            echo "::error::main no longer matches the triggering commit. Deploy the current main revision after CI succeeds."
+            exit 1
+          fi
 
       - uses: pnpm/action-setup@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+          # No cache: workflow_run executes code with a privileged event context.
 
       - run: pnpm install --frozen-lockfile
 
@@ -133,9 +159,12 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/download-artifact@v4
         with:
@@ -159,16 +188,30 @@ jobs:
   deploy-production:
     name: Deploy production
     if: |
-      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_run' &&
        github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.head_branch == 'main')
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Netlify posts the existing production commit comment.
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: refs/heads/main
+          persist-credentials: false
+
+      - name: Verify main still matches the built commit
+        env:
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          if [ "$(git rev-parse HEAD)" != "$EXPECTED_SHA" ]; then
+            echo "::error::main no longer matches the built commit. Deploy the current main revision after CI succeeds."
+            exit 1
+          fi
 
       - uses: actions/download-artifact@v4
         with:

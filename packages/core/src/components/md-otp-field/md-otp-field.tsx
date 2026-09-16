@@ -1,3 +1,4 @@
+import { createId } from '../../utils/id';
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, VNode, Watch, h } from '@stencil/core';
 import {
   setFormValue,
@@ -191,7 +192,7 @@ export class MdOtpField {
 
   private inputEls: (HTMLInputElement | undefined)[] = [];
   private cellsEl?: HTMLElement;
-  private uid = `md-otp-field-${Math.random().toString(36).slice(2, 7)}`;
+  private uid = createId('md-otp-field');
   private customValidityMessage = '';
   /** Last committed value — mdChange only fires when the value moved past this. */
   private lastCommitted = '';

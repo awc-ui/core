@@ -1,3 +1,4 @@
+import { createId } from '../../utils/id';
 import {
   Component,
   Host,
@@ -460,7 +461,7 @@ export class MdNavigationRail {
     );
   }
 
-  private overflowId = `md-rail-overflow-${Math.random().toString(36).slice(2, 9)}`;
+  private overflowId = createId('md-rail-overflow');
 
   /** Destinations pushed past `max-visible`, in author order. */
   private get overflowedTabs(): HTMLElement[] {

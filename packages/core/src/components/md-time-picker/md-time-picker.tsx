@@ -1,3 +1,4 @@
+import { createId } from '../../utils/id';
 import { checkValidityOf, getValidityOf, InlineValidationPresenter, reportValidityOf } from '../../utils/form';
 import { AttachInternals, Build, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
 
@@ -439,8 +440,7 @@ export class MdTimePicker {
      tracks open-order rather than DOM/stack position. */
   private openSeq = 0;
   private triggerFieldEl?: HTMLMdTextFieldElement;
-  private uid = Math.random().toString(36).slice(2, 11);
-  private headlineId = `md-time-picker-headline-${this.uid}`;
+  private headlineId = createId('md-time-picker-headline');
   /* Cumulative (unwrapped) rotation, per dial mode, in degrees.
      CSS `transition: transform` interpolates between literal angle
      values — `rotate(354deg) → rotate(0deg)` therefore unwinds the

@@ -1,3 +1,4 @@
+import { createId } from '../../utils/id';
 import {
   Component,
   Host,
@@ -420,7 +421,7 @@ export class MdNavigationRailTab {
     const menu = this.submenu;
     if (!menu) return;
     if (!this.el.id) {
-      this.generatedId = this.generatedId ?? `md-rail-tab-${Math.random().toString(36).slice(2, 9)}`;
+      this.generatedId = this.generatedId ?? createId('md-rail-tab');
       this.el.id = this.generatedId;
     }
     if (menu.getAttribute('anchor') !== this.el.id) menu.setAttribute('anchor', this.el.id);

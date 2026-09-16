@@ -1,3 +1,4 @@
+import { createId } from '../../utils/id';
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
 import {
   InlineValidationPresenter,
@@ -53,7 +54,7 @@ export class MdSwitch {
   /** Message set via setCustomValidity(); non-empty wins over valueMissing. */
   private customValidityMessage = '';
 
-  private uid = `md-switch-${Math.random().toString(36).slice(2, 7)}`;
+  private uid = createId('md-switch');
   @State() private validationMessage = '';
   private supportEl?: HTMLSpanElement;
   private validationPresenter = new InlineValidationPresenter({
