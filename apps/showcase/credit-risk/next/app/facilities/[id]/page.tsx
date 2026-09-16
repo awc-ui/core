@@ -10,7 +10,8 @@ import { notFound } from 'next/navigation';
 import { getFacilityById } from '@awc-ui/showcase-kit/data';
 import { FacilityScreen } from '@/components/screens/FacilityScreen';
 
-export default function Page({ params }: { params: { id: string } }) {
-  if (!getFacilityById(params.id)) notFound();
-  return <FacilityScreen facilityId={params.id} />;
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  if (!getFacilityById(id)) notFound();
+  return <FacilityScreen facilityId={id} />;
 }

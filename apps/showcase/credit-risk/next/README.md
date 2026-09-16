@@ -45,7 +45,7 @@ Both targets are the same `next build` from the same `next.config.mjs`, so the
 base path, `trailingSlash` and the per-request `<meta>` in `app/layout.tsx` are
 physically the same code. `AWC_TARGET=netlify` changes three things: it emits
 `output: 'standalone'` for Netlify's Next runtime, points
-`experimental.outputFileTracingRoot` at the workspace root, and arms
+`outputFileTracingRoot` at the workspace root, and arms
 `middleware.ts`.
 
 | | Node target | Netlify target |
@@ -55,7 +55,7 @@ physically the same code. `AWC_TARGET=netlify` changes three things: it emits
 | calls | `lib/dsd-transform.mjs` | `lib/dsd-transform.mjs` |
 | proved by | `node scripts/verify-ssr.mjs next` | `pnpm verify:netlify` |
 
-The middleware only **rewrites**. Next 14 compiles it for the Edge runtime,
+The middleware only **rewrites** and keeps Next.js 15's default Edge runtime,
 where the hydrate app's `import { Readable } from 'stream'` does not build, and
 on Netlify it becomes a Deno edge function with a 50 ms CPU budget against a
 ~140 ms hydrate pass; the Node route handler it points at has neither problem.
@@ -106,8 +106,9 @@ through `server.mjs`.
 This is the same framework-agnostic primitive as
 `starters/astro/src/middleware.ts`, `starters/nuxt/server/plugins/awc-ssr-dsd.ts`
 and `starters/sveltekit/src/hooks.server.ts` — those hang it off their
-framework's response hook. Next 14 has no such hook (middleware is Edge-only;
-Node middleware landed in 15.2), so the hook is the server. `starters/next` uses
+framework's response hook. This app keeps its existing custom-server response
+transform on Next.js 15; middleware only rewrites requests for the Netlify
+target. `starters/next` uses
 `@awc-ui/react/server` instead, which is cleaner and not available here — see
 the header comment in `server.mjs`.
 

@@ -130,7 +130,7 @@ function buildManifest(): string {
     link(
       "/frameworks/angular/",
       "Angular components and Angular SSR",
-      "Angular 17+ directives, forms, standalone setup, and server rendering.",
+      "Angular 20.3.31+ directives, forms, standalone setup, and server rendering.",
     ),
     link(
       "/frameworks/vue/",
@@ -140,7 +140,7 @@ function buildManifest(): string {
     link(
       "/frameworks/svelte/",
       "Svelte components and SvelteKit SSR",
-      "Svelte 4/5 custom elements and SvelteKit server rendering.",
+      "Svelte 5 custom elements and SvelteKit server rendering.",
     ),
     link(
       "/frameworks/ssr/",
@@ -148,9 +148,9 @@ function buildManifest(): string {
       "Declarative Shadow DOM architecture and framework support matrix.",
     ),
     "- [@awc-ui/react](https://www.npmjs.com/package/@awc-ui/react): Typed React 18+ components with Next.js and React SSR.",
-    "- [@awc-ui/angular](https://www.npmjs.com/package/@awc-ui/angular): Angular 17+ components, forms directives, and Angular SSR.",
+    "- [@awc-ui/angular](https://www.npmjs.com/package/@awc-ui/angular): Angular 20.3.31+ components, forms directives, and Angular SSR.",
     "- [@awc-ui/vue](https://www.npmjs.com/package/@awc-ui/vue): Typed Vue 3 components with Nuxt SSR.",
-    "- [@awc-ui/svelte](https://www.npmjs.com/package/@awc-ui/svelte): Svelte 4/5 components with SvelteKit SSR.",
+    "- [@awc-ui/svelte](https://www.npmjs.com/package/@awc-ui/svelte): Svelte 5 components with SvelteKit SSR.",
     "- [@awc-ui/tokens](https://www.npmjs.com/package/@awc-ui/tokens): Framework-agnostic Material Design 3 CSS design tokens.",
     "- [@awc-ui/theme](https://www.npmjs.com/package/@awc-ui/theme): Seed-color theme generation and CSS output.",
     "",

@@ -9,8 +9,8 @@ sidebar:
 AWC UI supports **server-side rendering (SSR)** through `@awc-ui/core/hydrate`.
 The server emits Declarative Shadow DOM (DSD), including component markup and
 styles. Client registration makes those elements interactive. Adoption also
-requires the framework to preserve Stencil's hydration annotations; Svelte 4
-needs the lifecycle helper described below.
+requires the framework to preserve Stencil's hydration annotations; the SvelteKit
+lifecycle below preserves those annotations before component registration.
 
 ## SSR framework support
 
@@ -57,7 +57,7 @@ to hydrate DSD.
   the transform once. Create it inside the server handle so concurrent requests
   have separate buffers. This delays streaming until the document is complete.
 - `createSvelteHydration()` returns `capture()` and `restore()`. Share one instance
-  in an app module. Use SvelteKit 2.10 or later. Call `capture()` from `hooks.client.ts`'s `init`, then call
+  in an app module. Use SvelteKit 2.70.3 or later. Call `capture()` from `hooks.client.ts`'s `init`, then call
   `restore()` in the root layout's `onMount` **before** dynamically importing
   component entries. Restore only attributes removed by Svelte; application
   attribute changes take precedence.
@@ -76,8 +76,8 @@ Canvas charts render their surrounding structure on the server and draw their
 plots in the browser.
 
 The core SSR smoke test renders every component and fails on render errors or
-missing expected DSD. The Svelte integration regression checks annotation loss,
-adoption, and HTML chunk buffering. `node scripts/verify-starters.mjs` installs
+missing expected DSD. The Svelte integration regression checks framework
+hydration, annotation restoration, shadow-root adoption, and HTML chunk buffering. `node scripts/verify-starters.mjs` installs
 packed candidates outside the workspace, builds the starters, and checks server
 HTML plus browser adoption and interaction. Use `--source=registry` after release
 to verify published-package installations; `--skip-browser` checks only the

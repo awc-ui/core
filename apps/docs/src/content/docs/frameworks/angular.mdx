@@ -1,6 +1,6 @@
 ---
 title: Angular Components and Angular SSR
-description: Angular 17+ Material Design 3 Web Components with typed directives, ngModel, reactive forms, standalone setup, and Angular SSR support.
+description: Angular 20.3.31+ Material Design 3 Web Components with typed directives, ngModel, reactive forms, standalone setup, and Angular SSR support.
 sidebar:
   label: Angular + SSR
   order: 2
@@ -8,6 +8,10 @@ sidebar:
 
 `@awc-ui/angular` provides standalone component proxies and Angular form value
 accessors. Imports register their custom elements automatically.
+
+Use Angular **20.3.31 or newer**. The wrapper and examples use the patched Angular
+20 compiler and runtime; applications on Angular 17–19 must upgrade Angular before
+updating the wrapper.
 
 ```bash
 npm install @awc-ui/angular @awc-ui/core
@@ -67,6 +71,21 @@ Angular can server-render the surrounding application normally. AWC UI's
 Declarative Shadow DOM, preserving styles and content in the server response.
 On the client, the imported Angular proxies register their custom elements and
 hydrate that server-rendered output.
+
+Forward the request's `BootstrapContext` when bootstrapping on the server. Angular
+uses it to keep the platform injector scoped to that request:
+
+```ts
+// src/main.server.ts
+import { bootstrapApplication, type BootstrapContext } from '@angular/platform-browser';
+import { AppComponent } from './app/app.component';
+import { config } from './app/app.config.server';
+
+export default (context: BootstrapContext) =>
+  bootstrapApplication(AppComponent, config, context);
+```
+
+For a custom Node server, import `CommonEngine` from `@angular/ssr/node`.
 
 The repository includes a validated
 [Angular SSR reference app](https://github.com/awc-ui/core/tree/main/apps/example-angular-ssr)

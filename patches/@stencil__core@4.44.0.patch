@@ -1,0 +1,16 @@
+diff --git a/testing/index.js b/testing/index.js
+index 690a277..ab07841 100644
+--- a/testing/index.js
++++ b/testing/index.js
+@@ -1995,9 +1995,9 @@ async function startPuppeteerBrowser(config) {
+       ...connectOpts
+     };
+     try {
+-      launchOpts.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_PATH || puppeteer.executablePath(launchOpts);
++      launchOpts.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_PATH || await puppeteer.executablePath(launchOpts);
+     } catch (_) {
+-      launchOpts.executablePath = puppeteer.executablePath(launchOpts.channel);
++      launchOpts.executablePath = await puppeteer.executablePath(launchOpts.channel);
+     }
+     browser = await puppeteer.launch({ ...launchOpts });
+   }

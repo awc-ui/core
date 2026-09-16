@@ -4,7 +4,7 @@
  *
  * WHY THIS FILE IS SEPARATE FROM `dsd-transform.mjs`
  *
- * `middleware.ts` is compiled for Next 14's EDGE runtime. `dsd-transform.mjs`
+ * `middleware.ts` uses Next.js's default EDGE runtime. `dsd-transform.mjs`
  * imports `@awc-ui/core/hydrate`, whose very first line is
  * `import { Readable } from 'stream'` — a Node built-in. Put the constants in
  * that module and the middleware bundle drags the whole 3.8 MB hydrate app in

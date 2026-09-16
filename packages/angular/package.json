@@ -1,7 +1,7 @@
 {
   "name": "@awc-ui/angular",
   "version": "1.0.0",
-  "description": "Angular 17+ components for accessible Material Design 3 Web Components, with typed directives, forms, and Angular SSR support",
+  "description": "Angular 20.3.31+ components for accessible Material Design 3 Web Components, with typed directives, forms, and Angular SSR support",
   "keywords": [
     "angular",
     "angular-component",
@@ -37,8 +37,6 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "esm2022": "./dist/esm2022/awc-ui-angular.mjs",
-      "esm": "./dist/esm2022/awc-ui-angular.mjs",
       "default": "./dist/fesm2022/awc-ui-angular.mjs"
     },
     "./package.json": {
@@ -61,23 +59,23 @@
     "tslib": "^2.8.1"
   },
   "peerDependencies": {
-    "@angular/common": ">=17",
-    "@angular/core": ">=17",
-    "@angular/forms": ">=17",
+    "@angular/common": ">=20.3.31",
+    "@angular/core": ">=20.3.31",
+    "@angular/forms": ">=20.3.31",
     "@awc-ui/core": "workspace:*",
     "rxjs": "^7.4.0"
   },
   "devDependencies": {
-    "@angular/common": "~17.3.0",
-    "@angular/compiler": "~17.3.0",
-    "@angular/compiler-cli": "~17.3.0",
-    "@angular/core": "~17.3.0",
-    "@angular/forms": "~17.3.0",
+    "@angular/common": "~20.3.31",
+    "@angular/compiler": "~20.3.31",
+    "@angular/compiler-cli": "~20.3.31",
+    "@angular/core": "~20.3.31",
+    "@angular/forms": "~20.3.31",
     "@awc-ui/core": "workspace:*",
-    "ng-packagr": "~17.3.0",
+    "ng-packagr": "~20.3.2",
     "rxjs": "^7.8.2",
-    "typescript": "~5.4.5",
-    "zone.js": "~0.14.0"
+    "typescript": "~5.9.3",
+    "zone.js": "~0.15.0"
   },
   "license": "MIT",
   "author": "AWC UI",

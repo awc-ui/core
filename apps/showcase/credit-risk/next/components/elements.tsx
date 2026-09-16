@@ -1,20 +1,19 @@
 'use client';
 
 /**
- * The three things React 18 cannot do with a custom element, done once.
+ * The custom-element bridge, shared across the showcase screens.
  *
  * 1. OBJECT PROPS. `chart.series`, `orgChart.nodes` and `sparkline.data` have no
- *    attribute form — React 18 would stringify them to `[object Object]`. They
+ *    attribute form. They
  *    are assigned to the element instance in an effect. Stencil's lazy proxy
  *    picks up own properties set before the element upgrades, so it does not
  *    matter whether the runtime has finished loading.
- * 2. CUSTOM EVENTS. `onMdSortChange` is not a React prop; React 18 only maps
- *    known DOM events. `useCustomEvent` attaches a real listener.
+ * 2. CUSTOM EVENTS. `useCustomEvent` attaches a real listener with the exact
+ *    case-sensitive name emitted by the component.
  * 3. TYPES. See `types/custom-elements.d.ts`.
  *
  * Everything else — strings, numbers, booleans — is a plain attribute and needs
- * none of this. Stencil parses `"true"`/`"false"` back to booleans, which is what
- * React writes for a boolean JSX value.
+ * none of this. React handles primitive custom-element props directly.
  */
 
 import { useCallback, useEffect, useRef, type MutableRefObject } from 'react';
@@ -44,7 +43,7 @@ export function useElementProps<T extends HTMLElement>(
     for (const [key, value] of Object.entries(latest.current)) {
       (el as unknown as Record<string, unknown>)[key] = value;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Callers supply stable dependencies; latest.current holds the current props.
   }, deps);
 
   return ref;

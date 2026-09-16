@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Kestrel Private Bank — Wealth Management Console, plain HTML build (no framework, pre-rendered, locale-routed)",
+  "description": "Kestrel Private Bank \u2014 Wealth Management Console, plain HTML build (no framework, pre-rendered, locale-routed)",
   "scripts": {
     "sync-runtime": "node scripts/sync-runtime.mjs",
     "build": "pnpm sync-runtime && node scripts/build.mjs",
@@ -20,6 +20,6 @@
   },
   "devDependencies": {
     "esbuild": "^0.25.12",
-    "puppeteer": "^24.0.0"
+    "puppeteer": "^25.11.0"
   }
 }

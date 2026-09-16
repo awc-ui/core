@@ -59,6 +59,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Puppeteer startup compatibility
+        run: node --test scripts/stencil-puppeteer-compat.test.mjs
+
+      - name: Check Stencil and Puppeteer browser startup compatibility
+        run: node --test scripts/stencil-puppeteer-compat.test.mjs
+
       - name: Generate documentation and package discovery metadata
         run: pnpm generate:docs
 

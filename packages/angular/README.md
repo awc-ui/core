@@ -1,6 +1,10 @@
 # Angular Web Components and Angular SSR — @awc-ui/angular
 
-Angular 17+ integration for AWC UI.
+Angular 20.3.31+ integration for AWC UI.
+
+The wrapper is built with the patched Angular 20 compiler. Applications must use
+Angular 20.3.31 or newer; upgrade Angular before updating this package from a
+version that supported Angular 17–19.
 
 `@awc-ui/angular` provides standalone component proxies and Angular form value
 accessors. Imports register their custom elements automatically.

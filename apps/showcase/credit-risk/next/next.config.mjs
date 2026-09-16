@@ -79,7 +79,7 @@ const nextConfig = {
   ...(NETLIFY_TARGET
     ? {
         output: 'standalone',
-        experimental: { outputFileTracingRoot: REPO_ROOT },
+        outputFileTracingRoot: REPO_ROOT,
       }
     : {}),
 };

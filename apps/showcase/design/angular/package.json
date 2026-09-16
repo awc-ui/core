@@ -2,7 +2,7 @@
   "name": "@awc-ui/showcase-design-angular",
   "version": "0.1.0",
   "private": true,
-  "description": "Pictor creative studio \u2014 native Angular standalone components",
+  "description": "Pictor creative studio — native Angular standalone components",
   "scripts": {
     "sync-runtime": "node scripts/sync-runtime.mjs",
     "dev": "pnpm sync-runtime && ng serve",
@@ -14,25 +14,26 @@
     "verify:localization": "node scripts/verify-localization.mjs"
   },
   "dependencies": {
-    "@angular/common": "~17.3.0",
-    "@angular/compiler": "~17.3.0",
-    "@angular/core": "~17.3.0",
-    "@angular/platform-browser": "~17.3.0",
-    "@angular/router": "~17.3.0",
+    "@angular/common": "~20.3.31",
+    "@angular/compiler": "~20.3.31",
+    "@angular/core": "~20.3.31",
+    "@angular/platform-browser": "~20.3.31",
+    "@angular/router": "~20.3.31",
     "@awc-ui/core": "workspace:*",
     "@awc-ui/showcase-kit": "workspace:*",
     "@fontsource/roboto": "^5.3.0",
     "material-symbols": "^0.40.2",
     "rxjs": "^7.8.0",
-    "zone.js": "~0.14.0",
-    "@awc-ui/pictor-model": "workspace:*"
+    "zone.js": "~0.15.0",
+    "@awc-ui/pictor-model": "workspace:*",
+    "tslib": "^2.8.1"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~17.3.0",
-    "@angular/cli": "~17.3.0",
-    "@angular/compiler-cli": "~17.3.0",
+    "@angular-devkit/build-angular": "~20.3.37",
+    "@angular/cli": "~20.3.37",
+    "@angular/compiler-cli": "~20.3.31",
     "@types/node": "^20.14.0",
-    "puppeteer": "^24.0.0",
-    "typescript": "~5.4.0"
+    "puppeteer": "^25.11.0",
+    "typescript": "~5.9.3"
   }
 }

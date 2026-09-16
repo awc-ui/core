@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Vela — Money & Investing, the plain-HTML flavour of the AWC UI banking showcase vertical: static pages written at build time, one per locale",
+  "description": "Vela \u2014 Money & Investing, the plain-HTML flavour of the AWC UI banking showcase vertical: static pages written at build time, one per locale",
   "scripts": {
     "sync-runtime": "node scripts/sync-runtime.mjs",
     "build": "pnpm sync-runtime && node scripts/build.mjs",
@@ -20,6 +20,6 @@
   },
   "devDependencies": {
     "esbuild": "^0.25.12",
-    "puppeteer": "^24.0.0"
+    "puppeteer": "^25.11.0"
   }
 }

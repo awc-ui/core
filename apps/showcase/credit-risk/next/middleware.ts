@@ -2,7 +2,7 @@
  * The switch that points document requests at `app/awc-dsd/route.ts`, and
  * nothing else.
  *
- * WHY IT ONLY REWRITES. Next 14 compiles middleware for the EDGE runtime, and
+ * WHY IT ONLY REWRITES. This app keeps middleware on the default EDGE runtime, and
  * on Netlify that becomes a Deno edge function with a 50 ms CPU budget. The
  * hydrate pass costs ~140 ms of CPU on the overview screen and its first import
  * is a Node built-in, so it can neither run here nor build here. What it can do

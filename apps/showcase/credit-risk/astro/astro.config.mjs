@@ -15,6 +15,8 @@ import { defineConfig } from 'astro/config';
  * deployed artifact is plain HTML with the shadow roots already in it.
  */
 export default defineConfig({
+  // Preserve the existing spacing between inline elements after the Astro 7 upgrade.
+  compressHTML: true,
   base: '/showcase/credit-risk/astro',
   output: 'static',
   trailingSlash: 'always',

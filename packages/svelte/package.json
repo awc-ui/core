@@ -1,7 +1,7 @@
 {
   "name": "@awc-ui/svelte",
   "version": "1.0.0",
-  "description": "Svelte 4 and 5 components for accessible Material Design 3 Web Components, with SvelteKit SSR and server-rendering guidance",
+  "description": "Svelte 5 components for accessible Material Design 3 Web Components, with SvelteKit SSR and server-rendering guidance",
   "keywords": [
     "svelte",
     "svelte-component",
@@ -52,11 +52,12 @@
   },
   "peerDependencies": {
     "@awc-ui/core": "workspace:*",
-    "svelte": ">=4"
+    "svelte": ">=5.57.0"
   },
   "devDependencies": {
     "@awc-ui/core": "workspace:*",
     "esbuild": "^0.25.12",
+    "svelte": "^5.57.0",
     "typescript": "^5.4.0"
   },
   "license": "MIT",

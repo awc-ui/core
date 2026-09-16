@@ -5,7 +5,7 @@ build renders the same six screens from the same fixture; this one ships one
 HTML document and one JavaScript entry, resolves its routes in the browser, and
 is served at `awc-ui.dev/showcase/wealth/angular/`.
 
-Angular 17.3, the `application` builder, the Angular router in
+Angular 20.3, the `application` builder, the Angular router in
 `PathLocationStrategy`. No server, no prerendering, no app-shell — and unlike
 the credit-risk vertical, **no server-rendered twin**: wealth is SPA-only by
 design (an authenticated internal tool is the case where an SPA is the honest

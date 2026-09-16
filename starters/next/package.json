@@ -12,7 +12,7 @@
     "@awc-ui/core": "^1.0.0-beta",
     "@awc-ui/react": "^1.0.0-beta",
     "@awc-ui/tokens": "^1.0.0-beta",
-    "next": "^16.3.4",
+    "next": "^16.3.5",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
@@ -24,5 +24,10 @@
   },
   "engines": {
     "node": ">=20.19.0"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "^8.5.28"
+    }
   }
 }
