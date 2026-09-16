@@ -1,5 +1,5 @@
 /**
- * Svelte 4/5 custom-element types and optional lazy-loader registration.
+ * Svelte 5 custom-element types and optional lazy-loader registration.
  *
  * In a client-rendered Vite app, load types and statically register what you use:
  * @example

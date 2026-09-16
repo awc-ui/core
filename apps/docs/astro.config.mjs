@@ -2,6 +2,7 @@ import { existsSync, statSync } from 'node:fs';
 import { join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
+import { unified } from '@astrojs/markdown-remark';
 import starlight from '@astrojs/starlight';
 import frameShowcase from './src/integrations/frame-showcase.mjs';
 import workspaceShowcases from './src/integrations/workspace-showcases.mjs';
@@ -164,6 +165,8 @@ function rehypeWrapTables() {
 }
 
 export default defineConfig({
+  // Preserve the existing spacing between inline elements after the Astro 7 upgrade.
+  compressHTML: true,
   // Preserve URLs for references and guides folded into their parent pages.
   redirects: {
     '/guides/ai-assistants/': '/guides/building-with-ai/#optional-mcp-and-skills',
@@ -192,7 +195,8 @@ export default defineConfig({
     '/components/table-toolbar/': '/components/table/#md-table-toolbar',
   },
   markdown: {
-    rehypePlugins: [rehypeWrapTables],
+    // Keep the docs table wrapper on the remark/rehype pipeline in Astro 7.
+    processor: unified({ rehypePlugins: [rehypeWrapTables] }),
   },
   site: 'https://awc-ui.dev',
   integrations: [
@@ -415,15 +419,15 @@ export default defineConfig({
         },
         {
           label: 'Getting Started',
-          autogenerate: { directory: 'getting-started' },
+          items: [{ autogenerate: { directory: 'getting-started' } }],
         },
         {
           label: 'Frameworks & SSR',
-          autogenerate: { directory: 'frameworks' },
+          items: [{ autogenerate: { directory: 'frameworks' } }],
         },
         {
           label: 'Theming',
-          autogenerate: { directory: 'theming' },
+          items: [{ autogenerate: { directory: 'theming' } }],
         },
         // Global, attribute-driven switches that apply library-wide from a
         // single element (usually <html>): density rungs, text direction,
@@ -433,7 +437,7 @@ export default defineConfig({
         // than a technique.
         {
           label: 'Global Behaviour',
-          autogenerate: { directory: 'behaviour' },
+          items: [{ autogenerate: { directory: 'behaviour' } }],
         },
         // Complete, runnable screens — the docs-site face of main-llm.md §8.
         // Ordered by how often evaluators ask for them (data-heavy first),
@@ -552,11 +556,11 @@ export default defineConfig({
         },
         {
           label: 'Guides',
-          autogenerate: { directory: 'guides' },
+          items: [{ autogenerate: { directory: 'guides' } }],
         },
         {
           label: 'Contributing',
-          autogenerate: { directory: 'contributing' },
+          items: [{ autogenerate: { directory: 'contributing' } }],
         },
       ],
     }),

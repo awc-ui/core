@@ -10,7 +10,8 @@ import { notFound } from 'next/navigation';
 import { getCounterpartyById } from '@awc-ui/showcase-kit/data';
 import { CounterpartyScreen } from '@/components/screens/CounterpartyScreen';
 
-export default function Page({ params }: { params: { id: string } }) {
-  if (!getCounterpartyById(params.id)) notFound();
-  return <CounterpartyScreen counterpartyId={params.id} />;
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  if (!getCounterpartyById(id)) notFound();
+  return <CounterpartyScreen counterpartyId={id} />;
 }

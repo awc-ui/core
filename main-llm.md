@@ -214,9 +214,9 @@ the raw custom elements and the `loader` import above.
 | Framework | Package | Requires |
 |---|---|---|
 | React / Next | `@awc-ui/react` | React 18+ |
-| Angular | `@awc-ui/angular` (`AwcUiModule`) | Angular 17+ |
+| Angular | `@awc-ui/angular` (`AwcUiModule`) | Angular 20.3.31+ |
 | Vue / Nuxt | `@awc-ui/vue` | Vue 3 |
-| Svelte / SvelteKit | `@awc-ui/svelte` | Svelte 4+ |
+| Svelte / SvelteKit | `@awc-ui/svelte` | Svelte 5.57+ |
 | Plain HTML / Astro | `@awc-ui/core/loader` | — |
 
 **SSR** — `@awc-ui/core/hydrate` renders Declarative Shadow DOM on the server.

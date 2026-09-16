@@ -13,14 +13,19 @@ const { build } = core('esbuild');
 const { compile } = svelte('svelte/compiler');
 const { renderToString } = core('./hydrate/index.js');
 const options = { fullDocument: false, serializeShadowRoot: 'declarative-shadow-dom', removeScripts: false, removeHtmlComments: false };
-const source = '<md-card variant="elevated"><span>Revenue</span></md-card>';
-const rendered = await renderToString(`<div id="app">${source}</div>`, options);
-const bundle = async (contents) => (await build({
+const source = '<script>let count = 0;</script><md-card variant="elevated"><span>Revenue</span></md-card><button onclick={() => count += 1}>{count}</button>';
+const bundle = async (contents, platform = 'browser', format = 'iife') => (await build({
   stdin: { contents, resolveDir: join(root, 'apps/example-sveltekit') },
-  bundle: true, format: 'iife', write: false, platform: 'browser',
+  bundle: true, format, write: false, platform,
 })).outputFiles[0].text;
-const compiled = compile(source, { generate: 'dom', hydratable: true, css: 'external', name: 'Probe' }).js.code;
-const framework = await bundle(`${compiled}\nwindow.mountProbe=()=>new Probe({target:document.getElementById('app'),hydrate:true});`);
+// Svelte 5's server output supplies the hydration boundary markers. Feed that
+// output through Stencil just as the SvelteKit server hook does in production.
+const server = compile(source, { generate: 'server', css: 'external', name: 'Probe' }).js.code;
+const serverBundle = await bundle(`${server}\nimport { render } from 'svelte/server';\nexport const html = render(Probe).body;`, 'node', 'esm');
+const { html } = await import(`data:text/javascript;base64,${Buffer.from(serverBundle).toString('base64')}`);
+const rendered = await renderToString(`<div id="app">${html}</div>`, options);
+const compiled = compile(source, { generate: 'client', css: 'external', name: 'Probe' }).js.code;
+const framework = await bundle(`${compiled}\nimport { hydrate, flushSync } from 'svelte';\nwindow.mountProbe=()=>{hydrate(Probe,{target:document.getElementById('app'),recover:false});flushSync();};\nwindow.flushProbe=flushSync;`);
 const components = await bundle("import '@awc-ui/core/components/md-card';");
 
 async function hydrate(preserve) {
@@ -35,15 +40,24 @@ async function hydrate(preserve) {
       template.parentElement.attachShadow({ mode: 'open' }).append(template.content);
       template.remove();
     }
+    const serverCard = window.document.querySelector('md-card');
+    const serverShadow = serverCard.shadowRoot;
     const lifecycle = createSvelteHydration();
     lifecycle.capture(window.document);
     window.eval(framework);
     window.mountProbe();
     const card = window.document.querySelector('md-card');
-    assert.equal(card.getAttribute('s-id'), null, 'fixture must reproduce Svelte 4 stripping');
+    assert.equal(card, serverCard, 'Svelte must hydrate the existing custom-element host');
+    assert.equal(card.shadowRoot, serverShadow, 'framework hydration must preserve server shadow DOM');
     if (preserve) lifecycle.restore();
+    assert.ok(card.hasAttribute('s-id'), 'Stencil adoption needs the server host annotation');
     window.eval(components);
     await new Promise((resolve) => window.requestAnimationFrame(() => window.requestAnimationFrame(resolve)));
+    assert.equal(card.shadowRoot, serverShadow, 'Stencil must adopt the existing shadow root');
+    const button = window.document.querySelector('button');
+    button.click();
+    window.flushProbe();
+    assert.equal(button.textContent, '1', 'the Svelte component must be interactive after hydration');
     return {
       slots: card.shadowRoot.querySelectorAll('slot').length,
       unclaimed: card.shadowRoot.querySelectorAll('[c-id]').length,
@@ -53,8 +67,8 @@ async function hydrate(preserve) {
   }
 }
 
-test('Svelte 4 loses adoption without preservation, then adopts with the helper', async () => {
-  assert.deepEqual(await hydrate(false), { slots: 2, unclaimed: 1 });
+test('Svelte 5 hydrates and adopts server shadow DOM with and without the annotation helper', async () => {
+  assert.deepEqual(await hydrate(false), { slots: 1, unclaimed: 0 });
   assert.deepEqual(await hydrate(true), { slots: 1, unclaimed: 0 });
 });
 

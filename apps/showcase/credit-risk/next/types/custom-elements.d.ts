@@ -26,7 +26,7 @@ import type { DetailedHTMLProps, HTMLAttributes } from 'react';
 
 type CE = DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement> & Record<string, unknown>;
 
-declare global {
+declare module 'react' {
   namespace JSX {
     interface IntrinsicElements {
       /* surfaces + indicators */

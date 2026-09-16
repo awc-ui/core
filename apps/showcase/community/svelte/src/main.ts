@@ -35,9 +35,10 @@ import '@awc-ui/core/css/tokens.css';
 // sheet; the wealth React build imports it, so this port does too.
 import '@awc-ui/core/css/pre-upgrade.css';
 import '@awc-ui/showcase-kit/community/app.css';
+import { mount } from 'svelte';
 import App from './App.svelte';
 
 const target = document.getElementById('root');
 if (!target) throw new Error('[showcase] #root is missing from index.html');
 
-export default new App({ target });
+export default mount(App, { target });

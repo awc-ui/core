@@ -5,7 +5,7 @@ framework build renders the same six screens from the same fixture; this one
 ships one HTML document and one JavaScript entry, resolves its routes in the
 browser, and is served at `awc-ui.dev/showcase/credit-risk/svelte/`.
 
-Vite, Svelte 4, and a router written in this repo. No SvelteKit, no server
+Vite, Svelte 5, and a router written in this repo. No SvelteKit, no server
 rendering, no build-time page generation. Until now `/svelte/` was a SvelteKit
 static export wearing Svelte's name; that build moved to
 [`../sveltekit/`](../sveltekit/README.md), where it renders per request and is

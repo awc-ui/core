@@ -85,9 +85,9 @@ finished dashboard.
 `angular.json` points `ssr.entry` at `src/server.ts`, so the Angular builder
 compiles it with the rest of the app and emits `dist/server/server.mjs` next to
 the `main.server.mjs` it imports and the `polyfills.server.mjs` the builder
-prepends. `pnpm start` runs that one file. Angular 17.3 ships `CommonEngine`
-from `@angular/ssr`; the `provideServerRendering()` / `CommonEngine` pairing is
-that version's API and differs from 18's and 19's.
+prepends. `pnpm start` runs that one file. Angular 20.3 provides `CommonEngine`
+from `@angular/ssr/node`. The server bootstrap forwards `BootstrapContext` to
+`bootstrapApplication()` so each request uses its own platform injector.
 
 `@awc-ui/core/hydrate` is listed in `externalDependencies`. It is Stencil's
 3.9 MB hydrate app, a runtime dependency of the server and never of the browser,

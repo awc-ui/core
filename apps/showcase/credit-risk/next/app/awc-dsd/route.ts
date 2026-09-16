@@ -15,10 +15,9 @@
  *    are Deno with a 50 ms CPU budget per request, and hydrating this app's
  *    overview screen — 206 shadow roots — measures ~140 ms of pure CPU. It
  *    would be killed, and killed only on the big pages.
- *  - NEXT MIDDLEWARE DOING THE WORK ITSELF. Next 14 compiles middleware for the
- *    Edge runtime, where `import { Readable } from 'stream'` — the hydrate
- *    app's first line — does not build. Node middleware landed in 15.2 and this
- *    app is on 14.2.
+ *  - NEXT MIDDLEWARE DOING THE WORK ITSELF. This app keeps middleware on the
+ *    default Edge runtime, where the hydrate module's Node built-ins cannot
+ *    run. The Node route handler retains the existing Netlify deployment seam.
  *  - A ROUTE HANDLER, which is this. `runtime = 'nodejs'`, so the hydrate app
  *    loads unchanged; Netlify runs it inside the same server function as the
  *    pages, so its dependencies are traced by `next build` and there is no

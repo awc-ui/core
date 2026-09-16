@@ -21,7 +21,8 @@ import { notFound } from 'next/navigation';
 import { getSectorById } from '@awc-ui/showcase-kit/data';
 import { SectorScreen } from '@/components/screens/SectorScreen';
 
-export default function Page({ params }: { params: { sector: string } }) {
-  if (!getSectorById(params.sector)) notFound();
-  return <SectorScreen sectorId={params.sector} />;
+export default async function Page({ params }: { params: Promise<{ sector: string }> }) {
+  const { sector } = await params;
+  if (!getSectorById(sector)) notFound();
+  return <SectorScreen sectorId={sector} />;
 }

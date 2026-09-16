@@ -26,9 +26,13 @@ let text = '';
   const check = () => spawnSync(process.execPath, [checker, '--workspace', workspace, '--tsconfig', './tsconfig.json', '--output', 'human'], { encoding: 'utf8' });
   await writeFile(join(workspace, 'App.svelte'), prefix + '<md-text-field label="Name" on:mdInput={(event) => text = event.detail} /><md-button variant="filled">Save</md-button>');
   let result = check(); assert.equal(result.status, 0, result.stdout + result.stderr);
+  await writeFile(join(workspace, 'App.svelte'), prefix + '<md-text-field label="Name" onmdInput={(event) => text = event.detail} />');
+  result = check(); assert.equal(result.status, 0, result.stdout + result.stderr);
   await writeFile(join(workspace, 'App.svelte'), prefix + '<md-button variant="not-a-real-variant">Save</md-button>');
   result = check(); assert.notEqual(result.status, 0, 'unknown variants must fail'); assert.match(result.stdout, /not-a-real-variant/);
   await writeFile(join(workspace, 'App.svelte'), prefix + '<md-text-field on:mdInput={(event) => text = event.detail.nonexistent} />');
   result = check(); assert.notEqual(result.status, 0, 'custom-event detail must be typed'); assert.match(result.stdout, /nonexistent/);
-  console.log('Svelte types: inferred custom-event details and valid props pass; invalid props/payloads are rejected.');
+  await writeFile(join(workspace, 'App.svelte'), prefix + '<md-text-field onmdInput={(event) => text = event.detail.nonexistent} />');
+  result = check(); assert.notEqual(result.status, 0, 'Svelte 5 event-handler properties must keep typed details'); assert.match(result.stdout, /nonexistent/);
+  console.log('Svelte types: legacy events and Svelte 5 event-handler properties infer custom-event details; invalid props/payloads are rejected.');
 } finally { await rm(workspace, { recursive: true, force: true }); }

@@ -1,6 +1,6 @@
 # SvelteKit SSR reference
 
-This workspace example uses Svelte 4 and SvelteKit 2.10+ with AWC UI's SSR-capable
+This workspace example uses Svelte 5.57+ and SvelteKit 2.70.3+ with AWC UI's SSR-capable
 component entries. Build core first, then run:
 
 ```sh

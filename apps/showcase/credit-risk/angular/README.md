@@ -5,7 +5,7 @@ framework build renders the same six screens from the same fixture; this one
 ships one HTML document and one JavaScript entry, resolves its routes in the
 browser, and is served at `awc-ui.dev/showcase/credit-risk/angular/`.
 
-Angular 17.3, the `application` builder, the Angular router in
+Angular 20.3, the `application` builder, the Angular router in
 `PathLocationStrategy`. No server, no prerendering, no app-shell. Until now
 `/angular/` was a build that prerendered all 95 routes at build time; that build
 moved to [`../angular-ssr/`](../angular-ssr/README.md), where it renders per

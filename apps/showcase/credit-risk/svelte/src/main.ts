@@ -16,17 +16,18 @@
  * them as a `<link>` in `<head>` at build time, so they are still render-blocking
  * stylesheets rather than a flash of unstyled content injected by JS.
  *
- * NO HYDRATION. `new App({ target })` and not `hydrate: true`: the shell that
+ * NO HYDRATION. `mount(App, { target })` instead of `hydrate(App, ...)`: the shell that
  * arrives from the host is empty, so there is nothing to adopt. That is the
  * difference this build exists to demonstrate against its SSR twin, and it is
- * one constructor option wide.
+ * the choice of mounting function.
  */
 
 import '@awc-ui/core/css/tokens.css';
 import '@awc-ui/showcase-kit/credit-risk/app.css';
+import { mount } from 'svelte';
 import App from './App.svelte';
 
 const target = document.getElementById('root');
 if (!target) throw new Error('[showcase] #root is missing from index.html');
 
-export default new App({ target });
+export default mount(App, { target });

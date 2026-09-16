@@ -83,9 +83,9 @@ published with npm provenance from GitHub Actions.
 | ------------------------------------------------------------------ | --------------------------------------------------------------------------- |
 | [`@awc-ui/core`](https://www.npmjs.com/package/@awc-ui/core)       | Framework-agnostic Web Components, SSR/hydration, and per-component imports |
 | [`@awc-ui/react`](https://www.npmjs.com/package/@awc-ui/react)     | Typed React 18+ components and a Next.js SSR entry                          |
-| [`@awc-ui/angular`](https://www.npmjs.com/package/@awc-ui/angular) | Angular 17+ components, forms directives, and Angular SSR support           |
+| [`@awc-ui/angular`](https://www.npmjs.com/package/@awc-ui/angular) | Angular 20.3.31+ components, forms directives, and Angular SSR support       |
 | [`@awc-ui/vue`](https://www.npmjs.com/package/@awc-ui/vue)         | Typed Vue 3 components, plugin registration, and Nuxt SSR support           |
-| [`@awc-ui/svelte`](https://www.npmjs.com/package/@awc-ui/svelte)   | Svelte 4/5 components and SvelteKit SSR support                             |
+| [`@awc-ui/svelte`](https://www.npmjs.com/package/@awc-ui/svelte)   | Svelte 5 components and SvelteKit SSR support                             |
 | [`@awc-ui/tokens`](https://www.npmjs.com/package/@awc-ui/tokens)   | MD3 design tokens as framework-agnostic CSS custom properties               |
 | [`@awc-ui/theme`](https://www.npmjs.com/package/@awc-ui/theme)     | Seed-color theme generation, static CSS, and a Web Worker entry             |
 
@@ -117,7 +117,7 @@ types:
 | [React and Next.js SSR](https://awc-ui.dev/frameworks/react/)     | `@awc-ui/react`   | React >= 18   |
 | [Angular and Angular SSR](https://awc-ui.dev/frameworks/angular/) | `@awc-ui/angular` | Angular >= 17 |
 | [Vue and Nuxt SSR](https://awc-ui.dev/frameworks/vue/)            | `@awc-ui/vue`     | Vue >= 3      |
-| [Svelte and SvelteKit SSR](https://awc-ui.dev/frameworks/svelte/) | `@awc-ui/svelte`  | Svelte >= 4   |
+| [Svelte and SvelteKit SSR](https://awc-ui.dev/frameworks/svelte/) | `@awc-ui/svelte`  | Svelte >= 5.57   |
 | Anything else                                                     | `@awc-ui/core`    | —             |
 
 **[Server-side rendering](https://awc-ui.dev/frameworks/ssr/)** is supported

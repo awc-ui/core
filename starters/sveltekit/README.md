@@ -2,7 +2,7 @@
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/fork/github/awc-ui/core/tree/main/starters/sveltekit)
 
-A standalone Svelte 4 dashboard using the published AWC UI packages. Use Node.js
+A standalone Svelte 5.57+ dashboard using the published AWC UI packages. Use Node.js
 20.19 or later. Source changes that add package APIs require the matching package
 release; the repository's packed-candidate checks verify them before publication.
 
@@ -11,10 +11,10 @@ release; the repository's packed-candidate checks verify them before publication
 - `src/hooks.server.ts` creates a separate HTML buffer for each request and calls
   `renderToString` once the final chunk arrives. This preserves a complete document
   and emits Declarative Shadow DOM during prerendering. Buffering delays streamed HTML.
-- `src/hooks.client.ts` uses SvelteKit 2.10+ `init` to capture Stencil's SSR host attributes before Svelte
+- `src/hooks.client.ts` uses SvelteKit 2.70.3+ `init` to capture Stencil's SSR host attributes before Svelte
   hydrates. The root layout restores removed attributes before importing the
-  component entries. Svelte 4 otherwise removes the `s-id` adoption markers,
-  causing the component runtime to append a second shadow render.
+  component entries. Registration after framework hydration allows the component
+  runtime to adopt the existing shadow roots.
 - `src/lib/awc.ts` shares `createSvelteHydration()` from
   `@awc-ui/core/ssr/sveltekit` between the two lifecycle hooks.
 - `src/lib/components.ts` imports the used SSR-capable component entries. Vite

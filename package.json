@@ -108,13 +108,13 @@
     "@arethetypeswrong/cli": "^0.18.4",
     "@changesets/changelog-github": "^0.7.0",
     "@changesets/cli": "^2.31.0",
-    "@playwright/test": "^1.58.2",
+    "@playwright/test": "1.62.1",
     "@typescript-eslint/eslint-plugin": "^8.59.2",
     "@typescript-eslint/parser": "^8.59.2",
     "eslint": "^10.3.0",
     "prettier": "^3.2.0",
     "publint": "^0.3.21",
-    "puppeteer": "^24.0.0",
+    "puppeteer": "^25.11.0",
     "stylelint": "^17.11.0",
     "stylelint-config-standard": "^40.0.0",
     "turbo": "2.10.12",
@@ -122,12 +122,23 @@
     "typescript-eslint": "^8.59.2"
   },
   "pnpm": {
+    "patchedDependencies": {
+      "@stencil/core@4.44.0": "patches/@stencil__core@4.44.0.patch"
+    },
     "overrides": {
       "@storybook/test-runner>jest": "^29.7.0",
       "@storybook/test-runner>jest-circus": "^29.7.0",
       "@storybook/test-runner>jest-runner": "^29.7.0",
       "@storybook/test-runner>jest-environment-node": "^29.7.0",
-      "@storybook/test-runner>@jest/types": "^29.6.3"
+      "@storybook/test-runner>@jest/types": "^29.6.3",
+      "@sveltejs/kit>cookie": "^0.7.2",
+      "next>postcss": "^8.5.28",
+      "sockjs>uuid": "^11.1.1",
+      "qs@<6.16.0": "^6.16.0",
+      "fast-uri@>=3.0.0 <3.1.6": "^3.1.6",
+      "js-yaml@>=3.0.0 <3.15.2": "^3.15.2",
+      "js-yaml@>=4.0.0 <4.3.2": "^4.3.2",
+      "svgo@>=4.0.0 <4.1.0": "^4.1.0"
     }
   },
   "pnpm-note": "Pins @storybook/test-runner (0.24.4) onto the jest 29 tree. It otherwise pulls jest 30 (jest/jest-circus/jest-runner/jest-environment-node), which brings jest-runtime@30 into the store; @stencil/core's `stencil test` then loads jest-runtime@30 against the jest-29 resolver API and crashes (normalizeCoreModuleSpecifier). test-runner is the sole jest-30 consumer, so scoping its jest deps to 29 removes jest 30 entirely; core keeps its declared jest 29.",
@@ -135,5 +146,6 @@
     "node": "^22.13.0 || >=24.0.0",
     "pnpm": ">=9.0.0"
   },
-  "packageManager": "pnpm@9.5.0"
+  "packageManager": "pnpm@9.5.0",
+  "pnpm-security-note": "Security overrides update vulnerable transitive releases while retaining each supported API line. cookie stays on 0.7 for SvelteKit; uuid 11 retains CommonJS and the v4 API used by sockjs; PostCSS stays on 8; js-yaml 3 and 4 are patched independently. Revisit when upstream minimum versions include these fixes. The Stencil patch awaits Puppeteer 25 browser-path resolution; remove it when upstream does so. Keep Playwright test, component-test, and runtime versions aligned: independently resolving their ranges loads incompatible runners."
 }

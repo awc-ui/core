@@ -1,7 +1,8 @@
 # Svelte Web Components and SvelteKit SSR — @awc-ui/svelte
 
-`@awc-ui/svelte` supplies types for AWC UI's native custom elements in Svelte 4
-and 5. Property types and custom-event payloads come from the core declarations.
+`@awc-ui/svelte` supplies types for AWC UI's native custom elements in Svelte
+5.57 or later. Property types and custom-event payloads come from the core
+declarations.
 
 ```bash
 npm install @awc-ui/svelte @awc-ui/core
@@ -46,7 +47,7 @@ components you use.
 
 ## SvelteKit server-side rendering
 
-Use SvelteKit 2.10 or later for the client initialization hook. On the server,
+Use SvelteKit 2.70.3 or later for the client initialization hook. On the server,
 transform the completed HTML response with `renderToString` from
 `@awc-ui/core/hydrate`; `createPageTransform` from `@awc-ui/core/ssr/sveltekit`
 buffers response chunks until the document is complete.
