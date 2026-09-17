@@ -19,11 +19,11 @@
  *
  * Usage:  node scripts/serve-docs-prod.mjs [--port 4323] [--no-compress]
  */
-import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
-import { extname, join, normalize, resolve, sep } from 'node:path';
+import { extname, join, resolve } from 'node:path';
 import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { brotliCompressSync, constants, gzipSync } from 'node:zlib';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -34,10 +34,6 @@ const portArg = argv.indexOf('--port');
 const PORT = portArg > -1 ? Number(argv[portArg + 1]) : 4323;
 const COMPRESS = !argv.includes('--no-compress');
 
-if (!existsSync(root)) {
-  console.error(`[serve-prod] ${root} does not exist — build first:\n              pnpm build`);
-  process.exit(1);
-}
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -65,11 +61,35 @@ const MIME = {
 const COMPRESSIBLE = new Set(['.html', '.js', '.mjs', '.css', '.json', '.svg', '.md', '.txt', '.xml', '.map']);
 const MIN_COMPRESS_BYTES = 1024;
 
-/** key: `${path}|${encoding}` → Buffer */
-const cache = new Map();
-let served = 0;
-let rawTotal = 0;
-let sentTotal = 0;
+/** Index only regular build files. Request text is never used to form a disk path.
+ * Symlinks (including compressed siblings and directory links) are not served.
+ */
+export function indexFiles(directory) {
+  const files = new Map();
+  function visit(current, prefix) {
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const file = join(current, entry.name);
+      const url = `${prefix}/${entry.name}`;
+      if (entry.isDirectory()) visit(file, url);
+      else if (entry.isFile()) files.set(url, file);
+    }
+  }
+  visit(directory, '');
+  return files;
+}
+
+export function resolveFile(files, urlPath) {
+  let clean;
+  try {
+    clean = decodeURIComponent(urlPath.split('?')[0].split('#')[0]);
+  } catch {
+    return null;
+  }
+  if (!clean.startsWith('/') || clean.includes('\\') || clean.includes('\0')
+    || clean.split('/').some(part => part === '.' || part === '..')) return null;
+  const indexPath = clean.endsWith('/') ? `${clean}index.html` : `${clean}/index.html`;
+  return files.get(clean) ?? files.get(indexPath) ?? files.get(`${clean}.html`) ?? null;
+}
 
 function encode(buf, encoding) {
   return encoding === 'br'
@@ -83,26 +103,11 @@ function encode(buf, encoding) {
 }
 
 /** Pick the best encoding the client accepts. */
-function negotiate(header = '') {
+function negotiate(header = '', compress = true) {
   const accept = header.toLowerCase();
-  if (!COMPRESS) return null;
+  if (!compress) return null;
   if (/\bbr\b/.test(accept)) return 'br';
   if (/\bgzip\b/.test(accept)) return 'gzip';
-  return null;
-}
-
-/** Resolve a URL path to a file on disk, the way a static host does. */
-function resolveFile(urlPath) {
-  const clean = decodeURIComponent(urlPath.split('?')[0].split('#')[0]);
-  // Block traversal: normalise, then require the result to stay under root.
-  const candidate = resolve(root, '.' + normalize(clean));
-  if (candidate !== root && !candidate.startsWith(root + sep)) return null;
-
-  if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
-  const asIndex = join(candidate, 'index.html');
-  if (existsSync(asIndex)) return asIndex;
-  const asHtml = candidate + '.html';
-  if (existsSync(asHtml)) return asHtml;
   return null;
 }
 
@@ -114,64 +119,81 @@ function cacheControl(file) {
   return 'public, max-age=3600';
 }
 
-const server = createServer((req, res) => {
-  const file = resolveFile(req.url || '/');
-
-  if (!file) {
-    const notFound = join(root, '404.html');
-    const body = existsSync(notFound) ? readFileSync(notFound) : Buffer.from('404');
-    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': body.length });
-    return res.end(req.method === 'HEAD' ? undefined : body);
+export function createDocsServer({ directory = root, compress = COMPRESS } = {}) {
+  const files = indexFiles(directory);
+  const compressedFiles = new Map();
+  for (const [url, file] of files) {
+    compressedFiles.set(file, { br: files.get(`${url}.br`), gzip: files.get(`${url}.gz`) });
   }
+  const cache = new Map();
+  let served = 0;
+  let rawTotal = 0;
+  let sentTotal = 0;
+  const server = createServer((req, res) => {
+    const file = resolveFile(files, req.url || '/');
 
-  const ext = extname(file);
-  const type = MIME[ext] || 'application/octet-stream';
-  const size = statSync(file).size;
-  const headers = { 'Content-Type': type, 'Cache-Control': cacheControl(file), Vary: 'Accept-Encoding' };
-
-  let encoding = COMPRESSIBLE.has(ext) && size >= MIN_COMPRESS_BYTES ? negotiate(req.headers['accept-encoding']) : null;
-
-  // No encoding wanted (or not worth it): stream it straight through.
-  if (!encoding) {
-    headers['Content-Length'] = size;
-    res.writeHead(200, headers);
-    served++; rawTotal += size; sentTotal += size;
-    if (req.method === 'HEAD') return res.end();
-    return createReadStream(file).pipe(res);
-  }
-
-  // A precompressed sibling is what a real precompressed deploy serves.
-  const sidecar = file + (encoding === 'br' ? '.br' : '.gz');
-  const key = `${file}|${encoding}`;
-  let body = cache.get(key);
-  if (!body) {
-    body = existsSync(sidecar) ? readFileSync(sidecar) : encode(readFileSync(file), encoding);
-    cache.set(key, body);
-  }
-
-  headers['Content-Encoding'] = encoding;
-  headers['Content-Length'] = body.length;
-  res.writeHead(200, headers);
-  served++; rawTotal += size; sentTotal += body.length;
-  res.end(req.method === 'HEAD' ? undefined : body);
-});
-
-server.listen(PORT, () => {
-  console.log(`[serve-prod] ${root.replace(repoRoot + '/', '')}`);
-  console.log(`[serve-prod] http://localhost:${PORT}/`);
-  console.log(`[serve-prod] compression: ${COMPRESS ? 'brotli q11 → gzip -9 → identity' : 'OFF'}`);
-});
-
-// Report the transfer saving on exit — the number that actually matters.
-for (const sig of ['SIGINT', 'SIGTERM']) {
-  process.on(sig, () => {
-    if (served) {
-      const mb = (n) => (n / 1024 / 1024).toFixed(2) + ' MB';
-      const pct = rawTotal ? ((1 - sentTotal / rawTotal) * 100).toFixed(1) : '0';
-      console.log(
-        `\n[serve-prod] ${served} responses — ${mb(rawTotal)} on disk, ${mb(sentTotal)} over the wire (${pct}% saved)`,
-      );
+    if (!file) {
+      const notFound = files.get('/404.html');
+      const body = notFound ? readFileSync(notFound) : Buffer.from('404');
+      res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': body.length });
+      return res.end(req.method === 'HEAD' ? undefined : body);
     }
-    server.close(() => process.exit(0));
+
+    const ext = extname(file);
+    const type = MIME[ext] || 'application/octet-stream';
+    const size = statSync(file).size;
+    const headers = { 'Content-Type': type, 'Cache-Control': cacheControl(file), Vary: 'Accept-Encoding' };
+
+    let encoding = COMPRESSIBLE.has(ext) && size >= MIN_COMPRESS_BYTES ? negotiate(req.headers['accept-encoding'], compress) : null;
+
+    // No encoding wanted (or not worth it): stream it straight through.
+    if (!encoding) {
+      headers['Content-Length'] = size;
+      res.writeHead(200, headers);
+      served++; rawTotal += size; sentTotal += size;
+      if (req.method === 'HEAD') return res.end();
+      return createReadStream(file).pipe(res);
+    }
+
+    // A precompressed sibling is what a real precompressed deploy serves.
+    const sidecar = compressedFiles.get(file)?.[encoding];
+    const key = `${file}|${encoding}`;
+    let body = cache.get(key);
+    if (!body) {
+      body = sidecar ? readFileSync(sidecar) : encode(readFileSync(file), encoding);
+      cache.set(key, body);
+    }
+
+    headers['Content-Encoding'] = encoding;
+    headers['Content-Length'] = body.length;
+    res.writeHead(200, headers);
+    served++; rawTotal += size; sentTotal += body.length;
+    res.end(req.method === 'HEAD' ? undefined : body);
   });
+
+  return { server, stats: () => ({ served, rawTotal, sentTotal }) };
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+  if (!existsSync(root)) {
+    console.error(`[serve-prod] ${root} does not exist — build first: pnpm build`);
+    process.exit(1);
+  }
+  const { server, stats } = createDocsServer();
+  server.listen(PORT, () => {
+    console.log(`[serve-prod] ${root.replace(repoRoot + '/', '')}`);
+    console.log(`[serve-prod] http://localhost:${PORT}/`);
+    console.log(`[serve-prod] compression: ${COMPRESS ? 'brotli q11 → gzip -9 → identity' : 'OFF'}`);
+  });
+  for (const sig of ['SIGINT', 'SIGTERM']) {
+    process.on(sig, () => {
+      const { served, rawTotal, sentTotal } = stats();
+      if (served) {
+        const mb = (n) => (n / 1024 / 1024).toFixed(2) + ' MB';
+        const pct = rawTotal ? ((1 - sentTotal / rawTotal) * 100).toFixed(1) : '0';
+        console.log(`\n[serve-prod] ${served} responses — ${mb(rawTotal)} on disk, ${mb(sentTotal)} over the wire (${pct}% saved)`);
+      }
+      server.close(() => process.exit(0));
+    });
+  }
 }

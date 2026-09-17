@@ -1,3 +1,4 @@
+import { createId } from '../../utils/id';
 import { Component, Element, Host, h, Prop, Watch } from '@stencil/core';
 
 /**
@@ -31,7 +32,7 @@ export class MdTabPanels {
 
   private tabsEl: (HTMLElement & { activeTabIndex?: number }) | null = null;
   private hasLoaded = false;
-  private uid = `md-tab-panels-${Math.random().toString(36).slice(2, 7)}`;
+  private uid = createId('md-tab-panels');
 
   private onTabChange = (e: Event) => {
     const detail = (e as CustomEvent<{ index: number }>).detail;

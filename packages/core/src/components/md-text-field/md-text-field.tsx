@@ -1,3 +1,4 @@
+import { createId } from '../../utils/id';
 import { getValidityOf, submitFormOnEnter, InlineValidationPresenter, withValidationCheck, withValidationReport } from '../../utils/form';
 import { AttachInternals, Build, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
 
@@ -198,7 +199,7 @@ export class MdTextField {
   private internalWrite = false;
   private composing = false;
   private warnedLiveFormat = false;
-  private uid = `md-text-field-${Math.random().toString(36).slice(2, 7)}`;
+  private uid = createId('md-text-field');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private recognition?: any;
   private debounceTimer?: ReturnType<typeof setTimeout>;

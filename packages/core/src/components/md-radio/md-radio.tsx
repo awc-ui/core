@@ -1,3 +1,4 @@
+import { createId } from '../../utils/id';
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
 import { RadioElement } from '../../utils/types';
 import { triggerRipple } from '../../utils/ripple';
@@ -43,7 +44,7 @@ export class MdRadio {
   /** Message set via setCustomValidity(); non-empty wins over valueMissing. */
   private customValidityMessage = '';
 
-  private uid = `md-radio-${Math.random().toString(36).slice(2, 7)}`;
+  private uid = createId('md-radio');
   @State() private validationMessage = '';
   private supportEl?: HTMLSpanElement;
   private validationPresenter = new InlineValidationPresenter({

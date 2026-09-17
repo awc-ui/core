@@ -33,7 +33,18 @@ export function enhanceShell(root = document) {
   if (fab && !fab.hasAttribute('data-bound')) {
     fab.setAttribute('data-bound', '');
     fab.addEventListener('mdClick', () => {
-      window.location.assign(fab.getAttribute('data-fab-href'));
+      const href = fab.getAttribute('data-fab-href');
+      if (!href) return;
+      let target;
+      try {
+        target = new URL(href, window.location.href);
+      } catch {
+        return;
+      }
+      if ((target.protocol === 'https:' || target.protocol === 'http:') &&
+          target.origin === window.location.origin) {
+        window.location.assign(target.href);
+      }
     });
   }
 }

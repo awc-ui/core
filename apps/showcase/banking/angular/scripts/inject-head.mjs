@@ -36,6 +36,7 @@
  * Runs after `ng build` and before the fan-out, so the 13 copies are made from
  * the finished shell rather than 13 copies each needing the same edit.
  */
+import { removeHtmlComments } from '../../../../../scripts/lib/html-comments.mjs';
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -89,15 +90,7 @@ if (!before.includes(MARKER)) {
   process.exit(1);
 }
 
-const after = before
-  .replace(MARKER, head)
-  // NON-greedy, so two adjacent comments do not collapse into one match that
-  // swallows the markup between them. There is no comment inside a <script>
-  // here to protect — the preboot above is minified JavaScript with no `<!--`
-  // in it, which the guard further up also depends on.
-  .replace(/<!--[\s\S]*?-->/g, '')
-  // The comments sat on their own lines; removing them leaves the blank lines.
-  .replace(/\n\s*\n+/g, '\n');
+const after = removeHtmlComments(before.replace(MARKER, () => head));
 
 writeFileSync(shell, after);
 

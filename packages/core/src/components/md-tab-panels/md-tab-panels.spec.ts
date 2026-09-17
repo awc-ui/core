@@ -53,6 +53,34 @@ describe('md-tab-panels', () => {
     expect(panels[0].getAttribute('tabindex')).toBe('-1');
   });
 
+  it('keeps separate tab groups uniquely linked and stable when selection changes', async () => {
+    // Repeated Math.random values used to give both groups the same ids.
+    const random = jest.spyOn(Math, 'random').mockReturnValue(0.5);
+    try {
+      const page = await newSpecPage({ components: COMPONENTS, html: FIXTURE + FIXTURE });
+      await page.waitForChanges();
+      const tabs = Array.from(page.body.querySelectorAll('md-tab'));
+      const panels = Array.from(page.body.querySelectorAll('md-tab-panel'));
+      const ids = [...tabs, ...panels].map((element) => element.id);
+
+      expect(ids.every(Boolean)).toBe(true);
+      expect(new Set(ids).size).toBe(ids.length);
+      panels.forEach((panel, i) => {
+        expect(panel.getAttribute('aria-labelledby')).toBe(tabs[i].id);
+        expect(tabs[i].getAttribute('controls')).toBe(panel.id);
+      });
+
+      await (page.body.querySelector('md-tabs') as HTMLMdTabsElement).selectTab(2);
+      await page.waitForChanges();
+      expect([...tabs, ...panels].map((element) => element.id)).toEqual(ids);
+      expect(panels.map((panel) => panel.hasAttribute('active'))).toEqual([
+        false, false, true, false, true, false,
+      ]);
+    } finally {
+      random.mockRestore();
+    }
+  });
+
   it('for="" resolves the tabs by id when not a sibling', async () => {
     const page = await newSpecPage({
       components: COMPONENTS,

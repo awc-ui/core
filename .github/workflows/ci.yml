@@ -29,6 +29,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -285,6 +288,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Security regression tests
+        run: pnpm test:security
+
       - name: ESLint
         run: pnpm lint:eslint
 
@@ -351,6 +357,9 @@ jobs:
           retention-days: 7
 
   test-a11y:
+    permissions:
+      contents: read
+      checks: write
     name: Accessibility (axe-core via Storybook)
     runs-on: ubuntu-latest
     needs: storybook-build

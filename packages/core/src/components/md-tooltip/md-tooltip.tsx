@@ -1,3 +1,4 @@
+import { createId } from '../../utils/id';
 import { Component, Host, h, Prop, State, Event, EventEmitter, Element, Method, Watch } from '@stencil/core';
 
 export type Placement =
@@ -90,7 +91,7 @@ export class MdTooltip {
   private slotObserver?: MutationObserver;
   private showTimer?: ReturnType<typeof setTimeout>;
   private hideTimer?: ReturnType<typeof setTimeout>;
-  private tooltipId = `md-tooltip-${Math.random().toString(36).slice(2, 9)}`;
+  private tooltipId = createId('md-tooltip');
   private scrollListenerBound = false;
   private escapeListenerBound = false;
   private hostHoverBound = false;

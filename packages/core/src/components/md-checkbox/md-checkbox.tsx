@@ -1,3 +1,4 @@
+import { createId } from '../../utils/id';
 import { AttachInternals, Component, Element, Event, EventEmitter, Host, Listen, Method, Prop, State, Watch, h } from '@stencil/core';
 import { triggerRipple } from '../../utils/ripple';
 import {
@@ -77,7 +78,7 @@ export class MdCheckbox {
 
 
   /** Stable id so the supporting line can be referenced by aria-describedby. */
-  private uid = `md-checkbox-${Math.random().toString(36).slice(2, 7)}`;
+  private uid = createId('md-checkbox');
 
   /** Drives aria-invalid on the host. */
   @State() private invalid = false;

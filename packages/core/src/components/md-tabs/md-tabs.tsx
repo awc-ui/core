@@ -1,3 +1,4 @@
+import { createId } from '../../utils/id';
 import { Component, Host, h, Prop, Event, EventEmitter, Element, Watch, State, Method, Listen } from '@stencil/core';
 
 /**
@@ -99,7 +100,7 @@ export class MdTabs {
   private glideToken = 0;
   private resizeObserver?: ResizeObserver;
   private dirObserver?: MutationObserver;
-  private uniquePrefix = `md-tabs-${Math.random().toString(36).slice(2, 7)}`;
+  private uniquePrefix = createId('md-tabs');
 
   // ─── Lifecycle ───────────────────────────────────────────
 

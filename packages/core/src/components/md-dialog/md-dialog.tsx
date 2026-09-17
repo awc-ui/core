@@ -1,3 +1,4 @@
+import { createId } from '../../utils/id';
 import { Component, Host, h, Prop, Event, EventEmitter, Method, Watch, State, Element, Listen } from '@stencil/core';
 import { OverlayLifecycle } from '../../utils/overlay-lifecycle';
 import { resolveDialogLabel } from './dialog-utils';
@@ -75,8 +76,8 @@ export class MdDialog {
   @State() private hasSlottedHeadline = false;
   @State() private hasSlottedActions = false;
 
-  private headlineId = `md-dialog-headline-${Math.random().toString(36).slice(2)}`;
-  private contentId = `md-dialog-content-${Math.random().toString(36).slice(2)}`;
+  private headlineId = createId('md-dialog-headline');
+  private contentId = createId('md-dialog-content');
   private containerEl!: HTMLElement;
   private previousFocus: HTMLElement | null = null;
   private openFocusFrame?: number;

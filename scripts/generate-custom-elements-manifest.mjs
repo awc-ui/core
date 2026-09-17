@@ -11,6 +11,7 @@
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { markdownPlainText, withoutMarkdownComments } from "./lib/markdown-text.mjs";
 
 const scriptDir = fileURLToPath(new URL(".", import.meta.url));
 const root = join(scriptDir, "..");
@@ -26,19 +27,11 @@ function className(tag) {
 }
 
 function plainText(markdown) {
-  return markdown
-    .replace(/<!--[^]*?-->/g, " ")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/[*_`#]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  return markdownPlainText(markdown);
 }
 
 function componentSummary(markdown, title) {
-  const body = markdown
-    .replace(/^#[^\n]*\n/, "")
-    .replace(/<!--[^]*?-->/g, "")
+  const body = withoutMarkdownComments(markdown.replace(/^#[^\n]*\n/, ""))
     .trim();
   const paragraph = body
     .split(/\n\s*\n/)

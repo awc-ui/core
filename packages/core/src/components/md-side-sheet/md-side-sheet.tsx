@@ -1,3 +1,4 @@
+import { createId } from '../../utils/id';
 import { Component, Host, h, Prop, Event, EventEmitter, Method, Watch, State, Element } from '@stencil/core';
 import { OverlayLifecycle } from '../../utils/overlay-lifecycle';
 
@@ -92,7 +93,7 @@ export class MdSideSheet {
   private containerEl!: HTMLElement;
   private previousFocus: HTMLElement | null = null;
   private openFocusFrame?: number;
-  private headlineId = `md-side-sheet-headline-${Math.random().toString(36).slice(2)}`;
+  private headlineId = createId('md-side-sheet-headline');
 
   // ── Lifecycle ───────────────────────────────────────────
 
