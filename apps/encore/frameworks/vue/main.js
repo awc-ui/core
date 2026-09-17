@@ -5,5 +5,6 @@ await ensureAwc();
 const app = createApp(EncoreShell);
 app.mount('#app');
 if (import.meta.hot) {
-  import.meta.hot.dispose(() => app.unmount());
+  const hot = import.meta.hot;
+  hot.dispose(() => app.unmount());
 }
