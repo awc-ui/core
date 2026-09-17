@@ -5,4 +5,6 @@ import { ensureAwc } from '../../src/runtime.js';
 await ensureAwc();
 const root = createRoot(document.querySelector('#app'));
 root.render(<React.StrictMode><FrameShell /></React.StrictMode>);
-if (import.meta.hot) import.meta.hot.dispose(() => root.unmount());
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => root.unmount());
+}
