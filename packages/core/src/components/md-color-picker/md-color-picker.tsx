@@ -927,7 +927,6 @@ export class MdColorPicker {
   }
 
   render() {
-    const previewColor = hsvaToHex(this.hsva, true);
     if (this.variant === 'popover') {
       return (
         <Host
