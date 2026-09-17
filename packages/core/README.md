@@ -17,7 +17,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
 
 **Material Design 3 Web Components, built with [Stencil](https://stenciljs.com/).**
-81 components that ship as standard custom elements, so they work in React,
+56 components that ship as standard custom elements, so they work in React,
 Angular, Vue, Svelte, or plain HTML, with SSR for Next.js, Nuxt, SvelteKit,
 Astro, and Angular.
 
@@ -98,8 +98,9 @@ something else:
 
 ### Smallest bundles: per-component imports
 
-`define` registers all 81 elements. Apps that want to ship only what they use
-import per component instead (the tokens then need one explicit CSS import):
+`define` registers the elements for all 56 components, including their nested
+sub-components. Apps that want to ship only what they use import per component
+instead (the tokens then need one explicit CSS import):
 
 ```js
 import "@awc-ui/core/css/tokens.css";

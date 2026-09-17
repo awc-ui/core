@@ -232,7 +232,7 @@ md-my-component.e2e.ts     browser tests
 readme.md                  API, do/don't, patterns
 ```
 
-Every one of the 81 existing components ships all five. The readme is not
+Every one of the 56 existing components ships all five. The readme is not
 optional — the docs site and the API tables are generated from the source and
 that file.
 

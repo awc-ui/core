@@ -9,8 +9,8 @@ import { Config } from '@stencil/core';
  * pays ~9.6 kB min / 3.3 kB gz of Declarative-Shadow-DOM claiming code it
  * never runs unless it actually server-renders.
  *
- * This config compiles the exact same 81 components with NO hydrate target,
- * so that code is compiled out. Output is identical in shape to
+ * This config compiles the same 56 components and their nested parts with NO
+ * hydrate target, so that code is compiled out. Output is identical in shape to
  * dist/components (same entry names, auto-define behavior, bundled runtime) —
  * only smaller.
  *

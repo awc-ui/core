@@ -4,8 +4,8 @@
 role: director
 audience: llm
 library: "@awc-ui/core"
-component-count: 57
-sub-component-count: 24
+component-count: 56
+sub-component-count: 25
 manual-count: 81
 per-component-docs: ./packages/core/src/components/<tag>/readme.md
 -->
@@ -681,10 +681,10 @@ from M3, copy-paste patterns, an anti-patterns table, and the theming surface.
 Work through them one at a time: pick the component from the decision matrix
 (§5), load its readme, write that component's markup, then move to the next.
 
-There are 81 manuals for 57 components: 24 of them document sub-components that
-are only valid inside a parent (a table cell, a tab panel, a select option).
-Every sub-component manual names its parent in the first line, and §7 below
-summarises the nesting.
+The library has 56 components and 25 sub-components, with 81 manuals in total.
+Sub-components are only valid inside a parent (a table cell, a tab panel, a
+select option). Every sub-component manual names its parent in the first line,
+and §7 below summarises the nesting.
 
 `status` in each manual's `llm:meta` block is one of:
 
