@@ -983,8 +983,8 @@ async function main() {
   // as opposed to medianComponentBundleKb above, which is the median CI BUDGET.
   // The distinction matters on the landing page: a budget is an upper bound we
   // promise not to cross, and quoting its median as "<= X kB / component" was
-  // false for 28 of 81 components. The median of what the build actually emits
-  // is the honest "typical" number.
+  // false for 28 of 81 custom elements (including nested parts). The median of
+  // what the build actually emits is the honest "typical" number.
   let medianComponentGzipKb = null;
   try {
     const baseline = JSON.parse(

@@ -7,10 +7,10 @@ import { newE2EPage } from '@stencil/core/testing';
  * rule, and the browser's `[hidden] { display: none }` is UA-origin — author
  * beats UA, so a `:host` display silently defeats the `hidden` attribute
  * unless the stylesheet also carries a `:host([hidden])` guard. 80 of 81
- * components were missing it, which meant `hidden` was a no-op almost
- * everywhere: a docs demo hiding skeleton placeholders left them stacked
- * above the real content, and an "empty state" toggled with `hidden` sat in
- * a flex column eating half the pane.
+ * custom elements (including nested parts) were missing it, which meant
+ * `hidden` was a no-op almost everywhere: a docs demo hiding skeleton
+ * placeholders left them stacked above the real content, and an "empty
+ * state" toggled with `hidden` sat in a flex column eating half the pane.
  *
  * This test samples across display modes (block, flex, inline-flex,
  * inline-block, contents) rather than all 81 tags — a missing guard is a

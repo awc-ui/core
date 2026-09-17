@@ -71,7 +71,8 @@ export function provideAwcUi(): Provider {
  * NOTE: the proxies are standalone components that register their own custom
  * element on import — no loader bootstrap needed. For the smallest bundles,
  * prefer importing individual components over this module: this module
- * references all 81 proxies, so the whole component set ships with your app.
+ * references every proxy, including nested parts, so all 56 components ship
+ * with your app.
  *
  * @example
  * // Smallest bundle — standalone component imports exactly what it uses:
