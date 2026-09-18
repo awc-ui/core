@@ -231,12 +231,12 @@ export default defineConfig({
         // and a sitemap (auto-injected @astrojs/sitemap → /sitemap-index.xml,
         // referenced from public/robots.txt). What it does NOT provide is a
         // social-share image or theme-color, so only those are added here.
-        // og.png is a static 1200×630 card in public/ (rendered from the logo
-        // mark; regenerate with sharp if the branding changes). The URL must
+        // The static 1200×630 card in public/ includes the canonical domain.
+        // Its versioned filename avoids reusing the old social image cache. The URL must
         // be absolute — scrapers don't resolve relative og:image paths.
         {
           tag: 'meta',
-          attrs: { property: 'og:image', content: 'https://awc-ui.dev/og.png' },
+          attrs: { property: 'og:image', content: 'https://awc-ui.dev/og-awc-ui-dev.png' },
         },
         {
           tag: 'meta',
@@ -255,7 +255,7 @@ export default defineConfig({
         },
         {
           tag: 'meta',
-          attrs: { name: 'twitter:image', content: 'https://awc-ui.dev/og.png' },
+          attrs: { name: 'twitter:image', content: 'https://awc-ui.dev/og-awc-ui-dev.png' },
         },
         {
           tag: 'meta',
