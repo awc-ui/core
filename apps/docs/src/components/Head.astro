@@ -35,6 +35,7 @@
  *     pulls the components it uses.
  */
 import Default from '@astrojs/starlight/components/Head.astro';
+import GoogleTag from './GoogleTag.astro';
 import heroMarkup from './HeroSection.astro?raw';
 import { getHeroRuntimePreloads } from '../lib/runtime-preloads';
 
@@ -108,6 +109,7 @@ const articleJsonLd = !isHome && !isNotFound
 ---
 
 <Default><slot /></Default>
+<GoogleTag />
 
 {/* Begin the above-the-fold component requests during HTML parsing instead
     of waiting for the lazy bootstrap to discover each connected element. */}

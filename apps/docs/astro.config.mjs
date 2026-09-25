@@ -219,6 +219,7 @@ export default defineConfig({
       // render as empty boxes — see src/components/Head.astro.
       components: {
         Head: './src/components/Head.astro',
+        Search: './src/components/Search.astro',
         SocialIcons: './src/components/ReleaseLinks.astro',
       },
       customCss: [

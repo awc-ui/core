@@ -23,6 +23,7 @@
 // tokens AND a default color set. The worker then overrides color tokens
 // per-panel via inline element styles, which beat :root via specificity.
 import "@awc-ui/tokens/tokens.css";
+import GoogleTag from "../../components/GoogleTag.astro";
 
 const DEFAULT_PRIMARY = "#6750A4";
 const DEFAULT_SECONDARY = "#625B71";
@@ -91,6 +92,7 @@ const CONTRAST_PAIRS = [
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <GoogleTag />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Material Design 3 Theme Generator | AWC UI</title>
     <meta

@@ -23,6 +23,7 @@
  */
 
 import "@awc-ui/tokens/tokens.css";
+import GoogleTag from "../../components/GoogleTag.astro";
 import { marked } from "marked";
 import { mainLlmWeb } from "../../lib/llm-web";
 
@@ -44,6 +45,7 @@ const lineCount = mainLlmWeb.split("\n").length;
 <html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
+    <GoogleTag />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AWC UI LLM specification for AI coding agents | AWC UI</title>
     <meta

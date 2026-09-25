@@ -1,0 +1,5 @@
+---
+import Default from '@astrojs/starlight/components/Search.astro';
+---
+
+{Astro.url.pathname !== '/' && <Default {...Astro.props} />}

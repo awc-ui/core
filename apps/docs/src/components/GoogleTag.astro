@@ -1,0 +1,16 @@
+---
+// Keep advertising measurement on the published docs site, out of local dev.
+const enabled = import.meta.env.PROD;
+---
+
+{enabled && (
+  <>
+    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=AW-18474243980"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-18474243980');
+    </script>
+  </>
+)}
