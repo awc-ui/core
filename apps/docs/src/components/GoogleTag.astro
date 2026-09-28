@@ -14,3 +14,18 @@ const enabled = import.meta.env.PROD;
     </script>
   </>
 )}
+
+<script>
+  import { setupOutboundConversions } from '../lib/outbound-conversions.mjs';
+
+  setupOutboundConversions({
+    document,
+    window,
+    // Preview builds and local verification must not report real conversions.
+    enabled: import.meta.env.PROD && window.location.hostname === 'awc-ui.dev',
+    sendTo: {
+      npm: 'AW-18474243980/xkDCCPGclIkdEIyvmulE',
+      github: 'AW-18474243980/7-IjCPSclIkdEIyvmulE',
+    },
+  });
+</script>
