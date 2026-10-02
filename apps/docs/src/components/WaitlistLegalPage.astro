@@ -1,0 +1,30 @@
+---
+interface Props { title: string; }
+const { title } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>{title} — AWC UI</title>
+  </head>
+  <body>
+    <main>
+      <a href="/">AWC UI</a>
+      <h1>{title}</h1>
+      <slot />
+      <p><a href="/#pro-tier">Back to Data Grid</a></p>
+    </main>
+  </body>
+</html>
+<style>
+  :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+  body { margin: 0; background: light-dark(#fffbfe, #141218); color: light-dark(#1d1b20, #e6e0e9); }
+  main { max-width: 46rem; padding: 3rem 1.25rem; margin-inline: auto; line-height: 1.7; }
+  a { color: light-dark(#6750a4, #d0bcff); text-underline-offset: 0.2em; }
+  a:focus-visible { outline: 3px solid currentColor; outline-offset: 4px; }
+  h1 { line-height: 1.2; }
+  :global(h2) { margin-top: 2rem; line-height: 1.35; }
+</style>

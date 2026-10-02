@@ -1,0 +1,185 @@
+---
+const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY?.trim() ?? "";
+const enabled = import.meta.env.PUBLIC_WAITLIST_ENABLED === "true" && siteKey.length > 0;
+---
+
+{enabled ? (
+  <section class="awc-waitlist" aria-labelledby="waitlist-title">
+    <h4 id="waitlist-title">Be first to hear about Data Grid</h4>
+    <p class="awc-waitlist__offer" id="waitlist-offer">
+      Join the waitlist for <strong>20% off your first annual Data Grid purchase</strong>.
+      Redeem within the first 30 days after its commercial launch. Renewals are
+      at the standard price. <a href="/waitlist-terms/">Offer details</a>.
+    </p>
+
+    <p data-waitlist-fallback>
+      Signup needs JavaScript and a security check. If the form does not appear,
+      enable JavaScript and reload this page.
+    </p>
+    <form
+      class="awc-waitlist__form"
+      data-waitlist-form
+      data-sitekey={siteKey}
+      action="/api/waitlist"
+      method="post"
+      aria-describedby="waitlist-offer waitlist-privacy"
+      hidden
+    >
+      <label for="waitlist-email">Email address</label>
+      <input
+        id="waitlist-email"
+        name="email"
+        type="email"
+        autocomplete="email"
+        inputmode="email"
+        autocapitalize="none"
+        spellcheck="false"
+        maxlength="254"
+        required
+      />
+      <div class="awc-waitlist__honeypot" aria-hidden="true">
+        <label for="waitlist-website">Leave this field empty</label>
+        <input id="waitlist-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+      </div>
+      <p class="awc-waitlist__privacy" id="waitlist-privacy">
+        By joining, you agree to receive Data Grid waitlist and launch emails.
+        Unsubscribe at any time. Read our <a href="/privacy/">Privacy Policy</a>
+        and <a href="/waitlist-terms/">Waitlist terms</a>.
+      </p>
+      <div data-waitlist-challenge></div>
+      <button class="awc-waitlist__retry" type="button" data-waitlist-retry hidden>
+        Retry security check
+      </button>
+      <button class="awc-waitlist__submit" type="submit" disabled>Join the waitlist</button>
+    </form>
+    <p class="awc-waitlist__status" data-waitlist-status role="status" aria-live="polite" aria-atomic="true" tabindex="-1"></p>
+  </section>
+) : (
+  <p class="awc-waitlist__coming-soon">
+    Data Grid is coming soon. Waitlist signup is not open yet. Check back for
+    launch details; AWC UI Core remains free and MIT licensed.
+  </p>
+)}
+
+<script>
+  import { initializeWaitlists, disposeWaitlists } from "../scripts/waitlist";
+
+  initializeWaitlists();
+  document.addEventListener("astro:page-load", initializeWaitlists);
+  document.addEventListener("astro:before-swap", disposeWaitlists);
+</script>
+
+<style>
+  .awc-waitlist {
+    padding-block-start: 1.5rem;
+    border-block-start: 1px solid var(--md-sys-color-outline-variant, #cac4d0);
+    color: var(--md-sys-color-on-surface, #1d1b20);
+  }
+
+  .awc-waitlist h4 {
+    margin: 0 0 0.75rem;
+    font-size: 1.125rem;
+    line-height: 1.4;
+  }
+
+  .awc-waitlist p,
+  .awc-waitlist__coming-soon {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .awc-waitlist__coming-soon,
+  .awc-waitlist__privacy {
+    color: var(--md-sys-color-on-surface-variant, #49454f);
+  }
+
+  .awc-waitlist a {
+    color: var(--md-sys-color-primary, #6750a4);
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  .awc-waitlist__form {
+    display: grid;
+    gap: 0.875rem;
+    margin-block-start: 1.25rem;
+  }
+
+  .awc-waitlist [hidden] {
+    display: none !important;
+  }
+
+  .awc-waitlist label {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .awc-waitlist input {
+    box-sizing: border-box;
+    inline-size: 100%;
+    min-inline-size: 0;
+    min-block-size: 48px;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--md-sys-color-outline, #79747e);
+    border-radius: var(--md-sys-shape-corner-small, 8px);
+    background: var(--md-sys-color-surface, #fef7ff);
+    color: var(--md-sys-color-on-surface, #1d1b20);
+    font: inherit;
+    font-size: 1rem;
+  }
+
+  .awc-waitlist__honeypot {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .awc-waitlist button {
+    min-block-size: 48px;
+    padding: 0.75rem 1.25rem;
+    border: 1px solid transparent;
+    border-radius: var(--md-sys-shape-corner-full, 9999px);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .awc-waitlist__submit {
+    background: var(--md-sys-color-tertiary, #7d5260);
+    color: var(--md-sys-color-on-tertiary, #fff);
+  }
+
+  .awc-waitlist__submit:hover:not(:disabled) {
+    box-shadow: var(--md-sys-elevation-2, 0 2px 6px #0003);
+  }
+
+  .awc-waitlist .awc-waitlist__retry {
+    border-color: var(--md-sys-color-outline, #79747e);
+    background: transparent;
+    color: var(--md-sys-color-primary, #6750a4);
+  }
+
+  .awc-waitlist button:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+
+  .awc-waitlist :is(a, input, button):focus-visible,
+  .awc-waitlist__status:focus-visible {
+    outline: 3px solid var(--md-sys-color-primary, #6750a4);
+    outline-offset: 3px;
+  }
+
+  .awc-waitlist__status:not(:empty) {
+    margin-block-start: 1rem;
+  }
+
+  .awc-waitlist__status[data-state="error"] {
+    color: var(--md-sys-color-error, #b3261e);
+  }
+</style>

@@ -1,0 +1,57 @@
+name: Waitlist
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: true
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: waitlist-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Waitlist security, persistence, and deployment
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: waitlist_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/waitlist_test
+      PUBLIC_WAITLIST_ENABLED: "false"
+      WAITLIST_ENABLED: "false"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - name: Install the browser for isolated waitlist UI tests
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Test HTTP, database concurrency, delivery, and release guards
+        run: node --test apps/docs/waitlist/*.test.mjs scripts/check-waitlist-release.test.mjs scripts/stage-waitlist-migrations.test.mjs
+      - name: Verify migration staging for Netlify publication
+        run: node scripts/stage-waitlist-migrations.mjs
+      - name: Verify deployable functions and Netlify metadata
+        run: node scripts/build-waitlist-functions.mjs

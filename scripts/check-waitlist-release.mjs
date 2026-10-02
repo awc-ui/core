@@ -1,0 +1,54 @@
+#!/usr/bin/env node
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+
+/** Validate public build configuration without loading any runtime credentials. */
+export function checkWaitlistRelease(env = process.env) {
+  const enabled = env.PUBLIC_WAITLIST_ENABLED;
+  if (enabled === undefined || enabled === "" || enabled === "false")
+    return { enabled: false };
+  if (enabled !== "true")
+    throw new Error("PUBLIC_WAITLIST_ENABLED must be true or false.");
+  if (env.CONTEXT !== "production")
+    throw new Error(
+      "The public waitlist may only be enabled in the production build.",
+    );
+
+  const key = env.PUBLIC_TURNSTILE_SITE_KEY?.trim();
+  if (!key || !/^0x4[A-Za-z0-9_-]{10,100}$/.test(key)) {
+    throw new Error(
+      "An enabled production waitlist needs a real PUBLIC_TURNSTILE_SITE_KEY, never a testing key.",
+    );
+  }
+  for (const name of [
+    "PUBLIC_WAITLIST_CONTROLLER_NAME",
+    "PUBLIC_WAITLIST_CONTACT_ADDRESS",
+  ]) {
+    const value = env[name]?.trim();
+    if (
+      !value ||
+      value.length < 5 ||
+      /(?:\bTODO\b|\bTBD\b|placeholder|example\.com|\[.+\])/i.test(value)
+    ) {
+      throw new Error(
+        `An enabled production waitlist needs completed ${name}.`,
+      );
+    }
+  }
+  return { enabled: true };
+}
+
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(resolve(process.argv[1])).href
+) {
+  try {
+    const { enabled } = checkWaitlistRelease();
+    console.log(
+      `Waitlist public configuration verified (${enabled ? "enabled" : "disabled"}).`,
+    );
+  } catch (error) {
+    console.error(`[waitlist:release] ${error.message}`);
+    process.exitCode = 1;
+  }
+}
