@@ -19,9 +19,32 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  waitlist-checks:
+    name: Waitlist checks
+    if: |
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    uses: ./.github/workflows/waitlist.yml
+    with:
+      ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
   build:
     name: Build site
     runs-on: ubuntu-latest
+    needs: waitlist-checks
+    env:
+      # These are public build settings, never runtime credentials. PR artifacts
+      # cannot activate the production signup form, regardless of repository vars.
+      CONTEXT: ${{ github.event_name == 'pull_request' && 'deploy-preview' || 'production' }}
+      PUBLIC_WAITLIST_ENABLED: ${{ github.event_name != 'pull_request' && vars.PUBLIC_WAITLIST_ENABLED == 'true' && 'true' || 'false' }}
+      PUBLIC_TURNSTILE_SITE_KEY: ${{ github.event_name != 'pull_request' && vars.PUBLIC_TURNSTILE_SITE_KEY || '' }}
+      PUBLIC_WAITLIST_CONTROLLER_NAME: ${{ github.event_name != 'pull_request' && vars.PUBLIC_WAITLIST_CONTROLLER_NAME || '' }}
+      PUBLIC_WAITLIST_CONTACT_ADDRESS: ${{ github.event_name != 'pull_request' && vars.PUBLIC_WAITLIST_CONTACT_ADDRESS || '' }}
     if: |
       github.event_name == 'pull_request' ||
       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
@@ -62,6 +85,12 @@ jobs:
           # No cache: workflow_run executes code with a privileged event context.
 
       - run: pnpm install --frozen-lockfile
+
+      - name: Verify public waitlist release settings
+        run: node scripts/check-waitlist-release.mjs
+
+      - name: Verify deployable waitlist functions and routing metadata
+        run: node scripts/build-waitlist-functions.mjs
 
       - name: Verify release is published before deploying production docs
         if: github.event_name != 'pull_request'
@@ -197,7 +226,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Netlify posts the existing production commit comment.
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -218,15 +247,29 @@ jobs:
           name: docs-dist
           path: apps/docs/dist/
 
-      - uses: nwtgck/actions-netlify@v3
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
         with:
-          publish-dir: ./apps/docs/dist
-          production-deploy: true
-          deploy-message: "Deploy ${{ github.event.workflow_run.head_sha }}"
-          enable-pull-request-comment: false
-          enable-commit-comment: true
-          netlify-config-path: ./apps/docs/netlify.toml
+          node-version: 22
+
+      # Only trusted main is checked out here. Dependency installation executes
+      # without the deployment token or runtime credentials.
+      - run: pnpm install --frozen-lockfile
+
+      - name: Stage reviewed database migrations for publication
+        run: node scripts/stage-waitlist-migrations.mjs
+
+      - name: Deploy the static site and waitlist functions
+        run: >-
+          pnpm exec netlify deploy --no-build --prod --context production
+          --filter @awc-ui/docs
+          --dir "$PWD/apps/docs/dist"
+          --functions "$PWD/apps/docs/netlify/functions"
+          --message "Deploy $EXPECTED_SHA"
         env:
+          EXPECTED_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        timeout-minutes: 5
+          NETLIFY_TELEMETRY_DISABLED: "1"
+        timeout-minutes: 10

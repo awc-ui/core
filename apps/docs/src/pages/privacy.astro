@@ -1,0 +1,37 @@
+---
+import WaitlistLegalPage from '../components/WaitlistLegalPage.astro';
+const name = import.meta.env.PUBLIC_WAITLIST_CONTROLLER_NAME?.trim();
+const address = import.meta.env.PUBLIC_WAITLIST_CONTACT_ADDRESS?.trim();
+const ready = Boolean(name && address);
+if (import.meta.env.PUBLIC_WAITLIST_ENABLED === 'true' && !ready) {
+  throw new Error('The waitlist controller identity and contact address must be finalized before publication.');
+}
+---
+<WaitlistLegalPage
+  title="Waitlist privacy notice"
+  description="How the AWC UI Data Grid waitlist handles your email address, protects signup requests, and respects your privacy and unsubscribe choices."
+>
+  {!ready ? (
+    <p>Waitlist signup is not open yet. We will publish the controller details and the complete waitlist privacy notice before collecting signups.</p>
+  ) : (
+    <>
+      <p>This notice covers the AWC UI Data Grid waitlist. It does not cover a future purchase or customer account.</p>
+      <h2>Who is responsible</h2>
+      <p>{name} administers the waitlist personally. Contact address: {address}. For privacy requests, email <a href="mailto:waitlist@awc-ui.dev">waitlist@awc-ui.dev</a>.</p>
+      <h2>What we collect and why</h2>
+      <p>We collect your email address, signup time, the version of the early offer and signup wording, unsubscribe preference, and email delivery status. We use these to register your interest, send a signup receipt and Data Grid launch information, and record your early offer eligibility. Joining is voluntary and does not create a paid subscription.</p>
+      <p>By selecting “Join the waitlist”, you consent to these waitlist and launch emails. No confirmation email needs to be clicked. If somebody entered your address without permission, use the unsubscribe link or contact us.</p>
+      <p>We also process technical request data to prevent bots, abuse, and repeated email delivery, based on our legitimate interest in securing the service. Our application stores a daily pseudonymous IP identifier for rate limiting rather than the raw IP address. Our infrastructure providers necessarily process IP addresses and other technical data to handle and protect requests.</p>
+      <h2>Service providers and access</h2>
+      <p>Netlify hosts the site, backend, and database. Cloudflare Turnstile checks whether signup requests are legitimate. GoDaddy Professional Email, powered by Titan, sends and stores the emails. The project administrator receives a notification containing your email address. We do not sell the list or use tracking pixels in waitlist emails.</p>
+      <p>These providers may process data outside your country, including outside the European Economic Area. Their data protection terms describe transfer safeguards, including the European Commission’s standard contractual clauses where applicable: <a href="https://www.netlify.com/privacy/">Netlify</a>, <a href="https://www.cloudflare.com/cloudflare-customer-dpa/">Cloudflare</a>, and <a href="https://www.godaddy.com/en-uk/legal/agreements/data-processing-addendum">GoDaddy</a>. Contact us for information about the safeguards applicable to your data or a copy of the relevant terms.</p>
+      <h2>Retention</h2>
+      <p>We retain waitlist and offer records until the launch offer closes, then review and remove them within 90 days unless needed for an unresolved request or a legal obligation. If launch is delayed, we review the list at least annually. Unsubscribing stops waitlist emails; we retain the minimum suppression and offer records needed to respect your choice and honor your eligibility. Requests to erase data are handled separately.</p>
+      <p>Email copies are also held in the administrator’s and sender’s mailboxes and must be included in retention and deletion requests. Provider security logs and backups follow the providers’ retention schedules.</p>
+      <p>Application rate-limit records are removed once their daily bucket is more than seven days old. Sending-budget records are removed after eight days. These short-lived records do not replace your signup or unsubscribe record.</p>
+      <h2>Your choices and rights</h2>
+      <p>You may withdraw email consent at any time using the unsubscribe link. This does not affect previous lawful processing or remove your early offer eligibility. You can request access, correction, erasure, restriction, or portability where applicable, and object to processing based on legitimate interests. Contact us using the address above; we may need to verify the request to protect your information.</p>
+      <p>You can also complain to your local data protection authority. In Romania, this is <a href="https://www.dataprotection.ro/">ANSPDCP</a>. We do not make decisions with legal or similarly significant effects about you solely through automated processing.</p>
+    </>
+  )}
+</WaitlistLegalPage>

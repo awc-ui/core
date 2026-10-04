@@ -1,33 +1,17 @@
 ---
 import stats from "../data/stats.json";
-
-// Story 1.4 AC: the waitlist CTA is currently a mailto stopgap; once the
-// Lemon Squeezy interest form ships in Epic 5, swap WAITLIST_URL.
-// Hidden until a mailing setup exists behind the address.
-const WAITLIST_ENABLED = false;
-const WAITLIST_URL =
-  "mailto:waitlist@awc-ui.dev?subject=AWC%20UI%20Pro%20%E2%80%94%20Waitlist&body=Please%20notify%20me%20when%20Awc%20UI%20Pro%20is%20available.%0A%0AInterested%20in%3A%20%5Bdata%20grid%20%2F%20advanced%20charts%20%2F%20export%20%2F%20other%5D";
+import WaitlistForm from "./WaitlistForm.astro";
 
 const proFeatures = [
   {
     icon: "table_view",
-    title: "Data Grid",
-    text: "Virtualized rows, server-side sorting, cell editing, multi-column filters, row grouping.",
+    title: "Data Grid comes first",
+    text: "Our first planned Pro product, focused on working with complex application data. Features, pricing, and launch timing are still being finalized.",
   },
   {
     icon: "stacked_line_chart",
-    title: "Advanced charts",
-    text: "Heatmap, treemap, candlestick, radar, multi-axis combo, and real-time streams. Brushing, zoom, drilldown, annotations — themed with the same MD3 tokens.",
-  },
-  {
-    icon: "ios_share",
-    title: "Export & Reporting",
-    text: "Print stylesheets, PDF export, CSV/Excel for grids, and a print-preview shell component.",
-  },
-  {
-    icon: "schedule",
-    title: "Calendar & Scheduling",
-    text: "Month, week, and day views with event drag-and-drop and recurring events.",
+    title: "More Pro products are coming",
+    text: "Charts, scheduling, and reporting will follow Data Grid. Launch dates are to be announced. These products are not included in the Data Grid launch offer.",
   },
 ];
 ---
@@ -45,9 +29,8 @@ const proFeatures = [
       </h2>
       <p class="awc-pro__lede">
         AWC&nbsp;UI Core covers the complete Material&nbsp;Design&nbsp;3 component
-        set under the MIT license. Pro will add the large application pieces
-        &mdash; data grid, advanced charts, scheduling, and export &mdash; for
-        teams that need them.
+        set under the MIT license. Pro is planned as a family of commercial
+        products for larger applications, starting with Data Grid.
       </p>
     </div>
 
@@ -118,13 +101,13 @@ const proFeatures = [
           </div>
           <div>
             <span class="awc-pro__plan-label awc-pro__plan-label--pro">AWC UI Pro</span>
-            <h3 class="awc-pro__plan-name">Power components</h3>
+            <h3 class="awc-pro__plan-name">Data Grid</h3>
           </div>
         </div>
 
         <p class="awc-pro__plan-price">
           <span class="awc-pro__plan-amount">TBD</span>
-          <span class="awc-pro__plan-suffix">pricing details soon &middot; npm&nbsp;Org delivery</span>
+          <span class="awc-pro__plan-suffix">pricing and launch details to come</span>
         </p>
 
         <ul class="awc-pro__features awc-pro__features--pro">
@@ -139,31 +122,9 @@ const proFeatures = [
               </span>
             </li>
           ))}
-          <li>
-            <span class="awc-pro__feature-icon" aria-hidden="true">
-              <span class="material-symbols-outlined">support_agent</span>
-            </span>
-            <span class="awc-pro__feature-copy">
-              <strong>Priority support</strong>
-              <span class="awc-pro__feature-text">Direct maintainer support with prioritized issue handling.</span>
-            </span>
-          </li>
         </ul>
 
-        {/* Waitlist CTA hidden until an email/mailing setup exists —
-            restore by flipping WAITLIST_ENABLED (the mailto address has
-            nothing behind it yet). */}
-        {WAITLIST_ENABLED && (
-          <>
-            <a href={WAITLIST_URL} class="awc-pro__btn awc-pro__btn--filled" data-waitlist-cta>
-              <span class="material-symbols-outlined" aria-hidden="true">mark_email_read</span>
-              Join the waitlist
-            </a>
-            <p class="awc-pro__plan-note">
-              We&rsquo;ll email you when Pro launches. No spam, unsubscribe with one click.
-            </p>
-          </>
-        )}
+        <WaitlistForm />
       </article>
     </div>
   </div>
@@ -491,19 +452,6 @@ const proFeatures = [
     font-size: 20px;
   }
 
-  .awc-pro__btn--filled {
-    background: var(--md-sys-color-tertiary);
-    color: var(--md-sys-color-on-tertiary);
-    box-shadow: var(--md-sys-elevation-1);
-  }
-
-  .awc-pro__btn--filled:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--md-sys-elevation-3);
-    color: var(--md-sys-color-on-tertiary);
-    text-decoration: none;
-  }
-
   .awc-pro__btn--ghost {
     background: transparent;
     color: var(--md-sys-color-primary);
@@ -527,6 +475,7 @@ const proFeatures = [
   @media (max-width: 64rem) {
     .awc-pro__grid {
       grid-template-columns: 1fr;
+      grid-auto-rows: auto;
     }
   }
 

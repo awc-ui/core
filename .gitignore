@@ -1,6 +1,11 @@
 # Dependencies
 node_modules/
 
+# Secrets are configured in Netlify, never committed.
+.env
+.env.*
+!.env.example
+
 # Build output
 dist/
 dist.bak/

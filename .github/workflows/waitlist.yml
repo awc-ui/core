@@ -1,0 +1,80 @@
+name: Waitlist
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: true
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: waitlist-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Waitlist security, persistence, and deployment
+    if: |
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: waitlist_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/waitlist_test
+      PUBLIC_WAITLIST_ENABLED: "false"
+      WAITLIST_ENABLED: "false"
+    steps:
+      # PR code stays in its own event/cache scope. Privileged events execute
+      # only trusted main; the caller's ref is an expected SHA, never a target.
+      - uses: actions/checkout@v4
+        if: github.event_name == 'pull_request'
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        if: github.event_name != 'pull_request'
+        with:
+          ref: refs/heads/main
+          persist-credentials: false
+      - name: Verify checkout matches the triggering commit
+        env:
+          EXPECTED_SHA: ${{ inputs.ref || github.sha }}
+        run: |
+          if [ "$(git rev-parse HEAD)" != "$EXPECTED_SHA" ]; then
+            echo "::error::Checked-out revision no longer matches the triggering commit. Run checks for the current revision."
+            exit 1
+          fi
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - name: Install the browser for isolated waitlist UI tests
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Test HTTP, database concurrency, delivery, and release guards
+        run: node --test apps/docs/waitlist/*.test.mjs scripts/check-waitlist-release.test.mjs scripts/stage-waitlist-migrations.test.mjs
+      - name: Verify migration staging for Netlify publication
+        run: node scripts/stage-waitlist-migrations.mjs
+      - name: Verify deployable functions and Netlify metadata
+        run: node scripts/build-waitlist-functions.mjs

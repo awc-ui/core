@@ -1,0 +1,56 @@
+---
+interface Props { title: string; description: string; }
+const { title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, 'https://awc-ui.dev').href;
+const pageTitle = `${title} — AWC UI`;
+const image = 'https://awc-ui.dev/og-awc-ui-dev.png';
+const jsonLd = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  '@id': `${canonical}#webpage`,
+  name: pageTitle,
+  description,
+  url: canonical,
+  inLanguage: 'en',
+  isPartOf: { '@id': 'https://awc-ui.dev/#website' },
+}).replace(/</g, '\\u003c');
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AWC UI" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:alt" content="AWC UI — Material Design 3 Web Components" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={image} />
+    <script type="application/ld+json" set:html={jsonLd} />
+  </head>
+  <body>
+    <main>
+      <a href="/">AWC UI</a>
+      <h1>{title}</h1>
+      <slot />
+      <p><a href="/#pro-tier">Back to Data Grid</a></p>
+    </main>
+  </body>
+</html>
+<style>
+  :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+  body { margin: 0; background: light-dark(#fffbfe, #141218); color: light-dark(#1d1b20, #e6e0e9); }
+  main { max-width: 46rem; padding: 3rem 1.25rem; margin-inline: auto; line-height: 1.7; }
+  a { color: light-dark(#6750a4, #d0bcff); text-underline-offset: 0.2em; }
+  a:focus-visible { outline: 3px solid currentColor; outline-offset: 4px; }
+  h1 { line-height: 1.2; }
+  :global(h2) { margin-top: 2rem; line-height: 1.35; }
+</style>
