@@ -76,6 +76,13 @@ docs build receives them. Pull request builds force the waitlist off.
 Runtime values belong in **Netlify, Production context, Functions scope**. Do not
 use an “all deploy contexts” default for any of them.
 
+The non-secret `AWS_LAMBDA_JS_RUNTIME=nodejs22.x` setting must also be present in
+the **Local development** context, Functions scope. Netlify CLI 27.10.2 reads that
+context when bundling functions with `deploy --no-build`, even with `--prod`.
+Keep all credentials and activation switches production-only. `--prod` selects
+production publication; `--context` is a build option and cannot be combined with
+`--no-build`.
+
 | Variable                 | Purpose                                                                            |
 | ------------------------ | ---------------------------------------------------------------------------------- |
 | `WAITLIST_ENABLED`       | `true` opens new signup; `false` closes it without breaking unsubscribe            |
