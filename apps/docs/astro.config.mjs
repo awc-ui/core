@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 import { unified } from '@astrojs/markdown-remark';
 import starlight from '@astrojs/starlight';
+import sitemap from '@astrojs/sitemap';
 import frameShowcase from './src/integrations/frame-showcase.mjs';
 import workspaceShowcases from './src/integrations/workspace-showcases.mjs';
 import componentsManifest from './src/data/components.json';
@@ -202,6 +203,7 @@ export default defineConfig({
   integrations: [
     frameShowcase(),
     workspaceShowcases(),
+    sitemap({ filter: (url) => new URL(url).pathname !== '/waitlist-check/' }),
     starlight({
       title: 'AWC UI',
       description:
@@ -228,10 +230,10 @@ export default defineConfig({
       ],
       head: [
         // SEO — Starlight already emits title, canonical, description, the
-        // og:title/type/url/locale/description/site_name set, twitter:card,
-        // and a sitemap (auto-injected @astrojs/sitemap → /sitemap-index.xml,
-        // referenced from public/robots.txt). What it does NOT provide is a
-        // social-share image or theme-color, so only those are added here.
+        // og:title/type/url/locale/description/site_name set, and twitter:card.
+        // The explicit sitemap integration emits /sitemap-index.xml, referenced
+        // from public/robots.txt, and excludes the operator check. Starlight does
+        // not provide a social-share image or theme-color, so those are added here.
         // The static 1200×630 card in public/ includes the canonical domain.
         // Its versioned filename avoids reusing the old social image cache. The URL must
         // be absolute — scrapers don't resolve relative og:image paths.

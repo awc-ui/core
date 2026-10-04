@@ -7,7 +7,7 @@ import {
   privateKey,
   hashToken,
 } from "./handler.mjs";
-import { readConfig, ORIGIN } from "./config.mjs";
+import { readConfig, ORIGIN, SENDER, OWNER, LIMITS } from "./config.mjs";
 import { createUnsubscribeHandler } from "./unsubscribe.mjs";
 
 const now = new Date("2026-10-02T12:00:00Z");
@@ -16,6 +16,24 @@ const config = {
   turnstileSecret: "test-secret",
   hmacSecret: "x".repeat(40),
   closesAt: now.getTime() + 86400_000,
+};
+const signupCheckEmail = "operator@example.test";
+const signupCheckConfig = {
+  ...config,
+  joinEnabled: false,
+  emailEnabled: false,
+  smtpCheckEnabled: false,
+  signupCheckEnabled: true,
+  signupCheckEmail,
+};
+const signupCheckEnv = {
+  WAITLIST_PRIVACY_READY: "true",
+  WAITLIST_HMAC_SECRET: "x".repeat(32),
+  TURNSTILE_SECRET_KEY: "test-secret",
+  WAITLIST_SIGNUP_CHECK_ENABLED: "true",
+  WAITLIST_SIGNUP_CHECK_EMAIL: signupCheckEmail,
+  WAITLIST_ENABLED: "false",
+  WAITLIST_EMAIL_ENABLED: "false",
 };
 const req = (
   body = { email: "hello@example.com", token: "valid-token", website: "" },
@@ -28,6 +46,7 @@ const req = (
     ...options,
   });
 const context = { ip: "203.0.113.20" };
+const registeredSubscriberId = "11111111-1111-4111-8111-111111111111";
 function harness(overrides = {}) {
   const calls = [];
   const store = {
@@ -37,7 +56,7 @@ function harness(overrides = {}) {
     },
     register: async (value) => {
       calls.push(["register", value]);
-      return { status: "registered" };
+      return { status: "registered", subscriberId: registeredSubscriberId };
     },
   };
   const handler = createJoinHandler({
@@ -230,17 +249,367 @@ test("enrollment stays open until launch with no scheduled date, while invalid d
     { WAITLIST_CLOSES_AT: "not-a-date" },
     { WAITLIST_CLOSES_AT: now.toISOString() },
   ]) {
-    const closed = harness({ config: readConfig({ ...env, ...extra }, production) });
+    const closed = harness({
+      config: readConfig({ ...env, ...extra }, production),
+    });
     assert.equal((await closed.handler(req(), context)).status, 503);
     assert.equal(closed.calls.length, 0);
   }
   const scheduled = harness({
-    config: readConfig({
-      ...env,
-      WAITLIST_CLOSES_AT: new Date(now.getTime() + 86400_000).toISOString(),
-    }, production),
+    config: readConfig(
+      {
+        ...env,
+        WAITLIST_CLOSES_AT: new Date(now.getTime() + 86400_000).toISOString(),
+      },
+      production,
+    ),
   });
   assert.equal((await scheduled.handler(req(), context)).status, 200);
+});
+
+test("signup check requires exact flags with public signup, delivery and SMTP checking disabled", () => {
+  const production = { deploy: { context: "production" } };
+  for (const smtpFlag of [undefined, "false"]) {
+    const result = readConfig(
+      { ...signupCheckEnv, WAITLIST_SMTP_CHECK_ENABLED: smtpFlag },
+      production,
+    );
+    assert.equal(result.signupCheckEnabled, true);
+    assert.equal(result.joinEnabled, false);
+    assert.equal(result.emailEnabled, false);
+    assert.equal(result.smtpCheckEnabled, false);
+    assert.equal(result.signupCheckEmail, signupCheckEmail);
+  }
+  for (const [flag, invalidValues] of [
+    [
+      "WAITLIST_SIGNUP_CHECK_ENABLED",
+      [undefined, "false", "TRUE", " true", "1", true],
+    ],
+    ["WAITLIST_ENABLED", [undefined, "true", "FALSE", " false", "0", false]],
+    [
+      "WAITLIST_EMAIL_ENABLED",
+      [undefined, "true", "FALSE", " false", "0", false],
+    ],
+    [
+      "WAITLIST_SMTP_CHECK_ENABLED",
+      ["true", "FALSE", " false", "", "0", false],
+    ],
+  ]) {
+    for (const value of invalidValues) {
+      assert.equal(
+        readConfig({ ...signupCheckEnv, [flag]: value }, production)
+          .signupCheckEnabled,
+        false,
+        `${flag}=${String(value)}`,
+      );
+    }
+  }
+});
+
+test("signup check requires a valid configured mailbox and normalizes it", async () => {
+  const production = { deploy: { context: "production" } };
+  const normalized = readConfig(
+    {
+      ...signupCheckEnv,
+      WAITLIST_SIGNUP_CHECK_EMAIL: ` ${signupCheckEmail.toUpperCase()} `,
+    },
+    production,
+  );
+  assert.equal(normalized.signupCheckEnabled, true);
+  assert.equal(normalized.signupCheckEmail, signupCheckEmail);
+  const enabled = harness({ config: normalized });
+  assert.equal(
+    (
+      await enabled.handler(
+        req({ email: signupCheckEmail, token: "token" }),
+        context,
+      )
+    ).status,
+    200,
+  );
+  for (const email of [
+    undefined,
+    "",
+    "bad",
+    "operator@example.test\r\nBcc:other@example.test",
+    12,
+  ]) {
+    const checked = readConfig(
+      { ...signupCheckEnv, WAITLIST_SIGNUP_CHECK_EMAIL: email },
+      production,
+    );
+    assert.equal(checked.signupCheckEnabled, false);
+    const { handler, calls } = harness({ config: checked });
+    assert.equal(
+      (await handler(req({ email: signupCheckEmail, token: "token" }), context))
+        .status,
+      503,
+    );
+    assert.equal(calls.length, 0);
+  }
+});
+
+test("signup check cannot bypass production, privacy or HMAC prerequisites", async () => {
+  const production = { deploy: { context: "production" } };
+  const cases = [
+    [signupCheckEnv, undefined],
+    ...["deploy-preview", "dev", "branch-deploy"].map((deployment) => [
+      { ...signupCheckEnv, CONTEXT: "production" },
+      { deploy: { context: deployment } },
+    ]),
+    ...[
+      { WAITLIST_PRIVACY_READY: undefined },
+      { WAITLIST_PRIVACY_READY: "false" },
+      { WAITLIST_PRIVACY_READY: "TRUE" },
+      { WAITLIST_HMAC_SECRET: undefined },
+      { WAITLIST_HMAC_SECRET: "x".repeat(31) },
+    ].map((extra) => [{ ...signupCheckEnv, ...extra }, production]),
+  ];
+  for (const [env, deployment] of cases) {
+    const checked = readConfig(env, deployment);
+    assert.equal(checked, null);
+    const { handler, calls } = harness({ config: checked });
+    assert.equal(
+      (await handler(req({ email: signupCheckEmail, token: "token" }), context))
+        .status,
+      503,
+    );
+    assert.equal(calls.length, 0);
+  }
+});
+
+test("signup check persists only the normalized configured mailbox through ordinary verification and consent", async () => {
+  const registered = [];
+  const { handler, calls } = harness({
+    config: {
+      ...signupCheckConfig,
+      signupCheckEmail: ` ${signupCheckEmail.toUpperCase()} `,
+    },
+    onRegistered: (trustedContext, subscriberId) => {
+      registered.push({
+        trustedContext,
+        subscriberId,
+        lastCall: calls.at(-1)[0],
+      });
+    },
+  });
+  const result = await handler(
+    req({
+      email: ` ${signupCheckEmail.toUpperCase()} `,
+      token: "check-token",
+      website: "",
+    }),
+    context,
+  );
+  assert.equal(result.status, 200);
+  assert.deepEqual(await result.json(), { ok: true });
+  assert.deepEqual(
+    calls.map(([kind]) => kind),
+    ["attempt", "verify", "register"],
+  );
+  const ipKey = privateKey(config.hmacSecret, "ip", `2026-10-02:${context.ip}`);
+  assert.deepEqual(calls[0][1], { ipKey, now, limits: LIMITS });
+  assert.deepEqual(calls[1][1], {
+    token: "check-token",
+    ip: context.ip,
+    secret: "test-secret",
+    now,
+  });
+  const row = calls[2][1];
+  assert.deepEqual(row, {
+    email: signupCheckEmail,
+    emailKey: privateKey(config.hmacSecret, "email", signupCheckEmail),
+    ipKey,
+    unsubscribeHash: hashToken(row.unsubscribeToken),
+    unsubscribeToken: row.unsubscribeToken,
+    offerVersion: "datagrid-early-20-v1",
+    now,
+    limits: LIMITS,
+  });
+  assert.match(row.unsubscribeToken, /^[A-Za-z0-9_-]{43}$/);
+  assert.ok(!JSON.stringify(row).includes(context.ip));
+  assert.ok(!JSON.stringify(row).includes("check-token"));
+  assert.match(result.headers.get("cache-control"), /no-store/);
+  assert.equal(signupCheckConfig.emailEnabled, false);
+  assert.deepEqual(registered, [
+    {
+      trustedContext: context,
+      subscriberId: registeredSubscriberId,
+      lastCall: "register",
+    },
+  ]);
+});
+
+test("signup check refuses other mailboxes before the honeypot, quotas, verification or persistence", async () => {
+  for (const email of [
+    OWNER,
+    SENDER,
+    "visitor@example.test",
+    "operator+check@example.test",
+    "bad",
+  ]) {
+    for (const website of ["", "bot"]) {
+      const { handler, calls } = harness({ config: signupCheckConfig });
+      for (const token of ["token", ""]) {
+        const result = await handler(req({ email, token, website }), context);
+        assert.equal(result.status, 503);
+        assert.deepEqual(await result.json(), { ok: false });
+      }
+      assert.equal(calls.length, 0);
+    }
+  }
+  const { handler, calls } = harness({ config: signupCheckConfig });
+  assert.equal(
+    (
+      await handler(
+        req({ email: signupCheckEmail, token: "token", website: "bot" }),
+        context,
+      )
+    ).status,
+    200,
+  );
+  assert.equal(calls.length, 0);
+});
+
+test("signup check fails closed for inconsistent runtime flags, missing verification secret and closure", async () => {
+  for (const extra of [
+    { signupCheckEnabled: undefined },
+    { signupCheckEnabled: false },
+    { signupCheckEnabled: "true" },
+    { signupCheckEmail: undefined },
+    { signupCheckEmail: "" },
+    { signupCheckEmail: "bad" },
+    { joinEnabled: undefined },
+    { emailEnabled: undefined },
+    { emailEnabled: true },
+    { emailEnabled: "false" },
+    { smtpCheckEnabled: undefined },
+    { smtpCheckEnabled: true },
+    { smtpCheckEnabled: "false" },
+    { turnstileSecret: undefined },
+    { closesAt: Number.NaN },
+    { closesAt: now.getTime() },
+  ]) {
+    const { handler, calls } = harness({
+      config: { ...signupCheckConfig, ...extra },
+    });
+    assert.equal(
+      (await handler(req({ email: signupCheckEmail, token: "token" }), context))
+        .status,
+      503,
+      JSON.stringify(extra),
+    );
+    assert.equal(calls.length, 0);
+  }
+});
+
+test("signup check retains token, origin and trusted IP validation", async () => {
+  const body = { email: signupCheckEmail, token: "token" };
+  const cases = [
+    ...[undefined, "", 12, "x".repeat(2049)].map((token) => [
+      req({ ...body, token }),
+      context,
+      400,
+    ]),
+    [req({ ...body, email: "bad" }), context, 503],
+    [
+      req(body, {
+        headers: {
+          origin: "https://evil.example",
+          "content-type": "application/json",
+        },
+      }),
+      context,
+      403,
+    ],
+    [
+      new Request("https://awc-ui.netlify.app/api/waitlist", req(body)),
+      context,
+      403,
+    ],
+    [
+      new Request(`${ORIGIN}/.netlify/functions/waitlist`, req(body)),
+      context,
+      403,
+    ],
+    ...[undefined, {}, { ip: "invalid" }].map((untrusted) => [
+      req(body, {
+        headers: {
+          origin: ORIGIN,
+          "content-type": "application/json",
+          "x-forwarded-for": context.ip,
+          "x-nf-client-connection-ip": context.ip,
+        },
+      }),
+      untrusted,
+      503,
+    ]),
+  ];
+  for (const [request, trustedContext, status] of cases) {
+    const { handler, calls } = harness({ config: signupCheckConfig });
+    assert.equal((await handler(request, trustedContext)).status, status);
+    assert.equal(calls.length, 0);
+  }
+});
+
+test("signup check keeps quota, verification and storage failures closed without delivery", async () => {
+  for (const [failure, status, expectedCalls] of [
+    ["attempt-limit", 429, ["attempt"]],
+    ["attempt-error", 503, ["attempt"]],
+    ["verification-rejected", 403, ["attempt", "verify"]],
+    ["verification-error", 503, ["attempt", "verify"]],
+    ["registration-limit", 429, ["attempt", "verify", "register"]],
+    ["registration-error", 503, ["attempt", "verify", "register"]],
+    ["existing", 200, ["attempt", "verify", "register"]],
+  ]) {
+    const calls = [];
+    let kicked = 0;
+    const { handler } = harness({
+      config: signupCheckConfig,
+      store: {
+        consumeAttempt: async () => {
+          calls.push("attempt");
+          if (failure === "attempt-error") throw new Error("database");
+          return failure !== "attempt-limit";
+        },
+        register: async () => {
+          calls.push("register");
+          if (failure === "registration-error") throw new Error("database");
+          return {
+            status: failure === "registration-limit" ? "limited" : "existing",
+          };
+        },
+      },
+      verify: async () => {
+        calls.push("verify");
+        if (failure === "verification-error") throw new Error("timeout");
+        return failure !== "verification-rejected";
+      },
+      onRegistered: () => kicked++,
+    });
+    const result = await handler(
+      req({ email: signupCheckEmail, token: "token" }),
+      context,
+    );
+    assert.equal(result.status, status, failure);
+    assert.deepEqual(await result.json(), { ok: status === 200 }, failure);
+    assert.deepEqual(calls, expectedCalls, failure);
+    assert.equal(kicked, 0, failure);
+  }
+});
+
+test("ordinary signup remains unrestricted when the signup-check flag is also present", async () => {
+  let kicked = 0;
+  const { handler, calls } = harness({
+    config: { ...signupCheckConfig, joinEnabled: true },
+    onRegistered: () => kicked++,
+  });
+  assert.equal((await handler(req(), context)).status, 200);
+  assert.equal(
+    calls.find(([kind]) => kind === "register")[1].email,
+    "hello@example.com",
+  );
+  assert.equal(kicked, 1);
 });
 
 test("Siteverify validates success, host, action, timestamp, replay/expiry; network and HTTP failure fail closed", async () => {

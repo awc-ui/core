@@ -69,6 +69,7 @@ docs build receives them. Pull request builds force the waitlist off.
 | Variable                          | Value                                                     |
 | --------------------------------- | --------------------------------------------------------- |
 | `PUBLIC_WAITLIST_ENABLED`         | `true` only after the activation steps; otherwise `false` |
+| `PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED` | Temporary operator page; `false` by default and for every preview |
 | `PUBLIC_TURNSTILE_SITE_KEY`       | The public site key for the production widget             |
 | `PUBLIC_WAITLIST_CONTROLLER_NAME` | The controller's confirmed public full name               |
 | `PUBLIC_WAITLIST_CONTACT_ADDRESS` | The controller's confirmed public contact address         |
@@ -93,6 +94,8 @@ production publication; `--context` is a build option and cannot be combined wit
 | `TURNSTILE_SECRET_KEY`   | Secret from the production Turnstile widget                                        |
 | `WAITLIST_SMTP_PASSWORD` | Password for the dedicated mailbox                                                 |
 | `WAITLIST_SMTP_CHECK_ENABLED` | Temporary operator-only email check; default absent/`false`                     |
+| `WAITLIST_SIGNUP_CHECK_ENABLED` | Temporary real Turnstile/signup check while public signup and general mail are off |
+| `WAITLIST_SIGNUP_CHECK_EMAIL` | One operator-controlled test mailbox; keep secret-valued, Production / Functions only |
 | `AWS_LAMBDA_JS_RUNTIME`  | `nodejs22.x`, matching the tested/bundled runtime                                  |
 
 The server reads the trusted invocation metadata `context.deploy.context` and
@@ -142,6 +145,42 @@ Run again to check for `waitlist_delivery_idle` without duplicate mail. Restore
 `WAITLIST_SMTP_CHECK_ENABLED=false` and redeploy after the check. This verifies
 SMTP/database delivery, not the public browser/Turnstile signup flow, which still
 needs its separate launch check.
+
+## Real browser check while public signup stays closed
+
+The operator can verify production Turnstile, persistence, and email delivery
+without opening signup for other addresses. Keep `WAITLIST_ENABLED=false`,
+`WAITLIST_EMAIL_ENABLED=false`, and `WAITLIST_SMTP_CHECK_ENABLED=false` explicitly
+set. With privacy ready, configure `WAITLIST_SIGNUP_CHECK_ENABLED=true` and one
+valid `WAITLIST_SIGNUP_CHECK_EMAIL` in Netlify Production / Functions. Never put
+the private mailbox in GitHub variables, source, build artifacts, or logs.
+
+Set the public GitHub build variable `PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED=true`
+and leave `PUBLIC_WAITLIST_ENABLED=false`, then deploy reviewed main. Open
+`https://awc-ui.dev/waitlist-check/` and submit the real shared form using the
+configured operator-controlled address. This page is excluded from the sitemap,
+has `noindex, nofollow`, and is not linked from the landing page. These are
+discovery controls, not authentication: the server-side address restriction and
+normal Turnstile/IP/quota checks enforce the closed rollout. Preview builds never
+enable the page or backend.
+
+Every other address is rejected before verification, registration, or delivery.
+The approved mailbox still requires a genuine, unexpired, single-use Turnstile
+token for `awc-ui.dev` and `waitlist_join`. A new verified registration defers
+delivery of only that subscriber's two jobs through `waitUntil`; it cannot drain
+the general queue despite the explicit operator-only SMTP exception. Duplicate
+or suppressed records never create or resend jobs. Use a previously unused
+operator mailbox to test a new registration; do not delete/unsuppress an old one.
+
+Check the page's success result and both inboxes, then repeat signup with a fresh
+challenge to confirm no duplicate messages. Test unsubscribe from the receipt.
+The general scheduled worker stays paused; if operator delivery fails or is
+uncertain, inspect its bounded outbox states rather than resetting/replaying it.
+Turn off both signup-check flags and redeploy after verification, or move to the
+approved public activation settings. Public activation must leave the operator
+flags off. A missing/invalid target or conflicting switches fails the check
+closed. If a temporary operator page remains cached, the backend switch still
+prevents registration.
 
 ## Abuse limits and delivery behavior
 

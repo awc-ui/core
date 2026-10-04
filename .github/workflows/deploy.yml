@@ -42,6 +42,7 @@ jobs:
       # cannot activate the production signup form, regardless of repository vars.
       CONTEXT: ${{ github.event_name == 'pull_request' && 'deploy-preview' || 'production' }}
       PUBLIC_WAITLIST_ENABLED: ${{ github.event_name != 'pull_request' && vars.PUBLIC_WAITLIST_ENABLED == 'true' && 'true' || 'false' }}
+      PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED: ${{ github.event_name != 'pull_request' && vars.PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED == 'true' && 'true' || 'false' }}
       PUBLIC_TURNSTILE_SITE_KEY: ${{ github.event_name != 'pull_request' && vars.PUBLIC_TURNSTILE_SITE_KEY || '' }}
       PUBLIC_WAITLIST_CONTROLLER_NAME: ${{ github.event_name != 'pull_request' && vars.PUBLIC_WAITLIST_CONTROLLER_NAME || '' }}
       PUBLIC_WAITLIST_CONTACT_ADDRESS: ${{ github.event_name != 'pull_request' && vars.PUBLIC_WAITLIST_CONTACT_ADDRESS || '' }}
