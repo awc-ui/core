@@ -262,7 +262,7 @@ jobs:
 
       - name: Deploy the static site and waitlist functions
         run: >-
-          pnpm exec netlify deploy --no-build --prod --context production
+          pnpm exec netlify deploy --no-build --prod
           --filter @awc-ui/docs
           --dir "$PWD/apps/docs/dist"
           --functions "$PWD/apps/docs/netlify/functions"
