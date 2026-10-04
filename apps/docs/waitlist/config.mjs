@@ -3,7 +3,6 @@ export const ORIGIN = "https://awc-ui.dev";
 export const SENDER = "waitlist@awc-ui.dev";
 export const OWNER = "ionut-valentin.mitrache@awc-ui.dev";
 export const LIMITS = Object.freeze({
-  dailyAttempts: 1000,
   dailyAttemptsPerIp: 30,
   dailyRegistrations: 100,
   dailyRegistrationsPerIp: 5,

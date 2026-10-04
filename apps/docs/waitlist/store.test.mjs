@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { createJoinHandler } from "./handler.mjs";
+import { ORIGIN } from "./config.mjs";
 import {
   createWaitlistStore,
   OFFER_VERSION,
@@ -10,6 +12,18 @@ import {
 
 const NOW = new Date("2026-10-01T12:00:00.000Z");
 const later = (milliseconds) => new Date(NOW.getTime() + milliseconds);
+const joinConfig = {
+  joinEnabled: true,
+  turnstileSecret: "test-secret",
+  hmacSecret: "test-only-hmac-secret".repeat(2),
+  closesAt: null,
+};
+const joinRequest = (token, email = "early@example.test") =>
+  new Request(`${ORIGIN}/api/waitlist`, {
+    method: "POST",
+    headers: { origin: ORIGIN, "content-type": "application/json" },
+    body: JSON.stringify({ email, token, website: "" }),
+  });
 const signup = (suffix = "one", overrides = {}) => ({
   email: `${suffix}@example.test`,
   emailKey: `email-${suffix}`,
@@ -179,15 +193,166 @@ test(
               store.consumeAttempt({
                 ipKey: "same",
                 now: NOW,
-                limits: { dailyAttempts: 20, dailyAttemptsPerIp: 3 },
+                limits: { dailyAttemptsPerIp: 3 },
               }),
             ),
           );
           assert.equal(attempts.filter(Boolean).length, 3);
+          assert.deepEqual(
+            (
+              await pool.query(
+                "SELECT kind, scope_key, used FROM waitlist_budgets",
+              )
+            ).rows,
+            [{ kind: "attempt", scope_key: "ip:same", used: 3 }],
+          );
+        },
+      );
+
+      await t.test(
+        "unverified requests cannot exhaust capacity for verified registrations",
+        async () => {
+          await reset();
+          let verificationCalls = 0;
+          let registrations = 0;
+          const handler = createJoinHandler({
+            config: joinConfig,
+            store,
+            clock: () => NOW,
+            verify: async ({ token }) => {
+              verificationCalls += 1;
+              return token === "valid-token";
+            },
+            // Only observe scheduling; this test never invokes an SMTP sender.
+            onRegistered: () => {
+              registrations += 1;
+            },
+          });
+          for (const token of ["", null, "x".repeat(2049)]) {
+            assert.equal(
+              (
+                await handler(joinRequest(token), { ip: "203.0.113.1" })
+              ).status,
+              400,
+            );
+          }
+          assert.equal(verificationCalls, 0);
+          assert.equal(await count("waitlist_budgets"), 0);
+
+          // The old shared attempt cap was exhausted by 1,000 failures from
+          // only 34 IPs, each remaining within its own 30-attempt allowance.
+          for (let first = 0; first < 1000; first += 34) {
+            const responses = await Promise.all(
+              Array.from({ length: Math.min(34, 1000 - first) }, (_, index) =>
+                handler(joinRequest("invalid-token"), {
+                  ip: `203.0.113.${index + 1}`,
+                }),
+              ),
+            );
+            assert.ok(responses.every((response) => response.status === 403));
+          }
+          assert.equal(verificationCalls, 1000);
+          assert.equal(registrations, 0);
+          assert.equal(await count("waitlist_subscribers"), 0);
+          assert.equal(await count("waitlist_outbox"), 0);
+          assert.equal(await count("waitlist_send_attempts"), 0);
+          const budgets = (
+            await pool.query(
+              "SELECT kind, scope_key, used FROM waitlist_budgets",
+            )
+          ).rows;
+          assert.equal(budgets.length, 34);
           assert.ok(
-            (await pool.query("SELECT used FROM waitlist_budgets")).rows.every(
-              (row) => row.used === 3,
+            budgets.every(
+              (row) =>
+                row.kind === "attempt" &&
+                row.scope_key.startsWith("ip:") &&
+                row.used <= 30,
             ),
+          );
+          assert.equal(
+            budgets.reduce((sum, row) => sum + row.used, 0),
+            1000,
+          );
+
+          // The abusive IP remains blocked before another verification call.
+          assert.equal(
+            (
+              await handler(joinRequest("invalid-token"), {
+                ip: "203.0.113.1",
+              })
+            ).status,
+            429,
+          );
+          assert.equal(verificationCalls, 1000);
+
+          const accepted = await handler(joinRequest("valid-token"), {
+            ip: "198.51.100.50",
+          });
+          assert.equal(accepted.status, 200);
+          assert.deepEqual(await accepted.json(), { ok: true });
+          assert.equal(verificationCalls, 1001);
+          assert.equal(registrations, 1);
+          assert.equal(await count("waitlist_subscribers"), 1);
+          assert.equal(await count("waitlist_outbox"), 2);
+          assert.equal(await count("waitlist_send_attempts"), 0);
+          assert.deepEqual(
+            (
+              await pool.query(
+                "SELECT kind, state FROM waitlist_outbox ORDER BY kind",
+              )
+            ).rows,
+            [
+              { kind: "admin", state: "pending" },
+              { kind: "welcome", state: "pending" },
+            ],
+          );
+          const registrationBudgets = (
+            await pool.query(
+              "SELECT scope_key, used FROM waitlist_budgets WHERE kind = 'registration'",
+            )
+          ).rows;
+          assert.equal(registrationBudgets.length, 2);
+          assert.ok(registrationBudgets.every((row) => row.used === 1));
+          assert.ok(
+            registrationBudgets.some((row) => row.scope_key === "global"),
+          );
+        },
+      );
+
+      await t.test(
+        "an exhausted legacy global attempt row cannot block a verified signup",
+        async () => {
+          await reset();
+          await pool.query(
+            `INSERT INTO waitlist_budgets (kind, bucket_date, scope_key, used)
+             VALUES ('attempt', $1, 'global', 1000)`,
+            [NOW.toISOString().slice(0, 10)],
+          );
+          const handler = createJoinHandler({
+            config: joinConfig,
+            store,
+            clock: () => NOW,
+            verify: async () => true,
+          });
+          assert.equal(
+            (
+              await handler(joinRequest("valid-token"), {
+                ip: "198.51.100.50",
+              })
+            ).status,
+            200,
+          );
+          assert.equal(await count("waitlist_subscribers"), 1);
+          assert.equal(await count("waitlist_outbox"), 2);
+          assert.equal(await count("waitlist_send_attempts"), 0);
+          assert.equal(
+            (
+              await pool.query(
+                "SELECT used FROM waitlist_budgets WHERE kind = 'attempt' AND scope_key = 'global'",
+              )
+            ).rows[0].used,
+            1000,
           );
         },
       );

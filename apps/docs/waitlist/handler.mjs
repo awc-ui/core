@@ -170,6 +170,8 @@ export function createJoinHandler({
       `${now.toISOString().slice(0, 10)}:${ip}`,
     );
     try {
+      // Failed challenges consume only this IP's attempt quota, never the
+      // shared registration or SMTP budgets used by legitimate visitors.
       if (!(await store.consumeAttempt({ ipKey, now, limits: LIMITS })))
         return json(429, { ok: false }, { "Retry-After": "3600" });
       if (

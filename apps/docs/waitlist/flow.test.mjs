@@ -257,10 +257,15 @@ test(
           "SELECT kind, used FROM waitlist_budgets WHERE scope_key = 'global' ORDER BY kind",
         )
       ).rows;
-      assert.deepEqual(budgets, [
-        { kind: "attempt", used: 21 },
-        { kind: "registration", used: 1 },
-      ]);
+      assert.deepEqual(budgets, [{ kind: "registration", used: 1 }]);
+      assert.deepEqual(
+        (
+          await pool.query(
+            "SELECT used FROM waitlist_budgets WHERE kind = 'attempt' AND scope_key LIKE 'ip:%'",
+          )
+        ).rows,
+        [{ used: 21 }],
+      );
     } finally {
       transport?.close();
       if (server?.server.listening)

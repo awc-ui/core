@@ -94,16 +94,17 @@ export function createWaitlistStore(pool) {
   async function consumeAttempt({ ipKey, now, limits = {} }) {
     boundedString(ipKey, "IP key");
     const timestamp = instant(now);
-    const total = positiveInteger(limits.dailyAttempts, 1000);
     const perIp = positiveInteger(limits.dailyAttemptsPerIp, 30);
     try {
+      // Before CAPTCHA verification, attempts may only spend the caller's
+      // own quota. A shared budget here lets invalid tokens close signup for
+      // everyone. Global registration and delivery quotas are enforced later.
       await transaction((client) =>
-        reserveDaily(client, {
+        reserveBudget(client, {
           kind: "attempt",
-          now: timestamp,
-          ipKey,
-          total,
-          perIp,
+          date: timestamp.toISOString().slice(0, 10),
+          scope: `ip:${ipKey}`,
+          limit: perIp,
         }),
       );
       return true;

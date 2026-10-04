@@ -112,9 +112,11 @@ and must never send mail or write to the production list.
 
 ## Abuse limits and delivery behavior
 
-The initial conservative limits are 1,000 signup attempts/day globally and
-30/IP/day, 100 new registrations/day globally and 5/IP/day, and a queue of at most
-400 jobs. Each new registration creates two independent jobs. SMTP attempts are
+Before Turnstile verification, signup attempts are limited to 30/IP/day. There is
+no shared pre-verification daily budget: invalid tokens from one set of IPs must
+not exhaust signup capacity for other visitors. Only verified new registrations
+spend the global budget of 100/day and the per-IP budget of 5/day. The queue holds
+at most 400 jobs. Each new registration creates two independent jobs. SMTP attempts are
 capped at **300 in a trailing 24 hours**, below the documented **500 SMTP sends/day
 per mailbox** limit for this GoDaddy plan. Do not share this mailbox with another
 sending application or assume the unused capacity guarantees deliverability.
@@ -124,6 +126,12 @@ across simultaneous requests. Netlify edge rate limits provide another layer;
 their enforcement can lag, so they are not the authoritative quota. A valid
 Turnstile challenge does not exempt a request from application limits. A provider
 outage must not bypass verification.
+
+These limits do not cap all costs from a distributed request flood. Rotating IPs
+can increase function invocations, verification calls, and per-IP budget rows.
+Monitor platform usage and edge protection as well as signup and SMTP counters;
+do not reintroduce a shared daily cutoff for unverified requests. Expired attempt
+rows are removed by the existing maintenance schedule.
 
 A new signup queues its two messages durably, then uses Netlify `context.waitUntil` for bounded delivery after the HTTP response. The scheduled worker runs hourly for recovery; this cadence lets Netlify Database sleep between activity instead of waking it every five minutes. SMTP acceptance records each job
 independently. A welcome failure does not cause a delivered owner notification to
