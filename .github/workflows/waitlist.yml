@@ -18,6 +18,14 @@ concurrency:
 jobs:
   test:
     name: Waitlist security, persistence, and deployment
+    if: |
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -38,10 +46,25 @@ jobs:
       PUBLIC_WAITLIST_ENABLED: "false"
       WAITLIST_ENABLED: "false"
     steps:
+      # PR code stays in its own event/cache scope. Privileged events execute
+      # only trusted main; the caller's ref is an expected SHA, never a target.
       - uses: actions/checkout@v4
+        if: github.event_name == 'pull_request'
         with:
-          ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
+      - uses: actions/checkout@v4
+        if: github.event_name != 'pull_request'
+        with:
+          ref: refs/heads/main
+          persist-credentials: false
+      - name: Verify checkout matches the triggering commit
+        env:
+          EXPECTED_SHA: ${{ inputs.ref || github.sha }}
+        run: |
+          if [ "$(git rev-parse HEAD)" != "$EXPECTED_SHA" ]; then
+            echo "::error::Checked-out revision no longer matches the triggering commit. Run checks for the current revision."
+            exit 1
+          fi
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:

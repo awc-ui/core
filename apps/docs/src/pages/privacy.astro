@@ -7,7 +7,10 @@ if (import.meta.env.PUBLIC_WAITLIST_ENABLED === 'true' && !ready) {
   throw new Error('The waitlist controller identity and contact address must be finalized before publication.');
 }
 ---
-<WaitlistLegalPage title="Waitlist privacy notice">
+<WaitlistLegalPage
+  title="Waitlist privacy notice"
+  description="How the AWC UI Data Grid waitlist handles your email address, protects signup requests, and respects your privacy and unsubscribe choices."
+>
   {!ready ? (
     <p>Waitlist signup is not open yet. We will publish the controller details and the complete waitlist privacy notice before collecting signups.</p>
   ) : (

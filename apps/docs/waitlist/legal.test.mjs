@@ -78,7 +78,9 @@ async function renderPage(page, env = {}) {
     })
   );
   const container = await AstroContainer.create();
-  const html = await container.renderToString(component);
+  const html = await container.renderToString(component, {
+    request: new Request(`https://preview.example/${page}/?preview=true`),
+  });
   const nodes = [...descendants(parse(html))];
   const main = nodes.find((node) => node.tagName === "main");
   assert.ok(main, "the page renders through its shared legal layout");
@@ -96,6 +98,51 @@ async function renderPage(page, env = {}) {
     );
   return { nodes, text, links };
 }
+
+test("legal pages publish complete metadata using canonical production URLs", async () => {
+  for (const page of ["privacy", "waitlist-terms"]) {
+    const { nodes } = await renderPage(page);
+    const attr = (node, name) =>
+      node.attrs?.find((attribute) => attribute.name === name)?.value;
+    const meta = (name) =>
+      attr(
+        nodes.find(
+          (node) =>
+            node.tagName === "meta" &&
+            (attr(node, "name") === name || attr(node, "property") === name),
+        ) ?? {},
+        "content",
+      );
+    const canonical = `https://awc-ui.dev/${page}/`;
+    assert.equal(
+      attr(
+        nodes.find(
+          (node) =>
+            node.tagName === "link" && attr(node, "rel") === "canonical",
+        ),
+        "href",
+      ),
+      canonical,
+    );
+    assert.ok(meta("description")?.length >= 50);
+    assert.match(meta("robots"), /^index, follow/);
+    assert.equal(meta("og:url"), canonical);
+    assert.equal(meta("og:description"), meta("description"));
+    assert.equal(meta("og:image"), "https://awc-ui.dev/og-awc-ui-dev.png");
+    const script = nodes.find(
+      (node) =>
+        node.tagName === "script" &&
+        attr(node, "type") === "application/ld+json",
+    );
+    const data = JSON.parse(
+      script.childNodes.map((node) => node.value).join(""),
+    );
+    assert.equal(data["@type"], "WebPage");
+    assert.equal(data.url, canonical);
+    assert.equal(data.description, meta("description"));
+    assert.equal(data.name, meta("og:title"));
+  }
+});
 
 test("privacy stays a closed-signup placeholder without a finalized identity", async () => {
   for (const env of [
@@ -182,14 +229,27 @@ test("public controller details render as text even if configured with HTML", as
   assert.ok(text.includes(name));
   assert.ok(text.includes(address));
   assert.ok(
-    !nodes.some((node) => node.tagName === "script" || node.tagName === "img"),
+    !nodes.some(
+      (node) =>
+        node.tagName === "img" ||
+        (node.tagName === "script" &&
+          !node.attrs.some(
+            (attribute) =>
+              attribute.name === "type" &&
+              attribute.value === "application/ld+json",
+          )),
+    ),
   );
   assert.ok(
     !nodes.some((node) =>
       node.attrs?.some((attribute) => attribute.name.startsWith("on")),
     ),
   );
-  assert.ok(!links.includes("https://evil.example/"));
+  assert.ok(
+    links.every(
+      (link) => new URL(link, "https://awc-ui.dev").hostname !== "evil.example",
+    ),
+  );
 });
 
 test("the offer page limits the discount to the first annual Data Grid purchase and the launch redemption window", async () => {

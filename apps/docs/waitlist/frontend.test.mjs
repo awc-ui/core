@@ -10,7 +10,7 @@ import ts from "typescript";
 const astroRequire = createRequire(
   realpathSync(new URL("../node_modules/astro/package.json", import.meta.url)),
 );
-const { transform } = await import(
+const { parse, transform } = await import(
   astroRequire.resolve("@astrojs/compiler-rs")
 );
 const { experimental_AstroContainer: AstroContainer } = await import(
@@ -22,6 +22,23 @@ const runtime = pathToFileURL(
 const source = readFileSync(
   new URL("../src/components/WaitlistForm.astro", import.meta.url),
   "utf8",
+);
+// Remove the component's hoisted controller using Astro's syntax tree. The real
+// controller is loaded separately in the browser harness below.
+const parsed = parse(source);
+assert.deepEqual(
+  parsed.diagnostics.filter((diagnostic) => diagnostic.severity === "error"),
+  [],
+);
+const clientScripts = parsed.ast.body.filter(
+  (node) =>
+    node.type === "JSXElement" &&
+    node.openingElement.name.name?.toLowerCase() === "script",
+);
+assert.equal(clientScripts.length, 1, "the form has one hoisted controller");
+const templateSource = clientScripts.reduceRight(
+  (template, node) => template.slice(0, node.start) + template.slice(node.end),
+  source,
 );
 const proSource = readFileSync(
   new URL("../src/components/ProTierSection.astro", import.meta.url),
@@ -61,15 +78,13 @@ function compile(source, filename) {
 }
 
 async function render(flag, sitekey, fullSection = false) {
-  // The hoisted client script is exercised separately through the real controller.
   const component = compile(
-    source
+    templateSource
       .replace("import.meta.env.PUBLIC_WAITLIST_ENABLED", JSON.stringify(flag))
       .replace(
         "import.meta.env.PUBLIC_TURNSTILE_SITE_KEY",
         JSON.stringify(sitekey),
-      )
-      .replace(/<script>[\s\S]*?<\/script>/, ""),
+      ),
     "WaitlistForm.astro",
   );
   let code = component.code;
