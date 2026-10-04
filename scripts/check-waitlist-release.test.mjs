@@ -54,3 +54,28 @@ test("unfinished personal controller details fail the public release", () => {
     }
   }
 });
+
+test("operator page requires production, real provider settings and explicitly closed public signup", () => {
+  const operator = {
+    ...valid,
+    PUBLIC_WAITLIST_ENABLED: "false",
+    PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED: "true",
+  };
+  assert.deepEqual(checkWaitlistRelease(operator), {
+    enabled: false,
+    signupCheckEnabled: true,
+  });
+  for (const override of [
+    { PUBLIC_WAITLIST_ENABLED: undefined },
+    { PUBLIC_WAITLIST_ENABLED: "true" },
+    { PUBLIC_WAITLIST_ENABLED: "" },
+    { PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED: "yes" },
+    { CONTEXT: "deploy-preview" },
+    { CONTEXT: "dev" },
+    { CONTEXT: undefined },
+    { PUBLIC_TURNSTILE_SITE_KEY: "1x00000000000000000000AA" },
+    { PUBLIC_WAITLIST_CONTROLLER_NAME: "" },
+    { PUBLIC_WAITLIST_CONTACT_ADDRESS: "" },
+  ])
+    assert.throws(() => checkWaitlistRelease({ ...operator, ...override }));
+});

@@ -1,0 +1,22 @@
+---
+import WaitlistLegalPage from '../components/WaitlistLegalPage.astro';
+import WaitlistForm from '../components/WaitlistForm.astro';
+
+const enabled = import.meta.env.PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED === 'true' &&
+  import.meta.env.CONTEXT === 'production';
+---
+<WaitlistLegalPage
+  title="Waitlist operator check"
+  description="An operator-only check of the AWC UI waitlist security challenge and signup flow before public signup opens."
+  noindex
+>
+  {enabled ? (
+    <>
+      <p>This check is for the AWC UI operator only. Public waitlist signup remains closed.</p>
+      <p>Complete the security check and submit the form using the operator-approved test address. Only that address is accepted. A successful new test signup sends a confirmation to the test address and a notification to the administrator.</p>
+      <WaitlistForm operatorCheck />
+    </>
+  ) : (
+    <p>The operator signup check is not active.</p>
+  )}
+</WaitlistLegalPage>

@@ -1,6 +1,13 @@
 ---
+interface Props { operatorCheck?: boolean; }
+const requestedOperatorCheck = Astro.props.operatorCheck === true;
+const operatorCheck = requestedOperatorCheck &&
+  import.meta.env.PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED === "true" &&
+  import.meta.env.CONTEXT === "production";
 const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY?.trim() ?? "";
-const enabled = import.meta.env.PUBLIC_WAITLIST_ENABLED === "true" && siteKey.length > 0;
+const enabled = siteKey.length > 0 && (requestedOperatorCheck
+  ? operatorCheck
+  : import.meta.env.PUBLIC_WAITLIST_ENABLED === "true");
 ---
 
 {enabled ? (

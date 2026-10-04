@@ -9,7 +9,7 @@ import ts from "typescript";
 const astroRequire = createRequire(
   realpathSync(new URL("../node_modules/astro/package.json", import.meta.url)),
 );
-const { transform } = await import(
+const { parse: parseAstro, transform } = await import(
   astroRequire.resolve("@astrojs/compiler-rs")
 );
 const { experimental_AstroContainer: AstroContainer } = await import(
@@ -65,17 +65,38 @@ function* descendants(node) {
 }
 
 async function renderPage(page, env = {}) {
-  const source = readFileSync(
-    new URL(`../src/pages/${page}.astro`, import.meta.url),
-    "utf8",
-  ).replace(
+  const withEnv = (source) => source.replace(
     /import\.meta\.env\.([A-Z0-9_]+)/g,
     (_match, key) => JSON.stringify(env[key]) ?? "undefined",
   );
+  const source = withEnv(readFileSync(
+    new URL(`../src/pages/${page}.astro`, import.meta.url),
+    "utf8",
+  ));
+  const imports = { "../components/WaitlistLegalPage.astro": layout };
+  if (page === "waitlist-check") {
+    const form = readFileSync(
+      new URL("../src/components/WaitlistForm.astro", import.meta.url),
+      "utf8",
+    );
+    // Server rendering uses the real form; its hoisted browser script is covered
+    // separately by frontend.test.mjs and is bundled by Astro in deployment.
+    const parsed = parseAstro(form);
+    const scripts = parsed.ast.body.filter((node) =>
+      node.type === "JSXElement" &&
+      node.openingElement.name.name?.toLowerCase() === "script",
+    );
+    const template = scripts.reduceRight(
+      (source, node) => source.slice(0, node.start) + source.slice(node.end),
+      form,
+    );
+    imports["../components/WaitlistForm.astro"] = compile(
+      withEnv(template),
+      "WaitlistForm.astro",
+    );
+  }
   const { default: component } = await import(
-    compile(source, `${page}.astro`, {
-      "../components/WaitlistLegalPage.astro": layout,
-    })
+    compile(source, `${page}.astro`, imports)
   );
   const container = await AstroContainer.create();
   const html = await container.renderToString(component, {
@@ -182,6 +203,60 @@ test("publishing an enabled waitlist without either identity field fails instead
       renderPage("privacy", { PUBLIC_WAITLIST_ENABLED: "true", ...identity }),
       /controller identity and contact address must be finalized/i,
     );
+  }
+});
+
+test("the production operator signup check also requires a finalized privacy identity", async () => {
+  for (const identity of [
+    {},
+    { PUBLIC_WAITLIST_CONTROLLER_NAME: "Example Maintainer" },
+    { PUBLIC_WAITLIST_CONTACT_ADDRESS: "operator@example.test" },
+    { PUBLIC_WAITLIST_CONTROLLER_NAME: " ", PUBLIC_WAITLIST_CONTACT_ADDRESS: "\t" },
+  ]) {
+    await assert.rejects(renderPage("privacy", {
+      PUBLIC_WAITLIST_ENABLED: "false",
+      PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED: "true",
+      CONTEXT: "production",
+      ...identity,
+    }), /controller identity and contact address must be finalized/i);
+  }
+});
+
+test("the operator route is noindex and renders the shared form only in explicitly enabled production", async () => {
+  const env = {
+    PUBLIC_WAITLIST_ENABLED: "false",
+    PUBLIC_TURNSTILE_SITE_KEY: "operator-public-site-key",
+    PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED: "true",
+    CONTEXT: "production",
+  };
+  const attr = (node, name) => node.attrs?.find((attribute) => attribute.name === name)?.value;
+  for (const [overrides, enabled] of [
+    [{}, true],
+    [{ PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED: undefined }, false],
+    [{ PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED: "false" }, false],
+    [{ PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED: "TRUE" }, false],
+    [{ CONTEXT: undefined }, false],
+    [{ CONTEXT: "dev" }, false],
+    [{ CONTEXT: "deploy-preview" }, false],
+    [{ CONTEXT: "branch-deploy" }, false],
+    [{ PUBLIC_TURNSTILE_SITE_KEY: " " }, false],
+  ]) {
+    const { nodes, text } = await renderPage("waitlist-check", { ...env, ...overrides });
+    const robots = nodes.find((node) => node.tagName === "meta" && attr(node, "name") === "robots");
+    assert.equal(attr(robots, "content"), "noindex, nofollow");
+    const forms = nodes.filter((node) => node.tagName === "form");
+    assert.equal(forms.length, Number(enabled));
+    if (enabled) {
+      assert.match(text, /for the AWC UI operator only/);
+      assert.match(text, /Public waitlist signup remains closed/);
+      assert.match(text, /sends a confirmation to the test address and a notification to the administrator/);
+      assert.equal(attr(forms[0], "action"), "/api/waitlist");
+      assert.equal(attr(forms[0], "data-sitekey"), env.PUBLIC_TURNSTILE_SITE_KEY);
+      const email = nodes.find((node) => node.tagName === "input" && attr(node, "name") === "email");
+      assert.equal(attr(email, "value"), undefined);
+      assert.equal(attr(email, "readonly"), undefined);
+      assert.ok(nodes.some((node) => attr(node, "data-waitlist-challenge") !== undefined));
+    }
   }
 });
 

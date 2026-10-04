@@ -1,6 +1,6 @@
 import { getRuntime } from "../../waitlist/runtime.mjs";
 import { createJoinHandler, json } from "../../waitlist/handler.mjs";
-import { deliverBatch } from "../../waitlist/mail.mjs";
+import { queueSignupDelivery } from "../../waitlist/mail.mjs";
 
 export default async (request, context) => {
   try {
@@ -8,9 +8,8 @@ export default async (request, context) => {
     return runtime
       ? await createJoinHandler({
           ...runtime,
-          onRegistered: (ctx) => {
-            if (typeof ctx.waitUntil === "function")
-              ctx.waitUntil(deliverBatch(runtime));
+          onRegistered: (ctx, subscriberId) => {
+            queueSignupDelivery(runtime, ctx, subscriberId);
           },
         })(request, context)
       : json(503, { ok: false });

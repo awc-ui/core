@@ -5,10 +5,20 @@ import { pathToFileURL } from "node:url";
 /** Validate public build configuration without loading any runtime credentials. */
 export function checkWaitlistRelease(env = process.env) {
   const enabled = env.PUBLIC_WAITLIST_ENABLED;
-  if (enabled === undefined || enabled === "" || enabled === "false")
+  const signupCheckEnabled = env.PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED;
+  for (const [name, value] of [
+    ["PUBLIC_WAITLIST_ENABLED", enabled],
+    ["PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED", signupCheckEnabled],
+  ]) {
+    if (![undefined, "", "false", "true"].includes(value))
+      throw new Error(`${name} must be true or false.`);
+  }
+  if (enabled !== "true" && signupCheckEnabled !== "true")
     return { enabled: false };
-  if (enabled !== "true")
-    throw new Error("PUBLIC_WAITLIST_ENABLED must be true or false.");
+  if (signupCheckEnabled === "true" && enabled !== "false")
+    throw new Error(
+      "An operator signup check requires PUBLIC_WAITLIST_ENABLED=false.",
+    );
   if (env.CONTEXT !== "production")
     throw new Error(
       "The public waitlist may only be enabled in the production build.",
@@ -35,7 +45,9 @@ export function checkWaitlistRelease(env = process.env) {
       );
     }
   }
-  return { enabled: true };
+  return signupCheckEnabled === "true"
+    ? { enabled: false, signupCheckEnabled: true }
+    : { enabled: true };
 }
 
 if (
@@ -43,9 +55,9 @@ if (
   import.meta.url === pathToFileURL(resolve(process.argv[1])).href
 ) {
   try {
-    const { enabled } = checkWaitlistRelease();
+    const { enabled, signupCheckEnabled } = checkWaitlistRelease();
     console.log(
-      `Waitlist public configuration verified (${enabled ? "enabled" : "disabled"}).`,
+      `Waitlist public configuration verified (${signupCheckEnabled ? "operator check only" : enabled ? "enabled" : "disabled"}).`,
     );
   } catch (error) {
     console.error(`[waitlist:release] ${error.message}`);

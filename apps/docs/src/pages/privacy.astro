@@ -3,7 +3,10 @@ import WaitlistLegalPage from '../components/WaitlistLegalPage.astro';
 const name = import.meta.env.PUBLIC_WAITLIST_CONTROLLER_NAME?.trim();
 const address = import.meta.env.PUBLIC_WAITLIST_CONTACT_ADDRESS?.trim();
 const ready = Boolean(name && address);
-if (import.meta.env.PUBLIC_WAITLIST_ENABLED === 'true' && !ready) {
+const signupEnabled = import.meta.env.PUBLIC_WAITLIST_ENABLED === 'true' ||
+  (import.meta.env.PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED === 'true' &&
+    import.meta.env.CONTEXT === 'production');
+if (signupEnabled && !ready) {
   throw new Error('The waitlist controller identity and contact address must be finalized before publication.');
 }
 ---

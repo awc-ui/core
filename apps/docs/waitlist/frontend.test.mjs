@@ -70,21 +70,32 @@ function compile(source, filename) {
   // Vite ordinarily handles these extracted styles; insert the same CSS below.
   return {
     ...result,
-    code: result.code.replace(
-      /^import "[^\n"]+\?astro&type=style[^\n"]+";$/gm,
-      "",
-    ),
+    code: ts.transpileModule(
+      result.code.replace(
+        /^import "[^\n"]+\?astro&type=style[^\n"]+";$/gm,
+        "",
+      ),
+      {
+        compilerOptions: {
+          target: ts.ScriptTarget.ES2022,
+          module: ts.ModuleKind.ESNext,
+        },
+      },
+    ).outputText,
   };
 }
 
-async function render(flag, sitekey, fullSection = false) {
+async function render(flag, sitekey, fullSection = false, options = {}) {
+  const env = {
+    PUBLIC_WAITLIST_ENABLED: flag,
+    PUBLIC_TURNSTILE_SITE_KEY: sitekey,
+    ...options.env,
+  };
   const component = compile(
-    templateSource
-      .replace("import.meta.env.PUBLIC_WAITLIST_ENABLED", JSON.stringify(flag))
-      .replace(
-        "import.meta.env.PUBLIC_TURNSTILE_SITE_KEY",
-        JSON.stringify(sitekey),
-      ),
+    templateSource.replace(
+      /import\.meta\.env\.([A-Z0-9_]+)/g,
+      (_match, key) => JSON.stringify(env[key]) ?? "undefined",
+    ),
     "WaitlistForm.astro",
   );
   let code = component.code;
@@ -107,7 +118,9 @@ async function render(flag, sitekey, fullSection = false) {
   }
   const { default: compiled } = await import(moduleUrl(code));
   const container = await AstroContainer.create();
-  const html = await container.renderToString(compiled);
+  const html = await container.renderToString(compiled, {
+    props: fullSection ? {} : options.props,
+  });
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><style>
     html{font-family:sans-serif}body{margin:0}*{box-sizing:border-box}${css}
   </style></head><body>${html}</body></html>`;
@@ -276,6 +289,52 @@ test("without JavaScript the form cannot send email through a browser navigation
   );
   assert.equal(await page.locator("form").getAttribute("method"), "post");
   assert.equal(calls.length + scripts.length, 0);
+});
+
+test("the operator check flag does not open the public landing form", async (t) => {
+  const markup = await render("false", "test-public-key", true, {
+    env: {
+      PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED: "true",
+      CONTEXT: "production",
+    },
+  });
+  const { page, calls, scripts } = await harness(t, { markup });
+  assert.equal(await page.locator("form").count(), 0);
+  assert.match(await page.locator("body").textContent(), /Waitlist signup is not open yet/);
+  assert.equal(await page.locator('a[href="/waitlist-check/"]').count(), 0);
+  assert.equal(calls.length + scripts.length, 0);
+});
+
+test("operator signup uses the same editable form, Turnstile and request flow through retries", async (t) => {
+  const behavior = {
+    status: 403,
+    markup: await render("false", "test-public-key", false, {
+      env: {
+        PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED: "true",
+        CONTEXT: "production",
+      },
+      props: { operatorCheck: true },
+    }),
+  };
+  const { page, calls } = await harness(t, behavior);
+  const email = page.getByLabel("Email address", { exact: true });
+  await verify(page);
+  assert.equal(await email.inputValue(), "");
+  assert.equal(await email.getAttribute("readonly"), null);
+  await email.fill("operator@example.test");
+  await page.locator("button[type=submit]").click();
+  await outcome(page, "error");
+  assert.equal(await email.getAttribute("readonly"), null);
+  assert.equal(await email.inputValue(), "operator@example.test");
+  await verify(page, "replacement-token");
+  assert.equal(await email.getAttribute("readonly"), null);
+  Object.assign(behavior, { status: 200 });
+  await page.locator("button[type=submit]").click();
+  await outcome(page, "success");
+  assert.deepEqual(calls.map((call) => call.postDataJSON()), [
+    { email: "operator@example.test", token: "fresh-token", website: "" },
+    { email: "operator@example.test", token: "replacement-token", website: "" },
+  ]);
 });
 
 test("new and duplicate signups share success feedback, private payload transport, reset, and focus", async (t) => {

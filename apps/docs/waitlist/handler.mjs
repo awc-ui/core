@@ -1,6 +1,7 @@
 import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 import { isIP } from "node:net";
-import { OFFER_VERSION, ORIGIN, LIMITS } from "./config.mjs";
+import { OFFER_VERSION, ORIGIN, LIMITS, normalizeEmail } from "./config.mjs";
+export { normalizeEmail } from "./config.mjs";
 
 export const hashToken = (token) =>
   createHash("sha256").update(token).digest("hex");
@@ -21,22 +22,6 @@ export const json = (status, body, extra = {}) =>
       ...extra,
     },
   });
-
-// Deliberately supports ordinary ASCII mailbox names; no display names, lists,
-// quoted local parts, CRLF or user-controlled headers. Dots/plus are preserved.
-export function normalizeEmail(value) {
-  if (typeof value !== "string") return null;
-  const email = value.trim().toLowerCase();
-  if (
-    email.length > 254 ||
-    !/^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(
-      email,
-    )
-  )
-    return null;
-  if (email.split("@")[0].length > 64) return null;
-  return email;
-}
 
 export async function readBody(request, max = 4096) {
   if (Number(request.headers.get("content-length")) > max)
@@ -114,12 +99,20 @@ export function createJoinHandler({
     if (request.method !== "POST")
       return json(405, { ok: false }, { Allow: "POST" });
     const now = clock();
+    // The browser check follows the ordinary verification/persistence path but
+    // permits only its configured mailbox while public signup and SMTP are off.
+    const signupCheckEmail = normalizeEmail(config?.signupCheckEmail);
+    const signupCheck =
+      config?.signupCheckEnabled === true &&
+      config.joinEnabled === false &&
+      config.emailEnabled === false &&
+      config.smtpCheckEnabled === false &&
+      signupCheckEmail !== null;
     if (
-      !config?.joinEnabled ||
+      (!config?.joinEnabled && !signupCheck) ||
       !config.turnstileSecret ||
       (config.closesAt !== null &&
-        (!Number.isFinite(config.closesAt) ||
-          now.getTime() >= config.closesAt))
+        (!Number.isFinite(config.closesAt) || now.getTime() >= config.closesAt))
     )
       return json(503, { ok: false });
     const url = new URL(request.url);
@@ -152,6 +145,8 @@ export function createJoinHandler({
     )
       return json(400, { ok: false });
     const email = normalizeEmail(body.email);
+    if (signupCheck && email !== signupCheckEmail)
+      return json(503, { ok: false });
     if (
       !email ||
       typeof body.token !== "string" ||
@@ -198,7 +193,7 @@ export function createJoinHandler({
         return json(429, { ok: false }, { "Retry-After": "3600" });
       if (result.status === "registered") {
         try {
-          onRegistered(context);
+          onRegistered(context, result.subscriberId);
         } catch {
           console.error("waitlist_delivery_deferred");
         }

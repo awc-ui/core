@@ -130,6 +130,34 @@ export async function deliverOne({
   return { status: saved ? "accepted" : "uncertain" };
 }
 
+export function queueSignupDelivery(
+  runtime,
+  context,
+  subscriberId,
+  deliver = deliverBatch,
+) {
+  if (typeof context?.waitUntil !== "function") return;
+  if (runtime.config.signupCheckEnabled) {
+    // Only a new, fully verified operator signup may send while general mail
+    // is paused. Missing scope must never fall back to the global queue.
+    if (
+      runtime.config.joinEnabled !== false ||
+      runtime.config.emailEnabled !== false ||
+      runtime.config.smtpCheckEnabled !== false ||
+      typeof subscriberId !== "string" ||
+      !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(subscriberId)
+    )
+      throw new Error("invalid_operator_delivery_scope");
+    context.waitUntil(
+      deliver({
+        ...runtime,
+        config: { ...runtime.config, emailEnabled: true },
+        subscriberId,
+      }),
+    );
+  } else context.waitUntil(deliver(runtime));
+}
+
 export async function deliverBatch({
   store,
   config,
