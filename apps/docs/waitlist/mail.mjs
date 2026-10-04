@@ -75,9 +75,11 @@ export function classifySmtpError(error) {
 export async function deliverOne({
   store,
   transport,
+  subscriberId,
   clock = () => new Date(),
 }) {
   const job = await store.claimOutbox({
+    subscriberId,
     now: clock(),
     dailyLimit: 300,
     maxPendingAgeMs: 7 * 86400_000,
@@ -95,7 +97,7 @@ export async function deliverOne({
       ambiguous: false,
       errorCode: "invalid_message",
     });
-    return { status: "failed" };
+    return { status: "failed", errorCode: "invalid_message" };
   }
   let accepted;
   try {
@@ -113,7 +115,10 @@ export async function deliverOne({
       now: clock(),
       ...failure,
     });
-    return { status: failure.ambiguous ? "uncertain" : "failed" };
+    return {
+      status: failure.ambiguous ? "uncertain" : "failed",
+      errorCode: failure.errorCode,
+    };
   }
   // Deliberately outside the SMTP catch: a DB write failure after acceptance
   // must leave the lease uncertain, never schedule another send.
@@ -128,6 +133,7 @@ export async function deliverOne({
 export async function deliverBatch({
   store,
   config,
+  subscriberId,
   maxJobs = 2,
   maxDurationMs = 10000,
 }) {
@@ -136,8 +142,10 @@ export async function deliverBatch({
   const deadline = Date.now() + maxDurationMs;
   try {
     for (let index = 0; index < maxJobs && Date.now() < deadline; index++) {
-      const result = await deliverOne({ store, transport });
+      const result = await deliverOne({ store, transport, subscriberId });
       console.info(`waitlist_delivery_${result.status}`);
+      if (result.errorCode)
+        console.error(`waitlist_delivery_${result.errorCode}`);
       if (result.status !== "accepted") break;
     }
   } catch {

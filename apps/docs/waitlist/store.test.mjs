@@ -400,6 +400,147 @@ test(
       );
 
       await t.test(
+        "subscriber-scoped claims leave older unrelated jobs pending and never fall back",
+        async () => {
+          await reset();
+          const unrelated = await store.register(signup("unrelated"));
+          const operator = await store.register(
+            signup("operator", { now: later(1) }),
+          );
+          const claims = [];
+          for (let index = 0; index < 2; index++) {
+            const job = await store.claimOutbox({
+              subscriberId: operator.subscriberId,
+              now: later(1),
+            });
+            assert.ok(job);
+            assert.equal(job.email, "operator@example.test");
+            claims.push(job);
+            assert.equal(
+              await store.completeOutbox({ ...job, now: later(1) }),
+              true,
+            );
+          }
+          assert.equal(new Set(claims.map((job) => job.id)).size, 2);
+          for (let index = 0; index < 3; index++)
+            assert.equal(
+              await store.claimOutbox({
+                subscriberId: operator.subscriberId,
+                now: later(1),
+              }),
+              null,
+            );
+          assert.deepEqual(
+            (
+              await pool.query(
+                "SELECT kind, state, attempts FROM waitlist_outbox WHERE subscriber_id = $1 ORDER BY kind",
+                [unrelated.subscriberId],
+              )
+            ).rows,
+            [
+              { kind: "admin", state: "pending", attempts: 0 },
+              { kind: "welcome", state: "pending", attempts: 0 },
+            ],
+          );
+          assert.equal(await count("waitlist_send_attempts"), 2);
+          const normalClaim = await store.claimOutbox({ now: later(1) });
+          assert.equal(normalClaim.email, "unrelated@example.test");
+        },
+      );
+
+      await t.test(
+        "concurrent subscriber-scoped claims reserve only distinct matching jobs",
+        async () => {
+          await reset();
+          await store.register(signup("unrelated"));
+          const operator = await store.register(
+            signup("operator", { now: later(1) }),
+          );
+          const results = await Promise.all(
+            Array.from({ length: 12 }, () =>
+              store.claimOutbox({
+                subscriberId: operator.subscriberId,
+                now: later(1),
+              }),
+            ),
+          );
+          const jobs = results.filter(Boolean);
+          assert.equal(jobs.length, 2);
+          assert.equal(new Set(jobs.map((job) => job.id)).size, 2);
+          assert.equal(new Set(jobs.map((job) => job.claimToken)).size, 2);
+          assert.ok(jobs.every((job) => job.email === "operator@example.test"));
+          assert.equal(await count("waitlist_send_attempts"), 2);
+          assert.equal(
+            (
+              await pool.query(
+                "SELECT count(*)::integer AS count FROM waitlist_outbox WHERE state = 'pending'",
+              )
+            ).rows[0].count,
+            2,
+          );
+        },
+      );
+
+      await t.test(
+        "concurrent subscriber scopes share the 300-attempt SMTP ceiling",
+        async () => {
+          await reset();
+          // Seed accepted historical sends without making network calls or
+          // spending time claiming 299 jobs. Every reservation retains its
+          // subscriber/job foreign keys and unique attempt number.
+          await pool.query(
+            `WITH subscribers AS (
+               INSERT INTO waitlist_subscribers
+                 (id, email, email_key, unsubscribe_hash, offer_version, created_at)
+               SELECT gen_random_uuid(), 'history-' || n || '@example.test',
+                 'history-email-' || n, 'history-token-' || n, $2, $1
+               FROM generate_series(1, 150) AS n
+               RETURNING id
+             ), jobs AS (
+               INSERT INTO waitlist_outbox
+                 (id, subscriber_id, kind, state, attempts, created_at,
+                  next_attempt_at, completed_at)
+               SELECT gen_random_uuid(), subscriber.id, kind, 'sent', 1, $1, $1, $1
+               FROM subscribers AS subscriber
+               CROSS JOIN unnest(ARRAY['welcome', 'admin']) AS kind
+               LIMIT 299
+               RETURNING id
+             )
+             INSERT INTO waitlist_send_attempts
+               (id, outbox_id, attempt_number, reserved_at)
+             SELECT gen_random_uuid(), id, 1, $1 FROM jobs`,
+            [NOW, OFFER_VERSION],
+          );
+          assert.equal(await count("waitlist_send_attempts"), 299);
+          const subscribers = await Promise.all([
+            store.register(signup("operator-one")),
+            store.register(signup("operator-two")),
+          ]);
+          const results = await Promise.all(
+            Array.from({ length: 12 }, (_, index) =>
+              store.claimOutbox({
+                subscriberId: subscribers[index % 2].subscriberId,
+                now: NOW,
+              }),
+            ),
+          );
+          const jobs = results.filter(Boolean);
+          assert.equal(jobs.length, 1);
+          assert.match(jobs[0].email, /^operator-(one|two)@example\.test$/);
+          assert.equal(await count("waitlist_send_attempts"), 300);
+          for (const subscriber of subscribers)
+            assert.equal(
+              await store.claimOutbox({
+                subscriberId: subscriber.subscriberId,
+                now: NOW,
+              }),
+              null,
+            );
+          assert.equal(await store.claimOutbox({ now: NOW }), null);
+        },
+      );
+
+      await t.test(
         "concurrent claims are exclusive and SMTP reservations use a rolling 24 hours",
         async () => {
           await reset();

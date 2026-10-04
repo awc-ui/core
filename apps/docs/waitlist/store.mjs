@@ -121,6 +121,7 @@ export function createWaitlistStore(pool) {
     unsubscribeHash,
     unsubscribeToken,
     offerVersion = OFFER_VERSION,
+    consentVersion = CONSENT_VERSION,
     now,
     limits = {},
   }) {
@@ -129,6 +130,7 @@ export function createWaitlistStore(pool) {
     boundedString(ipKey, "IP key");
     boundedString(unsubscribeHash, "unsubscribe hash");
     boundedString(unsubscribeToken, "unsubscribe token", 512);
+    boundedString(consentVersion, "consent version");
     if (offerVersion !== OFFER_VERSION)
       throw new TypeError("Invalid offer version");
     const timestamp = instant(now);
@@ -169,7 +171,7 @@ export function createWaitlistStore(pool) {
               emailKey,
               unsubscribeHash,
               offerVersion,
-              CONSENT_VERSION,
+              consentVersion,
               timestamp,
             ],
           );
@@ -197,10 +199,13 @@ export function createWaitlistStore(pool) {
 
   async function claimOutbox({
     now,
+    subscriberId,
     dailyLimit = MAX_SENDS_PER_24_HOURS,
     maxPendingAgeMs = 7 * DAY_MS,
     leaseMs = 120_000,
   } = {}) {
+    if (subscriberId !== undefined)
+      boundedString(subscriberId, "subscriber ID", 36);
     const timestamp = instant(now);
     const limit = positiveInteger(
       dailyLimit,
@@ -243,8 +248,9 @@ export function createWaitlistStore(pool) {
          ON subscriber.id = job.subscriber_id
          WHERE job.state = 'pending' AND job.next_attempt_at <= $1 AND job.attempts < $2
          AND (job.kind = 'admin' OR subscriber.suppressed_at IS NULL)
+         AND ($3::uuid IS NULL OR job.subscriber_id = $3::uuid)
          ORDER BY job.created_at, job.id LIMIT 1 FOR UPDATE OF job`,
-          [timestamp, MAX_ATTEMPTS],
+          [timestamp, MAX_ATTEMPTS, subscriberId ?? null],
         );
         if (!candidates.rowCount) return null;
         const job = candidates.rows[0];
