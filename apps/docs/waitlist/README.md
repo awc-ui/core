@@ -92,6 +92,7 @@ production publication; `--context` is a build option and cannot be combined wit
 | `WAITLIST_HMAC_SECRET`   | Random secret containing at least 32 bytes; keep a recoverable secret-manager copy |
 | `TURNSTILE_SECRET_KEY`   | Secret from the production Turnstile widget                                        |
 | `WAITLIST_SMTP_PASSWORD` | Password for the dedicated mailbox                                                 |
+| `WAITLIST_SMTP_CHECK_ENABLED` | Temporary operator-only email check; default absent/`false`                     |
 | `AWS_LAMBDA_JS_RUNTIME`  | `nodejs22.x`, matching the tested/bundled runtime                                  |
 
 The server reads the trusted invocation metadata `context.deploy.context` and
@@ -116,6 +117,31 @@ hostname `awc-ui.dev` and no pre-clearance. Its public site key is
 accept the expected hostname and action; the endpoint is not protected merely by
 rendering the widget. Local and automated tests use injected test dependencies
 and must never send mail or write to the production list.
+
+## Private operator email check before opening signup
+
+With the operator's authorization to receive both templates, set
+`WAITLIST_PRIVACY_READY=true`, leave both `WAITLIST_ENABLED=false` and
+`WAITLIST_EMAIL_ENABLED=false` explicitly set, and temporarily set
+`WAITLIST_SMTP_CHECK_ENABLED=true` in Production / Functions. Redeploy reviewed
+main, then use **Functions → waitlist-delivery → Run now** in the authenticated
+Netlify dashboard. The hourly worker can also run the same check.
+
+This registers only the fixed owner address and sends its real welcome and owner
+notification templates. The record uses `operator-email-check-v1` rather than
+claiming public-form consent. No HTTP endpoint accepts a recipient or bypasses
+Turnstile. The worker claims jobs only for that subscriber, preserving the shared
+300-attempt budget. Repeated/concurrent runs retain the existing record and never
+reset delivered, failed, uncertain, or suppressed jobs. Existing pending jobs may
+continue under their normal bounded retry rules.
+
+Keep `PUBLIC_WAITLIST_ENABLED=false` throughout. Privacy readiness keeps the
+welcome email's unsubscribe link usable; public signup still remains closed.
+Check for two `waitlist_delivery_accepted` log entries and actual inbox receipt.
+Run again to check for `waitlist_delivery_idle` without duplicate mail. Restore
+`WAITLIST_SMTP_CHECK_ENABLED=false` and redeploy after the check. This verifies
+SMTP/database delivery, not the public browser/Turnstile signup flow, which still
+needs its separate launch check.
 
 ## Abuse limits and delivery behavior
 

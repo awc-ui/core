@@ -2,7 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { SMTPServer } from "smtp-server";
 import nodemailer from "nodemailer";
-import { messageFor, classifySmtpError, deliverOne } from "./mail.mjs";
+import {
+  messageFor,
+  classifySmtpError,
+  deliverOne,
+  deliverBatch,
+} from "./mail.mjs";
 import { SENDER, OWNER, OFFER_VERSION } from "./config.mjs";
 
 const job = {
@@ -111,6 +116,73 @@ test("welcome and admin delivery failures are recorded independently", async () 
     );
     assert.equal(store.events[1][1].ambiguous, false);
   }
+});
+
+test("single delivery forwards subscriber scope without changing the shared SMTP limits", async () => {
+  for (const subscriberId of [
+    undefined,
+    "8b6c27b4-3833-4a92-823a-95ded48fc258",
+  ]) {
+    const claims = [];
+    let sends = 0;
+    const now = new Date("2026-10-04T12:00:00Z");
+    const result = await deliverOne({
+      subscriberId,
+      clock: () => now,
+      store: {
+        claimOutbox: async (value) => {
+          claims.push(value);
+          return null;
+        },
+      },
+      transport: {
+        sendMail: async () => {
+          sends++;
+        },
+      },
+    });
+    assert.deepEqual(result, { status: "idle" });
+    assert.deepEqual(claims, [
+      {
+        subscriberId,
+        now,
+        dailyLimit: 300,
+        maxPendingAgeMs: 7 * 86400_000,
+      },
+    ]);
+    assert.equal(sends, 0);
+  }
+});
+
+test("batch delivery preserves subscriber scope through to the store", async (t) => {
+  const subscriberId = "8b6c27b4-3833-4a92-823a-95ded48fc258";
+  const claims = [];
+  let closes = 0;
+  let sends = 0;
+  t.mock.method(nodemailer, "createTransport", () => ({
+    sendMail: async () => {
+      sends++;
+    },
+    close: () => {
+      closes++;
+    },
+  }));
+  await deliverBatch({
+    store: {
+      claimOutbox: async (value) => {
+        claims.push(value);
+        return null;
+      },
+    },
+    config: { emailEnabled: true, smtpPassword: "test-only-password" },
+    subscriberId,
+    maxJobs: 2,
+  });
+  assert.equal(claims.length, 1);
+  assert.equal(claims[0].subscriberId, subscriberId);
+  assert.equal(claims[0].dailyLimit, 300);
+  assert.equal(sends, 0);
+  assert.equal(closes, 1);
 });
 
 test("real local SMTP transport receives welcome and owner mail without external delivery", async (t) => {
