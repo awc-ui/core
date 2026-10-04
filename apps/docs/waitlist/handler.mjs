@@ -117,8 +117,9 @@ export function createJoinHandler({
     if (
       !config?.joinEnabled ||
       !config.turnstileSecret ||
-      !Number.isFinite(config.closesAt) ||
-      now.getTime() >= config.closesAt
+      (config.closesAt !== null &&
+        (!Number.isFinite(config.closesAt) ||
+          now.getTime() >= config.closesAt))
     )
       return json(503, { ok: false });
     const url = new URL(request.url);

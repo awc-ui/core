@@ -29,6 +29,12 @@ export function readConfig(env = process.env, context) {
     joinEnabled: env.WAITLIST_ENABLED === "true",
     emailEnabled: env.WAITLIST_EMAIL_ENABLED === "true",
     smtpPassword: env.WAITLIST_SMTP_PASSWORD,
-    closesAt: Date.parse(env.WAITLIST_CLOSES_AT ?? ""),
+    // Enrollment closes at commercial launch. Until its date is known, the
+    // explicit signup switch controls closure; an invalid supplied date fails
+    // closed instead of silently removing a configured deadline.
+    closesAt:
+      env.WAITLIST_CLOSES_AT === undefined
+        ? null
+        : Date.parse(env.WAITLIST_CLOSES_AT),
   };
 }

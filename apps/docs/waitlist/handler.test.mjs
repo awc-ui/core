@@ -211,6 +211,38 @@ test("existing addresses receive same success without immediate email kick; new 
   assert.equal(kicked, 1);
 });
 
+test("enrollment stays open until launch with no scheduled date, while invalid dates and the launch switch fail closed", async () => {
+  const env = {
+    WAITLIST_PRIVACY_READY: "true",
+    WAITLIST_HMAC_SECRET: "x".repeat(32),
+    WAITLIST_ENABLED: "true",
+    TURNSTILE_SECRET_KEY: "test-secret",
+  };
+  const production = { deploy: { context: "production" } };
+  const openConfig = readConfig(env, production);
+  assert.equal(openConfig.closesAt, null);
+  const open = harness({ config: openConfig });
+  assert.equal((await open.handler(req(), context)).status, 200);
+  assert.ok(open.calls.some(([kind]) => kind === "register"));
+  for (const extra of [
+    { WAITLIST_ENABLED: "false" },
+    { WAITLIST_CLOSES_AT: "" },
+    { WAITLIST_CLOSES_AT: "not-a-date" },
+    { WAITLIST_CLOSES_AT: now.toISOString() },
+  ]) {
+    const closed = harness({ config: readConfig({ ...env, ...extra }, production) });
+    assert.equal((await closed.handler(req(), context)).status, 503);
+    assert.equal(closed.calls.length, 0);
+  }
+  const scheduled = harness({
+    config: readConfig({
+      ...env,
+      WAITLIST_CLOSES_AT: new Date(now.getTime() + 86400_000).toISOString(),
+    }, production),
+  });
+  assert.equal((await scheduled.handler(req(), context)).status, 200);
+});
+
 test("Siteverify validates success, host, action, timestamp, replay/expiry; network and HTTP failure fail closed", async () => {
   const good = {
     success: true,

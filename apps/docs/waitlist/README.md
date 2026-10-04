@@ -19,8 +19,10 @@ not activate them. Complete these steps in order before opening registration:
 1. Finalize the personal controller's public identification/contact details and
    review the English privacy notice against the actual database provider,
    hosting regions, retention/deletion procedure, and processors. Do not publish
-   placeholder identity details. Record an enrollment closing date; the launch
-   and redemption-window dates are not yet known.
+   placeholder identity details. Enrollment closes at Data Grid's commercial
+   launch; the launch and redemption-window dates are not yet known. Close signup
+   with `WAITLIST_ENABLED=false` when launching, or schedule the same deadline
+   with `WAITLIST_CLOSES_AT` once the launch date is fixed.
 2. The selected production service is Netlify Database; its empty database has
    been provisioned separately. Review the initial migration in
    `apps/docs/netlify/database/migrations/202610020001_create_waitlist.sql`, configure
@@ -79,7 +81,7 @@ use an “all deploy contexts” default for any of them.
 | `WAITLIST_ENABLED`       | `true` opens new signup; `false` closes it without breaking unsubscribe            |
 | `WAITLIST_EMAIL_ENABLED` | Independent SMTP delivery switch; `false` pauses sending                           |
 | `WAITLIST_PRIVACY_READY` | `true` only after the final notice and operational data handling are ready         |
-| `WAITLIST_CLOSES_AT`     | Explicit future ISO 8601 timestamp in UTC for enrollment closure                   |
+| `WAITLIST_CLOSES_AT`     | Optional UTC ISO 8601 launch timestamp; omit until known. Empty/invalid values close signup. |
 | `WAITLIST_HMAC_SECRET`   | Random secret containing at least 32 bytes; keep a recoverable secret-manager copy |
 | `TURNSTILE_SECRET_KEY`   | Secret from the production Turnstile widget                                        |
 | `WAITLIST_SMTP_PASSWORD` | Password for the dedicated mailbox                                                 |
@@ -190,6 +192,11 @@ cached function manifests expire quickly, so this workflow deliberately rebundle
 the same trusted source at deployment.
 
 ## Closing, incidents, and data lifecycle
+
+At commercial launch, close early enrollment by setting `WAITLIST_ENABLED=false`
+and redeploying before opening sales. If the date is fixed ahead of time, setting
+`WAITLIST_CLOSES_AT` schedules that same closure. This value is intentionally
+absent while the launch date is unknown; do not substitute an arbitrary date.
 
 To stop new registrations, set `WAITLIST_ENABLED=false`; to stop mail, separately
 set `WAITLIST_EMAIL_ENABLED=false`, then redeploy so the runtime picks up the new
