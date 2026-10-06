@@ -31,6 +31,8 @@ The October 2026 dependency refresh updates Angular within its supported 20.3 li
 
 Install with `pnpm install --frozen-lockfile`. Temporary patches are registered in `pnpm.patchedDependencies` and their hashes are recorded in the lockfile. `pnpm test:dependency-security` exercises the installed dependency paths in CI, including image transforms, nested CSS selectors, Nuxt Git operations, and the malformed inputs addressed below.
 
+The follow-up refresh includes `sharp@0.35.5` for [GHSA-wq5f-xc86-pv6w](https://github.com/advisories/GHSA-wq5f-xc86-pv6w) and `shell-quote@1.12.0` for [GHSA-pqg4-j6r4-53mv](https://github.com/advisories/GHSA-pqg4-j6r4-53mv), added to GitHub's advisory database on October 6. Tests inspect the installed librsvg version (at least 2.63.2), exercise SVG rendering, and verify that shell quoting rejects line terminators after comment tokens without executing a shell command.
+
 | Dependency | Local change and provenance | Removal condition |
 | --- | --- | --- |
 | `node-forge@1.4.0` | [Local patch](patches/node-forge@1.4.0.patch) validates nested DigestAlgorithm element counts and empty ASN.1 NULL parameters for [GHSA-86w9-cpqp-85rv](https://github.com/advisories/GHSA-86w9-cpqp-85rv). Regression tests include valid OpenSSL signatures, BER compatibility, malformed structures, and RSA-PSS. This is a local mitigation, not an upstream release. | Upgrade to a release with the equivalent validation, remove the patch registration/file, and rerun the signature tests. |
