@@ -127,10 +127,23 @@ async function render(flag, sitekey, fullSection = false, options = {}) {
 }
 
 const turnstileStub = `
-  window.__turnstile = { resets: 0, removes: 0 };
+  window.__turnstile = {
+    resets: 0, removes: 0, renders: 0, readyCalls: 0,
+    async: document.currentScript?.async === true,
+    defer: document.currentScript?.defer === true,
+  };
   window.turnstile = {
-    ready(callback) { callback(); },
+    ready(callback) {
+      window.__turnstile.readyCalls++;
+      // The real API rejects ready() after async/defer script loading. Keeping
+      // this behavior in every fixture prevents a permissive stub hiding it.
+      if (window.__turnstile.async || window.__turnstile.defer) {
+        throw new Error('[Cloudflare Turnstile] Remove async/defer before using ready().');
+      }
+      callback();
+    },
     render(container, options) {
+      window.__turnstile.renders++;
       window.__turnstile.options = options;
       container.innerHTML = '<div style="width:150px;height:140px;border:1px solid">Security check</div>';
       return 'widget-1';
@@ -158,6 +171,8 @@ async function harness(t, behavior = {}) {
   page.setDefaultTimeout(5_000);
   const calls = [];
   const scripts = [];
+  const pageErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
   const held = [];
   const release = () => held.splice(0).forEach((resolve) => resolve());
   t.after(async () => {
@@ -234,7 +249,7 @@ async function harness(t, behavior = {}) {
     });
     await page.waitForFunction(() => Boolean(window.__waitlist));
   }
-  return { page, calls, scripts, release };
+  return { page, calls, scripts, pageErrors, release };
 }
 
 async function verify(page, token = "fresh-token") {
@@ -289,6 +304,40 @@ test("without JavaScript the form cannot send email through a browser navigation
   );
   assert.equal(await page.locator("form").getAttribute("method"), "post");
   assert.equal(calls.length + scripts.length, 0);
+});
+
+test("async-loaded Turnstile mounts without ready() and remounts from its cached API with a fresh-token gate", async (t) => {
+  const { page, calls, scripts, pageErrors } = await harness(t);
+  await page.waitForFunction(() => window.__turnstile?.renders === 1);
+  assert.deepEqual(await page.evaluate(() => ({
+    async: window.__turnstile.async,
+    defer: window.__turnstile.defer,
+    readyCalls: window.__turnstile.readyCalls,
+  })), { async: true, defer: true, readyCalls: 0 });
+  assert.equal(await page.locator("button[type=submit]").isDisabled(), true);
+  await page.getByLabel("Email address", { exact: true }).fill("person@example.com");
+  await page.locator("form").dispatchEvent("submit");
+  assert.equal(calls.length, 0, "mounting the API does not authorize signup");
+  await verify(page, "before-navigation-token");
+  assert.equal(await page.locator("button[type=submit]").isEnabled(), true);
+
+  await page.evaluate(() => {
+    window.__waitlist.disposeWaitlists();
+    window.__waitlist.initializeWaitlists();
+  });
+  await page.waitForFunction(() => window.__turnstile.renders === 2);
+  assert.equal(scripts.length, 1, "remounting reuses the loaded API");
+  assert.equal(await page.evaluate(() => window.__turnstile.removes), 1);
+  assert.equal(await page.locator("button[type=submit]").isDisabled(), true);
+  await page.locator("form").dispatchEvent("submit");
+  assert.equal(calls.length, 0, "a previous widget's token is not reused");
+  await verify(page, "after-navigation-token");
+  await page.locator("button[type=submit]").click();
+  await outcome(page, "success");
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].postDataJSON().token, "after-navigation-token");
+  assert.equal(await page.evaluate(() => window.__turnstile.readyCalls), 0);
+  assert.deepEqual(pageErrors, []);
 });
 
 test("the operator check flag does not open the public landing form", async (t) => {
