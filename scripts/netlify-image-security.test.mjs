@@ -15,6 +15,21 @@ const { default: sharp } = await import(pathToFileURL(fromIpx.resolve('sharp')).
 const { createIPX } = await import(pathToFileURL(ipxEntry).href);
 const { ImageHandler } = await import(pathToFileURL(imagesEntry).href);
 
+test('the installed SVG decoder includes the fixed librsvg release', async () => {
+  const actual = sharp.versions.rsvg.split('.').map(Number);
+  const minimum = [2, 63, 2];
+  const firstDifference = minimum.findIndex((part, index) => actual[index] !== part);
+  assert.ok(
+    firstDifference === -1 || actual[firstDifference] > minimum[firstDifference],
+    `librsvg ${sharp.versions.rsvg} predates the fix for GHSA-wq5f-xc86-pv6w`,
+  );
+  const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="12"><rect width="16" height="12" fill="red"/></svg>');
+  const { info } = await sharp(svg).png().toBuffer({ resolveWithObject: true });
+  assert.equal(info.width, 16);
+  assert.equal(info.height, 12);
+  assert.equal(info.format, 'png');
+});
+
 test('Netlify image transformations work with the patched sharp dependency', async (t) => {
   const pixels = Buffer.alloc(120 * 80 * 3);
   for (let y = 0; y < 80; y++) {
