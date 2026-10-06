@@ -366,5 +366,7 @@ test("advertising privacy matches the default-off and enabled Meta states", asyn
   assert.match(enabled.text, /cannot be recalled/);
   assert.match(enabled.text, /Accept and Reject buttons/);
   assert.match(enabled.text, /up to 90 days/);
-  assert.ok(enabled.links.includes("https://www.facebook.com/privacy/policy/"));
+  assert.ok(
+    enabled.links.some((link) => link === "https://www.facebook.com/privacy/policy/"),
+  );
 });
