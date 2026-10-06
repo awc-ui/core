@@ -14,7 +14,6 @@ interface TurnstileOptions {
 }
 
 interface Turnstile {
-  ready(callback: () => void): void;
   render(container: HTMLElement, options: TurnstileOptions): string | undefined;
   reset(widgetId: string): void;
   remove(widgetId: string): void;
@@ -36,16 +35,16 @@ function loadTurnstile(): Promise<Turnstile> {
       reject(new Error("Security check unavailable"));
     };
     const timer = window.setTimeout(fail, TIMEOUT_MS);
-    const ready = () => {
+    const loaded = () => {
       const api = getApi();
       if (!api) return fail();
-      api.ready(() => {
-        window.clearTimeout(timer);
-        resolve(api);
-      });
+      // The load event already means the API is available. Turnstile rejects
+      // ready() when its script was loaded with async/defer.
+      window.clearTimeout(timer);
+      resolve(api);
     };
     if (getApi()) {
-      ready();
+      loaded();
       return;
     }
     script.src =
@@ -53,7 +52,7 @@ function loadTurnstile(): Promise<Turnstile> {
     script.async = true;
     script.defer = true;
     script.referrerPolicy = "no-referrer";
-    script.addEventListener("load", ready, { once: true });
+    script.addEventListener("load", loaded, { once: true });
     script.addEventListener("error", fail, { once: true });
     document.head.append(script);
   }).catch((error: unknown) => {
