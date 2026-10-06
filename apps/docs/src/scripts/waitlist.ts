@@ -2,6 +2,7 @@ interface TurnstileOptions {
   sitekey: string;
   action: string;
   size: "compact";
+  appearance: "interaction-only";
   language: "en";
   "response-field": false;
   retry: "never";
@@ -131,6 +132,7 @@ function mountWaitlist(form: HTMLFormElement): () => void {
           sitekey: form.dataset.sitekey!,
           action: "waitlist_join",
           size: "compact",
+          appearance: "interaction-only",
           language: "en",
           "response-field": false,
           retry: "never",
