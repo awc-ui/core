@@ -3,6 +3,8 @@ import WaitlistLegalPage from '../components/WaitlistLegalPage.astro';
 const name = import.meta.env.PUBLIC_WAITLIST_CONTROLLER_NAME?.trim();
 const address = import.meta.env.PUBLIC_WAITLIST_CONTACT_ADDRESS?.trim();
 const ready = Boolean(name && address);
+const metaEnabled = import.meta.env.PROD && import.meta.env.CONTEXT === 'production' &&
+  import.meta.env.PUBLIC_META_MEASUREMENT_ENABLED === 'true';
 const signupEnabled = import.meta.env.PUBLIC_WAITLIST_ENABLED === 'true' ||
   (import.meta.env.PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED === 'true' &&
     import.meta.env.CONTEXT === 'production');
@@ -18,7 +20,7 @@ if (signupEnabled && !ready) {
     <p>Waitlist signup is not open yet. We will publish the controller details and the complete waitlist privacy notice before collecting signups.</p>
   ) : (
     <>
-      <p>This notice covers the AWC UI Data Grid waitlist. It does not cover a future purchase or customer account.</p>
+      <p>This notice covers the AWC UI Data Grid waitlist and optional advertising measurement on this site. It does not cover a future purchase or customer account.</p>
       <h2>Who is responsible</h2>
       <p>{name} administers the waitlist personally. Contact address: {address}. For privacy requests, email <a href="mailto:waitlist@awc-ui.dev">waitlist@awc-ui.dev</a>.</p>
       <h2>What we collect and why</h2>
@@ -32,6 +34,18 @@ if (signupEnabled && !ready) {
       <p>We retain waitlist and offer records until the launch offer closes, then review and remove them within 90 days unless needed for an unresolved request or a legal obligation. If launch is delayed, we review the list at least annually. Unsubscribing stops waitlist emails; we retain the minimum suppression and offer records needed to respect your choice and honor your eligibility. Requests to erase data are handled separately.</p>
       <p>Email copies are also held in the administrator’s and sender’s mailboxes and must be included in retention and deletion requests. Provider security logs and backups follow the providers’ retention schedules.</p>
       <p>Application rate-limit records are removed once their daily bucket is more than seven days old. Sending-budget records are removed after eight days. These short-lived records do not replace your signup or unsubscribe record.</p>
+      <h2 id="advertising-measurement">Optional advertising measurement</h2>
+      <p>Advertising measurement is separate from joining the waitlist and receiving launch emails. We ask before enabling it, using equally available Accept and Reject buttons. Rejecting has no effect on signup or your early offer. Reopen Advertising preferences using the button on this site to change your choice or withdraw permission.</p>
+      <p>After acceptance, eligible public pages can load the Google Ads tag to measure advertising. Google receives technical data such as your IP address, browser information and advertising cookie identifiers. We configure the tag with a fixed site URL and empty referrer, disable personalized advertising and analytics storage, and do not load it on pages with URL query parameters or fragments or on private waitlist links. We do not send a Google signup conversion from the form's generic success response. See <a href="https://policies.google.com/technologies/partner-sites">how Google uses information from partner sites</a>.</p>
+      {metaEnabled ? (
+        <p>With your permission, we also store a random browser identifier in the _fbp cookie and, when the current link contains a valid Meta ad click ID, that ID in the _fbc cookie. After a new waitlist signup is saved, our server queues one Lead event for Meta containing these identifiers, your browser user-agent, event time, an event ID and a fixed site URL. We do not send your email address, an email hash, name, raw IP address or private link to Meta. Duplicate signups do not create another Lead. No Meta browser pixel is loaded. See <a href="https://www.facebook.com/privacy/policy/">Meta's Privacy Policy</a>.</p>
+      ) : (
+        <p>Meta signup measurement is currently disabled. We do not create Meta advertising cookies or attach Meta identifiers to signup requests while it is disabled.</p>
+      )}
+      <p>Your choice and a random code used to withdraw permission are stored on this device for up to 90 days. Advertising cookies created by this site are limited to that period; returning to the site does not renew your choice. When the period ends, we ask again. These preferences are specific to this browser. Necessary storage used to remember a rejection or retry a withdrawal is used only to respect your choice.</p>
+      {metaEnabled && <p>Pending Meta events are retried for at most 24 hours. We clear their browser identifiers when delivery finishes, fails, expires or is cancelled. Active consent records last up to 90 days. A withdrawal linked to a recorded consent is retained as a hashed record for up to 180 days to prevent a delayed request from restoring permission. Withdrawal codes without an associated signup expire after 24 hours. Minimal completed event records are removed after 30 days; routine cleanup runs hourly. Provider retention after receipt is governed by the provider's terms.</p>}
+      <p>When you reject after accepting, we stop new optional measurement, remove this site's advertising cookies and reload the page to unload the Google tag. A withdrawal request also cancels Meta events that have not yet been sent. If your connection is unavailable, your browser keeps this withdrawal code and retries on a later visit or when connectivity returns. A request already in flight or data already received by a provider cannot be recalled by this control; contact us for an erasure request. Clearing browser storage can remove an unsent withdrawal request, so contact us if you need help.</p>
+      <p>Google and, when enabled, Meta may process advertising data outside the European Economic Area. Their linked privacy terms explain processing and international transfer safeguards. This optional processing relies on your consent; withdrawing it does not affect processing that already took place lawfully.</p>
       <h2>Your choices and rights</h2>
       <p>You may withdraw email consent at any time using the unsubscribe link. This does not affect previous lawful processing or remove your early offer eligibility. You can request access, correction, erasure, restriction, or portability where applicable, and object to processing based on legitimate interests. Contact us using the address above; we may need to verify the request to protect your information.</p>
       <p>You can also complain to your local data protection authority. In Romania, this is <a href="https://www.dataprotection.ro/">ANSPDCP</a>. We do not make decisions with legal or similarly significant effects about you solely through automated processing.</p>

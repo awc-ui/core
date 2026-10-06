@@ -1,3 +1,5 @@
+import { readAdvertisingConfig } from "./advertising.mjs";
+
 export const OFFER_VERSION = "datagrid-early-20-v1";
 export const ORIGIN = "https://awc-ui.dev";
 export const SENDER = "waitlist@awc-ui.dev";
@@ -40,6 +42,7 @@ export function readConfig(env = process.env, context) {
     return null;
   const signupCheckEmail = normalizeEmail(env.WAITLIST_SIGNUP_CHECK_EMAIL);
   return {
+    advertising: readAdvertisingConfig(env),
     hmacSecret: env.WAITLIST_HMAC_SECRET,
     turnstileSecret: env.TURNSTILE_SECRET_KEY,
     joinEnabled: env.WAITLIST_ENABLED === "true",

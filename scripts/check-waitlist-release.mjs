@@ -9,10 +9,18 @@ export function checkWaitlistRelease(env = process.env) {
   for (const [name, value] of [
     ["PUBLIC_WAITLIST_ENABLED", enabled],
     ["PUBLIC_WAITLIST_SIGNUP_CHECK_ENABLED", signupCheckEnabled],
+    ["PUBLIC_META_MEASUREMENT_ENABLED", env.PUBLIC_META_MEASUREMENT_ENABLED],
   ]) {
     if (![undefined, "", "false", "true"].includes(value))
       throw new Error(`${name} must be true or false.`);
   }
+  if (
+    env.PUBLIC_META_MEASUREMENT_ENABLED === "true" &&
+    (env.CONTEXT !== "production" || enabled !== "true")
+  )
+    throw new Error(
+      "Meta measurement requires the production public waitlist.",
+    );
   if (enabled !== "true" && signupCheckEnabled !== "true")
     return { enabled: false };
   if (signupCheckEnabled === "true" && enabled !== "false")

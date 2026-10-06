@@ -1,6 +1,5 @@
 import { getRuntime } from "../../waitlist/runtime.mjs";
-import { deliverBatch } from "../../waitlist/mail.mjs";
-import { runSmtpCheck } from "../../waitlist/smtp-check.mjs";
+import { runScheduledDelivery } from "../../waitlist/scheduled-delivery.mjs";
 
 // Scheduled functions are not publicly callable on Netlify. Production context
 // and separate switches prevent preview SMTP side effects. The explicit operator
@@ -8,11 +7,7 @@ import { runSmtpCheck } from "../../waitlist/smtp-check.mjs";
 export default async (_request, context) => {
   try {
     const runtime = getRuntime(context);
-    if (runtime) {
-      await runtime.store.maintain({ now: new Date() });
-      if (runtime.config.smtpCheckEnabled) await runSmtpCheck(runtime);
-      else await deliverBatch({ ...runtime, maxJobs: 20 });
-    }
+    if (runtime) await runScheduledDelivery(runtime);
   } catch {
     console.error("waitlist_delivery_unavailable");
   }

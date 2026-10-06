@@ -1,16 +1,29 @@
 ---
-// Keep advertising measurement on the published docs site, out of local dev.
-const enabled = import.meta.env.PROD;
+interface Props { sensitive?: boolean; }
+const production = import.meta.env.PROD && import.meta.env.CONTEXT === 'production';
+const { sensitive = false } = Astro.props;
+const meta = production && !sensitive && import.meta.env.PUBLIC_META_MEASUREMENT_ENABLED === 'true';
 ---
-
-{enabled && (
-  <>
-    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=AW-18474243980"></script>
-    <script is:inline>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'AW-18474243980');
-    </script>
-  </>
-)}
+<meta data-advertising-config data-production={String(production)} data-google={String(!sensitive)} data-meta={String(meta)} />
+<script>
+  import { initializeAdvertisingConsent } from '../scripts/advertising-consent';
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAdvertisingConsent, { once: true });
+  } else {
+    initializeAdvertisingConsent();
+  }
+</script>
+<style is:global>
+  .awc-advertising { font: 400 0.875rem/1.5 system-ui, sans-serif; color: light-dark(#1d1b20, #e6e0e9); color-scheme: light dark; }
+  .awc-advertising [hidden] { display: none !important; }
+  .awc-advertising-panel { position: fixed; z-index: 10000; inset: auto 1rem 1rem auto; width: min(34rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; padding: 1.25rem; border: 1px solid light-dark(#79747e, #938f99); border-radius: 1rem; background: light-dark(#fffbfe, #211f26); box-shadow: 0 4px 24px #0003; }
+  .awc-advertising h2 { margin: 0 0 0.5rem; font-size: 1.125rem; line-height: 1.4; }
+  .awc-advertising p { margin: 0.75rem 0; }
+  .awc-advertising a { color: light-dark(#6750a4, #d0bcff); text-decoration: underline; }
+  .awc-advertising button { box-sizing: border-box; min-height: 44px; padding: 0.625rem 1rem; border: 1px solid currentColor; border-radius: 1.5rem; font: inherit; font-weight: 600; color: light-dark(#6750a4, #d0bcff); background: light-dark(#fffbfe, #211f26); cursor: pointer; }
+  .awc-advertising-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-block: 1rem; }
+  .awc-advertising-actions button { flex: 1 1 10rem; }
+  .awc-advertising :focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
+  .awc-advertising-preferences { position: fixed; z-index: 9999; bottom: 0.75rem; left: 0.75rem; box-shadow: 0 2px 8px #0002; }
+  .awc-advertising [data-advertising-status]:empty { display: none; }
+</style>

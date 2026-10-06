@@ -1,7 +1,7 @@
 # AWC UI Data Grid waitlist operations
 
-The landing page remains static Astro on Netlify. Three Netlify Functions provide
-signup, unsubscribe, and queued SMTP delivery. PostgreSQL stores subscribers,
+The landing page remains static Astro on Netlify. Four Netlify Functions provide
+signup, unsubscribe, advertising-consent withdrawal, and queued delivery. PostgreSQL stores subscribers,
 versioned offer eligibility, rate budgets, and separate welcome/admin delivery
 jobs. The sender is `waitlist@awc-ui.dev`; owner notifications go to
 `ionut-valentin.mitrache@awc-ui.dev`.
@@ -10,6 +10,120 @@ This is single opt-in: a successful form submission joins immediately. Turnstile
 reduces automated abuse but does not establish ownership of the submitted email.
 There is no payment, license issuance, public discount code, or commerce account
 creation in this feature.
+
+## Optional advertising measurement
+
+Measurement is separate from email consent. The browser asks before loading the
+existing Google Ads tag or retaining Meta attribution. Rejecting advertising
+does not affect signup or the launch offer. No browser signup conversion fires:
+the public API deliberately gives identical replies for new, duplicate,
+suppressed, and honeypot requests.
+
+Google's tag is intentionally not loaded on URLs containing query parameters or
+fragments, including `gclid`, UTM links, and `/#pro-tier`, to avoid a third-party
+script seeing potentially private URL data. Google measurement is therefore
+incomplete on those entry points. This does not prevent consented Meta click
+attribution or the server Lead event on the waitlist landing URL.
+
+The optional server Meta `Lead` is inserted in the **same transaction as a new
+subscriber**, in `waitlist_advertising_outbox`, only with explicit current
+advertising consent and usable attribution. A unique subscriber constraint and
+stable random event ID prevent duplicate jobs. The ID and original event time
+remain unchanged across at most six attempts within 24 hours; network ambiguity
+is retried using Meta's event deduplication. Provider failure does not delay the
+signup response or change the email outbox. Existing `waitUntil` and hourly
+recovery deliver the events, with bounded worker time.
+
+The Meta payload contains `Lead`, its event ID/time, the fixed public landing URL,
+the browser User-Agent required for website events, and only valid `_fbp`/`_fbc`
+identifiers available after consent. It contains no name, email, email hash,
+subscriber ID, raw IP address, unsubscribe token, or arbitrary URL parameters.
+The identifiers and User-Agent are personal/pseudonymous data, not anonymous.
+Attribution may be lower than an integration sharing email/IP. No Meta browser
+SDK or automatic request-context extraction is used.
+
+The consent capability is random per grant and stored server-side only as a
+SHA-256 hash. Withdrawal cancels queued work and clears its match data, including
+when it races ahead of signup. A worker checks consent again before contacting
+Meta; requests already in flight or accepted cannot be recalled by a preference
+change. Browser withdrawal stops new local measurement and retains a pending
+capability until the server acknowledges cancellation. Re-granting creates a new
+capability; it never resurrects cancelled jobs or creates Leads for existing
+subscribers. Email unsubscribe and advertising preferences remain separate.
+
+The withdrawal endpoint requires the exact origin/path and a 43-character
+random capability, limits its body to 256 bytes, and has independent edge and
+30/IP/day persisted limits. It accepts no email address. The per-IP key is a
+daily HMAC, not a stored raw address. Unknown-capability records have short
+retention; distributed traffic can still consume platform invocations, so the
+existing usage/edge monitoring remains necessary.
+
+Match payloads are removed on successful delivery, permanent failure, withdrawal,
+or expiry (at most 24 hours plus the hourly maintenance cadence). Terminal job
+metadata is deleted after 30 days. Active consent records expire after 90 days;
+withdrawals of previously recorded grants remain for 180 days to prevent late
+requests from restoring consent, without extending on repeated withdrawal.
+An unknown-capability withdrawal is retained
+for only 24 hours to cover in-flight signup races, without extending its lifetime
+on repeat requests. Browser choices and attribution expire after 90 days.
+Deletion requests must include these advertising records and, where applicable,
+provider records. Delete the subscriber's `waitlist_advertising_outbox` rows before
+deleting `waitlist_subscribers`; both the advertising and email outboxes have
+foreign keys. Never remove subscribers using a cascade that skips review of
+pending deliveries or provider records.
+
+For an approved erasure, pause both delivery switches and wait for active leases
+to settle before a single reviewed database transaction cancels/deletes the
+target advertising jobs, deletes that subscriber's SMTP send-attempt rows and
+email jobs, then deletes the subscriber. Remove only unreferenced consent rows
+whose retention is no longer justified; one consent capability may cover several
+signups. Commit these changes together. Already transmitted provider events and
+mailbox/backups require their separate erasure process. These are operator
+instructions; no public erasure endpoint or automatic subscriber deletion is
+introduced by this feature.
+
+### Review and activation
+
+The new Meta path is **off by default**. Deploying code does not activate it.
+
+1. Review the privacy notice and consent UI, then deploy the additive
+   `202610060001_advertising_measurement.sql` migration with reviewed code.
+   Existing Netlify migration staging applies it before publishing the functions.
+   It does not alter email subscription or SMTP-outbox records.
+2. Configure the intended Meta Dataset/Pixel and a Conversions API access token.
+   Put runtime settings only in **Netlify Production / Functions**, never build
+   variables, source, logs, or chat:
+
+   | Variable | Setting |
+   | --- | --- |
+   | `META_CAPI_ENABLED` | Absent/`false` until explicitly activating delivery |
+   | `META_DATASET_ID` | Numeric Dataset/Pixel ID |
+   | `META_GRAPH_API_VERSION` | Explicit supported Graph version, e.g. `v24.0`; verify support before activation |
+   | `META_CAPI_ACCESS_TOKEN` | Secret token authorized for that dataset |
+   | `META_TEST_EVENT_CODE` | Optional temporary Meta Test Events code; remove after verification |
+
+3. Only after the backend configuration and migration are ready, set public
+   GitHub repository variable `PUBLIC_META_MEASUREMENT_ENABLED=true` and rebuild
+   the production site. PR builds force it off. This flag controls consented
+   browser attribution; it contains no dataset credential and sends no event by
+   itself. The backend independently requires `META_CAPI_ENABLED=true`, a valid
+   ID/token/version, trusted production metadata, and privacy readiness.
+4. Before normal delivery, verify a consented **new** operator signup in Meta
+   Test Events using `META_TEST_EVENT_CODE`. Check that the minimal fbp/fbc +
+   User-Agent payload is accepted by the actual configured dataset. Repeat the
+   signup to confirm no second Lead, test Reject, and test withdrawal before a
+   queued delivery. Local tests stub Meta and cannot prove real attribution,
+   match quality, or Ads Manager reporting. Do not optimize a campaign for website
+   Leads until this check succeeds.
+5. Remove the test-event code, review the final configuration, and enable normal
+   delivery. To pause, set `META_CAPI_ENABLED=false` and turn off the public flag.
+   Withdrawal and scheduled retention still work; pending events expire without
+   being replayed beyond their 24-hour window.
+
+Primary implementation references: [Google basic consent integration](https://developers.google.com/tag-platform/security/guides/consent),
+[Meta server event parameters](https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/server-event/),
+[Meta fbp/fbc parameters](https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/fbp-and-fbc/),
+and [Meta's first-party parameter-builder examples](https://github.com/facebook/capi-param-builder/tree/main/nodejs).
 
 ## Activation is deliberately separate from deploying code
 
@@ -295,13 +409,14 @@ Before launch, document an explicit retention period and run a reviewed deletion
 procedure on schedule. Subscriber records, outbox payloads, provider logs, backup
 copies, IP-derived budget keys, and send-attempt history all need coverage.
 Hourly maintenance deletes UTC budget buckets older than seven days and SMTP
-reservations older than eight days. It never deletes subscribers or outbox jobs,
+reservations older than eight days. It never deletes subscribers or email outbox jobs,
 and it preserves every reservation in the current 24-hour quota window. Do not
 manually erase recent reservations or today's budgets while the application is
 active. Deletion requests and suppression are separate operations; retain only
 the minimum justified suppression/offer records described in the final notice.
 Subscriber, outbox, provider-log and backup retention still require the reviewed
-operational deletion procedure.
+operational deletion procedure. Advertising match data, consent records and
+terminal advertising jobs use the separate bounded cleanup described above.
 
 ## Provider references
 

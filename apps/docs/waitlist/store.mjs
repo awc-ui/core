@@ -1,4 +1,8 @@
 import { randomUUID } from "node:crypto";
+import {
+  createAdvertisingStore,
+  queueAdvertising,
+} from "./advertising-store.mjs";
 
 export const OFFER_VERSION = "datagrid-early-20-v1";
 export const CONSENT_VERSION = "waitlist-2026-10-02-v1";
@@ -122,6 +126,7 @@ export function createWaitlistStore(pool) {
     unsubscribeToken,
     offerVersion = OFFER_VERSION,
     consentVersion = CONSENT_VERSION,
+    advertising = null,
     now,
     limits = {},
   }) {
@@ -187,6 +192,12 @@ export function createWaitlistStore(pool) {
               randomUUID(),
             ],
           );
+          if (advertising)
+            await queueAdvertising(client, {
+              subscriberId,
+              measurement: advertising,
+              now: timestamp,
+            });
           return { status: "registered", subscriberId };
         },
         { lockState: true },
@@ -387,6 +398,7 @@ export function createWaitlistStore(pool) {
   }
 
   return {
+    ...createAdvertisingStore(transaction),
     consumeAttempt,
     register,
     claimOutbox,
