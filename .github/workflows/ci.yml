@@ -62,6 +62,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Dependency security regression tests
+        run: pnpm test:dependency-security
+
       - name: Puppeteer startup compatibility
         run: node --test scripts/stencil-puppeteer-compat.test.mjs
 
