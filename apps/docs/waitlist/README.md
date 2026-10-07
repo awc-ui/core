@@ -14,7 +14,7 @@ creation in this feature.
 ## Optional advertising measurement
 
 Measurement is separate from email consent. The browser asks before loading the
-existing Google Ads tag or retaining Meta attribution. Rejecting advertising
+existing Google Ads tag or retaining enabled Meta, Reddit, or Google click attribution. Rejecting advertising
 does not affect signup or the launch offer. No browser signup conversion fires:
 the public API deliberately gives identical replies for new, duplicate,
 suppressed, and honeypot requests.
@@ -22,12 +22,13 @@ suppressed, and honeypot requests.
 Google's tag is intentionally not loaded on URLs containing query parameters or
 fragments, including `gclid`, UTM links, and `/#pro-tier`, to avoid a third-party
 script seeing potentially private URL data. Google measurement is therefore
-incomplete on those entry points. This does not prevent consented Meta click
-attribution or the server Lead event on the waitlist landing URL.
+incomplete on those entry points. This does not prevent separately enabled, consented server click attribution
+for Meta, Reddit, or Google on the waitlist landing URL. The server adapters do
+not load Google or Reddit browser scripts on campaign URLs.
 
 The optional server Meta `Lead` is inserted in the **same transaction as a new
 subscriber**, in `waitlist_advertising_outbox`, only with explicit current
-advertising consent and usable attribution. A unique subscriber constraint and
+advertising consent and usable attribution. A unique subscriber/provider constraint and
 stable random event ID prevent duplicate jobs. The ID and original event time
 remain unchanged across at most six attempts within 24 hours; network ambiguity
 is retried using Meta's event deduplication. Provider failure does not delay the
@@ -124,6 +125,138 @@ Primary implementation references: [Google basic consent integration](https://de
 [Meta server event parameters](https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/server-event/),
 [Meta fbp/fbc parameters](https://developers.facebook.com/docs/marketing-api/conversions-api/parameters/fbp-and-fbc/),
 and [Meta's first-party parameter-builder examples](https://github.com/facebook/capi-param-builder/tree/main/nodejs).
+
+## Reddit and Google signup measurement
+
+The additional providers start **disabled**, independently of the working Meta
+integration. Their public flags also start false in preview and production
+builds. Missing or malformed provider configuration disables only that provider.
+No provider receives email, email hashes, subscriber IDs, raw IP addresses, or
+private URLs from these server adapters. The Google tag remains a separate,
+consented browser integration with the limitations described above.
+
+Consent wording is `advertising-2026-10-07-v2`. Previously accepted versions are
+not silently expanded to cover Reddit or the new Google server integration:
+the browser withdraws the old capability and asks again. Declining does not
+change signup, early-offer eligibility, or transactional email. After consent,
+the browser retains only valid click IDs in secure first-party cookies whose
+expiry is bounded by the original 90-day grant. Duplicate/conflicting Google
+click parameters are ignored. Sensitive/private-link pages never capture them.
+
+New subscriber registration creates at most one outbox row **per provider** in
+its transaction. Returning, suppressed and duplicate addresses do not create
+new rows, even after re-granting consent. Existing Meta rows and event IDs are
+preserved by `202610070001_advertising_providers.sql`; no historic subscriber
+is backfilled. Reddit and Google destinations are bound when queued. Changing
+a pixel, conversion action, owner or login routing fails pending work closed
+instead of sending an old conversion to a new destination. Credential rotation
+does not change that destination identity.
+
+Each enabled provider has a separate bounded background worker so a slow
+Reddit endpoint or Google OAuth exchange cannot starve Meta. Delivery checks
+consent/lease immediately before dispatch; Google checks again after OAuth
+refresh and before ingestion. Withdrawal during token refresh therefore stops
+the conversion request before it starts. Once an ingestion request is in flight
+or accepted, neither local cancellation nor Google diagnostics can recall it.
+
+### Runtime configuration
+
+Set only in **Netlify Production / Functions**, never repository files, public
+build variables, chat, or logs. All examples below name fields, not credentials.
+
+| Variable | Purpose |
+| --- | --- |
+| `REDDIT_CAPI_ENABLED` | `true` for an approved controlled validation after setup, then normal delivery only after validation passes; absent/false otherwise |
+| `REDDIT_PIXEL_ID` | Intended account Pixel ID, such as `a2_...` |
+| `REDDIT_CAPI_ACCESS_TOKEN` | Secret conversion access token for that pixel |
+| `GOOGLE_CONVERSIONS_ENABLED` | `true` for an approved controlled validation after setup, then normal delivery only after validation passes; absent/false otherwise |
+| `GOOGLE_CONVERSION_CUSTOMER_ID` | Ten-digit customer ID owning the conversion action, without hyphens |
+| `GOOGLE_CONVERSION_ACTION_ID` | Numeric conversion action ID of type `UPLOAD_CLICKS`, not the AW tag ID |
+| `GOOGLE_LOGIN_CUSTOMER_ID` | Optional ten-digit manager ID, only for manager-routed access; otherwise omit |
+| `GOOGLE_OAUTH_CLIENT_ID` | OAuth client authorized for the Data Manager API |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Secret for that OAuth client |
+| `GOOGLE_OAUTH_REFRESH_TOKEN` | Secret production offline refresh grant for the authenticating account |
+
+Public GitHub build variables are `PUBLIC_REDDIT_MEASUREMENT_ENABLED` and
+`PUBLIC_GOOGLE_MEASUREMENT_ENABLED`. They control only consented attribution
+capture and disclosure; they contain no credentials and cannot enable backend
+transmission alone. Both use the existing release-readiness gate: production,
+public signup, valid Turnstile configuration and complete privacy identity.
+A flag change requires a production rebuild. Backend credentials never enter
+build/preview scope. Keep the new flags off during code review and deployment.
+
+### Reddit setup and delivery
+
+Verify the account's Pixel ID and create a conversion access token through its
+Events Manager. Review any newly displayed terms before enabling the integration.
+The adapter calls Reddit CAPI v3 at the fixed `/pixels/{pixel_id}/conversion_events`
+endpoint with one `SIGN_UP`, action source `WEBSITE`, original timestamp, stable
+random conversion ID, the consented `rdt_cid`, and the fixed public site URL.
+It does not install the Reddit browser pixel. No click ID means no Reddit event;
+no substitute email/IP matching is attempted.
+
+A successful API acknowledgement is not proof of campaign attribution or an
+impression-based match. Confirm a genuine authorized new signup in Events
+Manager before using SignUp for optimization. Network ambiguity and retryable
+errors reuse the same conversion ID/time, with at most six send attempts inside
+24 hours. No response payload or token is logged.
+
+### Google setup and asynchronous verification
+
+Enable **Data Manager API** in the intended Google Cloud project. Grant the
+OAuth principal access to the Google Ads conversion-owner account and request
+`https://www.googleapis.com/auth/datamanager` with offline access. Configure
+production OAuth lifecycle deliberately: external apps in Testing commonly
+issue refresh grants that expire after seven days. This adapter supports plain
+refresh-token OAuth, not DPoP-bound grants, service-account keys, or API keys.
+Invalid/revoked grants require reconnection; do not repeatedly regenerate events.
+
+Create or verify a dedicated signup action of type `UPLOAD_CLICKS` (Website /
+Import from clicks), then select it as the campaign signup goal. The adapter uses
+Google's supported Data Manager `POST /v1/events:ingest` API, not the restricted
+legacy Google Ads upload endpoint. Its minimal payload uses one consented
+`gclid`, `gbraid`, or `wbraid`, `WEB`, the signup time, stable transaction ID,
+configured destination, granted ad-user-data consent and denied personalization.
+It does not send a browser conversion or enhanced email match. This is
+**click-based measurement**; it does not establish view-through or engaged-view
+coverage for Demand Gen/YouTube video impressions.
+
+First validate the configured payload/destination using the API's
+`validateOnly: true` facility with an authorized test procedure. Validation does
+not send a conversion and does not prove matching. Then use an explicitly
+approved, unused operator email for the genuine signup test; never manufacture
+an ad click ID or generate fake production conversions.
+
+HTTP 200 with a request ID is only an ingestion acknowledgement. The job stays
+`processing`; attribution data is cleared immediately and only its opaque
+request ID remains for diagnostics. The first diagnostic check is due after
+30 minutes; further checks back off to at most one hour, with at most 48 polls
+and a 24-hour total lifetime. The hourly worker performs recovery. Only `SUCCESS`
+for exactly one record in the intended destination with no errors/warnings
+becomes `sent`. `FAILED`/partial success or warnings fail conservatively. An
+expired diagnostic window is **unverified**, not proof that Google rejected or
+did not count the original conversion. Never replay it under a new ID.
+
+Preserve destination, ID, time and payload on retries: Google treats an existing
+transaction ID as an adjustment rather than a duplicate error. Credential
+refresh uses only Google's fixed OAuth endpoint; account endpoints cannot be
+provided by visitors. Provider failure does not change the public signup reply
+or the email queue. Withdrawal cancels pending work for every provider and
+prevents later polls, but cannot remove already ingested conversions.
+
+Check duplicate signup (no second job), Reject, withdrawal before dispatch,
+malformed/absent identifiers, and provider diagnostics before enabling either
+campaign. Tests stub provider calls; local success does not establish real
+account permission, provider attribution or billing readiness.
+
+References: [Reddit direct integration](https://ads-api.reddit.com/docs/v3/guides/programs/capi/direct-integration),
+[Reddit click-ID persistence](https://ads-api.reddit.com/docs/v3/guides/programs/capi/click-id-persistence),
+[Google offline event requirements](https://developers.google.com/data-manager/api/devguides/events/google-ads/offline/send-events),
+[Google OAuth setup](https://developers.google.com/data-manager/api/devguides/quickstart/set-up-access),
+[Google refresh protocol](https://developers.google.com/identity/protocols/oauth2/web-server#offline),
+[Google ingestion REST](https://developers.google.com/data-manager/api/reference/rest/v1/events/ingest),
+[Google asynchronous diagnostics](https://developers.google.com/data-manager/api/devguides/diagnostics),
+[Google transaction ID semantics](https://developers.google.com/data-manager/api/devguides/events/google-ads/offline/upgrade).
 
 ## Activation is deliberately separate from deploying code
 
@@ -358,7 +491,7 @@ node scripts/stage-waitlist-migrations.mjs
 
 Without `TEST_DATABASE_URL`, the SQL integration suite reports **skipped**, not
 passed. The bundling check creates real temporary ZIP archives and inspects
-Netlify's generated manifest for all three functions, API routes, edge rate
+Netlify's generated manifest for all four functions, API routes, edge rate
 limits, schedule, and Node runtime. It does not contact Netlify or send email.
 
 `Deploy` calls the reusable `Waitlist` workflow before building or deploying,
@@ -366,7 +499,7 @@ including manual deploys. Existing CI-success, same-repository, main-branch and
 commit-matching checks remain in place. Site builds and dependency installation
 receive no runtime secrets. Production checks out the verified main commit and
 uses the pinned Netlify CLI with `--no-build` to upload the built static artifact
-and bundle the three source functions. PR previews retain the static deploy action
+and bundle the four source functions. PR previews retain the static deploy action
 with no functions input. Runtime secrets are configured on Netlify, not copied
 into the downloaded static artifact.
 

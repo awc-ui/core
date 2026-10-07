@@ -1,7 +1,10 @@
 import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 import { isIP } from "node:net";
 import { OFFER_VERSION, ORIGIN, LIMITS, normalizeEmail } from "./config.mjs";
-import { readAdvertisingMeasurement } from "./advertising.mjs";
+import {
+  readAdvertisingMeasurement,
+  enabledAdvertisingProviders,
+} from "./advertising.mjs";
 export { normalizeEmail } from "./config.mjs";
 
 export const hashToken = (token) =>
@@ -189,11 +192,12 @@ export function createJoinHandler({
         offerVersion: OFFER_VERSION,
         now,
         limits: LIMITS,
-        advertising: config.advertising
+        advertising: Object.keys(enabledAdvertisingProviders(config)).length
           ? readAdvertisingMeasurement(
               body.advertising,
               request.headers.get("user-agent"),
               now,
+              enabledAdvertisingProviders(config),
             )
           : null,
       });

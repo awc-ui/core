@@ -1,6 +1,10 @@
 import { createHash } from "node:crypto";
+import {
+  deliverProvider,
+  providerDestination,
+} from "./advertising-providers.mjs";
 
-export const AD_CONSENT_VERSION = "advertising-2026-10-06-v1";
+export const AD_CONSENT_VERSION = "advertising-2026-10-07-v2";
 export const AD_EVENT_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 export const AD_MAX_ATTEMPTS = 6;
 export const AD_CONSENT_RETENTION_MS = 180 * 24 * 60 * 60 * 1000;
@@ -54,7 +58,12 @@ function identifier(value, kind, now) {
   return age >= -300_000 && age <= 90 * 86400_000 ? value : undefined;
 }
 
-export function readAdvertisingMeasurement(value, userAgent, now = new Date()) {
+export function readAdvertisingMeasurement(
+  value,
+  userAgent,
+  now = new Date(),
+  enabled = { meta: true },
+) {
   if (
     !value ||
     typeof value !== "object" ||
@@ -63,7 +72,18 @@ export function readAdvertisingMeasurement(value, userAgent, now = new Date()) {
     value.version !== AD_CONSENT_VERSION ||
     !validConsentToken(value.token) ||
     Object.keys(value).some(
-      (key) => !["consent", "version", "token", "fbp", "fbc"].includes(key),
+      (key) =>
+        ![
+          "consent",
+          "version",
+          "token",
+          "fbp",
+          "fbc",
+          "rdt_cid",
+          "gclid",
+          "gbraid",
+          "wbraid",
+        ].includes(key),
     ) ||
     typeof userAgent !== "string" ||
     userAgent.length < 1 ||
@@ -71,18 +91,60 @@ export function readAdvertisingMeasurement(value, userAgent, now = new Date()) {
     /[\r\n\0]/.test(userAgent)
   )
     return null;
-  const fbp = identifier(value.fbp, "fbp", now);
-  const fbc = identifier(value.fbc, "fbc", now);
-  // Do not substitute an email hash or IP when attribution is unavailable.
-  if (!fbp && !fbc) return null;
+  const fbp = enabled.meta ? identifier(value.fbp, "fbp", now) : undefined;
+  const fbc = enabled.meta ? identifier(value.fbc, "fbc", now) : undefined;
+  const click = (id) =>
+    typeof id === "string" &&
+    id.length > 0 &&
+    id.length <= 500 &&
+    !/[^A-Za-z0-9_-]/.test(id)
+      ? id
+      : undefined;
+  const providers = {};
+  const redditClick = enabled.reddit ? click(value.rdt_cid) : undefined;
+  if (redditClick) providers.reddit = { click_id: redditClick };
+  const googleIds = ["gclid", "gbraid", "wbraid"].filter(
+    (key) => value[key] !== undefined,
+  );
+  if (enabled.google && googleIds.length === 1 && click(value[googleIds[0]]))
+    providers.google = { [googleIds[0]]: value[googleIds[0]] };
+  // Never invent attribution or substitute email/hash/IP identity.
+  if (!fbp && !fbc && !Object.keys(providers).length) return null;
   return {
     consentKey: consentKey(value.token),
     version: AD_CONSENT_VERSION,
-    userData: {
-      client_user_agent: userAgent,
-      ...(fbp ? { fbp } : {}),
-      ...(fbc ? { fbc } : {}),
-    },
+    ...(fbp || fbc
+      ? {
+          userData: {
+            client_user_agent: userAgent,
+            ...(fbp ? { fbp } : {}),
+            ...(fbc ? { fbc } : {}),
+          },
+        }
+      : {}),
+    ...(Object.keys(providers).length
+      ? {
+          providers,
+          destinations: Object.fromEntries(
+            Object.keys(providers).map((provider) => [
+              provider,
+              providerDestination(provider, enabled[provider]),
+            ]),
+          ),
+        }
+      : {}),
+  };
+}
+
+export function enabledAdvertisingProviders(config) {
+  return {
+    ...(config.advertising ? { meta: config.advertising } : {}),
+    ...(config.advertisingProviders?.reddit
+      ? { reddit: config.advertisingProviders.reddit }
+      : {}),
+    ...(config.advertisingProviders?.google
+      ? { google: config.advertisingProviders.google }
+      : {}),
   };
 }
 
@@ -91,9 +153,18 @@ export async function deliverAdvertisingOne({
   config,
   fetcher = fetch,
   clock = () => new Date(),
+  provider: selectedProvider,
 }) {
-  if (!config.advertising) return { status: "disabled" };
-  const job = await store.claimAdvertising({ now: clock() });
+  const providers = enabledAdvertisingProviders(config);
+  if (selectedProvider !== undefined) {
+    for (const provider of Object.keys(providers))
+      if (provider !== selectedProvider) delete providers[provider];
+  }
+  if (!Object.keys(providers).length) return { status: "disabled" };
+  const job = await store.claimAdvertising({
+    now: clock(),
+    providers: Object.keys(providers),
+  });
   if (!job) return { status: "idle" };
   // Withdrawal may have happened after the lease was claimed. Once the HTTP
   // request is in flight it cannot be recalled; subsequent jobs are cancelled.
@@ -105,7 +176,57 @@ export async function deliverAdvertisingOne({
     }))
   )
     return { status: "cancelled" };
-  const settings = config.advertising;
+  const provider = job.provider ?? "meta";
+  const settings = providers[provider];
+  if (!settings) return { status: "disabled" };
+  if (provider !== "meta") {
+    if (job.destinationKey !== providerDestination(provider, settings)) {
+      await store.failAdvertising({
+        id: job.id,
+        claimToken: job.claimToken,
+        now: clock(),
+        retryable: false,
+        errorCode: "destination_changed",
+      });
+      return { status: "failed" };
+    }
+    const result = await deliverProvider({
+      provider,
+      settings,
+      job,
+      fetcher,
+      canSend: () =>
+        store.advertisingCanSend({
+          id: job.id,
+          claimToken: job.claimToken,
+          now: clock(),
+        }),
+    });
+    if (result.status === "cancelled") return { status: "cancelled" };
+    if (result.status === "processing") {
+      await store.deferAdvertising({
+        id: job.id,
+        claimToken: job.claimToken,
+        requestId: result.requestId,
+        now: clock(),
+      });
+    } else if (result.status === "accepted") {
+      await store.completeAdvertising({
+        id: job.id,
+        claimToken: job.claimToken,
+        now: clock(),
+      });
+    } else {
+      await store.failAdvertising({
+        id: job.id,
+        claimToken: job.claimToken,
+        now: clock(),
+        retryable: result.retryable,
+        errorCode: result.errorCode,
+      });
+    }
+    return { status: result.status };
+  }
   let retryable = true;
   let errorCode = "network";
   try {
@@ -175,10 +296,29 @@ export async function deliverAdvertisingOne({
 export async function deliverAdvertisingBatch(runtime, { maxJobs = 20 } = {}) {
   if (!Number.isSafeInteger(maxJobs) || maxJobs < 1 || maxJobs > 20)
     throw new TypeError("Invalid job limit");
-  const deadline = Date.now() + 10_000;
-  for (let index = 0; index < maxJobs && Date.now() < deadline; index++) {
-    const result = await deliverAdvertisingOne(runtime);
-    if (["disabled", "idle"].includes(result.status)) break;
-    console.info(`advertising_delivery_${result.status}`);
-  }
+  const providers = Object.keys(enabledAdvertisingProviders(runtime.config));
+  // Each provider gets its own small worker budget. A slow OAuth exchange or
+  // unavailable Reddit endpoint cannot consume Meta's delivery opportunity.
+  await Promise.all(
+    providers.map(async (provider, index) => {
+      const quota =
+        Math.floor(maxJobs / providers.length) +
+        (index < maxJobs % providers.length ? 1 : 0);
+      const deadline = Date.now() + 10_000;
+      for (
+        let attempt = 0;
+        attempt < quota && Date.now() < deadline;
+        attempt++
+      ) {
+        try {
+          const result = await deliverAdvertisingOne({ ...runtime, provider });
+          if (["disabled", "idle"].includes(result.status)) break;
+          console.info(`advertising_${provider}_delivery_${result.status}`);
+        } catch {
+          console.error(`advertising_${provider}_delivery_deferred`);
+          break;
+        }
+      }
+    }),
+  );
 }

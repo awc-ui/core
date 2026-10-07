@@ -1,9 +1,12 @@
-const VERSION = "advertising-2026-10-06-v1";
+const VERSION = "advertising-2026-10-07-v2";
 const CHOICE_KEY = "awc:advertising:choice";
 const REVOKE_PREFIX = "awc:advertising:revoke:";
 const MAX_AGE = 90 * 24 * 60 * 60 * 1000;
 const TOKEN = /^[A-Za-z0-9_-]{43}$/;
 const GOOGLE_ID = "AW-18474243980";
+const validClick = (value: string) => value.length > 0 && value.length <= 500 && !/[^A-Za-z0-9_-]/.test(value);
+const GOOGLE_CLICKS = ["gclid", "gbraid", "wbraid"] as const;
+const CLICK_COOKIES = ["_awc_rdt_cid", ...GOOGLE_CLICKS.map((key) => `_awc_${key}`)];
 
 type Choice = {
   version: string;
@@ -17,6 +20,10 @@ type Measurement = {
   token: string;
   fbp?: string;
   fbc?: string;
+  rdt_cid?: string;
+  gclid?: string;
+  gbraid?: string;
+  wbraid?: string;
 };
 type AdvertisingWindow = Window & {
   awcAdvertising?: { signupMeasurement(): Measurement | undefined };
@@ -34,6 +41,8 @@ export function initializeAdvertisingConsent(): void {
   const production = config.dataset.production === "true" && location.protocol === "https:" && location.hostname === "awc-ui.dev";
   const metaEnabled = production && config.dataset.meta === "true";
   const googleEnabled = production && config.dataset.google === "true";
+  const redditEnabled = production && config.dataset.reddit === "true";
+  const googleMeasurementEnabled = production && config.dataset.googleMeasurement === "true";
   let forcedOff = new URLSearchParams(location.search).get("awc_advertising") === "off";
   const win = window as AdvertisingWindow;
   let choice: Choice | undefined;
@@ -119,14 +128,17 @@ export function initializeAdvertisingConsent(): void {
       finally { window.clearTimeout(timeout); inFlight.delete(token); }
     }));
   };
+  const expireCookie = (name: string) => {
+    for (const domain of ["", location.hostname, `.${location.hostname}`]) {
+      document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax; Secure${domain ? `; Domain=${domain}` : ""}`;
+    }
+  };
   const clearCookies = () => {
     // Expire host-only and historical parent-domain cookies, including linker IDs.
     for (const entry of document.cookie.split(";")) {
       const name = entry.trim().split("=")[0];
-      if (name !== "_fbp" && name !== "_fbc" && !name.startsWith("_gcl_")) continue;
-      for (const domain of ["", location.hostname, `.${location.hostname}`]) {
-        document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax; Secure${domain ? `; Domain=${domain}` : ""}`;
-      }
+      if (name !== "_fbp" && name !== "_fbc" && !name.startsWith("_gcl_") && !CLICK_COOKIES.includes(name)) continue;
+      expireCookie(name);
     }
   };
   const cookie = (name: string) => document.cookie.split(";").map((part) => part.trim())
@@ -156,6 +168,28 @@ export function initializeAdvertisingConsent(): void {
         saveCookie("_fbc", `fb.1.${Date.now()}.${clicks[0]}`);
       }
     }
+  };
+  const captureClicks = () => {
+    if (!valid(choice) || choice.decision !== "accepted") return;
+    const params = new URLSearchParams(location.search);
+    if (redditEnabled && params.has("rdt_cid")) {
+      const clicks = params.getAll("rdt_cid");
+      expireCookie("_awc_rdt_cid");
+      if (clicks.length === 1 && validClick(clicks[0])) saveCookie("_awc_rdt_cid", clicks[0]);
+    }
+    if (googleMeasurementEnabled) {
+      const clicks = GOOGLE_CLICKS.flatMap((key) => params.getAll(key).map((value) => ({ key, value })));
+      if (clicks.length > 0) {
+        // A new landing replaces previous Google attribution. Never select an
+        // arbitrary winner from duplicate or conflicting identifiers.
+        for (const key of GOOGLE_CLICKS) expireCookie(`_awc_${key}`);
+        if (clicks.length === 1 && validClick(clicks[0].value)) saveCookie(`_awc_${clicks[0].key}`, clicks[0].value);
+      }
+    }
+  };
+  const capturedClick = (key: string) => {
+    const value = cookie(`_awc_${key}`);
+    return value && validClick(value) ? value : undefined;
   };
   const denied = { ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied", analytics_storage: "denied" };
   const loadGoogle = () => {
@@ -193,7 +227,7 @@ export function initializeAdvertisingConsent(): void {
   root.className = "awc-advertising";
   root.innerHTML = `<section class="awc-advertising-panel" aria-labelledby="awc-advertising-title" aria-describedby="awc-advertising-description" hidden>
     <h2 id="awc-advertising-title" tabindex="-1">Advertising preferences</h2>
-    <p id="awc-advertising-description">With your permission, we use Google Ads to measure advertising. When enabled, Meta also receives a signup event with browser and ad-click identifiers after you join the waitlist. We do not send your email to Meta. Advertising measurement is optional; joining works either way.</p>
+    <p id="awc-advertising-description">With your permission, we use Google Ads to measure advertising. When enabled, Meta, Reddit and Google Ads also receive a signup event from our server after a new waitlist signup, using their advertising identifiers. We do not send your email address, name or raw IP address in these server events. Advertising measurement is optional; joining works either way.</p>
     <p>We remember your choice for up to 90 days. <a href="/privacy/#advertising-measurement">Read about advertising and your data</a>.</p>
     <div class="awc-advertising-actions"><button type="button" data-advertising-reject>Reject advertising</button><button type="button" data-advertising-accept>Accept advertising</button></div>
     <button type="button" data-advertising-close hidden>Keep current choice</button>
@@ -259,7 +293,7 @@ export function initializeAdvertisingConsent(): void {
     }
     hide();
     expiryTimer = window.setTimeout(() => { choice = rawChoice(); apply(); }, Math.min(choice.at + MAX_AGE - Date.now(), 2_147_483_647));
-    if (choice.decision === "accepted") { captureMeta(); loadGoogle(); }
+    if (choice.decision === "accepted") { captureMeta(); captureClicks(); loadGoogle(); }
     else stop();
   };
   root.querySelector("[data-advertising-accept]")!.addEventListener("click", () => {
@@ -320,11 +354,27 @@ export function initializeAdvertisingConsent(): void {
   win.awcAdvertising = {
     signupMeasurement() {
       const stored = rawChoice();
-      if (!metaEnabled || !valid(stored) || stored.decision !== "accepted" || stored.token !== choice?.token) return;
-      const fbp = identifier(cookie("_fbp"), "fbp");
-      const fbc = identifier(cookie("_fbc"), "fbc");
-      if (!fbp && !fbc) return;
-      return { consent: true, version: VERSION, token: stored.token!, ...(fbp ? { fbp } : {}), ...(fbc ? { fbc } : {}) };
+      if (forcedOff || !valid(stored) || stored.decision !== "accepted" || stored.token !== choice?.token) return;
+      const identifiers: Partial<Pick<Measurement, "fbp" | "fbc" | "rdt_cid" | "gclid" | "gbraid" | "wbraid">> = {};
+      if (metaEnabled) {
+        const fbp = identifier(cookie("_fbp"), "fbp");
+        const fbc = identifier(cookie("_fbc"), "fbc");
+        if (fbp) identifiers.fbp = fbp;
+        if (fbc) identifiers.fbc = fbc;
+      }
+      if (redditEnabled) {
+        const click = capturedClick("rdt_cid");
+        if (click) identifiers.rdt_cid = click;
+      }
+      if (googleMeasurementEnabled) {
+        const clicks = GOOGLE_CLICKS.filter((key) => cookie(`_awc_${key}`) !== undefined);
+        if (clicks.length === 1) {
+          const value = capturedClick(clicks[0]);
+          if (value) identifiers[clicks[0]] = value;
+        }
+      }
+      if (Object.keys(identifiers).length === 0) return;
+      return { consent: true, version: VERSION, token: stored.token!, ...identifiers };
     },
   };
   choice = rawChoice();

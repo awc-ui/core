@@ -370,3 +370,27 @@ test("advertising privacy matches the default-off and enabled Meta states", asyn
     enabled.links.some((link) => link === "https://www.facebook.com/privacy/policy/"),
   );
 });
+
+test("Reddit and Google server privacy disclosures follow independent production flags", async () => {
+  const identity = { PUBLIC_WAITLIST_CONTROLLER_NAME: "Example Maintainer", PUBLIC_WAITLIST_CONTACT_ADDRESS: "contact@example.test" };
+  const disabled = await renderPage("privacy", identity);
+  assert.match(disabled.text, /Reddit signup measurement is currently disabled/);
+  assert.match(disabled.text, /Google server signup measurement is currently disabled/);
+  assert.doesNotMatch(disabled.text, /our server queues one Sign Up event for Reddit/);
+  assert.doesNotMatch(disabled.text, /our server queues one signup conversion for Google Ads/);
+  for (const provider of ["REDDIT", "GOOGLE"]) {
+    const enabled = await renderPage("privacy", { ...identity, PROD: true, CONTEXT: "production", [`PUBLIC_${provider}_MEASUREMENT_ENABLED`]: "true" });
+    assert.match(enabled.text, provider === "REDDIT" ? /our server queues one Sign Up event for Reddit/ : /our server queues one signup conversion for Google Ads/);
+    assert.match(enabled.text, provider === "REDDIT" ? /Google server signup measurement is currently disabled/ : /Reddit signup measurement is currently disabled/);
+    assert.match(enabled.text, /Meta signup measurement is currently disabled/);
+    assert.match(enabled.text, /at most 24 hours/);
+    assert.match(enabled.text, /up to 180 days/);
+    assert.match(enabled.text, /up to 90 days/);
+    assert.match(enabled.text, /raw IP address or private link/);
+    assert.match(enabled.text, /cancels server conversion events/);
+    assert.ok(enabled.links.some((link) => link === (provider === "REDDIT" ? "https://www.reddit.com/policies/privacy-policy" : "https://policies.google.com/privacy")));
+  }
+  const preview = await renderPage("privacy", { ...identity, PROD: true, CONTEXT: "deploy-preview", PUBLIC_REDDIT_MEASUREMENT_ENABLED: "true", PUBLIC_GOOGLE_MEASUREMENT_ENABLED: "true" });
+  assert.match(preview.text, /Reddit signup measurement is currently disabled/);
+  assert.match(preview.text, /Google server signup measurement is currently disabled/);
+});

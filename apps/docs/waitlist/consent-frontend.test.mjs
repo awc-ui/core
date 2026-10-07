@@ -7,7 +7,7 @@ import { chromium } from "@playwright/test";
 import ts from "typescript";
 import { readAdvertisingMeasurement } from "./advertising.mjs";
 
-const VERSION = "advertising-2026-10-06-v1";
+const VERSION = "advertising-2026-10-07-v2";
 const CHOICE = "awc:advertising:choice";
 const REVOKE = "awc:advertising:revoke:";
 const oldToken = "A".repeat(43);
@@ -98,6 +98,167 @@ const reject = (page) => page.getByRole("button", { name: "Reject advertising", 
 const preferences = (page) => page.getByRole("button", { name: "Advertising preferences", exact: true }).click();
 const measurement = (page) => page.evaluate(() => window.awcAdvertising.signupMeasurement());
 const cookies = (context) => context.cookies("https://awc-ui.dev/");
+const serverProviders = {
+  PUBLIC_META_MEASUREMENT_ENABLED: "false",
+  PUBLIC_REDDIT_MEASUREMENT_ENABLED: "true",
+  PUBLIC_GOOGLE_MEASUREMENT_ENABLED: "true",
+};
+
+test("Reddit and Google server attribution remain off by default, independently of Meta and the basic Google tag", async (t) => {
+  const { page, context, external } = await harness(t, {
+    env: { PUBLIC_META_MEASUREMENT_ENABLED: "false" },
+    url: "https://awc-ui.dev/?rdt_cid=reddit_click&gclid=google_click#pro-tier",
+  });
+  await accept(page);
+  assert.equal(await measurement(page), undefined);
+  assert.deepEqual(await cookies(context), []);
+  assert.equal(external.length, 0);
+});
+
+test("Reddit and Google click capture requires explicit current consent and never sends a browser conversion", async (t) => {
+  const { page, context, external } = await harness(t, {
+    env: serverProviders, url: "https://awc-ui.dev/?rdt_cid=reddit_click&gclid=google_click#pro-tier",
+  });
+  assert.equal(await measurement(page), undefined);
+  assert.deepEqual(await cookies(context), []);
+  await accept(page);
+  const value = await measurement(page);
+  assert.equal(value.rdt_cid, "reddit_click");
+  assert.equal(value.gclid, "google_click");
+  assert.equal(value.version, VERSION);
+  assert.deepEqual(Object.keys(value).sort(), ["consent", "gclid", "rdt_cid", "token", "version"]);
+  const parsed = readAdvertisingMeasurement(value, "test-browser", new Date(), { reddit: true, google: true });
+  assert.deepEqual(parsed.providers, { reddit: { click_id: "reddit_click" }, google: { gclid: "google_click" } });
+  assert.equal(parsed.userData, undefined);
+  assert.equal(external.length, 0);
+  assert.equal(await page.evaluate(() => window.dataLayer), undefined);
+  for (const item of await cookies(context)) {
+    assert.equal(item.secure, true);
+    assert.equal(item.sameSite, "Lax");
+    assert.equal(item.domain, "awc-ui.dev");
+    assert.ok(item.expires * 1000 <= Date.now() + 90 * day);
+  }
+});
+
+test("each provider works independently and Google accepts opaque gclid or braid attribution without inventing one", async (t) => {
+  for (const key of ["gclid", "gbraid", "wbraid"]) {
+    const { page } = await harness(t, {
+      env: { ...serverProviders, PUBLIC_REDDIT_MEASUREMENT_ENABLED: "false" },
+      url: `https://awc-ui.dev/?${key}=opaque_123-ABC&rdt_cid=reddit_click`,
+    });
+    await accept(page);
+    assert.equal((await measurement(page))[key], "opaque_123-ABC");
+    assert.equal((await measurement(page)).rdt_cid, undefined);
+  }
+  const { page } = await harness(t, {
+    env: { ...serverProviders, PUBLIC_GOOGLE_MEASUREMENT_ENABLED: "false" },
+    url: "https://awc-ui.dev/?rdt_cid=reddit_click&gclid=google_click",
+  });
+  await accept(page);
+  assert.equal((await measurement(page)).rdt_cid, "reddit_click");
+  assert.equal((await measurement(page)).gclid, undefined);
+});
+
+test("malformed, duplicate, conflicting and missing provider click IDs cannot create attribution", async (t) => {
+  for (const query of [
+    "?rdt_cid=%3Cbad%3E", "?rdt_cid=one&rdt_cid=one", "?rdt_cid=",
+    "?gclid=one&gclid=two", "?gclid=one&gbraid=two", "?wbraid=one&gbraid=two",
+    "?gclid=one&gbraid=", "?gclid=has%20space", "?gbraid=%3Cbad%3E", "?wbraid=%0Ainvalid", "?rdt_cid=invalid%0A", "?gclid=invalid%0A",
+    `?gclid=${"x".repeat(501)}`, "?utm_source=google#pro-tier",
+  ]) {
+    const { page, context } = await harness(t, { env: serverProviders, url: `https://awc-ui.dev/${query}` });
+    await accept(page);
+    assert.equal(await measurement(page), undefined, query);
+    assert.deepEqual(await cookies(context), [], query);
+  }
+});
+
+test("new Google landings replace attribution, ambiguous landings clear it and ordinary navigation preserves its original expiry", async (t) => {
+  const { page, context } = await harness(t, { env: serverProviders, url: "https://awc-ui.dev/?gclid=first" });
+  await accept(page);
+  const firstCookie = (await cookies(context))[0];
+  await page.goto("https://awc-ui.dev/#pro-tier");
+  await page.waitForFunction(() => Boolean(window.awcAdvertising));
+  assert.equal((await measurement(page)).gclid, "first");
+  assert.equal((await cookies(context))[0].expires, firstCookie.expires);
+  await page.goto("https://awc-ui.dev/?wbraid=second");
+  await page.waitForFunction(() => Boolean(window.awcAdvertising));
+  assert.equal((await measurement(page)).wbraid, "second");
+  assert.equal((await measurement(page)).gclid, undefined);
+  await page.goto("https://awc-ui.dev/?gclid=third&wbraid=conflict");
+  await page.waitForFunction(() => Boolean(window.awcAdvertising));
+  assert.equal(await measurement(page), undefined);
+  assert.deepEqual(await cookies(context), []);
+});
+
+test("Reddit and Google capture fail closed on preview, sensitive pages, rejected grants and blocked storage", async (t) => {
+  for (const behavior of [
+    { env: { ...serverProviders, PROD: false } },
+    { env: { ...serverProviders, CONTEXT: "deploy-preview" } },
+    { env: serverProviders, sensitive: true },
+    { env: serverProviders, blocked: true },
+  ]) {
+    const { page, context, external } = await harness(t, {
+      ...behavior, url: "https://awc-ui.dev/?rdt_cid=reddit_click&gclid=google_click",
+    });
+    await accept(page);
+    assert.equal(await measurement(page), undefined);
+    assert.deepEqual(await cookies(context), []);
+    assert.equal(external.length, 0);
+  }
+  const { page, context } = await harness(t, { env: serverProviders, url: "https://awc-ui.dev/?rdt_cid=reddit_click&gclid=google_click" });
+  await reject(page);
+  await page.reload();
+  await page.waitForFunction(() => Boolean(window.awcAdvertising));
+  assert.equal(await measurement(page), undefined);
+  assert.deepEqual(await cookies(context), []);
+});
+
+test("upgrading the consent version revokes the previous grant and clears provider cookies before asking again", async (t) => {
+  const { page, context, withdrawals } = await harness(t, {
+    env: serverProviders,
+    url: "https://awc-ui.dev/?rdt_cid=new_click&gclid=new_click",
+    storage: { [CHOICE]: JSON.stringify({ version: "advertising-2026-10-06-v1", decision: "accepted", at: Date.now(), token: oldToken }) },
+    cookies: [["_awc_rdt_cid", "old_click"], ["_awc_gclid", "old_click"]],
+  });
+  await page.waitForFunction((key) => localStorage.getItem(key) === null, REVOKE + oldToken);
+  assert.ok(withdrawals.some((request) => request.postDataJSON().token === oldToken));
+  assert.equal(await measurement(page), undefined);
+  assert.deepEqual(await cookies(context), []);
+  assert.equal(await page.locator("section").isVisible(), true);
+});
+
+test("withdrawal clears all provider identifiers across tabs and cancels only with the private capability", async (t) => {
+  const { page, context, withdrawals, external } = await harness(t, {
+    env: serverProviders, url: "https://awc-ui.dev/?rdt_cid=reddit_click&gclid=google_click#pro-tier",
+  });
+  await accept(page);
+  const previous = await measurement(page);
+  const other = await context.newPage();
+  await other.goto("https://awc-ui.dev/#pro-tier");
+  await other.waitForFunction(() => Boolean(window.awcAdvertising));
+  assert.ok(await measurement(other));
+  await preferences(page);
+  await reject(page);
+  await other.waitForFunction(() => window.awcAdvertising.signupMeasurement() === undefined);
+  assert.deepEqual(await cookies(context), []);
+  assert.equal(await measurement(page), undefined);
+  assert.equal(external.length, 0);
+  assert.ok(withdrawals.length > 0);
+  assert.ok(withdrawals.every((request) => JSON.stringify(request.postDataJSON()) === JSON.stringify({ token: previous.token })));
+});
+
+test("server attribution cookies expire with the original grant while the page stays open", async (t) => {
+  const { page, context } = await harness(t, { env: serverProviders,
+    url: "https://awc-ui.dev/?rdt_cid=reddit_click&gclid=google_click", clock: true,
+    storage: { [CHOICE]: JSON.stringify({ version: VERSION, decision: "accepted", at: Date.now() - 90 * day + 60_000, token: oldToken }) },
+  });
+  assert.ok(await measurement(page));
+  for (const item of await cookies(context)) assert.ok(item.expires * 1000 <= Date.now() + 60_000);
+  await page.clock.fastForward(60_001);
+  assert.equal(await measurement(page), undefined);
+  assert.deepEqual(await cookies(context), []);
+});
 
 test("no advertising requests, identifiers or capture before a choice; reject keeps signup usable", async (t) => {
   const { page, context, external, withdrawals } = await harness(t, { url: "https://awc-ui.dev/?fbclid=valid_click" });

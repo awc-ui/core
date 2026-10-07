@@ -1,7 +1,10 @@
 import { getRuntime } from "../../waitlist/runtime.mjs";
 import { createJoinHandler, json } from "../../waitlist/handler.mjs";
 import { queueSignupDelivery } from "../../waitlist/mail.mjs";
-import { deliverAdvertisingBatch } from "../../waitlist/advertising.mjs";
+import {
+  deliverAdvertisingBatch,
+  enabledAdvertisingProviders,
+} from "../../waitlist/advertising.mjs";
 
 export default async (request, context) => {
   try {
@@ -12,11 +15,11 @@ export default async (request, context) => {
           onRegistered: (ctx, subscriberId) => {
             queueSignupDelivery(runtime, ctx, subscriberId);
             if (
-              runtime.config.advertising &&
+              Object.keys(enabledAdvertisingProviders(runtime.config)).length &&
               typeof ctx?.waitUntil === "function"
             )
               ctx.waitUntil(
-                deliverAdvertisingBatch(runtime, { maxJobs: 2 }).catch(() => {
+                deliverAdvertisingBatch(runtime, { maxJobs: 6 }).catch(() => {
                   console.error("advertising_delivery_deferred");
                 }),
               );
