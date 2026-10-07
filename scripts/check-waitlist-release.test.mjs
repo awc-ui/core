@@ -10,6 +10,31 @@ const valid = {
   PUBLIC_WAITLIST_CONTACT_ADDRESS: "10 Testing Street, Test City",
 };
 
+test("Meta attribution defaults off and can only accompany the production public form", () => {
+  assert.deepEqual(
+    checkWaitlistRelease({ ...valid, PUBLIC_META_MEASUREMENT_ENABLED: "true" }),
+    { enabled: true },
+  );
+  for (const overrides of [
+    { CONTEXT: "deploy-preview" },
+    { PUBLIC_WAITLIST_ENABLED: "false" },
+    { PUBLIC_WAITLIST_ENABLED: undefined },
+  ])
+    assert.throws(
+      () =>
+        checkWaitlistRelease({
+          ...valid,
+          PUBLIC_META_MEASUREMENT_ENABLED: "true",
+          ...overrides,
+        }),
+      /Meta measurement/,
+    );
+  assert.throws(
+    () => checkWaitlistRelease({ PUBLIC_META_MEASUREMENT_ENABLED: "yes" }),
+    /true or false/,
+  );
+});
+
 test("disabled builds need no provider configuration and never expose a signup form", () => {
   assert.deepEqual(checkWaitlistRelease({}), { enabled: false });
   assert.deepEqual(checkWaitlistRelease({ PUBLIC_WAITLIST_ENABLED: "false" }), {

@@ -425,6 +425,7 @@ test("signup check persists only the normalized configured mailbox through ordin
     offerVersion: "datagrid-early-20-v1",
     now,
     limits: LIMITS,
+    advertising: null,
   });
   assert.match(row.unsubscribeToken, /^[A-Za-z0-9_-]{43}$/);
   assert.ok(!JSON.stringify(row).includes(context.ip));

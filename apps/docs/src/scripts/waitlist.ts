@@ -189,6 +189,15 @@ function mountWaitlist(form: HTMLFormElement): () => void {
     request = new AbortController();
     const timer = window.setTimeout(() => request?.abort(), TIMEOUT_MS);
     try {
+      // Measurement is optional and must never prevent a signup. The consent
+      // controller rechecks the persisted choice at submission, including
+      // withdrawal in another tab. Generic success is never a browser Lead.
+      let advertising: unknown;
+      try {
+        advertising = (window as Window & {
+          awcAdvertising?: { signupMeasurement(): unknown };
+        }).awcAdvertising?.signupMeasurement();
+      } catch { /* Continue without advertising when browser storage fails. */ }
       const response = await fetch("/api/waitlist", {
         method: "POST",
         headers: {
@@ -199,6 +208,7 @@ function mountWaitlist(form: HTMLFormElement): () => void {
           email: email.value.trim(),
           token: submittedToken,
           website: website.value,
+          ...(advertising ? { advertising } : {}),
         }),
         signal: request.signal,
         credentials: "omit",

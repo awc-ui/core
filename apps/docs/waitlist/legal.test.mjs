@@ -51,12 +51,21 @@ function compile(source, filename, imports = {}) {
   return `data:text/javascript;base64,${Buffer.from(javascript).toString("base64")}`;
 }
 
+const googleSource = readFileSync(new URL("../src/components/GoogleTag.astro", import.meta.url), "utf8");
+const googleScripts = parseAstro(googleSource).ast.body.filter((node) =>
+  node.type === "JSXElement" && node.openingElement.name.name?.toLowerCase() === "script",
+);
+const googleTemplate = googleScripts.reduceRight(
+  (source, node) => source.slice(0, node.start) + source.slice(node.end), googleSource,
+).replace(/import\.meta\.env\.([A-Z0-9_]+)/g, "undefined");
+const googleTag = compile(googleTemplate, "GoogleTag.astro");
 const layout = compile(
   readFileSync(
     new URL("../src/components/WaitlistLegalPage.astro", import.meta.url),
     "utf8",
   ),
   "WaitlistLegalPage.astro",
+  { "./GoogleTag.astro": googleTag },
 );
 
 function* descendants(node) {
@@ -341,4 +350,23 @@ test("the offer page limits the discount to the first annual Data Grid purchase 
   );
   assert.ok(links.includes("/privacy/"));
   assert.ok(links.includes("mailto:waitlist@awc-ui.dev"));
+});
+
+
+test("advertising privacy matches the default-off and enabled Meta states", async () => {
+  const identity = { PUBLIC_WAITLIST_CONTROLLER_NAME: "Example Maintainer", PUBLIC_WAITLIST_CONTACT_ADDRESS: "contact@example.test" };
+  const disabled = await renderPage("privacy", identity);
+  assert.match(disabled.text, /Meta signup measurement is currently disabled/);
+  assert.doesNotMatch(disabled.text, /our server queues one Lead event/);
+  const enabled = await renderPage("privacy", { ...identity, PROD: true, CONTEXT: "production", PUBLIC_META_MEASUREMENT_ENABLED: "true" });
+  assert.match(enabled.text, /Duplicate signups do not create another Lead/);
+  assert.match(enabled.text, /No Meta browser pixel is loaded/);
+  assert.match(enabled.text, /at most 24 hours/);
+  assert.match(enabled.text, /up to 180 days/);
+  assert.match(enabled.text, /cannot be recalled/);
+  assert.match(enabled.text, /Accept and Reject buttons/);
+  assert.match(enabled.text, /up to 90 days/);
+  assert.ok(
+    enabled.links.some((link) => link === "https://www.facebook.com/privacy/policy/"),
+  );
 });

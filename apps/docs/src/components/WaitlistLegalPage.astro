@@ -1,4 +1,5 @@
 ---
+import GoogleTag from './GoogleTag.astro';
 interface Props { title: string; description: string; noindex?: boolean; }
 const { title, description, noindex = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, 'https://awc-ui.dev').href;
@@ -35,6 +36,7 @@ const jsonLd = JSON.stringify({
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={image} />
     <script type="application/ld+json" set:html={jsonLd} />
+    <GoogleTag sensitive={noindex} />
   </head>
   <body>
     <main>

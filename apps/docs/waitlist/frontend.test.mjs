@@ -53,6 +53,10 @@ const controller = ts.transpileModule(
     },
   },
 ).outputText;
+const consentController = ts.transpileModule(
+  readFileSync(new URL("../src/scripts/advertising-consent.ts", import.meta.url), "utf8"),
+  { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } },
+).outputText;
 const moduleUrl = (code) =>
   `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`;
 
@@ -173,6 +177,19 @@ async function harness(t, behavior = {}) {
   const scripts = [];
   const pageErrors = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
+  let markup = behavior.markup ?? enabledHtml;
+  if (behavior.consent) {
+    const source = readFileSync(new URL("../src/components/GoogleTag.astro", import.meta.url), "utf8");
+    const scripts = parse(source).ast.body.filter((node) => node.type === "JSXElement" && node.openingElement.name.name?.toLowerCase() === "script");
+    const template = scripts.reduceRight((source, node) => source.slice(0, node.start) + source.slice(node.end), source);
+    const env = { PROD: true, CONTEXT: "production", PUBLIC_META_MEASUREMENT_ENABLED: "true" };
+    const component = compile(template.replace(/import\.meta\.env\.([A-Z0-9_]+)/g,
+      (_match, key) => JSON.stringify(env[key]) ?? "undefined"), "GoogleTag.astro");
+    const { default: compiled } = await import(moduleUrl(component.code));
+    const container = await AstroContainer.create();
+    const head = await container.renderToString(compiled);
+    markup = markup.replace("</head>", `${head}<style>${component.css.join("\n")}</style></head>`);
+  }
   const held = [];
   const release = () => held.splice(0).forEach((resolve) => resolve());
   t.after(async () => {
@@ -234,13 +251,17 @@ async function harness(t, behavior = {}) {
     if (request.url() === "https://awc-ui.dev/") {
       await route.fulfill({
         contentType: "text/html",
-        body: behavior.markup ?? enabledHtml,
+        body: markup,
       });
       return;
     }
     await route.abort("blockedbyclient");
   });
   await page.goto("https://awc-ui.dev/");
+  if (behavior.consent) {
+    await page.addScriptTag({ type: "module", content: `${consentController}\ninitializeAdvertisingConsent();` });
+    await page.waitForFunction(() => Boolean(window.awcAdvertising));
+  }
   if (behavior.clock) await page.clock.install();
   if (!behavior.noScript) {
     await page.addScriptTag({
@@ -587,4 +608,54 @@ test("mobile layout, keyboard order, repeated initialization, and navigation cle
   }
   await page.evaluate(() => window.__waitlist.disposeWaitlists());
   assert.equal(await page.evaluate(() => window.__turnstile.removes), 1);
+});
+
+
+test("signup includes only the currently consented measurement and does not emit browser conversions", async (t) => {
+  for (const granted of [true, false]) {
+    const { page, calls } = await harness(t);
+    const advertising = { consent: true, version: "advertising-2026-10-06-v1", token: "A".repeat(43), fbp: `fb.1.${Date.now()}.123` };
+    await page.evaluate(({ granted, advertising }) => {
+      window.__adCalls = 0;
+      window.__adGranted = granted;
+      window.awcAdvertising = { signupMeasurement() { return window.__adGranted ? advertising : undefined; } };
+      window.gtag = () => { window.__adCalls++; };
+      window.fbq = () => { window.__adCalls++; };
+    }, { granted, advertising });
+    await verify(page);
+    await submit(page);
+    await outcome(page, "success");
+    assert.deepEqual(calls[0].postDataJSON().advertising, granted ? advertising : undefined);
+    assert.equal(await page.evaluate(() => window.__adCalls), 0);
+  }
+});
+
+test("optional measurement errors cannot prevent waitlist signup", async (t) => {
+  const { page, calls } = await harness(t);
+  await page.evaluate(() => {
+    window.awcAdvertising = { signupMeasurement() { throw new DOMException("Blocked", "SecurityError"); } };
+  });
+  await verify(page);
+  await submit(page);
+  await outcome(page, "success");
+  assert.equal(calls[0].postDataJSON().advertising, undefined);
+});
+
+
+test("rejecting the consent panel leaves the real waitlist usable on desktop and mobile", async (t) => {
+  for (const [name, viewport] of [["desktop", { width: 1280, height: 900 }], ["mobile", { width: 360, height: 800 }]]) {
+    const { page, calls } = await harness(t, { consent: true, viewport, markup: await render("true", "test-public-key", true) });
+    await verify(page);
+    await page.locator(".awc-waitlist").scrollIntoViewIfNeeded();
+    if (process.env.CONSENT_SCREENSHOT_DIRECTORY) await page.screenshot({ path: `${process.env.CONSENT_SCREENSHOT_DIRECTORY}/${name}-before.png` });
+    await page.getByRole("button", { name: "Reject advertising", exact: true }).click();
+    await page.locator(".awc-waitlist").scrollIntoViewIfNeeded();
+    if (process.env.CONSENT_SCREENSHOT_DIRECTORY) await page.screenshot({ path: `${process.env.CONSENT_SCREENSHOT_DIRECTORY}/${name}-after.png` });
+    assert.equal(await page.locator(".awc-advertising-panel").isVisible(), false);
+    assert.equal(await page.getByRole("button", { name: "Join the waitlist", exact: true }).isVisible(), true);
+    await submit(page);
+    await outcome(page, "success");
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].postDataJSON().advertising, undefined);
+  }
 });

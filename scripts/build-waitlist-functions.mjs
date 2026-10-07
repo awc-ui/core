@@ -22,6 +22,7 @@ try {
   );
   const { functions } = JSON.parse(await readFile(manifestPath, "utf8"));
   assert.deepEqual(functions.map((fn) => fn.name).sort(), [
+    "advertising-withdraw",
     "waitlist",
     "waitlist-delivery",
     "waitlist-unsubscribe",
@@ -39,6 +40,7 @@ try {
     );
   }
   for (const [name, route] of [
+    ["advertising-withdraw", "/api/advertising/withdraw"],
     ["waitlist", "/api/waitlist"],
     ["waitlist-unsubscribe", "/api/waitlist/unsubscribe"],
   ]) {
@@ -64,7 +66,7 @@ try {
     "Delivery recovery worker must run hourly.",
   );
   console.log(
-    "Three waitlist functions bundled: Node 22, API routes, edge rate limits, and delivery schedule verified.",
+    "Four waitlist functions bundled: Node 22, API routes, edge rate limits, and delivery schedule verified.",
   );
 } finally {
   await rm(temporary, { recursive: true, force: true });

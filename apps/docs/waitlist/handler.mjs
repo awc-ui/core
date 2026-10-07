@@ -1,6 +1,7 @@
 import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 import { isIP } from "node:net";
 import { OFFER_VERSION, ORIGIN, LIMITS, normalizeEmail } from "./config.mjs";
+import { readAdvertisingMeasurement } from "./advertising.mjs";
 export { normalizeEmail } from "./config.mjs";
 
 export const hashToken = (token) =>
@@ -140,7 +141,7 @@ export function createJoinHandler({
       typeof body !== "object" ||
       Array.isArray(body) ||
       Object.keys(body).some(
-        (key) => !["email", "token", "website"].includes(key),
+        (key) => !["email", "token", "website", "advertising"].includes(key),
       )
     )
       return json(400, { ok: false });
@@ -188,6 +189,13 @@ export function createJoinHandler({
         offerVersion: OFFER_VERSION,
         now,
         limits: LIMITS,
+        advertising: config.advertising
+          ? readAdvertisingMeasurement(
+              body.advertising,
+              request.headers.get("user-agent"),
+              now,
+            )
+          : null,
       });
       if (result.status === "limited")
         return json(429, { ok: false }, { "Retry-After": "3600" });
